@@ -260,7 +260,7 @@ private:
     std::vector<int> d_block_ids;
 };
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 #endif

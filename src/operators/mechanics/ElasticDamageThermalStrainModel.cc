@@ -21,7 +21,7 @@ ElasticDamageThermalStrainModel::ElasticDamageThermalStrainModel(
 
     for ( auto &elem : d_constitutiveMatrix ) {
         for ( size_t j = 0; j < 6; j++ )
-            elem[j]    = 0.;
+            elem[j] = 0.;
     }
 
     if ( d_useMaterialsLibrary == false ) {
@@ -521,7 +521,7 @@ void ElasticDamageThermalStrainModel::Thermal_Strain_Gauss_Point(
                                      ( d_tmp1Tau[d_gaussPtCnt] - d_EquilibriumTau[d_gaussPtCnt] );
         if ( d_tmp1Damage[d_gaussPtCnt] > d_CriticalDamageVec[d_gaussPtCnt] )
             d_tmp1Damage[d_gaussPtCnt] = d_CriticalDamageVec[d_gaussPtCnt];
-        double dam                     = d_tmp1Damage[d_gaussPtCnt];
+        double dam = d_tmp1Damage[d_gaussPtCnt];
         for ( int i = 0; i < 6; i++ ) {
             for ( int j = 0; j < 6; j++ ) {
                 d_constitutiveMatrix[i][j] = ( 1.0 - dam ) * d_initialConstitutiveMatrix[i][j];
@@ -563,5 +563,5 @@ void ElasticDamageThermalStrainModel::Thermal_Strain_Gauss_Point(
         }
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

@@ -67,6 +67,6 @@ private:
 };
 
 
-} // AMP namespace
+} // namespace AMP
 
 #endif

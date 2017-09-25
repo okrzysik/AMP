@@ -23,7 +23,6 @@
 
 #include "operators/LinearBVPOperator.h"
 #include "operators/NeutronicsRhs.h"
-#include "operators/NeutronicsRhs.h"
 #include "operators/OperatorBuilder.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
@@ -44,10 +43,9 @@
         ut.failure( __LINE__ );
 
 #define __PI__ 3.14159265
-#define __INIT_FN__( x, y, z, t )                                                     \
-    ( 750.0 +                                                                         \
-      10000.0 * ( 0.5 + x ) * ( 0.5 - x ) * ( 0.5 + y ) * ( 0.5 - y ) * ( 0.5 + z ) * \
-          ( 0.5 - z ) )
+#define __INIT_FN__( x, y, z, t )                                                             \
+    ( 750.0 + 10000.0 * ( 0.5 + x ) * ( 0.5 - x ) * ( 0.5 + y ) * ( 0.5 - y ) * ( 0.5 + z ) * \
+                  ( 0.5 - z ) )
 
 void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
 {

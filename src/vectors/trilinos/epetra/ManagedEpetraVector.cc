@@ -29,5 +29,5 @@ void ManagedEpetraVector::copy( const VectorOperations &src )
         VectorOperationsDefault<double>::copy( src );
     }
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

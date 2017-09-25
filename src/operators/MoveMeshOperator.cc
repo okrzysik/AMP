@@ -32,5 +32,5 @@ void MoveMeshOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     d_prevDisp->copyVector( dispVec );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

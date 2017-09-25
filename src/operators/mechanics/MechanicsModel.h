@@ -59,7 +59,7 @@ protected:
      * stress and/or tangent. */
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_deformationGradient;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

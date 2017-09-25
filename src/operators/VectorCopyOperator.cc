@@ -32,5 +32,5 @@ AMP::LinearAlgebra::Variable::shared_ptr VectorCopyOperator::getInputVariable()
 {
     return d_copyVariable;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

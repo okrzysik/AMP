@@ -10,8 +10,8 @@ namespace AMP {
 namespace Solver {
 
 /****************************************************************
-*  Constructors                                                 *
-****************************************************************/
+ *  Constructors                                                 *
+ ****************************************************************/
 GMRESSolver::GMRESSolver() : d_restarts( 0 ) { NULL_USE( d_restarts ); }
 
 GMRESSolver::GMRESSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
@@ -25,13 +25,13 @@ GMRESSolver::GMRESSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
 
 
 /****************************************************************
-*  Destructor                                                   *
-****************************************************************/
+ *  Destructor                                                   *
+ ****************************************************************/
 GMRESSolver::~GMRESSolver() {}
 
 /****************************************************************
-*  Initialize                                                   *
-****************************************************************/
+ *  Initialize                                                   *
+ ****************************************************************/
 void GMRESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
     AMP::shared_ptr<KrylovSolverParameters> parameters =
@@ -74,12 +74,11 @@ void GMRESSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 }
 
 /****************************************************************
-*  Solve                                                        *
-* TODO: store convergence history, iterations, convergence reason
-****************************************************************/
+ *  Solve                                                        *
+ * TODO: store convergence history, iterations, convergence reason
+ ****************************************************************/
 void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                         AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                             u )
+                         AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 
@@ -234,7 +233,7 @@ void GMRESSolver::orthogonalize( AMP::shared_ptr<AMP::LinearAlgebra::Vector> v )
     }
 
     // h_{k+1, k}
-    auto v_norm = v->L2Norm();
+    auto v_norm               = v->L2Norm();
     d_dHessenberg( k, k - 1 ) = v_norm; // adjusting for zero starting index
 }
 
@@ -306,8 +305,8 @@ void GMRESSolver::backwardSolve( void )
 }
 
 /****************************************************************
-*  Function to set the register the operator                    *
-****************************************************************/
+ *  Function to set the register the operator                    *
+ ****************************************************************/
 void GMRESSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op.get() != nullptr );
@@ -331,5 +330,5 @@ void GMRESSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorPa
         d_pPreconditioner->resetOperator( params );
     }
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

@@ -69,7 +69,7 @@ private:
 };
 
 
-} // Operator namespace
-} // AMP namespace
+} // namespace Operator
+} // namespace AMP
 
 #endif

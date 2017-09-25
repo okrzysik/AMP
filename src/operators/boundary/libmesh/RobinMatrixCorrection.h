@@ -114,7 +114,7 @@ private:
     AMP::shared_ptr<NeumannVectorCorrection> d_NeumannCorrection;
     AMP::shared_ptr<NeumannVectorCorrectionParameters> d_NeumannParams;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

@@ -20,7 +20,7 @@ public:
 
     AMP::LinearAlgebra::Matrix::shared_ptr d_inputMatrix;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

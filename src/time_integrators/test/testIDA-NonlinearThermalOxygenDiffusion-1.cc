@@ -8,7 +8,6 @@
 #include "utils/PIO.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
 #include "vectors/Variable.h"
 #include <string>
@@ -48,10 +47,9 @@
 
 #define __PI__ 3.14159265
 
-#define __INIT_THERMAL_FN__( x, y, z, t )                                             \
-    ( 750.0 +                                                                         \
-      10000.0 * ( 0.5 + x ) * ( 0.5 - x ) * ( 0.5 + y ) * ( 0.5 - y ) * ( 0.5 + z ) * \
-          ( 0.5 - z ) )
+#define __INIT_THERMAL_FN__( x, y, z, t )                                                     \
+    ( 750.0 + 10000.0 * ( 0.5 + x ) * ( 0.5 - x ) * ( 0.5 + y ) * ( 0.5 - y ) * ( 0.5 + z ) * \
+                  ( 0.5 - z ) )
 #define __INIT_OXYGEN_FN__( x, y, z, t ) \
     ( 0.01 + ( 0.5 + x ) * ( 0.5 - x ) * ( 0.5 + y ) * ( 0.5 - y ) * ( 0.5 + z ) * ( 0.5 - z ) )
 

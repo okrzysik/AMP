@@ -35,7 +35,7 @@ namespace Materials {
  * A Property class may provide only one of eval(), evalVector() or evalTensor(). It can not
  * provide both scalar and tensor
  */
-template <class Number>
+template<class Number>
 class Property
 {
 public:
@@ -67,7 +67,7 @@ public:
           d_variableNumberParameters( false )
     {
         if ( args != nullptr ) {
-            for ( size_t i     = 0; i < d_n_arguments; i++ )
+            for ( size_t i = 0; i < d_n_arguments; i++ )
                 d_arguments[i] = args[i];
         }
         for ( size_t i = 0; i < d_n_arguments; i++ ) {
@@ -127,9 +127,9 @@ public:
         AMP_INSIST( d_variableNumberParameters,
                     "changing number of parameters for this property not allowed" );
         d_params.resize( nparams );
-        for ( size_t i  = 0; i < nparams; i++ )
+        for ( size_t i = 0; i < nparams; i++ )
             d_params[i] = params[i];
-        d_nparams       = nparams;
+        d_nparams = nparams;
     }
 
     /** return the names of the arguments to eval */
@@ -180,11 +180,11 @@ public:
     bool in_range( const std::string &argname, const Number value );
 
     //! determine if a set of values are all within range or not
-    template <class INPUT_VTYPE>
+    template<class INPUT_VTYPE>
     bool in_range( const std::string &argname, const INPUT_VTYPE &values );
 
     //! determine if a set of sets of values are all within range or not
-    template <class INPUT_VTYPE>
+    template<class INPUT_VTYPE>
     bool in_range( const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &values );
 
     //! set the translation table between property arguments and AMP::Multivector entries
@@ -256,7 +256,7 @@ protected:
 
 private:
     /* Loops through input vectors, calling the child eval function, returning scalar */
-    template <class INPUT_VTYPE, class RETURN_VTYPE>
+    template<class INPUT_VTYPE, class RETURN_VTYPE>
     void evalvActual( RETURN_VTYPE &r,
                       const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &args );
 
@@ -314,16 +314,16 @@ public:
                         const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 };
 
-template <>
+template<>
 std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>>
 Property<double>::make_map( const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
-template <>
+template<>
 void Property<double>::evalv(
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> &r,
     const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
 
-template <>
+template<>
 void Property<double>::evalv( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &r,
                               const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 

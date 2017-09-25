@@ -6,7 +6,6 @@
 #include "utils/PIO.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
 #include "vectors/Variable.h"
 #include <string>
@@ -112,10 +111,9 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     const int NUMFILES          = 4;
-    std::string files[NUMFILES] = { "testNeutronicsRhs-1",
-                                    "testNeutronicsRhs-2",
-                                    "testNeutronicsRhs-3",
-                                    "testNeutronicsRhs-4" };
+    std::string files[NUMFILES] = {
+        "testNeutronicsRhs-1", "testNeutronicsRhs-2", "testNeutronicsRhs-3", "testNeutronicsRhs-4"
+    };
 
     for ( auto &file : files )
         sourceTest( &ut, file );

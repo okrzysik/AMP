@@ -9,8 +9,8 @@ namespace Operator {
 
 
 /************************************************************************
-*  Default constructor                                                  *
-************************************************************************/
+ *  Default constructor                                                  *
+ ************************************************************************/
 StridedZAxisMap::StridedZAxisMap( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : ScalarZAxisMap( p )
 {
@@ -26,13 +26,13 @@ StridedZAxisMap::StridedZAxisMap( const AMP::shared_ptr<AMP::Operator::OperatorP
 
 
 /************************************************************************
-*  De-constructor                                                       *
-************************************************************************/
+ *  De-constructor                                                       *
+ ************************************************************************/
 StridedZAxisMap::~StridedZAxisMap() {}
 
 /************************************************************************
-*  Check if the map type is "StridedZAxis"                              *
-************************************************************************/
+ *  Check if the map type is "StridedZAxis"                              *
+ ************************************************************************/
 bool StridedZAxisMap::validMapType( const std::string &t )
 {
     if ( t == "StridedZAxis" )
@@ -77,5 +77,5 @@ void StridedZAxisMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr result )
     AMP::pout << "after stride " << std::endl;
 }
 
-} // Operator namespace
-} // AMP namespace
+} // namespace Operator
+} // namespace AMP

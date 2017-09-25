@@ -1,10 +1,10 @@
-#include "utils/Utilities.h"
+#include "solvers/libmesh/CoupledFlow1DSolver.h"
 #include "operators/map/Map1Dto3D.h"
 #include "operators/map/Map3Dto1D.h"
 #include "operators/subchannel/FlowFrapconJacobian.h"
-#include "solvers/libmesh/CoupledFlow1DSolver.h"
 #include "solvers/libmesh/Flow1DSolver.h"
 #include "utils/InputDatabase.h"
+#include "utils/Utilities.h"
 #include "vectors/MultiVector.h"
 
 
@@ -81,8 +81,7 @@ void CoupledFlow1DSolver::resetOperator(
 }
 
 void CoupledFlow1DSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                 AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                     u )
+                                 AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
@@ -102,5 +101,5 @@ void CoupledFlow1DSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vecto
     d_flow1DSolver->solve( d_flowInput, d_flowOutput );
     d_flowInternal1to3->apply( d_flowOutput, nullVec );
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

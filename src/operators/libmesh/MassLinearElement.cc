@@ -75,7 +75,7 @@ void MassLinearElement::apply()
             break;
         case MassDensityModel::MassEquation::Manufactured:
             elem_nodes.resize( num_local_dofs );
-            for ( size_t i    = 0; i < num_local_dofs; i++ )
+            for ( size_t i = 0; i < num_local_dofs; i++ )
                 elem_nodes[i] = d_elem->point( i );
             d_densityModel->getDensityManufactured(
                 nodalDensity, d_LocalTemperature, d_LocalConcentration, d_LocalBurnup, elem_nodes );
@@ -108,5 +108,5 @@ void MassLinearElement::apply()
 
     d_densityModel->postLinearElementOperation();
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

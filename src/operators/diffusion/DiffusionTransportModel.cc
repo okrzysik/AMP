@@ -181,5 +181,5 @@ void DiffusionTransportModel::getTransport(
     }
     PROFILE_STOP( "getTransport", 7 );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

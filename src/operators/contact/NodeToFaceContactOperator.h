@@ -183,7 +183,7 @@ struct AnotherDataWithNoName {
 struct GeomType::FaceData {
     AMP::Mesh::MeshElementID d_GeomType::FaceVerticesGlobalIDs[4];
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

@@ -16,8 +16,8 @@ namespace Solver {
 
 
 /****************************************************************
-*  Constructors                                                 *
-****************************************************************/
+ *  Constructors                                                 *
+ ****************************************************************/
 AndersonStatusTest::AndersonStatusTest( AMP::shared_ptr<AMP::Database> db )
 {
     if ( db->keyExists( "AndersonConvergenceVariables" ) ) {
@@ -119,5 +119,5 @@ std::ostream &AndersonStatusTest::print( std::ostream &stream, int indent ) cons
 
     return stream;
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

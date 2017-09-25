@@ -161,13 +161,13 @@ void testSubsetMesh( AMP::Mesh::Mesh::shared_ptr mesh,
 
 
 // Function to test the index conversion given a multDOFManager
-void testMultiDOFMap(
-    AMP::UnitTest *ut, AMP::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF )
+void testMultiDOFMap( AMP::UnitTest *ut,
+                      AMP::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF )
 {
     // First create a global DOF list
     size_t N_global = multiDOF->numGlobalDOF();
     std::vector<size_t> globalDOFList( N_global );
-    for ( size_t i       = 0; i < N_global; i++ )
+    for ( size_t i = 0; i < N_global; i++ )
         globalDOFList[i] = i;
 
     // Loop through the DOFManagers

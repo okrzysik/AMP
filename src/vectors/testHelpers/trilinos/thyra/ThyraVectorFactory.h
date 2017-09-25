@@ -71,8 +71,8 @@ private:
 #ifdef USE_TRILINOS_BELOS
 void testBelosThyraVector( AMP::UnitTest &utils, const VectorFactory &factory );
 #endif
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 /// \endcond
 

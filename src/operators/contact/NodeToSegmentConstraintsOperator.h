@@ -161,7 +161,7 @@ private:
 
     std::fstream d_fout;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

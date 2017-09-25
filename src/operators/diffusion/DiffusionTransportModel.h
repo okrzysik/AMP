@@ -184,7 +184,7 @@ protected: // used to be private
 
     bool d_IsTensor;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

@@ -20,7 +20,6 @@
 #include "utils/PIO.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
 #include "vectors/SimpleVector.h"
 #include "vectors/Variable.h"
@@ -424,7 +423,7 @@ int main( int argc, char *argv[] )
     std::vector<std::string> files;
     if ( argc >= 2 ) {
         files.resize( argc - 1 );
-        for ( int i  = 0; i < argc - 1; i++ )
+        for ( int i = 0; i < argc - 1; i++ )
             files[i] = std::string( argv[i + 1] );
     } else {
         files.resize( 2 );

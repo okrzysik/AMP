@@ -12,8 +12,8 @@ static unsigned int MeshElementTypeID = TYPE_HASH( MeshElement );
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 MeshElement::MeshElement() : d_globalID()
 {
     typeID  = MeshElementTypeID;
@@ -76,8 +76,8 @@ MeshElement &MeshElement::operator=( MeshElement &&rhs )
 
 
 /********************************************************
-* Destructor                                            *
-********************************************************/
+ * Destructor                                            *
+ ********************************************************/
 MeshElement::~MeshElement()
 {
     if ( element != nullptr )
@@ -87,14 +87,14 @@ MeshElement::~MeshElement()
 
 
 /********************************************************
-* Is the element null                                   *
-********************************************************/
+ * Is the element null                                   *
+ ********************************************************/
 bool MeshElement::isNull() const { return typeID == MeshElementTypeID && element == nullptr; }
 
 
 /********************************************************
-* Function to clone the element                         *
-********************************************************/
+ * Function to clone the element                         *
+ ********************************************************/
 MeshElement *MeshElement::clone() const
 {
     if ( element == nullptr )
@@ -106,8 +106,8 @@ MeshElement *MeshElement::clone() const
 
 
 /********************************************************
-* Function to get the raw element                       *
-********************************************************/
+ * Function to get the raw element                       *
+ ********************************************************/
 inline MeshElement *MeshElement::getRawElement() { return element == nullptr ? this : element; }
 inline const MeshElement *MeshElement::getRawElement() const
 {
@@ -116,8 +116,8 @@ inline const MeshElement *MeshElement::getRawElement() const
 
 
 /********************************************************
-* Function to check if a point is within an element     *
-********************************************************/
+ * Function to check if a point is within an element     *
+ ********************************************************/
 bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
 {
     if ( element != nullptr )
@@ -136,8 +136,8 @@ bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) co
 
 
 /********************************************************
-* Function to return basic info                         *
-********************************************************/
+ * Function to return basic info                         *
+ ********************************************************/
 inline const MeshElementID &MeshElement::globalID() const
 {
     return element == nullptr ? d_globalID : element->d_globalID;
@@ -150,8 +150,8 @@ inline std::string MeshElement::elementClass() const
 
 
 /********************************************************
-* Functions that are wrappers to an anvanced version    *
-********************************************************/
+ * Functions that are wrappers to an anvanced version    *
+ ********************************************************/
 inline std::vector<double> MeshElement::coord() const
 {
     size_t N = 10;
@@ -188,8 +188,8 @@ inline std::vector<MeshElement::shared_ptr> MeshElement::getNeighbors() const
 
 
 /********************************************************
-* Functions that aren't implimented for the base class  *
-********************************************************/
+ * Functions that aren't implimented for the base class  *
+ ********************************************************/
 double MeshElement::volume() const
 {
     if ( element == nullptr )
@@ -223,7 +223,7 @@ unsigned int MeshElement::globalOwnerRank() const
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 #endif

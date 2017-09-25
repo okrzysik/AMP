@@ -66,7 +66,7 @@ public:
      */
     AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_pAlgebraicVariable;
 };
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif

@@ -13,7 +13,6 @@
 #include "libmesh/fe_base.h"
 #include "libmesh/fe_type.h"
 #include "libmesh/quadrature.h"
-#include "libmesh/quadrature.h"
 #include "libmesh/string_to_enum.h"
 
 #include <cstring>
@@ -62,9 +61,9 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
         std::vector<AMP::Mesh::MeshElement> nodes =
             iterator->getElements( AMP::Mesh::GeomType::Vertex );
         d_nodes[i].resize( nodes.size() );
-        for ( size_t j    = 0; j < nodes.size(); j++ )
+        for ( size_t j = 0; j < nodes.size(); j++ )
             d_nodes[i][j] = nodes[j].globalID();
-        size_t N_nodes    = d_nodes[i].size();
+        size_t N_nodes = d_nodes[i].size();
         // Cache the shape functions for all elements
         libMesh::Elem *elem =
             AMP::Discretization::createLibmeshElements::createElement( *iterator );
@@ -75,7 +74,7 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
         d_phi[i].resize( d_N_quad[i] * N_nodes, 0 );
         for ( size_t j = 0; j < phi.size(); j++ ) {
             AMP_ASSERT( phi[j].size() == d_N_quad[i] );
-            for ( size_t k                = 0; k < phi[j].size(); k++ )
+            for ( size_t k = 0; k < phi[j].size(); k++ )
                 d_phi[i][j + k * N_nodes] = phi[j][k];
         }
         delete elem;
@@ -140,5 +139,5 @@ void NodeToGaussPointOperator::apply( AMP::LinearAlgebra::Vector::const_shared_p
     } // end for
     PROFILE_STOP( "apply" );
 } // end apply
-}
-}
+} // namespace Operator
+} // namespace AMP

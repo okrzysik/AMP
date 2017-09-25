@@ -139,7 +139,7 @@ inline bool checkCmdLineFlag( const int argc, const char **argv, const char *str
 }
 
 // This function wraps the CUDA Driver API into a template function
-template <class T>
+template<class T>
 inline bool
 getCmdLineArgumentValue( const int argc, const char **argv, const char *string_ref, T *value )
 {

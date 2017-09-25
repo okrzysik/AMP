@@ -15,9 +15,9 @@ extern template class VectorOperationsOpenMP<float>;  // Suppresses implicit ins
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
-template <typename TYPE>
+ * Constructors                                                  *
+ ****************************************************************/
+template<typename TYPE>
 AMP::shared_ptr<VectorOperations> VectorOperationsOpenMP<TYPE>::cloneOperations() const
 {
     auto ptr = AMP::make_shared<VectorOperationsOpenMP<TYPE>>();
@@ -26,9 +26,9 @@ AMP::shared_ptr<VectorOperations> VectorOperationsOpenMP<TYPE>::cloneOperations(
 
 
 /****************************************************************
-* min, max, norms, etc.                                         *
-****************************************************************/
-template <typename TYPE>
+ * min, max, norms, etc.                                         *
+ ****************************************************************/
+template<typename TYPE>
 bool VectorOperationsOpenMP<TYPE>::localEquals( const VectorOperations &rhs, double tol ) const
 {
     const auto &x = *d_VectorData;
@@ -42,7 +42,7 @@ bool VectorOperationsOpenMP<TYPE>::localEquals( const VectorOperations &rhs, dou
         equal = equal && fabs( *it1 - *it2 ) <= tol;
     return equal;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsOpenMP<TYPE>::localMin( void ) const
 {
     TYPE min        = std::numeric_limits<TYPE>::max();
@@ -52,7 +52,7 @@ double VectorOperationsOpenMP<TYPE>::localMin( void ) const
         min = std::min( *it, min );
     return static_cast<double>( min );
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsOpenMP<TYPE>::localMax( void ) const
 {
     TYPE max        = -std::numeric_limits<TYPE>::max();
@@ -62,7 +62,7 @@ double VectorOperationsOpenMP<TYPE>::localMax( void ) const
         max = std::max( *it, max );
     return static_cast<double>( max );
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsOpenMP<TYPE>::localL1Norm( void ) const
 {
     TYPE sum        = 0;
@@ -72,7 +72,7 @@ double VectorOperationsOpenMP<TYPE>::localL1Norm( void ) const
         sum += std::abs( *it );
     return static_cast<double>( sum );
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsOpenMP<TYPE>::localL2Norm( void ) const
 {
     TYPE sum        = 0;
@@ -82,7 +82,7 @@ double VectorOperationsOpenMP<TYPE>::localL2Norm( void ) const
         sum += ( *it ) * ( *it );
     return sqrt( sum );
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsOpenMP<TYPE>::localMaxNorm( void ) const
 {
     TYPE max        = -std::numeric_limits<TYPE>::max();
@@ -92,7 +92,7 @@ double VectorOperationsOpenMP<TYPE>::localMaxNorm( void ) const
         max = std::max( std::abs( *it ), max );
     return static_cast<double>( max );
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsOpenMP<TYPE>::localDot( const VectorOperations &x ) const
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -109,7 +109,7 @@ double VectorOperationsOpenMP<TYPE>::localDot( const VectorOperations &x ) const
     }
     return ans;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsOpenMP<TYPE>::localMinQuotient( const VectorOperations &x ) const
 {
     auto curx  = x.getVectorData()->constBegin<TYPE>();
@@ -127,7 +127,7 @@ double VectorOperationsOpenMP<TYPE>::localMinQuotient( const VectorOperations &x
     }
     return ans;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsOpenMP<TYPE>::localWrmsNorm( const VectorOperations &x ) const
 {
     auto curx  = x.getVectorData()->constBegin<TYPE>();
@@ -145,7 +145,7 @@ double VectorOperationsOpenMP<TYPE>::localWrmsNorm( const VectorOperations &x ) 
     }
     return sqrt( ans / N );
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsOpenMP<TYPE>::localWrmsNormMask( const VectorOperations &x,
                                                         const VectorOperations &mask ) const
 {
@@ -171,9 +171,9 @@ double VectorOperationsOpenMP<TYPE>::localWrmsNormMask( const VectorOperations &
 
 
 /****************************************************************
-* Functions to initalize the data                               *
-****************************************************************/
-template <typename TYPE>
+ * Functions to initalize the data                               *
+ ****************************************************************/
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::zero()
 {
     const auto last = d_VectorData->end<TYPE>();
@@ -184,12 +184,12 @@ void VectorOperationsOpenMP<TYPE>::zero()
         auto &ghosts = getGhosts();
 #pragma omp parallel for
         for ( size_t i = 0; i < ghosts.size(); i++ )
-            ghosts[i]  = 0;
+            ghosts[i] = 0;
     }
     // Override the status state since we set the ghost values
     *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::setToScalar( double alpha )
 {
     const auto last = d_VectorData->end<TYPE>();
@@ -200,12 +200,12 @@ void VectorOperationsOpenMP<TYPE>::setToScalar( double alpha )
         auto &ghosts = getGhosts();
 #pragma omp parallel for
         for ( size_t i = 0; i < ghosts.size(); i++ )
-            ghosts[i]  = alpha;
+            ghosts[i] = alpha;
     }
     // Override the status state since we set the ghost values
     *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::setRandomValues()
 {
     RandomVariable<double> r( 0, 1, Vector::getDefaultRNG() );
@@ -219,7 +219,7 @@ void VectorOperationsOpenMP<TYPE>::setRandomValues()
     // Call makeConsistent to leave the vector in a consistent state
     d_VectorData->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::setRandomValues( RNG::shared_ptr rng )
 {
     RandomVariable<double> r( 0, 1, rng );
@@ -235,9 +235,9 @@ void VectorOperationsOpenMP<TYPE>::setRandomValues( RNG::shared_ptr rng )
 
 
 /****************************************************************
-* Basic linear algebra                                          *
-****************************************************************/
-template <typename TYPE>
+ * Basic linear algebra                                          *
+ ****************************************************************/
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::copy( const VectorOperations &x )
 {
     auto x_data = x.getVectorData();
@@ -246,7 +246,7 @@ void VectorOperationsOpenMP<TYPE>::copy( const VectorOperations &x )
     std::copy( x_data->begin<TYPE>(), x_data->end<TYPE>(), y_data->template begin<TYPE>() );
     y_data->copyGhostValues( *x_data );
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::scale( double alpha )
 {
     const auto last = d_VectorData->end<TYPE>();
@@ -254,7 +254,7 @@ void VectorOperationsOpenMP<TYPE>::scale( double alpha )
     for ( auto it = d_VectorData->begin<TYPE>(); it < last; ++it )
         *it *= alpha;
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::scale( double alpha, const VectorOperations &x )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -267,7 +267,7 @@ void VectorOperationsOpenMP<TYPE>::scale( double alpha, const VectorOperations &
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::add( const VectorOperations &x, const VectorOperations &y )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -283,7 +283,7 @@ void VectorOperationsOpenMP<TYPE>::add( const VectorOperations &x, const VectorO
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::subtract( const VectorOperations &x, const VectorOperations &y )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -299,7 +299,7 @@ void VectorOperationsOpenMP<TYPE>::subtract( const VectorOperations &x, const Ve
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::multiply( const VectorOperations &x, const VectorOperations &y )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -315,7 +315,7 @@ void VectorOperationsOpenMP<TYPE>::multiply( const VectorOperations &x, const Ve
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::divide( const VectorOperations &x, const VectorOperations &y )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -331,7 +331,7 @@ void VectorOperationsOpenMP<TYPE>::divide( const VectorOperations &x, const Vect
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::reciprocal( const VectorOperations &x )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -344,7 +344,7 @@ void VectorOperationsOpenMP<TYPE>::reciprocal( const VectorOperations &x )
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::linearSum( double alpha_in,
                                               const VectorOperations &x,
                                               double beta_in,
@@ -365,7 +365,7 @@ void VectorOperationsOpenMP<TYPE>::linearSum( double alpha_in,
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::axpy( double alpha_in,
                                          const VectorOperations &x,
                                          const VectorOperations &y )
@@ -384,7 +384,7 @@ void VectorOperationsOpenMP<TYPE>::axpy( double alpha_in,
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::axpby( double alpha_in,
                                           double beta_in,
                                           const VectorOperations &x )
@@ -401,7 +401,7 @@ void VectorOperationsOpenMP<TYPE>::axpby( double alpha_in,
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::abs( const VectorOperations &x )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -414,7 +414,7 @@ void VectorOperationsOpenMP<TYPE>::abs( const VectorOperations &x )
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::addScalar( const VectorOperations &x, double alpha_in )
 {
     const TYPE alpha = static_cast<TYPE>( alpha_in );
@@ -430,7 +430,7 @@ void VectorOperationsOpenMP<TYPE>::addScalar( const VectorOperations &x, double 
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

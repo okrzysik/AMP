@@ -25,7 +25,7 @@ public:
 
     std::vector<double> scalea;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

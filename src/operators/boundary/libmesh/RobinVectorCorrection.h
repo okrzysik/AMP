@@ -74,7 +74,7 @@ protected:
 private:
     int d_InstanceID;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

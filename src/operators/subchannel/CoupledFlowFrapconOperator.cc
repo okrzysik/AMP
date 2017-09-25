@@ -92,5 +92,5 @@ void CoupledFlowFrapconOperator::apply( AMP::LinearAlgebra::Vector::const_shared
     // d_Operators[3]->apply(nullVec, d_flowInput, nullVec, a, b);  // Is this necessary
     d_Operators[4]->apply( d_flowOutput, nullVec );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

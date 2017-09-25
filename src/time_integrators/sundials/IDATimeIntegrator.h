@@ -294,8 +294,8 @@ private:
 
     AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif
 #endif

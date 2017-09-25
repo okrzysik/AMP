@@ -116,7 +116,7 @@ private:
 
     void resetFrozen( const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> params );
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

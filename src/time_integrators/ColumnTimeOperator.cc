@@ -1,8 +1,8 @@
-#include "utils/InputDatabase.h"
 #include "ColumnTimeOperator.h"
 #include "LinearTimeOperator.h"
 #include "TimeOperatorParameters.h"
 #include "operators/ColumnOperatorParameters.h"
+#include "utils/InputDatabase.h"
 
 namespace AMP {
 namespace TimeIntegrator {
@@ -161,5 +161,5 @@ void ColumnTimeOperator::append( AMP::shared_ptr<Operator> /* op */ )
         << "Error: ColumnTimeOperator::append(): this routine is disabled for ColumnTimeOperators"
         << std::endl;
 }
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

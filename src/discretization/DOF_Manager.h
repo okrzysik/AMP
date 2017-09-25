@@ -53,16 +53,16 @@ public:
 
 
     /** \brief  Compares two DOFManager for equality.
-      * \details This operation compares two DOF managers to see if they are equivalent
-      * \param  rhs     DOFManager to compare
-      */
+     * \details This operation compares two DOF managers to see if they are equivalent
+     * \param  rhs     DOFManager to compare
+     */
     virtual bool operator==( const DOFManager &rhs ) const;
 
 
     /** \brief  Inverse of ==
-      * \details This function performs an equality check and negates it.  Hence, it is not virtual
-      * \param  rhs     DOFManager to compare
-      */
+     * \details This function performs an equality check and negates it.  Hence, it is not virtual
+     * \param  rhs     DOFManager to compare
+     */
     bool operator!=( const DOFManager &rhs ) const;
 
 
@@ -186,7 +186,7 @@ protected:
 };
 
 
-} // Discretization namespace
-} // AMP namespace
+} // namespace Discretization
+} // namespace AMP
 
 #endif

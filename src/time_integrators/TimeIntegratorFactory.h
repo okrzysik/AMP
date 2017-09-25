@@ -57,7 +57,7 @@ public:
 protected:
 private:
 };
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif // included_TimeIntegratorFactory

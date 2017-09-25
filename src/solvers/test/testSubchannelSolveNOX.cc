@@ -20,7 +20,6 @@
 
 #include "vectors/SimpleVector.h"
 #include "vectors/Variable.h"
-#include "vectors/Variable.h"
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 #include "vectors/VectorSelector.h"
@@ -762,8 +761,8 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         tempResNorm = globalThermalResVec->L2Norm();
     if ( subchannelMesh != NULL )
         flowResNorm = flowResVec->L2Norm();
-    tempResNorm     = globalComm.maxReduce( tempResNorm );
-    flowResNorm     = globalComm.maxReduce( flowResNorm );
+    tempResNorm = globalComm.maxReduce( tempResNorm );
+    flowResNorm = globalComm.maxReduce( flowResNorm );
     AMP::pout << "Initial residual norm: " << std::setprecision( 13 )
               << globalResMultiVector->L2Norm() << std::endl;
     AMP::pout << "Initial temp residual norm: " << std::setprecision( 13 ) << tempResNorm
@@ -884,8 +883,8 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
             double density2 = densityMapVec->getValueByLocalID( i );
             if ( !AMP::Utilities::approx_equal( density1, density2 ) )
                 pass_density = false;
-            double temp1     = flowTempVec->getValueByGlobalID( dofs[0] );
-            double temp2     = temperatureMapVec->getValueByLocalID( i );
+            double temp1 = flowTempVec->getValueByGlobalID( dofs[0] );
+            double temp2 = temperatureMapVec->getValueByLocalID( i );
             if ( !AMP::Utilities::approx_equal( temp1, temp2 ) )
                 pass_temperature = false;
             ++face;

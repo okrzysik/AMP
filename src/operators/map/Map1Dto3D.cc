@@ -1,6 +1,6 @@
-#include "utils/AMP_MPI.h"
-#include "discretization/DOF_Manager.h"
 #include "operators/map/Map1Dto3D.h"
+#include "discretization/DOF_Manager.h"
+#include "utils/AMP_MPI.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 
@@ -24,7 +24,7 @@ namespace AMP {
 namespace Operator {
 
 
-template <class T>
+template<class T>
 static T *getPtr( std::vector<T> &x )
 {
     if ( x.size() == 0 )
@@ -403,5 +403,5 @@ void Map1Dto3D::setVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
     outputVec = subsetOutputVector( vec );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

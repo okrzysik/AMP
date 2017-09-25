@@ -31,8 +31,8 @@ double dot3cross( double a[3], double b[3], double c[3] )
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 structuredMeshElement::structuredMeshElement() { reset(); }
 void structuredMeshElement::reset()
 {
@@ -85,20 +85,20 @@ structuredMeshElement &structuredMeshElement::operator=( const structuredMeshEle
 
 
 /****************************************************************
-* De-constructor                                                *
-****************************************************************/
+ * De-constructor                                                *
+ ****************************************************************/
 structuredMeshElement::~structuredMeshElement() {}
 
 
 /****************************************************************
-* Function to clone the element                                 *
-****************************************************************/
+ * Function to clone the element                                 *
+ ****************************************************************/
 MeshElement *structuredMeshElement::clone() const { return new structuredMeshElement( *this ); }
 
 
 /****************************************************************
-* Return the global rank of the owner rank                      *
-****************************************************************/
+ * Return the global rank of the owner rank                      *
+ ****************************************************************/
 unsigned int structuredMeshElement::globalOwnerRank() const
 {
     return d_mesh->getComm().globalRanks()[d_globalID.owner_rank()];
@@ -106,9 +106,9 @@ unsigned int structuredMeshElement::globalOwnerRank() const
 
 
 /****************************************************************
-* Function to get the elements composing the current element    *
-* We use a Canonical numbering system                           *
-****************************************************************/
+ * Function to get the elements composing the current element    *
+ * We use a Canonical numbering system                           *
+ ****************************************************************/
 void structuredMeshElement::getElements( const GeomType type,
                                          std::vector<MeshElement> &elements ) const
 {
@@ -129,7 +129,7 @@ void structuredMeshElement::getElementsID( const GeomType type,
     getElementIndex( type, N, index );
     ID.resize( N );
     for ( int i = 0; i < N; i++ )
-        ID[i]   = d_mesh->convert( index[i] );
+        ID[i] = d_mesh->convert( index[i] );
 }
 void structuredMeshElement::getElementIndex( const GeomType type,
                                              int &N,
@@ -290,8 +290,8 @@ void structuredMeshElement::getElementIndex( const GeomType type,
 
 
 /****************************************************************
-* Function to get the neighboring elements                      *
-****************************************************************/
+ * Function to get the neighboring elements                      *
+ ****************************************************************/
 void structuredMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const
 {
     int N = 0;
@@ -404,8 +404,8 @@ void structuredMeshElement::getNeighborIndex( int &N, BoxMesh::MeshElementIndex 
 
 
 /****************************************************************
-* Function to get the parent elements                           *
-****************************************************************/
+ * Function to get the parent elements                           *
+ ****************************************************************/
 std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) const
 {
     AMP_INSIST( static_cast<int>( type ) >= d_index.d_type,
@@ -530,9 +530,9 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
     // Get some basic properties from the mesh
     int meshGeomDim  = (int) d_mesh->getGeomType();
     bool periodic[3] = { false, false, false };
-    for ( int d     = 0; d < meshGeomDim; d++ )
+    for ( int d = 0; d < meshGeomDim; d++ )
         periodic[d] = d_mesh->d_isPeriodic[d];
-    int size[3]     = { 1, 1, 1 };
+    int size[3] = { 1, 1, 1 };
     for ( int d = 0; d < meshGeomDim; d++ )
         size[d] = d_mesh->d_globalSize[d];
     // Remove any elements that are outside the physical domain
@@ -583,15 +583,15 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
     // Create the elements
     AMP::Utilities::quicksort( index_list );
     std::vector<MeshElement> elements( index_list.size() );
-    for ( size_t i  = 0; i < index_list.size(); i++ )
+    for ( size_t i = 0; i < index_list.size(); i++ )
         elements[i] = structuredMeshElement( index_list[i], d_mesh );
     return elements;
 }
 
 
 /****************************************************************
-* Functions to get the element volume                           *
-****************************************************************/
+ * Functions to get the element volume                           *
+ ****************************************************************/
 double structuredMeshElement::volume() const
 {
     if ( d_globalID.type() == GeomType::Vertex ) {
@@ -672,7 +672,7 @@ double structuredMeshElement::volume() const
         for ( auto &elem : sub_pyr ) {
             // Set the nodes of the pyramid base
             for ( unsigned int i = 0; i < 4; ++i )
-                pyr_base[i]      = elem[i];
+                pyr_base[i] = elem[i];
             // Compute diff vectors
             double a[3], b[3], c[3], d[3], e[3];
             for ( int i = 0; i < 3; i++ ) {
@@ -696,8 +696,8 @@ double structuredMeshElement::volume() const
 
 
 /****************************************************************
-* Misc functions                                                *
-****************************************************************/
+ * Misc functions                                                *
+ ****************************************************************/
 bool structuredMeshElement::containsPoint( const std::vector<double> &, double ) const
 {
     AMP_ERROR( "Not finsihed" );
@@ -745,5 +745,5 @@ bool structuredMeshElement::isInBlock( int id ) const
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

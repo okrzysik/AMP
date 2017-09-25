@@ -18,7 +18,7 @@ public:
      * Initialize the array with random values
      * @param[in] x         The array to operate on
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static inline void rand( Array<TYPE, FUN, ALLOC> &x );
 
     /*! NOT IMPLEMENTED
@@ -30,34 +30,34 @@ public:
      * ...)
      * @return                  The reduction
      */
-    template <class TYPE, class FUN, class ALLOC, typename LAMBDA>
+    template<class TYPE, class FUN, class ALLOC, typename LAMBDA>
     static inline TYPE
     reduce( LAMBDA &op, const Array<TYPE, FUN, ALLOC> &A, const TYPE &initialValue );
 
     /*! NOT IMPLEMENTED
-    * Perform a reduce operator z = f(x,y)
-    * @param[in] op            The function operation
-    *                          Note: the operator is a template parameter to improve performance
-    * @param[in] A             The first array to operate on
-    * @param[in] B             The second array to operate on
-    * @param[in] initialValue  The initial value for the reduction (0 for sum, +/- inf for min/max,
-    * ...)
-    * @return                  The reduction
-    */
-    template <class TYPE, class FUN, class ALLOC, typename LAMBDA>
+     * Perform a reduce operator z = f(x,y)
+     * @param[in] op            The function operation
+     *                          Note: the operator is a template parameter to improve performance
+     * @param[in] A             The first array to operate on
+     * @param[in] B             The second array to operate on
+     * @param[in] initialValue  The initial value for the reduction (0 for sum, +/- inf for min/max,
+     * ...)
+     * @return                  The reduction
+     */
+    template<class TYPE, class FUN, class ALLOC, typename LAMBDA>
     static inline TYPE reduce( LAMBDA &op,
                                const Array<TYPE, FUN, ALLOC> &A,
                                const Array<TYPE, FUN, ALLOC> &B,
                                const TYPE &initialValue );
 
     /*! NOT IMPLEMENTED
-    * Perform a element-wise operation y = f(x)
-    * @param[in] fun           The function operation
-    *                          Note: the function is a template parameter to improve performance
-    * @param[in,out] x         The array to operate on
-    * @param[out] y            The output array
-    */
-    template <class TYPE, class FUN, class ALLOC, typename LAMBDA>
+     * Perform a element-wise operation y = f(x)
+     * @param[in] fun           The function operation
+     *                          Note: the function is a template parameter to improve performance
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */
+    template<class TYPE, class FUN, class ALLOC, typename LAMBDA>
     static inline void
     transform( LAMBDA &fun, const Array<TYPE, FUN, ALLOC> &x, Array<TYPE, FUN, ALLOC> &y );
 
@@ -69,7 +69,7 @@ public:
      * @param[in] y             The second array
      * @param[out] z            The output array
      */
-    template <class TYPE, class FUN, class ALLOC, typename LAMBDA>
+    template<class TYPE, class FUN, class ALLOC, typename LAMBDA>
     static inline void transform( LAMBDA &fun,
                                   const Array<TYPE, FUN, ALLOC> &x,
                                   const Array<TYPE, FUN, ALLOC> &y,
@@ -81,7 +81,7 @@ public:
      * @param[in] b             The second array
      * @param[out] c            The output array
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static void multiply( const Array<TYPE, FUN, ALLOC> &a,
                           const Array<TYPE, FUN, ALLOC> &b,
                           Array<TYPE, FUN, ALLOC> &c );
@@ -92,7 +92,7 @@ public:
      * @param[in] B             The second array
      * @param[in] tol           The tolerance
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static bool
     equals( const Array<TYPE, FUN, ALLOC> &A, const Array<TYPE, FUN, ALLOC> &B, TYPE tol );
 
@@ -101,7 +101,7 @@ public:
      * @param[in] A             The input array
      * @param[out] B            The output array
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static void transformReLU( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B );
 
     /*!
@@ -109,7 +109,7 @@ public:
      * @param[in] A             The array to operate on
      * @param[out] B            The output array
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static void transformAbs( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B );
 
     /*!
@@ -117,7 +117,7 @@ public:
      * @param[in] A             The array to operate on
      * @param[out] B            The output array
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static void transformTanh( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B );
 
     /*!
@@ -125,7 +125,7 @@ public:
      * @param[in] A             The array to operate on
      * @param[out] B            The output array
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static void transformHardTanh( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B );
 
     /*!
@@ -133,7 +133,7 @@ public:
      * @param[in] A             The array to operate on
      * @param[out] B            The output array
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static void transformSigmoid( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B );
 
     /*!
@@ -141,18 +141,18 @@ public:
      * @param[in] A             The array to operate on
      * @param[out] B            The output array
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static void transformSoftPlus( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B );
 
     /*!
      * Sum the elements of the Array
      * @param[in] A             The array to sum
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static TYPE sum( const Array<TYPE, FUN, ALLOC> &A );
 
 
-    template <class TYPE>
+    template<class TYPE>
     static inline void gemmWrapper( char TRANSA,
                                     char TRANSB,
                                     int M,
@@ -170,10 +170,10 @@ public:
     GPUFunctionTable(){};
 
 private:
-    template <class TYPE>
+    template<class TYPE>
     static inline void rand( size_t N, TYPE *x );
 };
-}
+} // namespace AMP
 #include "utils/cuda/GPUFunctionTable.hpp"
 
 

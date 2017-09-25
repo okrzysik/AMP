@@ -13,7 +13,6 @@
 #include "operators/flow/NavierStokesGalWFElement.h"
 #include "operators/flow/NavierStokesGalWFFEOperatorParameters.h"
 #include "operators/libmesh/NonlinearFEOperator.h"
-#include "operators/libmesh/NonlinearFEOperator.h"
 
 #include <vector>
 
@@ -29,8 +28,7 @@ public:
     virtual ~NavierStokesGalWFFEOperator() {}
 
     void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                      AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                          r ) override;
+                      AMP::shared_ptr<AMP::LinearAlgebra::Vector> r ) override;
 
     void postAssembly() override;
 
@@ -105,7 +103,7 @@ private:
 
     AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_outVariables; /**< Output variable. */
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

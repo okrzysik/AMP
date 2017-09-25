@@ -40,8 +40,9 @@ public:
      * \param[in] mesh          Mesh to test
      * \param[in] fast          Speed up testing by eliminating some of the tests
      */
-    static void MeshVectorTestLoop(
-        AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast = false );
+    static void MeshVectorTestLoop( AMP::UnitTest *ut,
+                                    AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                    bool fast = false );
 
 
     /**
@@ -51,25 +52,26 @@ public:
      * \param[in] mesh          Mesh to test
      * \param[in] fast          Speed up testing by eliminating some of the tests
      */
-    static void MeshMatrixTestLoop(
-        AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast = false );
+    static void MeshMatrixTestLoop( AMP::UnitTest *ut,
+                                    AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                    bool fast = false );
 
 public: // Basic tests
-        /**
-         * \brief Check basic id info
-         * \details  This tests checks some trivial ids
-         * \param[in,out] ut        Unit test class to report the results
-         */
+    /**
+     * \brief Check basic id info
+     * \details  This tests checks some trivial ids
+     * \param[in,out] ut        Unit test class to report the results
+     */
     static void testID( AMP::UnitTest *ut );
 
 
 public: // Mesh based tests
-        /**
-         * \brief Checks the mesh iterators
-         * \details  This test performs a series of simple tests on the basic iterators within a mesh
-         * \param[in,out] ut        Unit test class to report the results
-         * \param[in] mesh          Mesh to test
-         */
+    /**
+     * \brief Checks the mesh iterators
+     * \details  This test performs a series of simple tests on the basic iterators within a mesh
+     * \param[in,out] ut        Unit test class to report the results
+     * \param[in] mesh          Mesh to test
+     */
     static void MeshIteratorTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
@@ -79,8 +81,8 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void
-    MeshIteratorOperationTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static void MeshIteratorOperationTest( AMP::UnitTest *ut,
+                                           AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     /**
      * \brief Checks the mesh set operations
@@ -192,7 +194,7 @@ public: // Mesh based tests
 
 public: // Vector based tests
 #ifdef USE_AMP_VECTORS
-    //! Factory to create a vector from a mesh
+        //! Factory to create a vector from a mesh
     class MeshVectorFactory : public AMP::LinearAlgebra::VectorFactory
     {
     public:
@@ -223,6 +225,7 @@ public: // Vector based tests
         }
         //! Get the name
         virtual std::string name() const override { return "MeshVectorFactory"; }
+
     private:
         MeshVectorFactory();
         AMP::Discretization::DOFManager::shared_ptr d_dofManager;
@@ -238,7 +241,7 @@ public: // Vector based tests
      * \param[in] DOFs          DOF Manager to use
      * \param[in] gcw           Ghost cell width to use
      */
-    template <int DOF_PER_NODE, bool SPLIT>
+    template<int DOF_PER_NODE, bool SPLIT>
     static void simpleNodalVectorTests( AMP::UnitTest *ut,
                                         AMP::Mesh::Mesh::shared_ptr mesh,
                                         AMP::Discretization::DOFManager::shared_ptr DOFs,
@@ -251,15 +254,15 @@ public: // Vector based tests
      * \param[out] ut           Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    template <int DOF_PER_NODE, bool SPLIT>
+    template<int DOF_PER_NODE, bool SPLIT>
     static void VerifyGetVectorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh );
 
 
 public: // Matrix based tests
-    template <int DOF_PER_NODE, bool SPLIT>
+    template<int DOF_PER_NODE, bool SPLIT>
     static void VerifyGetMatrixTrivialTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh );
 
-    template <int DOF_PER_NODE, bool SPLIT>
+    template<int DOF_PER_NODE, bool SPLIT>
     static void GhostWriteTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh );
 
 

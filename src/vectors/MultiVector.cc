@@ -17,8 +17,8 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 MultiVector::MultiVector( const std::string &name )
 {
     d_pVariable.reset( new MultiVariable( name ) );
@@ -45,7 +45,7 @@ AMP::shared_ptr<const MultiVector> MultiVector::const_create(
 {
     std::vector<Vector::shared_ptr> vecs2( vecs.size() );
     for ( size_t i = 0; i < vecs.size(); i++ )
-        vecs2[i]   = AMP::const_pointer_cast<Vector>( vecs[i] );
+        vecs2[i] = AMP::const_pointer_cast<Vector>( vecs[i] );
     return MultiVector::create( variable, comm, vecs2 );
 }
 AMP::shared_ptr<const MultiVector> MultiVector::const_create(
@@ -54,7 +54,7 @@ AMP::shared_ptr<const MultiVector> MultiVector::const_create(
     Variable::shared_ptr variable( new Variable( name ) );
     std::vector<Vector::shared_ptr> vecs2( vecs.size() );
     for ( size_t i = 0; i < vecs.size(); i++ )
-        vecs2[i]   = AMP::const_pointer_cast<Vector>( vecs[i] );
+        vecs2[i] = AMP::const_pointer_cast<Vector>( vecs[i] );
     return MultiVector::create( variable, comm, vecs2 );
 }
 AMP::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec, AMP_MPI comm )
@@ -132,8 +132,8 @@ AMP::shared_ptr<const MultiVector> MultiVector::constView( Vector::const_shared_
 
 
 /****************************************************************
-* Functions to add/remove vectors                               *
-****************************************************************/
+ * Functions to add/remove vectors                               *
+ ****************************************************************/
 void MultiVector::addVector( Vector::shared_ptr v )
 {
     this->addVector( std::vector<Vector::shared_ptr>( 1, v ) );
@@ -174,7 +174,7 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
 void MultiVector::updateVectorOperations()
 {
     d_operations.resize( d_vVectors.size() );
-    for ( size_t i      = 0; i < d_vVectors.size(); i++ )
+    for ( size_t i = 0; i < d_vVectors.size(); i++ )
         d_operations[i] = d_vVectors[i].get();
 }
 void MultiVector::addVectorHelper( Vector::shared_ptr vec )
@@ -253,8 +253,8 @@ void MultiVector::replaceSubVector( Vector::shared_ptr oldVec, Vector::shared_pt
 
 
 /****************************************************************
-* Select into the vector                                        *
-****************************************************************/
+ * Select into the vector                                        *
+ ****************************************************************/
 Vector::shared_ptr MultiVector::selectInto( const VectorSelector &s )
 {
     // Subset each vector
@@ -299,8 +299,8 @@ Vector::const_shared_ptr MultiVector::selectInto( const VectorSelector &s ) cons
 
 
 /****************************************************************
-* Other functions                                               *
-****************************************************************/
+ * Other functions                                               *
+ ****************************************************************/
 bool MultiVector::containsPointer( const Vector::shared_ptr p ) const
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
@@ -313,8 +313,8 @@ bool MultiVector::containsPointer( const Vector::shared_ptr p ) const
 
 
 /****************************************************************
-* makeConsistent                                                *
-****************************************************************/
+ * makeConsistent                                                *
+ ****************************************************************/
 void MultiVector::makeConsistent( ScatterType t )
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
@@ -324,8 +324,8 @@ void MultiVector::makeConsistent( ScatterType t )
 
 
 /****************************************************************
-* query basic info                                              *
-****************************************************************/
+ * query basic info                                              *
+ ****************************************************************/
 size_t MultiVector::getLocalSize() const
 {
     size_t ans = 0;
@@ -345,8 +345,8 @@ size_t MultiVector::getGhostSize() const
 
 
 /****************************************************************
-* Functions to get access to the data                           *
-****************************************************************/
+ * Functions to get access to the data                           *
+ ****************************************************************/
 void MultiVector::putRawData( const double *in )
 {
     int cur_off = 0;
@@ -438,8 +438,8 @@ void *MultiVector::getDataBlock( size_t i ) { return getRawDataBlockAsVoid( i );
 
 
 /****************************************************************
-* Functions to print the data                                   *
-****************************************************************/
+ * Functions to print the data                                   *
+ ****************************************************************/
 void MultiVector::dumpOwnedData( std::ostream &out, size_t GIDoffset, size_t LIDoffset ) const
 {
     size_t localOffset = 0;
@@ -475,8 +475,8 @@ void MultiVector::dumpGhostedData( std::ostream &out, size_t offset ) const
 
 
 /****************************************************************
-* Subset                                                        *
-****************************************************************/
+ * Subset                                                        *
+ ****************************************************************/
 Vector::shared_ptr MultiVector::subsetVectorForVariable( Variable::const_shared_ptr name )
 {
     // Subset a multivector for a variable
@@ -547,8 +547,8 @@ MultiVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) con
 
 
 /****************************************************************
-* Misc functions                                                *
-****************************************************************/
+ * Misc functions                                                *
+ ****************************************************************/
 void MultiVector::assemble()
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
@@ -635,7 +635,7 @@ Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) c
     retVec->d_DOFManager = d_DOFManager;
     retVec->d_CommList   = d_CommList;
     retVec->d_vVectors.resize( d_vVectors.size() );
-    for ( size_t i            = 0; i != d_vVectors.size(); i++ )
+    for ( size_t i = 0; i != d_vVectors.size(); i++ )
         retVec->d_vVectors[i] = d_vVectors[i]->cloneVector();
     retVec->updateVectorOperations();
     return retVec;
@@ -643,8 +643,8 @@ Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) c
 
 
 /****************************************************************
-* Functions to access data by ID                                *
-****************************************************************/
+ * Functions to access data by ID                                *
+ ****************************************************************/
 void MultiVector::setValuesByLocalID( int num, size_t *indices, const double *in_vals )
 {
     if ( num == 0 )
@@ -745,7 +745,7 @@ void MultiVector::getValuesByGlobalID( int num, size_t *indices, double *out_val
             d_vVectors[i]->getValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
     }
     for ( size_t i = 0; i != remap.size(); i++ ) {
-        for ( size_t j            = 0; j != remap[i].size(); j++ )
+        for ( size_t j = 0; j != remap[i].size(); j++ )
             out_vals[remap[i][j]] = vals[i][j];
     }
 }
@@ -763,7 +763,7 @@ void MultiVector::getLocalValuesByGlobalID( int num, size_t *indices, double *ou
                 ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
     }
     for ( size_t i = 0; i != remap.size(); i++ ) {
-        for ( size_t j            = 0; j != remap[i].size(); j++ )
+        for ( size_t j = 0; j != remap[i].size(); j++ )
             out_vals[remap[i][j]] = vals[i][j];
     }
 }
@@ -781,7 +781,7 @@ void MultiVector::getGhostValuesByGlobalID( int num, size_t *indices, double *ou
                 ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
     }
     for ( size_t i = 0; i != remap.size(); i++ ) {
-        for ( size_t j            = 0; j != remap[i].size(); j++ )
+        for ( size_t j = 0; j != remap[i].size(); j++ )
             out_vals[remap[i][j]] = vals[i][j];
     }
 }
@@ -798,15 +798,15 @@ void MultiVector::getValuesByLocalID( int num, size_t *indices, double *out_vals
             d_vVectors[i]->getValuesByLocalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
     }
     for ( size_t i = 0; i != remap.size(); i++ ) {
-        for ( size_t j            = 0; j != remap[i].size(); j++ )
+        for ( size_t j = 0; j != remap[i].size(); j++ )
             out_vals[remap[i][j]] = vals[i][j];
     }
 }
 
 
 /****************************************************************
-* Function to partition the global ids by the sub vectors       *
-****************************************************************/
+ * Function to partition the global ids by the sub vectors       *
+ ****************************************************************/
 void MultiVector::partitionGlobalValues( const int num,
                                          const size_t *indices,
                                          const double *vals,
@@ -817,7 +817,7 @@ void MultiVector::partitionGlobalValues( const int num,
     PROFILE_START( "partitionGlobalValues", 2 );
     const size_t neg_one = ~( (size_t) 0 );
     std::vector<size_t> globalDOFs( num, neg_one );
-    for ( int i       = 0; i < num; i++ )
+    for ( int i = 0; i < num; i++ )
         globalDOFs[i] = indices[i];
     out_indices.resize( d_vVectors.size() );
     out_vals.resize( d_vVectors.size() );
@@ -840,7 +840,7 @@ void MultiVector::partitionGlobalValues( const int num,
         out_vals[i]    = std::vector<double>( count, 0.0 );
         if ( remap != nullptr )
             remap->operator[]( i ) = std::vector<int>( count, -1 );
-        count                      = 0;
+        count = 0;
         for ( size_t j = 0; j < subDOFs.size(); j++ ) {
             if ( subDOFs[j] != neg_one ) {
                 out_indices[i][count] = subDOFs[j];
@@ -856,8 +856,8 @@ void MultiVector::partitionGlobalValues( const int num,
 
 
 /****************************************************************
-* Function to partition the local ids by the sub vectors       *
-****************************************************************/
+ * Function to partition the local ids by the sub vectors       *
+ ****************************************************************/
 void MultiVector::partitionLocalValues( const int num,
                                         const size_t *indices,
                                         const double *vals,
@@ -895,5 +895,5 @@ void MultiVector::partitionLocalValues( const int num,
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP

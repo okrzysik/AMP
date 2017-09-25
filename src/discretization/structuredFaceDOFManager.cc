@@ -14,8 +14,8 @@ namespace Discretization {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 DOFManager::shared_ptr structuredFaceDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
                                                          int DOFsPerFace[3],
                                                          int gcw )
@@ -28,7 +28,7 @@ DOFManager::shared_ptr structuredFaceDOFManager::create( AMP::shared_ptr<AMP::Me
     manager->d_comm = mesh->getComm();
     manager->d_mesh = mesh;
     manager->d_gcw  = gcw;
-    for ( int i                   = 0; i < 3; i++ )
+    for ( int i = 0; i < 3; i++ )
         manager->d_DOFsPerFace[i] = DOFsPerFace[i];
     manager->initialize();
     return manager;
@@ -36,14 +36,14 @@ DOFManager::shared_ptr structuredFaceDOFManager::create( AMP::shared_ptr<AMP::Me
 
 
 /****************************************************************
-* Deconstructor                                                 *
-****************************************************************/
+ * Deconstructor                                                 *
+ ****************************************************************/
 structuredFaceDOFManager::~structuredFaceDOFManager() {}
 
 
 /****************************************************************
-* Initialize the data                                           *
-****************************************************************/
+ * Initialize the data                                           *
+ ****************************************************************/
 void structuredFaceDOFManager::initialize()
 {
     // Create a sorted list of the local and remote types
@@ -87,21 +87,21 @@ void structuredFaceDOFManager::initialize()
     // Correct the local dof indicies
     size_t offset = d_begin;
     for ( int d = 0; d < 3; d++ ) {
-        for ( size_t i         = 0; i < d_local_ids[d].size(); ++i )
+        for ( size_t i = 0; i < d_local_ids[d].size(); ++i )
             d_local_dofs[d][i] = offset + d_local_dofs[d][i] * d_DOFsPerFace[d];
         offset += d_local_ids[d].size() * d_DOFsPerFace[d];
     }
     // Determine the remote DOFs
     // Note: this must be done after d_local_id is set, d_begin and d_global are set, and remote_ids
     // must be sorted.
-    for ( int d          = 0; d < 3; d++ )
+    for ( int d = 0; d < 3; d++ )
         d_remote_dofs[d] = getRemoteDOF( d_remote_ids[d] );
 }
 
 
 /****************************************************************
-* Get the DOFs for the element                                  *
-****************************************************************/
+ * Get the DOFs for the element                                  *
+ ****************************************************************/
 inline void structuredFaceDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
                                                   std::vector<size_t> &dofs ) const
 {
@@ -154,8 +154,8 @@ void structuredFaceDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
 
 
 /****************************************************************
-* Get the element ID give a dof                                 *
-****************************************************************/
+ * Get the element ID give a dof                                 *
+ ****************************************************************/
 AMP::Mesh::MeshElement structuredFaceDOFManager::getElement( size_t dof ) const
 {
     AMP::Mesh::MeshElementID id;
@@ -183,8 +183,8 @@ AMP::Mesh::MeshElement structuredFaceDOFManager::getElement( size_t dof ) const
 
 
 /****************************************************************
-* Get an entry over the mesh elements associated with the DOFs  *
-****************************************************************/
+ * Get an entry over the mesh elements associated with the DOFs  *
+ ****************************************************************/
 AMP::Mesh::MeshIterator structuredFaceDOFManager::getIterator() const
 {
     std::vector<AMP::Mesh::MeshIterator::shared_ptr> faces( 3 );
@@ -198,8 +198,8 @@ AMP::Mesh::MeshIterator structuredFaceDOFManager::getIterator() const
 
 
 /****************************************************************
-* Return the remote DOFs                                        *
-****************************************************************/
+ * Return the remote DOFs                                        *
+ ****************************************************************/
 std::vector<size_t> structuredFaceDOFManager::getRemoteDOFs() const
 {
     // Create the list of remote DOFs
@@ -222,8 +222,8 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOFs() const
 
 
 /****************************************************************
-* Return the row DOFs                                           *
-****************************************************************/
+ * Return the row DOFs                                           *
+ ****************************************************************/
 std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
     if ( obj.elementType() != AMP::Mesh::GeomType::Face )
@@ -274,10 +274,10 @@ std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshE
 
 
 /****************************************************************
-* Find the remote DOF given a set of mesh element IDs           *
-* Note: for this function to work correctly, the remote ids     *
-* must be sorted, and d_local_id must be set                    *
-****************************************************************/
+ * Find the remote DOF given a set of mesh element IDs           *
+ * Note: for this function to work correctly, the remote ids     *
+ * must be sorted, and d_local_id must be set                    *
+ ****************************************************************/
 std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
     const std::vector<AMP::Mesh::MeshElementID> &remote_ids ) const
 {
@@ -367,7 +367,7 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
     AMP::Mesh::MeshElementID *send_buffer = nullptr;
     if ( !remote_ids2.empty() )
         send_buffer = &remote_ids2[0];
-    size_t N        = d_comm.allToAll<AMP::Mesh::MeshElementID>(
+    size_t N = d_comm.allToAll<AMP::Mesh::MeshElementID>(
         send_buffer, &send_cnt[0], &send_disp[0], &recv_id[0], &recv_cnt[0], &recv_disp[0], true );
     AMP_INSIST( N == tot_size, "Unexpected recieve size" );
     recv_id.resize( tot_size );
@@ -386,7 +386,7 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
     size_t *send_buffer_DOFs = nullptr;
     if ( tot_size > 0 )
         send_buffer_DOFs = &recieved_DOF[0];
-    N                    = d_comm.allToAll<size_t>( send_buffer_DOFs,
+    N = d_comm.allToAll<size_t>( send_buffer_DOFs,
                                  &recv_cnt[0],
                                  &recv_disp[0],
                                  &remote_dof[0],
@@ -401,5 +401,5 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
         AMP_ASSERT( remote_ids[i] == remote_ids2[i] );
     return remote_dof;
 }
-}
-}
+} // namespace Discretization
+} // namespace AMP

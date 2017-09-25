@@ -17,46 +17,46 @@ namespace AMP {
 
 
 /********************************************************
-*  Random number initialization                         *
-********************************************************/
-template <class TYPE, class FUN>
+ *  Random number initialization                         *
+ ********************************************************/
+template<class TYPE, class FUN>
 void FunctionTable::rand( Array<TYPE, FUN> &x )
 {
     FunctionTable::rand<TYPE>( x.length(), x.data() );
 }
-template <>
+template<>
 inline void FunctionTable::rand<double>( size_t N, double *x )
 {
     std::random_device rd;
     std::mt19937 gen( rd() );
     std::uniform_real_distribution<> dis( 0, 1 );
     for ( size_t i = 0; i < N; i++ )
-        x[i]       = dis( gen );
+        x[i] = dis( gen );
 }
-template <>
+template<>
 inline void FunctionTable::rand<float>( size_t N, float *x )
 {
     std::random_device rd;
     std::mt19937 gen( rd() );
     std::uniform_real_distribution<> dis( 0, 1 );
     for ( size_t i = 0; i < N; i++ )
-        x[i]       = dis( gen );
+        x[i] = dis( gen );
 }
-template <>
+template<>
 inline void FunctionTable::rand<int>( size_t N, int *x )
 {
     std::random_device rd;
     std::mt19937 gen( rd() );
     std::uniform_int_distribution<> dis;
     for ( size_t i = 0; i < N; i++ )
-        x[i]       = dis( gen );
+        x[i] = dis( gen );
 }
 
 
 /********************************************************
-*  Reduction                                            *
-********************************************************/
-template <class TYPE, class FUN, typename LAMBDA>
+ *  Reduction                                            *
+ ********************************************************/
+template<class TYPE, class FUN, typename LAMBDA>
 inline TYPE FunctionTable::reduce( LAMBDA &op, const Array<TYPE, FUN> &A, const TYPE &initialValue )
 {
     if ( A.length() == 0 )
@@ -67,7 +67,7 @@ inline TYPE FunctionTable::reduce( LAMBDA &op, const Array<TYPE, FUN> &A, const 
         y = op( x[i], y );
     return y;
 }
-template <class TYPE, class FUN, typename LAMBDA>
+template<class TYPE, class FUN, typename LAMBDA>
 inline TYPE FunctionTable::reduce( LAMBDA &op,
                                    const Array<TYPE, FUN> &A,
                                    const Array<TYPE, FUN> &B,
@@ -86,16 +86,16 @@ inline TYPE FunctionTable::reduce( LAMBDA &op,
 
 
 /********************************************************
-*  Unary transformation                                 *
-********************************************************/
-template <class TYPE, class FUN, typename LAMBDA>
+ *  Unary transformation                                 *
+ ********************************************************/
+template<class TYPE, class FUN, typename LAMBDA>
 inline void FunctionTable::transform( LAMBDA &fun, const Array<TYPE, FUN> &x, Array<TYPE, FUN> &y )
 {
     y.resize( x.size() );
     for ( size_t i = 0; i < x.length(); i++ )
-        y( i )     = fun( x( i ) );
+        y( i ) = fun( x( i ) );
 }
-template <class TYPE, class FUN, typename LAMBDA>
+template<class TYPE, class FUN, typename LAMBDA>
 inline void FunctionTable::transform( LAMBDA &fun,
                                       const Array<TYPE, FUN> &x,
                                       const Array<TYPE, FUN> &y,
@@ -104,14 +104,14 @@ inline void FunctionTable::transform( LAMBDA &fun,
     ARRAY_INSIST( x.sizeMatch( y ), "Sizes of x and y do not match" );
     z.resize( x.size() );
     for ( size_t i = 0; i < x.length(); i++ )
-        z( i )     = fun( x( i ), y( i ) );
+        z( i ) = fun( x( i ), y( i ) );
 }
 
 
 /********************************************************
-*  Multiply two arrays                                  *
-********************************************************/
-template <class TYPE, class FUN>
+ *  Multiply two arrays                                  *
+ ********************************************************/
+template<class TYPE, class FUN>
 void FunctionTable::multiply( const Array<TYPE, FUN> &a,
                               const Array<TYPE, FUN> &b,
                               Array<TYPE, FUN> &c )
@@ -132,7 +132,7 @@ void FunctionTable::multiply( const Array<TYPE, FUN> &a,
     }
 }
 
-template <class TYPE, class FUN>
+template<class TYPE, class FUN>
 bool FunctionTable::equals( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, TYPE tol )
 {
     bool pass = true;
@@ -143,23 +143,23 @@ bool FunctionTable::equals( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b
 }
 
 /********************************************************
-*  Specialized Functions                                *
-********************************************************/
-template <class TYPE, class FUN, class ALLOC>
+ *  Specialized Functions                                *
+ ********************************************************/
+template<class TYPE, class FUN, class ALLOC>
 void FunctionTable::transformReLU( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B )
 {
     const auto &fun = []( const TYPE &a ) { return std::max( a, static_cast<TYPE>( 0 ) ); };
     transform( fun, A, B );
 }
 
-template <class TYPE, class FUN, class ALLOC>
+template<class TYPE, class FUN, class ALLOC>
 void FunctionTable::transformAbs( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B )
 {
     B.resize( A.size() );
     const auto &fun = []( const TYPE &a ) { return std::abs( a ); };
     transform( fun, A, B );
 }
-template <class TYPE, class FUN, class ALLOC>
+template<class TYPE, class FUN, class ALLOC>
 void FunctionTable::transformTanh( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B )
 {
     B.resize( A.size() );
@@ -167,7 +167,7 @@ void FunctionTable::transformTanh( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE,
     transform( fun, A, B );
 }
 
-template <class TYPE, class FUN, class ALLOC>
+template<class TYPE, class FUN, class ALLOC>
 void FunctionTable::transformHardTanh( const Array<TYPE, FUN, ALLOC> &A,
                                        Array<TYPE, FUN, ALLOC> &B )
 {
@@ -178,7 +178,7 @@ void FunctionTable::transformHardTanh( const Array<TYPE, FUN, ALLOC> &A,
     transform( fun, A, B );
 }
 
-template <class TYPE, class FUN, class ALLOC>
+template<class TYPE, class FUN, class ALLOC>
 void FunctionTable::transformSigmoid( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B )
 {
     B.resize( A.size() );
@@ -186,7 +186,7 @@ void FunctionTable::transformSigmoid( const Array<TYPE, FUN, ALLOC> &A, Array<TY
     transform( fun, A, B );
 }
 
-template <class TYPE, class FUN, class ALLOC>
+template<class TYPE, class FUN, class ALLOC>
 void FunctionTable::transformSoftPlus( const Array<TYPE, FUN, ALLOC> &A,
                                        Array<TYPE, FUN, ALLOC> &B )
 {
@@ -195,14 +195,14 @@ void FunctionTable::transformSoftPlus( const Array<TYPE, FUN, ALLOC> &A,
     transform( fun, A, B );
 }
 
-template <class TYPE, class FUN, class ALLOC>
+template<class TYPE, class FUN, class ALLOC>
 TYPE FunctionTable::sum( const Array<TYPE, FUN, ALLOC> &A )
 {
     const auto &fun = []( const TYPE &a, const TYPE &b ) { return a + b; };
     return reduce( fun, A, (TYPE) 0 );
 }
 
-template <class TYPE>
+template<class TYPE>
 inline void FunctionTable::gemmWrapper( char TRANSA,
                                         char TRANSB,
                                         int M,

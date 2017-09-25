@@ -137,8 +137,7 @@ protected:
       @param [out] r output vector
       */
     void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                      AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                          r ) override;
+                      AMP::shared_ptr<AMP::LinearAlgebra::Vector> r ) override;
 
     /**
       This function is called at the end of the FE assembly.
@@ -168,10 +167,10 @@ protected:
     mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
                     AMP::LinearAlgebra::Variable::shared_ptr var );
 
-    template <MechanicsNonlinearElement::MaterialUpdateType updateType>
+    template<MechanicsNonlinearElement::MaterialUpdateType updateType>
     void updateMaterialForElement( const AMP::Mesh::MeshElement & );
 
-    template <MechanicsNonlinearUpdatedLagrangianElement::MaterialUpdateType updateType>
+    template<MechanicsNonlinearUpdatedLagrangianElement::MaterialUpdateType updateType>
     void updateMaterialForUpdatedLagrangianElement( const AMP::Mesh::MeshElement & );
 
     void updateMaterialForElementCommonFunction( const AMP::Mesh::MeshElement &,
@@ -232,7 +231,7 @@ protected:
     std::vector<std::vector<size_t>> d_dofIndices; /**< Primary DOF indices */
 };
 
-template <MechanicsNonlinearElement::MaterialUpdateType updateType>
+template<MechanicsNonlinearElement::MaterialUpdateType updateType>
 void MechanicsNonlinearFEOperator::updateMaterialForElement( const AMP::Mesh::MeshElement &elem )
 {
     std::vector<std::vector<double>> elementInputVectors1( Mechanics::TOTAL_NUMBER_OF_VARIABLES );
@@ -244,7 +243,7 @@ void MechanicsNonlinearFEOperator::updateMaterialForElement( const AMP::Mesh::Me
     d_mechNonlinElem->updateMaterialModel<updateType>( elementInputVectors1 );
 }
 
-template <MechanicsNonlinearUpdatedLagrangianElement::MaterialUpdateType updateType>
+template<MechanicsNonlinearUpdatedLagrangianElement::MaterialUpdateType updateType>
 void MechanicsNonlinearFEOperator::updateMaterialForUpdatedLagrangianElement(
     const AMP::Mesh::MeshElement &elem )
 {
@@ -257,7 +256,7 @@ void MechanicsNonlinearFEOperator::updateMaterialForUpdatedLagrangianElement(
     d_mechNULElem->updateMaterialModel<updateType>( elementInputVectors2,
                                                     elementInputVectors_pre2 );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

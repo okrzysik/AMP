@@ -27,9 +27,10 @@ struct MapConstructionParam {
 extern size_t globalMapTagOffset; // We need a global unique tag offset for every map
 
 
-template <typename MAP_TYPE>
-AMP::shared_ptr<AsyncMapColumnOperator> AsyncMapColumnOperator::build(
-    AMP::Mesh::Mesh::shared_ptr manager, AMP::shared_ptr<Database> database )
+template<typename MAP_TYPE>
+AMP::shared_ptr<AsyncMapColumnOperator>
+AsyncMapColumnOperator::build( AMP::Mesh::Mesh::shared_ptr manager,
+                               AMP::shared_ptr<Database> database )
 {
 
     AMP::shared_ptr<AsyncMapColumnOperatorParameters> newParams(
@@ -88,5 +89,5 @@ AMP::shared_ptr<AsyncMapColumnOperator> AsyncMapColumnOperator::build(
 
     return newMapColumn;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

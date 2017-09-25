@@ -16,8 +16,8 @@ namespace Operator {
 
 
 /**
-  * AMP Mesh manager for DTK.
-*/
+ * AMP Mesh manager for DTK.
+ */
 class DTKAMPMeshManager : public DataTransferKit::ClientManager
 {
 public:
@@ -89,7 +89,7 @@ private:
     // The function space over which the mesh and its fields are defined.
     Teuchos::RCP<DataTransferKit::FunctionSpace> d_function_space;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

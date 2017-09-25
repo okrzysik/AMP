@@ -11,7 +11,7 @@ namespace AMP {
 namespace voodoo {
 
 
-template <class Object>
+template<class Object>
 class Singleton
 {
 public:
@@ -24,13 +24,14 @@ public:
 protected:
     Singleton() {}
     ~Singleton() {}
+
 private: // emphasize the following members are private
     Singleton( const Singleton & );
     const Singleton &operator=( const Singleton & );
 };
 
 
-} // namespace VoodooFactory
-} // namespace amp
+} // namespace voodoo
+} // namespace AMP
 
 #endif // SINGLETON_H

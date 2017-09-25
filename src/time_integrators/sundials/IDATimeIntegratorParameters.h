@@ -77,7 +77,7 @@ private:
     explicit IDATimeIntegratorParameters( const IDATimeIntegratorParameters & );
     void operator=( const IDATimeIntegratorParameters & );
 };
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif

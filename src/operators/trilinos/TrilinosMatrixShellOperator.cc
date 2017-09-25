@@ -158,5 +158,5 @@ void TrilinosMatrixShellOperator::getColumn( int column,
 }
 
 
-} // Operator namespace
-} // AMP namespace
+} // namespace Operator
+} // namespace AMP

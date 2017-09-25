@@ -25,7 +25,7 @@ public:
     // Surface thickness (m)
     double depth;
 };
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif

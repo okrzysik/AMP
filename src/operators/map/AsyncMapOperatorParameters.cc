@@ -15,5 +15,5 @@ AsyncMapOperatorParameters::AsyncMapOperatorParameters( const AMP::shared_ptr<AM
 
 
 AsyncMapOperatorParameters::~AsyncMapOperatorParameters() {}
-}
-}
+} // namespace Operator
+} // namespace AMP

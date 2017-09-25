@@ -16,7 +16,7 @@ namespace AMP {
 namespace Mesh {
 
 
-template <int DOF_PER_NODE, bool SPLIT>
+template<int DOF_PER_NODE, bool SPLIT>
 void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     PROFILE_START( "VerifyGetMatrixTrivialTest", 1 );
@@ -73,7 +73,7 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
 }
 
 
-template <int DOF_PER_NODE, bool SPLIT>
+template<int DOF_PER_NODE, bool SPLIT>
 void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     PROFILE_START( "GhostWriteTest", 1 );

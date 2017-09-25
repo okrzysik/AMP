@@ -6,8 +6,8 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 AMP::shared_ptr<VectorOperations> MultiVectorOperations::cloneOperations() const
 {
     auto ptr = AMP::make_shared<MultiVectorOperations>();
@@ -16,8 +16,8 @@ AMP::shared_ptr<VectorOperations> MultiVectorOperations::cloneOperations() const
 
 
 /****************************************************************
-* min, max, norms, etc.                                         *
-****************************************************************/
+ * min, max, norms, etc.                                         *
+ ****************************************************************/
 bool MultiVectorOperations::localEquals( const VectorOperations &x, double tol ) const
 {
     auto x2     = dynamic_cast<const MultiVectorOperations *>( &x );
@@ -141,7 +141,7 @@ double MultiVectorOperations::localWrmsNormMask( const VectorOperations &x,
     for ( size_t i = 0; i < d_operations.size(); i++ ) {
         double tmp = d_operations[i]->localWrmsNormMask( *( x2->d_operations[i] ),
                                                          *( m2->d_operations[i] ) );
-        size_t N1 = d_operations[i]->getVectorData()->getLocalSize();
+        size_t N1  = d_operations[i]->getVectorData()->getLocalSize();
         ans += tmp * tmp * N1;
     }
     size_t N = getVectorData()->getLocalSize();
@@ -150,8 +150,8 @@ double MultiVectorOperations::localWrmsNormMask( const VectorOperations &x,
 
 
 /****************************************************************
-* Functions to initalize the data                               *
-****************************************************************/
+ * Functions to initalize the data                               *
+ ****************************************************************/
 void MultiVectorOperations::copy( const VectorOperations &x )
 {
     auto x2 = dynamic_cast<const MultiVectorOperations *>( &x );
@@ -207,8 +207,8 @@ void MultiVectorOperations::addScalar( const VectorOperations &x, double alpha )
 
 
 /****************************************************************
-* Basic linear algebra                                          *
-****************************************************************/
+ * Basic linear algebra                                          *
+ ****************************************************************/
 void MultiVectorOperations::reciprocal( const VectorOperations &x )
 {
     if ( d_operations.empty() ) {
@@ -359,5 +359,5 @@ void MultiVectorOperations::scale( double alpha )
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP

@@ -76,9 +76,9 @@ public:
 };
 
 
-template <class TYPE       = double,
-          typename VecOps  = VectorOperationsDefault<TYPE>,
-          typename VecData = VectorDataCPU<TYPE>>
+template<class TYPE       = double,
+         typename VecOps  = VectorOperationsDefault<TYPE>,
+         typename VecData = VectorDataCPU<TYPE>>
 class SimpleVectorFactory : public VectorFactory
 {
 public:
@@ -116,7 +116,7 @@ private:
 };
 
 
-template <class TYPE = double>
+template<class TYPE = double>
 class ArrayVectorFactory : public VectorFactory
 {
 public:
@@ -155,7 +155,7 @@ private:
 
 
 #ifdef USE_EXT_TRILINOS
-template <typename TYPE>
+template<typename TYPE>
 class SimpleManagedVectorFactory : public VectorFactory
 {
 public:
@@ -235,7 +235,7 @@ public:
     }
 };
 
-template <typename T>
+template<typename T>
 class PetscManagedVectorFactory : public VectorFactory
 {
 public:
@@ -296,7 +296,7 @@ public:
 };
 #endif
 
-template <typename TYPE>
+template<typename TYPE>
 class ViewFactory : public VectorFactory
 {
 public:
@@ -330,8 +330,7 @@ class MultiVectorFactory : public VectorFactory
 public:
     MultiVectorFactory( AMP::shared_ptr<const VectorFactory> factory1,
                         int N1,
-                        AMP::shared_ptr<const VectorFactory>
-                            factory2,
+                        AMP::shared_ptr<const VectorFactory> factory2,
                         int N2 )
         : NUM1( N1 ), NUM2( N2 ), FACTORY1( factory1 ), FACTORY2( factory2 )
     {
@@ -371,8 +370,8 @@ private:
     AMP::shared_ptr<const VectorFactory> FACTORY1;
     AMP::shared_ptr<const VectorFactory> FACTORY2;
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 /// \endcond
 

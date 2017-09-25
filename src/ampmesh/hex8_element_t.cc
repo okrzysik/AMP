@@ -433,7 +433,7 @@ double hex8_element_t::solve_newton(
     compute_residual_vector( &x[0], &( residual_vector[0] ) );
     double residual_norm = sqrt( std::inner_product(
         residual_vector.begin(), residual_vector.end(), residual_vector.begin(), 0.0 ) );
-    double tol = abs_tol + rel_tol * residual_norm;
+    double tol           = abs_tol + rel_tol * residual_norm;
 
     for ( unsigned int iter = 0; iter < max_iter; ++iter ) {
         //    ++newton_count;

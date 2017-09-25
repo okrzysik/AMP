@@ -9,8 +9,8 @@ namespace BoxMeshHelpers {
 
 
 /****************************************************************
-* Map the logical coordinates to a circle                       *
-****************************************************************/
+ * Map the logical coordinates to a circle                       *
+ ****************************************************************/
 static inline std::pair<double, double> map_c2p( int method, double xc, double yc )
 {
     // map xc > 0 and |yc| < xc ≡ d to (xp,yp) in r=1 using the mapping by:
@@ -124,9 +124,9 @@ std::pair<double, double> map_circle_logical( double r, int method, double x, do
 
 
 /****************************************************************
-* Helper function to map x,y,z logical coordinates in [0,1]     *
-* to x,y,z coordinates in a sphere with radius r                *
-****************************************************************/
+ * Helper function to map x,y,z logical coordinates in [0,1]     *
+ * to x,y,z coordinates in a sphere with radius r                *
+ ****************************************************************/
 std::tuple<double, double, double> map_logical_sphere( double r, double x, double y, double z )
 {
     // This maps from a a logically rectangular 3D mesh to a sphere mesh using the mapping by:
@@ -152,9 +152,9 @@ std::tuple<double, double, double> map_logical_sphere( double r, double x, doubl
 
 
 /****************************************************************
-* Helper function to map x,y logical coordinates in [0,1]       *
-* to x,y,z coordinates on the surface of a sphere               *
-****************************************************************/
+ * Helper function to map x,y logical coordinates in [0,1]       *
+ * to x,y,z coordinates on the surface of a sphere               *
+ ****************************************************************/
 std::tuple<double, double, double> map_logical_sphere_surface( double R, double x, double y )
 {
     // This maps from a a logically rectangular 3D mesh to the surface of a sphere using the mapping
@@ -186,15 +186,15 @@ std::pair<double, double> map_sphere_surface_logical( double R, double x, double
     double yc = point.second;
     if ( z < 0 )
         xc = -xc;
-    xc     = 0.5 * ( xc + 1 );
+    xc = 0.5 * ( xc + 1 );
     return std::make_pair( xc, yc );
 }
 
 
 /****************************************************************
-* Helper function to map x,y,z logical coordinates in [0,1]     *
-* to x,y,z coordinates in a shell with r1 <= r <= r2            *
-****************************************************************/
+ * Helper function to map x,y,z logical coordinates in [0,1]     *
+ * to x,y,z coordinates in a shell with r1 <= r <= r2            *
+ ****************************************************************/
 std::tuple<double, double, double>
 map_logical_shell( double r1, double r2, double x, double y, double z )
 {
@@ -209,6 +209,6 @@ map_logical_shell( double r1, double r2, double x, double y, double z )
 }
 
 
-} // BoxMeshHelpers namespace
-} // Mesh namespace
-} // AMP namespace
+} // namespace BoxMeshHelpers
+} // namespace Mesh
+} // namespace AMP

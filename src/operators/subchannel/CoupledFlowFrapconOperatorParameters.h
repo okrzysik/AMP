@@ -34,8 +34,8 @@ public:
 
     AMP::shared_ptr<Operator> d_FlowOperator;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 
 #endif

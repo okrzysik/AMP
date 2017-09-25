@@ -73,7 +73,7 @@ protected:
 };
 
 
-} // Geometry namespace
-} // AMP namespace
+} // namespace Geometry
+} // namespace AMP
 
 #endif

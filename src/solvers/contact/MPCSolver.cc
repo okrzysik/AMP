@@ -6,8 +6,7 @@ namespace AMP {
 namespace Solver {
 
 void MPCSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>,
-                       AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                           u )
+                       AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
 
     AMP::shared_ptr<AMP::Operator::NodeToSegmentConstraintsOperator> op =
@@ -15,5 +14,5 @@ void MPCSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>,
 
     op->applySolutionCorrection( u );
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

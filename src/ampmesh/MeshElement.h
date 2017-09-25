@@ -190,8 +190,8 @@ protected:
 };
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 #include "ampmesh/MeshElement.inline.h"
 

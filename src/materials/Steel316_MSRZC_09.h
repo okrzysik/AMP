@@ -12,8 +12,8 @@ class Steel316_MSRZC_09 : public Material
 public:
     Steel316_MSRZC_09();
 };
-}
-}
+} // namespace Materials
+} // namespace AMP
 
 
 // Add static initialize to force symbols to be included

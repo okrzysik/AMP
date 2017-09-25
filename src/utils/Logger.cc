@@ -163,4 +163,4 @@ void Logger::setWarning( bool onoff ) { d_log_warning = onoff; }
 
 
 void Logger::setDebug( bool onoff ) { d_log_debug = onoff; }
-}
+} // namespace AMP

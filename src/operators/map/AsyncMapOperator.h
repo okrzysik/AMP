@@ -64,8 +64,8 @@ protected:
     // Frozen vector for the output results
     AMP::LinearAlgebra::Vector::shared_ptr d_OutputVector;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 
 #endif

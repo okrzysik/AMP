@@ -92,7 +92,7 @@ protected:
 
     bool d_useJaumannRate; /**< A flag that checks whether to use Jaumann Rate in Updated Lagrangian
                             * formulation or not.
-                              */
+                            */
 
     bool d_useFlanaganTaylorElem; /** < Inside Green-Naghdi stress-rate whether to use Flanagan
                                      Taylor stress-srate or
@@ -102,7 +102,7 @@ protected:
 
 private:
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

@@ -67,7 +67,7 @@ private:
     Mat d_mat;
     AMP_MPI d_comm;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

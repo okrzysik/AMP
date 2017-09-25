@@ -1,5 +1,5 @@
-#include "math.h"
 #include "OxideModel.h"
+#include "math.h"
 #include "utils/Utilities.h"
 
 #include <algorithm>
@@ -15,8 +15,8 @@ extern void dgtsv_( int *, int *, double *, double *, double *, double *, int *,
 
 
 /************************************************************************
-* Return the equiblibrium concentrations                                *
-************************************************************************/
+ * Return the equiblibrium concentrations                                *
+ ************************************************************************/
 void OxideModel::get_equilibrium_concetration( double T, double *Ci )
 {
     // The oxygen concentration in the oxide at the oxide-gas interface is
@@ -97,8 +97,8 @@ void OxideModel::get_equilibrium_concetration( double T, double *Ci )
 
 
 /************************************************************************
-* Return the diffusion coefficients                                     *
-************************************************************************/
+ * Return the diffusion coefficients                                     *
+ ************************************************************************/
 void OxideModel::get_diffusion_coefficients( double T, double *D )
 {
     const double R = 1.077 * 9 / 5;            // Convert Kelvin to Rankine
@@ -109,8 +109,8 @@ void OxideModel::get_diffusion_coefficients( double T, double *D )
 
 
 /************************************************************************
-* Function to integrate the oxide over a fixed timestep                 *
-************************************************************************/
+ * Function to integrate the oxide over a fixed timestep                 *
+ ************************************************************************/
 int OxideModel::integrateOxide( double dT,
                                 int N,
                                 const int *N2,
@@ -127,13 +127,13 @@ int OxideModel::integrateOxide( double dT,
     int N2_max = 0;
     for ( int i = 0; i < N; i++ )
         N2_max = std::max( N2_max, N2[i] );
-    auto C2    = new double[N2_max];
+    auto C2 = new double[N2_max];
     // Copy the current solution
     for ( int i = 0; i < N + 1; i++ ) {
         x1[i] = x0[i];
     }
     for ( int i = 0; i < N; i++ ) {
-        for ( int j  = 0; j < N2[i]; j++ )
+        for ( int j = 0; j < N2[i]; j++ )
             C1[i][j] = C0[i][j];
     }
     // Compute the initial velocity
@@ -159,7 +159,7 @@ int OxideModel::integrateOxide( double dT,
         // Advance the solution by the timestep
         for ( int i = 0; i < N; i++ ) {
             solveLinearDiffusionLayer( N2[i], dt, &x1[i], &v1[i], &Cb[2 * i], C1[i], D[i], C2, x2 );
-            for ( int j  = 0; j < N2[i]; j++ )
+            for ( int j = 0; j < N2[i]; j++ )
                 C1[i][j] = C2[j];
         }
         // Move the boundaries and update the timestep
@@ -182,8 +182,8 @@ int OxideModel::integrateOxide( double dT,
 
 
 /************************************************************************
-* Compute the velocity of the zone boundaries                           *
-************************************************************************/
+ * Compute the velocity of the zone boundaries                           *
+ ************************************************************************/
 void OxideModel::computeVelocity( const int N,
                                   const double *x,
                                   const double *Cb,
@@ -203,14 +203,14 @@ void OxideModel::computeVelocity( const int N,
     // Compute the velocity of the interfaces
     v[0] = 0.0;
     for ( int i = 1; i < N; i++ )
-        v[i]    = ( flux[2 * i] - flux[2 * i - 1] ) / ( Cb[2 * i] - Cb[2 * i - 1] );
-    v[N]        = 0.0;
+        v[i] = ( flux[2 * i] - flux[2 * i - 1] ) / ( Cb[2 * i] - Cb[2 * i - 1] );
+    v[N] = 0.0;
 }
 
 
 /************************************************************************
-* Compute the maximum timestep based on diffusion                       *
-************************************************************************/
+ * Compute the maximum timestep based on diffusion                       *
+ ************************************************************************/
 double OxideModel::computeDiffustionTimestep(
     const int N, const double x[2], const double Cb[2], const double *C, const double D )
 {
@@ -234,8 +234,8 @@ double OxideModel::computeDiffustionTimestep(
 
 
 /************************************************************************
-* Perform a linear solve to get the future oxygen concentration         *
-************************************************************************/
+ * Perform a linear solve to get the future oxygen concentration         *
+ ************************************************************************/
 void OxideModel::solveLinearDiffusionLayer( const int N,
                                             const double dt,
                                             const double x0[2],
@@ -255,7 +255,7 @@ void OxideModel::solveLinearDiffusionLayer( const int N,
     double *rhs   = C1;
     // Fill the diffusion coefficients at zone boundaries
     for ( int i = 0; i < N + 1; i++ )
-        Db[i]   = D;
+        Db[i] = D;
     // Compute x1
     x1[0] = x0[0] + dt * v[0];
     x1[1] = x0[1] + dt * v[1];
@@ -275,9 +275,8 @@ void OxideModel::solveLinearDiffusionLayer( const int N,
         rhs[0] += 0.5 * dt / h0 * vi * 2 * ( C0[0] - Cb[0] ) - 0.5 * dt / h1 * vi * 2 * Cb[0];
     for ( int i = 1; i < N - 1; i++ ) {
         vi     = v[0] + ( i + 0.5 ) / Nd * ( v[1] - v[0] );
-        rhs[i] = C0[i] +
-                 0.5 * dt / ( h0 * h0 ) *
-                     ( Db[i + 1] * ( C0[i + 1] - C0[i] ) - Db[i] * ( C0[i] - C0[i - 1] ) );
+        rhs[i] = C0[i] + 0.5 * dt / ( h0 * h0 ) *
+                             ( Db[i + 1] * ( C0[i + 1] - C0[i] ) - Db[i] * ( C0[i] - C0[i - 1] ) );
         if ( vi >= 0 )
             rhs[i] += 0.5 * dt / h0 * vi * ( C0[i + 1] - C0[i] );
         else
@@ -334,5 +333,5 @@ void OxideModel::solveLinearDiffusionLayer( const int N,
     // Free memory
     delete[] mem;
 }
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

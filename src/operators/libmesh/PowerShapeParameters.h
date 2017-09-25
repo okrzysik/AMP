@@ -26,7 +26,7 @@ public:
     {
     }
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

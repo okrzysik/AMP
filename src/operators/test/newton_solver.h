@@ -32,7 +32,7 @@ struct solve_status_t {
     double final_residual_norm;
 };
 
-template <typename vector_t>
+template<typename vector_t>
 class newton_solver_t
 {
 public:
@@ -57,7 +57,7 @@ private:
                                                                  void *parameters );
 };
 
-template <typename vector_t>
+template<typename vector_t>
 void newton_solver_t<vector_t>::set( void ( *my_compute_residual )( vector_t const &,
                                                                     vector_t &,
                                                                     void * ),
@@ -69,7 +69,7 @@ void newton_solver_t<vector_t>::set( void ( *my_compute_residual )( vector_t con
         my_compute_action_inverse_jacobian_on_minus_residual;
 }
 
-template <typename vector_t>
+template<typename vector_t>
 solve_status_t newton_solver_t<vector_t>::solve( vector_t &solution, void *parameters )
 {
     vector_t residual( solution );
@@ -93,13 +93,13 @@ solve_status_t newton_solver_t<vector_t>::solve( vector_t &solution, void *param
     return solve_status_t( DIV_MAXIT, _maxit, norm_residual );
 }
 
-template <>
+template<>
 double newton_solver_t<double>::compute_norm( double const &x )
 {
     return std::abs( x );
 }
 
-template <>
+template<>
 void newton_solver_t<double>::update_solution( double const &dx, double &x )
 {
     x += dx;

@@ -102,8 +102,7 @@ void LinearTimeOperator::reset(
 AMP::shared_ptr<AMP::Operator::OperatorParameters>
 LinearTimeOperator::getParameters( const std::string &type,
                                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                                   AMP::shared_ptr<AMP::Operator::OperatorParameters>
-                                       params )
+                                   AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     AMP::shared_ptr<AMP::InputDatabase> timeOperator_db(
         new AMP::InputDatabase( "LinearTimeOperatorDatabase" ) );
@@ -120,5 +119,5 @@ LinearTimeOperator::getParameters( const std::string &type,
 
     return timeOperatorParameters;
 }
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

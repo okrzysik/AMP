@@ -154,5 +154,5 @@ Teuchos::RCP<DataTransferKit::EntityExtraData> AMPMeshEntityImpl::extraData() co
 }
 
 //---------------------------------------------------------------------------//
-}
-}
+} // namespace Operator
+} // namespace AMP

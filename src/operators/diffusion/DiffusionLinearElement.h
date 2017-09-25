@@ -53,7 +53,7 @@ protected:
 private:
     unsigned int d_num_dofs;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

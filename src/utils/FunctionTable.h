@@ -23,7 +23,7 @@ public:
      * Initialize the array with random values
      * @param[in] x         The array to operate on
      */
-    template <class TYPE, class FUN>
+    template<class TYPE, class FUN>
     static void rand( Array<TYPE, FUN> &x );
 
     /*!
@@ -35,7 +35,7 @@ public:
      * ...)
      * @return                  The reduction
      */
-    template <class TYPE, class FUN, typename LAMBDA>
+    template<class TYPE, class FUN, typename LAMBDA>
     static inline TYPE reduce( LAMBDA &op, const Array<TYPE, FUN> &A, const TYPE &initialValue );
 
     /*!
@@ -48,7 +48,7 @@ public:
      * ...)
      * @return                  The reduction
      */
-    template <class TYPE, class FUN, typename LAMBDA>
+    template<class TYPE, class FUN, typename LAMBDA>
     static inline TYPE reduce( LAMBDA &op,
                                const Array<TYPE, FUN> &A,
                                const Array<TYPE, FUN> &B,
@@ -61,7 +61,7 @@ public:
      * @param[in,out] x         The array to operate on
      * @param[out] y            The output array
      */
-    template <class TYPE, class FUN, typename LAMBDA>
+    template<class TYPE, class FUN, typename LAMBDA>
     static inline void transform( LAMBDA &fun, const Array<TYPE, FUN> &x, Array<TYPE, FUN> &y );
 
     /*!
@@ -72,7 +72,7 @@ public:
      * @param[in] y             The second array
      * @param[out] z            The output array
      */
-    template <class TYPE, class FUN, typename LAMBDA>
+    template<class TYPE, class FUN, typename LAMBDA>
     static inline void transform( LAMBDA &fun,
                                   const Array<TYPE, FUN> &x,
                                   const Array<TYPE, FUN> &y,
@@ -84,7 +84,7 @@ public:
      * @param[in] b             The second array
      * @param[out] c            The output array
      */
-    template <class TYPE, class FUN>
+    template<class TYPE, class FUN>
     static void
     multiply( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, Array<TYPE, FUN> &c );
 
@@ -94,10 +94,10 @@ public:
      * @param[in] B             The second array
      * @param[in] tol           The tolerance
      */
-    template <class TYPE, class FUN>
+    template<class TYPE, class FUN>
     static bool equals( const Array<TYPE, FUN> &A, const Array<TYPE, FUN> &B, TYPE tol );
 
-    template <class TYPE>
+    template<class TYPE>
     static inline void gemmWrapper( char TRANSA,
                                     char TRANSB,
                                     int M,
@@ -120,7 +120,7 @@ public:
      * @param[in] A             The input array
      * @param[out] B            The output array
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static void transformReLU( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B );
 
     /*!
@@ -128,7 +128,7 @@ public:
      * @param[in] A             The array to operate on
      * @param[out] B            The output array
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static void transformAbs( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B );
 
     /*!
@@ -136,7 +136,7 @@ public:
      * @param[in] A             The array to operate on
      * @param[out] B            The output array
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static void transformTanh( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B );
 
     /*!
@@ -144,7 +144,7 @@ public:
      * @param[in] A             The array to operate on
      * @param[out] B            The output array
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static void transformHardTanh( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B );
 
     /*!
@@ -152,7 +152,7 @@ public:
      * @param[in] A             The array to operate on
      * @param[out] B            The output array
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static void transformSigmoid( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B );
 
     /*!
@@ -160,20 +160,20 @@ public:
      * @param[in] A             The array to operate on
      * @param[out] B            The output array
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static void transformSoftPlus( const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B );
 
     /*!
      * Sum the elements of the Array
      * @param[in] A             The array to sum
      */
-    template <class TYPE, class FUN, class ALLOC>
+    template<class TYPE, class FUN, class ALLOC>
     static TYPE sum( const Array<TYPE, FUN, ALLOC> &A );
 
 private:
     FunctionTable();
 
-    template <class T>
+    template<class T>
     static inline void rand( size_t N, T *x );
 };
 

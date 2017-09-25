@@ -108,5 +108,5 @@ void DTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 }
 
 //---------------------------------------------------------------------------//
-}
-}
+} // namespace Operator
+} // namespace AMP

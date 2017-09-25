@@ -253,5 +253,5 @@ void BlockOperator::getRowForBlock( int locRow,
         getRow( blockOp.get(), locRow, locCols, values );
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

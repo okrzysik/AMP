@@ -9,9 +9,9 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Contructors                                                   *
-****************************************************************/
-template <typename TYPE>
+ * Contructors                                                   *
+ ****************************************************************/
+template<typename TYPE>
 VectorDataIterator<TYPE>::VectorDataIterator()
     : d_N_blocks( 0 ),
       d_CurBlock( 0 ),
@@ -23,7 +23,7 @@ VectorDataIterator<TYPE>::VectorDataIterator()
       d_data( nullptr )
 {
 }
-template <typename TYPE>
+template<typename TYPE>
 VectorDataIterator<TYPE>::VectorDataIterator( const VectorDataIterator &rhs )
     : d_N_blocks( rhs.d_N_blocks ),
       d_CurBlock( rhs.d_CurBlock ),
@@ -41,7 +41,7 @@ VectorDataIterator<TYPE>::VectorDataIterator( const VectorDataIterator &rhs )
         d_blockSize[i] = rhs.d_blockSize[i];
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 VectorDataIterator<TYPE>::VectorDataIterator( VectorDataIterator &&rhs )
     : d_N_blocks( rhs.d_N_blocks ),
       d_CurBlock( rhs.d_CurBlock ),
@@ -55,7 +55,7 @@ VectorDataIterator<TYPE>::VectorDataIterator( VectorDataIterator &&rhs )
     std::swap( d_blockSize, rhs.d_blockSize );
     std::swap( d_data, rhs.d_data );
 }
-template <typename TYPE>
+template<typename TYPE>
 VectorDataIterator<TYPE> &VectorDataIterator<TYPE>::operator=( const VectorDataIterator &rhs )
 {
     if ( this == &rhs )
@@ -76,7 +76,7 @@ VectorDataIterator<TYPE> &VectorDataIterator<TYPE>::operator=( const VectorDataI
     }
     return *this;
 }
-template <typename TYPE>
+template<typename TYPE>
 VectorDataIterator<TYPE> &VectorDataIterator<TYPE>::operator=( VectorDataIterator &&rhs )
 {
     if ( this == &rhs )
@@ -93,7 +93,7 @@ VectorDataIterator<TYPE> &VectorDataIterator<TYPE>::operator=( VectorDataIterato
     std::swap( d_data, rhs.d_data );
     return *this;
 }
-template <typename TYPE>
+template<typename TYPE>
 VectorDataIterator<TYPE>::VectorDataIterator( VectorData *vec, size_t position )
     : d_N_blocks( vec->numberOfDataBlocks() ),
       d_CurBlock( 0 ),
@@ -116,7 +116,7 @@ VectorDataIterator<TYPE>::VectorDataIterator( VectorData *vec, size_t position )
     }
     advance( position );
 }
-template <typename TYPE>
+template<typename TYPE>
 VectorDataIterator<TYPE>::~VectorDataIterator()
 {
     delete[] d_blockSize;
@@ -125,9 +125,9 @@ VectorDataIterator<TYPE>::~VectorDataIterator()
 
 
 /****************************************************************
-* Function to return an iterator to the begining/end            *
-****************************************************************/
-template <typename TYPE>
+ * Function to return an iterator to the begining/end            *
+ ****************************************************************/
+template<typename TYPE>
 inline VectorDataIterator<TYPE> VectorDataIterator<TYPE>::begin() const
 {
     auto it        = VectorDataIterator( *this );
@@ -136,7 +136,7 @@ inline VectorDataIterator<TYPE> VectorDataIterator<TYPE>::begin() const
     it.d_pos       = 0;
     return it;
 }
-template <typename TYPE>
+template<typename TYPE>
 inline VectorDataIterator<TYPE> VectorDataIterator<TYPE>::end() const
 {
     auto it = VectorDataIterator( *this );
@@ -150,9 +150,9 @@ inline VectorDataIterator<TYPE> VectorDataIterator<TYPE>::end() const
 
 
 /****************************************************************
-* Function to advance/receed the iterator                       *
-****************************************************************/
-template <typename TYPE>
+ * Function to advance/receed the iterator                       *
+ ****************************************************************/
+template<typename TYPE>
 inline void VectorDataIterator<TYPE>::advance( size_t i )
 {
     AMP_INSIST( d_pos + i <= d_size, "Attempted to iterate past the end of the iterator" );
@@ -172,7 +172,7 @@ inline void VectorDataIterator<TYPE>::advance( size_t i )
         }
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 inline void VectorDataIterator<TYPE>::recede( size_t i )
 {
     AMP_INSIST( d_pos >= i, "Attempted to iterate past the beginning of the iterator" );
@@ -195,16 +195,16 @@ inline void VectorDataIterator<TYPE>::recede( size_t i )
 
 
 /****************************************************************
-* Increment/Decrement Operators                                 *
-****************************************************************/
-template <typename TYPE>
+ * Increment/Decrement Operators                                 *
+ ****************************************************************/
+template<typename TYPE>
 VectorDataIterator<TYPE> &VectorDataIterator<TYPE>::operator++()
 {
     // Prefix increment (increment and return this)
     advance( 1 );
     return *this;
 }
-template <typename TYPE>
+template<typename TYPE>
 VectorDataIterator<TYPE> VectorDataIterator<TYPE>::operator++( int )
 {
     // Postfix increment (increment and return temporary object)
@@ -212,14 +212,14 @@ VectorDataIterator<TYPE> VectorDataIterator<TYPE>::operator++( int )
     advance( 1 );                          // apply operator
     return tmp;                            // return temporary result
 }
-template <typename TYPE>
+template<typename TYPE>
 VectorDataIterator<TYPE> &VectorDataIterator<TYPE>::operator--()
 {
     // Prefix decrement (decrement and return this)
     recede( 1 );
     return *this;
 }
-template <typename TYPE>
+template<typename TYPE>
 VectorDataIterator<TYPE> VectorDataIterator<TYPE>::operator--( int )
 {
     // Postfix decrement (decrement and return temporary object)
@@ -227,7 +227,7 @@ VectorDataIterator<TYPE> VectorDataIterator<TYPE>::operator--( int )
     recede( 1 );                           // apply operator
     return tmp;                            // return temporary result
 }
-template <typename TYPE>
+template<typename TYPE>
 VectorDataIterator<TYPE> &VectorDataIterator<TYPE>::operator+=( int offset )
 {
     if ( offset > 0 )
@@ -236,7 +236,7 @@ VectorDataIterator<TYPE> &VectorDataIterator<TYPE>::operator+=( int offset )
         recede( -offset );
     return *this;
 }
-template <typename TYPE>
+template<typename TYPE>
 VectorDataIterator<TYPE> &VectorDataIterator<TYPE>::operator-=( int offset )
 {
     if ( offset > 0 )
@@ -245,7 +245,7 @@ VectorDataIterator<TYPE> &VectorDataIterator<TYPE>::operator-=( int offset )
         advance( -offset );
     return *this;
 }
-template <typename TYPE>
+template<typename TYPE>
 VectorDataIterator<TYPE> VectorDataIterator<TYPE>::operator+( int offset )
 {
     VectorDataIterator ans( *this );
@@ -255,7 +255,7 @@ VectorDataIterator<TYPE> VectorDataIterator<TYPE>::operator+( int offset )
         ans.recede( -offset );
     return ans;
 }
-template <typename TYPE>
+template<typename TYPE>
 VectorDataIterator<TYPE> VectorDataIterator<TYPE>::operator-( int offset )
 {
     VectorDataIterator ans( *this );
@@ -268,9 +268,9 @@ VectorDataIterator<TYPE> VectorDataIterator<TYPE>::operator-( int offset )
 
 
 /****************************************************************
-* Difference Operators                                          *
-****************************************************************/
-template <typename TYPE>
+ * Difference Operators                                          *
+ ****************************************************************/
+template<typename TYPE>
 int VectorDataIterator<TYPE>::operator-( const VectorDataIterator<TYPE> &rhs ) const
 {
     return d_pos - rhs.d_pos;
@@ -278,9 +278,9 @@ int VectorDataIterator<TYPE>::operator-( const VectorDataIterator<TYPE> &rhs ) c
 
 
 /****************************************************************
-* Assigment Operators                                           *
-****************************************************************/
-template <typename TYPE>
+ * Assigment Operators                                           *
+ ****************************************************************/
+template<typename TYPE>
 TYPE &VectorDataIterator<TYPE>::operator[]( int i )
 {
     VectorDataIterator<TYPE> tmp( *this ); // Create a temporary variable
@@ -292,8 +292,8 @@ TYPE &VectorDataIterator<TYPE>::operator[]( int i )
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 
 #endif

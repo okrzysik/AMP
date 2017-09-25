@@ -6,8 +6,8 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Constructors/destructors                                      *
-****************************************************************/
+ * Constructors/destructors                                      *
+ ****************************************************************/
 NullVector::NullVector( Variable::shared_ptr var )
 {
     setVariable( var );
@@ -26,8 +26,8 @@ Vector::shared_ptr NullVector::create( const Variable::shared_ptr var )
 
 
 /****************************************************************
-* Misc functions                                                *
-****************************************************************/
+ * Misc functions                                                *
+ ****************************************************************/
 AMP::shared_ptr<ParameterBase> NullVector::getParameters()
 {
     return AMP::shared_ptr<ParameterBase>();
@@ -71,5 +71,5 @@ void *NullVector::getRawDataBlockAsVoid( size_t ) { return nullptr; }
 const void *NullVector::getRawDataBlockAsVoid( size_t ) const { return nullptr; }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP

@@ -24,8 +24,8 @@ namespace Materials {
  * \param[in]   args  input arguments corresponding to d_sequence
  *					  Must be in the correct order: T, u, burn
  */
-template <class Number>
-template <class INPUT_VTYPE, class RETURN_VTYPE>
+template<class Number>
+template<class INPUT_VTYPE, class RETURN_VTYPE>
 void TensorProperty<Number>::evalvActual(
     std::vector<std::vector<AMP::shared_ptr<RETURN_VTYPE>>> &r,
     const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &args )
@@ -121,7 +121,7 @@ void TensorProperty<Number>::evalvActual(
             for ( size_t j = 0; j < rdim1; j++ ) {
                 if ( r_iter[i][j] == r[i][j]->end() )
                     goAgain = false; // if goAgain true, none reached the end
-                alldone     = alldone &&
+                alldone = alldone &&
                           r_iter[i][j] == r[i][j]->end(); // if alldone true, all reached the end
             }
         // if one reached the end, make sure all did
@@ -137,7 +137,7 @@ void TensorProperty<Number>::evalvActual(
     }
 }
 
-template <class Number>
+template<class Number>
 void TensorProperty<Number>::evalv(
     std::vector<std::vector<AMP::shared_ptr<std::vector<Number>>>> &r,
     const std::map<std::string, AMP::shared_ptr<std::vector<Number>>> &args )
@@ -146,5 +146,5 @@ void TensorProperty<Number>::evalv(
     evalvActual( r, args );
 }
 
-} // Materials namespace
-} // AMP namespace
+} // namespace Materials
+} // namespace AMP

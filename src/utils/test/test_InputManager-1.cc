@@ -24,10 +24,10 @@
 
 
 /************************************************************************
-*                                                                       *
-* This tests whether we can create and use an InputManager object       *
-*                                                                       *
-************************************************************************/
+ *                                                                       *
+ * This tests whether we can create and use an InputManager object       *
+ *                                                                       *
+ ************************************************************************/
 void mytest( AMP::UnitTest *ut )
 {
     std::string input_file = "input_InputManager-1";

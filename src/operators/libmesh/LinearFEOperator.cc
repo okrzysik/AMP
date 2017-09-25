@@ -84,5 +84,5 @@ void LinearFEOperator::destroyCurrentLibMeshElement()
     delete d_currElemPtr;
     d_currElemPtr = nullptr;
 }
-}
-} // end namespace
+} // namespace Operator
+} // namespace AMP

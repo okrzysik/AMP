@@ -19,8 +19,8 @@ class FixedFuel : public Material
 public:
     FixedFuel();
 };
-}
-}
+} // namespace Materials
+} // namespace AMP
 
 
 // Add static initialize to force symbols to be included

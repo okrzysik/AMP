@@ -14,8 +14,8 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 ManagedSundialsVector::ManagedSundialsVector( VectorParameters::shared_ptr params )
     : ManagedVector( params ), SundialsVector()
 {
@@ -39,9 +39,9 @@ ManagedSundialsVector::ManagedSundialsVector( shared_ptr alias )
 
 
 /************************************************************************
-* Destructor for SundialsVector                                         *
-* Frees the memory allocated for the member N_Vector and its ops field  *
-************************************************************************/
+ * Destructor for SundialsVector                                         *
+ * Frees the memory allocated for the member N_Vector and its ops field  *
+ ************************************************************************/
 ManagedSundialsVector::~ManagedSundialsVector()
 {
     if ( d_n_vector ) {
@@ -56,8 +56,8 @@ ManagedSundialsVector::~ManagedSundialsVector()
 
 
 /************************************************************************
-* Clone the vector                                                      *
-************************************************************************/
+ * Clone the vector                                                      *
+ ************************************************************************/
 Vector::shared_ptr ManagedSundialsVector::cloneVector( const Variable::shared_ptr var ) const
 {
     Vector::shared_ptr retVal( rawClone() );
@@ -350,5 +350,5 @@ realtype ManagedSundialsVector::minquotient_AMP( N_Vector x, N_Vector w )
     // is this OK?
     return ( px->minQuotient( *px, *pw ) );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

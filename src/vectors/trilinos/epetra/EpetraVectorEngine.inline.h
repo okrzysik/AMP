@@ -57,5 +57,5 @@ inline size_t EpetraVectorEngine::sizeOfDataBlock( size_t i ) const
         return 0;
     return getLocalSize();
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

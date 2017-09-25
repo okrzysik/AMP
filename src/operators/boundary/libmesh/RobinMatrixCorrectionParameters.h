@@ -29,7 +29,7 @@ public:
 
     AMP::Discretization::DOFManager::shared_ptr d_DofMap;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

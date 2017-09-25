@@ -119,5 +119,5 @@ inline size_t ManagedVector::getGlobalSize() const { return d_Engine->getGlobalS
 
 
 inline ManagedVector::~ManagedVector() {}
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

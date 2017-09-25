@@ -29,7 +29,7 @@ protected:
     std::vector<std::vector<size_t>> d_MasterIndices;
     std::vector<std::vector<double>> d_MasterCoefficients;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

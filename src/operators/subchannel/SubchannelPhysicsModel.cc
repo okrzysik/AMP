@@ -91,7 +91,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
             std::string insist_string =
                 "Default argument '" + ( *key ) + "' was not found as a property argument";
             std::map<std::string, bool>::const_iterator it = defaults_found.find( *key );
-            bool found = false;
+            bool found                                     = false;
             if ( it != defaults_found.end() ) {
                 found = it->second;
             }
@@ -145,5 +145,5 @@ void SubchannelPhysicsModel::getProperty(
     AMP_INSIST( it != d_properties.end(), "Model does not have property (" + property + ")" );
     d_properties.find( property )->second->evalv( result, args );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

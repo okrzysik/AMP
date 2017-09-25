@@ -114,8 +114,8 @@ protected:
     double d_secondsPerDay;
     SourceType str2id( std::string str );
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #include "NeutronicsRhsExtras.i.h"
 

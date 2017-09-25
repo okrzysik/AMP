@@ -19,7 +19,7 @@ void readTestMesh( AMP::shared_ptr<AMP::InputDatabase> mesh_file_db, AMP::shared
 void readTestMesh( std::string mesh_file, AMP::shared_ptr<::Mesh> mesh );
 
 void readBinaryTestMesh( std::string mesh_file, AMP::shared_ptr<::Mesh> mesh );
-}
+} // namespace AMP
 
 #endif
 #endif

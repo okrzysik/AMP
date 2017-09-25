@@ -748,7 +748,7 @@ void polarDecompositionFeqRU_Simo(
     double tol = 1.0e-8;
 
     for ( int i = 0; i < 3; i++ )
-        for ( int j  = 0; j < 3; j++ )
+        for ( int j = 0; j < 3; j++ )
             Ft[j][i] = F[i][j];
 
     for ( auto &elem : I )
@@ -787,7 +787,7 @@ void polarDecompositionFeqRU_Simo(
         double t    = ( atan2( sqrt( term1 ), n ) ) / 3.0;
         double pi_d = 3.14159265358979;
         for ( int i = 0; i < 3; i++ )
-            x[i]    = m * cos( t + ( ( 2.0 * ( (double) ( i ) ) * pi_d ) / 3.0 ) );
+            x[i] = m * cos( t + ( ( 2.0 * ( (double) ( i ) ) * pi_d ) / 3.0 ) );
     }
 
     for ( int i = 0; i < 3; i++ ) {
@@ -986,5 +986,5 @@ void jaumannToCauchy( double Om[3][3], double Sg[3][3] )
         }
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

@@ -40,10 +40,10 @@ public:
 
     virtual ~TimeIntegratorParameters();
     /**
-    *  Database object which needs to be initialized specific to the time integrator.
-    *  Documentation for parameters required by each integrator can be found in the
-    *  documentation for the integrator.
-    */
+     *  Database object which needs to be initialized specific to the time integrator.
+     *  Documentation for parameters required by each integrator can be found in the
+     *  documentation for the integrator.
+     */
     AMP::shared_ptr<AMP::Database> d_db;
 
     /**
@@ -86,7 +86,7 @@ private:
     explicit TimeIntegratorParameters( const TimeIntegratorParameters & );
     void operator=( const TimeIntegratorParameters & );
 };
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif

@@ -1,8 +1,8 @@
-#include "ampmesh/libmesh/initializeLibMesh.h"
+#include "ampmesh/libmesh/libMesh.h"
 #include "ProfilerApp.h"
 #include "ampmesh/MeshElementVectorIterator.h"
 #include "ampmesh/MultiIterator.h"
-#include "ampmesh/libmesh/libMesh.h"
+#include "ampmesh/libmesh/initializeLibMesh.h"
 #include "ampmesh/libmesh/libMeshElement.h"
 #include "ampmesh/libmesh/libMeshIterator.h"
 #include "utils/AMPManager.h"
@@ -36,8 +36,8 @@ namespace Mesh {
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_in )
 {
     PROFILE_START( "constructor" );
@@ -110,7 +110,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
             displacement[1] = d_db->getDouble( "y_offset" );
         if ( d_db->keyExists( "z_offset" ) )
             displacement[2] = d_db->getDouble( "z_offset" );
-        bool test           = false;
+        bool test = false;
         for ( auto &elem : displacement ) {
             if ( elem != 0.0 )
                 test = true;
@@ -146,8 +146,8 @@ libMesh::libMesh( AMP::shared_ptr<::Mesh> mesh, std::string name )
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 libMesh::~libMesh()
 {
     // First we need to destroy the elements, surface sets, and boundary sets
@@ -163,8 +163,8 @@ libMesh::~libMesh()
 
 
 /********************************************************
-* Function to copy the mesh                             *
-********************************************************/
+ * Function to copy the mesh                             *
+ ********************************************************/
 AMP::shared_ptr<Mesh> libMesh::copy() const
 {
     return AMP::shared_ptr<Mesh>( new libMesh( *this ) );
@@ -172,8 +172,8 @@ AMP::shared_ptr<Mesh> libMesh::copy() const
 
 
 /********************************************************
-* Function to initialize the libMesh object             *
-********************************************************/
+ * Function to initialize the libMesh object             *
+ ********************************************************/
 void libMesh::initialize()
 {
     PROFILE_START( "initialize" );
@@ -538,8 +538,8 @@ void libMesh::initialize()
 
 
 /********************************************************
-* Function to estimate the mesh size                    *
-********************************************************/
+ * Function to estimate the mesh size                    *
+ ********************************************************/
 size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     AMP::shared_ptr<AMP::Database> database = params->getDatabase();
@@ -589,8 +589,8 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 
 
 /****************************************************************
-* Estimate the maximum number of processors                     *
-****************************************************************/
+ * Estimate the maximum number of processors                     *
+ ****************************************************************/
 size_t libMesh::maxProcs( const MeshParameters::shared_ptr &params )
 {
     return estimateMeshSize( params );
@@ -598,8 +598,8 @@ size_t libMesh::maxProcs( const MeshParameters::shared_ptr &params )
 
 
 /********************************************************
-* Return the number of elements                         *
-********************************************************/
+ * Return the number of elements                         *
+ ********************************************************/
 size_t libMesh::numLocalElements( const GeomType type ) const
 {
     auto n = n_local[static_cast<int>( type )];
@@ -628,8 +628,8 @@ size_t libMesh::numGhostElements( const GeomType type, int gcw ) const
 
 
 /********************************************************
-* Return an iterator over the given geometric type      *
-********************************************************/
+ * Return an iterator over the given geometric type      *
+ ********************************************************/
 MeshIterator libMesh::getIterator( const GeomType type, const int gcw ) const
 {
     libMeshIterator iterator;
@@ -692,9 +692,9 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw ) const
 
 
 /********************************************************
-* Return an iterator over the given boundary ids        *
-* Note: we have not programmed this for ghosts yet      *
-********************************************************/
+ * Return an iterator over the given boundary ids        *
+ * Note: we have not programmed this for ghosts yet      *
+ ********************************************************/
 MeshIterator libMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
     AMP_ASSERT( type <= GeomDim );
@@ -717,9 +717,9 @@ MeshIterator libMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
 
 
 /********************************************************
-* Return an iterator over the given boundary ids        *
-* Note: we have not programmed this for ghosts yet      *
-********************************************************/
+ * Return an iterator over the given boundary ids        *
+ * Note: we have not programmed this for ghosts yet      *
+ ********************************************************/
 std::vector<int> libMesh::getBoundaryIDs() const
 {
     const std::set<short int> libmesh_bids = d_libMesh->boundary_info->get_boundary_ids();
@@ -747,8 +747,8 @@ libMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
 
 
 /********************************************************
-* Return an iterator over the given block ids           *
-********************************************************/
+ * Return an iterator over the given block ids           *
+ ********************************************************/
 std::vector<int> libMesh::getBlockIDs() const { return d_block_ids; }
 MeshIterator libMesh::getBlockIDIterator( const GeomType, const int, const int ) const
 {
@@ -758,8 +758,8 @@ MeshIterator libMesh::getBlockIDIterator( const GeomType, const int, const int )
 
 
 /********************************************************
-* Return pointers to the neighbor nodes give a node id  *
-********************************************************/
+ * Return pointers to the neighbor nodes give a node id  *
+ ********************************************************/
 std::vector<::Node *> libMesh::getNeighborNodes( MeshElementID id ) const
 {
     AMP_INSIST( id.type() == GeomType::Vertex, "This function is for nodes" );
@@ -772,8 +772,8 @@ std::vector<::Node *> libMesh::getNeighborNodes( MeshElementID id ) const
 
 
 /********************************************************
-* Function to return the element given an ID            *
-********************************************************/
+ * Function to return the element given an ID            *
+ ********************************************************/
 MeshElement libMesh::getElement( const MeshElementID &elem_id ) const
 {
     MeshID mesh_id = elem_id.meshID();
@@ -819,8 +819,8 @@ MeshElement libMesh::getElement( const MeshElementID &elem_id ) const
 
 
 /********************************************************
-* Displace a mesh                                       *
-********************************************************/
+ * Displace a mesh                                       *
+ ********************************************************/
 int libMesh::isMeshMovable() const { return 1; }
 void libMesh::displaceMesh( const std::vector<double> &x_in )
 {
@@ -931,5 +931,5 @@ void libMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
 #endif
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

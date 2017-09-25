@@ -22,8 +22,8 @@ namespace Mesh {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 SphereSurfaceMesh::SphereSurfaceMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 {
     // Input options from the database
@@ -70,8 +70,8 @@ SphereSurfaceMesh::SphereSurfaceMesh( MeshParameters::shared_ptr params ) : BoxM
 
 
 /****************************************************************
-* Estimate the mesh size                                        *
-****************************************************************/
+ * Estimate the mesh size                                        *
+ ****************************************************************/
 std::vector<size_t>
 SphereSurfaceMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
@@ -86,8 +86,8 @@ SphereSurfaceMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &pa
 
 
 /****************************************************************
-* Functions to displace the mesh                                *
-****************************************************************/
+ * Functions to displace the mesh                                *
+ ****************************************************************/
 int SphereSurfaceMesh::isMeshMovable() const { return 1; }
 void SphereSurfaceMesh::displaceMesh( const std::vector<double> &x )
 {
@@ -111,8 +111,8 @@ void SphereSurfaceMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_sh
 
 
 /****************************************************************
-* Copy the mesh                                                 *
-****************************************************************/
+ * Copy the mesh                                                 *
+ ****************************************************************/
 AMP::shared_ptr<Mesh> SphereSurfaceMesh::copy() const
 {
     return AMP::shared_ptr<SphereSurfaceMesh>( new SphereSurfaceMesh( *this ) );
@@ -120,8 +120,8 @@ AMP::shared_ptr<Mesh> SphereSurfaceMesh::copy() const
 
 
 /****************************************************************
-* Return the coordinate                                         *
-****************************************************************/
+ * Return the coordinate                                         *
+ ****************************************************************/
 void SphereSurfaceMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
     int i      = index.index( 0 );
@@ -136,19 +136,19 @@ void SphereSurfaceMesh::coord( const MeshElementIndex &index, double *pos ) cons
 
 
 /****************************************************************
-* Return the logical coordinates                                *
-****************************************************************/
+ * Return the logical coordinates                                *
+ ****************************************************************/
 std::array<double, 3> SphereSurfaceMesh::physicalToLogical( const double *x ) const
 {
-    const double x0 = x[0] - d_offset[0];
-    const double y0 = x[1] - d_offset[1];
-    const double z0 = x[2] - d_offset[2];
-    const double r  = sqrt( x0 * x0 + y0 * y0 + z0 * z0 );
-    auto point      = BoxMeshHelpers::map_sphere_surface_logical( d_r, x0, y0, z0 );
+    const double x0           = x[0] - d_offset[0];
+    const double y0           = x[1] - d_offset[1];
+    const double z0           = x[2] - d_offset[2];
+    const double r            = sqrt( x0 * x0 + y0 * y0 + z0 * z0 );
+    auto point                = BoxMeshHelpers::map_sphere_surface_logical( d_r, x0, y0, z0 );
     std::array<double, 3> pos = { point.first, point.second, r / d_r - 1 };
     return pos;
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

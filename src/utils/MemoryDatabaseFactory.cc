@@ -21,4 +21,4 @@ AMP::shared_ptr<Database> MemoryDatabaseFactory::allocate( const std::string &na
     AMP::shared_ptr<MemoryDatabase> database( new MemoryDatabase( name ) );
     return database;
 }
-}
+} // namespace AMP

@@ -8,7 +8,7 @@
 namespace AMP {
 namespace Operator {
 
-template <typename OPERATOR>
+template<typename OPERATOR>
 class OperatorFactory
 {
 public:
@@ -28,7 +28,7 @@ public:
 };
 
 
-template <typename OPERATOR>
+template<typename OPERATOR>
 Operator::shared_ptr
 OperatorFactory<OPERATOR>::getOperator( AMP::shared_ptr<AMP::Database> input_db,
                                         AMP::Mesh::MeshManager::Adapter::shared_ptr mesh )
@@ -44,7 +44,7 @@ OperatorFactory<OPERATOR>::getOperator( AMP::shared_ptr<AMP::Database> input_db,
     return retVal;
 }
 
-template <typename OPERATOR>
+template<typename OPERATOR>
 Operator::shared_ptr
 OperatorFactory<OPERATOR>::getJacobian( Operator::shared_ptr oper,
                                         const AMP::LinearAlgebra::Vector::shared_ptr &vec,
@@ -60,7 +60,7 @@ OperatorFactory<OPERATOR>::getJacobian( Operator::shared_ptr oper,
         new typename Jacobian_t::OutputVariable( "factory jacobian output" ) ) );
     return retVal;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

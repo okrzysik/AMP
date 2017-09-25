@@ -127,7 +127,7 @@ private:
                                            double *C1,
                                            double *x1 );
 };
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif

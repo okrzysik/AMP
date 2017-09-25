@@ -87,7 +87,7 @@ protected:
 private:
     Discretization::createLibmeshElements libmeshElements;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

@@ -25,13 +25,13 @@ namespace AMP {
 namespace TimeIntegrator {
 
 /************************************************************************
-*                                                                       *
-* Constructor and destructor for TimeIntegrator.  The                   *
-* constructor sets default values for data members, then overrides      *
-* them with values read from input or restart.  The destructor does     *
-* nothing interesting.                                                  *
-*                                                                       *
-************************************************************************/
+ *                                                                       *
+ * Constructor and destructor for TimeIntegrator.  The                   *
+ * constructor sets default values for data members, then overrides      *
+ * them with values read from input or restart.  The destructor does     *
+ * nothing interesting.                                                  *
+ *                                                                       *
+ ************************************************************************/
 
 TimeIntegrator::TimeIntegrator(
     AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
@@ -237,5 +237,5 @@ void TimeIntegrator::printClassData( std::ostream &os ) const
     os << "d_integrator_step = " << d_integrator_step << std::endl;
     os << "d_max_integrator_steps = " << d_max_integrator_steps << std::endl;
 }
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

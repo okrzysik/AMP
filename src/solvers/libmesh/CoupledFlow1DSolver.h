@@ -19,8 +19,7 @@ public:
     virtual ~CoupledFlow1DSolver();
 
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u );
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
     void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
 
@@ -49,7 +48,7 @@ private:
 
     AMP::shared_ptr<AMP::Solver::Flow1DSolver> d_flow1DSolver;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

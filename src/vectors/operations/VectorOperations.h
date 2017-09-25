@@ -53,10 +53,10 @@ public:
     virtual void copy( const VectorOperations &x ) = 0;
 
     /**
-      *\brief Set vector entries (including ghosts) to zero
-      *\details This is equivalent (but more efficient) to calling setToScalar ( 0.0 ) followed by a
-      *     makeConsistent(SET)
-      */
+     *\brief Set vector entries (including ghosts) to zero
+     *\details This is equivalent (but more efficient) to calling setToScalar ( 0.0 ) followed by a
+     *     makeConsistent(SET)
+     */
     virtual void zero() = 0;
 
     /**
@@ -94,11 +94,11 @@ public:
     virtual void scale( double alpha ) = 0;
 
     /**
-      * \brief set vector to \f$x + \alpha \bar{1}\f$.
-      * \param[in] x a vector
-      * \param[in] alpha a scalar
-      * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
-      */
+     * \brief set vector to \f$x + \alpha \bar{1}\f$.
+     * \param[in] x a vector
+     * \param[in] alpha a scalar
+     * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
+     */
     virtual void addScalar( const VectorOperations &x, double alpha ) = 0;
 
     /**
@@ -134,8 +134,8 @@ public:
     virtual void divide( const VectorOperations &x, const VectorOperations &y ) = 0;
 
     /**
-      * \param x  a vector
-      * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i =
+     * \param x  a vector
+     * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i =
      * 1/x_i\f$.
      */
     virtual void reciprocal( const VectorOperations &x ) = 0;
@@ -154,36 +154,36 @@ public:
                             const VectorOperations &y ) = 0;
 
     /**
-      * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
-      * \param[in] alpha    a scalar
-      * \param[in] x        a vector
-      * \param[in] y        a vector
+     * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
+     * \param[in] alpha    a scalar
+     * \param[in] x        a vector
+     * \param[in] y        a vector
      */
     virtual void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) = 0;
 
     /**
-      * \brief Set this vector alpha * x + this.
-      *     \f$\mathit{this}_i = \alpha x_i + \beta \mathit{this}_i \f$
-      * \param[in] alpha    a scalar
-      * \param[in] beta     a scalar
-      * \param[in] x        a vector
-      */
+     * \brief Set this vector alpha * x + this.
+     *     \f$\mathit{this}_i = \alpha x_i + \beta \mathit{this}_i \f$
+     * \param[in] alpha    a scalar
+     * \param[in] beta     a scalar
+     * \param[in] x        a vector
+     */
     virtual void axpby( double alpha, double beta, const VectorOperations &x ) = 0;
 
     /**
-      * \brief Set this to the component-wise absolute value of a vector.
-      *     \f$\mathit{this}_i = |x_i|\f$.
-      * \param[in] x        a vector
+     * \brief Set this to the component-wise absolute value of a vector.
+     *     \f$\mathit{this}_i = |x_i|\f$.
+     * \param[in] x        a vector
      */
     virtual void abs( const VectorOperations &x ) = 0;
 
     /**
-      * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
+     * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
      */
     virtual double min( void ) const;
 
     /**
-      * \brief Return the maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
+     * \brief Return the maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
      */
     virtual double max( void ) const;
 
@@ -206,19 +206,19 @@ public:
     virtual double maxNorm( void ) const;
 
     /**
-      * \brief Return the dot product of this vector with the argument vector.
-      * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
-      * \param[in] x        a vector
+     * \brief Return the dot product of this vector with the argument vector.
+     * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
+     * \param[in] x        a vector
      */
     virtual double dot( const VectorOperations &x ) const;
 
     /**
-      * \brief Return the local minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
+     * \brief Return the local minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
      */
     virtual double localMin( void ) const = 0;
 
     /**
-      * \brief Return the local maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
+     * \brief Return the local maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
      */
     virtual double localMax( void ) const = 0;
 
@@ -241,80 +241,80 @@ public:
     virtual double localMaxNorm( void ) const = 0;
 
     /**
-      * \brief Return the local dot product of this vector with the argument vector.
-      * \details Returns \f[\sum_i x_i \mathit{this}_i\f]
-      * \param[in] x        a vector
+     * \brief Return the local dot product of this vector with the argument vector.
+     * \details Returns \f[\sum_i x_i \mathit{this}_i\f]
+     * \param[in] x        a vector
      */
     virtual double localDot( const VectorOperations &x ) const = 0;
 
     /**
-      * \brief  Determine if the local portion of two vectors are equal using an absolute tolerance
-      * \param[in] rhs      Vector to compare to
-      * \param[in] tol      Tolerance of comparison
-      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
-      */
+     * \brief  Determine if the local portion of two vectors are equal using an absolute tolerance
+     * \param[in] rhs      Vector to compare to
+     * \param[in] tol      Tolerance of comparison
+     * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
+     */
     virtual bool localEquals( const VectorOperations &rhs, double tol = 0.000001 ) const = 0;
 
     /**
-      * \brief Returns the local minimum of the quotient of two vectors:
-      *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
-      * \param[in] x a vector
-      * \return \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
-      */
+     * \brief Returns the local minimum of the quotient of two vectors:
+     *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
+     * \param[in] x a vector
+     * \return \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
+     */
     virtual double localMinQuotient( const VectorOperations &x ) const = 0;
 
     /**
-      * \brief Return a weighted norm of a vector
-      * \param[in] x a vector
-      * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_i \mathit{this}^2_i}{n}}\f]
-      */
+     * \brief Return a weighted norm of a vector
+     * \param[in] x a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_i \mathit{this}^2_i}{n}}\f]
+     */
     virtual double localWrmsNorm( const VectorOperations &x ) const = 0;
 
     /**
-      * \brief Return a weighted norm of a subset of a vector
-      * \param[in] x a vector
-      * \param[in] mask a vector
-      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0}
+     * \brief Return a weighted norm of a subset of a vector
+     * \param[in] x a vector
+     * \param[in] mask a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0}
      * \mathit{this}^2_iy^2_i}{n}}\f]
-      */
+     */
     virtual double localWrmsNormMask( const VectorOperations &x,
                                       const VectorOperations &mask ) const = 0;
 
 
 public: // Non-virtual functions
-        /**
-          * \brief  Determine if two vectors are equal using an absolute tolerance
-          * \param[in] rhs      Vector to compare to
-          * \param[in] tol      Tolerance of comparison
-          * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
-          */
+    /**
+     * \brief  Determine if two vectors are equal using an absolute tolerance
+     * \param[in] rhs      Vector to compare to
+     * \param[in] tol      Tolerance of comparison
+     * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
+     */
     bool equals( const VectorOperations &rhs, double tol = 0.000001 ) const;
 
 
     /**
-      * \brief Returns the minimum of the quotient of two vectors:
-      *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
-      */
+     * \brief Returns the minimum of the quotient of two vectors:
+     *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
+     */
     static double minQuotient( const VectorOperations &x, const VectorOperations &y );
 
     /**
-      * \brief Return a weighted norm of a vector
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
-      */
+     * \brief Return a weighted norm of a vector
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
+     */
     static double wrmsNorm( const VectorOperations &x, const VectorOperations &y );
 
     /**
-      * \brief Return a weighted norm of a subset of a vector
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \param[in] mask a vector
-      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
-      */
+     * \brief Return a weighted norm of a subset of a vector
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \param[in] mask a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
+     */
 
     static double wrmsNormMask( const VectorOperations &x,
                                 const VectorOperations &y,
@@ -329,35 +329,31 @@ public: // shared_ptr wrappers
     /// @copydoc VectorOperations::copy(const VectorOperations&)
     inline void copy( AMP::shared_ptr<const VectorOperations> x );
     /// @copydoc VectorOperations::add(const VectorOperations&,const VectorOperations&)
-    inline void
-    add( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
+    inline void add( AMP::shared_ptr<const VectorOperations> x,
+                     AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::addScalar(const VectorOperations&,double)
     inline void addScalar( AMP::shared_ptr<const VectorOperations> x, double alpha );
     /// @copydoc VectorOperations::subtract(const VectorOperations&,const VectorOperations&)
-    inline void subtract(
-        AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
+    inline void subtract( AMP::shared_ptr<const VectorOperations> x,
+                          AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::multiply(const VectorOperations&,const VectorOperations&)
-    inline void multiply(
-        AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
+    inline void multiply( AMP::shared_ptr<const VectorOperations> x,
+                          AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::divide(const VectorOperations&,const VectorOperations&)
-    inline void
-    divide( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
+    inline void divide( AMP::shared_ptr<const VectorOperations> x,
+                        AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::reciprocal(const VectorOperations&)
     inline void reciprocal( AMP::shared_ptr<const VectorOperations> x );
     /// @copydoc VectorOperations::linearSum(double,const VectorOperations&,double,const
     /// VectorOperations&)
     inline void linearSum( double alpha,
-                           AMP::shared_ptr<const VectorOperations>
-                               x,
+                           AMP::shared_ptr<const VectorOperations> x,
                            double beta,
-                           AMP::shared_ptr<const VectorOperations>
-                               y );
+                           AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::axpy(double,const VectorOperations&,const VectorOperations&)
     inline void axpy( double alpha,
-                      AMP::shared_ptr<const VectorOperations>
-                          x,
-                      AMP::shared_ptr<const VectorOperations>
-                          y );
+                      AMP::shared_ptr<const VectorOperations> x,
+                      AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::axpby(double,double,const VectorOperations&)
     inline void axpby( double alpha, double beta, AMP::shared_ptr<const VectorOperations> x );
     /// @copydoc VectorOperations::ans(const VectorOperations&)
@@ -365,18 +361,16 @@ public: // shared_ptr wrappers
     /// @copydoc VectorOperations::dot(const VectorOperations&)
     inline double dot( AMP::shared_ptr<const VectorOperations> x ) const;
     /// @copydoc VectorOperations::minQuotient(const VectorOperations&,const VectorOperations&)
-    static inline double minQuotient(
-        AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
+    static inline double minQuotient( AMP::shared_ptr<const VectorOperations> x,
+                                      AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::wrmsNorm(const VectorOperations&,const VectorOperations&)
-    static inline double wrmsNorm(
-        AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
+    static inline double wrmsNorm( AMP::shared_ptr<const VectorOperations> x,
+                                   AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::wrmsNormMask(const VectorOperations&,const
     /// VectorOperations&,const VectorOperations&)
     static inline double wrmsNormMask( AMP::shared_ptr<const VectorOperations> x,
-                                       AMP::shared_ptr<const VectorOperations>
-                                           y,
-                                       AMP::shared_ptr<const VectorOperations>
-                                           mask );
+                                       AMP::shared_ptr<const VectorOperations> y,
+                                       AMP::shared_ptr<const VectorOperations> mask );
 
 public:
     //! Return the pointer to the VectorData
@@ -404,8 +398,8 @@ protected: // Internal data
 };
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #include "VectorOperations.inline.h"
 

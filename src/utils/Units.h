@@ -9,7 +9,7 @@ enum class Time { unknown = 0, seconds, minutes, hours, days };
 enum class Length { unknown = 0, meters };
 enum class Temperature { unknown = 0, kelvin };
 enum class Mass { unknown = 0, kilograms };
-}
-}
+} // namespace Units
+} // namespace AMP
 
 #endif

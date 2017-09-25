@@ -24,7 +24,7 @@ public:
 
     virtual ~EpetraMatrixOperator() {}
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

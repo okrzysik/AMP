@@ -129,11 +129,9 @@ void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_
         if ( pos >= 0 ) {
             if ( !S_ISDIR( status.st_mode ) ) {
                 AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                           << "    Cannot create directories in path = "
-                           << path
+                           << "    Cannot create directories in path = " << path
                            << "\n    because some intermediate item in path exists and"
-                           << "is NOT a directory"
-                           << std::endl );
+                           << "is NOT a directory" << std::endl );
             }
         }
 
@@ -147,9 +145,7 @@ void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_
         if ( pos < 0 ) {
             if ( mkdir( path_buf, mode ) != 0 ) {
                 AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                           << "    Cannot create directory  = "
-                           << path_buf
-                           << std::endl );
+                           << "    Cannot create directory  = " << path_buf << std::endl );
             }
             pos = 0;
         }
@@ -171,9 +167,7 @@ void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_
             if ( pos < length ) {
                 if ( mkdir( path_buf, mode ) != 0 ) {
                     AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                               << "    Cannot create directory  = "
-                               << path_buf
-                               << std::endl );
+                               << "    Cannot create directory  = " << path_buf << std::endl );
                 }
             }
         } while ( pos < length );
@@ -265,9 +259,9 @@ unsigned int Utilities::hash_char( const char *name )
 
 
 /****************************************************************************
-*  Function to get the memory usage                                         *
-*  Note: this function should be thread-safe                                *
-****************************************************************************/
+ *  Function to get the memory usage                                         *
+ *  Note: this function should be thread-safe                                *
+ ****************************************************************************/
 #if defined( USE_MAC ) || defined( USE_LINUX )
 // Get the page size on mac or linux
 static size_t page_size = static_cast<size_t>( sysconf( _SC_PAGESIZE ) );
@@ -323,8 +317,8 @@ size_t Utilities::getMemoryUsage()
 
 
 /****************************************************************************
-*  Functions to get the time and timer resolution                           *
-****************************************************************************/
+ *  Functions to get the time and timer resolution                           *
+ ****************************************************************************/
 #if defined( USE_WINDOWS )
 double Utilities::time()
 {
@@ -368,8 +362,8 @@ void Utilities::sleepMs( unsigned int N ) { usleep( N * 1000 ); }
 
 
 /****************************************************************************
-*  Print AMP Banner                                                         *
-****************************************************************************/
+ *  Print AMP Banner                                                         *
+ ****************************************************************************/
 void Utilities::printBanner()
 {
     std::ostringstream banner;
@@ -582,4 +576,4 @@ double Utilities::trilinear( const std::vector<double> &x,
 void Utilities::nullUse( void *data ) { NULL_USE( data ); }
 
 
-} // AMP namespace
+} // namespace AMP

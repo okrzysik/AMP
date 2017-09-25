@@ -121,7 +121,7 @@ protected:
 private:
     AMP::LinearAlgebra::Variable::shared_ptr d_OutputVariable;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

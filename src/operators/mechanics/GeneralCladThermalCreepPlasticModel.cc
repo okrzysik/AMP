@@ -49,7 +49,7 @@ GeneralCladThermalCreepPlasticModel::GeneralCladThermalCreepPlasticModel(
 
     for ( auto &elem : d_constitutiveMatrix ) {
         for ( size_t j = 0; j < 6; j++ )
-            elem[j]    = 0.;
+            elem[j] = 0.;
     }
     d_Delta_Time                 = 0.;
     d_gaussPtCnt                 = 0;
@@ -907,5 +907,5 @@ void GeneralCladThermalCreepPlasticModel::postNonlinearAssembly()
         }
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

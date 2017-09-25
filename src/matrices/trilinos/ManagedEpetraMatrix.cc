@@ -22,8 +22,8 @@ namespace LinearAlgebra {
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 ManagedEpetraMatrix::ManagedEpetraMatrix( AMP::shared_ptr<ManagedEpetraMatrixParameters> params )
     : EpetraMatrix( params->getEpetraRowMap(), params->getEpetraColMap(), params->entryList() ),
       ManagedMatrix( params )
@@ -46,7 +46,7 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
         rhs.getRowByGlobalID( (int) i, cols, vals );
         std::vector<size_t> cols2( cols.size() );
         for ( size_t j = 0; j != cols.size(); j++ )
-            cols2[j]   = cols[j];
+            cols2[j] = cols[j];
         createValuesByGlobalID( i, cols2 );
     }
     d_RangeMap  = rhs.d_RangeMap;
@@ -56,8 +56,8 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
 
 
 /********************************************************
-* Get the left/right Vector/DOFManager                  *
-********************************************************/
+ * Get the left/right Vector/DOFManager                  *
+ ********************************************************/
 Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
 {
     auto memp = AMP::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
@@ -109,8 +109,8 @@ Discretization::DOFManager::shared_ptr ManagedEpetraMatrix::getLeftDOFManager() 
 
 
 /********************************************************
-* Multiply two matricies                                *
-********************************************************/
+ * Multiply two matricies                                *
+ ********************************************************/
 void ManagedEpetraMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 {
     if ( this->numGlobalColumns() != other_op->numGlobalRows() )
@@ -146,8 +146,8 @@ void ManagedEpetraMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 
 
 /********************************************************
-* Multiply the matrix by a vector                       *
-********************************************************/
+ * Multiply the matrix by a vector                       *
+ ********************************************************/
 void ManagedEpetraMatrix::mult( Vector::const_shared_ptr in, Vector::shared_ptr out )
 {
     AMP_ASSERT( in->getGlobalSize() == numGlobalColumns() );
@@ -172,8 +172,8 @@ void ManagedEpetraMatrix::multTranspose( Vector::const_shared_ptr in, Vector::sh
 
 
 /********************************************************
-* Scale the matrix                                      *
-********************************************************/
+ * Scale the matrix                                      *
+ ********************************************************/
 void ManagedEpetraMatrix::scale( double alpha )
 {
     VerifyEpetraReturn( d_epetraMatrix->Scale( alpha ), "scale" );
@@ -189,8 +189,8 @@ void ManagedEpetraMatrix::zero()
 
 
 /********************************************************
-* axpy                                                  *
-********************************************************/
+ * axpy                                                  *
+ ********************************************************/
 void ManagedEpetraMatrix::axpy( double alpha, const Matrix &rhs )
 {
     EpetraExt::MatrixMatrix::Add(
@@ -203,8 +203,8 @@ void ManagedEpetraMatrix::axpy( double alpha, const Matrix &rhs )
 
 
 /********************************************************
-* setOtherData                                          *
-********************************************************/
+ * setOtherData                                          *
+ ********************************************************/
 void ManagedEpetraMatrix::setOtherData()
 {
     AMP_MPI myComm = d_pParameters->getComm();
@@ -278,8 +278,8 @@ void ManagedEpetraMatrix::fillComplete() { EpetraMatrix::fillComplete(); }
 
 
 /********************************************************
-* Get/set the diagonal                                  *
-********************************************************/
+ * Get/set the diagonal                                  *
+ ********************************************************/
 Vector::shared_ptr ManagedEpetraMatrix::extractDiagonal( Vector::shared_ptr v ) const
 {
     Vector::shared_ptr retVal;
@@ -313,8 +313,8 @@ void ManagedEpetraMatrix::setIdentity()
 
 
 /********************************************************
-* Set/Add values by global id                           *
-********************************************************/
+ * Set/Add values by global id                           *
+ ********************************************************/
 void ManagedEpetraMatrix::addValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
 {
@@ -361,14 +361,14 @@ void ManagedEpetraMatrix::setValuesByGlobalID(
 
 
 /********************************************************
-* Get values/row by global id                           *
-********************************************************/
+ * Get values/row by global id                           *
+ ********************************************************/
 void ManagedEpetraMatrix::getValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const
 {
     // Zero out the data in values
     for ( size_t i = 0; i < num_rows * num_cols; i++ )
-        values[i]  = 0.0;
+        values[i] = 0.0;
     // Get the data for each row
     size_t firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
     size_t numRows  = d_pParameters->getLeftDOFManager()->endDOF();
@@ -443,8 +443,8 @@ std::vector<size_t> ManagedEpetraMatrix::getColumnIDs( size_t row ) const
 }
 
 /********************************************************
-* makeConsistent                                        *
-********************************************************/
+ * makeConsistent                                        *
+ ********************************************************/
 void ManagedEpetraMatrix::makeConsistent()
 {
     Epetra_FECrsMatrix *mat = dynamic_cast<Epetra_FECrsMatrix *>( d_epetraMatrix );
@@ -454,5 +454,5 @@ void ManagedEpetraMatrix::makeConsistent()
     }
     setOtherData();
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

@@ -28,7 +28,7 @@ public:
 
     //      AMP::shared_ptr<AMP::MeshUtils> d_MeshUtils;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

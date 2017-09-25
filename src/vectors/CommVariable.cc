@@ -17,5 +17,5 @@ CommVariable::getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr parentDO
 {
     return parentDOF->subset( d_comm );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

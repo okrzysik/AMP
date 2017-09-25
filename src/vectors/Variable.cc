@@ -32,5 +32,5 @@ void Variable::setUnits( const std::string &t ) { d_Units = t; }
 
 
 const std::string &Variable::getUnits() const { return d_Units; }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

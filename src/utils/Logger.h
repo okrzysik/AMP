@@ -200,6 +200,6 @@ private:
     bool d_log_warning;
     bool d_log_debug;
 };
-}
+} // namespace AMP
 
 #endif

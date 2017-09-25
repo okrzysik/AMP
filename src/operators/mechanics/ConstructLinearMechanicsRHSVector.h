@@ -31,8 +31,7 @@
 
 void computeTemperatureRhsVector(
     AMP::Mesh::Mesh::shared_ptr mesh,
-    AMP::shared_ptr<AMP::Database>
-        input_db,
+    AMP::shared_ptr<AMP::Database> input_db,
     AMP::LinearAlgebra::Variable::shared_ptr temperatureVar,
     AMP::LinearAlgebra::Variable::shared_ptr displacementVar,
     const AMP::shared_ptr<AMP::LinearAlgebra::Vector> &currTemperatureVec,

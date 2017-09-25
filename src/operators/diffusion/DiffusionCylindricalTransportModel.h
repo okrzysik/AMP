@@ -36,7 +36,7 @@ public:
 private:
     std::string d_RadiusArgument;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif /* DIFFUSIONCYLINDRICALTRANSPORTMODEL_H_ */

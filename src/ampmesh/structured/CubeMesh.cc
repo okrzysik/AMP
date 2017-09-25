@@ -20,8 +20,8 @@ namespace Mesh {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 CubeMesh::CubeMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 {
     // Input options from the database
@@ -49,7 +49,7 @@ CubeMesh::CubeMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
             d_coord[d].resize( d_globalSize[d] + 1 );
             const double x0 = range[2 * d];
             const double dx = ( range[2 * d + 1] - range[2 * d + 0] ) / d_globalSize[d];
-            for ( int i       = 0; i <= d_globalSize[d]; i++ )
+            for ( int i = 0; i <= d_globalSize[d]; i++ )
                 d_coord[d][i] = x0 + i * dx;
         }
     } else if ( d_db->keyExists( "x_grid" ) ) {
@@ -78,8 +78,8 @@ CubeMesh::CubeMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 
 
 /****************************************************************
-* Estimate the mesh size                                        *
-****************************************************************/
+ * Estimate the mesh size                                        *
+ ****************************************************************/
 std::vector<size_t> CubeMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
     auto db               = params->getDatabase();
@@ -88,14 +88,14 @@ std::vector<size_t> CubeMesh::estimateLogicalMeshSize( const MeshParameters::sha
     AMP_ASSERT( (int) size.size() == dim );
     std::vector<size_t> size2( size.size() );
     for ( size_t d = 0; d < size.size(); d++ )
-        size2[d]   = size[d];
+        size2[d] = size[d];
     return size2;
 }
 
 
 /****************************************************************
-* Functions to displace the mesh                                *
-****************************************************************/
+ * Functions to displace the mesh                                *
+ ****************************************************************/
 int CubeMesh::isMeshMovable() const { return 1; }
 void CubeMesh::displaceMesh( const std::vector<double> &x )
 {
@@ -120,8 +120,8 @@ void CubeMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr 
 
 
 /****************************************************************
-* Copy the mesh                                                 *
-****************************************************************/
+ * Copy the mesh                                                 *
+ ****************************************************************/
 AMP::shared_ptr<Mesh> CubeMesh::copy() const
 {
     return AMP::shared_ptr<CubeMesh>( new CubeMesh( *this ) );
@@ -129,8 +129,8 @@ AMP::shared_ptr<Mesh> CubeMesh::copy() const
 
 
 /****************************************************************
-* Return the coordinate                                         *
-****************************************************************/
+ * Return the coordinate                                         *
+ ****************************************************************/
 void CubeMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
     AMP_ASSERT( index.type() == AMP::Mesh::GeomType::Vertex );
@@ -154,8 +154,8 @@ void CubeMesh::coord( const MeshElementIndex &index, double *pos ) const
 
 
 /****************************************************************
-* Return the logical coordinates                                *
-****************************************************************/
+ * Return the logical coordinates                                *
+ ****************************************************************/
 std::array<double, 3> CubeMesh::physicalToLogical( const double *x ) const
 {
     std::array<double, 3> y = { 0, 0, 0 };
@@ -170,5 +170,5 @@ std::array<double, 3> CubeMesh::physicalToLogical( const double *x ) const
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

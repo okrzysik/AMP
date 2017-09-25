@@ -21,7 +21,7 @@ public:
     virtual VectorIndexer::shared_ptr getIndexer() { return d_Indexer; }
     virtual size_t DOFsPerObject() const { return 0; }
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

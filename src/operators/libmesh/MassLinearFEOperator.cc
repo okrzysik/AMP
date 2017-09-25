@@ -158,5 +158,5 @@ void MassLinearFEOperator::postElementOperation()
 
     destroyCurrentLibMeshElement();
 }
-}
-} // end namespace
+} // namespace Operator
+} // namespace AMP

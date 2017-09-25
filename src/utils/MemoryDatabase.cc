@@ -42,8 +42,8 @@ namespace AMP {
 
 
 /************************************************************************
-*  Constructors/destructors                                             *
-************************************************************************/
+ *  Constructors/destructors                                             *
+ ************************************************************************/
 MemoryDatabase::MemoryDatabase( const std::string &name )
     : d_database_name( name ), comm( AMP_COMM_WORLD )
 {
@@ -54,7 +54,7 @@ MemoryDatabase::MemoryDatabase( const std::string &name )
  *									                                    *
  * The virtual destructor deallocates database data.			        *
  *									                                    *
-************************************************************************/
+ ************************************************************************/
 
 MemoryDatabase::~MemoryDatabase() {}
 
@@ -63,7 +63,7 @@ MemoryDatabase::~MemoryDatabase() {}
  *                                                                       *
  * Create memory data file specified by name.                            *
  *                                                                       *
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::create( const std::string &name )
 {
@@ -78,7 +78,7 @@ bool MemoryDatabase::create( const std::string &name )
  *                                                                      *
  * Open memory data file specified by name                              *
  *                                                                      *
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::open( const std::string &name )
 {
@@ -92,7 +92,7 @@ bool MemoryDatabase::open( const std::string &name )
  *                                                                       *
  * Close the open data file.                                             *
  *                                                                       *
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::close()
 {
@@ -106,7 +106,7 @@ bool MemoryDatabase::close()
  *									*
  * Return whether the key exists in the database.			*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::keyExists( const std::string &key )
 {
@@ -117,7 +117,7 @@ bool MemoryDatabase::keyExists( const std::string &key )
  *									*
  * Return all of the keys in the database.				*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 std::vector<std::string> MemoryDatabase::getAllKeys()
 {
@@ -136,7 +136,7 @@ std::vector<std::string> MemoryDatabase::getAllKeys()
  *									*
  * Get the type of the array entry associated with the specified key	*
  *									*
-************************************************************************/
+ ************************************************************************/
 enum Database::DataType MemoryDatabase::getArrayType( const std::string &key )
 {
     KeyData *keydata = findKeyData( key );
@@ -153,7 +153,7 @@ enum Database::DataType MemoryDatabase::getArrayType( const std::string &key )
  * Get the size of the array entry associated with the specified key;	*
  * return 0 if the key does not exist.					*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 int MemoryDatabase::getArraySize( const std::string &key )
 {
@@ -169,7 +169,7 @@ int MemoryDatabase::getArraySize( const std::string &key )
  *									*
  * Member functions that manage the database values within the database.	*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::isDatabase( const std::string &key )
 {
@@ -205,7 +205,7 @@ AMP::shared_ptr<Database> MemoryDatabase::getDatabase( const std::string &key )
  *									*
  * Member functions that manage boolean values within the database.	*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::isBool( const std::string &key )
 {
@@ -281,9 +281,7 @@ void MemoryDatabase::getBoolArray( const std::string &key, bool *data, const int
 
     if ( nelements != (int) tmp.size() ) {
         MEMORY_DB_ERROR( "Incorrect array size=" << nelements << " specified for key=" << key
-                                                 << " with array size="
-                                                 << tsize
-                                                 << "..." );
+                                                 << " with array size=" << tsize << "..." );
     }
 
     for ( int i = 0; i < tsize; i++ ) {
@@ -295,7 +293,7 @@ void MemoryDatabase::getBoolArray( const std::string &key, bool *data, const int
  *									*
  * Member functions that manage box values within the database.		*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::isDatabaseBox( const std::string &key )
 {
@@ -374,9 +372,7 @@ void MemoryDatabase::getDatabaseBoxArray( const std::string &key,
 
     if ( nelements != (int) tmp.size() ) {
         MEMORY_DB_ERROR( "Incorrect array size=" << nelements << " specified for key=" << key
-                                                 << " with array size="
-                                                 << tsize
-                                                 << "..." );
+                                                 << " with array size=" << tsize << "..." );
     }
 
     for ( int i = 0; i < tsize; i++ ) {
@@ -388,7 +384,7 @@ void MemoryDatabase::getDatabaseBoxArray( const std::string &key,
  *									*
  * Member functions that manage character values within the database.	*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::isChar( const std::string &key )
 {
@@ -463,9 +459,7 @@ void MemoryDatabase::getCharArray( const std::string &key, char *data, const int
 
     if ( nelements != (int) tmp.size() ) {
         MEMORY_DB_ERROR( "Incorrect array size=" << nelements << " specified for key=" << key
-                                                 << " with array size="
-                                                 << tsize
-                                                 << "..." );
+                                                 << " with array size=" << tsize << "..." );
     }
 
     for ( int i = 0; i < tsize; i++ ) {
@@ -479,15 +473,16 @@ void MemoryDatabase::getCharArray( const std::string &key, char *data, const int
  * Note that complex numbers may be promoted from integers, floats,	*
  * and doubles.								*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::isComplex( const std::string &key )
 {
     KeyData *keydata = findKeyData( key );
-    return ( !keydata ? false : ( keydata->d_type == Database::AMP_COMPLEX ||
-                                  keydata->d_type == Database::AMP_INT ||
-                                  keydata->d_type == Database::AMP_FLOAT ||
-                                  keydata->d_type == Database::AMP_DOUBLE ) );
+    return ( !keydata ?
+                 false :
+                 ( keydata->d_type == Database::AMP_COMPLEX ||
+                   keydata->d_type == Database::AMP_INT || keydata->d_type == Database::AMP_FLOAT ||
+                   keydata->d_type == Database::AMP_DOUBLE ) );
 }
 
 void MemoryDatabase::putComplex( const std::string &key, const std::complex<double> &data )
@@ -608,9 +603,7 @@ void MemoryDatabase::getComplexArray( const std::string &key,
 
     if ( nelements != (int) tmp.size() ) {
         MEMORY_DB_ERROR( "Incorrect array size=" << nelements << " specified for key=" << key
-                                                 << " with array size="
-                                                 << tsize
-                                                 << "..." );
+                                                 << " with array size=" << tsize << "..." );
     }
 
     for ( int i = 0; i < tsize; i++ ) {
@@ -623,14 +616,15 @@ void MemoryDatabase::getComplexArray( const std::string &key,
  * Member functions that manage double values within the database.	*
  * Note that doubles may be promoted from integers or floats.		*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::isDouble( const std::string &key )
 {
     KeyData *keydata = findKeyData( key );
-    return ( !keydata ? false : ( keydata->d_type == Database::AMP_DOUBLE ||
-                                  keydata->d_type == Database::AMP_INT ||
-                                  keydata->d_type == Database::AMP_FLOAT ) );
+    return ( !keydata ? false :
+                        ( keydata->d_type == Database::AMP_DOUBLE ||
+                          keydata->d_type == Database::AMP_INT ||
+                          keydata->d_type == Database::AMP_FLOAT ) );
 }
 
 void MemoryDatabase::putDouble( const std::string &key, const double &data )
@@ -737,9 +731,7 @@ void MemoryDatabase::getDoubleArray( const std::string &key, double *data, const
 
     if ( nelements != (int) tmp.size() ) {
         MEMORY_DB_ERROR( "Incorrect array size=" << nelements << " specified for key=" << key
-                                                 << " with array size="
-                                                 << tsize
-                                                 << "..." );
+                                                 << " with array size=" << tsize << "..." );
     }
 
     for ( int i = 0; i < tsize; i++ ) {
@@ -753,14 +745,15 @@ void MemoryDatabase::getDoubleArray( const std::string &key, double *data, const
  * Note that floats may be promoted from integers or truncated from	*
  * doubles (without a warning).						*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::isFloat( const std::string &key )
 {
     KeyData *keydata = findKeyData( key );
-    return ( !keydata ? false : ( keydata->d_type == Database::AMP_DOUBLE ||
-                                  keydata->d_type == Database::AMP_INT ||
-                                  keydata->d_type == Database::AMP_FLOAT ) );
+    return ( !keydata ? false :
+                        ( keydata->d_type == Database::AMP_DOUBLE ||
+                          keydata->d_type == Database::AMP_INT ||
+                          keydata->d_type == Database::AMP_FLOAT ) );
 }
 
 void MemoryDatabase::putFloat( const std::string &key, const float &data )
@@ -872,9 +865,7 @@ void MemoryDatabase::getFloatArray( const std::string &key, float *data, const i
 
     if ( nelements != (int) tmp.size() ) {
         MEMORY_DB_ERROR( "Incorrect array size=" << nelements << " specified for key=" << key
-                                                 << " with array size="
-                                                 << tsize
-                                                 << "..." );
+                                                 << " with array size=" << tsize << "..." );
     }
 
     for ( int i = 0; i < tsize; i++ ) {
@@ -886,7 +877,7 @@ void MemoryDatabase::getFloatArray( const std::string &key, float *data, const i
  *									*
  * Member functions that manage integer values within the database.	*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::isInteger( const std::string &key )
 {
@@ -961,9 +952,7 @@ void MemoryDatabase::getIntegerArray( const std::string &key, int *data, const i
 
     if ( nelements != (int) tmp.size() ) {
         MEMORY_DB_ERROR( "Incorrect array size=" << nelements << " specified for key=" << key
-                                                 << " with array size="
-                                                 << tsize
-                                                 << "..." );
+                                                 << " with array size=" << tsize << "..." );
     }
 
     for ( int i = 0; i < tsize; i++ ) {
@@ -975,7 +964,7 @@ void MemoryDatabase::getIntegerArray( const std::string &key, int *data, const i
  *									*
  * Member functions that manage string values within the database.	*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::isString( const std::string &key )
 {
@@ -1053,9 +1042,7 @@ void MemoryDatabase::getStringArray( const std::string &key,
 
     if ( nelements != (int) tmp.size() ) {
         MEMORY_DB_ERROR( "Incorrect array size=" << nelements << " specified for key=" << key
-                                                 << " with array size="
-                                                 << tsize
-                                                 << "..." );
+                                                 << " with array size=" << tsize << "..." );
     }
 
     for ( int i = 0; i < tsize; i++ ) {
@@ -1071,7 +1058,7 @@ std::string MemoryDatabase::getName( void ) { return d_database_name; }
  * that key and return true.  If the key does not exist, then return	*
  * false.								*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 bool MemoryDatabase::deleteKeyIfFound( const std::string &key )
 {
@@ -1089,7 +1076,7 @@ bool MemoryDatabase::deleteKeyIfFound( const std::string &key )
  * Find the key data associated with the specified key and return a	*
  * pointer to the record.  If no such key data exists, then return NULL.	*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 MemoryDatabase::KeyData *MemoryDatabase::findKeyData( const std::string &key )
 {
@@ -1106,7 +1093,7 @@ MemoryDatabase::KeyData *MemoryDatabase::findKeyData( const std::string &key )
  * pointer to the record.  If no such key data exists, then exit with	*
  * an error message.							*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 MemoryDatabase::KeyData *MemoryDatabase::findKeyDataOrExit( const std::string &key )
 {
@@ -1122,7 +1109,7 @@ MemoryDatabase::KeyData *MemoryDatabase::findKeyDataOrExit( const std::string &k
  *									*
  * Print the entire database to the specified output stream.	        *
  *									*
-************************************************************************/
+ ************************************************************************/
 
 void MemoryDatabase::printClassData( std::ostream &os )
 {
@@ -1133,7 +1120,7 @@ void MemoryDatabase::printClassData( std::ostream &os )
  *									*
  * Print unused database keys to the specified output stream.	        *
  *									*
-************************************************************************/
+ ************************************************************************/
 
 void MemoryDatabase::printUnusedKeys( std::ostream &os ) const
 {
@@ -1144,7 +1131,7 @@ void MemoryDatabase::printUnusedKeys( std::ostream &os ) const
  *									*
  * Print default database keys to the specified output stream.     	*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 void MemoryDatabase::printDefaultKeys( std::ostream &os ) const
 {
@@ -1155,7 +1142,7 @@ void MemoryDatabase::printDefaultKeys( std::ostream &os ) const
  *									*
  * Indent the output stream by the specified indentation factor.		*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 void MemoryDatabase::indentStream( std::ostream &os, const int indent )
 {
@@ -1168,7 +1155,7 @@ void MemoryDatabase::indentStream( std::ostream &os, const int indent )
  *									*
  * Print database data to the specified output stream.			*
  *									*
-************************************************************************/
+ ************************************************************************/
 
 void MemoryDatabase::printDatabase( std::ostream &, const int, const int ) const
 {
@@ -1376,4 +1363,4 @@ void MemoryDatabase::printDatabase( std::ostream &, const int, const int ) const
     os << "}\n";
 #endif
 }
-}
+} // namespace AMP

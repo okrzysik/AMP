@@ -20,8 +20,8 @@ namespace Mesh {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 TubeMesh::TubeMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 {
     for ( int d = 0; d < 3; d++ ) {
@@ -46,9 +46,9 @@ TubeMesh::TubeMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
     AMP_INSIST( per.size() == 1u, "Periodic must be an array of length 1" );
     AMP_INSIST( range.size() == 4u, "Range must be an array of length 4" );
     AMP_INSIST( PhysicalDim == 3, "dim must be 3" );
-    for ( int i         = 0; i < 3; i++ )
+    for ( int i = 0; i < 3; i++ )
         d_globalSize[i] = size[i];
-    for ( int i    = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; i++ )
         d_range[i] = range[i];
     d_offset.fill( 0 );
     AMP_ASSERT( d_range[0] > 0 );
@@ -81,8 +81,8 @@ TubeMesh::TubeMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 
 
 /****************************************************************
-* Estimate the mesh size                                        *
-****************************************************************/
+ * Estimate the mesh size                                        *
+ ****************************************************************/
 std::vector<size_t> TubeMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
     auto db               = params->getDatabase();
@@ -90,14 +90,14 @@ std::vector<size_t> TubeMesh::estimateLogicalMeshSize( const MeshParameters::sha
     AMP_ASSERT( size.size() == 3u );
     std::vector<size_t> size2( size.size() );
     for ( size_t d = 0; d < size.size(); d++ )
-        size2[d]   = size[d];
+        size2[d] = size[d];
     return size2;
 }
 
 
 /****************************************************************
-* Functions to displace the mesh                                *
-****************************************************************/
+ * Functions to displace the mesh                                *
+ ****************************************************************/
 int TubeMesh::isMeshMovable() const { return 1; }
 void TubeMesh::displaceMesh( const std::vector<double> &x )
 {
@@ -121,8 +121,8 @@ void TubeMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr 
 
 
 /****************************************************************
-* Copy the mesh                                                 *
-****************************************************************/
+ * Copy the mesh                                                 *
+ ****************************************************************/
 AMP::shared_ptr<Mesh> TubeMesh::copy() const
 {
     return AMP::shared_ptr<TubeMesh>( new TubeMesh( *this ) );
@@ -130,8 +130,8 @@ AMP::shared_ptr<Mesh> TubeMesh::copy() const
 
 
 /****************************************************************
-* Return the coordinate                                         *
-****************************************************************/
+ * Return the coordinate                                         *
+ ****************************************************************/
 void TubeMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
     const double pi = 3.141592653589793116;
@@ -150,8 +150,8 @@ void TubeMesh::coord( const MeshElementIndex &index, double *pos ) const
 
 
 /****************************************************************
-* Return the logical coordinates                                *
-****************************************************************/
+ * Return the logical coordinates                                *
+ ****************************************************************/
 std::array<double, 3> TubeMesh::physicalToLogical( const double * ) const
 {
     AMP_ERROR( "physicalToLogical is not supported in TubeMesh" );
@@ -159,5 +159,5 @@ std::array<double, 3> TubeMesh::physicalToLogical( const double * ) const
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

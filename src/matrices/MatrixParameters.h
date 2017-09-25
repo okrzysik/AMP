@@ -9,8 +9,8 @@ namespace LinearAlgebra {
 
 
 /** \class MatrixParameters
-  * \brief  A class used to hold basic parameters for a matrix
-  */
+ * \brief  A class used to hold basic parameters for a matrix
+ */
 class MatrixParameters
 {
 public:
@@ -18,14 +18,14 @@ public:
     typedef AMP::shared_ptr<MatrixParameters> shared_ptr;
 
     /** \brief Constructor
-      * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$y\f$ is a left
      * vector )
-      * \param[in] right    The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \param[in] right    The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$x\f$ is a right
      * vector )
-      * \param[in] comm     Communicator for the matrix
-      */
+     * \param[in] comm     Communicator for the matrix
+     */
     explicit MatrixParameters( AMP::Discretization::DOFManager::shared_ptr left,
                                AMP::Discretization::DOFManager::shared_ptr right,
                                AMP_MPI comm );
@@ -90,7 +90,7 @@ protected:
     // The comm of the matrix
     AMP_MPI d_comm;
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

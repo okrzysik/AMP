@@ -94,7 +94,7 @@ private:
     AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable;  /**< Input variable */
     AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

@@ -242,4 +242,4 @@ namespace Operator {
     }
 */
 }
-} // end namespace
+} // namespace AMP

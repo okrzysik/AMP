@@ -11,5 +11,5 @@ ImplicitTimeIntegratorParameters::ImplicitTimeIntegratorParameters(
 }
 
 ImplicitTimeIntegratorParameters::~ImplicitTimeIntegratorParameters() {}
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

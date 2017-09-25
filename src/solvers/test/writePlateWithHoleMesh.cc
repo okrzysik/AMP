@@ -43,8 +43,8 @@ int main( int argc, char **argv )
     } // end for li
 
     for ( int mi = 0; mi <= me; mi++ ) {
-        mXarr[mi] = static_cast<double>( mi ) * a / static_cast<double>( me );
-        double th = ( __PI__ / 2.0 ) - ( static_cast<double>( mi ) * ( __PI__ ) /
+        mXarr[mi]  = static_cast<double>( mi ) * a / static_cast<double>( me );
+        double th  = ( __PI__ / 2.0 ) - ( static_cast<double>( mi ) * ( __PI__ ) /
                                          ( 4.0 * static_cast<double>( me ) ) );
         rMxArr[mi] = r * cos( th );
         rMzArr[mi] = r * sin( th );

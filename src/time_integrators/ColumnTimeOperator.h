@@ -153,7 +153,7 @@ private:
 
     double d_dCurrentDt;
 };
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif

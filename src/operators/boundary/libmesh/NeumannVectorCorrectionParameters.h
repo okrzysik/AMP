@@ -25,7 +25,7 @@ public:
 
     AMP::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

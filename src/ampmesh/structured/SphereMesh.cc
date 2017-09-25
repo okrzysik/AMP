@@ -22,8 +22,8 @@ namespace Mesh {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 SphereMesh::SphereMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 {
     // Input options from the database
@@ -66,8 +66,8 @@ SphereMesh::SphereMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 
 
 /****************************************************************
-* Estimate the mesh size                                        *
-****************************************************************/
+ * Estimate the mesh size                                        *
+ ****************************************************************/
 std::vector<size_t> SphereMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
     auto db               = params->getDatabase();
@@ -78,8 +78,8 @@ std::vector<size_t> SphereMesh::estimateLogicalMeshSize( const MeshParameters::s
 
 
 /****************************************************************
-* Functions to displace the mesh                                *
-****************************************************************/
+ * Functions to displace the mesh                                *
+ ****************************************************************/
 int SphereMesh::isMeshMovable() const { return 1; }
 void SphereMesh::displaceMesh( const std::vector<double> &x )
 {
@@ -103,8 +103,8 @@ void SphereMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_pt
 
 
 /****************************************************************
-* Copy the mesh                                                 *
-****************************************************************/
+ * Copy the mesh                                                 *
+ ****************************************************************/
 AMP::shared_ptr<Mesh> SphereMesh::copy() const
 {
     return AMP::shared_ptr<SphereMesh>( new SphereMesh( *this ) );
@@ -112,8 +112,8 @@ AMP::shared_ptr<Mesh> SphereMesh::copy() const
 
 
 /****************************************************************
-* Return the coordinate                                         *
-****************************************************************/
+ * Return the coordinate                                         *
+ ****************************************************************/
 void SphereMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
     int i      = index.index( 0 );
@@ -130,8 +130,8 @@ void SphereMesh::coord( const MeshElementIndex &index, double *pos ) const
 
 
 /****************************************************************
-* Return the logical coordinates                                *
-****************************************************************/
+ * Return the logical coordinates                                *
+ ****************************************************************/
 std::array<double, 3> SphereMesh::physicalToLogical( const double * ) const
 {
     AMP_ERROR( "physicalToLogical is not supported in SphereMesh" );
@@ -139,5 +139,5 @@ std::array<double, 3> SphereMesh::physicalToLogical( const double * ) const
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

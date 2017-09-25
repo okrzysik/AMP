@@ -15,5 +15,5 @@ TimeOperatorParameters::TimeOperatorParameters( const AMP::shared_ptr<AMP::Datab
 }
 
 TimeOperatorParameters::~TimeOperatorParameters() {}
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

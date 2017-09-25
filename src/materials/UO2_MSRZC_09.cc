@@ -338,7 +338,7 @@ inline double DTThermalConductivityProp::eval( std::vector<double> &args )
 
     return DTThCond;
 }
-}
+} // namespace UO2_MSRZC_09_NS
 
 //=================== Materials =====================================================
 
@@ -354,5 +354,5 @@ UO2_MSRZC_09::UO2_MSRZC_09()
     INSERT_PROPERTY_IN_MAP( DxThermalConductivity, UO2_MSRZC_09_NS );
     INSERT_PROPERTY_IN_MAP( DTThermalConductivity, UO2_MSRZC_09_NS );
 }
-}
-}
+} // namespace Materials
+} // namespace AMP

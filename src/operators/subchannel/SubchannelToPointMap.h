@@ -66,7 +66,7 @@ private:
 
     AMP::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

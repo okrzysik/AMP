@@ -1145,7 +1145,7 @@ public:
 };
 
 
-} // AMP namespace
+} // namespace AMP
 
 
 #endif

@@ -18,8 +18,8 @@ namespace LinearAlgebra {
 
 
 /** \class NativePetscVectorParameters
-  * \brief Parameters to set when creating a NativePetscVector
-  */
+ * \brief Parameters to set when creating a NativePetscVector
+ */
 class NativePetscVectorParameters : public NativeVectorParameters
 {
 public:
@@ -36,29 +36,29 @@ public:
     size_t d_localsize;
 
     /** \brief Constructor
-      * \details  This will create NativePetscVectorParameters that can be used
-      *   to construct a NativePetscVector around the given ::Vec.  Note that the
-      *   existing vector must be destroyed once through a call to VecDestroy.
-      *   This can be done be the user or the NativePetscVector based on the deleteable
-      *   flag.
-      * \param[in] v            The vector to wrap
-      * \param[in] deleteable   Do we want ~NativePetscVector() to call VecDestroy() on v
-      */
+     * \details  This will create NativePetscVectorParameters that can be used
+     *   to construct a NativePetscVector around the given ::Vec.  Note that the
+     *   existing vector must be destroyed once through a call to VecDestroy.
+     *   This can be done be the user or the NativePetscVector based on the deleteable
+     *   flag.
+     * \param[in] v            The vector to wrap
+     * \param[in] deleteable   Do we want ~NativePetscVector() to call VecDestroy() on v
+     */
     NativePetscVectorParameters( Vec v, bool deleteable );
 };
 
 
 /** \class NativePetscVector
-  * \brief An AMP Vector that uses PETSc for parallel data management, linear algebra,
-  * etc.
-  * \details  This is an AMP wrapper to PETSc.  This is different from ManagedPetscVector
-  * in that this class does not replace calls to Vec*.  Rather, it wraps these calls.
-  * This class is used when PETSc is chosen as the default linear algebra engine.
-  *
-  * This class is not to be used directly, just through base class interfaces.
-  * \see PetscVector
-  * \see ManagedPetscVector
-  */
+ * \brief An AMP Vector that uses PETSc for parallel data management, linear algebra,
+ * etc.
+ * \details  This is an AMP wrapper to PETSc.  This is different from ManagedPetscVector
+ * in that this class does not replace calls to Vec*.  Rather, it wraps these calls.
+ * This class is used when PETSc is chosen as the default linear algebra engine.
+ *
+ * This class is not to be used directly, just through base class interfaces.
+ * \see PetscVector
+ * \see ManagedPetscVector
+ */
 class NativePetscVector : public NativeVector,
                           public PetscVector,
                           public VectorEngine,
@@ -73,8 +73,8 @@ public:
 
 
     /** \brief Construct a wrapper for a PETSc Vec from a set of parameters
-      * \param[in] params The parameters describing the Vec
-      */
+     * \param[in] params The parameters describing the Vec
+     */
     explicit NativePetscVector( VectorParameters::shared_ptr params );
 
     //! Destructor
@@ -192,26 +192,26 @@ private:
     mutable double *d_pArray; // mutable so that we can cache the value
 
 public: // Pull VectorOperations into the current scope
-    using VectorOperationsDefault::add;
     using VectorOperationsDefault::abs;
-    using VectorOperationsDefault::axpy;
+    using VectorOperationsDefault::add;
     using VectorOperationsDefault::axpby;
+    using VectorOperationsDefault::axpy;
     using VectorOperationsDefault::divide;
     using VectorOperationsDefault::dot;
     using VectorOperationsDefault::linearSum;
     using VectorOperationsDefault::minQuotient;
     using VectorOperationsDefault::multiply;
+    using VectorOperationsDefault::reciprocal;
     using VectorOperationsDefault::scale;
     using VectorOperationsDefault::setRandomValues;
     using VectorOperationsDefault::subtract;
-    using VectorOperationsDefault::reciprocal;
     using VectorOperationsDefault::wrmsNorm;
     using VectorOperationsDefault::wrmsNormMask;
 };
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #include "NativePetscVector.inline.h"
 

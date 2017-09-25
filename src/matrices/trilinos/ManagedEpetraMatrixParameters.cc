@@ -14,7 +14,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-template <class T>
+template<class T>
 static inline T *getPtr( std::vector<T> &x )
 {
     if ( !x.empty() )
@@ -135,5 +135,5 @@ AMP::shared_ptr<Epetra_Map> ManagedEpetraMatrixParameters::getEpetraColMapPtr()
 }
 
 AMP_MPI ManagedEpetraMatrixParameters::getEpetraComm() { return d_comm; }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

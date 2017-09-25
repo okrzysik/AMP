@@ -32,10 +32,10 @@ AMP::shared_ptr<Database> InputManager::s_input_db = AMP::shared_ptr<Database>()
 
 /*
 *************************************************************************
- *									*
- * Basic singleton classes to create, set, and destroy the manager	*
- * instance.								*
- *									*
+*									*
+* Basic singleton classes to create, set, and destroy the manager	*
+* instance.								*
+*									*
 *************************************************************************
 */
 
@@ -77,10 +77,10 @@ void InputManager::freeManager()
 
 /*
 *************************************************************************
- *									*
- * The constructor and destructor are protected and call only be called	*
- * by the singleton class or its subclasses.				*
- *									*
+*									*
+* The constructor and destructor are protected and call only be called	*
+* by the singleton class or its subclasses.				*
+*									*
 *************************************************************************
 */
 
@@ -90,9 +90,9 @@ InputManager::~InputManager() {}
 
 /*
 *************************************************************************
- *									*
- * Return whether or not the manager contains an valid input database.   *
- *									*
+*									*
+* Return whether or not the manager contains an valid input database.   *
+*									*
 *************************************************************************
 */
 
@@ -100,9 +100,9 @@ bool InputManager::inputDatabaseExists() { return ( !( s_input_db.get() == nullp
 
 /*
 *************************************************************************
- *									*
- * Parse the specified input file and return the new database.		*
- *									*
+*									*
+* Parse the specified input file and return the new database.		*
+*									*
 *************************************************************************
 */
 
@@ -116,18 +116,18 @@ AMP::shared_ptr<InputDatabase> InputManager::parseInputFile( const std::string &
 
 /*
 *************************************************************************
- *									*
- * Accessor method for InputManger's root input database.                *
- *									*
+*									*
+* Accessor method for InputManger's root input database.                *
+*									*
 *************************************************************************
 */
 AMP::shared_ptr<Database> InputManager::getInputDatabase() { return ( s_input_db ); }
 
 /*
 *************************************************************************
- *									*
- * Parse the specified input file into the given database.		*
- *									*
+*									*
+* Parse the specified input file into the given database.		*
+*									*
 *************************************************************************
 */
 
@@ -152,16 +152,14 @@ void InputManager::parseInputFile( const std::string &filename, AMP::shared_ptr<
 
     if ( errors > 0 ) {
         AMP_WARNING( "InputManager: Errors = " << errors << ", Warnings = " << warnings
-                                               << "\n when parsing input file = "
-                                               << filename
+                                               << "\n when parsing input file = " << filename
                                                << std::endl );
         db->printClassData( plog );
         AMP_ERROR( "InputManager exiting..." << std::endl );
     }
     if ( warnings > 0 ) {
         AMP_WARNING( "InputManager: Warnings  = " << warnings << "\n when parsing input file = "
-                                                  << filename
-                                                  << std::endl );
+                                                  << filename << std::endl );
     }
 
     /*
@@ -173,4 +171,4 @@ void InputManager::parseInputFile( const std::string &filename, AMP::shared_ptr<
     if ( fstream )
         fclose( fstream );
 }
-}
+} // namespace AMP

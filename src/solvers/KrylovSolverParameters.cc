@@ -7,5 +7,5 @@ KrylovSolverParameters::KrylovSolverParameters( const AMP::shared_ptr<AMP::Datab
     : SolverStrategyParameters( db )
 {
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

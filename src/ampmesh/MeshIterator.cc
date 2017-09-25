@@ -13,8 +13,8 @@ static MeshElement nullElement;
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 MeshIterator::MeshIterator()
     : d_iterator( nullptr ),
       d_typeID( MeshIteratorTypeID ),
@@ -63,8 +63,8 @@ MeshIterator &MeshIterator::operator=( const MeshIterator &rhs )
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 MeshIterator::~MeshIterator()
 {
     if ( d_iterator != nullptr )
@@ -74,8 +74,8 @@ MeshIterator::~MeshIterator()
 
 
 /********************************************************
-* Function to clone the d_iterator                        *
-********************************************************/
+ * Function to clone the d_iterator                        *
+ ********************************************************/
 MeshIterator *MeshIterator::clone() const
 {
     if ( d_iterator == nullptr )
@@ -87,8 +87,8 @@ MeshIterator *MeshIterator::clone() const
 
 
 /********************************************************
-* Functions to return the begin or end d_iterator         *
-********************************************************/
+ * Functions to return the begin or end d_iterator         *
+ ********************************************************/
 MeshIterator MeshIterator::begin() const
 {
     if ( d_iterator == nullptr )
@@ -104,8 +104,8 @@ MeshIterator MeshIterator::end() const
 
 
 /********************************************************
-* Functions for incrementing/decrementing               *
-********************************************************/
+ * Functions for incrementing/decrementing               *
+ ********************************************************/
 MeshIterator &MeshIterator::operator++() { return d_iterator->operator++(); }
 MeshIterator MeshIterator::operator++( int i ) { return d_iterator->operator++( i ); }
 MeshIterator &MeshIterator::operator--() { return d_iterator->operator--(); }
@@ -113,8 +113,8 @@ MeshIterator MeshIterator::operator--( int i ) { return d_iterator->operator--( 
 
 
 /********************************************************
-* Functions for incrementing/decrementing               *
-********************************************************/
+ * Functions for incrementing/decrementing               *
+ ********************************************************/
 bool MeshIterator::operator==( const MeshIterator &rhs ) const
 {
     if ( this->size() == 0 && rhs.size() == 0 )
@@ -138,8 +138,8 @@ bool MeshIterator::operator!=( const MeshIterator &rhs ) const
 
 
 /********************************************************
-* Functions for dereferencing the d_iterator            *
-********************************************************/
+ * Functions for dereferencing the d_iterator            *
+ ********************************************************/
 MeshElement &MeshIterator::operator[]( int i )
 {
     if ( d_iterator != nullptr )
@@ -150,8 +150,8 @@ MeshElement &MeshIterator::operator[]( int i )
 
 
 /********************************************************
-*  arithmetic operators                                 *
-********************************************************/
+ *  arithmetic operators                                 *
+ ********************************************************/
 MeshIterator MeshIterator::operator+( int n ) const
 {
     if ( d_iterator != nullptr )
@@ -214,5 +214,5 @@ MeshIterator &MeshIterator::operator-=( const MeshIterator &it )
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

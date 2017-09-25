@@ -44,5 +44,5 @@ inline std::ostream &operator<<( std::ostream &out, const Matrix::shared_ptr p )
 {
     return operator<<( out, *p );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

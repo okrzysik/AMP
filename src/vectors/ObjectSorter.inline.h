@@ -16,5 +16,5 @@ inline ObjectSorter::ObjectSorter( Parameters::shared_ptr params )
 inline ObjectSorter::~ObjectSorter() {}
 
 inline size_t ObjectSorter::getFirstObject() { return d_FirstObject; }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

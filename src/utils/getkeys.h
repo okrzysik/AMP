@@ -19,7 +19,7 @@ namespace voodoo {
  * \brief	Given a map that is referenced by a key value, takes the keys and
  *			shoves them into a vector that is returned
  */
-template <typename key, class T>
+template<typename key, class T>
 std::vector<key> getKeys( const std::map<key, T> &keyMap )
 {
     std::vector<key> keyVector;
@@ -36,8 +36,8 @@ std::vector<key> getKeys( const std::map<key, T> &keyMap )
     return keyVector;
 }
 
-} // namespace VoodooFactory
-} // namespace amp
+} // namespace voodoo
+} // namespace AMP
 
 
 #endif // DETAILS_H

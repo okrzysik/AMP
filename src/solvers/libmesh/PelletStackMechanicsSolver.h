@@ -21,24 +21,21 @@ public:
     void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params );
 
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u );
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
 protected:
     void solveSerial( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                      AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                          u );
+                      AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
     void solveScan( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                    AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                        u );
+                    AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
     AMP::shared_ptr<AMP::Operator::PelletStackOperator> d_pelletStackOp;
     AMP::shared_ptr<AMP::Solver::ColumnSolver> d_columnSolver;
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_fbuffer1;
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_fbuffer2;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

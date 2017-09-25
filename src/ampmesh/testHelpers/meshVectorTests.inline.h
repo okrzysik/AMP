@@ -18,7 +18,7 @@ namespace Mesh {
 
 
 // Simple nodal vector tests
-template <int DOF_PER_NODE, bool SPLIT>
+template<int DOF_PER_NODE, bool SPLIT>
 void meshTests::simpleNodalVectorTests( AMP::UnitTest *utils,
                                         AMP::Mesh::Mesh::shared_ptr mesh,
                                         AMP::Discretization::DOFManager::shared_ptr DOFs,
@@ -70,7 +70,7 @@ void meshTests::simpleNodalVectorTests( AMP::UnitTest *utils,
 
 
 // VerifyGetVectorTest
-template <int DOF_PER_NODE, bool SPLIT>
+template<int DOF_PER_NODE, bool SPLIT>
 void meshTests::VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
 

@@ -22,7 +22,7 @@ public:
     void finalize()
     {
         std::map<size_t, size_t>::iterator c = d_SuperToSub.begin();
-        size_t lid = 0;
+        size_t lid                           = 0;
         while ( c != d_SuperToSub.end() ) {
             c->second         = lid;
             d_SubToSuper[lid] = c->first;
@@ -47,9 +47,9 @@ public:
     virtual size_t getSuperID( size_t i ) const { return d_SubToSuper[i]; }
     virtual size_t getNumLocalElements( Vector::shared_ptr v ) const
     {
-        size_t start = v->getCommunicationList()->getStartGID();
-        size_t end   = v->getCommunicationList()->numLocalRows() + start;
-        size_t i     = 0;
+        size_t start                         = v->getCommunicationList()->getStartGID();
+        size_t end                           = v->getCommunicationList()->numLocalRows() + start;
+        size_t i                             = 0;
         std::map<size_t, size_t>::iterator c = d_SuperToSub.begin();
         while ( c != d_SuperToSub.end() ) {
             if ( c->first >= start )
@@ -67,7 +67,7 @@ public:
         return d_SuperToSub.size() - i;
     }
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

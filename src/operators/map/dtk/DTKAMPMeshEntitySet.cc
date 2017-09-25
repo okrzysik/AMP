@@ -165,5 +165,5 @@ AMPMeshEntitySet::getGeomTypeFromEntityType( const int topological_dimension ) c
 }
 
 //---------------------------------------------------------------------------//
-}
-}
+} // namespace Operator
+} // namespace AMP

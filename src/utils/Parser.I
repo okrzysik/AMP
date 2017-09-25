@@ -20,6 +20,6 @@ inline void Parser::leaveScope() { d_scope_stack.pop_front(); }
 inline int Parser::getNumberErrors() const { return ( d_errors ); }
 
 inline int Parser::getNumberWarnings() const { return ( d_warnings ); }
-}
+} // namespace AMP
 
 #endif

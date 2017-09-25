@@ -165,7 +165,7 @@ private:
     //! we do not preallocate by default
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_vBasis;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

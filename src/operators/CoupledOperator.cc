@@ -67,5 +67,5 @@ void CoupledOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
 
     r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

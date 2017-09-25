@@ -150,5 +150,5 @@ void ExplicitEuler::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 }
 
 double ExplicitEuler::getNextDt( const bool ) { return d_current_dt; }
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

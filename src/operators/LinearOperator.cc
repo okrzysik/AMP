@@ -42,5 +42,5 @@ void LinearOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     fInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

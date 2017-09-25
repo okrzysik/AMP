@@ -12,11 +12,11 @@ namespace LinearAlgebra {
 
 
 /** \brief A core-local vector
-* \details This is a native AMP vector
-*/
-template <typename TYPE,
-          typename VecOps  = VectorOperationsDefault<TYPE>,
-          typename VecData = VectorDataCPU<TYPE>>
+ * \details This is a native AMP vector
+ */
+template<typename TYPE,
+         typename VecOps  = VectorOperationsDefault<TYPE>,
+         typename VecData = VectorDataCPU<TYPE>>
 class SimpleVector : public Vector, public VecOps, public VecData
 {
 protected:
@@ -27,37 +27,37 @@ protected:
 
 public:
     /** \brief    Create a SimpleVector
-      * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
-      * to be used in the code
-      * \param    localSize  The number of elements in the vector on this processor
-      * \param    var The variable associated with the new vector
-      */
+     * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
+     * to be used in the code
+     * \param    localSize  The number of elements in the vector on this processor
+     * \param    var The variable associated with the new vector
+     */
     static Vector::shared_ptr create( size_t localSize, const std::string &var );
 
     /** \brief    Create a SimpleVector
-      * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
-      * to be used in the code
-      * \param    localSize  The number of elements in the vector on this processor
-      * \param    var The variable associated with the new vector
-      */
+     * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
+     * to be used in the code
+     * \param    localSize  The number of elements in the vector on this processor
+     * \param    var The variable associated with the new vector
+     */
     static Vector::shared_ptr create( size_t localSize, Variable::shared_ptr var );
 
     /** \brief    Create a SimpleVector
-      * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
-      * to be used in the code
-      * \param    localSize  The number of elements in the vector on this processor
-      * \param    var The variable associated with the new vector
-      * \param    comm The variable associated with the new vector
-      */
+     * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
+     * to be used in the code
+     * \param    localSize  The number of elements in the vector on this processor
+     * \param    var The variable associated with the new vector
+     * \param    comm The variable associated with the new vector
+     */
     static Vector::shared_ptr create( size_t localSize, Variable::shared_ptr var, AMP_MPI comm );
 
     /** \brief    Create a SimpleVector
-      * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
-      * to be used in the code that spans a comm and contains ghost values.
-      * \param    var The variable associated with the new vector
-      * \param    DOFs The DOFManager
-      * \param    commlist The communication list
-      */
+     * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
+     * to be used in the code that spans a comm and contains ghost values.
+     * \param    var The variable associated with the new vector
+     * \param    DOFs The DOFManager
+     * \param    commlist The communication list
+     */
     static Vector::shared_ptr create( Variable::shared_ptr var,
                                       AMP::Discretization::DOFManager::shared_ptr DOFs,
                                       AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
@@ -81,8 +81,8 @@ public: // Functions derived from Vector
 };
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 
 #include "vectors/SimpleVector.hpp"

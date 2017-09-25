@@ -148,6 +148,6 @@ private:
         }
     }
 };
-}
+} // namespace AMP
 
 #endif

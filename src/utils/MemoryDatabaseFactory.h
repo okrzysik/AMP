@@ -28,6 +28,6 @@ class MemoryDatabaseFactory : public DatabaseFactory
      */
     virtual AMP::shared_ptr<Database> allocate( const std::string &name ) override;
 };
-}
+} // namespace AMP
 
 #endif

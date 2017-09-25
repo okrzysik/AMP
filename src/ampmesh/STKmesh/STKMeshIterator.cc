@@ -16,14 +16,14 @@ unsigned int STKMeshIteratorTypeID()
     static const unsigned int id( TYPE_HASH( STKMeshIterator ) );
     return id;
 }
-}
+} // namespace
 
 // unused global variable to prevent compiler warning
 static MeshElement nullElement;
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 STKMeshIterator::STKMeshIterator()
     : MeshIterator(),
       d_gcw( 0 ),
@@ -102,20 +102,20 @@ STKMeshIterator &STKMeshIterator::operator=( const STKMeshIterator &rhs )
 
 
 /********************************************************
-* Function to clone the iterator                        *
-********************************************************/
+ * Function to clone the iterator                        *
+ ********************************************************/
 MeshIterator *STKMeshIterator::clone() const { return new STKMeshIterator( *this ); }
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 STKMeshIterator::~STKMeshIterator() {}
 
 
 /********************************************************
-* Return an iterator to the beginning or end            *
-********************************************************/
+ * Return an iterator to the beginning or end            *
+ ********************************************************/
 MeshIterator STKMeshIterator::begin() const
 {
     STKMeshIterator e( d_mesh, d_gcw, d_entries );
@@ -130,8 +130,8 @@ MeshIterator STKMeshIterator::end() const
 
 
 /********************************************************
-* Return the number of elements in the iterator         *
-********************************************************/
+ * Return the number of elements in the iterator         *
+ ********************************************************/
 size_t STKMeshIterator::size() const { return d_entries->size(); }
 size_t STKMeshIterator::position() const
 {
@@ -141,8 +141,8 @@ size_t STKMeshIterator::position() const
 
 
 /********************************************************
-* Increment/Decrement the iterator                      *
-********************************************************/
+ * Increment/Decrement the iterator                      *
+ ********************************************************/
 MeshIterator &STKMeshIterator::operator++()
 {
     // Prefix increment (increment and return this)
@@ -172,8 +172,8 @@ MeshIterator STKMeshIterator::operator--( int )
 
 
 /********************************************************
-* Compare two iterators                                 *
-********************************************************/
+ * Compare two iterators                                 *
+ ********************************************************/
 bool STKMeshIterator::operator==( const MeshIterator &rhs ) const
 {
     const STKMeshIterator *rhs2 = NULL;
@@ -217,8 +217,8 @@ bool STKMeshIterator::operator!=( const MeshIterator &rhs ) const { return !( ( 
 
 
 /********************************************************
-* Dereference the iterator to get the element           *
-********************************************************/
+ * Dereference the iterator to get the element           *
+ ********************************************************/
 MeshElement &STKMeshIterator::operator*()
 {
     this->operator->(); // Initialize d_cur_element
@@ -231,5 +231,5 @@ MeshElement *STKMeshIterator::operator->()
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

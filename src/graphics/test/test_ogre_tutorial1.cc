@@ -6,6 +6,7 @@ class TutorialApplication : public BaseApplication
 public:
     TutorialApplication() {}
     virtual ~TutorialApplication() {}
+
 protected:
     virtual void createScene();
     // virtual void createCamera() {}

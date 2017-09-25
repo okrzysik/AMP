@@ -73,9 +73,9 @@ static const double HfSatPmaxVal      = 22119759.4074; // critical pressure; max
 static const double HfSatRanges[1][2] = { { HfSatPminVal, HfSatPmaxVal } };
 
 // Saturated vapor enthalpy as a function of pressure
-static const unsigned int HgSatNumArgs          = 1;
-static const unsigned int HgSatNumParams        = 12 + 9 + 7;
-static const double HgSatParams[HgSatNumParams] = { 0.1105836875e4,
+static const unsigned int HgSatNumArgs           = 1;
+static const unsigned int HgSatNumParams         = 12 + 9 + 7;
+static const double HgSatParams[HgSatNumParams]  = { 0.1105836875e4,
                                                     0.1436943768e2,
                                                     0.8018288621,
                                                     0.1617232913e-1,
@@ -206,9 +206,9 @@ static const double ViscRanges[2][2] = { { ViscTminVal, ViscTmaxVal },
                                          { ViscRhominVal, ViscRhomaxVal } };
 
 // enthalpy as a function of temperature and pressure
-static const unsigned int EnthalpyNumArgs             = 2;
-static const unsigned int EnthalpyNumParams           = 6;
-static const double EnthalpyParams[EnthalpyNumParams] = { -256638.942,    -203.118982,
+static const unsigned int EnthalpyNumArgs              = 2;
+static const unsigned int EnthalpyNumParams            = 6;
+static const double EnthalpyParams[EnthalpyNumParams]  = { -256638.942,    -203.118982,
                                                           0.760349801,    -3848757.66,
                                                           -0.00106377488, 0.0000006177396046 };
 static const std::string EnthalpyArgs[EnthalpyNumArgs] = { "temperature", "pressure" };
@@ -401,22 +401,22 @@ inline double TemperatureProp::eval( std::vector<double> &args )
     double ct1[2][4], ct2[5][5], ct3[5][5], ct4[5][5];
     int offset = 0;
     for ( int i = 0; i < 2; i++ )
-        for ( int j   = 0; j < 4; j++ )
+        for ( int j = 0; j < 4; j++ )
             ct1[i][j] = Param[offset + 4 * i + j];
 
     offset += 4 * 2;
     for ( int i = 0; i < 5; i++ )
-        for ( int j   = 0; j < 5; j++ )
+        for ( int j = 0; j < 5; j++ )
             ct2[i][j] = Param[offset + 5 * i + j];
 
     offset += 5 * 5;
     for ( int i = 0; i < 5; i++ )
-        for ( int j   = 0; j < 5; j++ )
+        for ( int j = 0; j < 5; j++ )
             ct3[i][j] = Param[offset + 5 * i + j];
 
     offset += 5 * 5;
     for ( int i = 0; i < 5; i++ )
-        for ( int j   = 0; j < 5; j++ )
+        for ( int j = 0; j < 5; j++ )
             ct4[i][j] = Param[offset + 5 * i + j];
 
     // calculate temperature
@@ -593,39 +593,39 @@ inline double SpecificVolumeProp::eval( std::vector<double> &args )
     double cn0[3][3], cn1[3][5], cn2[4][3], cn3[4][4], cp[3], cx[4], ct[3], cj[4], d;
     int offset = 0;
     for ( int i = 0; i < 3; i++ )
-        for ( int j   = 0; j < 3; j++ )
+        for ( int j = 0; j < 3; j++ )
             cn0[i][j] = Param[offset + 3 * i + j];
 
     offset += 3 * 3;
     for ( int i = 0; i < 3; i++ )
-        for ( int j   = 0; j < 5; j++ )
+        for ( int j = 0; j < 5; j++ )
             cn1[i][j] = Param[offset + 5 * i + j];
 
     offset += 3 * 5;
     for ( int i = 0; i < 4; i++ )
-        for ( int j   = 0; j < 3; j++ )
+        for ( int j = 0; j < 3; j++ )
             cn2[i][j] = Param[offset + 3 * i + j];
 
     offset += 4 * 3;
     for ( int i = 0; i < 4; i++ )
-        for ( int j   = 0; j < 4; j++ )
+        for ( int j = 0; j < 4; j++ )
             cn3[i][j] = Param[offset + 4 * i + j];
 
     offset += 4 * 4;
     for ( int i = 0; i < 3; i++ )
-        cp[i]   = Param[offset + i];
+        cp[i] = Param[offset + i];
 
     offset += 3;
     for ( int i = 0; i < 4; i++ )
-        cx[i]   = Param[offset + i];
+        cx[i] = Param[offset + i];
 
     offset += 4;
     for ( int i = 0; i < 3; i++ )
-        ct[i]   = Param[offset + i];
+        ct[i] = Param[offset + i];
 
     offset += 3;
     for ( int i = 0; i < 4; i++ )
-        cj[i]   = Param[offset + i];
+        cj[i] = Param[offset + i];
 
     offset += 4;
     d = Param[offset];
@@ -824,7 +824,7 @@ inline double ThermalConductivityProp::eval( std::vector<double> &args )
     double Tratiosum = 0.0;
     for ( size_t i = 0; i < 4; i++ )
         Tratiosum = Tratiosum + a[i] * pow( ( T / Tstar ), (double) i );
-    double k0     = pow( T / Tstar, 0.5 ) * Tratiosum;
+    double k0 = pow( T / Tstar, 0.5 ) * Tratiosum;
 
     double kbar = b0 + b1 * ( rho / rhostar ) + b2 * exp( B1 * pow( rho / rhostar + B2, 2 ) );
 
@@ -910,25 +910,24 @@ inline double DynamicViscosityProp::eval( std::vector<double> &args )
     std::valarray<double> Param = get_parameters();
     double a[4], b[5][6];
     for ( size_t i = 0; i < 4; i++ )
-        a[i]       = Param[i];
+        a[i] = Param[i];
     for ( size_t i = 0; i < 5; i++ )
         for ( size_t j = 0; j < 6; j++ )
-            b[i][j]    = Param[4 + 6 * i + j];
+            b[i][j] = Param[4 + 6 * i + j];
 
     double Tstar   = 647.27;  // [K]
     double rhostar = 317.763; // [kg/m3]
 
     double sum = 0;
     for ( size_t k = 0; k < 4; k++ )
-        sum   = sum + a[k] * pow( Tstar / T, (double) k );
+        sum = sum + a[k] * pow( Tstar / T, (double) k );
     double u0 = 1e-6 * pow( T / Tstar, 0.5 ) * pow( sum, -1.0 );
 
     double expsum = 0;
     for ( size_t i = 0; i < 5; i++ )
         for ( size_t j = 0; j < 6; j++ )
-            expsum =
-                expsum +
-                b[i][j] * pow( Tstar / T - 1, (double) j ) * pow( rho / rhostar - 1, (double) i );
+            expsum = expsum + b[i][j] * pow( Tstar / T - 1, (double) j ) *
+                                  pow( rho / rhostar - 1, (double) i );
     u = u0 * exp( rho / rhostar * expsum );
 
     // According to the source of the correlation, it seems that the viscosity
@@ -1004,7 +1003,7 @@ inline double EnthalpyProp::MfpSolve( double hmin, double hmax, double T, double
     // Return point with smallest function value
     return std::abs( fl ) < std::abs( fr ) ? l : r;
 }
-}
+} // namespace WaterLibrary_NS
 //=================== Materials =====================================================
 
 WaterLibrary::WaterLibrary()
@@ -1019,5 +1018,5 @@ WaterLibrary::WaterLibrary()
     INSERT_PROPERTY_IN_MAP( Enthalpy, WaterLibrary_NS );
     INSERT_PROPERTY_IN_MAP( ConvectiveHeat, WaterLibrary_NS );
 }
-}
-}
+} // namespace Materials
+} // namespace AMP

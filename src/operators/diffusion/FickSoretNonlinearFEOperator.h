@@ -76,7 +76,7 @@ private:
 
     bool d_AddSoretTerm;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

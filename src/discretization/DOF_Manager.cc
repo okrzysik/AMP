@@ -1,5 +1,5 @@
-#include "ampmesh/MeshElementVectorIterator.h"
 #include "discretization/DOF_Manager.h"
+#include "ampmesh/MeshElementVectorIterator.h"
 #include "discretization/subsetDOFManager.h"
 #include "utils/Utilities.h"
 
@@ -11,8 +11,8 @@ namespace Discretization {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 DOFManager::DOFManager( size_t N_local, const AMP_MPI &comm ) : d_comm( comm )
 {
     d_comm.sumScan( &N_local, &d_end, 1 );
@@ -22,14 +22,14 @@ DOFManager::DOFManager( size_t N_local, const AMP_MPI &comm ) : d_comm( comm )
 
 
 /****************************************************************
-* Deconstructor                                                 *
-****************************************************************/
+ * Deconstructor                                                 *
+ ****************************************************************/
 DOFManager::~DOFManager() {}
 
 
 /****************************************************************
-* Get the DOFs for the element                                  *
-****************************************************************/
+ * Get the DOFs for the element                                  *
+ ****************************************************************/
 void DOFManager::getDOFs( const AMP::Mesh::MeshElementID &, std::vector<size_t> & ) const
 {
     AMP_ERROR( "getDOFs is not implimented for the base class" );
@@ -53,8 +53,8 @@ void DOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
 
 
 /****************************************************************
-* Get the element ID give a dof                                 *
-****************************************************************/
+ * Get the element ID give a dof                                 *
+ ****************************************************************/
 AMP::Mesh::MeshElement DOFManager::getElement( size_t ) const
 {
     AMP_ERROR( "getElement is not implimented for the base class" );
@@ -62,44 +62,44 @@ AMP::Mesh::MeshElement DOFManager::getElement( size_t ) const
 }
 
 /****************************************************************
-* Get an entry over the mesh elements associated with the DOFs  *
-****************************************************************/
+ * Get an entry over the mesh elements associated with the DOFs  *
+ ****************************************************************/
 AMP::Mesh::MeshIterator DOFManager::getIterator() const { return AMP::Mesh::MeshIterator(); }
 
 
 /****************************************************************
-* Return the first D.O.F. on this core                          *
-****************************************************************/
+ * Return the first D.O.F. on this core                          *
+ ****************************************************************/
 size_t DOFManager::beginDOF() const { return d_begin; }
 
 
 /****************************************************************
-* Return the last D.O.F. on this core                           *
-****************************************************************/
+ * Return the last D.O.F. on this core                           *
+ ****************************************************************/
 size_t DOFManager::endDOF() const { return d_end; }
 
 
 /****************************************************************
-* Return the local number of D.O.F.s                           *
-****************************************************************/
+ * Return the local number of D.O.F.s                           *
+ ****************************************************************/
 size_t DOFManager::numLocalDOF() const { return ( d_end - d_begin ); }
 
 
 /****************************************************************
-* Return the global number of D.O.F.s                           *
-****************************************************************/
+ * Return the global number of D.O.F.s                           *
+ ****************************************************************/
 size_t DOFManager::numGlobalDOF() const { return d_global; }
 
 
 /****************************************************************
-* Return the global number of D.O.F.s                           *
-****************************************************************/
+ * Return the global number of D.O.F.s                           *
+ ****************************************************************/
 std::vector<size_t> DOFManager::getRemoteDOFs() const { return std::vector<size_t>(); }
 
 
 /****************************************************************
-* Return the global number of D.O.F.s                           *
-****************************************************************/
+ * Return the global number of D.O.F.s                           *
+ ****************************************************************/
 std::vector<size_t> DOFManager::getRowDOFs( const AMP::Mesh::MeshElement & ) const
 {
     AMP_ERROR( "getRowDOFs(element) is not implimented for the base class" );
@@ -108,8 +108,8 @@ std::vector<size_t> DOFManager::getRowDOFs( const AMP::Mesh::MeshElement & ) con
 
 
 /****************************************************************
-* Compare two DOFManagers                                       *
-****************************************************************/
+ * Compare two DOFManagers                                       *
+ ****************************************************************/
 bool DOFManager::operator==( const DOFManager &rhs ) const
 {
     if ( this == &rhs ) {
@@ -135,8 +135,8 @@ bool DOFManager::operator!=( const DOFManager &rhs ) const { return !( this->ope
 
 
 /****************************************************************
-* Subset the DOF manager                                        *
-****************************************************************/
+ * Subset the DOF manager                                        *
+ ****************************************************************/
 AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP_MPI &comm )
 {
     if ( comm.compare( d_comm ) != 0 )
@@ -225,5 +225,5 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::MeshIterator &i
         return AMP::shared_ptr<DOFManager>();
     return subsetDOFManager::create( shared_from_this(), dofs, intersection, comm );
 }
-}
-}
+} // namespace Discretization
+} // namespace AMP

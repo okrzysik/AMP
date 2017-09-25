@@ -21,7 +21,7 @@ public:
 
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenSolution;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

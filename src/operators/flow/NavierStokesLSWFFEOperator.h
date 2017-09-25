@@ -26,8 +26,7 @@ public:
     virtual ~NavierStokesLSWFFEOperator() {}
 
     void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                      AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                          r ) override;
+                      AMP::shared_ptr<AMP::LinearAlgebra::Vector> r ) override;
 
     void postAssembly() override;
 
@@ -91,7 +90,7 @@ protected:
 
     std::vector<std::vector<size_t>> d_type1DofIndices;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

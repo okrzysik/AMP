@@ -6,7 +6,6 @@
 #include "utils/PIO.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
 #include "vectors/Variable.h"
 #include <string>
@@ -35,8 +34,7 @@ void bcTests( AMP::UnitTest *ut,
               std::string msgPrefix,
               AMP::shared_ptr<AMP::Operator::Operator> &feOperator,
               AMP::shared_ptr<AMP::Operator::Operator> &bcOperator,
-              AMP::shared_ptr<AMP::InputDatabase>
-                  bcDatabase,
+              AMP::shared_ptr<AMP::InputDatabase> bcDatabase,
               AMP::LinearAlgebra::Vector::shared_ptr bcCorrectionVec )
 //             AMP::shared_ptr<AMP::Operator::OperatorParameters> &bcParameters)
 {

@@ -37,5 +37,5 @@ AMP::LinearAlgebra::Vector::shared_ptr joinVectors( AMP::LinearAlgebra::Vector::
     outVec->addVector( vec2 );
     return outVec;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

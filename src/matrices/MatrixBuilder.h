@@ -59,8 +59,8 @@ AMP::LinearAlgebra::Matrix::shared_ptr createMatrix(
 
 #endif
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif
 #endif

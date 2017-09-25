@@ -13,9 +13,9 @@ namespace Operator {
 
 
 /**
-  * AMP Mesh element implementation for DTK EntityLocalMap interface. The
-  * interface is currently only implemented for hex-8 elements.
-*/
+ * AMP Mesh element implementation for DTK EntityLocalMap interface. The
+ * interface is currently only implemented for hex-8 elements.
+ */
 class AMPMeshEntityLocalMap : public DataTransferKit::EntityLocalMap
 {
 public:
@@ -116,8 +116,8 @@ private:
     // Point inclusion tolerance.
     double d_inclusion_tol;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif
 //! @endcond

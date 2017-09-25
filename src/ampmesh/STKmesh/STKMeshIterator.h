@@ -51,10 +51,10 @@ public:
     virtual MeshElement *operator->(void) override;
 
     //! Dereference the iterator
-    virtual const MeshElement &operator*( void ) const override;
+    virtual const MeshElement &operator*(void) const override;
 
     //! Dereference the iterator
-    virtual const MeshElement *operator->( void ) const override;
+    virtual const MeshElement *operator->(void) const override;
 
     //! Return an iterator to the begining
     virtual MeshIterator begin() const override;
@@ -100,7 +100,7 @@ private:
     std::vector<stk::mesh::Entity *>::iterator d_pos;
     MeshElement d_cur_element;
 };
-}
-}
+} // namespace Mesh
+} // namespace AMP
 
 #endif

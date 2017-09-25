@@ -1,5 +1,5 @@
-#include "utils/LinearRegression.h"
 #include "utils/AMPManager.h"
+#include "utils/LinearRegression.h"
 #include "utils/UnitTest.h"
 
 void linearRegressionTest( AMP::UnitTest *ut )

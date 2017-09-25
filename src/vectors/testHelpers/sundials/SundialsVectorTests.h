@@ -69,8 +69,8 @@ private:
 };
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 /// \endcond
 

@@ -33,5 +33,5 @@ inline PetscVector::~PetscVector()
 }
 
 
-} // LinearAlgebra
-} // AMP
+} // namespace LinearAlgebra
+} // namespace AMP

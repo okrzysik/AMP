@@ -7,5 +7,5 @@ inline VectorEngineParameters::shared_ptr VectorEngine::getEngineParameters() co
 {
     return d_Params;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

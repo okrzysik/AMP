@@ -114,8 +114,7 @@ public:
      * @param [out] u : shared pointer to approximate computed solution
      */
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u ) override;
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * returns the internally stored PETSc KSP object
@@ -170,9 +169,9 @@ protected:
     void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
 
 private:
-// static functions to interface with PETSc
-// the signatures of these functions currently vary depending on whether the dev or release
-// release version of PETSc is being used
+    // static functions to interface with PETSc
+    // the signatures of these functions currently vary depending on whether the dev or release
+    // release version of PETSc is being used
 
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     static int setupPreconditioner( void * );
@@ -219,7 +218,7 @@ private:
 
     AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

@@ -184,6 +184,7 @@ private:
             return global >= data[2] && ( global - data[2] ) < ( data[1] - data[0] );
         }
         inline size_t id() const { return data[3]; }
+
     private:
         size_t data[4];
     };
@@ -197,7 +198,7 @@ private:
     std::vector<DOFMapStruct> d_dofMap;
     const size_t neg_one = ~( (size_t) 0 );
 };
-}
-}
+} // namespace Discretization
+} // namespace AMP
 
 #endif

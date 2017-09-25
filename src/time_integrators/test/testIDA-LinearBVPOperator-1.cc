@@ -23,7 +23,6 @@
 
 #include "operators/LinearBVPOperator.h"
 #include "operators/NeutronicsRhs.h"
-#include "operators/NeutronicsRhs.h"
 #include "operators/boundary/DirichletMatrixCorrection.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
@@ -46,10 +45,9 @@
 //#define __INIT_FN__(x,y,z,t) ( exp(-0.015 *  __PI__ * __PI__ * t) * cos(0.1 * __PI__ * x) *
 // cos(0.1 * __PI__ * y) *
 // cos(0.05 * __PI__ * z) )
-#define __INIT_FN__( x, y, z, t )                                                     \
-    ( 750.0 +                                                                         \
-      10000.0 * ( 0.5 + x ) * ( 0.5 - x ) * ( 0.5 + y ) * ( 0.5 - y ) * ( 0.5 + z ) * \
-          ( 0.5 - z ) )
+#define __INIT_FN__( x, y, z, t )                                                             \
+    ( 750.0 + 10000.0 * ( 0.5 + x ) * ( 0.5 - x ) * ( 0.5 + y ) * ( 0.5 - y ) * ( 0.5 + z ) * \
+                  ( 0.5 - z ) )
 
 void IDATimeIntegratorTest( AMP::UnitTest *ut )
 {

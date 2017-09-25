@@ -15,10 +15,10 @@
 using std::cout;
 using std::endl;
 using std::exception;
-using std::vector;
+using std::map;
 using std::string;
 using std::valarray;
-using std::map;
+using std::vector;
 
 #include "materials/Material.h"
 #include "materials/Property.h"
@@ -275,7 +275,7 @@ MatTestResult testMaterial( string &name )
             auto prop = property;
             vector<double> defin( nargs );
             for ( size_t i = 0; i < nargs; i++ )
-                defin[i]   = justright[i][0];
+                defin[i] = justright[i][0];
             prop->set_defaults( defin );
             vector<double> defaults( prop->get_defaults() );
             if ( defaults == defin )

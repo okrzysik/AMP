@@ -78,7 +78,7 @@ protected:
     // A pointer to a std::vector containing the desired mesh elements
     AMP::shared_ptr<std::vector<MeshElement>> d_elements;
 };
-}
-}
+} // namespace Mesh
+} // namespace AMP
 
 #endif

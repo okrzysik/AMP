@@ -1,6 +1,6 @@
-#include "utils/Utilities.h"
-#include "operators/subchannel/FlowFrapconJacobian.h"
 #include "solvers/libmesh/Flow1DSolver.h"
+#include "operators/subchannel/FlowFrapconJacobian.h"
+#include "utils/Utilities.h"
 #include "vectors/MultiVector.h"
 
 namespace AMP {
@@ -58,8 +58,7 @@ void Flow1DSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorP
 }
 
 void Flow1DSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                          AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                              u )
+                          AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
 
     AMP::LinearAlgebra::Vector::shared_ptr flowInputVec =
@@ -102,5 +101,5 @@ AMP::LinearAlgebra::Variable::shared_ptr Flow1DSolver::getInputVariable( int )
 {
     return d_inpVariable;
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

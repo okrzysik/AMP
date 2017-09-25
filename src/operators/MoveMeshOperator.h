@@ -25,7 +25,7 @@ protected:
     AMP::LinearAlgebra::Variable::shared_ptr d_var;
     AMP::LinearAlgebra::Vector::shared_ptr d_prevDisp;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

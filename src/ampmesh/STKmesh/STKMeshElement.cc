@@ -39,14 +39,14 @@ AMP::Mesh::GeomType geom_type( const stk::mesh::EntityRank rank )
     }
     return GeomType::Vertex;
 }
-}
+} // namespace
 
 typedef stk::mesh::Field<double, stk::mesh::Cartesian> CartesianField;
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 STKMeshElement::STKMeshElement()
     : d_dim( 0 ), d_rank( 0 ), d_mesh( 0 ), d_meshID( 0 ), ptr_element( 0 )
 {
@@ -75,8 +75,7 @@ STKMeshElement::STKMeshElement( int dim,
     d_globalID              = MeshElementID( is_local, type, local_id, owner_rank, meshID );
 }
 STKMeshElement::STKMeshElement( int dim,
-                                AMP::shared_ptr<stk::mesh::Entity>
-                                    STKmesh_element,
+                                AMP::shared_ptr<stk::mesh::Entity> STKmesh_element,
                                 unsigned int rank,
                                 MeshID meshID,
                                 const STKMesh *mesh )
@@ -123,20 +122,20 @@ STKMeshElement &STKMeshElement::operator=( const STKMeshElement &rhs )
 
 
 /****************************************************************
-* De-constructor                                                *
-****************************************************************/
+ * De-constructor                                                *
+ ****************************************************************/
 STKMeshElement::~STKMeshElement() { ptr_element = NULL; }
 
 
 /****************************************************************
-* Function to clone the element                                 *
-****************************************************************/
+ * Function to clone the element                                 *
+ ****************************************************************/
 MeshElement *STKMeshElement::clone() const { return new STKMeshElement( *this ); }
 
 
 /****************************************************************
-* Function to get the elements composing the current element    *
-****************************************************************/
+ * Function to get the elements composing the current element    *
+ ****************************************************************/
 std::vector<MeshElement> STKMeshElement::getElements( const GeomType type ) const
 {
     AMP_INSIST( type <= d_globalID.type(), "sub-elements must be of a smaller or equivalent type" );
@@ -190,8 +189,8 @@ std::vector<MeshElement> STKMeshElement::getElements( const GeomType type ) cons
 
 
 /****************************************************************
-* Function to get the neighboring elements                      *
-****************************************************************/
+ * Function to get the neighboring elements                      *
+ ****************************************************************/
 std::vector<MeshElement::shared_ptr> STKMeshElement::getNeighbors() const
 {
     std::vector<MeshElement::shared_ptr> neighbors( 0 );
@@ -247,8 +246,8 @@ std::vector<MeshElement::shared_ptr> STKMeshElement::getNeighbors() const
 
 
 /****************************************************************
-* Functions to get basic element properties                     *
-****************************************************************/
+ * Functions to get basic element properties                     *
+ ****************************************************************/
 double STKMeshElement::volume() const
 {
     const unsigned numCells = 1;
@@ -403,5 +402,5 @@ bool STKMeshElement::isInBlock( int id ) const
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

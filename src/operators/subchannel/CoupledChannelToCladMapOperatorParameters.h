@@ -37,8 +37,8 @@ public:
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_vector;
     AMP::shared_ptr<AMP::Operator::SubchannelPhysicsModel> d_subchannelPhysicsModel;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 
 #endif

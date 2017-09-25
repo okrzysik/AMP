@@ -39,7 +39,7 @@ public:
      */
     std::string d_name;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif /* FICKSORETNONLINEARFEOPERATORPARAMETERS_H_ */

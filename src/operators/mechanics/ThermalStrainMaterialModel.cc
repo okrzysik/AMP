@@ -553,5 +553,5 @@ void ThermalStrainMaterialModel::Thermal_Strain_Gauss_Point(
         }
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

@@ -22,8 +22,8 @@ namespace Mesh {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 ShellMesh::ShellMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 {
     // Input options from the database
@@ -71,8 +71,8 @@ ShellMesh::ShellMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 
 
 /****************************************************************
-* Estimate the mesh size                                        *
-****************************************************************/
+ * Estimate the mesh size                                        *
+ ****************************************************************/
 std::vector<size_t> ShellMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
     auto db               = params->getDatabase();
@@ -87,8 +87,8 @@ std::vector<size_t> ShellMesh::estimateLogicalMeshSize( const MeshParameters::sh
 
 
 /****************************************************************
-* Functions to displace the mesh                                *
-****************************************************************/
+ * Functions to displace the mesh                                *
+ ****************************************************************/
 int ShellMesh::isMeshMovable() const { return 1; }
 void ShellMesh::displaceMesh( const std::vector<double> &x )
 {
@@ -112,8 +112,8 @@ void ShellMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr
 
 
 /****************************************************************
-* Copy the mesh                                                 *
-****************************************************************/
+ * Copy the mesh                                                 *
+ ****************************************************************/
 AMP::shared_ptr<Mesh> ShellMesh::copy() const
 {
     return AMP::shared_ptr<ShellMesh>( new ShellMesh( *this ) );
@@ -121,8 +121,8 @@ AMP::shared_ptr<Mesh> ShellMesh::copy() const
 
 
 /****************************************************************
-* Return the coordinate                                         *
-****************************************************************/
+ * Return the coordinate                                         *
+ ****************************************************************/
 void ShellMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
     int i      = index.index( 0 );
@@ -139,8 +139,8 @@ void ShellMesh::coord( const MeshElementIndex &index, double *pos ) const
 
 
 /****************************************************************
-* Return the logical coordinates                                *
-****************************************************************/
+ * Return the logical coordinates                                *
+ ****************************************************************/
 std::array<double, 3> ShellMesh::physicalToLogical( const double * ) const
 {
     AMP_ERROR( "physicalToLogical is not supported in ShellMesh" );
@@ -148,5 +148,5 @@ std::array<double, 3> ShellMesh::physicalToLogical( const double * ) const
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

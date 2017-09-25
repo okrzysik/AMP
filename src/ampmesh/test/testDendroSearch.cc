@@ -77,23 +77,20 @@ void buildOctant( double const *space,
     AMP_ASSERT( y % static_cast<size_t>( 1u << ( max_depth - level ) ) == 0 );
     AMP_ASSERT( z < static_cast<size_t>( 1u << max_depth ) );
     AMP_ASSERT( z % static_cast<size_t>( 1u << ( max_depth - level ) ) == 0 );
-    octant[0] =
-        space[0] +
-        ( space[1] - space[0] ) * static_cast<double>( x ) / static_cast<double>( 2 * max_depth );
+    octant[0] = space[0] + ( space[1] - space[0] ) * static_cast<double>( x ) /
+                               static_cast<double>( 2 * max_depth );
     octant[1] = space[0] +
                 ( space[1] - space[0] ) *
                     static_cast<double>( x + static_cast<size_t>( 1u << ( max_depth - level ) ) ) /
                     static_cast<double>( 2 * max_depth );
-    octant[2] =
-        space[2] +
-        ( space[3] - space[2] ) * static_cast<double>( y ) / static_cast<double>( 2 * max_depth );
+    octant[2] = space[2] + ( space[3] - space[2] ) * static_cast<double>( y ) /
+                               static_cast<double>( 2 * max_depth );
     octant[3] = space[2] +
                 ( space[3] - space[2] ) *
                     static_cast<double>( y + static_cast<size_t>( 1u << ( max_depth - level ) ) ) /
                     static_cast<double>( 2 * max_depth );
-    octant[4] =
-        space[4] +
-        ( space[5] - space[4] ) * static_cast<double>( z ) / static_cast<double>( 2 * max_depth );
+    octant[4] = space[4] + ( space[5] - space[4] ) * static_cast<double>( z ) /
+                               static_cast<double>( 2 * max_depth );
     octant[5] = space[4] +
                 ( space[5] - space[4] ) *
                     static_cast<double>( z + static_cast<size_t>( 1u << ( max_depth - level ) ) ) /
@@ -502,9 +499,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     size_t n_j            = 1;
     size_t numRandomPts[] = { 100000, 20000, 40000, 80000, 160000, 320000 };
 
-    size_t n_i = 1;
+    size_t n_i                                                            = 1;
     void ( *randomPtsGenerators[] )( int, size_t, std::vector<double> & ) = { &genUniformPts };
-    std::string prefixes[] = { "uniform" };
+    std::string prefixes[]                                                = { "uniform" };
 
     std::string suffix = AMP::Utilities::intToString( npes );
 

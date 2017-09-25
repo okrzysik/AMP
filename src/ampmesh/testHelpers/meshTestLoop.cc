@@ -50,8 +50,9 @@ void meshTests::MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh
 }
 
 
-void meshTests::MeshVectorTestLoop(
-    AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast )
+void meshTests::MeshVectorTestLoop( AMP::UnitTest *ut,
+                                    AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                    bool fast )
 {
 // Run the vector tests
 #ifdef USE_AMP_VECTORS
@@ -67,8 +68,9 @@ void meshTests::MeshVectorTestLoop(
 }
 
 
-void meshTests::MeshMatrixTestLoop(
-    AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast )
+void meshTests::MeshMatrixTestLoop( AMP::UnitTest *ut,
+                                    AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                    bool fast )
 {
 // Run the matrix tests
 #ifdef USE_AMP_MATRICES

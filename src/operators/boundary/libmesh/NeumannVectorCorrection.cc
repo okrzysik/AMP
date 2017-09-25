@@ -186,7 +186,7 @@ void NeumannVectorCorrection::addRHScorrection(
 
                     dofs.resize( numNodesInCurrElem );
                     for ( size_t n = 0; n < dofIndices.size(); n++ )
-                        dofs[n]    = dofIndices[n][d_dofIds[j][k]];
+                        dofs[n] = dofIndices[n][d_dofIds[j][k]];
 
                     for ( size_t qp = 0; qp < numGaussPts; qp++ ) {
                         if ( d_isConstantFlux ) {
@@ -308,5 +308,5 @@ void NeumannVectorCorrection::setVariableFlux( const AMP::LinearAlgebra::Vector:
         d_variableFlux = flux->subsetVectorForVariable( d_variable );
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

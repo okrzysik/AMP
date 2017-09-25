@@ -9,7 +9,7 @@ namespace Materials {
 // ====================================================================================
 
 // set auxiliary data
-template <class Number>
+template<class Number>
 void Property<Number>::setAuxiliaryData( const std::string &key, const double val )
 {
     std::map<std::string, double>::iterator loc = d_AuxiliaryDataDouble.find( key );
@@ -22,7 +22,7 @@ void Property<Number>::setAuxiliaryData( const std::string &key, const double va
 }
 
 // set auxiliary data
-template <class Number>
+template<class Number>
 void Property<Number>::setAuxiliaryData( const std::string &key, const int val )
 {
     std::map<std::string, int>::iterator loc = d_AuxiliaryDataInteger.find( key );
@@ -35,7 +35,7 @@ void Property<Number>::setAuxiliaryData( const std::string &key, const int val )
 }
 
 // set auxiliary data
-template <class Number>
+template<class Number>
 void Property<Number>::setAuxiliaryData( const std::string &key, const std::string &val )
 {
     std::map<std::string, std::string>::iterator loc = d_AuxiliaryDataString.find( key );
@@ -48,21 +48,21 @@ void Property<Number>::setAuxiliaryData( const std::string &key, const std::stri
 }
 
 /// get auxiliary data
-template <class Number>
+template<class Number>
 void Property<Number>::getAuxiliaryData( const std::string &key, double &val )
 {
     val = *d_AuxiliaryDataDouble.find( key );
 }
 
 /// get auxiliary data
-template <class Number>
+template<class Number>
 void Property<Number>::getAuxiliaryData( const std::string &key, int &val )
 {
     val = *d_AuxiliaryDataInteger.find( key );
 }
 
 /// get auxiliary data
-template <class Number>
+template<class Number>
 void Property<Number>::getAuxiliaryData( const std::string &key, std::string &val )
 {
     val = *d_AuxiliaryDataString.find( key );
@@ -70,9 +70,9 @@ void Property<Number>::getAuxiliaryData( const std::string &key, std::string &va
 
 
 /************************************************************************
-*  Determine if a set of values are all within range or not             *
-************************************************************************/
-template <class Number>
+ *  Determine if a set of values are all within range or not             *
+ ************************************************************************/
+template<class Number>
 bool Property<Number>::in_range( const std::string &argname, const Number value )
 {
     if ( !is_argument( argname ) )
@@ -80,8 +80,8 @@ bool Property<Number>::in_range( const std::string &argname, const Number value 
     std::vector<Number> range = get_arg_range( argname );
     return value >= range[0] && value <= range[1];
 }
-template <class Number>
-template <class INPUT_VTYPE>
+template<class Number>
+template<class INPUT_VTYPE>
 bool Property<Number>::in_range( const std::string &argname, const INPUT_VTYPE &values )
 {
     if ( !is_argument( argname ) )
@@ -96,8 +96,8 @@ bool Property<Number>::in_range( const std::string &argname, const INPUT_VTYPE &
     }
     return result;
 }
-template <class Number>
-template <class INPUT_VTYPE>
+template<class Number>
+template<class INPUT_VTYPE>
 bool Property<Number>::in_range( const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &values )
 {
     bool result = true;
@@ -124,8 +124,8 @@ bool Property<Number>::in_range( const std::map<std::string, AMP::shared_ptr<INP
  * \param[in]   args  input arguments corresponding to d_sequence
  *                      Must be in the correct order: T, u, burn
  */
-template <class Number>
-template <class INPUT_VTYPE, class RETURN_VTYPE>
+template<class Number>
+template<class INPUT_VTYPE, class RETURN_VTYPE>
 void Property<Number>::evalvActual(
     RETURN_VTYPE &r, const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &args )
 {
@@ -186,7 +186,7 @@ void Property<Number>::evalvActual(
     }
 }
 
-template <class Number>
+template<class Number>
 Number Property<Number>::eval( std::vector<Number> & )
 {
     AMP_INSIST( false, "function is not implemented for this property" );
@@ -194,7 +194,7 @@ Number Property<Number>::eval( std::vector<Number> & )
     return x;
 }
 
-template <class Number>
+template<class Number>
 void Property<Number>::evalv(
     std::vector<Number> &r,
     const std::map<std::string, AMP::shared_ptr<std::vector<Number>>> &args )
@@ -220,5 +220,5 @@ void Property<Number>::evalv(
 }
 
 
-} // Materials namespace
-} // AMP namespace
+} // namespace Materials
+} // namespace AMP

@@ -27,5 +27,5 @@ inline void DataChangeListener::deregisterFromFirer( DataChangeFirer *firer )
 
     erase( std::find( begin(), end(), firer ) );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

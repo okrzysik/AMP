@@ -41,5 +41,5 @@ inline const Epetra_Vector &ManagedEpetraVector::getEpetra_Vector() const
 }
 
 inline void ManagedEpetraVector::assemble() {}
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

@@ -63,7 +63,7 @@ protected:
     AMP_MPI d_pelletStackComm;
     AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> d_n2nMaps;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

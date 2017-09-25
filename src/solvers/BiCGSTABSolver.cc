@@ -10,8 +10,8 @@ namespace AMP {
 namespace Solver {
 
 /****************************************************************
-*  Constructors                                                 *
-****************************************************************/
+ *  Constructors                                                 *
+ ****************************************************************/
 BiCGSTABSolver::BiCGSTABSolver() : d_restarts( 0 ) {}
 
 BiCGSTABSolver::BiCGSTABSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
@@ -25,13 +25,13 @@ BiCGSTABSolver::BiCGSTABSolver( AMP::shared_ptr<KrylovSolverParameters> paramete
 
 
 /****************************************************************
-*  Destructor                                                   *
-****************************************************************/
+ *  Destructor                                                   *
+ ****************************************************************/
 BiCGSTABSolver::~BiCGSTABSolver() {}
 
 /****************************************************************
-*  Initialize                                                   *
-****************************************************************/
+ *  Initialize                                                   *
+ ****************************************************************/
 void BiCGSTABSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
     AMP::shared_ptr<KrylovSolverParameters> parameters =
@@ -60,12 +60,11 @@ void BiCGSTABSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 }
 
 /****************************************************************
-*  Solve                                                        *
-* TODO: store convergence history, iterations, convergence reason
-****************************************************************/
+ *  Solve                                                        *
+ * TODO: store convergence history, iterations, convergence reason
+ ****************************************************************/
 void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                            AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                u )
+                            AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 
@@ -238,8 +237,8 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 }
 
 /****************************************************************
-*  Function to set the register the operator                    *
-****************************************************************/
+ *  Function to set the register the operator                    *
+ ****************************************************************/
 void BiCGSTABSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op.get() != nullptr );
@@ -264,5 +263,5 @@ void BiCGSTABSolver::resetOperator(
         d_pPreconditioner->resetOperator( params );
     }
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

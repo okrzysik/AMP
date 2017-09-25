@@ -856,5 +856,5 @@ void MechanicsLinearUpdatedLagrangianElement::initializeReferenceXYZ(
         elementRefXYZ[( 3 * ijk ) + 2] = xyz[ijk]( 2 );
     } // end of ijk.
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

@@ -21,9 +21,9 @@ extern template class VectorOperationsCuda<float>;  // Suppresses implicit insta
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
-template <typename TYPE>
+ * Constructors                                                  *
+ ****************************************************************/
+template<typename TYPE>
 AMP::shared_ptr<VectorOperations> VectorOperationsCuda<TYPE>::cloneOperations() const
 {
     auto ptr = AMP::make_shared<VectorOperationsCuda<TYPE>>();
@@ -32,19 +32,19 @@ AMP::shared_ptr<VectorOperations> VectorOperationsCuda<TYPE>::cloneOperations() 
 
 
 /****************************************************************
-* Check that all data can be passed to cuda                     *
-****************************************************************/
-template <typename TYPE>
+ * Check that all data can be passed to cuda                     *
+ ****************************************************************/
+template<typename TYPE>
 bool VectorOperationsCuda<TYPE>::checkData() const
 {
     return d_VectorData->numberOfDataBlocks() == 1;
 }
-template <typename TYPE>
+template<typename TYPE>
 bool VectorOperationsCuda<TYPE>::checkData( const VectorOperations &x ) const
 {
     return x.getVectorData()->numberOfDataBlocks() == 1 && d_VectorData->numberOfDataBlocks() == 1;
 }
-template <typename TYPE>
+template<typename TYPE>
 bool VectorOperationsCuda<TYPE>::checkData( const VectorOperations &x,
                                             const VectorOperations &y ) const
 {
@@ -54,9 +54,9 @@ bool VectorOperationsCuda<TYPE>::checkData( const VectorOperations &x,
 
 
 /****************************************************************
-* min, max, norms, etc.                                         *
-****************************************************************/
-template <typename TYPE>
+ * min, max, norms, etc.                                         *
+ ****************************************************************/
+template<typename TYPE>
 bool VectorOperationsCuda<TYPE>::localEquals( const VectorOperations &rhs, double tol ) const
 {
     if ( checkData( rhs ) ) {
@@ -67,7 +67,7 @@ bool VectorOperationsCuda<TYPE>::localEquals( const VectorOperations &rhs, doubl
         return VectorOperationsDefault<TYPE>::localEquals( rhs, tol );
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsCuda<TYPE>::localMin( void ) const
 {
     double result = 0;
@@ -85,7 +85,7 @@ double VectorOperationsCuda<TYPE>::localMin( void ) const
     }
     return result;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsCuda<TYPE>::localMax( void ) const
 {
     double result = 0;
@@ -103,15 +103,15 @@ double VectorOperationsCuda<TYPE>::localMax( void ) const
     }
     return result;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsCuda<TYPE>::localL1Norm( void ) const
 {
     double result = 0;
     if ( checkData() ) {
         const TYPE *data = d_VectorData->getRawDataBlock<TYPE>( 0 );
         size_t N         = d_VectorData->sizeOfDataBlock( 0 );
-        auto lambda = [=] __device__( TYPE x ) { return x < 0 ? -x : x; };
-        result         = thrust::transform_reduce(
+        auto lambda      = [=] __device__( TYPE x ) { return x < 0 ? -x : x; };
+        result           = thrust::transform_reduce(
             thrust::device, data, data + N, lambda, (TYPE) 0, thrust::plus<TYPE>() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -119,15 +119,15 @@ double VectorOperationsCuda<TYPE>::localL1Norm( void ) const
     }
     return result;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsCuda<TYPE>::localL2Norm( void ) const
 {
     double result = 0;
     if ( checkData() ) {
         const TYPE *data = d_VectorData->getRawDataBlock<TYPE>( 0 );
         size_t N         = d_VectorData->sizeOfDataBlock( 0 );
-        auto lambda = [=] __device__( TYPE x ) { return x * x; };
-        result         = thrust::transform_reduce(
+        auto lambda      = [=] __device__( TYPE x ) { return x * x; };
+        result           = thrust::transform_reduce(
             thrust::device, data, data + N, lambda, (TYPE) 0, thrust::plus<TYPE>() );
         result = sqrt( result );
     } else {
@@ -136,15 +136,15 @@ double VectorOperationsCuda<TYPE>::localL2Norm( void ) const
     }
     return result;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsCuda<TYPE>::localMaxNorm( void ) const
 {
     double result = 0;
     if ( checkData() ) {
         const TYPE *data = d_VectorData->getRawDataBlock<TYPE>( 0 );
         size_t N         = d_VectorData->sizeOfDataBlock( 0 );
-        auto lambda = [=] __device__( TYPE x ) { return x < 0 ? -x : x; };
-        result         = thrust::transform_reduce(
+        auto lambda      = [=] __device__( TYPE x ) { return x < 0 ? -x : x; };
+        result           = thrust::transform_reduce(
             thrust::device, data, data + N, lambda, (TYPE) 0, thrust::maximum<TYPE>() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -152,7 +152,7 @@ double VectorOperationsCuda<TYPE>::localMaxNorm( void ) const
     }
     return result;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsCuda<TYPE>::localDot( const VectorOperations &x ) const
 {
     double result = 0;
@@ -167,7 +167,7 @@ double VectorOperationsCuda<TYPE>::localDot( const VectorOperations &x ) const
     }
     return result;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsCuda<TYPE>::localMinQuotient( const VectorOperations &x ) const
 {
     double result = 0;
@@ -188,14 +188,14 @@ double VectorOperationsCuda<TYPE>::localMinQuotient( const VectorOperations &x )
     }
     return result;
 }
-template <typename T>
+template<typename T>
 struct thrust_wrs {
     typedef T first_argument_type;
     typedef T second_argument_type;
     typedef T result_type;
     __host__ __device__ T operator()( const T &x, const T &y ) const { return x * x * y * y; }
 };
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsCuda<TYPE>::localWrmsNorm( const VectorOperations &x ) const
 {
     double result = 0;
@@ -211,7 +211,7 @@ double VectorOperationsCuda<TYPE>::localWrmsNorm( const VectorOperations &x ) co
     }
     return result;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsCuda<TYPE>::localWrmsNormMask( const VectorOperations &x,
                                                       const VectorOperations &mask ) const
 {
@@ -221,14 +221,14 @@ double VectorOperationsCuda<TYPE>::localWrmsNormMask( const VectorOperations &x,
 
 
 /****************************************************************
-* Functions to initalize the data                               *
-****************************************************************/
-template <typename TYPE>
+ * Functions to initalize the data                               *
+ ****************************************************************/
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::zero()
 {
     VectorOperationsCuda<TYPE>::setToScalar( 0.0 );
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::setToScalar( double alpha )
 {
     bool useGPU = checkData();
@@ -248,7 +248,7 @@ void VectorOperationsCuda<TYPE>::setToScalar( double alpha )
     if ( hasGhosts() ) {
         auto &ghosts = getGhosts();
         for ( size_t i = 0; i != ghosts.size(); i++ )
-            ghosts[i]  = alpha;
+            ghosts[i] = alpha;
     }
     // Override the status state since we set the ghost values
     *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
@@ -256,13 +256,13 @@ void VectorOperationsCuda<TYPE>::setToScalar( double alpha )
     if ( useGPU )
         cudaDeviceSynchronize();
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::setRandomValues()
 {
     // Default to VectorOperationsDefault (on cpu)
     return VectorOperationsDefault<TYPE>::setRandomValues();
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::setRandomValues( RNG::shared_ptr rng )
 {
     // Default to VectorOperationsDefault (on cpu)
@@ -271,9 +271,9 @@ void VectorOperationsCuda<TYPE>::setRandomValues( RNG::shared_ptr rng )
 
 
 /****************************************************************
-* Basic linear algebra                                          *
-****************************************************************/
-template <typename TYPE>
+ * Basic linear algebra                                          *
+ ****************************************************************/
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::copy( const VectorOperations &x )
 {
     if ( checkData( x ) ) {
@@ -287,7 +287,7 @@ void VectorOperationsCuda<TYPE>::copy( const VectorOperations &x )
         return VectorOperationsDefault<TYPE>::copy( x );
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::scale( double alpha_in )
 {
     if ( checkData() ) {
@@ -302,7 +302,7 @@ void VectorOperationsCuda<TYPE>::scale( double alpha_in )
         VectorOperationsDefault<TYPE>::scale( alpha_in );
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::scale( double alpha_in, const VectorOperations &x )
 {
     if ( checkData( x ) ) {
@@ -318,7 +318,7 @@ void VectorOperationsCuda<TYPE>::scale( double alpha_in, const VectorOperations 
         VectorOperationsDefault<TYPE>::scale( alpha_in, x );
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::add( const VectorOperations &x, const VectorOperations &y )
 {
     if ( checkData( x, y ) ) {
@@ -333,7 +333,7 @@ void VectorOperationsCuda<TYPE>::add( const VectorOperations &x, const VectorOpe
         VectorOperationsDefault<TYPE>::add( x, y );
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::subtract( const VectorOperations &x, const VectorOperations &y )
 {
     if ( checkData( x, y ) ) {
@@ -348,7 +348,7 @@ void VectorOperationsCuda<TYPE>::subtract( const VectorOperations &x, const Vect
         VectorOperationsDefault<TYPE>::subtract( x, y );
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::multiply( const VectorOperations &x, const VectorOperations &y )
 {
     if ( checkData( x, y ) ) {
@@ -364,7 +364,7 @@ void VectorOperationsCuda<TYPE>::multiply( const VectorOperations &x, const Vect
         VectorOperationsDefault<TYPE>::multiply( x, y );
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::divide( const VectorOperations &x, const VectorOperations &y )
 {
     if ( checkData( x, y ) ) {
@@ -379,7 +379,7 @@ void VectorOperationsCuda<TYPE>::divide( const VectorOperations &x, const Vector
         VectorOperationsDefault<TYPE>::divide( x, y );
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::reciprocal( const VectorOperations &x )
 {
     if ( checkData( x ) ) {
@@ -394,7 +394,7 @@ void VectorOperationsCuda<TYPE>::reciprocal( const VectorOperations &x )
         VectorOperationsDefault<TYPE>::reciprocal( x );
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::linearSum( double alpha_in,
                                             const VectorOperations &x,
                                             double beta_in,
@@ -415,19 +415,19 @@ void VectorOperationsCuda<TYPE>::linearSum( double alpha_in,
         VectorOperationsDefault<TYPE>::linearSum( alpha_in, x, beta_in, y );
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::axpy( double alpha_in,
                                        const VectorOperations &x,
                                        const VectorOperations &y )
 {
     VectorOperationsCuda<TYPE>::linearSum( alpha_in, x, 1, y );
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::axpby( double alpha_in, double beta_in, const VectorOperations &x )
 {
     VectorOperationsCuda<TYPE>::linearSum( alpha_in, x, beta_in, *this );
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::abs( const VectorOperations &x )
 {
     if ( checkData( x ) ) {
@@ -442,7 +442,7 @@ void VectorOperationsCuda<TYPE>::abs( const VectorOperations &x )
         VectorOperationsDefault<TYPE>::abs( x );
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsCuda<TYPE>::addScalar( const VectorOperations &x, double alpha_in )
 {
     if ( checkData( x ) ) {
@@ -460,7 +460,7 @@ void VectorOperationsCuda<TYPE>::addScalar( const VectorOperations &x, double al
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

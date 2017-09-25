@@ -129,7 +129,7 @@ struct DendroSearch::ProjectOnBoundaryData {
     size_t d_GeomType::FaceLocalIndex;
     AMP::Mesh::MeshElementID d_GeomType::VolumeID;
 };
-}
-}
+} // namespace Mesh
+} // namespace AMP
 
 #endif // DENDRO_SEARCH

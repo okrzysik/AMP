@@ -13,7 +13,7 @@ subsetExceptForVariable( AMP::LinearAlgebra::Vector::shared_ptr inVec,
 
 AMP::LinearAlgebra::Vector::shared_ptr joinVectors( AMP::LinearAlgebra::Vector::shared_ptr vec1,
                                                     AMP::LinearAlgebra::Vector::shared_ptr vec2 );
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

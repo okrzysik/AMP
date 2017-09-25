@@ -13,9 +13,9 @@ extern template class VectorDataCPU<float>;  // Suppresses implicit instantiatio
 
 
 /****************************************************************
-* Allocate the data                                             *
-****************************************************************/
-template <typename TYPE>
+ * Allocate the data                                             *
+ ****************************************************************/
+template<typename TYPE>
 void VectorDataCPU<TYPE>::allocate( size_t start, size_t localSize, size_t globalSize )
 {
     d_Data.resize( localSize );
@@ -25,41 +25,41 @@ void VectorDataCPU<TYPE>::allocate( size_t start, size_t localSize, size_t globa
 
 
 /****************************************************************
-* Return basic properties                                       *
-****************************************************************/
-template <typename TYPE>
+ * Return basic properties                                       *
+ ****************************************************************/
+template<typename TYPE>
 inline size_t VectorDataCPU<TYPE>::numberOfDataBlocks() const
 {
     return 1;
 }
-template <typename TYPE>
+template<typename TYPE>
 inline size_t VectorDataCPU<TYPE>::sizeOfDataBlock( size_t i ) const
 {
     if ( i > 0 )
         return 0;
     return d_Data.size();
 }
-template <typename TYPE>
+template<typename TYPE>
 inline size_t VectorDataCPU<TYPE>::getLocalSize() const
 {
     return d_Data.size();
 }
-template <typename TYPE>
+template<typename TYPE>
 inline size_t VectorDataCPU<TYPE>::getGlobalSize() const
 {
     return d_globalSize;
 }
-template <typename TYPE>
+template<typename TYPE>
 uint64_t VectorDataCPU<TYPE>::getDataID() const
 {
     return reinterpret_cast<uint64_t>( d_Data.data() );
 }
-template <typename TYPE>
+template<typename TYPE>
 bool VectorDataCPU<TYPE>::isTypeId( size_t hash, size_t ) const
 {
     return hash == typeid( TYPE ).hash_code();
 }
-template <typename TYPE>
+template<typename TYPE>
 size_t VectorDataCPU<TYPE>::sizeofDataBlockType( size_t ) const
 {
     return sizeof( TYPE );
@@ -67,9 +67,9 @@ size_t VectorDataCPU<TYPE>::sizeofDataBlockType( size_t ) const
 
 
 /****************************************************************
-* Access the raw data blocks                                    *
-****************************************************************/
-template <typename TYPE>
+ * Access the raw data blocks                                    *
+ ****************************************************************/
+template<typename TYPE>
 inline void *VectorDataCPU<TYPE>::getRawDataBlockAsVoid( size_t i )
 {
     if ( i != 0 ) {
@@ -77,7 +77,7 @@ inline void *VectorDataCPU<TYPE>::getRawDataBlockAsVoid( size_t i )
     }
     return d_Data.data();
 }
-template <typename TYPE>
+template<typename TYPE>
 inline const void *VectorDataCPU<TYPE>::getRawDataBlockAsVoid( size_t i ) const
 {
     if ( i != 0 ) {
@@ -88,29 +88,29 @@ inline const void *VectorDataCPU<TYPE>::getRawDataBlockAsVoid( size_t i ) const
 
 
 /****************************************************************
-* Access individual values                                      *
-****************************************************************/
-template <typename TYPE>
+ * Access individual values                                      *
+ ****************************************************************/
+template<typename TYPE>
 inline TYPE &VectorDataCPU<TYPE>::operator[]( size_t i )
 {
     return d_Data[i];
 }
 
-template <typename TYPE>
+template<typename TYPE>
 inline const TYPE &VectorDataCPU<TYPE>::operator[]( size_t i ) const
 {
     return d_Data[i];
 }
-template <typename TYPE>
+template<typename TYPE>
 inline void VectorDataCPU<TYPE>::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
-    for ( int i            = 0; i != num; i++ )
+    for ( int i = 0; i != num; i++ )
         d_Data[indices[i]] = static_cast<TYPE>( vals[i] );
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
-template <typename TYPE>
+template<typename TYPE>
 inline void
 VectorDataCPU<TYPE>::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
@@ -122,7 +122,7 @@ VectorDataCPU<TYPE>::setLocalValuesByGlobalID( int num, size_t *indices, const d
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
-template <typename TYPE>
+template<typename TYPE>
 inline void VectorDataCPU<TYPE>::addValuesByLocalID( int num, size_t *indices, const double *vals )
 {
     for ( int i = 0; i != num; i++ )
@@ -131,7 +131,7 @@ inline void VectorDataCPU<TYPE>::addValuesByLocalID( int num, size_t *indices, c
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
-template <typename TYPE>
+template<typename TYPE>
 inline void
 VectorDataCPU<TYPE>::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
@@ -143,7 +143,7 @@ VectorDataCPU<TYPE>::addLocalValuesByGlobalID( int num, size_t *indices, const d
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
-template <typename TYPE>
+template<typename TYPE>
 inline void
 VectorDataCPU<TYPE>::getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
 {
@@ -155,9 +155,9 @@ VectorDataCPU<TYPE>::getLocalValuesByGlobalID( int num, size_t *indices, double 
 
 
 /****************************************************************
-* Copy raw data                                                 *
-****************************************************************/
-template <typename TYPE>
+ * Copy raw data                                                 *
+ ****************************************************************/
+template<typename TYPE>
 void VectorDataCPU<TYPE>::putRawData( const double *in )
 {
     for ( size_t i = 0; i < d_Data.size(); ++i ) {
@@ -165,7 +165,7 @@ void VectorDataCPU<TYPE>::putRawData( const double *in )
     }
 }
 
-template <typename TYPE>
+template<typename TYPE>
 void VectorDataCPU<TYPE>::copyOutRawData( double *out ) const
 {
     for ( size_t i = 0; i < d_Data.size(); ++i ) {
@@ -174,7 +174,7 @@ void VectorDataCPU<TYPE>::copyOutRawData( double *out ) const
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

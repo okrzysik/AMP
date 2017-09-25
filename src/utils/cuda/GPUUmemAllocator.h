@@ -2,7 +2,7 @@
 #define included_GPUUmemAllocator_H_
 
 
-template <typename T>
+template<typename T>
 class GPUUmemAllocator
 {
 public:

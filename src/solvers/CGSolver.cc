@@ -7,8 +7,8 @@ namespace AMP {
 namespace Solver {
 
 /****************************************************************
-*  Constructors                                                 *
-****************************************************************/
+ *  Constructors                                                 *
+ ****************************************************************/
 CGSolver::CGSolver() {}
 
 CGSolver::CGSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
@@ -22,13 +22,13 @@ CGSolver::CGSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
 
 
 /****************************************************************
-*  Destructor                                                   *
-****************************************************************/
+ *  Destructor                                                   *
+ ****************************************************************/
 CGSolver::~CGSolver() {}
 
 /****************************************************************
-*  Initialize                                                   *
-****************************************************************/
+ *  Initialize                                                   *
+ ****************************************************************/
 void CGSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
     AMP::shared_ptr<KrylovSolverParameters> parameters =
@@ -59,12 +59,11 @@ void CGSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 }
 
 /****************************************************************
-*  Solve                                                        *
-* TODO: store convergence history, iterations, convergence reason
-****************************************************************/
+ *  Solve                                                        *
+ * TODO: store convergence history, iterations, convergence reason
+ ****************************************************************/
 void CGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                      AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                          u )
+                      AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 
@@ -189,8 +188,8 @@ void CGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 }
 
 /****************************************************************
-*  Function to set the register the operator                    *
-****************************************************************/
+ *  Function to set the register the operator                    *
+ ****************************************************************/
 void CGSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op.get() != nullptr );
@@ -214,5 +213,5 @@ void CGSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParam
         d_pPreconditioner->resetOperator( params );
     }
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

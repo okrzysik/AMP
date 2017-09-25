@@ -298,5 +298,5 @@ NativeThyraVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *v
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP

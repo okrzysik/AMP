@@ -6,7 +6,7 @@
   @brief A small helper class used while sorting a pair of value and its index in an array/vector.
   @author Rahul Sampath
   */
-template <typename T>
+template<typename T>
 class IndexHolder
 {
 public:

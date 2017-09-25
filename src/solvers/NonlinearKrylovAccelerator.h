@@ -120,8 +120,8 @@ public:
     int getMaxFunctionEvaluations() const;
 
     /*!
-    *  Set maximum function evaluations in nonlinear solver.
-    */
+     *  Set maximum function evaluations in nonlinear solver.
+     */
     void setMaxFunctionEvaluations( int max_feval );
 
     /**
@@ -130,8 +130,7 @@ public:
      @param [out] u : shared pointer to approximate computed solution
      */
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u ) override;
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /*!
      * Obtain number of nonlinear iterations.
@@ -197,7 +196,7 @@ private:
     bool d_bSolverInitialized;
     bool d_bFreezePc;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

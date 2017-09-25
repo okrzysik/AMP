@@ -136,7 +136,7 @@ public:
      */
     DatabaseBox_POD d_data;
 };
-}
+} // namespace AMP
 
 #endif
 

@@ -86,7 +86,7 @@ private:
 
     AMP::Mesh::Mesh::shared_ptr d_slaveMesh;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

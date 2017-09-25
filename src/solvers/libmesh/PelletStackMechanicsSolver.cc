@@ -21,8 +21,7 @@ void PelletStackMechanicsSolver::resetOperator(
 
 
 void PelletStackMechanicsSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                        AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                            u )
+                                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     AMP_ASSERT(
         ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
@@ -44,8 +43,7 @@ void PelletStackMechanicsSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra
 }
 
 void PelletStackMechanicsSolver::solveSerial( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                              AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                                  u )
+                                              AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     if ( d_fbuffer2 == nullptr ) {
         d_fbuffer2 = f->cloneVector();
@@ -89,8 +87,7 @@ void PelletStackMechanicsSolver::solveSerial( AMP::shared_ptr<const AMP::LinearA
 }
 
 void PelletStackMechanicsSolver::solveScan( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                            AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                                u )
+                                            AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     d_columnSolver->solve( f, u );
     if ( d_pelletStackOp->onlyZcorrection() ) {
@@ -106,5 +103,5 @@ void PelletStackMechanicsSolver::solveScan( AMP::shared_ptr<const AMP::LinearAlg
 }
 
 
-} // Solver
-} // AMP
+} // namespace Solver
+} // namespace AMP

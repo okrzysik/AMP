@@ -18,8 +18,8 @@ namespace Operator {
 
 
 /**
-  * AMP Mesh element implementation for DTK EntityImpl interface.
-*/
+ * AMP Mesh element implementation for DTK EntityImpl interface.
+ */
 class AMPMeshEntityImpl : public DataTransferKit::EntityImpl
 {
 public:
@@ -68,7 +68,7 @@ public:
 
     /*
      * \brief Determine if entity is owned by the calling process.
-    */
+     */
     bool isLocallyOwned() const;
 
     /*!

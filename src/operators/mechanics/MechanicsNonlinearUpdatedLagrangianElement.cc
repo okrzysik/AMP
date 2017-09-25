@@ -530,7 +530,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
 
                 traceV_curr = V_curr[0][0] + V_curr[1][1] + V_curr[2][2];
                 for ( int i = 0; i < 3; i++ )
-                    for ( int j       = 0; j < 3; j++ )
+                    for ( int j = 0; j < 3; j++ )
                         tempMat[i][j] = ( ( Identity[i][j] * traceV_curr ) - V_curr[i][j] );
 
                 matInverse( tempMat, invTempMat );
@@ -585,11 +585,11 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
                 matMatMultiply( V_curr, Omega, VO );
 
                 for ( int i = 0; i < 3; i++ )
-                    for ( int j       = 0; j < 3; j++ )
+                    for ( int j = 0; j < 3; j++ )
                         delta_V[i][j] = DpWV[i][j] - VO[i][j];
 
                 for ( int i = 0; i < 3; i++ )
-                    for ( int j      = 0; j < 3; j++ )
+                    for ( int j = 0; j < 3; j++ )
                         V_curr[i][j] = V_prev[i][j] + delta_V[i][j];
 
                 for ( int i = 0; i < 3; i++ ) {
@@ -1393,5 +1393,5 @@ void MechanicsNonlinearUpdatedLagrangianElement::preNonlinearElementInit()
 
     d_gaussPtCnt = 0;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

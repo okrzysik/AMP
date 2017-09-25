@@ -9,8 +9,8 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 ManagedThyraVector::ManagedThyraVector( VectorParameters::shared_ptr params )
     : ManagedVector( params )
 {
@@ -30,14 +30,14 @@ ManagedVector *ManagedThyraVector::getNewRawPtr() const
 
 
 /****************************************************************
-* Destructor                                                    *
-****************************************************************/
+ * Destructor                                                    *
+ ****************************************************************/
 ManagedThyraVector::~ManagedThyraVector() {}
 
 
 /****************************************************************
-* Return the vector type                                        *
-****************************************************************/
+ * Return the vector type                                        *
+ ****************************************************************/
 std::string ManagedThyraVector::ManagedThyraVector::type() const
 {
     std::string retVal = "Managed Thyra Vector";
@@ -47,8 +47,8 @@ std::string ManagedThyraVector::ManagedThyraVector::type() const
 
 
 /****************************************************************
-* Clone the vector                                              *
-****************************************************************/
+ * Clone the vector                                              *
+ ****************************************************************/
 Vector::shared_ptr ManagedThyraVector::cloneVector( const Variable::shared_ptr var ) const
 {
     AMP::shared_ptr<ManagedThyraVectorParameters> p( new ManagedThyraVectorParameters() );
@@ -63,12 +63,12 @@ Vector::shared_ptr ManagedThyraVector::cloneVector( const Variable::shared_ptr v
 
 
 /****************************************************************
-* Copy the vector                                               *
-****************************************************************/
+ * Copy the vector                                               *
+ ****************************************************************/
 void ManagedThyraVector::copyVector( Vector::const_shared_ptr vec )
 {
     Vector::shared_ptr engineVec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
     engineVec->copyVector( vec );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

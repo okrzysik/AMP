@@ -95,10 +95,10 @@ public:
 
 
     /**
-      *  Function to convert DOFs from the parent DOF to a subset manager DOF.
-      *  Note: if the parent DOF does not exist in the subset, then -1 will be
-      *  returned in it's place
-      */
+     *  Function to convert DOFs from the parent DOF to a subset manager DOF.
+     *  Note: if the parent DOF does not exist in the subset, then -1 will be
+     *  returned in it's place
+     */
     virtual std::vector<size_t> getSubsetDOF( const std::vector<size_t> & ) const;
 
 
@@ -127,7 +127,7 @@ private:
     //! The iterator for the subset
     AMP::Mesh::MeshIterator d_iterator;
 };
-}
-}
+} // namespace Discretization
+} // namespace AMP
 
 #endif

@@ -233,5 +233,5 @@ PressureBoundaryOperator::PressureBoundaryOperator(
 
     d_tractionOp.reset( new TractionBoundaryOperator( tracOpParams ) );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

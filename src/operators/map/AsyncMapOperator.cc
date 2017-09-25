@@ -82,5 +82,5 @@ AMP::Mesh::Mesh::shared_ptr AsyncMapOperator::getMesh( int which )
         return AMP::Mesh::Mesh::shared_ptr();
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

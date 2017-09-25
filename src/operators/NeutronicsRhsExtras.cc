@@ -224,5 +224,5 @@ NeutronicsRhsExtras::SourceType NeutronicsRhsExtras::str2id( std::string str )
     }
     return NUM_SOURCE_TYPES;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

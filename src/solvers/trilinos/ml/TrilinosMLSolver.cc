@@ -14,8 +14,8 @@ namespace Solver {
 
 
 /****************************************************************
-* Constructors / Destructor                                     *
-****************************************************************/
+ * Constructors / Destructor                                     *
+ ****************************************************************/
 TrilinosMLSolver::TrilinosMLSolver()
 {
     d_ml             = nullptr;
@@ -165,8 +165,7 @@ void TrilinosMLSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Op
                 d_ml, 0, &( AMP::Operator::TrilinosMatrixShellOperator::matVec ) );
         } else {
             AMP_ERROR( "The option, increasingordecreasing = \""
-                       << ( d_mlOptions->d_increasingDecreasing )
-                       << "\" , is not supported." );
+                       << ( d_mlOptions->d_increasingDecreasing ) << "\" , is not supported." );
         }
     }
     d_bCreationPhase = true;
@@ -204,8 +203,7 @@ void TrilinosMLSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
 
 
 void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                              AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                  u )
+                              AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
     // in this case we make the assumption we can access a EpetraMat for now
@@ -318,8 +316,7 @@ void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> 
 
 
 void TrilinosMLSolver::reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                      AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                          u )
+                                      AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "reSolveWithLU" );
 
@@ -511,5 +508,5 @@ void TrilinosMLSolver::computeNullSpace( const AMP::shared_ptr<AMP::Operator::Op
 }
 
 
-} // Solver
-} // AMP
+} // namespace Solver
+} // namespace AMP

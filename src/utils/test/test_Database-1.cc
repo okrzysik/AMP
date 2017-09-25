@@ -25,10 +25,10 @@
 
 
 /************************************************************************
-*                                                                       *
-* This tests whether we can create and use an InputManager object       *
-*                                                                       *
-************************************************************************/
+ *                                                                       *
+ * This tests whether we can create and use an InputManager object       *
+ *                                                                       *
+ ************************************************************************/
 void readInputDatabase( AMP::UnitTest *ut )
 {
     std::string input_file = "input_Database-1";
@@ -62,11 +62,11 @@ void readInputDatabase( AMP::UnitTest *ut )
 
 
 /************************************************************************
-*                                                                       *
-* This tests whether we can put/get keys with a database                *
-*                                                                       *
-************************************************************************/
-template <class DATABASE>
+ *                                                                       *
+ * This tests whether we can put/get keys with a database                *
+ *                                                                       *
+ ************************************************************************/
+template<class DATABASE>
 void testCreateDatabase( AMP::UnitTest *ut )
 {
     AMP::shared_ptr<DATABASE> db( new DATABASE( "database" ) );

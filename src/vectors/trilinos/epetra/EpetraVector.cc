@@ -8,15 +8,15 @@ namespace LinearAlgebra {
 
 
 /********************************************************
-* Constructors / De-constructors                        *
-********************************************************/
+ * Constructors / De-constructors                        *
+ ********************************************************/
 EpetraVector::EpetraVector() {}
 EpetraVector::~EpetraVector() {}
 
 
 /********************************************************
-* View                                                  *
-********************************************************/
+ * View                                                  *
+ ********************************************************/
 Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
 {
     Vector::shared_ptr retVal;
@@ -71,5 +71,5 @@ Vector::const_shared_ptr EpetraVector::constView( Vector::const_shared_ptr inVec
         AMP_ERROR( "Cannot create view!" );
     return retVal;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

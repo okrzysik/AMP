@@ -185,7 +185,7 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
                         bnd1->getElements( AMP::Mesh::GeomType::Vertex );
                     dofIndices.resize( currNodes.size() );
                     std::vector<AMP::Mesh::MeshElementID> globalIDs( currNodes.size() );
-                    for ( size_t j   = 0; j < currNodes.size(); j++ )
+                    for ( size_t j = 0; j < currNodes.size(); j++ )
                         globalIDs[j] = currNodes[j].globalID();
 
                     // Get the libmesh element
@@ -198,7 +198,7 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
 
                     dofs.resize( currNodes.size() );
                     for ( size_t n = 0; n < dofIndices.size(); n++ )
-                        dofs[n]    = dofIndices[n][d_dofIds[nid][k]];
+                        dofs[n] = dofIndices[n][d_dofIds[nid][k]];
 
                     if ( d_isFluxGaussPtVector && myparams->d_variableFlux.get() != nullptr ) {
                         gpDOFManager->getDOFs( bnd1->globalID(), gpDofs );
@@ -265,5 +265,5 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
 
     } // skip matrix
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

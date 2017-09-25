@@ -64,5 +64,5 @@ void LinearBVPOperator::modifyRHSvector( AMP::LinearAlgebra::Vector::shared_ptr 
     ( this->getBoundaryOperator() )->addRHScorrection( rhs );
     ( this->getBoundaryOperator() )->setRHScorrection( rhs );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

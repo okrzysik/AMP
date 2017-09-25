@@ -13,9 +13,9 @@ namespace Solver {
 
 
 /**
-  * The TrilinosThyraModelEvaluator is a wrapper for a Thyra ModelEvaluator to
-  * wrap AMP::Operators for use with Trilinos NOX solvers.
-  */
+ * The TrilinosThyraModelEvaluator is a wrapper for a Thyra ModelEvaluator to
+ * wrap AMP::Operators for use with Trilinos NOX solvers.
+ */
 class TrilinosThyraModelEvaluatorParameters
 {
 public:
@@ -25,7 +25,7 @@ public:
     AMP::Solver::SolverStrategy::shared_ptr d_preconditioner;   //!< The preconditioner
     AMP::Solver::PrePostOperator::shared_ptr d_prePostOperator; //!< The pre-post operator
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

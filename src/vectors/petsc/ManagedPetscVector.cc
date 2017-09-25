@@ -1,6 +1,6 @@
+#include "vectors/petsc/ManagedPetscVector.h"
 #include "utils/Utilities.h"
 #include "vectors/VectorEngine.h"
-#include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/petsc/PetscVector.h"
 #ifdef USE_EXT_TRILINOS
 #include "vectors/trilinos/epetra/EpetraVectorEngine.h"
@@ -826,7 +826,7 @@ void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
     auto ids                              = new PetscInt[eparams.getLocalSize()];
     PetscInt begin                        = (PetscInt) eparams.beginDOF();
     PetscInt end                          = (PetscInt) eparams.endDOF();
-    for ( PetscInt i   = begin; i < end; i++ )
+    for ( PetscInt i = begin; i < end; i++ )
         ids[i - begin] = i;
     VecGetValues( source, dest.getLocalSize(), ids, dest.getRawDataBlock<double>() );
     delete[] ids;
@@ -865,5 +865,5 @@ void ManagedPetscVector::swapVectors( Vector &other )
     AMP_ASSERT( tmp != nullptr );
     ParentVector::swapVectors( *tmp );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

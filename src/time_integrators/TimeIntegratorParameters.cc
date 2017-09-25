@@ -11,5 +11,5 @@ TimeIntegratorParameters::TimeIntegratorParameters( const AMP::shared_ptr<AMP::D
 }
 
 TimeIntegratorParameters::~TimeIntegratorParameters() {}
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

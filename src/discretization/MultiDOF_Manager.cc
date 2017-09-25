@@ -9,10 +9,10 @@ namespace Discretization {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
-multiDOFManager::multiDOFManager(
-    const AMP_MPI &globalComm, std::vector<DOFManager::shared_ptr> managers )
+ * Constructors                                                  *
+ ****************************************************************/
+multiDOFManager::multiDOFManager( const AMP_MPI &globalComm,
+                                  std::vector<DOFManager::shared_ptr> managers )
     : d_managers( managers ),
       d_ids( managers.size(), 0 ),
       d_localSize( managers.size(), 0 ),
@@ -43,14 +43,14 @@ multiDOFManager::multiDOFManager(
 
 
 /****************************************************************
-* Deconstructor                                                 *
-****************************************************************/
+ * Deconstructor                                                 *
+ ****************************************************************/
 multiDOFManager::~multiDOFManager() {}
 
 
 /****************************************************************
-* Get the dofs for the element                                  *
-****************************************************************/
+ * Get the dofs for the element                                  *
+ ****************************************************************/
 void multiDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
                                std::vector<size_t> &dofs ) const
 {
@@ -95,8 +95,8 @@ void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<s
 
 
 /****************************************************************
-* Convert between local and global ids                          *
-****************************************************************/
+ * Convert between local and global ids                          *
+ ****************************************************************/
 inline size_t multiDOFManager::subToGlobal( int manager, size_t dof ) const
 {
     for ( const auto &map : d_dofMap ) {
@@ -120,8 +120,8 @@ inline std::pair<size_t, int> multiDOFManager::globalToSub( size_t dof ) const
 
 
 /****************************************************************
-* Get the element ID give a dof                                 *
-****************************************************************/
+ * Get the element ID give a dof                                 *
+ ****************************************************************/
 AMP::Mesh::MeshElement multiDOFManager::getElement( size_t dof ) const
 {
     auto map = globalToSub( dof );
@@ -131,10 +131,10 @@ AMP::Mesh::MeshElement multiDOFManager::getElement( size_t dof ) const
 
 
 /****************************************************************
-* Get an entry over the mesh elements associated with the DOFs  *
-* Note: if any sub-DOFManagers are the same, then this will     *
-* iterate over repeated elements.                               *
-****************************************************************/
+ * Get an entry over the mesh elements associated with the DOFs  *
+ * Note: if any sub-DOFManagers are the same, then this will     *
+ * iterate over repeated elements.                               *
+ ****************************************************************/
 AMP::Mesh::MeshIterator multiDOFManager::getIterator() const
 {
     if ( d_managers.size() == 1 ) {
@@ -142,7 +142,7 @@ AMP::Mesh::MeshIterator multiDOFManager::getIterator() const
     }
     // Get the iterators for all sub DOFmanagers
     std::vector<AMP::shared_ptr<AMP::Mesh::MeshIterator>> iterators( d_managers.size() );
-    for ( size_t i   = 0; i < d_managers.size(); i++ )
+    for ( size_t i = 0; i < d_managers.size(); i++ )
         iterators[i] = AMP::shared_ptr<AMP::Mesh::MeshIterator>(
             new AMP::Mesh::MeshIterator( d_managers[i]->getIterator() ) );
     // Get the list of unique elements
@@ -166,8 +166,8 @@ AMP::Mesh::MeshIterator multiDOFManager::getIterator() const
 
 
 /****************************************************************
-* Return the remote DOFs for a vector                           *
-****************************************************************/
+ * Return the remote DOFs for a vector                           *
+ ****************************************************************/
 std::vector<size_t> multiDOFManager::getRemoteDOFs() const
 {
     std::vector<size_t> global_dofs;
@@ -184,8 +184,8 @@ std::vector<size_t> multiDOFManager::getRemoteDOFs() const
 
 
 /****************************************************************
-* Return the global number of D.O.F.s                           *
-****************************************************************/
+ * Return the global number of D.O.F.s                           *
+ ****************************************************************/
 std::vector<size_t> multiDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
     std::vector<size_t> global_dofs;
@@ -202,14 +202,14 @@ std::vector<size_t> multiDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &o
 
 
 /****************************************************************
-* Function to convert DOFs                                      *
-****************************************************************/
+ * Function to convert DOFs                                      *
+ ****************************************************************/
 std::vector<size_t> multiDOFManager::getGlobalDOF( const int manager,
                                                    const std::vector<size_t> &subDOFs ) const
 {
     std::vector<size_t> dofs( subDOFs.size() );
     for ( size_t i = 0; i < dofs.size(); i++ )
-        dofs[i]    = subToGlobal( manager, subDOFs[i] );
+        dofs[i] = subToGlobal( manager, subDOFs[i] );
     return dofs;
 }
 std::vector<size_t> multiDOFManager::getSubDOF( const int manager,
@@ -225,14 +225,14 @@ std::vector<size_t> multiDOFManager::getSubDOF( const int manager,
 
 
 /****************************************************************
-* Function to return the DOFManagers                            *
-****************************************************************/
+ * Function to return the DOFManagers                            *
+ ****************************************************************/
 std::vector<DOFManager::shared_ptr> multiDOFManager::getDOFManagers() const { return d_managers; }
 
 
 /****************************************************************
-* Subset the DOF manager                                        *
-****************************************************************/
+ * Subset the DOF manager                                        *
+ ****************************************************************/
 AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP_MPI &comm_in )
 {
     // Check if we are dealing with a compatible comm
@@ -321,5 +321,5 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::MeshIterat
     // Create the new multiDOFManager
     return AMP::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
 }
-}
-}
+} // namespace Discretization
+} // namespace AMP

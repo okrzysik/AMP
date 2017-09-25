@@ -38,7 +38,7 @@ public:
     // Functions for pre/post apply
     virtual void runPreApply( AMP::LinearAlgebra::Vector::const_shared_ptr x,
                               AMP::LinearAlgebra::Vector::shared_ptr f,
-                              bool exact ) = 0;
+                              bool exact )  = 0;
     virtual void runPostApply( AMP::LinearAlgebra::Vector::const_shared_ptr x,
                                AMP::LinearAlgebra::Vector::shared_ptr f,
                                bool exact ) = 0;
@@ -49,7 +49,7 @@ protected:
 
 private:
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

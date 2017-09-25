@@ -114,7 +114,7 @@ inline std::vector<bool> BoxMesh::periodic() const
 {
     std::vector<bool> per( static_cast<int>( GeomDim ) );
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
-        per[d]  = d_isPeriodic[d];
+        per[d] = d_isPeriodic[d];
     return per;
 }
 inline std::vector<size_t> BoxMesh::size() const
@@ -155,9 +155,9 @@ inline BoxMesh::Box BoxMesh::getLocalBox( int gcw ) const
 
 
 /****************************************************************
-* Helper function to return the indices of the local block      *
-* owned by the given processor                                  *
-****************************************************************/
+ * Helper function to return the indices of the local block      *
+ * owned by the given processor                                  *
+ ****************************************************************/
 inline std::array<int, 6> BoxMesh::getLocalBlock( unsigned int rank ) const
 {
     int p[3];
@@ -177,19 +177,19 @@ inline std::array<int, 6> BoxMesh::getLocalBlock( unsigned int rank ) const
 
 
 /****************************************************************
-* Convert between the different id types                        *
-****************************************************************/
+ * Convert between the different id types                        *
+ ****************************************************************/
 inline MeshElementID BoxMesh::convert( const BoxMesh::MeshElementIndex &index ) const
 {
     int size[3] = { ( d_globalSize[0] + d_numBlocks[0] - 1 ) / d_numBlocks[0],
                     ( d_globalSize[1] + d_numBlocks[1] - 1 ) / d_numBlocks[1],
                     ( d_globalSize[2] + d_numBlocks[2] - 1 ) / d_numBlocks[2] };
-    int i  = index.index( 0 );
-    int j  = index.index( 1 );
-    int k  = index.index( 2 );
-    int px = std::min( i / size[0], d_numBlocks[0] - 1 );
-    int py = std::min( j / size[1], d_numBlocks[1] - 1 );
-    int pz = std::min( k / size[2], d_numBlocks[2] - 1 );
+    int i       = index.index( 0 );
+    int j       = index.index( 1 );
+    int k       = index.index( 2 );
+    int px      = std::min( i / size[0], d_numBlocks[0] - 1 );
+    int py      = std::min( j / size[1], d_numBlocks[1] - 1 );
+    int pz      = std::min( k / size[2], d_numBlocks[2] - 1 );
     i -= size[0] * px;
     j -= size[1] * py;
     k -= size[2] * pz;
@@ -208,8 +208,8 @@ inline BoxMesh::MeshElementIndex BoxMesh::convert( const MeshElementID &id ) con
     int size[3] = { ( d_globalSize[0] + d_numBlocks[0] - 1 ) / d_numBlocks[0],
                     ( d_globalSize[1] + d_numBlocks[1] - 1 ) / d_numBlocks[1],
                     ( d_globalSize[2] + d_numBlocks[2] - 1 ) / d_numBlocks[2] };
-    size_t ijk = id.local_id();
-    int i      = ijk % ( size[0] + 1 );
+    size_t ijk  = id.local_id();
+    int i       = ijk % ( size[0] + 1 );
     ijk /= ( size[0] + 1 );
     int j = ijk % ( size[1] + 1 );
     ijk /= ( size[1] + 1 );
@@ -223,7 +223,7 @@ inline BoxMesh::MeshElementIndex BoxMesh::convert( const MeshElementID &id ) con
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 #endif

@@ -29,9 +29,9 @@ public:
     typedef NodeToNodeMapParameters Parameters;
 
     /** \brief  Returns true if MapType = "NodeToNode"
-      * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db
-      * \return  True iff s == "NodeToNode"
-      */
+     * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db
+     * \return  True iff s == "NodeToNode"
+     */
     static bool validMapType( const std::string &s );
 
     //!  The base tag used in communication.
@@ -111,8 +111,8 @@ protected:
     std::vector<AMP::Mesh::MeshElementID> d_sendList;
     std::vector<AMP::Mesh::MeshElementID> d_recvList;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 
 #endif

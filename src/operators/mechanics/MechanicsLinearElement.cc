@@ -238,7 +238,7 @@ void MechanicsLinearElement::apply_Reduced()
         }
 
         for ( unsigned int i = 0; i < ( 3 * num_nodes ); i++ )
-            for ( unsigned int j        = 0; j < ( 3 * num_nodes ); j++ )
+            for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ )
                 materialStiffness[i][j] = 0.0;
 
         for ( auto &elem : materialMatrix )
@@ -431,7 +431,7 @@ void MechanicsLinearElement::apply_Normal()
         }
 
         for ( unsigned int i = 0; i < ( 3 * num_nodes ); i++ )
-            for ( unsigned int j        = 0; j < ( 3 * num_nodes ); j++ )
+            for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ )
                 materialStiffness[i][j] = 0.0;
 
         for ( auto &elem : materialMatrix )
@@ -573,5 +573,5 @@ void MechanicsLinearElement::apply_Normal()
 
     d_materialModel->postLinearElementOperation();
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

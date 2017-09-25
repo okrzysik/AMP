@@ -1,10 +1,10 @@
+#include "utils/cuda/testGPUAllocators.hpp"
 #include "utils/AMPManager.h"
 #include "utils/Array.h"
 #include "utils/FunctionTable.h"
 #include "utils/UnitTest.h"
 #include "utils/cuda/GPUDevAllocator.h"
 #include "utils/cuda/GPUUmemAllocator.h"
-#include "utils/cuda/testGPUAllocators.hpp"
 #include <cuda.h>
 
 

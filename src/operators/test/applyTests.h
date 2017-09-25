@@ -24,8 +24,7 @@ void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,
 
 void applyTests( AMP::UnitTest *ut,
                  std::string msgPrefix,
-                 AMP::shared_ptr<AMP::Operator::Operator>
-                     testOperator,
+                 AMP::shared_ptr<AMP::Operator::Operator> testOperator,
                  AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
                  AMP::LinearAlgebra::Vector::shared_ptr solVec,
                  AMP::LinearAlgebra::Vector::shared_ptr resVec,
@@ -34,8 +33,7 @@ void applyTests( AMP::UnitTest *ut,
 
 void applyTests( AMP::UnitTest *ut,
                  std::string msgPrefix,
-                 AMP::shared_ptr<AMP::Operator::Operator>
-                     testOperator,
+                 AMP::shared_ptr<AMP::Operator::Operator> testOperator,
                  AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
                  AMP::LinearAlgebra::Vector::shared_ptr solVec,
                  AMP::LinearAlgebra::Vector::shared_ptr resVec,

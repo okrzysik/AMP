@@ -12,8 +12,8 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Get the size of the vector                                    *
-****************************************************************/
+ * Get the size of the vector                                    *
+ ****************************************************************/
 inline size_t VectorData::getGlobalMaxID() const { return getGlobalSize(); }
 inline size_t VectorData::getLocalMaxID() const { return getLocalSize(); }
 inline size_t VectorData::getLocalStartID() const { return d_CommList->getStartGID(); }
@@ -30,9 +30,9 @@ inline bool VectorData::containsGlobalElement( size_t i )
 
 
 /****************************************************************
-* Get the type of data                                          *
-****************************************************************/
-template <typename TYPE>
+ * Get the type of data                                          *
+ ****************************************************************/
+template<typename TYPE>
 bool VectorData::isType() const
 {
     bool test = true;
@@ -41,7 +41,7 @@ bool VectorData::isType() const
         test = test && isTypeId( hash, i );
     return test;
 }
-template <typename TYPE>
+template<typename TYPE>
 bool VectorData::isBlockType( size_t i ) const
 {
     auto hash = typeid( TYPE ).hash_code();
@@ -50,36 +50,36 @@ bool VectorData::isBlockType( size_t i ) const
 
 
 /****************************************************************
-* Create vector iterators                                       *
-****************************************************************/
-template <class TYPE>
+ * Create vector iterators                                       *
+ ****************************************************************/
+template<class TYPE>
 inline VectorDataIterator<TYPE> VectorData::begin()
 {
     dataChanged();
     return VectorDataIterator<TYPE>( this, 0 );
 }
-template <class TYPE>
+template<class TYPE>
 inline VectorDataIterator<const TYPE> VectorData::begin() const
 {
     return VectorDataIterator<const TYPE>( const_cast<VectorData *>( this ), 0 );
 }
-template <class TYPE>
+template<class TYPE>
 inline VectorDataIterator<const TYPE> VectorData::constBegin() const
 {
     return VectorDataIterator<const TYPE>( const_cast<VectorData *>( this ), 0 );
 }
-template <class TYPE>
+template<class TYPE>
 inline VectorDataIterator<TYPE> VectorData::end()
 {
     dataChanged();
     return VectorDataIterator<TYPE>( this, getLocalSize() );
 }
-template <class TYPE>
+template<class TYPE>
 inline VectorDataIterator<const TYPE> VectorData::constEnd() const
 {
     return VectorDataIterator<const TYPE>( const_cast<VectorData *>( this ), getLocalSize() );
 }
-template <class TYPE>
+template<class TYPE>
 inline VectorDataIterator<const TYPE> VectorData::end() const
 {
     return VectorDataIterator<const TYPE>( const_cast<VectorData *>( this ), getLocalSize() );
@@ -88,8 +88,8 @@ inline size_t VectorData::getGhostSize() const { return d_Ghosts->size(); }
 
 
 /****************************************************************
-* Update status                                                 *
-****************************************************************/
+ * Update status                                                 *
+ ****************************************************************/
 inline VectorData::UpdateState VectorData::getUpdateStatus() const { return *d_UpdateState; }
 inline void VectorData::setUpdateStatus( UpdateState state ) { *d_UpdateState = state; }
 inline void VectorData::setUpdateStatusPtr( AMP::shared_ptr<UpdateState> rhs )
@@ -104,21 +104,21 @@ inline void VectorData::dataChanged()
 {
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
-    auto firer         = dynamic_cast<DataChangeFirer *>( this );
+    auto firer = dynamic_cast<DataChangeFirer *>( this );
     if ( firer != nullptr )
         firer->fireDataChange();
 }
 
 
 /****************************************************************
-* Templated functions                                           *
-****************************************************************/
-template <typename TYPE>
+ * Templated functions                                           *
+ ****************************************************************/
+template<typename TYPE>
 TYPE *VectorData::getRawDataBlock( size_t i )
 {
     return static_cast<TYPE *>( this->getRawDataBlockAsVoid( i ) );
 }
-template <typename TYPE>
+template<typename TYPE>
 const TYPE *VectorData::getRawDataBlock( size_t i ) const
 {
     return static_cast<const TYPE *>( this->getRawDataBlockAsVoid( i ) );
@@ -126,8 +126,8 @@ const TYPE *VectorData::getRawDataBlock( size_t i ) const
 
 
 /****************************************************************
-* Set/Get individual values                                     *
-****************************************************************/
+ * Set/Get individual values                                     *
+ ****************************************************************/
 inline void VectorData::setValueByLocalID( size_t i, const double val )
 {
     setValuesByLocalID( 1, &i, &val );
@@ -182,7 +182,7 @@ inline double VectorData::getValueByLocalID( size_t ndx ) const
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

@@ -9,41 +9,41 @@ namespace AMP {
 namespace LinearAlgebra {
 
 /** \class NativePetscMatrix
-  * \brief  This is a thin wrapper around PETSc Mat
-  * \details  As opposed to ManagedPetscMatrix, this is a
-  *    thin wrapper around a PETSc Mat.
-  */
+ * \brief  This is a thin wrapper around PETSc Mat
+ * \details  As opposed to ManagedPetscMatrix, this is a
+ *    thin wrapper around a PETSc Mat.
+ */
 class NativePetscMatrix : public PetscMatrix
 {
 protected:
     /** \brief Unused default constructor
-      */
+     */
     NativePetscMatrix();
 
     virtual void multiply( shared_ptr other_op, shared_ptr &result ) override;
 
 public:
     /** \brief  Construct a matrix from a PETSc Mat.
-      * \param[in] m  The Mat to wrap
-      * \param[in] dele  Let this class deallocate the Mat
-      */
+     * \param[in] m  The Mat to wrap
+     * \param[in] dele  Let this class deallocate the Mat
+     */
     explicit NativePetscMatrix( Mat m, bool dele = false );
 
 
     /** \brief Destructor
-      */
+     */
     virtual ~NativePetscMatrix();
 
     /** \brief Create a NativePetscMatrix with the same non-zero
-      * structure
-      * \param[in] m  The matrix to duplicate
-      * \return A new matrix with the same non-zero structure
-      */
+     * structure
+     * \param[in] m  The matrix to duplicate
+     * \return A new matrix with the same non-zero structure
+     */
     static Matrix::shared_ptr duplicateMat( Mat m );
 
     /** \brief Copy data from a PETSc Mat
-    * \param[in] m  The matrix with the data
-    */
+     * \param[in] m  The matrix with the data
+     */
     void copyFromMat( Mat m );
 
     virtual void mult( Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
@@ -90,8 +90,8 @@ public:
 
 private:
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #include "NativePetscMatrix.inline.h"
 

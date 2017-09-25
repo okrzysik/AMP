@@ -10,8 +10,8 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Get the comm                                                  *
-****************************************************************/
+ * Get the comm                                                  *
+ ****************************************************************/
 inline bool VectorOperations::hasComm() const
 {
     if ( d_VectorData == nullptr )
@@ -25,8 +25,8 @@ inline const AMP_MPI &VectorOperations::getComm() const
 
 
 /****************************************************************
-* Access ghost values                                           *
-****************************************************************/
+ * Access ghost values                                           *
+ ****************************************************************/
 inline bool VectorOperations::hasGhosts() const
 {
     if ( d_VectorData == nullptr )
@@ -37,8 +37,8 @@ inline std::vector<double> &VectorOperations::getGhosts() { return *( d_VectorDa
 
 
 /****************************************************************
-* Wrappers for shared_ptr                                       *
-****************************************************************/
+ * Wrappers for shared_ptr                                       *
+ ****************************************************************/
 inline bool VectorOperations::equals( AMP::shared_ptr<const VectorOperations> x, double tol )
 {
     return equals( *x, tol );
@@ -51,8 +51,8 @@ inline void VectorOperations::scale( double alpha, AMP::shared_ptr<const VectorO
 {
     return scale( alpha, *x );
 }
-inline void VectorOperations::add(
-    AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
+inline void VectorOperations::add( AMP::shared_ptr<const VectorOperations> x,
+                                   AMP::shared_ptr<const VectorOperations> y )
 {
     return add( *x, *y );
 }
@@ -60,18 +60,18 @@ void VectorOperations::addScalar( AMP::shared_ptr<const VectorOperations> x, dou
 {
     return addScalar( *x, alpha );
 }
-inline void VectorOperations::subtract(
-    AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
+inline void VectorOperations::subtract( AMP::shared_ptr<const VectorOperations> x,
+                                        AMP::shared_ptr<const VectorOperations> y )
 {
     return subtract( *x, *y );
 }
-inline void VectorOperations::multiply(
-    AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
+inline void VectorOperations::multiply( AMP::shared_ptr<const VectorOperations> x,
+                                        AMP::shared_ptr<const VectorOperations> y )
 {
     return multiply( *x, *y );
 }
-inline void VectorOperations::divide(
-    AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
+inline void VectorOperations::divide( AMP::shared_ptr<const VectorOperations> x,
+                                      AMP::shared_ptr<const VectorOperations> y )
 {
     return divide( *x, *y );
 }
@@ -80,19 +80,15 @@ inline void VectorOperations::reciprocal( AMP::shared_ptr<const VectorOperations
     return reciprocal( *x );
 }
 inline void VectorOperations::linearSum( double alpha,
-                                         AMP::shared_ptr<const VectorOperations>
-                                             x,
+                                         AMP::shared_ptr<const VectorOperations> x,
                                          double beta,
-                                         AMP::shared_ptr<const VectorOperations>
-                                             y )
+                                         AMP::shared_ptr<const VectorOperations> y )
 {
     return linearSum( alpha, *x, beta, *y );
 }
 inline void VectorOperations::axpy( double alpha,
-                                    AMP::shared_ptr<const VectorOperations>
-                                        x,
-                                    AMP::shared_ptr<const VectorOperations>
-                                        y )
+                                    AMP::shared_ptr<const VectorOperations> x,
+                                    AMP::shared_ptr<const VectorOperations> y )
 {
     return axpy( alpha, *x, *y );
 }
@@ -106,27 +102,25 @@ inline double VectorOperations::dot( AMP::shared_ptr<const VectorOperations> x )
 {
     return dot( *x );
 }
-inline double VectorOperations::minQuotient(
-    AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
+inline double VectorOperations::minQuotient( AMP::shared_ptr<const VectorOperations> x,
+                                             AMP::shared_ptr<const VectorOperations> y )
 {
     return minQuotient( *x, *y );
 }
-inline double VectorOperations::wrmsNorm(
-    AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
+inline double VectorOperations::wrmsNorm( AMP::shared_ptr<const VectorOperations> x,
+                                          AMP::shared_ptr<const VectorOperations> y )
 {
     return wrmsNorm( *x, *y );
 }
 inline double VectorOperations::wrmsNormMask( AMP::shared_ptr<const VectorOperations> x,
-                                              AMP::shared_ptr<const VectorOperations>
-                                                  y,
-                                              AMP::shared_ptr<const VectorOperations>
-                                                  mask )
+                                              AMP::shared_ptr<const VectorOperations> y,
+                                              AMP::shared_ptr<const VectorOperations> mask )
 {
     return wrmsNormMask( *x, *y, *mask );
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

@@ -13,7 +13,7 @@
 using namespace AMP::LinearAlgebra;
 
 
-template <typename FACTORY>
+template<typename FACTORY>
 void test_matrix_loop( AMP::UnitTest &ut )
 {
     std::string name = FACTORY::name();
@@ -34,7 +34,7 @@ void test_matrix_loop( AMP::UnitTest &ut )
 }
 
 
-template <typename FACTORY>
+template<typename FACTORY>
 void test_petsc_matrix_loop( AMP::UnitTest &ut )
 {
     NULL_USE( ut );

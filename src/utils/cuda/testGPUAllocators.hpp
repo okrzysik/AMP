@@ -1,12 +1,12 @@
 
-template <typename T>
+template<typename T>
 void opDataW( T *d_A, size_t n );
 
-template <typename T>
+template<typename T>
 void setDataW( T *d_A, T v, size_t n );
 
 
-template <typename T>
+template<typename T>
 class KernelWrapper
 {
 public:

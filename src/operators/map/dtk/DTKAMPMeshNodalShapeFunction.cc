@@ -106,5 +106,5 @@ void AMPMeshNodalShapeFunction::evaluateGradient(
 }
 
 //---------------------------------------------------------------------------//
-}
-}
+} // namespace Operator
+} // namespace AMP

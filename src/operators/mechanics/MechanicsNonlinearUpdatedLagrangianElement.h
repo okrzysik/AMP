@@ -110,7 +110,7 @@ public:
       the
       nodes of the current element at the previous time-step.
      */
-    template <MaterialUpdateType type>
+    template<MaterialUpdateType type>
     void updateMaterialModel( const std::vector<std::vector<double>> &elementInputVectors,
                               const std::vector<std::vector<double>> &elementInputVectors_pre );
 
@@ -172,21 +172,21 @@ public:
     }
 
 protected:
-    template <MaterialUpdateType type>
+    template<MaterialUpdateType type>
     void materialModelPreNonlinearElementOperation();
 
-    template <MaterialUpdateType type>
+    template<MaterialUpdateType type>
     void materialModelPreNonlinearGaussPointOperation();
 
-    template <MaterialUpdateType type>
+    template<MaterialUpdateType type>
     void materialModelNonlinearGaussPointOperation( const std::vector<std::vector<double>> &,
                                                     double[3][3],
                                                     double[3][3] );
 
-    template <MaterialUpdateType type>
+    template<MaterialUpdateType type>
     void materialModelPostNonlinearGaussPointOperation();
 
-    template <MaterialUpdateType type>
+    template<MaterialUpdateType type>
     void materialModelPostNonlinearElementOperation();
 
     /**
@@ -241,21 +241,21 @@ private:
 };
 
 
-template <>
+template<>
 inline void MechanicsNonlinearUpdatedLagrangianElement::materialModelPreNonlinearElementOperation<
     MechanicsNonlinearUpdatedLagrangianElement::RESET>()
 {
     d_materialModel->preNonlinearResetElementOperation();
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearUpdatedLagrangianElement::materialModelPreNonlinearElementOperation<
     MechanicsNonlinearUpdatedLagrangianElement::JACOBIAN>()
 {
     d_materialModel->preNonlinearJacobianElementOperation();
 }
 
-template <>
+template<>
 inline void
 MechanicsNonlinearUpdatedLagrangianElement::materialModelPreNonlinearGaussPointOperation<
     MechanicsNonlinearUpdatedLagrangianElement::RESET>()
@@ -263,7 +263,7 @@ MechanicsNonlinearUpdatedLagrangianElement::materialModelPreNonlinearGaussPointO
     d_materialModel->preNonlinearResetGaussPointOperation();
 }
 
-template <>
+template<>
 inline void
 MechanicsNonlinearUpdatedLagrangianElement::materialModelPreNonlinearGaussPointOperation<
     MechanicsNonlinearUpdatedLagrangianElement::JACOBIAN>()
@@ -271,21 +271,21 @@ MechanicsNonlinearUpdatedLagrangianElement::materialModelPreNonlinearGaussPointO
     d_materialModel->preNonlinearJacobianGaussPointOperation();
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearUpdatedLagrangianElement::materialModelPostNonlinearElementOperation<
     MechanicsNonlinearUpdatedLagrangianElement::RESET>()
 {
     d_materialModel->postNonlinearResetElementOperation();
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearUpdatedLagrangianElement::materialModelPostNonlinearElementOperation<
     MechanicsNonlinearUpdatedLagrangianElement::JACOBIAN>()
 {
     d_materialModel->postNonlinearJacobianElementOperation();
 }
 
-template <>
+template<>
 inline void
 MechanicsNonlinearUpdatedLagrangianElement::materialModelPostNonlinearGaussPointOperation<
     MechanicsNonlinearUpdatedLagrangianElement::RESET>()
@@ -293,7 +293,7 @@ MechanicsNonlinearUpdatedLagrangianElement::materialModelPostNonlinearGaussPoint
     d_materialModel->postNonlinearResetGaussPointOperation();
 }
 
-template <>
+template<>
 inline void
 MechanicsNonlinearUpdatedLagrangianElement::materialModelPostNonlinearGaussPointOperation<
     MechanicsNonlinearUpdatedLagrangianElement::JACOBIAN>()
@@ -301,7 +301,7 @@ MechanicsNonlinearUpdatedLagrangianElement::materialModelPostNonlinearGaussPoint
     d_materialModel->postNonlinearJacobianGaussPointOperation();
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearUpdatedLagrangianElement::materialModelNonlinearGaussPointOperation<
     MechanicsNonlinearUpdatedLagrangianElement::RESET>(
     const std::vector<std::vector<double>> &strain, double R_n[3][3], double R_np1[3][3] )
@@ -309,7 +309,7 @@ inline void MechanicsNonlinearUpdatedLagrangianElement::materialModelNonlinearGa
     d_materialModel->nonlinearResetGaussPointOperation_UL( strain, R_n, R_np1 );
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearUpdatedLagrangianElement::materialModelNonlinearGaussPointOperation<
     MechanicsNonlinearUpdatedLagrangianElement::JACOBIAN>(
     const std::vector<std::vector<double>> &strain, double R_n[3][3], double R_np1[3][3] )
@@ -318,7 +318,7 @@ inline void MechanicsNonlinearUpdatedLagrangianElement::materialModelNonlinearGa
 }
 
 
-template <MechanicsNonlinearUpdatedLagrangianElement::MaterialUpdateType type>
+template<MechanicsNonlinearUpdatedLagrangianElement::MaterialUpdateType type>
 void MechanicsNonlinearUpdatedLagrangianElement::updateMaterialModel(
     const std::vector<std::vector<double>> &elementInputVectors,
     const std::vector<std::vector<double>> &elementInputVectors_pre )
@@ -656,7 +656,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::updateMaterialModel(
 
     materialModelPostNonlinearElementOperation<type>();
 }
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

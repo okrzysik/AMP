@@ -9,5 +9,5 @@ inline NativeVector::NativeVector( parameters_ptr params )
     : Vector( AMP::dynamic_pointer_cast<VectorParameters>( params ) )
 {
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

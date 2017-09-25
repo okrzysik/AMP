@@ -209,7 +209,7 @@ void MassDensityModel::getDensityThermal( std::vector<double> &result,
     d_material->property( "Density" )->evalv( density, args );
     d_material->property( "HeatCapacityPressure" )->evalv( specificheat, args );
     for ( unsigned int i = 0; i < n; i++ )
-        result[i]        = density[i] * specificheat[i];
+        result[i] = density[i] * specificheat[i];
 
     if ( d_UseBilogScaling ) {
         DiffusionTransportModel::bilogScale( result, d_BilogRange[0], d_BilogRange[1] );
@@ -397,7 +397,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
             double x = xyz[k]( 0 ), y = xyz[k]( 1 ), z = xyz[k]( 2 );
             double r = sqrt( x * x + y * y ), th = acos( x / r );
             if ( y < 0 )
-                th    = 2 * Pi - th;
+                th = 2 * Pi - th;
             radius[k] = r;
             theta[k]  = th;
             zee[k]    = z;
@@ -438,5 +438,5 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         }
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

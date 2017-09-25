@@ -1,6 +1,6 @@
 
-#include "utils/ParameterBase.h"
 #include "Matrix.h"
+#include "utils/ParameterBase.h"
 #include <iomanip>
 
 namespace AMP {
@@ -115,5 +115,5 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
     */
     return out;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

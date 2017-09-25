@@ -20,8 +20,8 @@ class FixedClad : public Material
 public:
     FixedClad();
 };
-}
-}
+} // namespace Materials
+} // namespace AMP
 
 
 // Add static initialize to force symbols to be included

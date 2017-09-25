@@ -10,7 +10,7 @@ namespace AMP {
 namespace LinearAlgebra {
 class Vector;
 }
-}
+} // namespace AMP
 #endif
 
 #include "utils/shared_ptr.h"
@@ -348,13 +348,13 @@ public:
 
 
 public: // BoxMesh specific functionality
-        /**
-         * \brief    Return the logical coordinates
-         * \details  This function queries the mesh to get the logical coordinates in [0,1]
-         *     from the physical coordinates.  Not all meshes support this functionallity.
-         * \param[in] x         Physical coordinates
-         * @return              Returns the logical coordinates
-         */
+    /**
+     * \brief    Return the logical coordinates
+     * \details  This function queries the mesh to get the logical coordinates in [0,1]
+     *     from the physical coordinates.  Not all meshes support this functionallity.
+     * \param[in] x         Physical coordinates
+     * @return              Returns the logical coordinates
+     */
     virtual std::array<double, 3> physicalToLogical( const double *x ) const = 0;
 
     /**
@@ -422,8 +422,8 @@ protected:
     std::array<int, 3> d_numBlocks;   // The number of local box in each direction
     std::array<int, 6> d_surfaceId;   // For each surface which id is it part of (if any)
     std::array<bool, 6> d_onSurface;  // For each surface which id is it part of (if any)
-    ElementBlocks
-        d_globalSurfaceList[6][4]; // List of logical surface elements for each surface/type
+    ElementBlocks d_globalSurfaceList[6]
+                                     [4]; // List of logical surface elements for each surface/type
 
     // Friend functions to access protected functions
     friend class structuredMeshElement;
@@ -434,8 +434,8 @@ private:
 };
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 
 #include "ampmesh/structured/BoxMesh.inline.h"

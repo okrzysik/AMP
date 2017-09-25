@@ -33,5 +33,5 @@ namespace AMP {
  *
  */
 typedef AMP::MemoryDatabase InputDatabase;
-}
+} // namespace AMP
 #endif

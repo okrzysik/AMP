@@ -72,5 +72,5 @@ MechanicsElement::MechanicsElement( const AMP::shared_ptr<ElementOperationParame
 
     d_iDebugPrintInfoLevel = ( params->d_db )->getIntegerWithDefault( "print_info_level", 0 );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

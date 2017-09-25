@@ -70,8 +70,8 @@ void ImplicitTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameter
         d_solver = params->d_solver;
 
         /*
-        * Initialize object with data read from input and restart databases.
-        */
+         * Initialize object with data read from input and restart databases.
+         */
         getFromInput( params->d_db );
     } else {
         AMP_ERROR( "ImplicitTimeIntegrator::ImplicitTimeIntegrator: TimeIntegratorParameters "
@@ -178,7 +178,7 @@ void ImplicitTimeIntegrator::printClassData( std::ostream &os ) const
 }
 
 void ImplicitTimeIntegrator::initializeTimeOperator( AMP::shared_ptr<TimeIntegratorParameters> ) {}
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif

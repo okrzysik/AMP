@@ -1,6 +1,6 @@
 
-#include "utils/AMPManager.h"
 #include "materials/Material.h"
+#include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"

@@ -10,8 +10,8 @@ namespace Discretization {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManager> parentDOFManager,
                                                  const std::vector<size_t> &dofs,
                                                  const AMP::Mesh::MeshIterator &iterator,
@@ -65,7 +65,7 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
     std::vector<size_t> recv_data( subsetDOF->d_global );
     subsetDOF->d_comm.allGather( (int) N_local, &N_remote[0] );
     N_disp[0] = 0;
-    for ( int i   = 1; i < subsetDOF->d_comm.getSize(); i++ )
+    for ( int i = 1; i < subsetDOF->d_comm.getSize(); i++ )
         N_disp[i] = N_disp[i - 1] + N_remote[i - 1];
     subsetDOF->d_comm.allGather(
         send_data, (int) N_local, &recv_data[0], &N_remote[0], &N_disp[0], true );
@@ -95,14 +95,14 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
 
 
 /****************************************************************
-* Deconstructor                                                 *
-****************************************************************/
+ * Deconstructor                                                 *
+ ****************************************************************/
 subsetDOFManager::~subsetDOFManager() {}
 
 
 /****************************************************************
-* Get the dofs for the given element                            *
-****************************************************************/
+ * Get the dofs for the given element                            *
+ ****************************************************************/
 void subsetDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
                                 std::vector<size_t> &dofs ) const
 {
@@ -126,7 +126,7 @@ void subsetDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids
     }
     dofs.resize( subsetDOFs.size() );
     for ( size_t i = 0; i < subsetDOFs.size(); i++ )
-        dofs[i]    = subsetDOFs[i];
+        dofs[i] = subsetDOFs[i];
 }
 void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
                                 std::vector<size_t> &dofs ) const
@@ -135,8 +135,8 @@ void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
 }
 
 /****************************************************************
-* Get the element ID give a dof                                 *
-****************************************************************/
+ * Get the element ID give a dof                                 *
+ ****************************************************************/
 AMP::Mesh::MeshElement subsetDOFManager::getElement( size_t dof ) const
 {
     std::vector<size_t> dof2 = getParentDOF( { dof } );
@@ -145,22 +145,22 @@ AMP::Mesh::MeshElement subsetDOFManager::getElement( size_t dof ) const
 
 
 /****************************************************************
-* Get an entry over the mesh elements associated with the DOFs  *
-* Note: if any sub-DOFManagers are the same, then this will     *
-* iterate over repeated elements.                               *
-****************************************************************/
+ * Get an entry over the mesh elements associated with the DOFs  *
+ * Note: if any sub-DOFManagers are the same, then this will     *
+ * iterate over repeated elements.                               *
+ ****************************************************************/
 AMP::Mesh::MeshIterator subsetDOFManager::getIterator() const { return d_iterator; }
 
 
 /****************************************************************
-* Return the remote DOFs for a vector                           *
-****************************************************************/
+ * Return the remote DOFs for a vector                           *
+ ****************************************************************/
 std::vector<size_t> subsetDOFManager::getRemoteDOFs() const { return d_remoteSubsetDOFs; }
 
 
 /****************************************************************
-* Return the global number of D.O.F.s                           *
-****************************************************************/
+ * Return the global number of D.O.F.s                           *
+ ****************************************************************/
 std::vector<size_t> subsetDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
     std::vector<size_t> parentDOFs = d_parentDOFManager->getRowDOFs( obj );
@@ -178,8 +178,8 @@ std::vector<size_t> subsetDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
 
 
 /****************************************************************
-* Function to convert DOFs                                      *
-****************************************************************/
+ * Function to convert DOFs                                      *
+ ****************************************************************/
 std::vector<size_t> subsetDOFManager::getParentDOF( const std::vector<size_t> &subsetDOFs ) const
 {
     std::vector<size_t> parentDOFs( subsetDOFs.size() );
@@ -228,11 +228,11 @@ std::vector<size_t> subsetDOFManager::getLocalParentDOFs() const { return d_loca
 
 
 /****************************************************************
-* Function to return the DOFManagers                            *
-****************************************************************/
+ * Function to return the DOFManagers                            *
+ ****************************************************************/
 AMP::shared_ptr<const DOFManager> subsetDOFManager::getDOFManager() const
 {
     return d_parentDOFManager;
 }
-}
-}
+} // namespace Discretization
+} // namespace AMP

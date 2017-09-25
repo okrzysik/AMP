@@ -283,5 +283,5 @@ NavierStokesLSWFFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_sh
         return vec->constSubsetVectorForVariable( var );
     }
 }
-}
-} // end namespace
+} // namespace Operator
+} // namespace AMP

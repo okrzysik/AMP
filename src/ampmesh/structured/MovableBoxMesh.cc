@@ -19,8 +19,8 @@ namespace Mesh {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh ) : BoxMesh( mesh )
 {
     // Get a list of all nodes on the current processor
@@ -40,15 +40,15 @@ MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh ) : BoxMesh( mesh
     for ( size_t i = 0; i < d_index.size(); i++ ) {
         double pos[3];
         mesh.coord( d_index[i], pos );
-        for ( int d       = 0; d < PhysicalDim; d++ )
+        for ( int d = 0; d < PhysicalDim; d++ )
             d_coord[d][i] = pos[d];
     }
 }
 
 
 /****************************************************************
-* Functions to displace the mesh                                *
-****************************************************************/
+ * Functions to displace the mesh                                *
+ ****************************************************************/
 int MovableBoxMesh::isMeshMovable() const { return 2; }
 void MovableBoxMesh::displaceMesh( const std::vector<double> &x )
 {
@@ -130,8 +130,8 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
 
 
 /****************************************************************
-* Copy the mesh                                                 *
-****************************************************************/
+ * Copy the mesh                                                 *
+ ****************************************************************/
 AMP::shared_ptr<Mesh> MovableBoxMesh::copy() const
 {
     return AMP::shared_ptr<MovableBoxMesh>( new MovableBoxMesh( *this ) );
@@ -139,21 +139,21 @@ AMP::shared_ptr<Mesh> MovableBoxMesh::copy() const
 
 
 /****************************************************************
-* Return the coordinate                                         *
-****************************************************************/
+ * Return the coordinate                                         *
+ ****************************************************************/
 void MovableBoxMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
     AMP_ASSERT( index.type() == AMP::Mesh::GeomType::Vertex );
     size_t i = AMP::Utilities::findfirst( d_index, index );
     AMP_ASSERT( d_index[i] == index );
     for ( int d = 0; d < PhysicalDim; d++ )
-        pos[d]  = d_coord[d][i];
+        pos[d] = d_coord[d][i];
 }
 
 
 /****************************************************************
-* Return the logical coordinates                                *
-****************************************************************/
+ * Return the logical coordinates                                *
+ ****************************************************************/
 std::array<double, 3> MovableBoxMesh::physicalToLogical( const double * ) const
 {
     AMP_ERROR( "physicalToLogical is not supported in MovableBoxMesh" );
@@ -161,5 +161,5 @@ std::array<double, 3> MovableBoxMesh::physicalToLogical( const double * ) const
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

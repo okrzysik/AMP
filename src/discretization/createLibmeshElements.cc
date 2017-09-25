@@ -20,7 +20,6 @@ DISABLE_WARNINGS
 #include "libmesh/fe_type.h"
 #include "libmesh/node.h"
 #include "libmesh/quadrature.h"
-#include "libmesh/quadrature.h"
 #include "libmesh/string_to_enum.h"
 ENABLE_WARNINGS
 
@@ -57,8 +56,7 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in )
 void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
                                     libMeshEnums::QuadratureType qtype,
                                     libMeshEnums::Order qorder,
-                                    AMP::shared_ptr<const libMesh::FEType>
-                                        type,
+                                    AMP::shared_ptr<const libMesh::FEType> type,
                                     bool cache_fe )
 {
     PROFILE_START( "reinit" );
@@ -123,14 +121,14 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
         d_index[i] = i;
     AMP::Utilities::quicksort( d_ids, d_index );
     d_elements.resize( N, nullptr );
-    for ( size_t i    = 0; i < N; i++ )
+    for ( size_t i = 0; i < N; i++ )
         d_elements[i] = elements[d_index[i]];
     if ( !d_base_element.empty() ) {
         d_base_element.resize( N, nullptr );
         d_rule_element.resize( N );
-        for ( size_t i        = 0; i < N; i++ )
+        for ( size_t i = 0; i < N; i++ )
             d_base_element[i] = base[d_index[i]];
-        for ( size_t i        = 0; i < N; i++ )
+        for ( size_t i = 0; i < N; i++ )
             d_rule_element[i] = rule[d_index[i]];
     }
     PROFILE_STOP( "reinit" );
@@ -232,8 +230,8 @@ const libMesh::QBase *createLibmeshElements::getQBase( const AMP::Mesh::MeshElem
     PROFILE_STOP( "getQBase", 2 );
     return result;
 }
-}
-}
+} // namespace Discretization
+} // namespace AMP
 
 
 #endif

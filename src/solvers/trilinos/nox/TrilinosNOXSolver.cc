@@ -33,8 +33,8 @@ namespace Solver {
 
 
 /****************************************************************
-*  Constructors                                                 *
-****************************************************************/
+ *  Constructors                                                 *
+ ****************************************************************/
 TrilinosNOXSolver::TrilinosNOXSolver() : SolverStrategy() {}
 TrilinosNOXSolver::TrilinosNOXSolver( AMP::shared_ptr<TrilinosNOXSolverParameters> parameters )
     : SolverStrategy( parameters )
@@ -49,8 +49,8 @@ TrilinosNOXSolver::~TrilinosNOXSolver() {}
 
 
 /****************************************************************
-*  Initialize                                                   *
-****************************************************************/
+ *  Initialize                                                   *
+ ****************************************************************/
 void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> parameters )
 {
     // Copy the parameters
@@ -205,11 +205,10 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
 
 
 /****************************************************************
-*  Solve                                                        *
-****************************************************************/
+ *  Solve                                                        *
+ ****************************************************************/
 void TrilinosNOXSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                               AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                   u )
+                               AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     // PROFILE_START("solve");
     // Get thyra vectors
@@ -264,5 +263,5 @@ void TrilinosNOXSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
     u->copyVector( thyraVec->getVec( 0 ) );
     // PROFILE_STOP("solve");
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

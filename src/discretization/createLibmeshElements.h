@@ -61,8 +61,7 @@ public:
     void reinit( const AMP::Mesh::MeshIterator &iterator,
                  libMeshEnums::QuadratureType qtype,
                  libMeshEnums::Order qorder,
-                 AMP::shared_ptr<const libMesh::FEType>
-                     type,
+                 AMP::shared_ptr<const libMesh::FEType> type,
                  bool cache_fe = false );
 
     /**
@@ -106,8 +105,8 @@ private:
     std::vector<libMesh::FEBase *> d_base_element;
     std::vector<libMesh::QBase *> d_rule_element;
 };
-}
-}
+} // namespace Discretization
+} // namespace AMP
 
 #endif
 #endif

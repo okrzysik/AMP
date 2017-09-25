@@ -10,8 +10,8 @@ namespace LinearAlgebra {
 
 
 /************************************************************************
-* Constructors                                                          *
-************************************************************************/
+ * Constructors                                                          *
+ ************************************************************************/
 NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
     : NativeVector(), ThyraVector(), VectorEngine()
 {
@@ -37,14 +37,14 @@ NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
 
 
 /************************************************************************
-* Destructor                                                            *
-************************************************************************/
+ * Destructor                                                            *
+ ************************************************************************/
 NativeThyraVector::~NativeThyraVector() {}
 
 
 /************************************************************************
-* Vector functions                                                      *
-************************************************************************/
+ * Vector functions                                                      *
+ ************************************************************************/
 Vector::shared_ptr NativeThyraVector::cloneVector( const Variable::shared_ptr var ) const
 {
     AMP::shared_ptr<NativeThyraVectorParameters> params( new NativeThyraVectorParameters() );
@@ -62,7 +62,7 @@ void NativeThyraVector::putRawData( const double *in )
     for ( size_t b = 0; b < numberOfDataBlocks(); b++ ) {
         double *data = reinterpret_cast<double *>( getRawDataBlockAsVoid( b ) );
         for ( size_t j = 0; j < sizeOfDataBlock( b ); j++, i++ )
-            data[j]    = in[i];
+            data[j] = in[i];
     }
 }
 
@@ -73,7 +73,7 @@ void NativeThyraVector::copyOutRawData( double *out ) const
     for ( size_t b = 0; b < numberOfDataBlocks(); b++ ) {
         const double *data = reinterpret_cast<const double *>( getRawDataBlockAsVoid( b ) );
         for ( size_t j = 0; j < sizeOfDataBlock( b ); j++, i++ )
-            out[i]     = data[j];
+            out[i] = data[j];
     }
 }
 
@@ -148,5 +148,5 @@ size_t NativeThyraVector::sizeOfDataBlock( size_t i ) const
     AMP_ERROR( "not finished" );
     return d_local;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

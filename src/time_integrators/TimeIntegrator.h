@@ -57,9 +57,9 @@ public:
     /**
      * @brief  Resets the internal state of the time integrator.
      * @details Resets the internal state of the time integrator as needed.
-    * A parameter argument is passed to allow for general flexibility
-    * in determining what needs to be reset.
-    */
+     * A parameter argument is passed to allow for general flexibility
+     * in determining what needs to be reset.
+     */
     virtual void reset( AMP::shared_ptr<TimeIntegratorParameters> parameters ) = 0;
 
     /*!
@@ -225,12 +225,12 @@ public:
 
 protected:
     /*
-    * Read input data from specified database and initialize class members.
-    * If run is from restart, a subset of the restart values may be replaced
-    * with those read from input.
-    *
-    * When assertion checking is active, the database pointer must be non-null.
-    */
+     * Read input data from specified database and initialize class members.
+     * If run is from restart, a subset of the restart values may be replaced
+     * with those read from input.
+     *
+     * When assertion checking is active, the database pointer must be non-null.
+     */
     void getFromInput( const AMP::shared_ptr<AMP::Database> db );
 
     /*
@@ -313,8 +313,8 @@ private:
     explicit TimeIntegrator( const TimeIntegrator & );
     void operator=( const TimeIntegrator & );
 };
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif
 

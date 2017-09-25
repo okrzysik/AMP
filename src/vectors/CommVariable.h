@@ -9,16 +9,16 @@ namespace LinearAlgebra {
 
 
 /** \class MeshVariable
-  * \brief An AMP Variable that describes how to subset a DOF for a mesh
-  * \see SubsetVector
-  */
+ * \brief An AMP Variable that describes how to subset a DOF for a mesh
+ * \see SubsetVector
+ */
 class CommVariable : public SubsetVariable
 {
 public:
     /** \brief Constructor
-      * \param[in] name  The name of the new variable
-      * \param[in] comm  The AMP_MPI communicator of the new variable
-      */
+     * \param[in] name  The name of the new variable
+     * \param[in] comm  The AMP_MPI communicator of the new variable
+     */
     CommVariable( const std::string &name, AMP_MPI comm );
 
     virtual AMP::Discretization::DOFManager::shared_ptr
@@ -28,7 +28,7 @@ private:
     CommVariable();
     AMP_MPI d_comm;
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

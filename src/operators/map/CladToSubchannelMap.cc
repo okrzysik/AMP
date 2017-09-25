@@ -16,8 +16,8 @@ static double interp_linear( const std::vector<double> &, const std::vector<doub
 
 
 /************************************************************************
-*  Default constructor                                                  *
-************************************************************************/
+ *  Default constructor                                                  *
+ ************************************************************************/
 CladToSubchannelMap::CladToSubchannelMap(
     const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : AsyncMapOperator( p )
@@ -85,8 +85,8 @@ CladToSubchannelMap::CladToSubchannelMap(
 
 
 /************************************************************************
-*  De-constructor                                                       *
-************************************************************************/
+ *  De-constructor                                                       *
+ ************************************************************************/
 CladToSubchannelMap::~CladToSubchannelMap()
 {
     for ( auto &elem : d_sendBuffer ) {
@@ -106,8 +106,8 @@ CladToSubchannelMap::~CladToSubchannelMap()
 
 
 /************************************************************************
-*  Check if the map type is "CladToSubchannelMap"                       *
-************************************************************************/
+ *  Check if the map type is "CladToSubchannelMap"                       *
+ ************************************************************************/
 bool CladToSubchannelMap::validMapType( const std::string &t )
 {
     if ( t == "CladToSubchannelMap" )
@@ -117,8 +117,8 @@ bool CladToSubchannelMap::validMapType( const std::string &t )
 
 
 /************************************************************************
-*  Function to fill the grid of the subchannel for all processors       *
-************************************************************************/
+ *  Function to fill the grid of the subchannel for all processors       *
+ ************************************************************************/
 void CladToSubchannelMap::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Create the grid for all processors
@@ -164,8 +164,8 @@ void CladToSubchannelMap::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
 
 
 /************************************************************************
-*  Get an iterator over the desired faces in the subchannel mesh        *
-************************************************************************/
+ *  Get an iterator over the desired faces in the subchannel mesh        *
+ ************************************************************************/
 AMP::Mesh::MeshIterator
 CladToSubchannelMap::getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr mesh )
 {
@@ -196,8 +196,8 @@ CladToSubchannelMap::getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr mesh )
 
 
 /************************************************************************
-*  Start the communication                                              *
-************************************************************************/
+ *  Start the communication                                              *
+ ************************************************************************/
 void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                       AMP::LinearAlgebra::Vector::shared_ptr )
 {
@@ -220,7 +220,7 @@ void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
     for ( size_t i = 0; i < N_subchannels; i++ ) {
         if ( d_elem[i].empty() )
             continue;
-        for ( size_t j         = 0; j < 2 * d_elem[i].size(); j++ )
+        for ( size_t j = 0; j < 2 * d_elem[i].size(); j++ )
             d_sendBuffer[i][j] = 0.0;
         for ( size_t j = 0; j < d_elem[i].size(); j++ ) {
             DOF->getDOFs( d_elem[i][j], dofs );
@@ -246,8 +246,8 @@ void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
 
 
 /************************************************************************
-*  Finish the communication                                             *
-************************************************************************/
+ *  Finish the communication                                             *
+ ************************************************************************/
 void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
                                        AMP::LinearAlgebra::Vector::shared_ptr )
 {
@@ -306,8 +306,8 @@ void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
 
 
 /************************************************************************
-*  Set the vector                                                       *
-************************************************************************/
+ *  Set the vector                                                       *
+ ************************************************************************/
 void CladToSubchannelMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr result )
 {
     if ( result.get() != nullptr )
@@ -320,8 +320,8 @@ void CladToSubchannelMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr resu
 
 
 /************************************************************************
-*  Misc functions                                                       *
-************************************************************************/
+ *  Misc functions                                                       *
+ ************************************************************************/
 int CladToSubchannelMap::getSubchannelIndex( double x, double y )
 {
     size_t i = Utilities::findfirst( d_x, x );
@@ -379,5 +379,5 @@ double interp_linear( const std::vector<double> &x, const std::vector<double> &f
 }
 
 
-} // Operator namespace
-} // AMP namespace
+} // namespace Operator
+} // namespace AMP

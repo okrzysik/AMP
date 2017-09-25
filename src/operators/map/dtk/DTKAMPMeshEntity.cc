@@ -7,8 +7,8 @@ namespace Operator {
 
 
 /**
-  * AMP Mesh element implementation for DTK Entity interface.
-*/
+ * AMP Mesh element implementation for DTK Entity interface.
+ */
 
 // Constructor.
 AMPMeshEntity::AMPMeshEntity(
@@ -18,5 +18,5 @@ AMPMeshEntity::AMPMeshEntity(
 {
     this->b_entity_impl = Teuchos::rcp( new AMPMeshEntityImpl( element, rank_map, id_map ) );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

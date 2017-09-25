@@ -1,6 +1,5 @@
 #include "SolverStrategy.h"
 #include "utils/Utilities.h"
-#include "utils/Utilities.h"
 
 
 namespace AMP {
@@ -11,8 +10,8 @@ int SolverStrategy::d_iInstanceId = 0;
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 SolverStrategy::SolverStrategy()
 {
     d_iNumberIterations    = -1;
@@ -42,14 +41,14 @@ SolverStrategy::SolverStrategy( AMP::shared_ptr<SolverStrategyParameters> parame
 
 
 /****************************************************************
-* Destructor                                                    *
-****************************************************************/
+ * Destructor                                                    *
+ ****************************************************************/
 SolverStrategy::~SolverStrategy() {}
 
 
 /****************************************************************
-* Initialize                                                    *
-****************************************************************/
+ * Initialize                                                    *
+ ****************************************************************/
 void SolverStrategy::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 {
     AMP_INSIST( db.get() != nullptr, "InputDatabase object must be non-NULL" );
@@ -65,8 +64,8 @@ void SolverStrategy::initialize( AMP::shared_ptr<SolverStrategyParameters> const
 
 
 /****************************************************************
-* Reset                                                         *
-****************************************************************/
+ * Reset                                                         *
+ ****************************************************************/
 void SolverStrategy::resetOperator(
     const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
@@ -78,8 +77,8 @@ void SolverStrategy::reset( AMP::shared_ptr<SolverStrategyParameters> ) {}
 
 
 /****************************************************************
-* Set properties                                                *
-****************************************************************/
+ * Set properties                                                *
+ ****************************************************************/
 void SolverStrategy::setConvergenceTolerance( const int max_iterations, const double max_error )
 {
     AMP_INSIST( max_iterations >= 0, "max_iterations must be non-negative" );
@@ -91,8 +90,8 @@ void SolverStrategy::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector
 
 
 /****************************************************************
-* Empty functions                                               *
-****************************************************************/
+ * Empty functions                                               *
+ ****************************************************************/
 void SolverStrategy::appendSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr ) {}
 void SolverStrategy::appendRhsVector( AMP::LinearAlgebra::Vector::shared_ptr ) {}
 void SolverStrategy::formRhs( double,
@@ -101,5 +100,5 @@ void SolverStrategy::formRhs( double,
 {
 }
 
-} // Solver
-} // AMP
+} // namespace Solver
+} // namespace AMP

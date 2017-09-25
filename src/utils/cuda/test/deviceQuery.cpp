@@ -30,7 +30,7 @@ char **pArgv = NULL;
 #include <cuda.h>
 
 // This function wraps the CUDA Driver API into a template function
-template <class T>
+template<class T>
 inline void getCudaAttribute( T *attribute, CUdevice_attribute device_attribute, int device )
 {
     CUresult error = cuDeviceGetAttribute( attribute, device_attribute, device );
@@ -244,10 +244,9 @@ int main( int argc, char **argv )
 #if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
                  // on Windows (64-bit), the Tesla Compute Cluster driver for windows must be
                  // enabled to support this
-                 &&
-                 prop[i].tccDriver
+                 && prop[i].tccDriver
 #endif
-                 ) {
+            ) {
                 // This is an array of P2P capable GPUs
                 gpuid[gpu_p2p_count++] = i;
             }

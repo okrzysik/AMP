@@ -24,8 +24,8 @@ namespace LinearAlgebra {
 
 
 /********************************************************
-* Vector builder                                        *
-********************************************************/
+ * Vector builder                                        *
+ ********************************************************/
 AMP::LinearAlgebra::Vector::shared_ptr
 createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
               AMP::LinearAlgebra::Variable::shared_ptr variable,
@@ -168,7 +168,7 @@ createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
     }
     return AMP::LinearAlgebra::Vector::shared_ptr();
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

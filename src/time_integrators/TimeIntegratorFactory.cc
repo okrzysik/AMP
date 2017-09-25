@@ -72,5 +72,5 @@ AMP::shared_ptr<TimeIntegrator> TimeIntegratorFactory::createTimeIntegrator(
 
     return timeIntegrator;
 }
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

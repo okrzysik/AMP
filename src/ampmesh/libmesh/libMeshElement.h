@@ -107,8 +107,7 @@ protected:
                     const libMesh *mesh );
     libMeshElement( int dim,
                     GeomType type,
-                    AMP::shared_ptr<::Elem>
-                        element,
+                    AMP::shared_ptr<::Elem> element,
                     unsigned int rank,
                     MeshID meshID,
                     const libMesh *mesh );
@@ -128,7 +127,7 @@ protected:
     friend class AMP::Mesh::libMesh;
     friend class AMP::Mesh::libMeshIterator;
 };
-}
-}
+} // namespace Mesh
+} // namespace AMP
 
 #endif

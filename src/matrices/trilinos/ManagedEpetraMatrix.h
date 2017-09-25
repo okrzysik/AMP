@@ -16,10 +16,10 @@ namespace LinearAlgebra {
 
 
 /** \class ManagedEpetraMatrix
-  * \brief  A class that wraps an Epetra_CrsMatrix
-  * \details  This class stores an Epetra_FECrsMatrix and provides
-  * the AMP interface to this matrix.
-  */
+ * \brief  A class that wraps an Epetra_CrsMatrix
+ * \details  This class stores an Epetra_FECrsMatrix and provides
+ * the AMP interface to this matrix.
+ */
 class ManagedEpetraMatrix : public EpetraMatrix, public ManagedMatrix
 {
 protected:
@@ -42,18 +42,18 @@ protected:
 
 public:
     /** \brief Constructor
-      * \param[in] p  The description of the matrix
-      */
+     * \param[in] p  The description of the matrix
+     */
     explicit ManagedEpetraMatrix( AMP::shared_ptr<ManagedEpetraMatrixParameters> p );
 
     /** \brief Constructor from Epetra_CrsMatrix
-      * \param[in]  m  Matrix to wrap
-      * \param[in]  dele  If true, this class deletes the matrix
-      */
+     * \param[in]  m  Matrix to wrap
+     * \param[in]  dele  If true, this class deletes the matrix
+     */
     ManagedEpetraMatrix( Epetra_CrsMatrix *m, bool dele = false );
 
     /** \brief Destructor
-      */
+     */
     virtual ~ManagedEpetraMatrix() {}
 
     virtual void createValuesByGlobalID( size_t row, const std::vector<size_t> &cols ) override;
@@ -102,8 +102,8 @@ public:
     virtual void setIdentity() override;
     virtual void zero() override;
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #include "ManagedEpetraMatrix.inline.h"
 #endif

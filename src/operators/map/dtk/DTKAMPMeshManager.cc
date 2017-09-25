@@ -34,5 +34,5 @@ DTKAMPMeshManager::DTKAMPMeshManager(
 }
 
 //---------------------------------------------------------------------------//
-}
-}
+} // namespace Operator
+} // namespace AMP

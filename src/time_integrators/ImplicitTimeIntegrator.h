@@ -78,10 +78,10 @@ public:
     void initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
-    * Resets the internal state of the time integrator as needed.
-    * A parameter argument is passed to allow for general flexibility
-    * in determining what needs to be reset Typically used after a regrid.
-    */
+     * Resets the internal state of the time integrator as needed.
+     * A parameter argument is passed to allow for general flexibility
+     * in determining what needs to be reset Typically used after a regrid.
+     */
     virtual void reset( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override = 0;
 
     /*!
@@ -204,7 +204,7 @@ private:
     explicit ImplicitTimeIntegrator( const ImplicitTimeIntegrator & );
     void operator=( const ImplicitTimeIntegrator & );
 };
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif

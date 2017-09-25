@@ -1,4 +1,3 @@
-#include "utils/Database.h"
 #include "ampmesh/Mesh.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
@@ -6,6 +5,7 @@
 #include "operators/map/NodeToNodeMap.h"
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
+#include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/PIO.h"

@@ -36,7 +36,7 @@ public:
 protected:
 private:
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

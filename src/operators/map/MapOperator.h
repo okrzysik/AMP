@@ -24,10 +24,10 @@ namespace Operator {
 
 
 /**
-  * Class MapOperator is the base class for various mapping alogorithms. This
-  * class stores a pointer to the mapAdapter to which the solution has to be
-  * mapped from Operator's meshAdapter.
-  */
+ * Class MapOperator is the base class for various mapping alogorithms. This
+ * class stores a pointer to the mapAdapter to which the solution has to be
+ * mapped from Operator's meshAdapter.
+ */
 
 class MapOperator : public Operator
 {
@@ -85,7 +85,7 @@ protected:
 
 private:
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

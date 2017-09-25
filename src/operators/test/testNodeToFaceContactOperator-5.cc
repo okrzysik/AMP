@@ -466,19 +466,19 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     double referenceTemperature = input_db->getDouble( "ReferenceTemperature" );
 
-    double cladOuterRadiusTemperature = moderatorTemperature +
-                                        linearHeatGenerationRate / ( 2.0 * M_PI ) /
-                                            ( cladOuterRadius * moderatorHeatTransferCoefficient );
-    double cladInnerRadiusTemperature = cladOuterRadiusTemperature +
-                                        linearHeatGenerationRate / ( 2.0 * M_PI ) /
-                                            cladThermalConductivity *
-                                            std::log( cladOuterRadius / cladInnerRadius );
+    double cladOuterRadiusTemperature =
+        moderatorTemperature + linearHeatGenerationRate / ( 2.0 * M_PI ) /
+                                   ( cladOuterRadius * moderatorHeatTransferCoefficient );
+    double cladInnerRadiusTemperature =
+        cladOuterRadiusTemperature + linearHeatGenerationRate / ( 2.0 * M_PI ) /
+                                         cladThermalConductivity *
+                                         std::log( cladOuterRadius / cladInnerRadius );
     double gapAverageRadius = 0.5 * ( cladInnerRadius + fuelOuterRadius );
     double gapHeatTranferCoefficient =
         gapThermalConductivity / ( cladInnerRadius - fuelOuterRadius );
-    double fuelOuterRadiusTemperature = cladInnerRadiusTemperature +
-                                        linearHeatGenerationRate / ( 2.0 * M_PI ) /
-                                            ( gapAverageRadius * gapHeatTranferCoefficient );
+    double fuelOuterRadiusTemperature =
+        cladInnerRadiusTemperature + linearHeatGenerationRate / ( 2.0 * M_PI ) /
+                                         ( gapAverageRadius * gapHeatTranferCoefficient );
     double fuelCenterLineTemperature = fuelOuterRadiusTemperature;
     newton_solver_t<double> solver;
     solver.set( &my_f, &my_ijmf );

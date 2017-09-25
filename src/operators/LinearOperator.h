@@ -13,11 +13,11 @@ namespace Operator {
 
 
 /**
-  * An abstract base class for representing a linear operator. This class
-  * stores the matrix representation of the linear operator. It provides
-  * an implementation of the apply() function.
-  * @see Operator
-*/
+ * An abstract base class for representing a linear operator. This class
+ * stores the matrix representation of the linear operator. It provides
+ * an implementation of the apply() function.
+ * @see Operator
+ */
 class LinearOperator : public Operator
 {
 public:
@@ -77,7 +77,7 @@ protected:
 
 private:
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

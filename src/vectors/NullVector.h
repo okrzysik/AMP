@@ -10,10 +10,10 @@ namespace LinearAlgebra {
 
 
 /** \brief An empty vector
-  * \details Some operators do not require vectors for application.  In these
-  * circumstances, a NullVector is used.  This stores no data and performs no
-  * work.
-  */
+ * \details Some operators do not require vectors for application.  In these
+ * circumstances, a NullVector is used.  This stores no data and performs no
+ * work.
+ */
 class NullVector : public Vector, public VectorOperationsDefault<double>
 {
 private:
@@ -21,17 +21,17 @@ private:
 
 public:
     /**
-      *  \brief Create a NullVector
-      *  \param[in]  name  Name of variable to associate with this NullVector
-      *  \return Vector shared pointer to a NullVector
-      */
+     *  \brief Create a NullVector
+     *  \param[in]  name  Name of variable to associate with this NullVector
+     *  \return Vector shared pointer to a NullVector
+     */
     static Vector::shared_ptr create( const std::string &name );
 
     /**
-      *  \brief Create a NullVector
-      *  \param[in]  name  Variable to associate with this NullVector
-      *  \return Vector shared pointer to a NullVector
-      */
+     *  \brief Create a NullVector
+     *  \param[in]  name  Variable to associate with this NullVector
+     *  \return Vector shared pointer to a NullVector
+     */
     static Vector::shared_ptr create( const Variable::shared_ptr name );
 
     virtual ~NullVector();
@@ -85,7 +85,7 @@ protected:
     virtual void *getRawDataBlockAsVoid( size_t ) override;
     virtual const void *getRawDataBlockAsVoid( size_t ) const override;
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

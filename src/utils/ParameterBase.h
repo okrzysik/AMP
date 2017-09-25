@@ -24,6 +24,6 @@ public:
 protected:
 private:
 };
-}
+} // namespace AMP
 
 #endif

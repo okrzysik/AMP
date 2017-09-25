@@ -20,5 +20,5 @@ void MapOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
     d_MapComm = myparams->d_MapComm;
     d_MapMesh = myparams->d_MapMesh;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

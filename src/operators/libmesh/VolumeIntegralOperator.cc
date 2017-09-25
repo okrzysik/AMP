@@ -177,7 +177,7 @@ void VolumeIntegralOperator::preElementOperation( const AMP::Mesh::MeshElement &
 
     d_elementOutputVector.resize( d_dofIndices.size() );
     // Reinitialize the std::vector to zero (resize does not do this)
-    for ( unsigned int i         = 0; i < d_dofIndices.size(); i++ )
+    for ( unsigned int i = 0; i < d_dofIndices.size(); i++ )
         d_elementOutputVector[i] = 0.0;
 
     d_srcNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
@@ -276,5 +276,5 @@ void VolumeIntegralOperator::getNodeDofIndicesForCurrentElement()
         d_dofIndices[j] = dofs[0];
     } // end of j
 }
-}
-} // end namespace
+} // namespace Operator
+} // namespace AMP

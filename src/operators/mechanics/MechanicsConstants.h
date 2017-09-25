@@ -20,8 +20,8 @@ const unsigned int LHGR = 4; /**< Global constant used to identify Linear Heat G
 const unsigned int TOTAL_NUMBER_OF_VARIABLES =
     5; /**< Global constant that equals the number of
          different types of variables used within mechanics operators. */
-}
-}
-}
+} // namespace Mechanics
+} // namespace Operator
+} // namespace AMP
 
 #endif

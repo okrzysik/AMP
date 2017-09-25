@@ -14,7 +14,7 @@ using namespace AMP::unit_test;
 
 
 // Function to test subsetting a DOF manager
-template <class GENERATOR, bool SPLIT>
+template<class GENERATOR, bool SPLIT>
 void testSubsetDOFManager( AMP::UnitTest *ut )
 {
     // Get the mesh
@@ -79,7 +79,7 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
 
 
 // Function to test the creation/destruction of a simpleDOFManager
-template <class GENERATOR>
+template<class GENERATOR>
 void testSimpleDOFManager( AMP::UnitTest *ut )
 {
     // Get the mesh
@@ -179,7 +179,7 @@ void testSimpleDOFManager( AMP::UnitTest *ut )
 
 
 // Function to test the creation/destruction of a multiDOFManager
-template <class GENERATOR>
+template<class GENERATOR>
 void testMultiDOFManager( AMP::UnitTest *ut )
 {
     // Get the mesh
@@ -235,7 +235,7 @@ void testMultiDOFManager( AMP::UnitTest *ut )
 
 
 // Function to test the creation/destruction of a multiDOFManager
-template <class GENERATOR, int Nx, int Ny, int Nz, int GCW>
+template<class GENERATOR, int Nx, int Ny, int Nz, int GCW>
 void testStructureDOFManager( AMP::UnitTest *ut )
 {
     // Get the mesh

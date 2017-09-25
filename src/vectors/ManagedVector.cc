@@ -25,8 +25,8 @@ static inline AMP::shared_ptr<ManagedVector> getManaged( AMP::shared_ptr<Vector>
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in ) : Vector( params_in )
 {
     d_pParameters = AMP::dynamic_pointer_cast<ManagedVectorParameters>( params_in );
@@ -37,7 +37,7 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in ) : Vector(
     if ( d_pParameters->d_CloneEngine )
         d_Engine = d_pParameters->d_Engine->cloneEngine( d_vBuffer );
     else
-        d_Engine                 = d_pParameters->d_Engine;
+        d_Engine = d_pParameters->d_Engine;
     d_pParameters->d_CloneEngine = true;
 }
 ManagedVector::ManagedVector( shared_ptr alias )
@@ -53,8 +53,8 @@ ManagedVector::ManagedVector( shared_ptr alias )
 
 
 /********************************************************
-* Subset                                                *
-********************************************************/
+ * Subset                                                *
+ ********************************************************/
 Vector::shared_ptr ManagedVector::subsetVectorForVariable( Variable::const_shared_ptr name )
 {
     Vector::shared_ptr retVal;
@@ -474,5 +474,5 @@ AMP::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr n
     retVal->setVariable( name );
     return retVal;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

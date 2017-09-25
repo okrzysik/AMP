@@ -23,8 +23,8 @@ const unsigned int NUMBER_VARIABLES = 3; //< Total number of material parameters
 /// ASCI names of the standard material parameters appearing as arguments to material property
 /// evaluation functions.
 const std::string names[NUMBER_VARIABLES] = { "temperature", "concentration", "burnup" };
-}
-}
-}
+} // namespace Diffusion
+} // namespace Operator
+} // namespace AMP
 
 #endif

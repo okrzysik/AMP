@@ -51,4 +51,4 @@ inline RandomVariable<float>::operator type()
 {
     return static_cast<float>( d_RNG->nextDouble( d_Low, d_High ) );
 }
-}
+} // namespace AMP

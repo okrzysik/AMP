@@ -30,8 +30,8 @@ namespace LinearAlgebra {
   *
   */
 AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string &factory );
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 /// \endcond
 

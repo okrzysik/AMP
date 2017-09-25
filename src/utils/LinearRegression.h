@@ -7,26 +7,26 @@
 #include <vector>
 
 /**
-  * Linear Regression calculation class adapted from http://david.swaim.com/cpp/linreg.htm
-  *
-  * This class implements a standard linear regression on
-  * experimental data using a least squares fit to a straight
-  * line graph.  Calculates coefficients a and b of the equation:
-  *
-  * y = a + b * x
-  *
-  * for data points of x and y.  Also calculates the coefficient of
-  * determination, the coefficient of correlation, and standard
-  * error of estimate.
-  *
-  * The value n (number of points) must be greater than 2 to
-  * calculate the regression.  This is primarily because the
-  * standard error has a (N-2) in the denominator.
-  *
-  * Check haveData() to see if there is enough data in
-  * LinearRegression to get values.
-  *
-  **/
+ * Linear Regression calculation class adapted from http://david.swaim.com/cpp/linreg.htm
+ *
+ * This class implements a standard linear regression on
+ * experimental data using a least squares fit to a straight
+ * line graph.  Calculates coefficients a and b of the equation:
+ *
+ * y = a + b * x
+ *
+ * for data points of x and y.  Also calculates the coefficient of
+ * determination, the coefficient of correlation, and standard
+ * error of estimate.
+ *
+ * The value n (number of points) must be greater than 2 to
+ * calculate the regression.  This is primarily because the
+ * standard error has a (N-2) in the denominator.
+ *
+ * Check haveData() to see if there is enough data in
+ * LinearRegression to get values.
+ *
+ **/
 namespace AMP {
 
 class LinearRegression

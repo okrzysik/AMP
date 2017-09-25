@@ -42,7 +42,7 @@ private:
     explicit ImplicitTimeIntegratorParameters( const ImplicitTimeIntegratorParameters & );
     void operator=( const ImplicitTimeIntegratorParameters & );
 };
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif

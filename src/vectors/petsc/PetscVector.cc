@@ -90,5 +90,5 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP

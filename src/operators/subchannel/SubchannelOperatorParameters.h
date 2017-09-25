@@ -35,7 +35,7 @@ public:
     // Clad properties
     std::vector<double> clad_x, clad_y, clad_d;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

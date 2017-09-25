@@ -41,7 +41,7 @@ protected:
                                   diagnostic information that gets
                                   printed within this material model. */
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

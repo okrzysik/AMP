@@ -54,5 +54,5 @@ FlowElement::FlowElement( const AMP::shared_ptr<ElementOperationParameters> &par
 
     d_fe->attach_quadrature_rule( ( d_qrule ).get() );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

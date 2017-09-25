@@ -55,13 +55,13 @@ class FunctionTable;
 /*!
  * Class Array is a multi-dimensional array class written by Mark Berrill
  */
-template <class TYPE, class FUN = FunctionTable, class Allocator = std::allocator<TYPE>>
+template<class TYPE, class FUN = FunctionTable, class Allocator = std::allocator<TYPE>>
 class Array final
 {
 public: // Constructors / assignment operators
-        /*!
-         * Create a new empty Array
-         */
+    /*!
+     * Create a new empty Array
+     */
     Array();
 
     /*!
@@ -124,11 +124,11 @@ public: // Constructors / assignment operators
 
 
 public: // Views/copies/subset
-        /*!
-         * Create a 1D Array view to a raw block of data
-         * @param N             Number of elements in the array
-         * @param data          Pointer to the data
-         */
+    /*!
+     * Create a 1D Array view to a raw block of data
+     * @param N             Number of elements in the array
+     * @param data          Pointer to the data
+     */
     static std::shared_ptr<Array> view( size_t N, std::shared_ptr<TYPE> const &data );
 
     /*!
@@ -236,7 +236,7 @@ public: // Views/copies/subset
      * Convert an array of one type to another.  This may or may not allocate new memory.
      * @param array         Input array
      */
-    template <class TYPE2>
+    template<class TYPE2>
     static std::shared_ptr<Array<TYPE2, FUN, Allocator>>
     convert( std::shared_ptr<Array<TYPE, FUN, Allocator>> array );
 
@@ -245,7 +245,7 @@ public: // Views/copies/subset
      * Convert an array of one type to another.  This may or may not allocate new memory.
      * @param array         Input array
      */
-    template <class TYPE2>
+    template<class TYPE2>
     static std::shared_ptr<const Array<TYPE2, FUN, Allocator>>
     convert( std::shared_ptr<const Array<TYPE, FUN, Allocator>> array );
 
@@ -254,7 +254,7 @@ public: // Views/copies/subset
      * Copy and convert data from another array to this array
      * @param array         Source array
      */
-    template <class TYPE2>
+    template<class TYPE2>
     void copy( const Array<TYPE2, FUN, Allocator> &array );
 
     /*!
@@ -262,14 +262,14 @@ public: // Views/copies/subset
      *    Note: The current array must be allocated to the proper size first.
      * @param array         Source array
      */
-    template <class TYPE2>
+    template<class TYPE2>
     void copy( const TYPE2 *array );
 
     /*!
      * Copy and convert data from this array to a raw vector.
      * @param array         Source array
      */
-    template <class TYPE2>
+    template<class TYPE2>
     void copyTo( TYPE2 *array ) const;
 
     /*! swap the raw data pointers for the Arrays after checking for compatibility */
@@ -369,7 +369,7 @@ public: // Views/copies/subset
      * Subset the Array (total size of array will not change)
      * @param index         Index to subset (imin,imax,jmin,jmax,kmin,kmax,...)
      */
-    template <class TYPE2 = TYPE>
+    template<class TYPE2 = TYPE>
     Array<TYPE2, FUN, Allocator> subset( const std::vector<size_t> &index ) const;
 
     /*!
@@ -377,7 +377,7 @@ public: // Views/copies/subset
      * @param index         Index of the subset (imin,imax,jmin,jmax,kmin,kmax,...)
      * @param subset        The subset array to copy from
      */
-    template <class TYPE2>
+    template<class TYPE2>
     void copySubset( const std::vector<size_t> &index, const Array<TYPE2, FUN, Allocator> &subset );
 
     /*!
@@ -389,10 +389,10 @@ public: // Views/copies/subset
 
 
 public: // Accessors
-        /*!
-         * Access the desired element
-         * @param i             The row index
-         */
+    /*!
+     * Access the desired element
+     * @param i             The row index
+     */
     HOST_DEVICE inline TYPE &operator()( size_t i )
     {
         CHECK_ARRAY_INDEX3D( d_N, i, 0, 0 ) return d_data[i];
@@ -548,8 +548,8 @@ public: // Math operations
     inline TYPE mean( const std::vector<size_t> &index ) const;
 
     //! Find all elements that match the operator
-    std::vector<size_t>
-    find( const TYPE &value, std::function<bool( const TYPE &, const TYPE & )> compare ) const;
+    std::vector<size_t> find( const TYPE &value,
+                              std::function<bool( const TYPE &, const TYPE & )> compare ) const;
 
 
     //! Print an array
@@ -566,8 +566,8 @@ public: // Math operations
     Array coarsen( const Array &filter ) const;
 
     //! Coarsen an array using the given filter
-    Array
-    coarsen( const std::vector<size_t> &ratio, std::function<TYPE( const Array & )> filter ) const;
+    Array coarsen( const std::vector<size_t> &ratio,
+                   std::function<TYPE( const Array & )> filter ) const;
 
     /*!
      * Perform a element-wise operation y = f(x)
@@ -601,12 +601,12 @@ public: // Math operations
     inline TYPE interp( const std::vector<double> &x );
 
     /**
-      * \fn equals (Array & const rhs, TYPE tol )
-      * \brief  Determine if two Arrays are equal using an absolute tolerance
-      * \param[in] rhs Vector to compare to
-      * \param[in] tol Tolerance of comparison
-      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
-      */
+     * \fn equals (Array & const rhs, TYPE tol )
+     * \brief  Determine if two Arrays are equal using an absolute tolerance
+     * \param[in] rhs Vector to compare to
+     * \param[in] tol Tolerance of comparison
+     * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
+     */
     bool equals( const Array &rhs, TYPE tol = 0.000001 ) const;
 
 private:
@@ -618,7 +618,7 @@ private:
     void allocate( const std::vector<size_t> &N );
 
 public:
-    template <class TYPE2, class FUN2, class Allocator2>
+    template<class TYPE2, class FUN2, class Allocator2>
     inline bool sizeMatch( const Array<TYPE2, FUN2, Allocator2> &rhs ) const;
 
 private:

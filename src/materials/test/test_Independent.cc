@@ -5,12 +5,12 @@
  *      Author: bm, gad
  */
 
-#include "utils/Utilities.h"
 #include "materials/Material.h"
 #include "materials/TensorProperty.h"
 #include "materials/VectorProperty.h"
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
+#include "utils/Utilities.h"
 
 #include <iostream>
 #include <string>
@@ -60,7 +60,7 @@ int main( int argc, char **argv )
 
     std::vector<AMP::shared_ptr<std::vector<double>>> vfcv( 3 );
     for ( size_t i = 0; i < 3; i++ )
-        vfcv[i]    = AMP::shared_ptr<std::vector<double>>( new std::vector<double>( n ) );
+        vfcv[i] = AMP::shared_ptr<std::vector<double>>( new std::vector<double>( n ) );
 
     AMP::shared_ptr<AMP::Materials::VectorProperty<double>> vectorProperty =
         AMP::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>(

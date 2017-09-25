@@ -21,7 +21,7 @@ public:
     AMP_MPI d_MapComm;
     AMP::Mesh::Mesh::shared_ptr d_MapMesh;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

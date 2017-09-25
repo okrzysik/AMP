@@ -22,8 +22,8 @@ namespace Mesh {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 CircleMesh::CircleMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 {
     // Check for valid inputs
@@ -64,8 +64,8 @@ CircleMesh::CircleMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 
 
 /****************************************************************
-* Estimate the mesh size                                        *
-****************************************************************/
+ * Estimate the mesh size                                        *
+ ****************************************************************/
 std::vector<size_t> CircleMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
     auto db               = params->getDatabase();
@@ -77,8 +77,8 @@ std::vector<size_t> CircleMesh::estimateLogicalMeshSize( const MeshParameters::s
 
 
 /****************************************************************
-* Functions to displace the mesh                                *
-****************************************************************/
+ * Functions to displace the mesh                                *
+ ****************************************************************/
 int CircleMesh::isMeshMovable() const { return 1; }
 void CircleMesh::displaceMesh( const std::vector<double> &x )
 {
@@ -102,8 +102,8 @@ void CircleMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_pt
 
 
 /****************************************************************
-* Copy the mesh                                                 *
-****************************************************************/
+ * Copy the mesh                                                 *
+ ****************************************************************/
 AMP::shared_ptr<Mesh> CircleMesh::copy() const
 {
     return AMP::shared_ptr<CircleMesh>( new CircleMesh( *this ) );
@@ -111,8 +111,8 @@ AMP::shared_ptr<Mesh> CircleMesh::copy() const
 
 
 /****************************************************************
-* Return the coordinate                                         *
-****************************************************************/
+ * Return the coordinate                                         *
+ ****************************************************************/
 void CircleMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
     // This maps from a a logically rectangular 2D mesh to a circular mesh using the mapping by:
@@ -131,15 +131,15 @@ void CircleMesh::coord( const MeshElementIndex &index, double *pos ) const
 
 
 /****************************************************************
-* Return the logical coordinates                                *
-****************************************************************/
+ * Return the logical coordinates                                *
+ ****************************************************************/
 std::array<double, 3> CircleMesh::physicalToLogical( const double *x ) const
 {
-    auto point = BoxMeshHelpers::map_circle_logical( d_R, 2, x[0], x[1] );
+    auto point              = BoxMeshHelpers::map_circle_logical( d_R, 2, x[0], x[1] );
     std::array<double, 3> y = { point.first, point.second, 0 };
     return y;
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

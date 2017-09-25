@@ -63,10 +63,9 @@
 
 //#define __INIT_FN__(x, y, z, t) ( exp(- __PI__ * __PI__ * t) * sin(__PI__ * x) * sin(__PI__ * y) *
 // sin(__PI__ * z) )
-#define __INIT_FN__( x, y, z, t )                                                               \
-    ( 300 +                                                                                     \
-      exp( -0.015 * __PI__ * __PI__ * t ) * cos( 0.1 * __PI__ * x ) * cos( 0.1 * __PI__ * y ) * \
-          cos( 0.05 * __PI__ * z ) )
+#define __INIT_FN__( x, y, z, t )                                           \
+    ( 300 + exp( -0.015 * __PI__ * __PI__ * t ) * cos( 0.1 * __PI__ * x ) * \
+                cos( 0.1 * __PI__ * y ) * cos( 0.05 * __PI__ * z ) )
 
 void IDATimeIntegratorTest( AMP::UnitTest *ut )
 {

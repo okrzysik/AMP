@@ -12,5 +12,5 @@ Matrix::shared_ptr PetscMatrix::createView( shared_ptr in_matrix )
     AMP_INSIST( mat != nullptr, "Managed memory matrix is not well defined" );
     return mat;
 }
-}
-} // end namespace
+} // namespace LinearAlgebra
+} // namespace AMP

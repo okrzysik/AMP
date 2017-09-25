@@ -28,8 +28,8 @@ static inline void checkErr( PetscErrorCode ierr )
 
 
 /****************************************************************
-*  Constructors                                                 *
-****************************************************************/
+ *  Constructors                                                 *
+ ****************************************************************/
 PetscKrylovSolver::PetscKrylovSolver()
 {
     d_bKSPCreatedInternally = false;
@@ -50,8 +50,8 @@ PetscKrylovSolver::PetscKrylovSolver( AMP::shared_ptr<PetscKrylovSolverParameter
 
 
 /****************************************************************
-*  De-constructor                                               *
-****************************************************************/
+ *  De-constructor                                               *
+ ****************************************************************/
 PetscKrylovSolver::~PetscKrylovSolver()
 {
     if ( d_bKSPCreatedInternally ) {
@@ -67,8 +67,8 @@ PetscKrylovSolver::~PetscKrylovSolver()
 
 
 /****************************************************************
-*  Initialize                                                   *
-****************************************************************/
+ *  Initialize                                                   *
+ ****************************************************************/
 void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
     AMP::shared_ptr<PetscKrylovSolverParameters> parameters =
@@ -123,8 +123,8 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
         checkErr( PCSetType( pc, PCNONE ) );
     }
 
-// PetscTruth useZeroGuess = (d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
-// ierr = KSPSetInitialGuessNonzero(d_KrylovSolver, useZeroGuess);
+        // PetscTruth useZeroGuess = (d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
+        // ierr = KSPSetInitialGuessNonzero(d_KrylovSolver, useZeroGuess);
 
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     PetscTruth useNonzeroGuess = ( !d_bUseZeroInitialGuess ) ? PETSC_TRUE : PETSC_FALSE;
@@ -212,11 +212,10 @@ void PetscKrylovSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 }
 
 /****************************************************************
-*  Solve                                                        *
-****************************************************************/
+ *  Solve                                                        *
+ ****************************************************************/
 void PetscKrylovSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                               AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                   u )
+                               AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
@@ -309,8 +308,8 @@ void PetscKrylovSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
 
 
 /****************************************************************
-*  Function to set the KrylovSolver                             *
-****************************************************************/
+ *  Function to set the KrylovSolver                             *
+ ****************************************************************/
 void PetscKrylovSolver::setKrylovSolver( KSP *ksp )
 {
     if ( d_bKSPCreatedInternally ) {
@@ -328,8 +327,8 @@ void PetscKrylovSolver::setKrylovSolver( KSP *ksp )
 
 
 /****************************************************************
-*  Function to set the register the operator                    *
-****************************************************************/
+ *  Function to set the register the operator                    *
+ ****************************************************************/
 void PetscKrylovSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
 {
     // in this case we make the assumption we can access a PetscMat for now
@@ -393,8 +392,8 @@ void PetscKrylovSolver::resetOperator(
 
 
 /****************************************************************
-*  Function to setup the preconditioner                         *
-****************************************************************/
+ *  Function to setup the preconditioner                         *
+ ****************************************************************/
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
 int PetscKrylovSolver::setupPreconditioner( void * )
 {
@@ -405,9 +404,9 @@ int PetscKrylovSolver::setupPreconditioner( void * )
 #elif PETSC_VERSION_GE( 3, 2, 0 )
 PetscErrorCode PetscKrylovSolver::setupPreconditioner( PC pc )
 {
-    int ierr  = 0;
+    int ierr = 0;
     void *ctx = nullptr;
-    ierr      = PCShellGetContext( pc, &ctx );
+    ierr = PCShellGetContext( pc, &ctx );
     return ierr;
 }
 #else
@@ -416,8 +415,8 @@ PetscErrorCode PetscKrylovSolver::setupPreconditioner( PC pc )
 
 
 /****************************************************************
-*  Function to call the preconditioner                          *
-****************************************************************/
+ *  Function to call the preconditioner                          *
+ ****************************************************************/
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
 PetscErrorCode PetscKrylovSolver::applyPreconditioner( void *ctx, Vec r, Vec z )
 #elif PETSC_VERSION_GE( 3, 2, 0 )
@@ -491,4 +490,4 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     return ( ierr );
 }
 }
-}
+} // namespace AMP

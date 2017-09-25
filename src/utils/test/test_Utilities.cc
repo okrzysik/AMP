@@ -41,7 +41,7 @@ size_t abs_diff( size_t a, size_t b ) { return ( a >= b ) ? a - b : b - a; }
 
 
 // This checks approx_equal
-template <class T>
+template<class T>
 void testApproxEqualInt( UnitTest *ut )
 {
     std::string type_name( typeid( T ).name() );
@@ -59,7 +59,7 @@ void testApproxEqualInt( UnitTest *ut )
     else
         ut->failure( "Integer (" + type_name + ") passes close simple check." );
 }
-template <class T>
+template<class T>
 void testApproxEqual( UnitTest *ut )
 {
     std::string type_name( typeid( T ).name() );
@@ -240,8 +240,8 @@ void test_shared_from_this( UnitTest *ut )
 
 
 /****************************************************************
-* Run some basic utility tests                                  *
-****************************************************************/
+ * Run some basic utility tests                                  *
+ ****************************************************************/
 int main( int argc, char *argv[] )
 {
 
@@ -285,8 +285,8 @@ int main( int argc, char *argv[] )
         size_t N = 10000;
         std::vector<int> data1( N );
         srand( static_cast<unsigned int>( time( nullptr ) ) );
-        for ( size_t i         = 0; i < N; i++ )
-            data1[i]           = rand();
+        for ( size_t i = 0; i < N; i++ )
+            data1[i] = rand();
         std::vector<int> data2 = data1;
         std::vector<int> data3 = data1;
         double t1              = Utilities::time();

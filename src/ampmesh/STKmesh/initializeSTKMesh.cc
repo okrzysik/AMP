@@ -21,11 +21,11 @@ unsigned N_copies( const unsigned increment = 0 )
     copies += increment;
     return copies;
 }
-}
+} // namespace
 
 /************************************************************
-* Constructor initilize STKmesh on the given comm           *
-************************************************************/
+ * Constructor initilize STKmesh on the given comm           *
+ ************************************************************/
 initializeSTKMesh::initializeSTKMesh( AMP_MPI comm )
 {
     if ( N_copies() ) {
@@ -49,8 +49,8 @@ initializeSTKMesh::initializeSTKMesh( AMP_MPI comm )
 
 
 /************************************************************
-* Deconstructor that will finalize STKmesh                  *
-************************************************************/
+ * Deconstructor that will finalize STKmesh                  *
+ ************************************************************/
 initializeSTKMesh::~initializeSTKMesh()
 {
     // Use a barrier to ensure all processors are at the same point
@@ -60,8 +60,8 @@ initializeSTKMesh::~initializeSTKMesh()
 
 
 /************************************************************
-* Function check if initiallize can be called successfully  *
-************************************************************/
+ * Function check if initiallize can be called successfully  *
+ ************************************************************/
 bool initializeSTKMesh::canBeInitialized( AMP_MPI comm )
 {
     return ( !N_copies() || comm == d_comm || d_comm.compare( comm ) );
@@ -69,10 +69,10 @@ bool initializeSTKMesh::canBeInitialized( AMP_MPI comm )
 
 
 /************************************************************
-* Function to check if STKmesh has been initialized         *
-************************************************************/
+ * Function to check if STKmesh has been initialized         *
+ ************************************************************/
 bool initializeSTKMesh::isInitialized() { return !N_copies(); }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

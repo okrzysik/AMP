@@ -18,8 +18,8 @@ namespace TimeIntegrator {
 
 
 /***********************************************************************
-*  Constructor.                                                        *
-***********************************************************************/
+ *  Constructor.                                                        *
+ ***********************************************************************/
 BackwardEulerTimeIntegrator::BackwardEulerTimeIntegrator(
     AMP::shared_ptr<TimeIntegratorParameters> parameters )
     : ImplicitTimeIntegrator( parameters )
@@ -30,14 +30,14 @@ BackwardEulerTimeIntegrator::BackwardEulerTimeIntegrator(
 
 
 /***********************************************************************
-*  Destructor.                                                         *
-***********************************************************************/
+ *  Destructor.                                                         *
+ ***********************************************************************/
 BackwardEulerTimeIntegrator::~BackwardEulerTimeIntegrator() {}
 
 
 /***********************************************************************
-* Initialize.                                                          *
-***********************************************************************/
+ * Initialize.                                                          *
+ ***********************************************************************/
 void BackwardEulerTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
@@ -65,9 +65,9 @@ void BackwardEulerTimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameter
 
 
 /***********************************************************************
-*  Calculate an approximate time advanced solution.  We use FE as the  *
-*  predictor.                                                          *
-***********************************************************************/
+ *  Calculate an approximate time advanced solution.  We use FE as the  *
+ *  predictor.                                                          *
+ ***********************************************************************/
 void BackwardEulerTimeIntegrator::setInitialGuess( const bool,
                                                    const double,
                                                    const double,
@@ -79,8 +79,8 @@ void BackwardEulerTimeIntegrator::setInitialGuess( const bool,
 
 
 /***********************************************************************
-*  Update internal state to reflect time advanced solution.            *
-***********************************************************************/
+ *  Update internal state to reflect time advanced solution.            *
+ ***********************************************************************/
 void BackwardEulerTimeIntegrator::updateSolution( void )
 {
     // we can figure out a swap later
@@ -89,10 +89,10 @@ void BackwardEulerTimeIntegrator::updateSolution( void )
 
 
 /***********************************************************************
-*                                                                      *
-* Read input from database.                                            *
-*                                                                      *
-***********************************************************************/
+ *                                                                      *
+ * Read input from database.                                            *
+ *                                                                      *
+ ***********************************************************************/
 void BackwardEulerTimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 {
     if ( input_db->keyExists( "initial_timestep" ) ) {
@@ -106,8 +106,8 @@ double BackwardEulerTimeIntegrator::getNextDt( const bool ) { return d_current_d
 
 
 /***********************************************************************
-*  Check whether time advanced solution is acceptable.                 *
-***********************************************************************/
+ *  Check whether time advanced solution is acceptable.                 *
+ ***********************************************************************/
 bool BackwardEulerTimeIntegrator::checkNewSolution( void ) const
 {
     /*
@@ -135,5 +135,5 @@ void BackwardEulerTimeIntegrator::initializeTimeOperator(
     // it with a pointer to a TimeOperator
     d_operator.reset( new BackwardEulerTimeOperator( d_pTimeOperatorParameters ) );
 }
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

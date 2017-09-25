@@ -43,5 +43,5 @@ inline std::string ManagedPetscVector::type() const
 }
 
 inline void ManagedPetscVector::assemble() {}
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

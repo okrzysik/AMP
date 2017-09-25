@@ -15,8 +15,8 @@ static MeshElement nullElement;
 
 
 /********************************************************
-* Get the index                                         *
-********************************************************/
+ * Get the index                                         *
+ ********************************************************/
 inline BoxMesh::MeshElementIndex structuredMeshIterator::getIndex( int pos ) const
 {
     if ( d_elements ) {
@@ -25,9 +25,9 @@ inline BoxMesh::MeshElementIndex structuredMeshIterator::getIndex( int pos ) con
         int size[3] = { d_last.index( 0 ) - d_first.index( 0 ) + 1,
                         d_last.index( 1 ) - d_first.index( 1 ) + 1,
                         d_last.index( 2 ) - d_first.index( 2 ) + 1 };
-        int i = d_first.index( 0 ) + ( pos % size[0] );
-        int j = d_first.index( 1 ) + ( pos / size[0] % size[1] );
-        int k = d_first.index( 2 ) + ( pos / ( size[0] * size[1] ) % size[2] );
+        int i       = d_first.index( 0 ) + ( pos % size[0] );
+        int j       = d_first.index( 1 ) + ( pos / size[0] % size[1] );
+        int k       = d_first.index( 2 ) + ( pos / ( size[0] * size[1] ) % size[2] );
         if ( d_isPeriodic[0] ) {
             if ( i < 0 )
                 i += d_globalSize[0];
@@ -52,8 +52,8 @@ inline BoxMesh::MeshElementIndex structuredMeshIterator::getIndex( int pos ) con
 
 
 /********************************************************
-* set the current element                               *
-********************************************************/
+ * set the current element                               *
+ ********************************************************/
 inline void structuredMeshIterator::setCurrentElement()
 {
     if ( d_pos < d_size )
@@ -64,8 +64,8 @@ inline void structuredMeshIterator::setCurrentElement()
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 structuredMeshIterator::structuredMeshIterator()
 {
     d_typeID   = structuredMeshIteratorTypeID;
@@ -147,20 +147,20 @@ structuredMeshIterator &structuredMeshIterator::operator=( const structuredMeshI
 
 
 /********************************************************
-* Function to clone the iterator                        *
-********************************************************/
+ * Function to clone the iterator                        *
+ ********************************************************/
 MeshIterator *structuredMeshIterator::clone() const { return new structuredMeshIterator( *this ); }
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 structuredMeshIterator::~structuredMeshIterator() {}
 
 
 /********************************************************
-* Return an iterator to the beginning or end            *
-********************************************************/
+ * Return an iterator to the beginning or end            *
+ ********************************************************/
 MeshIterator structuredMeshIterator::begin() const
 {
     if ( d_elements )
@@ -178,8 +178,8 @@ MeshIterator structuredMeshIterator::end() const
 
 
 /********************************************************
-* Increment/Decrement the iterator                      *
-********************************************************/
+ * Increment/Decrement the iterator                      *
+ ********************************************************/
 MeshIterator &structuredMeshIterator::operator++()
 {
     // Prefix increment (increment and return this)
@@ -214,8 +214,8 @@ MeshIterator structuredMeshIterator::operator--( int )
 
 
 /********************************************************
-* Random access incrementors                            *
-********************************************************/
+ * Random access incrementors                            *
+ ********************************************************/
 MeshIterator structuredMeshIterator::operator+( int n ) const
 {
     structuredMeshIterator tmp( *this ); // Create a temporary iterator
@@ -241,8 +241,8 @@ MeshIterator &structuredMeshIterator::operator+=( int n )
 
 
 /********************************************************
-* Compare two iterators                                 *
-********************************************************/
+ * Compare two iterators                                 *
+ ********************************************************/
 bool structuredMeshIterator::operator==( const MeshIterator &rhs ) const
 {
     if ( size() != rhs.size() )
@@ -312,8 +312,8 @@ bool structuredMeshIterator::operator!=( const MeshIterator &rhs ) const
 
 
 /********************************************************
-* Get all elements in the iterator                      *
-********************************************************/
+ * Get all elements in the iterator                      *
+ ********************************************************/
 AMP::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>>
 structuredMeshIterator::getElements() const
 {
@@ -328,5 +328,5 @@ structuredMeshIterator::getElements() const
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

@@ -953,7 +953,7 @@ static const char *_cudaGetErrorEnum( NppStatus error )
 #endif
 #endif
 
-template <typename T>
+template<typename T>
 void check( T result, char const *const func, const char *const file, int const line )
 {
     if ( result ) {
@@ -1042,7 +1042,7 @@ inline int _ConvertSMVer2Cores( int major, int minor )
             nGpuArchCoresPerSM[index - 1].Cores );
     return nGpuArchCoresPerSM[index - 1].Cores;
 }
-// end of GPU Architecture definitions
+    // end of GPU Architecture definitions
 
 #ifdef __CUDA_RUNTIME_H__
 // General GPU Device CUDA Initialization
@@ -1234,7 +1234,7 @@ inline bool checkCudaCapabilities( int major_version, int minor_version )
 }
 #endif
 
-// end of CUDA Helper Functions
+    // end of CUDA Helper Functions
 
 
 #endif

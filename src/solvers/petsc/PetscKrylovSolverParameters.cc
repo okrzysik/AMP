@@ -7,5 +7,5 @@ PetscKrylovSolverParameters::PetscKrylovSolverParameters( const AMP::shared_ptr<
     : SolverStrategyParameters( db )
 {
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

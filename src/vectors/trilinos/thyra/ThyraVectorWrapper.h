@@ -22,10 +22,10 @@ namespace LinearAlgebra {
 
 
 /** \class ThyraVectorWrapper
-  * \brief  Wrapper for an AMP vector in Thyra
-  * \details  This allows us to safely wrap an AMP vector
-  *   in a thyra vector for use within Trilinos.
-  */
+ * \brief  Wrapper for an AMP vector in Thyra
+ * \details  This allows us to safely wrap an AMP vector
+ *   in a thyra vector for use within Trilinos.
+ */
 class ThyraVectorWrapper : public Thyra::VectorBase<double>
 {
 public:
@@ -162,7 +162,7 @@ private:
 
     friend class ThyraVector;
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

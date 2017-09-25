@@ -38,7 +38,7 @@ protected:
 
     std::vector<std::vector<unsigned int>> d_idxMap;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

@@ -12,8 +12,8 @@ namespace LinearAlgebra {
 
 
 /********************************************************
-* Multiply the matrix by a vector                       *
-********************************************************/
+ * Multiply the matrix by a vector                       *
+ ********************************************************/
 void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 {
     auto other = dynamic_pointer_cast<NativePetscMatrix>( other_op );
@@ -26,8 +26,8 @@ void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 
 
 /********************************************************
-* Get the diagonal                                      *
-********************************************************/
+ * Get the diagonal                                      *
+ ********************************************************/
 Vector::shared_ptr NativePetscMatrix::extractDiagonal( Vector::shared_ptr v ) const
 {
     Vector::shared_ptr retVal;
@@ -42,8 +42,8 @@ Vector::shared_ptr NativePetscMatrix::extractDiagonal( Vector::shared_ptr v ) co
 
 
 /********************************************************
-* Get the left/right Vector/DOFManager                  *
-********************************************************/
+ * Get the left/right Vector/DOFManager                  *
+ ********************************************************/
 Vector::shared_ptr NativePetscMatrix::getRightVector() const
 {
     Vec a;
@@ -79,14 +79,14 @@ Discretization::DOFManager::shared_ptr NativePetscMatrix::getLeftDOFManager() co
 
 
 /********************************************************
-* Get values/row by global id                           *
-********************************************************/
+ * Get values/row by global id                           *
+ ********************************************************/
 void NativePetscMatrix::getValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const
 {
     // Zero out the data in values
     for ( size_t i = 0; i < num_rows * num_cols; i++ )
-        values[i]  = 0.0;
+        values[i] = 0.0;
     // Get the data for each row
     Discretization::DOFManager::shared_ptr leftDOFManager = getLeftDOFManager();
     size_t firstRow                                       = leftDOFManager->beginDOF();
@@ -144,5 +144,5 @@ std::vector<size_t> NativePetscMatrix::getColumnIDs( size_t row ) const
 
     return cols;
 }
-}
-} // end
+} // namespace LinearAlgebra
+} // namespace AMP
