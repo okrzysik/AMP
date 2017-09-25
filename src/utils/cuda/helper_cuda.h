@@ -1072,8 +1072,9 @@ inline int gpuDeviceInit( int devID )
     checkCudaErrors( cudaGetDeviceProperties( &deviceProp, devID ) );
 
     if ( deviceProp.computeMode == cudaComputeModeProhibited ) {
-        fprintf( stderr, "Error: device is running in <Compute Mode Prohibited>, no threads can "
-                         "use ::cudaSetDevice().\n" );
+        fprintf( stderr,
+                 "Error: device is running in <Compute Mode Prohibited>, no threads can "
+                 "use ::cudaSetDevice().\n" );
         return -1;
     }
 
