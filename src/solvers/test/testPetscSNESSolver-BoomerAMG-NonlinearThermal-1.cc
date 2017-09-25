@@ -197,7 +197,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams(
         new AMP::Solver::SolverStrategyParameters( thermalPreconditioner_db ) );
     thermalPreconditionerParams->d_pOperator = linearThermalOperator;
-    auto linearThermalPreconditioner = std::make_shared<AMP::Solver::BoomerAMGSolver>(thermalPreconditionerParams);
+    auto linearThermalPreconditioner =
+        std::make_shared<AMP::Solver::BoomerAMGSolver>( thermalPreconditionerParams );
 
     // Crete the solvers
     AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(

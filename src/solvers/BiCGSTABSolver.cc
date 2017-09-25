@@ -1,7 +1,7 @@
 #include "solvers/BiCGSTABSolver.h"
-#include "solvers/KrylovSolverParameters.h"
 #include "ProfilerApp.h"
 #include "operators/LinearOperator.h"
+#include "solvers/KrylovSolverParameters.h"
 
 
 #include <cmath>
@@ -35,8 +35,7 @@ BiCGSTABSolver::~BiCGSTABSolver() {}
 ****************************************************************/
 void BiCGSTABSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
-    auto parameters =
-        AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
+    auto parameters = AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
@@ -115,16 +114,15 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
         std::cout << "BiCGSTAB: initial residual " << res_norm << std::endl;
-        }
+    }
 
     // return if the residual is already low enough
     if ( res_norm < terminate_tol ) {
         // provide a convergence reason
         // provide history (iterations, conv history etc)
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "BiCGSTABSolver::solve: initial residual norm "
-                      << res_norm << " is below convergence tolerance: "
-                      << terminate_tol << std::endl;
+            std::cout << "BiCGSTABSolver::solve: initial residual norm " << res_norm
+                      << " is below convergence tolerance: " << terminate_tol << std::endl;
         }
         return;
     }
@@ -225,7 +223,8 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         res_norm = res->L2Norm();
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "BiCGSTAB: iteration " << (iter+1) << ", residual " << res_norm << std::endl;
+            std::cout << "BiCGSTAB: iteration " << ( iter + 1 ) << ", residual " << res_norm
+                      << std::endl;
         }
 
         // break if the residual is already low enough
@@ -239,7 +238,8 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             // this is a breakdown of the iteration
             // need to flag
             if ( d_iDebugPrintInfoLevel > 0 ) {
-                std::cout << "BiCGSTABSolver::solve: breakdown encountered, omega == 0" << std::endl;
+                std::cout << "BiCGSTABSolver::solve: breakdown encountered, omega == 0"
+                          << std::endl;
             }
             break;
         }

@@ -45,14 +45,15 @@ public:
      */
     explicit TFQMRSolver( AMP::shared_ptr<SolverStrategyParameters> parameters );
 
-    /** 
-     * static create routine that is used by SolverFactory 
+    /**
+     * static create routine that is used by SolverFactory
      @param [in] parameters The parameters object
      contains a database objects with the fields listed for the constructor above
      */
-    static AMP::shared_ptr<SolverStrategy> createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    static AMP::shared_ptr<SolverStrategy>
+    createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-      return AMP::make_shared<TFQMRSolver> ( solverStrategyParameters );
+        return AMP::make_shared<TFQMRSolver>( solverStrategyParameters );
     }
 
     /**
@@ -104,7 +105,8 @@ public:
      * Resets the registered operator internally with new parameters if necessary
      * @param parameters    OperatorParameters object that is NULL by default
      */
-    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
+    void
+    resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
 
 protected:
     void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
@@ -119,7 +121,7 @@ private:
     bool d_bUsesPreconditioner = false;
 
     std::string d_preconditioner_side;
-    
+
     AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
 }

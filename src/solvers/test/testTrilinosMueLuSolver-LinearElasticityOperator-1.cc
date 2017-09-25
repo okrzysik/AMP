@@ -67,7 +67,8 @@ void linearElasticTest( AMP::UnitTest *ut )
     dirichletVecOp->setVariable( var );
 
     AMP::Discretization::DOFManager::shared_ptr dofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     AMP::LinearAlgebra::Vector::shared_ptr mechSolVec =
@@ -122,7 +123,8 @@ void linearElasticTest( AMP::UnitTest *ut )
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > ( 1e-10 * initResidualNorm ) ) {
-        ut->failure( "TrilinosMueLuSolver could not solve a linear elasticity problem successfully" );
+        ut->failure(
+            "TrilinosMueLuSolver could not solve a linear elasticity problem successfully" );
     } else {
         ut->passes( "TrilinosMueLuSolver successfully solves a linear elasticity problem" );
     }

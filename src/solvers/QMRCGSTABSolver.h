@@ -10,7 +10,7 @@ namespace Solver {
 /**
  * The QMRCGSTABSolver class implements the QMRCGSTAB method for non-symmetric linear systems
  * introduced by Chan et. al.
- * 
+ *
  * The implementation here is mostly based on the MATLAB code at
  * https://link.springer.com/content/pdf/bbm%3A978-3-8348-8100-7%2F1.pdf
  * Currently no preconditioning
@@ -43,14 +43,15 @@ public:
      */
     explicit QMRCGSTABSolver( AMP::shared_ptr<SolverStrategyParameters> parameters );
 
-    /** 
-     * static create routine that is used by SolverFactory 
+    /**
+     * static create routine that is used by SolverFactory
      @param [in] parameters The parameters object
      contains a database objects with the fields listed for the constructor above
      */
-    static AMP::shared_ptr<SolverStrategy> createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    static AMP::shared_ptr<SolverStrategy>
+    createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-      return AMP::make_shared<QMRCGSTABSolver> ( solverStrategyParameters );
+        return AMP::make_shared<QMRCGSTABSolver>( solverStrategyParameters );
     }
 
     /**
@@ -102,7 +103,8 @@ public:
      * Resets the registered operator internally with new parameters if necessary
      * @param parameters    OperatorParameters object that is NULL by default
      */
-    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
+    void
+    resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
 
 protected:
     void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
@@ -117,7 +119,7 @@ private:
     bool d_bUsesPreconditioner = false;
 
     std::string d_preconditioner_side;
-    
+
     AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
 }

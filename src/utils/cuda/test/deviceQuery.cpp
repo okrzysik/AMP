@@ -215,16 +215,17 @@ int main( int argc, char **argv )
                 deviceProp.pciBusID,
                 deviceProp.pciDeviceID );
 
-        const char *sComputeMode[] =
-            { "Default (multiple host threads can use ::cudaSetDevice() with device "
-              "simultaneously)",
-              "Exclusive (only one host thread in one process is able to use ::cudaSetDevice() "
-              "with this device)",
-              "Prohibited (no host thread can use ::cudaSetDevice() with this device)",
-              "Exclusive Process (many threads in one process is able to use ::cudaSetDevice() "
-              "with this device)",
-              "Unknown",
-              NULL };
+        const char *sComputeMode[] = {
+            "Default (multiple host threads can use ::cudaSetDevice() with device "
+            "simultaneously)",
+            "Exclusive (only one host thread in one process is able to use ::cudaSetDevice() "
+            "with this device)",
+            "Prohibited (no host thread can use ::cudaSetDevice() with this device)",
+            "Exclusive Process (many threads in one process is able to use ::cudaSetDevice() "
+            "with this device)",
+            "Unknown",
+            NULL
+        };
         printf( "  Compute Mode:\n" );
         printf( "     < %s >\n", sComputeMode[deviceProp.computeMode] );
     }

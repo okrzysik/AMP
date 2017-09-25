@@ -36,42 +36,41 @@ responsibility for the use of this software.
 #include "solvers/petsc/PetscKrylovSolver.h"
 #endif
 
+#include "solvers/BiCGSTABSolver.h"
 #include "solvers/CGSolver.h"
 #include "solvers/GMRESSolver.h"
-#include "solvers/BiCGSTABSolver.h"
-#include "solvers/TFQMRSolver.h"
 #include "solvers/QMRCGSTABSolver.h"
+#include "solvers/TFQMRSolver.h"
 
 namespace AMP {
-namespace Solver{
-    
+namespace Solver {
+
 // register all known solver factories
 void registerSolverFactories()
 {
     auto &solverFactory = SolverFactory::getFactory();
 
 #ifdef USE_TRILINOS_MUELU
-    solverFactory.registerFactory("TrilinosMueLuSolver", TrilinosMueLuSolver::createSolver);
+    solverFactory.registerFactory( "TrilinosMueLuSolver", TrilinosMueLuSolver::createSolver );
 #endif
-    
+
 #ifdef USE_TRILINOS_ML
-    solverFactory.registerFactory("TrilinosMLSolver", TrilinosMLSolver::createSolver);
+    solverFactory.registerFactory( "TrilinosMLSolver", TrilinosMLSolver::createSolver );
 #endif
-    
+
 #ifdef USE_EXT_HYPRE
-    solverFactory.registerFactory("BoomerAMGSolver", BoomerAMGSolver::createSolver);
+    solverFactory.registerFactory( "BoomerAMGSolver", BoomerAMGSolver::createSolver );
 #endif
-    
+
 #ifdef USE_EXT_PETSC
-    solverFactory.registerFactory("PetscKrylovSolver", PetscKrylovSolver::createSolver);
+    solverFactory.registerFactory( "PetscKrylovSolver", PetscKrylovSolver::createSolver );
 #endif
 
-    solverFactory.registerFactory("CGSolver", CGSolver::createSolver);
-    solverFactory.registerFactory("GMRESSolver", GMRESSolver::createSolver);
-    solverFactory.registerFactory("BiCGSTABSolver", BiCGSTABSolver::createSolver);
-    solverFactory.registerFactory("TFQMRSolver", TFQMRSolver::createSolver);
-    solverFactory.registerFactory("QMRCGSTABSolver", QMRCGSTABSolver::createSolver);
+    solverFactory.registerFactory( "CGSolver", CGSolver::createSolver );
+    solverFactory.registerFactory( "GMRESSolver", GMRESSolver::createSolver );
+    solverFactory.registerFactory( "BiCGSTABSolver", BiCGSTABSolver::createSolver );
+    solverFactory.registerFactory( "TFQMRSolver", TFQMRSolver::createSolver );
+    solverFactory.registerFactory( "QMRCGSTABSolver", QMRCGSTABSolver::createSolver );
 }
-
 }
 } // end namespace AMP

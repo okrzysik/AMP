@@ -15,9 +15,9 @@
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #include "Teuchos_ParameterList.hpp"
 // Xpetra include
-#include <Xpetra_Parameters.hpp>
-#include <Xpetra_Operator_fwd.hpp>
 #include <Xpetra_Matrix.hpp>
+#include <Xpetra_Operator_fwd.hpp>
+#include <Xpetra_Parameters.hpp>
 
 #include <MueLu_FactoryManager.hpp>
 #include <MueLu_HierarchyManager_fwd.hpp>
@@ -28,36 +28,41 @@
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
 
-namespace MueLu{
-  class EpetraOperator;
-  template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class Hierarchy;
-  template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class TentativePFactory;
-  template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class SaPFactory;
-  template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class TransPFactory;
-  template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class DirectSolver;
-  template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class SmootherFactory;
-  
-  using Scalar=double;
-  using LocalOrdinal=int;
-  using GlobalOrdinal=int;
-  using Node=Xpetra::EpetraNode;
+namespace MueLu {
+class EpetraOperator;
+template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
+class Hierarchy;
+template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
+class TentativePFactory;
+template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
+class SaPFactory;
+template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
+class TransPFactory;
+template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
+class DirectSolver;
+template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
+class SmootherFactory;
+
+using Scalar        = double;
+using LocalOrdinal  = int;
+using GlobalOrdinal = int;
+using Node          = Xpetra::EpetraNode;
 }
 
 namespace AMP {
 
-namespace Operator{
-  class LinearOperator;
+namespace Operator {
+class LinearOperator;
 }
 
 namespace Solver {
 
-  
 
 using TrilinosMueLuSolverParameters = SolverStrategyParameters;
-using SC=MueLu::Scalar;
-using LO=MueLu::LocalOrdinal;
-using GO=MueLu::GlobalOrdinal;
-using NO=MueLu::Node;
+using SC                            = MueLu::Scalar;
+using LO                            = MueLu::LocalOrdinal;
+using GO                            = MueLu::GlobalOrdinal;
+using NO                            = MueLu::Node;
 
 /**
  * The TrilinosMueLuSolver is a wrapper to the Trilinos ML solver. ML provides implementations of
@@ -87,9 +92,11 @@ public:
      */
     virtual ~TrilinosMueLuSolver();
 
-    //! static create routine that is used by SolverFactory 
-    static AMP::shared_ptr<SolverStrategy> createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters ) {
-      return AMP::make_shared<TrilinosMueLuSolver> ( solverStrategyParameters );
+    //! static create routine that is used by SolverFactory
+    static AMP::shared_ptr<SolverStrategy>
+    createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    {
+        return AMP::make_shared<TrilinosMueLuSolver>( solverStrategyParameters );
     }
 
     /**
@@ -98,7 +105,8 @@ public:
      @param [out] u : shared pointer to approximate computed solution
      */
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                    u ) override;
 
     /**
      * Solve the system \f$Au = f\f$.
@@ -106,7 +114,8 @@ public:
      @param [out] u : shared pointer to approximate computed solution
      */
     void solveWithHierarchy( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                             AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
+                             AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                                 u );
 
     /**
      * Return a shared pointer to the ML_Epetra::MultiLevelPreconditioner object
@@ -164,7 +173,8 @@ protected:
     void buildHierarchyByLevel( void );
 
     //! utility function to extract Xpetra Matrix from AMP LinearOperator
-    Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> getXpetraMatrix( AMP::shared_ptr<AMP::Operator::LinearOperator> & op );
+    Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>>
+    getXpetraMatrix( AMP::shared_ptr<AMP::Operator::LinearOperator> &op );
 
     Teuchos::RCP<MueLu::TentativePFactory<SC, LO, GO, NO>> getTentativePFactory( void );
     Teuchos::RCP<MueLu::SaPFactory<SC, LO, GO, NO>> getSaPFactory( void );
@@ -173,33 +183,34 @@ protected:
     Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> getSmootherFactory( const int level );
 
     Teuchos::ParameterList &getSmootherParameters( const int level );
-    
-private:
 
-    bool d_bUseEpetra                    = true;  //! whether we are using Epetra
-    bool d_build_hierarchy               = false; //! whether to explicitly build the hierarchy
-    bool d_build_hierarchy_from_defaults = true;  //! build the hierarchy using the defaults constructed by MueLu
-    bool d_construct_partition           = false; //! whether to construct user defined partitions
-    bool d_bCreationPhase                = false; //! set to true if the solver is yet to be initialized
-    bool d_bRobustMode                   = false; //! use a direct solver if the MG solve fails to converge
+private:
+    bool d_bUseEpetra      = true;  //! whether we are using Epetra
+    bool d_build_hierarchy = false; //! whether to explicitly build the hierarchy
+    bool d_build_hierarchy_from_defaults =
+        true; //! build the hierarchy using the defaults constructed by MueLu
+    bool d_construct_partition = false; //! whether to construct user defined partitions
+    bool d_bCreationPhase      = false; //! set to true if the solver is yet to be initialized
+    bool d_bRobustMode         = false; //! use a direct solver if the MG solve fails to converge
 
     AMP_MPI d_comm;
 
-    size_t d_maxLevels;  //! maximum number of levels
+    size_t d_maxLevels; //! maximum number of levels
 
     std::string d_smoother_type; //! key for creating different smoothers
-    
+
     AMP::shared_ptr<MueLu::EpetraOperator> d_mueluSolver;
 
     AMP::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
     Teuchos::ParameterList d_MueLuParameterList;
 
-    Teuchos::RCP< MueLu::HierarchyManager<SC,LO,GO,NO> > d_mueluHierarchyManager; //! manager that creates hierarchy
+    Teuchos::RCP<MueLu::HierarchyManager<SC, LO, GO, NO>>
+        d_mueluHierarchyManager; //! manager that creates hierarchy
 
-    Teuchos::RCP< MueLu::Hierarchy<SC,LO,GO,NO> > d_mueluHierarchy; //! AMG hierarchy
-    MueLu::FactoryManager<SC,LO,GO,NO> d_factoryManager; //! factory manager for MueLu components
-    std::vector<Teuchos::RCP<MueLu::FactoryManager<SC,LO,GO,NO>>> d_levelFactoryManager; //! factory manager for MueLu components by level
-
+    Teuchos::RCP<MueLu::Hierarchy<SC, LO, GO, NO>> d_mueluHierarchy; //! AMG hierarchy
+    MueLu::FactoryManager<SC, LO, GO, NO> d_factoryManager; //! factory manager for MueLu components
+    std::vector<Teuchos::RCP<MueLu::FactoryManager<SC, LO, GO, NO>>>
+        d_levelFactoryManager; //! factory manager for MueLu components by level
 };
 }
 }

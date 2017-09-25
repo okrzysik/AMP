@@ -1,12 +1,12 @@
 #include "solvers/QMRCGSTABSolver.h"
-#include "solvers/KrylovSolverParameters.h"
 #include "ProfilerApp.h"
 #include "operators/LinearOperator.h"
+#include "solvers/KrylovSolverParameters.h"
 
 
+#include <array>
 #include <cmath>
 #include <limits>
-#include <array>
 
 namespace AMP {
 namespace Solver {
@@ -36,8 +36,7 @@ QMRCGSTABSolver::~QMRCGSTABSolver() {}
 ****************************************************************/
 void QMRCGSTABSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
-    auto parameters =
-        AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
+    auto parameters = AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
@@ -62,7 +61,7 @@ void QMRCGSTABSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 
     // default is right preconditioning, options are right, left, both
     if ( d_bUsesPreconditioner ) {
-        d_preconditioner_side =  db->getStringWithDefault( "preconditioner_side", "right" );
+        d_preconditioner_side = db->getStringWithDefault( "preconditioner_side", "right" );
     }
 }
 
@@ -71,15 +70,18 @@ void QMRCGSTABSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 * TODO: store convergence history, iterations, convergence reason
 ****************************************************************/
 void QMRCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                            AMP::shared_ptr<AMP::LinearAlgebra::Vector> x )
+                             AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                                 x )
 {
     PROFILE_START( "solve" );
 
     // Check input vector states
-    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
-                ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT( ( x->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
-                ( x->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT(
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT(
+        ( x->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+        ( x->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
@@ -95,7 +97,8 @@ void QMRCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "QMRCGSTABSolver::solve: initial L2Norm of solution vector: " << x->L2Norm()
                   << std::endl;
-        std::cout << "QMRCGSTABSolver::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
+        std::cout << "QMRCGSTABSolver::solve: initial L2Norm of rhs vector: " << f_norm
+                  << std::endl;
     }
 
     if ( d_pOperator.get() != nullptr ) {
@@ -111,22 +114,21 @@ void QMRCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
     } else {
         d_pOperator->residual( f, x, r0 );
     }
-    
+
     // compute the current residual norm
-    double res_norm     = r0->L2Norm();
+    double res_norm = r0->L2Norm();
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
         std::cout << "QMRCGSTAB: initial residual " << res_norm << std::endl;
-        }
+    }
 
     // return if the residual is already low enough
     if ( res_norm < terminate_tol ) {
         // provide a convergence reason
         // provide history (iterations, conv history etc)
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "QMRCGSTABSolver::solve: initial residual norm "
-                      << res_norm << " is below convergence tolerance: "
-                      << terminate_tol << std::endl;
+            std::cout << "QMRCGSTABSolver::solve: initial residual norm " << res_norm
+                      << " is below convergence tolerance: " << terminate_tol << std::endl;
         }
         return;
     }
@@ -135,33 +137,33 @@ void QMRCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
     double tau   = res_norm;
     double eta   = 0.0;
     double theta = 0.0;
-    double rho1  = tau*tau;
-    
-    auto p =  f->cloneVector();
+    double rho1  = tau * tau;
+
+    auto p = f->cloneVector();
     p->copyVector( r0 );
-    
-    auto v =  f->cloneVector();
+
+    auto v = f->cloneVector();
     v->zero();
-    
-    auto d =  f->cloneVector();
+
+    auto d = f->cloneVector();
     d->zero();
 
-    auto d2 =  f->cloneVector();
+    auto d2 = f->cloneVector();
     d2->zero();
 
-    auto r =  f->cloneVector();
+    auto r = f->cloneVector();
     r->zero();
 
-    auto s =  f->cloneVector();
+    auto s = f->cloneVector();
     s->zero();
 
-    auto t =  f->cloneVector();
+    auto t = f->cloneVector();
     t->zero();
 
-    auto z =  f->cloneVector();
+    auto z = f->cloneVector();
     z->zero();
 
-    auto x2 =  f->cloneVector();
+    auto x2 = f->cloneVector();
     x2->zero();
 
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
@@ -172,99 +174,100 @@ void QMRCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
         z = p;
     }
-    
+
     d_pOperator->apply( z, v );
 
     int k = 0;
 
     bool converged = false;
-    
+
     while ( k < d_iMaxIterations ) {
 
         ++k;
-        auto rho2 = r0->dot( v ); 
+        auto rho2 = r0->dot( v );
 
         // replace by soft-equal
-        if( rho2 == 0.0 ) {
+        if ( rho2 == 0.0 ) {
             // the method breaks down as the vectors are orthogonal to r
             AMP_ERROR( "QMRCGSTAB breakdown, <r0,v> == 0 " );
         }
 
         // replace by soft-equal
-        if( rho1 == 0.0 ) {
+        if ( rho1 == 0.0 ) {
             // the method breaks down as it stagnates
             AMP_ERROR( "QMRCGSTAB breakdown, rho1==0 " );
         }
 
-        auto alpha = rho1/rho2;
+        auto alpha = rho1 / rho2;
 
         s->axpy( -alpha, v, r );
 
         // first quasi minimization and iterate update as per paper
-        const auto theta2 = s->L2Norm()/tau;
-        auto c      = 1.0/( std::sqrt( 1.0 + theta2*theta2 ) );
-        const auto tau2   = tau*theta2*c;
-        const auto eta2   = c*c*alpha;
-        
-        d2->axpy( theta*theta*eta/alpha, d, p );
+        const auto theta2 = s->L2Norm() / tau;
+        auto c            = 1.0 / ( std::sqrt( 1.0 + theta2 * theta2 ) );
+        const auto tau2   = tau * theta2 * c;
+        const auto eta2   = c * c * alpha;
 
-        x2->axpy( eta2, d2, x );            
-        
+        d2->axpy( theta * theta * eta / alpha, d, p );
+
+        x2->axpy( eta2, d2, x );
+
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-            
+
             d_pPreconditioner->solve( s, z );
-            
+
         } else {
             z = s;
         }
-        
+
         d_pOperator->apply( z, t );
 
-        const auto uu = s->dot( t ); 
-        const auto vv = t->dot( t ); 
+        const auto uu = s->dot( t );
+        const auto vv = t->dot( t );
 
         if ( vv == 0.0 ) {
             AMP_ERROR( "Matrix is singular" );
         }
 
-        const auto omega = uu/vv;
+        const auto omega = uu / vv;
 
         if ( omega == 0.0 ) {
             // the method breaks down as it stagnates
             AMP_ERROR( "QMRCGSTAB breakdown, omega==0.0 " );
         }
-        
-        r->axpy( omega, t, s );            
+
+        r->axpy( omega, t, s );
 
         // second quasi minimization and iterate update as per paper
-        theta = s->L2Norm()/tau2;
-        c     = 1.0/( std::sqrt( 1.0 + theta*theta ) );
-        tau   = tau2*theta*c;
-        eta   = c*c*omega;
-            
-        d->axpy( theta2*theta2*eta2/omega, d2, s );
+        theta = s->L2Norm() / tau2;
+        c     = 1.0 / ( std::sqrt( 1.0 + theta * theta ) );
+        tau   = tau2 * theta * c;
+        eta   = c * c * omega;
 
-        x->axpy( eta, d, x2 );            
-   
-        
-        if( std::fabs(tau) * (std::sqrt( (double) (k+1) ) ) <= terminate_tol ) {
-            
+        d->axpy( theta2 * theta2 * eta2 / omega, d2, s );
+
+        x->axpy( eta, d, x2 );
+
+
+        if ( std::fabs( tau ) * ( std::sqrt( (double) ( k + 1 ) ) ) <= terminate_tol ) {
+
             if ( d_iDebugPrintInfoLevel > 0 ) {
-                std::cout << "QMRCGSTAB: iteration " << (k+1) << ", residual " << tau << std::endl;
-                }
-            
-            converged = true; 
+                std::cout << "QMRCGSTAB: iteration " << ( k + 1 ) << ", residual " << tau
+                          << std::endl;
+            }
+
+            converged = true;
             break;
         }
 
         rho2 = r->dot( r0 );
         // replace by soft-equal
-        if( rho2 == 0.0 ) {
+        if ( rho2 == 0.0 ) {
             // the method breaks down as rho2==0
             AMP_ERROR( "QMRCGSTAB breakdown, rho2 == 0 " );
         }
 
-        const auto beta = (alpha*rho2)/(omega*rho1);
+        const auto beta = ( alpha * rho2 ) / ( omega * rho1 );
         p->axpy( -omega, v, p );
         p->axpy( beta, p, r );
 
@@ -276,16 +279,16 @@ void QMRCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
         d_pOperator->apply( z, v );
         rho1 = rho2;
-        
+
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "QMRCGSTAB: iteration " << (k+1) << ", residual " << tau << std::endl;
+            std::cout << "QMRCGSTAB: iteration " << ( k + 1 ) << ", residual " << tau << std::endl;
         }
     }
 
     if ( converged ) {
         // unwind the preconditioner if necessary
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-            z->copyVector(x);
+            z->copyVector( x );
             d_pPreconditioner->solve( z, x );
         }
     }

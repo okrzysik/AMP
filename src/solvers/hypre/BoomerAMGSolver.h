@@ -18,7 +18,8 @@ typedef SolverStrategyParameters BoomerAMGSolverParameters;
 
 
 /**
- * The BoomerAMGSolver is a wrapper to the HYPRE BoomerAMG solver. BoomerAMG provides implementations of
+ * The BoomerAMGSolver is a wrapper to the HYPRE BoomerAMG solver. BoomerAMG provides
+ * implementations of
  * various algebraic multigrid methods. The wrapper at present simply provides an adaptor
  * to enable AMP users to use the black box BoomerAMG preconditioner.
  */
@@ -45,9 +46,11 @@ public:
      */
     virtual ~BoomerAMGSolver();
 
-    //! static create routine that is used by SolverFactory 
-    static AMP::shared_ptr<SolverStrategy> createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters ) {
-      return AMP::make_shared<BoomerAMGSolver> ( solverStrategyParameters );
+    //! static create routine that is used by SolverFactory
+    static AMP::shared_ptr<SolverStrategy>
+    createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    {
+        return AMP::make_shared<BoomerAMGSolver>( solverStrategyParameters );
     }
 
     /**
@@ -56,7 +59,8 @@ public:
      @param [out] u : shared pointer to approximate computed solution
      */
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                    u ) override;
 
     /**
      * Initialize the solution vector and potentially create internal vectors needed for solution
@@ -95,46 +99,44 @@ public:
     void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
 
 private:
-
     /**
      * create the internal HYPRE_IJMatrix based on the AMP matrix
      */
     void createHYPREMatrix( const AMP::shared_ptr<AMP::LinearAlgebra::Matrix> matrix );
 
-    /** 
+    /**
      * create and initialize the internal hypre vectors for rhs and solution
      */
-    void createHYPREVectors( );
+    void createHYPREVectors();
 
     /**
      *  copy values from amp vector to hypre vector
      */
-    void copyToHypre( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> amp_v, 
+    void copyToHypre( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> amp_v,
                       HYPRE_IJVector hypre_v );
 
     /**
      *  copy values from hypre vector to amp vector
      */
-    void copyFromHypre( HYPRE_IJVector hypre_v, 
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_v );
+    void copyFromHypre( HYPRE_IJVector hypre_v, AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_v );
 
 
-    void setParameters(void); //! set BoomerAMG parameters based on internally set variables
+    void setParameters( void ); //! set BoomerAMG parameters based on internally set variables
 
     AMP_MPI d_comm;
 
-    HYPRE_IJMatrix d_ijMatrix;  //! pointer to HYPRE matrix struct
+    HYPRE_IJMatrix d_ijMatrix; //! pointer to HYPRE matrix struct
 
-    HYPRE_IJVector d_hypre_rhs;       //! pointer to HYPRE representation of rhs 
-    HYPRE_IJVector d_hypre_sol;       //! pointer to HYPRE representation of solution
+    HYPRE_IJVector d_hypre_rhs; //! pointer to HYPRE representation of rhs
+    HYPRE_IJVector d_hypre_sol; //! pointer to HYPRE representation of solution
 
-    HYPRE_Solver d_solver;      //! pointer to HYPRE BoomerAMG solver
+    HYPRE_Solver d_solver; //! pointer to HYPRE BoomerAMG solver
 
-    int d_num_functions              = 1;
-    int d_min_iterations             = 0;
-    int d_max_coarse_size            = 800;
-    int d_min_coarse_size            = 100;
-    int d_max_levels                 = 10;
+    int d_num_functions   = 1;
+    int d_min_iterations  = 0;
+    int d_max_coarse_size = 800;
+    int d_min_coarse_size = 100;
+    int d_max_levels      = 10;
     int d_coarsen_type;
     int d_measure_type;
     int d_agg_num_levels;
@@ -148,7 +150,7 @@ private:
     int d_agg_interp_type;
     int d_agg_P_max_elements;
     int d_agg_P12_max_elements;
-    int d_number_samples; 
+    int d_number_samples;
     int d_cycle_type;
     int d_additive_level;
     int d_mult_additive_level;

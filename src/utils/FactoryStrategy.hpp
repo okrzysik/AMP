@@ -1,21 +1,21 @@
 #ifndef AMP_FactoryStrategy_HPP_
 #define AMP_FactoryStrategy_HPP_
 
-#include <map>
-#include <string>
-#include <sstream>
-#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/UtilityMacros.h"
+#include "utils/shared_ptr.h"
+#include <map>
+#include <sstream>
+#include <string>
 
-namespace AMP{
+namespace AMP {
 
 // template for factories for operators and solvers
 
 // NOTE: ideally the create function should return a
 // unique_ptr but since AMP does not currently have that
 // we will return a shared_ptr
-    
+
 template <typename TYPE, typename PARAMETERS>
 class FactoryStrategy
 {
@@ -25,19 +25,18 @@ private:
      */
     FactoryStrategy();
 
-    using FunctionPtr = AMP::shared_ptr<TYPE>(*)( AMP::shared_ptr<PARAMETERS> parameters );
+    using FunctionPtr = AMP::shared_ptr<TYPE> ( * )( AMP::shared_ptr<PARAMETERS> parameters );
     using FunctionMap = std::map<std::string, FunctionPtr>;
 
     FunctionMap d_factories; //! maps from names to factories
 
     //! given name and parameter object create object
     AMP::shared_ptr<TYPE> create( std::string name, AMP::shared_ptr<PARAMETERS> parameters );
-    
+
     //! register a function that creates an object
-    void registerFunction(std::string name, FactoryStrategy::FunctionPtr ptr);
+    void registerFunction( std::string name, FactoryStrategy::FunctionPtr ptr );
 
 public:
-
     /**
      * Destructor.
      */
@@ -50,43 +49,41 @@ public:
      * Factory method for generating objects with characteristics
      * specified by parameters.
      */
-    static AMP::shared_ptr<TYPE>
-    create( AMP::shared_ptr<PARAMETERS> parameters );
+    static AMP::shared_ptr<TYPE> create( AMP::shared_ptr<PARAMETERS> parameters );
 
     // public interface for registering a function that creates an object
-    static void registerFactory(std::string name, FactoryStrategy::FunctionPtr ptr);
-
+    static void registerFactory( std::string name, FactoryStrategy::FunctionPtr ptr );
 };
 
 template <typename TYPE, typename PARAMETERS>
-FactoryStrategy<TYPE,PARAMETERS>::FactoryStrategy()
+FactoryStrategy<TYPE, PARAMETERS>::FactoryStrategy()
 {
 }
 
 template <typename TYPE, typename PARAMETERS>
-FactoryStrategy<TYPE,PARAMETERS>::~FactoryStrategy()
-{    
+FactoryStrategy<TYPE, PARAMETERS>::~FactoryStrategy()
+{
 }
 
 template <typename TYPE, typename PARAMETERS>
-FactoryStrategy<TYPE,PARAMETERS> &FactoryStrategy<TYPE,PARAMETERS>::getFactory(void )
+FactoryStrategy<TYPE, PARAMETERS> &FactoryStrategy<TYPE, PARAMETERS>::getFactory( void )
 {
-    static FactoryStrategy<TYPE,PARAMETERS> singletonInstance;
+    static FactoryStrategy<TYPE, PARAMETERS> singletonInstance;
     return singletonInstance;
 }
 
 template <typename TYPE, typename PARAMETERS>
-AMP::shared_ptr<TYPE> FactoryStrategy<TYPE,PARAMETERS>::create(std::string name, 
-                                                               AMP::shared_ptr<PARAMETERS> parameters)
+AMP::shared_ptr<TYPE> FactoryStrategy<TYPE, PARAMETERS>::create(
+    std::string name, AMP::shared_ptr<PARAMETERS> parameters )
 {
     AMP::shared_ptr<TYPE> obj;
-    auto it = d_factories.find(name);
-    if( it != d_factories.end() ) {
-        obj = it->second(parameters);
+    auto it = d_factories.find( name );
+    if ( it != d_factories.end() ) {
+        obj = it->second( parameters );
     } else {
         std::stringstream err;
         err << "Unable to create object " << name;
-        AMP_ERROR(err.str());
+        AMP_ERROR( err.str() );
     }
 
     return obj;
@@ -106,29 +103,27 @@ FactoryStrategy<TYPE, PARAMETERS>::create( AMP::shared_ptr<PARAMETERS> parameter
         objectName = inputDatabase->getString( "name" );
     } else {
         AMP_ERROR( "FactoryStrategy"
-                    << " -- Required key `name'"
-                    << " missing in input." );
+                   << " -- Required key `name'"
+                   << " missing in input." );
     }
 
     auto &factory = FactoryStrategy<TYPE, PARAMETERS>::getFactory();
-    return factory.create(objectName, parameters);
+    return factory.create( objectName, parameters );
 }
 
 template <typename TYPE, typename PARAMETERS>
-void FactoryStrategy<TYPE, PARAMETERS>::registerFactory(std::string name, 
-                                                        FactoryStrategy<TYPE, PARAMETERS>::FunctionPtr ptr)
+void FactoryStrategy<TYPE, PARAMETERS>::registerFactory(
+    std::string name, FactoryStrategy<TYPE, PARAMETERS>::FunctionPtr ptr )
 {
     auto &factory = FactoryStrategy<TYPE, PARAMETERS>::getFactory();
-    factory.registerFunction(name, ptr);
+    factory.registerFunction( name, ptr );
 }
 
 template <typename TYPE, typename PARAMETERS>
-void FactoryStrategy<TYPE, PARAMETERS>::registerFunction(std::string name, 
-                                                         FactoryStrategy<TYPE, PARAMETERS>::FunctionPtr ptr)
+void FactoryStrategy<TYPE, PARAMETERS>::registerFunction(
+    std::string name, FactoryStrategy<TYPE, PARAMETERS>::FunctionPtr ptr )
 {
     d_factories[name] = ptr;
 }
-
-
 }
 #endif

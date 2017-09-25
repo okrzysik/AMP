@@ -33,32 +33,29 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 
-#include "solvers/SolverFactory.h"
 #include "solvers/KrylovSolverParameters.h"
+#include "solvers/SolverFactory.h"
 
 AMP::shared_ptr<AMP::Solver::SolverStrategy>
-buildSolver ( const AMP::shared_ptr<AMP::InputDatabase> &input_db,
-              const std::string &solver_name,                            
-              const AMP::AMP_MPI &comm,
-              AMP::shared_ptr<AMP::Operator::Operator> &op )
+buildSolver( const AMP::shared_ptr<AMP::InputDatabase> &input_db,
+             const std::string &solver_name,
+             const AMP::AMP_MPI &comm,
+             AMP::shared_ptr<AMP::Operator::Operator> &op )
 {
 
     AMP::shared_ptr<AMP::Solver::SolverStrategy> solver;
     AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters;
-    
+
     AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
-    
+
     const auto &db = input_db->getDatabase( solver_name );
-    
+
     if ( db->keyExists( "name" ) ) {
-        
+
         auto name = db->getString( "name" );
 
-        if ( ( name == "GMRESSolver" )
-          || ( name == "CGSolver" )
-          || ( name == "BiCGSTABSolver" )
-          || ( name == "TFQMRSolver" ) 
-          || ( name == "QMRCGSTABSolver" ) ) {
+        if ( ( name == "GMRESSolver" ) || ( name == "CGSolver" ) || ( name == "BiCGSTABSolver" ) ||
+             ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" ) ) {
 
             // check if we need to construct a preconditioner
             auto use_preconditioner = db->getBoolWithDefault( "use_preconditioner", false );
@@ -68,34 +65,30 @@ buildSolver ( const AMP::shared_ptr<AMP::InputDatabase> &input_db,
 
                 auto pc_name = db->getStringWithDefault( "pc_name", "Preconditioner" );
 
-                pcSolver = buildSolver( input_db,
-                                        pc_name,
-                                        comm,
-                                        op );
-                
-                AMP_INSIST( pcSolver.get() != nullptr, "null preconditioner"); 
+                pcSolver = buildSolver( input_db, pc_name, comm, op );
+
+                AMP_INSIST( pcSolver.get() != nullptr, "null preconditioner" );
             }
-            
-            auto params = AMP::make_shared<AMP::Solver::KrylovSolverParameters> ( db );
-            params->d_comm = comm;
+
+            auto params               = AMP::make_shared<AMP::Solver::KrylovSolverParameters>( db );
+            params->d_comm            = comm;
             params->d_pPreconditioner = pcSolver;
-            parameters = params;
-            
+            parameters                = params;
+
         } else {
-            parameters = AMP::make_shared<AMP::Solver::SolverStrategyParameters> ( db );
+            parameters = AMP::make_shared<AMP::Solver::SolverStrategyParameters>( db );
         }
-        
+
         AMP_INSIST( parameters != nullptr, "null parameter object" );
         parameters->d_pOperator = op;
 
     } else {
-        AMP_ERROR("Key name does not exist in solver database");
+        AMP_ERROR( "Key name does not exist in solver database" );
     }
 
     solver = AMP::Solver::SolverFactory::create( parameters );
 
     return solver;
-
 }
 
 void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
@@ -150,7 +143,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
             meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
         AMP::Discretization::simpleDOFManager::create(
-                                                      meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+            meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
     //--------------------------------------------------
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -198,12 +191,11 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     //   CREATE THE THERMAL BVP OPERATOR  //
     ////////////////////////////////////////
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
-    auto linearOperator = AMP::Operator::OperatorBuilder::createOperator( meshAdapter,
-                                                                             "DiffusionBVPOperator",
-                                                                             input_db,
-                                                                             transportModel );
-    
-    auto diffusionOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linearOperator );
+    auto linearOperator = AMP::Operator::OperatorBuilder::createOperator(
+        meshAdapter, "DiffusionBVPOperator", input_db, transportModel );
+
+    auto diffusionOperator =
+        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linearOperator );
 
     AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvinVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable() );
@@ -244,8 +236,8 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
-    auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
-    auto linearSolver = buildSolver(  input_db, "LinearSolver", comm, linearOperator );
+    auto comm         = AMP::AMP_MPI( AMP_COMM_WORLD );
+    auto linearSolver = buildSolver( input_db, "LinearSolver", comm, linearOperator );
 
     // Set initial guess
     TemperatureInKelvinVec->setToScalar( 1.0 );
@@ -273,7 +265,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     if ( finalResidualNorm > 10.0 ) {
         ut->failure( "TrilinosMueLuSolver does not solve a linear thermal problem with a nuclear "
                      "source term." );
-    } 
+    }
 
     // Plot the results
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
@@ -304,17 +296,17 @@ int main( int argc, char *argv[] )
     AMP::Solver::registerSolverFactories();
 
     std::vector<std::string> files;
-    
+
     if ( argc > 1 ) {
 
         files.push_back( argv[1] );
 
     } else {
-    
+
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
-        
+
 #ifdef USE_EXT_HYPRE
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
@@ -335,7 +327,6 @@ int main( int argc, char *argv[] )
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR" );
 #endif
-
     }
 
     for ( auto &file : files )

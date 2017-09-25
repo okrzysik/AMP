@@ -1,7 +1,7 @@
 #include "solvers/GMRESSolver.h"
-#include "solvers/KrylovSolverParameters.h"
 #include "ProfilerApp.h"
 #include "operators/LinearOperator.h"
+#include "solvers/KrylovSolverParameters.h"
 
 
 #include <cmath>
@@ -35,8 +35,7 @@ GMRESSolver::~GMRESSolver() {}
 ****************************************************************/
 void GMRESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
-    auto parameters =
-        AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
+    auto parameters = AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
@@ -76,10 +75,10 @@ void GMRESSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 
     // default is right preconditioning, options are right, left, both
     if ( d_bUsesPreconditioner ) {
-        d_preconditioner_side =  db->getStringWithDefault( "preconditioner_side", "right" );
+        d_preconditioner_side = db->getStringWithDefault( "preconditioner_side", "right" );
     }
-    
-    d_bRestart            = db->getBoolWithDefault( "gmres_restart", false );
+
+    d_bRestart = db->getBoolWithDefault( "gmres_restart", false );
 }
 
 /****************************************************************
@@ -87,7 +86,8 @@ void GMRESSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 * TODO: store convergence history, iterations, convergence reason
 ****************************************************************/
 void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                         AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+                         AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                             u )
 {
     PROFILE_START( "solve" );
 
@@ -127,28 +127,27 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
         res->copyVector( f );
-        u->setToScalar(0.0);
+        u->setToScalar( 0.0 );
     } else {
         d_pOperator->residual( f, u, res );
     }
 
     d_nr = -1;
-    
+
     // compute the current residual norm
     const double beta = res->L2Norm();
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
         std::cout << "GMRES: initial residual " << beta << std::endl;
-        }
-    
+    }
+
     // return if the residual is already low enough
     if ( beta < terminate_tol ) {
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "GMRESSolver::solve: initial residual norm "
-                      << beta << " is below convergence tolerance: "
-                      << terminate_tol << std::endl;
+            std::cout << "GMRESSolver::solve: initial residual norm " << beta
+                      << " is below convergence tolerance: " << terminate_tol << std::endl;
         }
-        
+
         // provide history (iterations, conv history etc)
         return;
     }
@@ -165,7 +164,7 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     auto v_norm = beta;
 
     // z is only used if there is preconditioning
-    AMP::LinearAlgebra::Vector::shared_ptr z; 
+    AMP::LinearAlgebra::Vector::shared_ptr z;
 
     for ( int k = 0; ( k < d_iMaxIterations ) && ( v_norm > terminate_tol ); ++k ) {
 
@@ -177,7 +176,7 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         } else {
             z = d_vBasis[k];
         }
-        
+
         // construct the Krylov vector
         d_pOperator->apply( z, v );
 
@@ -212,23 +211,23 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
             // explicitly apply the newly computed
             // Givens rotations to the rhs vector
-            auto x      = d_dw[k];
-            auto y      = d_dw[k+1];
-            auto c      = d_dcos[k];
-            auto s      = d_dsin[k];
-            #if 0
+            auto x = d_dw[k];
+            auto y = d_dw[k + 1];
+            auto c = d_dcos[k];
+            auto s = d_dsin[k];
+#if 0
             d_dw[k]     = c * x - s * y;
             d_dw[k + 1] = s * x + c * y;
-            #else
+#else
             d_dw[k]     = c * x + s * y;
             d_dw[k + 1] = -s * x + c * y;
-            #endif
+#endif
         }
 
         v_norm = std::fabs( d_dw[k + 1] );
-        
+
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "GMRES: iteration " << (k+1) << ", residual " << v_norm << std::endl;
+            std::cout << "GMRES: iteration " << ( k + 1 ) << ", residual " << v_norm << std::endl;
         }
 
         ++d_nr; // update the dimension of the upper triangular system to solve
@@ -240,7 +239,7 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // update the current approximation with the correction
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
-        z->setToScalar(0.0);
+        z->setToScalar( 0.0 );
 
         for ( int i = 0; i <= d_nr; ++i ) {
             z->axpy( d_dy[i], d_vBasis[i], z );
@@ -248,8 +247,8 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         AMP::LinearAlgebra::Vector::shared_ptr v = f->cloneVector();
         d_pPreconditioner->solve( z, v );
-        u->axpy(1.0, v, u);
-        
+        u->axpy( 1.0, v, u );
+
     } else {
         for ( int i = 0; i <= d_nr; ++i ) {
             u->axpy( d_dy[i], d_vBasis[i], u );
@@ -279,7 +278,7 @@ void GMRESSolver::orthogonalize( AMP::shared_ptr<AMP::LinearAlgebra::Vector> v )
 
             const double h_jk = v->dot( d_vBasis[j] );
             v->axpy( -h_jk, d_vBasis[j], v );
-            d_dHessenberg( j, k-1 ) = h_jk;
+            d_dHessenberg( j, k - 1 ) = h_jk;
         }
     } else {
 
@@ -302,13 +301,13 @@ void GMRESSolver::applyGivensRotation( const int i, const int k )
     auto c = d_dcos[i];
     auto s = d_dsin[i];
 
-    #if 0
+#if 0
     d_dHessenberg( i, k )     = c * x - s * y;
     d_dHessenberg( i + 1, k ) = s * x + c * y;
-    #else
+#else
     d_dHessenberg( i, k )     = c * x + s * y;
     d_dHessenberg( i + 1, k ) = -s * x + c * y;
-    #endif
+#endif
 }
 
 void GMRESSolver::computeGivensRotation( const int k )
@@ -339,7 +338,7 @@ void GMRESSolver::computeGivensRotation( const int k )
     } else {
 
         r = std::sqrt( f * f + g * g );
-        r = 1.0/r;
+        r = 1.0 / r;
         c = std::fabs( f ) * r;
         s = std::copysign( g * r, f );
     }

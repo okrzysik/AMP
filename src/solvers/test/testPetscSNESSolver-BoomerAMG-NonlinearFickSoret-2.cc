@@ -213,7 +213,8 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> fickPreconditionerParams(
         new AMP::Solver::SolverStrategyParameters( fickPreconditioner_db ) );
     fickPreconditionerParams->d_pOperator = linBVPOp;
-    auto linearFickPreconditioner = std::make_shared<AMP::Solver::BoomerAMGSolver>(fickPreconditionerParams);
+    auto linearFickPreconditioner =
+        std::make_shared<AMP::Solver::BoomerAMGSolver>( fickPreconditionerParams );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // register the preconditioner with the Jacobian free Krylov solver
@@ -302,7 +303,8 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
                                 meshAdapter,
                                 AMP::Mesh::GeomType::Vertex,
                                 "Temperature" );
-    siloWriter->registerVector( fickCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "FickCoefficient" );
+    siloWriter->registerVector(
+        fickCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "FickCoefficient" );
     siloWriter->registerVector(
         soretCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ThermalDiffusionCoefficient" );
 

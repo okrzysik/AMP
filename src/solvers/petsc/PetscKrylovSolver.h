@@ -109,11 +109,13 @@ public:
     virtual ~PetscKrylovSolver();
 
 
-    //! static create routine that is used by SolverFactory 
-    static AMP::shared_ptr<SolverStrategy> createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters ) {
-      return AMP::make_shared<PetscKrylovSolver> ( solverStrategyParameters );
+    //! static create routine that is used by SolverFactory
+    static AMP::shared_ptr<SolverStrategy>
+    createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    {
+        return AMP::make_shared<PetscKrylovSolver>( solverStrategyParameters );
     }
-    
+
     /**
      * Solve the system \f$Au = 0\f$.
      * @param [in] f : shared pointer to right hand side vector

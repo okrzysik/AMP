@@ -21,10 +21,10 @@ responsibility for the use of this software.
 
 #include "utils/FactoryStrategy.hpp"
 
-namespace AMP{
+namespace AMP {
 
-namespace Solver{
-    
+namespace Solver {
+
 class SolverStrategy;
 class SolverStrategyParameters;
 
@@ -32,7 +32,6 @@ using SolverFactory = FactoryStrategy<SolverStrategy, SolverStrategyParameters>;
 
 // free function to preregister solvers known by SAMRSolvers
 void registerSolverFactories();
-
 }
 }
 #endif // included_SolverFactory_H_

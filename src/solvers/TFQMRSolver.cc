@@ -1,12 +1,12 @@
 #include "solvers/TFQMRSolver.h"
-#include "solvers/KrylovSolverParameters.h"
 #include "ProfilerApp.h"
 #include "operators/LinearOperator.h"
+#include "solvers/KrylovSolverParameters.h"
 
 
+#include <array>
 #include <cmath>
 #include <limits>
-#include <array>
 
 namespace AMP {
 namespace Solver {
@@ -36,8 +36,7 @@ TFQMRSolver::~TFQMRSolver() {}
 ****************************************************************/
 void TFQMRSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
-    auto parameters =
-        AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
+    auto parameters = AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
@@ -62,7 +61,7 @@ void TFQMRSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 
     // default is right preconditioning, options are right, left, both
     if ( d_bUsesPreconditioner ) {
-        d_preconditioner_side =  db->getStringWithDefault( "preconditioner_side", "right" );
+        d_preconditioner_side = db->getStringWithDefault( "preconditioner_side", "right" );
     }
 }
 
@@ -71,15 +70,18 @@ void TFQMRSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 * TODO: store convergence history, iterations, convergence reason
 ****************************************************************/
 void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                            AMP::shared_ptr<AMP::LinearAlgebra::Vector> x )
+                         AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                             x )
 {
     PROFILE_START( "solve" );
 
     // Check input vector states
-    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
-                ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT( ( x->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
-                ( x->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT(
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT(
+        ( x->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+        ( x->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
@@ -111,22 +113,21 @@ void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     } else {
         d_pOperator->residual( f, x, res );
     }
-    
+
     // compute the current residual norm
-    double res_norm     = res->L2Norm();
+    double res_norm = res->L2Norm();
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
         std::cout << "TFQMR: initial residual " << res_norm << std::endl;
-        }
+    }
 
     // return if the residual is already low enough
     if ( res_norm < terminate_tol ) {
         // provide a convergence reason
         // provide history (iterations, conv history etc)
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "TFQMRSolver::solve: initial residual norm "
-                      << res_norm << " is below convergence tolerance: "
-                      << terminate_tol << std::endl;
+            std::cout << "TFQMRSolver::solve: initial residual norm " << res_norm
+                      << " is below convergence tolerance: " << terminate_tol << std::endl;
         }
         return;
     }
@@ -135,15 +136,15 @@ void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     double theta = 0.0;
     double eta   = 0.0;
     double tau   = res_norm;
-    double rho   = tau*tau;
+    double rho   = tau * tau;
 
-    std::array< AMP::LinearAlgebra::Vector::shared_ptr, 2 > u;
+    std::array<AMP::LinearAlgebra::Vector::shared_ptr, 2> u;
     u[0] = f->cloneVector();
     u[1] = f->cloneVector();
     u[0]->zero();
     u[1]->zero();
 
-    std::array< AMP::LinearAlgebra::Vector::shared_ptr, 2 > y;
+    std::array<AMP::LinearAlgebra::Vector::shared_ptr, 2> y;
     y[0] = f->cloneVector();
     y[1] = f->cloneVector();
     y[0]->zero();
@@ -155,10 +156,10 @@ void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         z = f->cloneVector();
         z->zero();
     }
-    
+
     auto delta = f->cloneVector();
     delta->zero();
-    
+
     auto w = res->cloneVector();
     w->copyVector( res );
 
@@ -166,7 +167,7 @@ void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     auto d = res->cloneVector();
     d->zero();
-    
+
     auto v = res->cloneVector();
 
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
@@ -177,7 +178,7 @@ void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         z = y[0];
     }
-    
+
     d_pOperator->apply( z, v );
 
     u[0]->copyVector( v );
@@ -185,103 +186,101 @@ void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     int k = 0;
 
     bool converged = false;
-    
+
     while ( k < d_iMaxIterations ) {
 
         ++k;
-        auto sigma = res->dot( v ); 
+        auto sigma = res->dot( v );
 
         // replace by soft-equal
-        if( sigma == 0.0 ) {
+        if ( sigma == 0.0 ) {
             // the method breaks down as the vectors are orthogonal to r
             AMP_ERROR( "TFQMR breakdown, sigma == 0 " );
         }
 
-        auto alpha = rho/sigma;
+        auto alpha = rho / sigma;
 
         for ( int j = 0; j <= 1; ++j ) {
 
             if ( j == 1 ) {
-                
+
                 y[1]->axpy( -alpha, v, y[0] );
-                
+
                 if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-                    
+
                     d_pPreconditioner->solve( y[1], z );
-                    
+
                 } else {
                     z = y[1];
                 }
-                
-                d_pOperator->apply( z, u[1] );
 
+                d_pOperator->apply( z, u[1] );
             }
 
-            const int m = 2*k-1+j;
-            w->axpy(-alpha, u[j], w );
-            d->axpy( ( theta*theta*eta/alpha), d, y[j] );
+            const int m = 2 * k - 1 + j;
+            w->axpy( -alpha, u[j], w );
+            d->axpy( ( theta * theta * eta / alpha ), d, y[j] );
 
-            theta = w->L2Norm()/tau;
-            const auto c = 1.0/std::sqrt( 1+theta*theta );
-            tau = tau*theta*c;
-            eta = c*c*alpha;
+            theta        = w->L2Norm() / tau;
+            const auto c = 1.0 / std::sqrt( 1 + theta * theta );
+            tau          = tau * theta * c;
+            eta          = c * c * alpha;
 
             // update the increment to the solution
-            delta->axpy( eta, d, delta);
+            delta->axpy( eta, d, delta );
 
-            if( tau*(std::sqrt( (double) (m+1) ) ) <= terminate_tol ) {
+            if ( tau * ( std::sqrt( (double) ( m + 1 ) ) ) <= terminate_tol ) {
 
                 if ( d_iDebugPrintInfoLevel > 0 ) {
-                    std::cout << "TFQMR: iteration " << (k+1) << ", residual " << tau << std::endl;
+                    std::cout << "TFQMR: iteration " << ( k + 1 ) << ", residual " << tau
+                              << std::endl;
                 }
 
-                converged = true; 
+                converged = true;
                 break;
             }
-            
         }
 
         if ( converged ) {
 
             // unwind the preconditioner if necessary
             if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-               d_pPreconditioner->solve( delta, z );
+                d_pPreconditioner->solve( delta, z );
             } else {
-            z = delta;
+                z = delta;
             }
-            x->axpy( 1.0, z, x);
+            x->axpy( 1.0, z, x );
             return;
         }
 
         // replace by soft-equal
-        if( rho == 0.0 ) {
+        if ( rho == 0.0 ) {
             // the method breaks down as rho==0
             AMP_ERROR( "TFQMR breakdown, rho == 0 " );
         }
 
         const auto rho_n = res->dot( w );
-        const auto beta  = rho_n/rho;
-        rho = rho_n;
+        const auto beta  = rho_n / rho;
+        rho              = rho_n;
 
         y[0]->axpy( beta, y[1], w );
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-            
+
             d_pPreconditioner->solve( y[0], z );
-            
+
         } else {
 
             z = y[0];
-
         }
-                
+
         d_pOperator->apply( z, u[0] );
 
         v->axpy( beta, v, u[1] );
         v->axpy( beta, v, u[0] );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "TFQMR: iteration " << (k+1) << ", residual " << tau << std::endl;
+            std::cout << "TFQMR: iteration " << ( k + 1 ) << ", residual " << tau << std::endl;
         }
     }
 
@@ -305,8 +304,7 @@ void TFQMRSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operato
         AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
     AMP_ASSERT( linearOperator.get() != nullptr );
 }
-void TFQMRSolver::resetOperator(
-    const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+void TFQMRSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator.get() != nullptr ) {
         d_pOperator->reset( params );

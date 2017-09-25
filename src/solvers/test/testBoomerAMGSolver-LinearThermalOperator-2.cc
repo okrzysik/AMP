@@ -39,7 +39,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     double t1;
     // Input and output file names
     std::string input_file = "input_" + exeName;
-    std::string log_file = "output_" + exeName;
+    std::string log_file   = "output_" + exeName;
     ////////////////////////////////////
     //    INITIALIZE THE PROBLEM      //
     ////////////////////////////////////
@@ -81,10 +81,10 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     bool split               = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-                                                      meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
         AMP::Discretization::simpleDOFManager::create(
-                                                      meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+            meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
     //--------------------------------------------------
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -226,7 +226,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     siloWriter->registerMesh( meshAdapter );
 
     siloWriter->registerVector(
-                               TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
+        TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
     siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
 
     siloWriter->writeFile( input_file, 0 );
@@ -253,7 +253,7 @@ int main( int argc, char *argv[] )
     //    exeNames.push_back( "testBoomerAMGSolver-LinearThermalOperator-2_HALDEN_clad" );
 
     for ( auto &exeName : exeNames )
-        linearThermalTest( &ut, exeName);
+        linearThermalTest( &ut, exeName );
 
     ut.report();
 

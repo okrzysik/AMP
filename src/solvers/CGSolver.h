@@ -34,14 +34,15 @@ public:
      */
     explicit CGSolver( AMP::shared_ptr<SolverStrategyParameters> parameters );
 
-    /** 
-     * static create routine that is used by SolverFactory 
+    /**
+     * static create routine that is used by SolverFactory
      @param [in] parameters The parameters object
      contains a database objects with the fields listed for the constructor above
      */
-    static AMP::shared_ptr<SolverStrategy> createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    static AMP::shared_ptr<SolverStrategy>
+    createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-      return AMP::make_shared<CGSolver> ( solverStrategyParameters );
+        return AMP::make_shared<CGSolver>( solverStrategyParameters );
     }
 
     /**

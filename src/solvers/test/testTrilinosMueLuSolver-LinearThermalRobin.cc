@@ -87,7 +87,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
             meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
         AMP::Discretization::simpleDOFManager::create(
-                                                      meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+            meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
     //--------------------------------------------------
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -220,7 +220,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     if ( finalResidualNorm > 10.0 ) {
         ut->failure( "TrilinosMueLuSolver does not solve a linear thermal problem with a nuclear "
                      "source term." );
-    } 
+    }
 
     // Plot the results
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
@@ -256,7 +256,7 @@ int main( int argc, char *argv[] )
     exeNames.push_back( "testTrilinosMueLuSolver-LinearThermalOperator-3" );
     //    exeNames.push_back( "testTrilinosMueLuSolver-LinearThermalOperator-2" );
     exeNames.push_back( "testTrilinosMueLuSolver-LinearFickOperator-bar" );
-#endif    
+#endif
     for ( auto &exeName : exeNames )
         linearThermalTest( &ut, exeName );
 

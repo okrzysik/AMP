@@ -245,7 +245,8 @@ void linearFickTest( AMP::UnitTest *ut )
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
 
-    siloWriter->registerVector( SolutionVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Concentration" );
+    siloWriter->registerVector(
+        SolutionVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Concentration" );
     siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
 
     siloWriter->writeFile( input_file, 0 );

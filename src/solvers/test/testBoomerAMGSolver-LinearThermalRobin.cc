@@ -200,7 +200,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
     // Create the ML Solver
-    auto mlSolver = std::make_shared<AMP::Solver::BoomerAMGSolver> (mlSolverParams);
+    auto mlSolver = std::make_shared<AMP::Solver::BoomerAMGSolver>( mlSolverParams );
 
     // Use a random initial guess?
     mlSolver->setZeroInitialGuess( false );
