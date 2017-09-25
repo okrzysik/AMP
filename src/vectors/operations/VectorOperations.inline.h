@@ -18,7 +18,7 @@ inline bool VectorOperations::hasComm() const
         return false;
     return d_VectorData->getCommunicationList() != nullptr;
 }
-inline const AMP_MPI& VectorOperations::getComm() const
+inline const AMP_MPI &VectorOperations::getComm() const
 {
     return d_VectorData->getCommunicationList()->getComm();
 }
@@ -31,12 +31,9 @@ inline bool VectorOperations::hasGhosts() const
 {
     if ( d_VectorData == nullptr )
         return false;
-    return d_VectorData->d_Ghosts!=nullptr;
+    return d_VectorData->d_Ghosts != nullptr;
 }
-inline std::vector<double>& VectorOperations::getGhosts()
-{
-    return *(d_VectorData->d_Ghosts);
-}
+inline std::vector<double> &VectorOperations::getGhosts() { return *( d_VectorData->d_Ghosts ); }
 
 
 /****************************************************************
@@ -54,7 +51,8 @@ inline void VectorOperations::scale( double alpha, AMP::shared_ptr<const VectorO
 {
     return scale( alpha, *x );
 }
-inline void VectorOperations::add( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
+inline void VectorOperations::add(
+    AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
 {
     return add( *x, *y );
 }
@@ -62,15 +60,18 @@ void VectorOperations::addScalar( AMP::shared_ptr<const VectorOperations> x, dou
 {
     return addScalar( *x, alpha );
 }
-inline void VectorOperations::subtract( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
+inline void VectorOperations::subtract(
+    AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
 {
     return subtract( *x, *y );
 }
-inline void VectorOperations::multiply( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
+inline void VectorOperations::multiply(
+    AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
 {
     return multiply( *x, *y );
 }
-inline void VectorOperations::divide( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
+inline void VectorOperations::divide(
+    AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
 {
     return divide( *x, *y );
 }
@@ -79,43 +80,47 @@ inline void VectorOperations::reciprocal( AMP::shared_ptr<const VectorOperations
     return reciprocal( *x );
 }
 inline void VectorOperations::linearSum( double alpha,
-    AMP::shared_ptr<const VectorOperations> x,
-    double beta,
-    AMP::shared_ptr<const VectorOperations> y )
+                                         AMP::shared_ptr<const VectorOperations>
+                                             x,
+                                         double beta,
+                                         AMP::shared_ptr<const VectorOperations>
+                                             y )
 {
     return linearSum( alpha, *x, beta, *y );
 }
 inline void VectorOperations::axpy( double alpha,
-    AMP::shared_ptr<const VectorOperations> x,
-    AMP::shared_ptr<const VectorOperations> y )
+                                    AMP::shared_ptr<const VectorOperations>
+                                        x,
+                                    AMP::shared_ptr<const VectorOperations>
+                                        y )
 {
     return axpy( alpha, *x, *y );
 }
-inline void VectorOperations::axpby( double alpha, double beta, AMP::shared_ptr<const VectorOperations> x )
+inline void
+VectorOperations::axpby( double alpha, double beta, AMP::shared_ptr<const VectorOperations> x )
 {
     return axpby( alpha, beta, *x );
 }
-inline void VectorOperations::abs( AMP::shared_ptr<const VectorOperations> x )
-{
-    return abs( *x );
-}
+inline void VectorOperations::abs( AMP::shared_ptr<const VectorOperations> x ) { return abs( *x ); }
 inline double VectorOperations::dot( AMP::shared_ptr<const VectorOperations> x ) const
 {
     return dot( *x );
 }
-inline double VectorOperations::minQuotient( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
+inline double VectorOperations::minQuotient(
+    AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
 {
     return minQuotient( *x, *y );
 }
-inline double VectorOperations::wrmsNorm( 
-    AMP::shared_ptr<const VectorOperations> x,
-    AMP::shared_ptr<const VectorOperations> y )
+inline double VectorOperations::wrmsNorm(
+    AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
 {
     return wrmsNorm( *x, *y );
 }
 inline double VectorOperations::wrmsNormMask( AMP::shared_ptr<const VectorOperations> x,
-   AMP::shared_ptr<const VectorOperations> y,
-   AMP::shared_ptr<const VectorOperations> mask )
+                                              AMP::shared_ptr<const VectorOperations>
+                                                  y,
+                                              AMP::shared_ptr<const VectorOperations>
+                                                  mask )
 {
     return wrmsNormMask( *x, *y, *mask );
 }

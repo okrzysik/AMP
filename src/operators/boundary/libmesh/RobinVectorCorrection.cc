@@ -62,7 +62,8 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal       = this->subsetInputVector( r );
     AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = this->subsetInputVector( u );
 
-    AMP_ASSERT( uInternal->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
+    AMP_ASSERT( uInternal->getUpdateStatus() ==
+                AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
     // rInternal->makeConsistent ( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     std::vector<std::string> variableNames;
@@ -249,12 +250,12 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
 AMP::shared_ptr<OperatorParameters>
     RobinVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    auto tmp_db = AMP::make_shared<AMP::InputDatabase> ( "Dummy" );
+    auto tmp_db = AMP::make_shared<AMP::InputDatabase>( "Dummy" );
     tmp_db->putBool( "skip_params", true );
     tmp_db->putBool( "skip_rhs_correction", true );
     tmp_db->putBool( "skip_matrix_correction", false );
     tmp_db->putBool( "IsFluxGaussPtVector", d_isFluxGaussPtVector );
-    auto outParams = AMP::make_shared<RobinMatrixCorrectionParameters> ( tmp_db );
+    auto outParams                 = AMP::make_shared<RobinMatrixCorrectionParameters>( tmp_db );
     outParams->d_robinPhysicsModel = d_robinPhysicsModel;
     outParams->d_elementInputVec   = d_elementInputVec;
     outParams->d_variableFlux      = d_variableFlux;

@@ -80,7 +80,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     // create solution, rhs, and residual vectors
     AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Vector::shared_ptr solVec =
         AMP::LinearAlgebra::createVector( NodalScalarDOF, thermalVariable, true );
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec =

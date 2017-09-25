@@ -24,9 +24,9 @@ int main( int argc, char **argv )
     }
     int N_procs            = std::atoi( argv[1] );
     std::string input_file = argv[2];
-    double ratio = 2.0;
+    double ratio           = 2.0;
     if ( argc > 3 )
-        ratio = atof(argv[3]);
+        ratio = atof( argv[3] );
 
     // Simulate loading the mesh
     AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );

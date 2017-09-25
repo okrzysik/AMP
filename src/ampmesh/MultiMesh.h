@@ -272,7 +272,7 @@ public:
      *    and 2 if the individual nodes can be moved.
      * @return  The if
      */
-    virtual int isMeshMovable( ) const override;
+    virtual int isMeshMovable() const override;
 
     /**
      * \brief    Displace the entire mesh
@@ -303,7 +303,7 @@ public:
 
     // Function to simulate loading a multimesh
     static loadBalanceSimulator simulateBuildMesh( const MeshParameters::shared_ptr params,
-                                          const std::vector<int> &comm_ranks );
+                                                   const std::vector<int> &comm_ranks );
 
     // Function to add a processor to the load balance simulation
     static bool addProcSimulation( const loadBalanceSimulator &mesh,

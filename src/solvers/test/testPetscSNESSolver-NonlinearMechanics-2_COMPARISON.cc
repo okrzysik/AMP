@@ -159,7 +159,8 @@ void myTest( AMP::UnitTest *ut )
 // Create the silo writer and register the data
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( mechNlSolVec, mesh, AMP::Mesh::GeomType::Vertex, "MechanicsSolution" );
+    siloWriter->registerVector(
+        mechNlSolVec, mesh, AMP::Mesh::GeomType::Vertex, "MechanicsSolution" );
 #endif
 
     // Initial guess for NL solver must satisfy the displacement boundary conditions
@@ -230,7 +231,8 @@ void myTest( AMP::UnitTest *ut )
 
         double scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
         mechNlScaledRhsVec->scale( scaleValue, mechNlRhsVec );
-        mechNlScaledRhsVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+        mechNlScaledRhsVec->makeConsistent(
+            AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         AMP::pout << "L2 Norm at loading step " << ( step + 1 ) << " is "
                   << mechNlScaledRhsVec->L2Norm() << std::endl;
 

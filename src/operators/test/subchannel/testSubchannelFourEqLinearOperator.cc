@@ -196,7 +196,8 @@ getLateralFaces( AMP::Mesh::Mesh::shared_ptr mesh, bool )
         // get centroid of current face
         std::vector<double> faceCentroid = face->centroid();
         // get vertices of current face
-        std::vector<AMP::Mesh::MeshElement> vertices = face->getElements( AMP::Mesh::GeomType::Vertex );
+        std::vector<AMP::Mesh::MeshElement> vertices =
+            face->getElements( AMP::Mesh::GeomType::Vertex );
 
         bool perpindicular_to_x = true; // is the current face perpindicular to x-axis?
         bool perpindicular_to_y = true; // is the current face perpindicular to y-axis?
@@ -361,7 +362,7 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
         size_t i_m_MATLAB = AMP_to_MATLAB( *axial_face, 0 );
         size_t i_h_MATLAB = AMP_to_MATLAB( *axial_face, 1 );
         size_t i_p_MATLAB = AMP_to_MATLAB( *axial_face, 2 );
-        std::vector<double> val_m, val_h, val_p;       // nonzero values in Jacobian row
+        std::vector<double> val_m, val_h, val_p; // nonzero values in Jacobian row
         std::vector<size_t> ind_m, ind_h, ind_p; // indices of nonzeros in Jacobian row
         J_test_AMP->getRowByGlobalID( i_m_AMP, ind_m, val_m );
         J_test_AMP->getRowByGlobalID( i_h_AMP, ind_h, val_h );
@@ -405,7 +406,7 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
             dof_manager->getDOFs( lateral_face->globalID(), dofs );
             size_t i_w_AMP    = dofs[0];
             size_t i_w_MATLAB = AMP_to_MATLAB( *lateral_face, 3 );
-            std::vector<double> val_w;       // nonzero values in Jacobian row
+            std::vector<double> val_w; // nonzero values in Jacobian row
             std::vector<size_t> ind_w; // indices of nonzeros in Jacobian row
             J_test_AMP->getRowByGlobalID( i_w_AMP, ind_w, val_w );
             // loop over all DOFs
@@ -477,7 +478,7 @@ void Test( AMP::UnitTest *ut, const std::string &exeName )
 
     // check number of cells
     size_t expected_number_of_cells = numSubchannels * numAxialIntervals;
-    size_t numCells                 = subchannelMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
+    size_t numCells = subchannelMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
     if ( numCells == expected_number_of_cells )
         ut->passes( exeName + ": number of cells" );
     else {
@@ -573,7 +574,7 @@ void Test( AMP::UnitTest *ut, const std::string &exeName )
         d_elem[numSubchannels][numAxialIntervals]; // array of array of elements for each subchannel
     AMP::Mesh::MeshIterator cell =
         subchannelMesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ); // iterator for cells of mesh
-    for ( ; cell != cell.end(); ++cell ) {                   // loop over all cells
+    for ( ; cell != cell.end(); ++cell ) {                             // loop over all cells
         std::vector<double> center = cell->centroid();
         // get the index of the subchannel
         int isub               = subchannelOperator->getSubchannelIndex( center[0], center[1] );

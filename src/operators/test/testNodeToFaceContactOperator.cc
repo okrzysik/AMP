@@ -65,10 +65,10 @@ void drawVerticesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 }
 
 void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                            int boundaryID,
-                            std::ostream &os,
-                            double const *point_of_view,
-                            const std::string &option = "" )
+                                      int boundaryID,
+                                      std::ostream &os,
+                                      double const *point_of_view,
+                                      const std::string &option = "" )
 {
     AMP::Mesh::MeshIterator boundaryIterator =
         meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, boundaryID );
@@ -88,8 +88,9 @@ void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
         for ( size_t i = 0; i < 4; ++i ) {
             faceGeomType::VertexCoordinates = faceVertices[i].coord();
             AMP_ASSERT( faceGeomType::VertexCoordinates.size() == 3 );
-            std::copy(
-                faceGeomType::VertexCoordinates.begin(), faceGeomType::VertexCoordinates.end(), faceData + 3 * i );
+            std::copy( faceGeomType::VertexCoordinates.begin(),
+                       faceGeomType::VertexCoordinates.end(),
+                       faceData + 3 * i );
         } // end for i
         triangle_t t( faceDataPtr[0], faceDataPtr[1], faceDataPtr[2] );
 
@@ -299,11 +300,14 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         drawGeomType::FacesOnBoundaryID( masterMeshAdapter, 0, masterFout, point_of_view, "blue" );
         drawGeomType::FacesOnBoundaryID( masterMeshAdapter, 1, masterFout, point_of_view, "green" );
         drawGeomType::FacesOnBoundaryID( masterMeshAdapter, 2, masterFout, point_of_view, "red" );
-        drawGeomType::FacesOnBoundaryID( masterMeshAdapter, 3, masterFout, point_of_view, "magenta" );
+        drawGeomType::FacesOnBoundaryID(
+            masterMeshAdapter, 3, masterFout, point_of_view, "magenta" );
         drawGeomType::FacesOnBoundaryID( masterMeshAdapter, 4, masterFout, point_of_view, "black" );
-        drawGeomType::FacesOnBoundaryID( masterMeshAdapter, 5, masterFout, point_of_view, "orange" );
+        drawGeomType::FacesOnBoundaryID(
+            masterMeshAdapter, 5, masterFout, point_of_view, "orange" );
         drawGeomType::FacesOnBoundaryID( masterMeshAdapter, 6, masterFout, point_of_view, "pink" );
-        drawGeomType::FacesOnBoundaryID( masterMeshAdapter, 7, masterFout, point_of_view, "violet" );
+        drawGeomType::FacesOnBoundaryID(
+            masterMeshAdapter, 7, masterFout, point_of_view, "violet" );
         // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 1, masterFout, point_of_view);
         // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 4, masterFout, point_of_view);
         masterFout.close();
@@ -359,7 +363,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         std::fstream slaveFout;
         slaveFout.open( "slave_pellet", std::fstream::out );
         double point_of_view[3] = { 1.0, 1.0, 1.0 };
-        drawGeomType::FacesOnBoundaryID( slaveMeshAdapter, 0, slaveFout, point_of_view, "dashed,red" );
+        drawGeomType::FacesOnBoundaryID(
+            slaveMeshAdapter, 0, slaveFout, point_of_view, "dashed,red" );
         // drawGeomType::FacesOnBoundaryID(slaveMeshAdapter, 1, slaveFout, point_of_view, "dashed");
         // drawGeomType::FacesOnBoundaryID(slaveMeshAdapter, 4, slaveFout, point_of_view, "dashed");
         // drawVerticesOnBoundaryID(slaveMeshAdapter, 2, slaveFout, point_of_view, "red");
@@ -390,7 +395,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
 #ifdef USE_EXT_SILO
     {
-        siloWriter->registerVector( columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+        siloWriter->registerVector(
+            columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
         char outFileName[256];
         sprintf( outFileName, "TOTO_%d", 0 );
         siloWriter->writeFile( outFileName, 0 );
@@ -454,10 +460,12 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             int numMasterLocalNodes = 0;
             int numSlaveLocalNodes  = 0;
             if ( masterMeshAdapter.get() != NULL ) {
-                numMasterLocalNodes = masterMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
+                numMasterLocalNodes =
+                    masterMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
             }
             if ( slaveMeshAdapter.get() != NULL ) {
-                numSlaveLocalNodes = slaveMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
+                numSlaveLocalNodes =
+                    slaveMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
             }
             int matLocalSize = dofsPerNode * ( numMasterLocalNodes + numSlaveLocalNodes );
             AMP_ASSERT( matLocalSize == static_cast<int>( dofManager->numLocalDOF() ) );
@@ -496,7 +504,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
 #ifdef USE_EXT_SILO
         meshAdapter->displaceMesh( columnSolVec );
-        siloWriter->registerVector( columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+        siloWriter->registerVector(
+            columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
         char outFileName[256];
         sprintf( outFileName, "TOTO_%d", 0 );
         siloWriter->writeFile( outFileName, activeSetIteration + 1 );
@@ -537,7 +546,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     } // end if
 
 #ifdef USE_EXT_SILO
-    siloWriter->registerVector( columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector(
+        columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     char outFileName[256];
     sprintf( outFileName, "MPC_%d", 0 );
     siloWriter->writeFile( outFileName, 0 );

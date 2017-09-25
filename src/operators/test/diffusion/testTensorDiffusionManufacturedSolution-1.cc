@@ -268,7 +268,8 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
 
-    siloWriter->registerVector( workVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "RelativeError" );
+    siloWriter->registerVector(
+        workVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "RelativeError" );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( sourceVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Source" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );

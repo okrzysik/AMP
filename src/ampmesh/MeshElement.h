@@ -44,13 +44,12 @@ public:
 
     //! Destructor for a MeshElement
     virtual inline ~MeshElement();
-    
+
     //! Is the mesh element null
     inline bool isNull() const;
 
 
 public: // non-virtual functions
-
     //! Function to get a pointer to the raw mesh element (structuredMeshElement, etc.)
     inline MeshElement *getRawElement();
 
@@ -61,7 +60,7 @@ public: // non-virtual functions
     inline GeomType elementType() const;
 
     //! Return the unique global ID of the element
-    inline const MeshElementID& globalID() const;
+    inline const MeshElementID &globalID() const;
 
     // Overload operators
     inline bool operator==( const MeshElement &rhs ) const { return d_globalID == rhs.d_globalID; }
@@ -111,7 +110,6 @@ public: // non-virtual functions
 
 
 public: // Virtual functions
-
     //! Return the owner rank according to AMP_COMM_WORLD
     virtual inline unsigned int globalOwnerRank() const;
 
@@ -150,12 +148,11 @@ public: // Virtual functions
 
 
 public: // Advanced functions
-
     //! Return the elements composing the current element
-    virtual void getElements( const GeomType type, std::vector<MeshElement>& elements ) const;
+    virtual void getElements( const GeomType type, std::vector<MeshElement> &elements ) const;
 
     //! Return the IDs of the elements composing the current element
-    virtual void getElementsID( const GeomType type, std::vector<MeshElementID>& ID ) const;
+    virtual void getElementsID( const GeomType type, std::vector<MeshElementID> &ID ) const;
 
     /**
      *  Return the elements neighboring the current element.
@@ -164,10 +161,10 @@ public: // Advanced functions
      *  For Verticies, a list of all verticies that share an element is returned.
      *  This list is in unsorted order.
      */
-    virtual void getNeighbors( std::vector<MeshElement::shared_ptr>& neighbors ) const;
+    virtual void getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const;
 
     //! Return the coordinates of the vertex (only applies to verticies)
-    virtual void coord( size_t& N, double* pos ) const;
+    virtual void coord( size_t &N, double *pos ) const;
 
     /**
      * \brief     Return the centroid of the element
@@ -175,7 +172,7 @@ public: // Advanced functions
      *   centroid is defined as the average of the coordinates of the verticies.
      *   The centroid of a vertex is the vertex and will return the same result as coord().
      */
-    virtual void centroid( size_t& N, double* pos ) const;
+    virtual void centroid( size_t &N, double *pos ) const;
 
 
 protected:

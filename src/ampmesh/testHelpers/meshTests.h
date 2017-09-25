@@ -5,11 +5,11 @@
 #include "utils/UnitTest.h"
 
 #ifdef USE_AMP_VECTORS
+#include "discretization/simpleDOF_Manager.h"
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
-#include "vectors/testHelpers/VectorTests.h"
 #include "vectors/VectorBuilder.h"
-#include "discretization/simpleDOF_Manager.h"
+#include "vectors/testHelpers/VectorTests.h"
 #endif
 
 
@@ -24,8 +24,6 @@ namespace Mesh {
 class meshTests
 {
 public:
-
-
     /**
      * \brief Run all mesh based tests
      * \details  This test runs all the mesh-based tests
@@ -42,7 +40,8 @@ public:
      * \param[in] mesh          Mesh to test
      * \param[in] fast          Speed up testing by eliminating some of the tests
      */
-    static void MeshVectorTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast=false );
+    static void MeshVectorTestLoop(
+        AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast = false );
 
 
     /**
@@ -52,26 +51,25 @@ public:
      * \param[in] mesh          Mesh to test
      * \param[in] fast          Speed up testing by eliminating some of the tests
      */
-    static void MeshMatrixTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast=false );
+    static void MeshMatrixTestLoop(
+        AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast = false );
 
 public: // Basic tests
-
-    /**
-     * \brief Check basic id info
-     * \details  This tests checks some trivial ids
-     * \param[in,out] ut        Unit test class to report the results
-     */
+        /**
+         * \brief Check basic id info
+         * \details  This tests checks some trivial ids
+         * \param[in,out] ut        Unit test class to report the results
+         */
     static void testID( AMP::UnitTest *ut );
 
 
 public: // Mesh based tests
-
-    /**
-     * \brief Checks the mesh iterators
-     * \details  This test performs a series of simple tests on the basic iterators within a mesh
-     * \param[in,out] ut        Unit test class to report the results
-     * \param[in] mesh          Mesh to test
-     */
+        /**
+         * \brief Checks the mesh iterators
+         * \details  This test performs a series of simple tests on the basic iterators within a mesh
+         * \param[in,out] ut        Unit test class to report the results
+         * \param[in] mesh          Mesh to test
+         */
     static void MeshIteratorTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
@@ -81,11 +79,13 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshIteratorOperationTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static void
+    MeshIteratorOperationTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     /**
      * \brief Checks the mesh set operations
-     * \details  This test performs a series of simple tests on the union, intersection, and compliment operations.
+     * \details  This test performs a series of simple tests on the union, intersection, and
+     * compliment operations.
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
@@ -93,7 +93,8 @@ public: // Mesh based tests
 
     /**
      * \brief Checks the number of elements in a mesh
-     * \details  This test performs a series of simple tests on numLocalElements, numGlobalElements, and numGhostElements
+     * \details  This test performs a series of simple tests on numLocalElements, numGlobalElements,
+     * and numGhostElements
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
@@ -190,18 +191,20 @@ public: // Mesh based tests
 
 
 public: // Vector based tests
-
-#ifdef USE_AMP_VECTORS    
+#ifdef USE_AMP_VECTORS
     //! Factory to create a vector from a mesh
     class MeshVectorFactory : public AMP::LinearAlgebra::VectorFactory
     {
     public:
         MeshVectorFactory( AMP::Mesh::Mesh::shared_ptr mesh,
-            AMP::Mesh::GeomType type, int gcw, int dofs_per_node, bool split ):
-            SPLIT(split)
+                           AMP::Mesh::GeomType type,
+                           int gcw,
+                           int dofs_per_node,
+                           bool split )
+            : SPLIT( split )
         {
             d_dofManager = AMP::Discretization::simpleDOFManager::create(
-                    mesh, type, gcw, dofs_per_node, split );
+                mesh, type, gcw, dofs_per_node, split );
         }
         //! Get the Variable
         virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
@@ -220,7 +223,7 @@ public: // Vector based tests
         }
         //! Get the name
         virtual std::string name() const override { return "MeshVectorFactory"; }
-      private:
+    private:
         MeshVectorFactory();
         AMP::Discretization::DOFManager::shared_ptr d_dofManager;
         bool SPLIT;
@@ -253,8 +256,6 @@ public: // Vector based tests
 
 
 public: // Matrix based tests
-
-
     template <int DOF_PER_NODE, bool SPLIT>
     static void VerifyGetMatrixTrivialTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh );
 
@@ -263,16 +264,15 @@ public: // Matrix based tests
 
 
 private: // Private data
-
-    /**
-     * \brief Check a mesh iterator
-     * \details  This test performs a series of simple tests on a single mesh element iterator
-     * \param[out] ut           Unit test class to report the results
-     * \param[in] iterator      local iterator over elements
-     * \param[in] N_local       number of local elements for the iterator
-     * \param[in] N_ghost       number of ghost elements for the iterator
-     * \param[in] type          Geometric type
-     */
+         /**
+          * \brief Check a mesh iterator
+          * \details  This test performs a series of simple tests on a single mesh element iterator
+          * \param[out] ut           Unit test class to report the results
+          * \param[in] iterator      local iterator over elements
+          * \param[in] N_local       number of local elements for the iterator
+          * \param[in] N_ghost       number of ghost elements for the iterator
+          * \param[in] type          Geometric type
+          */
     static void ElementIteratorTest( AMP::UnitTest *ut,
                                      AMP::Mesh::Mesh::shared_ptr mesh,
                                      AMP::Mesh::MeshIterator iterator,
@@ -280,8 +280,10 @@ private: // Private data
                                      const size_t N_ghost,
                                      const AMP::Mesh::GeomType type );
 
-    // Helper function to create a map from the base mesh communicator rank to the main mesh communicator
-    static std::map<AMP::Mesh::MeshID, std::vector<int>> createRankMap( AMP::Mesh::Mesh::shared_ptr mesh );
+    // Helper function to create a map from the base mesh communicator rank to the main mesh
+    // communicator
+    static std::map<AMP::Mesh::MeshID, std::vector<int>>
+    createRankMap( AMP::Mesh::Mesh::shared_ptr mesh );
 
     static AMP::Mesh::Mesh::shared_ptr globalMeshForMeshVectorFactory;
 };

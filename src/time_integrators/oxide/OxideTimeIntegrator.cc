@@ -49,15 +49,15 @@ void OxideTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> 
     d_temp = ( oxide_parameters->d_temp )->select( meshSelector, "temperature" );
     AMP_ASSERT( d_temp.get() );
     std::vector<size_t> dofs;
-    d_temp->getDOFManager()->getDOFs( d_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 )->globalID(),
-                                      dofs );
+    d_temp->getDOFManager()->getDOFs(
+        d_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 )->globalID(), dofs );
     AMP_INSIST( dofs.size() == 1, "Temperature vector must be a nodal scalar vector" );
     double total_depth = oxide_parameters->depth;
     AMP_INSIST( total_depth > 0, "Surface depth must be > 0" );
 
     // Create the solution vector
-    AMP::Discretization::DOFManager::shared_ptr DOF =
-        AMP::Discretization::simpleDOFManager::create( d_mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    AMP::Discretization::DOFManager::shared_ptr DOF = AMP::Discretization::simpleDOFManager::create(
+        d_mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Variable::shared_ptr oxide_var(
         new AMP::LinearAlgebra::Variable( "oxide" ) );
     AMP::LinearAlgebra::Variable::shared_ptr alpha_var(

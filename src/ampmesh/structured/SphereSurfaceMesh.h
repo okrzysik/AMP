@@ -10,7 +10,6 @@ namespace AMP {
 namespace Mesh {
 
 
-
 /**
  * \class SphereSurfaceMesh
  * \brief A derived version of BoxMesh for a cube
@@ -19,7 +18,6 @@ namespace Mesh {
 class SphereSurfaceMesh : public AMP::Mesh::BoxMesh
 {
 public:
-
     //! Default constructor
     explicit SphereSurfaceMesh( MeshParameters::shared_ptr params );
 
@@ -40,7 +38,7 @@ public:
      *    and 2 if the individual nodes can be moved.
      * @return  The if
      */
-    virtual int isMeshMovable( ) const override;
+    virtual int isMeshMovable() const override;
 
     /**
      * \brief    Displace the entire mesh
@@ -72,7 +70,7 @@ public:
      * \brief    Return a mesh element's coordinates given it's id.
      * \details  This function queries the mesh to get an element's coordinates given the mesh id.
      *    Ideally, this should be done in O(1) time, but the implimentation is up to
-     *    the underlying mesh.  
+     *    the underlying mesh.
      * \param[in] index     Mesh element index we are requesting.
      * \param[out] pos      Mesh element coordinates
      */
@@ -80,15 +78,14 @@ public:
 
 
 public: // BoxMesh specific functionality
-
-    /**
-     * \brief    Return the logical coordinates
-     * \details  This function queries the mesh to get the logical coordinates in [0,1]
-     *     from the physical coordinates.  Not all meshes support this functionallity.
-     * \param[in] x         Physical coordinates
-     * @return              Returns the logical coordinates
-     */
-    virtual std::array<double,3> physicalToLogical( const double *x ) const override;
+        /**
+         * \brief    Return the logical coordinates
+         * \details  This function queries the mesh to get the logical coordinates in [0,1]
+         *     from the physical coordinates.  Not all meshes support this functionallity.
+         * \param[in] x         Physical coordinates
+         * @return              Returns the logical coordinates
+         */
+    virtual std::array<double, 3> physicalToLogical( const double *x ) const override;
 
 
 private:
@@ -96,8 +93,7 @@ private:
 
     // Internal data
     double d_r;
-    std::array<double,3> d_offset;
-
+    std::array<double, 3> d_offset;
 };
 
 

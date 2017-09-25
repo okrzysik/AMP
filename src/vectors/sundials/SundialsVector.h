@@ -64,9 +64,9 @@ public:
       double DoSundialsMin( Vector::shared_ptr &in )
       {
         // Create a Sundials N_Vector if necessary
-        Vector::shared_ptr  in_sundials_view = SundialsVector::view( in );        
+        Vector::shared_ptr  in_sundials_view = SundialsVector::view( in );
         // Extract the N_Vector
-        N_Vector in_nvector = dynamic_pointer_cast<SundialsVector>(in_sundials_view)->getNVector();  
+        N_Vector in_nvector = dynamic_pointer_cast<SundialsVector>(in_sundials_view)->getNVector();
         return N_VMin( in_nvector );
       }
       \endcode
@@ -83,9 +83,9 @@ public:
       double DoSundialsMin( Vector::shared_ptr &in )
       {
         // Create a Sundials N_Vector if necessary
-        Vector::shared_ptr  in_sundials_view = SundialsVector::view( in );        
+        Vector::shared_ptr  in_sundials_view = SundialsVector::view( in );
         // Extract the N_Vector
-        N_Vector in_nvector = dynamic_pointer_cast<SundialsVector>(in_sundials_view)->getNVector();  
+        N_Vector in_nvector = dynamic_pointer_cast<SundialsVector>(in_sundials_view)->getNVector();
         return N_VMin( in_nvector );
       }
       \endcode

@@ -78,11 +78,12 @@ void calculateManufacturedSolution(
     AMP::Mesh::Mesh::shared_ptr bottomAdapter = meshAdapter->Subset( "Bottom" );
 
     if ( bottomAdapter.get() != nullptr ) {
-        AMP::Mesh::MeshIterator el     = bottomAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+        AMP::Mesh::MeshIterator el = bottomAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
         AMP::Mesh::MeshIterator end_el = el.end();
 
         for ( ; el != end_el; ++el ) {
-            std::vector<AMP::Mesh::MeshElement> d_currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );
+            std::vector<AMP::Mesh::MeshElement> d_currNodes =
+                el->getElements( AMP::Mesh::GeomType::Vertex );
 
             std::vector<AMP::Mesh::MeshElementID> globalIDs( d_currNodes.size() );
 
@@ -170,7 +171,8 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
     for ( ; el != end_el; ++el ) {
 
-        std::vector<AMP::Mesh::MeshElement> d_currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );
+        std::vector<AMP::Mesh::MeshElement> d_currNodes =
+            el->getElements( AMP::Mesh::GeomType::Vertex );
 
         std::vector<size_t> bndGlobalIds;
         std::vector<AMP::Mesh::MeshElementID> globalIDs( d_currNodes.size() );
@@ -369,7 +371,8 @@ void myTest(
         new AMP::LinearAlgebra::Variable( "Temperature" ) );
 
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create(
+            manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     //  create solution, rhs, and  residual vectors
     AMP::LinearAlgebra::Vector::shared_ptr TemperatureVec =
         AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
@@ -421,11 +424,14 @@ void myTest(
 
     siloWriter->registerVector(
         manufacturedSolution, manager, AMP::Mesh::GeomType::Vertex, "ManufacturedSolution" );
-    siloWriter->registerVector( TemperatureVec, manager, AMP::Mesh::GeomType::Vertex, "ComputedSolution" );
+    siloWriter->registerVector(
+        TemperatureVec, manager, AMP::Mesh::GeomType::Vertex, "ComputedSolution" );
     siloWriter->registerVector( ResidualVec, manager, AMP::Mesh::GeomType::Vertex, "Residual" );
-    siloWriter->registerVector( solutionError, manager, AMP::Mesh::GeomType::Vertex, "SolutionErro" );
+    siloWriter->registerVector(
+        solutionError, manager, AMP::Mesh::GeomType::Vertex, "SolutionErro" );
 
-    siloWriter->registerVector( manufacturedRHS, manager, AMP::Mesh::GeomType::Volume, "ManufacturedRhs" );
+    siloWriter->registerVector(
+        manufacturedRHS, manager, AMP::Mesh::GeomType::Volume, "ManufacturedRhs" );
     std::string silo_file = "testMeshRefinementDiffusion-1";
     siloWriter->writeFile( silo_file, 0 );
 #endif

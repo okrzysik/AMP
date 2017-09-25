@@ -10,18 +10,18 @@ namespace LinearAlgebra {
 
 
 // Helper functions
-static inline ManagedVector* getManaged( Vector* x )
+static inline ManagedVector *getManaged( Vector *x )
 {
-    auto y = dynamic_cast<ManagedVector*>( x );
-    AMP_INSIST( y != nullptr, "x is not a ManagedVector");
+    auto y = dynamic_cast<ManagedVector *>( x );
+    AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
     return y;
 }
-static inline AMP::shared_ptr<ManagedVector> getManaged( AMP::shared_ptr<Vector> x ) {
+static inline AMP::shared_ptr<ManagedVector> getManaged( AMP::shared_ptr<Vector> x )
+{
     auto y = dynamic_pointer_cast<ManagedVector>( x );
-    AMP_INSIST( y != nullptr, "x is not a ManagedVector");
+    AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
     return y;
 }
-
 
 
 /********************************************************
@@ -41,12 +41,11 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in ) : Vector(
     d_pParameters->d_CloneEngine = true;
 }
 ManagedVector::ManagedVector( shared_ptr alias )
-    : Vector( AMP::dynamic_pointer_cast<VectorParameters>(
-          getManaged(alias)->getParameters() ) )
+    : Vector( AMP::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
 {
-    auto vec = getManaged(alias);
-    d_vBuffer = vec->d_vBuffer;
-    d_Engine  = vec->d_Engine;
+    auto vec      = getManaged( alias );
+    d_vBuffer     = vec->d_vBuffer;
+    d_Engine      = vec->d_Engine;
     d_pParameters = vec->d_pParameters;
     setVariable( vec->getVariable() );
     aliasGhostBuffer( vec );
@@ -60,7 +59,7 @@ Vector::shared_ptr ManagedVector::subsetVectorForVariable( Variable::const_share
 {
     Vector::shared_ptr retVal;
     if ( !d_vBuffer )
-        retVal = dynamic_pointer_cast<Vector>(d_Engine)->subsetVectorForVariable( name );
+        retVal = dynamic_pointer_cast<Vector>( d_Engine )->subsetVectorForVariable( name );
     if ( !retVal )
         retVal = Vector::subsetVectorForVariable( name );
     return retVal;
@@ -70,7 +69,7 @@ ManagedVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) c
 {
     Vector::const_shared_ptr retVal;
     if ( !d_vBuffer )
-        retVal = dynamic_pointer_cast<Vector>(d_Engine)->constSubsetVectorForVariable( name );
+        retVal = dynamic_pointer_cast<Vector>( d_Engine )->constSubsetVectorForVariable( name );
     if ( !retVal )
         retVal = Vector::constSubsetVectorForVariable( name );
     return retVal;
@@ -80,7 +79,7 @@ ManagedVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) c
 bool ManagedVector::isAnAliasOf( Vector &rhs )
 {
     bool retVal = false;
-    auto other = getManaged( &rhs );
+    auto other  = getManaged( &rhs );
     if ( other != nullptr ) {
         if ( d_vBuffer && ( other->d_vBuffer == d_vBuffer ) ) {
             retVal = true;
@@ -90,9 +89,9 @@ bool ManagedVector::isAnAliasOf( Vector &rhs )
 }
 
 
-void ManagedVector::copy( const VectorOperations& other )
+void ManagedVector::copy( const VectorOperations &other )
 {
-    auto rhs_managed = dynamic_cast<const ManagedVector*>( &other );
+    auto rhs_managed = dynamic_cast<const ManagedVector *>( &other );
     AMP::shared_ptr<Vector> vec1;
     AMP::shared_ptr<const Vector> vec2;
     if ( rhs_managed != nullptr ) {
@@ -131,10 +130,12 @@ Vector::UpdateState ManagedVector::getUpdateStatus() const
         } else if ( sub_state == UpdateState::LOCAL_CHANGED ) {
             // No change in state
         } else if ( sub_state == UpdateState::ADDING &&
-                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED || state == UpdateState::ADDING ) ) {
+                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED ||
+                      state == UpdateState::ADDING ) ) {
             state = UpdateState::ADDING;
         } else if ( sub_state == UpdateState::SETTING &&
-                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED || state == UpdateState::SETTING ) ) {
+                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED ||
+                      state == UpdateState::SETTING ) ) {
             state = UpdateState::SETTING;
         } else {
             state = UpdateState::MIXED;
@@ -166,7 +167,7 @@ void ManagedVector::swapVectors( Vector &other )
 
 void ManagedVector::aliasVector( Vector &other )
 {
-    auto in = getManaged( &other );
+    auto in       = getManaged( &other );
     d_pParameters = in->d_pParameters;
     d_vBuffer     = in->d_vBuffer;
 }
@@ -290,7 +291,7 @@ void ManagedVector::copyOutRawData( double *in ) const { d_Engine->copyOutRawDat
 
 void ManagedVector::scale( double alpha, const VectorOperations &x )
 {
-    auto x2 = dynamic_cast<const ManagedVector*>( &x );
+    auto x2 = dynamic_cast<const ManagedVector *>( &x );
     if ( x2 != nullptr ) {
         d_Engine->scale( alpha, x2->d_Engine );
     } else {
@@ -309,9 +310,9 @@ void ManagedVector::scale( double alpha )
 
 void ManagedVector::add( const VectorOperations &x, const VectorOperations &y )
 {
-    auto x2 = dynamic_cast<const ManagedVector*>( &x );
-    auto y2 = dynamic_cast<const ManagedVector*>( &y );
-    if ( x2!=nullptr && y2!=nullptr ) {
+    auto x2 = dynamic_cast<const ManagedVector *>( &x );
+    auto y2 = dynamic_cast<const ManagedVector *>( &y );
+    if ( x2 != nullptr && y2 != nullptr ) {
         d_Engine->add( x2->d_Engine, y2->d_Engine );
     } else {
         VectorOperationsDefault::add( x, y );
@@ -322,9 +323,9 @@ void ManagedVector::add( const VectorOperations &x, const VectorOperations &y )
 
 void ManagedVector::subtract( const VectorOperations &x, const VectorOperations &y )
 {
-    auto x2 = dynamic_cast<const ManagedVector*>( &x );
-    auto y2 = dynamic_cast<const ManagedVector*>( &y );
-    if ( x2!=nullptr && y2!=nullptr ) {
+    auto x2 = dynamic_cast<const ManagedVector *>( &x );
+    auto y2 = dynamic_cast<const ManagedVector *>( &y );
+    if ( x2 != nullptr && y2 != nullptr ) {
         d_Engine->subtract( x2->d_Engine, y2->d_Engine );
     } else {
         VectorOperationsDefault::subtract( x, y );
@@ -335,9 +336,9 @@ void ManagedVector::subtract( const VectorOperations &x, const VectorOperations 
 
 void ManagedVector::multiply( const VectorOperations &x, const VectorOperations &y )
 {
-    auto x2 = dynamic_cast<const ManagedVector*>( &x );
-    auto y2 = dynamic_cast<const ManagedVector*>( &y );
-    if ( x2!=nullptr && y2!=nullptr ) {
+    auto x2 = dynamic_cast<const ManagedVector *>( &x );
+    auto y2 = dynamic_cast<const ManagedVector *>( &y );
+    if ( x2 != nullptr && y2 != nullptr ) {
         d_Engine->multiply( x2->d_Engine, y2->d_Engine );
     } else {
         VectorOperationsDefault::multiply( x, y );
@@ -348,9 +349,9 @@ void ManagedVector::multiply( const VectorOperations &x, const VectorOperations 
 
 void ManagedVector::divide( const VectorOperations &x, const VectorOperations &y )
 {
-    auto x2 = dynamic_cast<const ManagedVector*>( &x );
-    auto y2 = dynamic_cast<const ManagedVector*>( &y );
-    if ( x2!=nullptr && y2!=nullptr ) {
+    auto x2 = dynamic_cast<const ManagedVector *>( &x );
+    auto y2 = dynamic_cast<const ManagedVector *>( &y );
+    if ( x2 != nullptr && y2 != nullptr ) {
         d_Engine->divide( x2->d_Engine, y2->d_Engine );
     } else {
         VectorOperationsDefault::divide( x, y );
@@ -361,7 +362,7 @@ void ManagedVector::divide( const VectorOperations &x, const VectorOperations &y
 
 void ManagedVector::reciprocal( const VectorOperations &x )
 {
-    auto x2 = dynamic_cast<const ManagedVector*>( &x );
+    auto x2 = dynamic_cast<const ManagedVector *>( &x );
     if ( x2 != nullptr ) {
         d_Engine->reciprocal( x2->d_Engine );
     } else {
@@ -372,13 +373,13 @@ void ManagedVector::reciprocal( const VectorOperations &x )
 
 
 void ManagedVector::linearSum( double alpha,
-                                      const VectorOperations &x,
-                                      double beta,
-                                      const VectorOperations &y )
+                               const VectorOperations &x,
+                               double beta,
+                               const VectorOperations &y )
 {
-    auto x2 = dynamic_cast<const ManagedVector*>( &x );
-    auto y2 = dynamic_cast<const ManagedVector*>( &y );
-    if ( x2!=nullptr && y2!=nullptr ) {
+    auto x2 = dynamic_cast<const ManagedVector *>( &x );
+    auto y2 = dynamic_cast<const ManagedVector *>( &y );
+    if ( x2 != nullptr && y2 != nullptr ) {
         d_Engine->linearSum( alpha, x2->d_Engine, beta, y2->d_Engine );
     } else {
         VectorOperationsDefault::linearSum( alpha, x, beta, y );
@@ -387,12 +388,11 @@ void ManagedVector::linearSum( double alpha,
 }
 
 
-void
-ManagedVector::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
+void ManagedVector::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
 {
-    auto x2 = dynamic_cast<const ManagedVector*>( &x );
-    auto y2 = dynamic_cast<const ManagedVector*>( &y );
-    if ( x2!=nullptr && y2!=nullptr ) {
+    auto x2 = dynamic_cast<const ManagedVector *>( &x );
+    auto y2 = dynamic_cast<const ManagedVector *>( &y );
+    if ( x2 != nullptr && y2 != nullptr ) {
         d_Engine->axpy( alpha, x2->d_Engine, y2->d_Engine );
     } else {
         VectorOperationsDefault::axpy( alpha, x, y );
@@ -403,7 +403,7 @@ ManagedVector::axpy( double alpha, const VectorOperations &x, const VectorOperat
 
 void ManagedVector::axpby( double alpha, double beta, const VectorOperations &x )
 {
-    auto x2 = dynamic_cast<const ManagedVector*>( &x );
+    auto x2 = dynamic_cast<const ManagedVector *>( &x );
     if ( x2 != nullptr ) {
         d_Engine->axpby( alpha, beta, x2->d_Engine );
     } else {
@@ -415,7 +415,7 @@ void ManagedVector::axpby( double alpha, double beta, const VectorOperations &x 
 
 void ManagedVector::abs( const VectorOperations &x )
 {
-    auto x2 = dynamic_cast<const ManagedVector*>( &x );
+    auto x2 = dynamic_cast<const ManagedVector *>( &x );
     if ( x2 != nullptr ) {
         d_Engine->abs( x2->d_Engine );
     } else {
@@ -458,9 +458,9 @@ double ManagedVector::maxNorm( void ) const { return d_Engine->maxNorm(); }
 
 double ManagedVector::dot( const VectorOperations &x ) const
 {
-    auto x2 = dynamic_cast<const ManagedVector*>( &x );
+    auto x2 = dynamic_cast<const ManagedVector *>( &x );
     if ( x2 != nullptr )
-        return d_Engine->dot(x2->d_Engine );
+        return d_Engine->dot( x2->d_Engine );
     return VectorOperationsDefault::dot( *this );
 }
 
@@ -469,14 +469,10 @@ AMP::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr n
 {
     AMP::shared_ptr<Vector> retVal( getNewRawPtr() );
     if ( !d_vBuffer ) {
-        getManaged( retVal )->d_Engine =
-            d_Engine->cloneEngine( VectorEngine::BufferPtr() );
+        getManaged( retVal )->d_Engine = d_Engine->cloneEngine( VectorEngine::BufferPtr() );
     }
     retVal->setVariable( name );
     return retVal;
 }
-
-
-
 }
 }

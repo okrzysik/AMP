@@ -59,7 +59,10 @@ public:
     }
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inputVariable; }
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outputVariable; }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    {
+        return d_outputVariable;
+    }
 
 protected:
     //! Empty constructor

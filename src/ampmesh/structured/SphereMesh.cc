@@ -3,9 +3,9 @@
 #include "ampmesh/structured/BoxMeshHelpers.h"
 
 #include "ampmesh/MultiIterator.h"
+#include "ampmesh/shapes/Box.h"
 #include "ampmesh/structured/structuredMeshElement.h"
 #include "ampmesh/structured/structuredMeshIterator.h"
-#include "ampmesh/shapes/Box.h"
 
 #ifdef USE_AMP_VECTORS
 #include "vectors/Variable.h"
@@ -24,8 +24,7 @@ namespace Mesh {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-SphereMesh::SphereMesh( MeshParameters::shared_ptr params ):
-    BoxMesh( params )
+SphereMesh::SphereMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 {
     // Input options from the database
     PhysicalDim = d_db->getInteger( "dim" );
@@ -36,7 +35,7 @@ SphereMesh::SphereMesh( MeshParameters::shared_ptr params ):
     AMP_INSIST( size.size() == 1u, "Size must be an array of length 1" );
     AMP_INSIST( range.size() == 1u, "Range must be an array of length 3" );
     AMP_INSIST( (int) PhysicalDim == 3, "dim must be 3" );
-    d_r = range[0];
+    d_r             = range[0];
     d_globalSize[0] = 2 * size[0];
     d_globalSize[1] = 2 * size[0];
     d_globalSize[2] = 2 * size[0];
@@ -60,7 +59,7 @@ SphereMesh::SphereMesh( MeshParameters::shared_ptr params ):
     // Initialize the logical mesh
     BoxMesh::initialize();
     // Set the geometry
-    //d_geometry.reset( new Geometry::Box( range ) );
+    // d_geometry.reset( new Geometry::Box( range ) );
     // Finalize the logical mesh
     BoxMesh::finalize();
 }
@@ -71,20 +70,17 @@ SphereMesh::SphereMesh( MeshParameters::shared_ptr params ):
 ****************************************************************/
 std::vector<size_t> SphereMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
-    auto db = params->getDatabase();
+    auto db               = params->getDatabase();
     std::vector<int> size = db->getIntegerArray( "Size" );
-    AMP_ASSERT(size.size()==1u);
-    return std::vector<size_t>(3,2*size[0]);
+    AMP_ASSERT( size.size() == 1u );
+    return std::vector<size_t>( 3, 2 * size[0] );
 }
 
 
 /****************************************************************
 * Functions to displace the mesh                                *
 ****************************************************************/
-int SphereMesh::isMeshMovable( ) const
-{
-    return 1;
-}
+int SphereMesh::isMeshMovable() const { return 1; }
 void SphereMesh::displaceMesh( const std::vector<double> &x )
 {
     AMP_ASSERT( x.size() == PhysicalDim );
@@ -111,7 +107,7 @@ void SphereMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_pt
 ****************************************************************/
 AMP::shared_ptr<Mesh> SphereMesh::copy() const
 {
-    return AMP::shared_ptr<SphereMesh>( new SphereMesh(*this) );
+    return AMP::shared_ptr<SphereMesh>( new SphereMesh( *this ) );
 }
 
 
@@ -120,31 +116,28 @@ AMP::shared_ptr<Mesh> SphereMesh::copy() const
 ****************************************************************/
 void SphereMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
-    int i = index.index(0);
-    int j = index.index(1);
-    int k = index.index(2);
-    double x = static_cast<double>(i) / static_cast<double>(d_globalSize[0]);
-    double y = static_cast<double>(j) / static_cast<double>(d_globalSize[1]);
-    double z = static_cast<double>(k) / static_cast<double>(d_globalSize[2]);
+    int i      = index.index( 0 );
+    int j      = index.index( 1 );
+    int k      = index.index( 2 );
+    double x   = static_cast<double>( i ) / static_cast<double>( d_globalSize[0] );
+    double y   = static_cast<double>( j ) / static_cast<double>( d_globalSize[1] );
+    double z   = static_cast<double>( k ) / static_cast<double>( d_globalSize[2] );
     auto point = BoxMeshHelpers::map_logical_sphere( d_r, x, y, z );
-    pos[0] = std::get<0>( point ) + d_offset[0];
-    pos[1] = std::get<1>( point ) + d_offset[1];
-    pos[2] = std::get<2>( point ) + d_offset[2];
+    pos[0]     = std::get<0>( point ) + d_offset[0];
+    pos[1]     = std::get<1>( point ) + d_offset[1];
+    pos[2]     = std::get<2>( point ) + d_offset[2];
 }
 
 
 /****************************************************************
 * Return the logical coordinates                                *
 ****************************************************************/
-std::array<double,3> SphereMesh::physicalToLogical( const double* ) const
+std::array<double, 3> SphereMesh::physicalToLogical( const double * ) const
 {
-    AMP_ERROR("physicalToLogical is not supported in SphereMesh");
-    return std::array<double,3>();
+    AMP_ERROR( "physicalToLogical is not supported in SphereMesh" );
+    return std::array<double, 3>();
 }
 
 
 } // Mesh namespace
 } // AMP namespace
-
-
-

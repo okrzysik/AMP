@@ -21,9 +21,9 @@ inline bool compareVecSubset( AMP::LinearAlgebra::Vector::const_shared_ptr vec1,
 // Test to check that Vector::select, Vector::constSelect, VectorSelector::subset,
 // and VectorSelector::constSubset return the same vectors
 inline void testSelector( AMP::UnitTest *ut,
-                   const std::string &test_name,
-                   const AMP::LinearAlgebra::VectorSelector &selector,
-                   AMP::LinearAlgebra::Vector::shared_ptr vec )
+                          const std::string &test_name,
+                          const AMP::LinearAlgebra::VectorSelector &selector,
+                          AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vec1 = selector.subset( vec );
     AMP::LinearAlgebra::Vector::const_shared_ptr vec2 =
@@ -99,7 +99,7 @@ void AMP::LinearAlgebra::VectorTests::test_VS_ByVariableName( AMP::UnitTest *ut 
         ut->failure( "Did not find a vector" );
     }
 
-    selection1 = vec3->select( AMP::LinearAlgebra::VS_ByVariableName( "vec3" ), "subset" );
+    selection1    = vec3->select( AMP::LinearAlgebra::VS_ByVariableName( "vec3" ), "subset" );
     auto vec3_sub = AMP::LinearAlgebra::MultiVector::create( "multivec", globalComm );
     vec3_sub->addVector( vec3a );
     vec3_sub->addVector( vec3b );

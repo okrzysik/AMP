@@ -11,15 +11,14 @@ namespace LinearAlgebra {
 
 /**
   * \brief  A set of vector operations for multivectors
-  * \details MultiVectorOperations impliments a default set of 
+  * \details MultiVectorOperations impliments a default set of
   *    vector operations for multivectors.
   */
 class MultiVectorOperations : virtual public VectorOperations
 {
 public:
-
     // Constructor
-    MultiVectorOperations( ) {}
+    MultiVectorOperations() {}
 
     //! Destructor
     virtual ~MultiVectorOperations() {}
@@ -135,7 +134,8 @@ public:
       * \param y a vector
       * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
      */
-    virtual void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
+    virtual void
+    axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
 
     /**
       * \param alpha a scalar
@@ -186,7 +186,7 @@ public:
       * \brief Return the local dot product of this vector with the argument vector.
       * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
      */
-    virtual double localDot( const VectorOperations& x ) const override;
+    virtual double localDot( const VectorOperations &x ) const override;
 
     /**
       * \brief  Determine if the local portion of two vectors are equal using an absolute tolerance
@@ -206,7 +206,6 @@ public:
 
 
 private:
-
     /**
       * \brief Returns the local minimum of the quotient of two vectors:
       *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
@@ -229,16 +228,16 @@ private:
       * \param[in] x a vector
       * \param[in] y a vector
       * \param[in] mask a vector
-      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0}  \mathit{this}^2_iy^2_i}{n}}\f]
+      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0}
+     * \mathit{this}^2_iy^2_i}{n}}\f]
       */
     virtual double localWrmsNormMask( const VectorOperations &x,
-                                const VectorOperations &mask ) const override;
+                                      const VectorOperations &mask ) const override;
 
 
 protected:
-
     // Internal data
-    std::vector<VectorOperations*> d_operations;
+    std::vector<VectorOperations *> d_operations;
 
 
 public: // Pull VectorOperations into the current scope
@@ -259,7 +258,6 @@ public: // Pull VectorOperations into the current scope
     using VectorOperations::reciprocal;
     using VectorOperations::wrmsNorm;
     using VectorOperations::wrmsNormMask;
-
 };
 
 

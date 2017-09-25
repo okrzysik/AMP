@@ -276,7 +276,8 @@ void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl 
  *\brief Build volume integral operator
  */
 //---------------------------------------------------------------------------//
-void MoabMapOperator::buildGeomType::VolumeIntOp( SP_VolIntOp &volIntOp, AMP::Mesh::Mesh::shared_ptr &mesh )
+void MoabMapOperator::buildGeomType::VolumeIntOp( SP_VolIntOp &volIntOp,
+                                                  AMP::Mesh::Mesh::shared_ptr &mesh )
 {
     using AMP::Operator::OperatorBuilder;
 

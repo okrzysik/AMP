@@ -88,14 +88,14 @@ ThyraVectorSpaceWrapper::createMembers( int numMembers ) const
 Teuchos::RCP<Thyra::VectorBase<double>>
 ThyraVectorSpaceWrapper::createMemberView( const RTOpPack::SubVectorView<double> &raw_v ) const
 {
-    NULL_USE(raw_v);
+    NULL_USE( raw_v );
     AMP_ERROR( "Not finished" );
     return Teuchos::RCP<Thyra::VectorBase<double>>();
 }
 Teuchos::RCP<const Thyra::VectorBase<double>>
 ThyraVectorSpaceWrapper::createMemberView( const RTOpPack::ConstSubVectorView<double> &raw_v ) const
 {
-    NULL_USE(raw_v);
+    NULL_USE( raw_v );
     AMP_ERROR( "Not finished" );
     return Teuchos::RCP<const Thyra::VectorBase<double>>();
 }
@@ -125,9 +125,9 @@ void ThyraVectorSpaceWrapper::scalarProdsImpl( const Thyra::MultiVectorBase<doub
                                                const Thyra::MultiVectorBase<double> &Y,
                                                const Teuchos::ArrayView<double> &scalarProds ) const
 {
-    NULL_USE(X);
-    NULL_USE(Y);
-    NULL_USE(scalarProds);
+    NULL_USE( X );
+    NULL_USE( Y );
+    NULL_USE( scalarProds );
     AMP_ERROR( "Not finished" );
 }
 }

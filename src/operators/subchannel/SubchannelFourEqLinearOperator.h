@@ -153,9 +153,9 @@ private:
         d_subchannelFace;    // List of z-face elements in each subchannel
     size_t d_numSubchannels; // number of subchannels
 
-    double Volume( double, double );              // evaluates specific volume
-    double Temperature( double, double );         // evaluates temperature
-    double DynamicViscosity( double, double );    // evaluates dynamic viscosity
+    double Volume( double, double );           // evaluates specific volume
+    double Temperature( double, double );      // evaluates temperature
+    double DynamicViscosity( double, double ); // evaluates dynamic viscosity
 
     AMP::Mesh::MeshElement
     getAxiallyAdjacentLateralFace( AMP::Mesh::MeshElement *,

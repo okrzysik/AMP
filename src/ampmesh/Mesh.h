@@ -1,10 +1,10 @@
 #ifndef included_AMP_Mesh
 #define included_AMP_Mesh
 
+#include "ampmesh/Geometry.h"
 #include "ampmesh/MeshID.h"
 #include "ampmesh/MeshIterator.h"
 #include "ampmesh/MeshParameters.h"
-#include "ampmesh/Geometry.h"
 #include "utils/AMP_MPI.h"
 #include "utils/enable_shared_from_this.h"
 #include "utils/shared_ptr.h"
@@ -102,7 +102,7 @@ public:
      * \details  This function will return the geometry for the mesh if it exists.
      *    Not all meshes will have a geometry associated with them.
      */
-    inline AMP::Geometry::Geometry::shared_ptr getGeometry( ) { return d_geometry; }
+    inline AMP::Geometry::Geometry::shared_ptr getGeometry() { return d_geometry; }
 
 
     /**
@@ -387,7 +387,7 @@ public:
      *    and 2 if the individual nodes can be moved.
      * @return  The if
      */
-    virtual int isMeshMovable( ) const = 0;
+    virtual int isMeshMovable() const = 0;
 
 
     /**

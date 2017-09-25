@@ -33,8 +33,8 @@ loadBalanceSimulator::loadBalanceSimulator()
     cache_valid  = false;
 }
 loadBalanceSimulator::loadBalanceSimulator( AMP::shared_ptr<MeshParameters> params,
-                          const std::vector<int> &ranks,
-                          size_t N_elements )
+                                            const std::vector<int> &ranks,
+                                            size_t N_elements )
 {
     // Get required values from the parameters
     AMP_ASSERT( !ranks.empty() );
@@ -49,15 +49,15 @@ loadBalanceSimulator::loadBalanceSimulator( AMP::shared_ptr<MeshParameters> para
     cache_valid = false;
     if ( d_type == std::string( "Multimesh" ) ) {
         loadBalanceSimulator rhs = MultiMesh::simulateBuildMesh( params, ranks );
-        d_name          = rhs.d_name;
-        d_type          = rhs.d_type;
-        d_N_elements    = rhs.d_N_elements;
-        d_max_ranks     = rhs.d_max_ranks;
-        d_params        = rhs.d_params;
-        d_ranks         = rhs.d_ranks;
-        d_submeshes     = rhs.d_submeshes;
-        d_decomp        = rhs.d_decomp;
-        cache_valid     = rhs.cache_valid;
+        d_name                   = rhs.d_name;
+        d_type                   = rhs.d_type;
+        d_N_elements             = rhs.d_N_elements;
+        d_max_ranks              = rhs.d_max_ranks;
+        d_params                 = rhs.d_params;
+        d_ranks                  = rhs.d_ranks;
+        d_submeshes              = rhs.d_submeshes;
+        d_decomp                 = rhs.d_decomp;
+        cache_valid              = rhs.cache_valid;
         if ( d_ranks.size() == 1 ) {
             d_min       = d_N_elements;
             d_max       = d_N_elements;
@@ -80,9 +80,9 @@ loadBalanceSimulator::loadBalanceSimulator( AMP::shared_ptr<MeshParameters> para
         d_ranks.resize( d_max_ranks );
 }
 loadBalanceSimulator::loadBalanceSimulator( AMP::shared_ptr<MeshParameters> params,
-                          const std::vector<int> &ranks,
-                          const std::vector<loadBalanceSimulator> &submeshes,
-                          int decomp )
+                                            const std::vector<int> &ranks,
+                                            const std::vector<loadBalanceSimulator> &submeshes,
+                                            int decomp )
 {
     AMP::shared_ptr<AMP::Database> database = params->getDatabase();
     AMP_ASSERT( database != nullptr );
@@ -212,7 +212,8 @@ void loadBalanceSimulator::changeRanks( const std::vector<int> &ranks )
             d_ranks[i] = ranks[i];
     }
 }
-void loadBalanceSimulator::countElements( const loadBalanceSimulator &mesh, std::vector<size_t> &N_elements )
+void loadBalanceSimulator::countElements( const loadBalanceSimulator &mesh,
+                                          std::vector<size_t> &N_elements )
 {
     if ( mesh.d_submeshes.empty() ) {
         for ( size_t i = 0; i < mesh.d_ranks.size(); i++ )

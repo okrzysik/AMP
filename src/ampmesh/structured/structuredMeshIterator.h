@@ -20,7 +20,8 @@ public:
     structuredMeshIterator();
 
     //! Range base constructor
-    structuredMeshIterator( BoxMesh::MeshElementIndex first, BoxMesh::MeshElementIndex last,
+    structuredMeshIterator( BoxMesh::MeshElementIndex first,
+                            BoxMesh::MeshElementIndex last,
                             const AMP::Mesh::BoxMesh *mesh,
                             size_t pos = 0 );
 
@@ -85,8 +86,8 @@ protected:
 
 private:
     // Data members
-    std::array<bool,3> d_isPeriodic;
-    std::array<int,3> d_globalSize;
+    std::array<bool, 3> d_isPeriodic;
+    std::array<int, 3> d_globalSize;
     BoxMesh::MeshElementIndex d_first;
     BoxMesh::MeshElementIndex d_last;
     AMP::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> d_elements;

@@ -84,7 +84,8 @@ void myGetRow( void *object, int row, std::vector<unsigned int> &cols, std::vect
 void selectNodes( AMP::Mesh::Mesh::shared_ptr mesh,
                   std::vector<AMP::Mesh::MeshElementID> &nodesGlobalIDs )
 {
-    AMP::Mesh::MeshIterator meshIterator = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4 );
+    AMP::Mesh::MeshIterator meshIterator =
+        mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4 );
     AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
     AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
     nodesGlobalIDs.clear();
@@ -137,7 +138,8 @@ void applySlaveLoadOperator( double loadParameterX,
                                 boundaryIterator_end   = boundaryIterator.end();
         std::vector<double> vertexCoordinates;
         std::vector<size_t> vertexDofIndices;
-        size_t nGeomType::Faces = ( meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 0, 0 ) ).size();
+        size_t nGeomType::Faces =
+            ( meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 0, 0 ) ).size();
         loadParameterX /= static_cast<double>( nGeomType::Faces );
         loadParameterZ /= static_cast<double>( nGeomType::Faces );
         for ( boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end;
@@ -200,7 +202,8 @@ void applyMasterLoadOperator( double loadParameterX,
                                 boundaryIterator_end   = boundaryIterator.end();
         std::vector<double> vertexCoordinates;
         std::vector<size_t> vertexDofIndices;
-        size_t nGeomType::Faces = ( meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 1, 0 ) ).size();
+        size_t nGeomType::Faces =
+            ( meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 1, 0 ) ).size();
         loadParameterX /= static_cast<double>( nGeomType::Faces );
         loadParameterZ /= static_cast<double>( nGeomType::Faces );
         for ( boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end;
@@ -395,13 +398,18 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         // masterFout.open("master_pellet", std::fstream::out);
         // double point_of_view[3] = { 1.0, 1.0, 1.0 };
         // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 0, masterFout, point_of_view, "blue");
-        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 1, masterFout, point_of_view, "green");
+        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 1, masterFout, point_of_view,
+        // "green");
         // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 2, masterFout, point_of_view, "red");
-        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 3, masterFout, point_of_view, "magenta");
-        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 4, masterFout, point_of_view, "black");
-        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 5, masterFout, point_of_view, "orange");
+        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 3, masterFout, point_of_view,
+        // "magenta");
+        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 4, masterFout, point_of_view,
+        // "black");
+        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 5, masterFout, point_of_view,
+        // "orange");
         // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 6, masterFout, point_of_view, "pink");
-        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 7, masterFout, point_of_view, "violet");
+        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 7, masterFout, point_of_view,
+        // "violet");
         ////drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 1, masterFout, point_of_view);
         ////drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 4, masterFout, point_of_view);
         // masterFout.close();
@@ -449,9 +457,12 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         // std::fstream slaveFout;
         // slaveFout.open("slave_pellet", std::fstream::out);
         // double point_of_view[3] = { 1.0, 1.0, 1.0 };
-        // drawGeomType::FacesOnBoundaryID(slaveMeshAdapter, 0, slaveFout, point_of_view, "dashed,red");
-        ////drawGeomType::FacesOnBoundaryID(slaveMeshAdapter, 1, slaveFout, point_of_view, "dashed");
-        ////drawGeomType::FacesOnBoundaryID(slaveMeshAdapter, 4, slaveFout, point_of_view, "dashed");
+        // drawGeomType::FacesOnBoundaryID(slaveMeshAdapter, 0, slaveFout, point_of_view,
+        // "dashed,red");
+        ////drawGeomType::FacesOnBoundaryID(slaveMeshAdapter, 1, slaveFout, point_of_view,
+        ///"dashed");
+        ////drawGeomType::FacesOnBoundaryID(slaveMeshAdapter, 4, slaveFout, point_of_view,
+        ///"dashed");
         ////drawVerticesOnBoundaryID(slaveMeshAdapter, 2, slaveFout, point_of_view, "red");
         // slaveFout.close();
     } // end if
@@ -598,23 +609,36 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     {
         siloWriter->registerVector(
             columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "SolutionDisplacement" );
-        siloWriter->registerVector( sigma_eff, meshAdapter, AMP::Mesh::GeomType::Vertex, "vonMisesStresses" );
-        siloWriter->registerVector( sigma_xx, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xx" );
-        siloWriter->registerVector( sigma_yy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yy" );
-        siloWriter->registerVector( sigma_zz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_zz" );
-        siloWriter->registerVector( sigma_yz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yz" );
-        siloWriter->registerVector( sigma_xz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xz" );
-        siloWriter->registerVector( sigma_xy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xy" );
         siloWriter->registerVector(
-            activeSetBeforeUpdateVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ActiveSetBeforeUpdate" );
+            sigma_eff, meshAdapter, AMP::Mesh::GeomType::Vertex, "vonMisesStresses" );
         siloWriter->registerVector(
-            activeSetAfterUpdateVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ActiveSetAfterUpdate" );
+            sigma_xx, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xx" );
+        siloWriter->registerVector(
+            sigma_yy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yy" );
+        siloWriter->registerVector(
+            sigma_zz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_zz" );
+        siloWriter->registerVector(
+            sigma_yz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yz" );
+        siloWriter->registerVector(
+            sigma_xz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xz" );
+        siloWriter->registerVector(
+            sigma_xy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xy" );
+        siloWriter->registerVector( activeSetBeforeUpdateVec,
+                                    meshAdapter,
+                                    AMP::Mesh::GeomType::Vertex,
+                                    "ActiveSetBeforeUpdate" );
+        siloWriter->registerVector( activeSetAfterUpdateVec,
+                                    meshAdapter,
+                                    AMP::Mesh::GeomType::Vertex,
+                                    "ActiveSetAfterUpdate" );
         siloWriter->registerVector(
             surfaceTractionVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Traction" );
-        siloWriter->registerVector( normalVectorVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Normal" );
+        siloWriter->registerVector(
+            normalVectorVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Normal" );
         siloWriter->registerVector(
             contactPressureVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ContactPressure" );
-        siloWriter->registerVector( contactShiftVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Shift" );
+        siloWriter->registerVector(
+            contactShiftVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Shift" );
         char outFileName[256];
         sprintf( outFileName, "TOTO_%d", 0 );
         siloWriter->writeFile( outFileName, 0 );

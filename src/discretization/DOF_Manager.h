@@ -183,7 +183,6 @@ protected:
 
     //! The comm for this DOFManager
     AMP_MPI d_comm;
-
 };
 
 

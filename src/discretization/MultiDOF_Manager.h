@@ -47,7 +47,8 @@ public:
      * (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
-    virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const override;
+    virtual void getDOFs( const AMP::Mesh::MeshElementID &id,
+                          std::vector<size_t> &dofs ) const override;
 
 
     /** \brief Get the entry indices of DOFs given a mesh element ID
@@ -111,7 +112,6 @@ public:
                                            const AMP_MPI &comm ) override;
 
 public:
-
     //! Get the DOFManagers that compose the multiDOFManager
     std::vector<DOFManager::shared_ptr> getDOFManagers() const;
 
@@ -148,15 +148,13 @@ public:
 
 
 private:
-
     // Convert the local to global dof
     inline size_t subToGlobal( int manager, size_t dof ) const;
 
     // Convert the global to local dof
-    inline std::pair<size_t,int> globalToSub( size_t dof ) const;
+    inline std::pair<size_t, int> globalToSub( size_t dof ) const;
 
 private:
-
     // Data used to convert between the local (sub) and global (parent) DOFs
     struct DOFMapStruct {
         // Constructors
@@ -175,43 +173,30 @@ private:
             data[3] = 0;
         }
         // Convert ids
-        inline size_t toGlobal( size_t local ) const
-        {
-            return local-data[0]+data[2];
-        }
-        inline size_t toLocal( size_t global ) const
-        {
-            return global-data[2]+data[0];
-        }
+        inline size_t toGlobal( size_t local ) const { return local - data[0] + data[2]; }
+        inline size_t toLocal( size_t global ) const { return global - data[2] + data[0]; }
         inline bool inRangeLocal( size_t local ) const
         {
-            return local>=data[0] && local<data[1];
+            return local >= data[0] && local < data[1];
         }
         inline size_t inRangeGlobal( size_t global ) const
         {
-            return global>=data[2] && (global-data[2])<(data[1]-data[0]);
+            return global >= data[2] && ( global - data[2] ) < ( data[1] - data[0] );
         }
-        inline size_t id() const
-        {
-            return data[3];
-        }
-      private:
+        inline size_t id() const { return data[3]; }
+    private:
         size_t data[4];
     };
 
 
 private:
-
     std::vector<DOFManager::shared_ptr> d_managers;
     std::vector<size_t> d_ids;
     std::vector<size_t> d_localSize;
     std::vector<size_t> d_globalSize;
     std::vector<DOFMapStruct> d_dofMap;
     const size_t neg_one = ~( (size_t) 0 );
-
 };
-
-
 }
 }
 

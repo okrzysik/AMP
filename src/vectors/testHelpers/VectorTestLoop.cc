@@ -58,7 +58,6 @@ void VectorTests::testBasicVector( AMP::UnitTest *ut )
 }
 
 
-
 void VectorTests::testManagedVector( AMP::UnitTest *ut )
 {
     testBasicVector( ut );
@@ -66,8 +65,8 @@ void VectorTests::testManagedVector( AMP::UnitTest *ut )
 #ifdef USE_EXT_PETSC
     {
         auto simplePetscFactory = AMP::make_shared<SimplePetscVectorFactory>( d_factory );
-        auto petscViewFactory = AMP::make_shared<PetscViewFactory>( simplePetscFactory );
-        auto petscCloneFactory = AMP::make_shared<PetscCloneFactory>( petscViewFactory );
+        auto petscViewFactory   = AMP::make_shared<PetscViewFactory>( simplePetscFactory );
+        auto petscCloneFactory  = AMP::make_shared<PetscCloneFactory>( petscViewFactory );
         PetscVectorTests test1( petscViewFactory );
         PetscVectorTests test2( petscCloneFactory );
         test1.testPetscVector( ut );
@@ -77,7 +76,8 @@ void VectorTests::testManagedVector( AMP::UnitTest *ut )
 
 #ifdef USE_EXT_SUNDIALS
     {
-        auto viewFactory = AMP::make_shared<ViewFactory<AMP::LinearAlgebra::SundialsVector>>( d_factory );
+        auto viewFactory =
+            AMP::make_shared<ViewFactory<AMP::LinearAlgebra::SundialsVector>>( d_factory );
         auto cloneFactory = AMP::make_shared<CloneFactory>( viewFactory );
         VectorTests test1( viewFactory );
         VectorTests test2( cloneFactory );
@@ -94,7 +94,7 @@ void VectorTests::testManagedVector( AMP::UnitTest *ut )
 
 void VectorTests::testNullVector( AMP::UnitTest *ut )
 {
-    auto viewFactory = AMP::make_shared<NullVectorFactory>( );
+    auto viewFactory = AMP::make_shared<NullVectorFactory>();
     VectorTests test( viewFactory );
     test.InstantiateVector( ut );
 }
@@ -118,7 +118,5 @@ void VectorTests::testVectorSelector( AMP::UnitTest *ut )
 }
 
 
-
 } // namespace LinearAlgebra
 } // namespace AMP
-

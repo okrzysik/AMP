@@ -104,7 +104,7 @@ libMeshIterator::libMeshIterator( int type,
 }
 libMeshIterator::libMeshIterator( const libMeshIterator &rhs )
     : MeshIterator(), // Note: we never want to call the base copy constructor
-    d_meshID( rhs.d_meshID )
+      d_meshID( rhs.d_meshID )
 {
     d_typeID   = libMeshIteratorTypeID;
     d_iterator = nullptr;
@@ -118,9 +118,10 @@ libMeshIterator::libMeshIterator( const libMeshIterator &rhs )
     d_element  = &d_cur_element;
     if ( d_type == 0 ) {
         // Node iterator
-        d_begin2 = (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) rhs.d_begin2 ) );
-        d_end2   = (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) rhs.d_end2 ) );
-        d_pos2   = (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) rhs.d_pos2 ) );
+        d_begin2 =
+            (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) rhs.d_begin2 ) );
+        d_end2 = (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) rhs.d_end2 ) );
+        d_pos2 = (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) rhs.d_pos2 ) );
     } else if ( d_type == 1 ) {
         // Element iterator
         d_begin2 =
@@ -317,8 +318,9 @@ bool libMeshIterator::operator==( const MeshIterator &rhs ) const
         rhs2 = tmp; // We can safely cast rhs to a libMeshIterator
     } else if ( tmp->d_typeID == libMeshIteratorTypeID ) {
         rhs2 = tmp; // We can safely cast rhs.iterator to a libMeshIterator
-    } else if ( reinterpret_cast<libMeshIterator*>( tmp->d_iterator )->d_typeID == libMeshIteratorTypeID ) {
-        rhs2 = reinterpret_cast<libMeshIterator*>( tmp->d_iterator );
+    } else if ( reinterpret_cast<libMeshIterator *>( tmp->d_iterator )->d_typeID ==
+                libMeshIteratorTypeID ) {
+        rhs2 = reinterpret_cast<libMeshIterator *>( tmp->d_iterator );
     }
     // Perform direct comparisions if we are dealing with two libMeshIterators
     if ( rhs2 != nullptr ) {
@@ -372,7 +374,8 @@ void libMeshIterator::setCurrentElement()
         // Node iterator
         ::Mesh::node_iterator *it = (::Mesh::node_iterator *) d_pos2;
         ::Node *node              = it->operator*();
-        d_cur_element = libMeshElement( d_dim, GeomType::Vertex, (void *) node, d_rank, d_meshID, d_mesh );
+        d_cur_element =
+            libMeshElement( d_dim, GeomType::Vertex, (void *) node, d_rank, d_meshID, d_mesh );
     } else if ( d_type == 1 ) {
         // Element iterator
         ::Mesh::element_iterator *it = (::Mesh::element_iterator *) d_pos2;

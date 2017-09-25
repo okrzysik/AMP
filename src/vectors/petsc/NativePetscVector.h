@@ -4,8 +4,8 @@
 #include "utils/AMP_MPI.h"
 #include "vectors/NativeVector.h"
 #include "vectors/VectorEngine.h"
-#include "vectors/petsc/PetscVector.h"
 #include "vectors/operations/VectorOperationsDefault.h"
+#include "vectors/petsc/PetscVector.h"
 
 
 namespace AMP {
@@ -59,11 +59,10 @@ public:
   * \see PetscVector
   * \see ManagedPetscVector
   */
-class NativePetscVector :
-    public NativeVector,
-    public PetscVector,
-    public VectorEngine,
-    public VectorOperationsDefault<double>
+class NativePetscVector : public NativeVector,
+                          public PetscVector,
+                          public VectorEngine,
+                          public VectorOperationsDefault<double>
 {
 public:
     //! Conveninece typedef
@@ -167,8 +166,11 @@ public:
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
     }
 
-    virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(double).hash_code(); }
-    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
+    virtual bool isTypeId( size_t hash, size_t ) const override
+    {
+        return hash == typeid( double ).hash_code();
+    }
+    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
 
 protected:
     virtual void *getRawDataBlockAsVoid( size_t i ) override;
@@ -205,7 +207,6 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::reciprocal;
     using VectorOperationsDefault::wrmsNorm;
     using VectorOperationsDefault::wrmsNormMask;
-
 };
 
 

@@ -184,4 +184,3 @@ void VectorData::copyGhostValues( const VectorData &rhs )
 
 } // LinearAlgebra namespace
 } // AMP namespace
-

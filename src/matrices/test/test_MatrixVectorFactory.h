@@ -8,14 +8,12 @@
 
 #include <vectors/testHelpers/VectorFactory.h>
 
-#if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
+#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
 #include "matrices/petsc/PetscMatrix.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/petsc/NativePetscVector.h"
 #include <vectors/testHelpers/petsc/PetscVectorFactory.h>
 #endif
-
-
 
 
 namespace AMP {
@@ -27,10 +25,9 @@ AMP::LinearAlgebra::Matrix::shared_ptr global_cached_matrix =
 
 
 // Classes to serve as the vector factories
-class AmpInterfaceLeftVectorFactory: public VectorFactory
+class AmpInterfaceLeftVectorFactory : public VectorFactory
 {
 public:
-
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
         return AMP::LinearAlgebra::Variable::shared_ptr(
@@ -56,10 +53,9 @@ public:
 };
 
 
-class AmpInterfaceRightVectorFactory: public VectorFactory
+class AmpInterfaceRightVectorFactory : public VectorFactory
 {
 public:
-
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
         return AMP::LinearAlgebra::Variable::shared_ptr(
@@ -85,12 +81,11 @@ public:
 };
 
 
-#if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
+#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
 
-class PETScInterfaceLeftVectorFactory: public VectorFactory, PetscVectorFactory
+class PETScInterfaceLeftVectorFactory : public VectorFactory, PetscVectorFactory
 {
 public:
-
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
         return AMP::LinearAlgebra::Variable::shared_ptr(
@@ -117,7 +112,10 @@ public:
         return vector;
     }
 
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override { return getVector(); }
+    virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
+    {
+        return getVector();
+    }
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
     {
@@ -135,10 +133,9 @@ public:
 };
 
 
-class PETScInterfaceRightVectorFactory: public VectorFactory,  PetscVectorFactory
+class PETScInterfaceRightVectorFactory : public VectorFactory, PetscVectorFactory
 {
 public:
-
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
         return AMP::LinearAlgebra::Variable::shared_ptr(
@@ -165,7 +162,10 @@ public:
         return vector;
     }
 
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override { return getVector(); }
+    virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
+    {
+        return getVector();
+    }
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
     {

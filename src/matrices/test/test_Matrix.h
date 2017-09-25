@@ -5,9 +5,9 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "matrices/Matrix.h"
 #include "matrices/MatrixBuilder.h"
+#include "utils/Utilities.h"
 #include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
-#include "utils/Utilities.h"
 
 #include "ProfilerApp.h"
 
@@ -141,6 +141,5 @@ template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<3,3,
 template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<3,3,ExodusReaderGenerator<>,2>::DOFs = AMP::shared_ptr<AMP::Discretization::DOFManager>();
 #endif
 // clang-format on
-
 }
 }

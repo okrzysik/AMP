@@ -14,9 +14,7 @@ namespace LinearAlgebra {
   * circumstances, a NullVector is used.  This stores no data and performs no
   * work.
   */
-class NullVector :
-    public Vector,
-    public VectorOperationsDefault<double>
+class NullVector : public Vector, public VectorOperationsDefault<double>
 {
 private:
     explicit NullVector( Variable::shared_ptr );

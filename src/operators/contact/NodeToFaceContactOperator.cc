@@ -144,7 +144,8 @@ size_t NodeToGeomType::FaceContactOperator::updateActiveSet(
                 d_MasterFacesLocalIndices[i];
             hex8_element_t::get_local_coordinates_on_face(
                 &( d_MasterShapeFunctionsValues[4 * i] ),
-                sendProjectionDataBuffer[sendMap[i]].d_SlaveGeomType::VertexLocalCoordOnMasterFace );
+                sendProjectionDataBuffer[sendMap[i]]
+                    .d_SlaveGeomType::VertexLocalCoordOnMasterFace );
             ++sendCnts[sendToRank];
         } // end for i
         AMP_ASSERT( std::find( sendMap.begin(), sendMap.end(), nSendData ) == sendMap.end() );
@@ -391,7 +392,8 @@ size_t NodeToGeomType::FaceContactOperator::updateActiveSet(
             d_ActiveSet.push_back( *inactiveSetIterator );
             inactiveSetIterator = d_InactiveSet.erase( inactiveSetIterator );
             hex8_element_t::get_basis_functions_values_on_face(
-                &( tmpSlaveVerticesLocalCoordOnGeomType::Face[2 * i] ), masterShapeFunctionsValuesPointer );
+                &( tmpSlaveVerticesLocalCoordOnGeomType::Face[2 * i] ),
+                masterShapeFunctionsValuesPointer );
             std::advance( masterShapeFunctionsValuesPointer, 4 );
             std::copy( &( tmpSlaveVerticesShift[3 * i] ),
                        &( tmpSlaveVerticesShift[3 * i] ) + 3,
@@ -781,7 +783,8 @@ void NodeToGeomType::FaceContactOperator::getVectorIndicesFromGlobalIDs(
     AMP_ASSERT( vectorIndicesIterator == vectorIndices.end() );
 }
 
-void NodeToGeomType::FaceContactOperator::copyMasterToSlave( AMP::LinearAlgebra::Vector::shared_ptr u )
+void NodeToGeomType::FaceContactOperator::copyMasterToSlave(
+    AMP::LinearAlgebra::Vector::shared_ptr u )
 {
     /** send and receive the master values */
     AMP::AMP_MPI comm = d_GlobalComm;
@@ -845,7 +848,8 @@ void NodeToGeomType::FaceContactOperator::copyMasterToSlave( AMP::LinearAlgebra:
     } // end if
 }
 
-void NodeToGeomType::FaceContactOperator::addSlaveToMaster( AMP::LinearAlgebra::Vector::shared_ptr u )
+void NodeToGeomType::FaceContactOperator::addSlaveToMaster(
+    AMP::LinearAlgebra::Vector::shared_ptr u )
 {
     /** send and receive slave value times shape functions values */
     AMP::AMP_MPI comm = d_GlobalComm;
@@ -910,7 +914,8 @@ void NodeToGeomType::FaceContactOperator::setSlaveToZero( AMP::LinearAlgebra::Ve
     } // end if
 }
 
-void NodeToGeomType::FaceContactOperator::addShiftToSlave( AMP::LinearAlgebra::Vector::shared_ptr u )
+void NodeToGeomType::FaceContactOperator::addShiftToSlave(
+    AMP::LinearAlgebra::Vector::shared_ptr u )
 {
     if ( ( d_ContactIsFrictionless ) && ( !d_SlaveVerticesGlobalIDs.empty() ) ) {
         AMP_ASSERT( d_DOFsPerNode == 3 );

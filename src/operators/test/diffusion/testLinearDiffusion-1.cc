@@ -72,7 +72,8 @@ void linearTest1( AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Variable::shared_ptr diffResVar = diffOp->getOutputVariable();
 
     AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr diffSolVec =
         AMP::LinearAlgebra::createVector( NodalScalarDOF, diffSolVar, true );

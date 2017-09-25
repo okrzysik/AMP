@@ -5,10 +5,10 @@
 #include "utils/UnitTest.h"
 #include "vectors/SimpleVector.h"
 
-#include "vectors/testHelpers/VectorTests.h"
 #include "test_MatrixVectorFactory.h"
+#include "vectors/testHelpers/VectorTests.h"
 
-#if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
+#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
 #include "matrices/petsc/ManagedPetscMatrix.h"
 #endif
 
@@ -74,8 +74,9 @@ public:
         VectorTests tests2( factory2 );
         tests1.testManagedVector( utils );
         tests2.testManagedVector( utils );
-#if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
-        if ( dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscMatrix>(global_cached_matrix) ) {
+#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+        if ( dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscMatrix>(
+                 global_cached_matrix ) ) {
             AMP::shared_ptr<VectorFactory> factory3( new PETScInterfaceRightVectorFactory() );
             AMP::shared_ptr<VectorFactory> factory4( new PETScInterfaceLeftVectorFactory() );
             VectorTests tests3( factory3 );
@@ -165,13 +166,13 @@ public:
             utils->passes( "trivial vector" );
 
         // Test that axpy failes with different sized matricies
-        std::vector<size_t> row(7);
-        for (size_t i=0; i<row.size(); i++)
-            row[i] = i;
+        std::vector<size_t> row( 7 );
+        for ( size_t i = 0; i < row.size(); i++ )
+            row[i]     = i;
         AMP::LinearAlgebra::Vector::shared_ptr smallVec =
             AMP::LinearAlgebra::SimpleVector<double>::create( 7, vector1lhs->getVariable() );
-        AMP::LinearAlgebra::Matrix::shared_ptr smallMat =
-            AMP::LinearAlgebra::createMatrix( smallVec, smallVec, FACTORY::type(), [row](size_t){ return row; } );
+        AMP::LinearAlgebra::Matrix::shared_ptr smallMat = AMP::LinearAlgebra::createMatrix(
+            smallVec, smallVec, FACTORY::type(), [row]( size_t ) { return row; } );
         try {
             matrix2->axpy( -2., smallMat ); // matrix2 = -matrix1
             utils->failure( "axpy did not crash with different sized matrices" );
@@ -414,7 +415,8 @@ public:
         std::vector<size_t> dofs;
         dofs.reserve( 24 );
         while ( it != end ) {
-            std::vector<AMP::Mesh::MeshElement> nodes = it->getElements( AMP::Mesh::GeomType::Vertex );
+            std::vector<AMP::Mesh::MeshElement> nodes =
+                it->getElements( AMP::Mesh::GeomType::Vertex );
             dofs.clear();
             for ( auto &node : nodes ) {
                 std::vector<size_t> dofsNode;

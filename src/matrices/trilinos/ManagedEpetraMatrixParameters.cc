@@ -57,31 +57,32 @@ Epetra_Map &ManagedEpetraMatrixParameters::getEpetraRowMap()
 Epetra_Map *ManagedEpetraMatrixParameters::getEpetraColMap()
 {
     return nullptr;
-/*#ifdef USE_EXT_MPI
-    Epetra_MpiComm comm = d_comm.getCommunicator();
-#else
-    Epetra_SerialComm comm;
-#endif
-    AMP_ASSERT(d_DOFManagerLeft.get()!=NULL);
-    AMP_ASSERT(d_DOFManagerRight.get()!=NULL);
-    AMP_INSIST(d_DOFManagerLeft->numGlobalDOF()<0x80000000,"Epetra does not support vectors with
-    global size greater
-    than 2^31");
-    int N_col_local = static_cast<int>( d_DOFManagerRight->numLocalDOF() );
-    int N_col_global = static_cast<int>( d_DOFManagerRight->numGlobalDOF() );
-    AMP_ASSERT(d_ColGlobal==N_col_global);
-    if ( d_eColMap.get() == 0 ) {
-        std::vector<int> cols;
-        cols.reserve ( d_sColumns.size() );
-        for ( std::set<int>::iterator curCol = d_sColumns.begin(); curCol != d_sColumns.end() ;
-    curCol++ )
-          cols.push_back ( *curCol );
-        d_eColMap = AMP::shared_ptr<Epetra_Map>( new Epetra_Map( -1, cols.size(), getPtr(cols), 0,
-    comm ) );
-        //d_eColMap = AMP::shared_ptr<Epetra_Map>( new Epetra_Map ( N_col_global, N_col_local,
-    d_ColBase, comm ) );
-    }
-    return d_eColMap.get();*/
+    /*#ifdef USE_EXT_MPI
+        Epetra_MpiComm comm = d_comm.getCommunicator();
+    #else
+        Epetra_SerialComm comm;
+    #endif
+        AMP_ASSERT(d_DOFManagerLeft.get()!=NULL);
+        AMP_ASSERT(d_DOFManagerRight.get()!=NULL);
+        AMP_INSIST(d_DOFManagerLeft->numGlobalDOF()<0x80000000,"Epetra does not support vectors with
+        global size greater
+        than 2^31");
+        int N_col_local = static_cast<int>( d_DOFManagerRight->numLocalDOF() );
+        int N_col_global = static_cast<int>( d_DOFManagerRight->numGlobalDOF() );
+        AMP_ASSERT(d_ColGlobal==N_col_global);
+        if ( d_eColMap.get() == 0 ) {
+            std::vector<int> cols;
+            cols.reserve ( d_sColumns.size() );
+            for ( std::set<int>::iterator curCol = d_sColumns.begin(); curCol != d_sColumns.end() ;
+        curCol++ )
+              cols.push_back ( *curCol );
+            d_eColMap = AMP::shared_ptr<Epetra_Map>( new Epetra_Map( -1, cols.size(), getPtr(cols),
+    0,
+        comm ) );
+            //d_eColMap = AMP::shared_ptr<Epetra_Map>( new Epetra_Map ( N_col_global, N_col_local,
+        d_ColBase, comm ) );
+        }
+        return d_eColMap.get();*/
 }
 
 
@@ -90,7 +91,7 @@ void ManagedEpetraMatrixParameters::addColumns( int a, int *b )
     for ( int i = 0; i != a; i++ )
         d_sColumns.insert( b[i] );
 }
-void ManagedEpetraMatrixParameters::addColumns( const std::set<size_t>& col )
+void ManagedEpetraMatrixParameters::addColumns( const std::set<size_t> &col )
 {
     for ( auto b : col )
         d_sColumns.insert( b );

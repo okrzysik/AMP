@@ -14,9 +14,9 @@ class Vector;
 #endif
 
 #include "utils/shared_ptr.h"
+#include <array>
 #include <map>
 #include <vector>
-#include <array>
 
 
 namespace AMP {
@@ -120,9 +120,8 @@ public:
          */
         inline explicit MeshElementIndex(
             GeomType type, unsigned char side, int x, int y = 0, int z = 0 );
-        inline void reset(
-            GeomType type, unsigned char side, int x, int y = 0, int z = 0 );
-        inline bool isNull() const { return d_side==255; }
+        inline void reset( GeomType type, unsigned char side, int x, int y = 0, int z = 0 );
+        inline bool isNull() const { return d_side == 255; }
         inline bool operator==( const MeshElementIndex &rhs ) const; //!< Operator ==
         inline bool operator!=( const MeshElementIndex &rhs ) const; //!< Operator !=
         inline bool operator>( const MeshElementIndex &rhs ) const;  //!< Operator >
@@ -130,10 +129,12 @@ public:
         inline bool operator<( const MeshElementIndex &rhs ) const;  //!< Operator <
         inline bool operator<=( const MeshElementIndex &rhs ) const; //!< Operator <=
         inline int index( int d ) const { return d_index[d]; }
-        inline int& index( int d ) { return d_index[d]; }
-        inline GeomType type() const { return static_cast<GeomType>(d_type); }
+        inline int &index( int d ) { return d_index[d]; }
+        inline GeomType type() const { return static_cast<GeomType>( d_type ); }
         inline unsigned char side() const { return d_side; }
-        static inline size_t numElements( const MeshElementIndex& first, const MeshElementIndex& last );
+        static inline size_t numElements( const MeshElementIndex &first,
+                                          const MeshElementIndex &last );
+
     private:
         unsigned char d_type; //!<  Mesh element type
         unsigned char d_side; //!<  Are we dealing with x, y, or z faces/edges
@@ -224,7 +225,8 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const override final;
+    virtual MeshIterator getSurfaceIterator( const GeomType type,
+                                             const int gcw = 0 ) const override final;
 
 
     /**
@@ -244,8 +246,9 @@ public:
      * \param id     Boundary id for the elements (example: sideset id)
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator
-    getBoundaryIDIterator( const GeomType type, const int id, const int gcw = 0 ) const override final;
+    virtual MeshIterator getBoundaryIDIterator( const GeomType type,
+                                                const int id,
+                                                const int gcw = 0 ) const override final;
 
     /**
      * \brief    Return the list of all boundary ID sets in the mesh
@@ -334,7 +337,7 @@ public:
      * \brief    Return a mesh element's coordinates given it's id.
      * \details  This function queries the mesh to get an element's coordinates given the mesh id.
      *    Ideally, this should be done in O(1) time, but the implimentation is up to
-     *    the underlying mesh.  
+     *    the underlying mesh.
      * \param[in] index     Mesh element index we are requesting.
      * \param[out] pos      Mesh element coordinates
      */
@@ -345,15 +348,14 @@ public:
 
 
 public: // BoxMesh specific functionality
-
-    /**
-     * \brief    Return the logical coordinates
-     * \details  This function queries the mesh to get the logical coordinates in [0,1]
-     *     from the physical coordinates.  Not all meshes support this functionallity.
-     * \param[in] x         Physical coordinates
-     * @return              Returns the logical coordinates
-     */
-    virtual std::array<double,3> physicalToLogical( const double *x ) const = 0;
+        /**
+         * \brief    Return the logical coordinates
+         * \details  This function queries the mesh to get the logical coordinates in [0,1]
+         *     from the physical coordinates.  Not all meshes support this functionallity.
+         * \param[in] x         Physical coordinates
+         * @return              Returns the logical coordinates
+         */
+    virtual std::array<double, 3> physicalToLogical( const double *x ) const = 0;
 
     /**
      * \brief    Return the element containing the point
@@ -364,7 +366,7 @@ public: // BoxMesh specific functionality
      *                      Note: it will return a null index (isNull) if no element of
      *                      the given type contains the point.
      */
-    MeshElementIndex getElementFromLogical( const std::array<double,3>& x, GeomType type ) const;
+    MeshElementIndex getElementFromLogical( const std::array<double, 3> &x, GeomType type ) const;
 
     /**
      * \brief    Return the element containing the point
@@ -379,16 +381,15 @@ public: // BoxMesh specific functionality
     MeshElementIndex getElementFromPhysical( const double *x, GeomType type ) const;
 
     //! Convert the MeshElementIndex to the MeshElementID
-    inline MeshElementID convert( const MeshElementIndex& id ) const;
+    inline MeshElementID convert( const MeshElementIndex &id ) const;
 
     //! Convert the MeshElementID to the MeshElementIndex
-    inline MeshElementIndex convert( const MeshElementID& id ) const;
+    inline MeshElementIndex convert( const MeshElementID &id ) const;
 
 protected:
-
     // Constructor
     explicit BoxMesh( MeshParameters::shared_ptr );
-    explicit BoxMesh( const BoxMesh& );
+    explicit BoxMesh( const BoxMesh & );
 
     // Function to initialize the mesh data once the logical mesh info has been created
     void initialize();
@@ -397,15 +398,16 @@ protected:
     void finalize();
 
     // Helper function to return the indices of the local block owned by the given processor
-    inline std::array<int,6> getLocalBlock( unsigned int rank ) const;
+    inline std::array<int, 6> getLocalBlock( unsigned int rank ) const;
 
     // Helper functions to identify the iterator blocks
-    typedef std::vector<std::pair<MeshElementIndex,MeshElementIndex>> ElementBlocks;
-    ElementBlocks getIteratorRange( std::array<int,6> range, const GeomType type, const int gcw ) const;
-    static ElementBlocks intersect( const ElementBlocks& v1, const ElementBlocks& v2 );
+    typedef std::vector<std::pair<MeshElementIndex, MeshElementIndex>> ElementBlocks;
+    ElementBlocks
+    getIteratorRange( std::array<int, 6> range, const GeomType type, const int gcw ) const;
+    static ElementBlocks intersect( const ElementBlocks &v1, const ElementBlocks &v2 );
 
     // Helper function to create an iterator from an ElementBlocks list
-    inline MeshIterator createIterator( const ElementBlocks& list ) const;
+    inline MeshIterator createIterator( const ElementBlocks &list ) const;
 
     // Helper function to fill the node data for a uniform cartesian mesh
     static void fillCartesianNodes( int dim,
@@ -415,12 +417,13 @@ protected:
                                     std::vector<double> *coord );
 
     // Internal data
-    std::array<bool,3> d_isPeriodic;        // Which directions are periodic
-    std::array<int,3>  d_globalSize;        // The size of the logical domain in each direction
-    std::array<int,3>  d_numBlocks;         // The number of local box in each direction
-    std::array<int,6>  d_surfaceId;         // For each surface which id is it part of (if any)
-    std::array<bool,6> d_onSurface;         // For each surface which id is it part of (if any)
-    ElementBlocks d_globalSurfaceList[6][4]; // List of logical surface elements for each surface/type
+    std::array<bool, 3> d_isPeriodic; // Which directions are periodic
+    std::array<int, 3> d_globalSize;  // The size of the logical domain in each direction
+    std::array<int, 3> d_numBlocks;   // The number of local box in each direction
+    std::array<int, 6> d_surfaceId;   // For each surface which id is it part of (if any)
+    std::array<bool, 6> d_onSurface;  // For each surface which id is it part of (if any)
+    ElementBlocks
+        d_globalSurfaceList[6][4]; // List of logical surface elements for each surface/type
 
     // Friend functions to access protected functions
     friend class structuredMeshElement;
@@ -428,8 +431,6 @@ protected:
 
 private:
     BoxMesh(); // Private empty constructor
-
-    
 };
 
 

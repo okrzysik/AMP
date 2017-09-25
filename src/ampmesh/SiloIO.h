@@ -47,7 +47,8 @@ public:
     virtual void readFile( const std::string &fname ) override;
 
     //!  Function to write a file
-    virtual void writeFile( const std::string &fname, size_t iteration_count, double time=0 ) override;
+    virtual void
+    writeFile( const std::string &fname, size_t iteration_count, double time = 0 ) override;
 
     /**
      * \brief    Function to register a mesh

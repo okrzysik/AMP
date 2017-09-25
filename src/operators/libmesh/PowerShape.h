@@ -7,9 +7,9 @@
 #include "operators/OperatorParameters.h"
 #include "operators/libmesh/PowerShapeParameters.h"
 #include "utils/InputDatabase.h"
-#include "vectors/Variable.h"
-#include "utils/shared_ptr.h"
 #include "utils/Utilities.h"
+#include "utils/shared_ptr.h"
+#include "vectors/Variable.h"
 
 
 // Libmesh headers

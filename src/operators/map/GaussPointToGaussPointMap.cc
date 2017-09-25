@@ -133,7 +133,8 @@ void GaussPointToGaussPointMap::createIdxMap(
     meshesForMap[1] = d_mesh2;
     AMP::Mesh::Mesh::shared_ptr multiMesh( new AMP::Mesh::MultiMesh( d_MapComm, meshesForMap ) );
 
-    //      AMP::Mesh::MeshIterator surfIter = multiMesh->getSurfaceIterator(AMP::Mesh::GeomType::Face, 0);
+    //      AMP::Mesh::MeshIterator surfIter =
+    //      multiMesh->getSurfaceIterator(AMP::Mesh::GeomType::Face, 0);
     //      AMP::Discretization::DOFManager::shared_ptr dofMap =
     //      AMP::Discretization::simpleDOFManager::create(multiMesh,
     //          surfIter, surfIter, dofsPerElem);
@@ -152,7 +153,8 @@ void GaussPointToGaussPointMap::createIdxMap(
     for ( auto &_i : d_sendList ) {
         AMP::Mesh::MeshElement el = multiMesh->getElement( _i );
 
-        std::vector<AMP::Mesh::MeshElement> currNodes = el.getElements( AMP::Mesh::GeomType::Vertex );
+        std::vector<AMP::Mesh::MeshElement> currNodes =
+            el.getElements( AMP::Mesh::GeomType::Vertex );
 
         ::Elem *elem = new ::Quad4;
         for ( size_t j = 0; j < currNodes.size(); ++j ) {
@@ -195,7 +197,8 @@ void GaussPointToGaussPointMap::createIdxMap(
     for ( auto &_i : d_recvList ) {
         AMP::Mesh::MeshElement el = multiMesh->getElement( _i );
 
-        std::vector<AMP::Mesh::MeshElement> currNodes = el.getElements( AMP::Mesh::GeomType::Vertex );
+        std::vector<AMP::Mesh::MeshElement> currNodes =
+            el.getElements( AMP::Mesh::GeomType::Vertex );
 
         ::Elem *elem = new ::Quad4;
         for ( size_t j = 0; j < currNodes.size(); ++j ) {

@@ -1,8 +1,8 @@
 #ifndef included_ArrayClass
 #define included_ArrayClass
 
-#include "utils/shared_ptr.h"
 #include "utils/Utilities.h"
+#include "utils/shared_ptr.h"
 
 #include <array>
 #include <functional>
@@ -273,7 +273,7 @@ public: // Views/copies/subset
     void copyTo( TYPE2 *array ) const;
 
     /*! swap the raw data pointers for the Arrays after checking for compatibility */
-    void swap(Array &other);
+    void swap( Array &other );
 
     /*!
      * Fill the array with the given value

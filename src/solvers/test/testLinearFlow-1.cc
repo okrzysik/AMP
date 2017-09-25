@@ -36,10 +36,10 @@
 #include "flow/ConsMomentumGalWFLinearFEOperator.h"
 */
 
-#include "operators/trilinos/EpetraMatrixOperator.h"
-#include "operators/trilinos/EpetraMatrixOperatorParameters.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
+#include "operators/trilinos/EpetraMatrixOperator.h"
+#include "operators/trilinos/EpetraMatrixOperatorParameters.h"
 
 #include "operators/BlockOperator.h"
 #include "operators/petsc/PetscMatrixShellOperator.h"
@@ -112,9 +112,11 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     // Create the DOF managers
     AMP::Discretization::DOFManager::shared_ptr DOF_scalar =
-        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create(
+            manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::Discretization::DOFManager::shared_ptr DOF_vector =
-        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create(
+            manager, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     // Create the vectors
     AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> globalSolVec =

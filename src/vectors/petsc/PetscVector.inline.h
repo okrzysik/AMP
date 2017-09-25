@@ -2,7 +2,6 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-
 inline PetscVector::PetscVector() { d_PetscRandom = 0; }
 
 
@@ -34,9 +33,5 @@ inline PetscVector::~PetscVector()
 }
 
 
-
-
-
 } // LinearAlgebra
 } // AMP
-

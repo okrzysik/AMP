@@ -150,10 +150,10 @@ void drawSpacePartition( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 }
 
 void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                            int boundaryID,
-                            std::ostream &os,
-                            double const *point_of_view,
-                            const std::string &option = "" )
+                                      int boundaryID,
+                                      std::ostream &os,
+                                      double const *point_of_view,
+                                      const std::string &option = "" )
 {
     AMP::Mesh::MeshIterator boundaryIterator =
         meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, boundaryID );
@@ -173,8 +173,9 @@ void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
         for ( size_t i = 0; i < 4; ++i ) {
             faceGeomType::VertexCoordinates = faceVertices[i].coord();
             AMP_ASSERT( faceGeomType::VertexCoordinates.size() == 3 );
-            std::copy(
-                faceGeomType::VertexCoordinates.begin(), faceGeomType::VertexCoordinates.end(), faceData + 3 * i );
+            std::copy( faceGeomType::VertexCoordinates.begin(),
+                       faceGeomType::VertexCoordinates.end(),
+                       faceData + 3 * i );
         } // end for i
         triangle_t t( faceDataPtr[0], faceDataPtr[1], faceDataPtr[2] );
 
@@ -309,8 +310,9 @@ void run( const std::string &meshFileName,
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
     globalComm.barrier();
-    double meshEndTime                = MPI_Wtime();
-    size_t numberGlobalVolumeElements = meshAdapter->numGlobalElements( AMP::Mesh::GeomType::Volume );
+    double meshEndTime = MPI_Wtime();
+    size_t numberGlobalVolumeElements =
+        meshAdapter->numGlobalElements( AMP::Mesh::GeomType::Volume );
     //  AMP_ASSERT(static_cast<size_t>(npes) * size_radius * size_radius * 4 * size_height ==
     //  numberGlobalVolumeElements);
     if ( !rank ) {

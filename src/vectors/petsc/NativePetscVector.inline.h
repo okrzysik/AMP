@@ -42,7 +42,7 @@ inline VectorEngine::BufferPtr NativePetscVector::getNewBuffer()
 
 inline bool NativePetscVector::sameEngine( VectorEngine &e ) const
 {
-    return dynamic_cast<const NativePetscVector*>( &e ) != nullptr;
+    return dynamic_cast<const NativePetscVector *>( &e ) != nullptr;
 }
 
 
@@ -123,15 +123,15 @@ inline void NativePetscVector::resetArray() const
 inline void NativePetscVector::swapVectors( Vector &other )
 {
     resetArray();
-    VecSwap( d_petscVec, dynamic_cast<NativePetscVector*>(&other)->getVec() );
+    VecSwap( d_petscVec, dynamic_cast<NativePetscVector *>( &other )->getVec() );
 }
 
 
 inline void NativePetscVector::copy( const VectorOperations &src )
 {
     resetArray();
-    VecCopy( dynamic_cast<const NativePetscVector*>(&src)->getVec(), d_petscVec );
-    copyGhostValues( *dynamic_cast<const VectorData*>(&src) );
+    VecCopy( dynamic_cast<const NativePetscVector *>( &src )->getVec(), d_petscVec );
+    copyGhostValues( *dynamic_cast<const VectorData *>( &src ) );
 }
 
 
@@ -145,7 +145,7 @@ inline void NativePetscVector::setToScalar( double alpha )
 inline void NativePetscVector::scale( double alpha, const VectorOperations &x )
 {
     resetArray();
-    copyVector( dynamic_cast<const NativePetscVector*>(&x)->shared_from_this() );
+    copyVector( dynamic_cast<const NativePetscVector *>( &x )->shared_from_this() );
     VecScale( d_petscVec, alpha );
 }
 
@@ -165,8 +165,8 @@ inline void NativePetscVector::axpbypcz( double alpha,
                                          double gamma )
 {
     resetArray();
-    Vec x = dynamic_cast<const NativePetscVector*>( &vx )->getVec();
-    Vec y = dynamic_cast<const NativePetscVector*>( &vy )->getVec();
+    Vec x = dynamic_cast<const NativePetscVector *>( &vx )->getVec();
+    Vec y = dynamic_cast<const NativePetscVector *>( &vy )->getVec();
     Vec z = d_petscVec;
     if ( x != y && x != z && y != z ) {
         // We can safely perform  z = alpha x + beta y + gamma z
@@ -205,8 +205,8 @@ inline void NativePetscVector::multiply( const VectorOperations &x, const Vector
 {
     resetArray();
     VecPointwiseMult( d_petscVec,
-                      dynamic_cast<const NativePetscVector*>(&x)->getVec(),
-                      dynamic_cast<const NativePetscVector*>(&y)->getVec() );
+                      dynamic_cast<const NativePetscVector *>( &x )->getVec(),
+                      dynamic_cast<const NativePetscVector *>( &y )->getVec() );
 }
 
 
@@ -214,15 +214,15 @@ inline void NativePetscVector::divide( const VectorOperations &x, const VectorOp
 {
     resetArray();
     VecPointwiseDivide( d_petscVec,
-                      dynamic_cast<const NativePetscVector*>(&x)->getVec(),
-                      dynamic_cast<const NativePetscVector*>(&y)->getVec() );
+                        dynamic_cast<const NativePetscVector *>( &x )->getVec(),
+                        dynamic_cast<const NativePetscVector *>( &y )->getVec() );
 }
 
 
 inline void NativePetscVector::reciprocal( const VectorOperations &x )
 {
     resetArray();
-    copyVector( dynamic_cast<const Vector*>(&x)->shared_from_this() );
+    copyVector( dynamic_cast<const Vector *>( &x )->shared_from_this() );
     VecReciprocal( d_petscVec );
 }
 
@@ -252,7 +252,7 @@ inline void NativePetscVector::axpby( double alpha, double beta, const VectorOpe
 inline void NativePetscVector::abs( const VectorOperations &x )
 {
     resetArray();
-    copyVector( dynamic_cast<const Vector*>(&x)->shared_from_this() );
+    copyVector( dynamic_cast<const Vector *>( &x )->shared_from_this() );
     VecAbs( d_petscVec );
 }
 
@@ -311,7 +311,7 @@ inline double NativePetscVector::dot( const VectorOperations &x ) const
 {
     resetArray();
     double ans;
-    VecDot( d_petscVec, dynamic_cast<const NativePetscVector*>(&x)->getVec(), &ans );
+    VecDot( d_petscVec, dynamic_cast<const NativePetscVector *>( &x )->getVec(), &ans );
     return ans;
 }
 

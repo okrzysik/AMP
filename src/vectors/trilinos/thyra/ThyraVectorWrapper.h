@@ -2,9 +2,9 @@
 #define included_AMP_ThyraVectorWrapper
 
 // AMP includes
+#include "utils/Utilities.h"
 #include "vectors/Vector.h"
 #include "vectors/trilinos/thyra/ThyraVector.h"
-#include "utils/Utilities.h"
 
 
 // Trilinos includes
@@ -84,7 +84,7 @@ protected:
                             const double alpha,
                             const double beta ) const override;
 
-    void assignImpl(double alpha) override;
+    void assignImpl( double alpha ) override;
 
     // Functions derived from Thyra::MultiVectorBase
     virtual Teuchos::RCP<Thyra::VectorBase<double>> nonconstColImpl( Teuchos::Ordinal j ) override;
@@ -113,18 +113,18 @@ protected:
             &targ_multi_vecs,
         const Teuchos::Ptr<RTOpPack::ReductTarget> &reduct_obj,
         const Teuchos::Ordinal primary_global_offset ) const override;
-    virtual void
-    acquireDetachedMultiVectorViewImpl( const Teuchos::Range1D &rowRng,
-                                        const Teuchos::Range1D &colRng,
-                                        RTOpPack::ConstSubMultiVectorView<double> *sub_mv ) const override;
-    virtual void
-    releaseDetachedMultiVectorViewImpl( RTOpPack::ConstSubMultiVectorView<double> *sub_mv ) const override;
-    virtual void
-    acquireNonconstDetachedMultiVectorViewImpl( const Teuchos::Range1D &rowRng,
-                                                const Teuchos::Range1D &colRng,
-                                                RTOpPack::SubMultiVectorView<double> *sub_mv ) override;
-    virtual void
-    commitNonconstDetachedMultiVectorViewImpl( RTOpPack::SubMultiVectorView<double> *sub_mv ) override;
+    virtual void acquireDetachedMultiVectorViewImpl(
+        const Teuchos::Range1D &rowRng,
+        const Teuchos::Range1D &colRng,
+        RTOpPack::ConstSubMultiVectorView<double> *sub_mv ) const override;
+    virtual void releaseDetachedMultiVectorViewImpl(
+        RTOpPack::ConstSubMultiVectorView<double> *sub_mv ) const override;
+    virtual void acquireNonconstDetachedMultiVectorViewImpl(
+        const Teuchos::Range1D &rowRng,
+        const Teuchos::Range1D &colRng,
+        RTOpPack::SubMultiVectorView<double> *sub_mv ) override;
+    virtual void commitNonconstDetachedMultiVectorViewImpl(
+        RTOpPack::SubMultiVectorView<double> *sub_mv ) override;
 
     // Functions derived from Thyra::VectorBase
     virtual void applyOpImpl(
@@ -138,9 +138,11 @@ protected:
                                    RTOpPack::ConstSubVectorView<double> *sub_vec ) const override;
     virtual void
     releaseDetachedVectorViewImpl( RTOpPack::ConstSubVectorView<double> *sub_vec ) const override;
-    virtual void acquireNonconstDetachedVectorViewImpl( const Teuchos::Range1D &rng,
-                                                        RTOpPack::SubVectorView<double> *sub_vec ) override;
-    virtual void commitNonconstDetachedVectorViewImpl( RTOpPack::SubVectorView<double> *sub_vec ) override;
+    virtual void
+    acquireNonconstDetachedVectorViewImpl( const Teuchos::Range1D &rng,
+                                           RTOpPack::SubVectorView<double> *sub_vec ) override;
+    virtual void
+    commitNonconstDetachedVectorViewImpl( RTOpPack::SubVectorView<double> *sub_vec ) override;
     virtual void setSubVectorImpl( const RTOpPack::SparseSubVectorT<double> &sub_vec ) override;
 
     // Internal data

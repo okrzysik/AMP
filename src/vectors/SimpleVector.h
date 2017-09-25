@@ -14,11 +14,10 @@ namespace LinearAlgebra {
 /** \brief A core-local vector
 * \details This is a native AMP vector
 */
-template< typename TYPE, typename VecOps=VectorOperationsDefault<TYPE>, typename VecData=VectorDataCPU<TYPE> >
-class SimpleVector :
-    public Vector,
-    public VecOps,
-    public VecData
+template <typename TYPE,
+          typename VecOps  = VectorOperationsDefault<TYPE>,
+          typename VecData = VectorDataCPU<TYPE>>
+class SimpleVector : public Vector, public VecOps, public VecData
 {
 protected:
     AMP_MPI d_comm;
@@ -33,7 +32,7 @@ public:
       * \param    localSize  The number of elements in the vector on this processor
       * \param    var The variable associated with the new vector
       */
-    static Vector::shared_ptr create( size_t localSize, const std::string& var );
+    static Vector::shared_ptr create( size_t localSize, const std::string &var );
 
     /** \brief    Create a SimpleVector
       * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
@@ -72,7 +71,6 @@ public:
 
 
 public: // Functions derived from Vector
-
     using Vector::cloneVector;
 
     virtual std::string type() const override { return "Simple Vector"; }
@@ -80,7 +78,6 @@ public: // Functions derived from Vector
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector &other ) override;
     virtual void assemble() override;
-
 };
 
 

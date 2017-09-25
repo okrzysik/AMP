@@ -18,7 +18,7 @@ inline VectorEngine::BufferPtr NativeThyraVector::getNewBuffer()
 
 inline bool NativeThyraVector::sameEngine( VectorEngine &e ) const
 {
-    return dynamic_cast<NativeThyraVector*>( &e );
+    return dynamic_cast<NativeThyraVector *>( &e );
 }
 
 
@@ -55,7 +55,7 @@ inline void NativeThyraVector::getValuesByLocalID( int numVals, size_t *ndx, dou
 
 inline Vector::shared_ptr NativeThyraVector::getManagedVectorCopy( AMP_MPI comm )
 {
-    NULL_USE(comm);
+    NULL_USE( comm );
     AMP_ERROR( "Not programmed yet" );
     return Vector::shared_ptr();
 }
@@ -66,29 +66,23 @@ inline AMP_MPI NativeThyraVector::getComm() const { return Vector::getComm(); }
 
 inline Vector::shared_ptr NativeThyraVector::getManagedVectorDuplicate( AMP_MPI comm )
 {
-    NULL_USE(comm);
+    NULL_USE( comm );
 
     AMP_ERROR( "Not programmed yet" );
     return Vector::shared_ptr();
 }
 
 
-inline void NativeThyraVector::aliasVector( Vector & )
-{
-    AMP_ERROR( "not implemented" );
-}
+inline void NativeThyraVector::aliasVector( Vector & ) { AMP_ERROR( "not implemented" ); }
 
 
-inline void NativeThyraVector::swapVectors( Vector & )
-{
-    AMP_ERROR( "not implemented" );
-}
+inline void NativeThyraVector::swapVectors( Vector & ) { AMP_ERROR( "not implemented" ); }
 
 
 inline Teuchos::RCP<const Thyra::VectorBase<double>>
 NativeThyraVector::getThyraVec( const VectorOperations &v )
 {
-    auto vec = dynamic_cast<const Vector*>( &v );
+    auto vec = dynamic_cast<const Vector *>( &v );
     AMP_ASSERT( vec != nullptr );
     auto vec2 = AMP::dynamic_pointer_cast<const ThyraVector>(
         ThyraVector::constView( vec->shared_from_this() ) );
@@ -106,7 +100,7 @@ NativeThyraVector::getThyraVec( const Vector::const_shared_ptr &vec )
 }
 
 
-inline void NativeThyraVector::copy( const VectorOperations& src_vec )
+inline void NativeThyraVector::copy( const VectorOperations &src_vec )
 {
     Thyra::copy<double>( *( getThyraVec( src_vec ) ), d_thyraVec.ptr() );
 }
@@ -120,7 +114,7 @@ inline void NativeThyraVector::setToScalar( double alpha )
 
 inline void NativeThyraVector::scale( double alpha, const VectorOperations &x )
 {
-    auto vec = dynamic_cast<const Vector*>( &x );
+    auto vec = dynamic_cast<const Vector *>( &x );
     AMP_ASSERT( vec != nullptr );
     copyVector( vec->shared_from_this() );
     Thyra::scale<double>( alpha, d_thyraVec.ptr() );

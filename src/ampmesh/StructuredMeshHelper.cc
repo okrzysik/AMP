@@ -126,8 +126,8 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
             for ( int k = box.first[2]; k <= box.last[2]; k++ ) {
                 for ( int j = box.first[1]; j <= box.last[1]; j++ ) {
                     for ( int i = box.first[0]; i <= box.last[0] + last[0]; i++ )
-                        face_list->push_back(
-                            AMP::Mesh::BoxMesh::MeshElementIndex( AMP::Mesh::GeomType::Face, 0, i, j, k ) );
+                        face_list->push_back( AMP::Mesh::BoxMesh::MeshElementIndex(
+                            AMP::Mesh::GeomType::Face, 0, i, j, k ) );
                 }
             }
         } else if ( direction == 1 ) {
@@ -135,8 +135,8 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
             for ( int k = box.first[2]; k <= box.last[2]; k++ ) {
                 for ( int i = box.first[0]; i <= box.last[0]; i++ ) {
                     for ( int j = box.first[1]; j <= box.last[1] + last[1]; j++ )
-                        face_list->push_back(
-                            AMP::Mesh::BoxMesh::MeshElementIndex( AMP::Mesh::GeomType::Face, 1, i, j, k ) );
+                        face_list->push_back( AMP::Mesh::BoxMesh::MeshElementIndex(
+                            AMP::Mesh::GeomType::Face, 1, i, j, k ) );
                 }
             }
         } else if ( direction == 2 ) {
@@ -144,8 +144,8 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
             for ( int j = box.first[1]; j <= box.last[1]; j++ ) {
                 for ( int i = box.first[0]; i <= box.last[0]; i++ ) {
                     for ( int k = box.first[2]; k <= box.last[2] + last[2]; k++ )
-                        face_list->push_back(
-                            AMP::Mesh::BoxMesh::MeshElementIndex( AMP::Mesh::GeomType::Face, 2, i, j, k ) );
+                        face_list->push_back( AMP::Mesh::BoxMesh::MeshElementIndex(
+                            AMP::Mesh::GeomType::Face, 2, i, j, k ) );
                 }
             }
         } else {
@@ -164,9 +164,10 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
         std::vector<std::tuple<int, int, int>> index;
         index.reserve( iterator.size() );
         for ( size_t i = 0; i < iterator.size(); ++i ) {
-            std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::GeomType::Vertex );
-            std::vector<double> center                = iterator->centroid();
-            bool is_valid                             = true;
+            std::vector<AMP::Mesh::MeshElement> nodes =
+                iterator->getElements( AMP::Mesh::GeomType::Vertex );
+            std::vector<double> center = iterator->centroid();
+            bool is_valid              = true;
             for ( auto &node : nodes ) {
                 std::vector<double> coord = node.coord();
                 if ( !AMP::Utilities::approx_equal( coord[direction], center[direction], 1e-12 ) )

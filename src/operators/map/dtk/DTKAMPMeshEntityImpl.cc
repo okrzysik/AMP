@@ -78,7 +78,8 @@ int AMPMeshEntityImpl::ownerRank() const { return d_owner_rank; }
 int AMPMeshEntityImpl::physicalDimension() const
 {
     // Get the vertices of the element.
-    std::vector<Mesh::MeshElement> vertices = d_extra_data->d_element.getElements( Mesh::GeomType::Vertex );
+    std::vector<Mesh::MeshElement> vertices =
+        d_extra_data->d_element.getElements( Mesh::GeomType::Vertex );
 
     // Get the dimension via the coordinates.
     int space_dim = 0;
@@ -101,7 +102,8 @@ void AMPMeshEntityImpl::boundingBox( Teuchos::Tuple<double, 6> &bounds ) const
     bounds     = Teuchos::tuple( max, max, max, -max, -max, -max );
 
     // Get the vertices of the element.
-    std::vector<Mesh::MeshElement> vertices = d_extra_data->d_element.getElements( Mesh::GeomType::Vertex );
+    std::vector<Mesh::MeshElement> vertices =
+        d_extra_data->d_element.getElements( Mesh::GeomType::Vertex );
 
     // Create a bounding box from the vertex coordinates.
     int num_vertices = vertices.size();

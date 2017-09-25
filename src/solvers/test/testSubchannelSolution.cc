@@ -407,8 +407,10 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     siloWriter->registerVector(
         manufacturedVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "ManufacturedSolution" );
     siloWriter->registerVector( solVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "ComputedSolution" );
-    siloWriter->registerVector( subchannelEnthalpy, xyFaceMesh, AMP::Mesh::GeomType::Face, "Enthalpy" );
-    siloWriter->registerVector( subchannelPressure, xyFaceMesh, AMP::Mesh::GeomType::Face, "Pressure" );
+    siloWriter->registerVector(
+        subchannelEnthalpy, xyFaceMesh, AMP::Mesh::GeomType::Face, "Enthalpy" );
+    siloWriter->registerVector(
+        subchannelPressure, xyFaceMesh, AMP::Mesh::GeomType::Face, "Pressure" );
     siloWriter->registerVector( tempVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "Temperature" );
     siloWriter->writeFile( exeName, 0 );
 #endif

@@ -108,8 +108,8 @@ void createMasterSlaveMap( AMP::Mesh::MeshManager::Adapter::shared_ptr masterMes
     for ( size_t i = 0; i < numContactNodes; i++ ) {
         AMP_ASSERT( masterContactNodes[i] < masterVolumeNodes.size() );
         AMP_ASSERT( slaveContactNodes[i] < slaveGeomType::VolumeNodes.size() );
-        masterVolumeNodes[masterContactNodes[i]] = static_cast<unsigned int>( -1 );
-        slaveGeomType::VolumeNodes[slaveContactNodes[i]]   = static_cast<unsigned int>( -1 );
+        masterVolumeNodes[masterContactNodes[i]]         = static_cast<unsigned int>( -1 );
+        slaveGeomType::VolumeNodes[slaveContactNodes[i]] = static_cast<unsigned int>( -1 );
     }
 
     std::vector<unsigned int> tmpMaster;
@@ -126,8 +126,8 @@ void createMasterSlaveMap( AMP::Mesh::MeshManager::Adapter::shared_ptr masterMes
         }
     }
 
-    masterVolumeNodes = tmpMaster;
-    slaveGeomType::VolumeNodes  = tmpSlave;
+    masterVolumeNodes          = tmpMaster;
+    slaveGeomType::VolumeNodes = tmpSlave;
 
     std::cout << "Created Master-Slave map for Tied-Contact." << std::endl;
 }

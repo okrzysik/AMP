@@ -4,8 +4,8 @@
 #include "ampmesh/Mesh.h"
 #include "matrices/Matrix.h"
 #include "matrices/MatrixBuilder.h"
-#include "vectors/Vector.h"
 #include "vectors/MultiVector.h"
+#include "vectors/Vector.h"
 
 #include "meshTests.h"
 
@@ -19,13 +19,14 @@ namespace Mesh {
 template <int DOF_PER_NODE, bool SPLIT>
 void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    PROFILE_START("VerifyGetMatrixTrivialTest",1);
+    PROFILE_START( "VerifyGetMatrixTrivialTest", 1 );
 
     // Create the DOF_Manager
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
         new AMP::Discretization::DOFManagerParameters( mesh ) );
     AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
+        AMP::Discretization::simpleDOFManager::create(
+            mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
 
     // Create a nodal variable
     auto variable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
@@ -36,10 +37,11 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
     auto matrixa = AMP::LinearAlgebra::createMatrix( vector1, vector2 );
 
     // Currently there is a bug with multivectors
-    bool isMultiVector = dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(vector1) != nullptr;
+    bool isMultiVector =
+        dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vector1 ) != nullptr;
     if ( isMultiVector ) {
         utils->expected_failure( "VerifyGetMatrixTrivialTest with split=true" );
-        PROFILE_STOP2("VerifyGetMatrixTrivialTest",1);
+        PROFILE_STOP2( "VerifyGetMatrixTrivialTest", 1 );
         return;
     }
 
@@ -67,20 +69,21 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
         utils->passes( "created identity matrix from mesh" );
     else
         utils->failure( "created identity matrix from mesh" );
-    PROFILE_STOP("VerifyGetMatrixTrivialTest",1);
+    PROFILE_STOP( "VerifyGetMatrixTrivialTest", 1 );
 }
 
 
 template <int DOF_PER_NODE, bool SPLIT>
 void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    PROFILE_START("GhostWriteTest",1);
+    PROFILE_START( "GhostWriteTest", 1 );
 
     // Create the DOF_Manager
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
         new AMP::Discretization::DOFManagerParameters( mesh ) );
     AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
+        AMP::Discretization::simpleDOFManager::create(
+            mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
 
     // Create a nodal variable
     AMP::LinearAlgebra::Variable::shared_ptr variable(
@@ -109,14 +112,15 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
                 double proc = mesh->getComm().getRank();
                 bool passes = true;
                 // Loop through the owned nodes
-                AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+                AMP::Mesh::MeshIterator iterator =
+                    mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
                 for ( size_t i = 0; i < iterator.size(); i++ ) {
                     // Get the DOFs for the node and it's neighbors
                     std::vector<size_t> localDOFs;
                     DOFs->getDOFs( iterator->globalID(), localDOFs );
                     std::vector<size_t> neighborDOFs, dofs;
                     auto neighbors = iterator->getNeighbors();
-                    for ( const auto& neighbor : neighbors ) {
+                    for ( const auto &neighbor : neighbors ) {
                         if ( neighbor == nullptr )
                             continue;
                         DOFs->getDOFs( neighbor->globalID(), dofs );
@@ -221,7 +225,7 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
         else
             utils->failure( msg );*/
     }
-    PROFILE_STOP("GhostWriteTest",1);
+    PROFILE_STOP( "GhostWriteTest", 1 );
 }
 
 

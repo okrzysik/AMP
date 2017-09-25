@@ -2,10 +2,10 @@
 #define included_AMP_MultiVector
 
 
-#include "vectors/Vector.h"
-#include "vectors/operations/MultiVectorOperations.h"
-#include "vectors/VectorEngine.h"
 #include "vectors/DataChangePassThrough.h"
+#include "vectors/Vector.h"
+#include "vectors/VectorEngine.h"
+#include "vectors/operations/MultiVectorOperations.h"
 
 
 namespace AMP {
@@ -17,11 +17,10 @@ namespace LinearAlgebra {
   *    Given a set of vectors, they can be collected into a singlevector.  This class
   *    accomplishes this task.
   */
-class MultiVector : 
-    public Vector,
-    public MultiVectorOperations,
-    public VectorEngine,
-    public DataChangePassThrough
+class MultiVector : public Vector,
+                    public MultiVectorOperations,
+                    public VectorEngine,
+                    public DataChangePassThrough
 {
 public:
     //!  Iterator typedef
@@ -106,7 +105,7 @@ public:
       * must be specified.
       */
     static AMP::shared_ptr<const MultiVector> constView( Vector::const_shared_ptr vec,
-                                                    AMP_MPI comm = AMP_MPI( AMP_COMM_NULL ) );
+                                                         AMP_MPI comm = AMP_MPI( AMP_COMM_NULL ) );
 
     /** \brief Encapsulate a vector in a MultiVector
       * \param[in] vec  The vector to view
@@ -207,7 +206,8 @@ public:
     // Vector engine functions
     virtual AMP::shared_ptr<std::vector<double>> getNewBuffer() override;
     virtual bool sameEngine( VectorEngine &rhs ) const override;
-    virtual VectorEngine::shared_ptr cloneEngine( AMP::shared_ptr<std::vector<double>> ) const override;
+    virtual VectorEngine::shared_ptr
+    cloneEngine( AMP::shared_ptr<std::vector<double>> ) const override;
     virtual void swapEngines( VectorEngine::shared_ptr p ) override;
     virtual const void *getDataBlock( size_t i ) const override;
     virtual void *getDataBlock( size_t i ) override;
@@ -323,7 +323,6 @@ public: // Pull VectorOperations into the current scope
     using MultiVectorOperations::wrmsNorm;
     using MultiVectorOperations::wrmsNormMask;
     using MultiVectorOperations::zero;
-
 };
 
 

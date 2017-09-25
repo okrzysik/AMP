@@ -196,8 +196,9 @@ MultiMesh::MultiMesh( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> &
 /********************************************************
 * Function to simulate the mesh building process        *
 ********************************************************/
-AMP::Mesh::loadBalanceSimulator MultiMesh::simulateBuildMesh( const MeshParameters::shared_ptr params,
-                                                     const std::vector<int> &comm_ranks )
+AMP::Mesh::loadBalanceSimulator
+MultiMesh::simulateBuildMesh( const MeshParameters::shared_ptr params,
+                              const std::vector<int> &comm_ranks )
 {
     // Create the multimesh parameters
     AMP::shared_ptr<MultiMeshParameters> multimeshParams =
@@ -236,9 +237,9 @@ AMP::Mesh::loadBalanceSimulator MultiMesh::simulateBuildMesh( const MeshParamete
     int decomp = ( N_proc_groups == comm_ranks.size() ) ? 1 : 0;
     // Create the simulated mesh structure
     std::vector<loadBalanceSimulator> submeshes( groups.size() );
-    for ( size_t i = 0; i < groups.size(); i++ )
-        submeshes[i] =
-            loadBalanceSimulator( multimeshParams->params[i], groups[i], multimeshParams->N_elements[i] );
+    for ( size_t i   = 0; i < groups.size(); i++ )
+        submeshes[i] = loadBalanceSimulator(
+            multimeshParams->params[i], groups[i], multimeshParams->N_elements[i] );
     return loadBalanceSimulator( multimeshParams, comm_ranks, submeshes, decomp );
 }
 
@@ -705,8 +706,9 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
     for ( auto &elem : d_meshes ) {
         MeshIterator iterator;
         if ( iterator_in.size() > 0 ) {
-            iterator = Mesh::getIterator(
-                SetOP::Intersection, iterator_in, elem->getIterator( type, elem->getMaxGhostWidth() ) );
+            iterator = Mesh::getIterator( SetOP::Intersection,
+                                          iterator_in,
+                                          elem->getIterator( type, elem->getMaxGhostWidth() ) );
         }
         AMP::shared_ptr<Mesh> mesh = elem->Subset( iterator, isGlobal );
         if ( mesh.get() != nullptr ) {
@@ -782,7 +784,7 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
 /********************************************************
 * Displace a mesh                                       *
 ********************************************************/
-int MultiMesh::isMeshMovable( ) const
+int MultiMesh::isMeshMovable() const
 {
     int value = 2;
     for ( auto &elem : d_meshes )

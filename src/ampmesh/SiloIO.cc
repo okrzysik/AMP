@@ -324,8 +324,9 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     PROFILE_START( "writeMesh - get-elements", 2 );
     AMP::Mesh::MeshIterator elem_iterator = mesh->getIterator( mesh->getGeomType(), 0 );
     AMP_ASSERT( elem_iterator.size() > 0 );
-    std::vector<AMP::Mesh::MeshElement> nodes = elem_iterator->getElements( AMP::Mesh::GeomType::Vertex );
-    int shapesize                             = nodes.size();
+    std::vector<AMP::Mesh::MeshElement> nodes =
+        elem_iterator->getElements( AMP::Mesh::GeomType::Vertex );
+    int shapesize = nodes.size();
     int shapetype;
     if ( shapesize == 8 )
         shapetype = DB_ZONETYPE_HEX;
@@ -367,10 +368,10 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     std::vector<int> nodelist;
     nodelist.reserve( shapesize * elem_iterator.size() );
     std::vector<MeshElementID> nodeids;
-    for ( const auto& elem : elem_iterator ) {
+    for ( const auto &elem : elem_iterator ) {
         elem.getElementsID( AMP::Mesh::GeomType::Vertex, nodeids );
         AMP_INSIST( (int) nodeids.size() == shapesize,
-            "Mixed element types is currently not supported" );
+                    "Mixed element types is currently not supported" );
         for ( auto &nodeid : nodeids ) {
             size_t index = AMP::Utilities::findfirst( nodelist_ids, nodeid );
             AMP_ASSERT( nodelist_ids[index] == nodeid );
@@ -450,12 +451,12 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     // Write the variables
     PROFILE_START( "writeMesh - variables", 2 );
 #ifdef USE_AMP_VECTORS
-    float ftime = time;
-    DBoptlist *optlist = DBMakeOptlist(10);
+    float ftime        = time;
+    DBoptlist *optlist = DBMakeOptlist( 10 );
     DBAddOption( optlist, DBOPT_CYCLE, &cycle );
     DBAddOption( optlist, DBOPT_TIME, &ftime );
     DBAddOption( optlist, DBOPT_DTIME, &time );
-    //DBAddOption(optlist, DBOPT_UNITS, (void *)units);
+    // DBAddOption(optlist, DBOPT_UNITS, (void *)units);
     for ( size_t i = 0; i < data.varName.size(); ++i ) {
         AMP::Discretization::DOFManager::shared_ptr DOFs = data.vec[i]->getDOFManager();
         int nvar                                         = 0;
@@ -866,8 +867,8 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
                 }
                 std::string multiMeshName = data.name;
                 std::string visitVarName  = multiMeshName + "_" + varName;
-                float ftime = time;
-                DBoptlist *opts = DBMakeOptlist(10);
+                float ftime               = time;
+                DBoptlist *opts           = DBMakeOptlist( 10 );
                 DBAddOption( opts, DBOPT_CYCLE, &cycle );
                 DBAddOption( opts, DBOPT_TIME, &ftime );
                 DBAddOption( opts, DBOPT_DTIME, &time );
@@ -1033,13 +1034,13 @@ SiloIO::siloBaseMeshData SiloIO::siloBaseMeshData::unpack( char *ptr )
 /************************************************************
 * Functions for siloMultiMeshData                           *
 ************************************************************/
-SiloIO::siloMultiMeshData::siloMultiMeshData( const SiloIO::siloMultiMeshData &rhs ):
-    id( rhs.id ),
-    mesh( rhs.mesh ),
-    ownerRank( rhs.ownerRank ),
-    name( rhs.name ),
-    meshes( rhs.meshes ),
-    varName( rhs.varName )
+SiloIO::siloMultiMeshData::siloMultiMeshData( const SiloIO::siloMultiMeshData &rhs )
+    : id( rhs.id ),
+      mesh( rhs.mesh ),
+      ownerRank( rhs.ownerRank ),
+      name( rhs.name ),
+      meshes( rhs.meshes ),
+      varName( rhs.varName )
 {
 }
 SiloIO::siloMultiMeshData &SiloIO::siloMultiMeshData::
@@ -1177,7 +1178,10 @@ void createSiloDirectory( DBfile *FileHandle, std::string path )
 
 #else
 void SiloIO::readFile( const std::string & ) { AMP_ERROR( "SILO not configured" ); }
-void SiloIO::writeFile( const std::string &, size_t, double ) { AMP_ERROR( "SILO not configured" ); }
+void SiloIO::writeFile( const std::string &, size_t, double )
+{
+    AMP_ERROR( "SILO not configured" );
+}
 void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, std::string )
 {
     AMP_ERROR( "SILO not configured" );

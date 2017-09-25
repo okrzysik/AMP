@@ -20,15 +20,15 @@ static inline double *getBufferPtr( VectorEngine::BufferPtr buf )
 }
 
 
-static inline Epetra_Vector& getEpetraVector( VectorOperations& vec )
+static inline Epetra_Vector &getEpetraVector( VectorOperations &vec )
 {
-    auto epetra = dynamic_cast<EpetraVectorEngine*>( &vec );
+    auto epetra = dynamic_cast<EpetraVectorEngine *>( &vec );
     AMP_INSIST( epetra != nullptr, "Not an EpetraVectorEngine" );
     return epetra->getEpetra_Vector();
 }
-static inline const Epetra_Vector& getEpetraVector( const VectorOperations& vec )
+static inline const Epetra_Vector &getEpetraVector( const VectorOperations &vec )
 {
-    auto epetra = dynamic_cast<const EpetraVectorEngine*>( &vec );
+    auto epetra = dynamic_cast<const EpetraVectorEngine *>( &vec );
     AMP_INSIST( epetra != nullptr, "Not an EpetraVectorEngine" );
     return epetra->getEpetra_Vector();
 }
@@ -94,10 +94,9 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
 * Constructor                                           *
 ********************************************************/
 EpetraVectorEngine::EpetraVectorEngine( VectorEngineParameters::shared_ptr alias, BufferPtr buf )
-    : d_epetraVector(
-          View, 
-          dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(), 
-          getBufferPtr( buf ) ),
+    : d_epetraVector( View,
+                      dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
+                      getBufferPtr( buf ) ),
       d_iLocalSize( 0 ),
       d_iGlobalSize( 0 )
 {
@@ -141,8 +140,7 @@ VectorEngine::shared_ptr EpetraVectorEngine::cloneEngine( BufferPtr p ) const
 
 void EpetraVectorEngine::add( const VectorOperations &x, const VectorOperations &y )
 {
-    getEpetra_Vector().Update( 1., getEpetraVector( x ), 1., getEpetraVector( y ),
-                               0. );
+    getEpetra_Vector().Update( 1., getEpetraVector( x ), 1., getEpetraVector( y ), 0. );
 }
 
 void EpetraVectorEngine::subtract( const VectorOperations &x, const VectorOperations &y )
@@ -286,7 +284,7 @@ double EpetraVectorEngine::dot( const VectorOperations &x ) const
 
 double EpetraVectorEngine::localDot( const VectorOperations & ) const
 {
-    AMP_ERROR("Not implimented");
+    AMP_ERROR( "Not implimented" );
     return 0;
 }
 
@@ -306,30 +304,28 @@ void EpetraVectorEngine::copyOutRawData( double *out ) const
 
 double EpetraVectorEngine::localMin( void ) const
 {
-    AMP_ERROR("Not implimented");
+    AMP_ERROR( "Not implimented" );
     return 0;
 }
 double EpetraVectorEngine::localMax( void ) const
 {
-    AMP_ERROR("Not implimented");
+    AMP_ERROR( "Not implimented" );
     return 0;
 }
 double EpetraVectorEngine::localL1Norm( void ) const
 {
-    AMP_ERROR("Not implimented");
+    AMP_ERROR( "Not implimented" );
     return 0;
 }
 double EpetraVectorEngine::localL2Norm( void ) const
 {
-    AMP_ERROR("Not implimented");
+    AMP_ERROR( "Not implimented" );
     return 0;
 }
 double EpetraVectorEngine::localMaxNorm( void ) const
 {
-    AMP_ERROR("Not implimented");
+    AMP_ERROR( "Not implimented" );
     return 0;
 }
-
-
 }
 }

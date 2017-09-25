@@ -1143,7 +1143,7 @@ void testCommDup( UnitTest *ut )
         ut->failure( "dup comm" );
         return;
     }
-#if defined(USE_PETSC) && !defined(USE_MPI)
+#if defined( USE_PETSC ) && !defined( USE_MPI )
     ut->expected_failure( "Skipping dup tests, PETSc (no-mpi) has a limit of 128 unique comms" );
     return;
 #endif

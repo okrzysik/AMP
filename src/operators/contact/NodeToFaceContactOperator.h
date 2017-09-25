@@ -1,5 +1,5 @@
 #ifndef included_AMP_NoteToGeomType::FaceContactOperator
-#define included_AMP_NoteToGeomType::FaceContactOperator
+#define included_AMP_NoteToGeomType ::FaceContactOperator
 
 
 #include "utils/shared_ptr.h"

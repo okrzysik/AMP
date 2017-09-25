@@ -1,11 +1,11 @@
 #ifndef included_AMP_PetscKrylovSolver
 #define included_AMP_PetscKrylovSolver
 
-#include "vectors/petsc/PetscHelpers.h"
 #include "solvers/SolverStrategy.h"
 #include "solvers/petsc/PetscKrylovSolverParameters.h"
 #include "solvers/petsc/PetscMonitor.h"
 #include "utils/AMP_MPI.h"
+#include "vectors/petsc/PetscHelpers.h"
 
 
 extern "C" {
@@ -163,7 +163,8 @@ public:
      * Resets the registered operator internally with new parameters if necessary
      * @param parameters    OperatorParameters object that is NULL by default
      */
-    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
+    void
+    resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
 
 protected:
     void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
@@ -176,7 +177,7 @@ private:
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     static int setupPreconditioner( void * );
     static PetscErrorCode applyPreconditioner( void *, Vec, Vec );
-#elif PETSC_VERSION_GE(3,2,0)
+#elif PETSC_VERSION_GE( 3, 2, 0 )
     static PetscErrorCode setupPreconditioner( PC pc );
     static PetscErrorCode applyPreconditioner( PC pc, Vec r, Vec z );
 #else

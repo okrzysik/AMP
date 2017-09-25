@@ -67,7 +67,8 @@ AMP::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec, A
     }
     if ( comm.isNull() )
         comm = vec->getComm();
-    multivec = create( vec->getVariable()->getName(), comm, std::vector<Vector::shared_ptr>( 1, vec ) );
+    multivec =
+        create( vec->getVariable()->getName(), comm, std::vector<Vector::shared_ptr>( 1, vec ) );
     auto firer = dynamic_pointer_cast<DataChangeFirer>( vec );
     if ( firer )
         firer->registerListener( multivec.get() );
@@ -95,12 +96,13 @@ AMP::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr vec, AMP_MPI 
     if ( !multivec ) {
         if ( comm.isNull() )
             comm = vec->getComm();
-        multivec = create( vec->getVariable()->getName(), comm,
-            std::vector<Vector::shared_ptr>( 1, vec ) );
+        multivec = create(
+            vec->getVariable()->getName(), comm, std::vector<Vector::shared_ptr>( 1, vec ) );
     }
     return multivec;
 }
-AMP::shared_ptr<const MultiVector> MultiVector::constView( Vector::const_shared_ptr vec, AMP_MPI comm )
+AMP::shared_ptr<const MultiVector> MultiVector::constView( Vector::const_shared_ptr vec,
+                                                           AMP_MPI comm )
 {
     // Check to see if this is a multivector
     auto multivec = AMP::dynamic_pointer_cast<const MultiVector>( vec );
@@ -122,8 +124,8 @@ AMP::shared_ptr<const MultiVector> MultiVector::constView( Vector::const_shared_
     if ( !multivec ) {
         if ( comm.isNull() )
             comm = vec->getComm();
-        multivec = const_create( vec->getVariable()->getName(), comm,
-            std::vector<Vector::const_shared_ptr>( 1, vec ) );
+        multivec = const_create(
+            vec->getVariable()->getName(), comm, std::vector<Vector::const_shared_ptr>( 1, vec ) );
     }
     return multivec;
 }
@@ -172,7 +174,7 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
 void MultiVector::updateVectorOperations()
 {
     d_operations.resize( d_vVectors.size() );
-    for (size_t i=0; i<d_vVectors.size(); i++)
+    for ( size_t i      = 0; i < d_vVectors.size(); i++ )
         d_operations[i] = d_vVectors[i].get();
 }
 void MultiVector::addVectorHelper( Vector::shared_ptr vec )
@@ -566,10 +568,12 @@ Vector::UpdateState MultiVector::getUpdateStatus() const
         } else if ( sub_state == UpdateState::LOCAL_CHANGED ) {
             continue;
         } else if ( sub_state == UpdateState::ADDING &&
-                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED || state == UpdateState::ADDING ) ) {
+                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED ||
+                      state == UpdateState::ADDING ) ) {
             state = UpdateState::ADDING;
         } else if ( sub_state == UpdateState::SETTING &&
-                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED || state == UpdateState::SETTING ) ) {
+                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED ||
+                      state == UpdateState::SETTING ) ) {
             state = UpdateState::SETTING;
         } else {
             state = UpdateState::MIXED;
@@ -606,7 +610,7 @@ VectorEngine::BufferPtr MultiVector::getNewBuffer() { return VectorEngine::Buffe
 
 bool MultiVector::sameEngine( VectorEngine &rhs ) const
 {
-    return dynamic_cast<MultiVector*>( &rhs ) != nullptr;
+    return dynamic_cast<MultiVector *>( &rhs ) != nullptr;
 }
 
 
@@ -893,4 +897,3 @@ void MultiVector::partitionLocalValues( const int num,
 
 } // LinearAlgebra namespace
 } // AMP namespace
-

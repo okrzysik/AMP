@@ -1,8 +1,8 @@
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
 #include "utils/InputManager.h"
-#include "utils/UnitTest.h"
 #include "utils/PIO.h"
+#include "utils/UnitTest.h"
 
 #include "ampmesh/Mesh.h"
 #include "discretization/simpleDOF_Manager.h"
@@ -39,8 +39,8 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
     surface->setName( "clad_surface" );
 
     // Create the temperature profile
-    AMP::Discretization::DOFManager::shared_ptr DOF =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    AMP::Discretization::DOFManager::shared_ptr DOF = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Variable::shared_ptr temp_var(
         new AMP::LinearAlgebra::Variable( "temperature" ) );
     AMP::LinearAlgebra::Vector::shared_ptr temp_vec =

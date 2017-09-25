@@ -36,7 +36,7 @@ public:
       * set, this method is used.  Once all createValuesByGlobalID
       * are finished, call fillComplete().
       */
-    virtual void createValuesByGlobalID( size_t row, const std::vector<size_t>& cols ) = 0;
+    virtual void createValuesByGlobalID( size_t row, const std::vector<size_t> &cols ) = 0;
 
     /** \brief  All createValuesByGlobalID have completed.
       */

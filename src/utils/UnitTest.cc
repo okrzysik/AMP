@@ -1,6 +1,6 @@
 #include "UnitTest.h"
-#include "Utilities.h"
 #include "AMPManager.h"
+#include "Utilities.h"
 
 #include <iostream>
 #include <sstream>

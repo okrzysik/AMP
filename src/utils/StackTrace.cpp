@@ -4,9 +4,9 @@
 #include <csignal>
 #include <cstring>
 #include <iostream>
-#include <set>
 #include <map>
 #include <mutex>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 
@@ -97,29 +97,28 @@ namespace AMP {
 
 // Set the callstack signal
 #ifdef SIGRTMIN
-    #define CALLSTACK_SIG SIGRTMIN+4
+#define CALLSTACK_SIG SIGRTMIN + 4
 #else
-    #define CALLSTACK_SIG SIGUSR1
-    #define SIGRTMIN SIGUSR1
-    #define SIGRTMAX SIGUSR1
+#define CALLSTACK_SIG SIGUSR1
+#define SIGRTMIN SIGUSR1
+#define SIGRTMAX SIGUSR1
 #endif
 
 
-
 // Utility to call system command and return output
-#if defined(USE_LINUX) || defined(USE_MAC)
-static inline std::string exec( const std::string& cmd )
+#if defined( USE_LINUX ) || defined( USE_MAC )
+static inline std::string exec( const std::string &cmd )
 {
-    signal( SIGCHLD, SIG_DFL );     // Clear child exited
-    FILE* pipe = popen(cmd.c_str(), "r");
+    signal( SIGCHLD, SIG_DFL ); // Clear child exited
+    FILE *pipe = popen( cmd.c_str(), "r" );
     if ( pipe == nullptr )
         return std::string();
     std::string result = "";
-    result.reserve(1024);    
-    while ( !feof(pipe) ) {
+    result.reserve( 1024 );
+    while ( !feof( pipe ) ) {
         char buffer[257];
         buffer[256] = 0;
-        if ( fgets(buffer, 128, pipe) != NULL )
+        if ( fgets( buffer, 128, pipe ) != NULL )
             result += buffer;
     }
     pclose( pipe );
@@ -129,13 +128,13 @@ static inline std::string exec( const std::string& cmd )
 
 
 // Utility to break a string by a newline
-static inline std::vector<std::string> breakString( const std::string& str )
+static inline std::vector<std::string> breakString( const std::string &str )
 {
     std::vector<std::string> strvec;
     size_t i1 = 0;
     size_t i2 = std::min( str.find( '\n', i1 ), str.length() );
     while ( i1 < str.length() ) {
-        strvec.push_back( str.substr( i1, i2-i1 ) );
+        strvec.push_back( str.substr( i1, i2 - i1 ) );
         i1 = i2 + 1;
         i2 = std::min( str.find( '\n', i1 ), str.length() );
     }
@@ -223,23 +222,23 @@ std::string StackTrace::stack_info::print() const
         depth = std::max<int>( depth, maxDepth( child ) );
     return depth+1;
 }*/
-std::vector<std::string> StackTrace::multi_stack_info::print( const std::string& prefix ) const
+std::vector<std::string> StackTrace::multi_stack_info::print( const std::string &prefix ) const
 {
     std::vector<std::string> text;
-    //auto depth = maxDepth( *this );
-    //std::string line = prefix + "[" + std::to_string( N ) + "] ";
-    //for (auto i=1; i<depth; i++)
+    // auto depth = maxDepth( *this );
+    // std::string line = prefix + "[" + std::to_string( N ) + "] ";
+    // for (auto i=1; i<depth; i++)
     //    line += "--";
-    //line += stack.print();
+    // line += stack.print();
     std::string line = prefix + "[" + std::to_string( N ) + "] " + stack.print();
     text.push_back( line );
     std::string prefix2 = prefix + "  ";
-    for ( size_t i=0; i<children.size(); i++ ) {
-        const auto& child = children[i];
-        auto tmp = child.print( );
-        for ( size_t j=0; j<tmp.size(); j++ ) {
+    for ( size_t i = 0; i < children.size(); i++ ) {
+        const auto &child = children[i];
+        auto tmp          = child.print();
+        for ( size_t j = 0; j < tmp.size(); j++ ) {
             std::string line = prefix2 + tmp[j];
-            if ( children.size()>1 && j>0 && i<children.size()-1 )
+            if ( children.size() > 1 && j > 0 && i < children.size() - 1 )
                 line[prefix2.size()] = '|';
             text.push_back( line );
         }
@@ -338,12 +337,12 @@ static const global_symbols_struct &getSymbols2()
 #error Unknown OS using nm
 #endif
                 auto output = breakString( exec( cmd ) );
-                for ( const auto& line : output ) {
+                for ( const auto &line : output ) {
                     if ( line.empty() )
                         continue;
                     if ( line[0] == ' ' )
                         continue;
-                    char *a = const_cast<char*>(line.c_str());
+                    char *a = const_cast<char *>( line.c_str() );
                     char *b = strchr( a, ' ' );
                     if ( b == nullptr )
                         continue;
@@ -374,8 +373,9 @@ static const global_symbols_struct &getSymbols2()
     }
     return data;
 }
-int StackTrace::getSymbols(
-    std::vector<void *> &address, std::vector<char> &type, std::vector<std::string> &obj )
+int StackTrace::getSymbols( std::vector<void *> &address,
+                            std::vector<char> &type,
+                            std::vector<std::string> &obj )
 {
     const global_symbols_struct &data = getSymbols2();
     address                           = data.address;
@@ -389,9 +389,9 @@ int StackTrace::getSymbols(
 *  Function to get call stack info                                          *
 ****************************************************************************/
 #ifdef USE_MAC
-static void *loadAddress( const std::string& object )
+static void *loadAddress( const std::string &object )
 {
-    static std::map<std::string,void*> obj_map;
+    static std::map<std::string, void *> obj_map;
     if ( obj_map.empty() ) {
         uint32_t numImages = _dyld_image_count();
         for ( uint32_t i = 0; i < numImages; i++ ) {
@@ -447,17 +447,20 @@ static std::tuple<std::string, std::string, std::string, int> split_atos( const 
 }
 #endif
 #ifdef USE_LINUX
-    typedef uint64_t uint_p;
-#elif defined(USE_MAC)
-    typedef unsigned long uint_p;
+typedef uint64_t uint_p;
+#elif defined( USE_MAC )
+typedef unsigned long uint_p;
 #endif
 #if defined( USE_LINUX ) || defined( USE_MAC )
-static inline std::string generateCmd( const std::string& s1,
-    const std::string& s2, const std::string& s3,
-    std::vector<void*> addresses, const std::string& s4 )
+static inline std::string generateCmd( const std::string &s1,
+                                       const std::string &s2,
+                                       const std::string &s3,
+                                       std::vector<void *>
+                                           addresses,
+                                       const std::string &s4 )
 {
     std::string cmd = s1 + s2 + s3;
-    for (size_t i=0; i<addresses.size(); i++) {
+    for ( size_t i = 0; i < addresses.size(); i++ ) {
         char tmp[32];
         sprintf( tmp, "%lx ", reinterpret_cast<uint_p>( addresses[i] ) );
         cmd += tmp;
@@ -890,78 +893,80 @@ std::vector<std::thread::native_handle_type> StackTrace::activeThreads( )
 std::vector<StackTrace::stack_info> StackTrace::getCallStack()
 {
     auto trace = StackTrace::backtrace();
-    auto info = getStackInfo(trace);
+    auto info  = getStackInfo( trace );
     return info;
 }
 std::vector<StackTrace::stack_info> StackTrace::getCallStack( std::thread::native_handle_type id )
 {
     auto trace = StackTrace::backtrace( id );
-    auto info = getStackInfo(trace);
+    auto info  = getStackInfo( trace );
     return info;
 }
-static void fillMultiStackInfoHelper( std::vector<StackTrace::multi_stack_info>& stack,
-    std::map<void*,StackTrace::stack_info>& stack_data )
+static void fillMultiStackInfoHelper( std::vector<StackTrace::multi_stack_info> &stack,
+                                      std::map<void *, StackTrace::stack_info> &stack_data )
 {
-    for (size_t i=0; i<stack.size(); i++) {
+    for ( size_t i = 0; i < stack.size(); i++ ) {
         stack[i].stack = stack_data[stack[i].stack.address];
         fillMultiStackInfoHelper( stack[i].children, stack_data );
     }
 }
-static void getAddresses( const std::vector<StackTrace::multi_stack_info>& stack, std::set<void*>& addresses )
+static void getAddresses( const std::vector<StackTrace::multi_stack_info> &stack,
+                          std::set<void *> &addresses )
 {
-    for (size_t i=0; i<stack.size(); i++) {
+    for ( size_t i = 0; i < stack.size(); i++ ) {
         addresses.insert( stack[i].stack.address );
         getAddresses( stack[i].children, addresses );
     }
 }
-static void fillMultiStackInfo( std::vector<StackTrace::multi_stack_info>& stack )
+static void fillMultiStackInfo( std::vector<StackTrace::multi_stack_info> &stack )
 {
     // Get the list of addresses we encountered
-    std::set<void*> addresses;
+    std::set<void *> addresses;
     getAddresses( stack, addresses );
     // Get the stack info
-    std::vector<void*> addresses2( addresses.begin(), addresses.end() );
+    std::vector<void *> addresses2( addresses.begin(), addresses.end() );
     auto stack_data = StackTrace::getStackInfo( addresses2 );
-    std::map<void*,StackTrace::stack_info> map_data;
-    for ( size_t i=0; i<addresses2.size(); i++)
+    std::map<void *, StackTrace::stack_info> map_data;
+    for ( size_t i = 0; i < addresses2.size(); i++ )
         map_data.insert( std::make_pair( addresses2[i], stack_data[i] ) );
     // Fill the data
     fillMultiStackInfoHelper( stack, map_data );
 }
-static std::vector<StackTrace::multi_stack_info> generateMultiStack( const std::vector<std::vector<void*>>& thread_backtrace )
+static std::vector<StackTrace::multi_stack_info>
+generateMultiStack( const std::vector<std::vector<void *>> &thread_backtrace )
 {
     std::vector<StackTrace::multi_stack_info> stack;
-    for ( const auto& trace : thread_backtrace ) {
+    for ( const auto &trace : thread_backtrace ) {
         if ( trace.empty() )
             continue;
-        std::vector<StackTrace::multi_stack_info>* parent = &stack;
-        for ( int i=trace.size()-1; i>=0; i-- ) {
-            void *ptr = trace[i];
-            StackTrace::multi_stack_info* child = nullptr;
-            for ( auto& tmp : *parent ) {
+        std::vector<StackTrace::multi_stack_info> *parent = &stack;
+        for ( int i = trace.size() - 1; i >= 0; i-- ) {
+            void *ptr                           = trace[i];
+            StackTrace::multi_stack_info *child = nullptr;
+            for ( auto &tmp : *parent ) {
                 if ( tmp.stack.address == ptr ) {
                     child = &tmp;
                     break;
                 }
             }
             if ( child == nullptr ) {
-                parent->resize( parent->size()+1 );
-                child = &(parent->back());
-                child->N = 0;
+                parent->resize( parent->size() + 1 );
+                child                = &( parent->back() );
+                child->N             = 0;
                 child->stack.address = ptr;
             }
-            (child->N)++;
-            parent = &(child->children);
+            ( child->N )++;
+            parent = &( child->children );
         }
     }
     return stack;
 }
-std::vector<StackTrace::multi_stack_info> StackTrace::getAllCallStacks( )
+std::vector<StackTrace::multi_stack_info> StackTrace::getAllCallStacks()
 {
     // Get the list of threads
-    auto threads = activeThreads( );
+    auto threads = activeThreads();
     // Get the backtrace of each thread
-    std::vector<std::vector<void*>> thread_backtrace;
+    std::vector<std::vector<void *>> thread_backtrace;
     for ( auto thread : threads )
         thread_backtrace.push_back( backtrace( thread ) );
     // Create the multi-stack strucutre
@@ -970,7 +975,6 @@ std::vector<StackTrace::multi_stack_info> StackTrace::getAllCallStacks( )
     fillMultiStackInfo( stack );
     return stack;
 }
-
 
 
 /****************************************************************************
@@ -1205,17 +1209,14 @@ void StackTrace::LoadModules()
 /****************************************************************************
 *  Get the signal name                                                      *
 ****************************************************************************/
-std::string StackTrace::signalName( int sig )
-{
-    return std::string( strsignal(sig) );
-}
+std::string StackTrace::signalName( int sig ) { return std::string( strsignal( sig ) ); }
 std::vector<int> StackTrace::allSignalsToCatch()
 {
     std::set<int> signals;
-    for (int i=1; i<32; i++)
-        signals.insert( i );
-    for (int i=SIGRTMIN; i<=SIGRTMAX; i++)
-        signals.insert( i );
+    for ( int i = 1; i < 32; i++ )
+    signals.insert( i );
+    for ( int i = SIGRTMIN; i <= SIGRTMAX; i++ )
+    signals.insert( i );
     signals.erase( SIGKILL );
     signals.erase( SIGSTOP );
     return std::vector<int>( signals.begin(), signals.end() );
@@ -1224,8 +1225,8 @@ std::vector<int> StackTrace::defaultSignalsToCatch()
 {
     auto tmp = allSignalsToCatch();
     std::set<int> signals( tmp.begin(), tmp.end() );
-    signals.erase( SIGWINCH );  // Don't catch window changed by default
-    signals.erase( SIGCONT );   // Don't catch continue by default
+    signals.erase( SIGWINCH ); // Don't catch window changed by default
+    signals.erase( SIGCONT );  // Don't catch continue by default
     return std::vector<int>( signals.begin(), signals.end() );
 }
 
@@ -1270,7 +1271,7 @@ static void term_func()
 }
 void StackTrace::clearSignal( int sig )
 {
-    if ( signals_set.find(sig) != signals_set.end() ) {
+    if ( signals_set.find( sig ) != signals_set.end() ) {
         signal( sig, SIG_DFL );
         signals_set.erase( sig );
     }
@@ -1281,7 +1282,7 @@ void StackTrace::clearSignals()
         signal( sig, SIG_DFL );
     signals_set.clear();
 }
-void StackTrace::setSignals( const std::vector<int>& signals, void (*handler) (int) )
+void StackTrace::setSignals( const std::vector<int> &signals, void ( *handler )( int ) )
 {
     for ( auto sig : signals ) {
         signal( sig, handler );

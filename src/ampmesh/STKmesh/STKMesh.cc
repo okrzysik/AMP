@@ -802,18 +802,19 @@ void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
 #ifdef USE_AMP_DISCRETIZATION
     // Create the position vector with the necessary ghost nodes
     AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create( shared_from_this(),
-                                                       getIterator( AMP::Mesh::GeomType::Vertex, 1 ),
-                                                       getIterator( AMP::Mesh::GeomType::Vertex, 0 ),
-                                                       PhysicalDim );
+        AMP::Discretization::simpleDOFManager::create(
+            shared_from_this(),
+            getIterator( AMP::Mesh::GeomType::Vertex, 1 ),
+            getIterator( AMP::Mesh::GeomType::Vertex, 0 ),
+            PhysicalDim );
     AMP::LinearAlgebra::Variable::shared_ptr nodalVariable(
         new AMP::LinearAlgebra::Variable( "tmp_pos" ) );
     AMP::LinearAlgebra::Vector::shared_ptr displacement =
         AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
     std::vector<size_t> dofs1( PhysicalDim );
     std::vector<size_t> dofs2( PhysicalDim );
-    AMP::Mesh::MeshIterator cur                      = getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-    AMP::Mesh::MeshIterator end                      = cur.end();
+    AMP::Mesh::MeshIterator cur = getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    AMP::Mesh::MeshIterator end = cur.end();
     AMP::Discretization::DOFManager::shared_ptr DOFx = x->getDOFManager();
     std::vector<double> data( PhysicalDim );
     while ( cur != end ) {
@@ -836,7 +837,8 @@ void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
         const unsigned int owner_rank = node->owner_rank();
         const unsigned int local_id   = node->identifier();
         const bool is_local           = owner_rank == rank;
-        AMP::Mesh::MeshElementID id( is_local, AMP::Mesh::GeomType::Vertex, local_id, owner_rank, d_meshID );
+        AMP::Mesh::MeshElementID id(
+            is_local, AMP::Mesh::GeomType::Vertex, local_id, owner_rank, d_meshID );
         // Get the position of the point
         DOFs->getDOFs( id, dofs2 );
         displacement->getValuesByGlobalID( PhysicalDim, &dofs2[0], &data[0] );

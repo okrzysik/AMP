@@ -92,9 +92,9 @@ void testMultiMeshOwnerRank( AMP::UnitTest &ut )
         // ranks are correct.
         int bnd_comm_rank            = arrayBoundaryMesh->getComm().getRank();
         bool owner_rank_is_comm_rank = true;
-        it                           = arrayBoundaryMesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-        auto it_begin                = it.begin();
-        auto it_end                  = it.end();
+        it            = arrayBoundaryMesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        auto it_begin = it.begin();
+        auto it_end   = it.end();
         for ( it = it_begin; it != it_end; ++it ) {
             // If the owner rank of the vertex is the same as the comm rank of
             // the boundary mesh that we got the vertex from then it should be

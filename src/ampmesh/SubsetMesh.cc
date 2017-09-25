@@ -64,25 +64,26 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
     d_max_gcw = d_parent_mesh->getMaxGhostWidth();
     d_elements =
         std::vector<std::vector<AMP::shared_ptr<std::vector<MeshElement>>>>( (int) GeomDim + 1 );
-    for ( int i = 0; i <= static_cast<int>(GeomDim); i++ ) {
+    for ( int i = 0; i <= static_cast<int>( GeomDim ); i++ ) {
         d_elements[i] = std::vector<AMP::shared_ptr<std::vector<MeshElement>>>(
             d_max_gcw + 1,
             AMP::shared_ptr<std::vector<MeshElement>>( new std::vector<MeshElement>() ) );
     }
     int gcw = 0;
     while ( 1 ) {
-        MeshIterator iterator1 =
-            Mesh::getIterator( SetOP::Intersection, iterator_in, mesh->getIterator( GeomDim, gcw ) );
+        MeshIterator iterator1 = Mesh::getIterator(
+            SetOP::Intersection, iterator_in, mesh->getIterator( GeomDim, gcw ) );
         MeshIterator iterator2 = iterator1.begin();
         if ( gcw > 0 )
-            iterator2 = Mesh::getIterator( SetOP::Complement, iterator1, mesh->getIterator( GeomDim, 0 ) );
-        d_elements[(int)GeomDim][gcw] = AMP::shared_ptr<std::vector<MeshElement>>(
+            iterator2 =
+                Mesh::getIterator( SetOP::Complement, iterator1, mesh->getIterator( GeomDim, 0 ) );
+        d_elements[(int) GeomDim][gcw] = AMP::shared_ptr<std::vector<MeshElement>>(
             new std::vector<MeshElement>( iterator2.size() ) );
         for ( size_t i = 0; i < iterator2.size(); i++ ) {
-            d_elements[(int)GeomDim][gcw]->operator[]( i ) = *iterator2;
+            d_elements[(int) GeomDim][gcw]->operator[]( i ) = *iterator2;
             ++iterator2;
         }
-        AMP::Utilities::quicksort( *( d_elements[(int)GeomDim][gcw] ) );
+        AMP::Utilities::quicksort( *( d_elements[(int) GeomDim][gcw] ) );
         if ( iterator1.size() == iterator_in.size() )
             break;
         gcw++;
@@ -381,8 +382,8 @@ AMP::shared_ptr<Mesh> SubsetMesh::Subset( std::string name ) const
 ********************************************************/
 MeshIterator SubsetMesh::getIterator( const GeomType type, const int gcw ) const
 {
-    int gcw2 = gcw;
-    int type2 = static_cast<int>(type);
+    int gcw2  = gcw;
+    int type2 = static_cast<int>( type );
     if ( gcw2 >= (int) d_elements[type2].size() )
         gcw2 = (int) d_elements[type2].size() - 1;
     if ( gcw2 == 0 )
@@ -395,7 +396,7 @@ MeshIterator SubsetMesh::getIterator( const GeomType type, const int gcw ) const
 }
 MeshIterator SubsetMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
-    int type2 = static_cast<int>(type);
+    int type2 = static_cast<int>( type );
     if ( gcw == 0 )
         return MultiVectorIterator( d_surface[type2][0], 0 );
     if ( gcw >= (int) d_surface[type2].size() )
@@ -484,25 +485,22 @@ std::vector<MeshElement> SubsetMesh::getElementParents( const MeshElement &elem,
 ********************************************************/
 size_t SubsetMesh::numLocalElements( const GeomType type ) const
 {
-    return d_elements[static_cast<int>(type)][0]->size();
+    return d_elements[static_cast<int>( type )][0]->size();
 }
 size_t SubsetMesh::numGlobalElements( const GeomType type ) const
 {
-    return N_global[static_cast<int>(type)];
+    return N_global[static_cast<int>( type )];
 }
 size_t SubsetMesh::numGhostElements( const GeomType type, int gcw ) const
 {
     AMP_ASSERT( type <= GeomDim );
     if ( gcw == 0 )
         return 0;
-    if ( gcw >= (int) d_elements[(int)type].size() )
+    if ( gcw >= (int) d_elements[(int) type].size() )
         AMP_ERROR( "Maximum ghost width exceeded" );
-    return d_elements[(int)type][gcw]->size();
+    return d_elements[(int) type][gcw]->size();
 }
-int SubsetMesh::isMeshMovable( ) const
-{
-    return 0;
-}
+int SubsetMesh::isMeshMovable() const { return 0; }
 void SubsetMesh::displaceMesh( const std::vector<double> & )
 {
     AMP_ERROR( "displaceMesh by a constant value does not work for subset mesh" );

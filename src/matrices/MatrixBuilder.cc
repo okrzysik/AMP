@@ -1,17 +1,17 @@
 #ifdef USE_AMP_VECTORS
 
 #include "matrices/MatrixBuilder.h"
-#include "matrices/DenseSerialMatrix.h"
 #include "discretization/DOF_Manager.h"
+#include "matrices/DenseSerialMatrix.h"
 #include "utils/Utilities.h"
 
 #ifdef USE_EXT_TRILINOS
-    #include "matrices/trilinos/ManagedEpetraMatrix.h"
-    #include "vectors/trilinos/epetra/EpetraVectorEngine.h"
-    #ifdef USE_EXT_PETSC
-        #include "matrices/petsc/ManagedPetscMatrix.h"
-        #include "vectors/petsc/ManagedPetscVector.h"
-    #endif
+#include "matrices/trilinos/ManagedEpetraMatrix.h"
+#include "vectors/trilinos/epetra/EpetraVectorEngine.h"
+#ifdef USE_EXT_PETSC
+#include "matrices/petsc/ManagedPetscMatrix.h"
+#include "vectors/petsc/ManagedPetscVector.h"
+#endif
 #endif
 
 #include <functional>
@@ -27,13 +27,14 @@ namespace LinearAlgebra {
 AMP::LinearAlgebra::Matrix::shared_ptr
 createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                      AMP::LinearAlgebra::Vector::shared_ptr rightVec,
-                     std::function<std::vector<size_t>(size_t)> getRow,
-                     const std::string& type )
+                     std::function<std::vector<size_t>( size_t )>
+                         getRow,
+                     const std::string &type )
 {
 #if defined( USE_EXT_TRILINOS )
     // Get the DOFs
-    AMP::Discretization::DOFManager::shared_ptr leftDOF = leftVec->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr rightDOF  = rightVec->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr leftDOF  = leftVec->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr rightDOF = rightVec->getDOFManager();
     if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
         AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested, and needs to "
                    "be fixed" );
@@ -42,7 +43,8 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         comm = AMP_MPI( AMP_COMM_SELF );
 
     // Create the matrix parameters
-    auto params = AMP::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrixParameters> ( leftDOF, rightDOF, comm );
+    auto params = AMP::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrixParameters>(
+        leftDOF, rightDOF, comm );
     params->d_CommListLeft  = leftVec->getCommunicationList();
     params->d_CommListRight = rightVec->getCommunicationList();
     params->d_VariableLeft  = leftVec->getVariable();
@@ -54,7 +56,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     size_t row_end   = leftDOF->endDOF();
     for ( size_t row = row_start; row < row_end; row++ ) {
         auto col = getRow( row );
-        params->setEntriesInRow( row-row_start, col.size() );
+        params->setEntriesInRow( row - row_start, col.size() );
         for ( auto &tmp : col )
             columns.insert( tmp );
     }
@@ -63,15 +65,15 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     // Create the matrix
     AMP::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrix> newMatrix;
     if ( type == "ManagedPetscMatrix" ) {
-        #if defined( USE_EXT_PETSC )
-            newMatrix.reset( new AMP::LinearAlgebra::ManagedPetscMatrix( params ) );
-        #else
-            AMP_ERROR("Unable to build ManagedPetscMatrix without PETSc");
-        #endif
+#if defined( USE_EXT_PETSC )
+        newMatrix.reset( new AMP::LinearAlgebra::ManagedPetscMatrix( params ) );
+#else
+        AMP_ERROR( "Unable to build ManagedPetscMatrix without PETSc" );
+#endif
     } else if ( type == "ManagedEpetraMatrix" ) {
         newMatrix.reset( new AMP::LinearAlgebra::ManagedEpetraMatrix( params ) );
     } else {
-        AMP_ERROR("Unknown ManagedMatrix type");
+        AMP_ERROR( "Unknown ManagedMatrix type" );
     }
 
     // Initialize the matrix
@@ -79,7 +81,8 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         auto col = getRow( row );
         newMatrix->createValuesByGlobalID( row, col );
     }
-    dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(newMatrix)->setEpetraMaps( leftVec, rightVec );
+    dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( newMatrix )
+        ->setEpetraMaps( leftVec, rightVec );
     newMatrix->fillComplete();
     newMatrix->zero();
     newMatrix->makeConsistent();
@@ -87,7 +90,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 #else
     NULL_USE( leftVec );
     NULL_USE( rightVec );
-    NULL_USE( type);
+    NULL_USE( type );
     NULL_USE( getRow );
     AMP_ERROR( "Unable to build a ManagedMatrix without TRILINOS" );
     return AMP::LinearAlgebra::Matrix::shared_ptr();
@@ -103,8 +106,8 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                          AMP::LinearAlgebra::Vector::shared_ptr rightVec )
 {
     // Get the DOFs
-    AMP::Discretization::DOFManager::shared_ptr leftDOF = leftVec->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr rightDOF  = rightVec->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr leftDOF  = leftVec->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr rightDOF = rightVec->getDOFManager();
     if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
         AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested, and needs to "
                    "be fixed" );
@@ -133,12 +136,12 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 ********************************************************/
 static void test( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
 {
-    auto leftDOF = matrix->getLeftDOFManager();
-    auto rightDOF = matrix->getRightDOFManager();
-    size_t N_local_row1 = leftDOF->numLocalDOF();
-    size_t N_local_row2 = matrix->numLocalRows();
-    size_t N_local_col1 = rightDOF->numLocalDOF();
-    size_t N_local_col2 = matrix->numLocalColumns();
+    auto leftDOF         = matrix->getLeftDOFManager();
+    auto rightDOF        = matrix->getRightDOFManager();
+    size_t N_local_row1  = leftDOF->numLocalDOF();
+    size_t N_local_row2  = matrix->numLocalRows();
+    size_t N_local_col1  = rightDOF->numLocalDOF();
+    size_t N_local_col2  = matrix->numLocalColumns();
     size_t N_global_row1 = leftDOF->numGlobalDOF();
     size_t N_global_row2 = matrix->numGlobalRows();
     size_t N_global_col1 = rightDOF->numGlobalDOF();
@@ -156,8 +159,9 @@ static void test( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
 AMP::LinearAlgebra::Matrix::shared_ptr
 createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
               AMP::LinearAlgebra::Vector::shared_ptr leftVec,
-              const std::string& type,
-              std::function<std::vector<size_t>(size_t)> getRow )
+              const std::string &type,
+              std::function<std::vector<size_t>( size_t )>
+                  getRow )
 {
     // Determine the type of matrix to build
     std::string type2 = type;
@@ -172,13 +176,12 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     }
     // Create the default getRow function (if not provided)
     if ( !getRow ) {
-        const auto leftDOF = leftVec->getDOFManager().get();
+        const auto leftDOF  = leftVec->getDOFManager().get();
         const auto rightDOF = rightVec->getDOFManager().get();
-        getRow = [leftDOF,rightDOF]( size_t row )
-            {
-                auto elem = leftDOF->getElement( row );
-                return rightDOF->getRowDOFs( elem );
-            };
+        getRow              = [leftDOF, rightDOF]( size_t row ) {
+            auto elem = leftDOF->getElement( row );
+            return rightDOF->getRowDOFs( elem );
+        };
     }
     // Build the matrix
     AMP::LinearAlgebra::Matrix::shared_ptr matrix;

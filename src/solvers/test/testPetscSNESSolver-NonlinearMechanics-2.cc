@@ -81,7 +81,8 @@ void myTest( AMP::UnitTest *ut )
         nonlinBvpOperator->getOutputVariable();
 
     AMP::Discretization::DOFManager::shared_ptr tempDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr initTempVec =
         AMP::LinearAlgebra::createVector( tempDofMap, temperatureVariable, true );
@@ -133,7 +134,8 @@ void myTest( AMP::UnitTest *ut )
     dirichletDispInVecOp->setVariable( displacementVariable );
 
     AMP::Discretization::DOFManager::shared_ptr dispDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     AMP::LinearAlgebra::Vector::shared_ptr mechNlSolVec =
@@ -199,7 +201,8 @@ void myTest( AMP::UnitTest *ut )
     nonlinearSolver->setZeroInitialGuess( false );
 
 #ifdef USE_EXT_SILO
-    siloWriter->registerVector( mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector(
+        mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
 #endif
 
     for ( int step = 0; step < NumberOfLoadingSteps; step++ ) {
@@ -208,7 +211,8 @@ void myTest( AMP::UnitTest *ut )
 
         double scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
         mechNlScaledRhsVec->scale( scaleValue, mechNlRhsVec );
-        mechNlScaledRhsVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+        mechNlScaledRhsVec->makeConsistent(
+            AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         AMP::pout << "L2 Norm at loading step " << ( step + 1 ) << " is "
                   << mechNlScaledRhsVec->L2Norm() << std::endl;
 

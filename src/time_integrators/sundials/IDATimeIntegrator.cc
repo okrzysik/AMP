@@ -186,9 +186,7 @@ void IDATimeIntegrator::initializeIDA()
         ierr = IDACalcIC( d_ida_mem, IDA_YA_YDP_INIT, tout1 );
         AMP_ASSERT( ierr == IDA_SUCCESS );
         ierr = IDAGetConsistentIC(
-            d_ida_mem,
-            pSundials_sol->getNVector(),
-            pSundials_sol_prime->getNVector() );
+            d_ida_mem, pSundials_sol->getNVector(), pSundials_sol_prime->getNVector() );
         AMP_ASSERT( ierr == IDA_SUCCESS );
     }
 
@@ -379,7 +377,7 @@ bool IDATimeIntegrator::checkNewSolution( void ) const
 int IDATimeIntegrator::IDAResTrial(
     realtype /* tt */, N_Vector yy, N_Vector yp, N_Vector rr, void *user_data_in )
 {
-    auto user_data = reinterpret_cast<IDATimeIntegrator*>( user_data_in );
+    auto user_data = reinterpret_cast<IDATimeIntegrator *>( user_data_in );
 
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> f;
 
@@ -398,8 +396,7 @@ int IDATimeIntegrator::IDAResTrial(
 
     user_data->getIDATimeOperator()->registerIDATimeDerivative( amp_yp );
 
-    AMP::LinearAlgebra::Vector::shared_ptr d_residual_Sundials =
-        user_data->getResidualVector();
+    AMP::LinearAlgebra::Vector::shared_ptr d_residual_Sundials = user_data->getResidualVector();
 
     double currentTime = user_data->getCurrentTime();
     user_data->getIDATimeOperator()->registerCurrentTime( currentTime );
@@ -423,15 +420,15 @@ int IDATimeIntegrator::IDAPrecSetup( realtype tt,
                                      N_Vector /* tmp2 */,
                                      N_Vector /* tmp3 */ )
 {
-    auto user_data = reinterpret_cast<IDATimeIntegrator*>( user_data_in );
+    auto user_data = reinterpret_cast<IDATimeIntegrator *>( user_data_in );
 
     int last_order, current_order;
     double last_stepsize, current_stepsize;
 
     int ierr = IDAGetLastOrder( user_data->getIDAMem(), &last_order );
-    ierr = IDAGetCurrentOrder( user_data->getIDAMem(), &current_order );
-    ierr = IDAGetLastStep( user_data->getIDAMem(), &last_stepsize );
-    ierr = IDAGetCurrentStep( user_data->getIDAMem(), &current_stepsize );
+    ierr     = IDAGetCurrentOrder( user_data->getIDAMem(), &current_order );
+    ierr     = IDAGetLastStep( user_data->getIDAMem(), &last_stepsize );
+    ierr     = IDAGetCurrentStep( user_data->getIDAMem(), &current_stepsize );
     AMP_ASSERT( ierr == IDA_SUCCESS );
 
     AMP::pout << "cj = " << cj << std::endl;
@@ -458,8 +455,7 @@ int IDATimeIntegrator::IDAPrecSetup( realtype tt,
         AMP::shared_ptr<AMP::Database> &db = jacParams->d_db;
         db->putDouble( "ScalingFactor", cj );
         db->putDouble( "CurrentTime", tt );
-        AMP::shared_ptr<AMP::Solver::SolverStrategy> pSolver =
-            user_data->getPreconditioner();
+        AMP::shared_ptr<AMP::Solver::SolverStrategy> pSolver = user_data->getPreconditioner();
         // double currentTime = user_data->getCurrentTime();
 
         // BP:  commenting out these lines that appear to be buggy
@@ -493,7 +489,7 @@ int IDATimeIntegrator::IDAPrecSolve( realtype,
                                      void *user_data_in,
                                      N_Vector )
 {
-    auto user_data = reinterpret_cast<IDATimeIntegrator*>( user_data_in );
+    auto user_data = reinterpret_cast<IDATimeIntegrator *>( user_data_in );
 
     AMP::LinearAlgebra::ExternalVectorDeleter d;
     AMP::LinearAlgebra::Vector *pr =
@@ -503,7 +499,7 @@ int IDATimeIntegrator::IDAPrecSolve( realtype,
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_rvec( pr, d );
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_zvec( pz, d );
 
-    user_data ->getPreconditioner()->solve( amp_rvec, amp_zvec );
+    user_data->getPreconditioner()->solve( amp_rvec, amp_zvec );
 
     return ( IDA_SUCCESS );
 }

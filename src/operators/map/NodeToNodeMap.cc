@@ -386,16 +386,13 @@ NodeToNodeMap::createOwnedPoints( AMP::Mesh::MeshIterator iterator )
 /********************************************************
 * Constructors for Point                                *
 ********************************************************/
-NodeToNodeMap::Point::Point():
-    proc( -1 )
+NodeToNodeMap::Point::Point() : proc( -1 )
 {
     pos[0] = 0.0;
     pos[1] = 0.0;
     pos[2] = 0.0;
 }
-NodeToNodeMap::Point::Point( const Point &rhs ):
-    id( rhs.id ),
-    proc( rhs.proc )
+NodeToNodeMap::Point::Point( const Point &rhs ) : id( rhs.id ), proc( rhs.proc )
 {
     pos[0] = rhs.pos[0];
     pos[1] = rhs.pos[1];

@@ -148,9 +148,12 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         new AMP::Operator::IsotropicElasticModel( cladMechanicsMaterialModelParams ) );
 
     // Build the contact operators
-    AMP::shared_ptr<AMP::Operator::NodeToGeomType::FaceContactOperator> bottomPelletTopPelletContactOperator;
-    AMP::shared_ptr<AMP::Operator::NodeToGeomType::FaceContactOperator> bottomPelletCladContactOperator;
-    AMP::shared_ptr<AMP::Operator::NodeToGeomType::FaceContactOperator> topPelletCladContactOperator;
+    AMP::shared_ptr<AMP::Operator::NodeToGeomType::FaceContactOperator>
+        bottomPelletTopPelletContactOperator;
+    AMP::shared_ptr<AMP::Operator::NodeToGeomType::FaceContactOperator>
+        bottomPelletCladContactOperator;
+    AMP::shared_ptr<AMP::Operator::NodeToGeomType::FaceContactOperator>
+        topPelletCladContactOperator;
 
     AMP::shared_ptr<AMP::Database> bottomPelletTopPelletContact_db =
         input_db->getDatabase( "BottomPelletTopPelletContactOperator" );
@@ -184,8 +187,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     bottomPelletCladContactOperatorParams->d_MasterMechanicsMaterialModel =
         fuelMechanicsMaterialModel;
     bottomPelletCladContactOperatorParams->reset();
-    bottomPelletCladContactOperator = AMP::shared_ptr<AMP::Operator::NodeToGeomType::FaceContactOperator>(
-        new AMP::Operator::NodeToGeomType::FaceContactOperator( bottomPelletCladContactOperatorParams ) );
+    bottomPelletCladContactOperator =
+        AMP::shared_ptr<AMP::Operator::NodeToGeomType::FaceContactOperator>(
+            new AMP::Operator::NodeToGeomType::FaceContactOperator(
+                bottomPelletCladContactOperatorParams ) );
     bottomPelletCladContactOperator->initialize();
     bottomPelletCladContactOperator->setContactIsFrictionless( contactIsFrictionless );
     //  bottomPelletCladContactOperator->setContactIsFrictionless(bottomPelletCladContact_db->getBoolWithDefault("ContactIsFrictionless",
@@ -201,8 +206,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     topPelletCladContactOperatorParams->d_Mesh                         = meshAdapter;
     topPelletCladContactOperatorParams->d_MasterMechanicsMaterialModel = fuelMechanicsMaterialModel;
     topPelletCladContactOperatorParams->reset();
-    topPelletCladContactOperator = AMP::shared_ptr<AMP::Operator::NodeToGeomType::FaceContactOperator>(
-        new AMP::Operator::NodeToGeomType::FaceContactOperator( topPelletCladContactOperatorParams ) );
+    topPelletCladContactOperator =
+        AMP::shared_ptr<AMP::Operator::NodeToGeomType::FaceContactOperator>(
+            new AMP::Operator::NodeToGeomType::FaceContactOperator(
+                topPelletCladContactOperatorParams ) );
     topPelletCladContactOperator->initialize();
     topPelletCladContactOperator->setContactIsFrictionless( contactIsFrictionless );
     //  topPelletCladContactOperator->setContactIsFrictionless(topPelletCladContact_db->getBoolWithDefault("ContactIsFrictionless",
@@ -375,15 +382,17 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             fuelOuterRadius,
             bottomPelletConstraints,
             false );
-        makeConstraintsOnFuel( topPelletMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 ),
-                               fuelOuterRadius,
-                               topPelletConstraints,
-                               true,
-                               dishRadius );
-        makeConstraintsOnFuel( topPelletMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1 ),
-                               fuelOuterRadius,
-                               topPelletConstraints,
-                               false );
+        makeConstraintsOnFuel(
+            topPelletMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 ),
+            fuelOuterRadius,
+            topPelletConstraints,
+            true,
+            dishRadius );
+        makeConstraintsOnFuel(
+            topPelletMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1 ),
+            fuelOuterRadius,
+            topPelletConstraints,
+            false );
     } // end if
     if ( !cladExpansionConstrained ) {
         double cladInnerRadius = input_db->getDouble( "CladInnerRadius" );
@@ -577,7 +586,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     } // end if
     if ( cladNeedALittleHelp != 0.0 ) {
         {
-            AMP::Mesh::MeshIterator it       = cladMeshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
+            AMP::Mesh::MeshIterator it =
+                cladMeshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
             AMP::Mesh::MeshIterator it_begin = it.begin(), it_end = it.end();
             std::vector<size_t> dofs;
             double epsilon = 1.0e-12;
@@ -589,7 +599,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         topPelletCladContactOperator->updateActiveSetWithALittleHelp( columnSolVec );
         columnSolVec->zero();
         {
-            AMP::Mesh::MeshIterator it       = cladMeshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
+            AMP::Mesh::MeshIterator it =
+                cladMeshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
             AMP::Mesh::MeshIterator it_begin = it.begin(), it_end = it.end();
             std::vector<size_t> dofs;
             double epsilon = 1.0e-12;
@@ -612,25 +623,40 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
 #ifdef USE_EXT_SILO
     {
-        siloWriter->registerVector( columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-        siloWriter->registerVector( tempVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Temperature" );
-        siloWriter->registerVector( sigma_eff, meshAdapter, AMP::Mesh::GeomType::Vertex, "vonMises" );
-        siloWriter->registerVector( sigma_xx, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xx" );
-        siloWriter->registerVector( sigma_yy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yy" );
-        siloWriter->registerVector( sigma_zz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_zz" );
-        siloWriter->registerVector( sigma_yz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yz" );
-        siloWriter->registerVector( sigma_xz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xz" );
-        siloWriter->registerVector( sigma_xy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xy" );
         siloWriter->registerVector(
-            activeSetBeforeUpdateVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ActiveSetBeforeUpdate" );
+            columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
         siloWriter->registerVector(
-            activeSetAfterUpdateVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ActiveSetAfterUpdate" );
+            tempVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Temperature" );
+        siloWriter->registerVector(
+            sigma_eff, meshAdapter, AMP::Mesh::GeomType::Vertex, "vonMises" );
+        siloWriter->registerVector(
+            sigma_xx, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xx" );
+        siloWriter->registerVector(
+            sigma_yy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yy" );
+        siloWriter->registerVector(
+            sigma_zz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_zz" );
+        siloWriter->registerVector(
+            sigma_yz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yz" );
+        siloWriter->registerVector(
+            sigma_xz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xz" );
+        siloWriter->registerVector(
+            sigma_xy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xy" );
+        siloWriter->registerVector( activeSetBeforeUpdateVec,
+                                    meshAdapter,
+                                    AMP::Mesh::GeomType::Vertex,
+                                    "ActiveSetBeforeUpdate" );
+        siloWriter->registerVector( activeSetAfterUpdateVec,
+                                    meshAdapter,
+                                    AMP::Mesh::GeomType::Vertex,
+                                    "ActiveSetAfterUpdate" );
         siloWriter->registerVector(
             surfaceTractionVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Traction" );
-        siloWriter->registerVector( normalVectorVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Normal" );
+        siloWriter->registerVector(
+            normalVectorVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Normal" );
         siloWriter->registerVector(
             contactPressureVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ContactPressure" );
-        siloWriter->registerVector( contactShiftVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Shift" );
+        siloWriter->registerVector(
+            contactShiftVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Shift" );
         siloWriter->writeFile( prefixFileName.c_str(), 0 );
     }
 #endif
@@ -653,10 +679,12 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     int numTopPelletLocalNodes    = 0;
     int numCladLocalNodes         = 0;
     if ( bottomPelletMeshAdapter.get() != NULL ) {
-        numBottomPelletLocalNodes = bottomPelletMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
+        numBottomPelletLocalNodes =
+            bottomPelletMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
     }
     if ( topPelletMeshAdapter.get() != NULL ) {
-        numTopPelletLocalNodes = topPelletMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
+        numTopPelletLocalNodes =
+            topPelletMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
     }
     if ( cladMeshAdapter.get() != NULL ) {
         numCladLocalNodes = cladMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );

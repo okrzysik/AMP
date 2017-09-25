@@ -1,8 +1,8 @@
 #ifndef included_test_VectorTests_inline
 #define included_test_VectorTests_inline
 
-#include "vectors/testHelpers/VectorTests.h"
 #include "vectors/MultiVector.h"
+#include "vectors/testHelpers/VectorTests.h"
 
 
 namespace AMP {
@@ -13,11 +13,11 @@ template <typename VIEWER>
 void VectorTests::DeepCloneOfView( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
-    if ( AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(vector1) == nullptr )
+    if ( AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vector1 ) == nullptr )
         return;
     vector1      = VIEWER::view( vector1 );
     auto vector2 = vector1->cloneVector();
-    bool pass                                      = true;
+    bool pass    = true;
     for ( size_t i = 0; i != vector1->numberOfDataBlocks(); i++ ) {
         pass &= ( vector1->getRawDataBlock<double>( i ) != vector2->getRawDataBlock<double>( i ) );
     }
@@ -29,7 +29,8 @@ void VectorTests::DeepCloneOfView( AMP::UnitTest *utils )
 
 
 template <typename ITERATOR>
-void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::UnitTest *utils )
+void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p,
+                                            AMP::UnitTest *utils )
 {
     int kk = p->getLocalSize();
     if ( ( p->end() - p->begin() ) == (int) p->getLocalSize() )
@@ -43,7 +44,7 @@ void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_p
         utils->failure( "Subtracting end from beginning " );
 
     VectorDataIterator<double> cur1, cur2;
-    cur1 = cur2 = p->begin();
+    cur1 = cur2                    = p->begin();
     VectorDataIterator<double> end = p->end();
     ++cur1;
     ++cur2;

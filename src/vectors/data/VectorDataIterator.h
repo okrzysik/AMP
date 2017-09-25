@@ -25,21 +25,19 @@ class VectorData;
   * uses the DataBlock interface in vectors to access data.  As a result,
   * for some non-AMP managed vectors, this class may not be the most efficient.
   */
-template<class TYPE=double>
+template <class TYPE = double>
 class VectorDataIterator final
 {
 private:
-    
     size_t d_N_blocks, d_CurBlock, d_CurOffset, d_pos, d_size;
     size_t d_hashcode;
     size_t *d_blockSize;
-    TYPE **d_data;    
+    TYPE **d_data;
 
     void advance( size_t );
     void recede( size_t );
 
 public:
-
     //!  Required typedef for iterator_traits
     typedef int difference_type;
 
@@ -78,13 +76,13 @@ public:
      * Assignment operator
      * @param rhs           Iterator to copy
      */
-    VectorDataIterator& operator=( const VectorDataIterator &rhs );
+    VectorDataIterator &operator=( const VectorDataIterator &rhs );
 
     /*!
      * Move assignment operator
      * @param rhs           Iterator to copy
      */
-    VectorDataIterator& operator=( VectorDataIterator &&rhs );
+    VectorDataIterator &operator=( VectorDataIterator &&rhs );
 
 
     /** \brief Constructor from a vector
@@ -98,11 +96,11 @@ public:
 
 
     //! Return a new iterator to the beginning of this iterator
-    VectorDataIterator begin( ) const;
+    VectorDataIterator begin() const;
 
 
     //! Return a new iterator to the end of this iterator
-    VectorDataIterator end( ) const;
+    VectorDataIterator end() const;
 
 
     //! Return the size of the iterator
@@ -121,7 +119,7 @@ public:
       * \see DataChangeListener
       * \details  This returns a reference to the data pointed to by the iterator
       */
-    inline TYPE& operator*() { return d_data[d_CurBlock][d_CurOffset]; }
+    inline TYPE &operator*() { return d_data[d_CurBlock][d_CurOffset]; }
 
 
     /** \brief Test for equality
@@ -253,7 +251,6 @@ public:
         \endcode
       */
     TYPE &operator[]( int i );
-
 };
 
 

@@ -120,9 +120,12 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
             thermalNonlinearOperator->getVolumeOperator() );
 
 
-    auto globalSolVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
-    auto globalRhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
-    auto globalResVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
+    auto globalSolVec =
+        AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
+    auto globalRhsVec =
+        AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
+    auto globalResVec =
+        AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
 
     globalSolVec->setToScalar( intguess );
 
@@ -252,8 +255,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     thermalNonlinearOperator->modifyRHSvector( globalRhsVec );
     thermalNonlinearOperator->modifyInitialSolutionVector( globalSolVec );
 
-    thermalNonlinearOperator->residual(
-        globalRhsVec, globalSolVec, globalResVec );
+    thermalNonlinearOperator->residual( globalRhsVec, globalSolVec, globalResVec );
     AMP::pout << "Initial Residual Norm for Step is: " << globalResVec->L2Norm() << std::endl;
     expectedVal = 4.84311;
     if ( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 1e-5 ) ) {
@@ -269,8 +271,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
         ut->failure( "the Final Solution Norm has changed." );
     }
 
-    thermalNonlinearOperator->residual(
-        globalRhsVec, globalSolVec, globalResVec );
+    thermalNonlinearOperator->residual( globalRhsVec, globalSolVec, globalResVec );
     AMP::pout << "Final   Residual Norm for Step is: " << globalResVec->L2Norm() << std::endl;
     expectedVal = 1. - 10;
     if ( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 10.0 ) ) {
@@ -283,7 +284,8 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
 
-    siloWriter->registerVector( globalSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Temperature" );
+    siloWriter->registerVector(
+        globalSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Temperature" );
 
     siloWriter->writeFile( input_file, 0 );
 #endif

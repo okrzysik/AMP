@@ -40,15 +40,16 @@ AMP::Mesh::GeomType getSurfaceType( AMP::Mesh::GeomType volume )
 
 AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    auto DOF = AMP::Discretization::simpleDOFManager::create( mesh, mesh->getGeomType(), 0, 1, false );
+    auto DOF =
+        AMP::Discretization::simpleDOFManager::create( mesh, mesh->getGeomType(), 0, 1, false );
     AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "volume" ) );
     auto vec = AMP::LinearAlgebra::createVector( DOF, var, true );
     vec->zero();
     std::vector<size_t> dofs;
-    for ( const auto& elem : mesh->getIterator(mesh->getGeomType(),0) ) {
+    for ( const auto &elem : mesh->getIterator( mesh->getGeomType(), 0 ) ) {
         double volume = elem.volume();
         DOF->getDOFs( elem.globalID(), dofs );
-        AMP_ASSERT( dofs.size()==1 );
+        AMP_ASSERT( dofs.size() == 1 );
         vec->addLocalValueByGlobalID( dofs[0], volume );
     }
     return vec;
@@ -76,9 +77,9 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     // Create the meshes from the input database
     PROFILE_START( "Load Mesh" );
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( params );
-    auto pointType = AMP::Mesh::GeomType::Vertex;
-    auto volumeType = mesh->getGeomType();
-    auto surfaceType = getSurfaceType( volumeType );
+    auto pointType                   = AMP::Mesh::GeomType::Vertex;
+    auto volumeType                  = mesh->getGeomType();
+    auto surfaceType                 = getSurfaceType( volumeType );
     globalComm.barrier();
     PROFILE_STOP( "Load Mesh" );
     double t2 = AMP::AMP_MPI::time();
@@ -91,10 +92,11 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     // Create a simple DOFManager
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
         new AMP::Discretization::DOFManagerParameters( mesh ) );
-    auto DOF_scalar  = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 1, true );
-    auto DOF_vector  = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 3, true );
-    auto DOF_gauss   = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 8, true );
-    auto DOF_surface = AMP::Discretization::simpleDOFManager::create( submesh, surfaceType, 0, 1, true );
+    auto DOF_scalar = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 1, true );
+    auto DOF_vector = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 3, true );
+    auto DOF_gauss  = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 8, true );
+    auto DOF_surface =
+        AMP::Discretization::simpleDOFManager::create( submesh, surfaceType, 0, 1, true );
 
     // Create the vectors
     AMP::LinearAlgebra::Variable::shared_ptr rank_var( new AMP::LinearAlgebra::Variable( "rank" ) );

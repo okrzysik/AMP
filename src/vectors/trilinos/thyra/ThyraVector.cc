@@ -1,7 +1,7 @@
 #include "vectors/trilinos/thyra/ThyraVector.h"
-#include "vectors/SimpleVector.h"
-#include "vectors/MultiVector.h"
 #include "vectors/MultiVariable.h"
+#include "vectors/MultiVector.h"
+#include "vectors/SimpleVector.h"
 #include "vectors/trilinos/thyra/ManagedThyraVector.h"
 #include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
@@ -34,12 +34,12 @@ Vector::const_shared_ptr ThyraVector::constView( Vector::const_shared_ptr inVect
         return inVector->getView<ManagedThyraVector>();
     // Create a new view
     Vector::shared_ptr retVal;
-    if ( dynamic_pointer_cast<const ManagedVector>(inVector) ) {
+    if ( dynamic_pointer_cast<const ManagedVector>( inVector ) ) {
         Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
         retVal                       = Vector::shared_ptr( new ManagedThyraVector( inVector2 ) );
         retVal->setVariable( inVector->getVariable() );
         inVector->registerView( retVal );
-    } else if ( dynamic_pointer_cast<const VectorEngine>(inVector) ) {
+    } else if ( dynamic_pointer_cast<const VectorEngine>( inVector ) ) {
         Vector::shared_ptr inVector2            = AMP::const_pointer_cast<Vector>( inVector );
         ManagedThyraVectorParameters *newParams = new ManagedThyraVectorParameters;
         newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
@@ -74,10 +74,10 @@ Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
         return inVector->getView<ManagedThyraVector>();
     // Create a new view
     Vector::shared_ptr retVal;
-    if ( dynamic_pointer_cast<ManagedVector>(inVector) ) {
+    if ( dynamic_pointer_cast<ManagedVector>( inVector ) ) {
         retVal = Vector::shared_ptr( new ManagedThyraVector( inVector ) );
         inVector->registerView( retVal );
-    } else if ( dynamic_pointer_cast<VectorEngine>(inVector) ) {
+    } else if ( dynamic_pointer_cast<VectorEngine>( inVector ) ) {
         ManagedThyraVectorParameters *newParams = new ManagedThyraVectorParameters;
         newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector );
         newParams->d_CloneEngine = false;
@@ -182,4 +182,3 @@ ThyraVector::constView( const Thyra::VectorBase<double> *vec )
 
 } // LinearAlgebra namespace
 } // AMP namespace
-

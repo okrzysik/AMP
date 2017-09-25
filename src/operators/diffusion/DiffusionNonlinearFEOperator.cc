@@ -192,7 +192,8 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
     for ( unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
         if ( d_isActive[var] ) {
             if ( d_isFrozen[var] ) {
-                d_Frozen[var]->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+                d_Frozen[var]->makeConsistent(
+                    AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
                 d_inVec[var] = d_Frozen[var];
             } else {
                 AMP::LinearAlgebra::Variable::shared_ptr tvar = d_inpVariables->getVariable( var );
@@ -201,7 +202,8 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
             }
 
             AMP_ASSERT( d_inVec[var] != nullptr );
-            AMP_ASSERT( d_inVec[var]->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
+            AMP_ASSERT( d_inVec[var]->getUpdateStatus() ==
+                        AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
             if ( d_iDebugPrintInfoLevel > 5 )
                 std::cout << "Max Value inside preAssembly: " << d_inVec[var]->max() << std::endl;
         }
@@ -392,7 +394,8 @@ AMP::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
             auto temperature = u_meshVec->constSubsetVectorForVariable( tvar );
             outParams->d_temperature =
                 std::const_pointer_cast<AMP::LinearAlgebra::Vector>( temperature );
-            outParams->d_temperature->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+            outParams->d_temperature->makeConsistent(
+                AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         }
     }
 
@@ -416,7 +419,8 @@ AMP::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
             auto bvar           = d_inpVariables->getVariable( Diffusion::BURNUP );
             auto burnup         = u_meshVec->constSubsetVectorForVariable( bvar );
             outParams->d_burnup = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( burnup );
-            outParams->d_burnup->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+            outParams->d_burnup->makeConsistent(
+                AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         }
     }
 
@@ -443,9 +447,9 @@ void DiffusionNonlinearFEOperator::resetFrozen(
 
 bool DiffusionNonlinearFEOperator::isValidInput( AMP::LinearAlgebra::Vector::shared_ptr &u )
 {
-    auto property = d_transportModel->getProperty();
-    std::vector<std::string> names       = property->get_arguments();
-    size_t nnames                        = names.size();
+    auto property                  = d_transportModel->getProperty();
+    std::vector<std::string> names = property->get_arguments();
+    size_t nnames                  = names.size();
     std::string argname;
     bool found = false;
     if ( d_PrincipalVariable == Diffusion::TEMPERATURE ) {

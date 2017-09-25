@@ -95,7 +95,7 @@ void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
                     AMP::LinearAlgebra::Vector::shared_ptr &specificPowerGpVec )
 {
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    auto multivec = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    auto multivec     = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
     globalMultiVector = multivec;
 
     AMP::LinearAlgebra::Variable::shared_ptr thermalVariable(
@@ -108,7 +108,8 @@ void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
     AMP::LinearAlgebra::Vector::shared_ptr thermalVec;
     if ( pinMesh.get() != nullptr ) {
         AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-            AMP::Discretization::simpleDOFManager::create( pinMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+            AMP::Discretization::simpleDOFManager::create(
+                pinMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
         thermalVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, thermalVariable );
     }
     multivec->addVector( thermalVec );
@@ -125,7 +126,8 @@ void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
 
     if ( pinMesh.get() != nullptr ) {
         AMP::Discretization::DOFManager::shared_ptr gaussPtDOFManager =
-            AMP::Discretization::simpleDOFManager::create( pinMesh, AMP::Mesh::GeomType::Volume, 1, 8 );
+            AMP::Discretization::simpleDOFManager::create(
+                pinMesh, AMP::Mesh::GeomType::Volume, 1, 8 );
         specificPowerGpVec = AMP::LinearAlgebra::createVector( gaussPtDOFManager, powerVariable );
         specificPowerGpVec->setToScalar( 0.0 );
     }
@@ -369,7 +371,8 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         // and clad inner
         // surface temp on pellet outer surfaces
         AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-            AMP::Discretization::simpleDOFManager::create( pinMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+            AMP::Discretization::simpleDOFManager::create(
+                pinMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
         thermalMapVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, thermalVariable, true );
 
         std::vector<AMP::Mesh::MeshID> pinMeshIDs = pinMesh->getBaseMeshIDs();
@@ -672,7 +675,8 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
     if ( pinMesh.get() != nullptr ) {
         globalThermalSolVec->setToScalar( 600 );
         AMP::Discretization::DOFManager::shared_ptr gaussPtDOFManager =
-            AMP::Discretization::simpleDOFManager::create( pinMesh, AMP::Mesh::GeomType::Volume, 1, 8 );
+            AMP::Discretization::simpleDOFManager::create(
+                pinMesh, AMP::Mesh::GeomType::Volume, 1, 8 );
         AMP::Mesh::MeshIterator it = pinMesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
@@ -689,7 +693,8 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
                 specificPowerGpVec->select( meshSelector, "cladPower" );
             cladPower->zero();
         }
-        specificPowerGpVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+        specificPowerGpVec->makeConsistent(
+            AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         volumeIntegralColumnOperator->apply( specificPowerGpVec, globalThermalRhsVec );
     }
 
@@ -924,17 +929,22 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         // Register the quantities to plot
         AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
         if( xyFaceMesh != NULL ){
-            siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "SubchannelFlow" );
-            siloWriter->registerVector( flowTempVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "FlowTemp" );
+            siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::GeomType::Face,
+    "SubchannelFlow" );
+            siloWriter->registerVector( flowTempVec, xyFaceMesh, AMP::Mesh::GeomType::Face,
+    "FlowTemp" );
             siloWriter->registerVector( deltaFlowTempVec, xyFaceMesh, AMP::Mesh::GeomType::Face,
     "FlowTempDelta" );
-            siloWriter->registerVector( flowDensityVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "FlowDensity"
+            siloWriter->registerVector( flowDensityVec, xyFaceMesh, AMP::Mesh::GeomType::Face,
+    "FlowDensity"
     );
         }
         if ( pinMesh.get()!=NULL ) {
-            siloWriter->registerVector( globalThermalSolVec ,  pinMesh , AMP::Mesh::GeomType::Vertex,
+            siloWriter->registerVector( globalThermalSolVec ,  pinMesh ,
+    AMP::Mesh::GeomType::Vertex,
     "Temperature" );
-            siloWriter->registerVector( specificPowerGpVec,  pinMesh , AMP::Mesh::GeomType::Volume, "Power" );
+            siloWriter->registerVector( specificPowerGpVec,  pinMesh , AMP::Mesh::GeomType::Volume,
+    "Power" );
         }
         siloWriter->writeFile( exeName, 0 );
     #endif

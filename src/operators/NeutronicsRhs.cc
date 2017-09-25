@@ -4,9 +4,9 @@
 #include "ampmesh/Mesh.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "operators/Operator.h"
-#include "vectors/Vector.h"
 #include "utils/InputDatabase.h"
 #include "utils/shared_ptr.h"
+#include "vectors/Vector.h"
 
 #include <cmath>
 #include <vector>
@@ -176,8 +176,9 @@ void NeutronicsRhs::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         rInternal->setToScalar( value );
     } else {
         rInternal->zero();
-        int ghostWidth                    = 0;
-        AMP::Mesh::MeshIterator elem      = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
+        int ghostWidth = 0;
+        AMP::Mesh::MeshIterator elem =
+            d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
         AMP::Mesh::MeshIterator end_elems = elem.end();
 
         unsigned int DOFsPerVolume = 8;

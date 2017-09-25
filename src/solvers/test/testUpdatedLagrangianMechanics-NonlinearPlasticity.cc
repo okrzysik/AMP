@@ -26,8 +26,8 @@
 #include "solvers/petsc/PetscSNESSolverParameters.h"
 #include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
-#include "utils/ReadTestMesh.h"
 #include "utils/PIO.h"
+#include "utils/ReadTestMesh.h"
 
 #include <iostream>
 #include <string>
@@ -93,7 +93,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     dirichletLoadVecOp->setVariable( dispVar );
 
     AMP::Discretization::DOFManager::shared_ptr dofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;

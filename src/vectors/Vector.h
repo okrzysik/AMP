@@ -60,14 +60,12 @@ class VectorSelector;
   * \f$\mathbf{L}\mathbf{\tilde{u}}=\mathbf{f}\f$.  In this case
   * \f$\mathbf{\tilde{u}}\f$ and \f$\mathbf{f}\f$ are Vectors.
   */
-class Vector :
-    virtual public VectorData,
-    virtual public VectorOperations,
-    public AMP::enable_shared_from_this<Vector>
+class Vector : virtual public VectorData,
+               virtual public VectorOperations,
+               public AMP::enable_shared_from_this<Vector>
 {
 
 public: // typedefs
-
     using VectorData::ScatterType;
     using VectorData::UpdateState;
 
@@ -87,9 +85,8 @@ public: // typedefs
 
 
 public: // Virtual functions
-
-    /** \brief Return the name of the vector
-      */
+        /** \brief Return the name of the vector
+          */
     virtual std::string type() const = 0;
 
     //! \name Vector memory manipulation
@@ -123,7 +120,7 @@ public: // Virtual functions
       * number of entries.  The vector will be associated with a clone of the same Variable with the
      * given name
      */
-    virtual Vector::shared_ptr cloneVector( const std::string& name ) const;
+    virtual Vector::shared_ptr cloneVector( const std::string &name ) const;
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
       * \param[in] name  Variable by which to retrieve a subvector
@@ -236,12 +233,10 @@ public: // Virtual functions
 
 
 public: // Constructor/destructors
-
-
-    /** \brief Constructor
-      * \param[in] parameters  A pointer to a parameters class
-      * \see VectorParameters
-     */
+        /** \brief Constructor
+          * \param[in] parameters  A pointer to a parameters class
+          * \see VectorParameters
+         */
     explicit Vector( VectorParameters::shared_ptr parameters );
 
     /** \brief Destructor
@@ -250,9 +245,8 @@ public: // Constructor/destructors
 
 
 public: // Non-virtual functions
-
     /// @copydoc VectorOperations::copy(const VectorOperations&)
-    inline void copyVector( AMP::shared_ptr<const Vector> x ) { copy(*x); }
+    inline void copyVector( AMP::shared_ptr<const Vector> x ) { copy( *x ); }
 
     /** \brief Change the variable associated with this vector
       * \param[in] name  The new variable
@@ -274,7 +268,7 @@ public: // Non-virtual functions
       * \return  A Vector shared pointer
       * \see MultiVector
      */
-    inline Vector::shared_ptr subsetVectorForVariable( const std::string& name );
+    inline Vector::shared_ptr subsetVectorForVariable( const std::string &name );
 
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
@@ -282,8 +276,7 @@ public: // Non-virtual functions
       * \return  A Vector shared pointer
       * \see MultiVector
      */
-    inline Vector::const_shared_ptr
-    constSubsetVectorForVariable( const std::string& name ) const;
+    inline Vector::const_shared_ptr constSubsetVectorForVariable( const std::string &name ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other Vector to swap data with
@@ -343,7 +336,6 @@ public: // Non-virtual functions
 
 
 protected: // Internal data
-
     // A default RNG to use when one is not specified
     static RNG::shared_ptr d_DefaultRNG;
 
@@ -366,7 +358,6 @@ private:
     std::ostream *d_output_stream;
 
     AMP::shared_ptr<std::vector<AMP::weak_ptr<Vector>>> d_Views;
-
 };
 
 

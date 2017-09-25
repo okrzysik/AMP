@@ -637,22 +637,22 @@ void Array<TYPE, FUN, Allocator>::copyTo( TYPE2 *dst ) const
         dst[i]     = static_cast<TYPE2>( d_data[i] );
 }
 template <class TYPE, class FUN, class Allocator>
-void Array<TYPE, FUN, Allocator>::swap(Array &other)
+void Array<TYPE, FUN, Allocator>::swap( Array &other )
 {
     // check that dimensions match
     ARRAY_ASSERT( d_length == other.length() );
     ARRAY_ASSERT( d_ndim == other.d_ndim );
     for ( int i = 0; i < d_ndim; i++ ) {
-        ARRAY_ASSERT(d_N[i]==other.d_N[i]);
+        ARRAY_ASSERT( d_N[i] == other.d_N[i] );
     }
     // set the raw data pointers
     TYPE *tmp_data = d_data;
-    d_data = other.d_data;
-    other.d_data = tmp_data;
+    d_data         = other.d_data;
+    other.d_data   = tmp_data;
     // set the shared pointers
     auto data_shared_ptr = d_ptr;
-    d_ptr = other.d_ptr;
-    other.d_ptr = data_shared_ptr;
+    d_ptr                = other.d_ptr;
+    other.d_ptr          = data_shared_ptr;
 }
 template <class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::fill( const TYPE &value )
@@ -1010,62 +1010,72 @@ Array<TYPE, FUN, Allocator>::coarsen( const std::vector<size_t> &ratio,
 /********************************************************
 *  Interpolate                                          *
 ********************************************************/
-template<class TYPE>
+template <class TYPE>
 inline TYPE Array_interp_1D( double x, int N, const TYPE *data )
 {
     int i = floor( x );
-    i = std::max(i,0);
-    i = std::min(i,N-2);
-    return (i+1-x)*data[i] + (x-i)*data[i+1];
+    i     = std::max( i, 0 );
+    i     = std::min( i, N - 2 );
+    return ( i + 1 - x ) * data[i] + ( x - i ) * data[i + 1];
 }
-template<class TYPE>
+template <class TYPE>
 inline TYPE Array_interp_2D( double x, double y, int Nx, int Ny, const TYPE *data )
 {
-    int i = floor( x );
-    i = std::max(i,0);
-    i = std::min(i,Nx-2);
-    double dx = x - i;
-    double dx2 = 1.0 - dx;
-    int j = floor( y );
-    j = std::max(j,0);
-    j = std::min(j,Ny-2);
-    double dy = y - j;
-    double dy2 = 1.0 - dy;
-    double f[4] = { data[i+j*Nx], data[i+1+j*Nx], data[i+(j+1)*Nx], data[i+1+(j+1)*Nx] };
+    int i       = floor( x );
+    i           = std::max( i, 0 );
+    i           = std::min( i, Nx - 2 );
+    double dx   = x - i;
+    double dx2  = 1.0 - dx;
+    int j       = floor( y );
+    j           = std::max( j, 0 );
+    j           = std::min( j, Ny - 2 );
+    double dy   = y - j;
+    double dy2  = 1.0 - dy;
+    double f[4] = { data[i + j * Nx],
+                    data[i + 1 + j * Nx],
+                    data[i + ( j + 1 ) * Nx],
+                    data[i + 1 + ( j + 1 ) * Nx] };
     return ( dx * f[1] + dx2 * f[0] ) * dy2 + ( dx * f[3] + dx2 * f[2] ) * dy;
 }
-template<class TYPE>
-inline TYPE Array_interp_3D( double x, double y, double z, int Nx, int Ny, int Nz, const TYPE *data )
+template <class TYPE>
+inline TYPE
+Array_interp_3D( double x, double y, double z, int Nx, int Ny, int Nz, const TYPE *data )
 {
-    int i = floor( x );
-    i = std::max(i,0);
-    i = std::min(i,Nx-2);
-    double dx = x - i;
-    double dx2 = 1.0 - dx;
-    int j = floor( y );
-    j = std::max(j,0);
-    j = std::min(j,Ny-2);
-    double dy = y - j;
-    double dy2 = 1.0 - dy;
-    int k = floor( z );
-    k = std::max(k,0);
-    k = std::min(k,Nz-2);
-    double dz = z - k;
-    double dz2 = 1.0 - dz;
-    double f[8] = { data[i+j*Nx+k*Nx*Ny], data[i+1+j*Nx+k*Nx*Ny], data[i+(j+1)*Nx+k*Nx*Ny], data[i+1+(j+1)*Nx+k*Nx*Ny],
-       data[i+j*Nx+(k+1)*Nx*Ny], data[i+1+j*Nx+(k+1)*Nx*Ny], data[i+(j+1)*Nx+(k+1)*Nx*Ny], data[i+1+(j+1)*Nx+(k+1)*Nx*Ny] };
-    double h0  = ( dx * f[1] + dx2 * f[0] ) * dy2 + ( dx * f[3] + dx2 * f[2] ) * dy;
-    double h1  = ( dx * f[5] + dx2 * f[4] ) * dy2 + ( dx * f[7] + dx2 * f[6] ) * dy;
+    int i       = floor( x );
+    i           = std::max( i, 0 );
+    i           = std::min( i, Nx - 2 );
+    double dx   = x - i;
+    double dx2  = 1.0 - dx;
+    int j       = floor( y );
+    j           = std::max( j, 0 );
+    j           = std::min( j, Ny - 2 );
+    double dy   = y - j;
+    double dy2  = 1.0 - dy;
+    int k       = floor( z );
+    k           = std::max( k, 0 );
+    k           = std::min( k, Nz - 2 );
+    double dz   = z - k;
+    double dz2  = 1.0 - dz;
+    double f[8] = { data[i + j * Nx + k * Nx * Ny],
+                    data[i + 1 + j * Nx + k * Nx * Ny],
+                    data[i + ( j + 1 ) * Nx + k * Nx * Ny],
+                    data[i + 1 + ( j + 1 ) * Nx + k * Nx * Ny],
+                    data[i + j * Nx + ( k + 1 ) * Nx * Ny],
+                    data[i + 1 + j * Nx + ( k + 1 ) * Nx * Ny],
+                    data[i + ( j + 1 ) * Nx + ( k + 1 ) * Nx * Ny],
+                    data[i + 1 + ( j + 1 ) * Nx + ( k + 1 ) * Nx * Ny] };
+    double h0 = ( dx * f[1] + dx2 * f[0] ) * dy2 + ( dx * f[3] + dx2 * f[2] ) * dy;
+    double h1 = ( dx * f[5] + dx2 * f[4] ) * dy2 + ( dx * f[7] + dx2 * f[6] ) * dy;
     return h0 * dz2 + h1 * dz;
 }
 template <class TYPE, class FUN, class Allocator>
 inline TYPE Array<TYPE, FUN, Allocator>::interp( const std::vector<double> &x )
 {
-    int ndim=0, dim[ARRAY_NDIM_MAX];
+    int ndim = 0, dim[ARRAY_NDIM_MAX];
     double x2[ARRAY_NDIM_MAX];
-    for (int d=0; d<d_ndim; d++) {
+    for ( int d = 0; d < d_ndim; d++ ) {
         if ( d_N[d] > 1 ) {
-            x2[ndim] = x[d];
+            x2[ndim]  = x[d];
             dim[ndim] = d_N[d];
             ndim++;
         }
@@ -1080,7 +1090,7 @@ inline TYPE Array<TYPE, FUN, Allocator>::interp( const std::vector<double> &x )
     } else if ( d_ndim == 3 ) {
         f = Array_interp_3D( x2[0], x2[1], x2[2], dim[0], dim[1], dim[2], d_data );
     } else {
-        AMP_ERROR("Not finished");
+        AMP_ERROR( "Not finished" );
     }
     return f;
 }
@@ -1207,7 +1217,7 @@ Array<TYPE, FUN, Allocator>::transform( std::function<TYPE( const TYPE &, const 
 template <class TYPE, class FUN, class Allocator>
 bool Array<TYPE, FUN, Allocator>::equals( const Array &rhs, TYPE tol ) const
 {
-    return FUN::equals(*this, rhs, tol);
+    return FUN::equals( *this, rhs, tol );
 }
 
 

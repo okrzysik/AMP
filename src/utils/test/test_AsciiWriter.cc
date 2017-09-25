@@ -56,7 +56,8 @@ AMP::LinearAlgebra::Vector::shared_ptr createVector( AMP::LinearAlgebra::Variabl
     // Create an AMP mesh
     auto mesh = AMP::Mesh::BoxMesh::generate( params );
     // Create the DOF Manager
-    auto DOF =  AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto DOF = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     // Create the vector
     return AMP::LinearAlgebra::createVector( DOF, var, true );
 }

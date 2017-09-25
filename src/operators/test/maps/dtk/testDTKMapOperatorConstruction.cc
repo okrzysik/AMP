@@ -35,7 +35,8 @@ void dtkConsruction( AMP::UnitTest *ut, std::string input_file )
     AMP::pout << "Finished loading meshes" << std::endl;
 
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create(
+            manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Variable::shared_ptr variable(
         new AMP::LinearAlgebra::Variable( "Field" ) );
     AMP::LinearAlgebra::Vector::shared_ptr fieldVec =

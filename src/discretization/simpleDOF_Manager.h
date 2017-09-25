@@ -89,7 +89,8 @@ public:
      * (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
-    virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const override;
+    virtual void getDOFs( const AMP::Mesh::MeshElementID &id,
+                          std::vector<size_t> &dofs ) const override;
 
 
     /** \brief Get the entry indices of DOFs given a mesh element ID
@@ -118,7 +119,7 @@ public:
 
     //! Get the row DOFs given a mesh element
     virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const override;
-    
+
 
     /** \brief Subset the DOF Manager for a mesh
      * \details  This will subset a DOF manager for a particular mesh.  The resulting DOFManager

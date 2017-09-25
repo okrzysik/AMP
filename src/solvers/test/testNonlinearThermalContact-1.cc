@@ -107,8 +107,11 @@ void thermalContactTest( AMP::UnitTest *ut, std::string exeName )
         AMP::Discretization::simpleDOFManager::create(
             meshAdapter2, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap1 =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter1, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter1,
+                                                       AMP::Mesh::GeomType::Volume,
+                                                       gaussPointGhostWidth,
+                                                       DOFsPerElement,
+                                                       split );
     AMP::LinearAlgebra::VS_Mesh vectorSelector1( meshAdapter1 );
     AMP::LinearAlgebra::VS_Mesh vectorSelector2( meshAdapter2 );
 

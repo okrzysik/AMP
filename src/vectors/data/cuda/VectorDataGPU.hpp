@@ -4,8 +4,8 @@
 #include "vectors/data/cuda/VectorDataGPU.h"
 
 
-#include <cuda_runtime_api.h>
 #include <cuda.h>
+#include <cuda_runtime_api.h>
 
 
 namespace AMP {
@@ -13,22 +13,22 @@ namespace LinearAlgebra {
 
 
 extern template class VectorDataGPU<double>; // Suppresses implicit instantiation below --
-extern template class VectorDataGPU<float>; // Suppresses implicit instantiation below --
+extern template class VectorDataGPU<float>;  // Suppresses implicit instantiation below --
 
 
 /****************************************************************
 * Allocate the data                                             *
 ****************************************************************/
-template<typename TYPE>
+template <typename TYPE>
 void VectorDataGPU<TYPE>::allocate( size_t start, size_t localSize, size_t globalSize )
 {
-    cudaMallocManaged( (void**) &d_Data, localSize*sizeof(TYPE), cudaMemAttachGlobal );
+    cudaMallocManaged( (void **) &d_Data, localSize * sizeof( TYPE ), cudaMemAttachGlobal );
     AMP_INSIST( d_Data, "Failed to allocate memory on device" );
     d_startIndex = start;
-    d_localSize = localSize;
+    d_localSize  = localSize;
     d_globalSize = globalSize;
 }
-template<typename TYPE>
+template <typename TYPE>
 VectorDataGPU<TYPE>::~VectorDataGPU()
 {
     cudaFree( d_Data );
@@ -38,58 +38,58 @@ VectorDataGPU<TYPE>::~VectorDataGPU()
 /****************************************************************
 * Return basic properties                                       *
 ****************************************************************/
-template<typename TYPE>
+template <typename TYPE>
 size_t VectorDataGPU<TYPE>::numberOfDataBlocks() const
 {
     return 1;
 }
-template<typename TYPE>
+template <typename TYPE>
 size_t VectorDataGPU<TYPE>::sizeOfDataBlock( size_t i ) const
 {
     if ( i > 0 )
         return 0;
     return d_localSize;
 }
-template<typename TYPE>
+template <typename TYPE>
 size_t VectorDataGPU<TYPE>::getLocalSize() const
 {
     return d_localSize;
 }
-template<typename TYPE>
+template <typename TYPE>
 size_t VectorDataGPU<TYPE>::getGlobalSize() const
 {
     return d_globalSize;
 }
-template<typename TYPE>
+template <typename TYPE>
 uint64_t VectorDataGPU<TYPE>::getDataID() const
 {
     return reinterpret_cast<uint64_t>( d_Data );
 }
-template<typename TYPE>
+template <typename TYPE>
 bool VectorDataGPU<TYPE>::isTypeId( size_t hash, size_t ) const
 {
-    return hash == typeid(TYPE).hash_code();
+    return hash == typeid( TYPE ).hash_code();
 }
-template<typename TYPE>
+template <typename TYPE>
 size_t VectorDataGPU<TYPE>::sizeofDataBlockType( size_t ) const
 {
-    return sizeof(TYPE);
+    return sizeof( TYPE );
 }
 
 
 /****************************************************************
 * Access the raw data blocks                                    *
 ****************************************************************/
-template<typename TYPE>
-inline void* VectorDataGPU<TYPE>::getRawDataBlockAsVoid( size_t i )
+template <typename TYPE>
+inline void *VectorDataGPU<TYPE>::getRawDataBlockAsVoid( size_t i )
 {
     if ( i != 0 ) {
         return 0;
     }
     return d_Data;
 }
-template<typename TYPE>
-inline const void* VectorDataGPU<TYPE>::getRawDataBlockAsVoid( size_t i ) const
+template <typename TYPE>
+inline const void *VectorDataGPU<TYPE>::getRawDataBlockAsVoid( size_t i ) const
 {
     if ( i != 0 ) {
         return 0;
@@ -101,18 +101,18 @@ inline const void* VectorDataGPU<TYPE>::getRawDataBlockAsVoid( size_t i ) const
 /****************************************************************
 * Access individual values                                      *
 ****************************************************************/
-template<typename TYPE>
-inline TYPE& VectorDataGPU<TYPE>::operator[]( size_t i )
+template <typename TYPE>
+inline TYPE &VectorDataGPU<TYPE>::operator[]( size_t i )
 {
     return d_Data[i];
 }
 
-template<typename TYPE>
-inline const TYPE& VectorDataGPU<TYPE>::operator[]( size_t i ) const
+template <typename TYPE>
+inline const TYPE &VectorDataGPU<TYPE>::operator[]( size_t i ) const
 {
     return d_Data[i];
 }
-template<typename TYPE>
+template <typename TYPE>
 inline void VectorDataGPU<TYPE>::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
     for ( int i            = 0; i != num; i++ )
@@ -121,7 +121,7 @@ inline void VectorDataGPU<TYPE>::setValuesByLocalID( int num, size_t *indices, c
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
-template<typename TYPE>
+template <typename TYPE>
 inline void
 VectorDataGPU<TYPE>::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
@@ -133,7 +133,7 @@ VectorDataGPU<TYPE>::setLocalValuesByGlobalID( int num, size_t *indices, const d
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
-template<typename TYPE>
+template <typename TYPE>
 inline void VectorDataGPU<TYPE>::addValuesByLocalID( int num, size_t *indices, const double *vals )
 {
     for ( int i = 0; i != num; i++ )
@@ -142,7 +142,7 @@ inline void VectorDataGPU<TYPE>::addValuesByLocalID( int num, size_t *indices, c
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
-template<typename TYPE>
+template <typename TYPE>
 inline void
 VectorDataGPU<TYPE>::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
@@ -154,7 +154,7 @@ VectorDataGPU<TYPE>::addLocalValuesByGlobalID( int num, size_t *indices, const d
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
-template<typename TYPE>
+template <typename TYPE>
 inline void
 VectorDataGPU<TYPE>::getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
 {
@@ -168,7 +168,7 @@ VectorDataGPU<TYPE>::getLocalValuesByGlobalID( int num, size_t *indices, double 
 /****************************************************************
 * Copy raw data                                                 *
 ****************************************************************/
-template<typename TYPE>
+template <typename TYPE>
 void VectorDataGPU<TYPE>::putRawData( const double *in )
 {
     for ( size_t i = 0; i < d_localSize; ++i ) {
@@ -176,7 +176,7 @@ void VectorDataGPU<TYPE>::putRawData( const double *in )
     }
 }
 
-template<typename TYPE>
+template <typename TYPE>
 void VectorDataGPU<TYPE>::copyOutRawData( double *out ) const
 {
     for ( size_t i = 0; i < d_localSize; ++i ) {

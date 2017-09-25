@@ -7,7 +7,6 @@
 #include "test_VectorHelpers.h"
 
 
-
 int main( int argc, char **argv )
 {
     AMP::AMPManager::startup( argc, argv );

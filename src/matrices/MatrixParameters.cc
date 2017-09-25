@@ -11,8 +11,8 @@ MatrixParameters::MatrixParameters( AMP::Discretization::DOFManager::shared_ptr 
                                     AMP::Discretization::DOFManager::shared_ptr right,
                                     AMP_MPI comm )
 {
-    AMP_ASSERT(left);
-    AMP_ASSERT(right);
+    AMP_ASSERT( left );
+    AMP_ASSERT( right );
     d_comm            = comm;
     d_DOFManagerLeft  = left;
     d_DOFManagerRight = right;

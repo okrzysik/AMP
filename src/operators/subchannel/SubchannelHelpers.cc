@@ -358,7 +358,8 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     getCladProperties( comm, clad, clad_x, clad_y, clad_d );
     AMP::Mesh::Mesh::shared_ptr clad_surface;
     if ( clad.get() != nullptr )
-        clad_surface = clad->Subset( clad->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 4, 1 ) );
+        clad_surface =
+            clad->Subset( clad->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 4, 1 ) );
     // Get the subchannel properties
     size_t N[2];
     std::vector<double> x, y, hydraulic_diam;

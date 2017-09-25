@@ -24,8 +24,8 @@ void testGetDOFIterator( AMP::UnitTest *ut,
                          const AMP::Mesh::MeshIterator &iterator,
                          AMP::Discretization::DOFManager::shared_ptr DOF )
 {
-    bool pass1 = true;
-    bool pass2 = true;
+    bool pass1                  = true;
+    bool pass2                  = true;
     AMP::Mesh::MeshIterator cur = iterator.begin();
     std::vector<size_t> dofs;
     for ( size_t i = 0; i < cur.size(); i++ ) {

@@ -4,12 +4,12 @@
 #include <iomanip>
 #include <iostream>
 
-#include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
+#include "utils/AMP_MPI.h"
 #include "utils/InputManager.h"
+#include "utils/PIO.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "utils/PIO.h"
 
 #include "ampmesh/Mesh.h"
 
@@ -63,7 +63,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     // Create a nodal scalar vector
     AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "myVar" ) );
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create(
+            mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Vector::shared_ptr vec =
         AMP::LinearAlgebra::createVector( nodalScalarDOF, var, true );
     vec->zero();
@@ -71,7 +72,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-    AMP::Mesh::MeshIterator bnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, surfaceId, 0 );
+    AMP::Mesh::MeshIterator bnd =
+        mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, surfaceId, 0 );
     std::cout << "Number of surface elements: " << bnd.size() << std::endl;
     AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
@@ -118,7 +120,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         double vol2 = bnd->volume();
         if ( fabs( vol1 - vol2 ) > ( 1.0e-8 * vol2 ) ) {
             std::cout << "GeomType::Volume 1 = " << std::setprecision( 15 ) << vol1 << std::endl;
-            std::cout << "GeomType::Volume 2 = " << std::setprecision( 15 ) << vol2 << std::endl << std::endl;
+            std::cout << "GeomType::Volume 2 = " << std::setprecision( 15 ) << vol2 << std::endl
+                      << std::endl;
             volume_passes = false;
         }
 

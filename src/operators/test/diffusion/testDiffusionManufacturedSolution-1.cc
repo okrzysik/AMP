@@ -177,7 +177,7 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName )
                 file << "results={" << std::endl;
             }
 
-            size_t numNodes = iterator.size();
+            size_t numNodes                    = iterator.size();
             size_t iNode                       = 0;
             double l2err                       = 0.;
             AMP::Mesh::MeshIterator myIterator = iterator.begin();
@@ -224,7 +224,8 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName )
             AMP::Utilities::Writer::buildWriter( "Silo" );
         siloWriter->registerMesh( meshAdapter );
 
-        siloWriter->registerVector( workVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "RelativeError" );
+        siloWriter->registerVector(
+            workVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "RelativeError" );
         siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
         siloWriter->registerVector( sourceVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Source" );
         siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );

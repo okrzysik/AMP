@@ -110,7 +110,8 @@ void DendroSearch::projectOnBoundaryID(
         //        std::vector<size_t> mapGeomType::Faces(6, 6);
         for ( size_t f = 0; f < 6; ++f ) {
             std::vector<AMP::Mesh::MeshElement> faceVertices =
-                controlGeomType::VolumeElementGeomType::Faces[f].getElements( AMP::Mesh::GeomType::Vertex );
+                controlGeomType::VolumeElementGeomType::Faces[f].getElements(
+                    AMP::Mesh::GeomType::Vertex );
             AMP_CHECK_ASSERT( faceVertices.size() == 4 );
             std::sort( faceVertices.begin(), faceVertices.end() );
             for ( size_t g = 0; g < 6; ++g ) {
@@ -150,9 +151,11 @@ void DendroSearch::projectOnBoundaryID(
                         d_localElems[elementLocalID].getElements( AMP::Mesh::GeomType::Vertex );
                     AMP_CHECK_ASSERT( meshElementVertices.size() == 8 );
                     for ( size_t v = 0; v < 4; ++v ) {
-                        //                tmpData.d_GeomType::FaceVerticesIDs[v] = faceVertices[v].globalID();
+                        //                tmpData.d_GeomType::FaceVerticesIDs[v] =
+                        //                faceVertices[v].globalID();
                         tmpData.d_GeomType::FaceVerticesIDs[v] =
-                            meshElementVertices[faceOrdering[4 * mapGeomType::Faces[f] + v]].globalID();
+                            meshElementVertices[faceOrdering[4 * mapGeomType::Faces[f] + v]]
+                                .globalID();
                     } // end for v
                       //              d_volume_elements[elementLocalID]->project_on_face(f,
                       //              pointLocalCoords_ptr,
@@ -165,8 +168,8 @@ void DendroSearch::projectOnBoundaryID(
                 }          // end if
             }              // end for f
         } else {           // point was found but element is not on boundary
-            tmpData.d_SearchStatus = FoundNotOnBoundary;
-            tmpData.d_GeomType::VolumeID     = d_localElems[elementLocalID].globalID();
+            tmpData.d_SearchStatus       = FoundNotOnBoundary;
+            tmpData.d_GeomType::VolumeID = d_localElems[elementLocalID].globalID();
         } // end if
         sendData[d_sendDisps[pointOwnerRank] + tmpSendCnts[pointOwnerRank]] = tmpData;
         ++tmpSendCnts[pointOwnerRank];
@@ -199,7 +202,9 @@ void DendroSearch::projectOnBoundaryID(
         faceVerticesGlobalIDs.begin(), faceVerticesGlobalIDs.end(), AMP::Mesh::MeshElementID() );
 
     projectionLocalCoordsOnGeomType::Face.resize( 2 * d_numLocalPts );
-    std::fill( projectionLocalCoordsOnGeomType::Face.begin(), projectionLocalCoordsOnGeomType::Face.end(), 0.0 );
+    std::fill( projectionLocalCoordsOnGeomType::Face.begin(),
+               projectionLocalCoordsOnGeomType::Face.end(),
+               0.0 );
 
     shiftGlobalCoords.resize( 3 * d_numLocalPts );
     std::fill( shiftGlobalCoords.begin(), shiftGlobalCoords.end(), 0.0 );
@@ -230,7 +235,8 @@ void DendroSearch::projectOnBoundaryID(
                         shiftGlobalCoords[3 * pointLocalID + d] = tmpData.d_ShiftGlobalCoords[d];
                     } // end for d
                     for ( size_t v = 0; v < 4; ++v ) {
-                        faceVerticesGlobalIDs[4 * pointLocalID + v] = tmpData.d_GeomType::FaceVerticesIDs[v];
+                        faceVerticesGlobalIDs[4 * pointLocalID + v] =
+                            tmpData.d_GeomType::FaceVerticesIDs[v];
                     } // end for v
                     faceLocalIndices[pointLocalID] = tmpData.d_GeomType::FaceLocalIndex;
                 } // end if
@@ -319,7 +325,8 @@ void DendroSearch::setupDSforSearch()
     for ( size_t eId = 0; eId < localNumElems; ++eId, ++el ) {
         std::vector<int> eIdSingleton( 1, eId );
         d_localElems.push_back( *el );
-        std::vector<AMP::Mesh::MeshElement> vertices = el->getElements( AMP::Mesh::GeomType::Vertex );
+        std::vector<AMP::Mesh::MeshElement> vertices =
+            el->getElements( AMP::Mesh::GeomType::Vertex );
         double support_points[24];
         std::vector<int> minId( 3, 0 );
         std::vector<int> maxId( 3, 0 );
@@ -712,7 +719,8 @@ void DendroSearch::search( AMP::AMP_MPI comm, const std::vector<double> &pts )
     //    d_fout<<"local elements="<<(d_meshAdapter.get() != NULL ?
     //    static_cast<int>(d_meshAdapter->numLocalElements(AMP::Mesh::GeomType::Volume)) : -1)
     //        <<"  global="<<(d_meshAdapter.get() != NULL ?
-    //        static_cast<int>(d_meshAdapter->numGlobalElements(AMP::Mesh::GeomType::Volume)) : -1)<<"\n";
+    //        static_cast<int>(d_meshAdapter->numGlobalElements(AMP::Mesh::GeomType::Volume)) :
+    //        -1)<<"\n";
 
     double coarseSearchBeginTime = MPI_Wtime();
 
@@ -1081,7 +1089,8 @@ void DendroSearch::interpolate( AMP::AMP_MPI comm,
     }
     interpolateBeginTime = MPI_Wtime();
 
-    AMP_CHECK_ASSERT( vectorField->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
+    AMP_CHECK_ASSERT( vectorField->getUpdateStatus() ==
+                      AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
     AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
 
     for ( int i = 0; i < npes; ++i ) {

@@ -23,7 +23,7 @@ static inline void checkErr( int ierr )
 {
     AMP_INSIST( ierr == 0, "Petsc returned non-zero error code" );
 }
-#elif PETSC_VERSION_GE(3,2,0)
+#elif PETSC_VERSION_GE( 3, 2, 0 )
 static inline void checkErr( PetscErrorCode ierr )
 {
     AMP_INSIST( ierr == 0, "Petsc returned non-zero error code" );
@@ -72,7 +72,7 @@ PetscSNESSolver::~PetscSNESSolver()
     SNESMonitorCancel( d_SNESSolver );
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     SNESDestroy( d_SNESSolver );
-#elif PETSC_VERSION_GE(3,2,0)
+#elif PETSC_VERSION_GE( 3, 2, 0 )
     SNESDestroy( &d_SNESSolver );
 #else
 #error Not programmed for this version yet
@@ -97,8 +97,8 @@ void PetscSNESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> para
     }
     checkErr( SNESCreate( d_comm.getCommunicator(), &d_SNESSolver ) );
 
-    // set the type to line search, potentially modify this later to be from input
-#if PETSC_VERSION_LE(3,2,0)
+// set the type to line search, potentially modify this later to be from input
+#if PETSC_VERSION_LE( 3, 2, 0 )
     checkErr( SNESSetType( d_SNESSolver, SNESLS ) );
 #else
     checkErr( SNESSetType( d_SNESSolver, SNESNEWTONLS ) );
@@ -151,17 +151,17 @@ void PetscSNESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> para
     }
 
     if ( d_bEnableLineSearchPreCheck ) {
-#if PETSC_VERSION_LE(3,2,0)
+#if PETSC_VERSION_LE( 3, 2, 0 )
         checkErr(
             SNESLineSearchSetPreCheck( d_SNESSolver, PetscSNESSolver::lineSearchPreCheck, this ) );
 #elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
         SNESLineSearch snesLineSearch;
-        SNESGetLineSearch(d_SNESSolver, &snesLineSearch);
-        checkErr(
-            SNESLineSearchSetPreCheck( snesLineSearch, PetscSNESSolver::lineSearchPreCheck, this ) );
+        SNESGetLineSearch( d_SNESSolver, &snesLineSearch );
+        checkErr( SNESLineSearchSetPreCheck(
+            snesLineSearch, PetscSNESSolver::lineSearchPreCheck, this ) );
 
 #else
-        #error This version of PETSc is not supported.  Check!!!
+#error This version of PETSc is not supported.  Check!!!
 #endif
     }
 
@@ -181,22 +181,22 @@ void PetscSNESSolver::getFromInput( const AMP::shared_ptr<AMP::Database> db )
         petscOptions = PetscMonitor::removeMonitor( petscOptions );
         d_PetscMonitor.reset( new PetscMonitor( d_comm ) );
     }
-#if PETSC_VERSION_LE(3,2,0)
+#if PETSC_VERSION_LE( 3, 2, 0 )
     PetscOptionsInsertString( petscOptions.c_str() );
 #elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
     // if the solver type is specified as 'ls' replace by 'newtonls'
     // this hack is brittle and will easily fail if the string is
     // not matched exactly in the input. Temporary fix for now
-    std::string solverTypeStr("-snes_type ls");
-    auto pos = petscOptions.find(solverTypeStr);
-    if(pos!=std::string::npos) {
-        petscOptions.erase(pos, solverTypeStr.length());
+    std::string solverTypeStr( "-snes_type ls" );
+    auto pos = petscOptions.find( solverTypeStr );
+    if ( pos != std::string::npos ) {
+        petscOptions.erase( pos, solverTypeStr.length() );
         petscOptions += " -snes_type newtonls";
     }
 
     PetscOptionsInsertString( PETSC_NULL, petscOptions.c_str() );
 #else
-        #error This version of PETSc is not supported.  Check!!!
+#error This version of PETSc is not supported.  Check!!!
 #endif
 
     d_bUsesJacobian = db->getBoolWithDefault( "usesJacobian", false );
@@ -255,16 +255,18 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
         sp_f->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     if ( sp_x.get() != nullptr )
         sp_x->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
-    AMP_ASSERT( ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
-                ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT(
+        ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+        ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
 
     AMP::shared_ptr<AMP::Operator::Operator> op( ( (PetscSNESSolver *) ctx )->getOperator() );
 
     op->residual( sp_f, sp_x, sp_r );
     sp_r->scale( -1.0 );
 
-    AMP_ASSERT( ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
-                ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT(
+        ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+        ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
 
     PROFILE_STOP( "apply" );
     return ( ierr );
@@ -275,7 +277,8 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
 *  Solve                                                        *
 ****************************************************************/
 void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                             AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+                             AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                                 u )
 {
     PROFILE_START( "solve" );
 
@@ -299,14 +302,18 @@ void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
 #endif
 
     // Check input vector states
-    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
-                ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
-                ( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT( ( spRhs->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
-                ( spRhs->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT( ( spSol->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
-                ( spSol->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT(
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT(
+        ( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+        ( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT(
+        ( spRhs->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+        ( spRhs->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT(
+        ( spSol->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+        ( spSol->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
 
     if ( d_iDebugPrintInfoLevel > 2 )
         AMP::pout << "L2 Norm of u in PetscSNESSolver::solve after view " << spSol->L2Norm()
@@ -315,11 +322,11 @@ void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
     // if the dynamic cast yielded a valid pointer
     if ( spSol.get() != nullptr ) {
 
-        Vec x = dynamic_pointer_cast<const AMP::LinearAlgebra::PetscVector>(spSol)->getVec();
+        Vec x = dynamic_pointer_cast<const AMP::LinearAlgebra::PetscVector>( spSol )->getVec();
 
         Vec b = PETSC_NULL;
         if ( spRhs.get() != nullptr ) {
-            b = dynamic_pointer_cast<const AMP::LinearAlgebra::PetscVector>(spRhs)->getVec();
+            b = dynamic_pointer_cast<const AMP::LinearAlgebra::PetscVector>( spRhs )->getVec();
             setSNESFunction( spRhs );
         }
 
@@ -338,7 +345,7 @@ void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
             }
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
             checkErr( MatMFFDSetFromOptions( d_Jacobian ) );
-#elif PETSC_VERSION_GE(3,2,0)
+#elif PETSC_VERSION_GE( 3, 2, 0 )
             checkErr( MatSetFromOptions( d_Jacobian ) );
 #else
 #error Not programmed for this version yet
@@ -418,12 +425,12 @@ void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
 /****************************************************************
 *  setJacobian                                                  *
 ****************************************************************/
-#if PETSC_VERSION_LE(3,2,0)
+#if PETSC_VERSION_LE( 3, 2, 0 )
 PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat *A, Mat *, MatStructure *, void *ctx )
 #elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
 PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat, void *ctx )
 #else
-        #error This version of PETSc is not supported.  Check!!!
+#error This version of PETSc is not supported.  Check!!!
 #endif
 {
     PROFILE_START( "setJacobian" );
@@ -432,14 +439,14 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat, void *ctx 
     bool bUsesJacobian           = pSNESSolver->getUsesJacobian();
 
     if ( !bUsesJacobian ) {
-#if PETSC_VERSION_LE(3,2,0)
+#if PETSC_VERSION_LE( 3, 2, 0 )
         ierr = MatAssemblyBegin( *A, MAT_FINAL_ASSEMBLY );
         ierr = MatAssemblyEnd( *A, MAT_FINAL_ASSEMBLY );
 #elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
         ierr = MatAssemblyBegin( A, MAT_FINAL_ASSEMBLY );
         ierr = MatAssemblyEnd( A, MAT_FINAL_ASSEMBLY );
 #else
-        #error This version of PETSc is not supported.  Check!!!
+#error This version of PETSc is not supported.  Check!!!
 #endif
     }
 
@@ -484,8 +491,8 @@ PetscSNESSolver::lineSearchPreCheck( SNES, Vec x, Vec y, void *checkctx, PetscTr
 PetscErrorCode
 PetscSNESSolver::lineSearchPreCheck( SNES, Vec x, Vec y, void *checkctx, PetscBool *changed_y )
 #elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
-PetscErrorCode
-PetscSNESSolver::lineSearchPreCheck( SNESLineSearch, Vec x, Vec y, PetscBool *changed_y, void *checkctx )
+PetscErrorCode PetscSNESSolver::lineSearchPreCheck(
+    SNESLineSearch, Vec x, Vec y, PetscBool *changed_y, void *checkctx )
 #else
 #error Not programmed for this version yet
 #endif
@@ -604,7 +611,8 @@ void PetscSNESSolver::setSNESFunction( AMP::shared_ptr<const AMP::LinearAlgebra:
     AMP_INSIST( petscVec.get() != nullptr,
                 "ERROR: Currently the SNES Solver can only be used with a Petsc_Vector, the "
                 "supplied Vector does not appear to belong to this class" );
-    Vec residualVector = dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(petscVec)->getVec();
+    Vec residualVector =
+        dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( petscVec )->getVec();
     SNESSetFunction( d_SNESSolver, residualVector, PetscSNESSolver::apply, (void *) this );
 }
 

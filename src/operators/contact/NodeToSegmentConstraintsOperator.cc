@@ -157,7 +157,8 @@ void NodeToSegmentConstraintsOperator::reset( const AMP::shared_ptr<OperatorPara
         //    AMP::Mesh::DendroSearch::FoundOnBoundary) );
         if ( *flagsIterator == AMP::Mesh::DendroSearch::FoundOnBoundary ) {
             hex8_element_t::get_basis_functions_values_on_face(
-                tmpSlaveVerticesLocalCoordOnGeomType::FacePointerToConst, masterShapeFunctionsValuesPointer );
+                tmpSlaveVerticesLocalCoordOnGeomType::FacePointerToConst,
+                masterShapeFunctionsValuesPointer );
             for ( size_t d = 0; d < 2; ++d ) {
                 ++tmpSlaveVerticesLocalCoordOnGeomType::FacePointerToConst;
             }

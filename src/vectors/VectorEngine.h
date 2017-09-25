@@ -1,9 +1,9 @@
 #ifndef included_AMP_VectorEngine
 #define included_AMP_VectorEngine
 
-#include "vectors/operations/VectorOperationsDefault.h"
 #include "utils/AMP_MPI.h"
 #include "utils/shared_ptr.h"
+#include "vectors/operations/VectorOperationsDefault.h"
 #include <vector>
 
 

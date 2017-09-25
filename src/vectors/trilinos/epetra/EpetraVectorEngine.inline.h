@@ -4,7 +4,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-inline EpetraVectorEngine::~EpetraVectorEngine() { }
+inline EpetraVectorEngine::~EpetraVectorEngine() {}
 
 inline Epetra_Vector &EpetraVectorEngine::getEpetra_Vector() { return d_epetraVector; }
 
@@ -46,7 +46,7 @@ inline size_t EpetraVectorEngine::getGlobalSize() const
 
 inline bool EpetraVectorEngine::sameEngine( VectorEngine &e ) const
 {
-    return dynamic_cast<EpetraVectorEngine*>( &e ) != nullptr;
+    return dynamic_cast<EpetraVectorEngine *>( &e ) != nullptr;
 }
 
 inline size_t EpetraVectorEngine::numberOfDataBlocks() const { return 1; }

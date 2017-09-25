@@ -6,8 +6,8 @@
 #include <algorithm>
 
 #include "utils/UnitTest.h"
-#include "vectors/petsc/PetscVector.h"
 #include "vectors/petsc/NativePetscVector.h"
+#include "vectors/petsc/PetscVector.h"
 #include "vectors/testHelpers/VectorTests.h"
 
 namespace AMP {
@@ -22,7 +22,10 @@ class PetscVectorFactory;
 class PetscVectorTests
 {
 public:
-    explicit PetscVectorTests( AMP::shared_ptr<const PetscVectorFactory> factory ): d_factory(factory) {}
+    explicit PetscVectorTests( AMP::shared_ptr<const PetscVectorFactory> factory )
+        : d_factory( factory )
+    {
+    }
 
     void testPetscVector( AMP::UnitTest *ut );
 

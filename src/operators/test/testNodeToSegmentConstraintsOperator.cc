@@ -63,10 +63,10 @@ void drawVerticesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 }
 
 void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                            int boundaryID,
-                            std::ostream &os,
-                            double const *point_of_view,
-                            const std::string &option = "" )
+                                      int boundaryID,
+                                      std::ostream &os,
+                                      double const *point_of_view,
+                                      const std::string &option = "" )
 {
     AMP::Mesh::MeshIterator boundaryIterator =
         meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, boundaryID );
@@ -86,8 +86,9 @@ void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
         for ( size_t i = 0; i < 4; ++i ) {
             faceGeomType::VertexCoordinates = faceVertices[i].coord();
             AMP_ASSERT( faceGeomType::VertexCoordinates.size() == 3 );
-            std::copy(
-                faceGeomType::VertexCoordinates.begin(), faceGeomType::VertexCoordinates.end(), faceData + 3 * i );
+            std::copy( faceGeomType::VertexCoordinates.begin(),
+                       faceGeomType::VertexCoordinates.end(),
+                       faceData + 3 * i );
         } // end for i
         triangle_t t( faceDataPtr[0], faceDataPtr[1], faceDataPtr[2] );
 
@@ -402,7 +403,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         int numMasterLocalNodes = 0;
         int numSlaveLocalNodes  = 0;
         if ( masterMeshAdapter.get() != NULL ) {
-            numMasterLocalNodes = masterMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
+            numMasterLocalNodes =
+                masterMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
         }
         if ( slaveMeshAdapter.get() != NULL ) {
             numSlaveLocalNodes = slaveMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
@@ -463,7 +465,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     } // end if
 
 #ifdef USE_EXT_SILO
-    siloWriter->registerVector( columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector(
+        columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     char outFileName[256];
     sprintf( outFileName, "MPC_%d", 0 );
     siloWriter->writeFile( outFileName, 0 );
@@ -606,7 +609,8 @@ void myTest2( AMP::UnitTest *ut, std::string exeName )
         AMP::shared_ptr<AMP::Operator::PetscMatrixShellOperator> matrixShellOperator(
             new AMP::Operator::PetscMatrixShellOperator( matrixShellParams ) );
 
-        int matLocalSize = dofsPerNode * meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
+        int matLocalSize =
+            dofsPerNode * meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
         AMP_ASSERT( matLocalSize == static_cast<int>( dofManager->numLocalDOF() ) );
         matrixShellOperator->setComm( globalComm );
         matrixShellOperator->setMatLocalRowSize( matLocalSize );

@@ -14,11 +14,13 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-class StridedVectorFactory: public VectorFactory
+class StridedVectorFactory : public VectorFactory
 {
 public:
-    
-    explicit StridedVectorFactory( AMP::shared_ptr<const VectorFactory> factory ): d_factory(factory) {}
+    explicit StridedVectorFactory( AMP::shared_ptr<const VectorFactory> factory )
+        : d_factory( factory )
+    {
+    }
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
@@ -45,10 +47,7 @@ public:
 
 private:
     AMP::shared_ptr<const VectorFactory> d_factory;
-
 };
-
-
 }
 }
 

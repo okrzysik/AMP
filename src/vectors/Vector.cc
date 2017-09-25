@@ -1,7 +1,7 @@
 #include "vectors/Vector.h"
 #include "utils/AMP_MPI.h"
-#include "utils/Utilities.h"
 #include "utils/PIO.h"
+#include "utils/Utilities.h"
 #include "vectors/DataChangeFirer.h"
 #include "vectors/MultiVector.h"
 #include "vectors/VectorSelector.h"
@@ -23,13 +23,11 @@ RNG::shared_ptr Vector::d_DefaultRNG;
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-Vector::Vector():
-    VectorData(),
-    VectorOperations()
+Vector::Vector() : VectorData(), VectorOperations()
 {
-    d_VectorData = dynamic_cast<VectorData*>(this);
-    d_Ghosts    = AMP::shared_ptr<std::vector<double>>( new std::vector<double> );
-    d_AddBuffer = AMP::shared_ptr<std::vector<double>>( new std::vector<double> );
+    d_VectorData = dynamic_cast<VectorData *>( this );
+    d_Ghosts     = AMP::shared_ptr<std::vector<double>>( new std::vector<double> );
+    d_AddBuffer  = AMP::shared_ptr<std::vector<double>>( new std::vector<double> );
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UpdateState::UNCHANGED;
     d_Views        = AMP::shared_ptr<std::vector<AMP::weak_ptr<Vector>>>(
@@ -39,7 +37,7 @@ Vector::Vector():
 }
 Vector::Vector( VectorParameters::shared_ptr parameters )
 {
-    d_VectorData = dynamic_cast<VectorData*>(this);
+    d_VectorData = dynamic_cast<VectorData *>( this );
     // Set default output stream
     d_output_stream = &AMP::plog;
     // Copy the relavent parameters
@@ -219,4 +217,3 @@ std::ostream &operator<<( std::ostream &out, const Vector &v )
 
 } // LinearAlgebra namespace
 } // AMP namespace
-

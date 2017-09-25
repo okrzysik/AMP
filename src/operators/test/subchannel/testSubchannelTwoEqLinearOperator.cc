@@ -38,7 +38,7 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian
     // loop over rows of Jacobian
     for ( size_t i = 0; i < num_dofs; i++ ) {
         std::vector<size_t> matCols; // indices of nonzero entries in row i
-        std::vector<double> matVals;       // values of nonzero entries in row i
+        std::vector<double> matVals; // values of nonzero entries in row i
         testJacobian->getRowByGlobalID(
             i, matCols, matVals ); // get nonzero entries of row i of Jacobian
         std::cout << "{";

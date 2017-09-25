@@ -99,7 +99,8 @@ public:
      * need to provide an implementation of.
      * @param [in] initialGuess: shared pointer to the initial guess vector.
      */
-    virtual void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override
+    virtual void
+    setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override
     {
         d_initialGuess = initialGuess;
     }

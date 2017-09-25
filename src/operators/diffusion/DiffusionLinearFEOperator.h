@@ -55,7 +55,6 @@ protected:
     AMP::shared_ptr<DiffusionLinearElement> d_diffLinElem;
 
     AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
-
 };
 }
 }

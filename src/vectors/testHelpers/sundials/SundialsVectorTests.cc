@@ -2,8 +2,8 @@
 
 #include "vectors/testHelpers/sundials/SundialsVectorTests.h"
 #include "vectors/Vector.h"
-#include "vectors/sundials/SundialsVector.h"
 #include "vectors/sundials/ManagedSundialsVector.h"
+#include "vectors/sundials/SundialsVector.h"
 
 
 namespace AMP {
@@ -39,8 +39,8 @@ void SundialsVectorTests::testSundialsVector( AMP::UnitTest *ut )
 void SundialsVectorTests::CloneSundialsVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    N_Vector vec_a = getVec( vectora );
-    N_Vector vec_b = N_VClone( vec_a );
+    N_Vector vec_a                                     = getVec( vectora );
+    N_Vector vec_b                                     = N_VClone( vec_a );
     AMP::LinearAlgebra::ManagedSundialsVector *vectorb = getVector( vec_b );
     bool pass                                          = true;
     for ( size_t i = 0; i != vectorb->numberOfDataBlocks(); i++ ) {
@@ -77,7 +77,6 @@ void SundialsVectorTests::LinearSumSundialsVector( AMP::UnitTest *utils )
     else
         utils->failure( "random linear sum" );
 }
-
 
 
 void SundialsVectorTests::ConstSundialsVector( AMP::UnitTest *utils )
@@ -342,8 +341,6 @@ void SundialsVectorTests::MinQuotientSundialsVector( AMP::UnitTest *utils )
     else
         utils->failure( "N_VMinQuotient" );
 }
-
-
 }
 }
 

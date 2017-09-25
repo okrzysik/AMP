@@ -157,7 +157,7 @@ void simpleDOFManager::initialize()
     // Note: this must be done after d_local_id is set, d_begin and d_global are set, and remote_ids
     // must be sorted.
     d_remote_dof = getRemoteDOF( d_remote_id );
-    AMP_ASSERT(d_remote_dof.size()==d_remote_id.size());
+    AMP_ASSERT( d_remote_dof.size() == d_remote_id.size() );
 }
 
 
@@ -213,7 +213,7 @@ AMP::shared_ptr<DOFManager> simpleDOFManager::subset( const AMP::Mesh::Mesh::sha
 * Get the DOFs for the element                                  *
 ****************************************************************/
 inline void simpleDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
-                                std::vector<size_t> &dofs ) const
+                                          std::vector<size_t> &dofs ) const
 {
     // Search for the dof locally
     size_t index = AMP::Utilities::findfirst( d_local_id, id );
@@ -241,7 +241,7 @@ void simpleDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids
                                 std::vector<size_t> &dofs ) const
 {
     dofs.resize( 0 );
-    dofs.reserve( ids.size()*DOFsPerElement );
+    dofs.reserve( ids.size() * DOFsPerElement );
     for ( auto id : ids )
         appendDOFs( id, dofs );
 }
@@ -262,10 +262,10 @@ AMP::Mesh::MeshElement simpleDOFManager::getElement( size_t dof ) const
     AMP::Mesh::MeshElementID id;
     if ( dof >= d_begin && dof < d_end ) {
         // We are searching for a local dof
-        id = d_local_id[(dof-d_begin)/DOFsPerElement];
+        id = d_local_id[( dof - d_begin ) / DOFsPerElement];
     }
-    const size_t dof2 = dof/DOFsPerElement;
-    for (size_t i=0; i<d_remote_id.size(); i++) {
+    const size_t dof2 = dof / DOFsPerElement;
+    for ( size_t i = 0; i < d_remote_id.size(); i++ ) {
         if ( d_remote_dof[i] == dof2 )
             id = d_remote_id[i];
     }
@@ -289,8 +289,8 @@ std::vector<size_t> simpleDOFManager::getRemoteDOFs() const
     // Create the list of remote DOFs
     size_t N = d_remote_id.size();
     std::vector<size_t> remote_DOFs( N * DOFsPerElement, (size_t) -1 );
-    for ( size_t i = 0, k=0; i < N; i++ ) {
-        for ( int j = 0; j < DOFsPerElement; j++, k++ )
+    for ( size_t i = 0, k = 0; i < N; i++ ) {
+        for ( int j        = 0; j < DOFsPerElement; j++, k++ )
             remote_DOFs[k] = d_remote_dof[i] * DOFsPerElement + j;
     }
     AMP::Utilities::quicksort( remote_DOFs );

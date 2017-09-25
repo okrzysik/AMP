@@ -1,12 +1,12 @@
 #ifndef included_AMP_PetscSNESSolver
 #define included_AMP_PetscSNESSolver
 
-#include "vectors/petsc/PetscHelpers.h"
 #include "solvers/SolverStrategy.h"
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/petsc/PetscMonitor.h"
 #include "solvers/petsc/PetscSNESSolverParameters.h"
 #include "utils/AMP_MPI.h"
+#include "vectors/petsc/PetscHelpers.h"
 
 #include <list>
 
@@ -168,13 +168,13 @@ private:
 
     static PetscErrorCode apply( SNES snes, Vec x, Vec f, void *ctx );
 
-#if PETSC_VERSION_LE(3,2,0)
+#if PETSC_VERSION_LE( 3, 2, 0 )
     static PetscErrorCode
     setJacobian( SNES snes, Vec x, Mat *A, Mat *B, MatStructure *mstruct, void *ctx );
 #elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
     static PetscErrorCode setJacobian( SNES, Vec x, Mat A, Mat, void *ctx );
 #else
-        #error This version of PETSc is not supported.  Check!!!
+#error This version of PETSc is not supported.  Check!!!
 #endif
 
     static bool isVectorValid( AMP::shared_ptr<AMP::Operator::Operator> &op,

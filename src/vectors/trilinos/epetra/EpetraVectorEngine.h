@@ -57,9 +57,7 @@ private:
   * libraries, it is very difficult to separate the data from the engine.  For this
   * reason, the EpetraVectorEngine contains the Epetra_Vector to operate on.
   */
-class EpetraVectorEngine :
-    public VectorEngine,
-    public VectorOperationsDefault<double>
+class EpetraVectorEngine : public VectorEngine, public VectorOperationsDefault<double>
 {
 protected:
     /** \brief  The Epetra_Vector to perform work on
@@ -164,7 +162,6 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::reciprocal;
     using VectorOperationsDefault::wrmsNorm;
     using VectorOperationsDefault::wrmsNormMask;
-
 };
 
 

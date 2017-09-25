@@ -96,7 +96,8 @@ void linearTest( AMP::UnitTest *ut,
 
     // create vectors for parameters
     AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Variable::shared_ptr tempVar(
         new AMP::LinearAlgebra::Variable( "testTempVar" ) );
     AMP::LinearAlgebra::Variable::shared_ptr concVar(

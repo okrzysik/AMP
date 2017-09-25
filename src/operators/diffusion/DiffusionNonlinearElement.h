@@ -59,7 +59,6 @@ public:
     bool getTransportAtGauss() { return d_transportAtGauss; }
 
 protected:
-
     std::vector<std::vector<double>> d_elementInputVectors;
 
     std::vector<double> *d_elementOutputVector;

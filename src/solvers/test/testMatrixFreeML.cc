@@ -5,11 +5,11 @@
 
 #include "utils/AMPManager.h"
 #include "utils/InputManager.h"
+#include "utils/PIO.h"
 #include "utils/ReadTestMesh.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "utils/WriteSolutionToFile.h"
-#include "utils/PIO.h"
 
 #include "ampmesh/MultiMesh.h"
 #include "ampmesh/libmesh/initializeLibMesh.h"
@@ -36,10 +36,7 @@
 
 #include "ml_include.h"
 
-void myGetRow2( void *object,
-                int row,
-                std::vector<size_t> &cols,
-                std::vector<double> &values )
+void myGetRow2( void *object, int row, std::vector<size_t> &cols, std::vector<double> &values )
 {
     AMP::Operator::ColumnOperator *op = reinterpret_cast<AMP::Operator::ColumnOperator *>( object );
     AMP::LinearAlgebra::Matrix::shared_ptr mat =
@@ -48,10 +45,7 @@ void myGetRow2( void *object,
     mat->getRowByGlobalID( row, cols, values );
 }
 
-void myGetRow3( void *object,
-                int row,
-                std::vector<size_t> &cols,
-                std::vector<double> &values )
+void myGetRow3( void *object, int row, std::vector<size_t> &cols, std::vector<double> &values )
 {
     AMP::Operator::ColumnOperator *op = reinterpret_cast<AMP::Operator::ColumnOperator *>( object );
     AMP::LinearAlgebra::Matrix::shared_ptr firstMat =
@@ -181,7 +175,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
     loadOperator->setVariable( fusedVar );
 
     AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF =
-        AMP::Discretization::simpleDOFManager::create( fusedMeshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
+        AMP::Discretization::simpleDOFManager::create(
+            fusedMeshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     AMP::LinearAlgebra::Vector::shared_ptr fusedSolVec =

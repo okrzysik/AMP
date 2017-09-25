@@ -6,15 +6,15 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "vectors/SimpleVector.h"
 #include "matrices/MatrixBuilder.h"
+#include "vectors/SimpleVector.h"
 
 
 using namespace AMP::LinearAlgebra;
 
 
 template <typename FACTORY>
-void test_matrix_loop( AMP::UnitTest& ut )
+void test_matrix_loop( AMP::UnitTest &ut )
 {
     std::string name = FACTORY::name();
     PROFILE_START( name );
@@ -35,25 +35,25 @@ void test_matrix_loop( AMP::UnitTest& ut )
 
 
 template <typename FACTORY>
-void test_petsc_matrix_loop( AMP::UnitTest& ut )
+void test_petsc_matrix_loop( AMP::UnitTest &ut )
 {
     NULL_USE( ut );
 }
 
 
-void testBasics( AMP::UnitTest& ut, const std::string& type )
+void testBasics( AMP::UnitTest &ut, const std::string &type )
 {
     // Test creating a non-square matrix and ensure it is the proper size
     auto left  = AMP::LinearAlgebra::SimpleVector<double>::create( 5, "left" );
     auto right = AMP::LinearAlgebra::SimpleVector<double>::create( 10, "right" );
-    auto mat = AMP::LinearAlgebra::createMatrix( right, left, type,
-        [](size_t row) { return std::vector<size_t>(1,row); } );
+    auto mat   = AMP::LinearAlgebra::createMatrix(
+        right, left, type, []( size_t row ) { return std::vector<size_t>( 1, row ); } );
     int rows = mat->numGlobalRows();
     int cols = mat->numGlobalColumns();
-    if ( rows==5 && cols==10 )
-        ut.passes("Created non-square matrix ("+type+")");
+    if ( rows == 5 && cols == 10 )
+        ut.passes( "Created non-square matrix (" + type + ")" );
     else
-        ut.failure("Failed non-square matrix ("+type+")");
+        ut.failure( "Failed non-square matrix (" + type + ")" );
 }
 
 
@@ -71,7 +71,7 @@ int main( int argc, char **argv )
 #ifdef USE_EXT_TRILINOS
     types.push_back( "ManagedEpetraMatrix" );
 #endif
-#if defined(USE_EXT_TRILINOS) && defined(USE_EXT_PETSC)
+#if defined( USE_EXT_TRILINOS ) && defined( USE_EXT_PETSC )
     types.push_back( "ManagedPetscMatrix" );
 #endif
     types.push_back( "auto" );

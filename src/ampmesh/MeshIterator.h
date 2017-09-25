@@ -42,12 +42,11 @@ public:
     virtual ~MeshIterator();
 
 public: // Virtual functions
-
-    /**
-     * \brief Pre-Increment
-     * \details  Pre-Increment the mesh iterator and return the reference to the iterator.
-     *   This should be the fastest way to increment the iterator.
-     */
+        /**
+         * \brief Pre-Increment
+         * \details  Pre-Increment the mesh iterator and return the reference to the iterator.
+         *   This should be the fastest way to increment the iterator.
+         */
     virtual MeshIterator &operator++();
 
     /**
@@ -167,9 +166,8 @@ public: // Virtual functions
 
 
 public: // non-virtual functions
-
     //! Return the raw iterator (may be this)
-    inline const MeshIterator* rawIterator() const;
+    inline const MeshIterator *rawIterator() const;
 
     //! Return the number of elements in the iterator
     inline size_t size() const;
@@ -228,4 +226,3 @@ protected:
 #include "ampmesh/MeshIterator.inline.h"
 
 #endif
-

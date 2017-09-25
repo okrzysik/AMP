@@ -1,9 +1,9 @@
 #include "ampmesh/structured/TubeMesh.h"
-#include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/MultiIterator.h"
+#include "ampmesh/shapes/Box.h"
+#include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/structuredMeshElement.h"
 #include "ampmesh/structured/structuredMeshIterator.h"
-#include "ampmesh/shapes/Box.h"
 
 #ifdef USE_AMP_VECTORS
 #include "vectors/Variable.h"
@@ -22,8 +22,7 @@ namespace Mesh {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-TubeMesh::TubeMesh( MeshParameters::shared_ptr params ):
-    BoxMesh( params )
+TubeMesh::TubeMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 {
     for ( int d = 0; d < 3; d++ ) {
         d_globalSize[d] = 1;
@@ -40,16 +39,16 @@ TubeMesh::TubeMesh( MeshParameters::shared_ptr params ):
     auto size   = d_db->getIntegerArray( "Size" );
     auto range  = d_db->getDoubleArray( "Range" );
     d_max_gcw   = d_db->getIntegerWithDefault( "GCW", 2 );
-    std::vector<unsigned char> per(1,false);
+    std::vector<unsigned char> per( 1, false );
     if ( d_db->keyExists( "Periodic" ) )
         per = d_db->getBoolArray( "Periodic" );
-    AMP_INSIST( size.size()  == 3u, "Size must be an array of length 3" );
-    AMP_INSIST( per.size()   == 1u, "Periodic must be an array of length 1" );
+    AMP_INSIST( size.size() == 3u, "Size must be an array of length 3" );
+    AMP_INSIST( per.size() == 1u, "Periodic must be an array of length 1" );
     AMP_INSIST( range.size() == 4u, "Range must be an array of length 4" );
     AMP_INSIST( PhysicalDim == 3, "dim must be 3" );
-    for (int i=0; i<3; i++)
+    for ( int i         = 0; i < 3; i++ )
         d_globalSize[i] = size[i];
-    for (int i=0; i<4; i++)
+    for ( int i    = 0; i < 4; i++ )
         d_range[i] = range[i];
     d_offset.fill( 0 );
     AMP_ASSERT( d_range[0] > 0 );
@@ -75,7 +74,7 @@ TubeMesh::TubeMesh( MeshParameters::shared_ptr params ):
     // Initialize the logical mesh
     BoxMesh::initialize();
     // Set the geometry
-    //d_geometry.reset( new Geometry::Box( range ) );
+    // d_geometry.reset( new Geometry::Box( range ) );
     // Finalize the logical mesh
     BoxMesh::finalize();
 }
@@ -86,12 +85,12 @@ TubeMesh::TubeMesh( MeshParameters::shared_ptr params ):
 ****************************************************************/
 std::vector<size_t> TubeMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
-    auto db = params->getDatabase();
+    auto db               = params->getDatabase();
     std::vector<int> size = db->getIntegerArray( "Size" );
-    AMP_ASSERT(size.size()==3u);
-    std::vector<size_t> size2(size.size());
-    for ( size_t d=0; d<size.size(); d++)
-        size2[d] = size[d];
+    AMP_ASSERT( size.size() == 3u );
+    std::vector<size_t> size2( size.size() );
+    for ( size_t d = 0; d < size.size(); d++ )
+        size2[d]   = size[d];
     return size2;
 }
 
@@ -99,10 +98,7 @@ std::vector<size_t> TubeMesh::estimateLogicalMeshSize( const MeshParameters::sha
 /****************************************************************
 * Functions to displace the mesh                                *
 ****************************************************************/
-int TubeMesh::isMeshMovable( ) const
-{
-    return 1;
-}
+int TubeMesh::isMeshMovable() const { return 1; }
 void TubeMesh::displaceMesh( const std::vector<double> &x )
 {
     AMP_ASSERT( x.size() == PhysicalDim );
@@ -129,7 +125,7 @@ void TubeMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr 
 ****************************************************************/
 AMP::shared_ptr<Mesh> TubeMesh::copy() const
 {
-    return AMP::shared_ptr<TubeMesh>( new TubeMesh(*this) );
+    return AMP::shared_ptr<TubeMesh>( new TubeMesh( *this ) );
 }
 
 
@@ -139,32 +135,29 @@ AMP::shared_ptr<Mesh> TubeMesh::copy() const
 void TubeMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
     const double pi = 3.141592653589793116;
-    int i = index.index(0);
-    int j = index.index(1);
-    int k = index.index(2);
-    double x = static_cast<double>(i) / static_cast<double>(d_globalSize[0]);
-    double y = static_cast<double>(j) / static_cast<double>(d_globalSize[1]);
-    double z = static_cast<double>(k) / static_cast<double>(d_globalSize[2]);
-    double r = d_range[0] + x * ( d_range[1] - d_range[0] );
-    double theta = 2.0 * pi * y;
-    pos[0] = r * cos( theta ) + d_offset[0];
-    pos[1] = r * sin( theta ) + d_offset[1];
-    pos[2] = d_range[2] + z * ( d_range[3] - d_range[2] ) + d_offset[2];
+    int i           = index.index( 0 );
+    int j           = index.index( 1 );
+    int k           = index.index( 2 );
+    double x        = static_cast<double>( i ) / static_cast<double>( d_globalSize[0] );
+    double y        = static_cast<double>( j ) / static_cast<double>( d_globalSize[1] );
+    double z        = static_cast<double>( k ) / static_cast<double>( d_globalSize[2] );
+    double r        = d_range[0] + x * ( d_range[1] - d_range[0] );
+    double theta    = 2.0 * pi * y;
+    pos[0]          = r * cos( theta ) + d_offset[0];
+    pos[1]          = r * sin( theta ) + d_offset[1];
+    pos[2]          = d_range[2] + z * ( d_range[3] - d_range[2] ) + d_offset[2];
 }
 
 
 /****************************************************************
 * Return the logical coordinates                                *
 ****************************************************************/
-std::array<double,3> TubeMesh::physicalToLogical( const double* ) const
+std::array<double, 3> TubeMesh::physicalToLogical( const double * ) const
 {
-    AMP_ERROR("physicalToLogical is not supported in TubeMesh");
-    return std::array<double,3>();
+    AMP_ERROR( "physicalToLogical is not supported in TubeMesh" );
+    return std::array<double, 3>();
 }
 
 
 } // Mesh namespace
 } // AMP namespace
-
-
-

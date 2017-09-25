@@ -3,10 +3,10 @@
 
 #include "utils/AMPManager.h"
 #include "utils/InputManager.h"
+#include "utils/PIO.h"
 #include "utils/ReadTestMesh.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "utils/PIO.h"
 
 #include "ampmesh/Mesh.h"
 #include "discretization/DOF_Manager.h"
@@ -51,7 +51,8 @@ void myTest( AMP::UnitTest *ut, std::string mesh_file )
 
     // Create the DOF manager
     AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create( myMeshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
+        AMP::Discretization::simpleDOFManager::create(
+            myMeshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
     // Create the vectors
     AMP::LinearAlgebra::Variable::shared_ptr myVar( new AMP::LinearAlgebra::Variable( "myVar" ) );

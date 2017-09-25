@@ -4,11 +4,11 @@
 
 
 #include "utils/Utilities.h"
+#include <atomic>
 #include <complex>
 #include <map>
 #include <set>
 #include <string>
-#include <atomic>
 
 // Include mpi.h (or define MPI objects)
 #ifdef USE_EXT_MPI
@@ -55,11 +55,10 @@ namespace AMP {
 class AMP_MPI final
 {
 public: // Constructors
-
-    /**
-     *\brief  Is MPI active
-     *\details  This returns true if MPI is initailized and not finalized
-     */
+        /**
+         *\brief  Is MPI active
+         *\details  This returns true if MPI is initailized and not finalized
+         */
     static bool MPI_active();
 
 
@@ -128,12 +127,11 @@ public: // Constructors
 
 
 public: // Member functions
-
-    /**
-     * \brief Get the node name
-     * \details  This function returns a unique name for each node.
-     *    It is a wrapper for MPI_Get_processor_name.
-     */
+        /**
+         * \brief Get the node name
+         * \details  This function returns a unique name for each node.
+         *    It is a wrapper for MPI_Get_processor_name.
+         */
     static std::string getNodeName();
 
 
@@ -146,7 +144,7 @@ public: // Member functions
 
 
     //! Function to set the affinity of the current process
-    static void setProcessAffinity( const std::vector<int>& procs );
+    static void setProcessAffinity( const std::vector<int> &procs );
 
 
     /**
@@ -181,9 +179,10 @@ public: // Member functions
 
     /**
      *\brief Query the level of thread support, returned in provided
-     * \param provided (valid values: MPI_THREAD_SINGLE, MPI_THREAD_FUNNELED, MPI_THREAD_SERIALIZED, MPI_THREAD_MULTIPLE )
+     * \param provided (valid values: MPI_THREAD_SINGLE, MPI_THREAD_FUNNELED, MPI_THREAD_SERIALIZED,
+     *MPI_THREAD_MULTIPLE )
      */
-    static int queryThreadSupport(int *provided);
+    static int queryThreadSupport( int *provided );
 
 
     /**
@@ -767,7 +766,7 @@ public: // Member functions
      * @return           Output array for allGather
      */
     template <class type>
-    std::vector<type> allGather( const type& x ) const;
+    std::vector<type> allGather( const type &x ) const;
 
 
     /*!
@@ -776,7 +775,7 @@ public: // Member functions
      * @return           Output array for allGather
      */
     template <class type>
-    std::vector<type> allGather( const std::vector<type>& x_in ) const;
+    std::vector<type> allGather( const std::vector<type> &x_in ) const;
 
 
     /*!
@@ -1013,11 +1012,13 @@ private: // Private helper functions for templated MPI operations;
     template <class type>
     void call_minReduce( type *x, const int n = 1, int *rank_of_min = nullptr ) const;
     template <class type>
-    void call_minReduce( const type *x, type *y, const int n = 1, int *rank_of_min = nullptr ) const;
+    void
+    call_minReduce( const type *x, type *y, const int n = 1, int *rank_of_min = nullptr ) const;
     template <class type>
     void call_maxReduce( type *x, const int n = 1, int *rank_of_max = nullptr ) const;
     template <class type>
-    void call_maxReduce( const type *x, type *y, const int n = 1, int *rank_of_max = nullptr ) const;
+    void
+    call_maxReduce( const type *x, type *y, const int n = 1, int *rank_of_max = nullptr ) const;
     template <class type>
     void call_bcast( type *x, const int n, const int root ) const;
     template <class type>
@@ -1041,7 +1042,6 @@ private: // Private helper functions for templated MPI operations;
 
 
 private: // data members
-
     // The internal MPI communicator
     MPI_Comm communicator;
 
@@ -1085,7 +1085,6 @@ private: // data members
      */
     static volatile unsigned int N_MPI_Comm_created;
     static volatile unsigned int N_MPI_Comm_destroyed;
-
 };
 
 

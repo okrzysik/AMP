@@ -1,10 +1,10 @@
 
 #include "utils/InputManager.h"
 #include "utils/AMPManager.h"
+#include "utils/PIO.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "utils/WriteSolutionToFile.h"
-#include "utils/PIO.h"
 
 #include <algorithm>
 #include <iostream>
@@ -43,8 +43,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
-    std::cout << "Mesh has " << ( meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex ) ) << " nodes."
-              << std::endl;
+    std::cout << "Mesh has " << ( meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex ) )
+              << " nodes." << std::endl;
 
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     AMP::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
@@ -65,7 +65,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     dirichletVecOp->setVariable( displacementVariable );
 
     AMP::Discretization::DOFManager::shared_ptr dofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     AMP::LinearAlgebra::Vector::shared_ptr mechSolVec =

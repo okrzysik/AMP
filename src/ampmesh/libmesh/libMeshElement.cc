@@ -62,11 +62,12 @@ libMeshElement::libMeshElement( int dim,
 }
 libMeshElement::libMeshElement( int dim,
                                 GeomType type,
-                                AMP::shared_ptr<::Elem> libmesh_element,
+                                AMP::shared_ptr<::Elem>
+                                    libmesh_element,
                                 unsigned int rank,
                                 MeshID meshID,
-                                const libMesh *mesh ):
-    d_delete_elem( false )
+                                const libMesh *mesh )
+    : d_delete_elem( false )
 {
     AMP_ASSERT( libmesh_element.get() != nullptr );
     typeID                  = libMeshElementTypeID;
@@ -95,8 +96,8 @@ libMeshElement::libMeshElement( int dim,
 }
 libMeshElement::libMeshElement( const libMeshElement &rhs )
     : MeshElement(), // Note: we never want to call the base copy constructor
-    d_meshID( rhs.d_meshID ),
-    d_delete_elem( false )
+      d_meshID( rhs.d_meshID ),
+      d_delete_elem( false )
 {
     typeID      = libMeshElementTypeID;
     element     = nullptr;
@@ -111,15 +112,15 @@ libMeshElement &libMeshElement::operator=( const libMeshElement &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID      = libMeshElementTypeID;
-    this->element     = nullptr;
-    this->d_globalID  = rhs.d_globalID;
-    this->d_dim       = rhs.d_dim;
-    this->ptr_element = rhs.ptr_element;
-    this->ptr2        = rhs.ptr2;
-    this->d_rank      = rhs.d_rank;
-    this->d_mesh      = rhs.d_mesh;
-    this->d_meshID    = rhs.d_meshID;
+    this->typeID        = libMeshElementTypeID;
+    this->element       = nullptr;
+    this->d_globalID    = rhs.d_globalID;
+    this->d_dim         = rhs.d_dim;
+    this->ptr_element   = rhs.ptr_element;
+    this->ptr2          = rhs.ptr2;
+    this->d_rank        = rhs.d_rank;
+    this->d_mesh        = rhs.d_mesh;
+    this->d_meshID      = rhs.d_meshID;
     this->d_delete_elem = false;
     return *this;
 }
@@ -149,10 +150,10 @@ unsigned int libMeshElement::globalOwnerRank() const
 /****************************************************************
 * Function to get the elements composing the current element    *
 ****************************************************************/
-void libMeshElement::getElements( const GeomType type, std::vector<MeshElement>& children ) const
+void libMeshElement::getElements( const GeomType type, std::vector<MeshElement> &children ) const
 {
     AMP_INSIST( type <= d_globalID.type(), "sub-elements must be of a smaller or equivalent type" );
-    children.clear( );
+    children.clear();
     ::Elem *elem = (::Elem *) ptr_element;
     if ( d_globalID.type() == GeomType::Vertex ) {
         // A vertex does not have children, return itself
@@ -218,7 +219,7 @@ void libMeshElement::getElements( const GeomType type, std::vector<MeshElement>&
 /****************************************************************
 * Function to get the neighboring elements                      *
 ****************************************************************/
-void libMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr>& neighbors ) const
+void libMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const
 {
     neighbors.clear();
     if ( d_globalID.type() == GeomType::Vertex ) {
@@ -261,24 +262,24 @@ double libMeshElement::volume() const
     ::Elem *elem = (::Elem *) ptr_element;
     return elem->volume();
 }
-void libMeshElement::coord( size_t& N, double* x ) const
+void libMeshElement::coord( size_t &N, double *x ) const
 {
     if ( d_globalID.type() != GeomType::Vertex )
         AMP_ERROR( "coord is only defined for Nodes" );
     ::Node *node = (::Node *) ptr_element;
-    N = std::min<size_t>( N, d_dim );
+    N            = std::min<size_t>( N, d_dim );
     for ( int i = 0; i < d_dim; i++ )
-        x[i] = ( *node )( i );
+        x[i]    = ( *node )( i );
 }
-void libMeshElement::centroid( size_t& N, double* x ) const
+void libMeshElement::centroid( size_t &N, double *x ) const
 {
     if ( d_globalID.type() == GeomType::Vertex )
         return coord( N, x );
     ::Elem *elem   = (::Elem *) ptr_element;
     ::Point center = elem->centroid();
-    N = std::min<size_t>( N, d_dim );
+    N              = std::min<size_t>( N, d_dim );
     for ( int i = 0; i < d_dim; i++ )
-        x[i] = center( i );
+        x[i]    = center( i );
 }
 bool libMeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
 {
@@ -298,7 +299,7 @@ bool libMeshElement::containsPoint( const std::vector<double> &pos, double TOL )
 }
 bool libMeshElement::isOnSurface() const
 {
-    int type           = static_cast<int>(d_globalID.type());
+    int type           = static_cast<int>( d_globalID.type() );
     MeshElement search = MeshElement( *this );
     if ( d_globalID.is_local() ) {
         const std::vector<MeshElement> &data = *( d_mesh->d_localSurfaceElements[type] );
@@ -346,7 +347,7 @@ bool libMeshElement::isOnBoundary( int id ) const
         // All other entities are on the boundary iff all of their verticies are on the surface
         std::vector<MeshElement> nodes;
         this->getElements( GeomType::Vertex, nodes );
-        on_boundary                    = true;
+        on_boundary = true;
         for ( auto &node : nodes )
             on_boundary = on_boundary && node.isOnBoundary( id );
     }

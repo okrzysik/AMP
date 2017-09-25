@@ -519,11 +519,15 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
         subchannelPressure->scale(P_scale);
         siloWriter->registerVector( manufacturedVec, xyFaceMesh, AMP::Mesh::GeomType::Face,
     "ManufacturedSolution" );
-        siloWriter->registerVector( solVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "ComputedSolution" );
-        siloWriter->registerVector( subchannelMass, xyFaceMesh, AMP::Mesh::GeomType::Face, "Axial Mass Flow
+        siloWriter->registerVector( solVec, xyFaceMesh, AMP::Mesh::GeomType::Face,
+    "ComputedSolution" );
+        siloWriter->registerVector( subchannelMass, xyFaceMesh, AMP::Mesh::GeomType::Face, "Axial
+    Mass Flow
     Rate" );
-        siloWriter->registerVector( subchannelEnthalpy, xyFaceMesh, AMP::Mesh::GeomType::Face, "Enthalpy" );
-        siloWriter->registerVector( subchannelPressure, xyFaceMesh, AMP::Mesh::GeomType::Face, "Pressure" );
+        siloWriter->registerVector( subchannelEnthalpy, xyFaceMesh, AMP::Mesh::GeomType::Face,
+    "Enthalpy" );
+        siloWriter->registerVector( subchannelPressure, xyFaceMesh, AMP::Mesh::GeomType::Face,
+    "Pressure" );
         siloWriter->registerVector( tempVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "Temperature" );
         siloWriter->writeFile( silo_name , 0 );
     #endif

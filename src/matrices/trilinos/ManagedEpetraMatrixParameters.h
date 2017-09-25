@@ -111,7 +111,7 @@ public:
       * \param[in] i  The number of columns
       * \param[in] cols  The column ids
       */
-    void addColumns( const std::set<size_t>& col );
+    void addColumns( const std::set<size_t> &col );
 
 private:
     AMP::shared_ptr<Epetra_Map> d_eRowMap;

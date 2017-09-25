@@ -231,10 +231,10 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
     }
 }
 
-void ThyraVectorWrapper::assignImpl(double alpha) 
+void ThyraVectorWrapper::assignImpl( double alpha )
 {
-    for ( auto &vec: d_vecs ) {
-        vec->setToScalar(alpha);
+    for ( auto &vec : d_vecs ) {
+        vec->setToScalar( alpha );
     }
 }
 
@@ -350,7 +350,7 @@ void ThyraVectorWrapper::acquireDetachedVectorViewImpl(
 void ThyraVectorWrapper::releaseDetachedVectorViewImpl(
     RTOpPack::ConstSubVectorView<double> *sub_vec ) const
 {
-    NULL_USE(sub_vec);
+    NULL_USE( sub_vec );
 }
 void ThyraVectorWrapper::acquireNonconstDetachedVectorViewImpl(
     const Teuchos::Range1D &rng, RTOpPack::SubVectorView<double> *sub_vec )

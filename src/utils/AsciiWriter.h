@@ -47,7 +47,7 @@ public:
     virtual void readFile( const std::string &fname );
 
     //!  Function to write a file
-    virtual void writeFile( const std::string &fname, size_t iteration_count, double time=0 );
+    virtual void writeFile( const std::string &fname, size_t iteration_count, double time = 0 );
 
 #ifdef USE_AMP_MESH
     /**

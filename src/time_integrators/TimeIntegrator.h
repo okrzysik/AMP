@@ -184,7 +184,7 @@ public:
      */
     virtual void appendSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
     {
-        NULL_USE(vec);
+        NULL_USE( vec );
     }
 
     /**
@@ -194,10 +194,7 @@ public:
      *  of vectors, but no vector may be owned by multiple solvers.
      * \param vec   The vector to append
      */
-    virtual void appendRhsVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
-    {
-        NULL_USE(vec);
-    }
+    virtual void appendRhsVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) { NULL_USE( vec ); }
 
     /**
      * \brief  Registers a writer with the solver

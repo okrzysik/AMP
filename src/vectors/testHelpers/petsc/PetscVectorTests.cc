@@ -1,10 +1,10 @@
 #ifdef USE_EXT_PETSC
 
 #include "vectors/MultiVector.h"
-#include "vectors/petsc/PetscHelpers.h"
-#include "vectors/testHelpers/petsc/PetscVectorTests.h"
-#include "vectors/testHelpers/petsc/PetscVectorFactory.h"
 #include "utils/UnitTest.h"
+#include "vectors/petsc/PetscHelpers.h"
+#include "vectors/testHelpers/petsc/PetscVectorFactory.h"
+#include "vectors/testHelpers/petsc/PetscVectorTests.h"
 
 #include "string"
 #include <algorithm>
@@ -144,9 +144,8 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
     utils->passes( "managed duplicated destroyed" );
 
     if ( dynamic_pointer_cast<MultiVector>( vectora ) ) {
-        AMP::LinearAlgebra::Vector::shared_ptr b =
-            AMP::LinearAlgebra::PetscVector::view( vectora );
-        bool passed = true;
+        AMP::LinearAlgebra::Vector::shared_ptr b = AMP::LinearAlgebra::PetscVector::view( vectora );
+        bool passed                              = true;
         for ( size_t i = 0; i != b->numberOfDataBlocks(); i++ ) {
             if ( b->getRawDataBlock<double>( i ) == vectora->getRawDataBlock<double>( i ) ) {
                 passed = false;
@@ -449,18 +448,15 @@ void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
     if ( l1norm_a1 == l1norm_a2 ) // These should be identical, since same method called
         utils->passes( "l1 norm: native norm equals interface norm for native vector" );
     else
-        utils->failure(
-            "l1 norm: native norm does not equal interface norm for native vector" );
+        utils->failure( "l1 norm: native norm does not equal interface norm for native vector" );
     if ( l2norm_a1 == l2norm_a2 ) // These should be identical, since same method called
         utils->passes( "l2 norm: native norm equals interface norm for native vector" );
     else
-        utils->failure(
-            "l2 norm: native norm does not equal interface norm for native vector" );
+        utils->failure( "l2 norm: native norm does not equal interface norm for native vector" );
     if ( infnorm_a1 == infnorm_a2 ) // These should be identical, since same method called
         utils->passes( "inf norm: native norm equals interface norm for native vector" );
     else
-        utils->failure(
-            "inf norm: native norm does not equal interface norm for native vector" );
+        utils->failure( "inf norm: native norm does not equal interface norm for native vector" );
 
     AMP::LinearAlgebra::Vector::shared_ptr vectorc = d_factory->getManagedVector();
     vectorc->copyVector( vectora );
@@ -479,18 +475,15 @@ void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
     if ( l1norm_c1 == l1norm_c2 ) // These should be identical, since same method called
         utils->passes( "l1 norm: native norm equals interface norm for managed vector" );
     else
-        utils->failure(
-            "l1 norm: native norm does not equal interface norm for managed vector" );
+        utils->failure( "l1 norm: native norm does not equal interface norm for managed vector" );
     if ( l2norm_c1 == l2norm_c2 ) // These should be identical, since same method called
         utils->passes( "l2 norm: native norm equals interface norm for managed vector" );
     else
-        utils->failure(
-            "l2 norm: native norm does not equal interface norm for managed vector" );
+        utils->failure( "l2 norm: native norm does not equal interface norm for managed vector" );
     if ( infnorm_c1 == infnorm_c2 ) // These should be identical, since same method called
         utils->passes( "inf norm: native norm equals interface norm for managed vector" );
     else
-        utils->failure(
-            "inf norm: native norm does not equal interface norm for managed vector" );
+        utils->failure( "inf norm: native norm does not equal interface norm for managed vector" );
     if ( fabs( l1norm_a1 - l1norm_c1 ) < 0.0000001 )
         utils->passes( "l1 norms equal for managed and native petsc vectors" );
     else
@@ -516,20 +509,17 @@ void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
          0.00001 ) // These should be identical, since same method called
         utils->passes( "l1 norm: native norm equals interface norm for managed vector" );
     else
-        utils->failure(
-            "l1 norm: native norm does not equal interface norm for managed vector" );
+        utils->failure( "l1 norm: native norm does not equal interface norm for managed vector" );
     if ( fabs( l2norm_c1 - l2norm_c2 ) <
          0.00001 ) // These should be identical, since same method called
         utils->passes( "l2 norm: native norm equals interface norm for managed vector" );
     else
-        utils->failure(
-            "l2 norm: native norm does not equal interface norm for managed vector" );
+        utils->failure( "l2 norm: native norm does not equal interface norm for managed vector" );
     if ( fabs( infnorm_c1 - infnorm_c2 ) <
          0.00001 ) // These should be identical, since same method called
         utils->passes( "inf norm: native norm equals interface norm for managed vector" );
     else
-        utils->failure(
-            "inf norm: native norm does not equal interface norm for managed vector" );
+        utils->failure( "inf norm: native norm does not equal interface norm for managed vector" );
     if ( fabs( l1norm_a1 - l1norm_c1 ) < 0.0000001 )
         utils->passes( "l1 norms equal for managed and native petsc vectors" );
     else
@@ -860,7 +850,7 @@ void PetscVectorTests::VerifySqrtPetscVector( AMP::UnitTest *utils )
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     checkPetscError( utils, VecSqrt( veca ) );
     checkPetscError( utils, VecSqrt( vecb ) );
-#elif PETSC_VERSION_GE(3,2,0)
+#elif PETSC_VERSION_GE( 3, 2, 0 )
     checkPetscError( utils, VecSqrtAbs( veca ) );
     checkPetscError( utils, VecSqrtAbs( vecb ) );
 #else
@@ -957,9 +947,9 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectora_orig( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb2( d_factory->getNativeVector() );
-    auto veca = getVec( vectora );
-    auto vecb = getVec( vectorb );
-    auto veca2 = getVec( vectora2 );
+    auto veca      = getVec( vectora );
+    auto vecb      = getVec( vectorb );
+    auto veca2     = getVec( vectora2 );
     auto veca_orig = getVec( vectora_orig );
     if ( !veca || !vecb || !veca || !veca_orig )
         utils->failure( "PETSc AXPY create" );
@@ -973,7 +963,7 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
     vectora2->axpy( 1.23456, vectorb2, vectora2 );
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     PetscTruth ans;
-#elif PETSC_VERSION_GE(3,2,0)
+#elif PETSC_VERSION_GE( 3, 2, 0 )
     PetscBool ans;
 #else
 #error Not programmed for this version yet
@@ -994,8 +984,8 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
     vectord->copyVector( vectorb );
     vectord2->copyVector( vectorb2 );
 
-    auto vecc = getVec( vectorc );
-    auto vecd = getVec( vectord );
+    auto vecc  = getVec( vectorc );
+    auto vecd  = getVec( vectord );
     auto vecc2 = getVec( vectorc2 );
     auto vecd2 = getVec( vectord2 );
     checkPetscError( utils, VecAXPY( vecc, 1.23456, vecd ) );
@@ -1036,8 +1026,8 @@ void PetscVectorTests::VerifyScalePetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectora2( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
-    auto veca = getVec( vectora );
-    auto vecb = getVec( vectorb );
+    auto veca  = getVec( vectora );
+    auto vecb  = getVec( vectorb );
     auto veca2 = getVec( vectora2 );
     if ( !veca || !veca2 || !vecb )
         utils->failure( "PETSc scale create" );

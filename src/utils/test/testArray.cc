@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include <math.h>
 #include <stdexcept>
@@ -8,7 +9,6 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <vector>
-#include <cmath>
 
 #include "utils/AMPManager.h"
 #include "utils/Array.h"
@@ -69,46 +69,50 @@ int TestAllocateClass::N_alloc = 0;
 
 
 // Function to test linear interpolation
-template<class TYPE> TYPE fun( double x, double y, double z );
-template<> inline double fun<double>( double x, double y, double z )
+template <class TYPE>
+TYPE fun( double x, double y, double z );
+template <>
+inline double fun<double>( double x, double y, double z )
 {
-    return sin(x)*cos(y)*exp(-z);
+    return sin( x ) * cos( y ) * exp( -z );
 }
-template<> inline int fun<int>( double x, double y, double z )
+template <>
+inline int fun<int>( double x, double y, double z )
 {
-    return static_cast<int>( 100000*fun<double>(x,y,z) );
+    return static_cast<int>( 100000 * fun<double>( x, y, z ) );
 }
-template<class TYPE>
-void test_interp( UnitTest& ut, const std::vector<size_t>& N )
+template <class TYPE>
+void test_interp( UnitTest &ut, const std::vector<size_t> &N )
 {
-    Array<TYPE> A(N);
+    Array<TYPE> A( N );
     std::vector<size_t> N2( N );
-    N2.resize(3,1);
+    N2.resize( 3, 1 );
     char buf[100];
-    std::sprintf(buf,"interp<%s,%i,%i,%i>",typeid(TYPE).name(),(int)N2[0],(int)N2[1],(int)N2[2]);
-    std::string testname(buf);
+    std::sprintf(
+        buf, "interp<%s,%i,%i,%i>", typeid( TYPE ).name(), (int) N2[0], (int) N2[1], (int) N2[2] );
+    std::string testname( buf );
     // Fill A
     A.fill( 0 );
-    for (size_t i=0; i<A.size(0); i++) {
-        double x = i*1.0/std::max<double>(N2[0]-1,1);
-        for (size_t j=0; j<A.size(1); j++) {
-            double y = j*1.0/std::max<double>(N2[1]-1,1);
-            for (size_t k=0; k<A.size(2); k++) {
-                double z = k*1.0/std::max<double>(N2[2]-1,1);
-                A(i,j,k) = fun<TYPE>(x,y,z);
+    for ( size_t i = 0; i < A.size( 0 ); i++ ) {
+        double x = i * 1.0 / std::max<double>( N2[0] - 1, 1 );
+        for ( size_t j = 0; j < A.size( 1 ); j++ ) {
+            double y = j * 1.0 / std::max<double>( N2[1] - 1, 1 );
+            for ( size_t k = 0; k < A.size( 2 ); k++ ) {
+                double z = k * 1.0 / std::max<double>( N2[2] - 1, 1 );
+                A( i, j, k ) = fun<TYPE>( x, y, z );
             }
         }
     }
     // Test the input points
     bool pass = true;
-    std::vector<double> x(3);
-    for (size_t i=0; i<A.size(0); i++) {
+    std::vector<double> x( 3 );
+    for ( size_t i = 0; i < A.size( 0 ); i++ ) {
         x[0] = i;
-        for (size_t j=0; j<A.size(1); j++) {
+        for ( size_t j = 0; j < A.size( 1 ); j++ ) {
             x[1] = j;
-            for (size_t k=0; k<A.size(2); k++) {
+            for ( size_t k = 0; k < A.size( 2 ); k++ ) {
                 x[2] = k;
-                if ( fabs( A(i,j,k)-A.interp( x ) ) > 1e-12*A(i,j,k) )
+                if ( fabs( A( i, j, k ) - A.interp( x ) ) > 1e-12 * A( i, j, k ) )
                     pass = false;
             }
         }
@@ -119,19 +123,19 @@ void test_interp( UnitTest& ut, const std::vector<size_t>& N )
         ut.failure( testname + " (input points)" );
     // Test random points
     static std::random_device rd;
-    static std::mt19937 gen(rd());
-    static std::uniform_real_distribution<double> dis(0,1);
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dis( 0, 1 );
     pass = true;
-    std::vector<double> x1(3,0);
-    std::vector<double> x2(3,0);
-    for (int i=0; i<10000; i++) {
-        for (size_t d=0; d<N.size(); d++) {
-            x1[d] = dis(gen);
-            x2[d] = (N[d]-1)*x1[d];
+    std::vector<double> x1( 3, 0 );
+    std::vector<double> x2( 3, 0 );
+    for ( int i = 0; i < 10000; i++ ) {
+        for ( size_t d = 0; d < N.size(); d++ ) {
+            x1[d] = dis( gen );
+            x2[d] = ( N[d] - 1 ) * x1[d];
         }
         TYPE y1 = fun<TYPE>( x1[0], x1[1], x1[2] );
         TYPE y2 = A.interp( x2 );
-        if ( fabs(y1-y2) > 1e-3*y1 )
+        if ( fabs( y1 - y2 ) > 1e-3 * y1 )
             pass = false;
     }
     if ( pass )
@@ -325,12 +329,12 @@ int main( int argc, char *argv[] )
             ut.passes( "operator-(scalar)" );
         else
             ut.failure( "operator-(scalar)" );
-        
-        //swap test
+
+        // swap test
         auto dA1 = M1.data();
         auto dA2 = M2.data();
-        M1.swap(M2);
-        pass = ((M1.data()==dA2)&&(M2.data()==dA1));
+        M1.swap( M2 );
+        pass = ( ( M1.data() == dA2 ) && ( M2.data() == dA1 ) );
         if ( pass )
             ut.passes( "swap" );
         else
@@ -383,7 +387,7 @@ int main( int argc, char *argv[] )
     }
 
     // Finished
-    ut.report(1);
+    ut.report( 1 );
     int num_failed = static_cast<int>( ut.NumFailGlobal() );
     if ( num_failed == 0 )
         pout << "All tests passed\n";

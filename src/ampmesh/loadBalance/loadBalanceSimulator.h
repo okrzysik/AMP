@@ -27,8 +27,8 @@ public:
      * Mesh::estimateMeshSize())
      */
     loadBalanceSimulator( AMP::shared_ptr<MeshParameters> params,
-                 const std::vector<int> &ranks,
-                 size_t N_elements = 0 );
+                          const std::vector<int> &ranks,
+                          size_t N_elements = 0 );
 
     /**
      * \brief    Advanced constructor
@@ -40,9 +40,9 @@ public:
      *                (0: General, 1: No set of submeshes share a rank, and all ranks are used)
      */
     loadBalanceSimulator( AMP::shared_ptr<MeshParameters> params,
-                 const std::vector<int> &ranks,
-                 const std::vector<loadBalanceSimulator> &submeshes,
-                 int decomp );
+                          const std::vector<int> &ranks,
+                          const std::vector<loadBalanceSimulator> &submeshes,
+                          int decomp );
 
     //! Empty constructor
     loadBalanceSimulator();

@@ -94,7 +94,6 @@ public:
       * class of PetscMatrix.
       */
     static shared_ptr createView( shared_ptr m );
-
 };
 }
 }

@@ -88,8 +88,10 @@ void test_with_shape( AMP::UnitTest *ut, std::string exeName )
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector(
-        SpecificPowerShapeVec, meshAdapter, AMP::Mesh::GeomType::Volume, "SpecificPowerInWattsPerKg" );
+    siloWriter->registerVector( SpecificPowerShapeVec,
+                                meshAdapter,
+                                AMP::Mesh::GeomType::Volume,
+                                "SpecificPowerInWattsPerKg" );
     siloWriter->writeFile( input_file, 0 );
 
     ut->passes( "Silo of shape vector written" );
@@ -100,8 +102,9 @@ void test_with_shape( AMP::UnitTest *ut, std::string exeName )
               << " : " << SpecificPowerShapeVec->min() << " : " << SpecificPowerShapeVec->max()
               << std::endl;
     // Check that the data is non-negative
-    bool itpasses                     = 1;
-    AMP::Mesh::MeshIterator elem      = meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
+    bool itpasses = 1;
+    AMP::Mesh::MeshIterator elem =
+        meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
     AMP::Mesh::MeshIterator end_elems = elem.end();
 
     for ( ; elem != end_elems; ++elem ) {

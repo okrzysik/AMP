@@ -159,9 +159,10 @@ SubchannelToCladMap::getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr mesh )
     std::multimap<double, AMP::Mesh::MeshElement> xyFace;
     AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     for ( size_t i = 0; i < iterator.size(); ++i ) {
-        std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::GeomType::Vertex );
-        std::vector<double> center                = iterator->centroid();
-        bool is_valid                             = true;
+        std::vector<AMP::Mesh::MeshElement> nodes =
+            iterator->getElements( AMP::Mesh::GeomType::Vertex );
+        std::vector<double> center = iterator->centroid();
+        bool is_valid              = true;
         for ( auto &node : nodes ) {
             std::vector<double> coord = node.coord();
             if ( !AMP::Utilities::approx_equal( coord[2], center[2], 1e-6 ) )

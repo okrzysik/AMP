@@ -5,11 +5,11 @@
 
 #include <functional>
 #include <iostream>
+#include <set>
 #include <stdio.h>
 #include <stdlib.h>
-#include <vector>
 #include <thread>
-#include <set>
+#include <vector>
 
 
 namespace AMP {
@@ -37,7 +37,7 @@ struct multi_stack_info {
     //! Default constructor
     multi_stack_info() : N( 0 ) {}
     //! Print the stack info
-    std::vector<std::string> print( const std::string& prefix=std::string() ) const;
+    std::vector<std::string> print( const std::string &prefix = std::string() ) const;
 };
 
 
@@ -48,7 +48,7 @@ std::vector<stack_info> getCallStack();
 std::vector<stack_info> getCallStack( std::thread::native_handle_type id );
 
 //! Function to return the current call stack for all threads
-std::vector<multi_stack_info> getAllCallStacks( );
+std::vector<multi_stack_info> getAllCallStacks();
 
 
 //! Function to return the current call stack for the current thread
@@ -73,8 +73,9 @@ std::string signalName( int signal );
  * Return the symbols from the current executable (not availible for all platforms)
  * @return              Returns 0 if sucessful
  */
-int getSymbols(
-    std::vector<void *> &address, std::vector<char> &type, std::vector<std::string> &obj );
+int getSymbols( std::vector<void *> &address,
+                std::vector<char> &type,
+                std::vector<std::string> &obj );
 
 
 /*!
@@ -106,7 +107,7 @@ void setErrorHandlers( std::function<void( std::string, terminateType )> abort )
  * @param[in] signals   List of signals to set
  * @param[in] handler   Function to handle signals
  */
-void setSignals( const std::vector<int>& signals, void (*handler) (int) );
+void setSignals( const std::vector<int> &signals, void ( *handler )( int ) );
 
 
 //! Clear a signal set by setSignals
@@ -114,21 +115,21 @@ void clearSignal( int signal );
 
 
 //! Clear all signals set by setSignals
-void clearSignals( );
+void clearSignals();
 
 
 //! Return a list of all signals that can be caught
-std::vector<int> allSignalsToCatch( );
+std::vector<int> allSignalsToCatch();
 
 //! Return a default list of signals to catch
-std::vector<int> defaultSignalsToCatch( );
+std::vector<int> defaultSignalsToCatch();
 
 
 //! Get a list of the active threads
-std::vector<std::thread::native_handle_type> activeThreads( );
+std::vector<std::thread::native_handle_type> activeThreads();
 
 //! Get a handle to this thread
-std::thread::native_handle_type thisThread( );
+std::thread::native_handle_type thisThread();
 
 
 } // namespace StackTrace

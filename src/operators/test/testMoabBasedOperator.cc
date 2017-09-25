@@ -274,7 +274,8 @@ void moabInterface( AMP::UnitTest *ut )
         std::string meshCoords   = "Mesh_Coords";
         SP_AMPVec thisMeshCoords = currentMesh->getPositionVector( meshCoords );
 
-        for ( unsigned int i = 0; i < currentMesh->numLocalElements( AMP::Mesh::GeomType::Vertex ); ++i ) {
+        for ( unsigned int i = 0; i < currentMesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
+              ++i ) {
             double val1 = 100.0 * ( thisMeshCoords->getValueByLocalID( 3 * i ) +
                                     thisMeshCoords->getValueByLocalID(
                                         3 * i + 2 ) ); // AMP  coordinates are in meters

@@ -41,7 +41,7 @@ initializeSTKMesh::initializeSTKMesh( AMP_MPI comm )
         // STKmesh is not initialized
         // Use a barrier to ensure all processors are at the same point
         N_copies( 1 );
-        d_comm = comm ;
+        d_comm = comm;
         d_comm.barrier();
     }
     return;

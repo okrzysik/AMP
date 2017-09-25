@@ -50,7 +50,7 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
     setMeshID();
     d_name = "NULL";
     if ( d_db != nullptr ) {
-        d_name = d_db->getStringWithDefault("MeshName","NULL");
+        d_name = d_db->getStringWithDefault( "MeshName", "NULL" );
     }
 }
 

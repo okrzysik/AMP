@@ -103,7 +103,7 @@ void structuredFaceDOFManager::initialize()
 * Get the DOFs for the element                                  *
 ****************************************************************/
 inline void structuredFaceDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
-                                        std::vector<size_t> &dofs ) const
+                                                  std::vector<size_t> &dofs ) const
 {
     if ( id.type() != AMP::Mesh::GeomType::Face )
         return;
@@ -139,7 +139,7 @@ inline void structuredFaceDOFManager::appendDOFs( const AMP::Mesh::MeshElementID
     }
 }
 void structuredFaceDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
-                                std::vector<size_t> &dofs ) const
+                                        std::vector<size_t> &dofs ) const
 {
     dofs.resize( 0 );
     for ( auto id : ids )
@@ -161,17 +161,17 @@ AMP::Mesh::MeshElement structuredFaceDOFManager::getElement( size_t dof ) const
     AMP::Mesh::MeshElementID id;
     if ( dof >= d_begin && dof < d_end ) {
         // We are searching for a local dof
-        for (int i=0; i<3; i++) {
-            for (size_t j=0; j<d_local_ids[i].size(); j++) {
-                if ( dof>=d_local_dofs[i][j] && dof<d_local_dofs[i][j]+d_DOFsPerFace[i] )
+        for ( int i = 0; i < 3; i++ ) {
+            for ( size_t j = 0; j < d_local_ids[i].size(); j++ ) {
+                if ( dof >= d_local_dofs[i][j] && dof < d_local_dofs[i][j] + d_DOFsPerFace[i] )
                     id = d_local_ids[i][j];
             }
         }
     } else {
         // We are searching for a remote dof
-        for (int i=0; i<3; i++) {
-            for (size_t j=0; j<d_remote_ids[i].size(); j++) {
-                if ( dof>=d_remote_dofs[i][j] && dof<d_remote_dofs[i][j]+d_DOFsPerFace[i] )
+        for ( int i = 0; i < 3; i++ ) {
+            for ( size_t j = 0; j < d_remote_ids[i].size(); j++ ) {
+                if ( dof >= d_remote_dofs[i][j] && dof < d_remote_dofs[i][j] + d_DOFsPerFace[i] )
                     id = d_remote_ids[i][j];
             }
         }
@@ -247,7 +247,8 @@ std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshE
     std::vector<AMP::Mesh::MeshElementID> ids;
     ids.reserve( 6 * parents.size() );
     for ( auto &parent : parents ) {
-        std::vector<AMP::Mesh::MeshElement> children = parent.getElements( AMP::Mesh::GeomType::Face );
+        std::vector<AMP::Mesh::MeshElement> children =
+            parent.getElements( AMP::Mesh::GeomType::Face );
         AMP_ASSERT( children.size() == 6 );
         for ( auto &elem : children )
             ids.push_back( elem.globalID() );

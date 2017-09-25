@@ -73,4 +73,3 @@ const void *NullVector::getRawDataBlockAsVoid( size_t ) const { return nullptr; 
 
 } // LinearAlgebra namespace
 } // AMP namespace
-

@@ -11,7 +11,6 @@ namespace Mesh {
 namespace BoxMeshHelpers {
 
 
-
 /**
  * \brief   Map logical coordinates to a circle
  * \details  This function will map logical coordinates in [0,1] to (x,y) coordinates
@@ -29,7 +28,7 @@ namespace BoxMeshHelpers {
  * \param[in] y         Logical y coordinate
  * @return              Returns a pair with the (x,y) value
  */
-std::pair<double,double> map_logical_circle( double R, int method, double x, double y );
+std::pair<double, double> map_logical_circle( double R, int method, double x, double y );
 
 
 /**
@@ -49,7 +48,7 @@ std::pair<double,double> map_logical_circle( double R, int method, double x, dou
  * \param[in] y         Physical y coordinate
  * @return              Returns a pair with the logical (x,y) value
  */
-std::pair<double,double> map_circle_logical( double R, int method, double x, double y );
+std::pair<double, double> map_circle_logical( double R, int method, double x, double y );
 
 
 /**
@@ -65,7 +64,7 @@ std::pair<double,double> map_circle_logical( double R, int method, double x, dou
  * \param[in] z         Logical z coordinate
  * @return              Returns a tuple with the (x,y,z) value
  */
-std::tuple<double,double,double> map_logical_sphere( double R, double x, double y, double z );
+std::tuple<double, double, double> map_logical_sphere( double R, double x, double y, double z );
 
 
 /**
@@ -80,11 +79,11 @@ std::tuple<double,double,double> map_logical_sphere( double R, double x, double 
  * \param[in] y         Logical y coordinate
  * @return              Returns a tuple with the (x,y,z) value
  */
-std::tuple<double,double,double> map_logical_sphere_surface( double R, double x, double y );
+std::tuple<double, double, double> map_logical_sphere_surface( double R, double x, double y );
 
 /**
  * \brief   Map coordinates from the surface of a sphere to logical
- * \details  This function will map the (x,y,z) coordinates on the surface of a 
+ * \details  This function will map the (x,y,z) coordinates on the surface of a
  *   sphere to logical coordinates in [0,1].  It uses the mapping by:
  *   Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
  *      and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
@@ -95,7 +94,7 @@ std::tuple<double,double,double> map_logical_sphere_surface( double R, double x,
  * \param[in] z         Physical z coordinate
  * @return              Returns a pair with the logical (x,y) values
  */
-std::pair<double,double> map_sphere_surface_logical( double R, double x, double y, double z );
+std::pair<double, double> map_sphere_surface_logical( double R, double x, double y, double z );
 
 
 /**
@@ -112,7 +111,8 @@ std::pair<double,double> map_sphere_surface_logical( double R, double x, double 
  * \param[in] z         Logical z coordinate
  * @return              Returns a tuple with the (x,y,z) value
  */
-std::tuple<double,double,double> map_logical_shell( double r1, double r2, double x, double y, double z );
+std::tuple<double, double, double>
+map_logical_shell( double r1, double r2, double x, double y, double z );
 
 
 } // BoxMeshHelpers namespace

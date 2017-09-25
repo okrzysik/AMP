@@ -5,8 +5,7 @@ namespace AMP {
 namespace TimeIntegrator {
 
 IDATimeOperator::IDATimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> in_params )
-    : TimeOperator( in_params ),
-    d_current_time(0)
+    : TimeOperator( in_params ), d_current_time( 0 )
 {
     d_cloningHappened = false;
     // BP, commenting out because this class does not define

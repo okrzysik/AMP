@@ -128,8 +128,8 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Variable::shared_ptr srcVar = sourceOp->getOutputVariable();
     AMP::LinearAlgebra::Variable::shared_ptr workVar( new AMP::LinearAlgebra::Variable( "work" ) );
 
-    AMP::Discretization::DOFManager::shared_ptr DOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    AMP::Discretization::DOFManager::shared_ptr DOF = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( DOF, solVar );
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( DOF, rhsVar );
@@ -327,7 +327,8 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 #ifdef USE_EXT_SILO
         AMP::Utilities::Writer::shared_ptr siloWriter =
             AMP::Utilities::Writer::buildWriter( "Silo" );
-        siloWriter->registerVector( workVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "RelativeError" );
+        siloWriter->registerVector(
+            workVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "RelativeError" );
         siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
         siloWriter->registerVector( srcVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Source" );
         siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );

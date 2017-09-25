@@ -1,6 +1,6 @@
 #include "vectors/operations/VectorOperations.h"
-#include "vectors/data/VectorData.h"
 #include "vectors/Vector.h"
+#include "vectors/data/VectorData.h"
 
 
 namespace AMP {
@@ -10,10 +10,7 @@ namespace LinearAlgebra {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-VectorOperations::VectorOperations():
-     d_VectorData(nullptr)
-{
-}
+VectorOperations::VectorOperations() : d_VectorData( nullptr ) {}
 
 
 /****************************************************************
@@ -67,8 +64,8 @@ double VectorOperations::minQuotient( const VectorOperations &x, const VectorOpe
     double ans = y.localMinQuotient( x );
     if ( y.hasComm() )
         ans = y.getComm().minReduce( ans );
-    AMP_INSIST( ans < std::numeric_limits<double>::max(),   
-        "denominator is the zero vector on an entire process" );
+    AMP_INSIST( ans < std::numeric_limits<double>::max(),
+                "denominator is the zero vector on an entire process" );
     return ans;
 }
 double VectorOperations::wrmsNorm( const VectorOperations &x, const VectorOperations &y )
@@ -77,19 +74,19 @@ double VectorOperations::wrmsNorm( const VectorOperations &x, const VectorOperat
     if ( y.hasComm() ) {
         size_t N1 = y.getVectorData()->getCommunicationList()->numLocalRows();
         size_t N2 = y.getVectorData()->getCommunicationList()->getTotalSize();
-        ans = sqrt( y.getComm().sumReduce( ans*ans*N1 ) / N2 );
+        ans       = sqrt( y.getComm().sumReduce( ans * ans * N1 ) / N2 );
     }
     return ans;
 }
 double VectorOperations::wrmsNormMask( const VectorOperations &x,
-                     const VectorOperations &y,
-                     const VectorOperations &mask )
+                                       const VectorOperations &y,
+                                       const VectorOperations &mask )
 {
     double ans = y.localWrmsNormMask( x, mask );
     if ( y.hasComm() ) {
         size_t N1 = y.getVectorData()->getCommunicationList()->numLocalRows();
         size_t N2 = y.getVectorData()->getCommunicationList()->getTotalSize();
-        ans = sqrt( y.getComm().sumReduce( ans*ans*N1 ) / N2 );
+        ans       = sqrt( y.getComm().sumReduce( ans * ans * N1 ) / N2 );
     }
     return ans;
 }
@@ -110,4 +107,3 @@ bool VectorOperations::equals( const VectorOperations &rhs, double tol ) const
 
 } // LinearAlgebra namespace
 } // AMP namespace
-

@@ -17,14 +17,10 @@ namespace LinearAlgebra {
 void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 {
     auto other = dynamic_pointer_cast<NativePetscMatrix>( other_op );
-    AMP_INSIST( other!=nullptr, "Incompatible matrix types" );
+    AMP_INSIST( other != nullptr, "Incompatible matrix types" );
 
     auto res = new NativePetscMatrix;
-    MatMatMult( d_Mat,
-                other->d_Mat,
-                MAT_INITIAL_MATRIX,
-                PETSC_DEFAULT,
-                &( res->d_Mat ) );
+    MatMatMult( d_Mat, other->d_Mat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &( res->d_Mat ) );
     result = Matrix::shared_ptr( res );
 }
 
@@ -35,12 +31,12 @@ void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 Vector::shared_ptr NativePetscMatrix::extractDiagonal( Vector::shared_ptr v ) const
 {
     Vector::shared_ptr retVal;
-    if ( dynamic_pointer_cast<NativePetscVector>(v) ) {
+    if ( dynamic_pointer_cast<NativePetscVector>( v ) ) {
         retVal = v;
     } else {
         retVal = getRightVector();
     }
-    MatGetDiagonal( getMat(), dynamic_pointer_cast<PetscVector>(retVal)->getVec() );
+    MatGetDiagonal( getMat(), dynamic_pointer_cast<PetscVector>( retVal )->getVec() );
     return retVal;
 }
 
@@ -51,7 +47,7 @@ Vector::shared_ptr NativePetscMatrix::extractDiagonal( Vector::shared_ptr v ) co
 Vector::shared_ptr NativePetscMatrix::getRightVector() const
 {
     Vec a;
-#if PETSC_VERSION_LE(3,2,0)
+#if PETSC_VERSION_LE( 3, 2, 0 )
     MatGetVecs( d_Mat, &a, PETSC_NULL );
 #else
     MatCreateVecs( d_Mat, &a, PETSC_NULL );
@@ -63,7 +59,7 @@ Vector::shared_ptr NativePetscMatrix::getRightVector() const
 Vector::shared_ptr NativePetscMatrix::getLeftVector() const
 {
     Vec a;
-#if PETSC_VERSION_LE(3,2,0)
+#if PETSC_VERSION_LE( 3, 2, 0 )
     MatGetVecs( d_Mat, PETSC_NULL, &a );
 #else
     MatCreateVecs( d_Mat, PETSC_NULL, &a );
@@ -89,12 +85,12 @@ void NativePetscMatrix::getValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const
 {
     // Zero out the data in values
-    for ( size_t i   = 0; i < num_rows * num_cols; i++ )
-        values[i] = 0.0;
+    for ( size_t i = 0; i < num_rows * num_cols; i++ )
+        values[i]  = 0.0;
     // Get the data for each row
     Discretization::DOFManager::shared_ptr leftDOFManager = getLeftDOFManager();
-    size_t firstRow                                          = leftDOFManager->beginDOF();
-    size_t numRows                                           = leftDOFManager->endDOF();
+    size_t firstRow                                       = leftDOFManager->beginDOF();
+    size_t numRows                                        = leftDOFManager->endDOF();
 
     for ( size_t i = 0; i < num_rows; i++ ) {
         if ( rows[i] < firstRow || rows[i] >= firstRow + numRows )
@@ -136,7 +132,7 @@ std::vector<size_t> NativePetscMatrix::getColumnIDs( size_t row ) const
 {
     int numCols;
     MatGetRow( d_Mat, row, &numCols, PETSC_NULL, PETSC_NULL );
-    std::vector<size_t> cols ( numCols );
+    std::vector<size_t> cols( numCols );
 
     if ( numCols ) {
         const PetscInt *out_cols;
@@ -148,6 +144,5 @@ std::vector<size_t> NativePetscMatrix::getColumnIDs( size_t row ) const
 
     return cols;
 }
-
 }
 } // end

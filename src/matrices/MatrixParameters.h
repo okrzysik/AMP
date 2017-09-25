@@ -89,7 +89,6 @@ protected:
 
     // The comm of the matrix
     AMP_MPI d_comm;
-
 };
 }
 }

@@ -2,8 +2,8 @@
 
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
-#include "ampmesh/testHelpers/meshTests.h"
 #include "ampmesh/structured/BoxMesh.h"
+#include "ampmesh/testHelpers/meshTests.h"
 
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
@@ -16,14 +16,13 @@
 #include "ProfilerApp.h"
 
 
-template<class GENERATOR>
+template <class GENERATOR>
 void runTest( AMP::UnitTest &ut )
 {
     auto generator = AMP::shared_ptr<GENERATOR>( new GENERATOR );
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshPerformance( &ut, generator->getMesh() );
 }
-
 
 
 void testMeshGenerators( AMP::UnitTest &ut )
@@ -35,7 +34,7 @@ void testMeshGenerators( AMP::UnitTest &ut )
     runTest<AMP::unit_test::AMPCylinderGenerator>( ut );
     runTest<AMP::unit_test::AMPMultiMeshGenerator>( ut );
     runTest<AMP::unit_test::AMPCubeGenerator<4>>( ut );
-    // libmesh generators
+// libmesh generators
 #ifdef USE_EXT_LIBMESH
     // Test the libmesh cube generator
     runTest<AMP::unit_test::LibMeshCubeGenerator<5>>( ut );
@@ -45,7 +44,6 @@ void testMeshGenerators( AMP::UnitTest &ut )
 #endif
     PROFILE_STOP( "testMeshGenerators" );
 }
-
 
 
 void testInputMesh( AMP::UnitTest &ut, std::string filename )
@@ -64,10 +62,10 @@ void testInputMesh( AMP::UnitTest &ut, std::string filename )
     AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Run the mesh tests
-    AMP::Mesh::meshTests::MeshPerformance( &ut, mesh );;
+    AMP::Mesh::meshTests::MeshPerformance( &ut, mesh );
+    ;
     PROFILE_STOP( "testInputMesh" );
 }
-
 
 
 // Main function
@@ -85,7 +83,7 @@ int main( int argc, char **argv )
         testMeshGenerators( ut );
     } else {
         // Test each given input file
-        for (int i=1; i<argc; i++)
+        for ( int i = 1; i < argc; i++ )
             testInputMesh( ut, argv[i] );
     }
 

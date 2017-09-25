@@ -28,7 +28,7 @@ int main( int argc, char *argv[] )
         return -1;
     }
 
-    // Create the matrix
+// Create the matrix
 #ifdef USE_MPI
     Epetra_MpiComm comm = MPI_COMM_WORLD;
 #include <Epetra_MpiComm.h>

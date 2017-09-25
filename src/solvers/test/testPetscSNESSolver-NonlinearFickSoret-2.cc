@@ -303,7 +303,8 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
                                 meshAdapter,
                                 AMP::Mesh::GeomType::Vertex,
                                 "Temperature" );
-    siloWriter->registerVector( fickCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "FickCoefficient" );
+    siloWriter->registerVector(
+        fickCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "FickCoefficient" );
     siloWriter->registerVector(
         soretCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ThermalDiffusionCoefficient" );
 

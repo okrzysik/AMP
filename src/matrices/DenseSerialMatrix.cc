@@ -211,7 +211,7 @@ std::vector<size_t> DenseSerialMatrix::getColumnIDs( size_t row ) const
 {
     AMP_ASSERT( row < d_rows );
 
-    std::vector<size_t> cols(d_cols);
+    std::vector<size_t> cols( d_cols );
     std::iota( cols.begin(), cols.end(), 0 );
 
     return cols;
@@ -226,7 +226,7 @@ void DenseSerialMatrix::getValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const
 {
     for ( size_t i = 0; i < num_rows; i++ )
-        for ( size_t j                  = 0; j < num_cols; j++ )
+        for ( size_t j               = 0; j < num_cols; j++ )
             values[i * num_cols + j] = d_M[rows[i] + cols[j] * d_rows];
 }
 

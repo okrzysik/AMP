@@ -185,7 +185,7 @@ public:
      *    and 2 if the individual nodes can be moved.
      * @return  The if
      */
-    virtual int isMeshMovable( ) const override;
+    virtual int isMeshMovable() const override;
 
     /**
      * \brief    Displace the entire mesh

@@ -3,13 +3,12 @@
 
 #include "utils/AMP_MPI.h"
 
-#include <vector>
 #include <array>
 #include <string>
+#include <vector>
 
 
 namespace AMP {
-
 
 
 /*!
@@ -124,10 +123,10 @@ public:
      *   Note: when comparing versions, only the last number needs to be compared.
      * @return          Returns array containing the {major,minor,build} version
      */
-    static std::array<int,3> revision();
+    static std::array<int, 3> revision();
 
     //! Return detailed revision information
-    static std::string info();    
+    static std::string info();
 
 private:
     // Private constructor (we do not actually want to create an object)

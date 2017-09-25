@@ -98,8 +98,11 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     int displacementDOFsPerNode = 3;
     AMP::Discretization::DOFManager::shared_ptr displDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, displacementDOFsPerNode, split );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter,
+                                                       AMP::Mesh::GeomType::Vertex,
+                                                       nodalGhostWidth,
+                                                       displacementDOFsPerNode,
+                                                       split );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the input multi-variable

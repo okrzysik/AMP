@@ -199,8 +199,9 @@ void nonlinearTest( AMP::UnitTest *ut,
     }
     diffRhsVec->setToScalar( 0.0 );
 
-    int zeroGhostWidth              = 0;
-    AMP::Mesh::MeshIterator curNode = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+    int zeroGhostWidth = 0;
+    AMP::Mesh::MeshIterator curNode =
+        meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
     AMP::Mesh::MeshIterator endNode = curNode.end();
 
     for ( curNode = curNode.begin(); curNode != endNode; ++curNode ) {

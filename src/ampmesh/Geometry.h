@@ -18,7 +18,6 @@ namespace Geometry {
 class Geometry
 {
 public:
-
     //! Destructor
     virtual ~Geometry() {}
 
@@ -39,13 +38,14 @@ public:
     /**
      * \brief    Calculate the distance to the object given a ray
      * \details  This function computes the distance to the object given a ray.
-     *     If the ray is inside the object, this distance is negitive.  If the 
-     *     ray will never intersect the object, this distance is inf.  
+     *     If the ray is inside the object, this distance is negitive.  If the
+     *     ray will never intersect the object, this distance is inf.
      * \param pos   Current position of ray
      * \param dir   Direction of ray (should be normalized for most uses)
      * @return      Returns the distance to the nearest surface (intersection = pos + dir*distance)
      */
-    virtual double distance( const std::initializer_list<double>& pos, const std::initializer_list<double>& dir ) const = 0;
+    virtual double distance( const std::initializer_list<double> &pos,
+                             const std::initializer_list<double> &dir ) const = 0;
 
     /**
      * \brief    Is the point in the geometry
@@ -54,7 +54,7 @@ public:
      * \param pos   Current position of ray
      * @return      Returns true if the point is inside the geometry (or on the surface)
      */
-    virtual bool inside( const std::initializer_list<double>& pos ) const = 0;
+    virtual bool inside( const std::initializer_list<double> &pos ) const = 0;
 
     /**
      * \brief    Displace the entire mesh
@@ -70,7 +70,6 @@ public:
 protected:
     //!  Empty constructor for the base class
     Geometry() {}
-
 };
 
 

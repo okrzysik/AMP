@@ -15,20 +15,20 @@ static MeshElement nullElement;
 /********************************************************
 * Constructors                                          *
 ********************************************************/
-MeshIterator::MeshIterator():
-    d_iterator(nullptr),
-    d_typeID( MeshIteratorTypeID ),
-    d_size(0),
-    d_pos(0),
-    d_element(nullptr)
+MeshIterator::MeshIterator()
+    : d_iterator( nullptr ),
+      d_typeID( MeshIteratorTypeID ),
+      d_size( 0 ),
+      d_pos( 0 ),
+      d_element( nullptr )
 {
 }
-MeshIterator::MeshIterator( const MeshIterator &rhs ):
-    d_iterator(nullptr),
-    d_typeID( MeshIteratorTypeID ),
-    d_size(0),
-    d_pos(0),
-    d_element(nullptr)
+MeshIterator::MeshIterator( const MeshIterator &rhs )
+    : d_iterator( nullptr ),
+      d_typeID( MeshIteratorTypeID ),
+      d_size( 0 ),
+      d_pos( 0 ),
+      d_element( nullptr )
 {
     if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
         d_iterator = nullptr;
@@ -47,9 +47,9 @@ MeshIterator &MeshIterator::operator=( const MeshIterator &rhs )
         delete d_iterator;
         d_iterator = nullptr;
     }
-    d_typeID = MeshIteratorTypeID;
-    d_size = 0;
-    d_pos = 0;
+    d_typeID  = MeshIteratorTypeID;
+    d_size    = 0;
+    d_pos     = 0;
     d_element = nullptr;
     if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
         d_iterator = nullptr;
@@ -212,7 +212,6 @@ MeshIterator &MeshIterator::operator-=( const MeshIterator &it )
         return d_iterator->operator-=( (int) it.position() );
     return this->operator+=( -static_cast<int>( it.position() ) );
 }
-
 
 
 } // Mesh namespace

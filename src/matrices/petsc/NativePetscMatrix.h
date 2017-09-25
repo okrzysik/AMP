@@ -63,14 +63,18 @@ public:
     virtual void scale( double alpha ) override;
     virtual void axpy( double alpha, const Matrix &x ) override;
 
-    virtual void
-    addValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
-    virtual void
-    setValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
-    virtual void
-    getValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const override;
-    virtual void
-    getRowByGlobalID( size_t row, std::vector<size_t> &cols, std::vector<double> &values ) const override;
+    virtual void addValuesByGlobalID(
+        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
+    virtual void setValuesByGlobalID(
+        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
+    virtual void getValuesByGlobalID( size_t num_rows,
+                                      size_t num_cols,
+                                      size_t *rows,
+                                      size_t *cols,
+                                      double *values ) const override;
+    virtual void getRowByGlobalID( size_t row,
+                                   std::vector<size_t> &cols,
+                                   std::vector<double> &values ) const override;
 
     std::vector<size_t> getColumnIDs( size_t row ) const override;
 
@@ -78,7 +82,8 @@ public:
     virtual void setDiagonal( Vector::const_shared_ptr in ) override;
 
     virtual void makeConsistent() override;
-    virtual Vector::shared_ptr extractDiagonal( Vector::shared_ptr p = Vector::shared_ptr() ) const override;
+    virtual Vector::shared_ptr
+    extractDiagonal( Vector::shared_ptr p = Vector::shared_ptr() ) const override;
     virtual double L1Norm() const override;
     virtual void setIdentity() override;
     virtual void zero() override;

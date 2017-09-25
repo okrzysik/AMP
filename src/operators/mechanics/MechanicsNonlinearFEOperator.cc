@@ -416,7 +416,8 @@ void MechanicsNonlinearFEOperator::reset( const AMP::shared_ptr<OperatorParamete
         for ( unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++ ) {
             if ( d_isActive[i] ) {
                 d_inVec_pre[i]->copyVector( d_inVec[i] );
-                d_inVec_pre[i]->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+                d_inVec_pre[i]->makeConsistent(
+                    AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
             }
         }
     }
@@ -459,7 +460,8 @@ AMP::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
         AMP::LinearAlgebra::Vector::shared_ptr displacementVector =
             mySubsetVector( u, ( d_inpVariables->getVariable( Mechanics::DISPLACEMENT ) ) );
         outParams->d_dispVec = displacementVector;
-        ( outParams->d_dispVec )->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+        ( outParams->d_dispVec )
+            ->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     }
 
     if ( d_jacobianReusesRadialReturn == false ) {
@@ -523,8 +525,8 @@ AMP::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
     return outParams;
 }
 
-void MechanicsNonlinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                                                         const std::string &fname )
+void MechanicsNonlinearFEOperator::printStressAndStrain(
+    AMP::LinearAlgebra::Vector::const_shared_ptr u, const std::string &fname )
 {
     if ( !d_isInitialized ) {
         init();
@@ -542,7 +544,7 @@ void MechanicsNonlinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vec
 
     if ( d_isActive[Mechanics::TEMPERATURE] ) {
         if ( !( d_isFrozen[Mechanics::TEMPERATURE] ) ) {
-            auto tempVar = d_inpVariables->getVariable( Mechanics::TEMPERATURE );
+            auto tempVar    = d_inpVariables->getVariable( Mechanics::TEMPERATURE );
             auto tempVector = mySubsetVector( u, tempVar );
             setVector( Mechanics::TEMPERATURE, tempVector );
         }
@@ -550,7 +552,7 @@ void MechanicsNonlinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vec
 
     if ( d_isActive[Mechanics::BURNUP] ) {
         if ( !( d_isFrozen[Mechanics::BURNUP] ) ) {
-            auto burnVar = d_inpVariables->getVariable( Mechanics::BURNUP );
+            auto burnVar    = d_inpVariables->getVariable( Mechanics::BURNUP );
             auto burnVector = mySubsetVector( u, burnVar );
             setVector( Mechanics::BURNUP, burnVector );
         }
@@ -558,7 +560,7 @@ void MechanicsNonlinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vec
 
     if ( d_isActive[Mechanics::OXYGEN_CONCENTRATION] ) {
         if ( !( d_isFrozen[Mechanics::OXYGEN_CONCENTRATION] ) ) {
-            auto oxyVar = d_inpVariables->getVariable( Mechanics::OXYGEN_CONCENTRATION );
+            auto oxyVar    = d_inpVariables->getVariable( Mechanics::OXYGEN_CONCENTRATION );
             auto oxyVector = mySubsetVector( u, oxyVar );
             setVector( Mechanics::OXYGEN_CONCENTRATION, oxyVector );
         }
@@ -566,7 +568,7 @@ void MechanicsNonlinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vec
 
     if ( d_isActive[Mechanics::LHGR] ) {
         if ( !( d_isFrozen[Mechanics::LHGR] ) ) {
-            auto lhgrVar = d_inpVariables->getVariable( Mechanics::LHGR );
+            auto lhgrVar    = d_inpVariables->getVariable( Mechanics::LHGR );
             auto lhgrVector = mySubsetVector( u, lhgrVar );
             setVector( Mechanics::LHGR, lhgrVector );
         }
@@ -735,7 +737,8 @@ void MechanicsNonlinearFEOperator::setVector(
 {
     AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable( id );
     d_inVec[id]                                  = mySubsetVector( frozenVec, var );
-    AMP_ASSERT( d_inVec[id]->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
+    AMP_ASSERT( d_inVec[id]->getUpdateStatus() ==
+                AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
 }
 
 void MechanicsNonlinearFEOperator::setReferenceTemperature(

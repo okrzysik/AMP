@@ -126,10 +126,10 @@ bool ExplicitEuler::checkNewSolution( void ) const
 *                                                                      *
 ************************************************************************
 */
-void ExplicitEuler::updateSolution( void ) 
-{ 
+void ExplicitEuler::updateSolution( void )
+{
     d_current_time += d_current_dt;
-    d_solution->swapVectors( *d_new_solution ); 
+    d_solution->swapVectors( *d_new_solution );
 }
 
 /*

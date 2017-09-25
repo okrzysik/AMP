@@ -3,9 +3,9 @@
 #include "ampmesh/structured/BoxMeshHelpers.h"
 
 #include "ampmesh/MultiIterator.h"
+#include "ampmesh/shapes/Box.h"
 #include "ampmesh/structured/structuredMeshElement.h"
 #include "ampmesh/structured/structuredMeshIterator.h"
-#include "ampmesh/shapes/Box.h"
 
 #ifdef USE_AMP_VECTORS
 #include "vectors/Variable.h"
@@ -24,8 +24,7 @@ namespace Mesh {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-CylinderMesh::CylinderMesh( MeshParameters::shared_ptr params ):
-    BoxMesh( params )
+CylinderMesh::CylinderMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 {
     // Input options from the database
     PhysicalDim = d_db->getInteger( "dim" );
@@ -33,16 +32,16 @@ CylinderMesh::CylinderMesh( MeshParameters::shared_ptr params ):
     auto size   = d_db->getIntegerArray( "Size" );
     auto range  = d_db->getDoubleArray( "Range" );
     d_max_gcw   = d_db->getIntegerWithDefault( "GCW", 2 );
-    std::vector<unsigned char> per(1,false);
+    std::vector<unsigned char> per( 1, false );
     if ( d_db->keyExists( "Periodic" ) )
         per = d_db->getBoolArray( "Periodic" );
     AMP_INSIST( per.size() == 1u, "Periodic must be an array of length 1" );
     AMP_INSIST( size.size() == 2u, "Size must be an array of length 2" );
     AMP_INSIST( range.size() == 3u, "Range must be an array of length 3" );
     AMP_INSIST( (int) PhysicalDim == 3, "dim must be 3" );
-    d_range[0] = range[0];
-    d_range[1] = range[1];
-    d_range[2] = range[2];
+    d_range[0]      = range[0];
+    d_range[1]      = range[1];
+    d_range[2]      = range[2];
     d_globalSize[0] = 2 * size[0];
     d_globalSize[1] = 2 * size[0];
     d_globalSize[2] = size[1];
@@ -68,7 +67,7 @@ CylinderMesh::CylinderMesh( MeshParameters::shared_ptr params ):
     // Initialize the logical mesh
     BoxMesh::initialize();
     // Set the geometry
-    //d_geometry.reset( new Geometry::Box( range ) );
+    // d_geometry.reset( new Geometry::Box( range ) );
     // Finalize the logical mesh
     BoxMesh::finalize();
 }
@@ -77,12 +76,13 @@ CylinderMesh::CylinderMesh( MeshParameters::shared_ptr params ):
 /****************************************************************
 * Estimate the mesh size                                        *
 ****************************************************************/
-std::vector<size_t> CylinderMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
+std::vector<size_t>
+CylinderMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
-    auto db = params->getDatabase();
+    auto db               = params->getDatabase();
     std::vector<int> size = db->getIntegerArray( "Size" );
-    AMP_ASSERT(size.size()==2u);
-    std::vector<size_t> size2(3);
+    AMP_ASSERT( size.size() == 2u );
+    std::vector<size_t> size2( 3 );
     size2[0] = 2 * size[0];
     size2[1] = 2 * size[0];
     size2[2] = size[1];
@@ -93,10 +93,7 @@ std::vector<size_t> CylinderMesh::estimateLogicalMeshSize( const MeshParameters:
 /****************************************************************
 * Functions to displace the mesh                                *
 ****************************************************************/
-int CylinderMesh::isMeshMovable( ) const
-{
-    return 1;
-}
+int CylinderMesh::isMeshMovable() const { return 1; }
 void CylinderMesh::displaceMesh( const std::vector<double> &x )
 {
     AMP_ASSERT( x.size() == PhysicalDim );
@@ -123,7 +120,7 @@ void CylinderMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_
 ****************************************************************/
 AMP::shared_ptr<Mesh> CylinderMesh::copy() const
 {
-    return AMP::shared_ptr<CylinderMesh>( new CylinderMesh(*this) );
+    return AMP::shared_ptr<CylinderMesh>( new CylinderMesh( *this ) );
 }
 
 
@@ -132,31 +129,28 @@ AMP::shared_ptr<Mesh> CylinderMesh::copy() const
 ****************************************************************/
 void CylinderMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
-    int i = index.index(0);
-    int j = index.index(1);
-    int k = index.index(2);
-    double x = static_cast<double>(i) / static_cast<double>(d_globalSize[0]);
-    double y = static_cast<double>(j) / static_cast<double>(d_globalSize[1]);
-    double z = static_cast<double>(k) / static_cast<double>(d_globalSize[2]);
+    int i      = index.index( 0 );
+    int j      = index.index( 1 );
+    int k      = index.index( 2 );
+    double x   = static_cast<double>( i ) / static_cast<double>( d_globalSize[0] );
+    double y   = static_cast<double>( j ) / static_cast<double>( d_globalSize[1] );
+    double z   = static_cast<double>( k ) / static_cast<double>( d_globalSize[2] );
     auto point = BoxMeshHelpers::map_logical_circle( d_range[0], 2, x, y );
-    pos[0] = point.first  + d_offset[0];
-    pos[1] = point.second + d_offset[1];
-    pos[2] = d_range[1] + z * ( d_range[2] - d_range[1] ) + d_offset[2];
+    pos[0]     = point.first + d_offset[0];
+    pos[1]     = point.second + d_offset[1];
+    pos[2]     = d_range[1] + z * ( d_range[2] - d_range[1] ) + d_offset[2];
 }
 
 
 /****************************************************************
 * Return the logical coordinates                                *
 ****************************************************************/
-std::array<double,3> CylinderMesh::physicalToLogical( const double* ) const
+std::array<double, 3> CylinderMesh::physicalToLogical( const double * ) const
 {
-    AMP_ERROR("physicalToLogical is not supported in CylinderMesh");
-    return std::array<double,3>();
+    AMP_ERROR( "physicalToLogical is not supported in CylinderMesh" );
+    return std::array<double, 3>();
 }
 
 
 } // Mesh namespace
 } // AMP namespace
-
-
-

@@ -21,7 +21,7 @@ void checkConsistency( double h, double p, double T, bool &allCorrect, bool &all
     using namespace AMP::Materials;
     AMP::shared_ptr<AMP::Materials::Material> mat =
         AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(
-            "WaterLibrary" );                                         // get water library
+            "WaterLibrary" );                                  // get water library
     auto temperatureProperty = mat->property( "Temperature" ); // temperature property
     auto enthalpyProperty    = mat->property( "Enthalpy" );    // enthalpy property
 
@@ -63,18 +63,17 @@ int main( int argc, char **argv )
     // test constructors for temperature
     AMP::shared_ptr<AMP::Materials::Material> mat =
         AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(
-            "WaterLibrary" );                                         // get water library
+            "WaterLibrary" );                                  // get water library
     auto temperatureProperty = mat->property( "Temperature" ); // temperature property
     auto liquidEnthalpyProperty =
         mat->property( "SaturatedLiquidEnthalpy" ); // saturated liquid enthalpy property
     auto vaporEnthalpyProperty =
-        mat->property( "SaturatedVaporEnthalpy" ); // saturated vapor enthalpy property
+        mat->property( "SaturatedVaporEnthalpy" );           // saturated vapor enthalpy property
     auto volumeProperty = mat->property( "SpecificVolume" ); // specific volume property
     auto conductivityProperty =
-        mat->property( "ThermalConductivity" ); // thermal conductivity property
-    auto viscosityProperty =
-        mat->property( "DynamicViscosity" );                    // dynamic viscosity property
-    auto enthalpyProperty = mat->property( "Enthalpy" ); // enthalpy property
+        mat->property( "ThermalConductivity" );                   // thermal conductivity property
+    auto viscosityProperty = mat->property( "DynamicViscosity" ); // dynamic viscosity property
+    auto enthalpyProperty  = mat->property( "Enthalpy" );         // enthalpy property
 
     // test property accessors for temperature
     std::string tcname = temperatureProperty->get_name();

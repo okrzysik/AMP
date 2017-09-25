@@ -3,11 +3,11 @@
 
 #include <string>
 
+#include "utils/Array.h"
+#include "utils/FunctionTable.h"
 #include "vectors/Vector.h"
 #include "vectors/operations/VectorOperationsDefault.h"
 #include "vectors/operations/VectorOperationsDefault.hpp"
-#include "utils/FunctionTable.h"
-#include "utils/Array.h"
 
 
 namespace AMP {
@@ -18,9 +18,7 @@ namespace LinearAlgebra {
   * \details This is a Vector that implements the Vector interface for a std::vector<double>.
   */
 template <typename T, typename FUN = FunctionTable, typename Allocator = std::allocator<T>>
-class ArrayVector :
-    public Vector,
-    public VectorOperationsDefault<T>
+class ArrayVector : public Vector, public VectorOperationsDefault<T>
 {
 private:
     AMP::Array<T, FUN, Allocator> d_array;
@@ -31,7 +29,6 @@ private:
     ArrayVector( const ArrayVector & );
 
 public:
-    
     /** \brief    Create a ArrayVector
       * \details  This is the factory method for the ArrayVector.  It returns the shared pointer
       * to be used in the code
@@ -92,13 +89,17 @@ public:
       * \details  A vector is not necessarily contiguous in memory.  This method
       * returns the number of contiguous blocks in memory used by this vector
       */
-    size_t numberOfDataBlocks() const override{ return 1; }
+    size_t numberOfDataBlocks() const override { return 1; }
 
     /** \brief Number of elements in a data block
       * \param[in] i  particular data block
       * \return The size of a particular block
       */
-    size_t sizeOfDataBlock( size_t i = 0 ) const override { NULL_USE(i); return d_array.length(); }
+    size_t sizeOfDataBlock( size_t i = 0 ) const override
+    {
+        NULL_USE( i );
+        return d_array.length();
+    }
 
     /**\brief Copy data into this vector
       *\param[in] buf  Buffer to copy from
@@ -133,11 +134,12 @@ public:
       * from 0.
       * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
       */
-    void setValuesByLocalID( int num, size_t *indices, const double *vals ) override { 
-        NULL_USE(num);
-        NULL_USE(indices);
-        NULL_USE(vals);
-        AMP_ERROR("Not implemented"); 
+    void setValuesByLocalID( int num, size_t *indices, const double *vals ) override
+    {
+        NULL_USE( num );
+        NULL_USE( indices );
+        NULL_USE( vals );
+        AMP_ERROR( "Not implemented" );
     }
 
     /**
@@ -148,11 +150,12 @@ public:
       *
       * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
       */
-    void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override { 
-        NULL_USE(num);
-        NULL_USE(indices);
-        NULL_USE(vals);
-        AMP_ERROR("Not implemented"); 
+    void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override
+    {
+        NULL_USE( num );
+        NULL_USE( indices );
+        NULL_USE( vals );
+        AMP_ERROR( "Not implemented" );
     }
 
     /**
@@ -165,11 +168,12 @@ public:
       * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
       */
-    void addValuesByLocalID( int num, size_t *indices, const double *vals ) override { 
-        NULL_USE(num);
-        NULL_USE(indices);
-        NULL_USE(vals);
-        AMP_ERROR("Not implemented"); 
+    void addValuesByLocalID( int num, size_t *indices, const double *vals ) override
+    {
+        NULL_USE( num );
+        NULL_USE( indices );
+        NULL_USE( vals );
+        AMP_ERROR( "Not implemented" );
     }
 
     /**
@@ -181,11 +185,12 @@ public:
       * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
       */
-    void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override { 
-        NULL_USE(num);
-        NULL_USE(indices);
-        NULL_USE(vals);
-        AMP_ERROR("Not implemented"); 
+    void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override
+    {
+        NULL_USE( num );
+        NULL_USE( indices );
+        NULL_USE( vals );
+        AMP_ERROR( "Not implemented" );
     }
 
     /**
@@ -195,11 +200,12 @@ public:
       * \param[out] vals the values to place in the vector
       * \details This will get any value owned by this core.
       */
-    void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override  { 
-        NULL_USE(num);
-        NULL_USE(indices);
-        NULL_USE(vals);
-        AMP_ERROR("Not implemented"); 
+    void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override
+    {
+        NULL_USE( num );
+        NULL_USE( indices );
+        NULL_USE( vals );
+        AMP_ERROR( "Not implemented" );
     }
 
     /**\brief  A unique id for the underlying data allocation
@@ -216,27 +222,35 @@ public:
       * of PETSc.
       * \details  This method is empty except for instantiations of NativePetscVector
       */
-    void assemble() override { AMP_ERROR("Not implemented"); }
+    void assemble() override { AMP_ERROR( "Not implemented" ); }
 
 protected:
+    /** \brief Return a pointer to a particular block of memory in the
+      * vector
+      * \param i The block to return
+      */
+    void *getRawDataBlockAsVoid( size_t i ) override
+    {
+        AMP_ASSERT( i == 0 );
+        return d_array.data();
+    }
 
     /** \brief Return a pointer to a particular block of memory in the
       * vector
       * \param i The block to return
       */
-    void *getRawDataBlockAsVoid( size_t i ) override { AMP_ASSERT(i==0); return d_array.data(); }
+    const void *getRawDataBlockAsVoid( size_t i ) const override
+    {
+        AMP_ASSERT( i == 0 );
+        return d_array.data();
+    }
 
-    /** \brief Return a pointer to a particular block of memory in the
-      * vector
-      * \param i The block to return
-      */
-    const void *getRawDataBlockAsVoid( size_t i ) const override  { AMP_ASSERT(i==0); return d_array.data(); }
-
-    virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(T).hash_code(); }
-    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
-
+    virtual bool isTypeId( size_t hash, size_t ) const override
+    {
+        return hash == typeid( T ).hash_code();
+    }
+    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
 };
-
 }
 }
 

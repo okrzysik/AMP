@@ -258,14 +258,16 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
 
     ut->passes( "set up to the iterations passes." );
 
-    auto globalSolMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    auto globalSolMultiVector =
+        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
     globalSolMultiVector->addVector( globalSolVec );
     globalSolMultiVector->addVector( flowSolViewVec );
 
     AMP::LinearAlgebra::Vector::shared_ptr globalSolMultiVectorView =
         AMP::LinearAlgebra::MultiVector::view( globalSolMultiVector, globalComm );
     //---------------------------------------------------------------------------------------------------------------------//
-    auto globalRhsMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    auto globalRhsMultiVector =
+        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
     globalRhsMultiVector->addVector( globalRhsVec );
     globalRhsMultiVector->addVector( flowRhsViewVec );
 
@@ -273,7 +275,8 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
         AMP::LinearAlgebra::MultiVector::view( globalRhsMultiVector, globalComm );
     //---------------------------------------------------------------------------------------------------------------------//
     //---------------------------------------------------------------------------------------------------------------------//
-    auto globalResMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    auto globalResMultiVector =
+        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
     globalResMultiVector->addVector( globalResVec );
     globalResMultiVector->addVector( flowResViewVec );
 

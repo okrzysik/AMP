@@ -155,8 +155,9 @@ void linearRobinTest( AMP::UnitTest *ut, std::string exeName )
 
     //------------------------------------------
     // check the solution
-    int zeroGhostWidth           = 0;
-    AMP::Mesh::MeshIterator node = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+    int zeroGhostWidth = 0;
+    AMP::Mesh::MeshIterator node =
+        meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
     AMP::Mesh::MeshIterator end_node = node.end();
 
     for ( ; node != end_node; ++node ) {

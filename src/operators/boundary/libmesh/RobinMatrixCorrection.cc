@@ -162,8 +162,8 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
             unsigned int numDofIds = d_dofIds[nid].size();
 
             for ( unsigned int k = 0; k < numDofIds; k++ ) {
-                AMP::Mesh::MeshIterator bnd1 =
-                    d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryIds[nid], 0 );
+                AMP::Mesh::MeshIterator bnd1 = d_Mesh->getBoundaryIDIterator(
+                    AMP::Mesh::GeomType::Face, d_boundaryIds[nid], 0 );
                 AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
                 for ( ; bnd1 != end_bnd1; ++bnd1 ) {
 

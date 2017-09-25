@@ -19,27 +19,27 @@ namespace Operator {
 
 // Constructor
 SubchannelFourEqLinearOperator::SubchannelFourEqLinearOperator(
-    const AMP::shared_ptr<SubchannelOperatorParameters> &params ):
-    LinearOperator( params ),
-    d_forceNoConduction(0),
-    d_forceNoTurbulence(0),
-    d_forceNoHeatSource(0),
-    d_forceNoFriction(0),
-    d_Pout(0),
-    d_Tin(0),
-    d_mass(0),
-    d_win(0),
-    d_gamma(0),
-    d_theta(0),
-    d_turbulenceCoef(0),
-    d_reynolds(0),
-    d_prandtl(0),
-    d_KG(0),
-    d_friction(0),
-    d_roughness(0),
-    d_NGrid(0),
-    d_Q(0),
-    d_numSubchannels(0)
+    const AMP::shared_ptr<SubchannelOperatorParameters> &params )
+    : LinearOperator( params ),
+      d_forceNoConduction( 0 ),
+      d_forceNoTurbulence( 0 ),
+      d_forceNoHeatSource( 0 ),
+      d_forceNoFriction( 0 ),
+      d_Pout( 0 ),
+      d_Tin( 0 ),
+      d_mass( 0 ),
+      d_win( 0 ),
+      d_gamma( 0 ),
+      d_theta( 0 ),
+      d_turbulenceCoef( 0 ),
+      d_reynolds( 0 ),
+      d_prandtl( 0 ),
+      d_KG( 0 ),
+      d_friction( 0 ),
+      d_roughness( 0 ),
+      d_NGrid( 0 ),
+      d_Q( 0 ),
+      d_numSubchannels( 0 )
 {
     AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "Key 'InputVariable' does not exist" );
     std::string inpVar = params->d_db->getString( "InputVariable" );
@@ -1121,7 +1121,8 @@ void SubchannelFourEqLinearOperator::getLateralFaces(
         // get centroid of current face
         std::vector<double> faceCentroid = face->centroid();
         // get vertices of current face
-        std::vector<AMP::Mesh::MeshElement> vertices = face->getElements( AMP::Mesh::GeomType::Vertex );
+        std::vector<AMP::Mesh::MeshElement> vertices =
+            face->getElements( AMP::Mesh::GeomType::Vertex );
 
         bool perpindicular_to_x = true; // is the current face perpindicular to x-axis?
         bool perpindicular_to_y = true; // is the current face perpindicular to y-axis?

@@ -78,8 +78,8 @@ public:
       * allocated a particular(row,col) specified, depending
       * on the actual subclass of matrix used.
       */
-    virtual void
-    addValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
+    virtual void addValuesByGlobalID(
+        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
 
     /** \brief  Set values in the matrix
       * \param[in] num_rows The number of rows represented in values
@@ -91,8 +91,8 @@ public:
       * allocated a particular(row,col) specified, depending
       * on the actual subclass of matrix used.
       */
-    virtual void
-    setValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
+    virtual void setValuesByGlobalID(
+        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
 
     /** \brief  Get values in the matrix
       * \param[in] num_rows The number of rows represented in values
@@ -103,8 +103,11 @@ public:
       * \details  This method will return zero for any entries that
       *   have not been allocated or are not ghosts on the current processor.
       */
-    virtual void
-    getValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const override;
+    virtual void getValuesByGlobalID( size_t num_rows,
+                                      size_t num_cols,
+                                      size_t *rows,
+                                      size_t *cols,
+                                      double *values ) const override;
 
 
     /** \brief  Add values to those in the matrix
@@ -148,8 +151,9 @@ public:
       * \param[out] cols  The column ids of the returned values
       * \param[out] values  The values in the row
       */
-    virtual void
-    getRowByGlobalID( size_t row, std::vector<size_t> &cols, std::vector<double> &values ) const override;
+    virtual void getRowByGlobalID( size_t row,
+                                   std::vector<size_t> &cols,
+                                   std::vector<double> &values ) const override;
 
     /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
       * \param[in]  row Which row
@@ -173,7 +177,7 @@ public:
     /** \brief  Perform communication to ensure values in the
       * matrix are the same across cores.
       */
-    virtual void makeConsistent()  override{}
+    virtual void makeConsistent() override {}
 
     /** \brief  Extract the diagonal from a matrix
       * \param[in]  buf  An optional vector to use as a buffer

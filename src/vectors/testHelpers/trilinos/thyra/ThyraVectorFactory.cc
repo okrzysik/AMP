@@ -39,8 +39,7 @@ namespace LinearAlgebra {
 ****************************************************************/
 AMP::LinearAlgebra::Variable::shared_ptr NativeThyraFactory::getVariable() const
 {
-    return AMP::LinearAlgebra::Variable::shared_ptr(
-        new AMP::LinearAlgebra::Variable( "thyra" ) );
+    return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable( "thyra" ) );
 }
 AMP::LinearAlgebra::Vector::shared_ptr NativeThyraFactory::getVector() const
 {
@@ -72,7 +71,7 @@ AMP::LinearAlgebra::Vector::shared_ptr NativeThyraFactory::getVector() const
 }
 AMP::Discretization::DOFManager::shared_ptr NativeThyraFactory::getDOFMap() const
 {
-    AMP_ERROR("Not finished");
+    AMP_ERROR( "Not finished" );
     return AMP::Discretization::DOFManager::shared_ptr();
 }
 
@@ -138,7 +137,7 @@ AMP::Discretization::DOFManager::shared_ptr ManagedNativeThyraFactory::getDOFMap
 /****************************************************************
 * testBelosThyraVector                                          *
 ****************************************************************/
-void testBelosThyraVector( AMP::UnitTest &ut, const VectorFactory& factory )
+void testBelosThyraVector( AMP::UnitTest &ut, const VectorFactory &factory )
 {
     AMP::shared_ptr<AMP::LinearAlgebra::ThyraVector> vector =
         AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>( factory.getVector() );
@@ -154,7 +153,6 @@ void testBelosThyraVector( AMP::UnitTest &ut, const VectorFactory& factory )
 
 
 #endif
-
 }
 }
 

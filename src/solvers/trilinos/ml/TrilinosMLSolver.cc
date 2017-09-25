@@ -204,7 +204,8 @@ void TrilinosMLSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
 
 
 void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                              AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+                              AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                                  u )
 {
     PROFILE_START( "solve" );
     // in this case we make the assumption we can access a EpetraMat for now
@@ -262,7 +263,7 @@ void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> 
         auto u_epetra = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>(
             AMP::LinearAlgebra::EpetraVector::view( u ) );
         const Epetra_Vector &fVec = f_epetra->getEpetra_Vector();
-        Epetra_Vector &uVec = u_epetra->getEpetra_Vector();
+        Epetra_Vector &uVec       = u_epetra->getEpetra_Vector();
 
         d_mlSolver->ApplyInverse( fVec, uVec );
     } else {

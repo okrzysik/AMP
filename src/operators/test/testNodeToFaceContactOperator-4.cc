@@ -250,22 +250,26 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     if ( bis ) {
         if ( !useLevitatingFuel ) {
             double fuelOuterRadius = input_db->getDouble( "FuelOuterRadius" );
-            makeConstraintsOnFuel( masterMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1 ),
-                                   fuelOuterRadius,
-                                   masterConstraints,
-                                   true );
-            makeConstraintsOnFuel( masterMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 ),
-                                   fuelOuterRadius,
-                                   masterConstraints,
-                                   false );
-            makeConstraintsOnFuel( slaveMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 ),
-                                   fuelOuterRadius,
-                                   slaveConstraints,
-                                   true );
-            makeConstraintsOnFuel( slaveMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1 ),
-                                   fuelOuterRadius,
-                                   slaveConstraints,
-                                   false );
+            makeConstraintsOnFuel(
+                masterMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1 ),
+                fuelOuterRadius,
+                masterConstraints,
+                true );
+            makeConstraintsOnFuel(
+                masterMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 ),
+                fuelOuterRadius,
+                masterConstraints,
+                false );
+            makeConstraintsOnFuel(
+                slaveMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 ),
+                fuelOuterRadius,
+                slaveConstraints,
+                true );
+            makeConstraintsOnFuel(
+                slaveMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1 ),
+                fuelOuterRadius,
+                slaveConstraints,
+                false );
         }
     } else {
         if ( !cladExpansionConstrained ) {
@@ -280,14 +284,16 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         }
         if ( !useLevitatingFuel ) {
             double fuelOuterRadius = input_db->getDouble( "FuelOuterRadius" );
-            makeConstraintsOnFuel( masterMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1 ),
-                                   fuelOuterRadius,
-                                   masterConstraints,
-                                   false );
-            makeConstraintsOnFuel( masterMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 ),
-                                   fuelOuterRadius,
-                                   masterConstraints,
-                                   true );
+            makeConstraintsOnFuel(
+                masterMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1 ),
+                fuelOuterRadius,
+                masterConstraints,
+                false );
+            makeConstraintsOnFuel(
+                masterMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 ),
+                fuelOuterRadius,
+                masterConstraints,
+                true );
         }
     } // end if
 
@@ -488,25 +494,40 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
 #ifdef USE_EXT_SILO
     {
-        siloWriter->registerVector( columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-        siloWriter->registerVector( tempVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Temperature" );
-        siloWriter->registerVector( sigma_eff, meshAdapter, AMP::Mesh::GeomType::Vertex, "vonMises" );
-        siloWriter->registerVector( sigma_xx, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xx" );
-        siloWriter->registerVector( sigma_yy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yy" );
-        siloWriter->registerVector( sigma_zz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_zz" );
-        siloWriter->registerVector( sigma_yz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yz" );
-        siloWriter->registerVector( sigma_xz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xz" );
-        siloWriter->registerVector( sigma_xy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xy" );
         siloWriter->registerVector(
-            activeSetBeforeUpdateVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ActiveSetBeforeUpdate" );
+            columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
         siloWriter->registerVector(
-            activeSetAfterUpdateVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ActiveSetAfterUpdate" );
+            tempVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Temperature" );
+        siloWriter->registerVector(
+            sigma_eff, meshAdapter, AMP::Mesh::GeomType::Vertex, "vonMises" );
+        siloWriter->registerVector(
+            sigma_xx, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xx" );
+        siloWriter->registerVector(
+            sigma_yy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yy" );
+        siloWriter->registerVector(
+            sigma_zz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_zz" );
+        siloWriter->registerVector(
+            sigma_yz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yz" );
+        siloWriter->registerVector(
+            sigma_xz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xz" );
+        siloWriter->registerVector(
+            sigma_xy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xy" );
+        siloWriter->registerVector( activeSetBeforeUpdateVec,
+                                    meshAdapter,
+                                    AMP::Mesh::GeomType::Vertex,
+                                    "ActiveSetBeforeUpdate" );
+        siloWriter->registerVector( activeSetAfterUpdateVec,
+                                    meshAdapter,
+                                    AMP::Mesh::GeomType::Vertex,
+                                    "ActiveSetAfterUpdate" );
         siloWriter->registerVector(
             surfaceTractionVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Traction" );
-        siloWriter->registerVector( normalVectorVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Normal" );
+        siloWriter->registerVector(
+            normalVectorVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Normal" );
         siloWriter->registerVector(
             contactPressureVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ContactPressure" );
-        siloWriter->registerVector( contactShiftVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Shift" );
+        siloWriter->registerVector(
+            contactShiftVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Shift" );
         siloWriter->writeFile( prefixFileName.c_str(), 0 );
     }
 #endif

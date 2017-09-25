@@ -11,7 +11,6 @@ namespace AMP {
 namespace Mesh {
 
 
-
 /**
  * \class MovableBoxMesh
  * \brief A general BoxMesh
@@ -19,14 +18,14 @@ namespace Mesh {
  *    coordinates of the nodes may be moved.  The base class
  *    BoxMesh is an arbitrary logically rectangular mesh class.
  *    To allow for derived implimentations which can leverage specific
- *    properties, a derived class is required.  
+ *    properties, a derived class is required.
  */
 class MovableBoxMesh : public AMP::Mesh::BoxMesh
 {
 public:
     //! Construct a movable box mesh from any existing box mesh
-    explicit MovableBoxMesh( const AMP::Mesh::BoxMesh& mesh );
-    
+    explicit MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh );
+
     /**
      * \brief    Is the mesh movable
      * \details  This function will check if the mesh can be displaced.
@@ -34,7 +33,7 @@ public:
      *    and 2 if the individual nodes can be moved.
      * @return  The if
      */
-    virtual int isMeshMovable( ) const override;
+    virtual int isMeshMovable() const override;
 
     /**
      * \brief    Displace the entire mesh
@@ -65,7 +64,7 @@ public:
      * \brief    Return a mesh element's coordinates given it's id.
      * \details  This function queries the mesh to get an element's coordinates given the mesh id.
      *    Ideally, this should be done in O(1) time, but the implimentation is up to
-     *    the underlying mesh.  
+     *    the underlying mesh.
      * \param[in] index     Mesh element index we are requesting.
      * \param[out] pos      Mesh element coordinates
      */
@@ -73,15 +72,14 @@ public:
 
 
 public: // BoxMesh specific functionality
-
-    /**
-     * \brief    Return the logical coordinates
-     * \details  This function queries the mesh to get the logical coordinates in [0,1]
-     *     from the physical coordinates.  Not all meshes support this functionallity.
-     * \param[in] x         Physical coordinates
-     * @return              Returns the logical coordinates
-     */
-    virtual std::array<double,3> physicalToLogical( const double *x ) const override;
+        /**
+         * \brief    Return the logical coordinates
+         * \details  This function queries the mesh to get the logical coordinates in [0,1]
+         *     from the physical coordinates.  Not all meshes support this functionallity.
+         * \param[in] x         Physical coordinates
+         * @return              Returns the logical coordinates
+         */
+    virtual std::array<double, 3> physicalToLogical( const double *x ) const override;
 
 
 private:

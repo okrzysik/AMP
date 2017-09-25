@@ -239,7 +239,8 @@ AMP::shared_ptr<OperatorParameters> NavierStokesLSWFFEOperator::getJacobianParam
             }//end for i
     */
     outParams->d_frozenVec = mySubsetVector( u, d_inpVariables );
-    outParams->d_frozenVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    outParams->d_frozenVec->makeConsistent(
+        AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     d_outVec.reset();
 
     return outParams;

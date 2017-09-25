@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <stdint.h>
 #include <stdio.h>
@@ -9,7 +10,6 @@
 #include <string.h>
 #include <time.h>
 #include <vector>
-#include <memory>
 
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
@@ -106,10 +106,7 @@ void testApproxEqual( UnitTest *ut )
 
 
 // Function to return the call stack
-std::vector<StackTrace::stack_info> get_call_stack()
-{
-    return StackTrace::getCallStack();
-}
+std::vector<StackTrace::stack_info> get_call_stack() { return StackTrace::getCallStack(); }
 
 
 // Function to test the interpolants
@@ -185,18 +182,18 @@ class dummy : public AMP::enable_shared_from_this<dummy>
 public:
     shared_ptr<dummy> getPtr() { return shared_from_this(); }
 };
-static inline bool test_shared_from_this_pointer( const shared_ptr<dummy>& p1 )
+static inline bool test_shared_from_this_pointer( const shared_ptr<dummy> &p1 )
 {
     bool pass = p1.use_count() == 1;
     int count1, count2;
-    auto p2   = p1->getPtr();
-    count1    = p1.use_count();
-    count2    = p2.use_count();
-    pass      = pass && count1 == 2 && count2 == 2;
+    auto p2 = p1->getPtr();
+    count1  = p1.use_count();
+    count2  = p2.use_count();
+    pass    = pass && count1 == 2 && count2 == 2;
     shared_ptr<dummy> p3( p1 );
-    count1  = p2.use_count();
-    count2  = p3.use_count();
-    pass    = pass && count1 == 3 && count2 == 3;
+    count1 = p2.use_count();
+    count2 = p3.use_count();
+    pass   = pass && count1 == 3 && count2 == 3;
     p2.reset();
     count1  = p2.use_count();
     count2  = p3.use_count();
@@ -206,13 +203,13 @@ static inline bool test_shared_from_this_pointer( const shared_ptr<dummy>& p1 )
     count2  = p4.use_count();
     pass    = pass && count1 == 3 && count2 == 3;
     shared_ptr<dummy> p5( p3.get(), []( void * ) {} );
-    count1  = p3.use_count();
-    count2  = p5.use_count();
-    pass    = pass && count1 == 3 && count2 == 1;
+    count1 = p3.use_count();
+    count2 = p5.use_count();
+    pass   = pass && count1 == 3 && count2 == 1;
     p5.reset();
-    count1  = p3.use_count();
-    count2  = p5.use_count();
-    pass    = pass && p3.use_count() == 3 && p5.use_count() == 0;
+    count1 = p3.use_count();
+    count2 = p5.use_count();
+    pass   = pass && p3.use_count() == 3 && p5.use_count() == 0;
     return pass;
 }
 void test_shared_from_this( UnitTest *ut )
@@ -231,7 +228,7 @@ void test_shared_from_this( UnitTest *ut )
     try {
         dummy *p1 = new dummy;
         auto p2   = p1->getPtr();
-        pass = test_shared_from_this_pointer( p2 );
+        pass      = test_shared_from_this_pointer( p2 );
     } catch ( ... ) {
         pass = false;
     }
@@ -269,8 +266,7 @@ int main( int argc, char *argv[] )
         test_shared_from_this( &ut );
 
         // Try converting an int to a string
-        if ( Utilities::intToString( 37, 0 ) == "37" &&
-             Utilities::intToString( 37, 3 ) == "037" )
+        if ( Utilities::intToString( 37, 0 ) == "37" && Utilities::intToString( 37, 3 ) == "037" )
             ut.passes( "Convert int to string" );
         else
             ut.failure( "Convert int to string" );

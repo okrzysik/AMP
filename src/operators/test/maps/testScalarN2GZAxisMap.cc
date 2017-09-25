@@ -41,7 +41,8 @@ void setBoundary( int id,
 
     AMP::Discretization::DOFManager::shared_ptr d1 = v1->getDOFManager();
 
-    AMP::Mesh::MeshIterator curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, id, 0 );
+    AMP::Mesh::MeshIterator curBnd =
+        mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, id, 0 );
     AMP::Mesh::MeshIterator endBnd = curBnd.end();
 
     std::vector<size_t> ids;
@@ -75,7 +76,8 @@ void setGpBoundary( int id,
 
     AMP::Discretization::DOFManager::shared_ptr d1 = v1->getDOFManager();
 
-    AMP::Mesh::MeshIterator curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, id, 0 );
+    AMP::Mesh::MeshIterator curBnd =
+        mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, id, 0 );
     AMP::Mesh::MeshIterator endBnd = curBnd.end();
 
     libmeshElements.reinit( curBnd );

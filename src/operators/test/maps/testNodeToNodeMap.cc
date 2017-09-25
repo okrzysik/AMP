@@ -27,7 +27,8 @@ void setBoundary( int id,
 
     AMP::Discretization::DOFManager::shared_ptr d1 = v1->getDOFManager();
 
-    AMP::Mesh::MeshIterator curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, id, 0 );
+    AMP::Mesh::MeshIterator curBnd =
+        mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, id, 0 );
     AMP::Mesh::MeshIterator endBnd = curBnd.end();
 
     std::vector<size_t> ids;
@@ -68,7 +69,8 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
         new AMP::Discretization::DOFManagerParameters( mesh ) );
     AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, DOFsPerNode );
+        AMP::Discretization::simpleDOFManager::create(
+            mesh, AMP::Mesh::GeomType::Vertex, 1, DOFsPerNode );
 
     // Test the creation/destruction of NodeToNodeMap (no apply call)
     try {

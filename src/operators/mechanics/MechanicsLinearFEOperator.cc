@@ -101,7 +101,8 @@ void MechanicsLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
         if ( d_dispVec != nullptr ) {
             if ( params->d_dispVec != nullptr ) {
                 d_dispVec->copyVector( params->d_dispVec );
-                d_dispVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+                d_dispVec->makeConsistent(
+                    AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
             } else {
                 d_dispVec.reset();
             }

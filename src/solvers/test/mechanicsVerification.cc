@@ -342,7 +342,8 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     /** Vectors: solution, right-hand side, residual */
     AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
+        AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
     AMP::LinearAlgebra::Vector::shared_ptr solVec =
         AMP::LinearAlgebra::createVector( NodalVectorDOF, bvpOperator->getInputVariable() );
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec =
@@ -538,11 +539,14 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
 
-    siloWriter->registerVector( exactErrVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Exact_Error_Vector" );
+    siloWriter->registerVector(
+        exactErrVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Exact_Error_Vector" );
     siloWriter->registerVector(
         exactSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Exact_Solution_Vector" );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
-    // siloWriter->registerVector( resVec, meshAdapter , AMP::Mesh::GeomType::Vertex, "Residual_Vector");
+    siloWriter->registerVector(
+        solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
+    // siloWriter->registerVector( resVec, meshAdapter , AMP::Mesh::GeomType::Vertex,
+    // "Residual_Vector");
 
     char outFileName1[256];
     sprintf( outFileName1, "undeformedBeam_%d", exampleNum );

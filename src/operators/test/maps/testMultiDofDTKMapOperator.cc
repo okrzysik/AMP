@@ -100,10 +100,14 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
     siloWriter->setDecomposition( 1 );
-    siloWriter->registerVector( potentialMapVec, mesh, AMP::Mesh::GeomType::Vertex, "potentialMapVec" );
-    siloWriter->registerVector( potentialSolVec, mesh, AMP::Mesh::GeomType::Vertex, "potentialSolVec" );
-    siloWriter->registerVector( ElectrodeMapVec, mesh, AMP::Mesh::GeomType::Vertex, "batteryMapVec" );
-    siloWriter->registerVector( ElectrodeSolVec, mesh, AMP::Mesh::GeomType::Vertex, "batterySolVec" );
+    siloWriter->registerVector(
+        potentialMapVec, mesh, AMP::Mesh::GeomType::Vertex, "potentialMapVec" );
+    siloWriter->registerVector(
+        potentialSolVec, mesh, AMP::Mesh::GeomType::Vertex, "potentialSolVec" );
+    siloWriter->registerVector(
+        ElectrodeMapVec, mesh, AMP::Mesh::GeomType::Vertex, "batteryMapVec" );
+    siloWriter->registerVector(
+        ElectrodeSolVec, mesh, AMP::Mesh::GeomType::Vertex, "batterySolVec" );
 
     //---------------------------------------------------
 

@@ -46,7 +46,7 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
         rhs.getRowByGlobalID( (int) i, cols, vals );
         std::vector<size_t> cols2( cols.size() );
         for ( size_t j = 0; j != cols.size(); j++ )
-            cols2[j]    = cols[j];
+            cols2[j]   = cols[j];
         createValuesByGlobalID( i, cols2 );
     }
     d_RangeMap  = rhs.d_RangeMap;
@@ -60,9 +60,8 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
 ********************************************************/
 Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
 {
-    auto memp =
-        AMP::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
-    AMP_INSIST(memp!=nullptr, "null cached ManagedEpetraMatrixParameters");
+    auto memp = AMP::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
+    AMP_INSIST( memp != nullptr, "null cached ManagedEpetraMatrixParameters" );
     int localSize  = memp->getLocalNumberOfColumns();
     int globalSize = memp->getGlobalNumberOfColumns();
     EpetraVectorEngineParameters *evep =
@@ -81,9 +80,8 @@ Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
 }
 Vector::shared_ptr ManagedEpetraMatrix::getLeftVector() const
 {
-    auto memp =
-        AMP::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
-    AMP_INSIST(memp!=nullptr, "null cached ManagedEpetraMatrixParameters");
+    auto memp = AMP::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
+    AMP_INSIST( memp != nullptr, "null cached ManagedEpetraMatrixParameters" );
     int localSize  = memp->getLocalNumberOfRows();
     int globalSize = memp->getGlobalNumberOfRows();
     EpetraVectorEngineParameters *evep =
@@ -117,7 +115,7 @@ void ManagedEpetraMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 {
     if ( this->numGlobalColumns() != other_op->numGlobalRows() )
         AMP_ERROR( "Inner matrix dimensions must agree" );
-    if ( !dynamic_pointer_cast<ManagedEpetraMatrix>(other_op) )
+    if ( !dynamic_pointer_cast<ManagedEpetraMatrix>( other_op ) )
         AMP_ERROR( "Incompatible matrix types" );
     AMP_ASSERT( other_op->numGlobalRows() == numGlobalColumns() );
 #ifdef USE_EXT_MPI
@@ -137,7 +135,7 @@ void ManagedEpetraMatrix::multiply( shared_ptr other_op, shared_ptr &result )
     int ierr = EpetraExt::MatrixMatrix::Multiply(
         *d_epetraMatrix,
         false,
-        *( dynamic_pointer_cast<ManagedEpetraMatrix>(other_op)->d_epetraMatrix ),
+        *( dynamic_pointer_cast<ManagedEpetraMatrix>( other_op )->d_epetraMatrix ),
         false,
         *( res->d_epetraMatrix ),
         true );
@@ -154,10 +152,8 @@ void ManagedEpetraMatrix::mult( Vector::const_shared_ptr in, Vector::shared_ptr 
 {
     AMP_ASSERT( in->getGlobalSize() == numGlobalColumns() );
     AMP_ASSERT( out->getGlobalSize() == numGlobalRows() );
-    auto in_view =
-        AMP::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
-    auto out_view =
-        AMP::dynamic_pointer_cast<EpetraVector>( EpetraVector::view( out ) );
+    auto in_view  = AMP::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
+    auto out_view = AMP::dynamic_pointer_cast<EpetraVector>( EpetraVector::view( out ) );
     const Epetra_Vector &in_vec = in_view->getEpetra_Vector();
     Epetra_Vector &out_vec      = out_view->getEpetra_Vector();
     int err                     = d_epetraMatrix->Multiply( false, in_vec, out_vec );
@@ -167,10 +163,8 @@ void ManagedEpetraMatrix::multTranspose( Vector::const_shared_ptr in, Vector::sh
 {
     AMP_ASSERT( in->getGlobalSize() == numGlobalColumns() );
     AMP_ASSERT( out->getGlobalSize() == numGlobalRows() );
-    auto in_view =
-        AMP::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
-    auto out_view =
-        AMP::dynamic_pointer_cast<EpetraVector>( EpetraVector::view( out ) );
+    auto in_view  = AMP::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
+    auto out_view = AMP::dynamic_pointer_cast<EpetraVector>( EpetraVector::view( out ) );
     int err =
         d_epetraMatrix->Multiply( true, in_view->getEpetra_Vector(), out_view->getEpetra_Vector() );
     VerifyEpetraReturn( err, "mult" );
@@ -200,8 +194,11 @@ void ManagedEpetraMatrix::zero()
 void ManagedEpetraMatrix::axpy( double alpha, const Matrix &rhs )
 {
     EpetraExt::MatrixMatrix::Add(
-        *( dynamic_cast<const ManagedEpetraMatrix*>(&rhs)->d_epetraMatrix ),
-        false, alpha, *d_epetraMatrix, 1.0 );
+        *( dynamic_cast<const ManagedEpetraMatrix *>( &rhs )->d_epetraMatrix ),
+        false,
+        alpha,
+        *d_epetraMatrix,
+        1.0 );
 }
 
 
@@ -291,15 +288,16 @@ Vector::shared_ptr ManagedEpetraMatrix::extractDiagonal( Vector::shared_ptr v ) 
     } else {
         retVal = getRightVector();
     }
-    VerifyEpetraReturn(
-        d_epetraMatrix->ExtractDiagonalCopy( dynamic_pointer_cast<EpetraVector>(retVal)->getEpetra_Vector() ),
-        "extractDiagonal" );
+    VerifyEpetraReturn( d_epetraMatrix->ExtractDiagonalCopy(
+                            dynamic_pointer_cast<EpetraVector>( retVal )->getEpetra_Vector() ),
+                        "extractDiagonal" );
     return retVal;
 }
 void ManagedEpetraMatrix::setDiagonal( Vector::const_shared_ptr in )
 {
     auto vec = dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
-    VerifyEpetraReturn( d_epetraMatrix->ReplaceDiagonalValues( vec->getEpetra_Vector() ), "setDiagonal" );
+    VerifyEpetraReturn( d_epetraMatrix->ReplaceDiagonalValues( vec->getEpetra_Vector() ),
+                        "setDiagonal" );
 }
 void ManagedEpetraMatrix::setIdentity()
 {
@@ -320,15 +318,15 @@ void ManagedEpetraMatrix::setIdentity()
 void ManagedEpetraMatrix::addValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
 {
-    std::vector<int> epetra_cols(num_cols);
-    std::copy( cols, cols+num_cols, epetra_cols.begin() );
-    
+    std::vector<int> epetra_cols( num_cols );
+    std::copy( cols, cols + num_cols, epetra_cols.begin() );
+
     for ( size_t i = 0; i != num_rows; i++ )
-        VerifyEpetraReturn(
-                           d_epetraMatrix->SumIntoGlobalValues( rows[i], num_cols, values + num_cols * i, epetra_cols.data() ),
-            "addValuesByGlobalId" );
+        VerifyEpetraReturn( d_epetraMatrix->SumIntoGlobalValues(
+                                rows[i], num_cols, values + num_cols * i, epetra_cols.data() ),
+                            "addValuesByGlobalId" );
 }
-void ManagedEpetraMatrix::createValuesByGlobalID( size_t row, const std::vector<size_t>& cols )
+void ManagedEpetraMatrix::createValuesByGlobalID( size_t row, const std::vector<size_t> &cols )
 {
     if ( cols.empty() )
         return;
@@ -344,15 +342,15 @@ void ManagedEpetraMatrix::createValuesByGlobalID( size_t row, const std::vector<
 void ManagedEpetraMatrix::setValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
 {
-    std::vector<int> epetra_cols(num_cols);
-    std::copy( cols, cols+num_cols, epetra_cols.begin() );    
+    std::vector<int> epetra_cols( num_cols );
+    std::copy( cols, cols + num_cols, epetra_cols.begin() );
 
     size_t MyFirstRow = d_pParameters->getLeftDOFManager()->beginDOF();
     size_t MyEndRow   = d_pParameters->getLeftDOFManager()->endDOF();
     for ( size_t i = 0; i != num_rows; i++ ) {
-        VerifyEpetraReturn(
-                           d_epetraMatrix->ReplaceGlobalValues( rows[i], num_cols, values + num_cols * i, epetra_cols.data() ),
-            "setValuesByGlobalID" );
+        VerifyEpetraReturn( d_epetraMatrix->ReplaceGlobalValues(
+                                rows[i], num_cols, values + num_cols * i, epetra_cols.data() ),
+                            "setValuesByGlobalID" );
         if ( rows[i] < MyFirstRow || rows[i] >= MyEndRow ) {
             for ( size_t j = 0; j != num_cols; j++ ) {
                 d_OtherData[rows[i]][cols[j]] = values[num_cols * i + j];
@@ -369,8 +367,8 @@ void ManagedEpetraMatrix::getValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const
 {
     // Zero out the data in values
-    for ( size_t i   = 0; i < num_rows * num_cols; i++ )
-        values[i] = 0.0;
+    for ( size_t i = 0; i < num_rows * num_cols; i++ )
+        values[i]  = 0.0;
     // Get the data for each row
     size_t firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
     size_t numRows  = d_pParameters->getLeftDOFManager()->endDOF();
@@ -380,13 +378,13 @@ void ManagedEpetraMatrix::getValuesByGlobalID(
         if ( rows[i] < firstRow || rows[i] >= firstRow + numRows )
             continue;
         size_t localRow = rows[i] - firstRow;
-        int numCols  = d_pParameters->entriesInRow( localRow );
+        int numCols     = d_pParameters->entriesInRow( localRow );
         if ( numCols == 0 )
             continue;
         row_cols.resize( numCols );
         row_values.resize( numCols );
         VerifyEpetraReturn( d_epetraMatrix->ExtractGlobalRowCopy(
-                                                                 rows[i], numCols, numCols, &( row_values[0] ), &( row_cols[0] ) ),
+                                rows[i], numCols, numCols, &( row_values[0] ), &( row_cols[0] ) ),
                             "getValuesByGlobalID" );
         for ( size_t j1 = 0; j1 < num_cols; j1++ ) {
             for ( size_t j2 = 0; j2 < (size_t) numCols; j2++ ) {
@@ -406,22 +404,22 @@ void ManagedEpetraMatrix::getRowByGlobalID( size_t row,
     AMP_ASSERT( row < firstRow + numRows );
 
     size_t localRow = row - firstRow;
-    int numCols  = d_pParameters->entriesInRow( localRow );
+    int numCols     = d_pParameters->entriesInRow( localRow );
     cols.resize( numCols );
     values.resize( numCols );
 
-    std::vector<int> epetra_cols(numCols);
+    std::vector<int> epetra_cols( numCols );
 
     if ( numCols ) {
         VerifyEpetraReturn( d_epetraMatrix->ExtractGlobalRowCopy(
-                                                                 row, numCols, numCols, &( values[0] ), &( epetra_cols[0] ) ),
+                                row, numCols, numCols, &( values[0] ), &( epetra_cols[0] ) ),
                             "getRowByGlobalID" );
-        std::copy(epetra_cols.begin(), epetra_cols.end(), cols.begin() );
+        std::copy( epetra_cols.begin(), epetra_cols.end(), cols.begin() );
     }
 }
 
 
-std::vector<size_t>  ManagedEpetraMatrix::getColumnIDs( size_t row ) const
+std::vector<size_t> ManagedEpetraMatrix::getColumnIDs( size_t row ) const
 {
     size_t firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
     size_t numRows  = d_pParameters->getLeftDOFManager()->endDOF();
@@ -429,16 +427,16 @@ std::vector<size_t>  ManagedEpetraMatrix::getColumnIDs( size_t row ) const
     AMP_ASSERT( row < firstRow + numRows );
 
     size_t localRow = row - firstRow;
-    int numCols  = d_pParameters->entriesInRow( localRow );
-    std::vector<size_t> cols ( numCols );
-    std::vector<double> values ( numCols );
-    std::vector<int> epetra_cols(numCols);
+    int numCols     = d_pParameters->entriesInRow( localRow );
+    std::vector<size_t> cols( numCols );
+    std::vector<double> values( numCols );
+    std::vector<int> epetra_cols( numCols );
 
     if ( numCols ) {
         VerifyEpetraReturn( d_epetraMatrix->ExtractGlobalRowCopy(
-                                                                 row, numCols, numCols, &( values[0] ), &( epetra_cols[0] ) ),
+                                row, numCols, numCols, &( values[0] ), &( epetra_cols[0] ) ),
                             "getRowByGlobalID" );
-        std::copy(epetra_cols.begin(), epetra_cols.end(), cols.begin() );
+        std::copy( epetra_cols.begin(), epetra_cols.end(), cols.begin() );
     }
 
     return cols;

@@ -89,8 +89,9 @@ void test_with_shape( AMP::UnitTest *ut )
     ut->passes( "PowerShape gets past apply with a non-flat power shape." );
 
     // Check that the data is non-negative
-    bool itpasses                     = 1;
-    AMP::Mesh::MeshIterator elem      = meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
+    bool itpasses = 1;
+    AMP::Mesh::MeshIterator elem =
+        meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
     AMP::Mesh::MeshIterator end_elems = elem.end();
 
     for ( ; elem != end_elems; ++elem ) {

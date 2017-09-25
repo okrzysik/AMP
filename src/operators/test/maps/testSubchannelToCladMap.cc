@@ -24,11 +24,13 @@ double getTemp( const std::vector<double> &x ) { return 500 + x[2] * 100; }
 AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth )
 {
     std::multimap<double, AMP::Mesh::MeshElement> xyFace;
-    AMP::Mesh::MeshIterator iterator = subChannel->getIterator( AMP::Mesh::GeomType::Face, ghostWidth );
+    AMP::Mesh::MeshIterator iterator =
+        subChannel->getIterator( AMP::Mesh::GeomType::Face, ghostWidth );
     for ( size_t i = 0; i < iterator.size(); ++i ) {
-        std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::GeomType::Vertex );
-        std::vector<double> center                = iterator->centroid();
-        bool is_valid                             = true;
+        std::vector<AMP::Mesh::MeshElement> nodes =
+            iterator->getElements( AMP::Mesh::GeomType::Vertex );
+        std::vector<double> center = iterator->centroid();
+        bool is_valid              = true;
         for ( auto &node : nodes ) {
             std::vector<double> coord = node.coord();
             if ( !AMP::Utilities::approx_equal( coord[2], center[2], 1e-6 ) )
@@ -150,8 +152,9 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 
     // Check the results
     if ( pin_mesh.get() != nullptr ) {
-        bool passes                = true;
-        AMP::Mesh::MeshIterator it = pin_mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4, 1 );
+        bool passes = true;
+        AMP::Mesh::MeshIterator it =
+            pin_mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4, 1 );
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
             pin_DOFs->getDOFs( it->globalID(), dofs );
@@ -173,8 +176,8 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     AMP::Discretization::DOFManager::shared_ptr gauss_DOFs;
     AMP::LinearAlgebra::Vector::shared_ptr T_gauss;
     if ( pin_mesh.get() != nullptr ) {
-        gauss_DOFs =
-            AMP::Discretization::simpleDOFManager::create( pin_mesh, AMP::Mesh::GeomType::Face, 1, 4 );
+        gauss_DOFs = AMP::Discretization::simpleDOFManager::create(
+            pin_mesh, AMP::Mesh::GeomType::Face, 1, 4 );
         T_gauss = AMP::LinearAlgebra::createVector( gauss_DOFs, temperature );
         T_gauss->zero();
     }
@@ -188,8 +191,9 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 
     // Check the results
     if ( clad_mesh.get() != nullptr ) {
-        bool passes                = true;
-        AMP::Mesh::MeshIterator it = clad_mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 4, 1 );
+        bool passes = true;
+        AMP::Mesh::MeshIterator it =
+            clad_mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 4, 1 );
         std::vector<size_t> dofs( 4 );
         std::vector<double> vals( 4 );
         for ( size_t i = 0; i < it.size(); i++ ) {
@@ -216,7 +220,8 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     if ( T_clad.get() != nullptr )
         siloWriter->registerVector( T_clad, pin_mesh, AMP::Mesh::GeomType::Vertex, "Temperature" );
     if ( T_subchannel.get() != nullptr )
-        siloWriter->registerVector( T_subchannel, subchannel_face, AMP::Mesh::GeomType::Face, "Temperature" );
+        siloWriter->registerVector(
+            T_subchannel, subchannel_face, AMP::Mesh::GeomType::Face, "Temperature" );
     siloWriter->setDecomposition( 1 );
     siloWriter->writeFile( fname, 0 );
 #endif

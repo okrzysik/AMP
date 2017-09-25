@@ -81,10 +81,7 @@ void MultiVariable::add( Variable::shared_ptr newVar )
 /****************************************************************
 * Misc                                                          *
 ****************************************************************/
-size_t MultiVariable::numVariables() const
-{
-    return d_vVariables.size();
-}
+size_t MultiVariable::numVariables() const { return d_vVariables.size(); }
 
 void MultiVariable::sortVariablesByName( const std::vector<std::string> &order )
 {

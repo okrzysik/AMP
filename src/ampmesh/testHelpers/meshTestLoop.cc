@@ -44,12 +44,14 @@ void meshTests::MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh
     // Bug_761<7>::run_test( ut, mesh );
     // Bug_761<8>::run_test( ut, mesh );
     // MeshAdapterTest<AllPassTest>::run_test( ut, mesh );
-    MeshPerformance( ut, mesh );;
+    MeshPerformance( ut, mesh );
+    ;
     PROFILE_STOP( "MeshTestLoop" );
 }
 
 
-void meshTests::MeshVectorTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast )
+void meshTests::MeshVectorTestLoop(
+    AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast )
 {
 // Run the vector tests
 #ifdef USE_AMP_VECTORS
@@ -65,7 +67,8 @@ void meshTests::MeshVectorTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh
 }
 
 
-void meshTests::MeshMatrixTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast )
+void meshTests::MeshMatrixTestLoop(
+    AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast )
 {
 // Run the matrix tests
 #ifdef USE_AMP_MATRICES
@@ -96,4 +99,3 @@ void meshTests::MeshMatrixTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh
 
 } // namespace Mesh
 } // namespace AMP
-

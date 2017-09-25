@@ -102,8 +102,8 @@ public:
       * allocated a particular (row,col) specified, depending
       * on the actual subclass of matrix used.
       */
-    virtual void
-    addValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) = 0;
+    virtual void addValuesByGlobalID(
+        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) = 0;
 
     /** \brief  Set values in the matrix
       * \param[in] num_rows The number of rows represented in values
@@ -115,8 +115,8 @@ public:
       * allocated a particular (row,col) specified, depending
       * on the actual subclass of matrix used.
       */
-    virtual void
-    setValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) = 0;
+    virtual void setValuesByGlobalID(
+        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) = 0;
 
     /** \brief  Get values in the matrix
       * \param[in] num_rows The number of rows represented in values
@@ -181,7 +181,7 @@ public:
     /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
       * \param[in]  row Which row
       */
-     virtual std::vector<size_t> getColumnIDs( size_t row ) const = 0;
+    virtual std::vector<size_t> getColumnIDs( size_t row ) const = 0;
 
     /** \brief  Set the diagonal to the values in a vector
       * \param[in] in The values to set the diagonal to
@@ -216,12 +216,12 @@ public:
       * \return  The number of global columns
       */
     virtual size_t numGlobalColumns() const;
-    
+
     /** \brief  Get the global id of the beginning row
      * \return  beginning global row id
      */
     virtual size_t beginRow() const;
-    
+
     /** \brief  Get the global id of the ending row
      * \return  ending global row id
      */

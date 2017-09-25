@@ -29,9 +29,7 @@ namespace LinearAlgebra {
         MultiVectorFactory<MVFactory1, 2, MVFactory2, 2> MVFactory3;
   *
   */
-AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string& factory );
-
-
+AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string &factory );
 }
 }
 

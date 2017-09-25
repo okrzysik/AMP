@@ -37,7 +37,7 @@ Vector::shared_ptr NativePetscVector::cloneVector( const Variable::shared_ptr va
     resetArray();
     Vec new_petscVec;
     VecDuplicate( d_petscVec, &new_petscVec );
-    auto npvParams = make_shared<NativePetscVectorParameters>( new_petscVec, true );
+    auto npvParams            = make_shared<NativePetscVectorParameters>( new_petscVec, true );
     npvParams->d_Comm         = getComm();
     Vector::shared_ptr retVal = Vector::shared_ptr( new NativePetscVector( npvParams ) );
     retVal->setVariable( var );
@@ -49,9 +49,9 @@ void NativePetscVector::putRawData( const double *in )
     int a, b;
     VecGetOwnershipRange( d_petscVec, &a, &b );
     AMP_ASSERT( b - a == (int) getLocalSize() );
-    std::vector<int> offs(b-a);
+    std::vector<int> offs( b - a );
     for ( size_t j = 0; j != offs.size(); j++ )
-        offs[j] = a + j;
+        offs[j]    = a + j;
     VecSetValues( d_petscVec, offs.size(), offs.data(), in, INSERT_VALUES );
 }
 

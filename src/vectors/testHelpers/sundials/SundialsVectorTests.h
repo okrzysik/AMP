@@ -6,13 +6,12 @@
 #include <algorithm>
 
 #include "utils/UnitTest.h"
-#include "vectors/testHelpers/VectorTests.h"
 #include "vectors/sundials/ManagedSundialsVector.h"
+#include "vectors/testHelpers/VectorTests.h"
 
 
 namespace AMP {
 namespace LinearAlgebra {
-
 
 
 /**
@@ -22,7 +21,10 @@ namespace LinearAlgebra {
 class SundialsVectorTests
 {
 public:
-    explicit SundialsVectorTests( AMP::shared_ptr<const VectorFactory> factory ): d_factory(factory) {}
+    explicit SundialsVectorTests( AMP::shared_ptr<const VectorFactory> factory )
+        : d_factory( factory )
+    {
+    }
 
     void testSundialsVector( AMP::UnitTest *ut );
 
@@ -64,7 +66,6 @@ private:
     {
         return reinterpret_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( a->content );
     }
-
 };
 
 

@@ -20,7 +20,8 @@ typedef ElementPhysicsModelParameters ManufacturedSourceModel1Parameters;
 class ManufacturedSourceModel1 : public ElementPhysicsModel
 {
 public:
-    explicit ManufacturedSourceModel1( const AMP::shared_ptr<ManufacturedSourceModel1Parameters> &params )
+    explicit ManufacturedSourceModel1(
+        const AMP::shared_ptr<ManufacturedSourceModel1Parameters> &params )
         : ElementPhysicsModel( params )
     {
         d_Dzero = 1.0;

@@ -1,8 +1,8 @@
 #ifndef included_AMP_VectorData
 #define included_AMP_VectorData
 
-#include "vectors/CommunicationList.h"
 #include "utils/shared_ptr.h"
+#include "vectors/CommunicationList.h"
 #include <vector>
 
 
@@ -10,7 +10,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-template<typename TYPE>
+template <typename TYPE>
 class VectorDataIterator;
 
 
@@ -39,10 +39,9 @@ class VectorDataIterator;
 class VectorData
 {
 public: // enums
-
-    /**\brief Flag to choose algorithm for makeConsistent
-      *\see makeConsistent
-      */
+        /**\brief Flag to choose algorithm for makeConsistent
+          *\see makeConsistent
+          */
     enum class ScatterType { CONSISTENT_ADD, CONSISTENT_SET };
 
     /**\brief The four states a Vector can be in
@@ -52,7 +51,6 @@ public: // enums
 
 
 public: // Virtual functions
-
     //! Virtual destructor
     virtual ~VectorData() {}
 
@@ -248,26 +246,25 @@ public: // Virtual functions
 
 
 public: // Advanced functions
-
-    /**\brief  A unique id for the underlying data allocation
-      *\details This is a unique id that is associated with the data
-      *   data allocation.  Views of a vector should preserve the id of
-      *   the original vector.  Vectors that are not allocated, or contain
-      *   multiple vectors (such as Multivector) should return 0.
-      *   Note: this id is not consistent across multiple processors.
-      */
+        /**\brief  A unique id for the underlying data allocation
+          *\details This is a unique id that is associated with the data
+          *   data allocation.  Views of a vector should preserve the id of
+          *   the original vector.  Vectors that are not allocated, or contain
+          *   multiple vectors (such as Multivector) should return 0.
+          *   Note: this id is not consistent across multiple processors.
+          */
     virtual uint64_t getDataID() const = 0;
 
     /** \brief Return a pointer to a particular block of memory in the vector
       * \param i The block to return
       */
-    virtual void* getRawDataBlockAsVoid( size_t i ) = 0;
+    virtual void *getRawDataBlockAsVoid( size_t i ) = 0;
 
     /** \brief Return a pointer to a particular block of memory in the
       * vector
       * \param i The block to return
       */
-    virtual const void* getRawDataBlockAsVoid( size_t i ) const = 0;
+    virtual const void *getRawDataBlockAsVoid( size_t i ) const = 0;
 
     /** \brief Return the result of sizeof(TYPE) for the given data block
       * \param i The block to return
@@ -282,7 +279,6 @@ public: // Advanced functions
 
 
 public:
-
     /** \brief Write owned data to an std::ostream
       * \param[in] out  The output stream to write to.
       * \param[in] GIDoffset  A number to add to the global ID when writing information
@@ -299,21 +295,20 @@ public:
 
 
 public: // Virtual functions dealing with the update status
-
-    /** \brief  Return the current update state of the Vector
-      * \details  This returns the effective update state of the
-      *  vector, including any vectors it contains.  The effective
-      *  state is defined as:
-      *  UNCHANGED - All data and sub vectors are unchanged
-      *  LOCAL_CHANGED - Local data may be modified, sub vectors must either
-      *             be UNCHANGED or LOCAL_CHANGED.
-      *  ADDING - Local and ghost data may be modified through add opperations,
-      *             sub vectors must be UNCHANGED, LOCAL_CHANGED, or ADDING
-      *  SETTING - Local and ghost data may be modified through set opperations,
-      *             sub vectors must be UNCHANGED, LOCAL_CHANGED, or SETTING
-      * If different subvectors have incompatible states ADDING and SETTING,
-      * this function will return MIXED
-      */
+        /** \brief  Return the current update state of the Vector
+          * \details  This returns the effective update state of the
+          *  vector, including any vectors it contains.  The effective
+          *  state is defined as:
+          *  UNCHANGED - All data and sub vectors are unchanged
+          *  LOCAL_CHANGED - Local data may be modified, sub vectors must either
+          *             be UNCHANGED or LOCAL_CHANGED.
+          *  ADDING - Local and ghost data may be modified through add opperations,
+          *             sub vectors must be UNCHANGED, LOCAL_CHANGED, or ADDING
+          *  SETTING - Local and ghost data may be modified through set opperations,
+          *             sub vectors must be UNCHANGED, LOCAL_CHANGED, or SETTING
+          * If different subvectors have incompatible states ADDING and SETTING,
+          * this function will return MIXED
+          */
     virtual UpdateState getUpdateStatus() const;
 
 
@@ -343,26 +338,25 @@ public: // Virtual functions dealing with the update status
 
 
 public: // Non-virtual functions
-
-    /**
-      * \brief Return an iterator to the beginning of the data
-      * \returns A VectorDataIterator
-      * \details Since the Vector presents an interface to a contiguous
-      *     block of data, it is natural for it to provide a random
-      *     access iterator.
-      * \warning The non-const version of the iterators will automatically
-      *     leave the vector in a non-consistent state.  The user may
-      *     be required to call makeConsistent.
-      */
-    template<class TYPE = double>
+        /**
+          * \brief Return an iterator to the beginning of the data
+          * \returns A VectorDataIterator
+          * \details Since the Vector presents an interface to a contiguous
+          *     block of data, it is natural for it to provide a random
+          *     access iterator.
+          * \warning The non-const version of the iterators will automatically
+          *     leave the vector in a non-consistent state.  The user may
+          *     be required to call makeConsistent.
+          */
+    template <class TYPE = double>
     inline VectorDataIterator<TYPE> begin();
 
     /// @copydoc VectorData::begin()
-    template<class TYPE = double>
+    template <class TYPE = double>
     inline VectorDataIterator<const TYPE> begin() const;
 
     /// @copydoc VectorData::begin()
-    template<class TYPE = double>
+    template <class TYPE = double>
     inline VectorDataIterator<const TYPE> constBegin() const;
 
     /**
@@ -375,15 +369,15 @@ public: // Non-virtual functions
       *     leave the vector in a non-consistent state.  The user may
       *     be required to call makeConsistent.
       */
-    template<class TYPE = double>
+    template <class TYPE = double>
     inline VectorDataIterator<TYPE> end();
 
     /// @copydoc VectorData::end()
-    template<class TYPE = double>
+    template <class TYPE = double>
     inline VectorDataIterator<const TYPE> end() const;
 
     /// @copydoc VectorData::end()
-    template<class TYPE = double>
+    template <class TYPE = double>
     inline VectorDataIterator<const TYPE> constEnd() const;
 
     /** \brief Obtain a particular contiguous block of data cast to RETURN_TYPE
@@ -392,7 +386,7 @@ public: // Non-virtual functions
       * \return A contiguous array of type RETURN_TYPE
       */
     template <typename RETURN_TYPE>
-    RETURN_TYPE* getRawDataBlock( size_t i = 0 );
+    RETURN_TYPE *getRawDataBlock( size_t i = 0 );
 
     /** \brief Obtain a particular contiguous block of data cast to RETURN_TYPE
       * \tparam RETURN_TYPE  The pointer type of the return
@@ -400,13 +394,13 @@ public: // Non-virtual functions
       * \return A const contiguous array of type RETURN_TYPE
       */
     template <typename RETURN_TYPE>
-    const RETURN_TYPE* getRawDataBlock( size_t i = 0 ) const;
+    const RETURN_TYPE *getRawDataBlock( size_t i = 0 ) const;
 
     /** \brief Check if the data is of the given type
       * \return true if all data is of the given type
       */
     template <typename TYPE>
-    bool isType( ) const;
+    bool isType() const;
 
     /** \brief Check if the data is of the given type
       * \return true if the ith block of data is of the given type
@@ -423,7 +417,6 @@ public: // Non-virtual functions
     void copyGhostValues( const VectorData &rhs );
 
 public:
-
     /** \brief Notify listeners that data has changed in this vector.
       */
     virtual void dataChanged();
@@ -435,14 +428,12 @@ public:
 
 
 public: // Non virtual functions
-
-
-    /**
-      * \brief Set a single value in the vector by local ID
-      * \param[in] i  offset of value to set
-      * \param[in] val the value to place in the vector
-      * \details An alias for setValuesByLocalID ( 1, &num, &val );
-      */
+        /**
+          * \brief Set a single value in the vector by local ID
+          * \param[in] i  offset of value to set
+          * \param[in] val the value to place in the vector
+          * \details An alias for setValuesByLocalID ( 1, &num, &val );
+          */
     void setValueByLocalID( size_t i, const double val );
 
     /**
@@ -548,9 +539,8 @@ public: // Non virtual functions
 
 
 protected: // Internal data
-
-    /**\brief  The communication list for this vector
-      */
+           /**\brief  The communication list for this vector
+             */
     CommunicationList::shared_ptr d_CommList;
 
     /** \brief  The current update state for a vector

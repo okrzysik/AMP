@@ -34,22 +34,24 @@ public:
     virtual inline std::string elementClass() const override { return "structuredMeshElement"; }
 
     //! Return the elements composing the current element
-    virtual void getElements( const GeomType type, std::vector<MeshElement>& elements ) const override;
+    virtual void getElements( const GeomType type,
+                              std::vector<MeshElement> &elements ) const override;
 
     //! Return the IDs of the elements composing the current element
-    virtual void getElementsID( const GeomType type, std::vector<MeshElementID>& ID ) const override;
+    virtual void getElementsID( const GeomType type,
+                                std::vector<MeshElementID> &ID ) const override;
 
     //! Return the elements neighboring the current element
-    virtual void getNeighbors( std::vector<MeshElement::shared_ptr>& neighbors ) const override;
+    virtual void getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const override;
 
     //! Return the volume of the current element (does not apply to verticies)
     virtual double volume() const override;
 
     //! Return the coordinates of the vertex (only applies to verticies)
-    virtual inline void coord( size_t& N, double* x ) const override final
+    virtual inline void coord( size_t &N, double *x ) const override final
     {
         N = d_physicalDim;
-        d_mesh->coord(d_index,x);
+        d_mesh->coord( d_index, x );
     }
 
     /**
@@ -59,7 +61,7 @@ public:
      *   to allocate the appropriate memory (number of dimensions)
      * \param[out] pos      The coordinates
      */
-    inline void coord( double *pos ) const { d_mesh->coord(d_index,pos); }
+    inline void coord( double *pos ) const { d_mesh->coord( d_index, pos ); }
 
     /**
      * \brief     Return true if the element contains the point
@@ -118,21 +120,19 @@ public:
     void reset( BoxMesh::MeshElementIndex index, const AMP::Mesh::BoxMesh *mesh );
 
 
-
 protected:
-
     // Clone the iterator
     virtual MeshElement *clone() const override;
 
     // Internal data
-    GeomType d_meshType;                // Mesh logical dimension
-    unsigned char d_physicalDim;        // Mesh physical dimension
-    BoxMesh::MeshElementIndex d_index;  // Index of element
-    const AMP::Mesh::BoxMesh *d_mesh;   // Pointer to mesh
+    GeomType d_meshType;               // Mesh logical dimension
+    unsigned char d_physicalDim;       // Mesh physical dimension
+    BoxMesh::MeshElementIndex d_index; // Index of element
+    const AMP::Mesh::BoxMesh *d_mesh;  // Pointer to mesh
 
     // Helper functions
-    void getNeighborIndex( int &N, BoxMesh::MeshElementIndex* index ) const;
-    void getElementIndex( const GeomType type, int &N, BoxMesh::MeshElementIndex* index ) const;
+    void getNeighborIndex( int &N, BoxMesh::MeshElementIndex *index ) const;
+    void getElementIndex( const GeomType type, int &N, BoxMesh::MeshElementIndex *index ) const;
 
     friend class AMP::Mesh::BoxMesh;
     friend class AMP::Mesh::structuredMeshIterator;

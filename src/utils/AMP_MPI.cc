@@ -11,13 +11,13 @@
 #include <algorithm>
 #include <climits>
 #include <limits>
+#include <random>
 #include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <typeinfo>
-#include <random>
 #include <thread>
+#include <typeinfo>
 
 
 // Include OS specific headers
@@ -136,7 +136,7 @@ static MPI_Request getRequest( MPI_Comm comm, int tag )
         uint32_t key  = ( hash & 0xFFFFFFFF ) >> 22; // Get a key 0-1024
         request       = (uint32_t) tag + ( key << 22 );
     } else if ( sizeof( MPI_Request ) == 8 && sizeof( MPI_Comm ) == 4 ) {
-        request       = (uint64_t) tag + ( ( (uint64_t) comm ) << 32 );
+        request = (uint64_t) tag + ( ( (uint64_t) comm ) << 32 );
     } else if ( sizeof( MPI_Request ) == 4 && sizeof( MPI_Comm ) == 8 ) {
         uint64_t hash = comm * 0x9E3779B97F4A7C15;   // 2^64*0.5*(sqrt(5)-1)
         uint64_t key  = ( hash & 0xFFFFFFFF ) >> 22; // Get a key 0-1024
@@ -153,10 +153,10 @@ static MPI_Request getRequest( MPI_Comm comm, int tag )
     }
     MPI_Request request2;
     if ( sizeof( MPI_Request ) == 4 ) {
-        uint32_t tmp = static_cast<uint32_t>(request);
-        memcpy(&request2,&tmp,sizeof(MPI_Request));
+        uint32_t tmp = static_cast<uint32_t>( request );
+        memcpy( &request2, &tmp, sizeof( MPI_Request ) );
     } else {
-        memcpy(&request2,&request,sizeof(MPI_Request));
+        memcpy( &request2, &request, sizeof( MPI_Request ) );
     }
     return request2;
 }
@@ -177,15 +177,15 @@ inline void check_MPI( int error )
 * Some helper functions to convert between signed/unsigned types  *
 ******************************************************************/
 DISABLE_WARNINGS
-static inline constexpr unsigned int offset_int( )
+static inline constexpr unsigned int offset_int()
 {
     return ~static_cast<unsigned int>( std::numeric_limits<int>::min() ) + 1;
 }
-static inline constexpr unsigned long int offset_long( )
+static inline constexpr unsigned long int offset_long()
 {
     return ~static_cast<long int>( std::numeric_limits<long int>::min() ) + 1;
 }
-static inline constexpr unsigned long long int offset_long_long( )
+static inline constexpr unsigned long long int offset_long_long()
 {
     return ~static_cast<long long int>( std::numeric_limits<long long int>::min() ) + 1;
 }
@@ -230,10 +230,7 @@ static inline long long int unsigned_to_signed( unsigned long long int x )
 /************************************************************************
 *  Functions to get/set the process affinities                          *
 ************************************************************************/
-int MPI_CLASS::getNumberOfProcessors()
-{
-    return std::thread::hardware_concurrency();
-}
+int MPI_CLASS::getNumberOfProcessors() { return std::thread::hardware_concurrency(); }
 std::vector<int> MPI_CLASS::getProcessAffinity()
 {
     std::vector<int> procs;
@@ -267,7 +264,7 @@ std::vector<int> MPI_CLASS::getProcessAffinity()
 #endif
     return procs;
 }
-void MPI_CLASS::setProcessAffinity( const std::vector<int>& procs )
+void MPI_CLASS::setProcessAffinity( const std::vector<int> &procs )
 {
 #ifdef USE_LINUX
     cpu_set_t mask;
@@ -307,10 +304,10 @@ bool MPI_CLASS::MPI_active()
 #endif
 }
 
-int MPI_CLASS::queryThreadSupport(int *provided)
+int MPI_CLASS::queryThreadSupport( int *provided )
 {
 #ifdef USE_MPI
-    return MPI_Query_thread(provided);
+    return MPI_Query_thread( provided );
 #else
     // for now set to no threads in serial
     *provided = 0;
@@ -397,7 +394,7 @@ void MPI_CLASS::reset()
     // Decrement the count if used
     int count = -1;
     if ( d_count != nullptr )
-        count = --(*d_count);
+        count = --( *d_count );
     if ( count == 0 ) {
         // We are holding that last reference to the MPI_Comm object, we need to free it
         if ( d_manage ) {
@@ -436,15 +433,15 @@ void MPI_CLASS::reset()
 /************************************************************************
 *  Copy constructors                                                    *
 ************************************************************************/
-MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm ):
-    communicator( comm.communicator ),
-    d_isNull( comm.d_isNull ),
-    d_manage( comm.d_manage ),
-    comm_rank( comm.comm_rank ),
-    comm_size( comm.comm_size ),
-    d_ranks( comm.d_ranks ),
-    d_maxTag( comm.d_maxTag ),
-    d_currentTag( comm.d_currentTag )
+MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm )
+    : communicator( comm.communicator ),
+      d_isNull( comm.d_isNull ),
+      d_manage( comm.d_manage ),
+      comm_rank( comm.comm_rank ),
+      comm_size( comm.comm_size ),
+      d_ranks( comm.d_ranks ),
+      d_maxTag( comm.d_maxTag ),
+      d_currentTag( comm.d_currentTag )
 {
     // Initialize the data members to the existing comm object
     if ( d_currentTag != nullptr )
@@ -453,11 +450,10 @@ MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm ):
     // Set and increment the count
     d_count = comm.d_count;
     if ( d_count != nullptr )
-        (*d_count)++;
+        ( *d_count )++;
     tmp_alignment = -1;
 }
-MPI_CLASS::MPI_CLASS( MPI_CLASS &&rhs ):
-    MPI_CLASS()
+MPI_CLASS::MPI_CLASS( MPI_CLASS &&rhs ) : MPI_CLASS()
 {
     std::swap( communicator, rhs.communicator );
     std::swap( d_isNull, rhs.d_isNull );
@@ -498,7 +494,7 @@ MPI_CLASS &MPI_CLASS::operator=( const MPI_CLASS &comm )
     // Set and increment the count
     this->d_count = comm.d_count;
     if ( this->d_count != nullptr )
-        (*d_count)++;
+        ( *d_count )++;
     this->tmp_alignment = -1;
     return *this;
 }
@@ -527,9 +523,9 @@ MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
 ************************************************************************/
 MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
 {
-    d_count  = nullptr;
-    d_ranks  = nullptr;
-    d_manage = false;
+    d_count       = nullptr;
+    d_ranks       = nullptr;
+    d_manage      = false;
     tmp_alignment = -1;
     // Check if we are using our version of comm_world
     if ( comm == MPI_CLASS_COMM_WORLD ) {
@@ -581,18 +577,18 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
         ++N_MPI_Comm_created;
     // Create d_ranks
     if ( comm_size > 1 ) {
-        d_ranks = new int[comm_size];
+        d_ranks    = new int[comm_size];
         d_ranks[0] = -1;
     }
 #else
     // We are not using MPI, intialize based on the communicator
-    NULL_USE(manage);
-    comm_rank    = 0;
-    comm_size    = 1;
-    d_maxTag     = mpi_max_tag;
-    d_isNull     = communicator == MPI_COMM_NULL;
+    NULL_USE( manage );
+    comm_rank = 0;
+    comm_size = 1;
+    d_maxTag  = mpi_max_tag;
+    d_isNull  = communicator == MPI_COMM_NULL;
     if ( d_isNull )
-        comm_size = 0;
+        comm_size    = 0;
 #endif
     if ( d_isNull ) {
         d_currentTag = nullptr;
@@ -622,13 +618,13 @@ std::vector<int> MPI_CLASS::globalRanks() const
     }
     // Check if we are dealing with a serial or null communicator
     if ( comm_size == 1 )
-        return std::vector<int>(1,myGlobalRank);
+        return std::vector<int>( 1, myGlobalRank );
     if ( d_ranks == nullptr || communicator == MPI_COMM_NULL )
         return std::vector<int>();
     // Fill d_ranks if necessary
     if ( d_ranks[0] == -1 ) {
         if ( communicator == AMP::AMPManager::comm_world.communicator ) {
-            for ( int i = 0; i < comm_size; i++ )
+            for ( int i    = 0; i < comm_size; i++ )
                 d_ranks[i] = i;
         } else {
 
@@ -637,7 +633,7 @@ std::vector<int> MPI_CLASS::globalRanks() const
         }
     }
     // Return d_ranks
-    return std::vector<int>( d_ranks, d_ranks+comm_size );
+    return std::vector<int>( d_ranks, d_ranks + comm_size );
 }
 
 
@@ -649,9 +645,9 @@ size_t MPI_CLASS::rand() const
     size_t val = 0;
     if ( getRank() == 0 ) {
         static std::random_device rd;
-        static std::mt19937 gen(rd());
+        static std::mt19937 gen( rd() );
         static std::uniform_int_distribution<size_t> dist;
-        val = dist(gen);
+        val = dist( gen );
     }
     val = bcast( val, 0 );
     return val;
@@ -762,7 +758,7 @@ MPI_CLASS MPI_CLASS::split( int color, int key ) const
     }
 #endif
     // Create the new object
-    NULL_USE(key);
+    NULL_USE( key );
     MPI_CLASS new_comm( new_MPI_comm, true );
     new_comm.d_call_abort = d_call_abort;
     return new_comm;
@@ -804,7 +800,7 @@ MPI_CLASS MPI_CLASS::dup() const
     if ( d_isNull )
         return MPI_CLASS( MPI_CLASS_COMM_NULL );
     MPI_Comm new_MPI_comm = communicator;
-#if defined(USE_MPI) || defined(USE_PETSC)
+#if defined( USE_MPI ) || defined( USE_PETSC )
     // USE MPI to duplicate the communicator
     MPI_Comm_dup( communicator, &new_MPI_comm );
 #else
@@ -1060,10 +1056,7 @@ int MPI_CLASS::compare( const MPI_CLASS &comm ) const
 /************************************************************************
 *  Abort the program.                                                   *
 ************************************************************************/
-void MPI_CLASS::setCallAbortInSerialInsteadOfExit( bool flag )
-{
-    d_call_abort = flag;
-}
+void MPI_CLASS::setCallAbortInSerialInsteadOfExit( bool flag ) { d_call_abort = flag; }
 void MPI_CLASS::abort() const
 {
 #ifdef USE_MPI
@@ -2386,7 +2379,9 @@ void MPI_CLASS::call_bcast<double>( double *x, const int n, const int root ) con
 #else
 // We need a concrete instantiation of bcast<char>(x,n,root);
 template <>
-void MPI_CLASS::call_bcast<char>( char*, const int, const int ) const { }
+void MPI_CLASS::call_bcast<char>( char *, const int, const int ) const
+{
+}
 #endif
 
 
@@ -2552,10 +2547,8 @@ MPI_Request MPI_CLASS::Isend<double>( const double *buf,
 #else
 // We need a concrete instantiation of send for use without mpi
 template <>
-MPI_Request MPI_CLASS::Isend<char>( const char *buf,
-                                    const int length,
-                                    const int,
-                                    const int tag ) const
+MPI_Request
+MPI_CLASS::Isend<char>( const char *buf, const int length, const int, const int tag ) const
 {
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
@@ -2700,8 +2693,7 @@ void MPI_CLASS::recv<double>(
 #else
 // We need a concrete instantiation of recv for use without mpi
 template <>
-void MPI_CLASS::recv<char>(
-    char *buf, int &length, const int, const bool, int tag ) const
+void MPI_CLASS::recv<char>( char *buf, int &length, const int, const bool, int tag ) const
 {
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
@@ -2778,8 +2770,7 @@ MPI_CLASS::Irecv<double>( double *buf, const int length, const int send_proc, co
 #else
 // We need a concrete instantiation of irecv for use without mpi
 template <>
-MPI_Request
-MPI_CLASS::Irecv<char>( char *buf, const int length, const int, const int tag ) const
+MPI_Request MPI_CLASS::Irecv<char>( char *buf, const int length, const int, const int tag ) const
 {
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
@@ -3027,7 +3018,7 @@ void MPI_CLASS::call_allGather<double>(
 #else
 // We need a concrete instantiation of call_allGather<char>(x_in,size_in,x_out,size_out)
 template <>
-void MPI_CLASS::call_allGather<char>( const char*, int, char*, int*, int* ) const
+void MPI_CLASS::call_allGather<char>( const char *, int, char *, int *, int * ) const
 {
     MPI_ERROR( "Internal error in communicator (allGather) " );
 }
@@ -3282,12 +3273,8 @@ void MPI_CLASS::call_allToAll<double>( const double *send_data,
 #else
 // Default instatiation of unsigned char
 template <>
-void MPI_CLASS::call_allToAll<char>( const char*,
-                                     const int[],
-                                     const int[],
-                                     char*,
-                                     const int*,
-                                     const int* ) const
+void MPI_CLASS::call_allToAll<char>(
+    const char *, const int[], const int[], char *, const int *, const int * ) const
 {
     MPI_ERROR( "Should not reach this point" );
 }
@@ -3821,14 +3808,14 @@ double MPI_CLASS::tick() { return MPI_Wtick(); }
 #else
 double MPI_CLASS::time()
 {
-    auto t = std::chrono::system_clock::now();
-    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(t.time_since_epoch());
-    return 1e-9*ns.count();
+    auto t  = std::chrono::system_clock::now();
+    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t.time_since_epoch() );
+    return 1e-9 * ns.count();
 }
 double MPI_CLASS::tick()
 {
     auto period = std::chrono::system_clock::period();
-    return static_cast<double>(period.num) / static_cast<double>(period.den);
+    return static_cast<double>( period.num ) / static_cast<double>( period.den );
 }
 #endif
 

@@ -17,14 +17,14 @@ ManagedEpetraVector::ManagedEpetraVector( shared_ptr alias )
 {
 }
 
-void ManagedEpetraVector::copy( const VectorOperations& src )
+void ManagedEpetraVector::copy( const VectorOperations &src )
 {
     // there must be a more sensible way of doing this but I can't find the documentation - BP
-    auto epetraVec = dynamic_cast<const ManagedEpetraVector*>( &src );
+    auto epetraVec = dynamic_cast<const ManagedEpetraVector *>( &src );
     if ( epetraVec ) {
         double scale = 1.0;
         getEpetra_Vector().Scale( scale, epetraVec->getEpetra_Vector() );
-        copyGhostValues( *dynamic_cast<const VectorData*>(&src) );
+        copyGhostValues( *dynamic_cast<const VectorData *>( &src ) );
     } else {
         VectorOperationsDefault<double>::copy( src );
     }

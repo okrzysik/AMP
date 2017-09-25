@@ -79,8 +79,8 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     // Create a surface mesh on the clad
     AMP::Mesh::Mesh::shared_ptr surfaceMesh;
     if ( meshAdapter2.get() != nullptr ) {
-        surfaceMesh =
-            meshAdapter2->Subset( meshAdapter2->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 4, 0 ) );
+        surfaceMesh = meshAdapter2->Subset(
+            meshAdapter2->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 4, 0 ) );
         surfaceMesh->setName( "clad_surface" );
     }
     globalComm.barrier();
@@ -89,7 +89,8 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
 
     // Create the DOF managers
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create(
+            manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     // AMP::Discretization::DOFManager::shared_ptr flowNodalScalarDOF =
     //    AMP::Discretization::simpleDOFManager::create(surfaceMesh,AMP::Mesh::GeomType::Vertex,1,1,true);
     AMP::Discretization::DOFManager::shared_ptr flowNodalScalarDOF;
@@ -372,20 +373,25 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
 
-    auto globalSolMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    auto globalSolMultiVector =
+        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
     globalSolMultiVector->addVector( globalSolVec );
     globalSolMultiVector->addVector( flowSolVec );
 
-    auto globalSolMultiVectorView = AMP::LinearAlgebra::MultiVector::view( globalSolMultiVector, globalComm );
+    auto globalSolMultiVectorView =
+        AMP::LinearAlgebra::MultiVector::view( globalSolMultiVector, globalComm );
     //---------------------------------------------------------------------------------------------------------------------//
-    auto globalRhsMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    auto globalRhsMultiVector =
+        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
     globalRhsMultiVector->addVector( globalRhsVec );
     globalRhsMultiVector->addVector( flowRhsVec );
 
-    auto globalRhsMultiVectorView = AMP::LinearAlgebra::MultiVector::view( globalRhsMultiVector, globalComm );
+    auto globalRhsMultiVectorView =
+        AMP::LinearAlgebra::MultiVector::view( globalRhsMultiVector, globalComm );
     //---------------------------------------------------------------------------------------------------------------------//
     //---------------------------------------------------------------------------------------------------------------------//
-   auto globalResMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    auto globalResMultiVector =
+        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
     globalResMultiVector->addVector( globalResVec );
     globalResMultiVector->addVector( flowResVec );
 
@@ -625,7 +631,8 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     if ( meshAdapter2.get() != nullptr ) {
         siloWriter->registerVector(
             globalSolVec, meshAdapter2, AMP::Mesh::GeomType::Vertex, "CladTemperature" );
-        siloWriter->registerVector( flowSolVec, surfaceMesh, AMP::Mesh::GeomType::Vertex, "FlowTemperature" );
+        siloWriter->registerVector(
+            flowSolVec, surfaceMesh, AMP::Mesh::GeomType::Vertex, "FlowTemperature" );
     }
 #endif
 

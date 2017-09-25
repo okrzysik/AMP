@@ -2,10 +2,10 @@
 #define included_AMP_ManagedVector
 
 
-#include "vectors/Vector.h"
-#include "vectors/operations/VectorOperationsDefault.h"
-#include "vectors/VectorEngine.h"
 #include "vectors/DataChangeFirer.h"
+#include "vectors/Vector.h"
+#include "vectors/VectorEngine.h"
+#include "vectors/operations/VectorOperationsDefault.h"
 
 #include <stdexcept>
 #include <vector>
@@ -47,10 +47,7 @@ public:
    A ManagedVector has two pointers: data and engine.  If the data pointer
    is null, then the engine is assumed to have the data.
 */
-class ManagedVector :
-    public Vector,
-    public VectorOperationsDefault<double>,
-    public DataChangeFirer
+class ManagedVector : public Vector, public VectorOperationsDefault<double>, public DataChangeFirer
 {
 
 public:
@@ -89,7 +86,7 @@ public:
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
     virtual size_t numberOfDataBlocks() const override;
     virtual size_t sizeOfDataBlock( size_t i ) const override;
-    virtual void copy( const VectorOperations& src ) override;
+    virtual void copy( const VectorOperations &src ) override;
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector &other ) override;
 
@@ -144,8 +141,11 @@ public:
     {
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
     }
-    virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(double).hash_code(); }
-    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
+    virtual bool isTypeId( size_t hash, size_t ) const override
+    {
+        return hash == typeid( double ).hash_code();
+    }
+    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
 
 protected:
     virtual Vector::shared_ptr selectInto( const VectorSelector & ) override;

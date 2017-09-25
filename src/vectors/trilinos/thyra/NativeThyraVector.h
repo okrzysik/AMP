@@ -1,11 +1,11 @@
 #ifndef included_AMP_NativeThyraVector
 #define included_AMP_NativeThyraVector
 
+#include "vectors/NativeVector.h"
 #include "vectors/Vector.h"
 #include "vectors/VectorEngine.h"
-#include "vectors/NativeVector.h"
-#include "vectors/trilinos/thyra/ThyraVector.h"
 #include "vectors/operations/VectorOperationsDefault.h"
+#include "vectors/trilinos/thyra/ThyraVector.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -42,11 +42,10 @@ public:
   * \see ThyraVector
   * \see ManagedThyraVector
   */
-class NativeThyraVector :
-    public NativeVector,
-    public ThyraVector,
-    public VectorEngine,
-    public VectorOperationsDefault<double>
+class NativeThyraVector : public NativeVector,
+                          public ThyraVector,
+                          public VectorEngine,
+                          public VectorOperationsDefault<double>
 {
 public:
     //! Conveninece typedef
@@ -66,11 +65,11 @@ public:
 
 
     //! Overloaded functions
-    virtual std::string type() const  override{ return "Native Thyra Vector"; }
+    virtual std::string type() const override { return "Native Thyra Vector"; }
     virtual Vector::shared_ptr getManagedVectorCopy( AMP_MPI comm ) override;
     virtual Vector::shared_ptr getManagedVectorDuplicate( AMP_MPI comm ) override;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
-    virtual void copy( const VectorOperations& vec ) override;
+    virtual void copy( const VectorOperations &vec ) override;
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector & ) override;
     virtual size_t numberOfDataBlocks() const override;
@@ -83,8 +82,12 @@ public:
     virtual void multiply( const VectorOperations &x, const VectorOperations &y ) override;
     virtual void divide( const VectorOperations &x, const VectorOperations &y ) override;
     virtual void reciprocal( const VectorOperations &x ) override;
-    virtual void linearSum( double alpha, const VectorOperations &x, double beta, const VectorOperations &y ) override;
-    virtual void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
+    virtual void linearSum( double alpha,
+                            const VectorOperations &x,
+                            double beta,
+                            const VectorOperations &y ) override;
+    virtual void
+    axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
     virtual void axpby( double alpha, double beta, const VectorOperations &x ) override;
     virtual void abs( const VectorOperations &x ) override;
     virtual double min( void ) const override;
@@ -112,8 +115,14 @@ public:
     virtual const void *getDataBlock( size_t i ) const override;
     virtual AMP_MPI getComm() const override;
     virtual void copyOutRawData( double *out ) const override;
-    virtual uint64_t getDataID() const override  { return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) ); }
-    virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(double).hash_code(); }
+    virtual uint64_t getDataID() const override
+    {
+        return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
+    }
+    virtual bool isTypeId( size_t hash, size_t ) const override
+    {
+        return hash == typeid( double ).hash_code();
+    }
 
 protected:
     //! Empty constructor.
@@ -121,7 +130,7 @@ protected:
 
     virtual void *getRawDataBlockAsVoid( size_t i ) override;
     virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
-    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
+    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
 
 private:
     size_t d_local;

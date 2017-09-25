@@ -69,7 +69,8 @@ void myTest( AMP::UnitTest *ut )
     Teuchos::RCP<DataTransferKit::FunctionSpace> function_space = dtk_mesh_manager.functionSpace();
 
     // Test the entity set and entity selector by getting an iterator over the nodes.
-    AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, ghostWidth );
+    AMP::Mesh::MeshIterator node_iterator =
+        mesh->getIterator( AMP::Mesh::GeomType::Vertex, ghostWidth );
     DataTransferKit::EntityIterator dtk_node_iterator =
         function_space->entitySet()->entityIterator( 0, function_space->selectFunction() );
     AMP_ASSERT( dtk_node_iterator.size() == node_iterator.size() );

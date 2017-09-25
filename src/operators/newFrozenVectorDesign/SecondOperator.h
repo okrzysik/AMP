@@ -10,7 +10,8 @@ namespace Operator {
 class SecondOperator : public OnePointOperator
 {
 public:
-    explicit SecondOperator( const AMP::shared_ptr<OperatorParameters> &params ) : OnePointOperator( params )
+    explicit SecondOperator( const AMP::shared_ptr<OperatorParameters> &params )
+        : OnePointOperator( params )
     {
         d_constant = 3.0;
         d_primaryVar.reset(

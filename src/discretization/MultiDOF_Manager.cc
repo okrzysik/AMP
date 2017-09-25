@@ -11,17 +11,18 @@ namespace Discretization {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-multiDOFManager::multiDOFManager( const AMP_MPI &globalComm, std::vector<DOFManager::shared_ptr> managers ):
-    d_managers(managers),
-    d_ids( managers.size(), 0 ),
-    d_localSize( managers.size(), 0 ),
-    d_globalSize( managers.size(), 0 )
-{ 
+multiDOFManager::multiDOFManager(
+    const AMP_MPI &globalComm, std::vector<DOFManager::shared_ptr> managers )
+    : d_managers( managers ),
+      d_ids( managers.size(), 0 ),
+      d_localSize( managers.size(), 0 ),
+      d_globalSize( managers.size(), 0 )
+{
     d_comm = globalComm;
     // Compute the total begin, end, and global size
     size_t local_size = 0;
     for ( size_t i = 0; i < managers.size(); i++ ) {
-        d_ids[i] = managers[i]->getComm().rand();
+        d_ids[i]        = managers[i]->getComm().rand();
         d_globalSize[i] = managers[i]->numGlobalDOF();
         d_localSize[i]  = managers[i]->numLocalDOF();
         local_size += d_localSize[i];
@@ -33,7 +34,8 @@ multiDOFManager::multiDOFManager( const AMP_MPI &globalComm, std::vector<DOFMana
     d_dofMap.resize( managers.size() );
     size_t begin = d_begin;
     for ( size_t i = 0; i < managers.size(); i++ ) {
-        d_dofMap[i] = DOFMapStruct( managers[i]->beginDOF(), managers[i]->endDOF(), begin, d_ids[i] );
+        d_dofMap[i] =
+            DOFMapStruct( managers[i]->beginDOF(), managers[i]->endDOF(), begin, d_ids[i] );
         begin += managers[i]->numLocalDOF();
     }
     d_dofMap = d_comm.allGather( d_dofMap );
@@ -49,13 +51,15 @@ multiDOFManager::~multiDOFManager() {}
 /****************************************************************
 * Get the dofs for the element                                  *
 ****************************************************************/
-void multiDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids, std::vector<size_t> &dofs ) const
+void multiDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
+                               std::vector<size_t> &dofs ) const
 {
     dofs.resize( 0 );
     if ( d_managers.empty() )
         return;
     if ( d_managers[0]->numGlobalDOF() == this->d_global ) {
-        // We are dealing with a multiDOFManager with only 1 sub DOF (this happens with multivectors)
+        // We are dealing with a multiDOFManager with only 1 sub DOF (this happens with
+        // multivectors)
         d_managers[0]->getDOFs( ids, dofs );
     } else {
         std::vector<size_t> local_dofs;
@@ -74,7 +78,8 @@ void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<s
     if ( d_managers.empty() )
         return;
     if ( d_managers[0]->numGlobalDOF() == this->d_global ) {
-        // We are dealing with a multiDOFManager with only 1 sub DOF (this happens with multivectors)
+        // We are dealing with a multiDOFManager with only 1 sub DOF (this happens with
+        // multivectors)
         d_managers[0]->getDOFs( id, dofs );
     } else {
         std::vector<size_t> local_dofs;
@@ -94,17 +99,17 @@ void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<s
 ****************************************************************/
 inline size_t multiDOFManager::subToGlobal( int manager, size_t dof ) const
 {
-    for ( const auto& map : d_dofMap ) {
-        if ( map.inRangeLocal( dof ) && map.id()==d_ids[manager] )
+    for ( const auto &map : d_dofMap ) {
+        if ( map.inRangeLocal( dof ) && map.id() == d_ids[manager] )
             return map.toGlobal( dof );
     }
     return neg_one;
 }
-inline std::pair<size_t,int> multiDOFManager::globalToSub( size_t dof ) const
+inline std::pair<size_t, int> multiDOFManager::globalToSub( size_t dof ) const
 {
-    for ( const auto& map : d_dofMap ) {
+    for ( const auto &map : d_dofMap ) {
         if ( map.inRangeGlobal( dof ) ) {
-            for (size_t i=0; i<d_managers.size(); i++) {
+            for ( size_t i = 0; i < d_managers.size(); i++ ) {
                 if ( d_ids[i] == map.id() )
                     return std::make_pair( map.toLocal( dof ), i );
             }
@@ -203,16 +208,17 @@ std::vector<size_t> multiDOFManager::getGlobalDOF( const int manager,
                                                    const std::vector<size_t> &subDOFs ) const
 {
     std::vector<size_t> dofs( subDOFs.size() );
-    for (size_t i=0; i<dofs.size(); i++)
-        dofs[i] = subToGlobal( manager, subDOFs[i] );
+    for ( size_t i = 0; i < dofs.size(); i++ )
+        dofs[i]    = subToGlobal( manager, subDOFs[i] );
     return dofs;
 }
-std::vector<size_t> multiDOFManager::getSubDOF( const int manager, std::vector<size_t> &globalDOFs ) const
+std::vector<size_t> multiDOFManager::getSubDOF( const int manager,
+                                                std::vector<size_t> &globalDOFs ) const
 {
     std::vector<size_t> dofs( globalDOFs.size() );
-    for (size_t i=0; i<dofs.size(); i++) {
+    for ( size_t i = 0; i < dofs.size(); i++ ) {
         auto map = globalToSub( globalDOFs[i] );
-        dofs[i] = map.second==manager ? map.first:neg_one;
+        dofs[i]  = map.second == manager ? map.first : neg_one;
     }
     return dofs;
 }

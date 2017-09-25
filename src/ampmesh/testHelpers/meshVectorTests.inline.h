@@ -17,13 +17,12 @@ namespace AMP {
 namespace Mesh {
 
 
-
 // Simple nodal vector tests
 template <int DOF_PER_NODE, bool SPLIT>
 void meshTests::simpleNodalVectorTests( AMP::UnitTest *utils,
-                             AMP::Mesh::Mesh::shared_ptr mesh,
-                             AMP::Discretization::DOFManager::shared_ptr DOFs,
-                             int gcw )
+                                        AMP::Mesh::Mesh::shared_ptr mesh,
+                                        AMP::Discretization::DOFManager::shared_ptr DOFs,
+                                        int gcw )
 {
 
     // Create a nodal variable
@@ -89,7 +88,7 @@ void meshTests::VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shar
 
         // Run the vector tests
         globalMeshForMeshVectorFactory = mesh;
-        AMP::shared_ptr<AMP::LinearAlgebra::VectorFactory> factory( 
+        AMP::shared_ptr<AMP::LinearAlgebra::VectorFactory> factory(
             new MeshVectorFactory( mesh, AMP::Mesh::GeomType::Vertex, gcw, DOF_PER_NODE, SPLIT ) );
         AMP::LinearAlgebra::VectorTests vectorTests( factory );
         vectorTests.testManagedVector( utils );

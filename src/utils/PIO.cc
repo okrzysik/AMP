@@ -187,4 +187,3 @@ void PIO::resumeLogging()
 
 
 } // AMP namespace
-

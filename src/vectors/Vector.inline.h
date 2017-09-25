@@ -26,15 +26,15 @@ inline AMP_MPI Vector::getComm() const { return d_CommList->getComm(); }
 /****************************************************************
 * Subset for variable name                                      *
 ****************************************************************/
-inline Vector::shared_ptr Vector::subsetVectorForVariable( const std::string& name )
+inline Vector::shared_ptr Vector::subsetVectorForVariable( const std::string &name )
 {
-    auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>(name);
+    auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( name );
     return subsetVectorForVariable( var );
 }
 inline Vector::const_shared_ptr
-Vector::constSubsetVectorForVariable( const std::string& name ) const
+Vector::constSubsetVectorForVariable( const std::string &name ) const
 {
-    auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>(name);
+    auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( name );
     return constSubsetVectorForVariable( var );
 }
 
@@ -81,8 +81,8 @@ inline RNG::shared_ptr Vector::getDefaultRNG()
     if ( !d_DefaultRNG ) {
         AMP_MPI globalComm( AMP_COMM_WORLD );
         int rank = globalComm.getRank();
-        RNGParameters::shared_ptr params(
-            new RNGParameters( RNGParameters::RNGOptions::USE_GLOBAL_SEED, static_cast<size_t>( rank ) ) );
+        RNGParameters::shared_ptr params( new RNGParameters(
+            RNGParameters::RNGOptions::USE_GLOBAL_SEED, static_cast<size_t>( rank ) ) );
         d_DefaultRNG = RNG::shared_ptr( new RNG( params ) );
     }
     return d_DefaultRNG;

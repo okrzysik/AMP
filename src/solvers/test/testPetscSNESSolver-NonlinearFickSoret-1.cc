@@ -92,7 +92,8 @@ void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> &resu
 
     // create solution, rhs, and residual vectors
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Vector::shared_ptr solVec =
         AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec =
@@ -190,8 +191,9 @@ void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> &resu
 
     // store result
     {
-        AMP::Mesh::MeshIterator iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-        size_t numNodes                  = iterator.size();
+        AMP::Mesh::MeshIterator iterator =
+            meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        size_t numNodes = iterator.size();
         results.resize( numNodes );
         std::vector<size_t> dofs;
         for ( size_t iNode = 0; iNode < numNodes; iNode++ ) {
@@ -273,7 +275,8 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create solution, rhs, and residual vectors
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Vector::shared_ptr solVec =
         AMP::LinearAlgebra::createVector( nodalScalarDOF, cVar, true );
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec =
@@ -372,8 +375,9 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
 
     // store result
     {
-        AMP::Mesh::MeshIterator iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-        size_t numNodes                  = iterator.size();
+        AMP::Mesh::MeshIterator iterator =
+            meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        size_t numNodes = iterator.size();
         results.resize( numNodes );
         std::vector<size_t> dofs;
         for ( size_t iNode = 0; iNode < numNodes; iNode++ ) {
@@ -427,7 +431,7 @@ int main( int argc, char *argv[] )
 
     std::cout << "fick/soretOff real err = " << l2err3 << std::endl;
 
-    if ( (l2err1 < 1.e-6) && (l2err2 < 1.e-6) && (l2err3 < 1.e-6) ) {
+    if ( ( l2err1 < 1.e-6 ) && ( l2err2 < 1.e-6 ) && ( l2err3 < 1.e-6 ) ) {
         ut.passes( "fick, fick-soret/off, and fick-soret/zero all agree" );
     }
 

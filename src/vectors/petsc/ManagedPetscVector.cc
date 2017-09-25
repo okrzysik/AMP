@@ -82,7 +82,7 @@ PetscErrorCode _AMP_loadintovectornative( PetscViewer, Vec )
     AMP_ERROR( "41 Not implemented" );
     return 0;
 }
-#elif PETSC_VERSION_GE(3,2,0)
+#elif PETSC_VERSION_GE( 3, 2, 0 )
 PetscErrorCode _AMP_setoption( Vec, VecOption, PetscBool ) { return 0; }
 PetscErrorCode _AMP_load( Vec, PetscViewer )
 {
@@ -117,20 +117,20 @@ _AMP_setvalues( Vec px, PetscInt ni, const PetscInt ix[], const PetscScalar y[],
     return 0;
 }
 
-#if PETSC_VERSION_(3,7,5)
-PetscErrorCode _AMP_shift( Vec px, PetscScalar s)
+#if PETSC_VERSION_( 3, 7, 5 )
+PetscErrorCode _AMP_shift( Vec px, PetscScalar s )
 {
     PETSC_RECAST( x, px );
 
     auto cur = x->VectorData::begin();
     auto end = x->VectorData::end();
     while ( cur != end ) {
-        *cur = s+ ( *cur );
+        *cur = s + ( *cur );
         cur++;
     }
     return 0;
 }
-#elif PETSC_VERSION_LT(3,7,5)
+#elif PETSC_VERSION_LT( 3, 7, 5 )
 // This function makes no sense wrt the PETSc interface VecShift( Vec, PetscScalar );
 PetscErrorCode _AMP_shift( Vec )
 {
@@ -382,9 +382,9 @@ PetscErrorCode _AMP_maxpointwisedivide( Vec a, Vec b, PetscReal *res )
     PETSC_RECAST( x, a );
     PETSC_RECAST( y, b );
 
-    auto cur_x = x->VectorData::constBegin();
-    auto cur_y = y->VectorData::constBegin();
-    auto end_x = x->VectorData::constEnd();
+    auto cur_x       = x->VectorData::constBegin();
+    auto cur_y       = y->VectorData::constBegin();
+    auto end_x       = x->VectorData::constEnd();
     double local_res = 0.0;
     while ( cur_x != end_x ) {
         if ( *cur_y == 0.0 ) {
@@ -736,7 +736,7 @@ void ManagedPetscVector::initPetsc()
     PetscMapSetLocalSize( d_petscVec->map, this->getLocalSize() );
     d_petscVec->map->rstart = static_cast<PetscInt>( this->getDOFManager()->beginDOF() );
     d_petscVec->map->rend   = static_cast<PetscInt>( this->getDOFManager()->endDOF() );
-#elif PETSC_VERSION_GE(3,2,0)
+#elif PETSC_VERSION_GE( 3, 2, 0 )
     PetscLayoutSetBlockSize( d_petscVec->map, 1 );
     PetscLayoutSetSize( d_petscVec->map, this->getGlobalSize() );
     PetscLayoutSetLocalSize( d_petscVec->map, this->getLocalSize() );
@@ -812,7 +812,7 @@ ManagedPetscVector *ManagedPetscVector::petscDuplicate()
 void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
 {
     auto params = AMP::dynamic_pointer_cast<ManagedVectorParameters>(
-        dynamic_cast<ManagedVector*>(&dest)->getParameters() );
+        dynamic_cast<ManagedVector *>( &dest )->getParameters() );
     if ( !params )
         throw( "Incompatible vector types" );
 
@@ -861,10 +861,9 @@ AMP::shared_ptr<AMP::LinearAlgebra::Vector> ManagedPetscVector::createFromPetscV
 
 void ManagedPetscVector::swapVectors( Vector &other )
 {
-    auto tmp = dynamic_cast<ManagedPetscVector*>( &other );
+    auto tmp = dynamic_cast<ManagedPetscVector *>( &other );
     AMP_ASSERT( tmp != nullptr );
     ParentVector::swapVectors( *tmp );
 }
-
 }
 }

@@ -260,7 +260,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::MeshElement
         d_elem[numSubchannels][numAxialIntervals]; // array of array of elements for each subchannel
     AMP::Mesh::MeshIterator cell = subchannelOpParams->d_Mesh->getIterator(
-        AMP::Mesh::GeomType::Volume, 0 );            // iterator for cells of mesh
+        AMP::Mesh::GeomType::Volume, 0 );  // iterator for cells of mesh
     for ( ; cell != cell.end(); ++cell ) { // loop over all cells
         std::vector<double> center = cell->centroid();
         // get the index of the subchannel
@@ -340,7 +340,8 @@ void Test( AMP::UnitTest *ut, std::string exeName )
     // array of gap faces
     AMP::Mesh::MeshElement gapFaces[numGaps][numAxialIntervals]; // gap faces
     // loop over all faces in mesh
-    AMP::Mesh::MeshIterator face = subchannelOpParams->d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
+    AMP::Mesh::MeshIterator face =
+        subchannelOpParams->d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     for ( ; face != face.end(); ++face ) { // loop over all faces in mesh
         std::vector<double> faceCentroid = face->centroid();
         // try to find face in lateral face map
@@ -393,8 +394,8 @@ void Test( AMP::UnitTest *ut, std::string exeName )
                 m_res[ii - 1][0] = ResVec->getValueByGlobalID( minusDofs[0] ) / m_scale;
                 h_res[ii - 1][0] = ResVec->getValueByGlobalID( minusDofs[1] ) / h_scale;
                 p_res[ii - 1][0] = ResVec->getValueByGlobalID( minusDofs[2] ) / p_scale;
-                std::cout << "GeomType::Face 0:\t" << m_res[ii - 1][0] << "\t" << h_res[ii - 1][0] << "\t"
-                          << p_res[ii - 1][0] << std::endl;
+                std::cout << "GeomType::Face 0:\t" << m_res[ii - 1][0] << "\t" << h_res[ii - 1][0]
+                          << "\t" << p_res[ii - 1][0] << std::endl;
             }
 
             // get dofs on plus face

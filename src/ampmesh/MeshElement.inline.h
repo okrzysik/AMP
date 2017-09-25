@@ -19,10 +19,8 @@ MeshElement::MeshElement() : d_globalID()
     typeID  = MeshElementTypeID;
     element = nullptr;
 }
-MeshElement::MeshElement( const MeshElement &rhs ) :
-    typeID( MeshElementTypeID ),
-    element( nullptr ),
-    d_globalID( rhs.d_globalID )
+MeshElement::MeshElement( const MeshElement &rhs )
+    : typeID( MeshElementTypeID ), element( nullptr ), d_globalID( rhs.d_globalID )
 {
     if ( rhs.element == nullptr && rhs.typeID == MeshElementTypeID ) {
         element = nullptr;
@@ -32,16 +30,14 @@ MeshElement::MeshElement( const MeshElement &rhs ) :
         element = rhs.element->clone();
     }
 }
-MeshElement::MeshElement( MeshElement && rhs ):
-    typeID( MeshElementTypeID ),
-    element( rhs.element ),
-    d_globalID( rhs.d_globalID )
+MeshElement::MeshElement( MeshElement &&rhs )
+    : typeID( MeshElementTypeID ), element( rhs.element ), d_globalID( rhs.d_globalID )
 {
-    if ( rhs.typeID!=MeshElementTypeID )
+    if ( rhs.typeID != MeshElementTypeID )
         element = rhs.clone();
     rhs.element = nullptr;
 }
-MeshElement& MeshElement::operator=( const MeshElement &rhs )
+MeshElement &MeshElement::operator=( const MeshElement &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
@@ -61,7 +57,7 @@ MeshElement& MeshElement::operator=( const MeshElement &rhs )
     d_globalID = rhs.d_globalID;
     return *this;
 }
-MeshElement& MeshElement::operator=( MeshElement && rhs )
+MeshElement &MeshElement::operator=( MeshElement &&rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
@@ -70,10 +66,10 @@ MeshElement& MeshElement::operator=( MeshElement && rhs )
         delete element;
         element = nullptr;
     }
-    typeID = MeshElementTypeID;
+    typeID     = MeshElementTypeID;
     d_globalID = rhs.d_globalID;
-    std::swap(element,rhs.element);
-    if ( rhs.typeID!=MeshElementTypeID )
+    std::swap( element, rhs.element );
+    if ( rhs.typeID != MeshElementTypeID )
         element = rhs.clone();
     return *this;
 }
@@ -93,10 +89,7 @@ MeshElement::~MeshElement()
 /********************************************************
 * Is the element null                                   *
 ********************************************************/
-bool MeshElement::isNull() const
-{
-    return typeID==MeshElementTypeID && element==nullptr;
-}
+bool MeshElement::isNull() const { return typeID == MeshElementTypeID && element == nullptr; }
 
 
 /********************************************************
@@ -115,13 +108,10 @@ MeshElement *MeshElement::clone() const
 /********************************************************
 * Function to get the raw element                       *
 ********************************************************/
-inline MeshElement *MeshElement::getRawElement()
-{
-    return element==nullptr ? this:element;
-}
+inline MeshElement *MeshElement::getRawElement() { return element == nullptr ? this : element; }
 inline const MeshElement *MeshElement::getRawElement() const
 {
-    return element==nullptr ? this:element;
+    return element == nullptr ? this : element;
 }
 
 
@@ -148,17 +138,14 @@ bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) co
 /********************************************************
 * Function to return basic info                         *
 ********************************************************/
-inline const MeshElementID& MeshElement::globalID() const
+inline const MeshElementID &MeshElement::globalID() const
 {
-    return element==nullptr ? d_globalID:element->d_globalID;
+    return element == nullptr ? d_globalID : element->d_globalID;
 }
-inline GeomType MeshElement::elementType() const
-{
-    return globalID().type();
-}
+inline GeomType MeshElement::elementType() const { return globalID().type(); }
 inline std::string MeshElement::elementClass() const
 {
-    return element==nullptr ? std::string("MeshElement"):element->elementClass();
+    return element == nullptr ? std::string( "MeshElement" ) : element->elementClass();
 }
 
 
@@ -169,33 +156,33 @@ inline std::vector<double> MeshElement::coord() const
 {
     size_t N = 10;
     double x[10];
-    ( element!=nullptr ? element:this )->coord( N, x );
-    return std::vector<double>( x, x+N );
+    ( element != nullptr ? element : this )->coord( N, x );
+    return std::vector<double>( x, x + N );
 }
 inline double MeshElement::coord( int i ) const
 {
     size_t N = 10;
     double x[10];
-    ( element!=nullptr ? element:this )->coord( N, x );
+    ( element != nullptr ? element : this )->coord( N, x );
     return x[i];
 }
 inline std::vector<double> MeshElement::centroid() const
 {
     size_t N = 10;
     double x[10];
-    ( element!=nullptr ? element:this )->centroid( N, x );
-    return std::vector<double>( x, x+N );
+    ( element != nullptr ? element : this )->centroid( N, x );
+    return std::vector<double>( x, x + N );
 }
 inline std::vector<MeshElement> MeshElement::getElements( const GeomType type ) const
 {
     std::vector<MeshElement> elements;
-    ( element!=nullptr ? element:this )->getElements( type, elements );
+    ( element != nullptr ? element : this )->getElements( type, elements );
     return elements;
 }
 inline std::vector<MeshElement::shared_ptr> MeshElement::getNeighbors() const
 {
     std::vector<MeshElement::shared_ptr> neighbors;
-    ( element!=nullptr ? element:this )->getNeighbors( neighbors );
+    ( element != nullptr ? element : this )->getNeighbors( neighbors );
     return neighbors;
 }
 

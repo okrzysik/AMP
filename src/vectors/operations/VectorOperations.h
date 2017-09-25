@@ -2,9 +2,9 @@
 #define included_AMP_VectorOperations
 
 
-#include "utils/shared_ptr.h"
 #include "utils/AMP_MPI.h"
 #include "utils/RNG.h"
+#include "utils/shared_ptr.h"
 #include <vector>
 
 
@@ -39,7 +39,6 @@ class VectorData;
 class VectorOperations
 {
 public:
-
     //! Destructor
     virtual ~VectorOperations() {}
 
@@ -211,7 +210,7 @@ public:
       * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
       * \param[in] x        a vector
      */
-    virtual double dot( const VectorOperations &x ) const ;
+    virtual double dot( const VectorOperations &x ) const;
 
     /**
       * \brief Return the local minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
@@ -246,7 +245,7 @@ public:
       * \details Returns \f[\sum_i x_i \mathit{this}_i\f]
       * \param[in] x        a vector
      */
-    virtual double localDot( const VectorOperations& x ) const = 0;
+    virtual double localDot( const VectorOperations &x ) const = 0;
 
     /**
       * \brief  Determine if the local portion of two vectors are equal using an absolute tolerance
@@ -275,20 +274,20 @@ public:
       * \brief Return a weighted norm of a subset of a vector
       * \param[in] x a vector
       * \param[in] mask a vector
-      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0}  \mathit{this}^2_iy^2_i}{n}}\f]
+      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0}
+     * \mathit{this}^2_iy^2_i}{n}}\f]
       */
     virtual double localWrmsNormMask( const VectorOperations &x,
                                       const VectorOperations &mask ) const = 0;
 
 
 public: // Non-virtual functions
-
-    /**
-      * \brief  Determine if two vectors are equal using an absolute tolerance
-      * \param[in] rhs      Vector to compare to
-      * \param[in] tol      Tolerance of comparison
-      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
-      */
+        /**
+          * \brief  Determine if two vectors are equal using an absolute tolerance
+          * \param[in] rhs      Vector to compare to
+          * \param[in] tol      Tolerance of comparison
+          * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
+          */
     bool equals( const VectorOperations &rhs, double tol = 0.000001 ) const;
 
 
@@ -323,7 +322,6 @@ public: // Non-virtual functions
 
 
 public: // shared_ptr wrappers
-   
     /// @copydoc VectorOperations::equals(const VectorOperations&,double)
     inline bool equals( AMP::shared_ptr<const VectorOperations> rhs, double tol = 0.000001 );
     /// @copydoc VectorOperations::scale(double,const VectorOperations&)
@@ -331,26 +329,35 @@ public: // shared_ptr wrappers
     /// @copydoc VectorOperations::copy(const VectorOperations&)
     inline void copy( AMP::shared_ptr<const VectorOperations> x );
     /// @copydoc VectorOperations::add(const VectorOperations&,const VectorOperations&)
-    inline void add( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
+    inline void
+    add( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::addScalar(const VectorOperations&,double)
     inline void addScalar( AMP::shared_ptr<const VectorOperations> x, double alpha );
     /// @copydoc VectorOperations::subtract(const VectorOperations&,const VectorOperations&)
-    inline void subtract( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
+    inline void subtract(
+        AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::multiply(const VectorOperations&,const VectorOperations&)
-    inline void multiply( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
+    inline void multiply(
+        AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::divide(const VectorOperations&,const VectorOperations&)
-    inline void divide( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
+    inline void
+    divide( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::reciprocal(const VectorOperations&)
     inline void reciprocal( AMP::shared_ptr<const VectorOperations> x );
-    /// @copydoc VectorOperations::linearSum(double,const VectorOperations&,double,const VectorOperations&)
+    /// @copydoc VectorOperations::linearSum(double,const VectorOperations&,double,const
+    /// VectorOperations&)
     inline void linearSum( double alpha,
-                           AMP::shared_ptr<const VectorOperations> x,
+                           AMP::shared_ptr<const VectorOperations>
+                               x,
                            double beta,
-                           AMP::shared_ptr<const VectorOperations> y );
+                           AMP::shared_ptr<const VectorOperations>
+                               y );
     /// @copydoc VectorOperations::axpy(double,const VectorOperations&,const VectorOperations&)
     inline void axpy( double alpha,
-                      AMP::shared_ptr<const VectorOperations> x,
-                      AMP::shared_ptr<const VectorOperations> y );
+                      AMP::shared_ptr<const VectorOperations>
+                          x,
+                      AMP::shared_ptr<const VectorOperations>
+                          y );
     /// @copydoc VectorOperations::axpby(double,double,const VectorOperations&)
     inline void axpby( double alpha, double beta, AMP::shared_ptr<const VectorOperations> x );
     /// @copydoc VectorOperations::ans(const VectorOperations&)
@@ -358,41 +365,42 @@ public: // shared_ptr wrappers
     /// @copydoc VectorOperations::dot(const VectorOperations&)
     inline double dot( AMP::shared_ptr<const VectorOperations> x ) const;
     /// @copydoc VectorOperations::minQuotient(const VectorOperations&,const VectorOperations&)
-    static inline double minQuotient( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
+    static inline double minQuotient(
+        AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::wrmsNorm(const VectorOperations&,const VectorOperations&)
-    static inline double wrmsNorm( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
-    /// @copydoc VectorOperations::wrmsNormMask(const VectorOperations&,const VectorOperations&,const VectorOperations&)
+    static inline double wrmsNorm(
+        AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
+    /// @copydoc VectorOperations::wrmsNormMask(const VectorOperations&,const
+    /// VectorOperations&,const VectorOperations&)
     static inline double wrmsNormMask( AMP::shared_ptr<const VectorOperations> x,
-                                       AMP::shared_ptr<const VectorOperations> y,
-                                       AMP::shared_ptr<const VectorOperations> mask );
+                                       AMP::shared_ptr<const VectorOperations>
+                                           y,
+                                       AMP::shared_ptr<const VectorOperations>
+                                           mask );
 
 public:
-    
     //! Return the pointer to the VectorData
-    inline VectorData* getVectorData() { return d_VectorData; }
+    inline VectorData *getVectorData() { return d_VectorData; }
 
     //! Return the pointer to the VectorData
-    inline const VectorData* getVectorData() const { return d_VectorData; }
+    inline const VectorData *getVectorData() const { return d_VectorData; }
 
     //! Do we have a valid communicator
     inline bool hasComm() const;
 
     //! Do we have a valid communicator
-    inline const AMP_MPI& getComm() const;
+    inline const AMP_MPI &getComm() const;
 
 protected:
-
     VectorOperations();
 
     inline bool hasGhosts() const;
-    inline std::vector<double>& getGhosts();
+    inline std::vector<double> &getGhosts();
 
 
 protected: // Internal data
-
     // Pointer to *this as a VectorData object
-    VectorData* d_VectorData;
-
+    VectorData *d_VectorData;
 };
 
 

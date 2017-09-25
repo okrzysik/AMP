@@ -8,15 +8,15 @@ namespace LinearAlgebra {
 Vector::const_shared_ptr SundialsVector::constView( Vector::const_shared_ptr inVector )
 {
     Vector::shared_ptr retVal;
-    if ( dynamic_pointer_cast<const SundialsVector>(inVector) ) {
+    if ( dynamic_pointer_cast<const SundialsVector>( inVector ) ) {
         return inVector;
     } else if ( inVector->hasView<SundialsVector>() ) {
         return inVector->getView<SundialsVector>();
-    } else if ( dynamic_pointer_cast<const ManagedVector>(inVector) ) {
+    } else if ( dynamic_pointer_cast<const ManagedVector>( inVector ) ) {
         Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
         retVal                       = Vector::shared_ptr( new ManagedSundialsVector( inVector2 ) );
         inVector->registerView( retVal );
-    } else if ( dynamic_pointer_cast<const VectorEngine>(inVector) ) {
+    } else if ( dynamic_pointer_cast<const VectorEngine>( inVector ) ) {
         Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
         auto new_params              = new ManagedSundialsVectorParameters;
         new_params->d_Engine         = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
@@ -51,14 +51,14 @@ Vector::const_shared_ptr SundialsVector::constView( Vector::const_shared_ptr inV
 Vector::shared_ptr SundialsVector::view( Vector::shared_ptr inVector )
 {
     Vector::shared_ptr retVal;
-    if ( dynamic_pointer_cast<SundialsVector>(inVector) ) {
+    if ( dynamic_pointer_cast<SundialsVector>( inVector ) ) {
         retVal = inVector;
     } else if ( inVector->hasView<SundialsVector>() ) {
         retVal = inVector->getView<SundialsVector>();
-    } else if ( dynamic_pointer_cast<ManagedVector>(inVector) ) {
+    } else if ( dynamic_pointer_cast<ManagedVector>( inVector ) ) {
         retVal = Vector::shared_ptr( new ManagedSundialsVector( inVector ) );
         inVector->registerView( retVal );
-    } else if ( dynamic_pointer_cast<VectorEngine>(inVector) ) {
+    } else if ( dynamic_pointer_cast<VectorEngine>( inVector ) ) {
         auto new_params           = new ManagedSundialsVectorParameters;
         new_params->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector );
         new_params->d_CloneEngine = false;
@@ -90,4 +90,3 @@ Vector::shared_ptr SundialsVector::view( Vector::shared_ptr inVector )
 
 } // LinearAlgebra namespace
 } // AMP namespace
-

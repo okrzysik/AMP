@@ -3,9 +3,9 @@
 
 #include "solvers/trilinos/nox/AndersonStatusTest.h"
 #include "solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
+#include "utils/Utilities.h"
 #include "vectors/trilinos/thyra/ThyraVector.h"
 #include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
-#include "utils/Utilities.h"
 
 
 // Trilinos includes
@@ -36,8 +36,8 @@ namespace Solver {
 *  Constructors                                                 *
 ****************************************************************/
 TrilinosNOXSolver::TrilinosNOXSolver() : SolverStrategy() {}
-TrilinosNOXSolver::TrilinosNOXSolver( AMP::shared_ptr<TrilinosNOXSolverParameters> parameters ):
-    SolverStrategy( parameters )
+TrilinosNOXSolver::TrilinosNOXSolver( AMP::shared_ptr<TrilinosNOXSolverParameters> parameters )
+    : SolverStrategy( parameters )
 {
     initialize( parameters );
 }
@@ -133,7 +133,7 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
     }
     builder.setParameterList( p );
     d_lowsFactory = builder.createLinearSolveStrategy( "" );
-    //d_lowsFactory->initializeVerboseObjectBase();
+    // d_lowsFactory->initializeVerboseObjectBase();
     d_thyraModel->set_W_factory( d_lowsFactory );
     // Create the convergence tests (these will need to be on the input database)
     Teuchos::RCP<NOX::StatusTest::NormF> absresid =

@@ -30,7 +30,7 @@ is required of each operator, consisting of the ability to specify: the action o
 the operator on a vector, operator (re)initialization, and approximate linearization
 (optional). Domain scientists can thus preserve their investments in existing physics
 by encapsulating them as operators while at the same time preserving the ability to
-create new physics operators with potentially different data structures. 
+create new physics operators with potentially different data structures.
 In future releases, operator adaptor interfaces will further minimize code modifications
 required. An operator can now represent a single physics or potentially multiple physics
 either as a composition of single physics operators or as a single tightly coupled

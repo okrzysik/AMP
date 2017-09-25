@@ -4,12 +4,11 @@
 #include "vectors/data/VectorData.h"
 
 
-
 namespace AMP {
 namespace LinearAlgebra {
 
 
-template<typename TYPE>
+template <typename TYPE>
 class VectorDataIterator;
 
 
@@ -22,12 +21,11 @@ class VectorDataIterator;
   the local values as a single block of data on the GPU.
 
   */
-template<typename TYPE=double>
+template <typename TYPE = double>
 class VectorDataGPU : virtual public VectorData
 {
 
 public: // Virtual functions
-
     //! Virtual destructor
     virtual ~VectorDataGPU();
 
@@ -126,26 +124,25 @@ public: // Virtual functions
 
 
 public: // Advanced virtual functions
-
-    /**\brief  A unique id for the underlying data allocation
-      *\details This is a unique id that is associated with the data
-      *   data allocation.  Views of a vector should preserve the id of
-      *   the original vector.  Vectors that are not allocated, or contain
-      *   multiple vectors (such as Multivector) should return 0.
-      *   Note: this id is not consistent across multiple processors.
-      */
+        /**\brief  A unique id for the underlying data allocation
+          *\details This is a unique id that is associated with the data
+          *   data allocation.  Views of a vector should preserve the id of
+          *   the original vector.  Vectors that are not allocated, or contain
+          *   multiple vectors (such as Multivector) should return 0.
+          *   Note: this id is not consistent across multiple processors.
+          */
     virtual uint64_t getDataID() const override;
 
     /** \brief Return a pointer to a particular block of memory in the vector
       * \param i The block to return
       */
-    virtual void* getRawDataBlockAsVoid( size_t i ) override;
+    virtual void *getRawDataBlockAsVoid( size_t i ) override;
 
     /** \brief Return a pointer to a particular block of memory in the
       * vector
       * \param i        The block to return
       */
-    virtual const void* getRawDataBlockAsVoid( size_t i ) const override;
+    virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
 
     /** \brief Return the result of sizeof(TYPE) for the given data block
       * \param i The block to return
@@ -159,33 +156,29 @@ public: // Advanced virtual functions
     virtual bool isTypeId( size_t hash, size_t block ) const override;
 
 
-public:  // Non-virtual functions
+public: // Non-virtual functions
+        /** \brief Access the raw element
+          * \param i        The element to return (local index)
+          */
+    TYPE &operator[]( size_t i );
 
     /** \brief Access the raw element
       * \param i        The element to return (local index)
       */
-    TYPE& operator[]( size_t i );
-
-    /** \brief Access the raw element
-      * \param i        The element to return (local index)
-      */
-    const TYPE& operator[]( size_t i ) const;
+    const TYPE &operator[]( size_t i ) const;
 
 
 protected:
-
-    VectorDataGPU(): d_Data(nullptr), d_startIndex(0), d_localSize(0), d_globalSize(0) {}
+    VectorDataGPU() : d_Data( nullptr ), d_startIndex( 0 ), d_localSize( 0 ), d_globalSize( 0 ) {}
 
     void allocate( size_t start, size_t localSize, size_t globalSize );
 
 
 private:
-
     TYPE *d_Data;
     size_t d_startIndex;
     size_t d_localSize;
     size_t d_globalSize;
-
 };
 
 

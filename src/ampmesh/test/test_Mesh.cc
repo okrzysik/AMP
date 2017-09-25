@@ -278,7 +278,7 @@ void testSubsetMesh( AMP::UnitTest *ut )
     generator->build_mesh();
     AMP::Mesh::Mesh::shared_ptr mesh = generator->getMesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
-    //MeshVectorTestLoop( ut, mesh );
+    // MeshVectorTestLoop( ut, mesh );
     // MeshMatrixTestLoop( ut, mesh );
 
     // Subset a mesh for a surface with ghost cells and test
@@ -297,7 +297,7 @@ void testSubsetMesh( AMP::UnitTest *ut )
 
 
 // Run the default tests/mesh generators
-void testDefaults( AMP::UnitTest& ut )
+void testDefaults( AMP::UnitTest &ut )
 {
     // Run the ID test
     AMP::Mesh::meshTests::testID( &ut );
@@ -305,25 +305,25 @@ void testDefaults( AMP::UnitTest& ut )
     // Run tests on a native AMP mesh
     testAMPMesh( &ut );
 
-    // Run tests on a STKmesh mesh
-    #ifdef USE_TRILINOS_STKMESH
-        testSTKMesh( &ut );
-    #endif
+// Run tests on a STKmesh mesh
+#ifdef USE_TRILINOS_STKMESH
+    testSTKMesh( &ut );
+#endif
 
-    // Run tests on a libmesh mesh
-    #ifdef USE_EXT_LIBMESH
-        testlibMesh( &ut );
-    #endif
+// Run tests on a libmesh mesh
+#ifdef USE_EXT_LIBMESH
+    testlibMesh( &ut );
+#endif
 
-    // Run tests on a moab mesh
-    #ifdef USE_EXT_MOAB
-        testMoabMesh( &ut );
-    #endif
+// Run tests on a moab mesh
+#ifdef USE_EXT_MOAB
+    testMoabMesh( &ut );
+#endif
 
-    // Run tests on the input file
-    #ifdef USE_EXT_LIBMESH
-        testInputMesh( &ut, "input_Mesh" );
-    #endif
+// Run tests on the input file
+#ifdef USE_EXT_LIBMESH
+    testInputMesh( &ut, "input_Mesh" );
+#endif
 
     // Run the basic tests on all mesh generators
     testMeshGenerators( &ut );
@@ -348,7 +348,7 @@ int main( int argc, char **argv )
         testDefaults( ut );
     } else {
         // Test each given input file
-        for (int i=1; i<argc; i++)
+        for ( int i = 1; i < argc; i++ )
             testInputMesh( &ut, argv[i] );
     }
 

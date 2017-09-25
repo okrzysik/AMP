@@ -33,21 +33,21 @@ inline bool MeshIterator::operator>=( const MeshIterator &rhs ) const
 /********************************************************
 * Function to get the size and position of the iterator *
 ********************************************************/
-inline const MeshIterator* MeshIterator::rawIterator() const
+inline const MeshIterator *MeshIterator::rawIterator() const
 {
-    return d_iterator==nullptr ? this:d_iterator;
+    return d_iterator == nullptr ? this : d_iterator;
 }
 inline size_t MeshIterator::size() const
 {
-    return d_iterator==nullptr ? d_size:d_iterator->d_size;
+    return d_iterator == nullptr ? d_size : d_iterator->d_size;
 }
 inline size_t MeshIterator::position() const
 {
-    return d_iterator==nullptr ? d_pos:d_iterator->d_pos;
+    return d_iterator == nullptr ? d_pos : d_iterator->d_pos;
 }
 inline unsigned int MeshIterator::type_id() const
 {
-    return d_iterator==nullptr ? d_typeID:d_iterator->d_typeID;
+    return d_iterator == nullptr ? d_typeID : d_iterator->d_typeID;
 }
 
 
@@ -56,19 +56,19 @@ inline unsigned int MeshIterator::type_id() const
 ********************************************************/
 inline MeshElement &MeshIterator::operator*()
 {
-    return d_iterator==nullptr ? *d_element:*d_iterator->d_element;
+    return d_iterator == nullptr ? *d_element : *d_iterator->d_element;
 }
 inline MeshElement *MeshIterator::operator->()
 {
-    return d_iterator==nullptr ? d_element:d_iterator->d_element;
+    return d_iterator == nullptr ? d_element : d_iterator->d_element;
 }
 inline const MeshElement &MeshIterator::operator*() const
 {
-    return d_iterator==nullptr ? *d_element:*d_iterator->d_element;
+    return d_iterator == nullptr ? *d_element : *d_iterator->d_element;
 }
 inline const MeshElement *MeshIterator::operator->() const
 {
-    return d_iterator==nullptr ? d_element:d_iterator->d_element;
+    return d_iterator == nullptr ? d_element : d_iterator->d_element;
 }
 
 

@@ -19,7 +19,7 @@ int main( int argc, char **argv )
     AMP::pout << "Testing SimpleVector" << std::endl;
     testBasicVector( ut, SimpleFactory1 );
     testBasicVector( ut, SimpleFactory2 );
-    //testBasicVector( ut, "SimpleVectorFactory<15,false,float>" );
+// testBasicVector( ut, "SimpleVectorFactory<15,false,float>" );
 #if USE_OPENMP
     testBasicVector( ut, "SimpleVectorFactory<15,false,double,openmp,cpu>" );
 #endif
@@ -53,10 +53,10 @@ int main( int argc, char **argv )
 #ifdef USE_EXT_TRILINOS
 
 #ifdef USE_TRILINOS_THYRA
-    std::string ManagedThyraFactory1 = "ManagedThyraFactory<"+SimpleFactory1+">";
-    std::string ManagedThyraFactory2 = "ManagedThyraFactory<"+SimpleFactory2+">";
-    std::string ManagedNativeThyraFactory1 = "ManagedNativeThyraFactory<"+SimpleFactory1+">";
-    std::string ManagedNativeThyraFactory2 = "ManagedNativeThyraFactory<"+SimpleFactory2+">";
+    std::string ManagedThyraFactory1       = "ManagedThyraFactory<" + SimpleFactory1 + ">";
+    std::string ManagedThyraFactory2       = "ManagedThyraFactory<" + SimpleFactory2 + ">";
+    std::string ManagedNativeThyraFactory1 = "ManagedNativeThyraFactory<" + SimpleFactory1 + ">";
+    std::string ManagedNativeThyraFactory2 = "ManagedNativeThyraFactory<" + SimpleFactory2 + ">";
 
     AMP::pout << "Testing NativeThyraVector" << std::endl;
     testBasicVector( ut, "NativeThyraFactory" );
@@ -100,9 +100,10 @@ int main( int argc, char **argv )
 #ifdef USE_TRILINOS_BELOS
     AMP::pout << "Testing Belos interface to Thyra vectors" << std::endl;
     testBelosThyraVector( ut, NativeThyraFactory() );
-    testBelosThyraVector( ut, ManagedThyraFactory( generateVectorFactory(SimpleFactory2) ) );
-    testBelosThyraVector( ut, ManagedNativeThyraFactory( generateVectorFactory(SimpleFactory2) ) );
-    testBelosThyraVector( ut, ManagedNativeThyraFactory( generateVectorFactory(MVFactory1) ) );
+    testBelosThyraVector( ut, ManagedThyraFactory( generateVectorFactory( SimpleFactory2 ) ) );
+    testBelosThyraVector( ut,
+                          ManagedNativeThyraFactory( generateVectorFactory( SimpleFactory2 ) ) );
+    testBelosThyraVector( ut, ManagedNativeThyraFactory( generateVectorFactory( MVFactory1 ) ) );
     AMP::pout << std::endl;
 #endif
 

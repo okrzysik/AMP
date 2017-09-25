@@ -31,8 +31,9 @@ void AMPMeshNodalShapeFunction::entitySupportIds(
 
     std::vector<DataTransferKit::SupportId> entity_dofs;
 
-    std::vector<AMP::Mesh::MeshElement> vertices = element.getElements( AMP::Mesh::GeomType::Vertex );
-    int num_nodes                                = vertices.size();
+    std::vector<AMP::Mesh::MeshElement> vertices =
+        element.getElements( AMP::Mesh::GeomType::Vertex );
+    int num_nodes = vertices.size();
     dof_ids.resize( num_nodes );
     for ( int n = 0; n < num_nodes; ++n ) {
         d_dof_manager->getDOFs( vertices[n].globalID(), entity_dofs );

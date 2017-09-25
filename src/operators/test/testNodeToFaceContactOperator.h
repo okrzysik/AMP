@@ -59,7 +59,7 @@ void computeFuelTemperature( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                              double linearHeatGenerationRate,
                              double fuelThermalConductivity )
 {
-    AMP::Mesh::MeshIterator meshIterator       = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
+    AMP::Mesh::MeshIterator meshIterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
     AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
     AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
     double epsilon                             = 1.0e-14;
@@ -91,7 +91,7 @@ void computeCladTemperature( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                              double cladOuterRadiusTemperature,
                              double cladThermalConductivity )
 {
-    AMP::Mesh::MeshIterator meshIterator       = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
+    AMP::Mesh::MeshIterator meshIterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
     AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
     AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
     std::vector<double> vertexCoord;
@@ -279,7 +279,8 @@ void applyCustomDirichletCondition(
 void shrinkMesh( AMP::Mesh::Mesh::shared_ptr mesh, double const shrinkFactor )
 {
     AMP::Discretization::DOFManager::shared_ptr dofManager =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 0, 3, false );
+        AMP::Discretization::simpleDOFManager::create(
+            mesh, AMP::Mesh::GeomType::Vertex, 0, 3, false );
     AMP::LinearAlgebra::Variable::shared_ptr dispVar( new AMP::LinearAlgebra::Variable( "disp" ) );
     AMP::LinearAlgebra::Vector::shared_ptr dispVec =
         AMP::LinearAlgebra::createVector( dofManager, dispVar, false );
@@ -305,7 +306,8 @@ void shrinkMesh( AMP::Mesh::Mesh::shared_ptr mesh, double const shrinkFactor )
 void rotateMesh( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     AMP::Discretization::DOFManager::shared_ptr dofManager =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 0, 3, false );
+        AMP::Discretization::simpleDOFManager::create(
+            mesh, AMP::Mesh::GeomType::Vertex, 0, 3, false );
     AMP::LinearAlgebra::Variable::shared_ptr dispVar( new AMP::LinearAlgebra::Variable( "disp" ) );
     AMP::LinearAlgebra::Vector::shared_ptr dispVec =
         AMP::LinearAlgebra::createVector( dofManager, dispVar, false );
@@ -323,8 +325,9 @@ void rotateMesh( AMP::Mesh::Mesh::shared_ptr mesh )
         //    rotate_points(2, M_PI / 12.0, 1, &(newGeomType::VertexCoord[0]));
         rotate_points( 2, M_PI / 2.0, 1, &( newGeomType::VertexCoord[0] ) );
         std::vector<double> vertexDisp( 3, 0.0 );
-        make_vector_from_two_points(
-            &( oldGeomType::VertexCoord[0] ), &( newGeomType::VertexCoord[0] ), &( vertexDisp[0] ) );
+        make_vector_from_two_points( &( oldGeomType::VertexCoord[0] ),
+                                     &( newGeomType::VertexCoord[0] ),
+                                     &( vertexDisp[0] ) );
         dispVec->setLocalValuesByGlobalID( 3, &( dofIndices[0] ), &( vertexDisp[0] ) );
     } // end for
     mesh->displaceMesh( dispVec );
@@ -611,10 +614,10 @@ void drawVerticesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 }
 
 void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                            int boundaryID,
-                            std::ostream &os,
-                            double const *point_of_view,
-                            const std::string &option = "" )
+                                      int boundaryID,
+                                      std::ostream &os,
+                                      double const *point_of_view,
+                                      const std::string &option = "" )
 {
     AMP::Mesh::MeshIterator boundaryIterator =
         meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, boundaryID );
@@ -634,8 +637,9 @@ void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
         for ( size_t i = 0; i < 4; ++i ) {
             faceGeomType::VertexCoordinates = faceVertices[i].coord();
             AMP_ASSERT( faceGeomType::VertexCoordinates.size() == 3 );
-            std::copy(
-                faceGeomType::VertexCoordinates.begin(), faceGeomType::VertexCoordinates.end(), faceData + 3 * i );
+            std::copy( faceGeomType::VertexCoordinates.begin(),
+                       faceGeomType::VertexCoordinates.end(),
+                       faceData + 3 * i );
         } // end for i
         triangle_t t( faceDataPtr[0], faceDataPtr[1], faceDataPtr[2] );
 

@@ -21,7 +21,6 @@ namespace LinearAlgebra {
 class VectorFactory
 {
 public:
-
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const = 0;
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const = 0;
@@ -35,7 +34,7 @@ public:
 
 protected:
     VectorFactory() {}
-    VectorFactory( const VectorFactory& );
+    VectorFactory( const VectorFactory & );
 };
 
 
@@ -46,10 +45,9 @@ protected:
 class VectorTests
 {
 public:
-    explicit VectorTests( AMP::shared_ptr<const VectorFactory> factory ): d_factory(factory) {}
+    explicit VectorTests( AMP::shared_ptr<const VectorFactory> factory ) : d_factory( factory ) {}
 
 public:
-
     void testBasicVector( AMP::UnitTest *ut );
 
     void testManagedVector( AMP::UnitTest *ut );
@@ -62,7 +60,6 @@ public:
 
 
 public:
-
     void InstantiateVector( AMP::UnitTest *utils );
 
 
@@ -172,7 +169,6 @@ public:
 
 
 public: // Vector selector tests
-
     // Test to check that Vector::select, Vector::constSelect, VectorSelector::subset,
     // and VectorSelector::constSubset return the same vectors
     void testAllSelectors( AMP::UnitTest *ut );

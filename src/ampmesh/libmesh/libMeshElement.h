@@ -39,16 +39,17 @@ public:
     virtual inline std::string elementClass() const override { return "libMeshElement"; }
 
     //! Return the elements composing the current element
-    virtual void getElements( const GeomType type,std::vector<MeshElement>& elements ) const override;
+    virtual void getElements( const GeomType type,
+                              std::vector<MeshElement> &elements ) const override;
 
     //! Return the elements neighboring the current element
-    virtual void getNeighbors( std::vector<MeshElement::shared_ptr>& neighbors ) const override;
+    virtual void getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const override;
 
     //! Return the volume of the current element (does not apply to verticies)
     virtual double volume() const override;
 
     //! Return the coordinates of all verticies composing the element
-    virtual void coord( size_t& N, double* pos ) const override;
+    virtual void coord( size_t &N, double *pos ) const override;
 
     /**
      * \brief     Return the centroid of the element
@@ -56,7 +57,7 @@ public:
      *   centroid is defined as the average of the coordinates of the verticies.
      *   The centroid of a vertex is the vertex and will return the same result as coord().
      */
-    virtual void centroid( size_t& N, double* pos ) const override;
+    virtual void centroid( size_t &N, double *pos ) const override;
 
     /**
      * \brief     Return true if the element contains the point

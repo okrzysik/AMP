@@ -143,7 +143,8 @@ void NeumannVectorCorrection::addRHScorrection(
             unsigned int numDofIds = d_dofIds[j].size();
 
             if ( !d_isConstantFlux ) {
-                d_variableFlux->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+                d_variableFlux->makeConsistent(
+                    AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
             }
 
             for ( unsigned int k = 0; k < numDofIds; k++ ) {
@@ -156,7 +157,7 @@ void NeumannVectorCorrection::addRHScorrection(
                 for ( ; bnd != end_bnd; ++bnd ) {
                     count++;
 
-                    d_currNodes                     = bnd->getElements( AMP::Mesh::GeomType::Vertex );
+                    d_currNodes = bnd->getElements( AMP::Mesh::GeomType::Vertex );
                     unsigned int numNodesInCurrElem = d_currNodes.size();
 
                     dofIndices.resize( numNodesInCurrElem );
@@ -292,7 +293,7 @@ void NeumannVectorCorrection::setFrozenVector( AMP::LinearAlgebra::Vector::share
         return;
     if ( d_Frozen == nullptr )
         d_Frozen = AMP::LinearAlgebra::MultiVector::create( "frozenMultiVec", d_Mesh->getComm() );
-    dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(d_Frozen)->addVector( f2 );
+    dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( d_Frozen )->addVector( f2 );
 }
 
 

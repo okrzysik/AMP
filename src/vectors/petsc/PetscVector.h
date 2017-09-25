@@ -169,7 +169,6 @@ public:
 
 
     virtual void dataChanged();
-
 };
 }
 }

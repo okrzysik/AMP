@@ -8,9 +8,9 @@
 
 #include "utils/AMPManager.h"
 #include "utils/InputManager.h"
+#include "utils/PIO.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "utils/PIO.h"
 
 #include "ampmesh/Mesh.h"
 #include "ampmesh/libmesh/libMesh.h"
@@ -64,7 +64,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     AMP::LinearAlgebra::Variable::shared_ptr myVar( new AMP::LinearAlgebra::Variable( "myVar" ) );
     AMP::Discretization::DOFManager::shared_ptr dof_map =
-        AMP::Discretization::simpleDOFManager::create( ampMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create(
+            ampMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Vector::shared_ptr T =
         AMP::LinearAlgebra::createVector( dof_map, myVar, true );
 

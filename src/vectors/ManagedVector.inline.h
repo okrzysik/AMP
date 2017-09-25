@@ -14,7 +14,7 @@ inline std::string ManagedVector::type() const
     if ( d_vBuffer )
         return " ( managed data )";
     std::string retVal = " ( managed view of ";
-    auto vec = dynamic_pointer_cast<Vector>( d_Engine );
+    auto vec           = dynamic_pointer_cast<Vector>( d_Engine );
     retVal += vec->type();
     retVal += " )";
     return retVal;

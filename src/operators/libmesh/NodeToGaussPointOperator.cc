@@ -59,7 +59,8 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
     AMP::Mesh::MeshIterator iterator = d_iterator.begin();
     for ( size_t i = 0; i < iterator.size(); ++i, ++iterator ) {
         // Cache the nodes for all elements
-        std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::GeomType::Vertex );
+        std::vector<AMP::Mesh::MeshElement> nodes =
+            iterator->getElements( AMP::Mesh::GeomType::Vertex );
         d_nodes[i].resize( nodes.size() );
         for ( size_t j    = 0; j < nodes.size(); j++ )
             d_nodes[i][j] = nodes[j].globalID();

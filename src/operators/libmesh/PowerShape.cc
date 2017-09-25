@@ -394,7 +394,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // apply.
     r->setToScalar( 1. );
 
-    AMP::Mesh::MeshIterator elem      = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
+    AMP::Mesh::MeshIterator elem = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
     AMP::Mesh::MeshIterator end_elems = elem.end();
 
     if ( d_coordinateSystem == "cartesian" ) {
@@ -854,8 +854,8 @@ double PowerShape::getVolumeIntegralSum( double rmax, double cx, double cy )
 
     double x, y, radius;
 
-    int ghostWidth                    = 0;
-    AMP::Mesh::MeshIterator elem      = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
+    int ghostWidth               = 0;
+    AMP::Mesh::MeshIterator elem = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
     AMP::Mesh::MeshIterator end_elems = elem.end();
 
     for ( ; elem != end_elems; ++elem ) {

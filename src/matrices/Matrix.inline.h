@@ -19,7 +19,7 @@ inline Matrix::~Matrix() {}
 
 inline void Matrix::axpy( double alpha, Matrix::const_shared_ptr x )
 {
-    AMP_ASSERT(x->numGlobalColumns()==this->numGlobalRows());
+    AMP_ASSERT( x->numGlobalColumns() == this->numGlobalRows() );
     axpy( alpha, *x );
 }
 

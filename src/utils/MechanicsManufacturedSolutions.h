@@ -1,9 +1,9 @@
-#include "utils/shared_ptr.h"
-#include "utils/Utilities.h"
 #include "utils/Database.h"
+#include "utils/Utilities.h"
+#include "utils/shared_ptr.h"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 
 namespace AMP {
@@ -225,7 +225,6 @@ protected:
 };                    // end class MMS
 
 
-
 /**
  * The class MMSLinear implements the following manufactured solution for the displacement along
  * axis @f$ i @f$
@@ -255,7 +254,6 @@ public:
 }; // end class MMSLinear
 
 
-
 /**
  * The class MMSTrigonometric implements the following manufactured solution for the displacement
  * along axis @f$ i @f$
@@ -281,7 +279,6 @@ public:
     virtual double getForcingTermZ( double x, double y, double z ) const override;
     virtual std::vector<double> getStressTensor( double x, double y, double z ) const override;
 }; // end class MMSTrigonometric
-
 
 
 /**

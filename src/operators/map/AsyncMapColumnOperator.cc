@@ -59,8 +59,8 @@ bool AsyncMapColumnOperator::requiresMakeConsistentSet()
 {
     bool test = false;
     for ( auto &elem : d_Operators )
-        test =
-            test || AMP::dynamic_pointer_cast<AsyncMapOperator>( elem )->requiresMakeConsistentSet();
+        test = test ||
+               AMP::dynamic_pointer_cast<AsyncMapOperator>( elem )->requiresMakeConsistentSet();
     return test;
 }
 

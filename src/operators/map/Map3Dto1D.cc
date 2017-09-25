@@ -87,7 +87,8 @@ void Map3Dto1D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP_ASSERT( u != nullptr );
         AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
         AMP_ASSERT( inputVec != nullptr );
-        AMP_ASSERT( inputVec->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
+        AMP_ASSERT( inputVec->getUpdateStatus() ==
+                    AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
 
         AMP::Discretization::DOFManager::shared_ptr dof_map = inputVec->getDOFManager();
 
@@ -226,7 +227,8 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         // Subset u for the local vector of interest
         AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
         AMP_ASSERT( inputVec != nullptr );
-        AMP_ASSERT( inputVec->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
+        AMP_ASSERT( inputVec->getUpdateStatus() ==
+                    AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
 
         AMP::Discretization::DOFManager::shared_ptr dof_map = inputVec->getDOFManager();
 
@@ -245,8 +247,9 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         // Iterator for the solid-clad boundary
         for ( ; bnd != end_bnd; ++bnd ) {
 
-            AMP::Mesh::MeshElement cur_side           = *bnd;
-            std::vector<AMP::Mesh::MeshElement> nodes = cur_side.getElements( AMP::Mesh::GeomType::Vertex );
+            AMP::Mesh::MeshElement cur_side = *bnd;
+            std::vector<AMP::Mesh::MeshElement> nodes =
+                cur_side.getElements( AMP::Mesh::GeomType::Vertex );
             AMP_ASSERT( nodes.size() == 4 );
 
             std::vector<double> zcoords;

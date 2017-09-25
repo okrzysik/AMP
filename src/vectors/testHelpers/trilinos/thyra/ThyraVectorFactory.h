@@ -16,10 +16,9 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-class NativeThyraFactory: public VectorFactory
+class NativeThyraFactory : public VectorFactory
 {
 public:
-    
     NativeThyraFactory() {}
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override;
@@ -32,11 +31,10 @@ public:
 };
 
 
-class ManagedThyraFactory: public VectorFactory
+class ManagedThyraFactory : public VectorFactory
 {
 public:
-    
-    ManagedThyraFactory( AMP::shared_ptr<VectorFactory> factory ): d_factory(factory) {}
+    ManagedThyraFactory( AMP::shared_ptr<VectorFactory> factory ) : d_factory( factory ) {}
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override;
 
@@ -52,11 +50,10 @@ private:
 };
 
 
-class ManagedNativeThyraFactory: public VectorFactory
+class ManagedNativeThyraFactory : public VectorFactory
 {
 public:
-
-    ManagedNativeThyraFactory( AMP::shared_ptr<VectorFactory> factory ): d_factory(factory) {}
+    ManagedNativeThyraFactory( AMP::shared_ptr<VectorFactory> factory ) : d_factory( factory ) {}
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override;
 
@@ -72,9 +69,8 @@ private:
 };
 
 #ifdef USE_TRILINOS_BELOS
-void testBelosThyraVector( AMP::UnitTest &utils, const VectorFactory& factory );
+void testBelosThyraVector( AMP::UnitTest &utils, const VectorFactory &factory );
 #endif
-
 }
 }
 

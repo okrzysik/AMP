@@ -7,8 +7,8 @@
 // AMP files
 #include "operators/ElementOperation.h"
 #include "operators/libmesh/MassDensityModel.h"
-#include "utils/shared_ptr.h"
 #include "utils/Utilities.h"
+#include "utils/shared_ptr.h"
 
 
 // Libmesh headers

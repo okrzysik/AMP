@@ -98,8 +98,9 @@ void computeTemperatureRhsVector(
     AMP::Mesh::MeshIterator end_el = el.end();
 
     for ( ; el != end_el; ++el ) {
-        std::vector<AMP::Mesh::MeshElement> currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );
-        size_t numNodesInCurrElem                     = currNodes.size();
+        std::vector<AMP::Mesh::MeshElement> currNodes =
+            el->getElements( AMP::Mesh::GeomType::Vertex );
+        size_t numNodesInCurrElem = currNodes.size();
 
         std::vector<std::vector<size_t>> type0DofIndices( currNodes.size() );
         std::vector<std::vector<size_t>> type1DofIndices( currNodes.size() );

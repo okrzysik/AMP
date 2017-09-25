@@ -912,9 +912,8 @@ void computeJInverse( double G[3][3],
     }
 
     detJ[0] = matDeterminant( J );
-    AMP_INSIST(
-        ( detJ[0] > 0.0 ),
-        "\n#########\nGeomType::Volume of the element is negetive.\nExiting the code.\n##########\n" );
+    AMP_INSIST( ( detJ[0] > 0.0 ), "\n#########\nGeomType::Volume of the element is "
+                                   "negetive.\nExiting the code.\n##########\n" );
 
     matInverse( J, G );
 }

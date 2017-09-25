@@ -18,16 +18,16 @@ void PetscVector::dataChanged()
 Vector::const_shared_ptr PetscVector::constView( Vector::const_shared_ptr inVector )
 {
     Vector::shared_ptr retVal;
-    if ( dynamic_pointer_cast<const PetscVector>(inVector) ) {
+    if ( dynamic_pointer_cast<const PetscVector>( inVector ) ) {
         return inVector;
     } else if ( inVector->hasView<PetscVector>() ) {
         return inVector->getView<PetscVector>();
-    } else if ( dynamic_pointer_cast<const ManagedVector>(inVector) ) {
+    } else if ( dynamic_pointer_cast<const ManagedVector>( inVector ) ) {
         Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
         retVal                       = Vector::shared_ptr( new ManagedPetscVector( inVector2 ) );
         retVal->setVariable( inVector->getVariable() );
         inVector->registerView( retVal );
-    } else if ( dynamic_pointer_cast<const VectorEngine>(inVector) ) {
+    } else if ( dynamic_pointer_cast<const VectorEngine>( inVector ) ) {
         Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
         auto newParams               = new ManagedPetscVectorParameters;
         newParams->d_Engine          = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
@@ -38,8 +38,9 @@ Vector::const_shared_ptr PetscVector::constView( Vector::const_shared_ptr inVect
         AMP_INSIST( inVector->getDOFManager().get() != nullptr,
                     "All vectors must have a DOFManager list" );
         newParams->d_DOFManager = inVector->getDOFManager();
-        ManagedPetscVector *newVector = new ManagedPetscVector( VectorParameters::shared_ptr( newParams ) );
-        dynamic_pointer_cast<DataChangeFirer>(inVector2)->registerListener( newVector );
+        ManagedPetscVector *newVector =
+            new ManagedPetscVector( VectorParameters::shared_ptr( newParams ) );
+        dynamic_pointer_cast<DataChangeFirer>( inVector2 )->registerListener( newVector );
         newVector->setVariable( inVector->getVariable() );
         newVector->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
         retVal = Vector::shared_ptr( newVector );
@@ -56,14 +57,14 @@ Vector::const_shared_ptr PetscVector::constView( Vector::const_shared_ptr inVect
 Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
 {
     Vector::shared_ptr retVal;
-    if ( dynamic_pointer_cast<PetscVector>(inVector) ) {
+    if ( dynamic_pointer_cast<PetscVector>( inVector ) ) {
         retVal = inVector;
     } else if ( inVector->hasView<PetscVector>() ) {
         retVal = inVector->getView<PetscVector>();
-    } else if ( dynamic_pointer_cast<ManagedVector>(inVector) ) {
+    } else if ( dynamic_pointer_cast<ManagedVector>( inVector ) ) {
         retVal = Vector::shared_ptr( new ManagedPetscVector( inVector ) );
         inVector->registerView( retVal );
-    } else if ( dynamic_pointer_cast<VectorEngine>(inVector) ) {
+    } else if ( dynamic_pointer_cast<VectorEngine>( inVector ) ) {
         auto newParams           = new ManagedPetscVectorParameters;
         newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector );
         newParams->d_CloneEngine = false;
@@ -75,7 +76,7 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
         newParams->d_DOFManager = inVector->getDOFManager();
         ManagedPetscVector *newVector =
             new ManagedPetscVector( VectorParameters::shared_ptr( newParams ) );
-        dynamic_pointer_cast<DataChangeFirer>(inVector)->registerListener( newVector );
+        dynamic_pointer_cast<DataChangeFirer>( inVector )->registerListener( newVector );
         newVector->setVariable( inVector->getVariable() );
         newVector->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
         retVal = Vector::shared_ptr( newVector );
@@ -91,4 +92,3 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
 
 } // LinearAlgebra namespace
 } // AMP namespace
-

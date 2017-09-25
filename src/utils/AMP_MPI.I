@@ -569,7 +569,7 @@ MPI_CLASS::Irecv( type *buf, const int length, const int send_proc, const int ta
 *  allGather                                                            *
 ************************************************************************/
 template <class type>
-std::vector<type> MPI_CLASS::allGather( const type& x ) const
+std::vector<type> MPI_CLASS::allGather( const type &x ) const
 {
     if ( getSize() <= 1 )
         return std::vector<type>( 1, x );
@@ -578,15 +578,15 @@ std::vector<type> MPI_CLASS::allGather( const type& x ) const
     return data;
 }
 template <class type>
-std::vector<type> MPI_CLASS::allGather( const std::vector<type>& x ) const
+std::vector<type> MPI_CLASS::allGather( const std::vector<type> &x ) const
 {
     if ( getSize() <= 1 )
         return x;
     std::vector<int> count = allGather<int>( x.size() );
     std::vector<int> disp( getSize(), 0 );
     size_t N = count[0];
-    for ( size_t i=1; i<count.size(); i++ ) {
-        disp[i] = disp[i-1] + count[i-1];
+    for ( size_t i = 1; i < count.size(); i++ ) {
+        disp[i] = disp[i - 1] + count[i - 1];
         N += count[i];
     }
     std::vector<type> data( N );
@@ -665,7 +665,7 @@ int MPI_CLASS::allGather( const type *send_data,
         MPI_CLASS_ERROR( "Error calling allGather" );
     // Check if we are dealing with a single processor
     if ( comm_size == 1 ) {
-        if ( send_data==nullptr && send_cnt>0 ) {
+        if ( send_data == nullptr && send_cnt > 0 ) {
             MPI_CLASS_ERROR( "send_data is null" );
         } else if ( !known_recv ) {
             // We do not know the recieved sizes

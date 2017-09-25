@@ -1,11 +1,11 @@
 #include <iostream>
 
-#include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
+#include "utils/AMP_MPI.h"
 #include "utils/InputManager.h"
+#include "utils/PIO.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "utils/PIO.h"
 
 DISABLE_WARNINGS
 #include "libmesh/mesh_communication.h"
@@ -96,7 +96,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         loadOperator->setVariable( dispVar );
 
         AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF =
-            AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
+            AMP::Discretization::simpleDOFManager::create(
+                meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         AMP::LinearAlgebra::Vector::shared_ptr solVec =
