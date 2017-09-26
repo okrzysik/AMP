@@ -114,7 +114,6 @@ public:
     virtual void swapEngines( shared_ptr p ) = 0;
 
 
-
     /** \brief  Get the parameters used to create this engine
      * \return The parameters
      */
@@ -127,12 +126,11 @@ public:
 
 
 public: // Deprecated functions
+    //! Return a contiguous block of data
+    inline void *getDataBlock( size_t i ) { return getRawDataBlockAsVoid( i ); }
 
     //! Return a contiguous block of data
-    inline void *getDataBlock( size_t i ) { return getRawDataBlockAsVoid(i); }
-
-    //! Return a contiguous block of data
-    inline const void *getDataBlock( size_t i ) const { return getRawDataBlockAsVoid(i); }
+    inline const void *getDataBlock( size_t i ) const { return getRawDataBlockAsVoid( i ); }
 };
 
 

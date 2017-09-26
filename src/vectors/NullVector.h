@@ -44,7 +44,6 @@ public: // Public constructors
 
 
 public: // Functions inherited from Vector
-
     inline std::string type() const override { return "Null Vector"; }
     inline AMP::shared_ptr<ParameterBase> getParameters() override
     {

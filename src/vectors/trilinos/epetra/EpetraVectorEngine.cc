@@ -98,11 +98,12 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
  * Constructor                                           *
  ********************************************************/
 EpetraVectorEngine::EpetraVectorEngine( VectorEngineParameters::shared_ptr alias, BufferPtr buf )
-    : d_epetraVector( View,
-                      dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
-                      getBufferPtr( buf ) ),
-      d_iLocalSize( 0 ),
-      d_iGlobalSize( 0 )
+    : EpetraVectorData(
+          View,
+          dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
+          getBufferPtr( buf ),
+          dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
+          dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() )
 {
     d_Params = alias;
 }
@@ -125,211 +126,11 @@ void EpetraVectorEngine::swapEngines( VectorEngine::shared_ptr x )
     getEpetra_Vector().ResetView( oth_pointer );
 }
 
-void EpetraVectorEngine::setToScalar( const double alpha )
-{
-    getEpetra_Vector().PutScalar( alpha );
-}
-
-void EpetraVectorEngine::scale( double alpha, const VectorOperations &x )
-{
-    getEpetra_Vector().Scale( alpha, getEpetraVector( x ) );
-}
-
-void EpetraVectorEngine::scale( double alpha ) { getEpetra_Vector().Scale( alpha ); }
-
 VectorEngine::shared_ptr EpetraVectorEngine::cloneEngine( BufferPtr p ) const
 {
     return shared_ptr( new EpetraVectorEngine( d_Params, p ) );
 }
 
-void EpetraVectorEngine::add( const VectorOperations &x, const VectorOperations &y )
-{
-    getEpetra_Vector().Update( 1., getEpetraVector( x ), 1., getEpetraVector( y ), 0. );
-}
 
-void EpetraVectorEngine::subtract( const VectorOperations &x, const VectorOperations &y )
-{
-    getEpetra_Vector().Update( 1., getEpetraVector( x ), -1., getEpetraVector( y ), 0. );
-}
-
-void EpetraVectorEngine::multiply( const VectorOperations &x, const VectorOperations &y )
-{
-    getEpetra_Vector().Multiply( 1., getEpetraVector( x ), getEpetraVector( y ), 0. );
-}
-
-void EpetraVectorEngine::divide( const VectorOperations &x, const VectorOperations &y )
-{
-    getEpetra_Vector().ReciprocalMultiply( 1., getEpetraVector( y ), getEpetraVector( x ), 0. );
-}
-
-void EpetraVectorEngine::reciprocal( const VectorOperations &x )
-{
-    getEpetra_Vector().Reciprocal( getEpetraVector( x ) );
-}
-
-void EpetraVectorEngine::linearSum( double alpha,
-                                    const VectorOperations &x,
-                                    double beta,
-                                    const VectorOperations &y )
-{
-    getEpetra_Vector().Update( alpha, getEpetraVector( x ), beta, getEpetraVector( y ), 0. );
-}
-
-void EpetraVectorEngine::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
-{
-    linearSum( alpha, x, 1., y );
-}
-
-void EpetraVectorEngine::axpby( double alpha, double beta, const VectorOperations &x )
-{
-    linearSum( alpha, x, beta, *this );
-}
-
-void EpetraVectorEngine::abs( const VectorOperations &x )
-{
-    getEpetra_Vector().Abs( getEpetraVector( x ) );
-}
-
-double EpetraVectorEngine::min() const
-{
-    double retVal;
-    getEpetra_Vector().MinValue( &retVal );
-    return retVal;
-}
-
-double EpetraVectorEngine::max() const
-{
-    double retVal;
-    getEpetra_Vector().MaxValue( &retVal );
-    return retVal;
-}
-
-void EpetraVectorEngine::setRandomValues()
-{
-    getEpetra_Vector().Random();
-    this->abs( *this );
-}
-
-
-void EpetraVectorEngine::setValuesByLocalID( int num, size_t *indices, const double *vals )
-{
-    for ( int i = 0; i != num; i++ )
-        getEpetra_Vector()[indices[i]] = vals[i];
-}
-
-
-void EpetraVectorEngine::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
-{
-    if ( num == 0 )
-        return;
-    AMP_ASSERT( getGlobalSize() < 0x80000000 );
-    std::vector<int> indices2( num, 0 );
-    for ( int i = 0; i < num; i++ )
-        indices2[i] = (int) indices[i];
-    getEpetra_Vector().ReplaceGlobalValues( num, const_cast<double *>( vals ), &indices2[0] );
-}
-
-void EpetraVectorEngine::addValuesByLocalID( int num, size_t *indices, const double *vals )
-{
-    if ( num == 0 )
-        return;
-    for ( int i = 0; i != num; i++ )
-        getEpetra_Vector()[indices[i]] += vals[i];
-}
-
-void EpetraVectorEngine::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
-{
-    if ( num == 0 )
-        return;
-    AMP_ASSERT( getGlobalSize() < 0x80000000 );
-    std::vector<int> indices2( num, 0 );
-    for ( int i = 0; i < num; i++ )
-        indices2[i] = (int) indices[i];
-    getEpetra_Vector().SumIntoGlobalValues( num, const_cast<double *>( vals ), &indices2[0] );
-}
-
-void EpetraVectorEngine::getValuesByLocalID( int, size_t *, double * ) const
-{
-    AMP_ERROR( "This shouldn't be called" );
-}
-
-void EpetraVectorEngine::getLocalValuesByGlobalID( int, size_t *, double * ) const
-{
-    AMP_ERROR( "This shouldn't be called" );
-}
-double EpetraVectorEngine::L1Norm() const
-{
-    double retVal;
-    getEpetra_Vector().Norm1( &retVal );
-    return retVal;
-}
-
-double EpetraVectorEngine::L2Norm() const
-{
-    double retVal;
-    getEpetra_Vector().Norm2( &retVal );
-    return retVal;
-}
-
-
-double EpetraVectorEngine::maxNorm() const
-{
-    double retVal;
-    getEpetra_Vector().NormInf( &retVal );
-    return retVal;
-}
-
-double EpetraVectorEngine::dot( const VectorOperations &x ) const
-{
-    double retVal;
-    getEpetra_Vector().Dot( getEpetraVector( x ), &retVal );
-    return retVal;
-}
-
-double EpetraVectorEngine::localDot( const VectorOperations & ) const
-{
-    AMP_ERROR( "Not implimented" );
-    return 0;
-}
-
-void EpetraVectorEngine::putRawData( const double *in )
-{
-    double *p;
-    getEpetra_Vector().ExtractView( &p );
-    size_t N = getLocalSize();
-    memcpy( p, in, N * sizeof( double ) );
-}
-
-void EpetraVectorEngine::copyOutRawData( double *out ) const
-{
-    getEpetra_Vector().ExtractCopy( out );
-}
-
-
-double EpetraVectorEngine::localMin() const
-{
-    AMP_ERROR( "Not implimented" );
-    return 0;
-}
-double EpetraVectorEngine::localMax() const
-{
-    AMP_ERROR( "Not implimented" );
-    return 0;
-}
-double EpetraVectorEngine::localL1Norm() const
-{
-    AMP_ERROR( "Not implimented" );
-    return 0;
-}
-double EpetraVectorEngine::localL2Norm() const
-{
-    AMP_ERROR( "Not implimented" );
-    return 0;
-}
-double EpetraVectorEngine::localMaxNorm() const
-{
-    AMP_ERROR( "Not implimented" );
-    return 0;
-}
 } // namespace LinearAlgebra
 } // namespace AMP

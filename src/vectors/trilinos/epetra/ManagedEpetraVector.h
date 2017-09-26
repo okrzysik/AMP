@@ -24,8 +24,6 @@ namespace LinearAlgebra {
  *
  * \see EpetraVector
  */
-
-
 class ManagedEpetraVector : public ManagedVector, public EpetraVector
 {
 public:
@@ -54,6 +52,8 @@ public:
 protected:
     virtual ManagedVector *getNewRawPtr() const override;
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

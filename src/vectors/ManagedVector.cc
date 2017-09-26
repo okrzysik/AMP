@@ -461,7 +461,7 @@ double ManagedVector::dot( const VectorOperations &x ) const
     auto x2 = dynamic_cast<const ManagedVector *>( &x );
     if ( x2 != nullptr )
         return d_Engine->dot( x2->d_Engine );
-    return VectorOperationsDefault::dot( *this );
+    return VectorOperationsDefault::dot( x );
 }
 
 

@@ -5,8 +5,10 @@
 #include <Epetra_Vector.h>
 
 #include "EpetraVector.h"
+
 #include "vectors/VectorEngine.h"
-#include "vectors/operations/VectorOperationsDefault.h"
+#include "vectors/trilinos/epetra/EpetraVectorData.h"
+#include "vectors/trilinos/epetra/EpetraVectorOperations.h"
 
 
 namespace AMP {
@@ -40,7 +42,7 @@ public:
                                   AMP::shared_ptr<Epetra_Map> emap,
                                   AMP_MPI ecomm );
 
-    //! destructor
+    //! Destructor
     virtual ~EpetraVectorEngineParameters();
 
     /** \brief  Return the Epetra_Map for this engine
@@ -59,20 +61,11 @@ private:
  * libraries, it is very difficult to separate the data from the engine.  For this
  * reason, the EpetraVectorEngine contains the Epetra_Vector to operate on.
  */
-class EpetraVectorEngine : public VectorEngine, public VectorOperationsDefault<double>
+class EpetraVectorEngine : public VectorEngine,
+                           public EpetraVectorData,
+                           public EpetraVectorOperations
 {
-protected:
-    /** \brief  The Epetra_Vector to perform work on
-     */
-    Epetra_Vector d_epetraVector;
 
-    /** \brief  The number of local elements in the vector
-     */
-    int d_iLocalSize;
-
-    /** \brief  The number of elements in the entire vector
-     */
-    int d_iGlobalSize;
 
 public:
     /** \brief Constructor
@@ -95,77 +88,13 @@ public:
      */
     const Epetra_Vector &getEpetra_Vector() const;
 
+
+public: // Functions derived from VectorEngine
     AMP_MPI getComm() const override;
-    virtual size_t getLocalSize() const override;
-    virtual size_t getGlobalSize() const override;
-    virtual BufferPtr getNewBuffer() override;
     virtual bool sameEngine( VectorEngine &e ) const override;
     virtual shared_ptr cloneEngine( BufferPtr p ) const override;
     virtual void swapEngines( shared_ptr ) override;
-    virtual size_t numberOfDataBlocks() const override;
-    virtual size_t sizeOfDataBlock( size_t i ) const override;
-
-    //    virtual void addScalar ( const VectorOperations & , double );
-    virtual void setToScalar( double alpha ) override;
-    virtual void scale( double alpha, const VectorOperations &x ) override;
-    virtual void scale( double alpha ) override;
-    virtual void add( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void divide( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void reciprocal( const VectorOperations &x ) override;
-    virtual void linearSum( double alpha,
-                            const VectorOperations &x,
-                            double beta,
-                            const VectorOperations &y ) override;
-    virtual void
-    axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void axpby( double alpha, double beta, const VectorOperations &x ) override;
-    virtual void abs( const VectorOperations &x ) override;
-    virtual double min( void ) const override;
-    virtual double max( void ) const override;
-    virtual void setRandomValues( void ) override;
-    virtual void setValuesByLocalID( int i, size_t *, const double *val ) override;
-    virtual void setLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
-    virtual void addValuesByLocalID( int i, size_t *, const double *val ) override;
-    virtual void addLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
-    virtual void getValuesByLocalID( int i, size_t *, double *val ) const override;
-    virtual void getLocalValuesByGlobalID( int i, size_t *, double *val ) const override;
-    virtual double L1Norm( void ) const override;
-    virtual double L2Norm( void ) const override;
-    virtual double maxNorm( void ) const override;
-    virtual double dot( const VectorOperations &x ) const override;
-    virtual void putRawData( const double *in ) override;
-    virtual void copyOutRawData( double *out ) const override;
-
-    virtual double localMin( void ) const override;
-    virtual double localMax( void ) const override;
-    virtual double localL1Norm( void ) const override;
-    virtual double localL2Norm( void ) const override;
-    virtual double localMaxNorm() const override;
-    virtual double localDot( const VectorOperations &x ) const override;
-    virtual uint64_t getDataID() const override { return reinterpret_cast<uint64_t>( getDataBlock(0) ); }
-    virtual void *getRawDataBlockAsVoid( size_t i ) override;
-    virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
-    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
-    virtual bool isTypeId( size_t hash, size_t ) const override{ return hash == typeid(double).hash_code(); }
-
-public: // Pull VectorOperations into the current scope
-    using VectorOperationsDefault::abs;
-    using VectorOperationsDefault::add;
-    using VectorOperationsDefault::axpby;
-    using VectorOperationsDefault::axpy;
-    using VectorOperationsDefault::divide;
-    using VectorOperationsDefault::dot;
-    using VectorOperationsDefault::linearSum;
-    using VectorOperationsDefault::minQuotient;
-    using VectorOperationsDefault::multiply;
-    using VectorOperationsDefault::reciprocal;
-    using VectorOperationsDefault::scale;
-    using VectorOperationsDefault::setRandomValues;
-    using VectorOperationsDefault::subtract;
-    using VectorOperationsDefault::wrmsNorm;
-    using VectorOperationsDefault::wrmsNormMask;
+    virtual BufferPtr getNewBuffer() override;
 };
 
 

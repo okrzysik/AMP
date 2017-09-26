@@ -45,16 +45,13 @@ public:
      */
     virtual Vector::shared_ptr getManagedVectorDuplicate( AMP_MPI comm ) = 0;
 
-    virtual size_t numberOfDataBlocks() const            = 0;
-    virtual size_t sizeOfDataBlock( size_t i = 0 ) const = 0;
-
 protected:
     //! Empty constructor.
     NativeVector();
 
-    virtual void *getRawDataBlockAsVoid( size_t i )             = 0;
-    virtual const void *getRawDataBlockAsVoid( size_t i ) const = 0;
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 
