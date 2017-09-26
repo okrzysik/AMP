@@ -148,9 +148,6 @@ public:
 
     virtual void swapEngines( VectorEngine::shared_ptr ) override;
 
-    virtual void *getDataBlock( size_t i ) override;
-    virtual const void *getDataBlock( size_t i ) const override;
-
     virtual AMP_MPI getComm() const override;
 
     virtual void copyOutRawData( double *out ) const override;

@@ -12,7 +12,7 @@ inline const Epetra_Vector &EpetraVectorEngine::getEpetra_Vector() const { retur
 
 inline AMP_MPI EpetraVectorEngine::getComm() const { return getEngineParameters()->getComm(); }
 
-inline void *EpetraVectorEngine::getDataBlock( size_t i )
+inline void* EpetraVectorEngine::getRawDataBlockAsVoid( size_t i )
 {
     if ( i > 1 )
         return nullptr;
@@ -21,7 +21,7 @@ inline void *EpetraVectorEngine::getDataBlock( size_t i )
     return p;
 }
 
-inline const void *EpetraVectorEngine::getDataBlock( size_t i ) const
+inline const void* EpetraVectorEngine::getRawDataBlockAsVoid( size_t i ) const
 {
     if ( i > 1 )
         return nullptr;

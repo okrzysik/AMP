@@ -96,8 +96,6 @@ public:
     const Epetra_Vector &getEpetra_Vector() const;
 
     AMP_MPI getComm() const override;
-    virtual void *getDataBlock( size_t i ) override;
-    virtual const void *getDataBlock( size_t i ) const override;
     virtual size_t getLocalSize() const override;
     virtual size_t getGlobalSize() const override;
     virtual BufferPtr getNewBuffer() override;
@@ -146,7 +144,11 @@ public:
     virtual double localL2Norm( void ) const override;
     virtual double localMaxNorm() const override;
     virtual double localDot( const VectorOperations &x ) const override;
-
+    virtual uint64_t getDataID() const override { return reinterpret_cast<uint64_t>( getDataBlock(0) ); }
+    virtual void *getRawDataBlockAsVoid( size_t i ) override;
+    virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
+    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
+    virtual bool isTypeId( size_t hash, size_t ) const override{ return hash == typeid(double).hash_code(); }
 
 public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::abs;

@@ -42,7 +42,7 @@ AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr m
 {
     auto DOF =
         AMP::Discretization::simpleDOFManager::create( mesh, mesh->getGeomType(), 0, 1, false );
-    AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "volume" ) );
+    auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( "volume" );
     auto vec = AMP::LinearAlgebra::createVector( DOF, var, true );
     vec->zero();
     std::vector<size_t> dofs;
@@ -99,15 +99,14 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
         AMP::Discretization::simpleDOFManager::create( submesh, surfaceType, 0, 1, true );
 
     // Create the vectors
-    AMP::LinearAlgebra::Variable::shared_ptr rank_var( new AMP::LinearAlgebra::Variable( "rank" ) );
-    auto rank_vec = AMP::LinearAlgebra::createVector( DOF_scalar, rank_var, true );
-    AMP::LinearAlgebra::Variable::shared_ptr position_var(
-        new AMP::LinearAlgebra::Variable( "position" ) );
-    auto position = AMP::LinearAlgebra::createVector( DOF_vector, position_var, true );
-    AMP::LinearAlgebra::Variable::shared_ptr gp_var( new AMP::LinearAlgebra::Variable( "gp_var" ) );
-    auto gauss_pt = AMP::LinearAlgebra::createVector( DOF_gauss, gp_var, true );
-    AMP::LinearAlgebra::Variable::shared_ptr id_var( new AMP::LinearAlgebra::Variable( "ids" ) );
-    auto id_vec = AMP::LinearAlgebra::createVector( DOF_surface, id_var, true );
+    auto rank_var     = AMP::make_shared<AMP::LinearAlgebra::Variable>( "rank" );
+    auto position_var = AMP::make_shared<AMP::LinearAlgebra::Variable>( "position" );
+    auto gp_var       = AMP::make_shared<AMP::LinearAlgebra::Variable>( "gp_var" );
+    auto id_var       = AMP::make_shared<AMP::LinearAlgebra::Variable>( "ids" );
+    auto rank_vec     = AMP::LinearAlgebra::createVector( DOF_scalar, rank_var, true );
+    auto position     = AMP::LinearAlgebra::createVector( DOF_vector, position_var, true );
+    auto gauss_pt     = AMP::LinearAlgebra::createVector( DOF_gauss, gp_var, true );
+    auto id_vec       = AMP::LinearAlgebra::createVector( DOF_surface, id_var, true );
     gauss_pt->setToScalar( 100 );
     globalComm.barrier();
 #endif
@@ -122,8 +121,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
         AMP::LinearAlgebra::VS_MeshIterator meshSelector( submesh->getIterator( pointType, 1 ),
                                                           submesh->getComm() );
         AMP::LinearAlgebra::VS_Stride zSelector( 2, 3 );
-        AMP::LinearAlgebra::Vector::shared_ptr vec_meshSubset =
-            position->select( meshSelector, "mesh subset" );
+        auto vec_meshSubset = position->select( meshSelector, "mesh subset" );
         AMP_ASSERT( vec_meshSubset.get() != nullptr );
         z_surface = vec_meshSubset->select( zSelector, "z surface" );
         AMP_ASSERT( z_surface.get() != nullptr );

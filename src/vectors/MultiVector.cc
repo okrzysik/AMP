@@ -167,7 +167,8 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
         params->d_remote_DOFs = remote_DOFs;
         d_CommList            = AMP::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
     }
-    // Set the vector operations
+    // Set the vector data and operations
+    updateVectorData();
     updateVectorOperations();
 }
 void MultiVector::updateVectorOperations()
@@ -175,6 +176,20 @@ void MultiVector::updateVectorOperations()
     d_operations.resize( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ )
         d_operations[i] = d_vVectors[i].get();
+}
+void MultiVector::updateVectorData()
+{
+    d_data.resize( d_vVectors.size() );
+    for ( size_t i = 0; i < d_vVectors.size(); i++ )
+        d_data[i] = d_vVectors[i].get();
+    auto *manager = dynamic_cast<AMP::Discretization::multiDOFManager *>( d_DOFManager.get() );
+    AMP_ASSERT( manager != nullptr );
+    d_globalDOFManager = manager;
+    auto subManagers   = manager->getDOFManagers();
+    AMP_ASSERT( subManagers.size() == d_vVectors.size() );
+    d_subDOFManager.resize( d_vVectors.size() );
+    for ( size_t i = 0; i < d_vVectors.size(); i++ )
+        d_subDOFManager[i] = subManagers[i].get();
 }
 void MultiVector::addVectorHelper( Vector::shared_ptr vec )
 {
@@ -246,6 +261,7 @@ void MultiVector::replaceSubVector( Vector::shared_ptr oldVec, Vector::shared_pt
     } // end for i
     AMP_INSIST( pos != -1, "oldVec was not found" );
     d_vVectors[pos] = newVec;
+    updateVectorData();
     updateVectorOperations();
 }
 
@@ -307,131 +323,6 @@ bool MultiVector::containsPointer( const Vector::shared_ptr p ) const
     }
     return false;
 }
-
-
-/****************************************************************
- * makeConsistent                                                *
- ****************************************************************/
-void MultiVector::makeConsistent( ScatterType t )
-{
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->makeConsistent( t );
-    *d_UpdateState = Vector::UpdateState::UNCHANGED;
-}
-
-
-/****************************************************************
- * query basic info                                              *
- ****************************************************************/
-size_t MultiVector::getLocalSize() const
-{
-    size_t ans = 0;
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        ans += d_vVectors[i]->getLocalSize();
-    AMP_ASSERT( ans == d_DOFManager->numLocalDOF() );
-    return ans;
-}
-size_t MultiVector::getGlobalSize() const { return d_DOFManager->numGlobalDOF(); }
-size_t MultiVector::getGhostSize() const
-{
-    size_t ans = 0;
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        ans += d_vVectors[i]->getGhostSize();
-    return ans;
-}
-
-
-/****************************************************************
- * Functions to get access to the data                           *
- ****************************************************************/
-void MultiVector::putRawData( const double *in )
-{
-    int cur_off = 0;
-    for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
-        d_vVectors[i]->putRawData( in + cur_off );
-        cur_off += d_vVectors[i]->getLocalSize();
-    }
-}
-size_t MultiVector::numberOfDataBlocks() const
-{
-    size_t ans = 0;
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        ans += d_vVectors[i]->numberOfDataBlocks();
-    return ans;
-}
-size_t MultiVector::sizeOfDataBlock( size_t i ) const
-{
-    size_t retVal = 0;
-    size_t rightOffset, leftOffset;
-    rightOffset = leftOffset = 0;
-    for ( size_t j = 0; j != d_vVectors.size(); j++ ) {
-        rightOffset += d_vVectors[j]->numberOfDataBlocks();
-        if ( i < rightOffset ) {
-            retVal = d_vVectors[j]->sizeOfDataBlock( i - leftOffset );
-            break;
-        }
-        leftOffset = rightOffset;
-    }
-    return retVal;
-}
-void MultiVector::copyOutRawData( double *out ) const
-{
-    size_t curOffset = 0;
-    for ( size_t j = 0; j != d_vVectors.size(); j++ ) {
-        d_vVectors[j]->copyOutRawData( &out[curOffset] );
-        curOffset += d_vVectors[j]->getLocalSize();
-    }
-}
-void *MultiVector::getRawDataBlockAsVoid( size_t i )
-{
-    size_t curOffset = 0;
-    for ( size_t j = 0; j != d_vVectors.size(); j++ ) {
-        curOffset += d_vVectors[j]->numberOfDataBlocks();
-        if ( i < curOffset ) {
-            size_t index = i + d_vVectors[j]->numberOfDataBlocks() - curOffset;
-            return d_vVectors[j]->getRawDataBlock<double>( index );
-        }
-    }
-    return nullptr;
-}
-const void *MultiVector::getRawDataBlockAsVoid( size_t i ) const
-{
-    size_t curOffset = 0;
-    for ( size_t j = 0; j != d_vVectors.size(); j++ ) {
-        curOffset += d_vVectors[j]->numberOfDataBlocks();
-        if ( i < curOffset ) {
-            size_t index = i + d_vVectors[j]->numberOfDataBlocks() - curOffset;
-            return d_vVectors[j]->getRawDataBlock<double>( index );
-        }
-    }
-    return nullptr;
-}
-size_t MultiVector::sizeofDataBlockType( size_t block ) const
-{
-    size_t curOffset = 0;
-    for ( size_t j = 0; j != d_vVectors.size(); j++ ) {
-        curOffset += d_vVectors[j]->numberOfDataBlocks();
-        if ( block < curOffset ) {
-            size_t index = block + d_vVectors[j]->numberOfDataBlocks() - curOffset;
-            return d_vVectors[j]->sizeofDataBlockType( index );
-        }
-    }
-    return 0;
-}
-bool MultiVector::isTypeId( size_t hash, size_t block ) const
-{
-    size_t curOffset = 0;
-    for ( size_t j = 0; j != d_vVectors.size(); j++ ) {
-        curOffset += d_vVectors[j]->numberOfDataBlocks();
-        if ( block < curOffset ) {
-            size_t index = block + d_vVectors[j]->numberOfDataBlocks() - curOffset;
-            return d_vVectors[j]->isTypeId( hash, index );
-        }
-    }
-    return false;
-}
-const void *MultiVector::getDataBlock( size_t i ) const { return getRawDataBlockAsVoid( i ); }
-void *MultiVector::getDataBlock( size_t i ) { return getRawDataBlockAsVoid( i ); }
 
 
 /****************************************************************
@@ -549,80 +440,31 @@ void MultiVector::assemble()
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         d_vVectors[i]->assemble();
 }
-
-
-Vector::UpdateState MultiVector::getUpdateStatus() const
-{
-    Vector::UpdateState state = *d_UpdateState;
-    for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
-        Vector::UpdateState sub_state = d_vVectors[i]->getUpdateStatus();
-        if ( sub_state == UpdateState::UNCHANGED ) {
-            continue;
-        } else if ( sub_state == UpdateState::LOCAL_CHANGED && state == UpdateState::UNCHANGED ) {
-            state = UpdateState::LOCAL_CHANGED;
-        } else if ( sub_state == UpdateState::LOCAL_CHANGED ) {
-            continue;
-        } else if ( sub_state == UpdateState::ADDING &&
-                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED ||
-                      state == UpdateState::ADDING ) ) {
-            state = UpdateState::ADDING;
-        } else if ( sub_state == UpdateState::SETTING &&
-                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED ||
-                      state == UpdateState::SETTING ) ) {
-            state = UpdateState::SETTING;
-        } else {
-            state = UpdateState::MIXED;
-        }
-    }
-    return state;
-}
-
-
-void MultiVector::setUpdateStatus( UpdateState state )
-{
-    *d_UpdateState = state;
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->setUpdateStatus( state );
-}
-
-
 void MultiVector::swapVectors( Vector &other )
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         d_vVectors[i]->swapVectors( getVector( other, i ) );
 }
-
-
 void MultiVector::aliasVector( Vector &other )
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         d_vVectors[i]->aliasVector( getVector( other, i ) );
 }
-
-
 VectorEngine::BufferPtr MultiVector::getNewBuffer() { return VectorEngine::BufferPtr(); }
-
-
 bool MultiVector::sameEngine( VectorEngine &rhs ) const
 {
     return dynamic_cast<MultiVector *>( &rhs ) != nullptr;
 }
-
-
 void MultiVector::swapEngines( VectorEngine::shared_ptr p )
 {
     auto vec = dynamic_pointer_cast<MultiVector>( p );
     AMP_INSIST( vec != nullptr, "Cannot swap with a non-MulitVector" );
     return swapVectors( *vec );
 }
-
-
 VectorEngine::shared_ptr MultiVector::cloneEngine( VectorEngine::BufferPtr ) const
 {
     return AMP::dynamic_pointer_cast<VectorEngine>( Vector::cloneVector( "engine_clone" ) );
 }
-
-
 Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) const
 {
     auto retVec          = AMP::shared_ptr<MultiVector>( new MultiVector( name->getName() ) );
@@ -632,260 +474,9 @@ Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) c
     retVec->d_vVectors.resize( d_vVectors.size() );
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         retVec->d_vVectors[i] = d_vVectors[i]->cloneVector();
+    retVec->updateVectorData();
     retVec->updateVectorOperations();
     return retVec;
-}
-
-
-/****************************************************************
- * Functions to access data by ID                                *
- ****************************************************************/
-void MultiVector::setValuesByLocalID( int num, size_t *indices, const double *in_vals )
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    partitionLocalValues( num, indices, in_vals, ndxs, vals );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_vVectors[i]->setValuesByLocalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-}
-void MultiVector::setLocalValuesByGlobalID( int num, size_t *indices, const double *in_vals )
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_vVectors[i]->setLocalValuesByGlobalID(
-                ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-}
-void MultiVector::setGhostValuesByGlobalID( int num, size_t *indices, const double *in_vals )
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_vVectors[i]->setGhostValuesByGlobalID(
-                ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-}
-void MultiVector::setValuesByGlobalID( int num, size_t *indices, const double *in_vals )
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_vVectors[i]->setValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-}
-void MultiVector::addValuesByLocalID( int num, size_t *indices, const double *in_vals )
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    partitionLocalValues( num, indices, in_vals, ndxs, vals );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_vVectors[i]->addValuesByLocalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-}
-void MultiVector::addLocalValuesByGlobalID( int num, size_t *indices, const double *in_vals )
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_vVectors[i]->addLocalValuesByGlobalID(
-                ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-}
-void MultiVector::addValuesByGlobalID( int num, size_t *indices, const double *in_vals )
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_vVectors[i]->addValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-}
-void MultiVector::getValuesByGlobalID( int num, size_t *indices, double *out_vals ) const
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    std::vector<std::vector<int>> remap;
-    partitionGlobalValues( num, indices, out_vals, ndxs, vals, &remap );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_vVectors[i]->getValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-    for ( size_t i = 0; i != remap.size(); i++ ) {
-        for ( size_t j = 0; j != remap[i].size(); j++ )
-            out_vals[remap[i][j]] = vals[i][j];
-    }
-}
-void MultiVector::getLocalValuesByGlobalID( int num, size_t *indices, double *out_vals ) const
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    std::vector<std::vector<int>> remap;
-    partitionGlobalValues( num, indices, out_vals, ndxs, vals, &remap );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_vVectors[i]->getLocalValuesByGlobalID(
-                ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-    for ( size_t i = 0; i != remap.size(); i++ ) {
-        for ( size_t j = 0; j != remap[i].size(); j++ )
-            out_vals[remap[i][j]] = vals[i][j];
-    }
-}
-void MultiVector::getGhostValuesByGlobalID( int num, size_t *indices, double *out_vals ) const
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    std::vector<std::vector<int>> remap;
-    partitionGlobalValues( num, indices, out_vals, ndxs, vals, &remap );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_vVectors[i]->getGhostValuesByGlobalID(
-                ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-    for ( size_t i = 0; i != remap.size(); i++ ) {
-        for ( size_t j = 0; j != remap[i].size(); j++ )
-            out_vals[remap[i][j]] = vals[i][j];
-    }
-}
-void MultiVector::getValuesByLocalID( int num, size_t *indices, double *out_vals ) const
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    std::vector<std::vector<int>> remap;
-    partitionLocalValues( num, indices, out_vals, ndxs, vals, &remap );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_vVectors[i]->getValuesByLocalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-    for ( size_t i = 0; i != remap.size(); i++ ) {
-        for ( size_t j = 0; j != remap[i].size(); j++ )
-            out_vals[remap[i][j]] = vals[i][j];
-    }
-}
-
-
-/****************************************************************
- * Function to partition the global ids by the sub vectors       *
- ****************************************************************/
-void MultiVector::partitionGlobalValues( const int num,
-                                         const size_t *indices,
-                                         const double *vals,
-                                         std::vector<std::vector<size_t>> &out_indices,
-                                         std::vector<std::vector<double>> &out_vals,
-                                         std::vector<std::vector<int>> *remap ) const
-{
-    PROFILE_START( "partitionGlobalValues", 2 );
-    const size_t neg_one = ~( (size_t) 0 );
-    std::vector<size_t> globalDOFs( num, neg_one );
-    for ( int i = 0; i < num; i++ )
-        globalDOFs[i] = indices[i];
-    out_indices.resize( d_vVectors.size() );
-    out_vals.resize( d_vVectors.size() );
-    if ( remap != nullptr )
-        remap->resize( d_vVectors.size() );
-    auto *manager = (AMP::Discretization::multiDOFManager *) d_DOFManager.get();
-    std::vector<AMP::Discretization::DOFManager::shared_ptr> DOFManagers =
-        manager->getDOFManagers();
-    AMP_ASSERT( DOFManagers.size() == d_vVectors.size() );
-    for ( size_t i = 0; i < d_vVectors.size(); i++ ) {
-        AMP_ASSERT( d_vVectors[i]->getDOFManager() == DOFManagers[i] );
-        std::vector<size_t> subDOFs = manager->getSubDOF( i, globalDOFs );
-        size_t count                = 0;
-        for ( auto &subDOF : subDOFs ) {
-            if ( subDOF != neg_one )
-                count++;
-        }
-        out_indices[i] = std::vector<size_t>( count, neg_one );
-        out_vals[i]    = std::vector<double>( count, 0.0 );
-        if ( remap != nullptr )
-            remap->operator[]( i ) = std::vector<int>( count, -1 );
-        count = 0;
-        for ( size_t j = 0; j < subDOFs.size(); j++ ) {
-            if ( subDOFs[j] != neg_one ) {
-                out_indices[i][count] = subDOFs[j];
-                out_vals[i][count]    = vals[j];
-                if ( remap != nullptr )
-                    remap->operator[]( i )[count] = j;
-                count++;
-            }
-        }
-    }
-    PROFILE_STOP( "partitionGlobalValues", 2 );
-}
-
-
-/****************************************************************
- * Function to partition the local ids by the sub vectors       *
- ****************************************************************/
-void MultiVector::partitionLocalValues( const int num,
-                                        const size_t *indices,
-                                        const double *vals,
-                                        std::vector<std::vector<size_t>> &out_indices,
-                                        std::vector<std::vector<double>> &out_vals,
-                                        std::vector<std::vector<int>> *remap ) const
-{
-    if ( num == 0 )
-        return;
-    PROFILE_START( "partitionLocalValues", 2 );
-    // Convert the local ids to global ids
-    size_t begin_DOF = d_DOFManager->beginDOF();
-    size_t end_DOF   = d_DOFManager->endDOF();
-    std::vector<size_t> global_indices( num );
-    for ( int i = 0; i < num; i++ ) {
-        AMP_INSIST( indices[i] < end_DOF, "Invalid local id" );
-        global_indices[i] = indices[i] + begin_DOF;
-    }
-    // Partition based on the global ids
-    partitionGlobalValues( num, &global_indices[0], vals, out_indices, out_vals, remap );
-    // Convert the new global ids back to local ids
-    const size_t neg_one = ~( (size_t) 0 );
-    for ( size_t i = 0; i < d_vVectors.size(); i++ ) {
-        if ( out_indices[i].size() == 0 )
-            continue;
-        begin_DOF = d_vVectors[i]->getDOFManager()->beginDOF();
-        end_DOF   = d_vVectors[i]->getDOFManager()->endDOF();
-        for ( auto &elem : out_indices[i] ) {
-            AMP_ASSERT( elem != neg_one );
-            elem -= begin_DOF;
-            AMP_ASSERT( elem < end_DOF );
-        }
-    }
-    PROFILE_STOP( "partitionLocalValues", 2 );
 }
 
 

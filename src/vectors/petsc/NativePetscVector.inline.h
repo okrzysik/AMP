@@ -59,18 +59,6 @@ inline void NativePetscVector::swapEngines( VectorEngine::shared_ptr p )
 }
 
 
-inline void *NativePetscVector::getDataBlock( size_t i )
-{
-    return static_cast<void *>( getRawDataBlock<double>( i ) );
-}
-
-
-inline const void *NativePetscVector::getDataBlock( size_t i ) const
-{
-    return static_cast<const void *>( getRawDataBlock<double>( i ) );
-}
-
-
 inline void NativePetscVector::getValuesByLocalID( int numVals, size_t *ndx, double *vals ) const
 {
     Vector::getValuesByLocalID( numVals, ndx, vals );

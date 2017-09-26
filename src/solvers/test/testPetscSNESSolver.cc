@@ -28,44 +28,38 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::AMP_MPI solverComm =
-        globalComm.dup(); // Create a unique solver comm to test proper cleanup
+    auto solverComm = globalComm.dup(); // Create a unique solver comm to test proper cleanup
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
     input_db->printClassData( AMP::plog );
 
     // Create a null vector for the initial guess
-    AMP::LinearAlgebra::Vector::shared_ptr nullVec =
-        AMP::LinearAlgebra::NullVector::create( "null" );
+    auto nullVec = AMP::LinearAlgebra::NullVector<double>::create( "null" );
 
     // Create the solution and function variables
-    AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "x" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr u =
-        AMP::LinearAlgebra::SimpleVector<double>::create( 10, var, solverComm );
-    AMP::LinearAlgebra::Vector::shared_ptr f = u->cloneVector();
+    auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( "x" );
+    auto u   = AMP::LinearAlgebra::SimpleVector<double>::create( 10, var, solverComm );
+    auto f   = u->cloneVector();
 
     // Create the operator
-    AMP::shared_ptr<AMP::Operator::IdentityOperator> op( new AMP::Operator::IdentityOperator() );
+    auto op = AMP::make_shared<AMP::Operator::IdentityOperator>();
     op->setInputVariable( var );
     op->setOutputVariable( var );
 
     // Get the databases for the nonlinear and linear solvers
-    AMP::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    // AMP::shared_ptr<AMP::Database> linearSolver_db =
-    // nonlinearSolver_db->getDatabase("LinearSolver");
+    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
+    // auto linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver");
 
     // initialize the nonlinear solver parameters
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
-        new AMP::Solver::PetscSNESSolverParameters( nonlinearSolver_db ) );
+    auto nonlinearSolverParams = AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
     nonlinearSolverParams->d_comm          = solverComm;
     nonlinearSolverParams->d_pInitialGuess = nullVec;
     nonlinearSolverParams->d_pOperator     = op;
 
 
     // Create the nonlinear solver
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(
-        new AMP::Solver::PetscSNESSolver( nonlinearSolverParams ) );
+    auto nonlinearSolver = AMP::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
     ut->passes( "PetscSNESSolver created" );
 
     // Call solve with a simple vector
@@ -73,7 +67,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     f->setRandomValues();
     nonlinearSolver->solve( f, u );
     ut->passes( "PetscSNESSolver solve called with simple vector" );
-    AMP::LinearAlgebra::Vector::shared_ptr x = u->cloneVector();
+    auto x = u->cloneVector();
     x->subtract( u, f );
     double error = x->L2Norm() / f->L2Norm();
     if ( fabs( error ) < 1e-8 )
@@ -84,10 +78,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     // Call solve with a multivector (there can be bugs when solve is called with a single vector
     // and then a
     // multivector)
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> mu =
-        AMP::LinearAlgebra::MultiVector::create( "multivector", solverComm );
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> mf =
-        AMP::LinearAlgebra::MultiVector::create( "multivector", solverComm );
+    auto mu = AMP::LinearAlgebra::MultiVector::create( "multivector", solverComm );
+    auto mf = AMP::LinearAlgebra::MultiVector::create( "multivector", solverComm );
     mu->addVector( u );
     mf->addVector( f );
     mu->setRandomValues();

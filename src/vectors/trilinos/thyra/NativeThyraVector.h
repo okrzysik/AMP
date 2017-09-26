@@ -111,8 +111,6 @@ public:
     virtual bool sameEngine( VectorEngine & ) const override;
     virtual VectorEngine::shared_ptr cloneEngine( BufferPtr p ) const override;
     virtual void swapEngines( VectorEngine::shared_ptr ) override;
-    virtual void *getDataBlock( size_t i ) override;
-    virtual const void *getDataBlock( size_t i ) const override;
     virtual AMP_MPI getComm() const override;
     virtual void copyOutRawData( double *out ) const override;
     virtual uint64_t getDataID() const override

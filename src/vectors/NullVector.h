@@ -2,8 +2,10 @@
 #define included_AMP_NullVector
 
 #include "vectors/Vector.h"
+#include "vectors/data/VectorDataNull.h"
 #include "vectors/operations/VectorOperationsDefault.h"
 #include <string>
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -14,63 +16,51 @@ namespace LinearAlgebra {
  * circumstances, a NullVector is used.  This stores no data and performs no
  * work.
  */
-class NullVector : public Vector, public VectorOperationsDefault<double>
+template<class TYPE = double>
+class NullVector : public Vector, public VectorOperationsDefault<TYPE>, public VectorDataNull<TYPE>
 {
-private:
-    explicit NullVector( Variable::shared_ptr );
-
-public:
+public: // Public constructors
     /**
      *  \brief Create a NullVector
      *  \param[in]  name  Name of variable to associate with this NullVector
      *  \return Vector shared pointer to a NullVector
      */
-    static Vector::shared_ptr create( const std::string &name );
+    static inline Vector::shared_ptr create( const std::string &name )
+    {
+        return create( AMP::make_shared<Variable>( name ) );
+    }
 
     /**
      *  \brief Create a NullVector
      *  \param[in]  name  Variable to associate with this NullVector
      *  \return Vector shared pointer to a NullVector
      */
-    static Vector::shared_ptr create( const Variable::shared_ptr name );
+    static inline Vector::shared_ptr create( const Variable::shared_ptr name )
+    {
+        return AMP::shared_ptr<NullVector>( new NullVector<TYPE>( name ) );
+    }
 
-    virtual ~NullVector();
+    virtual ~NullVector() = default;
 
-    virtual std::string type() const override { return "Null Vector"; }
-    virtual AMP::shared_ptr<ParameterBase> getParameters() override;
 
-    virtual shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
+public: // Functions inherited from Vector
 
-    virtual void swapVectors( Vector & ) override;
-    virtual void aliasVector( Vector & ) override;
-
-    virtual void setValuesByLocalID( int, size_t *, const double * ) override;
-    virtual void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
-    virtual void addValuesByLocalID( int, size_t *, const double * ) override;
-    virtual void addLocalValuesByGlobalID( int, size_t *, const double * ) override;
-    virtual void getLocalValuesByGlobalID( int, size_t *, double * ) const override;
-
-    virtual void makeConsistent( ScatterType ) override;
-
-    virtual void assemble() override;
-
-    virtual void putRawData( const double *in ) override;
-    virtual void copyOutRawData( double *out ) const override;
-
-    virtual size_t getLocalSize() const override;
-    virtual size_t getGlobalSize() const override;
-    virtual size_t getGhostSize() const override;
-
-    virtual size_t numberOfDataBlocks() const override;
-    virtual size_t sizeOfDataBlock( size_t ) const override;
-
-    virtual uint64_t getDataID() const override { return 0; }
-
-    virtual bool isTypeId( size_t, size_t ) const override { return false; }
-    virtual size_t sizeofDataBlockType( size_t ) const override { return 0; }
-
+    inline std::string type() const override { return "Null Vector"; }
+    inline AMP::shared_ptr<ParameterBase> getParameters() override
+    {
+        return AMP::shared_ptr<ParameterBase>();
+    }
+    inline shared_ptr cloneVector( const Variable::shared_ptr name ) const override
+    {
+        return create( name );
+    }
+    inline void swapVectors( Vector & ) override {}
+    inline void aliasVector( Vector & ) override {}
+    inline void makeConsistent( ScatterType ) override {}
+    inline void assemble() override {}
     using Vector::cloneVector;
     using Vector::dot;
+
 
 protected:
     virtual Vector::shared_ptr selectInto( const VectorSelector & ) override
@@ -82,9 +72,17 @@ protected:
         return Vector::const_shared_ptr();
     }
 
-    virtual void *getRawDataBlockAsVoid( size_t ) override;
-    virtual const void *getRawDataBlockAsVoid( size_t ) const override;
+
+private:
+    explicit inline NullVector( Variable::shared_ptr var )
+    {
+        setVariable( var );
+        d_CommList = CommunicationList::createEmpty( 0, AMP_MPI( AMP_COMM_SELF ) );
+        d_DOFManager.reset( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) );
+    }
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

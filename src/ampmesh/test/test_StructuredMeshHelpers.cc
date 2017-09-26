@@ -17,14 +17,14 @@ void runTest( AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr mesh = generator.getMesh();
 
     // Get iterators over each of the face types
-    AMP::Mesh::MeshIterator faces   = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
-    AMP::Mesh::MeshIterator x_faces = AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( mesh, 0 );
-    AMP::Mesh::MeshIterator y_faces = AMP::Mesh::StructuredMeshHelper::getXZFaceIterator( mesh, 0 );
-    AMP::Mesh::MeshIterator z_faces = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( mesh, 0 );
-    size_t N_faces                  = mesh->getComm().sumReduce( faces.size() );
-    size_t N_x_faces                = mesh->getComm().sumReduce( x_faces.size() );
-    size_t N_y_faces                = mesh->getComm().sumReduce( y_faces.size() );
-    size_t N_z_faces                = mesh->getComm().sumReduce( z_faces.size() );
+    auto faces       = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
+    auto x_faces     = AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( mesh, 0 );
+    auto y_faces     = AMP::Mesh::StructuredMeshHelper::getXZFaceIterator( mesh, 0 );
+    auto z_faces     = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( mesh, 0 );
+    size_t N_faces   = mesh->getComm().sumReduce( faces.size() );
+    size_t N_x_faces = mesh->getComm().sumReduce( x_faces.size() );
+    size_t N_y_faces = mesh->getComm().sumReduce( y_faces.size() );
+    size_t N_z_faces = mesh->getComm().sumReduce( z_faces.size() );
     if ( N_faces_tot == N_faces )
         ut->passes( "Total number of faces match" );
     else
@@ -37,10 +37,8 @@ void runTest( AMP::UnitTest *ut )
     if ( mesh->getComm().getSize() > 1 ) {
         bool pass = false;
         for ( int d = 0; d < 3; d++ ) {
-            AMP::Mesh::MeshIterator face0 =
-                AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( mesh, 0 );
-            AMP::Mesh::MeshIterator face1 =
-                AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( mesh, 1 );
+            auto face0 = AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( mesh, 0 );
+            auto face1 = AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( mesh, 1 );
             if ( face1.size() > face0.size() )
                 pass = true;
         }

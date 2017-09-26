@@ -54,7 +54,7 @@ private:
 class NullVectorFactory : public VectorFactory
 {
 public:
-    typedef AMP::LinearAlgebra::NullVector vector;
+    typedef AMP::LinearAlgebra::NullVector<double> vector;
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
@@ -64,7 +64,7 @@ public:
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        return AMP::LinearAlgebra::NullVector::create( "null" );
+        return AMP::LinearAlgebra::NullVector<double>::create( "null" );
     }
 
     virtual std::string name() const override { return "NullVectorFactory"; }
