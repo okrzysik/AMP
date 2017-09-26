@@ -1626,14 +1626,14 @@ static void yyensure_buffer_stack()
          * scanner will even need a stack. We use 2 instead of 1 to avoid an
          * immediate realloc on the next call.
          */
-        num_to_alloc        = 1;
-        ( yy_buffer_stack ) = (struct yy_buffer_state **) yyalloc(
-            num_to_alloc * sizeof( struct yy_buffer_state * ) );
+        num_to_alloc    = 1;
+        size_t bytes    = num_to_alloc * sizeof( yy_buffer_state * );
+        yy_buffer_stack = (struct yy_buffer_state **) yyalloc( bytes );
 
-        memset( ( yy_buffer_stack ), 0, num_to_alloc * sizeof( struct yy_buffer_state * ) );
+        memset( yy_buffer_stack, 0, bytes );
 
-        ( yy_buffer_stack_max ) = num_to_alloc;
-        ( yy_buffer_stack_top ) = 0;
+        yy_buffer_stack_max = num_to_alloc;
+        yy_buffer_stack_top = 0;
         return;
     }
 
@@ -1642,15 +1642,14 @@ static void yyensure_buffer_stack()
         /* Increase the buffer to prepare for a possible push. */
         int grow_size = 8 /* arbitrary grow size */;
 
-        num_to_alloc        = ( yy_buffer_stack_max ) + grow_size;
-        ( yy_buffer_stack ) = (struct yy_buffer_state **) yyrealloc(
-            ( yy_buffer_stack ), num_to_alloc * sizeof( struct yy_buffer_state * ) );
+        num_to_alloc    = ( yy_buffer_stack_max ) + grow_size;
+        size_t bytes    = num_to_alloc * sizeof( yy_buffer_state * );
+        yy_buffer_stack = (struct yy_buffer_state **) yyrealloc( yy_buffer_stack, bytes );
 
         /* zero only the new slots.*/
-        memset( ( yy_buffer_stack ) + ( yy_buffer_stack_max ),
-                0,
-                grow_size * sizeof( struct yy_buffer_state * ) );
-        ( yy_buffer_stack_max ) = num_to_alloc;
+        size_t new_bytes = grow_size * sizeof( yy_buffer_state * );
+        memset( yy_buffer_stack + yy_buffer_stack_max, 0, new_bytes );
+        yy_buffer_stack_max = num_to_alloc;
     }
 }
 

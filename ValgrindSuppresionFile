@@ -8,7 +8,7 @@
 
 #### Supress AMP errors
 {
-   yyMemoryLeak
+   yyMemoryLeak1
    Memcheck:Leak
    ...
    fun:realloc
@@ -17,7 +17,14 @@
    fun:_Z9yyrestartP7__sFILE
    ...
 }
-
+{
+   yyMemoryLeak2
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:_ZN3AMP9yyrestartEP8_IO_FILE
+   ...
+}
 
 
 
@@ -74,6 +81,15 @@
    ...
    fun:PetscOptionsInsert
    fun:PetscInitialize
+   ...
+}
+{
+   PetscMallocAlign
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:memalign
+   fun:PetscMallocAlign
+   fun:PetscPushErrorHandler
    ...
 }
 
@@ -266,6 +282,16 @@
    fun:dl_main
    fun:_dl_sysdep_start
    fun:_dl_start
+   ...
+}
+{
+   call_init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   ...
+   fun:call_init
+   fun:_dl_init
    ...
 }
 
