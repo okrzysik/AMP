@@ -211,7 +211,7 @@ public:
         local_mesh->add_point(::libMesh::Point( 1.0, 1.0, 0.5 ), 14 );
         local_mesh->add_point(::libMesh::Point( 0.5, 1.0, 0.5 ), 15 );
 
-        std::vector<std::vector<unsigned int>> elemNodeMap = getElemNodeMap();
+        auto elemNodeMap = getElemNodeMap();
         for ( size_t i = 0; i < elemNodeMap.size(); i++ ) {
             ::Elem *elem = local_mesh->add_elem( new ::libMesh::Hex8 );
             for ( int j = 0; j < 8; j++ ) {

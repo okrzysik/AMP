@@ -1,6 +1,7 @@
-#ifndef included_AMP_VectorDataCPU
-#define included_AMP_VectorDataCPU
+#ifndef included_AMP_MultiVectorData
+#define included_AMP_MultiVectorData
 
+#include "discretization/DOF_Manager.h"
 #include "vectors/data/VectorData.h"
 
 
@@ -8,32 +9,26 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-template<typename TYPE>
-class VectorDataIterator;
-
-
 /**
   \brief  A class used to hold vector data
 
   \details
 
-  VectorDataCPU is a default implimentation of VectorData that stores
+  MultiVectorData is a default implimentation of VectorData that stores
   the local values as a single block of data on the CPU.
 
   */
-template<typename TYPE = double>
-class VectorDataCPU : virtual public VectorData
+class MultiVectorData : virtual public VectorData
 {
-public: // Constructors
-    VectorDataCPU( size_t data, size_t startIndex, size_t globalSize );
-
 
 public: // Virtual functions
     //! Virtual destructor
-    virtual ~VectorDataCPU() {}
+    virtual ~MultiVectorData() {}
+
 
     //! Get the type name
-    virtual std::string VectorDataName() const override;
+    virtual std::string VectorDataName() const override { return "MultiVectorData"; }
+
 
     /** \brief Number of blocks of contiguous data in the Vector
      * \return Number of blocks in the Vector
@@ -73,11 +68,6 @@ public: // Virtual functions
      *\return Number of entries stored across all cores in this
      */
     virtual size_t getGlobalSize() const override;
-
-    /**\brief get local start id core.
-     *\return The first entry "owned" by this core
-     */
-    virtual size_t getLocalStartID() const override;
 
     /**
      * \brief Set values in the vector by their local offset
@@ -132,6 +122,19 @@ public: // Virtual functions
      */
     virtual void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override;
 
+    virtual void
+    setGhostValuesByGlobalID( int num, size_t *indices, const double *in_vals ) override;
+    virtual void setValuesByGlobalID( int num, size_t *indices, const double *in_vals ) override;
+    virtual void addValuesByGlobalID( int num, size_t *indices, const double *in_vals ) override;
+    virtual void getValuesByGlobalID( int num, size_t *indices, double *out_vals ) const override;
+    virtual void
+    getGhostValuesByGlobalID( int num, size_t *indices, double *out_vals ) const override;
+    virtual void getValuesByLocalID( int num, size_t *indices, double *out_vals ) const override;
+    virtual size_t getGhostSize() const override;
+    virtual void makeConsistent( ScatterType t ) override;
+    virtual UpdateState getUpdateStatus() const override;
+    virtual void setUpdateStatus( UpdateState state ) override;
+
 
 public: // Advanced virtual functions
     /**\brief  A unique id for the underlying data allocation
@@ -166,33 +169,51 @@ public: // Advanced virtual functions
     virtual bool isTypeId( size_t hash, size_t block ) const override;
 
 
-public: // Non-virtual functions
-    /** \brief Access the raw element
-     * \param i        The element to return (local index)
-     */
-    TYPE &operator[]( size_t i );
+protected:
+    MultiVectorData() : d_globalDOFManager( nullptr ) {}
 
-    /** \brief Access the raw element
-     * \param i        The element to return (local index)
-     */
-    const TYPE &operator[]( size_t i ) const;
+    // Internal data
+    std::vector<VectorData *> d_data;
+    AMP::Discretization::DOFManager *d_globalDOFManager;
+    std::vector<AMP::Discretization::DOFManager *> d_subDOFManager;
 
 
 protected:
-    VectorDataCPU() : d_startIndex( 0 ), d_globalSize( 0 ) {}
+    /** A method that will translate an array of global ids relative to the multivector
+     * into an array of arrays of global ids relative to the component vectors
+     * \param[in] num            The number of DOFs that need to be mapped
+     * \param[in] indices        The indices of the values relative to the multivector
+     * \param[in] vals           Values associated somehow with the indices
+     * \param[out] out_indices   An array of arrays of mapped indices relative to constituent
+     * vectors
+     * \param[out] out_vals      The values partitioned according to out_indices
+     * \param[out] remap         If not null, this is a list of where in the indices array an entry
+     * comes from
+     */
+    void partitionGlobalValues( const int num,
+                                const size_t *indices,
+                                const double *vals,
+                                std::vector<std::vector<size_t>> &out_indices,
+                                std::vector<std::vector<double>> &out_vals,
+                                std::vector<std::vector<int>> *remap = nullptr ) const;
 
-    void allocate( size_t start, size_t localSize, size_t globalSize );
-
-
-private:
-    std::vector<TYPE> d_Data;
-    size_t d_startIndex;
-    size_t d_globalSize;
-
-
-public: // Deprecated functions
-    //! return a const reference to the internal data container (deprecated)
-    inline const std::vector<TYPE> &getData( void ) const { return d_Data; }
+    /** A method that will translate an array of local ids relative to the multivector
+     * into an array of arrays of local ids relative to the component vectors
+     * \param[in] num            The number of DOFs that need to be mapped
+     * \param[in] indices        The indices of the values relative to the multivector
+     * \param[in] vals           Values associated somehow with the indices
+     * \param[out] out_indices   An array of arrays of mapped indices relative to constituent
+     * vectors
+     * \param[out] out_vals      The values partitioned according to out_indices
+     * \param[out] remap         If not null, this is a list of where in the indices array an entry
+     * comes from
+     */
+    void partitionLocalValues( const int num,
+                               const size_t *indices,
+                               const double *vals,
+                               std::vector<std::vector<size_t>> &out_indices,
+                               std::vector<std::vector<double>> &out_vals,
+                               std::vector<std::vector<int>> *remap = nullptr ) const;
 };
 
 

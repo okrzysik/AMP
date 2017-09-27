@@ -34,9 +34,9 @@ inline size_t NativePetscVector::sizeOfDataBlock( size_t i ) const
 }
 
 
-inline VectorEngine::BufferPtr NativePetscVector::getNewBuffer()
+inline AMP::shared_ptr<VectorData> NativePetscVector::getNewBuffer()
 {
-    return VectorEngine::BufferPtr();
+    return AMP::shared_ptr<VectorEngine>();
 }
 
 
@@ -46,28 +46,17 @@ inline bool NativePetscVector::sameEngine( VectorEngine &e ) const
 }
 
 
-inline VectorEngine::shared_ptr NativePetscVector::cloneEngine( BufferPtr ) const
+inline AMP::shared_ptr<VectorEngine>
+    NativePetscVector::cloneEngine( AMP::shared_ptr<VectorData> ) const
 {
     return AMP::dynamic_pointer_cast<VectorEngine>( Vector::cloneVector( "engine_clone" ) );
 }
 
 
-inline void NativePetscVector::swapEngines( VectorEngine::shared_ptr p )
+inline void NativePetscVector::swapEngines( AMP::shared_ptr<VectorEngine> p )
 {
     Vector::shared_ptr p2 = AMP::dynamic_pointer_cast<Vector>( p );
     Vector::swapVectors( p2 );
-}
-
-
-inline void *NativePetscVector::getDataBlock( size_t i )
-{
-    return static_cast<void *>( getRawDataBlock<double>( i ) );
-}
-
-
-inline const void *NativePetscVector::getDataBlock( size_t i ) const
-{
-    return static_cast<const void *>( getRawDataBlock<double>( i ) );
 }
 
 

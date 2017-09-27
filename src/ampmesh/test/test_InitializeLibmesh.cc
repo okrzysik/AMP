@@ -35,8 +35,7 @@ int main( int argc, char **argv )
         AMP_ASSERT( !AMP::Mesh::initializeLibMesh::isInitialized() );
         AMP_ASSERT( AMP::Mesh::initializeLibMesh::canBeInitialized( globalComm ) );
         AMP_ASSERT( AMP::Mesh::initializeLibMesh::canBeInitialized( splitComm ) );
-        AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmesh(
-            new AMP::Mesh::initializeLibMesh( splitComm ) );
+        auto libmesh = AMP::make_shared<AMP::Mesh::initializeLibMesh>( splitComm );
         AMP_ASSERT( AMP::Mesh::initializeLibMesh::isInitialized() );
         if ( globalComm.getSize() > 1 )
             AMP_ASSERT( !AMP::Mesh::initializeLibMesh::canBeInitialized( globalComm ) );

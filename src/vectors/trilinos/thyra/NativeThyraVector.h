@@ -66,6 +66,7 @@ public:
 
     //! Overloaded functions
     virtual std::string type() const override { return "Native Thyra Vector"; }
+    virtual std::string VectorDataName() const override { return "NativeThyraVector"; }
     virtual Vector::shared_ptr getManagedVectorCopy( AMP_MPI comm ) override;
     virtual Vector::shared_ptr getManagedVectorDuplicate( AMP_MPI comm ) override;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
@@ -107,12 +108,11 @@ public:
     virtual size_t getLocalSize() const override;
     virtual size_t getGlobalSize() const override;
     virtual void putRawData( const double * ) override;
-    virtual BufferPtr getNewBuffer() override;
+    virtual AMP::shared_ptr<VectorData> getNewBuffer() override;
     virtual bool sameEngine( VectorEngine & ) const override;
-    virtual VectorEngine::shared_ptr cloneEngine( BufferPtr p ) const override;
-    virtual void swapEngines( VectorEngine::shared_ptr ) override;
-    virtual void *getDataBlock( size_t i ) override;
-    virtual const void *getDataBlock( size_t i ) const override;
+    virtual AMP::shared_ptr<VectorEngine>
+    cloneEngine( AMP::shared_ptr<VectorData> p ) const override;
+    virtual void swapEngines( AMP::shared_ptr<VectorEngine> ) override;
     virtual AMP_MPI getComm() const override;
     virtual void copyOutRawData( double *out ) const override;
     virtual uint64_t getDataID() const override

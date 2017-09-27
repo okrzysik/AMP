@@ -34,7 +34,7 @@ public:
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        AMP::LinearAlgebra::Vector::shared_ptr vec = d_factory->getVector();
+        auto vec = d_factory->getVector();
         return vec->cloneVector();
     }
 
@@ -54,17 +54,16 @@ private:
 class NullVectorFactory : public VectorFactory
 {
 public:
-    typedef AMP::LinearAlgebra::NullVector vector;
+    typedef AMP::LinearAlgebra::NullVector<double> vector;
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
-        return AMP::LinearAlgebra::Variable::shared_ptr(
-            new AMP::LinearAlgebra::Variable( "null" ) );
+        return AMP::make_shared<AMP::LinearAlgebra::Variable>( "null" );
     }
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        return AMP::LinearAlgebra::NullVector::create( "null" );
+        return AMP::LinearAlgebra::NullVector<double>::create( "null" );
     }
 
     virtual std::string name() const override { return "NullVectorFactory"; }
@@ -86,8 +85,7 @@ public:
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
-        return AMP::LinearAlgebra::Variable::shared_ptr(
-            new AMP::LinearAlgebra::Variable( "simple" ) );
+        return AMP::make_shared<AMP::LinearAlgebra::Variable>( "simple" );
     }
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
@@ -124,8 +122,7 @@ public:
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
-        return AMP::LinearAlgebra::Variable::shared_ptr(
-            new AMP::LinearAlgebra::Variable( "array" ) );
+        return AMP::make_shared<AMP::LinearAlgebra::Variable>( "array" );
     }
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
@@ -163,29 +160,28 @@ public:
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
-        return AMP::LinearAlgebra::Variable::shared_ptr(
-            new AMP::LinearAlgebra::Variable( "..." ) );
+        return AMP::make_shared<AMP::LinearAlgebra::Variable>( "..." );
     }
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        const int num_local = 210;
+        const int nLocal = 210;
         AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-        AMP::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters> epetraParams(
-            new AMP::LinearAlgebra::EpetraVectorEngineParameters(
-                num_local, num_local * globalComm.getSize(), globalComm ) );
-        AMP::shared_ptr<AMP::LinearAlgebra::ManagedVectorParameters> managedParams(
-            new AMP::LinearAlgebra::ManagedVectorParameters );
-        AMP::LinearAlgebra::VectorEngine::BufferPtr buffer( new std::vector<double>( 120 ) );
-        managedParams->d_Engine = AMP::LinearAlgebra::VectorEngine::shared_ptr(
-            new AMP::LinearAlgebra::EpetraVectorEngine( epetraParams, buffer ) );
+        const int start   = nLocal * globalComm.getRank();
+        const int nGlobal = nLocal * globalComm.getSize();
+        auto epetraParams = AMP::make_shared<AMP::LinearAlgebra::EpetraVectorEngineParameters>(
+            nLocal, nGlobal, globalComm );
+        auto managedParams = AMP::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
+        auto buffer =
+            AMP::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
+        managedParams->d_Engine =
+            AMP::make_shared<AMP::LinearAlgebra::EpetraVectorEngine>( epetraParams, buffer );
         managedParams->d_CommList =
-            AMP::LinearAlgebra::CommunicationList::createEmpty( 210, globalComm );
-        managedParams->d_DOFManager = AMP::Discretization::DOFManager::shared_ptr(
-            new AMP::Discretization::DOFManager( 210, globalComm ) );
-        AMP::shared_ptr<TYPE> retval( new TYPE( managedParams ) );
-        retval->setVariable( AMP::LinearAlgebra::Variable::shared_ptr(
-            new AMP::LinearAlgebra::Variable( "Test Vector" ) ) );
+            AMP::LinearAlgebra::CommunicationList::createEmpty( nLocal, globalComm );
+        managedParams->d_DOFManager =
+            AMP::make_shared<AMP::Discretization::DOFManager>( nLocal, globalComm );
+        auto retval = AMP::make_shared<TYPE>( managedParams );
+        retval->setVariable( AMP::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
         return retval;
     }
 
@@ -216,14 +212,13 @@ public:
         PetscInt local_size = 15;
         VecSetSizes( v, local_size, PETSC_DECIDE );
         VecSetType( v, VECMPI ); // this line will have to be modified for the no mpi and cuda cases
-        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams(
-            new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
-        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVector> newVec(
-            new AMP::LinearAlgebra::NativePetscVector( npvParams ) );
+        auto npvParams =
+            AMP::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
+        auto newVec = AMP::make_shared<AMP::LinearAlgebra::NativePetscVector>( npvParams );
         VecSetFromOptions( v );
         newVec->assemble();
-        newVec->setVariable( AMP::LinearAlgebra::Variable::shared_ptr(
-            new AMP::LinearAlgebra::Variable( "Test NativePetscVector" ) ) );
+        newVec->setVariable(
+            AMP::make_shared<AMP::LinearAlgebra::Variable>( "Test NativePetscVector" ) );
         return newVec;
     }
 
@@ -252,18 +247,16 @@ public:
         AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
         VecCreate( globalComm.getCommunicator(), &v );
         VecSetSizes( v, 15, PETSC_DECIDE );
-        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams(
-            new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
+        auto npvParams =
+            AMP::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
         auto newVec = AMP::make_shared<AMP::LinearAlgebra::NativePetscVector>( npvParams );
         VecSetFromOptions( v );
         newVec->assemble();
-        auto p1        = new AMP::LinearAlgebra::ManagedVectorParameters;
+        auto p1        = AMP::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
         p1->d_Engine   = newVec;
         p1->d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( 210, globalComm );
-        AMP::LinearAlgebra::Vector::shared_ptr retval(
-            new T( AMP::LinearAlgebra::VectorParameters::shared_ptr( p1 ) ) );
-        retval->setVariable( AMP::LinearAlgebra::Variable::shared_ptr(
-            new AMP::LinearAlgebra::Variable( "Test Vector" ) ) );
+        auto retval    = AMP::make_shared<T>( p1 );
+        retval->setVariable( AMP::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
         return retval;
     }
 
@@ -309,7 +302,12 @@ public:
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        return TYPE::view( d_factory->getVector() );
+        auto rtn = TYPE::view( d_factory->getVector() );
+        auto vec = dynamic_cast<TYPE *>( rtn.get() );
+        AMP_INSIST( vec != nullptr, "Failed to cast view to type" );
+        auto native = vec->getNativeVec();
+        NULL_USE( native );
+        return rtn;
     }
 
     virtual std::string name() const override { return "ViewFactory"; }
@@ -338,12 +336,12 @@ public:
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
-        AMP::LinearAlgebra::MultiVariable *newVar = new AMP::LinearAlgebra::MultiVariable( "var1" );
+        auto newVar = AMP::make_shared<AMP::LinearAlgebra::MultiVariable>( "var1" );
         for ( int i = 0; i != NUM1; i++ )
             newVar->add( FACTORY1->getVariable() );
         for ( int i = 0; i != NUM2; i++ )
             newVar->add( FACTORY2->getVariable() );
-        return AMP::LinearAlgebra::Variable::shared_ptr( newVar );
+        return newVar;
     }
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
@@ -370,6 +368,8 @@ private:
     AMP::shared_ptr<const VectorFactory> FACTORY1;
     AMP::shared_ptr<const VectorFactory> FACTORY2;
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

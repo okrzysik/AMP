@@ -29,10 +29,10 @@ int main( int argc, char **argv )
         ratio = atof( argv[3] );
 
     // Simulate loading the mesh
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto database = input_db->getDatabase( "Mesh" );
+    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     std::vector<int> comm_ranks( N_procs );
     for ( int i = 0; i < N_procs; i++ )
         comm_ranks[i] = i;

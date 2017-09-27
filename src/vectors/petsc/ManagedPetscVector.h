@@ -94,7 +94,11 @@ public:
     using Vector::cloneVector;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr p ) const override;
 
-    virtual std::string type() const override;
+    virtual std::string type() const override
+    {
+        return "Managed PETSc Vector" + ManagedVector::type();
+    }
+
     void assemble() override;
 
     virtual bool petscHoldsView() const override;
@@ -102,9 +106,9 @@ public:
 protected:
     virtual ManagedVector *getNewRawPtr() const override;
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
-
-#include "ManagedPetscVector.inline.h"
 
 #endif

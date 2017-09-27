@@ -5,6 +5,7 @@
 #include "vectors/DataChangePassThrough.h"
 #include "vectors/Vector.h"
 #include "vectors/VectorEngine.h"
+#include "vectors/data/MultiVectorData.h"
 #include "vectors/operations/MultiVectorOperations.h"
 
 
@@ -18,6 +19,7 @@ namespace LinearAlgebra {
  *    accomplishes this task.
  */
 class MultiVector : public Vector,
+                    public MultiVectorData,
                     public MultiVectorOperations,
                     public VectorEngine,
                     public DataChangePassThrough
@@ -171,47 +173,19 @@ public:
 
     virtual AMP_MPI getComm() const override;
 
-    virtual size_t numberOfDataBlocks() const override;
-
-    virtual size_t sizeOfDataBlock( size_t i ) const override;
-
     virtual Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     virtual Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector &other ) override;
-    virtual void setValuesByLocalID( int num, size_t *indices, const double *vals ) override;
-    virtual void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
-    virtual void setGhostValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
-    virtual void setValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
-    virtual void addValuesByLocalID( int num, size_t *indices, const double *vals ) override;
-    virtual void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
-    virtual void addValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
-    virtual void getValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    virtual void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    virtual void getGhostValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    virtual void getValuesByLocalID( int numVals, size_t *ndx, double *vals ) const override;
-    virtual void makeConsistent( ScatterType t ) override;
-    virtual UpdateState getUpdateStatus() const override;
-    virtual void setUpdateStatus( UpdateState state ) override;
     virtual void assemble() override;
-    virtual size_t getLocalSize() const override;
-    virtual size_t getGlobalSize() const override;
-    virtual size_t getGhostSize() const override;
-    virtual void putRawData( const double * ) override;
-    virtual bool isTypeId( size_t hash, size_t ) const override;
-    virtual size_t sizeofDataBlockType( size_t i ) const override;
 
     // Vector engine functions
-    virtual AMP::shared_ptr<std::vector<double>> getNewBuffer() override;
+    virtual AMP::shared_ptr<VectorData> getNewBuffer() override;
     virtual bool sameEngine( VectorEngine &rhs ) const override;
-    virtual VectorEngine::shared_ptr
-    cloneEngine( AMP::shared_ptr<std::vector<double>> ) const override;
-    virtual void swapEngines( VectorEngine::shared_ptr p ) override;
-    virtual const void *getDataBlock( size_t i ) const override;
-    virtual void *getDataBlock( size_t i ) override;
-    virtual void copyOutRawData( double *out ) const override;
+    virtual AMP::shared_ptr<VectorEngine> cloneEngine( AMP::shared_ptr<VectorData> ) const override;
+    virtual void swapEngines( AMP::shared_ptr<VectorEngine> p ) override;
 
 
 protected:
@@ -225,9 +199,6 @@ protected:
 
     //! The list of AMP Vectors that comprise this Vector
     std::vector<Vector::shared_ptr> d_vVectors;
-
-    virtual void *getRawDataBlockAsVoid( size_t ) override;
-    virtual const void *getRawDataBlockAsVoid( size_t ) const override;
 
     /** \brief A convenience method for extracting vectors from a base class
      * \param[in]  vec  The vector to extract a vector from
@@ -250,49 +221,12 @@ protected:
 
     virtual void dataChanged() override;
 
-    /** A method that will translate an array of global ids relative to the multivector
-     * into an array of arrays of global ids relative to the component vectors
-     * \param[in] num            The number of DOFs that need to be mapped
-     * \param[in] indices        The indices of the values relative to the multivector
-     * \param[in] vals           Values associated somehow with the indices
-     * \param[out] out_indices   An array of arrays of mapped indices relative to constituent
-     * vectors
-     * \param[out] out_vals      The values partitioned according to out_indices
-     * \param[out] remap         If not null, this is a list of where in the indices array an entry
-     * comes from
-     */
-    void partitionGlobalValues( const int num,
-                                const size_t *indices,
-                                const double *vals,
-                                std::vector<std::vector<size_t>> &out_indices,
-                                std::vector<std::vector<double>> &out_vals,
-                                std::vector<std::vector<int>> *remap = nullptr ) const;
-
-    /** A method that will translate an array of local ids relative to the multivector
-     * into an array of arrays of local ids relative to the component vectors
-     * \param[in] num            The number of DOFs that need to be mapped
-     * \param[in] indices        The indices of the values relative to the multivector
-     * \param[in] vals           Values associated somehow with the indices
-     * \param[out] out_indices   An array of arrays of mapped indices relative to constituent
-     * vectors
-     * \param[out] out_vals      The values partitioned according to out_indices
-     * \param[out] remap         If not null, this is a list of where in the indices array an entry
-     * comes from
-     */
-    void partitionLocalValues( const int num,
-                               const size_t *indices,
-                               const double *vals,
-                               std::vector<std::vector<size_t>> &out_indices,
-                               std::vector<std::vector<double>> &out_vals,
-                               std::vector<std::vector<int>> *remap = nullptr ) const;
-
-    //! Return the id of the data
-    virtual uint64_t getDataID() const override { return 0; }
-
-
 private:
     // Helper function to add a vector without updating the DOF manager
     void addVectorHelper( Vector::shared_ptr vec );
+
+    // Helper function to update the vector data
+    inline void updateVectorData();
 
     // Helper function to update the vector operations
     inline void updateVectorOperations();

@@ -21,7 +21,7 @@ inline PetscRandom &PetscVector::getPetscRandom( AMP_MPI comm )
 inline Vec &PetscVector::getVec() { return d_petscVec; }
 
 
-inline Vec PetscVector::getVec() const { return d_petscVec; }
+inline const Vec &PetscVector::getVec() const { return d_petscVec; }
 
 
 inline PetscVector::~PetscVector()

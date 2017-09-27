@@ -10,9 +10,9 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-inline VectorEngine::BufferPtr NativeThyraVector::getNewBuffer()
+inline AMP::shared_ptr<VectorData> NativeThyraVector::getNewBuffer()
 {
-    return VectorEngine::BufferPtr();
+    return AMP::shared_ptr<VectorData>();
 }
 
 
@@ -22,28 +22,17 @@ inline bool NativeThyraVector::sameEngine( VectorEngine &e ) const
 }
 
 
-inline VectorEngine::shared_ptr NativeThyraVector::cloneEngine( BufferPtr ) const
+inline AMP::shared_ptr<VectorEngine>
+    NativeThyraVector::cloneEngine( AMP::shared_ptr<VectorData> ) const
 {
     return AMP::dynamic_pointer_cast<VectorEngine>( Vector::cloneVector( "engine_clone" ) );
 }
 
 
-inline void NativeThyraVector::swapEngines( VectorEngine::shared_ptr p )
+inline void NativeThyraVector::swapEngines( AMP::shared_ptr<VectorEngine> p )
 {
     Vector::shared_ptr p2 = AMP::dynamic_pointer_cast<Vector>( p );
     Vector::swapVectors( p2 );
-}
-
-
-inline void *NativeThyraVector::getDataBlock( size_t i )
-{
-    return static_cast<void *>( getRawDataBlock<double>( i ) );
-}
-
-
-inline const void *NativeThyraVector::getDataBlock( size_t i ) const
-{
-    return static_cast<const void *>( getRawDataBlock<double>( i ) );
 }
 
 

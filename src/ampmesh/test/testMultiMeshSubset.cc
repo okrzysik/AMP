@@ -16,20 +16,19 @@ void testMultiMeshSubset( AMP::UnitTest &ut )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Parse the input File
-    AMP::shared_ptr<AMP::InputDatabase> inputDatabase( new AMP::InputDatabase( "input_db" ) );
+    auto inputDatabase = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( inputFile, inputDatabase );
 
     // Read the mesh database
-    AMP::Database::shared_ptr meshDatabase = inputDatabase->getDatabase( "Mesh" );
+    auto meshDatabase = inputDatabase->getDatabase( "Mesh" );
 
     // Build the mesh
-    AMP::Mesh::MeshParameters::shared_ptr meshParams(
-        new AMP::Mesh::MeshParameters( meshDatabase ) );
+    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( globalComm );
-    AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // Subset the mesh
-    AMP::Mesh::Mesh::shared_ptr fooMesh = mesh->Subset( "Foo" );
+    auto fooMesh = mesh->Subset( "Foo" );
     AMP::Mesh::MeshIterator it;
     if ( fooMesh != nullptr )
         it = fooMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Volume, 0 );
