@@ -17,8 +17,8 @@ EpetraVector::~EpetraVector() = default;
 /********************************************************
  * View                                                  *
  ********************************************************/
-static AMP::shared_ptr<ManagedEpetraVector> createManagedEpetraVector(
-    Vector::shared_ptr inVector, AMP::shared_ptr<EpetraVectorEngine> engine )
+static AMP::shared_ptr<ManagedEpetraVector>
+createManagedEpetraVector( Vector::shared_ptr inVector, AMP::shared_ptr<EpetraVectorEngine> engine )
 {
     auto newParams           = AMP::make_shared<ManagedVectorParameters>();
     newParams->d_Engine      = engine;
@@ -27,7 +27,7 @@ static AMP::shared_ptr<ManagedEpetraVector> createManagedEpetraVector(
     newParams->d_CommList = inVector->getCommunicationList();
     AMP_INSIST( inVector->getDOFManager(), "All vectors must have a DOFManager list" );
     newParams->d_DOFManager = inVector->getDOFManager();
-    auto retVal = AMP::make_shared<ManagedEpetraVector>( newParams );
+    auto retVal             = AMP::make_shared<ManagedEpetraVector>( newParams );
     retVal->setVariable( inVector->getVariable() );
     retVal->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
     inVector->registerView( retVal );
@@ -36,7 +36,7 @@ static AMP::shared_ptr<ManagedEpetraVector> createManagedEpetraVector(
 Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
 {
     AMP_INSIST( inVector->numberOfDataBlocks() == 1,
-        "Epetra does not support more than 1 data block" );
+                "Epetra does not support more than 1 data block" );
     Vector::shared_ptr retVal;
     if ( dynamic_pointer_cast<EpetraVector>( inVector ) ) {
         retVal = inVector;
@@ -57,13 +57,13 @@ Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
         }
     } else if ( dynamic_pointer_cast<EpetraVectorEngine>( inVector ) ) {
         auto engine = AMP::dynamic_pointer_cast<EpetraVectorEngine>( inVector );
-        retVal = createManagedEpetraVector( inVector, engine );
+        retVal      = createManagedEpetraVector( inVector, engine );
     } else {
         // Create a multivector to wrap the given vector and create a view
         auto engineParams = AMP::make_shared<EpetraVectorEngineParameters>(
-            inVector->getLocalSize(), inVector->getGlobalSize(),inVector->getComm() );
+            inVector->getLocalSize(), inVector->getGlobalSize(), inVector->getComm() );
         auto engine = AMP::make_shared<EpetraVectorEngine>( engineParams, inVector );
-        retVal = createManagedEpetraVector( inVector, engine );
+        retVal      = createManagedEpetraVector( inVector, engine );
     }
     if ( !retVal )
         AMP_ERROR( "Cannot create view!" );

@@ -8,13 +8,14 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-
 // Define some specializations
-template<> std::string VectorDataCPU<double>::VectorDataName() const;
-template<> std::string VectorDataCPU<float>::VectorDataName() const;
+template<>
+std::string VectorDataCPU<double>::VectorDataName() const;
+template<>
+std::string VectorDataCPU<float>::VectorDataName() const;
 
 
-// Suppresses implicit instantiation below 
+// Suppresses implicit instantiation below
 extern template class VectorDataCPU<double>;
 extern template class VectorDataCPU<float>;
 
@@ -25,7 +26,7 @@ extern template class VectorDataCPU<float>;
 template<typename TYPE>
 std::string VectorDataCPU<TYPE>::VectorDataName() const
 {
-    return "VectorDataCPU<" + std::string(typeid(TYPE).name()) + ">";
+    return "VectorDataCPU<" + std::string( typeid( TYPE ).name() ) + ">";
 }
 
 

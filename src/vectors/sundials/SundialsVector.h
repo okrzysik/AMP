@@ -123,10 +123,8 @@ public:
     static Vector::const_shared_ptr constView( Vector::const_shared_ptr AmpVector );
 
 public:
-
-    inline N_Vector& getNativeVec() { return getNVector(); }
-    inline const N_Vector& getNativeVec() const { return getNVector(); }
-
+    inline N_Vector &getNativeVec() { return getNVector(); }
+    inline const N_Vector &getNativeVec() const { return getNVector(); }
 };
 
 

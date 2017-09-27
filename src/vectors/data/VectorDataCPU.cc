@@ -3,11 +3,13 @@
 
 
 // Specializations
-template<> std::string AMP::LinearAlgebra::VectorDataCPU<double>::VectorDataName() const
+template<>
+std::string AMP::LinearAlgebra::VectorDataCPU<double>::VectorDataName() const
 {
     return "VectorDataCPU<double>";
 }
-template<> std::string AMP::LinearAlgebra::VectorDataCPU<float>::VectorDataName() const
+template<>
+std::string AMP::LinearAlgebra::VectorDataCPU<float>::VectorDataName() const
 {
     return "VectorDataCPU<float>";
 }

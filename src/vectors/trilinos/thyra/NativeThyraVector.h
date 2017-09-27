@@ -110,7 +110,8 @@ public:
     virtual void putRawData( const double * ) override;
     virtual AMP::shared_ptr<VectorData> getNewBuffer() override;
     virtual bool sameEngine( VectorEngine & ) const override;
-    virtual AMP::shared_ptr<VectorEngine> cloneEngine( AMP::shared_ptr<VectorData> p ) const override;
+    virtual AMP::shared_ptr<VectorEngine>
+    cloneEngine( AMP::shared_ptr<VectorData> p ) const override;
     virtual void swapEngines( AMP::shared_ptr<VectorEngine> ) override;
     virtual AMP_MPI getComm() const override;
     virtual void copyOutRawData( double *out ) const override;

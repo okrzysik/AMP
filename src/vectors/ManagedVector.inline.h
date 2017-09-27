@@ -6,7 +6,10 @@ namespace LinearAlgebra {
 
 
 inline AMP::shared_ptr<VectorEngine> ManagedVector::getVectorEngine() { return d_Engine; }
-inline AMP::shared_ptr<const VectorEngine> ManagedVector::getVectorEngine() const { return d_Engine; }
+inline AMP::shared_ptr<const VectorEngine> ManagedVector::getVectorEngine() const
+{
+    return d_Engine;
+}
 
 
 inline std::string ManagedVector::type() const

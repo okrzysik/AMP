@@ -75,7 +75,6 @@ protected:
     VectorEngineParameters::shared_ptr d_Params;
 
 public:
-
     /** \brief  Destructor
      */
     virtual ~VectorEngine();

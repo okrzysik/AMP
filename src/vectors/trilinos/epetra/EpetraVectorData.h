@@ -50,7 +50,7 @@ public: // Virtual functions
     }
 
 protected:
-    EpetraVectorData( Epetra_DataAccess, const Epetra_BlockMap&, double*, int, int, int );
+    EpetraVectorData( Epetra_DataAccess, const Epetra_BlockMap &, double *, int, int, int );
 
     //! The Epetra_Vector to perform work on
     Epetra_Vector d_epetraVector;

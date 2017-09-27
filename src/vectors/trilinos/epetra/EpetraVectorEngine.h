@@ -73,7 +73,7 @@ public:
      * \param[in]  p  The buffer to use to construct the engine
      */
     EpetraVectorEngine( AMP::shared_ptr<VectorEngineParameters> alias,
-        AMP::shared_ptr<VectorData> p = nullptr );
+                        AMP::shared_ptr<VectorData> p = nullptr );
 
     /** \brief Destructor
      */
@@ -93,7 +93,8 @@ public:
 public: // Functions derived from VectorEngine
     AMP_MPI getComm() const override;
     virtual bool sameEngine( VectorEngine &e ) const override;
-    virtual AMP::shared_ptr<VectorEngine> cloneEngine( AMP::shared_ptr<VectorData> p ) const override;
+    virtual AMP::shared_ptr<VectorEngine>
+    cloneEngine( AMP::shared_ptr<VectorData> p ) const override;
     virtual void swapEngines( AMP::shared_ptr<VectorEngine> ) override;
     virtual AMP::shared_ptr<VectorData> getNewBuffer() override;
 };

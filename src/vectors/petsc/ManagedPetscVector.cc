@@ -831,12 +831,13 @@ AMP::shared_ptr<AMP::LinearAlgebra::Vector> ManagedPetscVector::createFromPetscV
     VecGetLocalSize( source, &local_size );
     VecGetSize( source, &global_size );
     VecGetOwnershipRange( source, &local_start, &local_end );
-    auto buffer = AMP::make_shared<VectorDataCPU<double>>(
-        local_start, local_size, global_size );
-    auto t = AMP::make_shared<ManagedPetscVectorParameters>();
-    auto ve_params = AMP::make_shared<EpetraVectorEngineParameters>( local_size, global_size, comm );
-    t->d_Engine    = AMP::make_shared<EpetraVectorEngine>( ve_params, buffer );
-    auto pRetVal   = AMP::make_shared<ManagedPetscVector>( AMP::dynamic_pointer_cast<VectorParameters>( t ) );
+    auto buffer = AMP::make_shared<VectorDataCPU<double>>( local_start, local_size, global_size );
+    auto t      = AMP::make_shared<ManagedPetscVectorParameters>();
+    auto ve_params =
+        AMP::make_shared<EpetraVectorEngineParameters>( local_size, global_size, comm );
+    t->d_Engine = AMP::make_shared<EpetraVectorEngine>( ve_params, buffer );
+    auto pRetVal =
+        AMP::make_shared<ManagedPetscVector>( AMP::dynamic_pointer_cast<VectorParameters>( t ) );
     return pRetVal;
 #else
     AMP_ERROR( "General case not programmed yet" );
@@ -859,10 +860,7 @@ ManagedVector *ManagedPetscVector::getNewRawPtr() const
     return new ManagedPetscVector( AMP::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
 }
 
-bool ManagedPetscVector::constructedWithPetscDuplicate()
-{
-    return d_bMadeWithPetscDuplicate;
-}
+bool ManagedPetscVector::constructedWithPetscDuplicate() { return d_bMadeWithPetscDuplicate; }
 
 ManagedPetscVector *ManagedPetscVector::rawClone() const
 {
@@ -871,7 +869,7 @@ ManagedPetscVector *ManagedPetscVector::rawClone() const
         p->d_Engine = d_Engine->cloneEngine( AMP::shared_ptr<VectorData>() );
     } else {
         p->d_Buffer = AMP::make_shared<VectorDataCPU<double>>(
-             d_vBuffer->getLocalStartID(),  d_vBuffer->getLocalSize(),  d_vBuffer->getGlobalSize() );
+            d_vBuffer->getLocalStartID(), d_vBuffer->getLocalSize(), d_vBuffer->getGlobalSize() );
         p->d_Engine = d_Engine->cloneEngine( p->d_Buffer );
     }
     p->d_CommList   = getCommunicationList();

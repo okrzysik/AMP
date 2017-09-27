@@ -32,11 +32,12 @@ Vector::const_shared_ptr PetscVector::constView( Vector::const_shared_ptr inVect
         auto newParams           = AMP::make_shared<ManagedPetscVectorParameters>();
         newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
         newParams->d_CloneEngine = false;
-        AMP_INSIST( inVector->getCommunicationList(), "All vectors must have a communication list" );
+        AMP_INSIST( inVector->getCommunicationList(),
+                    "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();
         AMP_INSIST( inVector->getDOFManager(), "All vectors must have a DOFManager list" );
         newParams->d_DOFManager = inVector->getDOFManager();
-        auto newVector = AMP::make_shared<ManagedPetscVector>( newParams );
+        auto newVector          = AMP::make_shared<ManagedPetscVector>( newParams );
         dynamic_pointer_cast<DataChangeFirer>( inVector2 )->registerListener( newVector.get() );
         newVector->setVariable( inVector->getVariable() );
         newVector->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
@@ -65,11 +66,12 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
         auto newParams           = AMP::make_shared<ManagedPetscVectorParameters>();
         newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector );
         newParams->d_CloneEngine = false;
-        AMP_INSIST( inVector->getCommunicationList(), "All vectors must have a communication list" );
+        AMP_INSIST( inVector->getCommunicationList(),
+                    "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();
         AMP_INSIST( inVector->getDOFManager(), "All vectors must have a DOFManager list" );
         newParams->d_DOFManager = inVector->getDOFManager();
-        auto newVector = AMP::make_shared<ManagedPetscVector>( newParams );
+        auto newVector          = AMP::make_shared<ManagedPetscVector>( newParams );
         dynamic_pointer_cast<DataChangeFirer>( inVector )->registerListener( newVector.get() );
         newVector->setVariable( inVector->getVariable() );
         newVector->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );

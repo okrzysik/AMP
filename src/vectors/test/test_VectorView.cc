@@ -13,13 +13,13 @@ int main( int argc, char **argv )
 
 #if defined( USE_EXT_TRILINOS )
     AMP::pout << "Testing EpetraVector::view<SimpleVector>" << std::endl;
-    VectorIteratorTests( ut, "ViewFactory<EpetraVector,"+SimpleFactory1+">" );
+    VectorIteratorTests( ut, "ViewFactory<EpetraVector," + SimpleFactory1 + ">" );
     AMP::pout << std::endl;
 #endif
 
 #if defined( USE_EXT_PETSC )
     AMP::pout << "Testing PetscVector::view<SimpleVector>" << std::endl;
-    VectorIteratorTests( ut, "ViewFactory<PetscVector,"+SimpleFactory1+">" );
+    VectorIteratorTests( ut, "ViewFactory<PetscVector," + SimpleFactory1 + ">" );
     AMP::pout << std::endl;
 #endif
 

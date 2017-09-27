@@ -39,7 +39,8 @@ public:
 
 
     // These methods are adequately documented in a base class
-    virtual std::string type() const override { 
+    virtual std::string type() const override
+    {
         return "Managed Epetra Vector" + ManagedVector::type();
     }
 

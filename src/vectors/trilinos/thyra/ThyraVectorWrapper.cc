@@ -619,7 +619,7 @@ static std::vector<ThyraVectorWrapper *> getPtr( std::vector<size_t> block_size,
                     "All vectors used in applyOpImpl must be of the type ThyraVectorWrapper" );
         for ( size_t j = 0; j < ptr[i]->numVecs(); j++ ) {
             AMP::LinearAlgebra::Vector::const_shared_ptr tmp = ptr[i]->getVec( j );
-            size_t N_blocks = tmp->numberOfDataBlocks();
+            size_t N_blocks                                  = tmp->numberOfDataBlocks();
             AMP_ASSERT( N_blocks == block_size.size() );
             for ( size_t k = 0; k < N_blocks; k++ )
                 AMP_ASSERT( block_size[k] == tmp->sizeOfDataBlock( k ) );

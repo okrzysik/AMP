@@ -73,11 +73,11 @@ ManagedSundialsVector *ManagedSundialsVector::rawClone() const
         p->d_Engine = d_Engine->cloneEngine( AMP::shared_ptr<VectorData>() );
     } else {
         p->d_Buffer = AMP::make_shared<VectorDataCPU<double>>(
-             d_vBuffer->getLocalStartID(),  d_vBuffer->getLocalSize(),  d_vBuffer->getGlobalSize() );
+            d_vBuffer->getLocalStartID(), d_vBuffer->getLocalSize(), d_vBuffer->getGlobalSize() );
         p->d_Engine = d_Engine->cloneEngine( p->d_Buffer );
     }
-    p->d_CommList   = getCommunicationList();
-    p->d_DOFManager = getDOFManager();
+    p->d_CommList                 = getCommunicationList();
+    p->d_DOFManager               = getDOFManager();
     ManagedSundialsVector *retVal = new ManagedSundialsVector( p );
     return retVal;
 }

@@ -167,14 +167,19 @@ public:
     {
         const int nLocal = 210;
         AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-        const int start = nLocal * globalComm.getRank();
+        const int start   = nLocal * globalComm.getRank();
         const int nGlobal = nLocal * globalComm.getSize();
-        auto epetraParams = AMP::make_shared<AMP::LinearAlgebra::EpetraVectorEngineParameters>( nLocal, nGlobal, globalComm );
-        auto managedParams = AMP::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>( );
-        auto buffer = AMP::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
-        managedParams->d_Engine = AMP::make_shared<AMP::LinearAlgebra::EpetraVectorEngine>( epetraParams, buffer );
-        managedParams->d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( nLocal, globalComm );
-        managedParams->d_DOFManager = AMP::make_shared<AMP::Discretization::DOFManager>( nLocal, globalComm );
+        auto epetraParams = AMP::make_shared<AMP::LinearAlgebra::EpetraVectorEngineParameters>(
+            nLocal, nGlobal, globalComm );
+        auto managedParams = AMP::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
+        auto buffer =
+            AMP::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
+        managedParams->d_Engine =
+            AMP::make_shared<AMP::LinearAlgebra::EpetraVectorEngine>( epetraParams, buffer );
+        managedParams->d_CommList =
+            AMP::LinearAlgebra::CommunicationList::createEmpty( nLocal, globalComm );
+        managedParams->d_DOFManager =
+            AMP::make_shared<AMP::Discretization::DOFManager>( nLocal, globalComm );
         auto retval = AMP::make_shared<TYPE>( managedParams );
         retval->setVariable( AMP::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
         return retval;
@@ -207,11 +212,13 @@ public:
         PetscInt local_size = 15;
         VecSetSizes( v, local_size, PETSC_DECIDE );
         VecSetType( v, VECMPI ); // this line will have to be modified for the no mpi and cuda cases
-        auto npvParams = AMP::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
+        auto npvParams =
+            AMP::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
         auto newVec = AMP::make_shared<AMP::LinearAlgebra::NativePetscVector>( npvParams );
         VecSetFromOptions( v );
         newVec->assemble();
-        newVec->setVariable( AMP::make_shared<AMP::LinearAlgebra::Variable>( "Test NativePetscVector" ) );
+        newVec->setVariable(
+            AMP::make_shared<AMP::LinearAlgebra::Variable>( "Test NativePetscVector" ) );
         return newVec;
     }
 
@@ -240,15 +247,16 @@ public:
         AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
         VecCreate( globalComm.getCommunicator(), &v );
         VecSetSizes( v, 15, PETSC_DECIDE );
-        auto npvParams = AMP::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
-        auto newVec    = AMP::make_shared<AMP::LinearAlgebra::NativePetscVector>( npvParams );
+        auto npvParams =
+            AMP::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
+        auto newVec = AMP::make_shared<AMP::LinearAlgebra::NativePetscVector>( npvParams );
         VecSetFromOptions( v );
         newVec->assemble();
-        auto p1        =  AMP::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
+        auto p1        = AMP::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
         p1->d_Engine   = newVec;
         p1->d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( 210, globalComm );
         auto retval    = AMP::make_shared<T>( p1 );
-        retval->setVariable(  AMP::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
+        retval->setVariable( AMP::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
         return retval;
     }
 
@@ -295,10 +303,10 @@ public:
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         auto rtn = TYPE::view( d_factory->getVector() );
-        auto vec = dynamic_cast<TYPE*>( rtn.get() );
+        auto vec = dynamic_cast<TYPE *>( rtn.get() );
         AMP_INSIST( vec != nullptr, "Failed to cast view to type" );
         auto native = vec->getNativeVec();
-        NULL_USE(native);
+        NULL_USE( native );
         return rtn;
     }
 

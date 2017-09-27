@@ -37,14 +37,8 @@ size_t MultiVectorData::sizeOfDataBlock( size_t i ) const
     }
     return retVal;
 }
-size_t MultiVectorData::getLocalSize() const
-{
-    return d_globalDOFManager->numLocalDOF();
-}
-size_t MultiVectorData::getGlobalSize() const
-{
-    return d_globalDOFManager->numGlobalDOF();
-}
+size_t MultiVectorData::getLocalSize() const { return d_globalDOFManager->numLocalDOF(); }
+size_t MultiVectorData::getGlobalSize() const { return d_globalDOFManager->numGlobalDOF(); }
 size_t MultiVectorData::getGhostSize() const
 {
     size_t ans = 0;

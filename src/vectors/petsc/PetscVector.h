@@ -127,7 +127,7 @@ public:
       }
       \endcode
       */
-    virtual const Vec& getVec() const;
+    virtual const Vec &getVec() const;
 
     /**
      *  \brief  If needed, create a PETSc wrapper for AmpVector.  Otherwise, return AmpVector.
@@ -172,10 +172,8 @@ public:
 
 
 public:
-
-    inline Vec& getNativeVec() { return getVec(); }
-    inline const Vec& getNativeVec() const { return getVec(); }
-
+    inline Vec &getNativeVec() { return getVec(); }
+    inline const Vec &getNativeVec() const { return getVec(); }
 };
 
 

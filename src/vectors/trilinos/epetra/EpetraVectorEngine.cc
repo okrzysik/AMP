@@ -1,6 +1,6 @@
 #include "vectors/trilinos/epetra/EpetraVectorEngine.h"
-#include "vectors/data/VectorDataCPU.h"
 #include "utils/Utilities.h"
+#include "vectors/data/VectorDataCPU.h"
 
 #ifdef USE_EXT_MPI
 #include <Epetra_MpiComm.h>
@@ -21,7 +21,7 @@ static inline double *getBufferPtr( AMP::shared_ptr<VectorData> buf )
     if ( N_blocks == 0 )
         return nullptr;
     if ( N_blocks > 1 )
-        AMP_ERROR("More than 1 data block detected");
+        AMP_ERROR( "More than 1 data block detected" );
     return buf->getRawDataBlock<double>( 0 );
 }
 
@@ -94,7 +94,8 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-EpetraVectorEngine::EpetraVectorEngine( AMP::shared_ptr<VectorEngineParameters> alias, AMP::shared_ptr<VectorData> buf )
+EpetraVectorEngine::EpetraVectorEngine( AMP::shared_ptr<VectorEngineParameters> alias,
+                                        AMP::shared_ptr<VectorData> buf )
     : EpetraVectorData(
           View,
           dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
@@ -103,7 +104,7 @@ EpetraVectorEngine::EpetraVectorEngine( AMP::shared_ptr<VectorEngineParameters> 
           dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
           dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() )
 {
-    d_Params = alias;
+    d_Params    = alias;
     d_buf_scope = buf;
 }
 

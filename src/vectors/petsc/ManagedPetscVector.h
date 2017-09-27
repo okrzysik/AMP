@@ -94,7 +94,8 @@ public:
     using Vector::cloneVector;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr p ) const override;
 
-    virtual std::string type() const override {
+    virtual std::string type() const override
+    {
         return "Managed PETSc Vector" + ManagedVector::type();
     }
 

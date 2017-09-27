@@ -26,7 +26,6 @@ class VectorDataNull : virtual public VectorData
 {
 
 public: // Virtual functions
-
     //! Virtual destructor
     virtual ~VectorDataNull() {}
 
@@ -52,13 +51,13 @@ public: // Virtual functions
     /**\brief Copy data into this vector
      *\param[in] buf  Buffer to copy from
      */
-    inline void putRawData( const double* ) override { }
+    inline void putRawData( const double * ) override {}
 
     /**\brief Copy data out of this vector
      *\param[out] buf  Buffer to copy to
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
-    inline void copyOutRawData( double* ) const override { }
+    inline void copyOutRawData( double * ) const override {}
 
     /**\brief Number of elements "owned" by this core
       *\return  Number of entries stored contiguously on this processor
@@ -83,8 +82,9 @@ public: // Virtual functions
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
      */
-    inline void setValuesByLocalID( int num, size_t*, const double* ) override {
-        AMP_INSIST(num==0,"Cannot set values in NullVectorData");
+    inline void setValuesByLocalID( int num, size_t *, const double * ) override
+    {
+        AMP_INSIST( num == 0, "Cannot set values in NullVectorData" );
     }
 
     /**
@@ -95,8 +95,9 @@ public: // Virtual functions
      *
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
      */
-    inline void setLocalValuesByGlobalID( int num, size_t*, const double* ) override {
-        AMP_INSIST(num==0,"Cannot set values in NullVectorData");
+    inline void setLocalValuesByGlobalID( int num, size_t *, const double * ) override
+    {
+        AMP_INSIST( num == 0, "Cannot set values in NullVectorData" );
     }
 
     /**
@@ -109,8 +110,9 @@ public: // Virtual functions
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
      */
-    inline void addValuesByLocalID( int num, size_t*, const double* ) override {
-        AMP_INSIST(num==0,"Cannot add values in NullVectorData");
+    inline void addValuesByLocalID( int num, size_t *, const double * ) override
+    {
+        AMP_INSIST( num == 0, "Cannot add values in NullVectorData" );
     }
 
     /**
@@ -122,8 +124,9 @@ public: // Virtual functions
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
      */
-    inline void addLocalValuesByGlobalID( int num, size_t*, const double* ) override {
-        AMP_INSIST(num==0,"Cannot add values in NullVectorData");
+    inline void addLocalValuesByGlobalID( int num, size_t *, const double * ) override
+    {
+        AMP_INSIST( num == 0, "Cannot add values in NullVectorData" );
     }
 
     /**
@@ -133,8 +136,9 @@ public: // Virtual functions
      * \param[out] vals the values to place in the vector
      * \details This will get any value owned by this core.
      */
-    inline void getLocalValuesByGlobalID( int num, size_t*, double* ) const override {
-        AMP_INSIST(num==0,"Cannot get values in NullVectorData");
+    inline void getLocalValuesByGlobalID( int num, size_t *, double * ) const override
+    {
+        AMP_INSIST( num == 0, "Cannot get values in NullVectorData" );
     }
 
 
@@ -162,20 +166,20 @@ public: // Advanced virtual functions
     /** \brief Return the result of sizeof(TYPE) for the given data block
      * \param i The block to return
      */
-    inline size_t sizeofDataBlockType( size_t ) const override { return sizeof(TYPE); }
+    inline size_t sizeofDataBlockType( size_t ) const override { return sizeof( TYPE ); }
 
     /** \brief Is the data of the given type
      * \param hash     The hash code: typeid(myint).hash_code()
      * \param block    The block id to check
      */
-    inline bool isTypeId( size_t hash, size_t ) const override {
+    inline bool isTypeId( size_t hash, size_t ) const override
+    {
         return hash == typeid( TYPE ).hash_code();
     }
 
 
 protected:
     VectorDataNull() {}
-
 };
 
 

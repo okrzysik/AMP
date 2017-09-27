@@ -51,7 +51,6 @@ public: // enums
 
 
 public: // Virtual functions
-
     //! Virtual destructor
     virtual ~VectorData() {}
 
@@ -544,7 +543,6 @@ public: // Non virtual functions
 
 
 protected: // Internal data
-
     //! The communication list for this vector
     CommunicationList::shared_ptr d_CommList;
 
@@ -565,10 +563,8 @@ protected: // Internal data
 
 
 protected: // Protected functions
-
     //! Default constructor
     VectorData() = default;
-
 };
 
 

@@ -107,10 +107,7 @@ void EpetraVectorOperations::setRandomValues()
     this->abs( *this );
 }
 
-void EpetraVectorOperations::scale( double alpha )
-{
-    getEpetra_Vector().Scale( alpha );
-}
+void EpetraVectorOperations::scale( double alpha ) { getEpetra_Vector().Scale( alpha ); }
 
 double EpetraVectorOperations::L1Norm() const
 {

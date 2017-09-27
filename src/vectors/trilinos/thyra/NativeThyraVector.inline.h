@@ -22,7 +22,8 @@ inline bool NativeThyraVector::sameEngine( VectorEngine &e ) const
 }
 
 
-inline AMP::shared_ptr<VectorEngine> NativeThyraVector::cloneEngine( AMP::shared_ptr<VectorData> ) const
+inline AMP::shared_ptr<VectorEngine>
+    NativeThyraVector::cloneEngine( AMP::shared_ptr<VectorData> ) const
 {
     return AMP::dynamic_pointer_cast<VectorEngine>( Vector::cloneVector( "engine_clone" ) );
 }

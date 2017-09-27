@@ -36,7 +36,6 @@ public:
 
     //! Indicates whether the engine should be used as is or cloned
     bool d_CloneEngine;
-
 };
 
 

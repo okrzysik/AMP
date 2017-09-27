@@ -22,7 +22,6 @@ class MultiVectorData : virtual public VectorData
 {
 
 public: // Virtual functions
-
     //! Virtual destructor
     virtual ~MultiVectorData() {}
 
@@ -171,7 +170,7 @@ public: // Advanced virtual functions
 
 
 protected:
-    MultiVectorData(): d_globalDOFManager(nullptr) {}
+    MultiVectorData() : d_globalDOFManager( nullptr ) {}
 
     // Internal data
     std::vector<VectorData *> d_data;

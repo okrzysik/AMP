@@ -145,7 +145,8 @@ public:
 
     virtual AMP::shared_ptr<VectorData> getNewBuffer() override;
     virtual bool sameEngine( VectorEngine & ) const override;
-    virtual AMP::shared_ptr<VectorEngine> cloneEngine( AMP::shared_ptr<VectorData> p ) const override;
+    virtual AMP::shared_ptr<VectorEngine>
+    cloneEngine( AMP::shared_ptr<VectorData> p ) const override;
 
     virtual void swapEngines( AMP::shared_ptr<VectorEngine> ) override;
 

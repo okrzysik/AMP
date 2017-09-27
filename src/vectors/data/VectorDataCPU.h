@@ -25,12 +25,10 @@ template<typename TYPE = double>
 class VectorDataCPU : virtual public VectorData
 {
 public: // Constructors
-
     VectorDataCPU( size_t data, size_t startIndex, size_t globalSize );
 
 
 public: // Virtual functions
-
     //! Virtual destructor
     virtual ~VectorDataCPU() {}
 
