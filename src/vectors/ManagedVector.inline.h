@@ -5,8 +5,8 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-inline VectorEngine::shared_ptr ManagedVector::getVectorEngine() { return d_Engine; }
-inline VectorEngine::const_shared_ptr ManagedVector::getVectorEngine() const { return d_Engine; }
+inline AMP::shared_ptr<VectorEngine> ManagedVector::getVectorEngine() { return d_Engine; }
+inline AMP::shared_ptr<const VectorEngine> ManagedVector::getVectorEngine() const { return d_Engine; }
 
 
 inline std::string ManagedVector::type() const
@@ -66,7 +66,7 @@ inline Vector::const_shared_ptr ManagedVector::selectInto( const VectorSelector 
 inline ManagedVectorParameters::ManagedVectorParameters()
 {
     d_CloneEngine = true;
-    d_Buffer      = VectorEngine::BufferPtr();
+    d_Buffer      = nullptr;
 }
 
 

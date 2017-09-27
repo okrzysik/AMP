@@ -23,8 +23,10 @@ public: // Virtual functions
     //! Virtual destructor
     virtual ~EpetraVectorData() {}
 
+    virtual std::string VectorDataName() const override { return "EpetraVectorData"; }
     virtual size_t getLocalSize() const override { return d_iLocalSize; }
     virtual size_t getGlobalSize() const override { return d_iGlobalSize; }
+    virtual size_t getLocalStartID() const override { return d_iLocalStart; }
     virtual size_t numberOfDataBlocks() const override { return 1; }
     virtual size_t sizeOfDataBlock( size_t i ) const override { return i == 0 ? d_iLocalSize : 0; }
     virtual void setValuesByLocalID( int i, size_t *, const double *val ) override;
@@ -48,10 +50,13 @@ public: // Virtual functions
     }
 
 protected:
-    EpetraVectorData( Epetra_DataAccess, const Epetra_BlockMap &, double *, int, int );
+    EpetraVectorData( Epetra_DataAccess, const Epetra_BlockMap&, double*, int, int, int );
 
     //! The Epetra_Vector to perform work on
     Epetra_Vector d_epetraVector;
+
+    //! The local start index
+    int d_iLocalStart;
 
     //! The number of local elements in the vector
     int d_iLocalSize;

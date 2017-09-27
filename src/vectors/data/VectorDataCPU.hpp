@@ -8,13 +8,35 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-extern template class VectorDataCPU<double>; // Suppresses implicit instantiation below --
-extern template class VectorDataCPU<float>;  // Suppresses implicit instantiation below --
+
+// Define some specializations
+template<> std::string VectorDataCPU<double>::VectorDataName() const;
+template<> std::string VectorDataCPU<float>::VectorDataName() const;
+
+
+// Suppresses implicit instantiation below 
+extern template class VectorDataCPU<double>;
+extern template class VectorDataCPU<float>;
+
+
+/****************************************************************
+ * Get the class type                                            *
+ ****************************************************************/
+template<typename TYPE>
+std::string VectorDataCPU<TYPE>::VectorDataName() const
+{
+    return "VectorDataCPU<" + std::string(typeid(TYPE).name()) + ">";
+}
 
 
 /****************************************************************
  * Allocate the data                                             *
  ****************************************************************/
+template<typename TYPE>
+VectorDataCPU<TYPE>::VectorDataCPU( size_t start, size_t localSize, size_t globalSize )
+{
+    allocate( start, localSize, globalSize );
+}
 template<typename TYPE>
 void VectorDataCPU<TYPE>::allocate( size_t start, size_t localSize, size_t globalSize )
 {
@@ -48,6 +70,11 @@ template<typename TYPE>
 inline size_t VectorDataCPU<TYPE>::getGlobalSize() const
 {
     return d_globalSize;
+}
+template<typename TYPE>
+inline size_t VectorDataCPU<TYPE>::getLocalStartID() const
+{
+    return d_startIndex;
 }
 template<typename TYPE>
 uint64_t VectorDataCPU<TYPE>::getDataID() const

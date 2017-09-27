@@ -289,5 +289,7 @@ AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
     }
     return factory;
 }
+
+
 } // namespace LinearAlgebra
 } // namespace AMP

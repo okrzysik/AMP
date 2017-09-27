@@ -1,4 +1,5 @@
 #include "vectors/petsc/ManagedPetscVector.h"
+#include "vectors/data/VectorDataCPU.h"
 
 #include "utils/Utilities.h"
 #include "vectors/VectorEngine.h"
@@ -830,14 +831,12 @@ AMP::shared_ptr<AMP::LinearAlgebra::Vector> ManagedPetscVector::createFromPetscV
     VecGetLocalSize( source, &local_size );
     VecGetSize( source, &global_size );
     VecGetOwnershipRange( source, &local_start, &local_end );
-    AMP::shared_ptr<ManagedVectorParameters> t( new ManagedPetscVectorParameters() );
-    VectorEngineParameters::shared_ptr ve_params(
-        new EpetraVectorEngineParameters( local_size, global_size, comm ) );
-    t->d_Engine = VectorEngine::shared_ptr(
-        new EpetraVectorEngine( ve_params, AMP::make_shared<VectorEngine::Buffer>( local_size ) ) );
-    ManagedPetscVector *pRetVal_t =
-        new ManagedPetscVector( AMP::dynamic_pointer_cast<VectorParameters>( t ) );
-    Vector::shared_ptr pRetVal( pRetVal_t );
+    auto buffer = AMP::make_shared<VectorDataCPU<double>>(
+        local_start, local_size, global_size );
+    auto t = AMP::make_shared<ManagedPetscVectorParameters>();
+    auto ve_params = AMP::make_shared<EpetraVectorEngineParameters>( local_size, global_size, comm );
+    t->d_Engine    = AMP::make_shared<EpetraVectorEngine>( ve_params, buffer );
+    auto pRetVal   = AMP::make_shared<ManagedPetscVector>( AMP::dynamic_pointer_cast<VectorParameters>( t ) );
     return pRetVal;
 #else
     AMP_ERROR( "General case not programmed yet" );
@@ -854,5 +853,44 @@ void ManagedPetscVector::swapVectors( Vector &other )
     AMP_ASSERT( tmp != nullptr );
     ParentVector::swapVectors( *tmp );
 }
+
+ManagedVector *ManagedPetscVector::getNewRawPtr() const
+{
+    return new ManagedPetscVector( AMP::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
+}
+
+bool ManagedPetscVector::constructedWithPetscDuplicate()
+{
+    return d_bMadeWithPetscDuplicate;
+}
+
+ManagedPetscVector *ManagedPetscVector::rawClone() const
+{
+    AMP::shared_ptr<ManagedVectorParameters> p( new ManagedPetscVectorParameters );
+    if ( !d_vBuffer ) {
+        p->d_Engine = d_Engine->cloneEngine( AMP::shared_ptr<VectorData>() );
+    } else {
+        p->d_Buffer = AMP::make_shared<VectorDataCPU<double>>(
+             d_vBuffer->getLocalStartID(),  d_vBuffer->getLocalSize(),  d_vBuffer->getGlobalSize() );
+        p->d_Engine = d_Engine->cloneEngine( p->d_Buffer );
+    }
+    p->d_CommList   = getCommunicationList();
+    p->d_DOFManager = getDOFManager();
+    ManagedPetscVector *retVal =
+        new ManagedPetscVector( AMP::dynamic_pointer_cast<VectorParameters>( p ) );
+    return retVal;
+}
+
+Vector::shared_ptr ManagedPetscVector::cloneVector( const Variable::shared_ptr p ) const
+{
+    Vector::shared_ptr retVal( rawClone() );
+    retVal->setVariable( p );
+    return retVal;
+}
+
+
+void ManagedPetscVector::assemble() {}
+
+
 } // namespace LinearAlgebra
 } // namespace AMP

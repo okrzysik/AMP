@@ -1,6 +1,6 @@
+#include "vectors/trilinos/epetra/EpetraVectorEngine.h"
+#include "vectors/data/VectorDataCPU.h"
 #include "utils/Utilities.h"
-
-#include "EpetraVectorEngine.h"
 
 #ifdef USE_EXT_MPI
 #include <Epetra_MpiComm.h>
@@ -15,11 +15,14 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-static inline double *getBufferPtr( VectorEngine::BufferPtr buf )
+static inline double *getBufferPtr( AMP::shared_ptr<VectorData> buf )
 {
-    if ( buf->empty() )
+    size_t N_blocks = buf->numberOfDataBlocks();
+    if ( N_blocks == 0 )
         return nullptr;
-    return &buf->operator[]( 0 );
+    if ( N_blocks > 1 )
+        AMP_ERROR("More than 1 data block detected");
+    return buf->getRawDataBlock<double>( 0 );
 }
 
 
@@ -91,11 +94,12 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-EpetraVectorEngine::EpetraVectorEngine( VectorEngineParameters::shared_ptr alias, BufferPtr buf )
+EpetraVectorEngine::EpetraVectorEngine( AMP::shared_ptr<VectorEngineParameters> alias, AMP::shared_ptr<VectorData> buf )
     : EpetraVectorData(
           View,
           dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
           getBufferPtr( buf ),
+          dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->beginDOF(),
           dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
           dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() )
 {
@@ -103,14 +107,14 @@ EpetraVectorEngine::EpetraVectorEngine( VectorEngineParameters::shared_ptr alias
 }
 
 
-VectorEngine::BufferPtr EpetraVectorEngine::getNewBuffer()
+AMP::shared_ptr<VectorData> EpetraVectorEngine::getNewBuffer()
 {
-    BufferPtr retval( new std::vector<double>( getLocalSize() ) );
-    //    d_epetraVector.ResetView ( &*(retval->begin()) );
-    return retval;
+    auto buffer = AMP::make_shared<VectorDataCPU<double>>(
+        getLocalStartID(), getLocalSize(), getGlobalSize() );
+    return buffer;
 }
 
-void EpetraVectorEngine::swapEngines( VectorEngine::shared_ptr x )
+void EpetraVectorEngine::swapEngines( AMP::shared_ptr<VectorEngine> x )
 {
     double *my_pointer;
     double *oth_pointer;
@@ -120,9 +124,9 @@ void EpetraVectorEngine::swapEngines( VectorEngine::shared_ptr x )
     getEpetra_Vector().ResetView( oth_pointer );
 }
 
-VectorEngine::shared_ptr EpetraVectorEngine::cloneEngine( BufferPtr p ) const
+AMP::shared_ptr<VectorEngine> EpetraVectorEngine::cloneEngine( AMP::shared_ptr<VectorData> p ) const
 {
-    return shared_ptr( new EpetraVectorEngine( d_Params, p ) );
+    return AMP::make_shared<EpetraVectorEngine>( d_Params, p );
 }
 
 

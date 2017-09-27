@@ -52,7 +52,7 @@ public:
     static Vector::const_shared_ptr view( Vector::const_shared_ptr, Variable::shared_ptr );
 
     virtual std::string type() const override;
-
+    virtual std::string VectorDataName() const override { return "SubsetVector"; }
     using Vector::cloneVector;
     virtual Vector::shared_ptr cloneVector( Variable::shared_ptr ) const override;
     virtual size_t numberOfDataBlocks() const override;

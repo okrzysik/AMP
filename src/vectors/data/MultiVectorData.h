@@ -22,8 +22,13 @@ class MultiVectorData : virtual public VectorData
 {
 
 public: // Virtual functions
+
     //! Virtual destructor
     virtual ~MultiVectorData() {}
+
+
+    //! Get the type name
+    virtual std::string VectorDataName() const override { return "MultiVectorData"; }
 
 
     /** \brief Number of blocks of contiguous data in the Vector

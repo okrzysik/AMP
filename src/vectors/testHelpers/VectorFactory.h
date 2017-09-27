@@ -167,10 +167,11 @@ public:
     {
         const int nLocal = 210;
         AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+        const int start = nLocal * globalComm.getRank();
         const int nGlobal = nLocal * globalComm.getSize();
         auto epetraParams = AMP::make_shared<AMP::LinearAlgebra::EpetraVectorEngineParameters>( nLocal, nGlobal, globalComm );
         auto managedParams = AMP::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>( );
-        auto buffer = AMP::make_shared<std::vector<double>>( nLocal, 0.0 );
+        auto buffer = AMP::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
         managedParams->d_Engine = AMP::make_shared<AMP::LinearAlgebra::EpetraVectorEngine>( epetraParams, buffer );
         managedParams->d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( nLocal, globalComm );
         managedParams->d_DOFManager = AMP::make_shared<AMP::Discretization::DOFManager>( nLocal, globalComm );

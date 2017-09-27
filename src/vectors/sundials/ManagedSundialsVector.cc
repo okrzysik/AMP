@@ -1,4 +1,5 @@
 #include "vectors/sundials/ManagedSundialsVector.h"
+#include "vectors/data/VectorDataCPU.h"
 
 #include "utils/UtilityMacros.h"
 
@@ -67,17 +68,17 @@ Vector::shared_ptr ManagedSundialsVector::cloneVector( const Variable::shared_pt
 }
 ManagedSundialsVector *ManagedSundialsVector::rawClone() const
 {
-    AMP::shared_ptr<ManagedVectorParameters> p( new ManagedSundialsVectorParameters );
+    auto p = AMP::make_shared<ManagedSundialsVectorParameters>();
     if ( !d_vBuffer ) {
-        p->d_Engine = d_Engine->cloneEngine( VectorEngine::BufferPtr() );
+        p->d_Engine = d_Engine->cloneEngine( AMP::shared_ptr<VectorData>() );
     } else {
-        p->d_Buffer = AMP::make_shared<VectorEngine::Buffer>( d_vBuffer->size() );
+        p->d_Buffer = AMP::make_shared<VectorDataCPU<double>>(
+             d_vBuffer->getLocalStartID(),  d_vBuffer->getLocalSize(),  d_vBuffer->getGlobalSize() );
         p->d_Engine = d_Engine->cloneEngine( p->d_Buffer );
     }
     p->d_CommList   = getCommunicationList();
     p->d_DOFManager = getDOFManager();
-    ManagedSundialsVector *retVal =
-        new ManagedSundialsVector( AMP::dynamic_pointer_cast<VectorParameters>( p ) );
+    ManagedSundialsVector *retVal = new ManagedSundialsVector( p );
     return retVal;
 }
 

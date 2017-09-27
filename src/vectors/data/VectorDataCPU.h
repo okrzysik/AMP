@@ -24,11 +24,18 @@ class VectorDataIterator;
 template<typename TYPE = double>
 class VectorDataCPU : virtual public VectorData
 {
+public: // Constructors
+
+    VectorDataCPU( size_t data, size_t startIndex, size_t globalSize );
+
 
 public: // Virtual functions
+
     //! Virtual destructor
     virtual ~VectorDataCPU() {}
 
+    //! Get the type name
+    virtual std::string VectorDataName() const override;
 
     /** \brief Number of blocks of contiguous data in the Vector
      * \return Number of blocks in the Vector
@@ -68,6 +75,11 @@ public: // Virtual functions
      *\return Number of entries stored across all cores in this
      */
     virtual size_t getGlobalSize() const override;
+
+    /**\brief get local start id core.
+     *\return The first entry "owned" by this core
+     */
+    virtual size_t getLocalStartID() const override;
 
     /**
      * \brief Set values in the vector by their local offset

@@ -51,8 +51,13 @@ public: // enums
 
 
 public: // Virtual functions
+
     //! Virtual destructor
     virtual ~VectorData() {}
+
+
+    //! Get the type name
+    virtual std::string VectorDataName() const = 0;
 
 
     /** \brief Number of blocks of contiguous data in the Vector
@@ -539,8 +544,8 @@ public: // Non virtual functions
 
 
 protected: // Internal data
-           /**\brief  The communication list for this vector
-            */
+
+    //! The communication list for this vector
     CommunicationList::shared_ptr d_CommList;
 
     /** \brief  The current update state for a vector
@@ -557,6 +562,13 @@ protected: // Internal data
 
     // Friends
     friend class VectorOperations;
+
+
+protected: // Protected functions
+
+    //! Default constructor
+    VectorData() = default;
+
 };
 
 

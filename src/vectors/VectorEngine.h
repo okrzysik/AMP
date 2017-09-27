@@ -75,17 +75,6 @@ protected:
     VectorEngineParameters::shared_ptr d_Params;
 
 public:
-    //! The basic buffer type of vectors
-    typedef std::vector<double> Buffer;
-
-    //! A shared pointer to the buffer
-    typedef AMP::shared_ptr<Buffer> BufferPtr;
-
-    //! A shared pointer to an engine
-    typedef AMP::shared_ptr<VectorEngine> shared_ptr;
-
-    //! A const shared pointer to an engine
-    typedef AMP::shared_ptr<const VectorEngine> const_shared_ptr;
 
     /** \brief  Destructor
      */
@@ -94,7 +83,7 @@ public:
     /** \brief Allocate a new buffer
      * \return A shared pointer to a new buffer
      */
-    virtual BufferPtr getNewBuffer() = 0;
+    virtual AMP::shared_ptr<VectorData> getNewBuffer() = 0;
 
     /** \brief  True if engines are the same
      * \param[in]  e  Engine to compare against
@@ -106,12 +95,12 @@ public:
      * \param[in]  p  The buffer to use for the copy.
      * \return  The new engine
      */
-    virtual shared_ptr cloneEngine( BufferPtr p ) const = 0;
+    virtual AMP::shared_ptr<VectorEngine> cloneEngine( AMP::shared_ptr<VectorData> p ) const = 0;
 
     /** \brief Swap engines
      * \param[in,out] p  The engine to exchange with
      */
-    virtual void swapEngines( shared_ptr p ) = 0;
+    virtual void swapEngines( AMP::shared_ptr<VectorEngine> p ) = 0;
 
 
     /** \brief  Get the parameters used to create this engine

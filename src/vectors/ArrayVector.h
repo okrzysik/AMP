@@ -224,6 +224,9 @@ public:
      */
     void assemble() override { AMP_ERROR( "Not implemented" ); }
 
+    //! Get the type name
+    virtual std::string VectorDataName() const override { return "ArrayVector"; }
+
 protected:
     /** \brief Return a pointer to a particular block of memory in the
      * vector

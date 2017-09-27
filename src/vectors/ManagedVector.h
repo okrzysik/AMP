@@ -29,13 +29,14 @@ public:
     ManagedVectorParameters();
 
     //! The VectorEngine to use with the managed vector
-    VectorEngine::shared_ptr d_Engine;
+    AMP::shared_ptr<VectorEngine> d_Engine;
+
+    //! Buffer to use for the managed vector
+    AMP::shared_ptr<VectorData> d_Buffer;
 
     //! Indicates whether the engine should be used as is or cloned
     bool d_CloneEngine;
 
-    //! Buffer to use for the managed vector
-    VectorEngine::BufferPtr d_Buffer;
 };
 
 
@@ -77,8 +78,8 @@ public:
     /** \brief  Return the engine associated with this ManagedVector
      * \return The engine
      */
-    VectorEngine::shared_ptr getVectorEngine();
-    VectorEngine::const_shared_ptr getVectorEngine() const;
+    AMP::shared_ptr<VectorEngine> getVectorEngine();
+    AMP::shared_ptr<const VectorEngine> getVectorEngine() const;
 
     virtual bool isAnAliasOf( Vector &rhs );
     virtual bool isAnAliasOf( Vector::shared_ptr rhs );
@@ -88,10 +89,10 @@ public:
 
 protected:
     //! The buffer used to store data
-    VectorEngine::BufferPtr d_vBuffer;
+    AMP::shared_ptr<VectorData> d_vBuffer;
 
     //! The engine to act on the buffer
-    VectorEngine::shared_ptr d_Engine;
+    AMP::shared_ptr<VectorEngine> d_Engine;
 
     //! The parameters used to create this vector
     AMP::shared_ptr<ManagedVectorParameters> d_pParameters;
@@ -127,6 +128,7 @@ public: // Derived from VectorData
         return hash == typeid( double ).hash_code();
     }
     virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
+    virtual std::string VectorDataName() const override { return type(); }
 
 
 protected: // Derived from VectorData
@@ -203,6 +205,8 @@ public: // Pull VectorOperations into the current scope
 private:
     ManagedVector();
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

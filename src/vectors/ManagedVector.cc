@@ -225,11 +225,9 @@ void ManagedVector::getValuesByGlobalID( int numVals, size_t *ndx, double *vals 
 void ManagedVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
     if ( d_vBuffer ) {
-        for ( int i = 0; i != numVals; i++ )
-            vals[i] = ( *d_vBuffer )[ndx[i] - d_CommList->getStartGID()];
+        d_vBuffer->getLocalValuesByGlobalID( numVals, ndx, vals );
     } else {
-        Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
-        vec->getLocalValuesByGlobalID( numVals, ndx, vals );
+        d_Engine->getLocalValuesByGlobalID( numVals, ndx, vals );
     }
 }
 
@@ -509,7 +507,7 @@ AMP::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr n
 {
     AMP::shared_ptr<Vector> retVal( getNewRawPtr() );
     if ( !d_vBuffer ) {
-        getManaged( retVal )->d_Engine = d_Engine->cloneEngine( VectorEngine::BufferPtr() );
+        getManaged( retVal )->d_Engine = d_Engine->cloneEngine( AMP::shared_ptr<VectorData>() );
     }
     retVal->setVariable( name );
     return retVal;

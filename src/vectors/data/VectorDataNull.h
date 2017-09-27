@@ -26,8 +26,13 @@ class VectorDataNull : virtual public VectorData
 {
 
 public: // Virtual functions
+
     //! Virtual destructor
     virtual ~VectorDataNull() {}
+
+
+    //! Get the type name
+    virtual std::string VectorDataName() const override { return "VectorDataNull"; }
 
 
     /** \brief Number of blocks of contiguous data in the Vector

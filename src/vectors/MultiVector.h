@@ -182,11 +182,10 @@ public:
     virtual void assemble() override;
 
     // Vector engine functions
-    virtual AMP::shared_ptr<std::vector<double>> getNewBuffer() override;
+    virtual AMP::shared_ptr<VectorData> getNewBuffer() override;
     virtual bool sameEngine( VectorEngine &rhs ) const override;
-    virtual VectorEngine::shared_ptr
-    cloneEngine( AMP::shared_ptr<std::vector<double>> ) const override;
-    virtual void swapEngines( VectorEngine::shared_ptr p ) override;
+    virtual AMP::shared_ptr<VectorEngine> cloneEngine( AMP::shared_ptr<VectorData> ) const override;
+    virtual void swapEngines( AMP::shared_ptr<VectorEngine> p ) override;
 
 
 protected:

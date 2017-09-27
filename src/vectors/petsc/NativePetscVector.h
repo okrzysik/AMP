@@ -93,6 +93,7 @@ public:
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector & ) override;
 
+    virtual std::string VectorDataName() const override { return "NativePetscVector"; }
     virtual size_t numberOfDataBlocks() const override;
     virtual size_t sizeOfDataBlock( size_t i ) const override;
 
@@ -142,11 +143,11 @@ public:
 
     virtual void putRawData( const double * ) override;
 
-    virtual BufferPtr getNewBuffer() override;
+    virtual AMP::shared_ptr<VectorData> getNewBuffer() override;
     virtual bool sameEngine( VectorEngine & ) const override;
-    virtual VectorEngine::shared_ptr cloneEngine( BufferPtr p ) const override;
+    virtual AMP::shared_ptr<VectorEngine> cloneEngine( AMP::shared_ptr<VectorData> p ) const override;
 
-    virtual void swapEngines( VectorEngine::shared_ptr ) override;
+    virtual void swapEngines( AMP::shared_ptr<VectorEngine> ) override;
 
     virtual AMP_MPI getComm() const override;
 

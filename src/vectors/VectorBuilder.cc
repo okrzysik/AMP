@@ -112,8 +112,8 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
         auto eveparams = AMP::make_shared<EpetraVectorEngineParameters>(
             DOFs->numLocalDOF(), DOFs->numGlobalDOF(), DOFs->getComm() );
         comm.barrier();
-        auto t_buffer = AMP::make_shared<VectorEngine::Buffer>( DOFs->numLocalDOF() );
-        AMP_ASSERT( t_buffer->size() == DOFs->numLocalDOF() );
+        auto t_buffer = AMP::make_shared<VectorDataCPU<double>>(
+            DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
         auto epetra_engine     = AMP::make_shared<EpetraVectorEngine>( eveparams, t_buffer );
         mvparams->d_Engine     = epetra_engine;
         mvparams->d_Buffer     = t_buffer;
@@ -130,8 +130,8 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
         auto eveparams = AMP::make_shared<EpetraVectorEngineParameters>(
             DOFs->numLocalDOF(), DOFs->numGlobalDOF(), DOFs->getComm() );
         comm.barrier();
-        auto t_buffer = AMP::make_shared<VectorEngine::Buffer>( DOFs->numLocalDOF() );
-        AMP_ASSERT( t_buffer->size() == DOFs->numLocalDOF() );
+        auto t_buffer = AMP::make_shared<VectorDataCPU<double>>(
+            DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
         auto epetra_engine     = AMP::make_shared<EpetraVectorEngine>( eveparams, t_buffer );
         mvparams->d_Engine     = epetra_engine;
         mvparams->d_Buffer     = t_buffer;

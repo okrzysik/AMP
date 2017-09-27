@@ -8,9 +8,13 @@ namespace LinearAlgebra {
 EpetraVectorData::EpetraVectorData( Epetra_DataAccess method,
                                     const Epetra_BlockMap &map,
                                     double *data,
+                                    int localStart,
                                     int localSize,
-                                    int globalSize )
-    : d_epetraVector( method, map, data ), d_iLocalSize( localSize ), d_iGlobalSize( globalSize )
+                                    int globalSize ):
+    d_epetraVector( method, map, data ),
+    d_iLocalStart(localStart),
+    d_iLocalSize( localSize ),
+    d_iGlobalSize( globalSize )
 {
 }
 

@@ -450,18 +450,18 @@ void MultiVector::aliasVector( Vector &other )
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         d_vVectors[i]->aliasVector( getVector( other, i ) );
 }
-VectorEngine::BufferPtr MultiVector::getNewBuffer() { return VectorEngine::BufferPtr(); }
+AMP::shared_ptr<VectorData> MultiVector::getNewBuffer() { return AMP::shared_ptr<VectorData>(); }
 bool MultiVector::sameEngine( VectorEngine &rhs ) const
 {
     return dynamic_cast<MultiVector *>( &rhs ) != nullptr;
 }
-void MultiVector::swapEngines( VectorEngine::shared_ptr p )
+void MultiVector::swapEngines( AMP::shared_ptr<VectorEngine> p )
 {
     auto vec = dynamic_pointer_cast<MultiVector>( p );
     AMP_INSIST( vec != nullptr, "Cannot swap with a non-MulitVector" );
     return swapVectors( *vec );
 }
-VectorEngine::shared_ptr MultiVector::cloneEngine( VectorEngine::BufferPtr ) const
+AMP::shared_ptr<VectorEngine> MultiVector::cloneEngine( AMP::shared_ptr<VectorData> ) const
 {
     return AMP::dynamic_pointer_cast<VectorEngine>( Vector::cloneVector( "engine_clone" ) );
 }
