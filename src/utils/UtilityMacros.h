@@ -249,6 +249,7 @@
         _Pragma( "GCC diagnostic ignored \"-Wunused-parameter\"" )                      \
         _Pragma( "GCC diagnostic ignored \"-Wdeprecated-declarations\"" )               \
         _Pragma( "GCC diagnostic ignored \"-Wvirtual-move-assign\"" )                   \
+        _Pragma( "GCC diagnostic ignored \"-Wunused-function\"" )                       \
         _Pragma( "GCC diagnostic ignored \"-Woverflow\"" )
 #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
 #else

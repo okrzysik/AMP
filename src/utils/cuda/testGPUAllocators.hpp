@@ -1,3 +1,4 @@
+#include <stdio.h>
 
 template<typename T>
 void opDataW( T *d_A, size_t n );
