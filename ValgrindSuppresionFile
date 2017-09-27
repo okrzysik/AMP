@@ -92,6 +92,16 @@
    fun:PetscPushErrorHandler
    ...
 }
+{
+   PetscMallocAlign2
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:memalign
+   fun:PetscMallocAlign
+   fun:PetscTrMallocDefault
+   fun:PetscPushErrorHandler
+   ...
+}
 
 
 #### Suppress all libgfortran errors

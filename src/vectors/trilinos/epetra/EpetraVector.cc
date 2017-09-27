@@ -60,12 +60,10 @@ Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
         retVal = createManagedEpetraVector( inVector, engine );
     } else {
         // Create a multivector to wrap the given vector and create a view
-        AMP_ERROR("Not finished");
-        /*auto engineParams = AMP::make_shared<EpetraVectorEngineParameters>(
+        auto engineParams = AMP::make_shared<EpetraVectorEngineParameters>(
             inVector->getLocalSize(), inVector->getGlobalSize(),inVector->getComm() );
-        BufferPtr buffer = nullptr;
-        auto engine = AMP::make_shared<EpetraVectorEngine>( engineParams, buffer );
-        retVal = createManagedEpetraVector( inVector, engine );*/
+        auto engine = AMP::make_shared<EpetraVectorEngine>( engineParams, inVector );
+        retVal = createManagedEpetraVector( inVector, engine );
     }
     if ( !retVal )
         AMP_ERROR( "Cannot create view!" );

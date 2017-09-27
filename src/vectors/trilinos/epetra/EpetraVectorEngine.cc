@@ -104,6 +104,7 @@ EpetraVectorEngine::EpetraVectorEngine( AMP::shared_ptr<VectorEngineParameters> 
           dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() )
 {
     d_Params = alias;
+    d_buf_scope = buf;
 }
 
 

@@ -55,6 +55,9 @@ protected:
     //! The Epetra_Vector to perform work on
     Epetra_Vector d_epetraVector;
 
+    //! A shared ptr to the buffer (to prevent it from leaving scope)
+    AMP::shared_ptr<VectorData> d_buf_scope;
+
     //! The local start index
     int d_iLocalStart;
 

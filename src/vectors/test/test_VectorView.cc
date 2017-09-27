@@ -12,9 +12,9 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
 
 #if defined( USE_EXT_TRILINOS )
-    //AMP::pout << "Testing EpetraVector::view<SimpleVector>" << std::endl;
-    //VectorIteratorTests( ut, "ViewFactory<EpetraVector,"+SimpleFactory1+">" );
-    //AMP::pout << std::endl;
+    AMP::pout << "Testing EpetraVector::view<SimpleVector>" << std::endl;
+    VectorIteratorTests( ut, "ViewFactory<EpetraVector,"+SimpleFactory1+">" );
+    AMP::pout << std::endl;
 #endif
 
 #if defined( USE_EXT_PETSC )
