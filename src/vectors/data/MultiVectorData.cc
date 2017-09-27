@@ -15,14 +15,14 @@ namespace LinearAlgebra {
 /****************************************************************
  * Return basic properties                                       *
  ****************************************************************/
-inline size_t MultiVectorData::numberOfDataBlocks() const
+size_t MultiVectorData::numberOfDataBlocks() const
 {
     size_t ans = 0;
     for ( const auto &data : d_data )
         ans += data->numberOfDataBlocks();
     return ans;
 }
-inline size_t MultiVectorData::sizeOfDataBlock( size_t i ) const
+size_t MultiVectorData::sizeOfDataBlock( size_t i ) const
 {
     size_t retVal = 0;
     size_t rightOffset, leftOffset;
@@ -37,11 +37,11 @@ inline size_t MultiVectorData::sizeOfDataBlock( size_t i ) const
     }
     return retVal;
 }
-inline size_t MultiVectorData::getLocalSize() const
+size_t MultiVectorData::getLocalSize() const
 {
     return d_globalDOFManager->numLocalDOF();
 }
-inline size_t MultiVectorData::getGlobalSize() const
+size_t MultiVectorData::getGlobalSize() const
 {
     return d_globalDOFManager->numGlobalDOF();
 }
@@ -83,7 +83,7 @@ size_t MultiVectorData::sizeofDataBlockType( size_t block ) const
 /****************************************************************
  * Access the raw data blocks                                    *
  ****************************************************************/
-inline void *MultiVectorData::getRawDataBlockAsVoid( size_t i )
+void *MultiVectorData::getRawDataBlockAsVoid( size_t i )
 {
     size_t curOffset = 0;
     for ( const auto &data : d_data ) {
@@ -95,7 +95,7 @@ inline void *MultiVectorData::getRawDataBlockAsVoid( size_t i )
     }
     return nullptr;
 }
-inline const void *MultiVectorData::getRawDataBlockAsVoid( size_t i ) const
+const void *MultiVectorData::getRawDataBlockAsVoid( size_t i ) const
 {
     size_t curOffset = 0;
     for ( const auto &data : d_data ) {

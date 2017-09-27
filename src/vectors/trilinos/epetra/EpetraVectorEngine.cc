@@ -29,12 +29,6 @@ static inline Epetra_Vector &getEpetraVector( VectorOperations &vec )
     AMP_INSIST( epetra != nullptr, "Not an EpetraVectorEngine" );
     return epetra->getEpetra_Vector();
 }
-static inline const Epetra_Vector &getEpetraVector( const VectorOperations &vec )
-{
-    auto epetra = dynamic_cast<const EpetraVectorEngine *>( &vec );
-    AMP_INSIST( epetra != nullptr, "Not an EpetraVectorEngine" );
-    return epetra->getEpetra_Vector();
-}
 
 
 /********************************************************

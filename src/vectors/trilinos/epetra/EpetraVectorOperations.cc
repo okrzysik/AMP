@@ -6,12 +6,6 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-static inline Epetra_Vector &getEpetraVector( VectorOperations &vec )
-{
-    auto epetra = dynamic_cast<EpetraVectorEngine *>( &vec );
-    AMP_INSIST( epetra != nullptr, "Not an EpetraVectorEngine" );
-    return epetra->getEpetra_Vector();
-}
 static inline const Epetra_Vector &getEpetraVector( const VectorOperations &vec )
 {
     auto epetra = dynamic_cast<const EpetraVectorEngine *>( &vec );
@@ -31,6 +25,7 @@ const Epetra_Vector &EpetraVectorOperations::getEpetra_Vector() const
     AMP_INSIST( epetra != nullptr, "Not an EpetraVectorEngine" );
     return epetra->getEpetra_Vector();
 }
+
 
 void EpetraVectorOperations::setToScalar( const double alpha )
 {
