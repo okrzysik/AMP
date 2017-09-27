@@ -12,8 +12,26 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-extern template class VectorDataGPU<double>; // Suppresses implicit instantiation below --
-extern template class VectorDataGPU<float>;  // Suppresses implicit instantiation below --
+// Define some specializations
+template<>
+std::string VectorDataGPU<double>::VectorDataName() const;
+template<>
+std::string VectorDataGPU<float>::VectorDataName() const;
+
+
+// Suppresses implicit instantiation below
+extern template class VectorDataGPU<double>;
+extern template class VectorDataGPU<float>;
+
+
+/****************************************************************
+ * Get the class type                                            *
+ ****************************************************************/
+template<typename TYPE>
+std::string VectorDataGPU<TYPE>::VectorDataName() const
+{
+    return "VectorDataGPU<" + std::string( typeid( TYPE ).name() ) + ">";
+}
 
 
 /****************************************************************

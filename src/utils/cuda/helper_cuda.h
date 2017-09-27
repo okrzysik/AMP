@@ -22,6 +22,10 @@
 #include <string.h>
 
 #include "utils/cuda/helper_string.h"
+#include "utils/Utilities.h"
+
+#include <cuda_runtime.h>
+#include <cuda.h>
 
 #ifndef EXIT_WAIVED
 #define EXIT_WAIVED 2
@@ -287,6 +291,7 @@ static const char *_cudaGetErrorEnum( cudaError_t error )
 
 #ifdef __cuda_cuda_h__
 // CUDA Driver API errors
+DISABLE_WARNINGS
 static const char *_cudaGetErrorEnum( CUresult error )
 {
     switch ( error ) {
@@ -507,6 +512,7 @@ static const char *_cudaGetErrorEnum( cublasStatus_t error )
 
     return "<unknown>";
 }
+ENABLE_WARNINGS
 #endif
 
 #ifdef _CUFFT_H_

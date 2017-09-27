@@ -29,6 +29,8 @@ public: // Virtual functions
     //! Virtual destructor
     virtual ~VectorDataGPU();
 
+    //! Get the type name
+    virtual std::string VectorDataName() const override;
 
     /** \brief Number of blocks of contiguous data in the Vector
      * \return Number of blocks in the Vector
