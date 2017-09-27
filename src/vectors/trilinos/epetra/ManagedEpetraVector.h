@@ -39,7 +39,9 @@ public:
 
 
     // These methods are adequately documented in a base class
-    virtual std::string type() const override;
+    virtual std::string type() const override { 
+        return "Managed Epetra Vector" + ManagedVector::type();
+    }
 
     using Vector::cloneVector;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const override;
@@ -57,6 +59,5 @@ protected:
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "ManagedEpetraVector.inline.h"
 
 #endif

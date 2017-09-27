@@ -40,9 +40,9 @@ Vector::Vector( VectorParameters::shared_ptr parameters )
     // Set default output stream
     d_output_stream = &AMP::plog;
     // Copy the relavent parameters
-    AMP_INSIST( parameters->d_CommList.get() != nullptr,
+    AMP_INSIST( parameters->d_CommList,
                 "d_CommList must be set in VectorParameters" );
-    AMP_INSIST( parameters->d_DOFManager.get() != nullptr,
+    AMP_INSIST( parameters->d_DOFManager,
                 "d_DOFManager must be set in VectorParameters" );
     setCommunicationList( parameters->d_CommList );
     d_UpdateState.reset( new UpdateState );

@@ -113,7 +113,14 @@ public:
      *  exception is thrown.
      */
     static Vector::const_shared_ptr constView( Vector::const_shared_ptr vec );
+
+public:
+
+    inline Epetra_Vector& getNativeVec() { return getEpetra_Vector(); }
+    inline const Epetra_Vector& getNativeVec() const { return getEpetra_Vector(); }
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

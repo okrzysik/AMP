@@ -220,7 +220,7 @@ AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
 #ifdef USE_EXT_TRILINOS
             factory.reset( new SimpleManagedVectorFactory<ManagedEpetraVector>() );
 #else
-            AMP_ERROR( "Generator is not valid without support for Petsc" );
+            AMP_ERROR( "Generator is not valid without support for Trilinos" );
 #endif
         } else {
             AMP_ERROR( "Unknown template argument for SimpleManagedVectorFactory" );
@@ -268,6 +268,12 @@ AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
             factory.reset( new ViewFactory<PetscVector>( factory2 ) );
 #else
             AMP_ERROR( "Generator is not valid without support for Petsc" );
+#endif
+        } else if ( args[0] == "EpetraVector" ) {
+#ifdef USE_EXT_PETSC
+            factory.reset( new ViewFactory<EpetraVector>( factory2 ) );
+#else
+            AMP_ERROR( "Generator is not valid without support for Trilinos" );
 #endif
         } else {
             AMP_ERROR( "Unknown template argument for SimpleManagedVectorFactory" );

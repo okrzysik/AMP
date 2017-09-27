@@ -40,6 +40,45 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in ) : Vector(
         d_Engine = d_pParameters->d_Engine;
     d_pParameters->d_CloneEngine = true;
 }
+#if 0
+ManagedVector::ManagedVector( shared_ptr alias )
+    : Vector( )
+{
+    // Get the managed vector
+    auto managed = dynamic_pointer_cast<ManagedVector>( alias );
+    auto params = AMP::dynamic_pointer_cast<VectorParameters>( alias->getParameters() );
+    AMP::shared_ptr<ManagedVectorParameters> managedParams;
+    VectorEngine::BufferPtr buffer;
+    VectorEngine::shared_ptr engine;
+    if ( managed ) {
+        // We have an existing managed vector
+        managedParams = managed->d_pParameters;
+        buffer        = managed->d_vBuffer;
+        engine        = managed->d_Engine;
+    } else {
+        // We are creating a managed vector from a basic vector
+        auto managedParams = AMP::make_shared<ManagedVectorParameters>();
+        managedParams->d_CommList = params->d_CommList;
+        managedParams->d_DOFManager = params->d_DOFManager;
+        managedParams->d_Engine = alias;
+        managedParams->d_CloneEngine = false;
+        managedParams->d_Buffer = nullptr;
+        buffer = managedParams->d_Engine;
+        engine = managedParams->d_Buffer;
+    }
+    // Set the basic vector properties
+    AMP_ASSERT( params->d_CommList );
+    AMP_ASSERT( params->d_DOFManager );
+    setCommunicationList( params->d_CommList );
+    d_DOFManager = params->d_DOFManager;
+    // Set the member variables
+    d_pParameters = managedParams;
+    d_vBuffer     = buffer;
+    d_Engine      = engine;
+    setVariable( alias->getVariable() );
+    aliasGhostBuffer( alias );
+}
+#else
 ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( AMP::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
 {
@@ -50,6 +89,7 @@ ManagedVector::ManagedVector( shared_ptr alias )
     setVariable( vec->getVariable() );
     aliasGhostBuffer( vec );
 }
+#endif
 
 
 /********************************************************
