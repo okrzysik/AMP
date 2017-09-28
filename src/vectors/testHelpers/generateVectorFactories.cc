@@ -270,7 +270,7 @@ AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
             AMP_ERROR( "Generator is not valid without support for Petsc" );
 #endif
         } else if ( args[0] == "EpetraVector" ) {
-#ifdef USE_EXT_PETSC
+#ifdef USE_EXT_TRILINOS
             factory.reset( new ViewFactory<EpetraVector>( factory2 ) );
 #else
             AMP_ERROR( "Generator is not valid without support for Trilinos" );
