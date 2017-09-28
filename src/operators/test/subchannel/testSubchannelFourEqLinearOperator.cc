@@ -45,7 +45,7 @@ const unsigned int num_dofs_AMP =
     3 * numSubchannels * numAxialFaces + numGaps_AMP * numAxialIntervals;
 
 // function to get the MATLAB subchannel index
-size_t getMATLABSubchannelIndex( AMP::Mesh::MeshElement face )
+size_t getMATLABSubchannelIndex( const AMP::Mesh::MeshElement &face )
 {
     double pitch = 0.0126; // pitch for test problem [m]
     double x1    = 0.5 * pitch;
@@ -91,7 +91,7 @@ size_t getMATLABSubchannelIndex( AMP::Mesh::MeshElement face )
 }
 
 // function to get the MATLAB gap index
-size_t getMATLABGapIndex( AMP::Mesh::MeshElement gapFace )
+size_t getMATLABGapIndex( const AMP::Mesh::MeshElement &gapFace )
 {
     double pitch = 0.0126; // pitch for test problem [m]
     double x1    = 0.5 * pitch;
@@ -148,7 +148,7 @@ size_t getMATLABGapIndex( AMP::Mesh::MeshElement gapFace )
 }
 
 // function to determine the axial level
-size_t getMATLABAxialIndex( AMP::Mesh::MeshElement face, bool is_axial_face_quantity )
+size_t getMATLABAxialIndex( const AMP::Mesh::MeshElement &face, bool is_axial_face_quantity )
 {
     double height                = 3.66;
     double dz                    = height / numAxialIntervals;
@@ -230,7 +230,7 @@ getLateralFaces( AMP::Mesh::Mesh::shared_ptr mesh, bool )
 }
 
 // find the MATLAB index for a variable on a given face
-size_t AMP_to_MATLAB( AMP::Mesh::MeshElement face, size_t variable_id )
+size_t AMP_to_MATLAB( const AMP::Mesh::MeshElement &face, size_t variable_id )
 {
     // determine if variable is axial face quantity or lateral face quantity
     bool is_axial_face_quantity = false;

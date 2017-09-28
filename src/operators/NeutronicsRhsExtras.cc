@@ -211,7 +211,7 @@ void NeutronicsRhsExtras::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 }
 
 
-NeutronicsRhsExtras::SourceType NeutronicsRhsExtras::str2id( std::string str )
+NeutronicsRhsExtras::SourceType NeutronicsRhsExtras::str2id( const std::string &str )
 {
     if ( str == "Isotopes" ) {
         return Isotopes;

@@ -149,6 +149,7 @@ public:
     cloneEngine( AMP::shared_ptr<VectorData> p ) const override;
 
     virtual void swapEngines( AMP::shared_ptr<VectorEngine> ) override;
+    virtual void swapData( VectorData &rhs ) override;
 
     virtual AMP_MPI getComm() const override;
 

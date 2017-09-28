@@ -40,7 +40,7 @@ std::string SiloIO::getExtension() { return "silo"; }
 #ifdef USE_EXT_SILO
 
 // Some internal functions
-static void createSiloDirectory( DBfile *FileHandle, std::string path );
+static void createSiloDirectory( DBfile *FileHandle, const std::string &path );
 
 
 /************************************************************
@@ -1144,7 +1144,7 @@ SiloIO::siloMultiMeshData SiloIO::siloMultiMeshData::unpack( char *ptr )
 /************************************************************
  * Some utilit functions                                     *
  ************************************************************/
-void createSiloDirectory( DBfile *FileHandle, std::string path )
+void createSiloDirectory( DBfile *FileHandle, const std::string &path )
 {
     // Create a subdirectory tree from the current working path if it does not exist
     char current_dir[256];

@@ -43,7 +43,7 @@
  * element discretization to check correctness of the operator discretization.
  */
 void linearTest( AMP::UnitTest *ut,
-                 std::string exeName,
+                 const std::string &exeName,
                  double function( const double, const double, const double ) )
 {
     // Initialization

@@ -325,6 +325,12 @@ void MultiVectorData::setUpdateStatus( UpdateState state )
 
 
 /****************************************************************
+ * Swap raw data                                                 *
+ ****************************************************************/
+void MultiVectorData::swapData( VectorData & ) { AMP_ERROR( "Not finished" ); }
+
+
+/****************************************************************
  * Function to partition the global ids by the sub vectors       *
  ****************************************************************/
 void MultiVectorData::partitionGlobalValues( const int num,

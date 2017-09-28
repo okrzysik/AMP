@@ -38,7 +38,7 @@
 #include "libmesh/enum_quadrature_type.h"
 #include "libmesh/string_to_enum.h"
 
-void myTest( AMP::UnitTest *ut, std::string exeName )
+void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string log_file = "output_" + exeName;
 

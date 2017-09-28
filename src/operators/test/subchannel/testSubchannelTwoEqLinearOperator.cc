@@ -89,7 +89,7 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian
     return passed;
 }
 
-void Test( AMP::UnitTest *ut, std::string exeName )
+void Test( AMP::UnitTest *ut, const std::string &exeName )
 {
     // create input and output file names
     std::string input_file = "input_" + exeName;

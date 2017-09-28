@@ -202,6 +202,24 @@ void VectorDataCPU<TYPE>::copyOutRawData( double *out ) const
 }
 
 
+/****************************************************************
+ * Swap raw data                                                 *
+ ****************************************************************/
+template<typename TYPE>
+void VectorDataCPU<TYPE>::swapData( VectorData &rhs )
+{
+    auto rhs2 = dynamic_cast<VectorDataCPU<TYPE> *>( &rhs );
+    AMP_INSIST( rhs2, "Cannot swap with arbitrary VectorData" );
+    std::swap( d_CommList, rhs2->d_CommList );
+    std::swap( d_UpdateState, rhs2->d_UpdateState );
+    std::swap( d_Ghosts, rhs2->d_Ghosts );
+    std::swap( d_AddBuffer, rhs2->d_AddBuffer );
+    std::swap( d_Data, rhs2->d_Data );
+    std::swap( d_startIndex, rhs2->d_startIndex );
+    std::swap( d_globalSize, rhs2->d_globalSize );
+}
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

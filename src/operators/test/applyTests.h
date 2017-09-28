@@ -23,7 +23,7 @@ void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,
              const size_t nshift );
 
 void applyTests( AMP::UnitTest *ut,
-                 std::string msgPrefix,
+                 const std::string &msgPrefix,
                  AMP::shared_ptr<AMP::Operator::Operator> testOperator,
                  AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
                  AMP::LinearAlgebra::Vector::shared_ptr solVec,
@@ -32,7 +32,7 @@ void applyTests( AMP::UnitTest *ut,
                  const double scale = 1.0 );
 
 void applyTests( AMP::UnitTest *ut,
-                 std::string msgPrefix,
+                 const std::string &msgPrefix,
                  AMP::shared_ptr<AMP::Operator::Operator> testOperator,
                  AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
                  AMP::LinearAlgebra::Vector::shared_ptr solVec,

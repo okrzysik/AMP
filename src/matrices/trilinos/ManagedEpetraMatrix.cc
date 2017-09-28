@@ -66,13 +66,15 @@ Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
     int localSize  = memp->getLocalNumberOfColumns();
     int globalSize = memp->getGlobalNumberOfColumns();
     int localStart = memp->getRightDOFManager()->beginDOF();
-    auto p_eng = AMP::make_shared<EpetraVectorEngineParameters>( localSize, globalSize, memp->getEpetraComm() );
+    auto p_eng     = AMP::make_shared<EpetraVectorEngineParameters>(
+        localSize, globalSize, memp->getEpetraComm() );
     auto p_params = AMP::make_shared<ManagedVectorParameters>();
-    p_params->d_Buffer = AMP::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    p_params->d_Engine = AMP::make_shared<EpetraVectorEngine>( p_eng, p_params->d_Buffer );
+    p_params->d_Buffer =
+        AMP::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
+    p_params->d_Engine     = AMP::make_shared<EpetraVectorEngine>( p_eng, p_params->d_Buffer );
     p_params->d_CommList   = memp->d_CommListRight;
     p_params->d_DOFManager = memp->getRightDOFManager();
-    auto rtn = AMP::make_shared<ManagedEpetraVector>( p_params );
+    auto rtn               = AMP::make_shared<ManagedEpetraVector>( p_params );
     rtn->setVariable( memp->d_VariableRight );
     // rtn->setVariable( Variable::shared_ptr( new Variable("right") ) );
     return rtn;
@@ -84,13 +86,15 @@ Vector::shared_ptr ManagedEpetraMatrix::getLeftVector() const
     int localSize  = memp->getLocalNumberOfRows();
     int globalSize = memp->getGlobalNumberOfRows();
     int localStart = memp->getRightDOFManager()->beginDOF();
-    auto p_eng = AMP::make_shared<EpetraVectorEngineParameters>( localSize, globalSize, memp->getEpetraComm() );
+    auto p_eng     = AMP::make_shared<EpetraVectorEngineParameters>(
+        localSize, globalSize, memp->getEpetraComm() );
     auto p_params = AMP::make_shared<ManagedVectorParameters>();
-    p_params->d_Buffer = AMP::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    p_params->d_Engine = AMP::make_shared<EpetraVectorEngine>( p_eng, p_params->d_Buffer );
+    p_params->d_Buffer =
+        AMP::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
+    p_params->d_Engine     = AMP::make_shared<EpetraVectorEngine>( p_eng, p_params->d_Buffer );
     p_params->d_CommList   = memp->d_CommListLeft;
     p_params->d_DOFManager = memp->getLeftDOFManager();
-    auto rtn = AMP::make_shared<ManagedEpetraVector>( p_params );
+    auto rtn               = AMP::make_shared<ManagedEpetraVector>( p_params );
     rtn->setVariable( memp->d_VariableLeft );
     // rtn->setVariable( Variable::shared_ptr( new Variable("left") ) );
     return rtn;

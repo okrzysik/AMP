@@ -27,6 +27,7 @@
 #
 
 
+# Function to add a serial or 1,2,4 processor test dependent on the existence of a parallel matrix
 FUNCTION( ADD_AMP_TEST_124_MATRIX EXEFILE ${ARGN} )
     IF ( USE_EXT_TRILINOS )
         # We have a parallel matrix

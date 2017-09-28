@@ -310,17 +310,15 @@ MeshIterator &libMeshIterator::operator+=( int n )
  ********************************************************/
 bool libMeshIterator::operator==( const MeshIterator &rhs ) const
 {
-    libMeshIterator *rhs2 = nullptr;
-    auto *tmp =
-        (libMeshIterator
-             *) &rhs; // Convert rhs to a libMeshIterator* so we can access the base class members
-    if ( typeid( rhs ) == typeid( libMeshIterator ) ) {
+    const libMeshIterator *rhs2 = nullptr;
+    // Convert rhs to a libMeshIterator* so we can access the base class members
+    auto *tmp = reinterpret_cast<const libMeshIterator *>( &rhs );
+    if ( tmp->d_typeID == libMeshIteratorTypeID ) {
         rhs2 = tmp; // We can safely cast rhs to a libMeshIterator
-    } else if ( tmp->d_typeID == libMeshIteratorTypeID ) {
-        rhs2 = tmp; // We can safely cast rhs.iterator to a libMeshIterator
-    } else if ( reinterpret_cast<libMeshIterator *>( tmp->d_iterator )->d_typeID ==
-                libMeshIteratorTypeID ) {
-        rhs2 = reinterpret_cast<libMeshIterator *>( tmp->d_iterator );
+    } else if ( tmp->d_iterator != nullptr ) {
+        tmp = reinterpret_cast<const libMeshIterator *>( tmp->d_iterator );
+        if ( tmp->d_typeID == libMeshIteratorTypeID )
+            rhs2 = tmp; // We can safely cast rhs.iterator to a libMeshIterator
     }
     // Perform direct comparisions if we are dealing with two libMeshIterators
     if ( rhs2 != nullptr ) {

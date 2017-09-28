@@ -41,7 +41,7 @@
 #include "materials/Material.h"
 
 
-void nonlinearTest( AMP::UnitTest *ut, std::string exeName )
+void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     // Initialization
     std::string input_file = "input_" + exeName;

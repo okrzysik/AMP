@@ -108,7 +108,7 @@ protected:
     AMP::LinearAlgebra::Variable::shared_ptr d_outputVariable;
     std::vector<Vec_Dbl> d_values;
     double d_secondsPerDay;
-    SourceType str2id( std::string str );
+    SourceType str2id( const std::string &str );
 };
 } // namespace Operator
 } // namespace AMP

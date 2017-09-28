@@ -20,8 +20,8 @@ public:
     structuredMeshIterator();
 
     //! Range base constructor
-    structuredMeshIterator( BoxMesh::MeshElementIndex first,
-                            BoxMesh::MeshElementIndex last,
+    structuredMeshIterator( const BoxMesh::MeshElementIndex &first,
+                            const BoxMesh::MeshElementIndex &last,
                             const AMP::Mesh::BoxMesh *mesh,
                             size_t pos = 0 );
 

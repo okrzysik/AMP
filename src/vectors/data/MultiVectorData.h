@@ -168,6 +168,11 @@ public: // Advanced virtual functions
      */
     virtual bool isTypeId( size_t hash, size_t block ) const override;
 
+    /** \brief Swap the data with another VectorData object
+     * \param rhs      The VectorData to swap with
+     */
+    virtual void swapData( VectorData &rhs ) override;
+
 
 protected:
     MultiVectorData() : d_globalDOFManager( nullptr ) {}

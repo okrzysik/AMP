@@ -485,7 +485,7 @@ void run( const std::string &meshFileName,
     //  }
 }
 
-void myTest( AMP::UnitTest *ut, std::string exeName )
+void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 

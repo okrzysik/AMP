@@ -32,7 +32,7 @@
 #include "vectors/VectorBuilder.h"
 
 
-void linearTest1( AMP::UnitTest *ut, std::string exeName )
+void linearTest1( AMP::UnitTest *ut, const std::string &exeName )
 {
     // this tests creation from database and usage
 

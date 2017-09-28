@@ -166,7 +166,7 @@ void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
 }
 
 
-void myTest( AMP::UnitTest *ut, std::string exeName )
+void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
@@ -475,7 +475,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     ut->passes( exeName );
 }
 
-void myTest2( AMP::UnitTest *ut, std::string exeName )
+void myTest2( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;

@@ -15,7 +15,7 @@ union id_mask {
     char id_c[sizeof( AMP::Mesh::uint64[2] )];
 };
 
-auto hash_id( AMP::Mesh::MeshElementID id ) -> std::hash<std::string>::result_type
+auto hash_id( const AMP::Mesh::MeshElementID &id ) -> std::hash<std::string>::result_type
 {
     id_mask m;
 
@@ -46,7 +46,7 @@ void makeCommRankMap( const AMP::AMP_MPI &comm, std::unordered_map<int, int> &ra
 }
 
 int mapElementOwnerRank( const std::unordered_map<int, int> &rank_map,
-                         AMP::Mesh::MeshElement element )
+                         const AMP::Mesh::MeshElement &element )
 {
     return rank_map.find( element.globalOwnerRank() )->second;
 }

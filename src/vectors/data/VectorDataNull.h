@@ -177,6 +177,7 @@ public: // Advanced virtual functions
         return hash == typeid( TYPE ).hash_code();
     }
 
+    inline void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 
 protected:
     VectorDataNull() {}

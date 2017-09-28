@@ -1397,12 +1397,11 @@ double SubchannelFourEqNonlinearOperator::Enthalpy( double T, double p )
     return result[0];
 }
 
-void SubchannelFourEqNonlinearOperator::getAxialFaces( AMP::Mesh::MeshElement cell,
+void SubchannelFourEqNonlinearOperator::getAxialFaces( const AMP::Mesh::MeshElement &cell,
                                                        AMP::Mesh::MeshElement &upperFace,
                                                        AMP::Mesh::MeshElement &lowerFace )
 {
     // gets upper and lower faces of a cell
-
     bool upperFaceFound              = false;
     bool lowerFaceFound              = false;
     std::vector<double> cellCentroid = cell.centroid();
@@ -1438,8 +1437,8 @@ void SubchannelFourEqNonlinearOperator::getAxialFaces( AMP::Mesh::MeshElement ce
 
 AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLateralFace(
     AMP::Mesh::MeshElement *daughterCell,
-    AMP::Mesh::MeshElement parentLateralFace,
-    std::map<std::vector<double>, AMP::Mesh::MeshElement> interiorLateralFaceMap )
+    const AMP::Mesh::MeshElement &parentLateralFace,
+    const std::map<std::vector<double>, AMP::Mesh::MeshElement> &interiorLateralFaceMap )
 {
     // gets the lateral face that is either below or above another lateral face
     // daughterCell: cell that is either above or below the parent cell
@@ -1447,8 +1446,8 @@ AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLate
     // find an axially
     // adjacent lateral face
 
-    bool axiallyAdjacentLateralFaceFound =
-        false; // has the axially adjacent lateral face been found?
+    // has the axially adjacent lateral face been found?
+    bool axiallyAdjacentLateralFaceFound = false;
     // get centroid of parent lateral face
     std::vector<double> parentLateralFaceCentroid = parentLateralFace.centroid();
     std::vector<double> daughterCellCentroid      = daughterCell->centroid();
@@ -1456,8 +1455,7 @@ AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLate
     // to the current
     // lateral face
     AMP::Mesh::MeshElement axiallyAdjacentLateralFace;
-    std::vector<AMP::Mesh::MeshElement> daughterCellFaces =
-        daughterCell->getElements( AMP::Mesh::GeomType::Face );
+    auto daughterCellFaces = daughterCell->getElements( AMP::Mesh::GeomType::Face );
     for ( auto &daughterCellFace : daughterCellFaces ) {
         std::vector<double> faceCentroid = daughterCellFace.centroid();
         auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
@@ -1489,5 +1487,7 @@ AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLate
     AMP_INSIST( axiallyAdjacentLateralFaceFound, "Axially adjacent lateral face was not found." );
     return axiallyAdjacentLateralFace;
 }
+
+
 } // namespace Operator
 } // namespace AMP

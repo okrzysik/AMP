@@ -245,7 +245,7 @@ void for_my_thesis( hex8_element_t *volume_element )
     draw_lines_on_face( 2, volume_element );
 }
 
-void myTest( AMP::UnitTest *ut, std::string exeName )
+void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     const double pi   = 3.141592653589793;
     double points[24] = {

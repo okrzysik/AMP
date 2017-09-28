@@ -111,13 +111,13 @@ public:
      * \param index     Index for the current elements
      * \param mesh      Underlying mesh
      */
-    structuredMeshElement( BoxMesh::MeshElementIndex index, const AMP::Mesh::BoxMesh *mesh );
+    structuredMeshElement( const BoxMesh::MeshElementIndex &index, const AMP::Mesh::BoxMesh *mesh );
 
     //! Reset the internal data to an empty element
     void reset();
 
     //! Reset the internal data to the given element
-    void reset( BoxMesh::MeshElementIndex index, const AMP::Mesh::BoxMesh *mesh );
+    void reset( const BoxMesh::MeshElementIndex &index, const AMP::Mesh::BoxMesh *mesh );
 
 
 protected:

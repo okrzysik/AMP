@@ -17,7 +17,7 @@
 
 #include "operators/libmesh/PowerShape.h"
 
-void test_with_shape( AMP::UnitTest *ut, std::string exeName )
+void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 {
 
     //--------------------------------------------------

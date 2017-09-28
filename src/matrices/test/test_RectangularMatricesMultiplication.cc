@@ -13,7 +13,7 @@
 #include "vectors/VectorBuilder.h"
 
 
-void myTest( AMP::UnitTest *ut, std::string exeName )
+void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
 #if !defined( USE_EXT_PETSC ) && !defined( USE_EXT_TRILINOS )
     if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() > 1 ) {

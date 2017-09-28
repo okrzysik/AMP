@@ -575,7 +575,7 @@ void myTest( AMP::UnitTest *ut,
     ut->passes( "Ran to completion" );
 }
 
-void multiMeshLoop( AMP::UnitTest *ut, std::string exeName )
+void multiMeshLoop( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
 
