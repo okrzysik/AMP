@@ -16,9 +16,8 @@
 #include <vectors/VectorBuilder.h>
 #include <vectors/VectorSelector.h>
 
-#
 
-void thermalTest( AMP::UnitTest *ut, std::string input_file )
+void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
 {
     std::string log_file = "log_DTKMapOperatorApply";
     std::string out_file = "out_DTKMapOperatorApply";

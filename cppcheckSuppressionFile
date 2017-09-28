@@ -5,7 +5,7 @@ copyCtorPointerCopying:*/utils/AMP_MPI.cc
 // Supress unnecessary passedByValue
 passedByValue:*/libmesh/initializeLibMesh.cc
 passedByValue:*/vectors/MeshVariable.cc
-passedByValue:*/vectors/VectorEngine.cc
+passedByValue:*/vectors/VectorEngine.cpp
 passedByValue:*/operators/subchannel/SubchannelHelpers.cc
 passedByValue:*/utils/test/test_AMP_MPI.cc
 passedByValue:*/operators/test/maps/testMultiDofDTKMapOperator-2.cc

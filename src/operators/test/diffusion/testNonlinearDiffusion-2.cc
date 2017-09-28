@@ -43,7 +43,7 @@
  * This test is patch test for the diffusion operator.
  */
 void nonlinearTest( AMP::UnitTest *ut,
-                    std::string exeName,
+                    const std::string &exeName,
                     double function( const double, const double, const double ) )
 {
     // Initialization
