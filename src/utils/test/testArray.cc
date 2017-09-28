@@ -91,6 +91,7 @@ void test_interp( UnitTest &ut, const std::vector<size_t> &N )
     std::sprintf(
         buf, "interp<%s,%i,%i,%i>", typeid( TYPE ).name(), (int) N2[0], (int) N2[1], (int) N2[2] );
     std::string testname( buf );
+
     // Fill A
     A.fill( 0 );
     for ( size_t i = 0; i < A.size( 0 ); i++ ) {
@@ -103,6 +104,7 @@ void test_interp( UnitTest &ut, const std::vector<size_t> &N )
             }
         }
     }
+
     // Test the input points
     bool pass = true;
     std::vector<double> x( 3 );
@@ -121,6 +123,7 @@ void test_interp( UnitTest &ut, const std::vector<size_t> &N )
         ut.passes( testname + " (input points)" );
     else
         ut.failure( testname + " (input points)" );
+
     // Test random points
     static std::random_device rd;
     static std::mt19937 gen( rd() );
@@ -178,6 +181,7 @@ int main( int argc, char *argv[] )
             ut.passes( "Array constructors" );
         else
             ut.failure( "Array constructors" );
+
         // Test std::string
         bool pass = true;
         Array<std::string> S;
@@ -191,19 +195,22 @@ int main( int argc, char *argv[] )
             ut.passes( "Array string" );
         else
             ut.failure( "Array string" );
+
         // Test a failed allocation
+        // Note: testing the allocation failure causes issues on a MAC
         try {
+#if !defined( __APPLE__ )
             size_t N = 10000;
             Array<double> M( N, N, N );
-#if defined( __APPLE__ )
-            ut.expected_failure( "Failed allocation succeeded (MAC)" );
-#else
             ut.failure( "Failed allocation succeeded???" );
-#endif
             AMP_ASSERT( M.length() == N * N * N );
+#else
+            ut.expected_failure( "Skipping failed allocation test on MAC" );
+#endif
         } catch ( ... ) {
             ut.passes( "Caught failed allocation" );
         }
+
         // Test math operators
         if ( M1.min() == 0 )
             ut.passes( "min" );
@@ -225,6 +232,7 @@ int main( int argc, char *argv[] )
             ut.passes( "NaNs" );
         else
             ut.failure( "NaNs" );
+
         // Test math operators with index subsets
         std::vector<size_t> idx{ 0, 4, 0, 2 };
         if ( M1.min( idx ) == 0 )
@@ -244,6 +252,7 @@ int main( int argc, char *argv[] )
             ut.passes( "mean on subset" );
         else
             ut.failure( "mean on subset" );
+
         // Test find
         std::vector<size_t> index = M1.find( 7, []( double a, double b ) { return a == b; } );
         if ( index.size() != 1 )
@@ -252,6 +261,7 @@ int main( int argc, char *argv[] )
             ut.passes( "find" );
         else
             ut.failure( "find" );
+
         // Test subset
         M3 = M1.subset<double>( { 0, 9, 0, 4 } );
         if ( M3 == M1 )
@@ -279,6 +289,7 @@ int main( int argc, char *argv[] )
             ut.passes( "copyFromSubset" );
         else
             ut.failure( "copyFromSubset" );
+
         // Test the time required to create a view
         Array<double> M_view;
         double t1 = Utilities::time();
@@ -292,6 +303,7 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "view" );
         pout << "Time to create view: " << ( t2 - t1 ) * 1e9 / 100000 << " ns\n";
+
         // Simple tests of +/-
         M2 = M1;
         M2.scale( 2 );
@@ -360,6 +372,7 @@ int main( int argc, char *argv[] )
         pout << "Time to perform sum (sum()): " << ( t2 - t1 ) * 1e9 / N << " ns\n";
         pout << "Time to perform sum (raw): " << ( t3 - t2 ) * 1e9 / N << " ns\n";
     }
+
     // Test the allocation of a non-trivial type
     {
         bool pass = true;
@@ -379,6 +392,7 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "Allocator" );
     }
+
     // Test interpolation
     {
         test_interp<double>( ut, { 100 } );
