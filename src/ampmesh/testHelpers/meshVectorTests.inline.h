@@ -75,7 +75,7 @@ void meshTests::VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shar
 
         // Create the DOF_Manager
         auto DOFparams = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
-        auto DOFs = AMP::Discretization::simpleDOFManager::create(
+        auto DOFs      = AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, gcw, DOF_PER_NODE, SPLIT );
 
         // Run some basic nodal vector tests
@@ -83,7 +83,7 @@ void meshTests::VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shar
 
         // Run the vector tests
         globalMeshForMeshVectorFactory = mesh;
-        auto factory = AMP::make_shared<MeshVectorFactory>(
+        auto factory                   = AMP::make_shared<MeshVectorFactory>(
             mesh, AMP::Mesh::GeomType::Vertex, gcw, DOF_PER_NODE, SPLIT );
         AMP::LinearAlgebra::VectorTests vectorTests( factory );
         vectorTests.testManagedVector( utils );

@@ -80,9 +80,9 @@ public:
                                                         const std::vector<double> &,
                                                         const std::vector<double> & );
 
-    void getAxialFaces( const AMP::Mesh::MeshElement&,
-                        AMP::Mesh::MeshElement&,
-                        AMP::Mesh::MeshElement& );
+    void getAxialFaces( const AMP::Mesh::MeshElement &,
+                        AMP::Mesh::MeshElement &,
+                        AMP::Mesh::MeshElement & );
 
     void fillSubchannelGrid(
         AMP::Mesh::Mesh::shared_ptr ); // function to fill the subchannel data for all processors
@@ -174,9 +174,9 @@ private:
     double Enthalpy( double, double );            // evaluates specific enthalpy
 
     AMP::Mesh::MeshElement
-    getAxiallyAdjacentLateralFace( AMP::Mesh::MeshElement*,
-                                   const AMP::Mesh::MeshElement&,
-                                   const std::map<std::vector<double>,AMP::Mesh::MeshElement>& );
+    getAxiallyAdjacentLateralFace( AMP::Mesh::MeshElement *,
+                                   const AMP::Mesh::MeshElement &,
+                                   const std::map<std::vector<double>, AMP::Mesh::MeshElement> & );
 };
 
 

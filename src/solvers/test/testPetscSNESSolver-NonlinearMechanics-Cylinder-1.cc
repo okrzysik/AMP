@@ -48,7 +48,7 @@ void myGetRow( int row, std::vector<size_t> &cols, std::vector<double> &values )
     myMatrix->getRowByGlobalID( row, cols, values );
 }
 
-void myTest( AMP::UnitTest *ut, const std::string& exeName )
+void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;

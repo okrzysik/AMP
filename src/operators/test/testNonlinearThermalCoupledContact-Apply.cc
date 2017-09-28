@@ -282,7 +282,7 @@ void applyTest( AMP::UnitTest *ut,
 }
 
 
-void thermalContactApplyTest( AMP::UnitTest *ut, const std::string& exeName )
+void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;

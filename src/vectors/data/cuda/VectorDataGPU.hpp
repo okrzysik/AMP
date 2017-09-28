@@ -207,9 +207,9 @@ void VectorDataGPU<TYPE>::copyOutRawData( double *out ) const
  * Swap raw data                                                 *
  ****************************************************************/
 template<typename TYPE>
-void VectorDataGPU<TYPE>::swapData( VectorData& rhs )
+void VectorDataGPU<TYPE>::swapData( VectorData &rhs )
 {
-    auto rhs2 = dynamic_cast<VectorDataGPU<TYPE>*>( &rhs );
+    auto rhs2 = dynamic_cast<VectorDataGPU<TYPE> *>( &rhs );
     AMP_INSIST( rhs2, "Cannot swap with arbitrary VectorData" );
     std::swap( d_CommList, rhs2->d_CommList );
     std::swap( d_UpdateState, rhs2->d_UpdateState );
@@ -217,7 +217,7 @@ void VectorDataGPU<TYPE>::swapData( VectorData& rhs )
     std::swap( d_AddBuffer, rhs2->d_AddBuffer );
     std::swap( d_Data, rhs2->d_Data );
     std::swap( d_startIndex, rhs2->d_startIndex );
-    std::swap( d_localSize,  rhs2->d_localSize );
+    std::swap( d_localSize, rhs2->d_localSize );
     std::swap( d_globalSize, rhs2->d_globalSize );
 }
 

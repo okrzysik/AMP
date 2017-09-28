@@ -23,7 +23,6 @@ responsibility for the use of this software.
 #include "TimeIntegratorParameters.h"
 
 
-
 namespace AMP {
 namespace TimeIntegrator {
 

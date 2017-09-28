@@ -357,7 +357,7 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
  * iterator over the surface nodes                       *
  ********************************************************/
 std::vector<NodeToNodeMap::Point>
-NodeToNodeMap::createOwnedPoints( const AMP::Mesh::MeshIterator& iterator )
+NodeToNodeMap::createOwnedPoints( const AMP::Mesh::MeshIterator &iterator )
 {
     // Create the list of points for each node
     std::vector<Point> surfacePts( iterator.size() );

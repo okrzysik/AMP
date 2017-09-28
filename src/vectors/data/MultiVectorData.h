@@ -171,7 +171,7 @@ public: // Advanced virtual functions
     /** \brief Swap the data with another VectorData object
      * \param rhs      The VectorData to swap with
      */
-    virtual void swapData( VectorData& rhs ) override;
+    virtual void swapData( VectorData &rhs ) override;
 
 
 protected:

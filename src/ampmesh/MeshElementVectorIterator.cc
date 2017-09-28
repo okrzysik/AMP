@@ -153,11 +153,11 @@ bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
 {
     const MultiVectorIterator *rhs2 = nullptr;
     // Convert rhs to a MultiVectorIterator* so we can access the base class members
-    const auto *tmp = reinterpret_cast<const MultiVectorIterator*>( &rhs );
+    const auto *tmp = reinterpret_cast<const MultiVectorIterator *>( &rhs );
     if ( tmp->d_typeID == MultiVectorIteratorTypeID ) {
         rhs2 = tmp; // We can safely cast rhs.iterator to a MultiVectorIterator
     } else if ( tmp->d_iterator != nullptr ) {
-        tmp = reinterpret_cast<const MultiVectorIterator*>( tmp->d_iterator );
+        tmp = reinterpret_cast<const MultiVectorIterator *>( tmp->d_iterator );
         if ( tmp->d_typeID == MultiVectorIteratorTypeID )
             rhs2 = tmp; // We can safely cast rhs.iterator to a MultiVectorIterator
     }

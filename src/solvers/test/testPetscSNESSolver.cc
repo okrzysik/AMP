@@ -21,7 +21,7 @@
 #include "vectors/SimpleVector.h"
 
 
-void myTest( AMP::UnitTest *ut, const std::string& exeName )
+void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
@@ -52,7 +52,8 @@ void myTest( AMP::UnitTest *ut, const std::string& exeName )
     // auto linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver");
 
     // initialize the nonlinear solver parameters
-    auto nonlinearSolverParams = AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+    auto nonlinearSolverParams =
+        AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
     nonlinearSolverParams->d_comm          = solverComm;
     nonlinearSolverParams->d_pInitialGuess = nullVec;
     nonlinearSolverParams->d_pOperator     = op;

@@ -221,7 +221,7 @@ protected:
      *  as those nodes that share an element with the given node.
      *  Note: the nodes returns are returned in unsorted order.
      */
-    std::vector<::Node *> getNeighborNodes( const MeshElementID& ) const;
+    std::vector<::Node *> getNeighborNodes( const MeshElementID & ) const;
 
     // Friend functions to access protected functions
     friend class libMeshElement;

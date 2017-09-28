@@ -56,7 +56,7 @@ public:
      * The memory database constructor creates an empty database with the
      * specified name.
      */
-    explicit MemoryDatabase( const std::string& name );
+    explicit MemoryDatabase( const std::string &name );
 
     /**
      * The memory database destructor deallocates the data in the database.

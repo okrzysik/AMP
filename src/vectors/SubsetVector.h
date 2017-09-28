@@ -78,7 +78,7 @@ public:
         return hash == typeid( double ).hash_code();
     }
     virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
-    virtual void swapData( VectorData& ) override { AMP_ERROR("Not finished"); }
+    virtual void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 
 private:
     SubsetVector() {}

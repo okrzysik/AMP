@@ -124,7 +124,7 @@ unsigned int perform_battery_of_tests( hex8_element_t *volume_element,
     return count_tests_failing;
 }
 
-void myTest( AMP::UnitTest *ut, const std::string& exeName )
+void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     const double pi   = 3.141592653589793;
     double points[24] = {

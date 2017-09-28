@@ -327,10 +327,7 @@ void MultiVectorData::setUpdateStatus( UpdateState state )
 /****************************************************************
  * Swap raw data                                                 *
  ****************************************************************/
-void MultiVectorData::swapData( VectorData& )
-{
-    AMP_ERROR("Not finished");
-}
+void MultiVectorData::swapData( VectorData & ) { AMP_ERROR( "Not finished" ); }
 
 
 /****************************************************************

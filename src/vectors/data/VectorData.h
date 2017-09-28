@@ -284,7 +284,7 @@ public: // Advanced functions
     /** \brief Swap the data with another VectorData object
      * \param rhs      The VectorData to swap with
      */
-    virtual void swapData( VectorData& rhs ) = 0;
+    virtual void swapData( VectorData &rhs ) = 0;
 
 
 public:

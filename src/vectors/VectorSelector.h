@@ -79,7 +79,7 @@ public:
     /** \brief Constructor
      * \param[in] name  The name of the variable to subset on
      */
-    explicit VS_ByVariableName( const std::string& name );
+    explicit VS_ByVariableName( const std::string &name );
 
     virtual bool isSelected( Vector::const_shared_ptr v ) const override;
 

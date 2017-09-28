@@ -135,7 +135,7 @@ void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
 }
 
 
-void SubchannelSolve( AMP::UnitTest *ut, const std::string& exeName )
+void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 {
     PROFILE_START( "Main" );
     std::string input_file = "input_" + exeName;

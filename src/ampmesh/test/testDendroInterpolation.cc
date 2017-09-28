@@ -28,7 +28,7 @@ double dummyFunction( const std::vector<double> &xyz, const int dof )
     return ( 1.0 + 6.0 * x ) + ( 2.0 - 5.0 * y ) + ( 3.0 + 4.0 * z );
 }
 
-void myTest( AMP::UnitTest *ut, const std::string& exeName )
+void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;

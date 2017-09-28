@@ -1397,7 +1397,7 @@ double SubchannelFourEqNonlinearOperator::Enthalpy( double T, double p )
     return result[0];
 }
 
-void SubchannelFourEqNonlinearOperator::getAxialFaces( const AMP::Mesh::MeshElement& cell,
+void SubchannelFourEqNonlinearOperator::getAxialFaces( const AMP::Mesh::MeshElement &cell,
                                                        AMP::Mesh::MeshElement &upperFace,
                                                        AMP::Mesh::MeshElement &lowerFace )
 {
@@ -1437,8 +1437,8 @@ void SubchannelFourEqNonlinearOperator::getAxialFaces( const AMP::Mesh::MeshElem
 
 AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLateralFace(
     AMP::Mesh::MeshElement *daughterCell,
-    const AMP::Mesh::MeshElement& parentLateralFace,
-    const std::map<std::vector<double>,AMP::Mesh::MeshElement>& interiorLateralFaceMap )
+    const AMP::Mesh::MeshElement &parentLateralFace,
+    const std::map<std::vector<double>, AMP::Mesh::MeshElement> &interiorLateralFaceMap )
 {
     // gets the lateral face that is either below or above another lateral face
     // daughterCell: cell that is either above or below the parent cell
@@ -1466,7 +1466,7 @@ AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLate
             // loop through coordinates to determine if lateral face is the lateral face axially
             // adjacent to the current
             // lateral face
-            double knownCentroid[3] = { parentLateralFaceCentroid[0],
+            double knownCentroid[3]           = { parentLateralFaceCentroid[0],
                                         parentLateralFaceCentroid[1],
                                         daughterCellCentroid[2] };
             bool isAxiallyAdjacentLateralFace = true;

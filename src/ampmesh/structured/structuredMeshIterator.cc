@@ -79,8 +79,8 @@ structuredMeshIterator::structuredMeshIterator()
     d_globalSize.fill( 0 );
     d_element = &d_cur_element;
 }
-structuredMeshIterator::structuredMeshIterator( const BoxMesh::MeshElementIndex& first,
-                                                const BoxMesh::MeshElementIndex& last,
+structuredMeshIterator::structuredMeshIterator( const BoxMesh::MeshElementIndex &first,
+                                                const BoxMesh::MeshElementIndex &last,
                                                 const AMP::Mesh::BoxMesh *mesh,
                                                 size_t pos )
     : d_isPeriodic( mesh->d_isPeriodic ),
@@ -251,11 +251,11 @@ bool structuredMeshIterator::operator==( const MeshIterator &rhs ) const
         return false;
     const structuredMeshIterator *rhs2 = nullptr;
     // Convert rhs to a structuredMeshIterator* so we can access the base class members
-    auto *tmp = reinterpret_cast<const structuredMeshIterator*>( &rhs );
+    auto *tmp = reinterpret_cast<const structuredMeshIterator *>( &rhs );
     if ( tmp->d_typeID == structuredMeshIteratorTypeID ) {
         rhs2 = tmp; // We can safely cast rhs to a structuredMeshIterator
     } else if ( tmp->d_iterator != nullptr ) {
-        tmp = reinterpret_cast<const structuredMeshIterator*>( tmp->d_iterator );
+        tmp = reinterpret_cast<const structuredMeshIterator *>( tmp->d_iterator );
         if ( tmp->d_typeID == structuredMeshIteratorTypeID )
             rhs2 = tmp; // We can safely cast rhs.iterator to a structuredMeshIterator
     }

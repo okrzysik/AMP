@@ -25,7 +25,7 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "discretization/structuredFaceDOFManager.h"
 
-void Test( AMP::UnitTest *ut, const std::string& exeName )
+void Test( AMP::UnitTest *ut, const std::string &exeName )
 {
     // create input and output file names
     std::string input_file = "input_" + exeName;

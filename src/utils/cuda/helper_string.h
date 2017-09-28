@@ -18,8 +18,8 @@
 #include <stdlib.h>
 #include <string>
 
-#include <cuda_runtime.h>
 #include <cuda.h>
+#include <cuda_runtime.h>
 
 #if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
 #ifndef _CRT_SECURE_NO_DEPRECATE

@@ -142,7 +142,7 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
     utils->passes( "managed duplicated destroyed" );
 
     if ( dynamic_pointer_cast<MultiVector>( vectora ) ) {
-        auto b = AMP::LinearAlgebra::PetscVector::view( vectora );
+        auto b      = AMP::LinearAlgebra::PetscVector::view( vectora );
         bool passed = true;
         for ( size_t i = 0; i != b->numberOfDataBlocks(); i++ ) {
             if ( b->getRawDataBlock<double>( i ) == vectora->getRawDataBlock<double>( i ) ) {
@@ -159,7 +159,7 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::StaticDuplicatePetscVector( AMP::UnitTest *utils )
 {
-    auto vectora = d_factory->getNativeVector();
+    auto vectora    = d_factory->getNativeVector();
     auto vector_dup = d_factory->getManagedVector();
     vector_dup->setToScalar( 1. );
     double t = vector_dup->L1Norm();
@@ -431,7 +431,7 @@ void PetscVectorTests::VerifyLogPetscVector( AMP::UnitTest *utils )
 void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
 {
     auto vectora = d_factory->getNativeVector();
-    auto veca = getVec( vectora );
+    auto veca    = getVec( vectora );
 
     vectora->setRandomValues();
     double l1norm_a1, l1norm_a2;
@@ -701,8 +701,8 @@ void PetscVectorTests::VerifyAbsPetscVector( AMP::UnitTest *utils )
 {
     auto vectora = d_factory->getNativeVector();
     auto vectorb = d_factory->getNativeVector();
-    auto veca = getVec( vectora );
-    auto vecb = getVec( vectorb );
+    auto veca    = getVec( vectora );
+    auto vecb    = getVec( vectorb );
     if ( !veca || !vecb )
         utils->failure( "PETSC abs create" );
 
@@ -940,15 +940,15 @@ void PetscVectorTests::VerifySetPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectora2 = d_factory->getNativeVector();
+    auto vectora      = d_factory->getNativeVector();
+    auto vectora2     = d_factory->getNativeVector();
     auto vectora_orig = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
-    auto vectorb2 = d_factory->getNativeVector();
-    auto veca      = getVec( vectora );
-    auto vecb      = getVec( vectorb );
-    auto veca2     = getVec( vectora2 );
-    auto veca_orig = getVec( vectora_orig );
+    auto vectorb      = d_factory->getNativeVector();
+    auto vectorb2     = d_factory->getNativeVector();
+    auto veca         = getVec( vectora );
+    auto vecb         = getVec( vectorb );
+    auto veca2        = getVec( vectora2 );
+    auto veca_orig    = getVec( vectora_orig );
     if ( !veca || !vecb || !veca || !veca_orig )
         utils->failure( "PETSc AXPY create" );
 
@@ -1021,12 +1021,12 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyScalePetscVector( AMP::UnitTest *utils )
 {
-    auto vectora = d_factory->getNativeVector();
+    auto vectora  = d_factory->getNativeVector();
     auto vectora2 = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
-    auto veca  = getVec( vectora );
-    auto vecb  = getVec( vectorb );
-    auto veca2 = getVec( vectora2 );
+    auto vectorb  = d_factory->getNativeVector();
+    auto veca     = getVec( vectora );
+    auto vecb     = getVec( vectorb );
+    auto veca2    = getVec( vectora2 );
     if ( !veca || !veca2 || !vecb )
         utils->failure( "PETSc scale create" );
 
@@ -1079,8 +1079,8 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
 {
     auto vectora = d_factory->getNativeVector();
     auto vectorb = d_factory->getNativeVector();
-    auto veca = getVec( vectora );
-    auto vecb = getVec( vectorb );
+    auto veca    = getVec( vectora );
+    auto vecb    = getVec( vectorb );
 
     vectora->setRandomValues();
     vectorb->setRandomValues();

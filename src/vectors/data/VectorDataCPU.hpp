@@ -206,9 +206,9 @@ void VectorDataCPU<TYPE>::copyOutRawData( double *out ) const
  * Swap raw data                                                 *
  ****************************************************************/
 template<typename TYPE>
-void VectorDataCPU<TYPE>::swapData( VectorData& rhs )
+void VectorDataCPU<TYPE>::swapData( VectorData &rhs )
 {
-    auto rhs2 = dynamic_cast<VectorDataCPU<TYPE>*>( &rhs );
+    auto rhs2 = dynamic_cast<VectorDataCPU<TYPE> *>( &rhs );
     AMP_INSIST( rhs2, "Cannot swap with arbitrary VectorData" );
     std::swap( d_CommList, rhs2->d_CommList );
     std::swap( d_UpdateState, rhs2->d_UpdateState );

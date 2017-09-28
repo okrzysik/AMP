@@ -28,7 +28,7 @@
 #include <exception>
 
 
-void sourceTest( AMP::UnitTest *ut, const std::string& exeName )
+void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     // Initialization
     std::string input_file = "input_" + exeName;

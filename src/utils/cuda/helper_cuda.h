@@ -21,11 +21,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils/cuda/helper_string.h"
 #include "utils/Utilities.h"
+#include "utils/cuda/helper_string.h"
 
-#include <cuda_runtime.h>
 #include <cuda.h>
+#include <cuda_runtime.h>
 
 #ifndef EXIT_WAIVED
 #define EXIT_WAIVED 2

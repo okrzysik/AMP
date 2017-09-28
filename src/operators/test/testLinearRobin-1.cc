@@ -93,7 +93,7 @@ void bcTests( AMP::UnitTest *ut,
     std::cout.flush();
 }
 
-void linearRobinTest( AMP::UnitTest *ut, const std::string& exeName )
+void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     // Initialization
     std::string input_file = "input_" + exeName;

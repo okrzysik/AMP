@@ -312,11 +312,11 @@ bool libMeshIterator::operator==( const MeshIterator &rhs ) const
 {
     const libMeshIterator *rhs2 = nullptr;
     // Convert rhs to a libMeshIterator* so we can access the base class members
-    auto *tmp = reinterpret_cast<const libMeshIterator*>( &rhs );
+    auto *tmp = reinterpret_cast<const libMeshIterator *>( &rhs );
     if ( tmp->d_typeID == libMeshIteratorTypeID ) {
         rhs2 = tmp; // We can safely cast rhs to a libMeshIterator
     } else if ( tmp->d_iterator != nullptr ) {
-        tmp = reinterpret_cast<const libMeshIterator*>( tmp->d_iterator );
+        tmp = reinterpret_cast<const libMeshIterator *>( tmp->d_iterator );
         if ( tmp->d_typeID == libMeshIteratorTypeID )
             rhs2 = tmp; // We can safely cast rhs.iterator to a libMeshIterator
     }

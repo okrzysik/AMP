@@ -178,11 +178,11 @@ bool STKMeshIterator::operator==( const MeshIterator &rhs ) const
 {
     const STKMeshIterator *rhs2 = nullptr;
     // Convert rhs to a STKMeshIterator* so we can access the base class members
-    const auto *tmp  = reinterpret_cast<const STKMeshIterator*>( &rhs );
+    const auto *tmp = reinterpret_cast<const STKMeshIterator *>( &rhs );
     if ( tmp->typeID == STKMeshIteratorTypeID() ) {
         rhs2 = tmp // We can safely cast rhs to a STKMeshIterator
     } else if ( tmp->d_iterator != nullptr ) {
-        tmp = reinterpret_cast<const STKMeshIterator*>( tmp->d_iterator );
+        tmp = reinterpret_cast<const STKMeshIterator *>( tmp->d_iterator );
         if ( tmp->d_typeID == STKMeshIteratorTypeID() )
             rhs2 = tmp; // We can safely cast rhs.iterator to a STKMeshIterator
     }

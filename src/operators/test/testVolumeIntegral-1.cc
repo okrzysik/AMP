@@ -30,7 +30,7 @@
 
 
 void resetTests( AMP::UnitTest *ut,
-                 const std::string& msgPrefix,
+                 const std::string &msgPrefix,
                  AMP::shared_ptr<AMP::Mesh::Mesh>,
                  AMP::shared_ptr<AMP::Operator::Operator>,
                  AMP::shared_ptr<AMP::InputDatabase> )
@@ -206,7 +206,7 @@ void applyTest( AMP::UnitTest *ut,
 }
 
 
-void sourceTest( AMP::UnitTest *ut, const std::string& exeName )
+void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     // Initialization
     std::string input_file = "input_" + exeName;

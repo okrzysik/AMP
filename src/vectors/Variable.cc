@@ -8,7 +8,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-Variable::Variable( const std::string& name ) : d_VariableName( name ) {}
+Variable::Variable( const std::string &name ) : d_VariableName( name ) {}
 
 
 Variable::~Variable() = default;

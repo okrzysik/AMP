@@ -63,10 +63,7 @@ void NativePetscVector::copyOutRawData( double *out ) const
 }
 
 
-void NativePetscVector::swapData( VectorData& )
-{
-    AMP_ERROR("Not finished");
-}
+void NativePetscVector::swapData( VectorData & ) { AMP_ERROR( "Not finished" ); }
 
 
 } // namespace LinearAlgebra

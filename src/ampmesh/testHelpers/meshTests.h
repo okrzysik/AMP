@@ -278,7 +278,7 @@ private: // Private data
           */
     static void ElementIteratorTest( AMP::UnitTest *ut,
                                      AMP::Mesh::Mesh::shared_ptr mesh,
-                                     const AMP::Mesh::MeshIterator& iterator,
+                                     const AMP::Mesh::MeshIterator &iterator,
                                      const size_t N_local,
                                      const size_t N_ghost,
                                      const AMP::Mesh::GeomType type );
