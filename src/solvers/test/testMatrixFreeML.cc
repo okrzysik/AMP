@@ -547,7 +547,7 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
 }
 
 
-void loopMyTest( AMP::UnitTest *ut, std::string exeName )
+void loopMyTest( AMP::UnitTest *ut, const std::string& exeName )
 {
     myTest2( ut, exeName, false );
     myTest2( ut, exeName, true );

@@ -60,7 +60,7 @@
 
 double h_Size = 1.46286;
 
-void myTest( AMP::UnitTest *ut, std::string exeName )
+void myTest( AMP::UnitTest *ut, const std::string& exeName )
 
 {
 

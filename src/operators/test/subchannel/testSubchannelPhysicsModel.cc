@@ -21,7 +21,7 @@
 #include "materials/Material.h"
 
 // function testing if two values are equal to within 1% and reporting if otherwise
-bool areEqual( double result, double known, std::string quantity )
+bool areEqual( double result, double known, const std::string& quantity )
 {
     bool passed;
     if ( !AMP::Utilities::approx_equal( result, known, 0.01 ) ) {
@@ -35,7 +35,7 @@ bool areEqual( double result, double known, std::string quantity )
 }
 
 // function with tests to be performed on each input file
-void nonlinearTest( AMP::UnitTest *ut, std::string exeName )
+void nonlinearTest( AMP::UnitTest *ut, const std::string& exeName )
 {
 
     //

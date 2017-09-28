@@ -26,6 +26,19 @@
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+
+# Function to add a serial or 1,2,4 processor test dependent on the existence of a parallel matrix
+FUNCTION( ADD_AMP_TEST_124_MATRIX EXEFILE ${ARGN} )
+    IF ( USE_EXT_TRILINOS )
+        # We have a parallel matrix
+        ADD_AMP_TEST_1_2_4( ${EXEFILE} ${ARGN} )
+    ELSE()
+        # We do not have a parallel matrix
+        ADD_AMP_TEST( ${EXEFILE} ${ARGN} )
+    ENDIF()
+ENDFUNCTION()
+
+
 # Copy meshes
 COPY_MESH_FILE ( pellet_1x.e )
 COPY_MESH_FILE ( pellet_lo_res.e )
@@ -39,7 +52,7 @@ ADD_AMP_TEST_1_2_4( test_Matrix )
 ADD_AMP_TEST_1_2_4( test_RectangularMatricesMultiplication )
 
 IF( USE_EXT_LIBMESH )
-  ADD_AMP_TEST_1_2_4( testMatCreate )
+  ADD_AMP_TEST_124_MATRIX( testMatCreate )
   COPY_TEST_FILE( input_testMatCreate-1 )
   ADD_AMP_TEST_1_2_4( testMatMultiply )
 ENDIF()

@@ -33,7 +33,7 @@
 #include <string>
 
 
-void myTest( AMP::UnitTest *ut, std::string exeName )
+void myTest( AMP::UnitTest *ut, const std::string& exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "log_" + exeName;

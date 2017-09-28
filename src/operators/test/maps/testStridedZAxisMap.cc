@@ -54,7 +54,7 @@ void project( AMP::Mesh::MeshIterator const &meshIterator,
 }
 
 
-void myTest( AMP::UnitTest *ut, std::string exeName )
+void myTest( AMP::UnitTest *ut, const std::string& exeName )
 {
     std::string inputFile = "input_" + exeName;
     std::string logFile   = "output_" + exeName;

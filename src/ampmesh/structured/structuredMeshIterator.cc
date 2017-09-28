@@ -79,8 +79,8 @@ structuredMeshIterator::structuredMeshIterator()
     d_globalSize.fill( 0 );
     d_element = &d_cur_element;
 }
-structuredMeshIterator::structuredMeshIterator( BoxMesh::MeshElementIndex first,
-                                                BoxMesh::MeshElementIndex last,
+structuredMeshIterator::structuredMeshIterator( const BoxMesh::MeshElementIndex& first,
+                                                const BoxMesh::MeshElementIndex& last,
                                                 const AMP::Mesh::BoxMesh *mesh,
                                                 size_t pos )
     : d_isPeriodic( mesh->d_isPeriodic ),

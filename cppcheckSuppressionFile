@@ -10,7 +10,7 @@ passedByValue:*/operators/subchannel/SubchannelHelpers.cc
 passedByValue:*/utils/test/test_AMP_MPI.cc
 passedByValue:*/operators/test/maps/testMultiDofDTKMapOperator-2.cc
 passedByValue:*/operators/test/maps/testMultiDofDTKMapOperator.cc
-passedByValue:*/solvers/test/testMeshRefinementDiffusion-1.c
+passedByValue:*/solvers/test/testMeshRefinementDiffusion-1.cc
 
 // Suppress unmatched suppressions
 unmatchedSuppression

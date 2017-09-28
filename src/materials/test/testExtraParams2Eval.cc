@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-void myTest( AMP::UnitTest *ut, std::string exeName )
+void myTest( AMP::UnitTest *ut, const std::string& exeName )
 {
     std::string matname = "UO2_MSRZC_09";
     AMP::shared_ptr<AMP::Materials::Material> material =

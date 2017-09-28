@@ -26,7 +26,7 @@
 #include "discretization/MultiDOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 
-void compare_face_value( std::string variable,
+void compare_face_value( const std::string& variable,
                          unsigned int i,
                          unsigned int j,
                          double value_array[][10],
@@ -40,7 +40,7 @@ void compare_face_value( std::string variable,
     }
 }
 
-void compare_gap_value( std::string variable,
+void compare_gap_value( const std::string& variable,
                         unsigned int i,
                         unsigned int j,
                         double value_array[][9],
@@ -54,7 +54,7 @@ void compare_gap_value( std::string variable,
     }
 }
 
-unsigned int getMATLABGapIndex( AMP::Mesh::MeshElement gapFace )
+unsigned int getMATLABGapIndex( const AMP::Mesh::MeshElement& gapFace )
 {
     double pitch = 0.0126; // pitch for test problem [m]
     double x1    = 0.5 * pitch;
@@ -110,7 +110,7 @@ unsigned int getMATLABGapIndex( AMP::Mesh::MeshElement gapFace )
     return k;
 }
 
-unsigned int getMATLABAxialIndex( AMP::Mesh::MeshElement gapFace )
+unsigned int getMATLABAxialIndex( const AMP::Mesh::MeshElement& gapFace )
 {
     double height   = 3.66;
     unsigned int Nz = 9;
@@ -136,7 +136,7 @@ unsigned int getMATLABAxialIndex( AMP::Mesh::MeshElement gapFace )
     return j;
 }
 
-void Test( AMP::UnitTest *ut, std::string exeName )
+void Test( AMP::UnitTest *ut, const std::string& exeName )
 {
     // create input and output file names
     std::string input_file = "input_" + exeName;

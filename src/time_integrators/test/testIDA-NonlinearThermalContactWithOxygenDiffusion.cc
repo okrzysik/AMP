@@ -53,7 +53,7 @@
 #include "time_integrators/sundials/IDATimeOperator.h"
 
 
-void thermalContactTest( AMP::UnitTest *ut, std::string exeName )
+void thermalContactTest( AMP::UnitTest *ut, const std::string& exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;

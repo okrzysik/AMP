@@ -55,7 +55,7 @@
       cos( 0.1 * __PI__ * z ) )
 
 
-void linearRobinTest( AMP::UnitTest *ut, std::string exeName )
+void linearRobinTest( AMP::UnitTest *ut, const std::string& exeName )
 {
     // Input and output file names
     //  #include <string>
