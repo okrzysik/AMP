@@ -182,7 +182,7 @@ void test_project_and_orthogonalize()
     AMP_ASSERT( compute_vector_norm( tmp ) == 0.0 );
 }
 
-void myTest( AMP::UnitTest *ut, std::string exeName )
+void myTest( AMP::UnitTest *ut, const std::string& exeName )
 {
     const double pi  = 3.141592653589793;
     double points[9] = {

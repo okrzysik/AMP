@@ -65,12 +65,12 @@ void PetscVectorTests::testPetscVector( AMP::UnitTest *ut )
 
 void PetscVectorTests::InstantiatePetscVectors( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr native_vector( d_factory->getNativeVector() );
+    auto native_vector = d_factory->getNativeVector();
     if ( native_vector )
         utils->passes( "native created" );
     else
         utils->failure( "native created" );
-    AMP::LinearAlgebra::Vector::shared_ptr managed_vector = d_factory->getManagedVector();
+    auto managed_vector = d_factory->getManagedVector();
     if ( managed_vector )
         utils->passes( "managed created" );
     else
@@ -81,8 +81,8 @@ void PetscVectorTests::InstantiatePetscVectors( AMP::UnitTest *utils )
 
 void PetscVectorTests::Bug_612( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getManagedVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getManagedVector() );
+    auto vectora = d_factory->getManagedVector();
+    auto vectorb = d_factory->getManagedVector();
 
     Vec veca = getVec( vectora );
     Vec vecb = getVec( vectorb );
@@ -119,7 +119,7 @@ void PetscVectorTests::Bug_612( AMP::UnitTest *utils )
 
 void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getManagedVector() );
+    auto vectora = d_factory->getManagedVector();
     if ( dynamic_pointer_cast<NativePetscVector>( vectora ) )
         return;
 
@@ -142,8 +142,8 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
     utils->passes( "managed duplicated destroyed" );
 
     if ( dynamic_pointer_cast<MultiVector>( vectora ) ) {
-        AMP::LinearAlgebra::Vector::shared_ptr b = AMP::LinearAlgebra::PetscVector::view( vectora );
-        bool passed                              = true;
+        auto b = AMP::LinearAlgebra::PetscVector::view( vectora );
+        bool passed = true;
         for ( size_t i = 0; i != b->numberOfDataBlocks(); i++ ) {
             if ( b->getRawDataBlock<double>( i ) == vectora->getRawDataBlock<double>( i ) ) {
                 passed = false;
@@ -159,8 +159,8 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::StaticDuplicatePetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector_dup = d_factory->getManagedVector();
+    auto vectora = d_factory->getNativeVector();
+    auto vector_dup = d_factory->getManagedVector();
     vector_dup->setToScalar( 1. );
     double t = vector_dup->L1Norm();
     if ( vector_dup->getGlobalSize() == vectora->getGlobalSize() )
@@ -182,9 +182,9 @@ void PetscVectorTests::StaticDuplicatePetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::StaticCopyPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
     vectora->setToScalar( 1. );
-    AMP::LinearAlgebra::Vector::shared_ptr vector_dup = d_factory->getManagedVector();
+    auto vector_dup = d_factory->getManagedVector();
     vector_dup->copyVector( vectora );
     double t = vector_dup->L1Norm();
     if ( vector_dup->getGlobalSize() == vectora->getGlobalSize() )
@@ -206,9 +206,9 @@ void PetscVectorTests::StaticCopyPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::CopyPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
+    auto vectorc = d_factory->getNativeVector();
     vectora->setRandomValues();
     vectorb->copyVector( vectora );
     vectorc->subtract( vectora, vectorb );
@@ -221,16 +221,16 @@ void PetscVectorTests::CopyPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyPointwiseMaxAbsPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
+    auto vectorc = d_factory->getNativeVector();
 
     vectora->setRandomValues();
     vectorb->setToScalar( .65 );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectore = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorf = d_factory->getManagedVector();
+    auto vectord = d_factory->getManagedVector();
+    auto vectore = d_factory->getManagedVector();
+    auto vectorf = d_factory->getManagedVector();
 
     vectord->copyVector( vectora );
     vectore->setToScalar( .65 );
@@ -254,16 +254,16 @@ void PetscVectorTests::VerifyPointwiseMaxAbsPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyPointwiseMaxPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
+    auto vectorc = d_factory->getNativeVector();
 
     vectora->setRandomValues();
     vectorb->setToScalar( .35 );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectore = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorf = d_factory->getManagedVector();
+    auto vectord = d_factory->getManagedVector();
+    auto vectore = d_factory->getManagedVector();
+    auto vectorf = d_factory->getManagedVector();
 
     vectord->copyVector( vectora );
     vectore->setToScalar( .35 );
@@ -287,16 +287,16 @@ void PetscVectorTests::VerifyPointwiseMaxPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyPointwiseMinPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
+    auto vectorc = d_factory->getNativeVector();
 
     vectora->setRandomValues();
     vectorb->setToScalar( .35 );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectore = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorf = d_factory->getManagedVector();
+    auto vectord = d_factory->getManagedVector();
+    auto vectore = d_factory->getManagedVector();
+    auto vectorf = d_factory->getManagedVector();
 
     vectord->copyVector( vectora );
     vectore->setToScalar( .35 );
@@ -320,17 +320,17 @@ void PetscVectorTests::VerifyPointwiseMinPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyAXPBYPCZPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
+    auto vectorc = d_factory->getNativeVector();
 
     vectora->setRandomValues();
     vectorb->setToScalar( -.5 );
     vectorc->setToScalar( 3.45678 );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectore = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorf = d_factory->getManagedVector();
+    auto vectord = d_factory->getManagedVector();
+    auto vectore = d_factory->getManagedVector();
+    auto vectorf = d_factory->getManagedVector();
 
     vectord->copyVector( vectora );
     vectore->setToScalar( -.5 );
@@ -355,14 +355,14 @@ void PetscVectorTests::VerifyAXPBYPCZPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyAYPXPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
 
     vectora->setRandomValues();
     vectorb->setToScalar( -.5 );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
+    auto vectorc = d_factory->getManagedVector();
+    auto vectord = d_factory->getManagedVector();
 
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
@@ -384,12 +384,12 @@ void PetscVectorTests::VerifyAYPXPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyExpPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
 
     vectora->setRandomValues();
     vectora->abs( vectora );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb = d_factory->getManagedVector();
+    auto vectorb = d_factory->getManagedVector();
     vectorb->copyVector( vectora );
 
     auto veca = getVec( vectora );
@@ -407,12 +407,12 @@ void PetscVectorTests::VerifyExpPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyLogPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
 
     vectora->setRandomValues();
     vectora->abs( vectora );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb = d_factory->getManagedVector();
+    auto vectorb = d_factory->getManagedVector();
     vectorb->copyVector( vectora );
 
     auto veca = getVec( vectora );
@@ -430,7 +430,7 @@ void PetscVectorTests::VerifyLogPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
     auto veca = getVec( vectora );
 
     vectora->setRandomValues();
@@ -456,7 +456,7 @@ void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
     else
         utils->failure( "inf norm: native norm does not equal interface norm for native vector" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc = d_factory->getManagedVector();
+    auto vectorc = d_factory->getManagedVector();
     vectorc->copyVector( vectora );
 
 
@@ -535,15 +535,15 @@ void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyAXPBYPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
 
     vectora->setRandomValues();
     vectorb->setToScalar( 2.0 );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc = d_factory->getManagedVector();
+    auto vectorc = d_factory->getManagedVector();
     vectorc->copyVector( vectora );
-    AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
+    auto vectord = d_factory->getManagedVector();
     vectord->copyVector( vectorb );
 
     auto veca = getVec( vectora );
@@ -579,10 +579,10 @@ void PetscVectorTests::VerifyAXPBYPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifySwapPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectord( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
+    auto vectorc = d_factory->getNativeVector();
+    auto vectord = d_factory->getNativeVector();
 
     auto veca = getVec( vectora );
     auto vecb = getVec( vectorb );
@@ -608,10 +608,10 @@ void PetscVectorTests::VerifySwapPetscVector( AMP::UnitTest *utils )
     else
         utils->failure( "Swap vectors AMP interface fails with native vectors" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectore = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorf = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorg = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorh = d_factory->getManagedVector();
+    auto vectore = d_factory->getManagedVector();
+    auto vectorf = d_factory->getManagedVector();
+    auto vectorg = d_factory->getManagedVector();
+    auto vectorh = d_factory->getManagedVector();
 
     auto vece = getVec( vectore );
     auto vecf = getVec( vectorf );
@@ -642,8 +642,8 @@ void PetscVectorTests::VerifySwapPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyGetSizePetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb = d_factory->getManagedVector();
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getManagedVector();
 
     auto veca = getVec( vectora );
     auto vecb = getVec( vectorb );
@@ -669,15 +669,15 @@ void PetscVectorTests::VerifyGetSizePetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyMaxPointwiseDividePetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
 
     vectora->setRandomValues();
     vectorb->setToScalar( 3.14159 );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc = d_factory->getManagedVector();
+    auto vectorc = d_factory->getManagedVector();
     vectorc->copyVector( vectora );
-    AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
+    auto vectord = d_factory->getManagedVector();
     vectord->copyVector( vectorb );
 
     auto veca = getVec( vectora );
@@ -699,8 +699,8 @@ void PetscVectorTests::VerifyMaxPointwiseDividePetscVector( AMP::UnitTest *utils
 
 void PetscVectorTests::VerifyAbsPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
     auto veca = getVec( vectora );
     auto vecb = getVec( vectorb );
     if ( !veca || !vecb )
@@ -717,8 +717,8 @@ void PetscVectorTests::VerifyAbsPetscVector( AMP::UnitTest *utils )
     else
         utils->failure( "native interface on native petsc abs doesn't work" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
+    auto vectorc = d_factory->getManagedVector();
+    auto vectord = d_factory->getManagedVector();
 
     auto vecc = getVec( vectorc );
     auto vecd = getVec( vectord );
@@ -740,10 +740,10 @@ void PetscVectorTests::VerifyAbsPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyPointwiseMultPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectord( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
+    auto vectorc = d_factory->getNativeVector();
+    auto vectord = d_factory->getNativeVector();
     if ( !vectora || !vectorb || !vectorc || !vectord )
         utils->failure( "PointwiseMult create" );
 
@@ -764,10 +764,10 @@ void PetscVectorTests::VerifyPointwiseMultPetscVector( AMP::UnitTest *utils )
         utils->failure( "managed interface for native vector" );
 
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectore = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorf = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorg = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorh = d_factory->getManagedVector();
+    auto vectore = d_factory->getManagedVector();
+    auto vectorf = d_factory->getManagedVector();
+    auto vectorg = d_factory->getManagedVector();
+    auto vectorh = d_factory->getManagedVector();
 
     vectore->setRandomValues();
     vectorf->setToScalar( 4.567 );
@@ -790,10 +790,10 @@ void PetscVectorTests::VerifyPointwiseMultPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyPointwiseDividePetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectord( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
+    auto vectorc = d_factory->getNativeVector();
+    auto vectord = d_factory->getNativeVector();
     vectora->setRandomValues();
     vectorb->setToScalar( 4.567 );
     vectorc->copyVector( vectora );
@@ -810,10 +810,10 @@ void PetscVectorTests::VerifyPointwiseDividePetscVector( AMP::UnitTest *utils )
     else
         utils->failure( "managed interface for native vector" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectore = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorf = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorg = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorh = d_factory->getManagedVector();
+    auto vectore = d_factory->getManagedVector();
+    auto vectorf = d_factory->getManagedVector();
+    auto vectorg = d_factory->getManagedVector();
+    auto vectorh = d_factory->getManagedVector();
 
     vectore->setRandomValues();
     vectorf->setToScalar( 4.567 );
@@ -836,11 +836,11 @@ void PetscVectorTests::VerifyPointwiseDividePetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifySqrtPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
 
     vectora->setRandomValues();
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getManagedVector() );
+    auto vectorb = d_factory->getManagedVector();
     vectorb->copyVector( vectora );
 
     auto veca = getVec( vectora );
@@ -864,8 +864,8 @@ void PetscVectorTests::VerifySqrtPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifySetRandomPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getManagedVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getManagedVector();
 
     auto veca = getVec( vectora );
     auto vecb = getVec( vectorb );
@@ -904,8 +904,8 @@ void PetscVectorTests::VerifySetRandomPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifySetPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getManagedVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getManagedVector();
 
     auto veca = getVec( vectora );
     auto vecb = getVec( vectorb );
@@ -940,11 +940,11 @@ void PetscVectorTests::VerifySetPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectora2( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectora_orig( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb2( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectora2 = d_factory->getNativeVector();
+    auto vectora_orig = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
+    auto vectorb2 = d_factory->getNativeVector();
     auto veca      = getVec( vectora );
     auto vecb      = getVec( vectorb );
     auto veca2     = getVec( vectora2 );
@@ -972,10 +972,10 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
     else
         utils->failure( "native interface on native petsc axpy doesn't work" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc  = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc2 = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectord  = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectord2 = d_factory->getManagedVector();
+    auto vectorc  = d_factory->getManagedVector();
+    auto vectorc2 = d_factory->getManagedVector();
+    auto vectord  = d_factory->getManagedVector();
+    auto vectord2 = d_factory->getManagedVector();
 
     vectorc->copyVector( vectora_orig );
     vectorc2->copyVector( vectora_orig );
@@ -1021,9 +1021,9 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyScalePetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectora2( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectora2 = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
     auto veca  = getVec( vectora );
     auto vecb  = getVec( vectorb );
     auto veca2 = getVec( vectora2 );
@@ -1053,8 +1053,8 @@ void PetscVectorTests::VerifyScalePetscVector( AMP::UnitTest *utils )
     else
         utils->failure( "Multiple scales failing in native petsc" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
+    auto vectorc = d_factory->getManagedVector();
+    auto vectord = d_factory->getManagedVector();
     vectorc->copyVector( vectora );
     vectord->copyVector( vectora );
 
@@ -1077,8 +1077,8 @@ void PetscVectorTests::VerifyScalePetscVector( AMP::UnitTest *utils )
 
 void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
+    auto vectora = d_factory->getNativeVector();
+    auto vectorb = d_factory->getNativeVector();
     auto veca = getVec( vectora );
     auto vecb = getVec( vectorb );
 
@@ -1097,8 +1097,8 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     else
         utils->failure( "multiple native dot fails" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
+    auto vectorc = d_factory->getManagedVector();
+    auto vectord = d_factory->getManagedVector();
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
     auto vecc = getVec( vectorc );
@@ -1115,8 +1115,8 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     else
         utils->failure( "native dot does not equal managed dot" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr vectore = d_factory->getManagedVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vectorf = d_factory->getManagedVector();
+    auto vectore = d_factory->getManagedVector();
+    auto vectorf = d_factory->getManagedVector();
     vectore->copyVector( vectora );
     vectorf->copyVector( vectorb );
     auto vece = getVec( vectore );

@@ -1432,7 +1432,7 @@ double SubchannelFourEqLinearOperator::DynamicViscosity( double T, double rho )
 }
 
 
-void SubchannelFourEqLinearOperator::getAxialFaces( AMP::Mesh::MeshElement cell,
+void SubchannelFourEqLinearOperator::getAxialFaces( const AMP::Mesh::MeshElement& cell,
                                                     AMP::Mesh::MeshElement &upperFace,
                                                     AMP::Mesh::MeshElement &lowerFace )
 {
@@ -1473,7 +1473,7 @@ void SubchannelFourEqLinearOperator::getAxialFaces( AMP::Mesh::MeshElement cell,
 
 AMP::Mesh::MeshElement SubchannelFourEqLinearOperator::getAxiallyAdjacentLateralFace(
     AMP::Mesh::MeshElement *daughterCell,
-    AMP::Mesh::MeshElement parentLateralFace,
+    const AMP::Mesh::MeshElement& parentLateralFace,
     std::map<std::vector<double>, AMP::Mesh::MeshElement> interiorLateralFaceMap )
 {
     // gets the lateral face that is either below or above another lateral face

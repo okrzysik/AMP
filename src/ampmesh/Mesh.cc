@@ -41,10 +41,12 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
 {
     // Set the base properties
     AMP_ASSERT( sizeof( MeshElementID ) == 16 );
-    d_params = params_in;
-    GeomDim  = GeomType::null;
-    d_comm   = d_params->comm;
-    d_db     = d_params->d_db;
+    d_params    = params_in;
+    GeomDim     = GeomType::null;
+    PhysicalDim = 0;
+    d_max_gcw   = 0;
+    d_comm      = d_params->comm;
+    d_db        = d_params->d_db;
     AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ),
                 "Communicator in mesh params must be non NULL " );
     setMeshID();

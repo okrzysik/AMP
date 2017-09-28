@@ -24,7 +24,7 @@ Vector::const_shared_ptr VectorSelector::subset( Vector::const_shared_ptr p ) co
 /********************************************************
  * VS_ByVariableName                                     *
  ********************************************************/
-VS_ByVariableName::VS_ByVariableName( std::string n ) : d_VecName( std::move( n ) ) {}
+VS_ByVariableName::VS_ByVariableName( const std::string& name ) : d_VecName( name ) {}
 bool VS_ByVariableName::isSelected( Vector::const_shared_ptr v ) const
 {
     return v->getVariable()->getName() == d_VecName;

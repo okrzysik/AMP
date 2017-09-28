@@ -43,12 +43,13 @@ void structuredMeshElement::reset()
     d_meshType    = GeomType::null;
     d_physicalDim = 0;
 }
-structuredMeshElement::structuredMeshElement( BoxMesh::MeshElementIndex index,
+structuredMeshElement::structuredMeshElement( const BoxMesh::MeshElementIndex& index,
                                               const AMP::Mesh::BoxMesh *mesh )
 {
     reset( index, mesh );
 }
-void structuredMeshElement::reset( BoxMesh::MeshElementIndex index, const AMP::Mesh::BoxMesh *mesh )
+void structuredMeshElement::reset( const BoxMesh::MeshElementIndex& index,
+                                   const AMP::Mesh::BoxMesh *mesh )
 {
     typeID        = structuredMeshElementTypeID;
     d_mesh        = mesh;

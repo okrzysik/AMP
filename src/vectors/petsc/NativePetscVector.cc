@@ -61,5 +61,13 @@ void NativePetscVector::copyOutRawData( double *out ) const
 {
     std::copy( getRawDataBlock<double>( 0 ), getRawDataBlock<double>( 0 ) + getLocalSize(), out );
 }
+
+
+void NativePetscVector::swapData( VectorData& )
+{
+    AMP_ERROR("Not finished");
+}
+
+
 } // namespace LinearAlgebra
 } // namespace AMP

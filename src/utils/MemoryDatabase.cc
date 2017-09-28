@@ -45,8 +45,8 @@ namespace AMP {
 /************************************************************************
  *  Constructors/destructors                                             *
  ************************************************************************/
-MemoryDatabase::MemoryDatabase( std::string name )
-    : d_database_name( std::move( name ) ), comm( AMP_COMM_WORLD )
+MemoryDatabase::MemoryDatabase( const std::string& name )
+    : d_database_name( name ), comm( AMP_COMM_WORLD )
 {
 }
 

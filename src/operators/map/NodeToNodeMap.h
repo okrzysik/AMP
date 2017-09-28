@@ -97,7 +97,7 @@ private:
     void createPairs( bool requireAllPaired = true );
 
     // Function to create the list of owned points from the iterator over the surface nodes
-    std::vector<Point> createOwnedPoints( AMP::Mesh::MeshIterator );
+    std::vector<Point> createOwnedPoints( const AMP::Mesh::MeshIterator& );
 
     // Function to create the communication lists
     void buildSendRecvList();

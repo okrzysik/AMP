@@ -22,10 +22,10 @@
    Memcheck:Leak
    ...
    fun:malloc
+   ...
    fun:_ZN3AMP9yyrestartEP8_IO_FILE
    ...
 }
-
 
 
 #### Supress std::ios_base::sync_with_stdio memory errors

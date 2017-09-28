@@ -63,7 +63,7 @@ public:
      *
      */
     MultiVariable( const std::string &name,
-                   std::vector<Variable::shared_ptr> vars = std::vector<Variable::shared_ptr>() );
+                   const std::vector<Variable::shared_ptr>& vars = std::vector<Variable::shared_ptr>() );
 
     /** \brief Destructor
      *

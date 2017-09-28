@@ -128,7 +128,7 @@ public: // Derived from VectorData
     }
     virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
     virtual std::string VectorDataName() const override { return type(); }
-
+    virtual void swapData( VectorData& ) override { AMP_ERROR("Not finished"); }
 
 protected: // Derived from VectorData
     virtual void dataChanged() override;

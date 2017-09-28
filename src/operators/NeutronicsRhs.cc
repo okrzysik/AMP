@@ -217,7 +217,7 @@ void NeutronicsRhs::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 }
 
 
-NeutronicsRhs::SourceType NeutronicsRhs::str2id( std::string str )
+NeutronicsRhs::SourceType NeutronicsRhs::str2id( const std::string& str )
 {
     if ( str == "Power" ) {
         return Power;

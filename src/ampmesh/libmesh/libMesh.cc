@@ -761,7 +761,7 @@ MeshIterator libMesh::getBlockIDIterator( const GeomType, const int, const int )
 /********************************************************
  * Return pointers to the neighbor nodes give a node id  *
  ********************************************************/
-std::vector<::Node *> libMesh::getNeighborNodes( MeshElementID id ) const
+std::vector<::Node *> libMesh::getNeighborNodes( const MeshElementID& id ) const
 {
     AMP_INSIST( id.type() == GeomType::Vertex, "This function is for nodes" );
     AMP_INSIST( id.meshID() == d_meshID, "Unknown mesh" );

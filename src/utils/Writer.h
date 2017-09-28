@@ -47,7 +47,7 @@ public:
      *                        otherwise an empty writer will be created.
      *               "Ascii" - A simple ascii writer
      */
-    static AMP::shared_ptr<AMP::Utilities::Writer> buildWriter( std::string type );
+    static AMP::shared_ptr<AMP::Utilities::Writer> buildWriter( const std::string& type );
 
     /**
      * \brief   Function to build a writer

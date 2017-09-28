@@ -123,6 +123,8 @@ public:
     {
         return hash == typeid( double ).hash_code();
     }
+    virtual void swapData( VectorData& ) override { AMP_ERROR("Not finished"); }
+
 
 protected:
     //! Empty constructor.

@@ -176,16 +176,15 @@ MeshIterator STKMeshIterator::operator--( int )
  ********************************************************/
 bool STKMeshIterator::operator==( const MeshIterator &rhs ) const
 {
-    const STKMeshIterator *rhs2 = NULL;
-    const STKMeshIterator *tmp  = static_cast<const STKMeshIterator *>( &rhs );
-    if ( typeid( rhs ) == typeid( STKMeshIterator ) ) {
-        rhs2 = dynamic_cast<const STKMeshIterator *>(
-            &rhs ); // We can safely cast rhs to a STKMeshIterator
-    } else if ( tmp->typeID == STKMeshIteratorTypeID() ) {
-        rhs2 = static_cast<const STKMeshIterator *>(
-            &rhs ); // We can safely cast rhs.iterator to a STKMeshIterator
-    } else if ( tmp->iterator->type_id() == STKMeshIteratorTypeID() ) {
-        rhs2 = static_cast<const STKMeshIterator *>( tmp->iterator );
+    const STKMeshIterator *rhs2 = nullptr;
+    // Convert rhs to a STKMeshIterator* so we can access the base class members
+    const auto *tmp  = reinterpret_cast<const STKMeshIterator*>( &rhs );
+    if ( tmp->typeID == STKMeshIteratorTypeID() ) {
+        rhs2 = tmp // We can safely cast rhs to a STKMeshIterator
+    } else if ( tmp->d_iterator != nullptr ) {
+        tmp = reinterpret_cast<const STKMeshIterator*>( tmp->d_iterator );
+        if ( tmp->d_typeID == STKMeshIteratorTypeID() )
+            rhs2 = tmp; // We can safely cast rhs.iterator to a STKMeshIterator
     }
     // Perform direct comparisions if we are dealing with two STKMeshIterators
     if ( rhs2 != NULL )

@@ -249,17 +249,15 @@ bool structuredMeshIterator::operator==( const MeshIterator &rhs ) const
 {
     if ( size() != rhs.size() )
         return false;
-    structuredMeshIterator *rhs2 = nullptr;
-    auto *tmp =
-        (structuredMeshIterator *) &rhs; // Convert rhs to a structuredMeshIterator* so we can
-                                         // access the base class members
-    if ( typeid( rhs ) == typeid( structuredMeshIterator ) ) {
+    const structuredMeshIterator *rhs2 = nullptr;
+    // Convert rhs to a structuredMeshIterator* so we can access the base class members
+    auto *tmp = reinterpret_cast<const structuredMeshIterator*>( &rhs );
+    if ( tmp->d_typeID == structuredMeshIteratorTypeID ) {
         rhs2 = tmp; // We can safely cast rhs to a structuredMeshIterator
-    } else if ( tmp->d_typeID == structuredMeshIteratorTypeID ) {
-        rhs2 = tmp; // We can safely cast rhs.iterator to a structuredMeshIterator
-    } else if ( reinterpret_cast<structuredMeshIterator *>( tmp->d_iterator )->d_typeID ==
-                structuredMeshIteratorTypeID ) {
-        rhs2 = reinterpret_cast<structuredMeshIterator *>( tmp->d_iterator );
+    } else if ( tmp->d_iterator != nullptr ) {
+        tmp = reinterpret_cast<const structuredMeshIterator*>( tmp->d_iterator );
+        if ( tmp->d_typeID == structuredMeshIteratorTypeID )
+            rhs2 = tmp; // We can safely cast rhs.iterator to a structuredMeshIterator
     }
     // Perform direct comparisions if we are dealing with two structuredMeshIterators
     if ( rhs2 != nullptr ) {
@@ -293,8 +291,8 @@ bool structuredMeshIterator::operator==( const MeshIterator &rhs ) const
     if ( this->position() != rhs.position() )
         return false;
     // Check that the elements match
-    AMP::Mesh::MeshIterator iterator = rhs.begin();
-    auto set1                        = getElements();
+    auto iterator = rhs.begin();
+    auto set1     = getElements();
     for ( size_t i = 0; i < d_size; i++ ) {
         auto *elem2 = dynamic_cast<structuredMeshElement *>( iterator->getRawElement() );
         if ( elem2 == nullptr )
@@ -321,8 +319,7 @@ structuredMeshIterator::getElements() const
 {
     if ( d_elements != nullptr )
         return d_elements;
-    AMP::shared_ptr<std::vector<BoxMesh::MeshElementIndex>> elements;
-    elements.reset( new std::vector<BoxMesh::MeshElementIndex>() );
+    auto elements = AMP::make_shared<std::vector<BoxMesh::MeshElementIndex>>();
     elements->reserve( d_size );
     for ( size_t pos = 0; pos < d_size; pos++ )
         elements->emplace_back( getIndex( pos ) );

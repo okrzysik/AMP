@@ -37,8 +37,8 @@ public:
 /****************************************************************
  * Constructors/Destructors                                      *
  ****************************************************************/
-MultiVariable::MultiVariable( const std::string &name, std::vector<Variable::shared_ptr> vars )
-    : Variable( name ), d_vVariables( std::move( vars ) )
+MultiVariable::MultiVariable( const std::string &name, const std::vector<Variable::shared_ptr>& vars )
+    : Variable( name ), d_vVariables( vars )
 {
 }
 MultiVariable::~MultiVariable() = default;

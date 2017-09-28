@@ -87,8 +87,8 @@ void SimpleVector<TYPE, OPS, DATA>::swapVectors( Vector &rhs )
 {
     auto x = dynamic_cast<SimpleVector *>( &rhs );
     AMP_INSIST( x != nullptr, "rhs is not a SimpleVector" );
-    // d_Data.swap( x->d_Data );
-    AMP_ERROR( "Not finished" );
+    std::swap( d_comm, d_comm );
+    swapData( rhs );
 }
 template<typename TYPE, typename OPS, typename DATA>
 void SimpleVector<TYPE, OPS, DATA>::aliasVector( Vector & )

@@ -112,7 +112,7 @@ protected:
     AMP::LinearAlgebra::Variable::shared_ptr d_outputVariable;
     Vec_Dbl3 d_values;
     double d_secondsPerDay;
-    SourceType str2id( std::string str );
+    SourceType str2id( const std::string& str );
 };
 } // namespace Operator
 } // namespace AMP

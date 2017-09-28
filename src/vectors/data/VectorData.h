@@ -281,6 +281,11 @@ public: // Advanced functions
      */
     virtual bool isTypeId( size_t hash, size_t block ) const = 0;
 
+    /** \brief Swap the data with another VectorData object
+     * \param rhs      The VectorData to swap with
+     */
+    virtual void swapData( VectorData& rhs ) = 0;
+
 
 public:
     /** \brief Write owned data to an std::ostream

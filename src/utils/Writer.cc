@@ -15,7 +15,7 @@ namespace Utilities {
 /************************************************************
  * Builder                                                   *
  ************************************************************/
-AMP::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::string type )
+AMP::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( const std::string& type )
 {
     AMP::shared_ptr<AMP::Utilities::Writer> writer;
     if ( type == "None" || type == "none" || type == "NONE" ) {
