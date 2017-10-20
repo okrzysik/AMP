@@ -117,7 +117,7 @@ MATH(EXPR N_PROCS_BUILD "(3*(${N_PROCS}+1))/4" )
 # This does not control the start of the day displayed on CDash, that is controled by the CDash project settings
 SET( NIGHTLY_START_TIME "$ENV{NIGHTLY_START_TIME}" )
 IF ( NOT NIGHTLY_START_TIME )
-    SET( NIGHTLY_START_TIME "18:00:00 EST" )
+    SET( NIGHTLY_START_TIME "17:00:00 EST" )
 ENDIF()
 SET( CTEST_NIGHTLY_START_TIME ${NIGHTLY_START_TIME} )
 
