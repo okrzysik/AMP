@@ -11,20 +11,31 @@
 #include <string>
 
 // Include mpi.h (or define MPI objects)
-#ifdef USE_EXT_MPI
-#include "mpi.h" // include mpi.h
+// clang-format off
+#ifdef USE_MPI
+    // Building with mpi
+    #include "mpi.h"
 #elif defined( USE_PETSC )
-#include "petsc/mpiuni/mpi.h" // petsc serial builds include mpi.h
+    // petsc serial builds include mpi.h
+    #include "petsc/mpiuni/mpi.h"
 #elif defined( USE_TRILINOS )
-#include "mpi.h" // trilinos serial builds include mpi.h
-#else
-typedef int MPI_Comm;
-typedef int MPI_Request;
-typedef void *MPI_Errhandler;
-#define MPI_COMM_WORLD ( (MPI_Comm) 0xF4000010 )
-#define MPI_COMM_SELF ( (MPI_Comm) 0xF4000001 )
-#define MPI_COMM_NULL ( (MPI_Comm) 0xF4000000 )
+    // trilinos serial builds include mpi.h
+    #include "mpi.h" 
+#elif defined(__has_include)
+    // Check if another package defines mpi.h
+    #if __has_include("mpi.h")
+        #include "mpi.h"
+    #endif
 #endif
+#ifndef MPI_COMM_WORLD
+    typedef int MPI_Comm;
+    typedef int MPI_Request;
+    typedef void *MPI_Errhandler;
+    #define MPI_COMM_WORLD ( (MPI_Comm) 0xF4000010 )
+    #define MPI_COMM_SELF ( (MPI_Comm) 0xF4000001 )
+    #define MPI_COMM_NULL ( (MPI_Comm) 0xF4000000 )
+#endif
+// clang-format on
 
 // Define extra comm_world, comm_self, and comm_null ids
 #define AMP_COMM_WORLD ( (MPI_Comm) 0xF4000010 )

@@ -23,11 +23,10 @@
 // Include OS specific headers
 #undef USE_WINDOWS
 #undef USE_LINUX
-#undef USE_MACsplitByNode
+#undef USE_MAC
 #if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
 // We are using windows
 #define USE_WINDOWS
-#define NOMINMAX
 #include <process.h>
 #include <windows.h>
 #define sched_yield() Sleep( 0 )
@@ -1149,8 +1148,8 @@ template<>
 void MPI_CLASS::call_sumReduce<unsigned char>( unsigned char *x, const int n ) const
 {
     PROFILE_START( "sumReduce2<unsigned char>", profile_level );
-    unsigned char *send = x;
-    auto *recv          = new unsigned char[n];
+    auto send = x;
+    auto recv = new unsigned char[n];
     MPI_Allreduce( send, recv, n, MPI_UNSIGNED_CHAR, MPI_SUM, communicator );
     for ( int i = 0; i < n; i++ )
         x[i] = recv[i];
@@ -1169,8 +1168,8 @@ template<>
 void MPI_CLASS::call_sumReduce<char>( char *x, const int n ) const
 {
     PROFILE_START( "sumReduce2<char>", profile_level );
-    char *send = x;
-    auto *recv = new char[n];
+    auto send = x;
+    auto recv = new char[n];
     MPI_Allreduce( send, recv, n, MPI_SIGNED_CHAR, MPI_SUM, communicator );
     for ( int i = 0; i < n; i++ )
         x[i] = recv[i];
@@ -1191,8 +1190,8 @@ template<>
 void MPI_CLASS::call_sumReduce<unsigned int>( unsigned int *x, const int n ) const
 {
     PROFILE_START( "sumReduce2<unsigned int>", profile_level );
-    unsigned int *send = x;
-    auto *recv         = new unsigned int[n];
+    auto send = x;
+    auto recv = new unsigned int[n];
     MPI_Allreduce( send, recv, n, MPI_UNSIGNED, MPI_SUM, communicator );
     for ( int i = 0; i < n; i++ )
         x[i] = recv[i];
@@ -1211,8 +1210,8 @@ template<>
 void MPI_CLASS::call_sumReduce<int>( int *x, const int n ) const
 {
     PROFILE_START( "sumReduce2<int>", profile_level );
-    int *send  = x;
-    auto *recv = new int[n];
+    auto send = x;
+    auto recv = new int[n];
     MPI_Allreduce( send, recv, n, MPI_INT, MPI_SUM, communicator );
     for ( int i = 0; i < n; i++ )
         x[i] = recv[i];
@@ -1231,8 +1230,8 @@ template<>
 void MPI_CLASS::call_sumReduce<long int>( long int *x, const int n ) const
 {
     PROFILE_START( "sumReduce2<long int>", profile_level );
-    long int *send = x;
-    auto *recv     = new long int[n];
+    auto send = x;
+    auto recv = new long int[n];
     MPI_Allreduce( send, recv, n, MPI_LONG, MPI_SUM, communicator );
     for ( int i = 0; i < n; i++ )
         x[i] = recv[i];
@@ -1253,8 +1252,8 @@ template<>
 void MPI_CLASS::call_sumReduce<unsigned long>( unsigned long *x, const int n ) const
 {
     PROFILE_START( "sumReduce2<unsigned long>", profile_level );
-    unsigned long int *send = x;
-    auto *recv              = new unsigned long int[n];
+    auto send = x;
+    auto recv = new unsigned long int[n];
     MPI_Allreduce( send, recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator );
     for ( int i = 0; i < n; i++ )
         x[i] = recv[i];
@@ -1276,8 +1275,8 @@ void MPI_CLASS::call_sumReduce<size_t>( size_t *x, const int n ) const
 {
     MPI_ASSERT( MPI_SIZE_T != 0 );
     PROFILE_START( "sumReduce2<size_t>", profile_level );
-    size_t *send = x;
-    size_t *recv = new size_t[n];
+    auto send = x;
+    auto recv = new size_t[n];
     MPI_Allreduce( (void *) send, (void *) recv, n, MPI_SIZE_T, MPI_SUM, communicator );
     for ( int i = 0; i < n; i++ )
         x[i] = recv[i];
@@ -1297,8 +1296,8 @@ template<>
 void MPI_CLASS::call_sumReduce<float>( float *x, const int n ) const
 {
     PROFILE_START( "sumReduce2<float>", profile_level );
-    float *send = x;
-    auto *recv  = new float[n];
+    auto send = x;
+    auto recv = new float[n];
     MPI_Allreduce( send, recv, n, MPI_FLOAT, MPI_SUM, communicator );
     for ( int i = 0; i < n; i++ )
         x[i] = recv[i];
@@ -1317,8 +1316,8 @@ template<>
 void MPI_CLASS::call_sumReduce<double>( double *x, const int n ) const
 {
     PROFILE_START( "sumReduce2<double>", profile_level );
-    double *send = x;
-    auto *recv   = new double[n];
+    auto send = x;
+    auto recv = new double[n];
     MPI_Allreduce( send, recv, n, MPI_DOUBLE, MPI_SUM, communicator );
     for ( int i = 0; i < n; i++ )
         x[i] = recv[i];
@@ -1332,8 +1331,8 @@ void MPI_CLASS::call_sumReduce<std::complex<double>>( const std::complex<double>
                                                       const int n ) const
 {
     PROFILE_START( "sumReduce1<complex double>", profile_level );
-    auto *send = new double[2 * n];
-    auto *recv = new double[2 * n];
+    auto send = new double[2 * n];
+    auto recv = new double[2 * n];
     for ( int i = 0; i < n; i++ ) {
         send[2 * i + 0] = real( x[i] );
         send[2 * i + 1] = imag( x[i] );
@@ -1349,8 +1348,8 @@ template<>
 void MPI_CLASS::call_sumReduce<std::complex<double>>( std::complex<double> *x, const int n ) const
 {
     PROFILE_START( "sumReduce2<complex double>", profile_level );
-    auto *send = new double[2 * n];
-    auto *recv = new double[2 * n];
+    auto send = new double[2 * n];
+    auto recv = new double[2 * n];
     for ( int i = 0; i < n; i++ ) {
         send[2 * i + 0] = real( x[i] );
         send[2 * i + 1] = imag( x[i] );
@@ -1382,7 +1381,7 @@ void MPI_CLASS::call_minReduce<unsigned char>( const unsigned char *send,
         MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED_CHAR, MPI_MIN, communicator );
         PROFILE_STOP( "minReduce1<unsigned char>", profile_level );
     } else {
-        auto *tmp = new int[n];
+        auto tmp = new int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = send[i];
         call_minReduce<int>( tmp, n, comm_rank_of_min );
@@ -1398,15 +1397,15 @@ void MPI_CLASS::call_minReduce<unsigned char>( unsigned char *x,
 {
     if ( comm_rank_of_min == nullptr ) {
         PROFILE_START( "minReduce2<unsigned char>", profile_level );
-        unsigned char *send = x;
-        auto *recv          = new unsigned char[n];
+        auto send = x;
+        auto recv = new unsigned char[n];
         MPI_Allreduce( send, recv, n, MPI_UNSIGNED_CHAR, MPI_MIN, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
         PROFILE_STOP( "minReduce2<unsigned char>", profile_level );
     } else {
-        auto *tmp = new int[n];
+        auto tmp = new int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = x[i];
         call_minReduce<int>( tmp, n, comm_rank_of_min );
@@ -1427,7 +1426,7 @@ void MPI_CLASS::call_minReduce<char>( const char *send,
         MPI_Allreduce( (void *) send, (void *) recv, n, MPI_SIGNED_CHAR, MPI_MIN, communicator );
         PROFILE_STOP( "minReduce1<char>", profile_level );
     } else {
-        auto *tmp = new int[n];
+        auto tmp = new int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = send[i];
         call_minReduce<int>( tmp, n, comm_rank_of_min );
@@ -1441,15 +1440,15 @@ void MPI_CLASS::call_minReduce<char>( char *x, const int n, int *comm_rank_of_mi
 {
     if ( comm_rank_of_min == nullptr ) {
         PROFILE_START( "minReduce2<char>", profile_level );
-        char *send = x;
-        auto *recv = new char[n];
+        auto send = x;
+        auto recv = new char[n];
         MPI_Allreduce( send, recv, n, MPI_SIGNED_CHAR, MPI_MIN, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
         PROFILE_STOP( "minReduce2<char>", profile_level );
     } else {
-        auto *tmp = new int[n];
+        auto tmp = new int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = x[i];
         call_minReduce<int>( tmp, n, comm_rank_of_min );
@@ -1470,7 +1469,7 @@ void MPI_CLASS::call_minReduce<unsigned int>( const unsigned int *send,
         MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED, MPI_MIN, communicator );
         PROFILE_STOP( "minReduce1<unsigned int>", profile_level );
     } else {
-        auto *tmp = new int[n];
+        auto tmp = new int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = unsigned_to_signed( send[i] );
         call_minReduce<int>( tmp, n, comm_rank_of_min );
@@ -1486,15 +1485,15 @@ void MPI_CLASS::call_minReduce<unsigned int>( unsigned int *x,
 {
     if ( comm_rank_of_min == nullptr ) {
         PROFILE_START( "minReduce2<unsigned int>", profile_level );
-        unsigned int *send = x;
-        auto *recv         = new unsigned int[n];
+        auto send = x;
+        auto recv = new unsigned int[n];
         MPI_Allreduce( send, recv, n, MPI_UNSIGNED, MPI_MIN, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
         PROFILE_STOP( "minReduce2<unsigned int>", profile_level );
     } else {
-        auto *tmp = new int[n];
+        auto tmp = new int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = unsigned_to_signed( x[i] );
         call_minReduce<int>( tmp, n, comm_rank_of_min );
@@ -1514,8 +1513,8 @@ void MPI_CLASS::call_minReduce<int>( const int *x,
     if ( comm_rank_of_min == nullptr ) {
         MPI_Allreduce( (void *) x, (void *) y, n, MPI_INT, MPI_MIN, communicator );
     } else {
-        auto *recv = new IntIntStruct[n];
-        auto *send = new IntIntStruct[n];
+        auto recv = new IntIntStruct[n];
+        auto send = new IntIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].j = x[i];
             send[i].i = comm_rank;
@@ -1535,15 +1534,15 @@ void MPI_CLASS::call_minReduce<int>( int *x, const int n, int *comm_rank_of_min 
 {
     PROFILE_START( "minReduce2<int>", profile_level );
     if ( comm_rank_of_min == nullptr ) {
-        int *send  = x;
-        auto *recv = new int[n];
+        auto send = x;
+        auto recv = new int[n];
         MPI_Allreduce( send, recv, n, MPI_INT, MPI_MIN, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
     } else {
-        auto *recv = new IntIntStruct[n];
-        auto *send = new IntIntStruct[n];
+        auto recv = new IntIntStruct[n];
+        auto send = new IntIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].j = x[i];
             send[i].i = comm_rank;
@@ -1570,7 +1569,7 @@ void MPI_CLASS::call_minReduce<unsigned long int>( const unsigned long int *send
         MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED_LONG, MPI_MIN, communicator );
         PROFILE_STOP( "minReduce1<unsigned long>", profile_level );
     } else {
-        auto *tmp = new long int[n];
+        auto tmp = new long int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = unsigned_to_signed( send[i] );
         call_minReduce<long int>( tmp, n, comm_rank_of_min );
@@ -1586,15 +1585,15 @@ void MPI_CLASS::call_minReduce<unsigned long int>( unsigned long int *x,
 {
     if ( comm_rank_of_min == nullptr ) {
         PROFILE_START( "minReduce2<unsigned long>", profile_level );
-        unsigned long int *send = x;
-        auto *recv              = new unsigned long int[n];
+        auto send = x;
+        auto recv = new unsigned long int[n];
         MPI_Allreduce( send, recv, n, MPI_UNSIGNED_LONG, MPI_MIN, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
         PROFILE_STOP( "minReduce2<unsigned long>", profile_level );
     } else {
-        auto *tmp = new long int[n];
+        auto tmp = new long int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = unsigned_to_signed( x[i] );
         call_minReduce<long int>( tmp, n, comm_rank_of_min );
@@ -1614,8 +1613,8 @@ void MPI_CLASS::call_minReduce<long int>( const long int *x,
     if ( comm_rank_of_min == nullptr ) {
         MPI_Allreduce( (void *) x, (void *) y, n, MPI_LONG, MPI_MIN, communicator );
     } else {
-        auto *recv = new LongIntStruct[n];
-        auto *send = new LongIntStruct[n];
+        auto recv = new LongIntStruct[n];
+        auto send = new LongIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].j = x[i];
             send[i].i = comm_rank;
@@ -1635,15 +1634,15 @@ void MPI_CLASS::call_minReduce<long int>( long int *x, const int n, int *comm_ra
 {
     PROFILE_START( "minReduce2<long int>", profile_level );
     if ( comm_rank_of_min == nullptr ) {
-        long int *send = x;
-        auto *recv     = new long int[n];
+        auto send = x;
+        auto recv = new long int[n];
         MPI_Allreduce( send, recv, n, MPI_LONG, MPI_MIN, communicator );
         for ( long int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
     } else {
-        auto *recv = new LongIntStruct[n];
-        auto *send = new LongIntStruct[n];
+        auto recv = new LongIntStruct[n];
+        auto send = new LongIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].j = x[i];
             send[i].i = comm_rank;
@@ -1667,8 +1666,8 @@ void MPI_CLASS::call_minReduce<unsigned long long int>( const unsigned long long
 {
     PROFILE_START( "minReduce1<long int>", profile_level );
     if ( comm_rank_of_min == nullptr ) {
-        auto *x = new long long int[n];
-        auto *y = new long long int[n];
+        auto x = new long long int[n];
+        auto y = new long long int[n];
         for ( int i = 0; i < n; i++ )
             x[i] = unsigned_to_signed( send[i] );
         MPI_Allreduce( (void *) x, (void *) y, n, MPI_LONG_LONG_INT, MPI_MIN, communicator );
@@ -1678,7 +1677,7 @@ void MPI_CLASS::call_minReduce<unsigned long long int>( const unsigned long long
         delete[] y;
     } else {
         printf( "minReduce<long long int> will use double\n" );
-        auto *tmp = new double[n];
+        auto tmp = new double[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = static_cast<double>( send[i] );
         call_minReduce<double>( tmp, n, comm_rank_of_min );
@@ -1693,7 +1692,7 @@ void MPI_CLASS::call_minReduce<unsigned long long int>( unsigned long long int *
                                                         const int n,
                                                         int *comm_rank_of_min ) const
 {
-    auto *recv = new unsigned long long int[n];
+    auto recv = new unsigned long long int[n];
     call_minReduce<unsigned long long int>( x, recv, n, comm_rank_of_min );
     for ( int i = 0; i < n; i++ )
         x[i] = recv[i];
@@ -1711,7 +1710,7 @@ void MPI_CLASS::call_minReduce<long long int>( const long long int *x,
         MPI_Allreduce( (void *) x, (void *) y, n, MPI_LONG_LONG_INT, MPI_MIN, communicator );
     } else {
         printf( "minReduce<long long int> will use double\n" );
-        auto *tmp = new double[n];
+        auto tmp = new double[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = static_cast<double>( x[i] );
         call_minReduce<double>( tmp, n, comm_rank_of_min );
@@ -1726,7 +1725,7 @@ void MPI_CLASS::call_minReduce<long long int>( long long int *x,
                                                const int n,
                                                int *comm_rank_of_min ) const
 {
-    auto *recv = new long long int[n];
+    auto recv = new long long int[n];
     call_minReduce<long long int>( x, recv, n, comm_rank_of_min );
     for ( int i = 0; i < n; i++ )
         x[i] = signed_to_unsigned( recv[i] );
@@ -1743,8 +1742,8 @@ void MPI_CLASS::call_minReduce<float>( const float *x,
     if ( comm_rank_of_min == nullptr ) {
         MPI_Allreduce( (void *) x, (void *) y, n, MPI_INT, MPI_MIN, communicator );
     } else {
-        auto *recv = new FloatIntStruct[n];
-        auto *send = new FloatIntStruct[n];
+        auto recv = new FloatIntStruct[n];
+        auto send = new FloatIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].f = x[i];
             send[i].i = comm_rank;
@@ -1764,15 +1763,15 @@ void MPI_CLASS::call_minReduce<float>( float *x, const int n, int *comm_rank_of_
 {
     PROFILE_START( "minReduce2<float>", profile_level );
     if ( comm_rank_of_min == nullptr ) {
-        float *send = x;
-        auto *recv  = new float[n];
+        auto send = x;
+        auto recv = new float[n];
         MPI_Allreduce( send, recv, n, MPI_FLOAT, MPI_MIN, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
     } else {
-        auto *recv = new FloatIntStruct[n];
-        auto *send = new FloatIntStruct[n];
+        auto recv = new FloatIntStruct[n];
+        auto send = new FloatIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].f = x[i];
             send[i].i = comm_rank;
@@ -1798,8 +1797,8 @@ void MPI_CLASS::call_minReduce<double>( const double *x,
     if ( comm_rank_of_min == nullptr ) {
         MPI_Allreduce( (void *) x, (void *) y, n, MPI_DOUBLE, MPI_MIN, communicator );
     } else {
-        auto *recv = new DoubleIntStruct[n];
-        auto *send = new DoubleIntStruct[n];
+        auto recv = new DoubleIntStruct[n];
+        auto send = new DoubleIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].d = x[i];
             send[i].i = comm_rank;
@@ -1819,15 +1818,15 @@ void MPI_CLASS::call_minReduce<double>( double *x, const int n, int *comm_rank_o
 {
     PROFILE_START( "minReduce2<double>", profile_level );
     if ( comm_rank_of_min == nullptr ) {
-        double *send = x;
-        auto *recv   = new double[n];
+        auto send = x;
+        auto recv = new double[n];
         MPI_Allreduce( send, recv, n, MPI_DOUBLE, MPI_MIN, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
     } else {
-        auto *recv = new DoubleIntStruct[n];
-        auto *send = new DoubleIntStruct[n];
+        auto recv = new DoubleIntStruct[n];
+        auto send = new DoubleIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].d = x[i];
             send[i].i = comm_rank;
@@ -1862,7 +1861,7 @@ void MPI_CLASS::call_maxReduce<unsigned char>( const unsigned char *send,
         MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED_CHAR, MPI_MAX, communicator );
         PROFILE_STOP( "maxReduce1<unsigned char>", profile_level );
     } else {
-        auto *tmp = new int[n];
+        auto tmp = new int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = send[i];
         call_maxReduce<int>( tmp, n, comm_rank_of_max );
@@ -1878,15 +1877,15 @@ void MPI_CLASS::call_maxReduce<unsigned char>( unsigned char *x,
 {
     if ( comm_rank_of_max == nullptr ) {
         PROFILE_START( "maxReduce2<unsigned char>", profile_level );
-        unsigned char *send = x;
-        auto *recv          = new unsigned char[n];
+        auto send = x;
+        auto recv = new unsigned char[n];
         MPI_Allreduce( send, recv, n, MPI_UNSIGNED_CHAR, MPI_MAX, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
         PROFILE_STOP( "maxReduce2<unsigned char>", profile_level );
     } else {
-        auto *tmp = new int[n];
+        auto tmp = new int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = x[i];
         call_maxReduce<int>( tmp, n, comm_rank_of_max );
@@ -1907,7 +1906,7 @@ void MPI_CLASS::call_maxReduce<char>( const char *send,
         MPI_Allreduce( (void *) send, (void *) recv, n, MPI_SIGNED_CHAR, MPI_MAX, communicator );
         PROFILE_STOP( "maxReduce1<char>", profile_level );
     } else {
-        auto *tmp = new int[n];
+        auto tmp = new int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = send[i];
         call_maxReduce<int>( tmp, n, comm_rank_of_max );
@@ -1921,15 +1920,15 @@ void MPI_CLASS::call_maxReduce<char>( char *x, const int n, int *comm_rank_of_ma
 {
     if ( comm_rank_of_max == nullptr ) {
         PROFILE_START( "maxReduce2<char>", profile_level );
-        char *send = x;
-        auto *recv = new char[n];
+        auto send = x;
+        auto recv = new char[n];
         MPI_Allreduce( send, recv, n, MPI_SIGNED_CHAR, MPI_MAX, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
         PROFILE_STOP( "maxReduce2<char>", profile_level );
     } else {
-        auto *tmp = new int[n];
+        auto tmp = new int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = x[i];
         call_maxReduce<int>( tmp, n, comm_rank_of_max );
@@ -1950,7 +1949,7 @@ void MPI_CLASS::call_maxReduce<unsigned int>( const unsigned int *send,
         MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED, MPI_MAX, communicator );
         PROFILE_STOP( "maxReduce1<unsigned int>", profile_level );
     } else {
-        auto *tmp = new int[n];
+        auto tmp = new int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = unsigned_to_signed( send[i] );
         call_maxReduce<int>( tmp, n, comm_rank_of_max );
@@ -1966,15 +1965,15 @@ void MPI_CLASS::call_maxReduce<unsigned int>( unsigned int *x,
 {
     if ( comm_rank_of_max == nullptr ) {
         PROFILE_START( "maxReduce2<unsigned int>", profile_level );
-        unsigned int *send = x;
-        auto *recv         = new unsigned int[n];
+        auto send = x;
+        auto recv = new unsigned int[n];
         MPI_Allreduce( send, recv, n, MPI_UNSIGNED, MPI_MAX, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
         PROFILE_STOP( "maxReduce2<unsigned int>", profile_level );
     } else {
-        auto *tmp = new int[n];
+        auto tmp = new int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = unsigned_to_signed( x[i] );
         call_maxReduce<int>( tmp, n, comm_rank_of_max );
@@ -1994,8 +1993,8 @@ void MPI_CLASS::call_maxReduce<int>( const int *x,
     if ( comm_rank_of_max == nullptr ) {
         MPI_Allreduce( (void *) x, (void *) y, n, MPI_INT, MPI_MAX, communicator );
     } else {
-        auto *recv = new IntIntStruct[n];
-        auto *send = new IntIntStruct[n];
+        auto recv = new IntIntStruct[n];
+        auto send = new IntIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].j = x[i];
             send[i].i = comm_rank;
@@ -2015,15 +2014,15 @@ void MPI_CLASS::call_maxReduce<int>( int *x, const int n, int *comm_rank_of_max 
 {
     PROFILE_START( "maxReduce2<int>", profile_level );
     if ( comm_rank_of_max == nullptr ) {
-        int *send  = x;
-        auto *recv = new int[n];
+        int *send = x;
+        auto recv = new int[n];
         MPI_Allreduce( send, recv, n, MPI_INT, MPI_MAX, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
     } else {
-        auto *recv = new IntIntStruct[n];
-        auto *send = new IntIntStruct[n];
+        auto recv = new IntIntStruct[n];
+        auto send = new IntIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].j = x[i];
             send[i].i = comm_rank;
@@ -2049,8 +2048,8 @@ void MPI_CLASS::call_maxReduce<long int>( const long int *x,
     if ( comm_rank_of_max == nullptr ) {
         MPI_Allreduce( (void *) x, (void *) y, n, MPI_LONG, MPI_MAX, communicator );
     } else {
-        auto *recv = new LongIntStruct[n];
-        auto *send = new LongIntStruct[n];
+        auto recv = new LongIntStruct[n];
+        auto send = new LongIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].j = x[i];
             send[i].i = comm_rank;
@@ -2070,15 +2069,15 @@ void MPI_CLASS::call_maxReduce<long int>( long int *x, const int n, int *comm_ra
 {
     PROFILE_START( "maxReduce2<lond int>", profile_level );
     if ( comm_rank_of_max == nullptr ) {
-        long int *send = x;
-        auto *recv     = new long int[n];
+        auto send = x;
+        auto recv = new long int[n];
         MPI_Allreduce( send, recv, n, MPI_LONG, MPI_MAX, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
     } else {
-        auto *recv = new LongIntStruct[n];
-        auto *send = new LongIntStruct[n];
+        auto recv = new LongIntStruct[n];
+        auto send = new LongIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].j = x[i];
             send[i].i = comm_rank;
@@ -2105,7 +2104,7 @@ void MPI_CLASS::call_maxReduce<unsigned long int>( const unsigned long int *send
         MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator );
         PROFILE_STOP( "maxReduce1<unsigned long>", profile_level );
     } else {
-        auto *tmp = new long int[n];
+        auto tmp = new long int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = unsigned_to_signed( send[i] );
         call_maxReduce<long int>( tmp, n, comm_rank_of_max );
@@ -2121,15 +2120,15 @@ void MPI_CLASS::call_maxReduce<unsigned long int>( unsigned long int *x,
 {
     if ( comm_rank_of_max == nullptr ) {
         PROFILE_START( "maxReduce2<unsigned long>", profile_level );
-        unsigned long int *send = x;
-        auto *recv              = new unsigned long int[n];
+        auto send = x;
+        auto recv = new unsigned long int[n];
         MPI_Allreduce( send, recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
         PROFILE_STOP( "maxReduce2<unsigned long>", profile_level );
     } else {
-        auto *tmp = new long int[n];
+        auto tmp = new long int[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = unsigned_to_signed( x[i] );
         call_maxReduce<long int>( tmp, n, comm_rank_of_max );
@@ -2147,8 +2146,8 @@ void MPI_CLASS::call_maxReduce<unsigned long long int>( const unsigned long long
 {
     PROFILE_START( "maxReduce1<long int>", profile_level );
     if ( comm_rank_of_max == nullptr ) {
-        auto *x = new long long int[n];
-        auto *y = new long long int[n];
+        auto x = new long long int[n];
+        auto y = new long long int[n];
         for ( int i = 0; i < n; i++ )
             x[i] = unsigned_to_signed( send[i] );
         MPI_Allreduce( (void *) x, (void *) y, n, MPI_LONG_LONG_INT, MPI_MAX, communicator );
@@ -2158,7 +2157,7 @@ void MPI_CLASS::call_maxReduce<unsigned long long int>( const unsigned long long
         delete[] y;
     } else {
         printf( "maxReduce<long long int> will use double\n" );
-        auto *tmp = new double[n];
+        auto tmp = new double[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = static_cast<double>( send[i] );
         call_maxReduce<double>( tmp, n, comm_rank_of_max );
@@ -2173,7 +2172,7 @@ void MPI_CLASS::call_maxReduce<unsigned long long int>( unsigned long long int *
                                                         const int n,
                                                         int *comm_rank_of_max ) const
 {
-    auto *recv = new unsigned long long int[n];
+    auto recv = new unsigned long long int[n];
     call_maxReduce<unsigned long long int>( x, recv, n, comm_rank_of_max );
     for ( int i = 0; i < n; i++ )
         x[i] = recv[i];
@@ -2191,7 +2190,7 @@ void MPI_CLASS::call_maxReduce<long long int>( const long long int *x,
         MPI_Allreduce( (void *) x, (void *) y, n, MPI_LONG_LONG_INT, MPI_MAX, communicator );
     } else {
         printf( "maxReduce<long long int> will use double\n" );
-        auto *tmp = new double[n];
+        auto tmp = new double[n];
         for ( int i = 0; i < n; i++ )
             tmp[i] = static_cast<double>( x[i] );
         call_maxReduce<double>( tmp, n, comm_rank_of_max );
@@ -2206,7 +2205,7 @@ void MPI_CLASS::call_maxReduce<long long int>( long long int *x,
                                                const int n,
                                                int *comm_rank_of_max ) const
 {
-    auto *recv = new long long int[n];
+    auto recv = new long long int[n];
     call_maxReduce<long long int>( x, recv, n, comm_rank_of_max );
     for ( int i = 0; i < n; i++ )
         x[i] = signed_to_unsigned( recv[i] );
@@ -2223,8 +2222,8 @@ void MPI_CLASS::call_maxReduce<float>( const float *x,
     if ( comm_rank_of_max == nullptr ) {
         MPI_Allreduce( (void *) x, (void *) y, n, MPI_FLOAT, MPI_MAX, communicator );
     } else {
-        auto *recv = new FloatIntStruct[n];
-        auto *send = new FloatIntStruct[n];
+        auto recv = new FloatIntStruct[n];
+        auto send = new FloatIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].f = x[i];
             send[i].i = comm_rank;
@@ -2244,15 +2243,15 @@ void MPI_CLASS::call_maxReduce<float>( float *x, const int n, int *comm_rank_of_
 {
     PROFILE_START( "maxReduce2<float>", profile_level );
     if ( comm_rank_of_max == nullptr ) {
-        float *send = x;
-        auto *recv  = new float[n];
+        auto send = x;
+        auto recv = new float[n];
         MPI_Allreduce( send, recv, n, MPI_FLOAT, MPI_MAX, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
     } else {
-        auto *recv = new FloatIntStruct[n];
-        auto *send = new FloatIntStruct[n];
+        auto recv = new FloatIntStruct[n];
+        auto send = new FloatIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].f = x[i];
             send[i].i = comm_rank;
@@ -2278,8 +2277,8 @@ void MPI_CLASS::call_maxReduce<double>( const double *x,
     if ( comm_rank_of_max == nullptr ) {
         MPI_Allreduce( (void *) x, (void *) y, n, MPI_DOUBLE, MPI_MAX, communicator );
     } else {
-        auto *recv = new DoubleIntStruct[n];
-        auto *send = new DoubleIntStruct[n];
+        auto recv = new DoubleIntStruct[n];
+        auto send = new DoubleIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].d = x[i];
             send[i].i = comm_rank;
@@ -2299,15 +2298,15 @@ void MPI_CLASS::call_maxReduce<double>( double *x, const int n, int *comm_rank_o
 {
     PROFILE_START( "maxReduce2<double>", profile_level );
     if ( comm_rank_of_max == nullptr ) {
-        double *send = x;
-        auto *recv   = new double[n];
+        auto send = x;
+        auto recv = new double[n];
         MPI_Allreduce( send, recv, n, MPI_DOUBLE, MPI_MAX, communicator );
         for ( int i = 0; i < n; i++ )
             x[i] = recv[i];
         delete[] recv;
     } else {
-        auto *recv = new DoubleIntStruct[n];
-        auto *send = new DoubleIntStruct[n];
+        auto recv = new DoubleIntStruct[n];
+        auto send = new DoubleIntStruct[n];
         for ( int i = 0; i < n; ++i ) {
             send[i].d = x[i];
             send[i].i = comm_rank;
@@ -2469,8 +2468,8 @@ void MPI_CLASS::send<char>( const char *buf, const int length, const int, int ta
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
     PROFILE_START( "send<char>", profile_level );
-    MPI_Request id = getRequest( communicator, tag );
-    std::map<MPI_Request, Isendrecv_struct>::iterator it = global_isendrecv_list.find( id );
+    auto id = getRequest( communicator, tag );
+    auto it = global_isendrecv_list.find( id );
     MPI_INSIST( it == global_isendrecv_list.end(),
                 "send must be paired with a previous call to irecv in serial" );
     MPI_ASSERT( it->second.status == 2 );
@@ -2553,8 +2552,8 @@ MPI_CLASS::Isend<char>( const char *buf, const int length, const int, const int 
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
     PROFILE_START( "Isend<char>", profile_level );
-    MPI_Request id = getRequest( communicator, tag );
-    std::map<MPI_Request, Isendrecv_struct>::iterator it = global_isendrecv_list.find( id );
+    auto id = getRequest( communicator, tag );
+    auto it = global_isendrecv_list.find( id );
     if ( it == global_isendrecv_list.end() ) {
         // We are calling isend first
         Isendrecv_struct data;
@@ -2698,8 +2697,8 @@ void MPI_CLASS::recv<char>( char *buf, int &length, const int, const bool, int t
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
     PROFILE_START( "recv<char>", profile_level );
-    MPI_Request id = getRequest( communicator, tag );
-    std::map<MPI_Request, Isendrecv_struct>::iterator it = global_isendrecv_list.find( id );
+    auto id = getRequest( communicator, tag );
+    auto it = global_isendrecv_list.find( id );
     MPI_INSIST( it != global_isendrecv_list.end(),
                 "recv must be paired with a previous call to isend in serial" );
     MPI_ASSERT( it->second.status == 1 );
@@ -2775,8 +2774,8 @@ MPI_Request MPI_CLASS::Irecv<char>( char *buf, const int length, const int, cons
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
     PROFILE_START( "Irecv<char>", profile_level );
-    MPI_Request id = getRequest( communicator, tag );
-    std::map<MPI_Request, Isendrecv_struct>::iterator it = global_isendrecv_list.find( id );
+    auto id = getRequest( communicator, tag );
+    auto it = global_isendrecv_list.find( id );
     if ( it == global_isendrecv_list.end() ) {
         // We are calling Irecv first
         Isendrecv_struct data;
@@ -3373,8 +3372,8 @@ void MPI_CLASS::call_sumScan<std::complex<double>>( const std::complex<double> *
                                                     std::complex<double> *y,
                                                     int n ) const
 {
-    auto *send = new double[2 * n];
-    auto *recv = new double[2 * n];
+    auto send = new double[2 * n];
+    auto recv = new double[2 * n];
     for ( int i = 0; i < n; i++ ) {
         send[2 * i + 0] = real( x[i] );
         send[2 * i + 1] = imag( x[i] );
@@ -3573,8 +3572,8 @@ std::vector<int> MPI_CLASS::commRanks( const std::vector<int> &ranks ) const
 {
 #ifdef USE_MPI
     // Get a byte array with the ranks to communicate
-    auto *data1 = new char[comm_size];
-    auto *data2 = new char[comm_size];
+    auto data1 = new char[comm_size];
+    auto data2 = new char[comm_size];
     memset( data1, 0, comm_size );
     memset( data2, 0, comm_size );
     for ( auto &rank : ranks )
@@ -3622,10 +3621,10 @@ int MPI_CLASS::waitAny( int count, MPI_Request *request )
     if ( count == 0 )
         return -1;
     PROFILE_START( "waitAny", profile_level );
-    int index    = -1;
-    int flag     = 0;
-    auto *status = new MPI_Status[count];
-    int err      = MPI_Testany( count, request, &index, &flag, status );
+    int index   = -1;
+    int flag    = 0;
+    auto status = new MPI_Status[count];
+    int err     = MPI_Testany( count, request, &index, &flag, status );
     MPI_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
@@ -3643,9 +3642,9 @@ void MPI_CLASS::waitAll( int count, MPI_Request *request )
     if ( count == 0 )
         return;
     PROFILE_START( "waitAll", profile_level );
-    int flag     = 0;
-    auto *status = new MPI_Status[count];
-    int err      = MPI_Testall( count, request, &flag, status );
+    int flag    = 0;
+    auto status = new MPI_Status[count];
+    int err     = MPI_Testall( count, request, &flag, status );
     MPI_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
