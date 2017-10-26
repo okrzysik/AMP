@@ -1,4 +1,5 @@
 #include "ampmesh/Mesh.h"
+#include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/testHelpers/meshTests.h"
 
 #include "utils/AMPManager.h"
@@ -11,17 +12,6 @@
 #include "ProfilerApp.h"
 
 #include "meshGenerators.h"
-
-#include "ampmesh/structured/BoxMesh.h"
-#ifdef USE_TRILINOS_STKMESH
-#include "ampmesh/STKmesh/STKMesh.h"
-#endif
-#ifdef USE_EXT_LIBMESH
-#include "ampmesh/libmesh/libMesh.h"
-#endif
-#ifdef USE_EXT_MOAB
-#include "ampmesh/moab/moabMesh.h"
-#endif
 
 
 // Function to test the creation/destruction of a mesh with the mesh generators
@@ -46,8 +36,8 @@ void testMeshGenerators( AMP::UnitTest *ut )
     generator = AMP::make_shared<AMP::unit_test::AMPMultiMeshGenerator>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
-// libmesh generators
 #ifdef USE_EXT_LIBMESH
+    // libmesh generators
     // Test the libmesh cube generator
     generator = AMP::make_shared<AMP::unit_test::LibMeshCubeGenerator<5>>();
     generator->build_mesh();
@@ -157,74 +147,82 @@ void testAMPMesh( AMP::UnitTest *ut )
 
 
 // Function to test the creation/destruction of a STKmesh mesh
-#ifdef USE_TRILINOS_STKMESH
 void testSTKMesh( AMP::UnitTest *ut )
 {
+#ifdef USE_TRILINOS_STKCLASSIC
     PROFILE_START( "testSTKMesh" );
     // Create a generic MeshParameters object
     auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
     database->putInteger( "dim", 3 );
+    database->putString( "MeshType", "STKMesh" );
     database->putString( "MeshName", "pellet_lo_res.e" );
     database->putString( "FileName", "pellet_lo_res.e" );
     auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
-    // Create an STKMesh mesh
-    auto mesh = AMP::make_shared<AMP::Mesh::STKMesh>( params );
+    // Create a STKMesh mesh
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    AMP_ASSERT( mesh != nullptr );
 
     // Run the mesh tests
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh );
     AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh );
     PROFILE_STOP( "testSTKMesh" );
-}
+#else
+    ut->expected_failure( "testSTKMesh disabled (compiled without STKClassic)" );
 #endif
+}
 
 
 // Function to test the creation/destruction of a libmesh mesh
-#ifdef USE_EXT_LIBMESH
+
 void testlibMesh( AMP::UnitTest *ut )
 {
+#ifdef USE_EXT_LIBMESH
     PROFILE_START( "testlibMesh" );
     // Create a generic MeshParameters object
     auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
     database->putInteger( "dim", 3 );
+    database->putString( "MeshType", "libMesh" );
     database->putString( "MeshName", "pellet_lo_res.e" );
     database->putString( "FileName", "pellet_lo_res.e" );
     auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
-    // Create an libMesh mesh
-    auto mesh = AMP::make_shared<AMP::Mesh::libMesh>( params );
+    // Create a libMesh mesh
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    AMP_ASSERT( mesh != nullptr );
 
     // Run the mesh tests
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh );
     AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh );
     PROFILE_STOP( "testlibMesh" );
-}
+#else
+    ut->expected_failure( "testlibMesh disabled (compiled without libmesh)" );
 #endif
+}
+
 
 
 // Function to test the creation/destruction of a moab mesh
-#ifdef USE_EXT_MOAB
 void testMoabMesh( AMP::UnitTest *ut )
 {
+#ifdef USE_EXT_MOAB
     PROFILE_START( "testMoabMesh" );
     // Create a generic MeshParameters object
     auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
     database->putInteger( "dim", 3 );
+    database->putString( "MeshType", "MOAB" );
     database->putString( "MeshName", "pellet_lo_res.e" );
     database->putString( "FileName", "pellet_lo_res.e" );
     auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
-    // Create an MOAB mesh
-    try {
-        auto mesh = AMP::make_shared<AMP::Mesh::moabMesh>( params );
-    } catch ( ... ) {
-        ut->expected_failure( "MOAB meshes cannot be created yet" );
-    }
+    // Create a MOAB mesh
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    AMP_ASSERT( mesh != nullptr );
 
     // Run the mesh tests
     ut->expected_failure( "Mesh tests not working on a MOAB mesh yet" );
@@ -232,8 +230,10 @@ void testMoabMesh( AMP::UnitTest *ut )
     // MeshVectorTestLoop( ut, mesh );
     // MeshMatrixTestLoop( ut, mesh );
     PROFILE_STOP( "testMoabMesh" );
-}
+#else
+    ut->expected_failure( "testMoabMesh disabled (compiled without MOAB)" );
 #endif
+}
 
 
 void testInputMesh( AMP::UnitTest *ut, std::string filename )
@@ -250,6 +250,7 @@ void testInputMesh( AMP::UnitTest *ut, std::string filename )
 
     // Create the meshes from the input database
     auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    AMP_ASSERT( mesh != nullptr );
 
     // Run the mesh tests
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
@@ -297,25 +298,19 @@ void testDefaults( AMP::UnitTest &ut )
     // Run tests on a native AMP mesh
     testAMPMesh( &ut );
 
-// Run tests on a STKmesh mesh
-#ifdef USE_TRILINOS_STKMESH
-    testSTKMesh( &ut );
-#endif
+    // Run tests on a STKmesh mesh (currently disabled)
+    // testSTKMesh( &ut );
 
-// Run tests on a libmesh mesh
-#ifdef USE_EXT_LIBMESH
+    // Run tests on a libmesh mesh
     testlibMesh( &ut );
-#endif
 
-// Run tests on a moab mesh
-#ifdef USE_EXT_MOAB
+    // Run tests on a moab mesh
     testMoabMesh( &ut );
-#endif
 
-// Run tests on the input file
-#ifdef USE_EXT_LIBMESH
-    testInputMesh( &ut, "input_Mesh" );
-#endif
+    // Run tests on the input file
+    #ifdef USE_LIBMESH
+        testInputMesh( &ut, "input_Mesh" );
+    #endif
 
     // Run the basic tests on all mesh generators
     testMeshGenerators( &ut );
