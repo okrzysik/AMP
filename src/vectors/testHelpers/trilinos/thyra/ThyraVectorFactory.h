@@ -34,7 +34,7 @@ public:
 class ManagedThyraFactory : public VectorFactory
 {
 public:
-    ManagedThyraFactory( AMP::shared_ptr<VectorFactory> factory ) : d_factory( factory ) {}
+    explicit ManagedThyraFactory( AMP::shared_ptr<VectorFactory> factory ) : d_factory( factory ) {}
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override;
 
@@ -53,7 +53,7 @@ private:
 class ManagedNativeThyraFactory : public VectorFactory
 {
 public:
-    ManagedNativeThyraFactory( AMP::shared_ptr<VectorFactory> factory ) : d_factory( factory ) {}
+    explicit ManagedNativeThyraFactory( AMP::shared_ptr<VectorFactory> factory ) : d_factory( factory ) {}
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override;
 
