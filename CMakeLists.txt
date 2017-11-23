@@ -38,6 +38,13 @@ ENDIF()
 INCLUDE_DIRECTORIES( "${${PROJ}_INSTALL_DIR}/include" )
 
 
+# Build the TPLs if necessary
+IF ( TPL_URL )
+    INCLUDE( cmake/configure_TPLs.cmake )
+    CONFIGURE_TPL_BUILDER()
+ENDIF()
+
+
 # Load the TPL package
 IF ( NOT ONLY_BUILD_DOCS )
     IF ( NOT TPL_DIRECTORY )
