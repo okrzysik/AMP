@@ -67,8 +67,11 @@ FUNCTION ( CONFIGURE_TPL_BUILDER )
         OUTPUT_QUIET
     )
     # Configure the TPL builder
-    MESSAGE( STATUS "Configuring TPL builder" )
     FILE( MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/tpl-build" )
+    SET( TPL_COMMAND "${CMAKE_COMMAND} ${TPL_CMAKE} ${CMAKE_BINARY_DIR}/tpl-builder" )
+    STRING( REPLACE ";" " " TPL_COMMAND "${TPL_COMMAND}" )
+    MESSAGE( STATUS "Configuring TPL builder" )
+    MESSAGE( "   ${TPL_COMMAND}" )
     EXECUTE_PROCESS(
         COMMAND ${CMAKE_COMMAND} ${TPL_CMAKE} "${CMAKE_BINARY_DIR}/tpl-builder"
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/tpl-build"

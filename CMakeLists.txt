@@ -11,6 +11,9 @@ MESSAGE ("===============")
 # Set the project name
 SET( PROJ AMP )
 SET( AMP_LIB amp )
+IF ( NOT ${PROJ}_INSTALL_DIR )
+    SET( ${PROJ}_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}" )
+ENDIF()
 
 
 # Initialize the project (should disable langagues that the TPL builder will enable)
@@ -28,8 +31,6 @@ SET( ${PROJ}_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src" )
 SET( ${PROJ}_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}" )
 IF( ${PROJ}_INSTALL_DIR )
     SET( ${PROJ}_INSTALL_DIR "${${PROJ}_INSTALL_DIR}" )
-ELSEIF( CMAKE_INSTALL_PREFIX )
-    SET( ${PROJ}_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}" )
 ELSEIF( NOT ${PROJ}_INSTALL_DIR )
     SET( ${PROJ}_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/ampdir" )
 ENDIF()
