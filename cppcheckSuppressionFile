@@ -1,6 +1,10 @@
 // Supress false warnings
 noConstructor:*/utils/RNG.h
 copyCtorPointerCopying:*/utils/AMP_MPI.cc
+redundantAssignment:*/utils/AMP_MPI.cpp
+multiCondition:*/utils/AMP_MPI.cpp
+incorrectLogicOperator:*/utils/AMP_MPI.cpp
+duplicateExpression:*/utils/AMP_MPI.cpp
 
 // Supress unnecessary passedByValue
 passedByValue:*/libmesh/initializeLibMesh.cc

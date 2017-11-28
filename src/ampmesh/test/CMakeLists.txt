@@ -71,8 +71,6 @@ ADD_AMP_TEST( test_Mesh )
 ENDIF()
 
 ADD_AMP_PROVISIONAL_TEST( testMeshPerformance )
-IF ( USE_TRILINOS_STKMESH )
-ENDIF()
 IF ( USE_EXT_LIBMESH )
     ADD_AMP_TEST_1_2_4( test_InitializeLibmesh )
 ENDIF()

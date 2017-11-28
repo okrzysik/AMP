@@ -1,12 +1,8 @@
 # Set some CMake properties    
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-CMAKE_POLICY(SET CMP0004 OLD)
-IF ( ${CMAKE_MAJOR_VERSION} EQUAL 3 )
-    CMAKE_POLICY(SET CMP0026 OLD)
-    CMAKE_POLICY(SET CMP0053 OLD)
-ENDIF()
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 
 
+# Print banner
 MESSAGE ("===============")
 MESSAGE ("Configuring AMP")
 MESSAGE ("===============")
@@ -15,6 +11,9 @@ MESSAGE ("===============")
 # Set the project name
 SET( PROJ AMP )
 SET( AMP_LIB amp )
+IF ( NOT ${PROJ}_INSTALL_DIR )
+    SET( ${PROJ}_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}" )
+ENDIF()
 
 
 # Initialize the project (should disable langagues that the TPL builder will enable)
@@ -36,6 +35,13 @@ ELSEIF( NOT ${PROJ}_INSTALL_DIR )
     SET( ${PROJ}_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/ampdir" )
 ENDIF()
 INCLUDE_DIRECTORIES( "${${PROJ}_INSTALL_DIR}/include" )
+
+
+# Build the TPLs if necessary
+IF ( TPL_URL )
+    INCLUDE( cmake/configure_TPLs.cmake )
+    CONFIGURE_TPL_BUILDER()
+ENDIF()
 
 
 # Load the TPL package
@@ -140,7 +146,7 @@ SET( EXCLUDE_TESTS_FROM_ALL 0 )
 ADD_CUSTOM_TARGET( build-test )
 ADD_CUSTOM_TARGET( build-examples )
 ADD_CUSTOM_TARGET( check COMMAND  make test  )
-ADD_DISTCLEAN( src ampdir AMP compile_commands.json )
+ADD_DISTCLEAN( src ampdir AMP compile_commands.json AMP-Data.tar.gz tpl-build tpl-builder )
 MACRO( ADD_AMP_TEST_1_2_4 EXENAME ${ARGN} )
     ADD_AMP_TEST ( ${EXENAME} ${ARGN} )
     ADD_AMP_TEST_PARALLEL ( ${EXENAME} 2 ${ARGN} )

@@ -4,8 +4,8 @@
 #include "ampmesh/MultiMesh.h"
 #include "ampmesh/SubsetMesh.h"
 #include "ampmesh/structured/BoxMesh.h"
-#ifdef USE_TRILINOS_STKMESH
-#include "ampmesh/STKmesh/STKMesh.h"
+#ifdef USE_TRILINOS_STKCLASSIC
+//#include "ampmesh/STKmesh/STKMesh.h"
 #endif
 #ifdef USE_EXT_LIBMESH
 #include "ampmesh/libmesh/libMesh.h"
@@ -89,9 +89,10 @@ AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif
     } else if ( MeshType == std::string( "STKMesh" ) ) {
-// The mesh is a libmesh mesh
-#ifdef USE_TRILINOS_STKMESH
-        mesh = AMP::make_shared<AMP::Mesh::STKMesh>( params );
+// The mesh is a stk mesh
+#ifdef USE_TRILINOS_STKClassic
+        // mesh = AMP::make_shared<AMP::Mesh::STKMesh>( params );
+        AMP_ERROR( "AMP stk mesh interface is broken" );
 #else
         AMP_ERROR( "AMP was compiled without support for STKMesh" );
 #endif
@@ -147,8 +148,9 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 #endif
     } else if ( MeshType == std::string( "STKMesh" ) ) {
 // The mesh is a stkMesh mesh
-#ifdef USE_TRILINOS_STKMESH
-        meshSize = AMP::Mesh::STKMesh::estimateMeshSize( params );
+#ifdef USE_TRILINOS_STKCLASSIC
+        //meshSize = AMP::Mesh::STKMesh::estimateMeshSize( params );
+        AMP_ERROR( "AMP stk mesh interface is broken" );
 #else
         AMP_ERROR( "AMP was compiled without support for STKMesh" );
 #endif
@@ -189,8 +191,9 @@ size_t Mesh::maxProcs( const MeshParameters::shared_ptr &params )
 #endif
     } else if ( MeshType == std::string( "STKMesh" ) ) {
 // The mesh is a stkMesh mesh
-#ifdef USE_TRILINOS_STKMESH
-        maxSize = AMP::Mesh::STKMesh::maxProcs( params );
+#ifdef USE_TRILINOS_STKCLASSIC
+        // maxSize = AMP::Mesh::STKMesh::maxProcs( params );
+        AMP_ERROR( "AMP stk mesh interface is broken" );
 #else
         AMP_ERROR( "AMP was compiled without support for STKMesh" );
 #endif

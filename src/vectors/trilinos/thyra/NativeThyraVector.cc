@@ -1,9 +1,12 @@
 #include "vectors/trilinos/thyra/NativeThyraVector.h"
-
 #include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
+
+// Trilinos includes
+DISABLE_WARNINGS
 //#include "Thyra_SpmdVectorBase_def.hpp"
 #include "Thyra_DefaultSpmdVector_def.hpp"
+ENABLE_WARNINGS
 
 
 namespace AMP {
@@ -144,5 +147,7 @@ size_t NativeThyraVector::sizeOfDataBlock( size_t i ) const
     AMP_ERROR( "not finished" );
     return d_local;
 }
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
