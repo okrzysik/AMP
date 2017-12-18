@@ -14,7 +14,7 @@ To access the Advanced Multi-Physics (AMP) code:
 The websites associated with the AMP package includes:
 
 * Wiki: https://bitbucket.org/AdvancedMultiPhysics/amp2/wiki/Home
-* Doxygen documentation: http://advancedmultiphysics.bitbucket.org/
+* Doxygen documentation: https://advancedmultiphysics.bitbucket.io
 * Mercurial repositories:  https://bitbucket.org/AdvancedMultiPhysics/amp2
 * Issue tracker: https://bitbucket.org/AdvancedMultiPhysics/amp2/issues?status=new&status=open
 * CDash regression dashboard: http://vayu.ornl.gov/CDash/index.php?project=AMP

@@ -23,9 +23,11 @@ std::ofstream *PIO::s_filestream = nullptr;
 static ParallelBuffer pout_buffer;
 static ParallelBuffer perr_buffer;
 static ParallelBuffer plog_buffer;
+static ParallelBuffer pnull_buffer;
 std::ostream pout( &pout_buffer );
 std::ostream perr( &perr_buffer );
 std::ostream plog( &plog_buffer );
+std::ostream pnull( &pnull_buffer );
 
 
 /************************************************************************
