@@ -1,20 +1,15 @@
-
-#include <utils/AMPManager.h>
-#include <utils/InputDatabase.h>
-#include <utils/InputManager.h>
-#include <utils/PIO.h>
-#include <utils/UnitTest.h>
-#include <utils/Writer.h>
-
-#include <ampmesh/Mesh.h>
-
-#include <vectors/MultiVector.h>
-#include <vectors/VectorBuilder.h>
-#include <vectors/VectorSelector.h>
-
-#include <discretization/simpleDOF_Manager.h>
-
-#include <operators/map/StridedZAxisMap.h>
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/map/StridedZAxisMap.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 
 #include <functional>
 

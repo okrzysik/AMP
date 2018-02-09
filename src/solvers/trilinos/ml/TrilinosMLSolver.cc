@@ -1,13 +1,13 @@
-#include "solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
+#include "AMP/matrices/Matrix.h"
+#include "AMP/matrices/trilinos/EpetraMatrix.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/operators/trilinos/TrilinosMatrixShellOperator.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/DataChangeFirer.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 #include "ProfilerApp.h"
-#include "matrices/Matrix.h"
-#include "matrices/trilinos/EpetraMatrix.h"
-#include "operators/LinearOperator.h"
-#include "operators/trilinos/TrilinosMatrixShellOperator.h"
-#include "utils/Utilities.h"
-#include "vectors/DataChangeFirer.h"
-#include "vectors/trilinos/epetra/EpetraVector.h"
 
 namespace AMP {
 namespace Solver {

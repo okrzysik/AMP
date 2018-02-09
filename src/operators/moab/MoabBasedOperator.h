@@ -13,8 +13,8 @@
 #include <string>
 
 // AMP Includes
-#include "operators/Operator.h"
-#include "operators/moab/MoabBasedOperatorParameters.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/moab/MoabBasedOperatorParameters.h"
 
 // Moab Includes
 #include "moab/Interface.hpp"

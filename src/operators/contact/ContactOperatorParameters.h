@@ -1,10 +1,9 @@
-
 #ifndef included_AMP_ContactOperatorParameters
 #define included_AMP_ContactOperatorParameters
 
-#include <discretization/DOF_Manager.h>
-#include <operators/OperatorParameters.h>
-#include <operators/mechanics/MechanicsMaterialModel.h>
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/operators/mechanics/MechanicsMaterialModel.h"
 
 namespace AMP {
 namespace Operator {

@@ -2,8 +2,8 @@
 #ifndef included_AMP_Unit_test_Libmesh_Generators_h
 #define included_AMP_Unit_test_Libmesh_Generators_h
 
-#include "ampmesh/libmesh/initializeLibMesh.h"
-#include "ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/initializeLibMesh.h"
+#include "AMP/ampmesh/libmesh/libMesh.h"
 #include "meshGenerators.h"
 
 // LibMesh include

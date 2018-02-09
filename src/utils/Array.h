@@ -1,8 +1,8 @@
 #ifndef included_ArrayClass
 #define included_ArrayClass
 
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
 
 #include <array>
 #include <functional>
@@ -631,7 +631,7 @@ private:
 
 
 } // namespace AMP
-#include "utils/Array.hpp"
-#include "utils/FunctionTable.h"
+#include "AMP/utils/Array.hpp"
+#include "AMP/utils/FunctionTable.h"
 
 #endif

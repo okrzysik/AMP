@@ -3,11 +3,11 @@
 #define included_AMP_NonlinearFEOperator
 
 /* AMP files */
-#include "ampmesh/Mesh.h"
-#include "ampmesh/MeshElement.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/libmesh/FEOperatorParameters.h"
 #include "libmesh/elem.h"
-#include "operators/Operator.h"
-#include "operators/libmesh/FEOperatorParameters.h"
 
 #include <vector>
 

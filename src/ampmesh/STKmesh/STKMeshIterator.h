@@ -1,9 +1,9 @@
 #ifndef included_AMP_STKMeshIterators
 #define included_AMP_STKMeshIterators
 
-#include "ampmesh/MeshIterator.h"
-#include "ampmesh/STKmesh/STKMesh.h"
-#include "utils/shared_ptr.h"
+#include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/ampmesh/STKmesh/STKMesh.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace Mesh {

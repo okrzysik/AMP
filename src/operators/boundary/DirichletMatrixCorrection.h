@@ -6,7 +6,7 @@
 #include "DirichletMatrixCorrectionParameters.h"
 #include "DirichletVectorCorrection.h"
 
-#include "vectors/Variable.h"
+#include "AMP/vectors/Variable.h"
 
 namespace AMP {
 namespace Operator {

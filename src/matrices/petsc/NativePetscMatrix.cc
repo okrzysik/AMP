@@ -1,10 +1,10 @@
 #include "petscmat.h"
 #include "petscvec.h"
 
-#include "matrices/Matrix.h"
-#include "matrices/petsc/NativePetscMatrix.h"
-#include "vectors/Vector.h"
-#include "vectors/petsc/NativePetscVector.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/matrices/petsc/NativePetscMatrix.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/petsc/NativePetscVector.h"
 
 
 namespace AMP {

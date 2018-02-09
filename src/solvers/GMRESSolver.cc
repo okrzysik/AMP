@@ -1,6 +1,6 @@
-#include "solvers/GMRESSolver.h"
+#include "AMP/solvers/GMRESSolver.h"
+#include "AMP/operators/LinearOperator.h"
 #include "ProfilerApp.h"
-#include "operators/LinearOperator.h"
 
 
 #include <cmath>

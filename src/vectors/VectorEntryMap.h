@@ -4,8 +4,8 @@
 #include <map>
 #include <vector>
 
-#include "utils/AMP_MPI.h"
-#include "vectors/CommunicationList.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/vectors/CommunicationList.h"
 
 #include "ObjectSorter.h"
 #include "Variable.h"

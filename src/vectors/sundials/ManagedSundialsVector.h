@@ -1,8 +1,8 @@
 #ifndef included_AMP_ManagedSundialsVector
 #define included_AMP_ManagedSundialsVector
 
-#include "vectors/ManagedVector.h"
-#include "vectors/sundials/SundialsVector.h"
+#include "AMP/vectors/ManagedVector.h"
+#include "AMP/vectors/sundials/SundialsVector.h"
 
 
 extern "C" {

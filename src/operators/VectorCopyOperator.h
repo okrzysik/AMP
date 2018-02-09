@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "operators/Operator.h"
-#include "operators/VectorCopyOperatorParameters.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/VectorCopyOperatorParameters.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 
 namespace AMP {
 namespace Operator {

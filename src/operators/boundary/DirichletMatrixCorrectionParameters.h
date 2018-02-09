@@ -2,7 +2,7 @@
 #ifndef included_AMP_DirichletMatrixCorrectionParameters
 #define included_AMP_DirichletMatrixCorrectionParameters
 
-#include "operators/boundary/LinearBoundaryOperatorParameters.h"
+#include "AMP/operators/boundary/LinearBoundaryOperatorParameters.h"
 
 namespace AMP {
 namespace Operator {

@@ -5,14 +5,14 @@
 #include <iostream>
 #include <string>
 
-#include "discretization/DOF_Manager.h"
-#include "utils/ParameterBase.h"
-#include "utils/RNG.h"
-#include "utils/enable_shared_from_this.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Variable.h"
-#include "vectors/data/VectorData.h"
-#include "vectors/operations/VectorOperations.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/ParameterBase.h"
+#include "AMP/utils/RNG.h"
+#include "AMP/utils/enable_shared_from_this.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/data/VectorData.h"
+#include "AMP/vectors/operations/VectorOperations.h"
 
 
 namespace AMP {

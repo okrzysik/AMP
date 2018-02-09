@@ -3,11 +3,11 @@
 
 #include <set>
 
-#include "discretization/DOF_Manager.h"
-#include "matrices/ManagedMatrix.h"
-#include "matrices/trilinos/EpetraMatrix.h"
-#include "matrices/trilinos/ManagedEpetraMatrixParameters.h"
-#include "vectors/trilinos/epetra/EpetraVector.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/matrices/ManagedMatrix.h"
+#include "AMP/matrices/trilinos/EpetraMatrix.h"
+#include "AMP/matrices/trilinos/ManagedEpetraMatrixParameters.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 
 #include <Epetra_FECrsMatrix.h>
 

@@ -2,17 +2,17 @@
 #include "NeutronicsRhsExtras.h"
 
 /*AMP Files */
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/Vector.h"
 #include "NeutronicsRhsExtras.h"
 #include "NeutronicsRhsExtrasParameters.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "operators/Operator.h"
-#include "utils/Utilities.h"
-#include "vectors/Vector.h"
 
-#include "utils/InputDatabase.h"
+#include "AMP/utils/InputDatabase.h"
 
 /*Boost Files */
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 #include <cmath>
 #include <vector>

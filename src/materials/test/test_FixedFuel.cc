@@ -5,12 +5,12 @@
  *      Author: bm, gad
  */
 
-#include "materials/Material.h"
-#include "materials/TensorProperty.h"
-#include "materials/VectorProperty.h"
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/TensorProperty.h"
+#include "AMP/materials/VectorProperty.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
 #include <iostream>
 #include <string>

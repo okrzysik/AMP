@@ -1,10 +1,10 @@
 #ifndef included_AMP_structuredMeshIterators
 #define included_AMP_structuredMeshIterators
 
-#include "ampmesh/MeshIterator.h"
-#include "ampmesh/structured/BoxMesh.h"
-#include "ampmesh/structured/structuredMeshElement.h"
-#include "utils/shared_ptr.h"
+#include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/ampmesh/structured/BoxMesh.h"
+#include "AMP/ampmesh/structured/structuredMeshElement.h"
+#include "AMP/utils/shared_ptr.h"
 
 #include <array>
 

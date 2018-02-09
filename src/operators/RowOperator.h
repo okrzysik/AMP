@@ -2,13 +2,13 @@
 #define included_AMP_RowOperator
 
 /* AMP files */
-#include "operators/Operator.h"
-#include "operators/OperatorParameters.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/vectors/Vector.h"
 
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
 #include "ColumnOperatorParameters.h"
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {

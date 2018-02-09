@@ -1,6 +1,6 @@
-#include "vectors/operations/VectorOperations.h"
-#include "vectors/Vector.h"
-#include "vectors/data/VectorData.h"
+#include "AMP/vectors/operations/VectorOperations.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/data/VectorData.h"
 
 
 namespace AMP {

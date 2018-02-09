@@ -1,11 +1,11 @@
 #include <set>
 #include <vector>
 
-#include "ampmesh/MeshElementVectorIterator.h"
-#include "ampmesh/MultiIterator.h"
-#include "ampmesh/SubsetMesh.h"
+#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/ampmesh/MultiIterator.h"
+#include "AMP/ampmesh/SubsetMesh.h"
 #ifdef USE_AMP_VECTORS
-#include "vectors/Vector.h"
+#include "AMP/vectors/Vector.h"
 #endif
 
 namespace AMP {

@@ -2,11 +2,11 @@
 #ifndef included_AMP_LinearOperator
 #define included_AMP_LinearOperator
 
-#include "matrices/Matrix.h"
-#include "operators/Operator.h"
-#include "operators/OperatorParameters.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Vector.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 
 namespace AMP {
 namespace Operator {

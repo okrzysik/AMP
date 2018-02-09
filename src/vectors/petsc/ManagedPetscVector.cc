@@ -1,11 +1,11 @@
-#include "vectors/petsc/ManagedPetscVector.h"
-#include "vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/data/VectorDataCPU.h"
 
-#include "utils/Utilities.h"
-#include "vectors/VectorEngine.h"
-#include "vectors/petsc/PetscVector.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/VectorEngine.h"
+#include "AMP/vectors/petsc/PetscVector.h"
 #ifdef USE_EXT_TRILINOS
-#include "vectors/trilinos/epetra/EpetraVectorEngine.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
 #endif
 
 

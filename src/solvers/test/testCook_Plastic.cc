@@ -1,6 +1,6 @@
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include <iostream>
 #include <string>
 
@@ -9,7 +9,7 @@
 
 #include <sys/stat.h>
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 /* libMesh files */
 DISABLE_WARNINGS
@@ -27,40 +27,40 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 /* AMP files */
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/libmesh/initializeLibMesh.h"
-#include "ampmesh/libmesh/libMesh.h"
-#include "materials/Material.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/libmesh/initializeLibMesh.h"
+#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/materials/Material.h"
 
-#include "operators/ElementPhysicsModel.h"
-#include "operators/LinearBVPOperator.h"
-#include "operators/NonlinearBVPOperator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include "AMP/operators/ElementPhysicsModel.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/NonlinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 
 
-#include "discretization/DOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "utils/Writer.h"
-#include "vectors/MultiVariable.h"
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorBuilder.h"
-#include "vectors/VectorSelector.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/vectors/MultiVariable.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 
-#include "solvers/petsc/PetscKrylovSolver.h"
-#include "solvers/petsc/PetscSNESSolver.h"
-#include "solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/solvers/petsc/PetscSNESSolver.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
-#include "utils/ReadTestMesh.h"
+#include "AMP/utils/ReadTestMesh.h"
 
 
 void myTest( AMP::UnitTest *ut, const std::string &exeName )

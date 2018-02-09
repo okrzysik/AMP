@@ -1,5 +1,5 @@
-#include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
-#include "vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
+#include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
+#include "AMP/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
 
 
 DISABLE_WARNINGS

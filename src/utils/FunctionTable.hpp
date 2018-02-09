@@ -1,8 +1,8 @@
 #ifndef included_FunctionTable_hpp
 #define included_FunctionTable_hpp
 
-#include "utils/FunctionTable.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/FunctionTable.h"
+#include "AMP/utils/Utilities.h"
 
 // External includes
 #include "LapackWrappers.h"

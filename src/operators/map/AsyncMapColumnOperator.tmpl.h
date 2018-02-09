@@ -1,8 +1,8 @@
-#include "operators/map/AsyncMapOperator.h"
-#include "operators/map/AsyncMapOperatorParameters.h"
-//#include "operators/map/Map3to1to3.h"
-#include "utils/Database.h"
-#include "utils/MemoryDatabase.h"
+#include "AMP/operators/map/AsyncMapOperator.h"
+#include "AMP/operators/map/AsyncMapOperatorParameters.h"
+//#include "AMP/operators/map/Map3to1to3.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/MemoryDatabase.h"
 
 #include <iostream>
 

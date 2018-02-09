@@ -1,5 +1,5 @@
-#include "operators/subchannel/ConvectiveHeatCoefficient.h"
-#include "utils/Utilities.h"
+#include "AMP/operators/subchannel/ConvectiveHeatCoefficient.h"
+#include "AMP/utils/Utilities.h"
 #include <cmath>
 
 

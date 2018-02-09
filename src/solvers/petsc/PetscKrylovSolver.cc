@@ -1,10 +1,10 @@
-#include "solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/matrices/petsc/PetscMatrix.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/vectors/ExternalVectorDeleter.h"
+#include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "ProfilerApp.h"
-#include "matrices/Matrix.h"
-#include "matrices/petsc/PetscMatrix.h"
-#include "operators/LinearOperator.h"
-#include "vectors/ExternalVectorDeleter.h"
-#include "vectors/petsc/ManagedPetscVector.h"
 
 #include "petscpc.h"
 

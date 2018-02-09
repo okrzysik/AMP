@@ -3,44 +3,44 @@
 
 #ifdef USE_EXT_LIBMESH
 // mechanics material models
-#include "operators/mechanics/ElasticDamageThermalStrainModel.h"
-#include "operators/mechanics/GeneralCladThermalCreepPlasticModel.h"
-#include "operators/mechanics/IsotropicElasticModel.h"
-#include "operators/mechanics/PericElastoViscoPlasticModel.h"
-#include "operators/mechanics/ThermalStrainMaterialModel.h"
-#include "operators/mechanics/ThermalVonMisesMatModel.h"
-#include "operators/mechanics/VonMisesElastoPlasticModel.h"
-#include "operators/mechanics/VonMises_IsotropicKinematicHardening.h"
+#include "AMP/operators/mechanics/ElasticDamageThermalStrainModel.h"
+#include "AMP/operators/mechanics/GeneralCladThermalCreepPlasticModel.h"
+#include "AMP/operators/mechanics/IsotropicElasticModel.h"
+#include "AMP/operators/mechanics/PericElastoViscoPlasticModel.h"
+#include "AMP/operators/mechanics/ThermalStrainMaterialModel.h"
+#include "AMP/operators/mechanics/ThermalVonMisesMatModel.h"
+#include "AMP/operators/mechanics/VonMisesElastoPlasticModel.h"
+#include "AMP/operators/mechanics/VonMises_IsotropicKinematicHardening.h"
 
 // flow transport model
-#include "operators/flow/FlowTransportModel.h"
+#include "AMP/operators/flow/FlowTransportModel.h"
 
 // diffusion transport model
-#include "operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
 
 // diffusion transport tensor model
-#include "operators/diffusion/DiffusionTransportTensorModel.h"
+#include "AMP/operators/diffusion/DiffusionTransportTensorModel.h"
 
 // diffusion transport cylindrical model
-#include "operators/diffusion/DiffusionCylindricalTransportModel.h"
+#include "AMP/operators/diffusion/DiffusionCylindricalTransportModel.h"
 
 // Pellet Contact Conductance model
-#include "operators/libmesh/PelletContactConductanceModel.h"
+#include "AMP/operators/libmesh/PelletContactConductanceModel.h"
 
 // Convective Heat Coefficient model
-#include "operators/subchannel/ConvectiveHeatCoefficient.h"
+#include "AMP/operators/subchannel/ConvectiveHeatCoefficient.h"
 
 // source physics model
-#include "operators/libmesh/SourcePhysicsModel.h"
+#include "AMP/operators/libmesh/SourcePhysicsModel.h"
 
 // mass density model
-#include "operators/libmesh/MassDensityModel.h"
+#include "AMP/operators/libmesh/MassDensityModel.h"
 
 // manufactured diffusion transport model
-#include "operators/ManufacturedDiffusionTransportModel.h"
+#include "AMP/operators/ManufacturedDiffusionTransportModel.h"
 
 // subchannel physics model
-#include "operators/subchannel/SubchannelPhysicsModel.h"
+#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
 #endif
 
 

@@ -1,7 +1,7 @@
-#include "vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
-#include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
+#include "AMP/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
+#include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 
 DISABLE_WARNINGS
 #include "Thyra_DefaultSpmdVectorSpace.hpp"

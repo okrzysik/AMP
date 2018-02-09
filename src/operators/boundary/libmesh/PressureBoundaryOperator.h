@@ -2,7 +2,7 @@
 #ifndef included_AMP_PressureBoundaryOperator
 #define included_AMP_PressureBoundaryOperator
 
-#include "operators/boundary/libmesh/TractionBoundaryOperator.h"
+#include "AMP/operators/boundary/libmesh/TractionBoundaryOperator.h"
 
 namespace AMP {
 namespace Operator {

@@ -1,10 +1,10 @@
 #ifndef included_AMP_AsyncMapColumnOperator
 #define included_AMP_AsyncMapColumnOperator
 
-#include "operators/AsynchronousColumnOperator.h"
-#include "operators/AsynchronousColumnOperatorParameters.h"
+#include "AMP/operators/AsynchronousColumnOperator.h"
+#include "AMP/operators/AsynchronousColumnOperatorParameters.h"
 
-#include "ampmesh/Mesh.h"
+#include "AMP/ampmesh/Mesh.h"
 
 namespace AMP {
 namespace Operator {

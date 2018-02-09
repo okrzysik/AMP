@@ -1,10 +1,10 @@
 #ifdef USE_EXT_PETSC
 
-#include "vectors/testHelpers/petsc/PetscVectorTests.h"
-#include "utils/UnitTest.h"
-#include "vectors/MultiVector.h"
-#include "vectors/petsc/PetscHelpers.h"
-#include "vectors/testHelpers/petsc/PetscVectorFactory.h"
+#include "AMP/vectors/testHelpers/petsc/PetscVectorTests.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
+#include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 
 #include "string"
 #include <algorithm>

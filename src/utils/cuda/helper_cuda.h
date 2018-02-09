@@ -21,8 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils/Utilities.h"
-#include "utils/cuda/helper_string.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/cuda/helper_string.h"
 
 #include <cuda.h>
 #include <cuda_runtime.h>

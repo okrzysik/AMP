@@ -1,9 +1,8 @@
-#include <utils/AMPManager.h>
-#include <utils/UnitTest.h>
-
-#include <ampmesh/euclidean_geometry_tools.h>
-#include <ampmesh/hex8_element_t.h>
-#include <ampmesh/latex_visualization_tools.h>
+#include "AMP/ampmesh/euclidean_geometry_tools.h"
+#include "AMP/ampmesh/hex8_element_t.h"
+#include "AMP/ampmesh/latex_visualization_tools.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
 
 
 class soft_equal_to

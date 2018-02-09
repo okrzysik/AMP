@@ -1,4 +1,4 @@
-#include "utils/cuda/test.hpp"
+#include "AMP/utils/cuda/test.hpp"
 
 int main()
 {

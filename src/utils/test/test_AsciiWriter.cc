@@ -1,32 +1,32 @@
 #include <sstream>
 #include <string>
 
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
 
-#include "utils/Writer.h"
+#include "AMP/utils/Writer.h"
 
 #ifdef USE_AMP_MESH
-#include "ampmesh/Mesh.h"
-#include "ampmesh/structured/BoxMesh.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/structured/BoxMesh.h"
 #endif
 #ifdef USE_AMP_DISCRETIZATION
-#include "discretization/simpleDOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #endif
 #ifdef USE_AMP_VECTORS
-#include "vectors/SimpleVector.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/vectors/SimpleVector.h"
+#include "AMP/vectors/VectorBuilder.h"
 #endif
 #ifdef USE_AMP_MATRICES
-#include "matrices/Matrix.h"
-#include "matrices/MatrixBuilder.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/matrices/MatrixBuilder.h"
 #endif
 
 

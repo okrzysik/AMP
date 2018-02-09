@@ -1,13 +1,13 @@
 #include "OxideTimeIntegrator.h"
 #include "OxideModel.h"
 
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/MultiVariable.h"
+#include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 #include "ProfilerApp.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Utilities.h"
-#include "vectors/MultiVariable.h"
-#include "vectors/VectorBuilder.h"
-#include "vectors/VectorSelector.h"
 
 
 namespace AMP {

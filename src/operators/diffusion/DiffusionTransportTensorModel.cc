@@ -6,8 +6,8 @@
  */
 
 #include "DiffusionTransportTensorModel.h"
-#include "utils/Database.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/Utilities.h"
 #include <cmath>
 
 namespace AMP {

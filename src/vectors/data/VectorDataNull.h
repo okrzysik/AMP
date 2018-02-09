@@ -1,7 +1,7 @@
 #ifndef included_AMP_VectorDataNull
 #define included_AMP_VectorDataNull
 
-#include "vectors/data/VectorData.h"
+#include "AMP/vectors/data/VectorData.h"
 
 
 namespace AMP {

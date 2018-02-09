@@ -12,11 +12,11 @@
 #include "../Database.h"
 #include "../ManufacturedSolution.h"
 #include "../MemoryDatabase.h"
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
 
 
 void testit( AMP::UnitTest *ut,

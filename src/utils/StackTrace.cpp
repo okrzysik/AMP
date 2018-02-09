@@ -1,4 +1,4 @@
-#include "utils/StackTrace.h"
+#include "AMP/utils/StackTrace.h"
 
 #include <algorithm>
 #include <csignal>

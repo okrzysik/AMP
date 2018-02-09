@@ -1,9 +1,9 @@
 #ifndef included_AMP_ManagedEpetraVector
 #define included_AMP_ManagedEpetraVector
 
+#include "AMP/vectors/ManagedVector.h"
 #include "EpetraVector.h"
 #include "EpetraVectorEngine.h"
-#include "vectors/ManagedVector.h"
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 

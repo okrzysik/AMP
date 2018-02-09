@@ -1,9 +1,9 @@
 #ifndef included_RowOperatorParameters
 #define included_RowOperatorParameters
 
-#include "operators/Operator.h"
-#include "operators/OperatorParameters.h"
-#include "utils/shared_ptr.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {

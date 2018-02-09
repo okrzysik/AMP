@@ -3,9 +3,9 @@
  *
  */
 
-#include "operators/subchannel/SubchannelPhysicsModel.h"
-#include "utils/Database.h"
-#include "utils/Utilities.h"
+#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/Utilities.h"
 #include <algorithm>
 #include <cmath>
 #include <map>

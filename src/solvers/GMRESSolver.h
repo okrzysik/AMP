@@ -1,10 +1,10 @@
 #ifndef included_AMP_GMRESSolver
 #define included_AMP_GMRESSolver
 
-#include "solvers/KrylovSolverParameters.h"
-#include "solvers/SolverStrategy.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Array.h"
+#include "AMP/solvers/KrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Array.h"
 
 namespace AMP {
 namespace Solver {

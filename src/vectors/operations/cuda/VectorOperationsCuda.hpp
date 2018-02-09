@@ -1,10 +1,10 @@
 #ifndef included_AMP_VectorOperationsCuda_hpp
 #define included_AMP_VectorOperationsCuda_hpp
 
-#include "vectors/Vector.h"
-#include "vectors/data/VectorData.h"
-#include "vectors/operations/VectorOperationsDefault.hpp"
-#include "vectors/operations/cuda/VectorOperationsCuda.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/data/VectorData.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.hpp"
+#include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>

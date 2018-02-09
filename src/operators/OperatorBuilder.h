@@ -1,12 +1,12 @@
 #ifndef included_AMP_OperatorBuilder
 #define included_AMP_OperatorBuilder
 
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/boundary/BoundaryOperator.h"
+#include "AMP/utils/InputDatabase.h"
 #include "ElementPhysicsModel.h"
 #include "ElementPhysicsModelFactory.h"
-#include "ampmesh/Mesh.h"
-#include "operators/Operator.h"
-#include "operators/boundary/BoundaryOperator.h"
-#include "utils/InputDatabase.h"
 
 namespace AMP {
 namespace Operator {

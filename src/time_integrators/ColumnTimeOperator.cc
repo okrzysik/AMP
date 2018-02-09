@@ -1,8 +1,8 @@
 #include "ColumnTimeOperator.h"
+#include "AMP/operators/ColumnOperatorParameters.h"
+#include "AMP/utils/InputDatabase.h"
 #include "LinearTimeOperator.h"
 #include "TimeOperatorParameters.h"
-#include "operators/ColumnOperatorParameters.h"
-#include "utils/InputDatabase.h"
 
 namespace AMP {
 namespace TimeIntegrator {

@@ -1,7 +1,7 @@
-#include "vectors/sundials/ManagedSundialsVector.h"
-#include "vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/sundials/ManagedSundialsVector.h"
+#include "AMP/vectors/data/VectorDataCPU.h"
 
-#include "utils/UtilityMacros.h"
+#include "AMP/utils/UtilityMacros.h"
 
 
 namespace AMP {

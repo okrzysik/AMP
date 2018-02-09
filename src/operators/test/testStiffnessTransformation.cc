@@ -1,9 +1,9 @@
-#include "utils/AMPManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
-#include "operators/mechanics/UpdatedLagrangianUtils.h"
+#include "AMP/operators/mechanics/UpdatedLagrangianUtils.h"
 
 
 void myTest( AMP::UnitTest *ut )

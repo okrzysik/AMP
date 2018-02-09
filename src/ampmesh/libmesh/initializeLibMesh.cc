@@ -1,7 +1,7 @@
-#include "ampmesh/libmesh/initializeLibMesh.h"
-#include "ampmesh/libmesh/libMeshIterator.h"
-#include "utils/AMPManager.h"
-#include "utils/MemoryDatabase.h"
+#include "AMP/ampmesh/libmesh/initializeLibMesh.h"
+#include "AMP/ampmesh/libmesh/libMeshIterator.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/MemoryDatabase.h"
 
 #include <cstring>
 

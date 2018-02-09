@@ -6,7 +6,7 @@
 #include <cuda_runtime.h>
 #include <iostream>
 
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 
 inline void checkError( cudaError_t e )
 {

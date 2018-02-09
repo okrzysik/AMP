@@ -1,7 +1,7 @@
 
-#include "operators/libmesh/PelletStackOperator.h"
-#include "operators/map/NodeToNodeMap.h"
-#include "vectors/VectorSelector.h"
+#include "AMP/operators/libmesh/PelletStackOperator.h"
+#include "AMP/operators/map/NodeToNodeMap.h"
+#include "AMP/vectors/VectorSelector.h"
 
 namespace AMP {
 namespace Operator {

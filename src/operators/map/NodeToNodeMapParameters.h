@@ -1,8 +1,8 @@
 #ifndef included_AMP_NodeToNodeMapParameters
 #define included_AMP_NodeToNodeMapParameters
 
-#include "ampmesh/Mesh.h"
-#include "operators/map/AsyncMapOperatorParameters.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/operators/map/AsyncMapOperatorParameters.h"
 
 namespace AMP {
 namespace Operator {

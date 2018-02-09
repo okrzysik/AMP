@@ -1,18 +1,18 @@
-#include "ampmesh/structured/MovableBoxMesh.h"
+#include "AMP/ampmesh/structured/MovableBoxMesh.h"
 
-#include "ampmesh/MultiIterator.h"
-#include "ampmesh/structured/BoxMesh.h"
-#include "ampmesh/structured/structuredMeshElement.h"
-#include "ampmesh/structured/structuredMeshIterator.h"
+#include "AMP/ampmesh/MultiIterator.h"
+#include "AMP/ampmesh/structured/BoxMesh.h"
+#include "AMP/ampmesh/structured/structuredMeshElement.h"
+#include "AMP/ampmesh/structured/structuredMeshIterator.h"
 
 #ifdef USE_AMP_VECTORS
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
 #endif
 #ifdef USE_AMP_DISCRETIZATION
-#include "discretization/DOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #endif
 
 namespace AMP {

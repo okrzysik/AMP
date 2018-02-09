@@ -1,4 +1,4 @@
-#include "vectors/petsc/NativePetscVector.h"
+#include "AMP/vectors/petsc/NativePetscVector.h"
 
 namespace AMP {
 namespace LinearAlgebra {

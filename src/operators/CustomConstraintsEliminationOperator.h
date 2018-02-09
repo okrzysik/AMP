@@ -2,7 +2,7 @@
 #ifndef included_AMP_CustomConstraintsEliminationOperator
 #define included_AMP_CustomConstraintsEliminationOperator
 
-#include <operators/ConstraintsEliminationOperator.h>
+#include "AMP/operators/ConstraintsEliminationOperator.h"
 
 namespace AMP {
 namespace Operator {

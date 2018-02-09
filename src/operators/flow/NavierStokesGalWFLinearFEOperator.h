@@ -3,11 +3,11 @@
 #define included_AMP_NavierStokesGalWFLinearFEOperator
 
 // AMP files
-#include "operators/flow/NavierStokesConstants.h"
-#include "operators/flow/NavierStokesGalWFLinearElement.h"
-#include "operators/flow/NavierStokesLinearFEOperatorParameters.h"
-#include "operators/libmesh/LinearFEOperator.h"
-#include "vectors/MultiVariable.h"
+#include "AMP/operators/flow/NavierStokesConstants.h"
+#include "AMP/operators/flow/NavierStokesGalWFLinearElement.h"
+#include "AMP/operators/flow/NavierStokesLinearFEOperatorParameters.h"
+#include "AMP/operators/libmesh/LinearFEOperator.h"
+#include "AMP/vectors/MultiVariable.h"
 
 #include <vector>
 

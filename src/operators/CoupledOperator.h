@@ -1,9 +1,9 @@
 #ifndef included_AMP_CoupledOperator
 #define included_AMP_CoupledOperator
 
+#include "AMP/vectors/Vector.h"
 #include "ColumnOperator.h"
 #include "CoupledOperatorParameters.h"
-#include "vectors/Vector.h"
 
 #include <vector>
 

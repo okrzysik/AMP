@@ -2,7 +2,7 @@
 #ifndef included_AMP_PelletStackOperatorParameters
 #define included_AMP_PelletStackOperatorParameters
 
-#include "operators/map/AsyncMapColumnOperator.h"
+#include "AMP/operators/map/AsyncMapColumnOperator.h"
 
 namespace AMP {
 namespace Operator {

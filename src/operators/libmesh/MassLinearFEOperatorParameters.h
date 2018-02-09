@@ -1,9 +1,9 @@
 #ifndef included_AMP_MassLinearFEOperatorParameters
 #define included_AMP_MassLinearFEOperatorParameters
 
-#include "operators/libmesh/LinearFEOperatorParameters.h"
+#include "AMP/operators/libmesh/LinearFEOperatorParameters.h"
 
-#include "operators/libmesh/MassDensityModel.h"
+#include "AMP/operators/libmesh/MassDensityModel.h"
 
 namespace AMP {
 namespace Operator {

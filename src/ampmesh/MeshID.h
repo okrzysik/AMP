@@ -1,7 +1,7 @@
 #ifndef included_AMP_MeshID
 #define included_AMP_MeshID
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 #include <vector>
 
 

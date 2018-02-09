@@ -2,7 +2,7 @@
 #ifndef included_AMP_DTK_AMPField
 #define included_AMP_DTK_AMPField
 
-#include <vectors/Vector.h>
+#include "AMP/vectors/Vector.h"
 
 #include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>

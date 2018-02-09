@@ -1,6 +1,6 @@
 
 #include "Matrix.h"
-#include "utils/ParameterBase.h"
+#include "AMP/utils/ParameterBase.h"
 #include <iomanip>
 
 namespace AMP {

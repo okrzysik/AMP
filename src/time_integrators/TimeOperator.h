@@ -1,11 +1,11 @@
 #ifndef included_TimeOperator
 #define included_TimeOperator
 
-#include "operators/Operator.h"
-#include "operators/OperatorParameters.h"
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 
 
 namespace AMP {

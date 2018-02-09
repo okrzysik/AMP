@@ -2,10 +2,10 @@
 #ifndef included_AMP_SubchannelHelpers
 #define included_AMP_SubchannelHelpers
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/MeshElement.h"
-#include "operators/subchannel/SubchannelPhysicsModel.h"
-#include "vectors/Vector.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
+#include "AMP/vectors/Vector.h"
 
 #include <string>
 #include <vector>

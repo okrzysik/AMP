@@ -2,9 +2,9 @@
 #ifndef included_AMP_VolumeIntegralOperatorParameters
 #define included_AMP_VolumeIntegralOperatorParameters
 
-#include "discretization/DOF_Manager.h"
-#include "operators/libmesh/FEOperatorParameters.h"
-#include "operators/libmesh/SourcePhysicsModel.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/operators/libmesh/FEOperatorParameters.h"
+#include "AMP/operators/libmesh/SourcePhysicsModel.h"
 
 namespace AMP {
 namespace Operator {

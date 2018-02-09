@@ -1,23 +1,23 @@
-#include "solvers/libmesh/PelletStackHelpers.h"
+#include "AMP/solvers/libmesh/PelletStackHelpers.h"
 
-#include "discretization/simpleDOF_Manager.h"
-#include "matrices/MatrixBuilder.h"
-#include "operators/CoupledOperator.h"
-#include "operators/LinearBVPOperator.h"
-#include "operators/NonlinearBVPOperator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/libmesh/PelletStackOperator.h"
-#include "operators/map/AsyncMapColumnOperator.h"
-#include "operators/map/NodeToNodeMap.h"
-#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/operators/CoupledOperator.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/NonlinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
+#include "AMP/operators/libmesh/PelletStackOperator.h"
+#include "AMP/operators/map/AsyncMapColumnOperator.h"
+#include "AMP/operators/map/NodeToNodeMap.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #ifdef USE_EXT_PETSC
-#include "solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #endif
 
-#include "solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
 
 void helperCreateStackOperatorForPelletMechanics(

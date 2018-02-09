@@ -3,7 +3,8 @@
 #ifndef included_AMP_MPI_I
 #define included_AMP_MPI_I
 
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
+
 #define MPI_CLASS AMP_MPI
 #define MPI_CLASS_ERROR AMP_ERROR
 #define MPI_CLASS_ASSERT AMP_ASSERT

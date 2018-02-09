@@ -6,14 +6,14 @@
 #include <string>
 #include <vector>
 
-#include "ampmesh/Mesh.h"
-#include "discretization/DOF_Manager.h"
-#include "materials/Material.h"
-#include "materials/Property.h"
-#include "operators/ElementPhysicsModel.h"
-#include "operators/diffusion/DiffusionConstants.h"
-#include "operators/diffusion/DiffusionTransportModel.h"
-#include "utils/shared_ptr.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/Property.h"
+#include "AMP/operators/ElementPhysicsModel.h"
+#include "AMP/operators/diffusion/DiffusionConstants.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/utils/shared_ptr.h"
 
 
 namespace AMP {

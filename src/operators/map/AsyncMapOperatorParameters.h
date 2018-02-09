@@ -1,10 +1,10 @@
 #ifndef included_AMP_AsyncMapOperatorParameters
 #define included_AMP_AsyncMapOperatorParameters
 
-#include "ampmesh/Mesh.h"
-#include "discretization/DOF_Manager.h"
-#include "operators/AsynchronousOperatorParameters.h"
-#include "utils/AMP_MPI.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/operators/AsynchronousOperatorParameters.h"
+#include "AMP/utils/AMP_MPI.h"
 
 
 namespace AMP {

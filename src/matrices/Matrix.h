@@ -1,10 +1,10 @@
 #ifndef included_AMP_Matrix
 #define included_AMP_Matrix
 
-#include "matrices/MatrixParameters.h"
-#include "utils/ParameterBase.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Vector.h"
+#include "AMP/matrices/MatrixParameters.h"
+#include "AMP/utils/ParameterBase.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 
 
 namespace AMP {

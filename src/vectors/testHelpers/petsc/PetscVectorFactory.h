@@ -1,13 +1,13 @@
 #ifndef included_test_PetscVectorFactory
 #define included_test_PetscVectorFactory
 
-#include "vectors/testHelpers/VectorFactory.h"
-#include "vectors/testHelpers/generateVectorFactories.h"
+#include "AMP/vectors/testHelpers/VectorFactory.h"
+#include "AMP/vectors/testHelpers/generateVectorFactories.h"
 
-#include "utils/AMP_MPI.h"
-#include "vectors/petsc/ManagedPetscVector.h"
-#include "vectors/petsc/NativePetscVector.h"
-#include "vectors/petsc/PetscHelpers.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/NativePetscVector.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
 
 
 /// \cond UNDOCUMENTED

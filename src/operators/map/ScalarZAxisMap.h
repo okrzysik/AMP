@@ -1,8 +1,8 @@
 #ifndef included_AMP_ScalarZAxisMap
 #define included_AMP_ScalarZAxisMap
 
-#include "operators/map/Map3to1to3.h"
-#include "operators/map/Map3to1to3Parameters.h"
+#include "AMP/operators/map/Map3to1to3.h"
+#include "AMP/operators/map/Map3to1to3Parameters.h"
 
 
 namespace AMP {

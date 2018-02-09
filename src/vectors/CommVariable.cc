@@ -1,5 +1,5 @@
 #include "CommVariable.h"
-#include "discretization/DOF_Manager.h"
+#include "AMP/discretization/DOF_Manager.h"
 
 namespace AMP {
 namespace LinearAlgebra {

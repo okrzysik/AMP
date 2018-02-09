@@ -1,7 +1,7 @@
 #include "math.h"
 
+#include "AMP/discretization/DOF_Manager.h"
 #include "SimpleVector.h"
-#include "discretization/DOF_Manager.h"
 
 namespace AMP {
 namespace LinearAlgebra {

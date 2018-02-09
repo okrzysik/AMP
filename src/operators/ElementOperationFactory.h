@@ -2,9 +2,9 @@
 #define included_ElementOperationFactory
 
 /* Boost files */
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "operators/ElementOperation.h"
+#include "AMP/operators/ElementOperation.h"
 
 
 namespace AMP {

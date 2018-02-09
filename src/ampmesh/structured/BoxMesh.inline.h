@@ -1,7 +1,7 @@
 #ifndef included_AMP_BoxMeshInline
 #define included_AMP_BoxMeshInline
 
-#include "ampmesh/structured/BoxMesh.h"
+#include "AMP/ampmesh/structured/BoxMesh.h"
 
 #include <algorithm>
 

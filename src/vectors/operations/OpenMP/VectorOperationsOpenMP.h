@@ -2,7 +2,7 @@
 #define included_AMP_VectorOperationsOpenMP
 
 
-#include "vectors/operations/VectorOperations.h"
+#include "AMP/vectors/operations/VectorOperations.h"
 
 
 namespace AMP {

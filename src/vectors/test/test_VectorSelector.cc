@@ -1,8 +1,8 @@
-#include "vectors/MultiVector.h"
-#include "vectors/VectorSelector.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/VectorSelector.h"
 
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
 
 #include "test_VectorHelpers.h"
 

@@ -1,6 +1,5 @@
-
-#include <operators/ConstraintsEliminationOperator.h>
-#include <solvers/ConstraintsEliminationSolver.h>
+#include "AMP/solvers/ConstraintsEliminationSolver.h"
+#include "AMP/operators/ConstraintsEliminationOperator.h"
 
 namespace AMP {
 namespace Solver {

@@ -1,15 +1,15 @@
 #ifndef included_AMP_MapSurface
 #define included_AMP_MapSurface
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "operators/Operator.h"
-#include "operators/OperatorParameters.h"
-#include "operators/map/Map1Dto3D.h"
-#include "operators/map/Map3Dto1D.h"
-#include "vectors/SimpleVector.h"
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/operators/map/Map1Dto3D.h"
+#include "AMP/operators/map/Map3Dto1D.h"
+#include "AMP/vectors/SimpleVector.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
 
 #include <string>
 

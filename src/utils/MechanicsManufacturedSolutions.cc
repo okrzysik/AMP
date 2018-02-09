@@ -1,5 +1,5 @@
-#include "utils/MechanicsManufacturedSolutions.h"
-#include "utils/PIO.h"
+#include "AMP/utils/MechanicsManufacturedSolutions.h"
+#include "AMP/utils/PIO.h"
 
 
 namespace AMP {

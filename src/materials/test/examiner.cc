@@ -5,7 +5,7 @@
  *      Author: gad
  */
 
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 
 #include <algorithm>
 #include <cmath>
@@ -22,13 +22,13 @@ using std::string;
 using std::valarray;
 using std::vector;
 
-#include "materials/Material.h"
-#include "materials/Property.h"
-#include "utils/AMPManager.h"
-#include "utils/Database.h"
-#include "utils/Factory.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/Property.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/Factory.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
 
 // Allow external materials to include additional headers in the test
 // Note: this includes 1 additional include header that is passed from the command line:

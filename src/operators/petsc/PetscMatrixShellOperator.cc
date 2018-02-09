@@ -1,7 +1,7 @@
-#include "operators/petsc/PetscMatrixShellOperator.h"
-#include "matrices/petsc/NativePetscMatrix.h"
-#include "vectors/ExternalVectorDeleter.h"
-#include "vectors/petsc/NativePetscVector.h"
+#include "AMP/operators/petsc/PetscMatrixShellOperator.h"
+#include "AMP/matrices/petsc/NativePetscMatrix.h"
+#include "AMP/vectors/ExternalVectorDeleter.h"
+#include "AMP/vectors/petsc/NativePetscVector.h"
 
 
 namespace AMP {

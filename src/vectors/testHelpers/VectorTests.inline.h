@@ -1,8 +1,8 @@
 #ifndef included_test_VectorTests_inline
 #define included_test_VectorTests_inline
 
-#include "vectors/MultiVector.h"
-#include "vectors/testHelpers/VectorTests.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
 
 
 namespace AMP {

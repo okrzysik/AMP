@@ -8,9 +8,9 @@
  *
  */
 
-#include "materials/Ox_MSRZC_09.h"
-#include "materials/Material.h"
-#include "materials/Property.h"
+#include "AMP/materials/Ox_MSRZC_09.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/Property.h"
 
 #include <cmath>
 #include <string>

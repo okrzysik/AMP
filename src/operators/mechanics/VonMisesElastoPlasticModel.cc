@@ -1,9 +1,9 @@
 
 #include "VonMisesElastoPlasticModel.h"
+#include "AMP/materials/Property.h"
 #include "MechanicsConstants.h"
-#include "materials/Property.h"
 
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 #include <iostream>
 
 namespace AMP {

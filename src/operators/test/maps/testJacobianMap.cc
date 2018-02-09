@@ -1,10 +1,10 @@
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
 #include <cstdlib>
 #include <iostream>
 
-#include "utils/ReadTestMesh.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/ReadTestMesh.h"
+#include "AMP/utils/shared_ptr.h"
 
 // Libmesh files
 DISABLE_WARNINGS

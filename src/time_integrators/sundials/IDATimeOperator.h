@@ -2,15 +2,15 @@
 #define included_IDATimeOperator
 
 
-#include "operators/Operator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/OperatorParameters.h"
-#include "time_integrators/TimeOperator.h"
-#include "time_integrators/TimeOperatorParameters.h"
-#include "utils/InputDatabase.h"
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/time_integrators/TimeOperator.h"
+#include "AMP/time_integrators/TimeOperatorParameters.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 
 
 namespace AMP {

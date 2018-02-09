@@ -2,10 +2,10 @@
 #ifndef included_AMP_SubchannelParameters
 #define included_AMP_SubchannelParameters
 
-#include "discretization/DOF_Manager.h"
-#include "operators/OperatorParameters.h"
-#include "operators/boundary/libmesh/RobinPhysicsModel.h"
-#include "operators/subchannel/SubchannelPhysicsModel.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/operators/boundary/libmesh/RobinPhysicsModel.h"
+#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
 
 namespace AMP {
 namespace Operator {

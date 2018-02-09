@@ -2,9 +2,9 @@
 #define included_AMP_VectorOperations
 
 
-#include "utils/AMP_MPI.h"
-#include "utils/RNG.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/RNG.h"
+#include "AMP/utils/shared_ptr.h"
 #include <vector>
 
 

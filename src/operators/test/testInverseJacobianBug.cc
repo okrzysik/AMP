@@ -1,22 +1,22 @@
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 #include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <iostream>
 
-#include "utils/AMPManager.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/libmesh/libMesh.h"
 
-#include "discretization/simpleDOF_Manager.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #include "libmesh/boundary_info.h"
 #include "libmesh/cell_hex8.h"

@@ -1,7 +1,7 @@
 #ifndef included_AMP_moabMesh
 #define included_AMP_moabMesh
 
-#include "ampmesh/Mesh.h"
+#include "AMP/ampmesh/Mesh.h"
 
 // MOAB include
 #include "moab/Core.hpp"

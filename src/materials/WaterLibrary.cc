@@ -4,9 +4,9 @@
  * flow.
  */
 
-#include "materials/WaterLibrary.h"
-#include "materials/Material.h"
-#include "materials/Property.h"
+#include "AMP/materials/WaterLibrary.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/Property.h"
 
 #include <iomanip>
 #include <string>

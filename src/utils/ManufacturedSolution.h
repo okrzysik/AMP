@@ -1,8 +1,8 @@
 #ifndef MMS_H
 #define MMS_H
 
+#include "AMP/utils/Utilities.h"
 #include "Database.h"
-#include "utils/Utilities.h"
 #include <valarray>
 
 namespace AMP {

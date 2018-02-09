@@ -4,11 +4,11 @@
 
 #include <vector>
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 /* AMP files */
-#include "operators/ElementOperation.h"
-#include "operators/flow/FlowTransportModel.h"
+#include "AMP/operators/ElementOperation.h"
+#include "AMP/operators/flow/FlowTransportModel.h"
 
 /* Libmesh files */
 #include "libmesh/elem.h"

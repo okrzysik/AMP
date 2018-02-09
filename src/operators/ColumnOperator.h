@@ -2,8 +2,8 @@
 #ifndef included_AMP_ColumnOperator
 #define included_AMP_ColumnOperator
 
-#include "operators/ColumnOperatorParameters.h"
-#include "operators/Operator.h"
+#include "AMP/operators/ColumnOperatorParameters.h"
+#include "AMP/operators/Operator.h"
 
 #include <vector>
 

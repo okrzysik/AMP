@@ -1,6 +1,6 @@
 #include "CoupledOperator.h"
-#include "utils/Utilities.h"
-#include "vectors/Vector.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/Vector.h"
 
 #include "ProfilerApp.h"
 

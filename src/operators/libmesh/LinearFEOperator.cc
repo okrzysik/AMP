@@ -1,9 +1,9 @@
 
 #include "LinearFEOperator.h"
+#include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/VectorBuilder.h"
 #include "ProfilerApp.h"
-#include "matrices/MatrixBuilder.h"
-#include "utils/Utilities.h"
-#include "vectors/VectorBuilder.h"
 
 #include "libmesh/cell_hex8.h"
 #include "libmesh/node.h"

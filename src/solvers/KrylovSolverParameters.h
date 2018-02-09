@@ -1,10 +1,10 @@
 #ifndef included_AMP_KrylovSolverParameters
 #define included_AMP_KrylovSolverParameters
 
-#include "solvers/SolverStrategy.h"
-#include "solvers/SolverStrategyParameters.h"
-#include "utils/Database.h"
-#include "utils/shared_ptr.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace Solver {

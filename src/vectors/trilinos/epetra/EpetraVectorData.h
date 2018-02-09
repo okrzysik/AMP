@@ -1,7 +1,7 @@
 #ifndef included_AMP_EpetraVectorData
 #define included_AMP_EpetraVectorData
 
-#include "vectors/data/VectorData.h"
+#include "AMP/vectors/data/VectorData.h"
 
 #include <Epetra_Vector.h>
 

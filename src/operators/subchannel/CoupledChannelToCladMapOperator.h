@@ -1,11 +1,11 @@
 #ifndef included_AMP_CoupledChannelToCladMapOperator
 #define included_AMP_CoupledChannelToCladMapOperator
 
-#include "operators/Operator.h"
-#include "operators/subchannel/CoupledChannelToCladMapOperatorParameters.h"
-#include "operators/subchannel/SubchannelPhysicsModel.h"
-#include "utils/Utilities.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/subchannel/CoupledChannelToCladMapOperatorParameters.h"
+#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/Vector.h"
 #include <vector>
 
 namespace AMP {

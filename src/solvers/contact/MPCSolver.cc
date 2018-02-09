@@ -1,6 +1,5 @@
-
-#include <operators/contact/NodeToSegmentConstraintsOperator.h>
-#include <solvers/contact/MPCSolver.h>
+#include "AMP/solvers/contact/MPCSolver.h"
+#include "AMP/operators/contact/NodeToSegmentConstraintsOperator.h"
 
 namespace AMP {
 namespace Solver {

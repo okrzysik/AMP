@@ -1,19 +1,19 @@
 #ifdef USE_AMP_DISCRETIZATION
 
-#include "vectors/VectorBuilder.h"
-#include "discretization/MultiDOF_Manager.h"
-#include "vectors/ManagedVector.h"
-#include "vectors/MultiVariable.h"
-#include "vectors/MultiVector.h"
-#include "vectors/SimpleVector.h"
+#include "AMP/vectors/VectorBuilder.h"
+#include "AMP/discretization/MultiDOF_Manager.h"
+#include "AMP/vectors/ManagedVector.h"
+#include "AMP/vectors/MultiVariable.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/SimpleVector.h"
 #ifdef USE_EXT_PETSC
-#include "vectors/petsc/ManagedPetscVector.h"
-#include "vectors/petsc/PetscVector.h"
+#include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/PetscVector.h"
 #endif
 #ifdef USE_EXT_TRILINOS
-#include "vectors/trilinos/epetra/EpetraVector.h"
-#include "vectors/trilinos/epetra/EpetraVectorEngine.h"
-#include "vectors/trilinos/epetra/ManagedEpetraVector.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVector.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
+#include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
 #endif
 
 #include <iostream>

@@ -1,7 +1,7 @@
 // Description:	Yacc grammar description for the input database
+#include "AMP/utils/shared_ptr.h"
 #include "Database.h"
 #include "Parser.h"
-#include "utils/shared_ptr.h"
 #include <cmath>
 #include <complex>
 #include <sstream>

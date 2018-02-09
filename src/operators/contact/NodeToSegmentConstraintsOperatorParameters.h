@@ -2,8 +2,8 @@
 #ifndef included_AMP_NodeToSegmentConstraintsOperatorParameters
 #define included_AMP_NodeToSegmentConstraintsOperatorParameters
 
-#include "discretization/DOF_Manager.h"
-#include "operators/OperatorParameters.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/operators/OperatorParameters.h"
 
 namespace AMP {
 namespace Operator {

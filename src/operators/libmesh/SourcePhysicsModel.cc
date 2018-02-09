@@ -1,16 +1,16 @@
 
 #include <cstring>
 
+#include "AMP/materials/Material.h"
+#include "AMP/operators/ElementPhysicsModel.h"
+#include "AMP/operators/ElementPhysicsModelParameters.h"
+#include "AMP/operators/ManufacturedSourceModel1.h"
+#include "AMP/operators/ManufacturedSourceModel2.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/operators/libmesh/MassDensityModel.h"
+#include "AMP/utils/shared_ptr.h"
 #include "ProfilerApp.h"
 #include "SourcePhysicsModel.h"
-#include "materials/Material.h"
-#include "operators/ElementPhysicsModel.h"
-#include "operators/ElementPhysicsModelParameters.h"
-#include "operators/ManufacturedSourceModel1.h"
-#include "operators/ManufacturedSourceModel2.h"
-#include "operators/diffusion/DiffusionTransportModel.h"
-#include "operators/libmesh/MassDensityModel.h"
-#include "utils/shared_ptr.h"
 
 
 namespace AMP {

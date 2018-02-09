@@ -1,6 +1,6 @@
-#include "ampmesh/libmesh/libMeshIterator.h"
-#include "ampmesh/libmesh/libMeshElement.h"
-#include "utils/Utilities.h"
+#include "AMP/ampmesh/libmesh/libMeshIterator.h"
+#include "AMP/ampmesh/libmesh/libMeshElement.h"
+#include "AMP/utils/Utilities.h"
 
 // libMesh includes
 #include "libmesh/elem.h"

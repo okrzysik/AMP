@@ -1,11 +1,11 @@
 #ifndef included_AMP_CoupledFlowFrapconParameters
 #define included_AMP_CoupledFlowFrapconParameters
 
-#include "operators/subchannel/CoupledFlowFrapconOperator.h"
-#include "solvers/SolverStrategy.h"
-#include "solvers/SolverStrategyParameters.h"
-#include "utils/Database.h"
-#include "utils/shared_ptr.h"
+#include "AMP/operators/subchannel/CoupledFlowFrapconOperator.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace Solver {

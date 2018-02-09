@@ -1,4 +1,4 @@
-#include "solvers/libmesh/PelletStackMechanicsSolver.h"
+#include "AMP/solvers/libmesh/PelletStackMechanicsSolver.h"
 
 namespace AMP {
 namespace Solver {

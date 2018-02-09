@@ -1,9 +1,9 @@
 #ifndef included_AMP_Property
 #define included_AMP_Property
 
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
-#include "vectors/MultiVector.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/MultiVector.h"
 
 #include <algorithm>
 #include <limits>

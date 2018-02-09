@@ -11,10 +11,10 @@
 #include <valarray>
 #include <vector>
 
-#include "materials/Material.h"
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/materials/Material.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
 using namespace std;
 

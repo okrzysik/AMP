@@ -1,11 +1,11 @@
-#include "solvers/libmesh/CoupledFlow1DSolver.h"
-#include "operators/map/Map1Dto3D.h"
-#include "operators/map/Map3Dto1D.h"
-#include "operators/subchannel/FlowFrapconJacobian.h"
-#include "solvers/libmesh/Flow1DSolver.h"
-#include "utils/InputDatabase.h"
-#include "utils/Utilities.h"
-#include "vectors/MultiVector.h"
+#include "AMP/solvers/libmesh/CoupledFlow1DSolver.h"
+#include "AMP/operators/map/Map1Dto3D.h"
+#include "AMP/operators/map/Map3Dto1D.h"
+#include "AMP/operators/subchannel/FlowFrapconJacobian.h"
+#include "AMP/solvers/libmesh/Flow1DSolver.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/MultiVector.h"
 
 
 namespace AMP {

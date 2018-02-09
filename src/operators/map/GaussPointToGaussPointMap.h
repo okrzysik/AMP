@@ -2,7 +2,7 @@
 #ifndef included_AMP_GaussPointToGaussPointMap
 #define included_AMP_GaussPointToGaussPointMap
 
-#include "operators/map/NodeToNodeMap.h"
+#include "AMP/operators/map/NodeToNodeMap.h"
 
 #include <vector>
 

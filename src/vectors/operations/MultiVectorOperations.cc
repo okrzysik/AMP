@@ -1,4 +1,4 @@
-#include "vectors/operations/MultiVectorOperations.h"
+#include "AMP/vectors/operations/MultiVectorOperations.h"
 
 
 namespace AMP {

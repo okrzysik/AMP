@@ -2,7 +2,7 @@
 #ifndef included_AMP_TractionBoundaryOperatorParameters
 #define included_AMP_TractionBoundaryOperatorParameters
 
-#include "operators/OperatorParameters.h"
+#include "AMP/operators/OperatorParameters.h"
 
 namespace AMP {
 namespace Operator {

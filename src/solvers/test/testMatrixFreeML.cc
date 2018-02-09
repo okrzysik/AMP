@@ -1,38 +1,38 @@
 #include <iostream>
 #include <string>
 
-#include "materials/Material.h"
+#include "AMP/materials/Material.h"
 
-#include "utils/AMPManager.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/ReadTestMesh.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
-#include "utils/WriteSolutionToFile.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/ReadTestMesh.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/WriteSolutionToFile.h"
 
-#include "ampmesh/MultiMesh.h"
-#include "ampmesh/libmesh/initializeLibMesh.h"
-#include "ampmesh/libmesh/libMesh.h"
-#include "utils/ReadTestMesh.h"
+#include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/ampmesh/libmesh/initializeLibMesh.h"
+#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/utils/ReadTestMesh.h"
 
-#include "discretization/DOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
 
+#include "AMP/operators/ColumnOperator.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
+#include "AMP/operators/trilinos/TrilinosMatrixShellOperator.h"
 #include "libmesh/mesh_communication.h"
-#include "operators/ColumnOperator.h"
-#include "operators/LinearBVPOperator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/trilinos/TrilinosMatrixShellOperator.h"
 
-#include "vectors/trilinos/epetra/EpetraVector.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 
-#include "solvers/petsc/PetscKrylovSolver.h"
-#include "solvers/petsc/PetscKrylovSolverParameters.h"
-#include "solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
 #include "ml_include.h"
 

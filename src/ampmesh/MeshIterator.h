@@ -1,8 +1,8 @@
 #ifndef included_AMP_MeshIterators
 #define included_AMP_MeshIterators
 
-#include "ampmesh/MeshElement.h"
-#include "utils/shared_ptr.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/utils/shared_ptr.h"
 #include <iterator>
 
 namespace AMP {
@@ -223,6 +223,6 @@ protected:
 } // namespace Mesh
 } // namespace AMP
 
-#include "ampmesh/MeshIterator.inline.h"
+#include "AMP/ampmesh/MeshIterator.inline.h"
 
 #endif

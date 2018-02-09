@@ -1,7 +1,7 @@
 #ifndef included_AMP_RNG_h
 #define included_AMP_RNG_h
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 #include <cstdlib>
 
 namespace AMP {

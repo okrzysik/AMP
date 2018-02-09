@@ -1,9 +1,9 @@
-#include "operators/map/NodeToNodeMap.h"
+#include "AMP/operators/map/NodeToNodeMap.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/map/NodeToNodeMapParameters.h"
+#include "AMP/vectors/Variable.h"
 #include "ProfilerApp.h"
-#include "ampmesh/MeshElement.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "operators/map/NodeToNodeMapParameters.h"
-#include "vectors/Variable.h"
 
 #include <set>
 

@@ -1,6 +1,6 @@
-#include "vectors/StridedVariable.h"
+#include "AMP/vectors/StridedVariable.h"
+#include "AMP/discretization/subsetDOFManager.h"
 #include "StridedVariable.h"
-#include "discretization/subsetDOFManager.h"
 
 
 namespace AMP {

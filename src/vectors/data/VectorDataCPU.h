@@ -1,7 +1,7 @@
 #ifndef included_AMP_VectorDataCPU
 #define included_AMP_VectorDataCPU
 
-#include "vectors/data/VectorData.h"
+#include "AMP/vectors/data/VectorData.h"
 
 
 namespace AMP {

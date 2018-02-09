@@ -1,9 +1,9 @@
 #ifndef included_AMP_Variable_h
 #define included_AMP_Variable_h
 
-#include "utils/Utilities.h"
-#include "utils/enable_shared_from_this.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/enable_shared_from_this.h"
+#include "AMP/utils/shared_ptr.h"
 
 
 namespace AMP {

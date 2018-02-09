@@ -1,6 +1,6 @@
-#include "operators/map/SubchannelToCladGPMap.h"
+#include "AMP/operators/map/SubchannelToCladGPMap.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "ProfilerApp.h"
-#include "discretization/DOF_Manager.h"
 
 // Libmesh files
 DISABLE_WARNINGS

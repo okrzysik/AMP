@@ -1,10 +1,10 @@
 #ifndef included_SolverStrategyParameters
 #define included_SolverStrategyParameters
 
-#include "operators/Operator.h"
-#include "utils/Database.h"
-#include "utils/ParameterBase.h"
-#include "utils/shared_ptr.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/ParameterBase.h"
+#include "AMP/utils/shared_ptr.h"
 
 
 namespace AMP {

@@ -1,7 +1,7 @@
 #ifndef included_AMP_Vector_inline
 #define included_AMP_Vector_inline
 
-#include "vectors/data/VectorDataIterator.h"
+#include "AMP/vectors/data/VectorDataIterator.h"
 #include <algorithm>
 
 

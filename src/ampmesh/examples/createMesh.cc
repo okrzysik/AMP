@@ -1,15 +1,15 @@
 #include <sstream>
 #include <string>
 
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
-#include "ampmesh/Mesh.h"
-#include "utils/Writer.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/utils/Writer.h"
 
 
 void createMesh( AMP::UnitTest *ut, const std::string &input_file )

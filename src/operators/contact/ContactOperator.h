@@ -2,8 +2,8 @@
 #ifndef included_AMP_ContactOperator
 #define included_AMP_ContactOperator
 
-#include <operators/ConstraintsEliminationOperator.h>
-#include <operators/contact/ContactOperatorParameters.h>
+#include "AMP/operators/ConstraintsEliminationOperator.h"
+#include "AMP/operators/contact/ContactOperatorParameters.h"
 
 namespace AMP {
 namespace Operator {

@@ -5,13 +5,13 @@
 #include <list>
 #include <vector>
 
-#include "operators/map/AsyncMapOperator.h"
-#include "operators/map/NodeToNodeMapParameters.h"
+#include "AMP/operators/map/AsyncMapOperator.h"
+#include "AMP/operators/map/NodeToNodeMapParameters.h"
 
-#include "ampmesh/Mesh.h"
-#include "discretization/DOF_Manager.h"
-#include "utils/AMP_MPI.h"
-#include "vectors/Vector.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/vectors/Vector.h"
 
 
 namespace AMP {

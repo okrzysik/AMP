@@ -1,8 +1,8 @@
 #ifndef included_AMP_Flow1DSolver
 #define included_AMP_Flow1DSolver
 
-#include "solvers/SolverStrategy.h"
-#include "solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 
 namespace AMP {
 namespace Solver {

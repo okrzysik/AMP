@@ -2,10 +2,10 @@
 #define included_AMP_libMeshElement
 
 
-#include "ampmesh/MeshElement.h"
-#include "ampmesh/libmesh/libMesh.h"
-#include "ampmesh/libmesh/libMeshIterator.h"
-#include "utils/shared_ptr.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libMeshIterator.h"
+#include "AMP/utils/shared_ptr.h"
 #include <vector>
 
 

@@ -1,6 +1,6 @@
-#include "ampmesh/SiloIO.h"
+#include "AMP/ampmesh/SiloIO.h"
+#include "AMP/ampmesh/MultiMesh.h"
 #include "ProfilerApp.h"
-#include "ampmesh/MultiMesh.h"
 
 #include <chrono>
 
@@ -100,8 +100,8 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
                 std::map<AMP::Mesh::MeshID, siloBaseMeshData>::iterator iterator;
                 for ( iterator = d_baseMeshes.begin(); iterator != d_baseMeshes.end();
                       ++iterator ) {
-                    siloBaseMeshData &data = iterator->second;
-                    data.file              = fname.c_str();
+                    auto &data = iterator->second;
+                    data.file  = fname.c_str();
                     AMP_ASSERT( data.id == iterator->first );
                     writeMesh( FileHandle, iterator->second, cycle, time );
                 }
@@ -123,8 +123,8 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
         // Write the base meshes
         std::map<AMP::Mesh::MeshID, siloBaseMeshData>::iterator iterator;
         for ( iterator = d_baseMeshes.begin(); iterator != d_baseMeshes.end(); ++iterator ) {
-            siloBaseMeshData &data = iterator->second;
-            data.file              = fname_rank.c_str();
+            auto &data = iterator->second;
+            data.file  = fname_rank.c_str();
             AMP_ASSERT( data.id == iterator->first );
             writeMesh( FileHandle, iterator->second, cycle, time );
         }
@@ -190,9 +190,9 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
         // Create and register a multimesh for the rank
         if ( level == 3 ) {
             // Create a unique id for each rank
-            AMP::Mesh::uint64 tmp_id = mesh->meshID().getData();
-            AMP::Mesh::uint64 root2  = d_comm.getRank() + 1;
-            tmp_id                   = ( root2 << 48 ) + tmp_id;
+            uint64_t tmp_id = mesh->meshID().getData();
+            uint64_t root2  = d_comm.getRank() + 1;
+            tmp_id          = ( root2 << 48 ) + tmp_id;
             siloMultiMeshData data2;
             data2.id       = AMP::Mesh::MeshID( tmp_id );
             data2.mesh     = mesh;
@@ -204,11 +204,10 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
     } else {
         // We are dealing with a multimesh, register the current mesh and sub meshes
         int level2 = level;
-        if ( level == 1 ) {
+        if ( level == 1 )
             level2 = 0;
-        }
-        std::string new_path                               = path + mesh->getName() + "_/";
-        std::vector<AMP::Mesh::Mesh::shared_ptr> submeshes = multimesh->getMeshes();
+        auto new_path  = path + mesh->getName() + "_/";
+        auto submeshes = multimesh->getMeshes();
         for ( auto &submeshe : submeshes )
             registerMesh( submeshe, level2, new_path );
         if ( level > 0 ) {
@@ -259,10 +258,10 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
     // Make sure the mesh has been registered
     registerMesh( mesh );
     // Perform some error checking
-    AMP::Discretization::DOFManager::shared_ptr DOFs = vec->getDOFManager();
-    AMP::Mesh::MeshIterator iterator1                = mesh->getIterator( type, 0 );
-    AMP::Mesh::MeshIterator iterator2                = DOFs->getIterator();
-    AMP::Mesh::MeshIterator iterator3 =
+    auto DOFs      = vec->getDOFManager();
+    auto iterator1 = mesh->getIterator( type, 0 );
+    auto iterator2 = DOFs->getIterator();
+    auto iterator3 =
         AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, iterator1, iterator2 );
     if ( iterator1.size() != iterator3.size() )
         AMP_ERROR( "vector does not cover the entire mesh for the given entity type" );
@@ -393,9 +392,9 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
         if ( pos == std::string::npos ) {
             pos = tmp_path.size();
         }
-        std::string subdir = tmp_path.substr( 0, pos );
-        DBtoc *toc         = DBGetToc( FileHandle );
-        bool subdir_found  = false;
+        auto subdir       = tmp_path.substr( 0, pos );
+        DBtoc *toc        = DBGetToc( FileHandle );
+        bool subdir_found = false;
         for ( int i = 0; i < toc->ndir; ++i ) {
             if ( subdir.compare( toc->dir_names[i] ) == 0 )
                 subdir_found = true;
@@ -412,11 +411,11 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     PROFILE_START( "writeMesh - elements", 2 );
     std::stringstream stream;
     stream << data.rank;
-    std::string rank                         = stream.str();
-    std::string meshName                     = data.meshName;
-    std::string zoneName                     = "zone_" + rank;
-    AMP::Mesh::MeshIterator element_iterator = mesh->getIterator( mesh->getGeomType(), 0 );
-    auto num_elems                           = (int) element_iterator.size();
+    std::string rank      = stream.str();
+    std::string meshName  = data.meshName;
+    std::string zoneName  = "zone_" + rank;
+    auto element_iterator = mesh->getIterator( mesh->getGeomType(), 0 );
+    auto num_elems        = (int) element_iterator.size();
     DBPutZonelist2( FileHandle,
                     zoneName.c_str(),
                     num_elems,
@@ -458,10 +457,10 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     DBAddOption( optlist, DBOPT_DTIME, &time );
     // DBAddOption(optlist, DBOPT_UNITS, (void *)units);
     for ( size_t i = 0; i < data.varName.size(); ++i ) {
-        AMP::Discretization::DOFManager::shared_ptr DOFs = data.vec[i]->getDOFManager();
-        int nvar                                         = 0;
-        int centering                                    = 0;
-        auto var                                         = new double *[data.varSize[i]];
+        auto DOFs     = data.vec[i]->getDOFManager();
+        int nvar      = 0;
+        int centering = 0;
+        auto var      = new double *[data.varSize[i]];
         for ( int j = 0; j < data.varSize[i]; ++j )
             var[j] = nullptr;
         const char *varnames[] = { "1", "2", "3" };
@@ -628,8 +627,8 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
                 d_comm.recv( recv_buf, recv_size, i, false, 24987 );
                 char *ptr = recv_buf;
                 for ( int j = 0; j < recv_num[i]; ++j ) {
-                    siloMultiMeshData tmp = siloMultiMeshData::unpack( ptr );
-                    ptr                   = &ptr[tmp.size()];
+                    auto tmp = siloMultiMeshData::unpack( ptr );
+                    ptr      = &ptr[tmp.size()];
                     meshdata.push_back( tmp );
                 }
             }
@@ -757,8 +756,8 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
     std::map<AMP::Mesh::MeshID, siloMultiMeshData>::iterator iterator;
     for ( iterator = multiMeshes.begin(); iterator != multiMeshes.end(); ++iterator ) {
         // AMP::Mesh::MeshID id = iterator->first;
-        AMP::Mesh::Mesh::shared_ptr mesh        = iterator->second.mesh;
-        std::vector<AMP::Mesh::MeshID> base_ids = getMeshIDs( mesh );
+        auto mesh     = iterator->second.mesh;
+        auto base_ids = getMeshIDs( mesh );
         for ( auto id : base_ids ) {
             const auto &it = d_baseMeshes.find( id );
             if ( it != d_baseMeshes.end() ) {
@@ -799,8 +798,8 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
         PROFILE_START( "create directories", 2 );
         std::set<std::string> subdirs;
         for ( it = multiMeshes.begin(); it != multiMeshes.end(); ++it ) {
-            siloMultiMeshData data = it->second;
-            std::string file       = data.name;
+            auto data = it->second;
+            auto file = data.name;
             AMP_ASSERT( !file.empty() );
             if ( file.compare( 0, base_path.size(), base_path ) == 0 )
                 file = file.substr( base_path.size() );
@@ -865,10 +864,10 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
                         break;
                     }
                 }
-                std::string multiMeshName = data.name;
-                std::string visitVarName  = multiMeshName + "_" + varName;
-                float ftime               = time;
-                DBoptlist *opts           = DBMakeOptlist( 10 );
+                auto multiMeshName = data.name;
+                auto visitVarName  = multiMeshName + "_" + varName;
+                float ftime        = time;
+                DBoptlist *opts    = DBMakeOptlist( 10 );
                 DBAddOption( opts, DBOPT_CYCLE, &cycle );
                 DBAddOption( opts, DBOPT_TIME, &ftime );
                 DBAddOption( opts, DBOPT_DTIME, &time );

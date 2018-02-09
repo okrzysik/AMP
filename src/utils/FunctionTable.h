@@ -2,7 +2,7 @@
 #define included_FunctionTable
 
 
-#include "utils/Array.h"
+#include "AMP/utils/Array.h"
 
 #include <functional>
 
@@ -180,6 +180,6 @@ private:
 
 } // namespace AMP
 
-#include "utils/FunctionTable.hpp"
+#include "AMP/utils/FunctionTable.hpp"
 
 #endif

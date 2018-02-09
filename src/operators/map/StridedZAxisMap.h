@@ -1,9 +1,9 @@
 #ifndef included_AMP_StridedZAxisMap
 #define included_AMP_StridedZAxisMap
 
-#include "operators/map/Map3to1to3.h"
-#include "operators/map/Map3to1to3Parameters.h"
-#include "operators/map/ScalarZAxisMap.h"
+#include "AMP/operators/map/Map3to1to3.h"
+#include "AMP/operators/map/Map3to1to3Parameters.h"
+#include "AMP/operators/map/ScalarZAxisMap.h"
 
 
 namespace AMP {

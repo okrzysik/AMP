@@ -2,12 +2,12 @@
 #define included_AMP_FickSoretNonlinearFEOperator
 
 /* AMP files */
-#include "ampmesh/Mesh.h"
-#include "ampmesh/MeshElement.h"
-#include "discretization/DOF_Manager.h"
-#include "operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "operators/diffusion/FickSoretNonlinearFEOperatorParameters.h"
-#include "utils/shared_ptr.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
+#include "AMP/operators/diffusion/FickSoretNonlinearFEOperatorParameters.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {

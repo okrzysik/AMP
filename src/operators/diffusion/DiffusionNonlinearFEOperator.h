@@ -2,12 +2,12 @@
 #ifndef included_AMP_DiffusionNonlinearFEOperator
 #define included_AMP_DiffusionNonlinearFEOperator
 
-#include "operators/diffusion/DiffusionConstants.h"
-#include "operators/diffusion/DiffusionNonlinearElement.h"
-#include "operators/diffusion/DiffusionNonlinearFEOperatorParameters.h"
-#include "operators/libmesh/NonlinearFEOperator.h"
-#include "vectors/MultiVariable.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/diffusion/DiffusionConstants.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearElement.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearFEOperatorParameters.h"
+#include "AMP/operators/libmesh/NonlinearFEOperator.h"
+#include "AMP/vectors/MultiVariable.h"
+#include "AMP/vectors/Vector.h"
 
 #include <vector>
 

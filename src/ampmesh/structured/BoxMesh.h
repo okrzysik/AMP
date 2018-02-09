@@ -1,9 +1,9 @@
 #ifndef included_AMP_BoxMesh
 #define included_AMP_BoxMesh
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/MeshID.h"
-#include "ampmesh/MeshIterator.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshID.h"
+#include "AMP/ampmesh/MeshIterator.h"
 
 #ifdef USE_AMP_VECTORS
 namespace AMP {
@@ -13,7 +13,7 @@ class Vector;
 } // namespace AMP
 #endif
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 #include <array>
 #include <map>
 #include <vector>
@@ -438,7 +438,7 @@ private:
 } // namespace AMP
 
 
-#include "ampmesh/structured/BoxMesh.inline.h"
+#include "AMP/ampmesh/structured/BoxMesh.inline.h"
 
 
 #endif

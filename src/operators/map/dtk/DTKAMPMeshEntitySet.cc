@@ -1,5 +1,5 @@
 
-#include "ampmesh/MeshID.h"
+#include "AMP/ampmesh/MeshID.h"
 
 #include "DTKAMPMeshEntity.h"
 #include "DTKAMPMeshEntityExtraData.h"

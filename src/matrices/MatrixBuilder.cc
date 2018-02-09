@@ -1,16 +1,16 @@
 #ifdef USE_AMP_VECTORS
 
-#include "matrices/MatrixBuilder.h"
-#include "discretization/DOF_Manager.h"
-#include "matrices/DenseSerialMatrix.h"
-#include "utils/Utilities.h"
+#include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/matrices/DenseSerialMatrix.h"
+#include "AMP/utils/Utilities.h"
 
 #ifdef USE_EXT_TRILINOS
-#include "matrices/trilinos/ManagedEpetraMatrix.h"
-#include "vectors/trilinos/epetra/EpetraVectorEngine.h"
+#include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
 #ifdef USE_EXT_PETSC
-#include "matrices/petsc/ManagedPetscMatrix.h"
-#include "vectors/petsc/ManagedPetscVector.h"
+#include "AMP/matrices/petsc/ManagedPetscMatrix.h"
+#include "AMP/vectors/petsc/ManagedPetscVector.h"
 #endif
 #endif
 

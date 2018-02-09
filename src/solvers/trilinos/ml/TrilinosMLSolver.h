@@ -2,10 +2,10 @@
 #ifndef included_AMP_TrilinosMLSolver
 #define included_AMP_TrilinosMLSolver
 
-#include "matrices/trilinos/EpetraMatrix.h"
-#include "solvers/SolverStrategy.h"
-#include "solvers/SolverStrategyParameters.h"
-#include "solvers/trilinos/ml/MLoptions.h"
+#include "AMP/matrices/trilinos/EpetraMatrix.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/trilinos/ml/MLoptions.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"

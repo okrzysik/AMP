@@ -1,6 +1,6 @@
-#include "solvers/BiCGSTABSolver.h"
+#include "AMP/solvers/BiCGSTABSolver.h"
+#include "AMP/operators/LinearOperator.h"
 #include "ProfilerApp.h"
-#include "operators/LinearOperator.h"
 
 
 #include <cmath>

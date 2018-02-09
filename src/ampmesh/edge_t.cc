@@ -1,7 +1,7 @@
 
-#include <ampmesh/edge_t.h>
-#include <ampmesh/euclidean_geometry_tools.h>
-#include <utils/Utilities.h>
+#include <AMP/ampmesh/edge_t.h>
+#include <AMP/ampmesh/euclidean_geometry_tools.h>
+#include <AMP/utils/Utilities.h>
 
 
 #include <cmath>

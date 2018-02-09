@@ -1,7 +1,7 @@
-#include "solvers/BandedSolver.h"
+#include "AMP/solvers/BandedSolver.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
-#include "operators/LinearOperator.h"
-#include "utils/Utilities.h"
 
 // External includes
 #include "LapackWrappers.h"

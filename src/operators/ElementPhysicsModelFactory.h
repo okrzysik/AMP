@@ -2,9 +2,9 @@
 #define included_AMP_ElementPhysicsModelFactory
 
 /* Boost files */
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "operators/ElementPhysicsModel.h"
+#include "AMP/operators/ElementPhysicsModel.h"
 
 namespace AMP {
 namespace Operator {

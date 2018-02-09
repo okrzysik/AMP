@@ -3,12 +3,12 @@
 
 #include <vector>
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 /* AMP files */
-#include "operators/ElementOperation.h"
-#include "operators/diffusion/DiffusionTransportModel.h"
-#include "operators/diffusion/DiffusionTransportTensorModel.h"
+#include "AMP/operators/ElementOperation.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/operators/diffusion/DiffusionTransportTensorModel.h"
 
 /* Libmesh files */
 #include "libmesh/elem.h"

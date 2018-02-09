@@ -1,23 +1,23 @@
-#include "materials/Material.h"
-#include "operators/NeutronicsRhs.h"
-#include "utils/AMPManager.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Variable.h"
+#include "AMP/materials/Material.h"
+#include "AMP/operators/NeutronicsRhs.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Variable.h"
 #include <string>
 
-#include "operators/subchannel/FlowFrapconOperator.h"
-#include "utils/Writer.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/subchannel/FlowFrapconOperator.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/vectors/Vector.h"
 
-#include "operators/LinearBVPOperator.h"
-#include "operators/OperatorBuilder.h"
-#include "vectors/SimpleVector.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/vectors/SimpleVector.h"
 
 #define ITFAILS ut.failure( __LINE__ );
 #define UNIT_TEST( a ) \
@@ -203,17 +203,17 @@ void flowTest( AMP::UnitTest *ut )
 
 
     // Construct a smart pointer to a new database.
-    //  #include "utils/shared_ptr.h"
-    //  #include "utils/InputDatabase.h"
+    //  #include "AMP/utils/shared_ptr.h"
+    //  #include "AMP/utils/InputDatabase.h"
     AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
 
     // Fill the database from the input file.
-    //  #include "utils/InputManager.h"
+    //  #include "AMP/utils/InputManager.h"
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
     input_db->printClassData( AMP::plog );
 
     // Print from all cores into the output files
-    //   #include "utils/PIO.h"
+    //   #include "AMP/utils/PIO.h"
     AMP::PIO::logAllNodes( log_file );
 
     // Get the Mesh database and create the mesh parameters

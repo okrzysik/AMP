@@ -20,17 +20,17 @@ using std::string;
 using std::valarray;
 using std::vector;
 
-#include "materials/Material.h"
-#include "materials/Property.h"
-#include "materials/TensorProperty.h"
-#include "materials/VectorProperty.h"
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Factory.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
-#include "vectors/MultiVector.h"
-#include "vectors/SimpleVector.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/Property.h"
+#include "AMP/materials/TensorProperty.h"
+#include "AMP/materials/VectorProperty.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Factory.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/SimpleVector.h"
 
 // Allow external materials to include additional headers in the test
 // Note: this includes 1 additional include header that is passed from the command line:

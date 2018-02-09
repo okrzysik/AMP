@@ -1,8 +1,8 @@
 #ifndef included_AMP_PetscMonitor
 #define included_AMP_PetscMonitor
 
-#include "utils/AMP_MPI.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
 #include <complex>
 #include <map>
 #include <set>

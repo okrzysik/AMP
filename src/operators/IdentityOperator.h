@@ -1,9 +1,9 @@
 #ifndef included_AMP_IdentityOperator
 #define included_AMP_IdentityOperator
 
-#include "operators/LinearOperator.h"
-#include "operators/OperatorParameters.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/vectors/Vector.h"
 
 namespace AMP {
 namespace Operator {

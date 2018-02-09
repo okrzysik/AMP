@@ -1,6 +1,6 @@
-#include "operators/libmesh/MassLinearElement.h"
+#include "AMP/operators/libmesh/MassLinearElement.h"
+#include "AMP/utils/Utilities.h"
 #include "libmesh/point.h"
-#include "utils/Utilities.h"
 
 namespace AMP {
 namespace Operator {

@@ -1,8 +1,8 @@
-#include "solvers/trilinos/nox/AndersonStatusTest.h"
+#include "AMP/solvers/trilinos/nox/AndersonStatusTest.h"
 
-#include "solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
-#include "vectors/trilinos/thyra/ThyraVector.h"
-#include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
+#include "AMP/solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
+#include "AMP/vectors/trilinos/thyra/ThyraVector.h"
+#include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
 // Trilinos includes
 DISABLE_WARNINGS

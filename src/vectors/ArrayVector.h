@@ -3,11 +3,11 @@
 
 #include <string>
 
-#include "utils/Array.h"
-#include "utils/FunctionTable.h"
-#include "vectors/Vector.h"
-#include "vectors/operations/VectorOperationsDefault.h"
-#include "vectors/operations/VectorOperationsDefault.hpp"
+#include "AMP/utils/Array.h"
+#include "AMP/utils/FunctionTable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.hpp"
 
 
 namespace AMP {

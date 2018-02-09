@@ -2,7 +2,7 @@
 #ifndef included_AMP_RobinVectorCorrectionParameters
 #define included_AMP_RobinVectorCorrectionParameters
 
-#include "operators/OperatorParameters.h"
+#include "AMP/operators/OperatorParameters.h"
 
 namespace AMP {
 namespace Operator {

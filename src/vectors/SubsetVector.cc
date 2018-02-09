@@ -1,11 +1,11 @@
 #include <algorithm>
 
-#include "discretization/subsetDOFManager.h"
-#include "utils/Utilities.h"
-#include "vectors/MultiVector.h"
-#include "vectors/SubsetVariable.h"
-#include "vectors/SubsetVector.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/discretization/subsetDOFManager.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/SubsetVariable.h"
+#include "AMP/vectors/SubsetVector.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #include "ProfilerApp.h"
 

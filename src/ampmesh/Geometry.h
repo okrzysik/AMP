@@ -1,7 +1,7 @@
 #ifndef included_AMP_Geometry
 #define included_AMP_Geometry
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 #include <vector>
 

@@ -1,6 +1,6 @@
-#include "ampmesh/loadBalance/loadBalanceSimulator.h"
-#include "ampmesh/Mesh.h"
-#include "ampmesh/MultiMesh.h"
+#include "AMP/ampmesh/loadBalance/loadBalanceSimulator.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MultiMesh.h"
 
 #include <algorithm>
 #include <cstring>

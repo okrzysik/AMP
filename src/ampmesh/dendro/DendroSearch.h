@@ -2,14 +2,14 @@
 #ifndef DENDRO_SEARCH
 #define DENDRO_SEARCH
 
-#include "utils/AMP_MPI.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
 
-#include "vectors/Vector.h"
+#include "AMP/vectors/Vector.h"
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/MeshElement.h"
-#include "ampmesh/hex8_element_t.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/ampmesh/hex8_element_t.h"
 
 #include <cmath>
 #include <cstdlib>

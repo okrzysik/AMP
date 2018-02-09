@@ -1,6 +1,6 @@
-#include "matrices/MatrixParameters.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Utilities.h"
+#include "AMP/matrices/MatrixParameters.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
 
 
 namespace AMP {

@@ -1,11 +1,11 @@
 #ifndef included_test_VectorTests
 #define included_test_VectorTests
 
-#include "utils/UnitTest.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
 
 #include <string>
 
@@ -192,7 +192,7 @@ private:
 
 
 // Extra includes
-#include "vectors/testHelpers/VectorTests.inline.h"
+#include "AMP/vectors/testHelpers/VectorTests.inline.h"
 
 
 #endif

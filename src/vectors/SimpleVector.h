@@ -1,10 +1,10 @@
 #ifndef included_AMP_SimpleVector
 #define included_AMP_SimpleVector
 
+#include "AMP/vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.hpp"
 #include "Vector.h"
-#include "vectors/data/VectorDataCPU.h"
-#include "vectors/operations/VectorOperationsDefault.h"
-#include "vectors/operations/VectorOperationsDefault.hpp"
 
 
 namespace AMP {
@@ -85,6 +85,6 @@ public: // Functions derived from Vector
 } // namespace AMP
 
 
-#include "vectors/SimpleVector.hpp"
+#include "AMP/vectors/SimpleVector.hpp"
 
 #endif

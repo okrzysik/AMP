@@ -1,6 +1,6 @@
 
 #include "MechanicsElement.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 
 /* Libmesh files */
 #include "libmesh/auto_ptr.h"

@@ -2,8 +2,8 @@
 #ifndef included_AMP_FlowFrapconOperatorParameters
 #define included_AMP_FlowFrapconOperatorParameters
 
-#include "operators/OperatorParameters.h"
-#include "operators/subchannel/FlowFrapconJacobianParameters.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/operators/subchannel/FlowFrapconJacobianParameters.h"
 
 namespace AMP {
 namespace Operator {

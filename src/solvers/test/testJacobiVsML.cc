@@ -1,26 +1,26 @@
 
-#include "utils/AMPManager.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
-#include "utils/WriteSolutionToFile.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/WriteSolutionToFile.h"
 
 #include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "discretization/simpleDOF_Manager.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/vectors/VectorBuilder.h"
 
-#include "operators/LinearBVPOperator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/boundary/DirichletVectorCorrection.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
 
-#include "solvers/petsc/PetscKrylovSolver.h"
-#include "solvers/petsc/PetscKrylovSolverParameters.h"
-#include "solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
 void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {

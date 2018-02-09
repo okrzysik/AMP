@@ -1,8 +1,8 @@
 #ifndef included_AMP_SubsetVector
 #define included_AMP_SubsetVector
 
-#include "vectors/Vector.h"
-#include "vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include <vector>
 
 namespace AMP {

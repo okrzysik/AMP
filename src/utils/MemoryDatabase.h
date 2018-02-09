@@ -12,8 +12,8 @@
 #define included_MemoryDatabase
 
 
+#include "AMP/utils/AMP_MPI.h"
 #include "Database.h"
-#include "utils/AMP_MPI.h"
 #include <complex>
 #include <list>
 #include <vector>

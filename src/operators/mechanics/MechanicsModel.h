@@ -4,13 +4,13 @@
 
 #include <cstring>
 
-#include "operators/ElementPhysicsModel.h"
-#include "operators/MechanicsModelParameters.h"
+#include "AMP/operators/ElementPhysicsModel.h"
+#include "AMP/operators/MechanicsModelParameters.h"
 
-#include "materials/Material.h"
-#include "vectors/Vector.h"
+#include "AMP/materials/Material.h"
+#include "AMP/vectors/Vector.h"
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {

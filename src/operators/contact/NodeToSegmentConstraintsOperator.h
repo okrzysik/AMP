@@ -3,14 +3,14 @@
 #define included_AMP_NoteToSegmentConstraintsOperator
 
 
-#include "utils/shared_ptr.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/contact/NodeToSegmentConstraintsOperatorParameters.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
 #include <fstream>
-#include <matrices/Matrix.h>
-#include <operators/Operator.h>
-#include <operators/contact/NodeToSegmentConstraintsOperatorParameters.h>
 #include <vector>
-#include <vectors/Variable.h>
-#include <vectors/Vector.h>
 
 
 namespace AMP {

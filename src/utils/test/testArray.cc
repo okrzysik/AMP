@@ -9,11 +9,11 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "utils/AMPManager.h"
-#include "utils/Array.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Array.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
 
 using namespace AMP;

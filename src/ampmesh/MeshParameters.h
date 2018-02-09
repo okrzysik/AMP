@@ -1,8 +1,8 @@
 #ifndef included_AMP_MeshParameters
 #define included_AMP_MeshParameters
 
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
 
 
 namespace AMP {

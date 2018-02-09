@@ -1,10 +1,10 @@
-#include "operators/subchannel/SubchannelHelpers.h"
-#include "ampmesh/MeshElementVectorIterator.h"
-#include "ampmesh/StructuredMeshHelper.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "operators/subchannel/SubchannelConstants.h"
-#include "utils/Utilities.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/operators/subchannel/SubchannelHelpers.h"
+#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/subchannel/SubchannelConstants.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #include <cmath>
 #include <tuple>

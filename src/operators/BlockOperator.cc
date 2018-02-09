@@ -1,7 +1,7 @@
-#include "operators/BlockOperator.h"
-#include "operators/BlockOperatorParameters.h"
-#include "operators/LinearOperator.h"
-#include "vectors/MultiVariable.h"
+#include "AMP/operators/BlockOperator.h"
+#include "AMP/operators/BlockOperatorParameters.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/vectors/MultiVariable.h"
 
 #include <algorithm>
 

@@ -2,10 +2,10 @@
 #define included_AMP_TrilinosThyraModelEvaluator
 
 
-#include "discretization/DOF_Manager.h"
-#include "solvers/trilinos/thyra/TrilinosLinearOP.h"
-#include "solvers/trilinos/thyra/TrilinosThyraModelEvaluatorParameters.h"
-#include "utils/shared_ptr.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/solvers/trilinos/thyra/TrilinosLinearOP.h"
+#include "AMP/solvers/trilinos/thyra/TrilinosThyraModelEvaluatorParameters.h"
+#include "AMP/utils/shared_ptr.h"
 
 
 // Trilinos includes

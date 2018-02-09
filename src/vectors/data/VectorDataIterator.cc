@@ -1,5 +1,5 @@
-#include "vectors/data/VectorDataIterator.h"
-#include "vectors/data/VectorDataIterator.hpp"
+#include "AMP/vectors/data/VectorDataIterator.h"
+#include "AMP/vectors/data/VectorDataIterator.hpp"
 
 
 // Explicit instantiations

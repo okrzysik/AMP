@@ -1,6 +1,6 @@
-#include "vectors/trilinos/epetra/ManagedEpetraVector.h"
-#include "utils/Utilities.h"
-#include "vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/data/VectorDataCPU.h"
 
 
 namespace AMP {

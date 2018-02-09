@@ -1,31 +1,31 @@
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <string>
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
 
-#include "vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorBuilder.h"
 
-#include "operators/OperatorBuilder.h"
-#include "operators/subchannel/SubchannelConstants.h"
-#include "operators/subchannel/SubchannelFourEqLinearOperator.h"
-#include "operators/subchannel/SubchannelOperatorParameters.h"
-#include "operators/subchannel/SubchannelPhysicsModel.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/subchannel/SubchannelConstants.h"
+#include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
+#include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
+#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
 
-#include "ampmesh/StructuredMeshHelper.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "discretization/structuredFaceDOFManager.h"
+#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/discretization/structuredFaceDOFManager.h"
 
 // number of subchannels
 const size_t numSubchannels = 3 * 3; // 3x3 subchannel array

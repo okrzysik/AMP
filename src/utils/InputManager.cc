@@ -11,12 +11,12 @@
 //       We have simply used it with modifications
 
 #include "InputManager.h"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMPManager.h"
 #include "PIO.h"
 #include "Parser.h"
 #include "ShutdownRegistry.h"
 #include "Utilities.h"
-#include "utils/AMP_MPI.h"
 #include <cstdio>
 #include <cstdlib>
 

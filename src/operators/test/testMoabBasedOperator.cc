@@ -12,21 +12,21 @@
 #include <string>
 #include <vector>
 
-#include "utils/AMPManager.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
-#include "discretization/simpleDOF_Manager.h"
-#include "utils/Writer.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 // AMP Moab Includes
-#include "operators/moab/MoabBasedOperator.h"
-#include "operators/moab/MoabMapOperator.h"
+#include "AMP/operators/moab/MoabBasedOperator.h"
+#include "AMP/operators/moab/MoabMapOperator.h"
 
 // MOAB Includes
 #include "Coupler.hpp"

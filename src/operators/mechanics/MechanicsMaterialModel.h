@@ -4,12 +4,12 @@
 
 #include <cstring>
 
+#include "AMP/operators/ElementPhysicsModel.h"
 #include "UpdatedLagrangianUtils.h"
-#include "operators/ElementPhysicsModel.h"
 
-#include "materials/Material.h"
+#include "AMP/materials/Material.h"
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {

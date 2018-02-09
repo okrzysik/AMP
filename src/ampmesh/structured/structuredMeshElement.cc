@@ -1,6 +1,6 @@
-#include "ampmesh/structured/structuredMeshElement.h"
-#include "ampmesh/MeshElement.h"
-#include "utils/Utilities.h"
+#include "AMP/ampmesh/structured/structuredMeshElement.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/utils/Utilities.h"
 
 
 namespace AMP {

@@ -1,8 +1,8 @@
 
-#include "operators/LinearBVPOperator.h"
-#include "operators/boundary/ColumnBoundaryOperator.h"
-#include "operators/boundary/LinearBoundaryOperatorParameters.h"
-#include "utils/Utilities.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/boundary/ColumnBoundaryOperator.h"
+#include "AMP/operators/boundary/LinearBoundaryOperatorParameters.h"
+#include "AMP/utils/Utilities.h"
 
 #include <stdexcept>
 

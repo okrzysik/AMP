@@ -2,9 +2,9 @@
 #ifndef included_AMP_DTK_AMPMeshEntityExtraData
 #define included_AMP_DTK_AMPMeshEntityExtraData
 
-#include "ampmesh/MeshElement.h"
+#include "AMP/ampmesh/MeshElement.h"
 
-#include "utils/AMP_MPI.h"
+#include "AMP/utils/AMP_MPI.h"
 
 #include <DTK_EntityExtraData.hpp>
 

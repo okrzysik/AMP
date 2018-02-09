@@ -1,4 +1,4 @@
-#include "solvers/KrylovSolverParameters.h"
+#include "AMP/solvers/KrylovSolverParameters.h"
 
 namespace AMP {
 namespace Solver {

@@ -1,33 +1,33 @@
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 #include <string>
 
-#include "utils/AMPManager.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
-#include "ampmesh/Mesh.h"
-#include "utils/Writer.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/utils/Writer.h"
 
-#include "discretization/DOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 
-#include "vectors/MultiVector.h"
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
 
-#include "materials/Material.h"
-#include "operators/NeutronicsRhs.h"
-#include "operators/libmesh/VolumeIntegralOperator.h"
-#include "vectors/Variable.h"
+#include "AMP/materials/Material.h"
+#include "AMP/operators/NeutronicsRhs.h"
+#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
+#include "AMP/vectors/Variable.h"
 
-#include "matrices/Matrix.h"
-#include "matrices/MatrixBuilder.h"
-#include "matrices/trilinos/EpetraMatrix.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/matrices/trilinos/EpetraMatrix.h"
 
 /*
 #include "flow/ConsMassGalWFLinearElement.h"
@@ -36,21 +36,21 @@
 #include "flow/ConsMomentumGalWFLinearFEOperator.h"
 */
 
-#include "operators/LinearBVPOperator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/trilinos/EpetraMatrixOperator.h"
-#include "operators/trilinos/EpetraMatrixOperatorParameters.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/trilinos/EpetraMatrixOperator.h"
+#include "AMP/operators/trilinos/EpetraMatrixOperatorParameters.h"
 
-#include "operators/BlockOperator.h"
-#include "operators/petsc/PetscMatrixShellOperator.h"
-#include "operators/trilinos/TrilinosMatrixShellOperator.h"
+#include "AMP/operators/BlockOperator.h"
+#include "AMP/operators/petsc/PetscMatrixShellOperator.h"
+#include "AMP/operators/trilinos/TrilinosMatrixShellOperator.h"
 
-#include "solvers/ColumnSolver.h"
-#include "solvers/petsc/PetscKrylovSolver.h"
-#include "solvers/petsc/PetscKrylovSolverParameters.h"
-#include "solvers/petsc/PetscSNESSolver.h"
-#include "solvers/petsc/PetscSNESSolverParameters.h"
-#include "solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/petsc/PetscSNESSolver.h"
+#include "AMP/solvers/petsc/PetscSNESSolverParameters.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
 
 #define ITFAILS ut.failure( __LINE__ );

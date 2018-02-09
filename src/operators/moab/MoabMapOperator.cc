@@ -7,8 +7,8 @@
 //---------------------------------------------------------------------------//
 
 #include "MoabMapOperator.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "cell_hex8.h"
-#include "discretization/simpleDOF_Manager.h"
 #include "elem.h"
 
 namespace AMP {

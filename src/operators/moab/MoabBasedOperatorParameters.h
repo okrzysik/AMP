@@ -13,8 +13,8 @@
 #include <string>
 
 // AMP Includes
-#include "operators/OperatorParameters.h"
-#include "utils/Database.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/utils/Database.h"
 
 namespace AMP {
 namespace Operator {

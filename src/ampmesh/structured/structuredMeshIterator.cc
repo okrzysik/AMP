@@ -1,7 +1,7 @@
-#include "ampmesh/structured/structuredMeshIterator.h"
+#include "AMP/ampmesh/structured/structuredMeshIterator.h"
 
-#include "ampmesh/structured/structuredMeshElement.h"
-#include "utils/Utilities.h"
+#include "AMP/ampmesh/structured/structuredMeshElement.h"
+#include "AMP/utils/Utilities.h"
 #include <utility>
 
 

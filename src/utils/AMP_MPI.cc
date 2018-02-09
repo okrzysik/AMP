@@ -1,9 +1,9 @@
 // This file impliments a wrapper class for MPI functions
 
 // Include AMP headers
-#include "utils/AMP_MPI.h"
-#include "utils/AMPManager.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
 

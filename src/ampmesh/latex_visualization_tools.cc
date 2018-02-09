@@ -1,6 +1,6 @@
-#include <ampmesh/euclidean_geometry_tools.h>
-#include <ampmesh/latex_visualization_tools.h>
-#include <utils/Utilities.h>
+#include "AMP/ampmesh/latex_visualization_tools.h"
+#include "AMP/ampmesh/euclidean_geometry_tools.h"
+#include "AMP/utils/Utilities.h"
 
 
 #include <iomanip>

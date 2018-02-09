@@ -1,7 +1,7 @@
 #ifndef included_AMP_MovableBoxMesh
 #define included_AMP_MovableBoxMesh
 
-#include "ampmesh/structured/BoxMesh.h"
+#include "AMP/ampmesh/structured/BoxMesh.h"
 
 #include <array>
 #include <vector>

@@ -1,9 +1,9 @@
 #ifndef included_BandedSolver
 #define included_BandedSolver
 
-#include "operators/Operator.h"
-#include "solvers/SolverStrategy.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/vectors/Vector.h"
 
 
 namespace AMP {

@@ -2,7 +2,7 @@
 #define included_AMP_SundialsVector
 
 
-#include "vectors/Vector.h"
+#include "AMP/vectors/Vector.h"
 
 extern "C" {
 #include "sundials/sundials_nvector.h"

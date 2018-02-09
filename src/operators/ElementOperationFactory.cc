@@ -1,18 +1,18 @@
 
 #include "ElementOperationFactory.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 
 #ifdef USE_EXT_LIBMESH
-#include "operators/diffusion/DiffusionElement.h"
-#include "operators/diffusion/DiffusionLinearElement.h"
-#include "operators/diffusion/DiffusionNonlinearElement.h"
-#include "operators/libmesh/MassLinearElement.h"
-#include "operators/libmesh/SourceNonlinearElement.h"
-#include "operators/mechanics/MechanicsElement.h"
-#include "operators/mechanics/MechanicsLinearElement.h"
-#include "operators/mechanics/MechanicsLinearUpdatedLagrangianElement.h"
-#include "operators/mechanics/MechanicsNonlinearElement.h"
-#include "operators/mechanics/MechanicsNonlinearUpdatedLagrangianElement.h"
+#include "AMP/operators/diffusion/DiffusionElement.h"
+#include "AMP/operators/diffusion/DiffusionLinearElement.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearElement.h"
+#include "AMP/operators/libmesh/MassLinearElement.h"
+#include "AMP/operators/libmesh/SourceNonlinearElement.h"
+#include "AMP/operators/mechanics/MechanicsElement.h"
+#include "AMP/operators/mechanics/MechanicsLinearElement.h"
+#include "AMP/operators/mechanics/MechanicsLinearUpdatedLagrangianElement.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearElement.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearUpdatedLagrangianElement.h"
 #endif
 
 

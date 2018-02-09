@@ -2,13 +2,13 @@
 #define included_AMP_NoteToGeomType ::FaceContactOperator
 
 
-#include "utils/shared_ptr.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/operators/contact/ContactOperator.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
 #include <fstream>
-#include <matrices/Matrix.h>
-#include <operators/contact/ContactOperator.h>
-#include <utils/Utilities.h>
-#include <vectors/Variable.h>
-#include <vectors/Vector.h>
 
 namespace AMP {
 namespace Operator {

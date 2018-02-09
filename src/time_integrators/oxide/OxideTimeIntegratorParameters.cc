@@ -1,4 +1,4 @@
-#include "time_integrators/oxide/OxideTimeIntegratorParameters.h"
+#include "AMP/time_integrators/oxide/OxideTimeIntegratorParameters.h"
 
 namespace AMP {
 namespace TimeIntegrator {

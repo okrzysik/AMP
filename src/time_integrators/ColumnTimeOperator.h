@@ -1,7 +1,7 @@
 #ifndef included_AMP_ColumnTimeOperator
 #define included_AMP_ColumnTimeOperator
 
-#include "operators/ColumnOperator.h"
+#include "AMP/operators/ColumnOperator.h"
 
 namespace AMP {
 namespace TimeIntegrator {

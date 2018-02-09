@@ -2,7 +2,7 @@
 #ifndef included_AMP_FirstOperator
 #define included_AMP_FirstOperator
 
-#include "operators/newFrozenVectorDesign/OnePointOperator.h"
+#include "AMP/operators/newFrozenVectorDesign/OnePointOperator.h"
 
 namespace AMP {
 namespace Operator {

@@ -2,8 +2,8 @@
 #ifndef included_AMP_VectorBuider
 #define included_AMP_VectorBuider
 
-#include "discretization/DOF_Manager.h"
-#include "vectors/Vector.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/vectors/Vector.h"
 #include <string>
 
 

@@ -1,9 +1,9 @@
-#include "discretization/structuredFaceDOFManager.h"
-#include "ampmesh/MultiIterator.h"
-#include "ampmesh/MultiMesh.h"
-#include "ampmesh/StructuredMeshHelper.h"
-#include "discretization/MultiDOF_Manager.h"
-#include "utils/Utilities.h"
+#include "AMP/discretization/structuredFaceDOFManager.h"
+#include "AMP/ampmesh/MultiIterator.h"
+#include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/discretization/MultiDOF_Manager.h"
+#include "AMP/utils/Utilities.h"
 #include <algorithm>
 #include <set>
 #include <vector>

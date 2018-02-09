@@ -2,11 +2,11 @@
 #ifndef included_AMP_MechanicsNonlinearFEOperatorParameters
 #define included_AMP_MechanicsNonlinearFEOperatorParameters
 
-#include "discretization/DOF_Manager.h"
-#include "operators/libmesh/FEOperatorParameters.h"
-#include "operators/mechanics/MechanicsConstants.h"
-#include "operators/mechanics/MechanicsMaterialModel.h"
-#include "vectors/Vector.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/operators/libmesh/FEOperatorParameters.h"
+#include "AMP/operators/mechanics/MechanicsConstants.h"
+#include "AMP/operators/mechanics/MechanicsMaterialModel.h"
+#include "AMP/vectors/Vector.h"
 
 namespace AMP {
 namespace Operator {

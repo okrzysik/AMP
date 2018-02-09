@@ -1,20 +1,20 @@
-#include "ampmesh/testHelpers/meshTests.h"
+#include "AMP/ampmesh/testHelpers/meshTests.h"
 
 #include <set>
 #include <vector>
 
-#include "utils/AMP_MPI.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/MeshElement.h"
-#include "ampmesh/MeshElementVectorIterator.h"
-#include "ampmesh/MeshIterator.h"
-#include "ampmesh/SubsetMesh.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/ampmesh/SubsetMesh.h"
 
 #ifdef USE_AMP_VECTORS
-#include "vectors/Vector.h"
+#include "AMP/vectors/Vector.h"
 #endif
 
 

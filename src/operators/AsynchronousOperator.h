@@ -1,9 +1,9 @@
 #ifndef included_AMP_AsynchronousOperator
 #define included_AMP_AsynchronousOperator
 
+#include "AMP/operators/Operator.h"
+#include "AMP/utils/AMP_MPI.h"
 #include "AsynchronousOperatorParameters.h"
-#include "operators/Operator.h"
-#include "utils/AMP_MPI.h"
 
 #include <vector>
 

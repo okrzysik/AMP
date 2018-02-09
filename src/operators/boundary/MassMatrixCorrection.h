@@ -4,7 +4,7 @@
 #include "BoundaryOperator.h"
 #include "DirichletMatrixCorrectionParameters.h"
 
-#include "vectors/Variable.h"
+#include "AMP/vectors/Variable.h"
 
 namespace AMP {
 namespace Operator {

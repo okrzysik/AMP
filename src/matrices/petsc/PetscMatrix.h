@@ -1,7 +1,7 @@
 #ifndef included_AMP_PetscMatrix
 #define included_AMP_PetscMatrix
 
-#include "vectors/petsc/PetscHelpers.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
 
 
 #ifdef MPICH_SKIP_MPICXX
@@ -30,7 +30,7 @@
 #endif
 
 
-#include "matrices/Matrix.h"
+#include "AMP/matrices/Matrix.h"
 
 namespace AMP {
 namespace LinearAlgebra {

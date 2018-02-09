@@ -5,10 +5,10 @@
 #include "string"
 #include <algorithm>
 
-#include "utils/UnitTest.h"
-#include "vectors/petsc/NativePetscVector.h"
-#include "vectors/petsc/PetscVector.h"
-#include "vectors/testHelpers/VectorTests.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/vectors/petsc/NativePetscVector.h"
+#include "AMP/vectors/petsc/PetscVector.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
 
 namespace AMP {
 namespace LinearAlgebra {

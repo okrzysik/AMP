@@ -1,10 +1,10 @@
 #ifndef included_AMP_CommunicationList_h
 #define included_AMP_CommunicationList_h
 
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/ParameterBase.h"
+#include "AMP/utils/shared_ptr.h"
 #include "VectorIndexer.h"
-#include "utils/AMP_MPI.h"
-#include "utils/ParameterBase.h"
-#include "utils/shared_ptr.h"
 #include <map>
 #include <set>
 #include <vector>

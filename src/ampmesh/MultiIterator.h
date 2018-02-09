@@ -1,8 +1,8 @@
 #ifndef included_AMP_MultiIterator
 #define included_AMP_MultiIterator
 
-#include "ampmesh/MeshIterator.h"
-#include "utils/shared_ptr.h"
+#include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace Mesh {

@@ -1,11 +1,11 @@
 #define NOMINMAX
 #include "Utilities.h"
 
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Logger.h"
-#include "utils/PIO.h"
-#include "utils/StackTrace.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Logger.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/StackTrace.h"
 
 #include <algorithm>
 #include <cmath>

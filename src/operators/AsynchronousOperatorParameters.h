@@ -1,7 +1,7 @@
 #ifndef included_AMP_AsynchronousOperatorParameters
 #define included_AMP_AsynchronousOperatorParameters
 
-#include "operators/OperatorParameters.h"
+#include "AMP/operators/OperatorParameters.h"
 
 namespace AMP {
 namespace Operator {

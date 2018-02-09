@@ -3,10 +3,10 @@
 
 #include <vector>
 
-#include "operators/diffusion/DiffusionConstants.h"
-#include "operators/diffusion/DiffusionTransportModel.h"
-#include "operators/libmesh/FEOperatorParameters.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/diffusion/DiffusionConstants.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/operators/libmesh/FEOperatorParameters.h"
+#include "AMP/vectors/Vector.h"
 
 
 namespace AMP {

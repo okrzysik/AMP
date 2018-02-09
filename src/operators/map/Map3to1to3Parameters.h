@@ -1,7 +1,7 @@
 #ifndef included_AMP_Map3to1to3Parameters
 #define included_AMP_Map3to1to3Parameters
 
-#include "operators/map/AsyncMapOperatorParameters.h"
+#include "AMP/operators/map/AsyncMapOperatorParameters.h"
 
 
 namespace AMP {

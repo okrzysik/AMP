@@ -1,9 +1,9 @@
 #ifndef included_AMP_SubchannelToPointMapParameters
 #define included_AMP_SubchannelToPointMapParameters
 
-#include "operators/OperatorParameters.h"
-#include "operators/subchannel/SubchannelPhysicsModel.h"
-#include "utils/AMP_MPI.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
+#include "AMP/utils/AMP_MPI.h"
 
 
 namespace AMP {

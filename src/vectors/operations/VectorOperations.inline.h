@@ -2,7 +2,7 @@
 #define included_AMP_VectorOperations_inline
 
 
-#include "vectors/data/VectorData.h"
+#include "AMP/vectors/data/VectorData.h"
 
 
 namespace AMP {

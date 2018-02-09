@@ -1,8 +1,8 @@
 #ifndef included_AMP_MeshElement
 #define included_AMP_MeshElement
 
-#include "ampmesh/MeshID.h"
-#include "utils/shared_ptr.h"
+#include "AMP/ampmesh/MeshID.h"
+#include "AMP/utils/shared_ptr.h"
 #include <vector>
 
 
@@ -193,6 +193,6 @@ protected:
 } // namespace Mesh
 } // namespace AMP
 
-#include "ampmesh/MeshElement.inline.h"
+#include "AMP/ampmesh/MeshElement.inline.h"
 
 #endif

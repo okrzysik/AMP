@@ -1,6 +1,6 @@
-#include "solvers/CGSolver.h"
+#include "AMP/solvers/CGSolver.h"
+#include "AMP/operators/LinearOperator.h"
 #include "ProfilerApp.h"
-#include "operators/LinearOperator.h"
 
 
 namespace AMP {

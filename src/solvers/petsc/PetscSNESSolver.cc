@@ -1,14 +1,14 @@
 #include "PetscSNESSolver.h"
 
+#include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
-#include "utils/Utilities.h"
 
-#include "matrices/petsc/PetscMatrix.h"
-#include "operators/ColumnOperator.h"
-#include "operators/LinearOperator.h"
-#include "vectors/ExternalVectorDeleter.h"
-#include "vectors/Vector.h"
-#include "vectors/petsc/ManagedPetscVector.h"
+#include "AMP/matrices/petsc/PetscMatrix.h"
+#include "AMP/operators/ColumnOperator.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/vectors/ExternalVectorDeleter.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/petsc/ManagedPetscVector.h"
 
 #include "petscmat.h"
 #include "petscsnes.h"

@@ -3,10 +3,10 @@
 #define included_AMP_NavierStokesLSWFLinearFEOperator
 
 /* AMP files */
-#include "operators/flow/NavierStokesConstants.h"
-#include "operators/flow/NavierStokesLSWFLinearElement.h"
-#include "operators/flow/NavierStokesLinearFEOperatorParameters.h"
-#include "operators/libmesh/LinearFEOperator.h"
+#include "AMP/operators/flow/NavierStokesConstants.h"
+#include "AMP/operators/flow/NavierStokesLSWFLinearElement.h"
+#include "AMP/operators/flow/NavierStokesLinearFEOperatorParameters.h"
+#include "AMP/operators/libmesh/LinearFEOperator.h"
 
 #include <vector>
 

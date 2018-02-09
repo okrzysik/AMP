@@ -2,7 +2,7 @@
 #ifndef included_AMP_MoveMeshOperator
 #define included_AMP_MoveMeshOperator
 
-#include "operators/Operator.h"
+#include "AMP/operators/Operator.h"
 
 namespace AMP {
 namespace Operator {

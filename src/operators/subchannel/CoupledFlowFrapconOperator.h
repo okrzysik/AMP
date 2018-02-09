@@ -1,13 +1,13 @@
 #ifndef included_AMP_CoupledFlowFrapconOperator
 #define included_AMP_CoupledFlowFrapconOperator
 
-#include "operators/ColumnOperator.h"
-#include "operators/map/Map1Dto3D.h"
-#include "operators/map/Map3Dto1D.h"
-#include "operators/subchannel/CoupledFlowFrapconOperatorParameters.h"
-#include "operators/subchannel/FlowFrapconOperator.h"
-#include "utils/Utilities.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/ColumnOperator.h"
+#include "AMP/operators/map/Map1Dto3D.h"
+#include "AMP/operators/map/Map3Dto1D.h"
+#include "AMP/operators/subchannel/CoupledFlowFrapconOperatorParameters.h"
+#include "AMP/operators/subchannel/FlowFrapconOperator.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/Vector.h"
 #include <vector>
 
 namespace AMP {

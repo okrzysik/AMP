@@ -1,6 +1,6 @@
-#include "utils/AMPManager.h"
-#include "utils/LinearRegression.h"
-#include "utils/UnitTest.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/LinearRegression.h"
+#include "AMP/utils/UnitTest.h"
 
 void linearRegressionTest( AMP::UnitTest *ut )
 {

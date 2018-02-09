@@ -1,4 +1,4 @@
-#include <operators/map/dtk/MultiDofDTKMapOperator.h>
+#include "AMP/operators/map/dtk/MultiDofDTKMapOperator.h"
 
 namespace AMP {
 namespace Operator {

@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 

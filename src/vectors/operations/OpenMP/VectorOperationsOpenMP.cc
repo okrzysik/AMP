@@ -1,5 +1,5 @@
-#include "vectors/operations/OpenMP/VectorOperationsOpenMP.h"
-#include "vectors/operations/OpenMP/VectorOperationsOpenMP.hpp"
+#include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
+#include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.hpp"
 
 
 // Explicit instantiations

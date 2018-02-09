@@ -1,7 +1,7 @@
 #ifndef CylindricallySymmetric_H
 #define CylindricallySymmetric_H
 
-#include "materials/Material.h"
+#include "AMP/materials/Material.h"
 
 
 // Define the material

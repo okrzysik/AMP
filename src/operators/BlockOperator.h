@@ -2,7 +2,7 @@
 #ifndef included_AMP_BlockOperator
 #define included_AMP_BlockOperator
 
-#include "operators/Operator.h"
+#include "AMP/operators/Operator.h"
 
 #include <vector>
 

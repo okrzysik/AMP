@@ -2,11 +2,11 @@
 #define included_AMP_MultiVector
 
 
-#include "vectors/DataChangePassThrough.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorEngine.h"
-#include "vectors/data/MultiVectorData.h"
-#include "vectors/operations/MultiVectorOperations.h"
+#include "AMP/vectors/DataChangePassThrough.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorEngine.h"
+#include "AMP/vectors/data/MultiVectorData.h"
+#include "AMP/vectors/operations/MultiVectorOperations.h"
 
 
 namespace AMP {

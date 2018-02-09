@@ -1,46 +1,46 @@
-#include "utils/AMPManager.h"
-#include "utils/InputManager.h"
-#include "utils/UnitTest.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/UnitTest.h"
 #include <string>
 
-#include "ampmesh/Mesh.h"
-#include "discretization/DOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "utils/Writer.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/vectors/VectorBuilder.h"
 
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <vector>
 
-#include "operators/libmesh/VolumeIntegralOperator.h"
-#include "utils/shared_ptr.h"
+#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/PIO.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/PIO.h"
 
-#include "operators/BVPOperatorParameters.h"
-#include "operators/ColumnOperator.h"
-#include "operators/CoupledOperator.h"
-#include "operators/LinearBVPOperator.h"
-#include "operators/NonlinearBVPOperator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/boundary/ColumnBoundaryOperator.h"
-#include "operators/boundary/libmesh/RobinVectorCorrection.h"
+#include "AMP/operators/BVPOperatorParameters.h"
+#include "AMP/operators/ColumnOperator.h"
+#include "AMP/operators/CoupledOperator.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/NonlinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/boundary/ColumnBoundaryOperator.h"
+#include "AMP/operators/boundary/libmesh/RobinVectorCorrection.h"
 
-#include "operators/map/AsyncMapColumnOperator.h"
-#include "operators/map/ScalarZAxisMap.h"
+#include "AMP/operators/map/AsyncMapColumnOperator.h"
+#include "AMP/operators/map/ScalarZAxisMap.h"
 
-#include "solvers/ColumnSolver.h"
-#include "solvers/petsc/PetscKrylovSolver.h"
-#include "solvers/petsc/PetscKrylovSolverParameters.h"
-#include "solvers/petsc/PetscSNESSolver.h"
-#include "solvers/petsc/PetscSNESSolverParameters.h"
-#include "solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/petsc/PetscSNESSolver.h"
+#include "AMP/solvers/petsc/PetscSNESSolverParameters.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
 /* Libmesh files */
 #include "libmesh/elem.h"

@@ -9,11 +9,11 @@
 #include <valarray>
 #include <vector>
 
-#include "materials/Material.h"
-#include "materials/WaterLibrary.h"
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/WaterLibrary.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
 
 void checkConsistency( double h, double p, double T, bool &allCorrect, bool &allConsistent )

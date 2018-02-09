@@ -1,9 +1,9 @@
 #ifndef included_subsetDOF_Manager
 #define included_subsetDOF_Manager
 
-#include "ampmesh/MeshElement.h"
-#include "discretization/DOF_Manager.h"
-#include "utils/shared_ptr.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/shared_ptr.h"
 
 
 namespace AMP {

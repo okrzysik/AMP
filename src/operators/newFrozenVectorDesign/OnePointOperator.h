@@ -2,7 +2,7 @@
 #ifndef included_AMP_OnePointOperator
 #define included_AMP_OnePointOperator
 
-#include "operators/Operator.h"
+#include "AMP/operators/Operator.h"
 
 namespace AMP {
 namespace Operator {

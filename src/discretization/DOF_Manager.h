@@ -1,10 +1,10 @@
 #ifndef included_AMP_DOF_Manager
 #define included_AMP_DOF_Manager
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/MeshElement.h"
-#include "discretization/DOF_ManagerParameters.h"
-#include "utils/AMP_MPI.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/discretization/DOF_ManagerParameters.h"
+#include "AMP/utils/AMP_MPI.h"
 
 
 namespace AMP {

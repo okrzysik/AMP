@@ -1,8 +1,8 @@
 #ifndef included_AMP_SecondOperator
 #define included_AMP_SecondOperator
 
-#include "operators/newFrozenVectorDesign/OnePointOperator.h"
-#include "vectors/MultiVariable.h"
+#include "AMP/operators/newFrozenVectorDesign/OnePointOperator.h"
+#include "AMP/vectors/MultiVariable.h"
 
 namespace AMP {
 namespace Operator {

@@ -1,14 +1,14 @@
 #include "petscmat.h"
 #include "petscvec.h"
 
-#include "vectors/ExternalVectorDeleter.h"
-#include "vectors/Vector.h"
-#include "vectors/petsc/ManagedPetscVector.h"
-#include "vectors/petsc/PetscVector.h"
-#include "vectors/trilinos/epetra/EpetraVectorEngine.h"
+#include "AMP/vectors/ExternalVectorDeleter.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/PetscVector.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
 
-#include "matrices/petsc/ManagedPetscMatrix.h"
-#include "matrices/trilinos/ManagedEpetraMatrix.h"
+#include "AMP/matrices/petsc/ManagedPetscMatrix.h"
+#include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 
 
 PetscErrorCode _AMP_Mult( Mat m, Vec i, Vec o )

@@ -4,14 +4,14 @@
 #include <string>
 
 
-#include "matrices/ManagedMatrix.h"
-#include "time_integrators/TimeIntegrator.h"
-#include "time_integrators/sundials/IDATimeIntegratorParameters.h"
-#include "time_integrators/sundials/IDATimeOperator.h"
-#include "vectors/sundials/ManagedSundialsVector.h"
-#include "vectors/sundials/SundialsVector.h"
+#include "AMP/matrices/ManagedMatrix.h"
+#include "AMP/time_integrators/TimeIntegrator.h"
+#include "AMP/time_integrators/sundials/IDATimeIntegratorParameters.h"
+#include "AMP/time_integrators/sundials/IDATimeOperator.h"
+#include "AMP/vectors/sundials/ManagedSundialsVector.h"
+#include "AMP/vectors/sundials/SundialsVector.h"
 
-#include "operators/LinearOperator.h"
+#include "AMP/operators/LinearOperator.h"
 
 /*
  #ifndef included_ImplicitTimeIntegrator

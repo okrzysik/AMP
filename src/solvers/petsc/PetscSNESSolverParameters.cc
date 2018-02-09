@@ -1,4 +1,4 @@
-#include "solvers/petsc/PetscSNESSolverParameters.h"
+#include "AMP/solvers/petsc/PetscSNESSolverParameters.h"
 
 namespace AMP {
 namespace Solver {

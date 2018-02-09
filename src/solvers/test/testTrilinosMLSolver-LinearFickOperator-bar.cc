@@ -1,38 +1,38 @@
 
-#include "materials/Material.h"
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Variable.h"
+#include "AMP/materials/Material.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Variable.h"
 #include <fstream>
 #include <limits>
 #include <string>
 
-#include "operators/ElementOperationFactory.h"
-#include "operators/ElementPhysicsModelFactory.h"
-#include "operators/LinearBVPOperator.h"
-#include "operators/NeutronicsRhs.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/diffusion/DiffusionLinearElement.h"
-#include "operators/diffusion/DiffusionLinearFEOperator.h"
-#include "operators/diffusion/DiffusionTransportModel.h"
-#include "operators/libmesh/VolumeIntegralOperator.h"
-#include "utils/Writer.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/ElementOperationFactory.h"
+#include "AMP/operators/ElementPhysicsModelFactory.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/NeutronicsRhs.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/diffusion/DiffusionLinearElement.h"
+#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/vectors/Vector.h"
 
-#include "ampmesh/Mesh.h"
-#include "discretization/DOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "operators/boundary/DirichletMatrixCorrection.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/boundary/DirichletMatrixCorrection.h"
+#include "AMP/vectors/VectorBuilder.h"
 
-#include "solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
 #define ITFAILS ut.failure( __LINE__ );
 #define UNIT_TEST( a ) \
@@ -53,17 +53,17 @@ void linearFickTest( AMP::UnitTest *ut )
     ////////////////////////////////////
 
     // Construct a smart pointer to a new database.
-    //  #include "utils/shared_ptr.h"
-    //  #include "utils/InputDatabase.h"
+    //  #include "AMP/utils/shared_ptr.h"
+    //  #include "AMP/utils/InputDatabase.h"
     AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
 
     // Fill the database from the input file.
-    //  #include "utils/InputManager.h"
+    //  #include "AMP/utils/InputManager.h"
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
     input_db->printClassData( AMP::plog );
 
     // Print from all cores into the output files
-    //   #include "utils/PIO.h"
+    //   #include "AMP/utils/PIO.h"
     AMP::PIO::logAllNodes( log_file );
 
     //--------------------------------------------------

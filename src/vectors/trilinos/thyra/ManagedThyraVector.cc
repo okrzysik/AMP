@@ -1,7 +1,7 @@
-#include "vectors/trilinos/thyra/ManagedThyraVector.h"
-#include "vectors/MultiVector.h"
-#include "vectors/SimpleVector.h"
-#include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
+#include "AMP/vectors/trilinos/thyra/ManagedThyraVector.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/SimpleVector.h"
+#include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
 
 namespace AMP {

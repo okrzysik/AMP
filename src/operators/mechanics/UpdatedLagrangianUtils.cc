@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 #include <iostream>
 
 namespace AMP {

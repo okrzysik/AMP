@@ -5,8 +5,8 @@
 #include "petscmat.h"
 
 // AMP files
-#include "matrices/petsc/PetscMatrix.h"
-#include "matrices/trilinos/ManagedEpetraMatrix.h"
+#include "AMP/matrices/petsc/PetscMatrix.h"
+#include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 
 namespace AMP {
 namespace LinearAlgebra {

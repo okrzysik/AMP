@@ -5,9 +5,9 @@
  *      Author: bm, gad
  */
 
-#include "materials/Steel316_MSRZC_09.h"
-#include "materials/Material.h"
-#include "materials/Property.h"
+#include "AMP/materials/Steel316_MSRZC_09.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/Property.h"
 
 #include <string>
 #include <valarray>

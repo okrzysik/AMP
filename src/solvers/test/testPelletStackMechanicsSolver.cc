@@ -5,16 +5,16 @@
 #include <iostream>
 #include <vector>
 
-#include "solvers/libmesh/PelletStackHelpers.h"
-#include "solvers/petsc/PetscSNESSolver.h"
+#include "AMP/solvers/libmesh/PelletStackHelpers.h"
+#include "AMP/solvers/petsc/PetscSNESSolver.h"
 
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
-#include "utils/Writer.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Writer.h"
 
 
 void myTest( AMP::UnitTest *ut, const std::string &exeName )

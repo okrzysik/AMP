@@ -1,13 +1,13 @@
 #include "../../ampmesh/test/meshGenerators.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/MultiDOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/discretization/structuredFaceDOFManager.h"
+#include "AMP/discretization/subsetDOFManager.h"
+#include "AMP/utils/AMP_MPI.h"
 #include "DOFManager_tests.h"
-#include "ampmesh/Mesh.h"
-#include "ampmesh/MultiMesh.h"
-#include "discretization/DOF_Manager.h"
-#include "discretization/MultiDOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "discretization/structuredFaceDOFManager.h"
-#include "discretization/subsetDOFManager.h"
-#include "utils/AMP_MPI.h"
 
 
 using namespace AMP::unit_test;

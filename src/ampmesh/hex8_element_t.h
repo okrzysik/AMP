@@ -1,8 +1,8 @@
-
 #ifndef HEX8_ELEMENT_T
 #define HEX8_ELEMENT_T
 
-#include <ampmesh/triangle_t.h>
+#include "AMP/ampmesh/triangle_t.h"
+
 #include <vector>
 
 double compute_inverse_3_by_3_matrix( double const *mat, double *inv );

@@ -1,7 +1,7 @@
-#include "operators/map/ScalarZAxisMap.h"
+#include "AMP/operators/map/ScalarZAxisMap.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/PIO.h"
 #include "ProfilerApp.h"
-#include "discretization/DOF_Manager.h"
-#include "utils/PIO.h"
 
 
 namespace AMP {

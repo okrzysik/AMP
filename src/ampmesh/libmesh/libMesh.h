@@ -1,8 +1,8 @@
 #ifndef included_AMP_LibMesh
 #define included_AMP_LibMesh
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/libmesh/initializeLibMesh.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/libmesh/initializeLibMesh.h"
 
 // LibMesh include
 DISABLE_WARNINGS

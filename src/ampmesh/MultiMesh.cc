@@ -1,17 +1,17 @@
-#include "ampmesh/MultiMesh.h"
-#include "ampmesh/MeshElement.h"
-#include "ampmesh/MultiIterator.h"
-#include "ampmesh/MultiMeshParameters.h"
-#include "ampmesh/SubsetMesh.h"
-#include "ampmesh/loadBalance/loadBalanceSimulator.h"
+#include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/ampmesh/MultiIterator.h"
+#include "AMP/ampmesh/MultiMeshParameters.h"
+#include "AMP/ampmesh/SubsetMesh.h"
+#include "AMP/ampmesh/loadBalance/loadBalanceSimulator.h"
 
-#include "utils/Database.h"
-#include "utils/MemoryDatabase.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/MemoryDatabase.h"
+#include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_VECTORS
-#include "vectors/MultiVector.h"
-#include "vectors/Vector.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/Vector.h"
 #endif
 
 #include <iostream>

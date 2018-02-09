@@ -5,9 +5,9 @@
 #include "string"
 #include <algorithm>
 
-#include "utils/UnitTest.h"
-#include "vectors/sundials/ManagedSundialsVector.h"
-#include "vectors/testHelpers/VectorTests.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/vectors/sundials/ManagedSundialsVector.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
 
 
 namespace AMP {

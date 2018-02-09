@@ -1,28 +1,28 @@
-#include "ampmesh/Mesh.h"
-#include "utils/Utilities.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/utils/Utilities.h"
 
-#include "ampmesh/MultiMesh.h"
-#include "ampmesh/SubsetMesh.h"
-#include "ampmesh/structured/BoxMesh.h"
+#include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/ampmesh/SubsetMesh.h"
+#include "AMP/ampmesh/structured/BoxMesh.h"
 #ifdef USE_TRILINOS_STKCLASSIC
-//#include "ampmesh/STKmesh/STKMesh.h"
+//#include "AMP/ampmesh/STKmesh/STKMesh.h"
 #endif
 #ifdef USE_EXT_LIBMESH
-#include "ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libMesh.h"
 #endif
 #ifdef USE_EXT_MOAB
-#include "ampmesh/moab/moabMesh.h"
+#include "AMP/ampmesh/moab/moabMesh.h"
 #endif
-#include "ampmesh/MeshElementVectorIterator.h"
+#include "AMP/ampmesh/MeshElementVectorIterator.h"
 
 #ifdef USE_AMP_VECTORS
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
 #endif
 #ifdef USE_AMP_DISCRETIZATION
-#include "discretization/DOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #endif
 
 #include <cmath>
@@ -149,7 +149,7 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     } else if ( MeshType == std::string( "STKMesh" ) ) {
 // The mesh is a stkMesh mesh
 #ifdef USE_TRILINOS_STKCLASSIC
-        //meshSize = AMP::Mesh::STKMesh::estimateMeshSize( params );
+        // meshSize = AMP::Mesh::STKMesh::estimateMeshSize( params );
         AMP_ERROR( "AMP stk mesh interface is broken" );
 #else
         AMP_ERROR( "AMP was compiled without support for STKMesh" );

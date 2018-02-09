@@ -3,7 +3,7 @@
 
 #include <set>
 
-#include "matrices/MatrixParameters.h"
+#include "AMP/matrices/MatrixParameters.h"
 
 #include <Epetra_FECrsMatrix.h>
 
