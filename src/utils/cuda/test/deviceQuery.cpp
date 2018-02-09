@@ -16,7 +16,7 @@
 // std::system includes
 #include <iostream>
 
-#include "utils/cuda/helper_cuda.h"
+#include "AMP/utils/cuda/helper_cuda.h"
 #include <cuda_runtime.h>
 
 

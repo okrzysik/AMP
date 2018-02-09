@@ -1,30 +1,30 @@
 
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
 #include <iostream>
 #include <string>
 
-#include "discretization/MultiDOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/discretization/MultiDOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/vectors/VectorBuilder.h"
 
-#include "operators/ColumnOperator.h"
-#include "operators/LinearBVPOperator.h"
-#include "operators/LinearOperator.h"
-#include "operators/NonlinearBVPOperator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/diffusion/DiffusionLinearFEOperator.h"
-#include "operators/diffusion/DiffusionNonlinearFEOperator.h"
+#include "AMP/operators/ColumnOperator.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/operators/NonlinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 
-#include "operators/mechanics/MechanicsLinearFEOperator.h"
-#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 
 #include "../applyTests.h"
 

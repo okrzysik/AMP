@@ -1,7 +1,7 @@
 #ifndef included_AMPUnitTest
 #define included_AMPUnitTest
 
-#include "utils/AMP_MPI.h"
+#include "AMP/utils/AMP_MPI.h"
 
 #include <sstream>
 #include <string>

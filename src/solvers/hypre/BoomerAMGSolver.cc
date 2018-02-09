@@ -1,10 +1,11 @@
-#include "solvers/hypre/BoomerAMGSolver.h"
+#include "AMP/solvers/hypre/BoomerAMGSolver.h"
+
+#include "AMP/matrices/Matrix.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/DataChangeFirer.h"
 
 #include "ProfilerApp.h"
-#include "matrices/Matrix.h"
-#include "operators/LinearOperator.h"
-#include "utils/Utilities.h"
-#include "vectors/DataChangeFirer.h"
 
 #include <iomanip>
 #include <numeric>

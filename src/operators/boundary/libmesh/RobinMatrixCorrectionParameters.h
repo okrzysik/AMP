@@ -2,9 +2,9 @@
 #ifndef included_AMP_RobinMatrixCorrectionParameters
 #define included_AMP_RobinMatrixCorrectionParameters
 
-#include "operators/boundary/LinearBoundaryOperatorParameters.h"
-#include "operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
-#include "operators/boundary/libmesh/RobinPhysicsModel.h"
+#include "AMP/operators/boundary/LinearBoundaryOperatorParameters.h"
+#include "AMP/operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
+#include "AMP/operators/boundary/libmesh/RobinPhysicsModel.h"
 
 namespace AMP {
 namespace Operator {

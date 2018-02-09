@@ -1,9 +1,9 @@
 
-#include "ampmesh/dendro/DendroSearch.h"
+#include "AMP/ampmesh/dendro/DendroSearch.h"
 
-#include "ampmesh/latex_visualization_tools.h"
+#include "AMP/ampmesh/latex_visualization_tools.h"
+#include "AMP/utils/Utilities.h"
 #include "externVars.h"
-#include "utils/Utilities.h"
 #include <fstream>
 #include <iomanip>
 #include <numeric>

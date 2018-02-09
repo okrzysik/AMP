@@ -2,8 +2,8 @@
 #define included_AMP_ManagedThyraVector
 
 // AMP includes
-#include "vectors/ManagedVector.h"
-#include "vectors/trilinos/thyra/ThyraVector.h"
+#include "AMP/vectors/ManagedVector.h"
+#include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 
 
 namespace AMP {

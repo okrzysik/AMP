@@ -3,16 +3,16 @@
 #define included_AMP_NeutronicsRhsExtras
 
 /* AMP files */
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/Variable.h"
 #include "NeutronicsRhsExtrasParameters.h"
-#include "operators/Operator.h"
-#include "operators/OperatorParameters.h"
-#include "utils/Utilities.h"
-#include "vectors/Variable.h"
 
-#include "utils/InputDatabase.h"
+#include "AMP/utils/InputDatabase.h"
 
 /*Boost files */
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 #include <vector>
 

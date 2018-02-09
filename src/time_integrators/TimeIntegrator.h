@@ -1,12 +1,12 @@
 #ifndef included_TimeIntegrator
 #define included_TimeIntegrator
 
-#include "operators/Operator.h"
-#include "time_integrators/TimeIntegratorParameters.h"
-#include "utils/InputDatabase.h"
-#include "utils/Writer.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/time_integrators/TimeIntegratorParameters.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 
 #include <string>
 

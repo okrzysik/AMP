@@ -8,9 +8,9 @@
  *      Author: gad
  */
 
-#include "operators/OperatorParameters.h"
-#include "operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "vectors/Variable.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
+#include "AMP/vectors/Variable.h"
 #include <string>
 
 namespace AMP {

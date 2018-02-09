@@ -1,12 +1,12 @@
 #ifndef included_test_StridedVectorFactory
 #define included_test_StridedVectorFactory
 
-#include "vectors/MultiVector.h"
-#include "vectors/VectorSelector.h"
-#include "vectors/testHelpers/VectorTests.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/VectorSelector.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
 
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
 
 
 namespace AMP {

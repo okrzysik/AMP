@@ -1,9 +1,9 @@
 #ifndef included_AMP_NullVector
 #define included_AMP_NullVector
 
-#include "vectors/Vector.h"
-#include "vectors/data/VectorDataNull.h"
-#include "vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/data/VectorDataNull.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include <string>
 
 

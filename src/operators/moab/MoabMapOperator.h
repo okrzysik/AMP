@@ -13,16 +13,16 @@
 #include <vector>
 
 // AMP Includes
-#include "ampmesh/Mesh.h"
-#include "operators/ElementPhysicsModel.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/libmesh/VolumeIntegralOperator.h"
-#include "utils/Utilities.h"
-#include "vectors/DataChangeFirer.h"
-#include "vectors/Vector.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/operators/ElementPhysicsModel.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/DataChangeFirer.h"
+#include "AMP/vectors/Vector.h"
 
-#include "operators/moab/MoabBasedOperator.h"
-#include "operators/moab/MoabMapOperatorParameters.h"
+#include "AMP/operators/moab/MoabBasedOperator.h"
+#include "AMP/operators/moab/MoabMapOperatorParameters.h"
 
 // Moab includes
 #include "Coupler.hpp"

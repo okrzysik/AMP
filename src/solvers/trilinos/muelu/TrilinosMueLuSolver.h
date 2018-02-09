@@ -1,32 +1,23 @@
-
 #ifndef included_AMP_TrilinosMueLuSolver
 #define included_AMP_TrilinosMueLuSolver
 
-#include "matrices/trilinos/EpetraMatrix.h"
-#include "solvers/SolverStrategy.h"
-#include "solvers/SolverStrategyParameters.h"
-#include "solvers/trilinos/ml/MLoptions.h"
+#include "AMP/matrices/trilinos/EpetraMatrix.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/trilinos/ml/MLoptions.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wextra"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+// Trilinos includes
+DISABLE_WARNINGS
 #include "Teuchos_ParameterList.hpp"
-// Xpetra include
-#include <Xpetra_Matrix.hpp>
-#include <Xpetra_Operator_fwd.hpp>
-#include <Xpetra_Parameters.hpp>
-
-#include <MueLu_FactoryManager.hpp>
-#include <MueLu_HierarchyManager_fwd.hpp>
+#include "Xpetra_Matrix.hpp"
+#include "Xpetra_Operator_fwd.hpp"
+#include "Xpetra_Parameters.hpp"
+#include "MueLu_FactoryManager.hpp"
+#include "MueLu_HierarchyManager_fwd.hpp"
+ENABLE_WARNINGS
 
 #include <vector>
 
-#pragma GCC diagnostic pop
-#pragma GCC diagnostic pop
-#pragma GCC diagnostic pop
 
 namespace MueLu {
 class EpetraOperator;

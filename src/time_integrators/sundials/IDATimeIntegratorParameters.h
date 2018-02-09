@@ -3,25 +3,25 @@
 
 
 #ifndef included_TimeIntegratorParameters
-#include "time_integrators/TimeIntegratorParameters.h"
+#include "AMP/time_integrators/TimeIntegratorParameters.h"
 #endif
 
 #ifndef included_IDATimeOperator
-#include "time_integrators/sundials/IDATimeOperator.h"
+#include "AMP/time_integrators/sundials/IDATimeOperator.h"
 #endif
 
 #ifndef included_LinearTimeOperator
-#include "time_integrators/LinearTimeOperator.h"
+#include "AMP/time_integrators/LinearTimeOperator.h"
 #endif
 
 // BC : Altered this to get a compile going..
 //#ifndef included_AMP_MassMatrix
-//#include "operators/MassMatrix.h"
+//#include "AMP/operators/MassMatrix.h"
 //#endif
-#include "operators/Operator.h"
+#include "AMP/operators/Operator.h"
 
 #ifndef included_SolverStrategy
-#include "solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategy.h"
 #endif
 
 namespace AMP {

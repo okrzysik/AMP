@@ -3,8 +3,8 @@
 #define included_test_generateVectorFactory
 
 
-#include "vectors/testHelpers/VectorFactory.h"
-#include "vectors/testHelpers/VectorTests.h"
+#include "AMP/vectors/testHelpers/VectorFactory.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
 
 
 namespace AMP {

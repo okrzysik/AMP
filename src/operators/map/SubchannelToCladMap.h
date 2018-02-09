@@ -1,8 +1,8 @@
 #ifndef included_AMP_SubchannelToCladMap
 #define included_AMP_SubchannelToCladMap
 
-#include "ampmesh/MeshElementVectorIterator.h"
-#include "operators/map/ScalarZAxisMap.h"
+#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/operators/map/ScalarZAxisMap.h"
 
 namespace AMP {
 namespace Operator {

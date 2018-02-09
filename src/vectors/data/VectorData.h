@@ -1,8 +1,8 @@
 #ifndef included_AMP_VectorData
 #define included_AMP_VectorData
 
-#include "utils/shared_ptr.h"
-#include "vectors/CommunicationList.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/CommunicationList.h"
 #include <vector>
 
 
@@ -577,7 +577,7 @@ protected: // Protected functions
 } // namespace AMP
 
 
-#include "vectors/data/VectorData.inline.h"
+#include "AMP/vectors/data/VectorData.inline.h"
 
 
 #endif

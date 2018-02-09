@@ -1,5 +1,5 @@
-#include "ampmesh/MeshParameters.h"
-#include "utils/AMP_MPI.h"
+#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/utils/AMP_MPI.h"
 
 namespace AMP {
 namespace Mesh {

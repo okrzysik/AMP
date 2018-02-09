@@ -3,11 +3,11 @@
 #define included_AMP_CoupledChannelToCladMapOperatorParameters
 
 /*AMP files */
-#include "operators/Operator.h"
-#include "operators/OperatorParameters.h"
-#include "operators/subchannel/SubchannelPhysicsModel.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
 /*Boost files */
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 #include <vector>
 

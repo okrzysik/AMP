@@ -1,8 +1,8 @@
 #ifndef included_ArrayClass_hpp
 #define included_ArrayClass_hpp
 
-#include "utils/Array.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/Array.h"
+#include "AMP/utils/Utilities.h"
 
 #include <algorithm>
 #include <cstring>

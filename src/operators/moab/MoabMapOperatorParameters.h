@@ -13,9 +13,9 @@
 #include <string>
 
 // AMP Includes
-#include "ampmesh/Mesh.h"
-#include "operators/OperatorParameters.h"
-#include "utils/Database.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/utils/Database.h"
 
 namespace AMP {
 namespace Operator {

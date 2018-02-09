@@ -1,20 +1,20 @@
 #ifndef included_test_VectorFactory
 #define included_test_VectorFactory
 
-#include "utils/AMP_MPI.h"
-#include "vectors/ArrayVector.h"
-#include "vectors/ManagedVector.h"
-#include "vectors/MultiVariable.h"
-#include "vectors/MultiVector.h"
-#include "vectors/NullVector.h"
-#include "vectors/SimpleVector.h"
-#include "vectors/Variable.h"
-#include "vectors/testHelpers/VectorTests.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/vectors/ArrayVector.h"
+#include "AMP/vectors/ManagedVector.h"
+#include "AMP/vectors/MultiVariable.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/NullVector.h"
+#include "AMP/vectors/SimpleVector.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
 #ifdef USE_EXT_PETSC
-#include <vectors/petsc/NativePetscVector.h>
+#include "AMP/vectors/petsc/NativePetscVector.h"
 #endif
 #ifdef USE_EXT_TRILINOS
-#include <vectors/trilinos/epetra/EpetraVectorEngine.h>
+#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
 #endif
 
 

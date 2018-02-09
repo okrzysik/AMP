@@ -1,10 +1,10 @@
 #ifndef included_simpleDOF_Manager
 #define included_simpleDOF_Manager
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/MeshElement.h"
-#include "discretization/DOF_Manager.h"
-#include "utils/shared_ptr.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/shared_ptr.h"
 
 
 namespace AMP {

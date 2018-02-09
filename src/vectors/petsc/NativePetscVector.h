@@ -1,11 +1,11 @@
 #ifndef included_AMP_NativePetscVector
 #define included_AMP_NativePetscVector
 
-#include "utils/AMP_MPI.h"
-#include "vectors/NativeVector.h"
-#include "vectors/VectorEngine.h"
-#include "vectors/operations/VectorOperationsDefault.h"
-#include "vectors/petsc/PetscVector.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/vectors/NativeVector.h"
+#include "AMP/vectors/VectorEngine.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/petsc/PetscVector.h"
 
 
 namespace AMP {

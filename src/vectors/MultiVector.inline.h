@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdexcept>
 
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 
 #include "MultiVector.h"
 

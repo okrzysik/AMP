@@ -1,7 +1,7 @@
-#include "solvers/CGSolver.h"
+#include "AMP/solvers/CGSolver.h"
+#include "AMP/operators/LinearOperator.h"
 #include "ProfilerApp.h"
-#include "operators/LinearOperator.h"
-#include "solvers/KrylovSolverParameters.h"
+#include "AMP/solvers/KrylovSolverParameters.h"
 
 
 namespace AMP {

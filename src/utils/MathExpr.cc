@@ -1,6 +1,6 @@
-#include "utils/MathExpr.h"
-#include "utils/Utilities.h"
-#include "utils/tinyexpr/tinyexpr.h"
+#include "AMP/utils/MathExpr.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/tinyexpr/tinyexpr.h"
 
 
 namespace AMP {

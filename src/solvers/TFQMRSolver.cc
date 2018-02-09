@@ -1,7 +1,7 @@
-#include "solvers/TFQMRSolver.h"
+#include "AMP/solvers/TFQMRSolver.h"
 #include "ProfilerApp.h"
-#include "operators/LinearOperator.h"
-#include "solvers/KrylovSolverParameters.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/solvers/KrylovSolverParameters.h"
 
 
 #include <array>

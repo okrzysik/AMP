@@ -1,5 +1,5 @@
-#include "vectors/petsc/ManagedPetscVector.h"
-#include "vectors/petsc/NativePetscVector.h"
+#include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/NativePetscVector.h"
 
 #include "petscvec.h"
 

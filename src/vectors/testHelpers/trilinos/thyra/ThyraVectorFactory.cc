@@ -1,12 +1,12 @@
 #ifdef USE_TRILINOS_THYRA
 
-#include "vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
+#include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
 
-#include "discretization/DOF_Manager.h"
-#include "utils/AMP_MPI.h"
-#include "vectors/VectorBuilder.h"
-#include "vectors/trilinos/thyra/ManagedThyraVector.h"
-#include "vectors/trilinos/thyra/NativeThyraVector.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/trilinos/thyra/ManagedThyraVector.h"
+#include "AMP/vectors/trilinos/thyra/NativeThyraVector.h"
 
 
 // Trilinos includes

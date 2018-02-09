@@ -1,6 +1,6 @@
-#include "ampmesh/STKmesh/STKMeshIterator.h"
-#include "ampmesh/STKmesh/STKMeshElement.h"
-#include "utils/Utilities.h"
+#include "AMP/ampmesh/STKmesh/STKMeshIterator.h"
+#include "AMP/ampmesh/STKmesh/STKMeshElement.h"
+#include "AMP/utils/Utilities.h"
 
 
 #include "stk_mesh/base/BulkData.hpp"

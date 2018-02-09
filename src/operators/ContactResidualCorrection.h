@@ -2,9 +2,9 @@
 #ifndef included_AMP_ContactResidualCorrection
 #define included_AMP_ContactResidualCorrection
 
-#include "ampmesh/MeshID.h"
-#include "operators/Operator.h"
-#include "vectors/MultiVariable.h"
+#include "AMP/ampmesh/MeshID.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/vectors/MultiVariable.h"
 
 namespace AMP {
 namespace Operator {

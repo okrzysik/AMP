@@ -2,7 +2,7 @@
 #ifndef included_AMP_DTK_AMPMeshEntityLocalMap
 #define included_AMP_DTK_AMPMeshEntityLocalMap
 
-#include "utils/AMP_MPI.h"
+#include "AMP/utils/AMP_MPI.h"
 
 #include <DTK_EntityLocalMap.hpp>
 

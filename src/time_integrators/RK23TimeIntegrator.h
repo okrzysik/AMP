@@ -8,7 +8,7 @@
 #endif
 
 #ifndef included_AMP_Vector
-#include "vectors/Vector.h"
+#include "AMP/vectors/Vector.h"
 #endif
 
 namespace AMP {

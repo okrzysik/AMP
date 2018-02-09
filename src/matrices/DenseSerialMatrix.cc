@@ -1,5 +1,5 @@
-#include "matrices/DenseSerialMatrix.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/matrices/DenseSerialMatrix.h"
+#include "AMP/vectors/VectorBuilder.h"
 #include <cstdio>
 #include <cstring>
 

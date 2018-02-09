@@ -2,9 +2,9 @@
 #ifndef included_AMP_Unit_test_Mesh_Generators_h
 #define included_AMP_Unit_test_Mesh_Generators_h
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/structured/BoxMesh.h"
-#include "utils/MemoryDatabase.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/structured/BoxMesh.h"
+#include "AMP/utils/MemoryDatabase.h"
 
 namespace AMP {
 namespace unit_test {

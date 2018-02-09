@@ -1,5 +1,5 @@
 // This tests the error handler making sure we catch segfaults and print the call stack
-#include "utils/AMPManager.h"
+#include "AMP/utils/AMPManager.h"
 #include <csignal>
 #include <iomanip>
 #include <iostream>

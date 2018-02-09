@@ -1,5 +1,5 @@
 
-#include "operators/ConstraintsEliminationOperator.h"
+#include "AMP/operators/ConstraintsEliminationOperator.h"
 
 #include <algorithm>
 #include <cmath>

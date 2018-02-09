@@ -1,7 +1,7 @@
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "vectors/MultiVariable.h"
-#include "vectors/MultiVector.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/vectors/MultiVariable.h"
+#include "AMP/vectors/MultiVector.h"
 #include <iostream>
 
 #include "test_VectorHelpers.h"

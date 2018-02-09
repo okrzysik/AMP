@@ -1,7 +1,7 @@
 #ifndef included_GPUFunctionTable_HPP_
 #define included_GPUFunctionTable_HPP_
 
-#include "utils/Array.h"
+#include "AMP/utils/Array.h"
 #include <cublas_v2.h>
 #include <curand.h>
 

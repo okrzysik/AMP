@@ -1,9 +1,9 @@
-#include "operators/subchannel/SubchannelToPointMap.h"
+#include "AMP/operators/subchannel/SubchannelToPointMap.h"
 
+#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/operators/subchannel/SubchannelConstants.h"
+#include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
-#include "ampmesh/StructuredMeshHelper.h"
-#include "operators/subchannel/SubchannelConstants.h"
-#include "utils/Utilities.h"
 
 
 namespace AMP {

@@ -1,5 +1,5 @@
-#include "ampmesh/structured/BoxMeshHelpers.h"
-#include "utils/Utilities.h"
+#include "AMP/ampmesh/structured/BoxMeshHelpers.h"
+#include "AMP/utils/Utilities.h"
 
 #include <cmath>
 

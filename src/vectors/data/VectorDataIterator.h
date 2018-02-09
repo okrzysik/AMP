@@ -258,6 +258,6 @@ public:
 } // namespace AMP
 
 
-#include "vectors/data/VectorDataIterator.inline.h"
+#include "AMP/vectors/data/VectorDataIterator.inline.h"
 
 #endif

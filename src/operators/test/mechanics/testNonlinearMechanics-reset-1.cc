@@ -1,37 +1,37 @@
 
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include <iostream>
 #include <string>
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "materials/Material.h"
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
+#include "AMP/materials/Material.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
 
-#include "discretization/simpleDOF_Manager.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #include "libmesh/libmesh.h"
 
-#include "operators/mechanics/MechanicsLinearElement.h"
-#include "operators/mechanics/MechanicsLinearFEOperator.h"
-#include "operators/mechanics/MechanicsNonlinearElement.h"
-#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
-#include "operators/mechanics/VonMisesElastoPlasticModel.h"
+#include "AMP/operators/mechanics/MechanicsLinearElement.h"
+#include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearElement.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include "AMP/operators/mechanics/VonMisesElastoPlasticModel.h"
 
-#include "operators/boundary/DirichletMatrixCorrection.h"
-#include "operators/boundary/DirichletVectorCorrection.h"
+#include "AMP/operators/boundary/DirichletMatrixCorrection.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
 
-#include "operators/BVPOperatorParameters.h"
-#include "operators/LinearBVPOperator.h"
-#include "operators/NonlinearBVPOperator.h"
+#include "AMP/operators/BVPOperatorParameters.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/NonlinearBVPOperator.h"
 
 
 void myTest( AMP::UnitTest *ut )

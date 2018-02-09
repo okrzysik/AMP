@@ -2,8 +2,8 @@
 #ifndef included_AMP_ElementPhysicsModel
 #define included_AMP_ElementPhysicsModel
 
+#include "AMP/utils/shared_ptr.h"
 #include "ElementPhysicsModelParameters.h"
-#include "utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {

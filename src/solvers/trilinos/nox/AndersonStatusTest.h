@@ -2,7 +2,7 @@
 #define included_AMP_AndersonStatusTest
 
 // AMP includes
-#include "utils/Database.h"
+#include "AMP/utils/Database.h"
 
 // Trilinos includes
 DISABLE_WARNINGS

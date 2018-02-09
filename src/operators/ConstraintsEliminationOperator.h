@@ -2,10 +2,10 @@
 #ifndef included_AMP_ConstraintsEliminationOperator
 #define included_AMP_ConstraintsEliminationOperator
 
-#include <operators/Operator.h>
+#include "AMP/operators/Operator.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
 #include <vector>
-#include <vectors/Variable.h>
-#include <vectors/Vector.h>
 
 namespace AMP {
 namespace Operator {

@@ -1,7 +1,7 @@
 #ifndef included_AMP_CircleBoxMesh
 #define included_AMP_CircleBoxMesh
 
-#include "ampmesh/structured/BoxMesh.h"
+#include "AMP/ampmesh/structured/BoxMesh.h"
 
 #include <array>
 #include <vector>

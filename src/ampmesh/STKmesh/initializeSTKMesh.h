@@ -1,7 +1,7 @@
 #ifndef included_AMP_initializeSTKMesh
 #define included_AMP_initializeSTKMesh
 
-#include "utils/AMP_MPI.h"
+#include "AMP/utils/AMP_MPI.h"
 
 namespace AMP {
 namespace Mesh {

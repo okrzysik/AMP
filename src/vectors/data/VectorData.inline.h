@@ -1,8 +1,8 @@
 #ifndef included_AMP_VectorData_inline
 #define included_AMP_VectorData_inline
 
-#include "vectors/DataChangeFirer.h"
-#include "vectors/data/VectorDataIterator.h"
+#include "AMP/vectors/DataChangeFirer.h"
+#include "AMP/vectors/data/VectorDataIterator.h"
 
 #include <algorithm>
 

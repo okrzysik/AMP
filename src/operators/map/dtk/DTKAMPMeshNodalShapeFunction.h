@@ -2,9 +2,9 @@
 #ifndef included_AMP_DTK_AMPMeshNodalShapeFunction
 #define included_AMP_DTK_AMPMeshNodalShapeFunction
 
-#include "utils/AMP_MPI.h"
+#include "AMP/utils/AMP_MPI.h"
 
-#include "discretization/DOF_Manager.h"
+#include "AMP/discretization/DOF_Manager.h"
 
 #include <DTK_EntityShapeFunction.hpp>
 

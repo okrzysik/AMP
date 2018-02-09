@@ -4,11 +4,11 @@
 
 #include <vector>
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 /* AMP files */
+#include "AMP/operators/ElementOperation.h"
 #include "MechanicsMaterialModel.h"
-#include "operators/ElementOperation.h"
 
 /* Libmesh files */
 #include "libmesh/elem.h"

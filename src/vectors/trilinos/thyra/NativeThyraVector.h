@@ -1,11 +1,11 @@
 #ifndef included_AMP_NativeThyraVector
 #define included_AMP_NativeThyraVector
 
-#include "vectors/NativeVector.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorEngine.h"
-#include "vectors/operations/VectorOperationsDefault.h"
-#include "vectors/trilinos/thyra/ThyraVector.h"
+#include "AMP/vectors/NativeVector.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorEngine.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 
 namespace AMP {
 namespace LinearAlgebra {

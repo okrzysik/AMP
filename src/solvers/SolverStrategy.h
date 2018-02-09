@@ -1,11 +1,11 @@
 #ifndef included_SolverStrategy
 #define included_SolverStrategy
 
+#include "AMP/operators/Operator.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 #include "SolverStrategyParameters.h"
-#include "operators/Operator.h"
-#include "utils/Writer.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Vector.h"
 
 
 namespace AMP {

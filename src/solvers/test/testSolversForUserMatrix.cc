@@ -1,35 +1,30 @@
 #include <iostream>
 #include <string>
 
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/vectors/SimpleVector.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
+#include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/solvers/KrylovSolverParameters.h"
+#include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/hypre/BoomerAMGSolver.h"
 
-#include "ampmesh/Mesh.h"
-
-#include "discretization/DOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
-
-#include "vectors/SimpleVector.h"
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorBuilder.h"
-
-#include "matrices/MatrixBuilder.h"
-
-#include "operators/LinearOperator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/OperatorParameters.h"
-
-#include "solvers/KrylovSolverParameters.h"
-#include "solvers/SolverFactory.h"
-#include "solvers/hypre/BoomerAMGSolver.h"
 
 AMP::shared_ptr<AMP::Solver::SolverStrategy>
 buildSolver( const AMP::shared_ptr<AMP::InputDatabase> &input_db,

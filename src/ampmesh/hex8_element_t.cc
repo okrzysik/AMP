@@ -1,7 +1,6 @@
-
-#include <ampmesh/euclidean_geometry_tools.h>
-#include <ampmesh/hex8_element_t.h>
-#include <utils/Utilities.h>
+#include "AMP/ampmesh/hex8_element_t.h"
+#include "AMP/ampmesh/euclidean_geometry_tools.h"
+#include "AMP/utils/Utilities.h"
 
 #include <algorithm>
 #include <cmath>

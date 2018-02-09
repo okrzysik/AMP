@@ -1,7 +1,7 @@
-#include "discretization/DOF_Manager.h"
-#include "ampmesh/MeshElementVectorIterator.h"
-#include "discretization/subsetDOFManager.h"
-#include "utils/Utilities.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/discretization/subsetDOFManager.h"
+#include "AMP/utils/Utilities.h"
 
 #include <set>
 #include <utility>

@@ -2,13 +2,13 @@
 #ifndef included_AMP_DTK_DTKMapOperator
 #define included_AMP_DTK_DTKMapOperator
 
-#include "operators/Operator.h"
+#include "AMP/operators/Operator.h"
 
-#include "utils/AMP_MPI.h"
+#include "AMP/utils/AMP_MPI.h"
 
-#include "ampmesh/Mesh.h"
+#include "AMP/ampmesh/Mesh.h"
 
-#include "vectors/Vector.h"
+#include "AMP/vectors/Vector.h"
 
 #include "DTKAMPMeshManager.h"
 

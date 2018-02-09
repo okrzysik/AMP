@@ -1,12 +1,12 @@
-#include "ampmesh/STKmesh/initializeSTKMesh.h"
-#include "ampmesh/STKmesh/STKMeshIterator.h"
-#include "utils/AMPManager.h"
-#include "utils/MemoryDatabase.h"
+#include "AMP/ampmesh/STKmesh/initializeSTKMesh.h"
+#include "AMP/ampmesh/STKmesh/STKMeshIterator.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/MemoryDatabase.h"
 
 #include <string.h>
 
 // STKMesh include
-#include "ampmesh/Mesh.h"
+#include "AMP/ampmesh/Mesh.h"
 
 
 namespace AMP {

@@ -1,6 +1,6 @@
 
 #include "ColumnSolver.h"
-#include "operators/ColumnOperatorParameters.h"
+#include "AMP/operators/ColumnOperatorParameters.h"
 
 namespace AMP {
 namespace Solver {

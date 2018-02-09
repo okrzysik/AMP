@@ -1,7 +1,7 @@
 #ifndef included_EpetraMatrixOperatorParameters_h
 #define included_EpetraMatrixOperatorParameters_h
 
-#include "matrices/trilinos/EpetraMatrix.h"
+#include "AMP/matrices/trilinos/EpetraMatrix.h"
 
 namespace AMP {
 namespace Operator {

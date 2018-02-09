@@ -1,8 +1,8 @@
-#include "operators/map/SubchannelToCladMap.h"
+#include "AMP/operators/map/SubchannelToCladMap.h"
+#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/PIO.h"
 #include "ProfilerApp.h"
-#include "ampmesh/StructuredMeshHelper.h"
-#include "discretization/DOF_Manager.h"
-#include "utils/PIO.h"
 
 
 namespace AMP {

@@ -1,31 +1,31 @@
 
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
 #include <cstdlib>
 #include <iostream>
 #include <string>
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/libmesh/libMesh.h"
 
-#include "discretization/simpleDOF_Manager.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #include "libmesh/libmesh.h"
 #include "libmesh/mesh_communication.h"
 
-#include "operators/OperatorBuilder.h"
-#include "operators/mechanics/MechanicsLinearFEOperator.h"
-#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 
-#include "utils/ReadTestMesh.h"
+#include "AMP/utils/ReadTestMesh.h"
 
 void myTest( AMP::UnitTest *ut, std::string exeName, int callLinReset )
 {

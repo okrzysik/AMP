@@ -1,10 +1,10 @@
-#include "utils/Writer.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/utils/Utilities.h"
 
-#include "utils/AsciiWriter.h"
-#include "utils/NullWriter.h"
+#include "AMP/utils/AsciiWriter.h"
+#include "AMP/utils/NullWriter.h"
 #ifdef USE_AMP_MESH
-#include "ampmesh/SiloIO.h"
+#include "AMP/ampmesh/SiloIO.h"
 #endif
 
 

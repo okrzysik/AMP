@@ -1,17 +1,17 @@
-#include <ampmesh/Mesh.h>
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/operators/map/dtk/DTKMapOperator.h"
+#include "AMP/operators/map/dtk/MultiDofDTKMapOperator.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 #include <discretization/simpleDOF_Manager.h>
-#include <operators/map/dtk/DTKMapOperator.h>
-#include <operators/map/dtk/MultiDofDTKMapOperator.h>
-#include <utils/AMPManager.h>
-#include <utils/AMP_MPI.h>
-#include <utils/InputDatabase.h>
-#include <utils/InputManager.h>
-#include <utils/PIO.h>
-#include <utils/UnitTest.h>
-#include <utils/Utilities.h>
-#include <vectors/Variable.h>
-#include <vectors/VectorBuilder.h>
-#include <vectors/VectorSelector.h>
 
 
 void dtkConsruction( AMP::UnitTest *ut, std::string input_file )

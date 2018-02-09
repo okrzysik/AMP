@@ -1,6 +1,6 @@
-#include "ampmesh/MeshElementVectorIterator.h"
-#include "ampmesh/MeshElement.h"
-#include "utils/Utilities.h"
+#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/utils/Utilities.h"
 
 namespace AMP {
 namespace Mesh {

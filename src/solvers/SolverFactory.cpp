@@ -15,32 +15,32 @@ University makes any warranty, express or
 implied, or assumes any liability or
 responsibility for the use of this software.
 */
-#include "solvers/SolverFactory.h"
+#include "AMP/solvers/SolverFactory.h"
 
-#include "solvers/SolverStrategy.h"
-#include "solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 
 #ifdef USE_EXT_HYPRE
-#include "solvers/hypre/BoomerAMGSolver.h"
+#include "AMP/solvers/hypre/BoomerAMGSolver.h"
 #endif
 
 #ifdef USE_TRILINOS_ML
-#include "solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #endif
 
 #ifdef USE_TRILINOS_MUELU
-#include "solvers/trilinos/muelu/TrilinosMueLuSolver.h"
+#include "AMP/solvers/trilinos/muelu/TrilinosMueLuSolver.h"
 #endif
 
 #ifdef USE_EXT_PETSC
-#include "solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #endif
 
-#include "solvers/BiCGSTABSolver.h"
-#include "solvers/CGSolver.h"
-#include "solvers/GMRESSolver.h"
-#include "solvers/QMRCGSTABSolver.h"
-#include "solvers/TFQMRSolver.h"
+#include "AMP/solvers/BiCGSTABSolver.h"
+#include "AMP/solvers/CGSolver.h"
+#include "AMP/solvers/GMRESSolver.h"
+#include "AMP/solvers/QMRCGSTABSolver.h"
+#include "AMP/solvers/TFQMRSolver.h"
 
 namespace AMP {
 namespace Solver {

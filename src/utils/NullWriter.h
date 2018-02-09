@@ -1,7 +1,7 @@
 #ifndef included_AMP_NullWriter
 #define included_AMP_NullWriter
 
-#include "utils/Writer.h"
+#include "AMP/utils/Writer.h"
 
 
 namespace AMP {

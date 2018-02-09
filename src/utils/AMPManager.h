@@ -1,7 +1,7 @@
 #ifndef included_tbox_AMPManager
 #define included_tbox_AMPManager
 
-#include "utils/AMP_MPI.h"
+#include "AMP/utils/AMP_MPI.h"
 
 #include <array>
 #include <string>

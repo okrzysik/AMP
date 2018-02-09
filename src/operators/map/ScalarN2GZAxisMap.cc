@@ -1,9 +1,9 @@
-#include "operators/map/ScalarN2GZAxisMap.h"
+#include "AMP/operators/map/ScalarN2GZAxisMap.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/vectors/VectorBuilder.h"
 #include "ProfilerApp.h"
-#include "discretization/DOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "utils/PIO.h"
-#include "vectors/VectorBuilder.h"
 
 
 // Libmesh files

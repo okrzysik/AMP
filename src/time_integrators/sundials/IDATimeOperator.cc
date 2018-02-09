@@ -1,4 +1,4 @@
-#include "time_integrators/sundials/IDATimeOperator.h"
+#include "AMP/time_integrators/sundials/IDATimeOperator.h"
 
 
 namespace AMP {

@@ -1,8 +1,8 @@
 #ifndef included_AMP_ManagedPetscVector
 #define included_AMP_ManagedPetscVector
 
-#include "vectors/ManagedVector.h"
-#include "vectors/petsc/PetscVector.h"
+#include "AMP/vectors/ManagedVector.h"
+#include "AMP/vectors/petsc/PetscVector.h"
 
 
 namespace AMP {

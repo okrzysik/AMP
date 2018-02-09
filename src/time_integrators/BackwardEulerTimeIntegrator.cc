@@ -1,4 +1,4 @@
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 
 #ifndef included_TimeIntegratorParameters
 #include "TimeIntegratorParameters.h"
@@ -11,7 +11,7 @@
 #include "TimeOperatorParameters.h"
 
 /*Design-By-Contract Macros*/
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 
 namespace AMP {
 namespace TimeIntegrator {

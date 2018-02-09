@@ -1,8 +1,8 @@
-#include "utils/AsciiWriter.h"
+#include "AMP/utils/AsciiWriter.h"
 #include "ProfilerApp.h"
 
 #ifdef USE_AMP_VECTORS
-#include "vectors/SimpleVector.h"
+#include "AMP/vectors/SimpleVector.h"
 #endif
 
 

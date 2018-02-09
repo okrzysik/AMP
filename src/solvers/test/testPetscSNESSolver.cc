@@ -2,23 +2,23 @@
 // Note: the comm used should NOT be comm_world as there are cleanup issues for other comms when
 // using the monitor
 // option
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include <iostream>
 #include <string>
 
-#include "ampmesh/Mesh.h"
-#include "operators/IdentityOperator.h"
-#include "operators/NullOperator.h"
-#include "solvers/petsc/PetscSNESSolver.h"
-#include "vectors/MultiVector.h"
-#include "vectors/NullVector.h"
-#include "vectors/SimpleVector.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/operators/IdentityOperator.h"
+#include "AMP/operators/NullOperator.h"
+#include "AMP/solvers/petsc/PetscSNESSolver.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/NullVector.h"
+#include "AMP/vectors/SimpleVector.h"
 
 
 void myTest( AMP::UnitTest *ut, const std::string &exeName )

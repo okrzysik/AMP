@@ -1,8 +1,8 @@
 #ifndef included_AMP_NodeToGaussPointOperator
 #define included_AMP_NodeToGaussPointOperator
 
-#include "discretization/createLibmeshElements.h"
-#include "operators/Operator.h"
+#include "AMP/discretization/createLibmeshElements.h"
+#include "AMP/operators/Operator.h"
 
 
 namespace AMP {

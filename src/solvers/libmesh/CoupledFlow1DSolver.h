@@ -1,11 +1,11 @@
 #ifndef included_AMP_CoupledFlow1DSolver
 #define included_AMP_CoupledFlow1DSolver
 
-#include "operators/map/MapOperator.h"
-#include "solvers/SolverStrategy.h"
-#include "solvers/SolverStrategyParameters.h"
-#include "solvers/libmesh/CoupledFlow1DSolverParameters.h"
-#include "solvers/libmesh/Flow1DSolver.h"
+#include "AMP/operators/map/MapOperator.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/libmesh/CoupledFlow1DSolverParameters.h"
+#include "AMP/solvers/libmesh/Flow1DSolver.h"
 
 
 namespace AMP {

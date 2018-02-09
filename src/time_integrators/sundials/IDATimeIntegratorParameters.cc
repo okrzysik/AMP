@@ -1,4 +1,4 @@
-#include "time_integrators/sundials/IDATimeIntegratorParameters.h"
+#include "AMP/time_integrators/sundials/IDATimeIntegratorParameters.h"
 
 namespace AMP {
 namespace TimeIntegrator {

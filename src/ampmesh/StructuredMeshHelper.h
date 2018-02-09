@@ -1,7 +1,7 @@
 #ifndef included_AMP_StructuredMeshHelper
 #define included_AMP_StructuredMeshHelper
 
-#include "ampmesh/Mesh.h"
+#include "AMP/ampmesh/Mesh.h"
 
 
 namespace AMP {

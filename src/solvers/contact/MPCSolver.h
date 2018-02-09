@@ -1,8 +1,7 @@
-
 #ifndef included_contact_MPCSolver
 #define included_contact_MPCSolver
 
-#include <solvers/SolverStrategy.h>
+#include "AMP/solvers/SolverStrategy.h"
 
 namespace AMP {
 namespace Solver {

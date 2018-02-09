@@ -1,4 +1,4 @@
-#include "ampmesh/testHelpers/meshTests.h"
+#include "AMP/ampmesh/testHelpers/meshTests.h"
 
 #include "ProfilerApp.h"
 

@@ -1,12 +1,12 @@
 #ifndef included_AMP_NullOperator
 #define included_AMP_NullOperator
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "operators/Operator.h"
-#include "operators/OperatorParameters.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/OperatorParameters.h"
 
-#include "vectors/Vector.h"
+#include "AMP/vectors/Vector.h"
 
 #include <string>
 

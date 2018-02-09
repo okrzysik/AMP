@@ -1,9 +1,9 @@
 #ifndef included_AMP_MultiVectorData_hpp
 #define included_AMP_MultiVectorData_hpp
 
-#include "vectors/data/MultiVectorData.h"
-#include "discretization/MultiDOF_Manager.h"
-#include "vectors/data/VectorData.h"
+#include "AMP/vectors/data/MultiVectorData.h"
+#include "AMP/discretization/MultiDOF_Manager.h"
+#include "AMP/vectors/data/VectorData.h"
 
 #include "ProfilerApp.h"
 

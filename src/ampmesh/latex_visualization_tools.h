@@ -1,8 +1,9 @@
 #ifndef LATEX_VISUALIZATION_TOOLS
 #define LATEX_VISUALIZATION_TOOLS
 
-#include <ampmesh/hex8_element_t.h>
-#include <ampmesh/triangle_t.h>
+#include "AMP/ampmesh/hex8_element_t.h"
+#include "AMP/ampmesh/triangle_t.h"
+
 #include <iostream>
 
 void write_point( double const *p, std::ostream &os = std::cout );

@@ -1,9 +1,9 @@
-#include "ampmesh/Mesh.h"
-#include "ampmesh/StructuredMeshHelper.h"
-#include "ampmesh/structured/BoxMesh.h"
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/UnitTest.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/ampmesh/structured/BoxMesh.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/UnitTest.h"
 
 #include "meshGenerators.h"
 

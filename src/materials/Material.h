@@ -1,9 +1,9 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
+#include "AMP/utils/Factory.h"
+#include "AMP/utils/shared_ptr.h"
 #include "Property.h"
-#include "utils/Factory.h"
-#include "utils/shared_ptr.h"
 
 #include <map>
 #include <string>

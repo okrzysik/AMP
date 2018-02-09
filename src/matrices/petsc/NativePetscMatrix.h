@@ -3,7 +3,7 @@
 #define included_AMP_Petsc_Matrix
 
 // AMP files
-#include "matrices/petsc/PetscMatrix.h"
+#include "AMP/matrices/petsc/PetscMatrix.h"
 
 namespace AMP {
 namespace LinearAlgebra {

@@ -1,8 +1,8 @@
-#include "discretization/MultiDOF_Manager.h"
+#include "AMP/discretization/MultiDOF_Manager.h"
 
 
-#include "ampmesh/MeshElementVectorIterator.h"
-#include "utils/Utilities.h"
+#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/utils/Utilities.h"
 
 
 namespace AMP {

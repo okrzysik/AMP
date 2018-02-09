@@ -1,6 +1,6 @@
-#include "vectors/trilinos/epetra/EpetraVectorEngine.h"
-#include "utils/Utilities.h"
-#include "vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/data/VectorDataCPU.h"
 
 #ifdef USE_EXT_MPI
 #include <Epetra_MpiComm.h>

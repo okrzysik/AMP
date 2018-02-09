@@ -1,27 +1,27 @@
-#include "vectors/testHelpers/generateVectorFactories.h"
+#include "AMP/vectors/testHelpers/generateVectorFactories.h"
 
-#include <vectors/testHelpers/StridedVectorSelector.h>
-#include <vectors/testHelpers/VectorFactory.h>
+#include "AMP/vectors/testHelpers/StridedVectorSelector.h"
+#include "AMP/vectors/testHelpers/VectorFactory.h"
 
 #ifdef USE_EXT_PETSC
-#include <vectors/testHelpers/petsc/PetscVectorFactory.h>
+#include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #endif
 
 #ifdef USE_EXT_TRILINOS
 #ifdef USE_TRILINOS_THYRA
-#include <vectors/trilinos/epetra/ManagedEpetraVector.h>
+#include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
 #endif
 #ifdef USE_TRILINOS_THYRA
-#include <vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h>
+#include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
 #endif
 #endif
 
 #ifdef USE_OPENMP
-#include "vectors/operations/OpenMP/VectorOperationsOpenMP.h"
+#include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 #endif
 #ifdef USE_CUDA
-#include "vectors/data/cuda/VectorDataGPU.h"
-#include "vectors/operations/cuda/VectorOperationsCuda.h"
+#include "AMP/vectors/data/cuda/VectorDataGPU.h"
+#include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
 
 #include <string>

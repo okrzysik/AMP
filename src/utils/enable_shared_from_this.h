@@ -3,7 +3,7 @@
 #define included_AMP_enable_shared_from_this
 
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 #ifdef USE_BOOST_PTR
 #define base_enable_shared_from_this boost::enable_shared_from_this

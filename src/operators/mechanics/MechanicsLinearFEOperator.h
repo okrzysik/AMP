@@ -3,12 +3,12 @@
 #define included_AMP_MechanicsLinearFEOperator
 
 /* AMP files */
+#include "AMP/operators/libmesh/LinearFEOperator.h"
+#include "AMP/vectors/Variable.h"
 #include "MechanicsConstants.h"
 #include "MechanicsLinearElement.h"
 #include "MechanicsLinearFEOperatorParameters.h"
 #include "MechanicsLinearUpdatedLagrangianElement.h"
-#include "operators/libmesh/LinearFEOperator.h"
-#include "vectors/Variable.h"
 
 #include <vector>
 

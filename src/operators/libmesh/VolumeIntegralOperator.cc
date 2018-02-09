@@ -1,10 +1,10 @@
-#include "operators/libmesh/VolumeIntegralOperator.h"
+#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
-#include "utils/InputDatabase.h"
-#include "utils/Utilities.h"
 
-#include "matrices/MatrixBuilder.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #include <cstring>
 

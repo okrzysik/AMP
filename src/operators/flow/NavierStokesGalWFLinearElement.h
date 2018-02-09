@@ -4,11 +4,11 @@
 
 #include <vector>
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 /* AMP files */
-#include "operators/flow/FlowElement.h"
-#include "operators/flow/NavierStokesConstants.h"
+#include "AMP/operators/flow/FlowElement.h"
+#include "AMP/operators/flow/NavierStokesConstants.h"
 
 namespace AMP {
 namespace Operator {

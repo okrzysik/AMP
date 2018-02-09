@@ -2,8 +2,8 @@
 #ifndef included_MLoptions
 #define included_MLoptions
 
-#include "utils/Database.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/shared_ptr.h"
 #include <string>
 
 namespace AMP {

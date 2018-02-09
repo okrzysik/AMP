@@ -2,9 +2,9 @@
 #ifndef included_AMP_MechanicsModelParameters
 #define included_AMP_MechanicsModelParameters
 
-#include "operators/ElementPhysicsModelParameters.h"
+#include "AMP/operators/ElementPhysicsModelParameters.h"
 
-#include "vectors/Vector.h"
+#include "AMP/vectors/Vector.h"
 
 namespace AMP {
 namespace Operator {

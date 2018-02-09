@@ -1,9 +1,9 @@
-#include "vectors/VectorSelector.h"
+#include "AMP/vectors/VectorSelector.h"
 
-#include "vectors/CommVariable.h"
-#include "vectors/MeshVariable.h"
-#include "vectors/StridedVariable.h"
-#include "vectors/SubsetVector.h"
+#include "AMP/vectors/CommVariable.h"
+#include "AMP/vectors/MeshVariable.h"
+#include "AMP/vectors/StridedVariable.h"
+#include "AMP/vectors/SubsetVector.h"
 #include <utility>
 
 

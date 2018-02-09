@@ -1,11 +1,11 @@
 #ifndef included_MeshMatrixTests
 #define included_MeshMatrixTests
 
-#include "ampmesh/Mesh.h"
-#include "matrices/Matrix.h"
-#include "matrices/MatrixBuilder.h"
-#include "vectors/MultiVector.h"
-#include "vectors/Vector.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/Vector.h"
 
 #include "meshTests.h"
 

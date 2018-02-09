@@ -2,9 +2,9 @@
 #define included_AMP_ThyraVectorWrapper
 
 // AMP includes
-#include "utils/Utilities.h"
-#include "vectors/Vector.h"
-#include "vectors/trilinos/thyra/ThyraVector.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 
 
 // Trilinos includes

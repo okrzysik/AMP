@@ -1,10 +1,10 @@
 #ifndef included_AMP_PetscKrylovSolverParameters
 #define included_AMP_PetscKrylovSolverParameters
 
-#include "solvers/SolverStrategy.h"
-#include "solvers/SolverStrategyParameters.h"
-#include "utils/Database.h"
-#include "utils/shared_ptr.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/shared_ptr.h"
 
 #ifdef MPICH_SKIP_MPICXX
 #define _FIX_FOR_PETSC_MPI_CXX

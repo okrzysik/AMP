@@ -1,5 +1,5 @@
+#include "AMP/utils/Utilities.h"
 #include "VectorSelector.h"
-#include "utils/Utilities.h"
 
 namespace AMP {
 namespace LinearAlgebra {

@@ -2,8 +2,8 @@
 #ifndef included_AMP_FEOperatorParameters
 #define included_AMP_FEOperatorParameters
 
-#include "operators/ElementOperation.h"
-#include "operators/OperatorParameters.h"
+#include "AMP/operators/ElementOperation.h"
+#include "AMP/operators/OperatorParameters.h"
 
 namespace AMP {
 namespace Operator {

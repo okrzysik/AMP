@@ -1,8 +1,8 @@
 #ifndef included_AMP_TFQMRSolver
 #define included_AMP_TFQMRSolver
 
-#include "solvers/SolverStrategy.h"
-#include "utils/AMP_MPI.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/utils/AMP_MPI.h"
 
 namespace AMP {
 namespace Solver {

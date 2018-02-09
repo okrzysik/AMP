@@ -1,7 +1,6 @@
-
-#include <ampmesh/euclidean_geometry_tools.h>
-#include <ampmesh/triangle_t.h>
-#include <utils/Utilities.h>
+#include "AMP/ampmesh/triangle_t.h"
+#include "AMP/ampmesh/euclidean_geometry_tools.h"
+#include "AMP/utils/Utilities.h"
 
 
 #include <iostream>

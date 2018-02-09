@@ -1,14 +1,14 @@
 #ifndef included_AMP_SubchannelPhysicsModel
 #define included_AMP_SubchannelPhysicsModel
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 #include <cstring>
 #include <map>
 #include <vector>
 
-#include "materials/Material.h"
-#include "operators/ElementPhysicsModel.h"
-#include "operators/ElementPhysicsModelParameters.h"
+#include "AMP/materials/Material.h"
+#include "AMP/operators/ElementPhysicsModel.h"
+#include "AMP/operators/ElementPhysicsModelParameters.h"
 
 
 namespace AMP {

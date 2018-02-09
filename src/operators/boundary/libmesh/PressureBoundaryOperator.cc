@@ -1,10 +1,10 @@
 
-#include "operators/boundary/libmesh/PressureBoundaryOperator.h"
-#include "ampmesh/Mesh.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "utils/InputDatabase.h"
-#include "utils/Utilities.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/operators/boundary/libmesh/PressureBoundaryOperator.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #include "libmesh/auto_ptr.h"
 #include "libmesh/cell_hex8.h"

@@ -1,5 +1,5 @@
 
-#include "operators/boundary/libmesh/TractionBoundaryOperator.h"
+#include "AMP/operators/boundary/libmesh/TractionBoundaryOperator.h"
 
 #include "libmesh/auto_ptr.h"
 #include "libmesh/cell_hex8.h"

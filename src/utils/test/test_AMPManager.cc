@@ -6,8 +6,8 @@
 #include <sstream>
 #include <vector>
 
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
 
 
 //  This test will start and shutdown AMP

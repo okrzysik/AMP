@@ -3,10 +3,10 @@
 
 #include <vector>
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 // AMP files
-#include "operators/libmesh/MassElement.h"
+#include "AMP/operators/libmesh/MassElement.h"
 
 namespace AMP {
 namespace Operator {

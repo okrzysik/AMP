@@ -1,8 +1,8 @@
 #ifndef included_AMP_SubchannelToCladGPMap
 #define included_AMP_SubchannelToCladGPMap
 
-#include "discretization/createLibmeshElements.h"
-#include "operators/map/SubchannelToCladMap.h"
+#include "AMP/discretization/createLibmeshElements.h"
+#include "AMP/operators/map/SubchannelToCladMap.h"
 
 namespace AMP {
 namespace Operator {

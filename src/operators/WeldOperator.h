@@ -2,14 +2,14 @@
 #ifndef included_AMP_WeldOperator
 #define included_AMP_WeldOperator
 
-#include "utils/AMP_MPI.h"
-#include "utils/InputDatabase.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/InputDatabase.h"
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "operators/Operator.h"
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
 #include <string>
 
 #ifdef DEBUG_CHECK_ASSERTIONS

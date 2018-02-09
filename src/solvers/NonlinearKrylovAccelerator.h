@@ -2,11 +2,11 @@
 #define included_NonlinearKrylovAccelerator
 
 
+#include "AMP/utils/Database.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 #include "NonlinearKrylovAcceleratorParameters.h"
 #include "SolverStrategy.h"
-#include "utils/Database.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Vector.h"
 
 namespace AMP {
 namespace Solver {

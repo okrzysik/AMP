@@ -1,16 +1,16 @@
 #ifndef included_MeshVectorTests
 #define included_MeshVectorTests
 
-#include "ampmesh/testHelpers/meshTests.h"
+#include "AMP/ampmesh/testHelpers/meshTests.h"
 
-#include "discretization/DOF_Manager.h"
-#include "discretization/DOF_ManagerParameters.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/DOF_ManagerParameters.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
 
-#include "vectors/testHelpers/VectorTests.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
 
 
 namespace AMP {

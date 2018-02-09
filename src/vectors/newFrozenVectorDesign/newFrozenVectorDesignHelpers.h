@@ -2,7 +2,7 @@
 #ifndef included_AMP_NewFrozenVectorDesignHelpers
 #define included_AMP_NewFrozenVectorDesignHelpers
 
-#include "vectors/Vector.h"
+#include "AMP/vectors/Vector.h"
 
 namespace AMP {
 namespace LinearAlgebra {

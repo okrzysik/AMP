@@ -19,7 +19,7 @@ responsibility for the use of this software.
 #ifndef included_SolverFactory_H_
 #define included_SolverFactory_H_
 
-#include "utils/FactoryStrategy.hpp"
+#include "AMP/utils/FactoryStrategy.hpp"
 
 namespace AMP {
 

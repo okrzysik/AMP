@@ -2,8 +2,8 @@
 #ifndef included_AMP_MatrixBuider
 #define included_AMP_MatrixBuider
 
-#include "matrices/Matrix.h"
-#include "vectors/Vector.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/vectors/Vector.h"
 
 #include <functional>
 #include <string>

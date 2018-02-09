@@ -1,8 +1,8 @@
-#include "operators/map/Map1Dto3D.h"
-#include "discretization/DOF_Manager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/InputDatabase.h"
-#include "utils/Utilities.h"
+#include "AMP/operators/map/Map1Dto3D.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Utilities.h"
 
 // Libmesh files
 DISABLE_WARNINGS

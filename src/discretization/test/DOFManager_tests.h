@@ -1,19 +1,19 @@
 #ifndef included_DOFManager_tests
 #define included_DOFManager_tests
 
-#include "discretization/DOF_Manager.h"
-#include "discretization/MultiDOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "discretization/subsetDOFManager.h"
-#include "utils/UnitTest.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/MultiDOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/discretization/subsetDOFManager.h"
+#include "AMP/utils/UnitTest.h"
 
 #ifdef USE_AMP_VECTORS
-#include "vectors/MeshVariable.h"
-#include "vectors/MultiVector.h"
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorBuilder.h"
-#include "vectors/VectorSelector.h"
+#include "AMP/vectors/MeshVariable.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 #endif
 
 using namespace AMP::unit_test;

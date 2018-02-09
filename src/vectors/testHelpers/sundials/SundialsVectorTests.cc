@@ -1,9 +1,9 @@
 #ifdef USE_EXT_SUNDIALS
 
-#include "vectors/testHelpers/sundials/SundialsVectorTests.h"
-#include "vectors/Vector.h"
-#include "vectors/sundials/ManagedSundialsVector.h"
-#include "vectors/sundials/SundialsVector.h"
+#include "AMP/vectors/testHelpers/sundials/SundialsVectorTests.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/sundials/ManagedSundialsVector.h"
+#include "AMP/vectors/sundials/SundialsVector.h"
 
 
 namespace AMP {

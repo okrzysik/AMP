@@ -1,18 +1,18 @@
-#include "ampmesh/moab/moabMesh.h"
-#include "ampmesh/MeshElementVectorIterator.h"
-#include "ampmesh/MultiIterator.h"
-#include "utils/AMPManager.h"
-#include "utils/MemoryDatabase.h"
-#include "utils/Utilities.h"
+#include "AMP/ampmesh/moab/moabMesh.h"
+#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/ampmesh/MultiIterator.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/MemoryDatabase.h"
+#include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_VECTORS
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
 #endif
 #ifdef USE_AMP_DISCRETIZATION
-#include "discretization/DOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #endif
 
 

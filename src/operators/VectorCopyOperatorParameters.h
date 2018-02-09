@@ -3,9 +3,9 @@
 
 #include <vector>
 
-#include "operators/OperatorParameters.h"
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
 
 namespace AMP {
 namespace Operator {

@@ -1,8 +1,7 @@
-
 #ifndef included_AMP_ConstraintsEliminationSolver
 #define included_AMP_ConstraintsEliminationSolver
 
-#include <solvers/SolverStrategy.h>
+#include "AMP/solvers/SolverStrategy.h"
 
 namespace AMP {
 namespace Solver {

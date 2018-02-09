@@ -1,4 +1,4 @@
-#include "vectors/trilinos/thyra/NativeThyraVector.h"
+#include "AMP/vectors/trilinos/thyra/NativeThyraVector.h"
 
 DISABLE_WARNINGS
 #include "Thyra_VectorStdOps_def.hpp"

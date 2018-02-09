@@ -1,4 +1,4 @@
-#include "graphics/ogre/BaseApplication.h"
+#include "AMP/graphics/ogre/BaseApplication.h"
 
 
 class TutorialApplication : public BaseApplication

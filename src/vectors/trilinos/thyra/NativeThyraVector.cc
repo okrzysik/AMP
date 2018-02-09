@@ -1,5 +1,5 @@
-#include "vectors/trilinos/thyra/NativeThyraVector.h"
-#include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
+#include "AMP/vectors/trilinos/thyra/NativeThyraVector.h"
+#include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
 
 // Trilinos includes

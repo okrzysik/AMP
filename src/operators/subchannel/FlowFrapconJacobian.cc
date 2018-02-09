@@ -1,5 +1,5 @@
-#include "operators/subchannel/FlowFrapconJacobian.h"
-#include "utils/Utilities.h"
+#include "AMP/operators/subchannel/FlowFrapconJacobian.h"
+#include "AMP/utils/Utilities.h"
 
 
 /* Libmesh files */

@@ -1,7 +1,7 @@
 #ifndef included_AMP_VectorIndexer
 #define included_AMP_VectorIndexer
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 
 namespace AMP {

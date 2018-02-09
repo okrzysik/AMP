@@ -3,12 +3,12 @@
 #define included_AMP_PowerShapeParameters
 
 /* AMP files */
-#include "operators/OperatorParameters.h"
-#include "utils/Database.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/utils/Database.h"
+#include "AMP/vectors/Vector.h"
 
 /* Boost files */
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {

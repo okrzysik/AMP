@@ -1,7 +1,7 @@
 
-#include "vectors/newFrozenVectorDesign/newFrozenVectorDesignHelpers.h"
+#include "AMP/vectors/newFrozenVectorDesign/newFrozenVectorDesignHelpers.h"
 
-#include "vectors/MultiVector.h"
+#include "AMP/vectors/MultiVector.h"
 
 namespace AMP {
 namespace LinearAlgebra {

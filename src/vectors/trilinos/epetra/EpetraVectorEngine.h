@@ -6,9 +6,9 @@
 
 #include "EpetraVector.h"
 
-#include "vectors/VectorEngine.h"
-#include "vectors/trilinos/epetra/EpetraVectorData.h"
-#include "vectors/trilinos/epetra/EpetraVectorOperations.h"
+#include "AMP/vectors/VectorEngine.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
 
 
 namespace AMP {

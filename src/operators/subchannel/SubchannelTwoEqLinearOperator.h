@@ -2,9 +2,9 @@
 #ifndef included_AMP_SubchannelTwoEqLinearOperator
 #define included_AMP_SubchannelTwoEqLinearOperator
 
-#include "operators/LinearOperator.h"
-#include "operators/subchannel/SubchannelOperatorParameters.h"
-#include "operators/subchannel/SubchannelPhysicsModel.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
+#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
 
 
 namespace AMP {

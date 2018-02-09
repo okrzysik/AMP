@@ -1,7 +1,7 @@
 #ifndef included_GPUDevAllocator_HPP_
 #define included_GPUDevAllocator_HPP_
 
-#include "utils/cuda/GPUDevAllocator.h"
+#include "AMP/utils/cuda/GPUDevAllocator.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <iostream>

@@ -1,8 +1,8 @@
 #include "test_Discretization.h"
 #include "../../ampmesh/test/meshGenerators.h"
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/UnitTest.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/UnitTest.h"
 
 
 // Main function

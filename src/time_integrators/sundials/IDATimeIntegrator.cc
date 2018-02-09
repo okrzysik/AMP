@@ -1,11 +1,11 @@
-#include "time_integrators/LinearTimeOperator.h"
+#include "AMP/time_integrators/LinearTimeOperator.h"
 #include <iostream>
 
-#include "operators/OperatorBuilder.h"
-#include "time_integrators/TimeIntegratorParameters.h"
-#include "time_integrators/sundials/IDATimeIntegrator.h"
-#include "utils/Utilities.h"
-#include "vectors/ExternalVectorDeleter.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/time_integrators/TimeIntegratorParameters.h"
+#include "AMP/time_integrators/sundials/IDATimeIntegrator.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/ExternalVectorDeleter.h"
 
 #ifdef USE_EXT_SUNDIALS
 // Note:  sundials 2.4.0 has a memory leak that can cause some tests to fail

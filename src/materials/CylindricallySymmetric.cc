@@ -7,11 +7,11 @@
 
 #include "CylindricallySymmetric.h"
 
-#include "materials/Material.h"
-#include "materials/Property.h"
-#include "materials/TensorProperty.h"
-#include "materials/VectorProperty.h"
-#include "utils/Utilities.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/Property.h"
+#include "AMP/materials/TensorProperty.h"
+#include "AMP/materials/VectorProperty.h"
+#include "AMP/utils/Utilities.h"
 
 #include <cmath>
 #include <iostream>

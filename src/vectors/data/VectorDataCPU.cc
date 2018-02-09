@@ -1,5 +1,5 @@
-#include "vectors/data/VectorDataCPU.h"
-#include "vectors/data/VectorDataCPU.hpp"
+#include "AMP/vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/data/VectorDataCPU.hpp"
 
 
 // Specializations

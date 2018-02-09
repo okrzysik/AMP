@@ -2,10 +2,10 @@
 #define included_AMP_TrilinosThyraModelEvaluatorParameters
 
 
-#include "operators/Operator.h"
-#include "solvers/SolverStrategy.h"
-#include "solvers/trilinos/nox/PrePostOperator.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/trilinos/nox/PrePostOperator.h"
+#include "AMP/vectors/Vector.h"
 
 
 namespace AMP {

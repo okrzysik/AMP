@@ -1,7 +1,7 @@
 #ifndef included_AMP_structuredMeshElement
 #define included_AMP_structuredMeshElement
 
-#include "ampmesh/structured/BoxMesh.h"
+#include "AMP/ampmesh/structured/BoxMesh.h"
 #include <vector>
 
 namespace AMP {

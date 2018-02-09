@@ -1,5 +1,5 @@
-#include "vectors/ManagedVector.h"
-#include "utils/Utilities.h"
+#include "AMP/vectors/ManagedVector.h"
+#include "AMP/utils/Utilities.h"
 #include <iostream>
 #include <stdexcept>
 #include <string>

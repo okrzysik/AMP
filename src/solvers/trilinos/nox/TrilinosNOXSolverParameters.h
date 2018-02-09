@@ -1,11 +1,11 @@
 #ifndef included_AMP_TrilinosNOXSolverParameters
 #define included_AMP_TrilinosNOXSolverParameters
 
-#include "solvers/SolverStrategyParameters.h"
-#include "solvers/trilinos/nox/PrePostOperator.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/shared_ptr.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/trilinos/nox/PrePostOperator.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/shared_ptr.h"
 
 
 namespace AMP {

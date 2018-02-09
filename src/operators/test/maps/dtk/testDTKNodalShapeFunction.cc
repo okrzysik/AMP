@@ -1,30 +1,30 @@
 
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include <cstdlib>
 #include <iostream>
 #include <map>
 #include <string>
 #include <unordered_map>
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
 
-#include "vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorBuilder.h"
 
-#include "discretization/simpleDOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 
-#include "ampmesh/Mesh.h"
+#include "AMP/ampmesh/Mesh.h"
 
-#include "operators/map/dtk/DTKAMPMeshEntityIterator.h"
-#include "operators/map/dtk/DTKAMPMeshNodalShapeFunction.h"
+#include "AMP/operators/map/dtk/DTKAMPMeshEntityIterator.h"
+#include "AMP/operators/map/dtk/DTKAMPMeshNodalShapeFunction.h"
 
 bool selectAll( DataTransferKit::Entity entity ) { return true; }
 

@@ -1,6 +1,6 @@
 #include "SourceNonlinearElement.h"
+#include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
-#include "utils/Utilities.h"
 
 /* Libmesh files */
 #include "libmesh/auto_ptr.h"

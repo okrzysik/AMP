@@ -1,13 +1,13 @@
 #include "TimeIntegrator.h"
 
-#include "utils/AMP_MPI.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
 
 /*Design-By-Contract Macros*/
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 
 #ifndef NULL
 #define NULL ( 0 )
@@ -18,7 +18,7 @@
 #include "TimeIntegratorParameters.h"
 #endif
 #ifndef included_AMP_Operator
-#include "operators/Operator.h"
+#include "AMP/operators/Operator.h"
 #endif
 
 namespace AMP {

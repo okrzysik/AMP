@@ -2,10 +2,10 @@
 #define included_AMP_ManagedVector
 
 
-#include "vectors/DataChangeFirer.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorEngine.h"
-#include "vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/DataChangeFirer.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorEngine.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
 
 #include <stdexcept>
 #include <vector>

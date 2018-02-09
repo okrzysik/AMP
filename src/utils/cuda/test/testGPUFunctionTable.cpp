@@ -1,8 +1,8 @@
-#include "utils/AMPManager.h"
-#include "utils/Array.h"
-#include "utils/UnitTest.h"
-#include "utils/cuda/GPUFunctionTable.h"
-#include "utils/cuda/GPUUmemAllocator.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Array.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/cuda/GPUFunctionTable.h"
+#include "AMP/utils/cuda/GPUUmemAllocator.h"
 #include <cuda.h>
 
 

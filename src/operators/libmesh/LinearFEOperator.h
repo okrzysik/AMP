@@ -3,11 +3,11 @@
 #define included_AMP_LinearFEOperator
 
 /* AMP files */
-#include "ampmesh/Mesh.h"
-#include "ampmesh/MeshElement.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/operators/libmesh/LinearFEOperatorParameters.h"
 #include "libmesh/elem.h"
-#include "operators/LinearOperator.h"
-#include "operators/libmesh/LinearFEOperatorParameters.h"
 
 namespace AMP {
 namespace Operator {

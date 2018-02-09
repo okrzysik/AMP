@@ -1,11 +1,11 @@
 
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "materials/Material.h"
+#include "AMP/materials/Material.h"
 
 #include <algorithm>
 #include <iostream>

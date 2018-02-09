@@ -1,7 +1,7 @@
 
-#include "operators/subchannel/FlowFrapconOperator.h"
-#include "utils/InputDatabase.h"
-#include "utils/Utilities.h"
+#include "AMP/operators/subchannel/FlowFrapconOperator.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Utilities.h"
 
 /* Libmesh files */
 #include "libmesh/auto_ptr.h"

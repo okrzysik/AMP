@@ -1,10 +1,10 @@
 #ifndef included_AMP_STKMeshElement
 #define included_AMP_STKMeshElement
 
-#include "ampmesh/MeshElement.h"
-#include "ampmesh/STKmesh/STKMesh.h"
-#include "ampmesh/STKmesh/STKMeshIterator.h"
-#include "utils/shared_ptr.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/ampmesh/STKmesh/STKMesh.h"
+#include "AMP/ampmesh/STKmesh/STKMeshIterator.h"
+#include "AMP/utils/shared_ptr.h"
 #include <vector>
 
 namespace AMP {

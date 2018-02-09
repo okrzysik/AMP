@@ -1,11 +1,11 @@
 #ifndef included_AMP_SubchannelToPointMapMap
 #define included_AMP_SubchannelToPointMapMap
 
-#include "ampmesh/Mesh.h"
-#include "operators/Operator.h"
-#include "operators/subchannel/SubchannelPhysicsModel.h"
-#include "operators/subchannel/SubchannelToPointMapParameters.h"
-#include "utils/AMP_MPI.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
+#include "AMP/operators/subchannel/SubchannelToPointMapParameters.h"
+#include "AMP/utils/AMP_MPI.h"
 
 namespace AMP {
 namespace Operator {

@@ -1,7 +1,7 @@
 #ifndef included_AMP_VectorDataCPU_hpp
 #define included_AMP_VectorDataCPU_hpp
 
-#include "vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/data/VectorDataCPU.h"
 
 
 namespace AMP {

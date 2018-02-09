@@ -1,5 +1,5 @@
-#include "matrices/trilinos/EpetraMatrix.h"
-#include "matrices/trilinos/ManagedEpetraMatrix.h"
+#include "AMP/matrices/trilinos/EpetraMatrix.h"
+#include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 
 #include <EpetraExt_Transpose_RowMatrix.h>
 

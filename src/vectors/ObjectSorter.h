@@ -1,7 +1,7 @@
 #ifndef included_AMP_ObjectSorter_h
 #define included_AMP_ObjectSorter_h
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace LinearAlgebra {

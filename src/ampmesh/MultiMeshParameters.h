@@ -1,7 +1,7 @@
 #ifndef included_AMP_MultiMeshParameters
 #define included_AMP_MultiMeshParameters
 
-#include "ampmesh/MeshParameters.h"
+#include "AMP/ampmesh/MeshParameters.h"
 
 
 namespace AMP {

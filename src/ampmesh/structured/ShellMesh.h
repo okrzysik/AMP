@@ -1,7 +1,7 @@
 #ifndef included_AMP_ShellBoxMesh
 #define included_AMP_ShellBoxMesh
 
-#include "ampmesh/structured/BoxMesh.h"
+#include "AMP/ampmesh/structured/BoxMesh.h"
 
 #include <array>
 

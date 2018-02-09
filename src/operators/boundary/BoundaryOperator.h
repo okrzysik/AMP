@@ -1,7 +1,7 @@
 #ifndef included_AMP_BoundaryOperator
 #define included_AMP_BoundaryOperator
 
-#include "operators/Operator.h"
+#include "AMP/operators/Operator.h"
 
 namespace AMP {
 namespace Operator {

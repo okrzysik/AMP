@@ -1,8 +1,8 @@
 #ifndef included_AMP_MultiMesh
 #define included_AMP_MultiMesh
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/loadBalance/loadBalanceSimulator.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/loadBalance/loadBalanceSimulator.h"
 
 namespace AMP {
 namespace Mesh {

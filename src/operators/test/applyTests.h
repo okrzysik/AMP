@@ -8,9 +8,9 @@
 #ifndef APPLY_TESTS_H_
 #define APPLY_TESTS_H_
 
-#include "operators/Operator.h"
-#include "utils/UnitTest.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/vectors/Vector.h"
 #include <string>
 
 void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,

@@ -1,9 +1,9 @@
-#include "vectors/MultiVector.h"
-#include "discretization/DOF_Manager.h"
-#include "discretization/MultiDOF_Manager.h"
-#include "utils/Utilities.h"
-#include "vectors/ManagedVector.h"
-#include "vectors/MultiVariable.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/MultiDOF_Manager.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/ManagedVector.h"
+#include "AMP/vectors/MultiVariable.h"
 
 #include "ProfilerApp.h"
 

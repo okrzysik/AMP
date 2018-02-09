@@ -1,13 +1,13 @@
 #ifndef included_AMP_SourcePhysicsModel
 #define included_AMP_SourcePhysicsModel
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 #include <cstring>
 
-#include "materials/Material.h"
-#include "operators/ElementPhysicsModel.h"
-#include "operators/ElementPhysicsModelParameters.h"
-#include "utils/Utilities.h"
+#include "AMP/materials/Material.h"
+#include "AMP/operators/ElementPhysicsModel.h"
+#include "AMP/operators/ElementPhysicsModelParameters.h"
+#include "AMP/utils/Utilities.h"
 
 
 // Libmesh headers

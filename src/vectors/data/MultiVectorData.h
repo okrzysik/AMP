@@ -1,8 +1,8 @@
 #ifndef included_AMP_MultiVectorData
 #define included_AMP_MultiVectorData
 
-#include "discretization/DOF_Manager.h"
-#include "vectors/data/VectorData.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/vectors/data/VectorData.h"
 
 
 namespace AMP {

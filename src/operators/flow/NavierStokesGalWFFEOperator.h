@@ -3,16 +3,16 @@
 #define included_AMP_NavierStokesGalWFFEOperator
 
 // AMP files
-#include "ampmesh/MeshElement.h"
-#include "discretization/DOF_Manager.h"
-#include "vectors/MultiVariable.h"
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/vectors/MultiVariable.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
 
-#include "operators/flow/NavierStokesConstants.h"
-#include "operators/flow/NavierStokesGalWFElement.h"
-#include "operators/flow/NavierStokesGalWFFEOperatorParameters.h"
-#include "operators/libmesh/NonlinearFEOperator.h"
+#include "AMP/operators/flow/NavierStokesConstants.h"
+#include "AMP/operators/flow/NavierStokesGalWFElement.h"
+#include "AMP/operators/flow/NavierStokesGalWFFEOperatorParameters.h"
+#include "AMP/operators/libmesh/NonlinearFEOperator.h"
 
 #include <vector>
 

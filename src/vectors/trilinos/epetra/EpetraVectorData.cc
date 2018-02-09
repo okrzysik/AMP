@@ -1,4 +1,4 @@
-#include "vectors/trilinos/epetra/EpetraVectorData.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
 
 
 namespace AMP {

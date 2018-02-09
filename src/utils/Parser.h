@@ -19,15 +19,15 @@
 #define included_stdio
 #include <stdio.h>
 #endif
+#include "AMP/utils/shared_ptr.h"
 #include "Database.h"
-#include "utils/shared_ptr.h"
 #include <list>
 #ifndef included_String
 #include <string>
 #define included_String
 #endif
 
-#include "utils/AMP_MPI.h"
+#include "AMP/utils/AMP_MPI.h"
 
 namespace AMP {
 

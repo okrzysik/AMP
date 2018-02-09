@@ -1,22 +1,22 @@
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include <iostream>
 #include <string>
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "materials/Material.h"
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
+#include "AMP/materials/Material.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
 
 
-#include "ampmesh/MeshVariable.h"
-#include "utils/Writer.h"
+#include "AMP/ampmesh/MeshVariable.h"
+#include "AMP/utils/Writer.h"
 
 
 #include "../ColumnSolver.h"
@@ -24,14 +24,14 @@
 #include "../PetscKrylovSolverParameters.h"
 #include "../PetscSNESSolver.h"
 #include "../PetscSNESSolverParameters.h"
-#include "operators/BVPOperatorParameters.h"
-#include "operators/ColumnOperator.h"
-#include "operators/DirichletVectorCorrection.h"
-#include "operators/LinearBVPOperator.h"
-#include "operators/NonlinearBVPOperator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/diffusion/DiffusionLinearFEOperator.h"
-#include "operators/diffusion/DiffusionNonlinearFEOperator.h"
+#include "AMP/operators/BVPOperatorParameters.h"
+#include "AMP/operators/ColumnOperator.h"
+#include "AMP/operators/DirichletVectorCorrection.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/NonlinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 
 #include "../TrilinosMLSolver.h"
 

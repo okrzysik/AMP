@@ -3,15 +3,15 @@
 
 #include <string>
 
-#include "utils/Database.h"
+#include "AMP/utils/Database.h"
 
-#include "utils/ParameterBase.h"
+#include "AMP/utils/ParameterBase.h"
 
 #ifndef included_SolverStrategy
 #include "SolverStrategy.h"
 #endif
 
-#include "vectors/Vector.h"
+#include "AMP/vectors/Vector.h"
 
 namespace AMP {
 namespace Solver {

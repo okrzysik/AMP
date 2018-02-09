@@ -3,15 +3,15 @@
 #define included_AMP_MechanicsNonlinearFEOperator
 
 /* AMP files */
-#include "ampmesh/MeshElement.h"
-#include "discretization/DOF_Manager.h"
-#include "operators/libmesh/NonlinearFEOperator.h"
-#include "operators/mechanics/MechanicsConstants.h"
-#include "operators/mechanics/MechanicsNonlinearElement.h"
-#include "operators/mechanics/MechanicsNonlinearFEOperatorParameters.h"
-#include "operators/mechanics/MechanicsNonlinearUpdatedLagrangianElement.h"
-#include "vectors/MultiVariable.h"
-#include "vectors/Variable.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/operators/libmesh/NonlinearFEOperator.h"
+#include "AMP/operators/mechanics/MechanicsConstants.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearElement.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearFEOperatorParameters.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearUpdatedLagrangianElement.h"
+#include "AMP/vectors/MultiVariable.h"
+#include "AMP/vectors/Variable.h"
 
 #include <vector>
 

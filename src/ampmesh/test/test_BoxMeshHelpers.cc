@@ -1,7 +1,7 @@
-#include "ampmesh/structured/BoxMeshHelpers.h"
+#include "AMP/ampmesh/structured/BoxMeshHelpers.h"
 
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
 
 #include <cmath>
 #include <random>

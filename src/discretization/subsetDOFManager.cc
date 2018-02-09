@@ -1,8 +1,8 @@
-#include "discretization/subsetDOFManager.h"
+#include "AMP/discretization/subsetDOFManager.h"
 
+#include "AMP/ampmesh/MultiIterator.h"
+#include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
-#include "ampmesh/MultiIterator.h"
-#include "utils/Utilities.h"
 
 
 namespace AMP {

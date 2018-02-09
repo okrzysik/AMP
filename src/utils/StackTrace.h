@@ -1,7 +1,7 @@
 #ifndef included_AMP_StackTrace
 #define included_AMP_StackTrace
 
-#include "utils/PIO.h"
+#include "AMP/utils/PIO.h"
 
 #include <functional>
 #include <iostream>

@@ -7,18 +7,18 @@
 #include <string.h>
 #include <vector>
 
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/shared_ptr.h"
 
 #ifdef USE_AMP_MESH
-#include "ampmesh/Mesh.h"
+#include "AMP/ampmesh/Mesh.h"
 #endif
 #ifdef USE_AMP_VECTORS
-#include "vectors/Vector.h"
+#include "AMP/vectors/Vector.h"
 #endif
 #ifdef USE_AMP_MATRICES
-#include "matrices/Matrix.h"
+#include "AMP/matrices/Matrix.h"
 #endif
 
 

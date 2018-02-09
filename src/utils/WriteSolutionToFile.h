@@ -3,8 +3,8 @@
 #ifndef included_WriteSolutionToFile
 #define included_WriteSolutionToFile
 
-#include "ampmesh/Mesh.h"
-#include "vectors/Vector.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/vectors/Vector.h"
 
 void printSolution( AMP::Mesh::Mesh::shared_ptr mesh,
                     AMP::LinearAlgebra::Vector::shared_ptr solVec,

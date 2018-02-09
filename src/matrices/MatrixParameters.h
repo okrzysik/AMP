@@ -1,8 +1,8 @@
 #ifndef included_AMP_MatrixParameters
 #define included_AMP_MatrixParameters
 
-#include "discretization/DOF_Manager.h"
-#include "vectors/Vector.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/vectors/Vector.h"
 
 namespace AMP {
 namespace LinearAlgebra {

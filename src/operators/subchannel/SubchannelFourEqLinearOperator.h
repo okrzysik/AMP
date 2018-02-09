@@ -2,10 +2,10 @@
 #ifndef included_AMP_SubchannelFourEqLinearOperator
 #define included_AMP_SubchannelFourEqLinearOperator
 
-#include "operators/LinearOperator.h"
-#include "operators/subchannel/SubchannelOperatorParameters.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
 
-#include "ampmesh/MeshElementVectorIterator.h"
+#include "AMP/ampmesh/MeshElementVectorIterator.h"
 
 namespace AMP {
 namespace Operator {

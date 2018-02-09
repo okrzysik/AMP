@@ -1,7 +1,7 @@
 #ifndef included_AMP_Geometry_Box
 #define included_AMP_Geometry_Box
 
-#include "ampmesh/Geometry.h"
+#include "AMP/ampmesh/Geometry.h"
 
 #include <vector>
 

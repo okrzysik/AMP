@@ -1,9 +1,9 @@
 #ifndef included_AMP_VectorOperationsOpenMP_hpp
 #define included_AMP_VectorOperationsOpenMP_hpp
 
-#include "vectors/Vector.h"
-#include "vectors/data/VectorData.h"
-#include "vectors/operations/OpenMP/VectorOperationsOpenMP.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/data/VectorData.h"
+#include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 
 
 namespace AMP {

@@ -3,11 +3,11 @@
 #define included_AMP_MassLinearFEOperator
 
 // AMP files
-#include "operators/libmesh/LinearFEOperator.h"
-#include "operators/libmesh/MassLinearElement.h"
-#include "operators/libmesh/MassLinearFEOperatorParameters.h"
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
+#include "AMP/operators/libmesh/LinearFEOperator.h"
+#include "AMP/operators/libmesh/MassLinearElement.h"
+#include "AMP/operators/libmesh/MassLinearFEOperatorParameters.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
 
 #include <vector>
 

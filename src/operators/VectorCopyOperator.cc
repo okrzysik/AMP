@@ -1,4 +1,4 @@
-#include "operators/VectorCopyOperator.h"
+#include "AMP/operators/VectorCopyOperator.h"
 
 namespace AMP {
 namespace Operator {

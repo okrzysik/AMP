@@ -2,11 +2,11 @@
 #ifndef included_AMP_OperatorParameters
 #define included_AMP_OperatorParameters
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "ampmesh/Mesh.h"
-#include "utils/Database.h"
-#include "utils/ParameterBase.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/ParameterBase.h"
 
 
 namespace AMP {

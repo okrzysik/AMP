@@ -1,5 +1,5 @@
 
-#include "operators/MoveMeshOperator.h"
+#include "AMP/operators/MoveMeshOperator.h"
 
 namespace AMP {
 namespace Operator {

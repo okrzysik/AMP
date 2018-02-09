@@ -1,6 +1,6 @@
 
 #include "NavierStokesLSWFLinearElement.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 
 namespace AMP {
 namespace Operator {

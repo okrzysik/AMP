@@ -2,8 +2,8 @@
 #ifndef included_LinearBoundaryOperatorParameters
 #define included_LinearBoundaryOperatorParameters
 
-#include "matrices/Matrix.h"
-#include "operators/OperatorParameters.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/operators/OperatorParameters.h"
 
 namespace AMP {
 namespace Operator {

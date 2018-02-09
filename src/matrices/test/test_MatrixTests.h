@@ -1,15 +1,15 @@
 #ifndef included_test_MatrixTests
 #define included_test_MatrixTests
 
-#include "discretization/DOF_Manager.h"
-#include "utils/UnitTest.h"
-#include "vectors/SimpleVector.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/vectors/SimpleVector.h"
 
+#include "AMP/vectors/testHelpers/VectorTests.h"
 #include "test_MatrixVectorFactory.h"
-#include "vectors/testHelpers/VectorTests.h"
 
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-#include "matrices/petsc/ManagedPetscMatrix.h"
+#include "AMP/matrices/petsc/ManagedPetscMatrix.h"
 #endif
 
 

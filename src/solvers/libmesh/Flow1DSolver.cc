@@ -1,7 +1,7 @@
-#include "solvers/libmesh/Flow1DSolver.h"
-#include "operators/subchannel/FlowFrapconJacobian.h"
-#include "utils/Utilities.h"
-#include "vectors/MultiVector.h"
+#include "AMP/solvers/libmesh/Flow1DSolver.h"
+#include "AMP/operators/subchannel/FlowFrapconJacobian.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/MultiVector.h"
 
 namespace AMP {
 namespace Solver {

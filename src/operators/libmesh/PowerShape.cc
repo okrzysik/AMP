@@ -12,22 +12,22 @@
 
 /*AMP Files */
 #include "PowerShape.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
 #include "PowerShapeParameters.h"
-#include "discretization/simpleDOF_Manager.h"
 #include "libmesh/cell_hex8.h"
-#include "operators/Operator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/OperatorParameters.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorBuilder.h"
 
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/utils/InputDatabase.h"
 #include "VolumeIntegralOperator.h"
-#include "ampmesh/Mesh.h"
 #include "libmesh/string_to_enum.h"
-#include "utils/InputDatabase.h"
 
 /*Boost Files */
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 #include <cmath>
 #include <vector>

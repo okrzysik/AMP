@@ -1,7 +1,7 @@
 #ifndef included_AMP_DataChangeListener_h
 #define included_AMP_DataChangeListener_h
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 #include <algorithm>
 #include <deque>
 

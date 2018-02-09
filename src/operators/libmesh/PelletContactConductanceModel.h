@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-#include "operators/ElementPhysicsModelFactory.h"
-#include "operators/boundary/libmesh/RobinPhysicsModel.h"
-#include "operators/diffusion/DiffusionTransportModel.h"
-#include "utils/shared_ptr.h"
+#include "AMP/operators/ElementPhysicsModelFactory.h"
+#include "AMP/operators/boundary/libmesh/RobinPhysicsModel.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {

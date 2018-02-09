@@ -10,13 +10,13 @@
 #include <sstream>
 #include <vector>
 
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/StackTrace.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
-#include "utils/enable_shared_from_this.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/StackTrace.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/enable_shared_from_this.h"
+#include "AMP/utils/shared_ptr.h"
 
 
 // Detect the OS (defines which tests we allow to fail)

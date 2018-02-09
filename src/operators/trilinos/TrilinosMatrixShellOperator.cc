@@ -1,6 +1,6 @@
 
 #include "TrilinosMatrixShellOperator.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 namespace AMP {
 namespace Operator {

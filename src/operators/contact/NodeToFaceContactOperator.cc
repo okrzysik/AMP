@@ -1,10 +1,10 @@
 
-#include "ampmesh/MeshID.h"
-#include "ampmesh/dendro/DendroSearch.h"
-#include "ampmesh/euclidean_geometry_tools.h"
-#include "ampmesh/latex_visualization_tools.h"
-#include "operators/contact/NodeToGeomType::FaceContactOperator.h"
-#include "operators/mechanics/IsotropicElasticModel.h"
+#include "AMP/ampmesh/MeshID.h"
+#include "AMP/ampmesh/dendro/DendroSearch.h"
+#include "AMP/ampmesh/euclidean_geometry_tools.h"
+#include "AMP/ampmesh/latex_visualization_tools.h"
+#include "AMP/operators/contact/NodeToGeomType::FaceContactOperator.h"
+#include "AMP/operators/mechanics/IsotropicElasticModel.h"
 
 #include <algorithm>
 #include <cmath>

@@ -1,11 +1,11 @@
 #ifndef included_LinearTimeOperator
 #define included_LinearTimeOperator
 
-#include "operators/LinearOperator.h"
-#include "operators/OperatorParameters.h"
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 
 
 namespace AMP {

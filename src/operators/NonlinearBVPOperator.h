@@ -2,9 +2,9 @@
 #ifndef included_AMP_NonlinearBVPOperator
 #define included_AMP_NonlinearBVPOperator
 
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/boundary/BoundaryOperator.h"
 #include "BVPOperatorParameters.h"
-#include "operators/Operator.h"
-#include "operators/boundary/BoundaryOperator.h"
 
 namespace AMP {
 namespace Operator {

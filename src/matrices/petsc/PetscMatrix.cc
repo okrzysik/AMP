@@ -1,5 +1,5 @@
-#include "matrices/petsc/PetscMatrix.h"
-#include "matrices/petsc/ManagedPetscMatrix.h"
+#include "AMP/matrices/petsc/PetscMatrix.h"
+#include "AMP/matrices/petsc/ManagedPetscMatrix.h"
 
 
 namespace AMP {

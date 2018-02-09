@@ -5,9 +5,9 @@
  *	  Author: bm
  */
 
-#include "materials/Dr_nonlinear.h"
-#include "materials/Material.h"
-#include "materials/Property.h"
+#include "AMP/materials/Dr_nonlinear.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/Property.h"
 
 #include <string>
 #include <valarray>

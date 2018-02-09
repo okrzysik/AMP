@@ -1,7 +1,7 @@
-#include "operators/subchannel/CoupledFlowFrapconOperator.h"
-#include "operators/subchannel/CoupledFlowFrapconOperatorParameters.h"
-#include "utils/Utilities.h"
-#include "vectors/SimpleVector.h"
+#include "AMP/operators/subchannel/CoupledFlowFrapconOperator.h"
+#include "AMP/operators/subchannel/CoupledFlowFrapconOperatorParameters.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/SimpleVector.h"
 
 
 namespace AMP {

@@ -2,10 +2,10 @@
 
 #include <string>
 
+#include "AMP/utils/AMP_MPI.h"
 #include "PIO.h"
 #include "ParallelBuffer.h"
 #include "Utilities.h"
-#include "utils/AMP_MPI.h"
 
 #ifndef NULL
 #define NULL 0

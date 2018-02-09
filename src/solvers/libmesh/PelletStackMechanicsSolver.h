@@ -1,10 +1,10 @@
 #ifndef included_AMP_PelletStackMechanicsSolver
 #define included_AMP_PelletStackMechanicsSolver
 
-#include "operators/libmesh/PelletStackOperator.h"
-#include "solvers/ColumnSolver.h"
-#include "solvers/SolverStrategy.h"
-#include "solvers/libmesh/PelletStackMechanicsSolverParameters.h"
+#include "AMP/operators/libmesh/PelletStackOperator.h"
+#include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/libmesh/PelletStackMechanicsSolverParameters.h"
 
 namespace AMP {
 namespace Solver {

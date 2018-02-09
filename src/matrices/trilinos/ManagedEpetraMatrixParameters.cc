@@ -1,6 +1,6 @@
-#include "matrices/trilinos/ManagedEpetraMatrixParameters.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Utilities.h"
+#include "AMP/matrices/trilinos/ManagedEpetraMatrixParameters.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
 
 #include "EpetraExt_MatrixMatrix.h"
 #include "Epetra_Map.h"

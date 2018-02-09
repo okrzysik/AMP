@@ -1,5 +1,5 @@
-#include "ampmesh/STKmesh/STKMeshElement.h"
-#include "utils/Utilities.h"
+#include "AMP/ampmesh/STKmesh/STKMeshElement.h"
+#include "AMP/utils/Utilities.h"
 
 #include "Teuchos_RCP.hpp"
 #include "stk_mesh/base/FieldData.hpp"

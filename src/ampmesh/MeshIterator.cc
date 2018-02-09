@@ -1,5 +1,5 @@
-#include "ampmesh/MeshIterator.h"
-#include "utils/Utilities.h"
+#include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/utils/Utilities.h"
 
 namespace AMP {
 namespace Mesh {

@@ -1,6 +1,6 @@
 #include "LinearTimeOperator.h"
+#include "AMP/utils/InputDatabase.h"
 #include "TimeOperatorParameters.h"
-#include "utils/InputDatabase.h"
 
 
 namespace AMP {

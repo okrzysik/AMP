@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-#include "materials/Material.h"
-#include "materials/Property.h"
-#include "operators/ElementPhysicsModel.h"
-#include "utils/shared_ptr.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/Property.h"
+#include "AMP/operators/ElementPhysicsModel.h"
+#include "AMP/utils/shared_ptr.h"
 //#include "RobinPhysicsModelParameters.h"
 
 namespace AMP {

@@ -2,7 +2,7 @@
 #define included_AMP_EpetraVectorOperations
 
 
-#include "vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
 
 #include <Epetra_Vector.h>
 

@@ -1,8 +1,8 @@
 #ifndef included_PetscMatrixShellOperator
 #define included_PetscMatrixShellOperator
 
-#include "operators/LinearOperator.h"
-#include "utils/AMP_MPI.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/utils/AMP_MPI.h"
 
 
 #ifdef MPICH_SKIP_MPICXX

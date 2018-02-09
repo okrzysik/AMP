@@ -2,11 +2,11 @@
 #ifndef included_AMP_NeumannVectorCorrection
 #define included_AMP_NeumannVectorCorrection
 
-#include "operators/boundary/BoundaryOperator.h"
-#include "operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
-#include "operators/boundary/libmesh/RobinPhysicsModel.h"
+#include "AMP/operators/boundary/BoundaryOperator.h"
+#include "AMP/operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
+#include "AMP/operators/boundary/libmesh/RobinPhysicsModel.h"
 
-#include "discretization/createLibmeshElements.h"
+#include "AMP/discretization/createLibmeshElements.h"
 
 // Libmesh files
 #include "libmesh/quadrature.h"

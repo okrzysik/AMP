@@ -1,7 +1,7 @@
 #ifndef included_AMP_PelletStackMechanicsSolverParameters
 #define included_AMP_PelletStackMechanicsSolverParameters
 
-#include "solvers/ColumnSolver.h"
+#include "AMP/solvers/ColumnSolver.h"
 
 namespace AMP {
 namespace Solver {

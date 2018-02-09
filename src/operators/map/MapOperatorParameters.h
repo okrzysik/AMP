@@ -2,8 +2,8 @@
 #ifndef included_AMP_MapOperatorParameters
 #define included_AMP_MapOperatorParameters
 
-#include "ampmesh/Mesh.h"
-#include "operators/OperatorParameters.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/operators/OperatorParameters.h"
 
 namespace AMP {
 namespace Operator {

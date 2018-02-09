@@ -1,7 +1,7 @@
 #ifndef included_AMP_VectorDataGPU
 #define included_AMP_VectorDataGPU
 
-#include "vectors/data/VectorData.h"
+#include "AMP/vectors/data/VectorData.h"
 
 
 namespace AMP {

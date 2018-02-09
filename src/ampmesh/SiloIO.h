@@ -7,14 +7,14 @@
 #include <string.h>
 #include <vector>
 
-#include "ampmesh/Mesh.h"
-#include "utils/Writer.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/utils/Writer.h"
 
 #ifdef USE_AMP_VECTORS
-#include "vectors/Vector.h"
+#include "AMP/vectors/Vector.h"
 #endif
 #ifdef USE_AMP_MATRICES
-#include "matrices/Matrix.h"
+#include "AMP/matrices/Matrix.h"
 #endif
 #ifdef USE_EXT_SILO
 #include <silo.h>

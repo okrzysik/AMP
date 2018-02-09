@@ -2,9 +2,9 @@
 #ifndef included_AMP_OnePointSolver
 #define included_AMP_OnePointSolver
 
-#include "operators/newFrozenVectorDesign/OnePointOperator.h"
-#include "solvers/SolverStrategy.h"
-#include "vectors/newFrozenVectorDesign/newFrozenVectorDesignHelpers.h"
+#include "AMP/operators/newFrozenVectorDesign/OnePointOperator.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/vectors/newFrozenVectorDesign/newFrozenVectorDesignHelpers.h"
 
 namespace AMP {
 namespace Solver {

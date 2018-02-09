@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "utils/tinyexpr/tinyexpr.h"
+#include "AMP/utils/tinyexpr/tinyexpr.h"
 
 
 namespace AMP {

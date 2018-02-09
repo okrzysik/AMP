@@ -1,13 +1,13 @@
 #include "test_Matrix.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
 #include "test_MatrixTests.h"
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
 
-#include "matrices/MatrixBuilder.h"
-#include "vectors/SimpleVector.h"
+#include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/vectors/SimpleVector.h"
 
 
 using namespace AMP::LinearAlgebra;

@@ -1,13 +1,13 @@
 #ifndef included_AMP_Operator
 #define included_AMP_Operator
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "operators/OperatorParameters.h"
+#include "AMP/operators/OperatorParameters.h"
 
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorSelector.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorSelector.h"
 
 #include <string>
 

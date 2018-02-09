@@ -1,29 +1,20 @@
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/vectors/VectorBuilder.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
+#include "AMP/solvers/hypre/BoomerAMGSolver.h"
 
-
-#include <iostream>
-#include <string>
-
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
-
-#include "discretization/simpleDOF_Manager.h"
-#include "utils/Writer.h"
-#include "vectors/VectorBuilder.h"
-
-/* AMP files */
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-
-#include "operators/LinearBVPOperator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/boundary/DirichletVectorCorrection.h"
-
-#include "solvers/hypre/BoomerAMGSolver.h"
 
 void linearElasticTest( AMP::UnitTest *ut )
 {

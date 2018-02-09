@@ -7,16 +7,16 @@
 #include <string.h>
 #include <vector>
 
-#include "utils/Writer.h"
+#include "AMP/utils/Writer.h"
 
 #ifdef USE_AMP_MESH
-#include "ampmesh/Mesh.h"
+#include "AMP/ampmesh/Mesh.h"
 #endif
 #ifdef USE_AMP_VECTORS
-#include "vectors/Vector.h"
+#include "AMP/vectors/Vector.h"
 #endif
 #ifdef USE_AMP_MATRICES
-#include "matrices/Matrix.h"
+#include "AMP/matrices/Matrix.h"
 #endif
 
 

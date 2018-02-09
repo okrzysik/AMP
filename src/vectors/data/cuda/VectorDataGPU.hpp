@@ -1,7 +1,7 @@
 #ifndef included_AMP_VectorDataGPU_hpp
 #define included_AMP_VectorDataGPU_hpp
 
-#include "vectors/data/cuda/VectorDataGPU.h"
+#include "AMP/vectors/data/cuda/VectorDataGPU.h"
 
 
 #include <cuda.h>

@@ -1,14 +1,19 @@
-#include "solvers/trilinos/muelu/TrilinosMueLuSolver.h"
+#include "AMP/solvers/trilinos/muelu/TrilinosMueLuSolver.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/matrices/trilinos/EpetraMatrix.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/DataChangeFirer.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 
+#include "ProfilerApp.h"
+
+// Trilinos includes
 DISABLE_WARNINGS
-// Teuchos
-#include <Teuchos_RCP.hpp>
-
-// Xpetra
-#include <Xpetra_EpetraVector.hpp>
-#include <Xpetra_Matrix.hpp>
-#include <Xpetra_Operator.hpp>
-// MueLu
+#include "Teuchos_RCP.hpp"
+#include "Xpetra_EpetraVector.hpp"
+#include "Xpetra_Matrix.hpp"
+#include "Xpetra_Operator.hpp"
 #include "MueLu.hpp"
 #include "MueLu_DirectSolver.hpp"
 #include "MueLu_Ifpack2Smoother.hpp"
@@ -19,17 +24,10 @@ DISABLE_WARNINGS
 #include "MueLu_TentativePFactory.hpp"
 #include "MueLu_TransPFactory.hpp"
 #include "MueLu_TrilinosSmoother.hpp"
-#include <MueLu_CreateEpetraPreconditioner.hpp>
-
+#include "MueLu_CreateEpetraPreconditioner.hpp"
+#include "MueLu_ParameterListInterpreter_decl.hpp"
 ENABLE_WARNINGS
 
-#include "ProfilerApp.h"
-#include "matrices/Matrix.h"
-#include "matrices/trilinos/EpetraMatrix.h"
-#include "operators/LinearOperator.h"
-#include "utils/Utilities.h"
-#include "vectors/DataChangeFirer.h"
-#include "vectors/trilinos/epetra/EpetraVector.h"
 
 namespace AMP {
 namespace Solver {

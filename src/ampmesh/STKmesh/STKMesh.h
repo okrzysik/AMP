@@ -1,9 +1,9 @@
 #ifndef included_AMP_STKMesh
 #define included_AMP_STKMesh
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/MeshIterator.h"
-#include "ampmesh/STKmesh/initializeSTKMesh.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/ampmesh/STKmesh/initializeSTKMesh.h"
 
 #include "Teuchos_RCP.hpp"
 #include "stk_io/util/Gmesh_STKmesh_Fixture.hpp"

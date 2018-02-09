@@ -1,13 +1,13 @@
 #ifndef included_AMP_Mesh
 #define included_AMP_Mesh
 
-#include "ampmesh/Geometry.h"
-#include "ampmesh/MeshID.h"
-#include "ampmesh/MeshIterator.h"
-#include "ampmesh/MeshParameters.h"
-#include "utils/AMP_MPI.h"
-#include "utils/enable_shared_from_this.h"
-#include "utils/shared_ptr.h"
+#include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/MeshID.h"
+#include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/enable_shared_from_this.h"
+#include "AMP/utils/shared_ptr.h"
 
 #ifdef USE_AMP_VECTORS
 namespace AMP {

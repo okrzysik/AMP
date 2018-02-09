@@ -1,17 +1,17 @@
-#include "vectors/testHelpers/VectorTests.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
 
-#include "utils/UnitTest.h"
+#include "AMP/utils/UnitTest.h"
 
-#include "vectors/testHelpers/VectorFactory.h"
+#include "AMP/vectors/testHelpers/VectorFactory.h"
 
 #ifdef USE_EXT_SUNDIALS
-#include "vectors/sundials/SundialsVector.h"
-#include "vectors/testHelpers/sundials/SundialsVectorTests.h"
+#include "AMP/vectors/sundials/SundialsVector.h"
+#include "AMP/vectors/testHelpers/sundials/SundialsVectorTests.h"
 #endif
 #ifdef USE_EXT_PETSC
-#include "vectors/petsc/PetscVector.h"
-#include "vectors/testHelpers/petsc/PetscVectorFactory.h"
-#include "vectors/testHelpers/petsc/PetscVectorTests.h"
+#include "AMP/vectors/petsc/PetscVector.h"
+#include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
+#include "AMP/vectors/testHelpers/petsc/PetscVectorTests.h"
 #endif
 
 

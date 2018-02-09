@@ -2,9 +2,9 @@
 #ifndef included_AMP_BlockOperatorParameters
 #define included_AMP_BlockOperatorParameters
 
-#include "operators/OperatorParameters.h"
+#include "AMP/operators/OperatorParameters.h"
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {

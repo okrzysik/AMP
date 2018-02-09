@@ -2,11 +2,11 @@
 #define included_TimeIntegratorParameters
 
 
-#include "operators/Operator.h"
-#include "utils/Database.h"
-#include "utils/ParameterBase.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/ParameterBase.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 
 #include <string>
 

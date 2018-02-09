@@ -12,8 +12,8 @@
 #ifndef included_Database
 #define included_Database
 
-#include "utils/DatabaseBox.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/DatabaseBox.h"
+#include "AMP/utils/shared_ptr.h"
 
 #include <complex>
 #include <string>

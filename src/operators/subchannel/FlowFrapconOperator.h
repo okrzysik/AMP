@@ -2,9 +2,9 @@
 #ifndef included_AMP_FlowFrapconOperator
 #define included_AMP_FlowFrapconOperator
 
-#include "operators/Operator.h"
-#include "operators/subchannel/FlowFrapconOperatorParameters.h"
-#include "vectors/SimpleVector.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/subchannel/FlowFrapconOperatorParameters.h"
+#include "AMP/vectors/SimpleVector.h"
 
 /* Libmesh files */
 #include "libmesh/fe_base.h"

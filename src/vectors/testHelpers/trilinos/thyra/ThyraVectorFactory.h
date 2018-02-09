@@ -2,11 +2,11 @@
 #define included_ThyraVectorFactor
 
 
-#include "utils/UnitTest.h"
-#include "vectors/Vector.h"
-#include "vectors/testHelpers/VectorTests.h"
-#include <vectors/trilinos/thyra/ManagedThyraVector.h>
-#include <vectors/trilinos/thyra/NativeThyraVector.h>
+#include "AMP/utils/UnitTest.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
+#include "AMP/vectors/trilinos/thyra/ManagedThyraVector.h"
+#include "AMP/vectors/trilinos/thyra/NativeThyraVector.h"
 
 
 /// \cond UNDOCUMENTED
@@ -53,7 +53,10 @@ private:
 class ManagedNativeThyraFactory : public VectorFactory
 {
 public:
-    explicit ManagedNativeThyraFactory( AMP::shared_ptr<VectorFactory> factory ) : d_factory( factory ) {}
+    explicit ManagedNativeThyraFactory( AMP::shared_ptr<VectorFactory> factory )
+        : d_factory( factory )
+    {
+    }
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override;
 

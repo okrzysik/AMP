@@ -1,10 +1,10 @@
 // This program simulates the load balance with a given input file on a given number of processors
 
-#include "ampmesh/Mesh.h"
-#include "ampmesh/loadBalance/loadBalanceSimulator.h"
-#include "utils/AMPManager.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/loadBalance/loadBalanceSimulator.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
 
 #include <cmath>
 #include <iomanip>

@@ -1,8 +1,8 @@
 #ifndef included_AMP_CommVariable_H
 #define included_AMP_CommVariable_H
 
-#include "utils/AMP_MPI.h"
-#include "vectors/SubsetVariable.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/vectors/SubsetVariable.h"
 
 namespace AMP {
 namespace LinearAlgebra {

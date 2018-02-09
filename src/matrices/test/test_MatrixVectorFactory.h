@@ -1,18 +1,18 @@
 #ifndef included_test_MatrixVectorFactory
 #define included_test_MatrixVectorFactory
 
-#include "discretization/DOF_Manager.h"
-#include "matrices/Matrix.h"
-#include "utils/UnitTest.h"
-#include "vectors/Vector.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/vectors/Vector.h"
 
-#include <vectors/testHelpers/VectorFactory.h>
+#include "AMP/vectors/testHelpers/VectorFactory.h"
 
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-#include "matrices/petsc/PetscMatrix.h"
-#include "vectors/petsc/ManagedPetscVector.h"
-#include "vectors/petsc/NativePetscVector.h"
-#include <vectors/testHelpers/petsc/PetscVectorFactory.h>
+#include "AMP/matrices/petsc/PetscMatrix.h"
+#include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/NativePetscVector.h"
+#include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #endif
 
 

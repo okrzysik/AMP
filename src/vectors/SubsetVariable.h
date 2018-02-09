@@ -1,8 +1,8 @@
 #ifndef included_AMP_SubsetVariable_H
 #define included_AMP_SubsetVariable_H
 
-#include "discretization/DOF_Manager.h"
-#include "vectors/Variable.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/vectors/Variable.h"
 
 
 namespace AMP {

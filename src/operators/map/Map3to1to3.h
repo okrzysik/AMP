@@ -4,9 +4,9 @@
 #include <map>
 #include <vector>
 
-#include "ampmesh/MeshIterator.h"
-#include "operators/map/AsyncMapOperator.h"
-#include "operators/map/AsyncMapOperatorParameters.h"
+#include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/operators/map/AsyncMapOperator.h"
+#include "AMP/operators/map/AsyncMapOperatorParameters.h"
 
 
 namespace AMP {

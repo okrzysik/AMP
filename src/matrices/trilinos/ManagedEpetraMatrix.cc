@@ -1,13 +1,13 @@
-#include "matrices/trilinos/ManagedEpetraMatrix.h"
+#include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVector.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
+#include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
 #include "ProfilerApp.h"
-#include "utils/Utilities.h"
-#include "vectors/data/VectorDataCPU.h"
-#include "vectors/trilinos/epetra/EpetraVector.h"
-#include "vectors/trilinos/epetra/EpetraVectorEngine.h"
-#include "vectors/trilinos/epetra/ManagedEpetraVector.h"
 #include <algorithm>
 
-#include "utils/AMP_MPI.h"
+#include "AMP/utils/AMP_MPI.h"
 
 #include <EpetraExt_MatrixMatrix.h>
 #include <EpetraExt_Transpose_RowMatrix.h>

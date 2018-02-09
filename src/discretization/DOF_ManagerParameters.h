@@ -1,8 +1,8 @@
 #ifndef included_AMP_DOF_ManagerParameters
 #define included_AMP_DOF_ManagerParameters
 
-#include "ampmesh/Mesh.h"
-#include "utils/shared_ptr.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace Discretization {

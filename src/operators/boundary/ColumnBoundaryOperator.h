@@ -2,9 +2,9 @@
 #ifndef included_AMP_ColumnBoundaryOperator
 #define included_AMP_ColumnBoundaryOperator
 
+#include "AMP/operators/ColumnOperatorParameters.h"
+#include "AMP/vectors/Vector.h"
 #include "BoundaryOperator.h"
-#include "operators/ColumnOperatorParameters.h"
-#include "vectors/Vector.h"
 
 #include <vector>
 

@@ -4,8 +4,8 @@
 #include "NOX_Abstract_PrePostOperator.H"
 #include "NOX_Solver_Generic.H"
 
-#include "utils/shared_ptr.h"
-#include "vectors/Vector.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 
 
 namespace AMP {

@@ -2,11 +2,11 @@
 #ifndef included_AMP_FlowFrapconJacobian
 #define included_AMP_FlowFrapconJacobian
 
-#include "operators/Operator.h"
-#include "operators/subchannel/FlowFrapconJacobianParameters.h"
-#include "vectors/SimpleVector.h"
-//#include "operators/map/Map3Dto1D.h"
-//#include "operators/map/Map1Dto3D.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/subchannel/FlowFrapconJacobianParameters.h"
+#include "AMP/vectors/SimpleVector.h"
+//#include "AMP/operators/map/Map3Dto1D.h"
+//#include "AMP/operators/map/Map1Dto3D.h"
 
 /* Libmesh files */
 #include "libmesh/fe_base.h"

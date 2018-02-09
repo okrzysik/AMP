@@ -3,7 +3,7 @@
 #define included_AMP_MPI
 
 
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 #include <atomic>
 #include <complex>
 #include <map>
@@ -1104,7 +1104,7 @@ private: // data members
 
 // Include the default instantiations
 // \cond HIDDEN_SYMBOLS
-#include "utils/AMP_MPI.I"
+#include "AMP/utils/AMP_MPI.I"
 // \endcond
 
 

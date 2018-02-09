@@ -1,9 +1,9 @@
 #ifndef included_AMP_DenseSerialMatrix
 #define included_AMP_DenseSerialMatrix
 
-#include "matrices/Matrix.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Vector.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 
 namespace AMP {
 namespace LinearAlgebra {

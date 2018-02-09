@@ -1,13 +1,13 @@
-#include "ampmesh/Mesh.h"
-#include "ampmesh/structured/BoxMesh.h"
-#include "ampmesh/testHelpers/meshTests.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/structured/BoxMesh.h"
+#include "AMP/ampmesh/testHelpers/meshTests.h"
 
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/MemoryDatabase.h"
-#include "utils/UnitTest.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/MemoryDatabase.h"
+#include "AMP/utils/UnitTest.h"
 
 #include "ProfilerApp.h"
 
@@ -205,7 +205,6 @@ void testlibMesh( AMP::UnitTest *ut )
 }
 
 
-
 // Function to test the creation/destruction of a moab mesh
 void testMoabMesh( AMP::UnitTest *ut )
 {
@@ -307,10 +306,10 @@ void testDefaults( AMP::UnitTest &ut )
     // Run tests on a moab mesh
     testMoabMesh( &ut );
 
-    // Run tests on the input file
-    #ifdef USE_LIBMESH
-        testInputMesh( &ut, "input_Mesh" );
-    #endif
+// Run tests on the input file
+#ifdef USE_LIBMESH
+    testInputMesh( &ut, "input_Mesh" );
+#endif
 
     // Run the basic tests on all mesh generators
     testMeshGenerators( &ut );

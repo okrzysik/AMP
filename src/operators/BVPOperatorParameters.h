@@ -1,9 +1,9 @@
 #ifndef included_AMP_BVPOperatorParameters
 #define included_AMP_BVPOperatorParameters
 
-#include "operators/OperatorParameters.h"
-#include "operators/boundary/BoundaryOperator.h"
-#include "utils/shared_ptr.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/operators/boundary/BoundaryOperator.h"
+#include "AMP/utils/shared_ptr.h"
 
 
 namespace AMP {

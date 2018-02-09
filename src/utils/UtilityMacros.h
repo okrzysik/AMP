@@ -2,7 +2,7 @@
 #ifndef included_AMP_UtilityMacros
 #define included_AMP_UtilityMacros
 
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 
 
 /*! \defgroup Macros Set of utility macro functions used in AMP
@@ -251,7 +251,8 @@
         _Pragma( "GCC diagnostic ignored \"-Wvirtual-move-assign\"" )                   \
         _Pragma( "GCC diagnostic ignored \"-Wunused-function\"" )                       \
         _Pragma( "GCC diagnostic ignored \"-Woverflow\"" )                              \
-        _Pragma( "GCC diagnostic ignored \"-Wunused-variable\"" )
+        _Pragma( "GCC diagnostic ignored \"-Wunused-variable\"" )                       \
+        _Pragma( "GCC diagnostic ignored \"-Wignored-qualifiers\"" )
 #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
 #else
 #define DISABLE_WARNINGS

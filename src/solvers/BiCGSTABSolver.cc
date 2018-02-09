@@ -1,8 +1,8 @@
-#include "solvers/BiCGSTABSolver.h"
-#include "ProfilerApp.h"
-#include "operators/LinearOperator.h"
-#include "solvers/KrylovSolverParameters.h"
+#include "AMP/solvers/BiCGSTABSolver.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/solvers/KrylovSolverParameters.h"
 
+#include "ProfilerApp.h"
 
 #include <cmath>
 #include <limits>

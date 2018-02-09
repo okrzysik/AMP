@@ -1,8 +1,8 @@
 #ifndef included_AMP_BoomerAMGSolver
 #define included_AMP_BoomerAMGSolver
 
-#include "solvers/SolverStrategy.h"
-#include "solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 
 extern "C" {
 #include "HYPRE.h"

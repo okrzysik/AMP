@@ -2,12 +2,12 @@
 #ifndef included_AMP_ConstructLinearMechanicsRHSVector
 #define included_AMP_ConstructLinearMechanicsRHSVector
 
-#include "materials/Material.h"
+#include "AMP/materials/Material.h"
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "utils/Database.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/Utilities.h"
 
 /* Libmesh files */
 #include "libmesh/auto_ptr.h"
@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-#include "ampmesh/Mesh.h"
+#include "AMP/ampmesh/Mesh.h"
 
 void computeTemperatureRhsVector(
     AMP::Mesh::Mesh::shared_ptr mesh,

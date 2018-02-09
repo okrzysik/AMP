@@ -1,12 +1,12 @@
 /* AMP Files */
 #include "NeutronicsRhs.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 #include "NeutronicsRhsParameters.h"
-#include "ampmesh/Mesh.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "operators/Operator.h"
-#include "utils/InputDatabase.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Vector.h"
 
 #include <cmath>
 #include <vector>

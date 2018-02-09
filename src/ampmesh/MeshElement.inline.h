@@ -1,7 +1,7 @@
 #ifndef included_AMP_MeshElement_inline
 #define included_AMP_MeshElement_inline
 
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 
 namespace AMP {
 namespace Mesh {

@@ -1,9 +1,9 @@
 #ifndef included_AMP_DiffusionTransportTensorModel
 #define included_AMP_DiffusionTransportTensorModel
 
-#include "materials/TensorProperty.h"
-#include "operators/diffusion/DiffusionTransportModel.h"
-#include "utils/Utilities.h"
+#include "AMP/materials/TensorProperty.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/utils/Utilities.h"
 
 namespace AMP {
 namespace Operator {

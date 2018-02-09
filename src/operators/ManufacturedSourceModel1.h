@@ -1,13 +1,19 @@
 #ifndef included_AMP_ManufacturedSourceModel1
 #define included_AMP_ManufacturedSourceModel1
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/Property.h"
+#include "AMP/operators/ElementPhysicsModel.h"
+
+
+// LibMesh include
+DISABLE_WARNINGS
+#include "libmesh/point.h"
+ENABLE_WARNINGS
+
 #include <iostream>
 #include <string>
-
-#include "ElementPhysicsModel.h"
-#include "materials/Material.h"
-#include "materials/Property.h"
 
 
 namespace AMP {

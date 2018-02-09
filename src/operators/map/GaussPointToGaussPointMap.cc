@@ -1,8 +1,8 @@
 
-#include "operators/map/GaussPointToGaussPointMap.h"
-#include "ampmesh/MultiMesh.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/operators/map/GaussPointToGaussPointMap.h"
+#include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 // Libmesh files
 DISABLE_WARNINGS

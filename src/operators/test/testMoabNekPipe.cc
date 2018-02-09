@@ -18,10 +18,10 @@
 #include <string>
 #include <vector>
 
-#include "utils/AMPManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
 // Nek includes
 #include "nek/Nek5000_API2.h"

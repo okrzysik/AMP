@@ -1,21 +1,21 @@
-#include "ampmesh/Mesh.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "utils/AMPManager.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Variable.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Variable.h"
 #include <string>
 
-#include "utils/Writer.h"
-#include "vectors/Vector.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
 
-#include "operators/libmesh/PowerShape.h"
+#include "AMP/operators/libmesh/PowerShape.h"
 
 void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 {

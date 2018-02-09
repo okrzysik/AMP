@@ -1,8 +1,7 @@
-
 #ifndef TRIANGLE_T
 #define TRIANGLE_T
 
-#include <ampmesh/edge_t.h>
+#include "AMP/ampmesh/edge_t.h"
 
 #include <vector>
 

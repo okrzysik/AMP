@@ -1,11 +1,12 @@
-#include <utils/AMPManager.h>
-#include <utils/UnitTest.h>
+#include "AMP/ampmesh/euclidean_geometry_tools.h"
+#include "AMP/ampmesh/triangle_t.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
 
-#include <ampmesh/euclidean_geometry_tools.h>
-#include <ampmesh/triangle_t.h>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+
 
 void test_above_point( triangle_t *t_ptr, unsigned int n_random_candidate_points = 10000 )
 {

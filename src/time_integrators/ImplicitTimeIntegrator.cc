@@ -12,10 +12,10 @@
 #include "TimeOperatorParameters.h"
 
 /*Design-By-Contract Macros*/
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 
-#include "utils/AMP_MPI.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>

@@ -1,4 +1,4 @@
-#include "vectors/VectorEngine.h"
+#include "AMP/vectors/VectorEngine.h"
 
 
 namespace AMP {

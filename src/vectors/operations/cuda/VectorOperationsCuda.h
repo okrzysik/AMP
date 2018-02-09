@@ -2,7 +2,7 @@
 #define included_AMP_VectorOperationsCuda
 
 
-#include "vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
 
 
 namespace AMP {

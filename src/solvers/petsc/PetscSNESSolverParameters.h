@@ -1,11 +1,11 @@
 #ifndef included_AMP_PetscSNESSolverParameters
 #define included_AMP_PetscSNESSolverParameters
 
-#include "solvers/SolverStrategyParameters.h"
-#include "solvers/petsc/PetscKrylovSolver.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/shared_ptr.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/shared_ptr.h"
 
 #ifdef MPICH_SKIP_MPICXX
 #define _FIX_FOR_PETSC_MPI_CXX

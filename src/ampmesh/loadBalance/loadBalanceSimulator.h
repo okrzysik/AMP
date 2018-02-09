@@ -1,7 +1,7 @@
 #ifndef included_AMP_loadBalanceSimulator
 #define included_AMP_loadBalanceSimulator
 
-#include "ampmesh/MeshParameters.h"
+#include "AMP/ampmesh/MeshParameters.h"
 
 
 namespace AMP {

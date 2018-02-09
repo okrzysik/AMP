@@ -14,15 +14,15 @@
 #define included_InputManager
 
 
+#include "AMP/utils/shared_ptr.h"
 #include "InputDatabase.h"
-#include "utils/shared_ptr.h"
 #ifndef included_String
 #include <string>
 #define included_String
 #endif
 
 
-#include "utils/AMP_MPI.h"
+#include "AMP/utils/AMP_MPI.h"
 
 namespace AMP {
 

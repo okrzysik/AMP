@@ -1,7 +1,7 @@
 #include "Map3to1to3.h"
+#include "AMP/vectors/Variable.h"
 #include "Map3to1to3Parameters.h"
 #include "ProfilerApp.h"
-#include "vectors/Variable.h"
 
 
 namespace AMP {

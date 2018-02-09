@@ -3,12 +3,12 @@
 
 #include <vector>
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 // AMP files
-#include "operators/ElementOperation.h"
-#include "operators/libmesh/SourcePhysicsModel.h"
-#include "utils/Utilities.h"
+#include "AMP/operators/ElementOperation.h"
+#include "AMP/operators/libmesh/SourcePhysicsModel.h"
+#include "AMP/utils/Utilities.h"
 
 
 // Libmesh headers

@@ -1,5 +1,5 @@
-#include "ampmesh/shapes/Box.h"
-#include "utils/Utilities.h"
+#include "AMP/ampmesh/shapes/Box.h"
+#include "AMP/utils/Utilities.h"
 
 
 namespace AMP {

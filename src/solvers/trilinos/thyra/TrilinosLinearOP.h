@@ -2,9 +2,9 @@
 #define included_AMP_TrilinosLinearOP
 
 // AMP includes
-#include "operators/LinearOperator.h"
-#include "solvers/SolverStrategy.h"
-#include "vectors/Vector.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/vectors/Vector.h"
 
 // Trilinos includes
 DISABLE_WARNINGS

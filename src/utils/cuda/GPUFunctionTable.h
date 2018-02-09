@@ -1,7 +1,7 @@
 #ifndef included_GPUFunctionTable_H_
 #define included_GPUFunctionTable_H_
 
-#include "utils/Array.h"
+#include "AMP/utils/Array.h"
 
 namespace AMP {
 
@@ -174,7 +174,7 @@ private:
     static inline void rand( size_t N, TYPE *x );
 };
 } // namespace AMP
-#include "utils/cuda/GPUFunctionTable.hpp"
+#include "AMP/utils/cuda/GPUFunctionTable.hpp"
 
 
 #endif

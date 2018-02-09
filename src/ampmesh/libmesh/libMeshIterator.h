@@ -1,8 +1,8 @@
 #ifndef included_AMP_libMeshIterators
 #define included_AMP_libMeshIterators
 
-#include "ampmesh/MeshIterator.h"
-#include "ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/ampmesh/libmesh/libMesh.h"
 
 
 namespace AMP {

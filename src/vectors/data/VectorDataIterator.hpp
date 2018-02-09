@@ -1,7 +1,7 @@
 #ifndef included_AMP_VectorIterators_tmpl
 #define included_AMP_VectorIterators_tmpl
 
-#include "vectors/data/VectorData.h"
+#include "AMP/vectors/data/VectorData.h"
 
 
 namespace AMP {

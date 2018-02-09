@@ -2,14 +2,14 @@
 #define included_AMP_Map1Dto3D
 
 
-#include "discretization/createLibmeshElements.h"
-#include "operators/Operator.h"
-#include "operators/OperatorParameters.h"
-#include "operators/map/MapOperator.h"
-#include "operators/map/MapOperatorParameters.h"
-#include "utils/shared_ptr.h"
-#include "vectors/Variable.h"
-#include "vectors/Vector.h"
+#include "AMP/discretization/createLibmeshElements.h"
+#include "AMP/operators/Operator.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/operators/map/MapOperator.h"
+#include "AMP/operators/map/MapOperatorParameters.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
 
 #include <string>
 

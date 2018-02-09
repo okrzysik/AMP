@@ -1,12 +1,12 @@
-#include "operators/diffusion/DiffusionNonlinearFEOperator.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
+#include "AMP/materials/Material.h"
+#include "AMP/operators/ElementOperationParameters.h"
+#include "AMP/operators/diffusion/DiffusionConstants.h"
+#include "AMP/operators/diffusion/DiffusionLinearElement.h"
+#include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
-#include "materials/Material.h"
-#include "operators/ElementOperationParameters.h"
-#include "operators/diffusion/DiffusionConstants.h"
-#include "operators/diffusion/DiffusionLinearElement.h"
-#include "operators/diffusion/DiffusionLinearFEOperatorParameters.h"
-#include "utils/InputDatabase.h"
-#include "utils/Utilities.h"
 
 #include <cstring>
 #include <iostream>

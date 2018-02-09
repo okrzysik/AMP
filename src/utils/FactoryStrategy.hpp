@@ -1,9 +1,9 @@
 #ifndef AMP_FactoryStrategy_HPP_
 #define AMP_FactoryStrategy_HPP_
 
-#include "utils/InputDatabase.h"
-#include "utils/UtilityMacros.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/UtilityMacros.h"
+#include "AMP/utils/shared_ptr.h"
 #include <map>
 #include <sstream>
 #include <string>

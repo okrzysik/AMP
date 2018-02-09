@@ -1,14 +1,13 @@
-#include <vectors/Vector.h>
-#include <vectors/testHelpers/VectorFactory.h>
-#include <vectors/testHelpers/VectorTests.h>
-#include <vectors/testHelpers/generateVectorFactories.h>
-
-#include <utils/UnitTest.h>
+#include "AMP/utils/UnitTest.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/testHelpers/VectorFactory.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
+#include "AMP/vectors/testHelpers/generateVectorFactories.h"
 
 #include "test_ArrayVector.h"
 
 #ifdef USE_TRILINOS_THYRA
-#include <vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h>
+#include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
 #endif
 
 

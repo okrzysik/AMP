@@ -3,14 +3,14 @@
 #define included_AMP_NavierStokesLSWFFEOperator
 
 /* AMP files */
-#include "ampmesh/MeshElement.h"
-#include "discretization/DOF_Manager.h"
-#include "operators/flow/NavierStokesConstants.h"
-#include "operators/flow/NavierStokesLSWFElement.h"
-#include "operators/flow/NavierStokesLSWFFEOperatorParameters.h"
-#include "operators/libmesh/NonlinearFEOperator.h"
-#include "vectors/MultiVariable.h"
-#include "vectors/Variable.h"
+#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/operators/flow/NavierStokesConstants.h"
+#include "AMP/operators/flow/NavierStokesLSWFElement.h"
+#include "AMP/operators/flow/NavierStokesLSWFFEOperatorParameters.h"
+#include "AMP/operators/libmesh/NonlinearFEOperator.h"
+#include "AMP/vectors/MultiVariable.h"
+#include "AMP/vectors/Variable.h"
 
 #include <vector>
 

@@ -6,10 +6,10 @@
  */
 
 #include "DiffusionTransportModel.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/Utilities.h"
 #include "DiffusionTransportTensorModel.h"
 #include "ProfilerApp.h"
-#include "utils/Database.h"
-#include "utils/Utilities.h"
 #include <algorithm>
 #include <cmath>
 #include <map>

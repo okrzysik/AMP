@@ -2,9 +2,9 @@
 #define included_OxideTimeIntegrator
 
 
-#include "time_integrators/TimeIntegrator.h"
-#include "time_integrators/oxide/OxideTimeIntegratorParameters.h"
-#include "vectors/Vector.h"
+#include "AMP/time_integrators/TimeIntegrator.h"
+#include "AMP/time_integrators/oxide/OxideTimeIntegratorParameters.h"
+#include "AMP/vectors/Vector.h"
 
 #include <string>
 

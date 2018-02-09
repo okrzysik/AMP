@@ -1,5 +1,4 @@
-
-#include <operators/CustomConstraintsEliminationOperator.h>
+#include "AMP/operators/CustomConstraintsEliminationOperator.h"
 
 namespace AMP {
 namespace Operator {

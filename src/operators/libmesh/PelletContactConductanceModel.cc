@@ -1,5 +1,5 @@
 #include "PelletContactConductanceModel.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/Utilities.h"
 #include <cmath>
 
 

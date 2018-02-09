@@ -2,11 +2,11 @@
 #ifndef included_AMP_ElementOperationParameters
 #define included_AMP_ElementOperationParameters
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "utils/Database.h"
+#include "AMP/utils/Database.h"
 
-#include "utils/ParameterBase.h"
+#include "AMP/utils/ParameterBase.h"
 
 namespace AMP {
 namespace Operator {

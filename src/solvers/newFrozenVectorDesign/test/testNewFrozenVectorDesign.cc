@@ -4,21 +4,21 @@
 #include <iostream>
 #include <vector>
 
-#include "utils/AMPManager.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
-#include "utils/UnitTest.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
 
-#include "vectors/MultiVector.h"
-#include "vectors/SimpleVector.h"
-#include "vectors/newFrozenVectorDesign/newFrozenVectorDesignHelpers.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/SimpleVector.h"
+#include "AMP/vectors/newFrozenVectorDesign/newFrozenVectorDesignHelpers.h"
 
-#include "operators/ColumnOperator.h"
-#include "operators/newFrozenVectorDesign/FirstOperator.h"
-#include "operators/newFrozenVectorDesign/SecondOperator.h"
+#include "AMP/operators/ColumnOperator.h"
+#include "AMP/operators/newFrozenVectorDesign/FirstOperator.h"
+#include "AMP/operators/newFrozenVectorDesign/SecondOperator.h"
 
-#include "solvers/ColumnSolver.h"
-#include "solvers/newFrozenVectorDesign/OnePointSolver.h"
+#include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/newFrozenVectorDesign/OnePointSolver.h"
 
 int main( int argc, char *argv[] )
 {

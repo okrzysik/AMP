@@ -6,8 +6,8 @@
  */
 
 #include "MassDensityModel.h"
-#include "materials/TensorProperty.h"
-#include "operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/materials/TensorProperty.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include <algorithm>
 #include <limits>
 

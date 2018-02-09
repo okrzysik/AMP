@@ -1,7 +1,7 @@
 #include "NonlinearBVPOperator.h"
 
+#include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
-#include "utils/Utilities.h"
 #include <stdexcept>
 
 namespace AMP {

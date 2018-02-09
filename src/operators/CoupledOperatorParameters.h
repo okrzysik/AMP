@@ -3,10 +3,10 @@
 #define included_AMP_CoupledOperatorParameters
 
 /*AMP files */
+#include "AMP/operators/Operator.h"
 #include "ColumnOperatorParameters.h"
-#include "operators/Operator.h"
 /*Boost files */
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
 #include <vector>
 

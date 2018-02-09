@@ -1,8 +1,8 @@
 #ifndef included_OxideTimeIntegratorParameters
 #define included_OxideTimeIntegratorParameters
 
-#include "ampmesh/Mesh.h"
-#include "time_integrators/TimeIntegratorParameters.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/time_integrators/TimeIntegratorParameters.h"
 
 namespace AMP {
 namespace TimeIntegrator {

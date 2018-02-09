@@ -8,8 +8,8 @@
 #ifndef FixedClad_H
 #define FixedClad_H
 
+#include "AMP/utils/Factory.h"
 #include "Material.h"
-#include "utils/Factory.h"
 
 
 // Define the material

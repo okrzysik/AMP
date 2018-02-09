@@ -1,42 +1,42 @@
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include <iostream>
 #include <string>
 
-#include "utils/shared_ptr.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/PIO.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
 
-#include "ampmesh/Mesh.h"
-#include "discretization/DOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "vectors/VectorBuilder.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #include "libmesh/libmesh.h"
 
 #include "../ElementPhysicsModelFactory.h"
 #include "../ElementPhysicsModelParameters.h"
 #include "../OperatorBuilder.h"
-#include "operators/diffusion/DiffusionConstants.h"
-#include "operators/diffusion/DiffusionLinearElement.h"
-#include "operators/diffusion/DiffusionLinearFEOperator.h"
-#include "operators/diffusion/DiffusionLinearFEOperatorParameters.h"
-#include "operators/diffusion/DiffusionNonlinearElement.h"
-#include "operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "operators/diffusion/DiffusionNonlinearFEOperatorParameters.h"
-#include "operators/diffusion/DiffusionTransportModel.h"
-#include "operators/diffusion/FickSoretNonlinearFEOperator.h"
-#include "operators/diffusion/FickSoretNonlinearFEOperatorParameters.h"
+#include "AMP/operators/diffusion/DiffusionConstants.h"
+#include "AMP/operators/diffusion/DiffusionLinearElement.h"
+#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
+#include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearElement.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearFEOperatorParameters.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/operators/diffusion/FickSoretNonlinearFEOperator.h"
+#include "AMP/operators/diffusion/FickSoretNonlinearFEOperatorParameters.h"
 
 #include "applyTests.h"
 
-#include "materials/Material.h"
+#include "AMP/materials/Material.h"
 
 
 void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )

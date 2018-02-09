@@ -1,9 +1,9 @@
-#include "vectors/MultiVariable.h"
-#include "vectors/MultiVector.h"
+#include "AMP/vectors/MultiVariable.h"
+#include "AMP/vectors/MultiVector.h"
 
-#include "vectors/testHelpers/VectorTests.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
 
-#include "utils/AMPManager.h"
+#include "AMP/utils/AMPManager.h"
 
 #include "test_VectorHelpers.h"
 

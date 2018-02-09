@@ -1,6 +1,6 @@
 #include "ManufacturedSolution.h"
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
 #include <cmath>
 #include <limits>
 #include <string>

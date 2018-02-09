@@ -9,8 +9,9 @@ MESSAGE ("===============")
 
 
 # Set the project name
-SET( PROJ AMP )
-SET( AMP_LIB amp )
+SET( PROJ AMP )                 # Set the project name for CMake
+SET( AMP_LIB amp )              # Set the final library name
+SET( AMP_INC AMP )              # Set an optional subfolder for includes (e.g. include/name/...)
 IF ( NOT ${PROJ}_INSTALL_DIR )
     SET( ${PROJ}_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}" )
 ENDIF()
@@ -98,7 +99,7 @@ IF ( NOT ONLY_BUILD_DOCS )
         CONFIGURE_TIMER( FALSE "${AMP_INSTALL_DIR}/include" FALSE )
     ENDIF()
     INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SharedPtr.cmake" )
-    CONFIGURE_SHARED_PTR( "${${PROJ}_INSTALL_DIR}/include/utils" AMP )
+    CONFIGURE_SHARED_PTR( "${${PROJ}_INSTALL_DIR}/include/AMP/utils" AMP )
     # Configure AMP (all external libraries must be configured first)
     CONFIGURE_AMP()
 ENDIF()

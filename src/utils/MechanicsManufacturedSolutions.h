@@ -1,6 +1,6 @@
-#include "utils/Database.h"
-#include "utils/Utilities.h"
-#include "utils/shared_ptr.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
 
 #include <string>
 #include <vector>

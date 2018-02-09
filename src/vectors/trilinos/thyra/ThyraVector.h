@@ -2,8 +2,8 @@
 #define included_AMP_ThyraVector
 
 // AMP includes
-#include "vectors/DataChangePassThrough.h"
-#include "vectors/Vector.h"
+#include "AMP/vectors/DataChangePassThrough.h"
+#include "AMP/vectors/Vector.h"
 
 // Thyra includes
 DISABLE_WARNINGS
