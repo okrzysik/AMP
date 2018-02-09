@@ -1,7 +1,7 @@
 #include "AMP/solvers/GMRESSolver.h"
 #include "AMP/operators/LinearOperator.h"
-#include "ProfilerApp.h"
 #include "AMP/solvers/KrylovSolverParameters.h"
+#include "ProfilerApp.h"
 
 
 #include <cmath>

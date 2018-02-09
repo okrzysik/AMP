@@ -1,5 +1,6 @@
-#include "AMP/materials/Material.h"
+#include "AMP/operators/libmesh/SourcePhysicsModel.h"
 #include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
 #include "AMP/operators/ManufacturedSourceModel1.h"
@@ -7,7 +8,6 @@
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/operators/libmesh/MassDensityModel.h"
 #include "AMP/utils/shared_ptr.h"
-#include "AMP/operators/libmesh/SourcePhysicsModel.h"
 
 #include "ProfilerApp.h"
 

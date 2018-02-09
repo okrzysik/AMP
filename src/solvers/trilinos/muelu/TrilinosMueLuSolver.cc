@@ -10,22 +10,22 @@
 
 // Trilinos includes
 DISABLE_WARNINGS
-#include "Teuchos_RCP.hpp"
-#include "Xpetra_EpetraVector.hpp"
-#include "Xpetra_Matrix.hpp"
-#include "Xpetra_Operator.hpp"
 #include "MueLu.hpp"
+#include "MueLu_CreateEpetraPreconditioner.hpp"
 #include "MueLu_DirectSolver.hpp"
 #include "MueLu_Ifpack2Smoother.hpp"
 #include "MueLu_IfpackSmoother.hpp"
+#include "MueLu_ParameterListInterpreter_decl.hpp"
 #include "MueLu_RAPFactory.hpp"
 #include "MueLu_SaPFactory.hpp"
 #include "MueLu_SmootherFactory.hpp"
 #include "MueLu_TentativePFactory.hpp"
 #include "MueLu_TransPFactory.hpp"
 #include "MueLu_TrilinosSmoother.hpp"
-#include "MueLu_CreateEpetraPreconditioner.hpp"
-#include "MueLu_ParameterListInterpreter_decl.hpp"
+#include "Teuchos_RCP.hpp"
+#include "Xpetra_EpetraVector.hpp"
+#include "Xpetra_Matrix.hpp"
+#include "Xpetra_Operator.hpp"
 ENABLE_WARNINGS
 
 

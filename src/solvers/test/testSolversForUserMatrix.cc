@@ -1,6 +1,16 @@
 #include <iostream>
 #include <string>
 
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/OperatorParameters.h"
+#include "AMP/solvers/KrylovSolverParameters.h"
+#include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/hypre/BoomerAMGSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -10,20 +20,10 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/shared_ptr.h"
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include "AMP/matrices/MatrixBuilder.h"
-#include "AMP/operators/LinearOperator.h"
-#include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/OperatorParameters.h"
-#include "AMP/solvers/KrylovSolverParameters.h"
-#include "AMP/solvers/SolverFactory.h"
-#include "AMP/solvers/hypre/BoomerAMGSolver.h"
 
 
 AMP::shared_ptr<AMP::Solver::SolverStrategy>

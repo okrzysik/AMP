@@ -8,12 +8,12 @@
 
 // Trilinos includes
 DISABLE_WARNINGS
+#include "MueLu_FactoryManager.hpp"
+#include "MueLu_HierarchyManager_fwd.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Xpetra_Matrix.hpp"
 #include "Xpetra_Operator_fwd.hpp"
 #include "Xpetra_Parameters.hpp"
-#include "MueLu_FactoryManager.hpp"
-#include "MueLu_HierarchyManager_fwd.hpp"
 ENABLE_WARNINGS
 
 #include <vector>
