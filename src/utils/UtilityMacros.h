@@ -251,7 +251,8 @@
         _Pragma( "GCC diagnostic ignored \"-Wvirtual-move-assign\"" )                   \
         _Pragma( "GCC diagnostic ignored \"-Wunused-function\"" )                       \
         _Pragma( "GCC diagnostic ignored \"-Woverflow\"" )                              \
-        _Pragma( "GCC diagnostic ignored \"-Wunused-variable\"" )
+        _Pragma( "GCC diagnostic ignored \"-Wunused-variable\"" )                       \
+        _Pragma( "GCC diagnostic ignored \"-Wignored-qualifiers\"" )
 #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
 #else
 #define DISABLE_WARNINGS

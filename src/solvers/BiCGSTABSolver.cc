@@ -2,7 +2,6 @@
 #include "AMP/operators/LinearOperator.h"
 #include "ProfilerApp.h"
 
-
 #include <cmath>
 #include <limits>
 
