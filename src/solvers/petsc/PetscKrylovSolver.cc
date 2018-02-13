@@ -6,6 +6,8 @@
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "ProfilerApp.h"
 
+#include "petsc.h"
+#include "petscksp.h"
 #include "petscpc.h"
 
 namespace AMP {
@@ -25,6 +27,22 @@ static inline void checkErr( PetscErrorCode ierr )
 #else
 #error Not programmed for this version yet
 #endif
+
+
+static inline PCSide getPCSide( const std::string& pc_side )
+{
+    PCSide PcSide;
+    if ( pc_side == "RIGHT" ) {
+        PcSide = PC_RIGHT;
+    } else if ( pc_side == "LEFT" ) {
+        PcSide = PC_LEFT;
+    } else if ( pc_side == "SYMMETRIC" ) {
+        PcSide = PC_SYMMETRIC;
+    } else {
+        AMP_ERROR( "Unknown value for pc_type" );
+    }
+    return PcSide;
+}
 
 
 /****************************************************************
@@ -113,9 +131,9 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
             checkErr( PCShellSetApply( pc, PetscKrylovSolver::applyPreconditioner ) );
         }
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-        checkErr( KSPSetPreconditionerSide( d_KrylovSolver, d_PcSide ) );
+        checkErr( KSPSetPreconditionerSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
 #elif PETSC_VERSION_GE( 3, 2, 0 )
-        checkErr( KSPSetPCSide( d_KrylovSolver, d_PcSide ) );
+        checkErr( KSPSetPCSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
 #else
 #error Not programmed for this version yet
 #endif
@@ -196,16 +214,7 @@ void PetscKrylovSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
             // call error here
             AMP_ERROR( "pc_type does not exist" );
         }
-        std::string pc_side = db->getStringWithDefault( "pc_side", "RIGHT" );
-        if ( pc_side == "RIGHT" ) {
-            d_PcSide = PC_RIGHT;
-        } else if ( pc_side == "LEFT" ) {
-            d_PcSide = PC_LEFT;
-        } else if ( pc_side == "SYMMETRIC" ) {
-            d_PcSide = PC_SYMMETRIC;
-        } else {
-            AMP_ERROR( "Unknown value for pc_type" );
-        }
+        d_PcSide = db->getStringWithDefault( "pc_side", "RIGHT" );
     } else {
         d_sPcType = "none";
     }
@@ -278,9 +287,9 @@ void PetscKrylovSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
             checkErr( PCShellSetApply( pc, PetscKrylovSolver::applyPreconditioner ) );
         }
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-        checkErr( KSPSetPreconditionerSide( d_KrylovSolver, d_PcSide ) );
+        checkErr( KSPSetPreconditionerSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
 #elif PETSC_VERSION_GE( 3, 2, 0 )
-        checkErr( KSPSetPCSide( d_KrylovSolver, d_PcSide ) );
+        checkErr( KSPSetPCSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
 #else
 #error Not programmed for this version yet
 #endif

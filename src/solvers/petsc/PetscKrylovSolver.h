@@ -8,33 +8,13 @@
 #include "AMP/vectors/petsc/PetscHelpers.h"
 
 
-extern "C" {
+// Forward declare a few types for PETSc
+#include "petscversion.h"
+typedef int PetscErrorCode;
+typedef struct _p_SNES* SNES;
+typedef struct _p_KSP* KSP;
+typedef struct _p_PC* PC;
 
-#ifdef MPICH_SKIP_MPICXX
-#define _FIX_FOR_PETSC_MPI_CXX
-#undef MPICH_SKIP_MPICXX
-#endif
-
-#ifdef OMPI_SKIP_MPICXX
-#define _FIX_FOR_PETSC_OMPI_CXX
-#undef OMPI_SKIP_MPICXX
-#endif
-
-#include "petsc.h"
-#include "petscksp.h"
-
-#ifdef _FIX_FOR_PETSC_MPI_CXX
-#ifndef MPICH_SKIP_MPICXX
-#define MPICH_SKIP_MPICXX
-#endif
-#endif
-
-#ifdef _FIX_FOR_PETSC_OMPI_CXX
-#ifndef OMPI_SKIP_MPICXX
-#define OMPI_SKIP_MPICXX
-#endif
-#endif
-}
 
 namespace AMP {
 namespace Solver {
@@ -197,7 +177,7 @@ private:
     std::string d_sPcType;
     std::string d_KSPAppendOptionsPrefix;
 
-    PCSide d_PcSide;
+    std::string d_PcSide;
 
     // FGMRES specific options
     int d_iMaxKrylovDimension;
