@@ -1,4 +1,8 @@
 #include "AMP/solvers/petsc/PetscMonitor.h"
+#include "AMP/utils/Utilities.h"
+
+#include "petscksp.h"
+#include "petscsnes.h"
 
 #include <iomanip>
 #include <iostream>

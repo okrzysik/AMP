@@ -2,16 +2,12 @@
 #define included_AMP_PetscMonitor
 
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/Utilities.h"
-#include <complex>
-#include <map>
-#include <set>
 
-#ifdef USE_EXT_PETSC
-#include "petsc.h"
-#include "petscksp.h"
-#include "petscsnes.h"
-#endif
+
+// Forward declare a few types for PETSc
+typedef int PetscErrorCode;
+typedef struct _p_SNES* SNES;
+typedef struct _p_KSP* KSP;
 
 
 namespace AMP {
@@ -45,11 +41,11 @@ public:
     //! Routine to pass to petsc for monitoring SNES
     static PetscErrorCode monitorSNES( SNES, int, double, void * );
 
-//! Routine to pass to petsc for monitoring KSP delete
-// static PetscErrorCode (*)(void**)  getKSPMonitorDelete();
+    //! Routine to pass to petsc for monitoring KSP delete
+    // static PetscErrorCode (*)(void**)  getKSPMonitorDelete();
 
-//! Routine to pass to petsc for monitoring SNES delete
-// static PetscErrorCode (*)(void**)  getSNESMonitorDelete();
+    //! Routine to pass to petsc for monitoring SNES delete
+    // static PetscErrorCode (*)(void**)  getSNESMonitorDelete();
 #endif
 
     // Function to remove the monitor options from the options
