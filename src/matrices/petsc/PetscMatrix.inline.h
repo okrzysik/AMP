@@ -4,7 +4,10 @@ namespace LinearAlgebra {
 
 inline PetscMatrix::PetscMatrix() {}
 
-inline PetscMatrix::PetscMatrix( MatrixParameters::shared_ptr params ) : Matrix( params ) {}
+inline PetscMatrix::PetscMatrix( MatrixParameters::shared_ptr params )
+    : Matrix( params ), d_MatCreatedInternally( false ), d_Mat( nullptr )
+{
+}
 
 inline PetscMatrix::~PetscMatrix() {}
 
