@@ -2,7 +2,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-inline PetscVector::PetscVector() { d_PetscRandom = 0; }
+inline PetscVector::PetscVector() : d_PetscRandom( 0 ), d_petscVec( nullptr ) {}
 
 
 inline PetscRandom &PetscVector::getPetscRandom( AMP_MPI comm )

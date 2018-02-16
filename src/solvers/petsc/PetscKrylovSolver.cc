@@ -31,7 +31,7 @@ static inline void checkErr( PetscErrorCode ierr )
 
 static inline PCSide getPCSide( const std::string &pc_side )
 {
-    PCSide PcSide;
+    PCSide PcSide = PC_RIGHT;
     if ( pc_side == "RIGHT" ) {
         PcSide = PC_RIGHT;
     } else if ( pc_side == "LEFT" ) {
