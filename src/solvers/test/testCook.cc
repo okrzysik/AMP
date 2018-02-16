@@ -59,10 +59,6 @@ ENABLE_WARNINGS
 
 #include "AMP/utils/ReadTestMesh.h"
 
-extern "C" {
-#include "petsc.h"
-}
-
 
 void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 {

@@ -5,10 +5,9 @@
 
 // Forward declare a few types for PETSc
 typedef int PetscErrorCode;
-typedef struct _p_Vec* Vec;
-typedef struct _p_Mat* Mat;
-typedef struct _p_PetscRandom* PetscRandom;
-
+typedef struct _p_Vec *Vec;
+typedef struct _p_Mat *Mat;
+typedef struct _p_PetscRandom *PetscRandom;
 
 
 namespace PETSC {

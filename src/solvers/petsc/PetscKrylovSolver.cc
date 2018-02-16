@@ -29,7 +29,7 @@ static inline void checkErr( PetscErrorCode ierr )
 #endif
 
 
-static inline PCSide getPCSide( const std::string& pc_side )
+static inline PCSide getPCSide( const std::string &pc_side )
 {
     PCSide PcSide;
     if ( pc_side == "RIGHT" ) {

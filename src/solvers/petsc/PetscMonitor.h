@@ -6,8 +6,8 @@
 
 // Forward declare a few types for PETSc
 typedef int PetscErrorCode;
-typedef struct _p_SNES* SNES;
-typedef struct _p_KSP* KSP;
+typedef struct _p_SNES *SNES;
+typedef struct _p_KSP *KSP;
 
 
 namespace AMP {
