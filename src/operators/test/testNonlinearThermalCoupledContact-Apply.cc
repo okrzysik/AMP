@@ -46,10 +46,6 @@
 #include "AMP/operators/map/MapOperatorParameters.h"
 #include "AMP/operators/map/MapSurface.h"
 
-extern "C" {
-#include "petsc.h"
-}
-
 
 void resetTests( AMP::UnitTest *ut,
                  std::string msgPrefix,

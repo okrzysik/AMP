@@ -11,9 +11,9 @@
 // Forward declare a few types for PETSc
 #include "petscversion.h"
 typedef int PetscErrorCode;
-typedef struct _p_SNES* SNES;
-typedef struct _p_KSP* KSP;
-typedef struct _p_PC* PC;
+typedef struct _p_SNES *SNES;
+typedef struct _p_KSP *KSP;
+typedef struct _p_PC *PC;
 
 
 namespace AMP {
