@@ -1,13 +1,13 @@
-#include "AMP/utils/AMPManager.h"
 #include "AMP/AMP_Version.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/RNG.h"
 #include "AMP/utils/ShutdownRegistry.h"
-#include "AMP/utils/StackTrace.h"
 #include "AMP/utils/Utilities.h"
-#include "ProfilerApp.h"
 
+#include "ProfilerApp.h"
+#include "StackTrace/StackTrace.h"
 
 // Include external files for startup/version info
 // clang-format off
@@ -79,6 +79,7 @@ AMPManagerProperties AMPManager::properties = AMPManagerProperties();
 ****************************************************************************/
 static int force_exit     = 0;
 static bool printed_stack = false;
+static int abort_stackType = 3;
 static void abort_fun( std::string msg, StackTrace::terminateType type )
 {
     if ( type == StackTrace::terminateType::exception )
@@ -93,10 +94,20 @@ void AMPManager::terminate_AMP( std::string message )
         std::stringstream msg;
         msg << message << std::endl;
         msg << "Bytes used = " << AMP::Utilities::getMemoryUsage() << std::endl;
-        auto stack = AMP::StackTrace::getCallStack();
+        StackTrace::multi_stack_info stack;
+        if ( abort_stackType == 1 ) {
+            stack = StackTrace::getCallStack();
+        } else if ( abort_stackType == 2 ) {
+            stack = StackTrace::getAllCallStacks();
+        } else if ( abort_stackType == 3 ) {
+            stack = StackTrace::getGlobalCallStacks();
+        }
+        StackTrace::cleanupStackTrace( stack );
+        auto data = stack.print();
+        msg << std::endl;
         msg << "Stack Trace:\n";
-        for ( auto &elem : stack )
-            msg << "   " << elem.print() << std::endl;
+        for ( const auto &i : data )
+            msg << " " << i << std::endl;
         // Add a rank dependent wait to hopefully print the stack trace cleanly
         Utilities::sleepMs( ( 100 * comm.getRank() ) / comm.getSize() );
         perr << msg.str();
@@ -124,7 +135,7 @@ void AMPManager::exitFun()
     std::stringstream msg;
     msg << "Calling exit without calling shutdown\n";
     msg << "Bytes used = " << AMP::Utilities::getMemoryUsage() << std::endl;
-    auto stack = AMP::StackTrace::getCallStack();
+    auto stack = StackTrace::getCallStack();
     msg << "Stack Trace:\n";
     for ( auto &elem : stack )
         msg << "   " << elem.print() << std::endl;
@@ -202,6 +213,22 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     PROFILE_DISABLE();
     // Set the abort method
     AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
+    // Initialize MPI
+    AMP::AMP_MPI::changeProfileLevel( properties.profile_MPI_level );
+#ifdef USE_EXT_MPI
+    if ( MPI_Active() ) {
+        called_MPI_Init = false;
+        MPI_time        = 0;
+    } else {
+        int provided_thread_support;
+        double MPI_start_time = Utilities::time();
+        int result            = MPI_Init_thread( &argc, &argv, MPI_THREAD_MULTIPLE, &provided_thread_support );
+        if ( result != MPI_SUCCESS )
+            AMP_ERROR( "AMP was unable to initialize MPI" );
+        called_MPI_Init = true;
+        MPI_time        = Utilities::time() - MPI_start_time;
+    }
+#endif
     // Initialize PETSc
 #ifdef USE_EXT_PETSC
     double petsc_start_time = Utilities::time();
@@ -224,27 +251,14 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     #endif
     petsc_time = Utilities::time() - petsc_start_time;
 #endif
-    // Initialize MPI
-    AMP::AMP_MPI::changeProfileLevel( properties.profile_MPI_level );
-#ifdef USE_EXT_MPI
-    if ( MPI_Active() ) {
-        called_MPI_Init = false;
-        MPI_time        = 0;
-    } else {
-        double MPI_start_time = Utilities::time();
-        int result            = MPI_Init( &argc, &argv );
-        if ( result != MPI_SUCCESS )
-            AMP_ERROR( "AMP was unable to initialize MPI" );
-        called_MPI_Init = true;
-        MPI_time        = Utilities::time() - MPI_start_time;
-    }
-#endif
     // Initialize AMP's MPI
     if ( properties.COMM_WORLD == AMP_COMM_WORLD )
         comm_world = AMP_MPI( MPI_COMM_WORLD );
     else
         comm_world = AMP_MPI( properties.COMM_WORLD ); // Initialize the parallel IO
     PIO::initialize();
+    // Initialze call stack
+    StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
     // Initialize the random number generator
     AMP::RNG::initialize( 123 );
     // Initialize cuda
@@ -295,6 +309,8 @@ void AMPManager::shutdown()
     // Syncronize all processors
     comm_world.barrier();
     ShutdownRegistry::callRegisteredShutdowns();
+    // Disable call stack
+    StackTrace::globalCallStackFinalize( );
     // Shutdown the parallel IO
     PIO::finalize();
     // Shutdown MPI

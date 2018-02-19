@@ -7,6 +7,7 @@
 
 
 #include "Logger.h"
+#include <cstdarg>
 #include <limits>
 #include <math.h>
 #include <sstream>
@@ -237,6 +238,13 @@ unsigned int hash_char( const char * );
 std::vector<int> factor( size_t );
 
 /*!
+ * Set an environmental variable
+ * @param name              The name of the environmental variable
+ * @param value             The value to set
+ */
+void setenv( const char *name, const char *value );
+
+/*!
  * Function to get the memory availible.
  * This function will return the total memory availible
  * Note: depending on the implimentation, this number may be rounded to
@@ -269,8 +277,22 @@ void printBanner();
 //! Null use function
 void nullUse( void * );
 
+//! std::string version of sprintf
+inline std::string stringf( const char *format, ... );
+
 } // namespace Utilities
 
+
+// stringf
+inline std::string Utilities::stringf( const char *format, ... )
+{
+    va_list ap;
+    va_start( ap, format );
+    char tmp[4096];
+    vsprintf( tmp, format, ap );
+    va_end( ap );
+    return std::string( tmp );
+}
 
 // templated quicksort routine
 template<class T>
