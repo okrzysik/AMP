@@ -107,16 +107,27 @@ std::string Utilities::blockToString( int num ) { return intToString( num, 4 ); 
 void Utilities::abort( const std::string &message, const std::string &filename, const int line )
 {
     if ( AMP::AMPManager::use_MPI_Abort == true ) {
-        // Print the call stack and memory usage
+        // Get the call stack and memory usage
         long long unsigned int N_bytes = getMemoryUsage();
-        printf( "Bytes used = %llu\n", N_bytes );
         auto stack = StackTrace::getCallStack();
-        printf( "Stack Trace:\n" );
-        for ( auto &elem : stack )
-            printf( "   %s\n", elem.print().c_str() );
-        printf( "\n" );
         // Log the abort message
-        Logger::getInstance()->logAbort( message, filename, line );
+        if ( AMPManager::isInitialized() ) {
+            AMP::pout << "Bytes used = " << N_bytes << std::endl;
+            AMP::pout << "Stack Trace:\n";
+            for ( auto &elem : stack )
+                AMP::pout << "   " << elem.print() << std::endl;
+            AMP::pout << std::endl;
+            Logger::getInstance()->logAbort( message, filename, line );
+        } else {
+            std::cout << "Bytes used = " << N_bytes << std::endl;
+            std::cout << "Stack Trace:\n";
+            for ( auto &elem : stack )
+                std::cout << "   " << elem.print() << std::endl;
+            std::cout << std::endl;
+            std::cerr << "Program abort called in file ``" << filename << "'' at line " << line << std::endl;
+            std::cerr << "ERROR MESSAGE: " << std::endl << message.c_str() << std::endl;
+            std::cerr << std::flush;
+        }
         // Use MPI_abort (will terminate all processes)
         AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );
         comm.abort();
