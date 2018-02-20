@@ -306,25 +306,13 @@ void AMPManager::shutdown()
         AMP_ERROR(
             "AMP has been initialized and shutdown.  Calling shutdown more than once is invalid" );
     initialized = -1;
+    // Disable call stack
+    StackTrace::globalCallStackFinalize( );
     // Syncronize all processors
     comm_world.barrier();
     ShutdownRegistry::callRegisteredShutdowns();
-    // Disable call stack
-    StackTrace::globalCallStackFinalize( );
     // Shutdown the parallel IO
     PIO::finalize();
-    // Shutdown MPI
-    comm_world.barrier();   // Sync all processes
-    clearMPIErrorHandler(); // Clear MPI error handler before deleting comms
-    AMPManager::use_MPI_Abort = false;
-    comm_world                = AMP_MPI( AMP_COMM_NULL ); // Delete comm world
-    if ( called_MPI_Init ) {
-        double MPI_start_time = Utilities::time();
-#ifdef USE_EXT_MPI
-        MPI_Finalize();
-#endif
-        MPI_time = Utilities::time() - MPI_start_time;
-    }
     // Shudown PETSc
     double petsc_time = 0.0;
 #ifdef USE_EXT_PETSC
@@ -344,6 +332,18 @@ void AMPManager::shutdown()
         if ( MPI_time != 0 )
             printf( " MPI shutdown time = %0.3f s\n", MPI_time );
         printf( "\n" );
+    }
+    // Shutdown MPI
+    comm_world.barrier();   // Sync all processes
+    clearMPIErrorHandler(); // Clear MPI error handler before deleting comms
+    AMPManager::use_MPI_Abort = false;
+    comm_world                = AMP_MPI( AMP_COMM_NULL ); // Delete comm world
+    if ( called_MPI_Init ) {
+        double MPI_start_time = Utilities::time();
+#ifdef USE_EXT_MPI
+        MPI_Finalize();
+#endif
+        MPI_time = Utilities::time() - MPI_start_time;
     }
     // Print any AMP_MPI leaks
     if ( AMP_MPI::MPI_Comm_created() != AMP_MPI::MPI_Comm_destroyed() ) {
