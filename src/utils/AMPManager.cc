@@ -1,5 +1,5 @@
-#include "AMP/AMP_Version.h"
 #include "AMP/utils/AMPManager.h"
+#include "AMP/AMP_Version.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/RNG.h"

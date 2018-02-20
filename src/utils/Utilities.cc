@@ -109,7 +109,7 @@ void Utilities::abort( const std::string &message, const std::string &filename, 
     if ( AMP::AMPManager::use_MPI_Abort == true ) {
         // Get the call stack and memory usage
         long long unsigned int N_bytes = getMemoryUsage();
-        auto stack = StackTrace::getCallStack();
+        auto stack                     = StackTrace::getCallStack();
         // Log the abort message
         if ( AMPManager::isInitialized() ) {
             AMP::pout << "Bytes used = " << N_bytes << std::endl;
@@ -124,7 +124,8 @@ void Utilities::abort( const std::string &message, const std::string &filename, 
             for ( auto &elem : stack )
                 std::cout << "   " << elem.print() << std::endl;
             std::cout << std::endl;
-            std::cerr << "Program abort called in file ``" << filename << "'' at line " << line << std::endl;
+            std::cerr << "Program abort called in file ``" << filename << "'' at line " << line
+                      << std::endl;
             std::cerr << "ERROR MESSAGE: " << std::endl << message.c_str() << std::endl;
             std::cerr << std::flush;
         }
@@ -380,8 +381,8 @@ void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_
     if ( only_node_zero_creates )
         comm.barrier();
 }
- 
- 
+
+
 /****************************************************************************
  *  Print AMP Banner                                                         *
  ****************************************************************************/

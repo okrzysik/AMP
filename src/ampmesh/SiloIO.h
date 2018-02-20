@@ -113,28 +113,23 @@ private:
     struct siloBaseMeshData {
         AMP::Mesh::MeshID id;             // Unique ID to identify the mesh
         AMP::Mesh::Mesh::shared_ptr mesh; // Pointer to the mesh
-        int rank;      // Rank of the current processor on the mesh (used for name mangling)
-        int ownerRank; // Global rank of the processor that "owns" the mesh (usually rank 0 on the
-                       // mesh comm)
-        std::string meshName; // Name of the mesh in silo
-        std::string path;     // Path to the mesh in silo
-        std::string file;     // File that will contain the mesh
-        std::vector<std::string>
-            varName; // List of the names of variables associated with each mesh
-        std::vector<AMP::Mesh::GeomType>
-            varType;              // List of the types of variables associated with each mesh
-        std::vector<int> varSize; // Number of unknowns per point
+        int rank;                         // Rank of the current processor on the mesh
+        int ownerRank;                    // Global rank of the processor that "owns" the mesh
+        std::string meshName;             // Name of the mesh in silo
+        std::string path;                 // Path to the mesh in silo
+        std::string file;                 // File that will contain the mesh
+        std::vector<std::string> varName; // Names of variables for each mesh
+        std::vector<AMP::Mesh::GeomType> varType; // Types of variables for each mesh
+        std::vector<int> varSize;                 // Number of unknowns per point
 #ifdef USE_AMP_VECTORS
-        std::vector<AMP::LinearAlgebra::Vector::shared_ptr>
-            vec; // List of the vectors associated with each mesh
+        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vec; // Vectors for each mesh
 #endif
-        // Function to count the number of bytes needed to pack the data (note: some info may be
-        // lost)
-        size_t size();
+        // Function to count the number of bytes needed to pack the data
+        size_t size() const;
         // Function to pack the data to a byte array (note: some info may be lost)
-        void pack( char * );
+        void pack( char * ) const;
         // Function to unpack the data from a byte array (note: some info may be lost)
-        static siloBaseMeshData unpack( char * );
+        static siloBaseMeshData unpack( const char * );
     };
 
     // Structure used to hold data for the silo multimeshes
@@ -145,14 +140,13 @@ private:
                                               // (usually rank 0 on the mesh comm)
         std::string name;                     // Name of the multimesh in silo
         std::vector<siloBaseMeshData> meshes; // Base mesh info needed to construct the mesh data
-        std::vector<std::string>
-            varName; // List of the names of variables associated with each mesh
+        std::vector<std::string> varName;     // Vectors for each mesh
         // Function to count the number of bytes needed to pack the data
-        size_t size();
+        size_t size() const;
         // Function to pack the data to a byte array
-        void pack( char * );
+        void pack( char * ) const;
         // Function to unpack the data from a byte array
-        static siloMultiMeshData unpack( char * );
+        static siloMultiMeshData unpack( const char * );
         // Constructors
         siloMultiMeshData() : id(), ownerRank( -1 ) {}
         siloMultiMeshData( const siloMultiMeshData & );

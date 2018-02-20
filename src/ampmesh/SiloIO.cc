@@ -24,6 +24,21 @@ static inline size_t find_slash( const std::string &filename )
 }
 
 
+// Function to replace all instances of a string with another
+static inline void strrep( std::string &str, const std::string &s, const std::string &r )
+{
+    size_t i = 0;
+    while ( i < str.length() ) {
+        i = str.find( s, i );
+        if ( i == std::string::npos ) {
+            break;
+        }
+        str.replace( i, s.length(), r );
+        i += r.length();
+    }
+}
+
+
 /************************************************************
  * Constructor/Destructor                                    *
  ************************************************************/
@@ -76,7 +91,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
 #ifdef USE_AMP_VECTORS
     PROFILE_START( "makeConsistent", 1 );
     for ( auto &elem : d_vectors ) {
-        AMP::LinearAlgebra::Vector::UpdateState localState = elem->getUpdateStatus();
+        auto localState = elem->getUpdateStatus();
         if ( localState == AMP::LinearAlgebra::Vector::UpdateState::ADDING )
             elem->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_ADD );
         else
@@ -97,13 +112,11 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
                     FileHandle = DBOpen( fname.c_str(), DB_HDF5, DB_APPEND );
                 }
                 // Write the base meshes
-                std::map<AMP::Mesh::MeshID, siloBaseMeshData>::iterator iterator;
-                for ( iterator = d_baseMeshes.begin(); iterator != d_baseMeshes.end();
-                      ++iterator ) {
-                    auto &data = iterator->second;
+                for ( auto &tmp : d_baseMeshes ) {
+                    auto &data = tmp.second;
                     data.file  = fname.c_str();
-                    AMP_ASSERT( data.id == iterator->first );
-                    writeMesh( FileHandle, iterator->second, cycle, time );
+                    AMP_ASSERT( data.id == tmp.first );
+                    writeMesh( FileHandle, tmp.second, cycle, time );
                 }
                 // Close the file
                 DBClose( FileHandle );
@@ -118,15 +131,14 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
         std::stringstream tmp2;
         tmp2 << fname_in << "_silo/" << cycle << "." << d_comm.getRank() + 1 << "."
              << getExtension();
-        std::string fname_rank = tmp2.str();
+        auto fname_rank    = tmp2.str();
         DBfile *FileHandle = DBCreate( fname_rank.c_str(), DB_CLOBBER, DB_LOCAL, nullptr, DB_HDF5 );
         // Write the base meshes
-        std::map<AMP::Mesh::MeshID, siloBaseMeshData>::iterator iterator;
-        for ( iterator = d_baseMeshes.begin(); iterator != d_baseMeshes.end(); ++iterator ) {
-            auto &data = iterator->second;
+        for ( auto &tmp : d_baseMeshes ) {
+            auto &data = tmp.second;
             data.file  = fname_rank.c_str();
-            AMP_ASSERT( data.id == iterator->first );
-            writeMesh( FileHandle, iterator->second, cycle, time );
+            AMP_ASSERT( data.id == tmp.first );
+            writeMesh( FileHandle, tmp.second, cycle, time );
         }
         // Close the file
         DBClose( FileHandle );
@@ -159,8 +171,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
         AMP_INSIST( d_dim == mesh->getDim(),
                     "All meshes must have the same number of physical dimensions" );
     AMP_INSIST( level >= 0 && level <= 3, "Invalid value for level" );
-    AMP::shared_ptr<AMP::Mesh::MultiMesh> multimesh =
-        AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    auto multimesh = AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( multimesh.get() == nullptr ) {
         // We are dealing with a single mesh
         siloBaseMeshData data;
@@ -170,13 +181,11 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
         std::stringstream stream;
         stream << data.rank;
         std::string rank = stream.str();
-        data.ownerRank =
-            d_comm.getRank(); // Everybody owns the mesh because every rank is an independent mesh
-        data.meshName = "rank_" + rank;
-        data.path     = path + mesh->getName() + "_/";
+        data.ownerRank   = d_comm.getRank();
+        data.meshName    = "rank_" + rank;
+        data.path        = path + mesh->getName() + "_/";
         if ( d_baseMeshes.find( mesh->meshID() ) == d_baseMeshes.end() )
-            d_baseMeshes.insert(
-                std::pair<AMP::Mesh::MeshID, siloBaseMeshData>( mesh->meshID(), data ) );
+            d_baseMeshes.insert( std::make_pair( mesh->meshID(), data ) );
         // Create and register a multimesh for the current mesh
         if ( level > 0 ) {
             siloMultiMeshData data2;
@@ -184,8 +193,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
             data2.mesh     = mesh;
             data2.name     = path + mesh->getName();
             data.ownerRank = mesh->getComm().bcast( d_comm.getRank(), 0 );
-            d_multiMeshes.insert(
-                std::pair<AMP::Mesh::MeshID, siloMultiMeshData>( data2.id, data2 ) );
+            d_multiMeshes.insert( std::make_pair( data2.id, data2 ) );
         }
         // Create and register a multimesh for the rank
         if ( level == 3 ) {
@@ -198,8 +206,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
             data2.mesh     = mesh;
             data2.name     = path + mesh->getName() + "_/rank_" + rank;
             data.ownerRank = d_comm.getRank();
-            d_multiMeshes.insert(
-                std::pair<AMP::Mesh::MeshID, siloMultiMeshData>( data2.id, data2 ) );
+            d_multiMeshes.insert( std::make_pair( data2.id, data2 ) );
         }
     } else {
         // We are dealing with a multimesh, register the current mesh and sub meshes
@@ -216,8 +223,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
             data.mesh      = mesh;
             data.name      = path + mesh->getName();
             data.ownerRank = mesh->getComm().bcast( d_comm.getRank(), 0 );
-            d_multiMeshes.insert(
-                std::pair<AMP::Mesh::MeshID, siloMultiMeshData>( mesh->meshID(), data ) );
+            d_multiMeshes.insert( std::make_pair( mesh->meshID(), data ) );
         }
     }
 }
@@ -228,16 +234,15 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
 std::vector<AMP::Mesh::MeshID> SiloIO::getMeshIDs( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     std::vector<AMP::Mesh::MeshID> ids;
-    AMP::shared_ptr<AMP::Mesh::MultiMesh> multimesh =
-        AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    auto multimesh = AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( multimesh.get() == nullptr ) {
         // We are dealing with a single mesh
         ids = std::vector<AMP::Mesh::MeshID>( 1, mesh->meshID() );
     } else {
         // We are dealining with a multimesh
-        std::vector<AMP::Mesh::Mesh::shared_ptr> meshes = multimesh->getMeshes();
+        auto meshes = multimesh->getMeshes();
         for ( auto &meshe : meshes ) {
-            std::vector<AMP::Mesh::MeshID> ids2 = getMeshIDs( meshe );
+            auto ids2 = getMeshIDs( meshe );
             for ( auto &elem : ids2 )
                 ids.push_back( elem );
         }
@@ -258,30 +263,27 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
     // Make sure the mesh has been registered
     registerMesh( mesh );
     // Perform some error checking
-    auto DOFs      = vec->getDOFManager();
-    auto iterator1 = mesh->getIterator( type, 0 );
-    auto iterator2 = DOFs->getIterator();
-    auto iterator3 =
-        AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, iterator1, iterator2 );
-    if ( iterator1.size() != iterator3.size() )
+    auto DOFs = vec->getDOFManager();
+    auto it1  = mesh->getIterator( type, 0 );
+    auto it2  = DOFs->getIterator();
+    auto it3  = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, it1, it2 );
+    if ( it1.size() != it3.size() )
         AMP_ERROR( "vector does not cover the entire mesh for the given entity type" );
     std::vector<size_t> dofs;
-    DOFs->getDOFs( iterator1->globalID(), dofs );
+    DOFs->getDOFs( it1->globalID(), dofs );
     int DOFsPerPoint = dofs.size();
     if ( type == AMP::Mesh::GeomType::Vertex )
-        iterator1 = mesh->getIterator( type, 1 );
-    for ( size_t i = 0; i < iterator1.size(); ++i ) {
-        DOFs->getDOFs( iterator1->globalID(), dofs );
+        it1 = mesh->getIterator( type, 1 );
+    for ( size_t i = 0; i < it1.size(); ++i, ++it1 ) {
+        DOFs->getDOFs( it1->globalID(), dofs );
         AMP_ASSERT( (int) dofs.size() == DOFsPerPoint );
-        ++iterator1;
     }
     // Register the vector with the appropriate base meshes
     std::string name = vec->type();
     if ( !name.empty() ) {
         name = name_in;
     }
-    std::vector<AMP::Mesh::MeshID> ids = getMeshIDs( mesh );
-    for ( auto id : ids ) {
+    for ( auto id : getMeshIDs( mesh ) ) {
         const auto &it = d_baseMeshes.find( id );
         if ( it == d_baseMeshes.end() )
             continue;
@@ -318,13 +320,12 @@ void SiloIO::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr )
 void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cycle, double time )
 {
     PROFILE_START( "writeMesh", 1 );
-    AMP::Mesh::Mesh::shared_ptr mesh = data.mesh;
+    auto mesh = data.mesh;
     // Get the zone (element) lists
     PROFILE_START( "writeMesh - get-elements", 2 );
-    AMP::Mesh::MeshIterator elem_iterator = mesh->getIterator( mesh->getGeomType(), 0 );
+    auto elem_iterator = mesh->getIterator( mesh->getGeomType(), 0 );
     AMP_ASSERT( elem_iterator.size() > 0 );
-    std::vector<AMP::Mesh::MeshElement> nodes =
-        elem_iterator->getElements( AMP::Mesh::GeomType::Vertex );
+    auto nodes    = elem_iterator->getElements( AMP::Mesh::GeomType::Vertex );
     int shapesize = nodes.size();
     int shapetype;
     if ( shapesize == 8 )
@@ -340,7 +341,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     // Get the node list (unique integer for each node) and coordinates
     PROFILE_START( "writeMesh - get-nodelist", 3 );
     PROFILE_START( "writeMesh - get-nodelist-1", 3 );
-    AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
+    auto node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     std::vector<AMP::Mesh::MeshElementID> nodelist_ids( node_iterator.size() );
     for ( size_t i = 0; i < node_iterator.size(); ++i ) {
         nodelist_ids[i] = node_iterator->globalID();
@@ -489,13 +490,12 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
                 var[j] = new double[nvar];
             std::vector<size_t> dofs( data.varSize[i] );
             std::vector<double> vals( data.varSize[i] );
-            AMP::Mesh::MeshIterator it = element_iterator.begin();
-            for ( int j = 0; j < nvar; ++j ) {
+            auto it = element_iterator.begin();
+            for ( int j = 0; j < nvar; ++j, ++it ) {
                 DOFs->getDOFs( it->globalID(), dofs );
                 data.vec[i]->getValuesByGlobalID( data.varSize[i], &dofs[0], &vals[0] );
                 for ( int k = 0; k < data.varSize[i]; ++k )
                     var[k][j] = vals[k];
-                ++it;
             }
         } else {
             // We are storing edge or face data
@@ -562,13 +562,12 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
     // Convert the data to vectors
     std::vector<AMP::Mesh::MeshID> ids;
     std::vector<siloMultiMeshData> meshdata;
-    std::map<AMP::Mesh::MeshID, siloMultiMeshData>::iterator iterator;
     int myRank = d_comm.getRank();
-    for ( iterator = data.begin(); iterator != data.end(); ++iterator ) {
+    for ( const auto &it : data ) {
         // Only send the base meshes that I own
-        siloMultiMeshData tmp = iterator->second;
+        auto tmp = it.second;
         tmp.meshes.resize( 0 );
-        for ( auto &elem : iterator->second.meshes ) {
+        for ( auto &elem : tmp.meshes ) {
             if ( elem.ownerRank == myRank )
                 tmp.meshes.push_back( elem );
         }
@@ -577,8 +576,8 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
             tmp.varName.resize( 0 );
         // Only send the multimesh if there are base meshes that need to be sent or I own the mesh
         if ( !tmp.meshes.empty() || tmp.ownerRank == myRank ) {
-            ids.push_back( iterator->first );
-            meshdata.push_back( iterator->second );
+            ids.push_back( it.first );
+            meshdata.push_back( it.second );
         }
     }
     // Create buffers to store the data
@@ -641,10 +640,10 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
     delete[] send_buf;
     // Add the meshes from other processors (keeping the existing meshes)
     for ( auto &elem : meshdata ) {
-        iterator = data.find( elem.id );
+        auto iterator = data.find( elem.id );
         if ( iterator == data.end() ) {
             // Add the multimesh
-            data.insert( std::pair<AMP::Mesh::MeshID, siloMultiMeshData>( elem.id, elem ) );
+            data.insert( std::make_pair( elem.id, elem ) );
         } else {
             // Add the submeshes
             for ( auto &meshe : elem.meshes ) {
@@ -747,23 +746,28 @@ void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
 /************************************************************
  * Function to write the summary data                        *
  ************************************************************/
+static inline std::string getFile( const std::string &file, const std::string &root )
+{
+    AMP_ASSERT( !file.empty() );
+    if ( file.compare( 0, root.size(), root ) == 0 )
+        return file.substr( root.size() );
+    return file;
+}
 void SiloIO::writeSummary( std::string filename, int cycle, double time )
 {
     PROFILE_START( "writeSummary", 1 );
     AMP_ASSERT( !filename.empty() );
     // Add the siloBaseMeshData to the multimeshes
-    std::map<AMP::Mesh::MeshID, siloMultiMeshData> multiMeshes = d_multiMeshes;
-    std::map<AMP::Mesh::MeshID, siloMultiMeshData>::iterator iterator;
-    for ( iterator = multiMeshes.begin(); iterator != multiMeshes.end(); ++iterator ) {
-        // AMP::Mesh::MeshID id = iterator->first;
-        auto mesh     = iterator->second.mesh;
+    auto multiMeshes = d_multiMeshes;
+    for ( auto &tmp : multiMeshes ) {
+        auto mesh     = tmp.second.mesh;
         auto base_ids = getMeshIDs( mesh );
         for ( auto id : base_ids ) {
             const auto &it = d_baseMeshes.find( id );
             if ( it != d_baseMeshes.end() ) {
                 siloBaseMeshData data = it->second;
                 AMP_ASSERT( it->first == data.id );
-                iterator->second.meshes.push_back( data );
+                tmp.second.meshes.push_back( data );
             }
         }
     }
@@ -772,14 +776,13 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
         siloMultiMeshData wholemesh;
         wholemesh.id = AMP::Mesh::MeshID((unsigned int)-1,0);
         wholemesh.name = "whole_mesh";
-        std::map<AMP::Mesh::MeshID,siloBaseMeshData>::iterator iterator2;
-        for (iterator2=d_baseMeshes.begin(); iterator2!=d_baseMeshes.end(); ++iterator2) {
-            siloBaseMeshData data = iterator2->second;
-            AMP_ASSERT(iterator2->first==data.id);
+        for (auto it=d_baseMeshes.begin(); it!=d_baseMeshes.end(); ++it) {
+            siloBaseMeshData data = it->second;
+            AMP_ASSERT(it->first==data.id);
             wholemesh.meshes.push_back(data);
         }
         wholemesh.owner_rank = 0;
-        multimeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(wholemesh.id,wholemesh)
+        multimeshes.insert( std::make_pair(wholemesh.id,wholemesh)
     );
     }*/
     // Gather the results
@@ -791,18 +794,13 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
     if ( find_slash( filename ) != std::string::npos )
         base_path = filename.substr( 0, find_slash( filename ) + 1 );
     if ( d_comm.getRank() == 0 ) {
-        DBfile *FileHandle;
-        FileHandle = DBOpen( filename.c_str(), DB_HDF5, DB_APPEND );
-        std::map<AMP::Mesh::MeshID, siloMultiMeshData>::iterator it;
+        DBfile *FileHandle = DBOpen( filename.c_str(), DB_HDF5, DB_APPEND );
         // Create the subdirectories
         PROFILE_START( "create directories", 2 );
         std::set<std::string> subdirs;
-        for ( it = multiMeshes.begin(); it != multiMeshes.end(); ++it ) {
-            auto data = it->second;
-            auto file = data.name;
-            AMP_ASSERT( !file.empty() );
-            if ( file.compare( 0, base_path.size(), base_path ) == 0 )
-                file = file.substr( base_path.size() );
+        for ( const auto &tmp : multiMeshes ) {
+            auto data  = tmp.second;
+            auto file  = getFile( data.name, base_path );
             size_t pos = find_slash( file );
             if ( pos != std::string::npos )
                 subdirs.insert( file.substr( 0, pos ) );
@@ -812,19 +810,18 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
         PROFILE_STOP( "create directories", 2 );
         // Create the multimeshes
         PROFILE_START( "write multimeshes", 2 );
-        for ( it = multiMeshes.begin(); it != multiMeshes.end(); ++it ) {
-            siloMultiMeshData data = it->second;
-            std::vector<std::string> meshNames( data.meshes.size() );
-            for ( size_t i = 0; i < data.meshes.size(); ++i ) {
-                std::string file = data.meshes[i].file;
-                AMP_ASSERT( !file.empty() );
-                if ( file.compare( 0, base_path.size(), base_path ) == 0 )
-                    file = file.substr( base_path.size() );
+        for ( const auto &tmp : multiMeshes ) {
+            const auto &data = tmp.second;
+            size_t N         = data.meshes.size();
+            std::vector<std::string> meshNames( N );
+            for ( size_t i = 0; i < N; ++i ) {
+                auto file    = getFile( data.meshes[i].file, base_path );
                 meshNames[i] = file + ":" + data.meshes[i].path + "/" + data.meshes[i].meshName;
+                strrep( meshNames[i], "//", "/" );
             }
-            auto meshnames = new char *[data.meshes.size()];
-            auto meshtypes = new int[data.meshes.size()];
-            for ( size_t i = 0; i < data.meshes.size(); ++i ) {
+            auto meshnames = new char *[N];
+            auto meshtypes = new int[N];
+            for ( size_t i = 0; i < N; ++i ) {
                 meshnames[i] = (char *) meshNames[i].c_str();
                 meshtypes[i] = DB_UCDMESH;
             }
@@ -840,22 +837,23 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
         PROFILE_STOP( "write multimeshes", 2 );
         // Generate the multi-variables
         PROFILE_START( "write multivariables", 2 );
-        for ( it = multiMeshes.begin(); it != multiMeshes.end(); ++it ) {
-            siloMultiMeshData data = it->second;
+        for ( const auto &tmp : multiMeshes ) {
+            const auto &data = tmp.second;
+            size_t N         = data.meshes.size();
             // std::cout << data.name << std::endl;
-            for ( size_t i = 0; i < data.varName.size(); ++i ) {
-                std::string varName = data.varName[i];
-                std::vector<std::string> varNames( data.meshes.size() );
-                auto varnames = new char *[data.meshes.size()];
-                auto vartypes = new int[data.meshes.size()];
-                for ( size_t i = 0; i < data.meshes.size(); ++i ) {
+            for ( const auto &varName : data.varName ) {
+                std::vector<std::string> varNames( N );
+                auto varnames = new char *[N];
+                auto vartypes = new int[N];
+                for ( size_t i = 0; i < N; ++i ) {
                     std::stringstream stream;
                     stream << data.meshes[i].rank;
-                    varNames[i] = data.meshes[i].file + ":" + data.meshes[i].path + "/" + varName +
-                                  "P" + stream.str();
+                    auto file = getFile( data.meshes[i].file, base_path );
+                    varNames[i] =
+                        file + ":" + data.meshes[i].path + "/" + varName + "P" + stream.str();
+                    strrep( varNames[i], "//", "/" );
                     varnames[i] = (char *) varNames[i].c_str();
                     vartypes[i] = DB_UCDVAR;
-                    // std::cout << varNames[i] << std::endl;
                 }
                 int varSize = 0;
                 for ( size_t i = 0; i < data.meshes[0].varName.size(); ++i ) {
@@ -887,9 +885,9 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
                         stream << "_" << j;
                         std::string postfix = stream.str();
                         std::vector<std::string> varNames2( data.meshes.size() );
-                        for ( size_t i = 0; i < data.meshes.size(); ++i ) {
-                            varNames2[i] = varNames[i] + postfix;
-                            varnames[i]  = (char *) varNames2[i].c_str();
+                        for ( size_t k = 0; k < data.meshes.size(); ++k ) {
+                            varNames2[k] = varNames[k] + postfix;
+                            varnames[k]  = (char *) varNames2[k].c_str();
                         }
                         DBPutMultivar( FileHandle,
                                        ( visitVarName + postfix ).c_str(),
@@ -912,9 +910,51 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
 
 
 /************************************************************
+ * Functions to pack/unpack data to a char array             *
+ ************************************************************/
+template<class TYPE>
+static inline void packData( char *ptr, size_t &pos, const TYPE &data );
+template<class TYPE>
+static inline TYPE unpackData( const char *ptr, size_t &pos );
+template<>
+inline void packData<std::string>( char *ptr, size_t &pos, const std::string &data )
+{
+    int N = data.size();
+    memcpy( &ptr[pos], &N, sizeof( int ) );
+    pos += sizeof( int );
+    memcpy( &ptr[pos], data.data(), N );
+    pos += N;
+}
+template<>
+inline std::string unpackData<std::string>( const char *ptr, size_t &pos )
+{
+    int N;
+    memcpy( &N, &ptr[pos], sizeof( int ) );
+    pos += sizeof( int );
+    std::string data( N, ptr[pos] );
+    pos += N;
+    return data;
+}
+template<class TYPE>
+static inline void packData( char *ptr, size_t &pos, const TYPE &data )
+{
+    memcpy( &ptr[pos], &data, sizeof( TYPE ) );
+    pos += sizeof( TYPE );
+}
+template<class TYPE>
+static inline TYPE unpackData( const char *ptr, size_t &pos )
+{
+    TYPE data;
+    memcpy( &data, &ptr[pos], sizeof( TYPE ) );
+    pos += sizeof( TYPE );
+    return data;
+}
+
+
+/************************************************************
  * Functions for siloBaseMeshData                            *
  ************************************************************/
-size_t SiloIO::siloBaseMeshData::size()
+size_t SiloIO::siloBaseMeshData::size() const
 {
     size_t N_bytes = sizeof( AMP::Mesh::MeshID ); // Store the mesh id
     N_bytes += sizeof( int );                     // Store the processor rank
@@ -930,100 +970,45 @@ size_t SiloIO::siloBaseMeshData::size()
     }
     return N_bytes;
 }
-void SiloIO::siloBaseMeshData::pack( char *ptr )
+void SiloIO::siloBaseMeshData::pack( char *ptr ) const
 {
     size_t pos = 0;
-    // Store the mesh id
-    *( (AMP::Mesh::MeshID *) &ptr[pos] ) = id;
-    pos += sizeof( AMP::Mesh::MeshID );
-    // Store the mesh rank
-    *( (int *) &ptr[pos] ) = rank;
-    pos += sizeof( int );
-    // Store the owner rank
-    *( (int *) &ptr[pos] ) = ownerRank;
-    pos += sizeof( int );
-    // Store the mesh name
-    *( (int *) &ptr[pos] ) = (int) meshName.size();
-    pos += sizeof( int );
-    meshName.copy( (char *) &ptr[pos], meshName.size(), 0 );
-    pos += meshName.size();
-    // Store the mesh path
-    *( (int *) &ptr[pos] ) = (int) path.size();
-    pos += sizeof( int );
-    path.copy( (char *) &ptr[pos], path.size(), 0 );
-    pos += path.size();
-    // Store the mesh file
-    *( (int *) &ptr[pos] ) = (int) file.size();
-    pos += sizeof( int );
-    file.copy( (char *) &ptr[pos], file.size(), 0 );
-    pos += file.size();
-    // Store the number of variables
-    *( (int *) &ptr[pos] ) = (int) varName.size();
-    pos += sizeof( int );
+    packData<AMP::Mesh::MeshID>( ptr, pos, id );
+    packData<int>( ptr, pos, rank );
+    packData<int>( ptr, pos, ownerRank );
+    packData<std::string>( ptr, pos, meshName );
+    packData<std::string>( ptr, pos, path );
+    packData<std::string>( ptr, pos, file );
+    packData<int>( ptr, pos, varName.size() );
     for ( size_t i = 0; i < varName.size(); ++i ) {
-        // Store the variable name
-        *( (int *) &ptr[pos] ) = (int) varName[i].size();
-        pos += sizeof( int );
-        varName[i].copy( (char *) &ptr[pos], varName[i].size(), 0 );
-        pos += varName[i].size();
-        // Store the variable type
-        *( (AMP::Mesh::GeomType *) &ptr[pos] ) = varType[i];
-        pos += sizeof( AMP::Mesh::GeomType );
-        // Store the number of unknowns per point
-        *( (int *) &ptr[pos] ) = (int) varSize[i];
-        pos += sizeof( int );
+        packData<std::string>( ptr, pos, varName[i] );
+        packData<AMP::Mesh::GeomType>( ptr, pos, varType[i] );
+        packData<int>( ptr, pos, varSize[i] );
     }
     AMP_ASSERT( pos == size() );
 }
-SiloIO::siloBaseMeshData SiloIO::siloBaseMeshData::unpack( char *ptr )
+SiloIO::siloBaseMeshData SiloIO::siloBaseMeshData::unpack( const char *ptr )
 {
     siloBaseMeshData data;
-    size_t pos = 0;
-    // Store the mesh id
-    data.id = *( (AMP::Mesh::MeshID *) &ptr[pos] );
-    pos += sizeof( AMP::Mesh::MeshID );
-    // Store the mesh rank
-    data.rank = *( (int *) &ptr[pos] );
-    pos += sizeof( int );
-    // Store the owner rank
-    data.ownerRank = *( (int *) &ptr[pos] );
-    pos += sizeof( int );
-    // Store the mesh name
-    int size = *( (int *) &ptr[pos] );
-    pos += sizeof( int );
-    data.meshName = std::string( (char *) &ptr[pos], size );
-    pos += size;
-    // Store the mesh path
-    size = *( (int *) &ptr[pos] );
-    pos += sizeof( int );
-    data.path = std::string( (char *) &ptr[pos], size );
-    pos += size;
-    // Store the mesh file
-    size = *( (int *) &ptr[pos] );
-    pos += sizeof( int );
-    data.file = std::string( (char *) &ptr[pos], size );
-    pos += size;
+    size_t pos     = 0;
+    data.id        = unpackData<AMP::Mesh::MeshID>( ptr, pos );
+    data.rank      = unpackData<int>( ptr, pos );
+    data.ownerRank = unpackData<int>( ptr, pos );
+    data.meshName  = unpackData<std::string>( ptr, pos );
+    data.path      = unpackData<std::string>( ptr, pos );
+    data.file      = unpackData<std::string>( ptr, pos );
     // Store the variables
-    int N_var = *( (int *) &ptr[pos] );
-    pos += sizeof( int );
+    size_t N_var = unpackData<int>( ptr, pos );
     data.varName.resize( N_var );
     data.varType.resize( N_var );
     data.varSize.resize( N_var );
 #ifdef USE_AMP_VECTORS
     data.vec.resize( N_var ); // Set the vec to NULL
 #endif
-    for ( int i = 0; i < N_var; ++i ) {
-        // Store the variable name
-        size = *( (int *) &ptr[pos] );
-        pos += sizeof( int );
-        data.varName[i] = std::string( (char *) &ptr[pos], size );
-        pos += size;
-        // Store the variable type
-        data.varType[i] = *( (AMP::Mesh::GeomType *) &ptr[pos] );
-        pos += sizeof( AMP::Mesh::GeomType );
-        // Store the number of unknowns per point
-        data.varSize[i] = *( (int *) &ptr[pos] );
-        pos += sizeof( int );
+    for ( size_t i = 0; i < N_var; ++i ) {
+        data.varName[i] = unpackData<std::string>( ptr, pos );
+        data.varType[i] = unpackData<AMP::Mesh::GeomType>( ptr, pos );
+        data.varSize[i] = unpackData<int>( ptr, pos );
     }
     AMP_ASSERT( pos == data.size() );
     return data;
@@ -1055,86 +1040,58 @@ operator=( const SiloIO::siloMultiMeshData &rhs )
     this->varName   = rhs.varName;
     return *this;
 }
-size_t SiloIO::siloMultiMeshData::size()
+size_t SiloIO::siloMultiMeshData::size() const
 {
     size_t N_bytes = sizeof( AMP::Mesh::MeshID ); // Store the mesh id
     N_bytes += sizeof( int );                     // Store the owner rank
     N_bytes += sizeof( int ) + name.size();       // Store the mesh name
     N_bytes += sizeof( int );                     // Store the number of sub meshes
-    for ( auto &elem : meshes )
-        N_bytes += elem.size(); // Store the sub meshes
+    for ( const auto &mesh : meshes )
+        N_bytes += mesh.size(); // Store the sub meshes
     N_bytes += sizeof( int );   // Store the number of variables
-    for ( auto &elem : varName ) {
+    for ( const auto &name : varName ) {
         N_bytes += sizeof( int ); // Store the length of the variable name
-        N_bytes += elem.size();   // Store the variable name
+        N_bytes += name.size();   // Store the variable name
     }
     return N_bytes;
 }
-void SiloIO::siloMultiMeshData::pack( char *ptr )
+void SiloIO::siloMultiMeshData::pack( char *ptr ) const
 {
     size_t pos = 0;
-    // Store the mesh id
-    *( (AMP::Mesh::MeshID *) &ptr[pos] ) = id;
-    pos += sizeof( AMP::Mesh::MeshID );
-    // Store the owner rank
-    *( (int *) &ptr[pos] ) = ownerRank;
-    pos += sizeof( int );
-    // Store name
-    *( (int *) &ptr[pos] ) = (int) name.size();
-    pos += sizeof( int );
-    name.copy( (char *) &ptr[pos], name.size(), 0 );
-    pos += name.size();
+    packData<AMP::Mesh::MeshID>( ptr, pos, id );
+    packData<int>( ptr, pos, ownerRank );
+    packData<std::string>( ptr, pos, name );
     // Store the base meshes
-    *( (int *) &ptr[pos] ) = (int) meshes.size();
-    pos += sizeof( int );
-    for ( auto &elem : meshes ) {
-        elem.pack( &ptr[pos] );
-        pos += elem.size();
+    packData<int>( ptr, pos, meshes.size() );
+    for ( const auto &mesh : meshes ) {
+        mesh.pack( &ptr[pos] );
+        pos += mesh.size();
     }
     // Store the variables
-    *( (int *) &ptr[pos] ) = (int) varName.size();
-    pos += sizeof( int );
-    for ( auto &elem : varName ) {
-        *( (int *) &ptr[pos] ) = (int) elem.size();
-        pos += sizeof( int );
-        elem.copy( (char *) &ptr[pos], elem.size(), 0 );
-        pos += elem.size();
-    }
+    packData<int>( ptr, pos, varName.size() );
+    for ( const auto &name : varName )
+        packData<std::string>( ptr, pos, name );
     AMP_ASSERT( pos == size() );
 }
-SiloIO::siloMultiMeshData SiloIO::siloMultiMeshData::unpack( char *ptr )
+SiloIO::siloMultiMeshData SiloIO::siloMultiMeshData::unpack( const char *ptr )
 {
-    siloMultiMeshData data;
     size_t pos = 0;
-    // Store the mesh id
-    data.id = *( (AMP::Mesh::MeshID *) &ptr[pos] );
-    pos += sizeof( AMP::Mesh::MeshID );
-    // Store the owner rank
-    data.ownerRank = *( (int *) &ptr[pos] );
-    pos += sizeof( int );
-    // Store name
-    int size = *( (int *) &ptr[pos] );
-    pos += sizeof( int );
-    data.name = std::string( (char *) &ptr[pos], size );
-    pos += size;
+    siloMultiMeshData data;
+    data.id        = unpackData<AMP::Mesh::MeshID>( ptr, pos );
+    data.ownerRank = unpackData<int>( ptr, pos );
+    data.name      = unpackData<std::string>( ptr, pos );
     // Store the base meshes
-    int N_meshes = *( (int *) &ptr[pos] );
-    pos += sizeof( int );
+    int N_meshes = unpackData<int>( ptr, pos );
     data.meshes.resize( N_meshes );
     for ( int i = 0; i < N_meshes; ++i ) {
         data.meshes[i] = siloBaseMeshData::unpack( &ptr[pos] );
         pos += data.meshes[i].size();
     }
     // Store the variables
-    int N_var = *( (int *) &ptr[pos] );
-    pos += sizeof( int );
+    int N_var    = unpackData<int>( ptr, pos );
     data.varName = std::vector<std::string>( N_var );
-    for ( auto &elem : data.varName ) {
-        size = *( (int *) &ptr[pos] );
-        pos += sizeof( int );
-        elem = std::string( (char *) &ptr[pos], size );
-        pos += size;
-    }
+    for ( auto &name : data.varName )
+        name = unpackData<std::string>( ptr, pos );
     AMP_ASSERT( pos == data.size() );
     return data;
 }
