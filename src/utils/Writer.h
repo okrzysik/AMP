@@ -150,7 +150,15 @@ public:
     virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat ) = 0;
 #endif
 
-protected:
+
+protected:  // Protected member functions
+
+    // Given a filename, strip the directory information and create the directories if needed
+    void createDirectories( const std::string& filename );
+
+
+protected:  // Internal data
+
     // The comm of the writer
     AMP_MPI d_comm;
 

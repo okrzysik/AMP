@@ -74,6 +74,8 @@ void SiloIO::readFile( const std::string & ) { AMP_ERROR( "readFile is not impli
 void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
 {
     PROFILE_START( "writeFile" );
+    // Create the directory (if needed)
+    createDirectories( fname_in );
     // Create the file name
     std::stringstream tmp;
     tmp << fname_in << "_" << cycle << "." << getExtension();
@@ -339,7 +341,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     int shapecnt = elem_iterator.size();
     PROFILE_STOP( "writeMesh - get-elements", 2 );
     // Get the node list (unique integer for each node) and coordinates
-    PROFILE_START( "writeMesh - get-nodelist", 3 );
+    PROFILE_START( "writeMesh - get-nodelist", 2 );
     PROFILE_START( "writeMesh - get-nodelist-1", 3 );
     auto node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     std::vector<AMP::Mesh::MeshElementID> nodelist_ids( node_iterator.size() );

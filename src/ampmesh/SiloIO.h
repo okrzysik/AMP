@@ -47,21 +47,29 @@ public:
     virtual void readFile( const std::string &fname ) override;
 
     //!  Function to write a file
+    /**
+     * \brief    Function to write a file
+     * \details  This function will write a file with all mesh/vector data that
+     *    was registered.  If the filename included a relative or absolute path,
+     *    the directory structure will be created. 
+     * \param fname         The filename to use
+     * \param iteration     The iteration number
+     * \param time          The current simulation time
+     */
     virtual void
-    writeFile( const std::string &fname, size_t iteration_count, double time = 0 ) override;
+    writeFile( const std::string &fname, size_t iteration, double time = 0 ) override;
 
     /**
      * \brief    Function to register a mesh
      * \details  This function will register a mesh with the silo writer.
      *           Note: if mesh is a MultiMesh, it will register all sub meshes.
-     * \param mesh  The mesh to register
-     * \param level How many sub meshes do we want?
-     *              0: Only register the local base meshes (advanced users only)
-     *              1: Register current mesh only (default)
-     *              2: Register all meshes (do not seperate for the ranks)
-     *              3: Register all mesh pieces including the individual ranks
-
-     * \param path  The directory path for the mesh.  Default is an empty string.
+     * \param mesh      The mesh to register
+     * \param level     How many sub meshes do we want?
+     *                      0: Only register the local base meshes (advanced users only)
+     *                      1: Register current mesh only (default)
+     *                      2: Register all meshes (do not seperate for the ranks)
+     *                      3: Register all mesh pieces including the individual ranks
+     * \param path      The directory path for the mesh.  Default is an empty string.
      */
     virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh,
                                int level        = 1,
