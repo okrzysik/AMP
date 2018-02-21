@@ -5,7 +5,7 @@ namespace LinearAlgebra {
 inline PetscVector::PetscVector() : d_PetscRandom( 0 ), d_petscVec( nullptr ) {}
 
 
-inline PetscRandom &PetscVector::getPetscRandom( AMP_MPI comm )
+inline PetscRandom &PetscVector::getPetscRandom( const AMP_MPI& comm )
 {
     if ( d_PetscRandom == 0 ) {
         d_PetscRandom = new PetscRandom;

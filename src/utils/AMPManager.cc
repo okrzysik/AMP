@@ -325,14 +325,6 @@ void AMPManager::shutdown()
 #endif
     Utilities::sleepMs( 10 );
     shutdown_time = Utilities::time() - start_time;
-    if ( print_times && rank == 0 ) {
-        printf( "shutdown time = %0.3f s\n", shutdown_time );
-        if ( petsc_time != 0 )
-            printf( " PETSc shutdown time = %0.3f s\n", petsc_time );
-        if ( MPI_time != 0 )
-            printf( " MPI shutdown time = %0.3f s\n", MPI_time );
-        printf( "\n" );
-    }
     // Shutdown MPI
     comm_world.barrier();   // Sync all processes
     clearMPIErrorHandler(); // Clear MPI error handler before deleting comms
@@ -354,6 +346,15 @@ void AMPManager::shutdown()
     }
     // Shutdown the profiler
     PROFILE_DISABLE();
+    // List shutdown times
+    if ( print_times && rank == 0 ) {
+        printf( "shutdown time = %0.3f s\n", shutdown_time );
+        if ( petsc_time != 0 )
+            printf( " PETSc shutdown time = %0.3f s\n", petsc_time );
+        if ( MPI_time != 0 )
+            printf( " MPI shutdown time = %0.3f s\n", MPI_time );
+        printf( "\n" );
+    }
 // Print memory leaks on rank 0
 #ifdef USE_TIMER
     MemoryApp::MemoryStats memory = MemoryApp::getMemoryStats();
