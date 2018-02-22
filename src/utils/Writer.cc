@@ -58,12 +58,12 @@ void Writer::setDecomposition( int d )
     AMP_INSIST( d == 1 || d == 2, "decomposition must be 1 or 2" );
     d_decomposition = d;
 }
-void Writer::createDirectories( const std::string& filename )
+void Writer::createDirectories( const std::string &filename )
 {
-    size_t i = filename.rfind('/');
-    if ( i != std::string::npos && d_comm.getRank()==0 )
-        AMP::Utilities::recursiveMkdir( filename.substr(0,i),
-            ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
+    size_t i = filename.rfind( '/' );
+    if ( i != std::string::npos && d_comm.getRank() == 0 )
+        AMP::Utilities::recursiveMkdir(
+            filename.substr( 0, i ), ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
     d_comm.barrier();
 }
 

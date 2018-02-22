@@ -51,13 +51,12 @@ public:
      * \brief    Function to write a file
      * \details  This function will write a file with all mesh/vector data that
      *    was registered.  If the filename included a relative or absolute path,
-     *    the directory structure will be created. 
+     *    the directory structure will be created.
      * \param fname         The filename to use
      * \param iteration     The iteration number
      * \param time          The current simulation time
      */
-    virtual void
-    writeFile( const std::string &fname, size_t iteration, double time = 0 ) override;
+    virtual void writeFile( const std::string &fname, size_t iteration, double time = 0 ) override;
 
     /**
      * \brief    Function to register a mesh

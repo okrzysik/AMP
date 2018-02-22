@@ -151,14 +151,12 @@ public:
 #endif
 
 
-protected:  // Protected member functions
-
+protected: // Protected member functions
     // Given a filename, strip the directory information and create the directories if needed
-    void createDirectories( const std::string& filename );
+    void createDirectories( const std::string &filename );
 
 
-protected:  // Internal data
-
+protected: // Internal data
     // The comm of the writer
     AMP_MPI d_comm;
 

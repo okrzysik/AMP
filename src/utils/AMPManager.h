@@ -108,6 +108,9 @@ public:
     //! Set the default signal/terminate handlers (called on startup)
     static void setHandlers();
 
+    //! Clearthe default signal/terminate handlers (called on shutdown)
+    static void clearHandlers();
+
     //! Functions to initialize/destroy the mpi error handler
     static void setMPIErrorHandler();
     static void clearMPIErrorHandler();

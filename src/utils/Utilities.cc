@@ -129,6 +129,8 @@ void Utilities::abort( const std::string &message, const std::string &filename, 
             std::cerr << "ERROR MESSAGE: " << std::endl << message.c_str() << std::endl;
             std::cerr << std::flush;
         }
+        // Stop error handling
+        AMPManager::clearHandlers();
         // Use MPI_abort (will terminate all processes)
         AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );
         comm.abort();

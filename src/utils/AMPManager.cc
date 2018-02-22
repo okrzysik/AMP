@@ -408,15 +408,26 @@ void AMPManager::setHandlers()
     std::at_quick_exit( exitFun );
 #endif
 }
-#ifdef USE_EXT_MPI
-AMP::shared_ptr<MPI_Errhandler> AMPManager::mpierr;
+void dummyErrorHandler( std::string, StackTrace::terminateType ) {}
+void AMPManager::clearHandlers()
+{
+    initialized = 3;
+    // Don't call the global version of the call stack
+    StackTrace::globalCallStackFinalize();
+    // Clear the MPI error handler for comm_world
+    clearMPIErrorHandler();
+    // Clear the error handlers for petsc
+#ifdef USE_EXT_PETSC
+    PetscPopSignalHandler();
 #endif
+}
 
 
 /****************************************************************************
 *  Functions to handle MPI errors                                           *
 ****************************************************************************/
 #ifdef USE_EXT_MPI
+AMP::shared_ptr<MPI_Errhandler> AMPManager::mpierr;
 static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
 {
     if ( *err == MPI_ERR_COMM && *comm == MPI_COMM_WORLD ) {
