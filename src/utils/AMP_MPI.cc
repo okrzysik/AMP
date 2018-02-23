@@ -129,35 +129,13 @@ std::map<MPI_Request, Isendrecv_struct> global_isendrecv_list;
 static MPI_Request getRequest( MPI_Comm comm, int tag )
 {
     MPI_ASSERT( tag >= 0 && tag <= mpi_max_tag );
-    uint64_t request = 0;
-    if ( sizeof( MPI_Request ) == 4 && sizeof( MPI_Comm ) == 4 ) {
-        uint32_t hash = comm * 0x9E3779B9;           // 2^32*0.5*(sqrt(5)-1)
-        uint32_t key  = ( hash & 0xFFFFFFFF ) >> 22; // Get a key 0-1024
-        request       = (uint32_t) tag + ( key << 22 );
-    } else if ( sizeof( MPI_Request ) == 8 && sizeof( MPI_Comm ) == 4 ) {
-        request = (uint64_t) tag + ( ( (uint64_t) comm ) << 32 );
-    } else if ( sizeof( MPI_Request ) == 4 && sizeof( MPI_Comm ) == 8 ) {
-        uint64_t hash = comm * 0x9E3779B97F4A7C15;   // 2^64*0.5*(sqrt(5)-1)
-        uint64_t key  = ( hash & 0xFFFFFFFF ) >> 22; // Get a key 0-1024
-        request       = (uint32_t) tag + ( key << 32 );
-    } else if ( sizeof( MPI_Request ) == 8 && sizeof( MPI_Comm ) == 8 ) {
-        uint64_t hash = comm * 0x9E3779B97F4A7C15; // 2^64*0.5*(sqrt(5)-1)
-        uint64_t key  = ( hash & 0xFFFFFFFF );     // Get a key 0-2^32-1
-        request       = (uint64_t) tag + ( key << 32 );
-    } else {
-        char text[50];
-        sprintf(
-            text, "Not Programmed (%i,%i)", (int) sizeof( MPI_Request ), (int) sizeof( MPI_Comm ) );
-        MPI_ERROR( std::string( text ) );
-    }
-    MPI_Request request2;
-    if ( sizeof( MPI_Request ) == 4 ) {
-        uint32_t tmp = static_cast<uint32_t>( request );
-        memcpy( &request2, &tmp, sizeof( MPI_Request ) );
-    } else {
-        memcpy( &request2, &request, sizeof( MPI_Request ) );
-    }
-    return request2;
+    // Use hashing function: 2^64*0.5*(sqrt(5)-1)
+    uint64_t a = static_cast<uint8_t>( comm ) * 0x9E3779B97F4A7C15;
+    uint64_t b = static_cast<uint8_t>( tag ) * 0x9E3779B97F4A7C15;
+    uint64_t hash = a ^ b;
+    MPI_Request request;
+    memcpy( &request, &hash, sizeof( MPI_Request ) );
+    return request;
 }
 #endif
 
