@@ -130,8 +130,8 @@ static MPI_Request getRequest( MPI_Comm comm, int tag )
 {
     MPI_ASSERT( tag >= 0 && tag <= mpi_max_tag );
     // Use hashing function: 2^64*0.5*(sqrt(5)-1)
-    uint64_t a = static_cast<uint8_t>( comm ) * 0x9E3779B97F4A7C15;
-    uint64_t b = static_cast<uint8_t>( tag ) * 0x9E3779B97F4A7C15;
+    uint64_t a    = static_cast<uint8_t>( comm ) * 0x9E3779B97F4A7C15;
+    uint64_t b    = static_cast<uint8_t>( tag ) * 0x9E3779B97F4A7C15;
     uint64_t hash = a ^ b;
     MPI_Request request;
     memcpy( &request, &hash, sizeof( MPI_Request ) );

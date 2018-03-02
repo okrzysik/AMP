@@ -19,8 +19,7 @@ SubchannelToCladMap::SubchannelToCladMap(
     const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : AsyncMapOperator( p )
 {
-    AMP::shared_ptr<SubchannelToCladMapParameters> params =
-        AMP::dynamic_pointer_cast<SubchannelToCladMapParameters>( p );
+    auto params = AMP::dynamic_pointer_cast<SubchannelToCladMapParameters>( p );
     AMP_ASSERT( params );
 
     // Clone the communicator to protect the communication (we need a large number of unique tags)
@@ -109,14 +108,13 @@ void SubchannelToCladMap::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
     // Get a list of processors that need each x-y point
     d_ownSubChannel = std::vector<bool>( Nx * Ny, false );
     if ( mesh.get() != nullptr ) {
-        AMP::Mesh::MeshIterator it = getSubchannelIterator( mesh );
+        auto it = getSubchannelIterator( mesh );
         AMP_ASSERT( it.size() > 0 );
-        for ( size_t k = 0; k < it.size(); k++ ) {
-            std::vector<double> center = it->centroid();
-            int index                  = getSubchannelIndex( center[0], center[1] );
+        for ( size_t k = 0; k < it.size(); k++, ++it ) {
+            auto center = it->centroid();
+            int index   = getSubchannelIndex( center[0], center[1] );
             AMP_ASSERT( index >= 0 );
             d_ownSubChannel[index] = true;
-            ++it;
         }
     }
     d_subchannelRanks = std::vector<std::vector<int>>( Nx * Ny );
@@ -138,13 +136,12 @@ std::vector<std::vector<AMP::Mesh::MeshElementID>> SubchannelToCladMap::getEleme
     const std::vector<double> &, const std::vector<double> &, AMP::Mesh::MeshIterator iterator )
 {
     std::vector<std::vector<AMP::Mesh::MeshElementID>> list( N_subchannels );
-    AMP::Mesh::MeshIterator it = iterator.begin();
-    for ( size_t k = 0; k < it.size(); k++ ) {
-        std::vector<double> center = it->centroid();
-        int index                  = getSubchannelIndex( center[0], center[1] );
+    auto it = iterator.begin();
+    for ( size_t k = 0; k < it.size(); k++, ++it ) {
+        auto center = it->centroid();
+        int index   = getSubchannelIndex( center[0], center[1] );
         AMP_ASSERT( index >= 0 );
         list[index].push_back( it->globalID() );
-        ++it;
     }
     return list;
 }
@@ -157,24 +154,21 @@ AMP::Mesh::MeshIterator
 SubchannelToCladMap::getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     std::multimap<double, AMP::Mesh::MeshElement> xyFace;
-    AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
-    for ( size_t i = 0; i < iterator.size(); ++i ) {
-        std::vector<AMP::Mesh::MeshElement> nodes =
-            iterator->getElements( AMP::Mesh::GeomType::Vertex );
-        std::vector<double> center = iterator->centroid();
-        bool is_valid              = true;
+    auto it = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
+    for ( size_t i = 0; i < it.size(); ++i, ++it ) {
+        auto nodes    = it->getElements( AMP::Mesh::GeomType::Vertex );
+        auto center   = it->centroid();
+        bool is_valid = true;
         for ( auto &node : nodes ) {
-            std::vector<double> coord = node.coord();
+            auto coord = node.coord();
             if ( !AMP::Utilities::approx_equal( coord[2], center[2], 1e-6 ) )
                 is_valid = false;
         }
         if ( is_valid ) {
-            xyFace.insert( std::pair<double, AMP::Mesh::MeshElement>( center[2], *iterator ) );
+            xyFace.insert( std::pair<double, AMP::Mesh::MeshElement>( center[2], *it ) );
         }
-        ++iterator;
     }
-    AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elements(
-        new std::vector<AMP::Mesh::MeshElement>() );
+    auto elements = AMP::make_shared<std::vector<AMP::Mesh::MeshElement>>();
     elements->reserve( xyFace.size() );
     for ( auto &elem : xyFace )
         elements->push_back( elem.second );
@@ -196,12 +190,10 @@ void SubchannelToCladMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
     }
 
     // Subset the vector for the variable (we only need the local portion of the vector)
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    auto var = getInputVariable();
     AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI( AMP_COMM_SELF ) );
-    AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetVec =
-        u->constSelect( commSelector, var->getName() );
-    AMP::LinearAlgebra::Vector::const_shared_ptr curPhysics =
-        commSubsetVec->constSubsetVectorForVariable( var );
+    auto commSubsetVec = u->constSelect( commSelector, var->getName() );
+    auto curPhysics    = commSubsetVec->constSubsetVectorForVariable( var );
     AMP_ASSERT( curPhysics );
 
     // Zero out the send buffers
@@ -212,24 +204,23 @@ void SubchannelToCladMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
             d_sendBuffer[i][j] = 0.0;
     }
     // Fill the faces I own
-    AMP::Discretization::DOFManager::shared_ptr DOF = curPhysics->getDOFManager();
+    auto DOF = curPhysics->getDOFManager();
     std::vector<size_t> dofs;
-    AMP::Mesh::MeshIterator it = d_iterator1.begin();
-    for ( size_t i = 0; i < it.size(); i++ ) {
-        AMP::Mesh::MeshElementID id = it->globalID();
+    auto it = d_iterator1.begin();
+    for ( size_t i = 0; i < it.size(); i++, ++it ) {
+        auto id = it->globalID();
         if ( !id.is_local() )
             continue;
         DOF->getDOFs( id, dofs );
         AMP_ASSERT( dofs.size() == 1 );
-        double val              = curPhysics->getLocalValueByGlobalID( dofs[0] );
-        std::vector<double> pos = it->centroid();
-        int index               = getSubchannelIndex( pos[0], pos[1] );
+        double val = curPhysics->getLocalValueByGlobalID( dofs[0] );
+        auto pos   = it->centroid();
+        int index  = getSubchannelIndex( pos[0], pos[1] );
         AMP_ASSERT( index >= 0 );
         AMP_ASSERT( d_ownSubChannel[index] );
         int index2 = Utilities::findfirst( d_z, pos[2] - 1e-12 );
         AMP_ASSERT( Utilities::approx_equal( pos[2], d_z[index2] ) );
         d_sendBuffer[index][index2] = val;
-        ++it;
     }
 
     // Send the data
@@ -318,8 +309,8 @@ void SubchannelToCladMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_p
     for ( auto &id : ids ) {
         DOF->getDOFs( id, dofs );
         AMP_ASSERT( dofs.size() == 1 );
-        std::vector<double> pos = mesh->getElement( id ).coord();
-        double val              = interp_linear( z, f, pos[2] );
+        auto pos   = mesh->getElement( id ).coord();
+        double val = interp_linear( z, f, pos[2] );
         vec->setLocalValueByGlobalID( dofs[0], val );
     }
     PROFILE_STOP( "fillReturnVector" );

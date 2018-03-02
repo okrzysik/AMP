@@ -2,8 +2,8 @@
 #define included_AMP_BoxMeshHelpers
 
 
+#include "AMP/ampmesh/Geometry.h"
 #include <set>
-#include <tuple>
 
 
 namespace AMP {
@@ -62,9 +62,9 @@ std::pair<double, double> map_circle_logical( double R, int method, double x, do
  * \param[in] x         Logical x coordinate
  * \param[in] y         Logical y coordinate
  * \param[in] z         Logical z coordinate
- * @return              Returns a tuple with the (x,y,z) value
+ * @return              Returns the physical point
  */
-std::tuple<double, double, double> map_logical_sphere( double R, double x, double y, double z );
+AMP::Geometry::Point<double> map_logical_sphere( double R, double x, double y, double z );
 
 
 /**
@@ -77,9 +77,9 @@ std::tuple<double, double, double> map_logical_sphere( double R, double x, doubl
  * \param[in] R         Radius of sphere
  * \param[in] x         Logical x coordinate
  * \param[in] y         Logical y coordinate
- * @return              Returns a tuple with the (x,y,z) value
+ * @return              Returns the physical point
  */
-std::tuple<double, double, double> map_logical_sphere_surface( double R, double x, double y );
+AMP::Geometry::Point<double> map_logical_sphere_surface( double R, double x, double y );
 
 /**
  * \brief   Map coordinates from the surface of a sphere to logical
@@ -109,9 +109,9 @@ std::pair<double, double> map_sphere_surface_logical( double R, double x, double
  * \param[in] x         Logical x coordinate
  * \param[in] y         Logical y coordinate
  * \param[in] z         Logical z coordinate
- * @return              Returns a tuple with the (x,y,z) value
+ * @return              Returns the physical point
  */
-std::tuple<double, double, double>
+AMP::Geometry::Point<double>
 map_logical_shell( double r1, double r2, double x, double y, double z );
 
 

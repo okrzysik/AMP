@@ -1,7 +1,7 @@
 #ifndef included_AMP_SphereSurfaceBoxMesh
 #define included_AMP_SphereSurfaceBoxMesh
 
-#include "AMP/ampmesh/structured/BoxMesh.h"
+#include "AMP/ampmesh/structured/StructuredGeometryMesh.h"
 
 #include <array>
 
@@ -15,7 +15,7 @@ namespace Mesh {
  * \brief A derived version of BoxMesh for a cube
  * \details A concrete implementation of BoxMesh for a shell
  */
-class SphereSurfaceMesh : public AMP::Mesh::BoxMesh
+class SphereSurfaceMesh : public AMP::Mesh::StructuredGeometryMesh
 {
 public:
     //! Default constructor
@@ -31,69 +31,10 @@ public:
      */
     static std::vector<size_t> estimateLogicalMeshSize( const MeshParameters::shared_ptr &params );
 
-    /**
-     * \brief    Is the mesh movable
-     * \details  This function will check if the mesh can be displaced.
-     *    It will return 0 if the mesh cannont be moved, 1 if it can be displaced,
-     *    and 2 if the individual nodes can be moved.
-     * @return  The if
-     */
-    virtual int isMeshMovable() const override;
-
-    /**
-     * \brief    Displace the entire mesh
-     * \details  This function will displace the entire mesh by a scalar value.
-     *   This function is a blocking call for the mesh communicator, and requires
-     *   the same value on all processors.  The displacement vector should be the
-     *   size of the physical dimension.
-     * \param x  Displacement vector
-     */
-    virtual void displaceMesh( const std::vector<double> &x ) override;
-
-#ifdef USE_AMP_VECTORS
-    /**
-     * \brief    Displace the entire mesh
-     * \details  This function will displace the entire mesh by displacing
-     *   each node by the values provided in the vector.  This function is
-     *   a blocking call for the mesh communicator
-     * \param x  Displacement vector.  Must have N DOFs per node where N
-     *           is the physical dimension of the mesh.
-     */
-    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
-#endif
-
-    //! Virtual function to copy the mesh (allows use to proply copy the derived class)
-    virtual AMP::shared_ptr<Mesh> copy() const override;
-
-
-    /**
-     * \brief    Return a mesh element's coordinates given it's id.
-     * \details  This function queries the mesh to get an element's coordinates given the mesh id.
-     *    Ideally, this should be done in O(1) time, but the implimentation is up to
-     *    the underlying mesh.
-     * \param[in] index     Mesh element index we are requesting.
-     * \param[out] pos      Mesh element coordinates
-     */
-    virtual void coord( const MeshElementIndex &index, double *pos ) const override;
-
-
-public: // BoxMesh specific functionality
-    /**
-     * \brief    Return the logical coordinates
-     * \details  This function queries the mesh to get the logical coordinates in [0,1]
-     *     from the physical coordinates.  Not all meshes support this functionallity.
-     * \param[in] x         Physical coordinates
-     * @return              Returns the logical coordinates
-     */
-    virtual std::array<double, 3> physicalToLogical( const double *x ) const override;
-
+    virtual AMP::shared_ptr<Mesh> clone() const override;
 
 private:
     SphereSurfaceMesh(); // Private empty constructor
-
-    // Internal data
-    double d_r;
-    std::array<double, 3> d_offset;
 };
 
 

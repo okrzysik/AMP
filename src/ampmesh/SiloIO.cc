@@ -285,7 +285,8 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
     if ( !name.empty() ) {
         name = name_in;
     }
-    for ( auto id : getMeshIDs( mesh ) ) {
+    auto ids = getMeshIDs( mesh );
+    for ( auto id : ids ) {
         const auto &it = d_baseMeshes.find( id );
         if ( it == d_baseMeshes.end() )
             continue;
@@ -569,7 +570,7 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
         // Only send the base meshes that I own
         auto tmp = it.second;
         tmp.meshes.resize( 0 );
-        for ( auto &elem : tmp.meshes ) {
+        for ( auto &elem : it.second.meshes ) {
             if ( elem.ownerRank == myRank )
                 tmp.meshes.push_back( elem );
         }
@@ -922,19 +923,14 @@ template<>
 inline void packData<std::string>( char *ptr, size_t &pos, const std::string &data )
 {
     int N = data.size();
-    memcpy( &ptr[pos], &N, sizeof( int ) );
-    pos += sizeof( int );
-    memcpy( &ptr[pos], data.data(), N );
-    pos += N;
+    memcpy( &ptr[pos], data.c_str(), N + 1 );
+    pos += N + 1;
 }
 template<>
 inline std::string unpackData<std::string>( const char *ptr, size_t &pos )
 {
-    int N;
-    memcpy( &N, &ptr[pos], sizeof( int ) );
-    pos += sizeof( int );
-    std::string data( N, ptr[pos] );
-    pos += N;
+    std::string data( &ptr[pos] );
+    pos += data.size() + 1;
     return data;
 }
 template<class TYPE>
@@ -961,12 +957,12 @@ size_t SiloIO::siloBaseMeshData::size() const
     size_t N_bytes = sizeof( AMP::Mesh::MeshID ); // Store the mesh id
     N_bytes += sizeof( int );                     // Store the processor rank
     N_bytes += sizeof( int );                     // Store the owner rank
-    N_bytes += sizeof( int ) + meshName.size();   // Store the mesh name
-    N_bytes += sizeof( int ) + path.size();       // Store the mesh path
-    N_bytes += sizeof( int ) + file.size();       // Store the mesh file
+    N_bytes += meshName.size() + 1;               // Store the mesh name
+    N_bytes += path.size() + 1;                   // Store the mesh path
+    N_bytes += file.size() + 1;                   // Store the mesh file
     N_bytes += sizeof( int );                     // Store the number of variables
     for ( auto &elem : varName ) {
-        N_bytes += sizeof( int ) + elem.size();   // Store the variable name
+        N_bytes += elem.size() + 1;               // Store the variable name
         N_bytes += sizeof( AMP::Mesh::GeomType ); // Store the variable type
         N_bytes += sizeof( int );                 // Store the number of unknowns per point
     }
@@ -1005,7 +1001,7 @@ SiloIO::siloBaseMeshData SiloIO::siloBaseMeshData::unpack( const char *ptr )
     data.varType.resize( N_var );
     data.varSize.resize( N_var );
 #ifdef USE_AMP_VECTORS
-    data.vec.resize( N_var ); // Set the vec to NULL
+    data.vec.resize( N_var );
 #endif
     for ( size_t i = 0; i < N_var; ++i ) {
         data.varName[i] = unpackData<std::string>( ptr, pos );
@@ -1046,15 +1042,13 @@ size_t SiloIO::siloMultiMeshData::size() const
 {
     size_t N_bytes = sizeof( AMP::Mesh::MeshID ); // Store the mesh id
     N_bytes += sizeof( int );                     // Store the owner rank
-    N_bytes += sizeof( int ) + name.size();       // Store the mesh name
+    N_bytes += name.size() + 1;                   // Store the mesh name
     N_bytes += sizeof( int );                     // Store the number of sub meshes
     for ( const auto &mesh : meshes )
         N_bytes += mesh.size(); // Store the sub meshes
     N_bytes += sizeof( int );   // Store the number of variables
-    for ( const auto &name : varName ) {
-        N_bytes += sizeof( int ); // Store the length of the variable name
-        N_bytes += name.size();   // Store the variable name
-    }
+    for ( const auto &name : varName )
+        N_bytes += name.size() + 1; // Store the variable name
     return N_bytes;
 }
 void SiloIO::siloMultiMeshData::pack( char *ptr ) const

@@ -92,6 +92,11 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
         AMP::Mesh::Mesh::shared_ptr new_mesh = AMP::Mesh::Mesh::buildMesh( params->params[i] );
         d_meshes.push_back( new_mesh );
     }
+    if ( d_meshes.empty() ) {
+        PhysicalDim = 0;
+        GeomDim     = static_cast<GeomType>( 0 );
+        return;
+    }
     // Get the physical dimension and the highest geometric type
     PhysicalDim = d_meshes[0]->getDim();
     GeomDim     = d_meshes[0]->getGeomType();
@@ -251,7 +256,7 @@ MultiMesh::~MultiMesh() = default;
 /********************************************************
  * Function to copy the mesh                             *
  ********************************************************/
-AMP::shared_ptr<Mesh> MultiMesh::copy() const
+AMP::shared_ptr<Mesh> MultiMesh::clone() const
 {
     return AMP::shared_ptr<Mesh>( new MultiMesh( *this ) );
 }
@@ -780,12 +785,12 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
 /********************************************************
  * Displace a mesh                                       *
  ********************************************************/
-int MultiMesh::isMeshMovable() const
+Mesh::Movable MultiMesh::isMeshMovable() const
 {
     int value = 2;
     for ( auto &elem : d_meshes )
-        value = std::min( value, elem->isMeshMovable() );
-    return value;
+        value = std::min( value, static_cast<int>( elem->isMeshMovable() ) );
+    return static_cast<Mesh::Movable>( value );
 }
 void MultiMesh::displaceMesh( const std::vector<double> &x_in )
 {

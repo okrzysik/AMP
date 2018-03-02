@@ -1,22 +1,8 @@
 #include "AMP/ampmesh/structured/CircleMesh.h"
-
+#include "AMP/ampmesh/shapes/Circle.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
 #include "AMP/ampmesh/structured/BoxMeshHelpers.h"
 
-#include "AMP/ampmesh/MultiIterator.h"
-#include "AMP/ampmesh/shapes/Box.h"
-#include "AMP/ampmesh/structured/structuredMeshElement.h"
-#include "AMP/ampmesh/structured/structuredMeshIterator.h"
-
-#ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Variable.h"
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorBuilder.h"
-#endif
-#ifdef USE_AMP_DISCRETIZATION
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
-#endif
 
 namespace AMP {
 namespace Mesh {
@@ -25,7 +11,7 @@ namespace Mesh {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-CircleMesh::CircleMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
+CircleMesh::CircleMesh( MeshParameters::shared_ptr params ) : StructuredGeometryMesh( params )
 {
     // Check for valid inputs
     AMP_INSIST( params.get(), "Params must not be null" );
@@ -44,8 +30,7 @@ CircleMesh::CircleMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
     d_globalSize[1] = 2 * size[0];
     d_isPeriodic[0] = false;
     d_isPeriodic[1] = false;
-    d_R             = range[0];
-    d_offset.fill( 0 );
+    double R        = range[0];
     // Change the surface ids to match the standard ids
     d_surfaceId[0] = 1;
     d_surfaceId[1] = 1;
@@ -58,7 +43,7 @@ CircleMesh::CircleMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
     // Initialize the logical mesh
     BoxMesh::initialize();
     // Set the geometry
-    // d_geometry.reset( new Geometry::Box( range ) );
+    d_geometry.reset( new Geometry::Circle( R ) );
     // Finalize the logical mesh
     BoxMesh::finalize();
 }
@@ -78,65 +63,9 @@ std::vector<size_t> CircleMesh::estimateLogicalMeshSize( const MeshParameters::s
 
 
 /****************************************************************
- * Functions to displace the mesh                                *
- ****************************************************************/
-int CircleMesh::isMeshMovable() const { return 1; }
-void CircleMesh::displaceMesh( const std::vector<double> &x )
-{
-    AMP_ASSERT( x.size() == PhysicalDim );
-    for ( int i = 0; i < PhysicalDim; i++ ) {
-        d_offset[i] += x[i];
-        d_box[2 * i + 0] += x[i];
-        d_box[2 * i + 1] += x[i];
-        d_box_local[2 * i + 0] += x[i];
-        d_box_local[2 * i + 1] += x[i];
-    }
-    if ( d_geometry != nullptr )
-        d_geometry->displaceMesh( x );
-}
-#ifdef USE_AMP_VECTORS
-void CircleMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr )
-{
-    AMP_ERROR( "displaceMesh (vector) violates CircleMesh properties" );
-}
-#endif
-
-
-/****************************************************************
  * Copy the mesh                                                 *
  ****************************************************************/
-AMP::shared_ptr<Mesh> CircleMesh::copy() const { return AMP::make_shared<CircleMesh>( *this ); }
-
-
-/****************************************************************
- * Return the coordinate                                         *
- ****************************************************************/
-void CircleMesh::coord( const MeshElementIndex &index, double *pos ) const
-{
-    // This maps from a a logically rectangular 2D mesh to a circular mesh using the mapping by:
-    // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and Finite
-    // GeomType::Volume
-    //    Methods for PDEs in Circular and Spherical Domains", SIAM REVIEW, Vol. 50, No. 4, pp.
-    //    723–752 (2008)
-    int i      = index.index( 0 );
-    int j      = index.index( 1 );
-    double x   = static_cast<double>( i ) / static_cast<double>( d_globalSize[0] );
-    double y   = static_cast<double>( j ) / static_cast<double>( d_globalSize[1] );
-    auto point = BoxMeshHelpers::map_logical_circle( d_R, 2, x, y );
-    pos[0]     = point.first + d_offset[0];
-    pos[1]     = point.second + d_offset[1];
-}
-
-
-/****************************************************************
- * Return the logical coordinates                                *
- ****************************************************************/
-std::array<double, 3> CircleMesh::physicalToLogical( const double *x ) const
-{
-    auto point              = BoxMeshHelpers::map_circle_logical( d_R, 2, x[0], x[1] );
-    std::array<double, 3> y = { { point.first, point.second, 0 } };
-    return y;
-}
+AMP::shared_ptr<Mesh> CircleMesh::clone() const { return AMP::make_shared<CircleMesh>( *this ); }
 
 
 } // namespace Mesh

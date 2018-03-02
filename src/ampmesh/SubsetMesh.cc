@@ -317,9 +317,9 @@ SubsetMesh::~SubsetMesh() = default;
 /********************************************************
  * Copy the mesh                                         *
  ********************************************************/
-AMP::shared_ptr<Mesh> SubsetMesh::copy() const
+AMP::shared_ptr<Mesh> SubsetMesh::clone() const
 {
-    AMP_ERROR( "Copy is not currently supported with SubsetMesh" );
+    AMP_ERROR( "clone is not currently supported with SubsetMesh" );
     return AMP::shared_ptr<Mesh>();
 }
 
@@ -495,7 +495,7 @@ size_t SubsetMesh::numGhostElements( const GeomType type, int gcw ) const
         AMP_ERROR( "Maximum ghost width exceeded" );
     return d_elements[(int) type][gcw]->size();
 }
-int SubsetMesh::isMeshMovable() const { return 0; }
+Mesh::Movable SubsetMesh::isMeshMovable() const { return Mesh::Movable::Fixed; }
 void SubsetMesh::displaceMesh( const std::vector<double> & )
 {
     AMP_ERROR( "displaceMesh by a constant value does not work for subset mesh" );

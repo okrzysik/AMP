@@ -45,16 +45,13 @@ void test_map_logical_sphere_surface( AMP::UnitTest &ut )
     const double r = 2.0;
     bool pass      = true;
     for ( int i = 0; i < 10000; i++ ) {
-        double x = dis( gen );
-        double y = dis( gen );
-        auto p   = AMP::Mesh::BoxMeshHelpers::map_logical_sphere_surface( r, x, y );
-        auto p2  = AMP::Mesh::BoxMeshHelpers::map_sphere_surface_logical(
-            r, std::get<0>( p ), std::get<1>( p ), std::get<2>( p ) );
-        double r2 =
-            sqrt( std::get<0>( p ) * std::get<0>( p ) + std::get<1>( p ) * std::get<1>( p ) +
-                  std::get<2>( p ) * std::get<2>( p ) );
-        pass = pass && r2 < r + 1e-15;
-        pass = pass && fabs( p2.first - x ) < 1e-10 && fabs( p2.second - y ) < 1e-10;
+        double x  = dis( gen );
+        double y  = dis( gen );
+        auto p    = AMP::Mesh::BoxMeshHelpers::map_logical_sphere_surface( r, x, y );
+        auto p2   = AMP::Mesh::BoxMeshHelpers::map_sphere_surface_logical( r, p.x, p.y, p.z );
+        double r2 = sqrt( p.x * p.x + p.y * p.y + p.z * p.z );
+        pass      = pass && r2 < r + 1e-15;
+        pass      = pass && fabs( p2.first - x ) < 1e-10 && fabs( p2.second - y ) < 1e-10;
         if ( fabs( p2.first - x ) > 1e-10 || fabs( p2.second - y ) > 1e-10 )
             printf( "%e %e %e %e %e %e\n", x, y, p2.first, p2.second, p2.first - x, p2.second - y );
     }

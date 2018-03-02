@@ -1,6 +1,7 @@
 #ifndef included_AMP_BoxMesh
 #define included_AMP_BoxMesh
 
+#include "AMP/ampmesh/Geometry.h"
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshID.h"
 #include "AMP/ampmesh/MeshIterator.h"
@@ -154,7 +155,7 @@ public:
 
 
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
-    virtual AMP::shared_ptr<Mesh> copy() const override = 0;
+    virtual AMP::shared_ptr<Mesh> clone() const override = 0;
 
 
     /**
@@ -355,7 +356,8 @@ public: // BoxMesh specific functionality
      * \param[in] x         Physical coordinates
      * @return              Returns the logical coordinates
      */
-    virtual std::array<double, 3> physicalToLogical( const double *x ) const = 0;
+    virtual AMP::Geometry::Point<double>
+    physicalToLogical( const AMP::Geometry::Point<double> &x ) const = 0;
 
     /**
      * \brief    Return the element containing the point
@@ -366,7 +368,8 @@ public: // BoxMesh specific functionality
      *                      Note: it will return a null index (isNull) if no element of
      *                      the given type contains the point.
      */
-    MeshElementIndex getElementFromLogical( const std::array<double, 3> &x, GeomType type ) const;
+    MeshElementIndex getElementFromLogical( const AMP::Geometry::Point<double> &x,
+                                            GeomType type ) const;
 
     /**
      * \brief    Return the element containing the point
@@ -378,7 +381,8 @@ public: // BoxMesh specific functionality
      *                      Note: it will return a null index (isNull) if no element of
      *                      the given type contains the point.
      */
-    MeshElementIndex getElementFromPhysical( const double *x, GeomType type ) const;
+    MeshElementIndex getElementFromPhysical( const AMP::Geometry::Point<double> &x,
+                                             GeomType type ) const;
 
     //! Convert the MeshElementIndex to the MeshElementID
     inline MeshElementID convert( const MeshElementIndex &id ) const;

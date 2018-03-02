@@ -1,19 +1,7 @@
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/utils/Utilities.h"
-
-#include "AMP/ampmesh/MultiMesh.h"
-#include "AMP/ampmesh/SubsetMesh.h"
-#include "AMP/ampmesh/structured/BoxMesh.h"
-#ifdef USE_TRILINOS_STKCLASSIC
-//#include "AMP/ampmesh/STKmesh/STKMesh.h"
-#endif
-#ifdef USE_EXT_LIBMESH
-#include "AMP/ampmesh/libmesh/libMesh.h"
-#endif
-#ifdef USE_EXT_MOAB
-#include "AMP/ampmesh/moab/moabMesh.h"
-#endif
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/ampmesh/SubsetMesh.h"
+#include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Variable.h"
@@ -21,7 +9,6 @@
 #include "AMP/vectors/VectorBuilder.h"
 #endif
 #ifdef USE_AMP_DISCRETIZATION
-#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #endif
 
@@ -30,6 +17,7 @@
 
 namespace AMP {
 namespace Mesh {
+
 
 static unsigned int nextLocalMeshID = 1;
 
@@ -61,148 +49,6 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
  * De-constructor                                        *
  ********************************************************/
 Mesh::~Mesh() = default;
-
-
-/********************************************************
- * Create a mesh from the input database                 *
- ********************************************************/
-AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_ptr &params )
-{
-    auto database = params->d_db;
-    AMP_ASSERT( database != nullptr );
-    AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
-    AMP_INSIST( database->keyExists( "MeshName" ), "MeshName must exist in input database" );
-    std::string MeshType = database->getString( "MeshType" );
-    std::string MeshName = database->getString( "MeshName" );
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh;
-    if ( MeshType == std::string( "Multimesh" ) ) {
-        // The mesh is a multimesh
-        mesh = AMP::make_shared<AMP::Mesh::MultiMesh>( params );
-    } else if ( MeshType == std::string( "AMP" ) ) {
-        // The mesh is a AMP mesh
-        mesh = AMP::Mesh::BoxMesh::generate( params );
-    } else if ( MeshType == std::string( "libMesh" ) ) {
-// The mesh is a libmesh mesh
-#ifdef USE_EXT_LIBMESH
-        mesh = AMP::make_shared<AMP::Mesh::libMesh>( params );
-#else
-        AMP_ERROR( "AMP was compiled without support for libMesh" );
-#endif
-    } else if ( MeshType == std::string( "STKMesh" ) ) {
-// The mesh is a stk mesh
-#ifdef USE_TRILINOS_STKClassic
-        // mesh = AMP::make_shared<AMP::Mesh::STKMesh>( params );
-        AMP_ERROR( "AMP stk mesh interface is broken" );
-#else
-        AMP_ERROR( "AMP was compiled without support for STKMesh" );
-#endif
-    } else if ( MeshType == std::string( "moab" ) || MeshType == std::string( "MOAB" ) ) {
-// The mesh is a MOAB mesh
-#ifdef USE_EXT_MOAB
-        mesh = AMP::make_shared<AMP::Mesh::moabMesh>( params );
-#else
-        AMP_ERROR( "AMP was compiled without support for MOAB" );
-#endif
-    } else {
-        // Unknown mesh type
-        AMP_ERROR( std::string( "Unknown mesh type (" ) + MeshType + std::string( ")" ) );
-    }
-    mesh->setName( MeshName );
-    return mesh;
-}
-
-
-/********************************************************
- * Estimate the mesh size                                *
- ********************************************************/
-size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
-{
-    auto database = params->d_db;
-    AMP_ASSERT( database != nullptr );
-    size_t meshSize = 0;
-    if ( database->keyExists( "NumberOfElements" ) ) {
-        // User specified the number of elements, this should override everything
-        meshSize = (size_t) database->getInteger( "NumberOfElements" );
-        // Adjust the number of elements by a weight if desired
-        if ( database->keyExists( "Weight" ) ) {
-            double weight = database->getDouble( "Weight" );
-            meshSize      = (size_t) ceil( weight * ( (double) meshSize ) );
-        }
-        return meshSize;
-    }
-    // This is being called through the base class, call the appropriate function
-    AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
-    std::string MeshType = database->getString( "MeshType" );
-    if ( MeshType == std::string( "Multimesh" ) ) {
-        // The mesh is a multimesh
-        meshSize = AMP::Mesh::MultiMesh::estimateMeshSize( params );
-    } else if ( MeshType == std::string( "AMP" ) ) {
-        // The mesh is a AMP mesh
-        meshSize = AMP::Mesh::BoxMesh::estimateMeshSize( params );
-    } else if ( MeshType == std::string( "libMesh" ) ) {
-// The mesh is a libmesh mesh
-#ifdef USE_EXT_LIBMESH
-        meshSize = AMP::Mesh::libMesh::estimateMeshSize( params );
-#else
-        AMP_ERROR( "AMP was compiled without support for libMesh" );
-#endif
-    } else if ( MeshType == std::string( "STKMesh" ) ) {
-// The mesh is a stkMesh mesh
-#ifdef USE_TRILINOS_STKCLASSIC
-        // meshSize = AMP::Mesh::STKMesh::estimateMeshSize( params );
-        AMP_ERROR( "AMP stk mesh interface is broken" );
-#else
-        AMP_ERROR( "AMP was compiled without support for STKMesh" );
-#endif
-    } else if ( database->keyExists( "NumberOfElements" ) ) {
-        int NumberOfElements = database->getInteger( "NumberOfElements" );
-        meshSize             = NumberOfElements;
-    } else {
-        // Unknown mesh type
-        AMP_ERROR( "Unknown mesh type and NumberOfElements does not exist in database" );
-    }
-    return meshSize;
-}
-
-
-/********************************************************
- * Estimate the maximum number of processors             *
- ********************************************************/
-size_t Mesh::maxProcs( const MeshParameters::shared_ptr &params )
-{
-    auto database = params->d_db;
-    AMP_ASSERT( database != nullptr );
-    // This is being called through the base class, call the appropriate function
-    AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
-    std::string MeshType = database->getString( "MeshType" );
-    size_t maxSize       = 0;
-    if ( MeshType == std::string( "Multimesh" ) ) {
-        // The mesh is a multimesh
-        maxSize = AMP::Mesh::MultiMesh::maxProcs( params );
-    } else if ( MeshType == std::string( "AMP" ) ) {
-        // The mesh is a AMP mesh
-        maxSize = AMP::Mesh::BoxMesh::maxProcs( params );
-    } else if ( MeshType == std::string( "libMesh" ) ) {
-// The mesh is a libmesh mesh
-#ifdef USE_EXT_LIBMESH
-        maxSize = AMP::Mesh::libMesh::maxProcs( params );
-#else
-        AMP_ERROR( "AMP was compiled without support for libMesh" );
-#endif
-    } else if ( MeshType == std::string( "STKMesh" ) ) {
-// The mesh is a stkMesh mesh
-#ifdef USE_TRILINOS_STKCLASSIC
-        // maxSize = AMP::Mesh::STKMesh::maxProcs( params );
-        AMP_ERROR( "AMP stk mesh interface is broken" );
-#else
-        AMP_ERROR( "AMP was compiled without support for STKMesh" );
-#endif
-    } else {
-        // Unknown mesh type
-        AMP_ERROR( "Unknown mesh type and NumberOfElements does not exist in database" );
-    }
-    return maxSize;
-}
 
 
 /********************************************************
@@ -270,8 +116,7 @@ AMP::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator, bool isGlobal 
     } else if ( !isGlobal && iterator.size() == 0 ) {
         return AMP::shared_ptr<Mesh>();
     }
-    AMP::shared_ptr<const Mesh> this_mesh( shared_from_this() );
-    AMP::shared_ptr<SubsetMesh> mesh( new SubsetMesh( this_mesh, iterator, isGlobal ) );
+    auto mesh = AMP::make_shared<SubsetMesh>( shared_from_this(), iterator, isGlobal );
     return mesh;
 }
 
@@ -283,11 +128,10 @@ MeshElement Mesh::getElement( const MeshElementID &elem_id ) const
 {
     MeshID mesh_id = elem_id.meshID();
     AMP_INSIST( mesh_id == d_meshID, "mesh id must match the mesh id of the element" );
-    MeshIterator iterator = getIterator( elem_id.type() );
-    for ( size_t i = 0; i < iterator.size(); i++ ) {
-        if ( iterator->globalID() == elem_id )
-            return *iterator;
-        ++iterator;
+    auto it = getIterator( elem_id.type() );
+    for ( size_t i = 0; i < it.size(); i++, ++it ) {
+        if ( it->globalID() == elem_id )
+            return *it;
     }
     return MeshElement();
 }
@@ -311,26 +155,20 @@ AMP::LinearAlgebra::Vector::shared_ptr Mesh::getPositionVector( std::string name
                                                                 const int gcw ) const
 {
 #ifdef USE_AMP_DISCRETIZATION
-    AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create(
-            AMP::const_pointer_cast<Mesh>( shared_from_this() ),
-            AMP::Mesh::GeomType::Vertex,
-            gcw,
-            PhysicalDim,
-            true );
-    AMP::LinearAlgebra::Variable::shared_ptr nodalVariable(
-        new AMP::LinearAlgebra::Variable( name ) );
-    AMP::LinearAlgebra::Vector::shared_ptr position =
-        AMP::LinearAlgebra::createVector( DOFs, nodalVariable, true );
+    auto DOFs = AMP::Discretization::simpleDOFManager::create(
+        AMP::const_pointer_cast<Mesh>( shared_from_this() ),
+        AMP::Mesh::GeomType::Vertex,
+        gcw,
+        PhysicalDim,
+        true );
+    auto nodalVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( name );
+    auto position      = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, true );
     std::vector<size_t> dofs( PhysicalDim );
-    AMP::Mesh::MeshIterator cur = DOFs->getIterator();
-    AMP::Mesh::MeshIterator end = cur.end();
-    while ( cur != end ) {
-        AMP::Mesh::MeshElementID id = cur->globalID();
-        std::vector<double> coord   = cur->coord();
+    for ( const auto &elem : DOFs->getIterator() ) {
+        auto id    = elem.globalID();
+        auto coord = elem.coord();
         DOFs->getDOFs( id, dofs );
         position->setValuesByGlobalID( dofs.size(), &dofs[0], &coord[0] );
-        ++cur;
     }
     return position;
 #else
