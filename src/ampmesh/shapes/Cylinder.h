@@ -40,12 +40,13 @@ protected:
     double d_r;
     double d_z_min;
     double d_z_max;
-    std::array<double, 3> d_offset;
+    double d_offset[3];
 
 private:
     // Private constuctor
     Cylinder();
 };
+
 
 } // namespace Geometry
 } // namespace AMP

@@ -41,12 +41,13 @@ public:
 protected:
     // Internal data
     double d_r_min, d_r_max, d_z_min, d_z_max;
-    std::array<double, 3> d_offset;
+    double d_offset[3];
 
 private:
     // Private constuctor
     Tube();
 };
+
 
 } // namespace Geometry
 } // namespace AMP

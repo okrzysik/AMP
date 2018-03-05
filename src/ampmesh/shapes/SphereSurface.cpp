@@ -10,7 +10,12 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-SphereSurface::SphereSurface( double r ) : d_r( r ) { d_offset.fill( 0 ); }
+SphereSurface::SphereSurface( double r ) : d_r( r )
+{
+    d_offset[0] = 0;
+    d_offset[1] = 0;
+    d_offset[2] = 0;
+}
 
 
 /********************************************************

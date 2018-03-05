@@ -38,12 +38,13 @@ public:
 protected:
     // Internal data
     double d_r;
-    std::array<double, 3> d_offset;
+    double d_offset[3];
 
 private:
     // Private constuctor
     Sphere();
 };
+
 
 } // namespace Geometry
 } // namespace AMP

@@ -39,12 +39,13 @@ public:
 protected:
     // Internal data
     double d_r_min, d_r_max;
-    std::array<double, 3> d_offset;
+    double d_offset[3];
 
 private:
     // Private constuctor
     Shell();
 };
+
 
 } // namespace Geometry
 } // namespace AMP

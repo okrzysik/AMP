@@ -13,7 +13,9 @@ namespace Geometry {
 Cylinder::Cylinder( double r, double z_min, double z_max )
     : d_r( r ), d_z_min( z_min ), d_z_max( z_max )
 {
-    d_offset.fill( 0 );
+    d_offset[0] = 0;
+    d_offset[1] = 0;
+    d_offset[2] = 0;
 }
 
 

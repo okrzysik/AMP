@@ -12,7 +12,9 @@ namespace Geometry {
  ********************************************************/
 Shell::Shell( double r_min, double r_max ) : d_r_min( r_min ), d_r_max( r_max )
 {
-    d_offset.fill( 0 );
+    d_offset[0] = 0;
+    d_offset[1] = 0;
+    d_offset[2] = 0;
 }
 
 
