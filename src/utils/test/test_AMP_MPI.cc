@@ -1147,27 +1147,25 @@ void testCommDup( UnitTest *ut )
     ut->expected_failure( "Skipping dup tests, PETSc (no-mpi) has a limit of 128 unique comms" );
     return;
 #endif
-    size_t N_comm_try = 10000; // Maximum number of comms to try and create
+    int N_comm_try = 2000; // Maximum number of comms to try and create
     std::vector<MPI_CLASS> comms;
     comms.reserve( N_comm_try );
     try {
-        for ( size_t i = 0; i < N_comm_try; i++ ) {
+        for ( int i = 0; i < N_comm_try; i++ ) {
             MPI_CLASS tmp_comm = globalComm.dup();
             comms.push_back( tmp_comm );
             MPI_ASSERT( globalComm.getCommunicator() != comms[i].getCommunicator() );
             MPI_ASSERT( comms.back().sumReduce<int>( 1 ) ==
                         globalComm.getSize() ); // We need to communicate as part of the test
         }
-        ut->passes( "Created an unlimited number of comms" );
+        ut->passes( AMP::Utilities::stringf( "Created %i comms", N_comm_try ) );
     } catch ( ... ) {
         if ( comms.size() < 252 ) {
             ut->failure( "Could not create 252 different communicators" );
         } else {
-            char message[128];
-            sprintf( message,
-                     "Failed to create an unlimited number of comms (%llu)",
-                     static_cast<unsigned long long int>( comms.size() ) );
-            ut->expected_failure( message );
+            int N = comms.size();
+            ut->expected_failure( AMP::Utilities::stringf(
+                "Failed to create an unlimited number of comms (%i)", N ) );
         }
         AMP::pout << "Maximum number of concurrent communicators: " << comms.size() << std::endl;
     }
@@ -1176,7 +1174,7 @@ void testCommDup( UnitTest *ut )
     globalComm.barrier();
     try {
         double start = MPI_CLASS::time();
-        for ( size_t i = 0; i < N_comm_try; i++ ) {
+        for ( int i = 0; i < N_comm_try; i++ ) {
             MPI_CLASS tmp_comm1 = globalComm.dup();
             MPI_CLASS tmp_comm2 = globalComm.dup();
             MPI_ASSERT( globalComm.getCommunicator() != tmp_comm1.getCommunicator() );

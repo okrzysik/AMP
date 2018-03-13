@@ -1,20 +1,6 @@
 #include "AMP/ampmesh/structured/TubeMesh.h"
-
 #include "AMP/ampmesh/MultiIterator.h"
-#include "AMP/ampmesh/shapes/Box.h"
-#include "AMP/ampmesh/structured/BoxMesh.h"
-#include "AMP/ampmesh/structured/structuredMeshElement.h"
-#include "AMP/ampmesh/structured/structuredMeshIterator.h"
-
-#ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Variable.h"
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorBuilder.h"
-#endif
-#ifdef USE_AMP_DISCRETIZATION
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
-#endif
+#include "AMP/ampmesh/shapes/Tube.h"
 
 namespace AMP {
 namespace Mesh {
@@ -23,7 +9,7 @@ namespace Mesh {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-TubeMesh::TubeMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
+TubeMesh::TubeMesh( MeshParameters::shared_ptr params ) : StructuredGeometryMesh( params )
 {
     for ( int d = 0; d < 3; d++ ) {
         d_globalSize[d] = 1;
@@ -49,12 +35,6 @@ TubeMesh::TubeMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
     AMP_INSIST( PhysicalDim == 3, "dim must be 3" );
     for ( int i = 0; i < 3; i++ )
         d_globalSize[i] = size[i];
-    for ( int i = 0; i < 4; i++ )
-        d_range[i] = range[i];
-    d_offset.fill( 0 );
-    AMP_ASSERT( d_range[0] > 0 );
-    AMP_ASSERT( d_range[1] > d_range[0] );
-    AMP_ASSERT( d_range[3] > d_range[2] );
     // Change the surface ids to match the standard ids
     // 0 - 8: Inner surface
     // 1 - 4: Outer surface
@@ -75,7 +55,7 @@ TubeMesh::TubeMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
     // Initialize the logical mesh
     BoxMesh::initialize();
     // Set the geometry
-    // d_geometry.reset( new Geometry::Box( range ) );
+    d_geometry.reset( new Geometry::Tube( range[0], range[1], range[2], range[3] ) );
     // Finalize the logical mesh
     BoxMesh::finalize();
 }
@@ -97,64 +77,9 @@ std::vector<size_t> TubeMesh::estimateLogicalMeshSize( const MeshParameters::sha
 
 
 /****************************************************************
- * Functions to displace the mesh                                *
- ****************************************************************/
-int TubeMesh::isMeshMovable() const { return 1; }
-void TubeMesh::displaceMesh( const std::vector<double> &x )
-{
-    AMP_ASSERT( x.size() == PhysicalDim );
-    for ( int i = 0; i < PhysicalDim; i++ ) {
-        d_offset[i] += x[i];
-        d_box[2 * i + 0] += x[i];
-        d_box[2 * i + 1] += x[i];
-        d_box_local[2 * i + 0] += x[i];
-        d_box_local[2 * i + 1] += x[i];
-    }
-    if ( d_geometry != nullptr )
-        d_geometry->displaceMesh( x );
-}
-#ifdef USE_AMP_VECTORS
-void TubeMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr )
-{
-    AMP_ERROR( "displaceMesh (vector) violates TubeMesh properties" );
-}
-#endif
-
-
-/****************************************************************
  * Copy the mesh                                                 *
  ****************************************************************/
-AMP::shared_ptr<Mesh> TubeMesh::copy() const { return AMP::make_shared<TubeMesh>( *this ); }
-
-
-/****************************************************************
- * Return the coordinate                                         *
- ****************************************************************/
-void TubeMesh::coord( const MeshElementIndex &index, double *pos ) const
-{
-    const double pi = 3.141592653589793116;
-    int i           = index.index( 0 );
-    int j           = index.index( 1 );
-    int k           = index.index( 2 );
-    double x        = static_cast<double>( i ) / static_cast<double>( d_globalSize[0] );
-    double y        = static_cast<double>( j ) / static_cast<double>( d_globalSize[1] );
-    double z        = static_cast<double>( k ) / static_cast<double>( d_globalSize[2] );
-    double r        = d_range[0] + x * ( d_range[1] - d_range[0] );
-    double theta    = 2.0 * pi * y;
-    pos[0]          = r * cos( theta ) + d_offset[0];
-    pos[1]          = r * sin( theta ) + d_offset[1];
-    pos[2]          = d_range[2] + z * ( d_range[3] - d_range[2] ) + d_offset[2];
-}
-
-
-/****************************************************************
- * Return the logical coordinates                                *
- ****************************************************************/
-std::array<double, 3> TubeMesh::physicalToLogical( const double * ) const
-{
-    AMP_ERROR( "physicalToLogical is not supported in TubeMesh" );
-    return std::array<double, 3>();
-}
+AMP::shared_ptr<Mesh> TubeMesh::clone() const { return AMP::make_shared<TubeMesh>( *this ); }
 
 
 } // namespace Mesh

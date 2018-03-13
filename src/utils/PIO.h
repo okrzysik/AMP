@@ -13,16 +13,12 @@
 #define included_PIO
 
 
-#ifndef included_fstream
+#include <cstdarg>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
-#define included_fstream
-#endif
-
-#ifndef included_String
 #include <string>
-#define included_String
-#endif
+
 
 namespace AMP {
 
@@ -112,6 +108,24 @@ extern std::ostream plog;
  * Null output stream.
  */
 extern std::ostream pnull;
+
+/*!
+ * Parallel output printp pout writes to the standard output from node zero
+ * only.  Output from other nodes is ignored.  If logging is enabled, then
+ * output is mirrored to the log stream, as well.
+ * The format matches the format for printf
+ */
+inline int printp( const char *format, ... )
+{
+    va_list ap;
+    va_start( ap, format );
+    char tmp[4096];
+    int n = vsprintf( tmp, format, ap );
+    va_end( ap );
+    pout << tmp;
+    pout.flush();
+    return n;
+}
 
 } // namespace AMP
 

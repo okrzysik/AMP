@@ -33,7 +33,7 @@ public:
      *    and 2 if the individual nodes can be moved.
      * @return  The if
      */
-    virtual int isMeshMovable() const override;
+    virtual Mesh::Movable isMeshMovable() const override;
 
     /**
      * \brief    Displace the entire mesh
@@ -57,8 +57,8 @@ public:
     virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 #endif
 
-    //! Virtual function to copy the mesh (allows use to proply copy the derived class)
-    virtual AMP::shared_ptr<Mesh> copy() const override;
+    //! Virtual function to copy the mesh (allows us to properly copy the derived class)
+    virtual AMP::shared_ptr<Mesh> clone() const override;
 
     /**
      * \brief    Return a mesh element's coordinates given it's id.
@@ -79,7 +79,8 @@ public: // BoxMesh specific functionality
      * \param[in] x         Physical coordinates
      * @return              Returns the logical coordinates
      */
-    virtual std::array<double, 3> physicalToLogical( const double *x ) const override;
+    virtual AMP::Geometry::Point<double>
+    physicalToLogical( const AMP::Geometry::Point<double> &x ) const override;
 
 
 private:

@@ -59,7 +59,7 @@ protected:
      *  If PetscRandomCreate has not been called, this will
      *  call it.
      */
-    PetscRandom &getPetscRandom( AMP_MPI comm = AMP_MPI( AMP_COMM_NULL ) );
+    PetscRandom &getPetscRandom( const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
 
     /**
      *  \brief  Swap the underlying PETSc Vec with another

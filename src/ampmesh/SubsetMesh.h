@@ -54,8 +54,8 @@ public:
     virtual AMP::shared_ptr<Mesh> Subset( std::string name ) const override;
 
 
-    //! Function to copy the mesh (allows use to proply copy the derived class)
-    virtual AMP::shared_ptr<Mesh> copy() const override;
+    //! Function to copy the mesh (allows use to properly copy the derived class)
+    virtual AMP::shared_ptr<Mesh> clone() const override;
 
 
     /* Return the number of local element of the given type
@@ -208,7 +208,7 @@ public:
      *    and 2 if the individual nodes can be moved.
      * @return  The if
      */
-    virtual int isMeshMovable() const override;
+    virtual Mesh::Movable isMeshMovable() const override;
 
     /**
      * \brief    Displace the entire mesh

@@ -50,7 +50,7 @@ MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh ) : BoxMesh( mesh
 /****************************************************************
  * Functions to displace the mesh                                *
  ****************************************************************/
-int MovableBoxMesh::isMeshMovable() const { return 2; }
+Mesh::Movable MovableBoxMesh::isMeshMovable() const { return Mesh::Movable::Deform; }
 void MovableBoxMesh::displaceMesh( const std::vector<double> &x )
 {
     AMP_ASSERT( x.size() == PhysicalDim );
@@ -63,7 +63,7 @@ void MovableBoxMesh::displaceMesh( const std::vector<double> &x )
         d_box_local[2 * i + 1] += x[i];
     }
     if ( d_geometry != nullptr )
-        d_geometry->displaceMesh( x );
+        d_geometry->displaceMesh( x.data() );
 }
 #ifdef USE_AMP_VECTORS
 void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
@@ -76,15 +76,13 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
             getIterator( AMP::Mesh::GeomType::Vertex, d_max_gcw ),
             getIterator( AMP::Mesh::GeomType::Vertex, 0 ),
             PhysicalDim );
-    AMP::LinearAlgebra::Variable::shared_ptr nodalVariable(
-        new AMP::LinearAlgebra::Variable( "tmp_pos" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr displacement =
-        AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
+    auto nodalVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "tmp_pos" );
+    auto displacement  = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
     std::vector<size_t> dofs1( PhysicalDim );
     std::vector<size_t> dofs2( PhysicalDim );
-    AMP::Mesh::MeshIterator cur = getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-    AMP::Mesh::MeshIterator end = cur.end();
-    AMP::Discretization::DOFManager::shared_ptr DOFx = x->getDOFManager();
+    auto cur  = getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto end  = cur.end();
+    auto DOFx = x->getDOFManager();
     std::vector<double> data( PhysicalDim );
     while ( cur != end ) {
         AMP::Mesh::MeshElementID id = cur->globalID();
@@ -133,7 +131,7 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
 /****************************************************************
  * Copy the mesh                                                 *
  ****************************************************************/
-AMP::shared_ptr<Mesh> MovableBoxMesh::copy() const
+AMP::shared_ptr<Mesh> MovableBoxMesh::clone() const
 {
     return AMP::make_shared<MovableBoxMesh>( *this );
 }
@@ -155,10 +153,11 @@ void MovableBoxMesh::coord( const MeshElementIndex &index, double *pos ) const
 /****************************************************************
  * Return the logical coordinates                                *
  ****************************************************************/
-std::array<double, 3> MovableBoxMesh::physicalToLogical( const double * ) const
+AMP::Geometry::Point<double>
+MovableBoxMesh::physicalToLogical( const AMP::Geometry::Point<double> & ) const
 {
     AMP_ERROR( "physicalToLogical is not supported in MovableBoxMesh" );
-    return std::array<double, 3>();
+    return AMP::Geometry::Point<double>();
 }
 
 

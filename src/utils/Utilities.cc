@@ -1,11 +1,11 @@
 #define NOMINMAX
-#include "Utilities.h"
-
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Logger.h"
 #include "AMP/utils/PIO.h"
-#include "AMP/utils/StackTrace.h"
+
+#include "StackTrace/StackTrace.h"
 
 #include <algorithm>
 #include <cmath>
@@ -21,168 +21,54 @@
 #include <stdexcept>
 #include <sys/stat.h>
 
+#ifdef USE_TIMER
+#include "MemoryApp.h"
+#endif
 
-// Detect the OS and include system dependent headers
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || \
-    defined( _MSC_VER )
-// Note: windows has not been testeds
-#define USE_WINDOWS
-#define NOMINMAX
+// Detect the OS
 // clang-format off
-#include <windows.h>
-#include <process.h>
-#include <psapi.h>
-#include <tchar.h>
-// clang-format on
-#define mkdir( path, mode ) _mkdir( path )
-//#pragma comment(lib, psapi.lib) //added
-//#pragma comment(linker, /DEFAULTLIB:psapi.lib)
+#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || defined( _MSC_VER )
+    #define USE_WINDOWS
 #elif defined( __APPLE__ )
-#define USE_MAC
-#include <cxxabi.h>
-#include <dlfcn.h>
-#include <execinfo.h>
-#include <mach/mach.h>
-#include <stdint.h>
-#include <sys/sysctl.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
+    #define USE_MAC
 #elif defined( __linux ) || defined( __unix ) || defined( __posix )
-#define USE_LINUX
-#define USE_NM
-#include <dlfcn.h>
-#include <execinfo.h>
-#include <malloc.h>
-#include <sys/time.h>
-#include <unistd.h>
+    #define USE_LINUX
+    #define USE_NM
 #else
-#error Unknown OS
+    #error Unknown OS
 #endif
+// clang-format on
 
 
-#ifdef __GNUC__
-#define USE_ABI
-#include <cxxabi.h>
+// Include system dependent headers
+// clang-format off
+#ifdef USE_WINDOWS
+    #include <process.h>
+    #include <psapi.h>
+    #include <stdio.h>
+    #include <tchar.h>
+    #include <windows.h>
+#else
+    #include <dlfcn.h>
+    #include <execinfo.h>
+    #include <sched.h>
+    #include <sys/time.h>
+    #include <ctime>
+    #include <unistd.h>
 #endif
+#ifdef USE_LINUX
+    #include <malloc.h>
+#endif
+#ifdef USE_MAC
+    #include <mach/mach.h>
+    #include <sys/sysctl.h>
+    #include <sys/types.h>
+#endif
+// clang-format on
 
 
 namespace AMP {
 
-// Routine to check if a file exists
-bool Utilities::fileExists( const std::string &filename )
-{
-    std::ifstream ifile( filename.c_str() );
-    return ifile.good();
-}
-
-// Routine to rename a file.
-void Utilities::renameFile( const std::string &old_filename, const std::string &new_filename )
-{
-    AMP_ASSERT( !old_filename.empty() );
-    AMP_ASSERT( !new_filename.empty() );
-    rename( old_filename.c_str(), new_filename.c_str() );
-}
-
-// Routine to delete a file.
-void Utilities::deleteFile( const std::string &filename )
-{
-    AMP_ASSERT( !filename.empty() );
-    if ( fileExists( filename ) ) {
-        int error = remove( filename.c_str() );
-        AMP_INSIST( error == 0, "Error deleting file" );
-    }
-}
-
-/*
- * Routine to recursively construct directories based on a relative path name.
- */
-void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_node_zero_creates )
-{
-    AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );
-    if ( ( !only_node_zero_creates ) || ( comm.getRank() == 0 ) ) {
-        auto length    = (int) path.length();
-        auto *path_buf = new char[length + 1];
-        sprintf( path_buf, "%s", path.c_str() );
-        struct stat status;
-        int pos = length - 1;
-
-        /* find part of path that has not yet been created */
-        while ( ( stat( path_buf, &status ) != 0 ) && ( pos >= 0 ) ) {
-
-            /* slide backwards in string until next slash found */
-            bool slash_found = false;
-            while ( ( !slash_found ) && ( pos >= 0 ) ) {
-                if ( path_buf[pos] == '/' || path_buf[pos] == 92 ) {
-                    slash_found = true;
-                    if ( pos >= 0 )
-                        path_buf[pos] = '\0';
-                } else
-                    pos--;
-            }
-        }
-
-        /*
-         * if there is a part of the path that already exists make sure
-         * it is really a directory
-         */
-        if ( pos >= 0 ) {
-            if ( !S_ISDIR( status.st_mode ) ) {
-                AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                           << "    Cannot create directories in path = " << path
-                           << "\n    because some intermediate item in path exists and"
-                           << "is NOT a directory" << std::endl );
-            }
-        }
-
-        /* make all directories that do not already exist */
-
-        /*
-         * if (pos < 0), then there is no part of the path that
-         * already exists.  Need to make the first part of the
-         * path before sliding along path_buf.
-         */
-        if ( pos < 0 ) {
-            if ( mkdir( path_buf, mode ) != 0 ) {
-                AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                           << "    Cannot create directory  = " << path_buf << std::endl );
-            }
-            pos = 0;
-        }
-
-        /* make rest of directories */
-        do {
-
-            /* slide forward in string until next '\0' found */
-            bool null_found = false;
-            while ( ( !null_found ) && ( pos < length ) ) {
-                if ( path_buf[pos] == '\0' ) {
-                    null_found    = true;
-                    path_buf[pos] = '/';
-                }
-                pos++;
-            }
-
-            /* make directory if not at end of path */
-            if ( pos < length ) {
-                if ( mkdir( path_buf, mode ) != 0 ) {
-                    AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                               << "    Cannot create directory  = " << path_buf << std::endl );
-                }
-            }
-        } while ( pos < length );
-
-        delete[] path_buf;
-    }
-
-    /*
-     * Make sure all processors wait until node zero creates
-     * the directory structure.
-     */
-    if ( only_node_zero_creates ) {
-        comm.barrier();
-    }
-}
 
 /*
  * Routine to convert an integer to a string.
@@ -221,16 +107,30 @@ std::string Utilities::blockToString( int num ) { return intToString( num, 4 ); 
 void Utilities::abort( const std::string &message, const std::string &filename, const int line )
 {
     if ( AMP::AMPManager::use_MPI_Abort == true ) {
-        // Print the call stack and memory usage
+        // Get the call stack and memory usage
         long long unsigned int N_bytes = getMemoryUsage();
-        printf( "Bytes used = %llu\n", N_bytes );
-        auto stack = StackTrace::getCallStack();
-        printf( "Stack Trace:\n" );
-        for ( auto &elem : stack )
-            printf( "   %s\n", elem.print().c_str() );
-        printf( "\n" );
+        auto stack                     = StackTrace::getCallStack();
         // Log the abort message
-        Logger::getInstance()->logAbort( message, filename, line );
+        if ( AMPManager::isInitialized() ) {
+            AMP::pout << "Bytes used = " << N_bytes << std::endl;
+            AMP::pout << "Stack Trace:\n";
+            for ( auto &elem : stack )
+                AMP::pout << "   " << elem.print() << std::endl;
+            AMP::pout << std::endl;
+            Logger::getInstance()->logAbort( message, filename, line );
+        } else {
+            std::cout << "Bytes used = " << N_bytes << std::endl;
+            std::cout << "Stack Trace:\n";
+            for ( auto &elem : stack )
+                std::cout << "   " << elem.print() << std::endl;
+            std::cout << std::endl;
+            std::cerr << "Program abort called in file ``" << filename << "'' at line " << line
+                      << std::endl;
+            std::cerr << "ERROR MESSAGE: " << std::endl << message.c_str() << std::endl;
+            std::cerr << std::flush;
+        }
+        // Stop error handling
+        AMPManager::clearHandlers();
         // Use MPI_abort (will terminate all processes)
         AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );
         comm.abort();
@@ -259,61 +159,95 @@ unsigned int Utilities::hash_char( const char *name )
 
 
 /****************************************************************************
- *  Function to get the memory usage                                         *
- *  Note: this function should be thread-safe                                *
+ *  Function to set an environemental variable                               *
  ****************************************************************************/
-#if defined( USE_MAC ) || defined( USE_LINUX )
-// Get the page size on mac or linux
-static size_t page_size = static_cast<size_t>( sysconf( _SC_PAGESIZE ) );
-#endif
-size_t Utilities::getSystemMemory()
+void Utilities::setenv( const char *name, const char *value )
 {
-    size_t N_bytes = 0;
-#if defined( USE_LINUX )
-    static long pages = sysconf( _SC_PHYS_PAGES );
-    N_bytes           = pages * page_size;
-#elif defined( USE_MAC )
-    int mib[2]    = { CTL_HW, HW_MEMSIZE };
-    u_int namelen = sizeof( mib ) / sizeof( mib[0] );
-    uint64_t size;
-    size_t len = sizeof( size );
-    if ( sysctl( mib, namelen, &size, &len, NULL, 0 ) == 0 )
-        N_bytes = size;
+#if defined( USE_LINUX ) || defined( USE_MAC )
+    char env[100];
+    sprintf( env, "%s=%s", name, value );
+    bool pass = false;
+    if ( value != nullptr )
+        pass = ::setenv( name, value, 1 ) == 0;
+    else
+        pass = ::unsetenv( name ) == 0;
 #elif defined( USE_WINDOWS )
-    MEMORYSTATUSEX status;
-    status.dwLength = sizeof( status );
-    GlobalMemoryStatusEx( &status );
-    N_bytes = status.ullTotalPhys;
+    bool pass = SetEnvironmentVariable( name, value ) != 0;
 #else
 #error Unknown OS
 #endif
+    if ( !pass ) {
+        char msg[100];
+        if ( value != nullptr )
+            sprintf( msg, "Error setting enviornmental variable: %s=%s\n", name, value );
+        else
+            sprintf( msg, "Error clearing enviornmental variable: %s\n", name );
+        AMP_ERROR( msg );
+    }
+}
+
+
+/****************************************************************************
+ *  Function to get the memory usage                                         *
+ *  Note: this function should be thread-safe                                *
+ ****************************************************************************/
+// clang-format off
+#if defined( USE_MAC ) || defined( USE_LINUX )
+    // Get the page size on mac or linux
+    static size_t page_size = static_cast<size_t>( sysconf( _SC_PAGESIZE ) );
+#endif
+size_t Utilities::getSystemMemory()
+{
+    #if defined( USE_LINUX )
+        static long pages = sysconf( _SC_PHYS_PAGES );
+        size_t N_bytes    = pages * page_size;
+    #elif defined( USE_MAC )
+        int mib[2]    = { CTL_HW, HW_MEMSIZE };
+        u_int namelen = sizeof( mib ) / sizeof( mib[0] );
+        uint64_t size;
+        size_t len = sizeof( size );
+        size_t N_bytes = 0;
+        if ( sysctl( mib, namelen, &size, &len, nullptr, 0 ) == 0 )
+            N_bytes = size;
+    #elif defined( USE_WINDOWS )
+        MEMORYSTATUSEX status;
+        status.dwLength = sizeof( status );
+        GlobalMemoryStatusEx( &status );
+        size_t N_bytes = status.ullTotalPhys;
+    #else
+        #error Unknown OS
+    #endif
     return N_bytes;
 }
 size_t Utilities::getMemoryUsage()
 {
-    size_t N_bytes = 0;
-#if defined( USE_LINUX )
-    struct mallinfo meminfo = mallinfo();
-    size_t size_hblkhd      = static_cast<unsigned int>( meminfo.hblkhd );
-    size_t size_uordblks    = static_cast<unsigned int>( meminfo.uordblks );
-    N_bytes                 = size_hblkhd + size_uordblks;
-#elif defined( USE_MAC )
-    struct task_basic_info t_info;
-    mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
-    if ( KERN_SUCCESS !=
-         task_info( mach_task_self(), TASK_BASIC_INFO, (task_info_t) &t_info, &t_info_count ) ) {
-        return 0;
-    }
-    N_bytes = t_info.virtual_size;
-#elif defined( USE_WINDOWS )
-    PROCESS_MEMORY_COUNTERS memCounter;
-    GetProcessMemoryInfo( GetCurrentProcess(), &memCounter, sizeof( memCounter ) );
-    N_bytes = memCounter.WorkingSetSize;
-#else
-#error Unknown OS
-#endif
+    #ifdef USE_TIMER
+        size_t N_bytes = MemoryApp::getTotalMemoryUsage();
+    #else
+        #if defined( USE_LINUX )
+            struct mallinfo meminfo = mallinfo();
+            size_t size_hblkhd      = static_cast<unsigned int>( meminfo.hblkhd );
+            size_t size_uordblks    = static_cast<unsigned int>( meminfo.uordblks );
+            size_t N_bytes          = size_hblkhd + size_uordblks;
+        #elif defined( USE_MAC )
+            struct task_basic_info t_info;
+            mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+            if ( KERN_SUCCESS !=
+                 task_info( mach_task_self(), TASK_BASIC_INFO, (task_info_t) &t_info, &t_info_count ) ) {
+                return 0;
+            }
+            size_t N_bytes = t_info.virtual_size;
+        #elif defined( USE_WINDOWS )
+            PROCESS_MEMORY_COUNTERS memCounter;
+            GetProcessMemoryInfo( GetCurrentProcess(), &memCounter, sizeof( memCounter ) );
+            size_t N_bytes = memCounter.WorkingSetSize;
+        #else
+            #error Unknown OS
+        #endif
+    #endif
     return N_bytes;
 }
+// clang-format on
 
 
 /****************************************************************************
@@ -359,6 +293,96 @@ void Utilities::sleepMs( unsigned int N ) { usleep( N * 1000 ); }
 #else
 #error Unknown OS
 #endif
+
+
+/****************************************************************************
+ *  Filesystem utilities                                                     *
+ ****************************************************************************/
+bool Utilities::fileExists( const std::string &filename )
+{
+    std::ifstream ifile( filename.c_str() );
+    return ifile.good();
+}
+
+void Utilities::renameFile( const std::string &old_filename, const std::string &new_filename )
+{
+    AMP_ASSERT( !old_filename.empty() );
+    AMP_ASSERT( !new_filename.empty() );
+    rename( old_filename.c_str(), new_filename.c_str() );
+}
+
+void Utilities::deleteFile( const std::string &filename )
+{
+    AMP_ASSERT( !filename.empty() );
+    if ( fileExists( filename ) ) {
+        int error = remove( filename.c_str() );
+        AMP_INSIST( error == 0, "Error deleting file" );
+    }
+}
+void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_node_zero_creates )
+{
+    AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );
+    if ( ( !only_node_zero_creates ) || ( comm.getRank() == 0 ) ) {
+        auto length    = (int) path.length();
+        auto *path_buf = new char[length + 1];
+        sprintf( path_buf, "%s", path.c_str() );
+        struct stat status;
+        int pos = length - 1;
+        // find part of path that has not yet been created
+        while ( ( stat( path_buf, &status ) != 0 ) && ( pos >= 0 ) ) {
+            // slide backwards in string until next slash found
+            bool slash_found = false;
+            while ( ( !slash_found ) && ( pos >= 0 ) ) {
+                if ( path_buf[pos] == '/' || path_buf[pos] == 92 ) {
+                    slash_found = true;
+                    if ( pos >= 0 )
+                        path_buf[pos] = '\0';
+                } else
+                    pos--;
+            }
+        }
+        // if there is a part of the path that already exists make sure it is really a directory
+        if ( pos >= 0 ) {
+            if ( !S_ISDIR( status.st_mode ) ) {
+                AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
+                           << "    Cannot create directories in path = " << path
+                           << "\n    because some intermediate item in path exists and"
+                           << "is NOT a directory" << std::endl );
+            }
+        }
+        // make all directories that do not already exist
+        if ( pos < 0 ) {
+            if ( mkdir( path_buf, mode ) != 0 ) {
+                AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
+                           << "    Cannot create directory  = " << path_buf << std::endl );
+            }
+            pos = 0;
+        }
+        // make rest of directories
+        do {
+            // slide forward in string until next '\0' found
+            bool null_found = false;
+            while ( ( !null_found ) && ( pos < length ) ) {
+                if ( path_buf[pos] == '\0' ) {
+                    null_found    = true;
+                    path_buf[pos] = '/';
+                }
+                pos++;
+            }
+            // make directory if not at end of path
+            if ( pos < length ) {
+                if ( mkdir( path_buf, mode ) != 0 ) {
+                    AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
+                               << "    Cannot create directory  = " << path_buf << std::endl );
+                }
+            }
+        } while ( pos < length );
+        delete[] path_buf;
+    }
+    // Make sure all processors wait until node zero creates the directory structure.
+    if ( only_node_zero_creates )
+        comm.barrier();
+}
 
 
 /****************************************************************************

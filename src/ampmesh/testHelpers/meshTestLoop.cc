@@ -25,9 +25,9 @@ void meshTests::MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh
     // Test the node neighbors
     getNodeNeighbors( ut, mesh );
     // Test displacement
-    if ( mesh->isMeshMovable() >= 1 )
+    if ( mesh->isMeshMovable() >= AMP::Mesh::Mesh::Movable::Displace )
         DisplaceMeshScalar( ut, mesh );
-    if ( mesh->isMeshMovable() >= 2 )
+    if ( mesh->isMeshMovable() >= AMP::Mesh::Mesh::Movable::Deform )
         DisplaceMeshVector( ut, mesh );
     // VerifyNodeElemMapIteratorTest::run_test( ut, mesh );
     // Test the elements

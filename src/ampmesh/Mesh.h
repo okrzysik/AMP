@@ -62,6 +62,17 @@ public:
      */
     typedef AMP::shared_ptr<const AMP::Mesh::Mesh> const_shared_ptr;
 
+    /**
+     *\typedef generator
+     *\brief  Generator for meshes
+     *\details  This is a user-supplied function to generate a mesh.  Users may register their
+     *     own mesh generators using registerGenerator and the mesh builder will call them.
+     */
+    typedef std::function<Mesh::shared_ptr( MeshParameters::shared_ptr )> generatorType;
+
+    //! Enumeration for basic mesh-based quantities
+    enum class Movable : uint8_t { Fixed = 0, Displace = 1, Deform = 2 };
+
 
     /**
      * \brief Read in mesh files, partition domain, and prepare environment for simulation
@@ -98,6 +109,19 @@ public:
 
 
     /**
+     * \brief   Create a mesh
+     * \details  This function will create a mesh (or series of meshes) based on
+     *   the input database.
+     * \param name      Name of mesh generator
+     * \param gen       Mesh generator to use
+     */
+    static inline void registerGenerator( const std::string &name, generatorType gen )
+    {
+        d_generators[name] = gen;
+    }
+
+
+    /**
      * \brief   Return the geometry of the mesh
      * \details  This function will return the geometry for the mesh if it exists.
      *    Not all meshes will have a geometry associated with them.
@@ -129,8 +153,8 @@ public:
     virtual ~Mesh();
 
 
-    //! Virtual function to copy the mesh (allows use to proply copy the derived class)
-    virtual AMP::shared_ptr<Mesh> copy() const = 0;
+    //! Virtual function to clone the mesh (allows us to properly copy the derived class)
+    virtual AMP::shared_ptr<Mesh> clone() const = 0;
 
 
     /**
@@ -383,11 +407,9 @@ public:
     /**
      * \brief    Is the mesh movable
      * \details  This function will check if the mesh can be displaced.
-     *    It will return 0 if the mesh cannont be moved, 1 if it can be displaced,
-     *    and 2 if the individual nodes can be moved.
-     * @return  The if
+     * @return   enum indicating the extent the mesh can be moved
      */
-    virtual int isMeshMovable() const = 0;
+    virtual Movable isMeshMovable() const = 0;
 
 
     /**
@@ -460,6 +482,9 @@ protected:
 
     //! The bounding box for the mesh
     std::vector<double> d_box, d_box_local;
+
+    //! A list of mesh generators to use
+    static std::map<std::string, generatorType> d_generators;
 
     /**
      *  A function to create a unique id for the mesh (requires the comm to be set)

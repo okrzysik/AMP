@@ -4,10 +4,10 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/RNG.h"
 #include "AMP/utils/ShutdownRegistry.h"
-#include "AMP/utils/StackTrace.h"
 #include "AMP/utils/Utilities.h"
-#include "ProfilerApp.h"
 
+#include "ProfilerApp.h"
+#include "StackTrace/StackTrace.h"
 
 // Include external files for startup/version info
 // clang-format off
@@ -35,6 +35,11 @@
 #endif
 #ifdef USE_EXT_SILO
     #include "silo.h"
+#endif
+#ifdef USE_EXT_SAMRAI
+    #undef NULL_USE
+    #include "SAMRAI/tbox/StartupShutdownManager.h"
+    #include "SAMRAI/tbox/SAMRAIManager.h"
 #endif
 #ifdef USE_EXT_HYPRE
     #include "HYPRE_config.h"
@@ -79,6 +84,7 @@ AMPManagerProperties AMPManager::properties = AMPManagerProperties();
 ****************************************************************************/
 static int force_exit     = 0;
 static bool printed_stack = false;
+static int abort_stackType = 3;
 static void abort_fun( std::string msg, StackTrace::terminateType type )
 {
     if ( type == StackTrace::terminateType::exception )
@@ -93,10 +99,20 @@ void AMPManager::terminate_AMP( std::string message )
         std::stringstream msg;
         msg << message << std::endl;
         msg << "Bytes used = " << AMP::Utilities::getMemoryUsage() << std::endl;
-        auto stack = AMP::StackTrace::getCallStack();
+        StackTrace::multi_stack_info stack;
+        if ( abort_stackType == 1 ) {
+            stack = StackTrace::getCallStack();
+        } else if ( abort_stackType == 2 ) {
+            stack = StackTrace::getAllCallStacks();
+        } else if ( abort_stackType == 3 ) {
+            stack = StackTrace::getGlobalCallStacks();
+        }
+        StackTrace::cleanupStackTrace( stack );
+        auto data = stack.print();
+        msg << std::endl;
         msg << "Stack Trace:\n";
-        for ( auto &elem : stack )
-            msg << "   " << elem.print() << std::endl;
+        for ( const auto &i : data )
+            msg << " " << i << std::endl;
         // Add a rank dependent wait to hopefully print the stack trace cleanly
         Utilities::sleepMs( ( 100 * comm.getRank() ) / comm.getSize() );
         perr << msg.str();
@@ -124,7 +140,7 @@ void AMPManager::exitFun()
     std::stringstream msg;
     msg << "Calling exit without calling shutdown\n";
     msg << "Bytes used = " << AMP::Utilities::getMemoryUsage() << std::endl;
-    auto stack = AMP::StackTrace::getCallStack();
+    auto stack = StackTrace::getCallStack();
     msg << "Stack Trace:\n";
     for ( auto &elem : stack )
         msg << "   " << elem.print() << std::endl;
@@ -179,11 +195,7 @@ PetscErrorCode petsc_err_handler( MPI_Comm,
 
 
 /****************************************************************************
-*                                                                            *
 * Initialize the AMP package.  This routine performs the following tasks:   *
-*                                                                            *
-* (1) Initialize MPI                                                        *
-*                                                                            *
 ****************************************************************************/
 void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperties &properties_in )
 {
@@ -192,25 +204,207 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
         AMP_ERROR( "AMP was previously initialized and shutdown.  It cannot be reinitialized" );
     if ( initialized == -1 )
         AMP_ERROR( "AMP was previously initialized and shutdown.  It cannot be reinitialized" );
-    double start_time   = Utilities::time();
-    double startup_time = 0, petsc_time = 0, MPI_time = 0;
-    argc        = argc_in;
-    argv        = argv_in;
-    properties  = properties_in;
-    print_times = properties.print_times;
+    // Begin startup procedure
+    double start = Utilities::time();
+    argc         = argc_in;
+    argv         = argv_in;
+    properties   = properties_in;
+    print_times  = properties.print_times;
     // Initialize the timers (default is disabled)
     PROFILE_DISABLE();
     // Set the abort method
     AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
+    // Initialize MPI
+    double MPI_time = start_MPI( argc, argv, properties.profile_MPI_level );
     // Initialize PETSc
+    double petsc_time = start_PETSc();
+    // Initialize SAMRAI
+    double SAMRAI_time = start_SAMRAI();
+    // Initialize AMP's MPI
+    if ( properties.COMM_WORLD == AMP_COMM_WORLD )
+        comm_world = AMP_MPI( MPI_COMM_WORLD );
+    else
+        comm_world = AMP_MPI( properties.COMM_WORLD );
+    // Initialize the parallel IO
+    PIO::initialize();
+    // Initialze call stack
+    StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
+    // Initialize the random number generator
+    AMP::RNG::initialize( 123 );
+    // Initialize cuda
+    start_CUDA();
+    // Set the signal/terminate handlers
+    setHandlers();
+    // Initialization finished
+    initialized = 1;
+    rank        = comm_world.getRank();
+    double time = Utilities::time() - start;
+    if ( properties.print_startup ) {
+        AMP::pout << "Version info:\n" << info() << std::endl;
+        AMP::pout.flush();
+    }
+    if ( print_times && comm_world.getRank() == 0 ) {
+        printf( "startup time = %0.3f s\n", time );
+        if ( MPI_time != 0 )
+            printf( " MPI startup time = %0.3f s\n", MPI_time );
+        if ( petsc_time != 0 )
+            printf( " PETSc startup time = %0.3f s\n", petsc_time );
+        if ( petsc_time != 0 )
+            printf( " SAMRAI startup time = %0.3f s\n", SAMRAI_time );
+        printf( "\n" );
+    }
+}
+
+
+/****************************************************************************
+* Shutdown the AMP package                                                  *
+****************************************************************************/
+void AMPManager::shutdown()
+{
+    double start_time = Utilities::time();
+    int rank = comm_world.getRank();
+    if ( initialized == 0 )
+        AMP_ERROR( "AMP is not initialized, did you forget to call startup or call shutdown more "
+                   "than once" );
+    if ( initialized == -1 )
+        AMP_ERROR(
+            "AMP has been initialized and shutdown.  Calling shutdown more than once is invalid" );
+    initialized = -1;
+    // Disable call stack and error handlers
+    StackTrace::globalCallStackFinalize( );
+    clearMPIErrorHandler();
+    // Disable MPI_Abort
+    AMPManager::use_MPI_Abort = false;
+    // Shutdown the registry
+    ShutdownRegistry::callRegisteredShutdowns();
+    // Shutdown the parallel IO
+    PIO::finalize();
+    // Shutdown the profiler
+    PROFILE_DISABLE();
+    // Syncronize all ranks
+    comm_world.barrier();
+    // Shudown PETSc
+    double petsc_time = stop_PETSc();
+    // Shutdown SAMRAI
+    double SAMRAI_time = stop_SAMRAI();
+    // Shutdown MPI
+    double MPI_time = stop_MPI();
+    // Print any AMP_MPI leaks
+    if ( AMP_MPI::MPI_Comm_created() != AMP_MPI::MPI_Comm_destroyed() ) {
+        printf( "Rank %i detected AMP_MPI comm leak: %i %i\n",
+                rank,
+                static_cast<int>( AMP_MPI::MPI_Comm_created() ),
+                static_cast<int>( AMP_MPI::MPI_Comm_destroyed() ) );
+    }
+    // List shutdown times
+    double shutdown_time = Utilities::time() - start_time;
+    if ( print_times && rank == 0 ) {
+        printf( "shutdown time = %0.3f s\n", shutdown_time );
+        if ( SAMRAI_time != 0 )
+            printf( " SAMRAI shutdown time = %0.3f s\n", SAMRAI_time );
+        if ( petsc_time != 0 )
+            printf( " PETSc shutdown time = %0.3f s\n", petsc_time );
+        if ( MPI_time != 0 )
+            printf( " MPI shutdown time = %0.3f s\n", MPI_time );
+        printf( "\n" );
+    }
+// Print memory leaks on rank 0
+#ifdef USE_TIMER
+    MemoryApp::MemoryStats memory = MemoryApp::getMemoryStats();
+    if ( rank == 0 && memory.N_new > memory.N_delete )
+        MemoryApp::print( std::cout );
+#endif
+    // Wait 50 milli-seconds for all processors to finish
+    Utilities::sleepMs( 50 );
+}
+
+
+/****************************************************************************
+* Function to start/stop MPI                                                *
+****************************************************************************/
+double AMPManager::start_MPI( int argc, char *argv[], int profile_level )
+{
+    double time = 0;
+    AMP::AMP_MPI::changeProfileLevel( profile_level );
+    NULL_USE( argc );
+    NULL_USE( argv );
+#ifdef USE_EXT_MPI
+    if ( MPI_Active() ) {
+        called_MPI_Init = false;
+    } else {
+        int provided;
+        double start = Utilities::time();
+        int result   = MPI_Init_thread( &argc, &argv, MPI_THREAD_MULTIPLE, &provided );
+        if ( result != MPI_SUCCESS )
+            AMP_ERROR( "AMP was unable to initialize MPI" );
+        if ( provided < MPI_THREAD_MULTIPLE )
+            AMP::perr << "Warning: Failed to start MPI with MPI_THREAD_MULTIPLE\n";
+        called_MPI_Init = true;
+        time            = Utilities::time() - start;
+    }
+#endif
+    return time;
+}
+double AMPManager::stop_MPI()
+{
+    double time = 0;
+    comm_world = AMP_MPI( AMP_COMM_NULL );
+#ifdef USE_EXT_MPI
+    int finalized;
+    MPI_Finalized( &finalized );
+    if ( called_MPI_Init && !finalized ) {
+        double start = Utilities::time();
+        MPI_Finalize();
+        time = Utilities::time() - start;
+    }
+#endif
+    return time;
+}
+
+
+/****************************************************************************
+* Function to start/stop SAMRAI                                             *
+****************************************************************************/
+double AMPManager::start_SAMRAI()
+{
+    double time = 0;
+#ifdef USE_EXT_SAMRAI
+    double start = Utilities::time();
+    SAMRAI::tbox::SAMRAIManager::initialize();
+    SAMRAI::tbox::SAMRAIManager::startup();
+    SAMRAI::tbox::SAMRAIManager::setMaxNumberPatchDataEntries( 2048 );
+    time = Utilities::time() - start;
+#endif
+    return time;
+}
+double AMPManager::stop_SAMRAI()
+{
+    double time = 0;
+#ifdef USE_EXT_SAMRAI
+    double start = Utilities::time();
+    SAMRAI::tbox::SAMRAIManager::shutdown();
+    SAMRAI::tbox::SAMRAIManager::finalize();
+    SAMRAI::tbox::SAMRAI_MPI::finalize();
+    time = Utilities::time() - start;
+#endif
+    return time;
+}
+
+
+/****************************************************************************
+* Function to start/stop PETSc                                              *
+****************************************************************************/
+double AMPManager::start_PETSc( )
+{
+    double time = 0;
 #ifdef USE_EXT_PETSC
-    double petsc_start_time = Utilities::time();
+    double start = Utilities::time();
     if ( PetscInitializeCalled ) {
         called_PetscInitialize = false;
     } else {
-        std::vector<char *> petscArgs = getPetscArgs();
-        auto n_args                    = static_cast<int>( petscArgs.size() );
-        char **args                   = nullptr;
+        auto petscArgs = getPetscArgs();
+        auto n_args    = static_cast<int>( petscArgs.size() );
+        char **args    = nullptr;
         if ( n_args > 0 )
             args = &petscArgs[0];
         PetscInitialize( &n_args, &( args ), PETSC_NULL, PETSC_NULL );
@@ -222,134 +416,22 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
         // Fix minor bug in petsc where first call to dup returns MPI_COMM_WORLD instead of a new comm
         AMP::AMP_MPI( MPI_COMM_WORLD ).dup();
     #endif
-    petsc_time = Utilities::time() - petsc_start_time;
+    time = Utilities::time() - start;
 #endif
-    // Initialize MPI
-    AMP::AMP_MPI::changeProfileLevel( properties.profile_MPI_level );
-#ifdef USE_EXT_MPI
-    if ( MPI_Active() ) {
-        called_MPI_Init = false;
-        MPI_time        = 0;
-    } else {
-        double MPI_start_time = Utilities::time();
-        int result            = MPI_Init( &argc, &argv );
-        if ( result != MPI_SUCCESS )
-            AMP_ERROR( "AMP was unable to initialize MPI" );
-        called_MPI_Init = true;
-        MPI_time        = Utilities::time() - MPI_start_time;
-    }
-#endif
-    // Initialize AMP's MPI
-    if ( properties.COMM_WORLD == AMP_COMM_WORLD )
-        comm_world = AMP_MPI( MPI_COMM_WORLD );
-    else
-        comm_world = AMP_MPI( properties.COMM_WORLD ); // Initialize the parallel IO
-    PIO::initialize();
-    // Initialize the random number generator
-    AMP::RNG::initialize( 123 );
-    // Initialize cuda
-#ifdef USE_CUDA
-    void *tmp;
-    cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal );
-    cudaFree( tmp );
-#endif
-    // Set the signal/terminate handlers
-    setHandlers();
-    // Initialization finished
-    initialized  = 1;
-    rank         = comm_world.getRank();
-    startup_time = Utilities::time() - start_time;
-    if ( properties.print_startup ) {
-        AMP::pout << "Version info:\n" << info() << std::endl;
-        AMP::pout.flush();
-    }
-    if ( print_times && comm_world.getRank() == 0 ) {
-        printf( "startup time = %0.3f s\n", startup_time );
-        if ( petsc_time != 0 )
-            printf( " PETSc startup time = %0.3f s\n", petsc_time );
-        if ( MPI_time != 0 )
-            printf( " MPI startup time = %0.3f s\n", MPI_time );
-        printf( "\n" );
-    }
+    return time;
 }
-
-
-/****************************************************************************
-*                                                                           *
-* Shutdown the AMP package.  This routine currently only deallocates        *
-* statically allocated memory and finalizes the output streams.             *
-*                                                                           *
-****************************************************************************/
-void AMPManager::shutdown()
+double AMPManager::stop_PETSc()
 {
-    double start_time    = Utilities::time();
-    double shutdown_time = 0, MPI_time = 0;
-    int rank = comm_world.getRank();
-    if ( initialized == 0 )
-        AMP_ERROR( "AMP is not initialized, did you forget to call startup or call shutdown more "
-                   "than once" );
-    if ( initialized == -1 )
-        AMP_ERROR(
-            "AMP has been initialized and shutdown.  Calling shutdown more than once is invalid" );
-    initialized = -1;
-    // Syncronize all processors
-    comm_world.barrier();
-    ShutdownRegistry::callRegisteredShutdowns();
-    // Shutdown the parallel IO
-    PIO::finalize();
-    // Shutdown MPI
-    comm_world.barrier();   // Sync all processes
-    clearMPIErrorHandler(); // Clear MPI error handler before deleting comms
-    AMPManager::use_MPI_Abort = false;
-    comm_world                = AMP_MPI( AMP_COMM_NULL ); // Delete comm world
-    if ( called_MPI_Init ) {
-        double MPI_start_time = Utilities::time();
-#ifdef USE_EXT_MPI
-        MPI_Finalize();
-#endif
-        MPI_time = Utilities::time() - MPI_start_time;
-    }
-    // Shudown PETSc
-    double petsc_time = 0.0;
+    double time = 0;
 #ifdef USE_EXT_PETSC
     if ( called_PetscInitialize ) {
-        double petsc_start_time = Utilities::time();
+        double start = Utilities::time();
         PetscPopSignalHandler();
         PetscFinalize();
-        petsc_time = Utilities::time() - petsc_start_time;
+        time = Utilities::time() - start;
     }
 #endif
-    Utilities::sleepMs( 10 );
-    shutdown_time = Utilities::time() - start_time;
-    if ( print_times && rank == 0 ) {
-        printf( "shutdown time = %0.3f s\n", shutdown_time );
-        if ( petsc_time != 0 )
-            printf( " PETSc shutdown time = %0.3f s\n", petsc_time );
-        if ( MPI_time != 0 )
-            printf( " MPI shutdown time = %0.3f s\n", MPI_time );
-        printf( "\n" );
-    }
-    // Print any AMP_MPI leaks
-    if ( AMP_MPI::MPI_Comm_created() != AMP_MPI::MPI_Comm_destroyed() ) {
-        printf( "Rank %i detected AMP_MPI comm leak: %i %i\n",
-                rank,
-                static_cast<int>( AMP_MPI::MPI_Comm_created() ),
-                static_cast<int>( AMP_MPI::MPI_Comm_destroyed() ) );
-    }
-    // Shutdown the profiler
-    PROFILE_DISABLE();
-// Print memory leaks on rank 0
-#ifdef USE_TIMER
-    MemoryApp::MemoryStats memory = MemoryApp::getMemoryStats();
-    if ( rank == 0 && memory.N_new > memory.N_delete )
-        MemoryApp::print( std::cout );
-#endif
-// Wait 50 milli-seconds for all processors to finish
-#ifdef USE_EXT_MPI
-    if ( MPI_Active() )
-        MPI_Barrier( MPI_COMM_WORLD );
-#endif
-    Utilities::sleepMs( 50 );
+    return time;
 }
 
 
@@ -368,6 +450,20 @@ std::vector<char *> AMPManager::getPetscArgs()
     std::vector<char *> args;
     addArg( "-malloc no", args );
     return args;
+}
+
+
+/****************************************************************************
+* Function to start/stop CUDA                                               *
+****************************************************************************/
+double start_CUDA( )
+{
+#ifdef USE_CUDA
+    void *tmp;
+    cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal );
+    cudaFree( tmp );
+#endif
+    return 0;
 }
 
 
@@ -391,15 +487,26 @@ void AMPManager::setHandlers()
     std::at_quick_exit( exitFun );
 #endif
 }
-#ifdef USE_EXT_MPI
-AMP::shared_ptr<MPI_Errhandler> AMPManager::mpierr;
+void dummyErrorHandler( std::string, StackTrace::terminateType ) {}
+void AMPManager::clearHandlers()
+{
+    initialized = 3;
+    // Don't call the global version of the call stack
+    StackTrace::globalCallStackFinalize();
+    // Clear the MPI error handler for comm_world
+    clearMPIErrorHandler();
+    // Clear the error handlers for petsc
+#ifdef USE_EXT_PETSC
+    PetscPopSignalHandler();
 #endif
+}
 
 
 /****************************************************************************
 *  Functions to handle MPI errors                                           *
 ****************************************************************************/
 #ifdef USE_EXT_MPI
+AMP::shared_ptr<MPI_Errhandler> AMPManager::mpierr;
 static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
 {
     if ( *err == MPI_ERR_COMM && *comm == MPI_COMM_WORLD ) {
@@ -520,6 +627,11 @@ std::string AMPManager::info()
     out << "   Fortran Flags: " << AMP::Version::Fortran_FLAGS << std::endl;
 #ifdef USE_TIMER
     out << "ProfilerApp: " << TIMER_VERSION << std::endl;
+#endif
+#ifdef USE_EXT_SAMRAI
+    out << "SAMRAI: " << SAMRAI_VERSION_MAJOR << "." <<
+                        SAMRAI_VERSION_MINOR << "." <<
+                        SAMRAI_VERSION_PATCHLEVEL << std::endl;
 #endif
 #ifdef USE_EXT_PETSC
     out << "PETSc: " << PETSC_VERSION_MAJOR << "." <<

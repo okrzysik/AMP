@@ -73,6 +73,7 @@ duplicateExpression:*/utils/Grammar.cc
 
 // Suppress warnings for ampmesh
 noExplicitConstructor:*/ampmesh/MeshID.h
+noExplicitConstructor:*/ampmesh/Geometry.h
 toomanyconfigs:*/ampmesh/test/test_Mesh.cc
 
 // Suppress material warnings

@@ -392,7 +392,7 @@ MeshElement BoxMesh::getElement( const MeshElementIndex &index ) const
  * Find the mesh element index from a point                      *
  ****************************************************************/
 static inline int to_nearest( double x ) { return static_cast<int>( floor( x + 0.5 ) ); }
-BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const std::array<double, 3> &x0,
+BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const AMP::Geometry::Point<double> &x0,
                                                           GeomType type ) const
 {
     // Correct x for periodic boundaries
@@ -460,7 +460,8 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const std::array<doubl
     }
     return index;
 }
-BoxMesh::MeshElementIndex BoxMesh::getElementFromPhysical( const double *x, GeomType type ) const
+BoxMesh::MeshElementIndex BoxMesh::getElementFromPhysical( const AMP::Geometry::Point<double> &x,
+                                                           GeomType type ) const
 {
     auto logical = physicalToLogical( x );
     auto index   = getElementFromLogical( logical, type );

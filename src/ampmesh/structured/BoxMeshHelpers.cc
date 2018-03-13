@@ -127,7 +127,7 @@ std::pair<double, double> map_circle_logical( double r, int method, double x, do
  * Helper function to map x,y,z logical coordinates in [0,1]     *
  * to x,y,z coordinates in a sphere with radius r                *
  ****************************************************************/
-std::tuple<double, double, double> map_logical_sphere( double r, double x, double y, double z )
+AMP::Geometry::Point<double> map_logical_sphere( double r, double x, double y, double z )
 {
     // This maps from a a logically rectangular 3D mesh to a sphere mesh using the mapping by:
     //    Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
@@ -147,7 +147,7 @@ std::tuple<double, double, double> map_logical_sphere( double r, double x, doubl
     x2                 = w * x2 + r * ( 1 - w ) * xc / sqrt3;
     y2                 = w * y2 + r * ( 1 - w ) * yc / sqrt3;
     z2                 = w * z2 + r * ( 1 - w ) * zc / sqrt3;
-    return std::make_tuple( x2, y2, z2 );
+    return AMP::Geometry::Point<double>( x2, y2, z2 );
 }
 
 
@@ -155,7 +155,7 @@ std::tuple<double, double, double> map_logical_sphere( double r, double x, doubl
  * Helper function to map x,y logical coordinates in [0,1]       *
  * to x,y,z coordinates on the surface of a sphere               *
  ****************************************************************/
-std::tuple<double, double, double> map_logical_sphere_surface( double R, double x, double y )
+AMP::Geometry::Point<double> map_logical_sphere_surface( double R, double x, double y )
 {
     // This maps from a a logically rectangular 3D mesh to the surface of a sphere using the mapping
     // by:
@@ -175,7 +175,7 @@ std::tuple<double, double, double> map_logical_sphere_surface( double R, double 
     xp *= R;
     yp *= R;
     zp *= R;
-    return std::make_tuple( xp, yp, zp );
+    return AMP::Geometry::Point<double>( xp, yp, zp );
 }
 std::pair<double, double> map_sphere_surface_logical( double R, double x, double y, double z )
 {
@@ -195,8 +195,7 @@ std::pair<double, double> map_sphere_surface_logical( double R, double x, double
  * Helper function to map x,y,z logical coordinates in [0,1]     *
  * to x,y,z coordinates in a shell with r1 <= r <= r2            *
  ****************************************************************/
-std::tuple<double, double, double>
-map_logical_shell( double r1, double r2, double x, double y, double z )
+AMP::Geometry::Point<double> map_logical_shell( double r1, double r2, double x, double y, double z )
 {
     // This maps from a a logically rectangular 3D mesh to a shell mesh using the mapping by:
     // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and Finite

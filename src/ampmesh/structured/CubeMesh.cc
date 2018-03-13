@@ -6,16 +6,6 @@
 #include "AMP/ampmesh/structured/structuredMeshElement.h"
 #include "AMP/ampmesh/structured/structuredMeshIterator.h"
 
-#ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Variable.h"
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorBuilder.h"
-#endif
-#ifdef USE_AMP_DISCRETIZATION
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
-#endif
-
 namespace AMP {
 namespace Mesh {
 
@@ -23,7 +13,7 @@ namespace Mesh {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-CubeMesh::CubeMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
+CubeMesh::CubeMesh( MeshParameters::shared_ptr params ) : StructuredGeometryMesh( params )
 {
     // Input options from the database
     PhysicalDim           = d_db->getInteger( "dim" );
@@ -41,38 +31,39 @@ CubeMesh::CubeMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
     }
     // Initialize the logical mesh
     BoxMesh::initialize();
-    // Fill the coordinates
-    std::vector<double> range( 2 * PhysicalDim, 0 );
+    // Fill the coordinates and set the geometry
     if ( d_db->keyExists( "Range" ) ) {
-        range = d_db->getDoubleArray( "Range" );
+        auto range = d_db->getDoubleArray( "Range" );
         AMP_INSIST( range.size() == 2 * PhysicalDim, "Range must be 2*dim for cube generator" );
-        for ( int d = 0; d < PhysicalDim; d++ ) {
-            d_coord[d].resize( d_globalSize[d] + 1 );
-            const double x0 = range[2 * d];
-            const double dx = ( range[2 * d + 1] - range[2 * d + 0] ) / d_globalSize[d];
-            for ( int i = 0; i <= d_globalSize[d]; i++ )
-                d_coord[d][i] = x0 + i * dx;
-        }
+        if ( PhysicalDim == 1 )
+            d_geometry.reset( new Geometry::Box<1>( range ) );
+        if ( PhysicalDim == 2 )
+            d_geometry.reset( new Geometry::Box<2>( range ) );
+        if ( PhysicalDim == 3 )
+            d_geometry.reset( new Geometry::Box<3>( range ) );
     } else if ( d_db->keyExists( "x_grid" ) ) {
+        std::vector<std::vector<double>> coord( PhysicalDim );
         for ( int d = 0; d < PhysicalDim; d++ ) {
             if ( d == 0 ) {
-                d_coord[d] = d_db->getDoubleArray( "x_grid" );
+                coord[d] = d_db->getDoubleArray( "x_grid" );
             } else if ( d == 1 ) {
                 AMP_INSIST( d_db->keyExists( "y_grid" ), "Field 'y_grid' must exist in database'" );
-                d_coord[d] = d_db->getDoubleArray( "y_grid" );
+                coord[d] = d_db->getDoubleArray( "y_grid" );
             } else if ( d == 2 ) {
                 AMP_INSIST( d_db->keyExists( "z_grid" ), "Field 'z_grid' must exist in database'" );
-                d_coord[d] = d_db->getDoubleArray( "z_grid" );
+                coord[d] = d_db->getDoubleArray( "z_grid" );
             } else {
                 AMP_ERROR( "Physical Dimensions > 3 are not supported yet" );
             }
-            AMP_ASSERT( (int) d_coord[d].size() == d_globalSize[d] + 1 );
-            range[2 * d + 0] = d_coord[d].front();
-            range[2 * d + 1] = d_coord[d].back();
+            AMP_ASSERT( (int) coord[d].size() == d_globalSize[d] + 1 );
         }
+        if ( PhysicalDim == 1 )
+            d_geometry.reset( new Geometry::Grid<1>( coord ) );
+        if ( PhysicalDim == 2 )
+            d_geometry.reset( new Geometry::Grid<2>( coord ) );
+        if ( PhysicalDim == 3 )
+            d_geometry.reset( new Geometry::Grid<3>( coord ) );
     }
-    // Set the geometry
-    d_geometry.reset( new Geometry::Box( range ) );
     // Finalize the logical mesh
     BoxMesh::finalize();
 }
@@ -95,77 +86,9 @@ std::vector<size_t> CubeMesh::estimateLogicalMeshSize( const MeshParameters::sha
 
 
 /****************************************************************
- * Functions to displace the mesh                                *
- ****************************************************************/
-int CubeMesh::isMeshMovable() const { return 1; }
-void CubeMesh::displaceMesh( const std::vector<double> &x )
-{
-    AMP_ASSERT( x.size() == PhysicalDim );
-    for ( int i = 0; i < PhysicalDim; i++ ) {
-        for ( size_t j = 0; j < d_coord[i].size(); j++ )
-            d_coord[i][j] += x[i];
-        d_box[2 * i + 0] += x[i];
-        d_box[2 * i + 1] += x[i];
-        d_box_local[2 * i + 0] += x[i];
-        d_box_local[2 * i + 1] += x[i];
-    }
-    if ( d_geometry != nullptr )
-        d_geometry->displaceMesh( x );
-}
-#ifdef USE_AMP_VECTORS
-void CubeMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr )
-{
-    AMP_ERROR( "displaceMesh (vector) violates CubeMesh properties" );
-}
-#endif
-
-
-/****************************************************************
  * Copy the mesh                                                 *
  ****************************************************************/
-AMP::shared_ptr<Mesh> CubeMesh::copy() const { return AMP::make_shared<CubeMesh>( *this ); }
-
-
-/****************************************************************
- * Return the coordinate                                         *
- ****************************************************************/
-void CubeMesh::coord( const MeshElementIndex &index, double *pos ) const
-{
-    AMP_ASSERT( index.type() == AMP::Mesh::GeomType::Vertex );
-    for ( int d = 0; d < PhysicalDim; d++ ) {
-        int i = index.index( d );
-        if ( i >= 0 && i <= d_globalSize[d] ) {
-            pos[d] = d_coord[d][i];
-        } else {
-            int shift = 0;
-            if ( i < 0 ) {
-                i += d_globalSize[d];
-                shift = -1;
-            } else if ( i > d_globalSize[d] ) {
-                i -= d_globalSize[d];
-                shift = 1;
-            }
-            pos[d] = d_coord[d][i] + shift * ( d_box[2 * d + 1] - d_box[2 * d] );
-        }
-    }
-}
-
-
-/****************************************************************
- * Return the logical coordinates                                *
- ****************************************************************/
-std::array<double, 3> CubeMesh::physicalToLogical( const double *x ) const
-{
-    std::array<double, 3> y = { { 0, 0, 0 } };
-    for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
-        int i = AMP::Utilities::findfirst( d_coord[d], x[d] );
-        i     = std::max<int>( i, 1 );
-        i     = std::min<int>( i, d_coord[d].size() - 1 );
-        y[d]  = ( i - 1 ) + ( x[d] - d_coord[d][i - 1] ) / ( d_coord[d][i] - d_coord[d][i - 1] );
-        y[d]  = y[d] / d_globalSize[d];
-    }
-    return y;
-}
+AMP::shared_ptr<Mesh> CubeMesh::clone() const { return AMP::make_shared<CubeMesh>( *this ); }
 
 
 } // namespace Mesh

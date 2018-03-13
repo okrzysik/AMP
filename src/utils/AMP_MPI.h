@@ -3,18 +3,35 @@
 #define included_AMP_MPI
 
 
-#include "AMP/utils/Utilities.h"
 #include <atomic>
 #include <complex>
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
+
 
 // Include mpi.h (or define MPI objects)
 // clang-format off
 #ifdef USE_MPI
     // Building with mpi
     #include "mpi.h"
+#elif defined( USE_SAMRAI )
+    // Building with SAMRAI and without MPI is complicated
+    #ifdef USE_PETSC
+        #include "petsc/mpiuni/mpi.h"
+        #define HAVE_MPI
+    #endif
+    #ifdef INCLUDED_SAMRAI_CONFIG_H
+        #include "SAMRAI/tbox/SAMRAI_MPI.h"
+    #else
+        #define INCLUDED_SAMRAI_CONFIG_H
+        #define included_tbox_Utilities
+        #include "SAMRAI/tbox/SAMRAI_MPI.h"
+        #undef included_tbox_Utilities
+        #undef INCLUDED_SAMRAI_CONFIG_H
+    #endif
+    #undef HAVE_MPI
 #elif defined( USE_PETSC )
     // petsc serial builds include mpi.h
     #include "petsc/mpiuni/mpi.h"
@@ -26,8 +43,7 @@
     #if __has_include("mpi.h")
         #include "mpi.h"
     #endif
-#endif
-#ifndef MPI_COMM_WORLD
+#else
     typedef int MPI_Comm;
     typedef int MPI_Request;
     typedef void *MPI_Errhandler;

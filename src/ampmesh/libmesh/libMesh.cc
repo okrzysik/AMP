@@ -166,7 +166,7 @@ libMesh::~libMesh()
 /********************************************************
  * Function to copy the mesh                             *
  ********************************************************/
-AMP::shared_ptr<Mesh> libMesh::copy() const
+AMP::shared_ptr<Mesh> libMesh::clone() const
 {
     return AMP::shared_ptr<Mesh>( new libMesh( *this ) );
 }
@@ -822,7 +822,7 @@ MeshElement libMesh::getElement( const MeshElementID &elem_id ) const
 /********************************************************
  * Displace a mesh                                       *
  ********************************************************/
-int libMesh::isMeshMovable() const { return 1; }
+Mesh::Movable libMesh::isMeshMovable() const { return Mesh::Movable::Displace; }
 void libMesh::displaceMesh( const std::vector<double> &x_in )
 {
     // Check x
