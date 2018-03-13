@@ -159,8 +159,19 @@ private:
     //! Function to create the arguments to pass to petsc
     static std::vector<char *> getPetscArgs();
 
+    // Function to control exit behavior
     static void exitFun();
+
+    // Functions to start/shutdown the various packages
+    static double start_MPI( int argc_in, char *argv_in[], int profile_level );
+    static double start_SAMRAI();
+    static double start_PETSc();
+    static double start_CUDA();
+    static double stop_MPI();
+    static double stop_SAMRAI();
+    static double stop_PETSc();
 };
+
 } // namespace AMP
 
 #endif
