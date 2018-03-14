@@ -7,6 +7,7 @@
 #include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
+#include "LapackWrappers.h"
 #include "StackTrace/StackTrace.h"
 
 // Include external files for startup/version info
@@ -456,7 +457,7 @@ std::vector<char *> AMPManager::getPetscArgs()
 /****************************************************************************
 * Function to start/stop CUDA                                               *
 ****************************************************************************/
-double start_CUDA( )
+double AMPManager::start_CUDA( )
 {
 #ifdef USE_CUDA
     void *tmp;
@@ -671,7 +672,7 @@ std::string AMPManager::info()
              MPI_info.insert( pos+1, "   " );
              pos = MPI_info.find('\n',pos+1);
         }
-        out << "MPI: " << MPI_info;
+        out << "MPI: " << MPI_info << std::endl;
     } else {
         int MPI_version;
         int MPI_subversion;
@@ -679,6 +680,7 @@ std::string AMPManager::info()
         out << "MPI: " << MPI_version << "." << MPI_subversion << std::endl;
     }
 #endif
+    out << "Lapack: " << Lapack<double>::info();
     return out.str();
 }
 
