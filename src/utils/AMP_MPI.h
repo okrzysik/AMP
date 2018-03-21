@@ -16,11 +16,14 @@
 #ifdef USE_MPI
     // Building with mpi
     #include "mpi.h"
-#elif defined( USE_SAMRAI )
-    // Building with SAMRAI and without MPI is complicated
-    #ifdef USE_PETSC
-        #include "petsc/mpiuni/mpi.h"
-        #define HAVE_MPI
+#elif defined( USE_SAMRAI ) && defined( USE_PETSC )
+    // Building with SAMRAI and PETSc and without MPI is complicated
+    #include "petsc/mpiuni/mpi.h"
+    #undef MPI_REQUEST_NULL
+    #define HAVE_MPI
+    #ifndef included_tbox_SAMRAI_MPI
+        void* MPI_REQUEST_NULL = (void*) 3;
+        size_t MPI_ERR_IN_STATUS = 4;
     #endif
     #ifdef INCLUDED_SAMRAI_CONFIG_H
         #include "SAMRAI/tbox/SAMRAI_MPI.h"
@@ -32,6 +35,9 @@
         #undef INCLUDED_SAMRAI_CONFIG_H
     #endif
     #undef HAVE_MPI
+#elif defined( USE_SAMRAI )
+    // SAMRAI serial builds define basic MPI types
+    #include "SAMRAI/tbox/SAMRAI_MPI.h"
 #elif defined( USE_PETSC )
     // petsc serial builds include mpi.h
     #include "petsc/mpiuni/mpi.h"
