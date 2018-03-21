@@ -6,8 +6,8 @@
 #include "AMP/utils/ShutdownRegistry.h"
 #include "AMP/utils/Utilities.h"
 
-#include "ProfilerApp.h"
 #include "LapackWrappers.h"
+#include "ProfilerApp.h"
 #include "StackTrace/StackTrace.h"
 
 // Include external files for startup/version info
@@ -41,6 +41,7 @@
     #undef NULL_USE
     #include "SAMRAI/tbox/StartupShutdownManager.h"
     #include "SAMRAI/tbox/SAMRAIManager.h"
+    #include "SAMRAI/tbox/Logger.h"
 #endif
 #ifdef USE_EXT_HYPRE
     #include "HYPRE_config.h"
@@ -217,15 +218,15 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
     // Initialize MPI
     double MPI_time = start_MPI( argc, argv, properties.profile_MPI_level );
-    // Initialize PETSc
-    double petsc_time = start_PETSc();
-    // Initialize SAMRAI
-    double SAMRAI_time = start_SAMRAI();
     // Initialize AMP's MPI
     if ( properties.COMM_WORLD == AMP_COMM_WORLD )
         comm_world = AMP_MPI( MPI_COMM_WORLD );
     else
         comm_world = AMP_MPI( properties.COMM_WORLD );
+    // Initialize PETSc
+    double petsc_time = start_PETSc();
+    // Initialize SAMRAI
+    double SAMRAI_time = start_SAMRAI();
     // Initialize the parallel IO
     PIO::initialize();
     // Initialze call stack
@@ -371,6 +372,7 @@ double AMPManager::start_SAMRAI()
     double time = 0;
 #ifdef USE_EXT_SAMRAI
     double start = Utilities::time();
+    SAMRAI::tbox::SAMRAI_MPI::init( AMP_MPI( AMP_COMM_WORLD ).getCommunicator() );
     SAMRAI::tbox::SAMRAIManager::initialize();
     SAMRAI::tbox::SAMRAIManager::startup();
     SAMRAI::tbox::SAMRAIManager::setMaxNumberPatchDataEntries( 2048 );
@@ -390,6 +392,25 @@ double AMPManager::stop_SAMRAI()
 #endif
     return time;
 }
+
+
+/****************************************************************************
+ *  Class to override the output appender for abort messages                 *
+ ****************************************************************************/
+#ifdef USE_EXT_SAMRAI
+#include "SAMRAI/tbox/Logger.h"
+class SAMRUtilsAbortAppender : public SAMRAI::tbox::Logger::Appender
+{
+public:
+    void
+    logMessage( const std::string &msg, const std::string &file, const int line ) override
+    {
+        AMP::Utilities::abort( msg, file, line );
+    }
+    SAMRUtilsAbortAppender() = default;
+    virtual ~SAMRUtilsAbortAppender() = default;
+};
+#endif
 
 
 /****************************************************************************
@@ -478,7 +499,15 @@ void AMPManager::setHandlers()
 // Set the error handlers for petsc
 #ifdef USE_EXT_PETSC
     PetscPopSignalHandler();
+    PetscPopErrorHandler();
     PetscPushErrorHandler( &petsc_err_handler, PETSC_NULL );
+#endif
+// Set the error handlers for SAMRAI
+#ifdef USE_EXT_SAMRAI
+    SAMRAI::tbox::SAMRAI_MPI::setCallAbortInSerialInsteadOfExit( true );
+    SAMRAI::tbox::SAMRAI_MPI::setCallAbortInParallelInsteadOfMPIAbort( true );
+    auto appender = AMP::make_shared<SAMRUtilsAbortAppender>();
+    SAMRAI::tbox::Logger::getInstance()->setAbortAppender( appender );
 #endif
     // Set the terminate routine for runtime errors
     StackTrace::setErrorHandlers( abort_fun );
@@ -499,6 +528,7 @@ void AMPManager::clearHandlers()
     // Clear the error handlers for petsc
 #ifdef USE_EXT_PETSC
     PetscPopSignalHandler();
+    PetscPopErrorHandler();
 #endif
 }
 
@@ -524,7 +554,7 @@ static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
     throw std::logic_error( msg );
 }
 #endif
-void AMPManager::setMPIErrorHandler()
+void AMPManager::setMPIErrorHandler( )
 {
 #ifdef USE_EXT_MPI
     if ( MPI_Active() ) {
@@ -536,6 +566,9 @@ void AMPManager::setMPIErrorHandler()
         MPI_Comm_set_errhandler( MPI_COMM_WORLD, *mpierr );
         if ( comm_world.getCommunicator() != MPI_COMM_WORLD )
             MPI_Comm_set_errhandler( comm_world.getCommunicator(), *mpierr );
+#ifdef USE_EXT_SAMRAI
+        MPI_Comm_set_errhandler( SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator(), *mpierr );
+#endif
     }
 #endif
 }
@@ -550,6 +583,9 @@ void AMPManager::clearMPIErrorHandler()
         MPI_Comm_set_errhandler( MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL );
         if ( comm_world.getCommunicator() != MPI_COMM_WORLD )
             MPI_Comm_set_errhandler( comm_world.getCommunicator(), MPI_ERRORS_ARE_FATAL );
+#ifdef USE_EXT_SAMRAI
+        MPI_Comm_set_errhandler( SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator(), MPI_ERRORS_ARE_FATAL );
+#endif
     }
 #endif
 }

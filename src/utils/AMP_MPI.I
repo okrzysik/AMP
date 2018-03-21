@@ -5,6 +5,9 @@
 
 #include "AMP/utils/Utilities.h"
 
+#include <typeinfo>
+
+
 #define MPI_CLASS AMP_MPI
 #define MPI_CLASS_ERROR AMP_ERROR
 #define MPI_CLASS_ASSERT AMP_ASSERT
