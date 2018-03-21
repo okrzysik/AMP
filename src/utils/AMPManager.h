@@ -2,6 +2,7 @@
 #define included_tbox_AMPManager
 
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/shared_ptr.h"
 
 #include <array>
 #include <string>

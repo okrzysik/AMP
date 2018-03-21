@@ -9,13 +9,10 @@
 // NOTE: This is a modification of the Logger class from SAMRAI
 //       We have simply used it with modifications
 
-#ifndef included_tbox_Logger
-#define included_tbox_Logger
+#ifndef included_AMP_Logger
+#define included_AMP_Logger
 
-#ifndef included_String
 #include <string>
-#define included_String
-#endif
 
 #include "AMP/utils/shared_ptr.h"
 

@@ -2,6 +2,7 @@
 #ifndef included_AMP_UtilityMacros
 #define included_AMP_UtilityMacros
 
+#include "AMP/utils/Logger.h"
 #include "AMP/utils/Utilities.h"
 
 
