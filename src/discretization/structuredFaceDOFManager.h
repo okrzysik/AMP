@@ -1,5 +1,5 @@
-#ifndef included_structuredFaceDOFManager
-#define included_structuredFaceDOFManager
+#ifndef included_AMP_structuredFaceDOFManager
+#define included_AMP_structuredFaceDOFManager
 
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshElement.h"

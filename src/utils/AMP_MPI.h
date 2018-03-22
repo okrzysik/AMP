@@ -21,7 +21,7 @@
     #include "petsc/mpiuni/mpi.h"
     #undef MPI_REQUEST_NULL
     #define HAVE_MPI
-    #ifndef included_tbox_SAMRAI_MPI
+    #ifndef included_AMP_tbox_SAMRAI_MPI
         extern void* MPI_REQUEST_NULL;
         extern size_t MPI_ERR_IN_STATUS;
     #endif
@@ -29,7 +29,7 @@
         #include "SAMRAI/tbox/SAMRAI_MPI.h"
     #else
         #define INCLUDED_SAMRAI_CONFIG_H
-        #define included_tbox_Utilities
+        #define included_AMP_tbox_Utilities
         #include "SAMRAI/tbox/SAMRAI_MPI.h"
         #undef included_tbox_Utilities
         #undef INCLUDED_SAMRAI_CONFIG_H

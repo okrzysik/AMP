@@ -1,5 +1,5 @@
-#ifndef included_NonlinearKrylovAcceleratorParameters
-#define included_NonlinearKrylovAcceleratorParameters
+#ifndef included_AMP_NonlinearKrylovAcceleratorParameters
+#define included_AMP_NonlinearKrylovAcceleratorParameters
 
 #include <string>
 
@@ -7,7 +7,7 @@
 
 #include "AMP/utils/ParameterBase.h"
 
-#ifndef included_SolverStrategy
+#ifndef included_AMP_SolverStrategy
 #include "SolverStrategy.h"
 #endif
 

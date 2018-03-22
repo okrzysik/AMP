@@ -1,7 +1,7 @@
 #ifdef USE_AMP_MESH
 #ifdef USE_AMP_VECTORS
-#ifndef included_WriteSolutionToFile
-#define included_WriteSolutionToFile
+#ifndef included_AMP_WriteSolutionToFile
+#define included_AMP_WriteSolutionToFile
 
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/vectors/Vector.h"

@@ -1,6 +1,6 @@
 
-#ifndef included_ContactSearchUtils
-#define included_ContactSearchUtils
+#ifndef included_AMP_ContactSearchUtils
+#define included_AMP_ContactSearchUtils
 
 #include <vector>
 

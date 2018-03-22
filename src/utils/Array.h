@@ -1,5 +1,5 @@
-#ifndef included_ArrayClass
-#define included_ArrayClass
+#ifndef included_AMP_ArrayClass
+#define included_AMP_ArrayClass
 
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/shared_ptr.h"

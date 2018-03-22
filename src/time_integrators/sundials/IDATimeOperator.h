@@ -1,5 +1,5 @@
-#ifndef included_IDATimeOperator
-#define included_IDATimeOperator
+#ifndef included_AMP_IDATimeOperator
+#define included_AMP_IDATimeOperator
 
 
 #include "AMP/operators/Operator.h"

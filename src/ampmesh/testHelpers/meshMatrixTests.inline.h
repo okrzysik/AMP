@@ -1,5 +1,5 @@
-#ifndef included_MeshMatrixTests
-#define included_MeshMatrixTests
+#ifndef included_AMP_MeshMatrixTests
+#define included_AMP_MeshMatrixTests
 
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/matrices/Matrix.h"

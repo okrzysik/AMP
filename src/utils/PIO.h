@@ -9,8 +9,8 @@
 // NOTE: This is a modification of the PIO class from SAMRAI
 //       We have simply used it with modifications
 
-#ifndef included_PIO
-#define included_PIO
+#ifndef included_AMP_PIO
+#define included_AMP_PIO
 
 
 #include <cstdarg>

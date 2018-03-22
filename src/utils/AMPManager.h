@@ -1,5 +1,5 @@
-#ifndef included_tbox_AMPManager
-#define included_tbox_AMPManager
+#ifndef included_AMP_tbox_AMPManager
+#define included_AMP_tbox_AMPManager
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/shared_ptr.h"

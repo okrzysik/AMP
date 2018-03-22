@@ -209,6 +209,17 @@ inline void quicksort( std::vector<T1> &x, std::vector<T2> &y )
 template<class T>
 void unique( std::vector<T> &x );
 
+/*!
+ * Subroutine to perform the unique operation on the elements in X
+ * This function performs the unique operation on the values in X storing them in Y.
+ * It also returns the index vectors I and J such that Y[k] = X[I[k]] and X[k] = Y[J[k]].
+ * @param X         Points to sort (nx)
+ * @param I         The index vector I (ny)
+ * @param J         The index vector J (nx)
+ */
+template <class T>
+void unique( std::vector<T> &X, std::vector<size_t> &I, std::vector<size_t> &J );
+
 
 /*!
  * Search a std::vector for the first entry >= the given value

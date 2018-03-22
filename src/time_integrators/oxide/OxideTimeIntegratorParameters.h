@@ -1,5 +1,5 @@
-#ifndef included_OxideTimeIntegratorParameters
-#define included_OxideTimeIntegratorParameters
+#ifndef included_AMP_OxideTimeIntegratorParameters
+#define included_AMP_OxideTimeIntegratorParameters
 
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"

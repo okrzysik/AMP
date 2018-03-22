@@ -1,5 +1,5 @@
-#ifndef included_test_VectorTests
-#define included_test_VectorTests
+#ifndef included_AMP_test_VectorTests
+#define included_AMP_test_VectorTests
 
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/shared_ptr.h"

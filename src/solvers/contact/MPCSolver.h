@@ -1,5 +1,5 @@
-#ifndef included_contact_MPCSolver
-#define included_contact_MPCSolver
+#ifndef included_AMP_contact_MPCSolver
+#define included_AMP_contact_MPCSolver
 
 #include "AMP/solvers/SolverStrategy.h"
 

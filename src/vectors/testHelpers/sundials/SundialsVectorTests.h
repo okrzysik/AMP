@@ -1,6 +1,6 @@
 #ifdef USE_EXT_SUNDIALS
-#ifndef included_test_SundialsVectorTests
-#define included_test_SundialsVectorTests
+#ifndef included_AMP_test_SundialsVectorTests
+#define included_AMP_test_SundialsVectorTests
 
 #include "string"
 #include <algorithm>

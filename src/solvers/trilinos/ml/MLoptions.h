@@ -1,6 +1,6 @@
 
-#ifndef included_MLoptions
-#define included_MLoptions
+#ifndef included_AMP_MLoptions
+#define included_AMP_MLoptions
 
 #include "AMP/utils/Database.h"
 #include "AMP/utils/shared_ptr.h"

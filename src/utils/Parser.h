@@ -11,20 +11,20 @@
 // NOTE: This is a modification of the Parser class from SAMRAI
 //       We have simply used it with modifications
 
-#ifndef included_Parser
-#define included_Parser
+#ifndef included_AMP_Parser
+#define included_AMP_Parser
 
 
-#ifndef included_stdio
-#define included_stdio
+#ifndef included_AMP_stdio
+#define included_AMP_stdio
 #include <stdio.h>
 #endif
 #include "AMP/utils/shared_ptr.h"
 #include "Database.h"
 #include <list>
-#ifndef included_String
+#ifndef included_AMP_String
 #include <string>
-#define included_String
+#define included_AMP_String
 #endif
 
 #include "AMP/utils/AMP_MPI.h"

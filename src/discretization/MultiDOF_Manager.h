@@ -1,5 +1,5 @@
-#ifndef included_MultiDOF_Manager
-#define included_MultiDOF_Manager
+#ifndef included_AMP_MultiDOF_Manager
+#define included_AMP_MultiDOF_Manager
 
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshElement.h"

@@ -1,5 +1,5 @@
-#ifndef included_OxideTimeIntegrator
-#define included_OxideTimeIntegrator
+#ifndef included_AMP_OxideTimeIntegrator
+#define included_AMP_OxideTimeIntegrator
 
 
 #include "AMP/time_integrators/TimeIntegrator.h"

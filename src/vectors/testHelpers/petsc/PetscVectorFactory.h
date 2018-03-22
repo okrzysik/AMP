@@ -1,5 +1,5 @@
-#ifndef included_test_PetscVectorFactory
-#define included_test_PetscVectorFactory
+#ifndef included_AMP_test_PetscVectorFactory
+#define included_AMP_test_PetscVectorFactory
 
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 #include "AMP/vectors/testHelpers/generateVectorFactories.h"

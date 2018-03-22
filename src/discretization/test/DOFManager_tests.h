@@ -1,5 +1,5 @@
-#ifndef included_DOFManager_tests
-#define included_DOFManager_tests
+#ifndef included_AMP_DOFManager_tests
+#define included_AMP_DOFManager_tests
 
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/MultiDOF_Manager.h"

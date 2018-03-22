@@ -1,5 +1,5 @@
-#ifndef included_IDATimeIntegrator
-#define included_IDATimeIntegrator
+#ifndef included_AMP_IDATimeIntegrator
+#define included_AMP_IDATimeIntegrator
 
 #include <string>
 
@@ -14,7 +14,7 @@
 #include "AMP/operators/LinearOperator.h"
 
 /*
- #ifndef included_ImplicitTimeIntegrator
+ #ifndef included_AMP_ImplicitTimeIntegrator
  #include "ImplicitTimeIntegrator.h"
  #endif
  */

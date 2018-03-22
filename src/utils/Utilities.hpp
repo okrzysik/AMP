@@ -257,6 +257,38 @@ void AMP::Utilities::unique( std::vector<T> &x )
     if ( pos < x.size() )
         x.resize( pos );
 }
+template<class T>
+void AMP::Utilities::unique( std::vector<T> &X, std::vector<size_t> &I, std::vector<size_t> &J )
+{
+    const size_t neg_one = static_cast<size_t>( -1 );
+    J.resize( 0 );
+    J.resize( X.size(), neg_one );
+    // Initialize the index vector I
+    I.resize( X.size() );
+    for ( size_t i = 0; i < X.size(); i++ )
+        I[i] = i;
+    // Sort the values
+    quicksort( X, I );
+    // Delete duplicate entries
+    size_t pos = 1;
+    for ( size_t i = 1; i < X.size(); i++ ) {
+        if ( X[i] != X[pos - 1] ) {
+            X[pos] = X[i];
+            I[pos] = I[i];
+            pos++;
+        }
+    }
+    X.resize( pos );
+    I.resize( pos );
+    // Fill the index array J
+    for ( size_t i = 0; i < I.size(); i++ )
+        J[I[i]] = i;
+    for ( size_t i = 0; i < J.size(); i++ ) {
+        if ( J[i] == neg_one )
+            J[i] = J[i - 1];
+    }
+}
+
 
 
 /************************************************************************

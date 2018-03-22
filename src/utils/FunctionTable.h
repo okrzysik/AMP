@@ -1,5 +1,5 @@
-#ifndef included_FunctionTable
-#define included_FunctionTable
+#ifndef included_AMP_FunctionTable
+#define included_AMP_FunctionTable
 
 
 #include "AMP/utils/Array.h"

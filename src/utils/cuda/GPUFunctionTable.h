@@ -1,5 +1,5 @@
-#ifndef included_GPUFunctionTable_H_
-#define included_GPUFunctionTable_H_
+#ifndef included_AMP_GPUFunctionTable_H_
+#define included_AMP_GPUFunctionTable_H_
 
 #include "AMP/utils/Array.h"
 

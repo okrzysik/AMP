@@ -1,6 +1,6 @@
 // Generate the desired vector factory
-#ifndef included_test_generateVectorFactory
-#define included_test_generateVectorFactory
+#ifndef included_AMP_test_generateVectorFactory
+#define included_AMP_test_generateVectorFactory
 
 
 #include "AMP/vectors/testHelpers/VectorFactory.h"

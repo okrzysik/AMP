@@ -1,5 +1,5 @@
-#ifndef included_test_MatrixTests
-#define included_test_MatrixTests
+#ifndef included_AMP_test_MatrixTests
+#define included_AMP_test_MatrixTests
 
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/UnitTest.h"

@@ -1,5 +1,5 @@
-#ifndef included_PetscMatrixShellOperator
-#define included_PetscMatrixShellOperator
+#ifndef included_AMP_PetscMatrixShellOperator
+#define included_AMP_PetscMatrixShellOperator
 
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/utils/AMP_MPI.h"

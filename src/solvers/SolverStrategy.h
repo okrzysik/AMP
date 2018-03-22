@@ -1,5 +1,5 @@
-#ifndef included_SolverStrategy
-#define included_SolverStrategy
+#ifndef included_AMP_SolverStrategy
+#define included_AMP_SolverStrategy
 
 #include "AMP/operators/Operator.h"
 #include "AMP/utils/Writer.h"

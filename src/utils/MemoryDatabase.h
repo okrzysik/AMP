@@ -8,8 +8,8 @@
 // Description: A memory database structure that stores (key,value) pairs in memory
 //
 
-#ifndef included_MemoryDatabase
-#define included_MemoryDatabase
+#ifndef included_AMP_MemoryDatabase
+#define included_AMP_MemoryDatabase
 
 
 #include "AMP/utils/AMP_MPI.h"

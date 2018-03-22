@@ -8,15 +8,15 @@
 // Description:	Parallel I/O class buffer to manage parallel ostreams output
 //
 
-#ifndef included_tbox_ParallelBuffer
-#define included_tbox_ParallelBuffer
+#ifndef included_AMP_tbox_ParallelBuffer
+#define included_AMP_tbox_ParallelBuffer
 
 
 #include <iostream>
 
-#ifndef included_String
+#ifndef included_AMP_String
 #include <string>
-#define included_String
+#define included_AMP_String
 #endif
 
 namespace AMP {

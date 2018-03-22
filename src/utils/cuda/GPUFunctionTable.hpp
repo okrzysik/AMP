@@ -1,5 +1,5 @@
-#ifndef included_GPUFunctionTable_HPP_
-#define included_GPUFunctionTable_HPP_
+#ifndef included_AMP_GPUFunctionTable_HPP_
+#define included_AMP_GPUFunctionTable_HPP_
 
 #include "AMP/utils/Array.h"
 #include <cublas_v2.h>

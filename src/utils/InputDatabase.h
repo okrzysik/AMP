@@ -12,8 +12,8 @@
 //       We have simply used it with modifications
 
 
-#ifndef included_InputDatabase
-#define included_InputDatabase
+#ifndef included_AMP_InputDatabase
+#define included_AMP_InputDatabase
 
 
 #include "MemoryDatabase.h"

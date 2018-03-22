@@ -10,15 +10,15 @@
 // NOTE: This is a modification of the InputManager class from SAMRAI
 //       We have simply used it with modifications
 
-#ifndef included_InputManager
-#define included_InputManager
+#ifndef included_AMP_InputManager
+#define included_AMP_InputManager
 
 
 #include "AMP/utils/shared_ptr.h"
 #include "InputDatabase.h"
-#ifndef included_String
+#ifndef included_AMP_String
 #include <string>
-#define included_String
+#define included_AMP_String
 #endif
 
 

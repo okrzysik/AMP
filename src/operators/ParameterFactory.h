@@ -1,5 +1,5 @@
-#ifndef included_ParameterFactory
-#define included_ParameterFactory
+#ifndef included_AMP_ParameterFactory
+#define included_AMP_ParameterFactory
 
 /* AMP files */
 #include "AMP/ampmesh/Mesh.h"

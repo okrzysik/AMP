@@ -1,5 +1,5 @@
-#ifndef included_test_VectorTests_inline
-#define included_test_VectorTests_inline
+#ifndef included_AMP_test_VectorTests_inline
+#define included_AMP_test_VectorTests_inline
 
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"

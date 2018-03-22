@@ -1,5 +1,5 @@
-#ifndef included_AMPUnitTest
-#define included_AMPUnitTest
+#ifndef included_AMP_AMPUnitTest
+#define included_AMP_AMPUnitTest
 
 #include "AMP/utils/AMP_MPI.h"
 

@@ -1,5 +1,5 @@
-#ifndef included_GPUUmemAllocator_H_
-#define included_GPUUmemAllocator_H_
+#ifndef included_AMP_GPUUmemAllocator_H_
+#define included_AMP_GPUUmemAllocator_H_
 
 
 template<typename T>

@@ -1,5 +1,5 @@
-#ifndef included_test_StridedVectorFactory
-#define included_test_StridedVectorFactory
+#ifndef included_AMP_test_StridedVectorFactory
+#define included_AMP_test_StridedVectorFactory
 
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorSelector.h"

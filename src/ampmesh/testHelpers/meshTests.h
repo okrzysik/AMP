@@ -1,5 +1,5 @@
-#ifndef included_MeshTests
-#define included_MeshTests
+#ifndef included_AMP_MeshTests
+#define included_AMP_MeshTests
 
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/utils/UnitTest.h"
