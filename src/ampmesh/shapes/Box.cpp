@@ -189,7 +189,7 @@ template<std::size_t NDIM>
 Point<double> Grid<NDIM>::physical( const Point<double> &pos ) const
 {
     Point<double> point;
-    for ( int d = 0; d < NDIM; d++ ) {
+    for ( size_t d = 0; d < NDIM; d++ ) {
         double p = pos[d] * ( d_coord[d].size() - 1 );
         int i    = std::min<int>( p, d_coord[d].size() - 2 );
         point[d] = d_coord[d][i] + ( p - i ) * ( d_coord[d][i + 1] - d_coord[d][i] );
@@ -223,7 +223,7 @@ template<std::size_t NDIM>
 Point<double> Grid<NDIM>::logical( const Point<double> &pos ) const
 {
     Point<double> logical;
-    for ( int d = 0; d < NDIM; d++ ) {
+    for ( size_t d = 0; d < NDIM; d++ ) {
         int i = AMP::Utilities::findfirst( d_coord[d], pos[d] );
         i     = std::max<int>( i, 1 );
         i     = std::min<int>( i, d_coord[d].size() - 1 );
