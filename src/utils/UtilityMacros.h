@@ -232,6 +232,7 @@
  *      Be sure to follow with ENABLE_WARNINGS
  */
 // clang-format off
+#ifndef DISABLE_WARNINGS
 #if defined( USING_MSVC )
     #define DISABLE_WARNINGS __pragma( warning( push, 0 ) )
     #define ENABLE_WARNINGS __pragma( warning( pop ) )
@@ -261,6 +262,7 @@
 #else
 #define DISABLE_WARNINGS
 #define ENABLE_WARNINGS
+#endif
 #endif
 // clang-format on
 
