@@ -1,9 +1,9 @@
-#ifndef included_RK4TimeIntegrator
-#define included_RK4TimeIntegrator
+#ifndef included_AMP_RK4TimeIntegrator
+#define included_AMP_RK4TimeIntegrator
 
 #include <string>
 
-#ifndef included_TimeIntegrator
+#ifndef included_AMP_TimeIntegrator
 #include "TimeIntegrator.h"
 #endif
 

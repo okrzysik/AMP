@@ -1,5 +1,5 @@
-#ifndef included_RowOperatorParameters
-#define included_RowOperatorParameters
+#ifndef included_AMP_RowOperatorParameters
+#define included_AMP_RowOperatorParameters
 
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/OperatorParameters.h"

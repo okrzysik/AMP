@@ -1,5 +1,5 @@
-#ifndef included_test_VectorFactory
-#define included_test_VectorFactory
+#ifndef included_AMP_test_VectorFactory
+#define included_AMP_test_VectorFactory
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/ArrayVector.h"

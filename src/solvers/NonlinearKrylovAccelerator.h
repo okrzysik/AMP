@@ -1,5 +1,5 @@
-#ifndef included_NonlinearKrylovAccelerator
-#define included_NonlinearKrylovAccelerator
+#ifndef included_AMP_NonlinearKrylovAccelerator
+#define included_AMP_NonlinearKrylovAccelerator
 
 
 #include "AMP/utils/Database.h"

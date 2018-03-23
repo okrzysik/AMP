@@ -9,8 +9,8 @@
 //
 // NOTE: This is a modification of the Database class from SAMRAI
 //       We have simply used it with modifications
-#ifndef included_Database
-#define included_Database
+#ifndef included_AMP_Database
+#define included_AMP_Database
 
 #include "AMP/utils/DatabaseBox.h"
 #include "AMP/utils/shared_ptr.h"

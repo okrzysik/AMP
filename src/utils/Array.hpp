@@ -1,5 +1,5 @@
-#ifndef included_ArrayClass_hpp
-#define included_ArrayClass_hpp
+#ifndef included_AMP_ArrayClass_hpp
+#define included_AMP_ArrayClass_hpp
 
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Utilities.h"

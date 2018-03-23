@@ -1,5 +1,5 @@
-#ifndef included_BandedSolver
-#define included_BandedSolver
+#ifndef included_AMP_BandedSolver
+#define included_AMP_BandedSolver
 
 #include "AMP/operators/Operator.h"
 #include "AMP/solvers/SolverStrategy.h"

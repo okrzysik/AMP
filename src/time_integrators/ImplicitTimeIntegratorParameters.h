@@ -1,5 +1,5 @@
-#ifndef included_ImplicitTimeIntegratorParameters
-#define included_ImplicitTimeIntegratorParameters
+#ifndef included_AMP_ImplicitTimeIntegratorParameters
+#define included_AMP_ImplicitTimeIntegratorParameters
 
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/utils/InputDatabase.h"

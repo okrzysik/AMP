@@ -1,6 +1,6 @@
 #ifdef USE_EXT_PETSC
-#ifndef included_test_PetscVectorTests
-#define included_test_PetscVectorTests
+#ifndef included_AMP_test_PetscVectorTests
+#define included_AMP_test_PetscVectorTests
 
 #include "string"
 #include <algorithm>

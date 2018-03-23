@@ -16,8 +16,8 @@ implied, or assumes any liability or
 responsibility for the use of this software.
 */
 
-#ifndef included_TimeIntegratorFactory
-#define included_TimeIntegratorFactory
+#ifndef included_AMP_TimeIntegratorFactory
+#define included_AMP_TimeIntegratorFactory
 
 #include "TimeIntegrator.h"
 #include "TimeIntegratorParameters.h"

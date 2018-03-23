@@ -1,5 +1,5 @@
-#ifndef included_MeshVectorTests
-#define included_MeshVectorTests
+#ifndef included_AMP_MeshVectorTests
+#define included_AMP_MeshVectorTests
 
 #include "AMP/ampmesh/testHelpers/meshTests.h"
 

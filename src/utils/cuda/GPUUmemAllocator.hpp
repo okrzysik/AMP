@@ -1,5 +1,5 @@
-#ifndef included_GPUUmemAllocator_HPP_
-#define included_GPUUmemAllocator_HPP_
+#ifndef included_AMP_GPUUmemAllocator_HPP_
+#define included_AMP_GPUUmemAllocator_HPP_
 
 
 #include <cuda.h>

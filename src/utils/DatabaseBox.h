@@ -10,8 +10,8 @@
 // NOTE: This is a modification of the DatabaseBox class from SAMRAI
 //       We have simply used it with modifications
 
-#ifndef included_DatabaseBox
-#define included_DatabaseBox
+#ifndef included_AMP_DatabaseBox
+#define included_AMP_DatabaseBox
 
 
 #ifndef DatabaseBox_MAX_DIM

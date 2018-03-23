@@ -1,5 +1,5 @@
-#ifndef included_LinearTimeOperator
-#define included_LinearTimeOperator
+#ifndef included_AMP_LinearTimeOperator
+#define included_AMP_LinearTimeOperator
 
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/OperatorParameters.h"

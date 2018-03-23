@@ -1,9 +1,9 @@
-#ifndef included_ExplicitEuler
-#define included_ExplicitEuler
+#ifndef included_AMP_ExplicitEuler
+#define included_AMP_ExplicitEuler
 
 #include <string>
 
-#ifndef included_TimeIntegrator
+#ifndef included_AMP_TimeIntegrator
 #include "TimeIntegrator.h"
 #endif
 

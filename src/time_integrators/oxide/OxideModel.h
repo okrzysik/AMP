@@ -1,5 +1,5 @@
-#ifndef included_OxideModel
-#define included_OxideModel
+#ifndef included_AMP_OxideModel
+#define included_AMP_OxideModel
 
 
 #include <string>

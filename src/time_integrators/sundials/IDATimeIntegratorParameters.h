@@ -1,16 +1,16 @@
-#ifndef included_IDATimeIntegratorParameters
-#define included_IDATimeIntegratorParameters
+#ifndef included_AMP_IDATimeIntegratorParameters
+#define included_AMP_IDATimeIntegratorParameters
 
 
-#ifndef included_TimeIntegratorParameters
+#ifndef included_AMP_TimeIntegratorParameters
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 #endif
 
-#ifndef included_IDATimeOperator
+#ifndef included_AMP_IDATimeOperator
 #include "AMP/time_integrators/sundials/IDATimeOperator.h"
 #endif
 
-#ifndef included_LinearTimeOperator
+#ifndef included_AMP_LinearTimeOperator
 #include "AMP/time_integrators/LinearTimeOperator.h"
 #endif
 
@@ -20,7 +20,7 @@
 //#endif
 #include "AMP/operators/Operator.h"
 
-#ifndef included_SolverStrategy
+#ifndef included_AMP_SolverStrategy
 #include "AMP/solvers/SolverStrategy.h"
 #endif
 

@@ -7,8 +7,8 @@
 // Description:	A factory for building MemoryDatabases
 //
 
-#ifndef included_MemoryDatabaseFactory
-#define included_MemoryDatabaseFactory
+#ifndef included_AMP_MemoryDatabaseFactory
+#define included_AMP_MemoryDatabaseFactory
 
 
 #include "DatabaseFactory.h"

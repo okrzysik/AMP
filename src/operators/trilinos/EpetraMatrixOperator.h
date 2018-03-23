@@ -1,5 +1,5 @@
-#ifndef included_EpetraMatrixOperator_h
-#define included_EpetraMatrixOperator_h
+#ifndef included_AMP_EpetraMatrixOperator_h
+#define included_AMP_EpetraMatrixOperator_h
 
 #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 #include "AMP/operators/LinearOperator.h"

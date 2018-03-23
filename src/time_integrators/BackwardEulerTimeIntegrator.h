@@ -1,9 +1,9 @@
-#ifndef included_BackwardEulerTimeIntegrator
-#define included_BackwardEulerTimeIntegrator
+#ifndef included_AMP_BackwardEulerTimeIntegrator
+#define included_AMP_BackwardEulerTimeIntegrator
 
 #include <string>
 
-#ifndef included_ImplicitTimeIntegrator
+#ifndef included_AMP_ImplicitTimeIntegrator
 #include "ImplicitTimeIntegrator.h"
 #endif
 

@@ -1,5 +1,5 @@
-#ifndef included_GPUDevAllocator_H_
-#define included_GPUDevAllocator_H_
+#ifndef included_AMP_GPUDevAllocator_H_
+#define included_AMP_GPUDevAllocator_H_
 
 template<typename T>
 class GPUDevAllocator

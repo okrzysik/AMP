@@ -1,5 +1,5 @@
-#ifndef included_GPUDevAllocator_HPP_
-#define included_GPUDevAllocator_HPP_
+#ifndef included_AMP_GPUDevAllocator_HPP_
+#define included_AMP_GPUDevAllocator_HPP_
 
 #include "AMP/utils/cuda/GPUDevAllocator.h"
 #include <cuda.h>

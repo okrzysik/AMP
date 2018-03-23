@@ -1,5 +1,5 @@
-#ifndef included_ThyraVectorFactor
-#define included_ThyraVectorFactor
+#ifndef included_AMP_ThyraVectorFactor
+#define included_AMP_ThyraVectorFactor
 
 
 #include "AMP/utils/UnitTest.h"

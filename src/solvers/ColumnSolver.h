@@ -1,5 +1,5 @@
-#ifndef included_ColumnSolver
-#define included_ColumnSolver
+#ifndef included_AMP_ColumnSolver
+#define included_AMP_ColumnSolver
 
 #include "SolverStrategy.h"
 #include <string>

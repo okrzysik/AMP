@@ -1,5 +1,5 @@
-#ifndef included_test_MatrixVectorFactory
-#define included_test_MatrixVectorFactory
+#ifndef included_AMP_test_MatrixVectorFactory
+#define included_AMP_test_MatrixVectorFactory
 
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/Matrix.h"

@@ -1,5 +1,5 @@
-#ifndef included_SolverStrategyParameters
-#define included_SolverStrategyParameters
+#ifndef included_AMP_SolverStrategyParameters
+#define included_AMP_SolverStrategyParameters
 
 #include "AMP/operators/Operator.h"
 #include "AMP/utils/Database.h"

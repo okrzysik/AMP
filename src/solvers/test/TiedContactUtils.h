@@ -1,6 +1,6 @@
 
-#ifndef included_TiedContactUtils
-#define included_TiedContactUtils
+#ifndef included_AMP_TiedContactUtils
+#define included_AMP_TiedContactUtils
 
 #include <vector>
 

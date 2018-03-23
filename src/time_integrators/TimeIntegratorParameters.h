@@ -1,5 +1,5 @@
-#ifndef included_TimeIntegratorParameters
-#define included_TimeIntegratorParameters
+#ifndef included_AMP_TimeIntegratorParameters
+#define included_AMP_TimeIntegratorParameters
 
 
 #include "AMP/operators/Operator.h"

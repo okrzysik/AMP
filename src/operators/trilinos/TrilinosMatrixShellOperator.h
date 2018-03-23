@@ -1,5 +1,5 @@
-#ifndef included_TrilinosMatrixShellOperator
-#define included_TrilinosMatrixShellOperator
+#ifndef included_AMP_TrilinosMatrixShellOperator
+#define included_AMP_TrilinosMatrixShellOperator
 
 #include "AMP/operators/LinearOperator.h"
 

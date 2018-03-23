@@ -9,8 +9,8 @@
 // NOTE: This is a modification of the DatabaseFactory class from SAMRAI
 //       We have simply used it with modifications
 
-#ifndef included_DatabaseFactory
-#define included_DatabaseFactory
+#ifndef included_AMP_DatabaseFactory
+#define included_AMP_DatabaseFactory
 
 
 #include "Database.h"

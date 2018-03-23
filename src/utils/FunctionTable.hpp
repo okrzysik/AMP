@@ -1,5 +1,5 @@
-#ifndef included_FunctionTable_hpp
-#define included_FunctionTable_hpp
+#ifndef included_AMP_FunctionTable_hpp
+#define included_AMP_FunctionTable_hpp
 
 #include "AMP/utils/FunctionTable.h"
 #include "AMP/utils/Utilities.h"

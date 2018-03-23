@@ -8,8 +8,8 @@
 // Description:	Registry of shutdown routines to be called at program exit
 //
 
-#ifndef included_tbox_ShutdownRegistry
-#define included_tbox_ShutdownRegistry
+#ifndef included_AMP_tbox_ShutdownRegistry
+#define included_AMP_tbox_ShutdownRegistry
 
 
 namespace AMP {

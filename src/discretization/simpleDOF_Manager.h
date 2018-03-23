@@ -1,5 +1,5 @@
-#ifndef included_simpleDOF_Manager
-#define included_simpleDOF_Manager
+#ifndef included_AMP_simpleDOF_Manager
+#define included_AMP_simpleDOF_Manager
 
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshElement.h"
