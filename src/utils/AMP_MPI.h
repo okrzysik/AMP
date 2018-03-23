@@ -29,7 +29,7 @@
         #include "SAMRAI/tbox/SAMRAI_MPI.h"
     #else
         #define INCLUDED_SAMRAI_CONFIG_H
-        #define included_AMP_tbox_Utilities
+        #define included_tbox_Utilities
         #include "SAMRAI/tbox/SAMRAI_MPI.h"
         #undef included_tbox_Utilities
         #undef INCLUDED_SAMRAI_CONFIG_H
