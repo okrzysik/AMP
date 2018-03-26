@@ -157,10 +157,6 @@ int main( int argc, char *argv[] )
     AMPManager::startup( argc, argv, startup_properties );
     UnitTest ut;
 
-    // these are currently not defined for AMP
-    //    Utilities::setAbortBehavior(true,true,true);
-    //    Utilities::setErrorHandlers();
-
     // Limit the scope of variables
     {
         // Create several matrices

@@ -9,6 +9,8 @@
 #include "LapackWrappers.h"
 #include "ProfilerApp.h"
 #include "StackTrace/StackTrace.h"
+#include "StackTrace/Utilities.h"
+
 
 // Include external files for startup/version info
 // clang-format off
@@ -87,12 +89,6 @@ AMPManagerProperties AMPManager::properties = AMPManagerProperties();
 static int force_exit     = 0;
 static bool printed_stack = false;
 static int abort_stackType = 3;
-static void abort_fun( std::string msg, StackTrace::terminateType type )
-{
-    if ( type == StackTrace::terminateType::exception )
-        force_exit = std::max( force_exit, 1 );
-    AMPManager::terminate_AMP( msg );
-}
 void AMPManager::terminate_AMP( std::string message )
 {
     AMP_MPI comm( AMP_COMM_WORLD );
@@ -139,10 +135,14 @@ void AMPManager::exitFun()
 {
     if ( initialized != 1 || printed_stack )
         return;
+    auto stack = StackTrace::getCallStack();
+    for ( auto &elem : stack ) {
+        if ( elem.function == "MPID_Abort" )
+            return;
+    }
     std::stringstream msg;
     msg << "Calling exit without calling shutdown\n";
     msg << "Bytes used = " << AMP::Utilities::getMemoryUsage() << std::endl;
-    auto stack = StackTrace::getCallStack();
     msg << "Stack Trace:\n";
     for ( auto &elem : stack )
         msg << "   " << elem.print() << std::endl;
@@ -236,6 +236,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     // Initialize cuda
     start_CUDA();
     // Set the signal/terminate handlers
+    StackTrace::Utilities::setErrorHandlers();
     setHandlers();
     // Initialization finished
     initialized = 1;
@@ -275,6 +276,7 @@ void AMPManager::shutdown()
     // Disable call stack and error handlers
     StackTrace::globalCallStackFinalize( );
     clearMPIErrorHandler();
+    StackTrace::Utilities::clearErrorHandlers();
     // Disable MPI_Abort
     AMPManager::use_MPI_Abort = false;
     // Shutdown the registry
@@ -510,14 +512,13 @@ void AMPManager::setHandlers()
     SAMRAI::tbox::Logger::getInstance()->setAbortAppender( appender );
 #endif
     // Set the terminate routine for runtime errors
-    StackTrace::setErrorHandlers( abort_fun );
+    StackTrace::Utilities::setErrorHandlers( );
     // Set atexit function
     std::atexit( exitFun );
 #ifdef USE_LINUX
     std::at_quick_exit( exitFun );
 #endif
 }
-void dummyErrorHandler( std::string, StackTrace::terminateType ) {}
 void AMPManager::clearHandlers()
 {
     initialized = 3;
@@ -536,57 +537,22 @@ void AMPManager::clearHandlers()
 /****************************************************************************
 *  Functions to handle MPI errors                                           *
 ****************************************************************************/
-#ifdef USE_EXT_MPI
-AMP::shared_ptr<MPI_Errhandler> AMPManager::mpierr;
-static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
-{
-    if ( *err == MPI_ERR_COMM && *comm == MPI_COMM_WORLD ) {
-        // Special error handling for an invalid MPI_COMM_WORLD
-        std::cerr << "Error invalid MPI_COMM_WORLD";
-        exit( -1 );
-    }
-    int msg_len = 0;
-    char message[1000];
-    MPI_Error_string( *err, message, &msg_len );
-    if ( msg_len <= 0 )
-        AMP_ERROR( "Unkown error in MPI" );
-    std::string msg = "Error calling MPI routine:\n" + std::string( message ) + "\n";
-    throw std::logic_error( msg );
-}
-#endif
 void AMPManager::setMPIErrorHandler( )
 {
 #ifdef USE_EXT_MPI
-    if ( MPI_Active() ) {
-        if ( mpierr.get() == nullptr ) {
-            mpierr = AMP::make_shared<MPI_Errhandler>( );
-            MPI_Comm_create_errhandler( MPI_error_handler_fun, mpierr.get() );
-        }
-        MPI_Comm_set_errhandler( MPI_COMM_SELF, *mpierr );
-        MPI_Comm_set_errhandler( MPI_COMM_WORLD, *mpierr );
-        if ( comm_world.getCommunicator() != MPI_COMM_WORLD )
-            MPI_Comm_set_errhandler( comm_world.getCommunicator(), *mpierr );
+    StackTrace::setMPIErrorHandler( comm_world.getCommunicator() );
 #ifdef USE_EXT_SAMRAI
-        MPI_Comm_set_errhandler( SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator(), *mpierr );
+    StackTrace::setMPIErrorHandler( SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator() );
 #endif
-    }
 #endif
 }
 void AMPManager::clearMPIErrorHandler()
 {
 #ifdef USE_EXT_MPI
-    if ( MPI_Active() ) {
-        if ( mpierr.get() != nullptr )
-            MPI_Errhandler_free( mpierr.get() ); // Delete the error handler
-        mpierr.reset();
-        MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
-        MPI_Comm_set_errhandler( MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL );
-        if ( comm_world.getCommunicator() != MPI_COMM_WORLD )
-            MPI_Comm_set_errhandler( comm_world.getCommunicator(), MPI_ERRORS_ARE_FATAL );
+    StackTrace::clearMPIErrorHandler( comm_world.getCommunicator() );
 #ifdef USE_EXT_SAMRAI
-        MPI_Comm_set_errhandler( SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator(), MPI_ERRORS_ARE_FATAL );
+    StackTrace::clearMPIErrorHandler( SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator() );
 #endif
-    }
 #endif
 }
 
