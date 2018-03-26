@@ -83,65 +83,13 @@ std::string Utilities::intToString( int num, int min_width )
         os << std::setw( tmp_width ) << std::setfill( '0' ) << num;
     }
     os << std::flush;
-
-    return ( os.str() ); // returns the string form of the stringstream object
+    return ( os.str() );
 }
-
 std::string Utilities::nodeToString( int num ) { return intToString( num, 5 ); }
-
 std::string Utilities::processorToString( int num ) { return intToString( num, 5 ); }
-
-
 std::string Utilities::patchToString( int num ) { return intToString( num, 4 ); }
-
-
 std::string Utilities::levelToString( int num ) { return intToString( num, 4 ); }
-
-
 std::string Utilities::blockToString( int num ) { return intToString( num, 4 ); }
-
-
-/*
- * Routine that calls abort and prints calling location to error stream.
- */
-void Utilities::abort( const std::string &message, const std::string &filename, const int line )
-{
-    if ( AMP::AMPManager::use_MPI_Abort == true ) {
-        // Get the call stack and memory usage
-        long long unsigned int N_bytes = getMemoryUsage();
-        auto stack                     = StackTrace::getCallStack();
-        // Log the abort message
-        if ( AMPManager::isInitialized() ) {
-            AMP::pout << "Bytes used = " << N_bytes << std::endl;
-            AMP::pout << "Stack Trace:\n";
-            for ( auto &elem : stack )
-                AMP::pout << "   " << elem.print() << std::endl;
-            AMP::pout << std::endl;
-            Logger::getInstance()->logAbort( message, filename, line );
-        } else {
-            std::cout << "Bytes used = " << N_bytes << std::endl;
-            std::cout << "Stack Trace:\n";
-            for ( auto &elem : stack )
-                std::cout << "   " << elem.print() << std::endl;
-            std::cout << std::endl;
-            std::cerr << "Program abort called in file ``" << filename << "'' at line " << line
-                      << std::endl;
-            std::cerr << "ERROR MESSAGE: " << std::endl << message.c_str() << std::endl;
-            std::cerr << std::flush;
-        }
-        // Stop error handling
-        AMPManager::clearHandlers();
-        // Use MPI_abort (will terminate all processes)
-        AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );
-        comm.abort();
-    } else {
-        // Throw a standard exception (allows the use of try, catch)
-        // std::stringstream  stream;
-        // stream << message << std::endl << "  " << filename << ":  " << line;
-        // std::cout << stream.str() << std::endl;
-        throw std::logic_error( message );
-    }
-}
 
 
 // Function to create a 32-bit hash key from a character array
@@ -185,114 +133,6 @@ void Utilities::setenv( const char *name, const char *value )
         AMP_ERROR( msg );
     }
 }
-
-
-/****************************************************************************
- *  Function to get the memory usage                                         *
- *  Note: this function should be thread-safe                                *
- ****************************************************************************/
-// clang-format off
-#if defined( USE_MAC ) || defined( USE_LINUX )
-    // Get the page size on mac or linux
-    static size_t page_size = static_cast<size_t>( sysconf( _SC_PAGESIZE ) );
-#endif
-size_t Utilities::getSystemMemory()
-{
-    #if defined( USE_LINUX )
-        static long pages = sysconf( _SC_PHYS_PAGES );
-        size_t N_bytes    = pages * page_size;
-    #elif defined( USE_MAC )
-        int mib[2]    = { CTL_HW, HW_MEMSIZE };
-        u_int namelen = sizeof( mib ) / sizeof( mib[0] );
-        uint64_t size;
-        size_t len = sizeof( size );
-        size_t N_bytes = 0;
-        if ( sysctl( mib, namelen, &size, &len, nullptr, 0 ) == 0 )
-            N_bytes = size;
-    #elif defined( USE_WINDOWS )
-        MEMORYSTATUSEX status;
-        status.dwLength = sizeof( status );
-        GlobalMemoryStatusEx( &status );
-        size_t N_bytes = status.ullTotalPhys;
-    #else
-        #error Unknown OS
-    #endif
-    return N_bytes;
-}
-size_t Utilities::getMemoryUsage()
-{
-    #ifdef USE_TIMER
-        size_t N_bytes = MemoryApp::getTotalMemoryUsage();
-    #else
-        #if defined( USE_LINUX )
-            struct mallinfo meminfo = mallinfo();
-            size_t size_hblkhd      = static_cast<unsigned int>( meminfo.hblkhd );
-            size_t size_uordblks    = static_cast<unsigned int>( meminfo.uordblks );
-            size_t N_bytes          = size_hblkhd + size_uordblks;
-        #elif defined( USE_MAC )
-            struct task_basic_info t_info;
-            mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
-            if ( KERN_SUCCESS !=
-                 task_info( mach_task_self(), TASK_BASIC_INFO, (task_info_t) &t_info, &t_info_count ) ) {
-                return 0;
-            }
-            size_t N_bytes = t_info.virtual_size;
-        #elif defined( USE_WINDOWS )
-            PROCESS_MEMORY_COUNTERS memCounter;
-            GetProcessMemoryInfo( GetCurrentProcess(), &memCounter, sizeof( memCounter ) );
-            size_t N_bytes = memCounter.WorkingSetSize;
-        #else
-            #error Unknown OS
-        #endif
-    #endif
-    return N_bytes;
-}
-// clang-format on
-
-
-/****************************************************************************
- *  Functions to get the time and timer resolution                           *
- ****************************************************************************/
-#if defined( USE_WINDOWS )
-double Utilities::time()
-{
-    LARGE_INTEGER end, f;
-    QueryPerformanceFrequency( &f );
-    QueryPerformanceCounter( &end );
-    double time = ( (double) end.QuadPart ) / ( (double) f.QuadPart );
-    return time;
-}
-double Utilities::tick()
-{
-    LARGE_INTEGER f;
-    QueryPerformanceFrequency( &f );
-    double resolution = ( (double) 1.0 ) / ( (double) f.QuadPart );
-    return resolution;
-}
-void Utilities::sleepMs( unsigned int N ) { Sleep( N ); }
-#elif defined( USE_LINUX ) || defined( USE_MAC )
-double Utilities::time()
-{
-    timeval current_time;
-    gettimeofday( &current_time, nullptr );
-    double time = ( (double) current_time.tv_sec ) + 1e-6 * ( (double) current_time.tv_usec );
-    return time;
-}
-double Utilities::tick()
-{
-    timeval start, end;
-    gettimeofday( &start, nullptr );
-    gettimeofday( &end, nullptr );
-    while ( end.tv_sec == start.tv_sec && end.tv_usec == start.tv_usec )
-        gettimeofday( &end, nullptr );
-    double resolution = ( (double) ( end.tv_sec - start.tv_sec ) ) +
-                        1e-6 * ( (double) ( end.tv_usec - start.tv_usec ) );
-    return resolution;
-}
-void Utilities::sleepMs( unsigned int N ) { usleep( N * 1000 ); }
-#else
-#error Unknown OS
-#endif
 
 
 /****************************************************************************

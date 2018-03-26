@@ -147,12 +147,6 @@ private:
     static int argc;
     static char **argv;
     static AMPManagerProperties properties;
-#ifdef USE_EXT_MPI
-    static AMP::shared_ptr<MPI_Errhandler> mpierr;
-#endif
-
-    //! abort must be a friend to access use_MPI_Abort to change the abort behavior
-    friend void AMP::Utilities::abort( const std::string &, const std::string &, const int );
 
     //! AMP_MPI must be a friend to access comm_world and the MPI error handler
     friend class AMP::AMP_MPI;

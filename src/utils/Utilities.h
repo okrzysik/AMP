@@ -5,7 +5,11 @@
 // Include the utility macros
 #include "UtilityMacros.h"
 
+// Include utilities from StackTrace
+#include "StackTrace/Utilities.h"
 
+
+#include <chrono>
 #include <cstdarg>
 #include <limits>
 #include <math.h>
@@ -66,6 +70,25 @@ inline T type_default_tol()
  * used.
  */
 namespace Utilities {
+
+
+// Include functions from StackTrace
+using StackTrace::Utilities::abort;
+using StackTrace::Utilities::getSystemMemory;
+using StackTrace::Utilities::getMemoryUsage;
+using StackTrace::Utilities::time;
+using StackTrace::Utilities::tick;
+
+
+
+/*!
+ * Set an environmental variable
+ * @param name              The name of the environmental variable
+ * @param value             The value to set
+ */
+void setenv( const char *name, const char *value );
+
+
 /*!
  * Create the directory specified by the path string.  Permissions are set
  * by default to rwx by user.  The intermediate directories in the
@@ -122,13 +145,6 @@ std::string processorToString( int num );
 std::string patchToString( int num );
 std::string levelToString( int num );
 std::string blockToString( int num );
-
-
-/*!
- * Aborts the run after printing an error message with file and
- * linenumber information.
- */
-void abort( const std::string &message, const std::string &filename, const int line );
 
 
 /*!
@@ -292,39 +308,8 @@ unsigned int hash_char( const char * );
 //! Get the prime factors for a number
 std::vector<int> factor( size_t );
 
-/*!
- * Set an environmental variable
- * @param name              The name of the environmental variable
- * @param value             The value to set
- */
-void setenv( const char *name, const char *value );
-
-/*!
- * Function to get the memory availible.
- * This function will return the total memory availible
- * Note: depending on the implimentation, this number may be rounded to
- * to a multiple of the page size.
- * If this function fails, it will return 0.
- */
-size_t getSystemMemory();
-
-/*!
- * Function to get the memory usage.
- * This function will return the total memory used by the application.
- * Note: depending on the implimentation, this number may be rounded to
- * to a multiple of the page size.
- * If this function fails, it will return 0.
- */
-size_t getMemoryUsage();
-
-//! Function to get an arbitrary point in time
-double time();
-
-//! Function to get the resolution of time
-double tick();
-
 //! Sleep for the specified number of ms
-void sleepMs( unsigned int );
+inline void sleepMs( unsigned int N ) { std::this_thread::sleep_for( std::chrono::milliseconds( N ) ); }
 
 //! Print AMP Banner
 void printBanner();

@@ -6,6 +6,7 @@
 #include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
+#include "StackTrace/StackTrace.h"
 
 // Include all other headers
 #include <algorithm>
@@ -527,8 +528,7 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
         if ( MPI_SIZE_T == 0x0 )
             MPI_SIZE_T = getSizeTDataType();
         // Attach the error handler
-        if ( AMPManager::mpierr.get() != nullptr )
-            MPI_Comm_set_errhandler( communicator, *AMPManager::mpierr );
+        StackTrace::setMPIErrorHandler( communicator );
         // Get the communicator properties
         MPI_Comm_rank( communicator, &comm_rank );
         MPI_Comm_size( communicator, &comm_size );
