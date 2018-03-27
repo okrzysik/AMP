@@ -62,9 +62,8 @@ int main( int argc, char **argv )
     for ( size_t i = 0; i < 3; i++ )
         vfcv[i] = AMP::make_shared<std::vector<double>>( n );
 
-    AMP::shared_ptr<AMP::Materials::VectorProperty<double>> vectorProperty =
-        AMP::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>(
-            mat->property( "VectorFickCoefficient" ) );
+    auto vectorProperty = AMP::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>(
+        mat->property( "VectorFickCoefficient" ) );
     vectorProperty->set_dimension( 3 );
     double vparams[] = { 1.1, 2.2, 3.3 };
     vectorProperty->set_parameters_and_number( vparams, 3 );

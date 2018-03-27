@@ -290,7 +290,6 @@ void AMP::Utilities::unique( std::vector<T> &X, std::vector<size_t> &I, std::vec
 }
 
 
-
 /************************************************************************
  * Subroutine to find the first element in X which is greater than Y     *
  * using a simple hashing technique.  This is the a faster method, but   *
