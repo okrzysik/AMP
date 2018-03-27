@@ -74,11 +74,10 @@ namespace Utilities {
 
 // Include functions from StackTrace
 using StackTrace::Utilities::abort;
-using StackTrace::Utilities::getSystemMemory;
 using StackTrace::Utilities::getMemoryUsage;
-using StackTrace::Utilities::time;
+using StackTrace::Utilities::getSystemMemory;
 using StackTrace::Utilities::tick;
-
+using StackTrace::Utilities::time;
 
 
 /*!
@@ -233,7 +232,7 @@ void unique( std::vector<T> &x );
  * @param I         The index vector I (ny)
  * @param J         The index vector J (nx)
  */
-template <class T>
+template<class T>
 void unique( std::vector<T> &X, std::vector<size_t> &I, std::vector<size_t> &J );
 
 
@@ -309,7 +308,10 @@ unsigned int hash_char( const char * );
 std::vector<int> factor( size_t );
 
 //! Sleep for the specified number of ms
-inline void sleepMs( unsigned int N ) { std::this_thread::sleep_for( std::chrono::milliseconds( N ) ); }
+inline void sleepMs( unsigned int N )
+{
+    std::this_thread::sleep_for( std::chrono::milliseconds( N ) );
+}
 
 //! Print AMP Banner
 void printBanner();

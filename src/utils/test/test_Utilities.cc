@@ -494,6 +494,19 @@ int main( int argc, char *argv[] )
         // Test creating an empty directory
         Utilities::recursiveMkdir( "." );
 
+        // Test catching an error
+        try {
+            AMP_ERROR( "test_error" );
+            ut.failure( "Failed to catch error" );
+        } catch ( const StackTrace::abort_error &err ) {
+            if ( err.message == "test_error" )
+                ut.passes( "Caught error" );
+            else
+                ut.failure( "Failed to catch error with proper message" );
+        } catch ( std::exception &err ) {
+            ut.failure( "Caught unknown exception type" );
+        }
+
         // Finished testing, report the results
         ut.report();
         num_failed = ut.NumFailGlobal();

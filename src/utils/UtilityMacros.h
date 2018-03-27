@@ -64,7 +64,7 @@
 #define AMP_ERROR( MSG )                                           \
     do {                                                           \
         TBOXOSTREAM tboxos;                                        \
-        tboxos << MSG << std::ends;                                \
+        tboxos << MSG;                                             \
         AMP::Utilities::abort( tboxos.str(), __FILE__, __LINE__ ); \
     } while ( 0 )
 
@@ -115,7 +115,7 @@
     do {                                                               \
         if ( !( EXP ) ) {                                              \
             TBOXOSTREAM tboxos;                                        \
-            tboxos << "Failed assertion: " << #EXP << std::ends;       \
+            tboxos << "Failed assertion: " << #EXP;                    \
             AMP::Utilities::abort( tboxos.str(), __FILE__, __LINE__ ); \
         }                                                              \
     } while ( 0 )

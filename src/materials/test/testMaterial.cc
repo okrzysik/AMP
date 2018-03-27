@@ -1,10 +1,3 @@
-/*
- * testMaterial.cc
- *
- *  Created on: Feb 11, 2010
- *      Author: gad
- */
-
 #include <cmath>
 #include <iostream>
 #include <map>
@@ -12,13 +5,7 @@
 #include <string>
 #include <valarray>
 #include <vector>
-using std::cout;
-using std::endl;
-using std::exception;
-using std::map;
-using std::string;
-using std::valarray;
-using std::vector;
+
 
 #include "AMP/materials/Material.h"
 #include "AMP/materials/Property.h"
@@ -32,6 +19,9 @@ using std::vector;
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/SimpleVector.h"
 
+#include "testMaterialHelpers.h"
+
+
 // Allow external materials to include additional headers in the test
 // Note: this includes 1 additional include header that is passed from the command line:
 //   Ex:  -D EXTRA_MATERIAL_HEADER='"materials/FuelMaterial.h"'
@@ -39,58 +29,12 @@ using std::vector;
 #include EXTRA_MATERIAL_HEADER
 #endif
 
-static const size_t NSUCCESS = 12;
-static const size_t NARGEVAL = 2;
-static const size_t NVECTOR  = 6;
-static const size_t NTENSOR  = 6;
 
-class PropTestResult
-{
-public:
-    PropTestResult()
-        : range( false ),
-          params( false ),
-          unknown( false ),
-          name( "none" ),
-          isVector( false ),
-          isTensor( false )
-    {
-        for ( auto &elem : success )
-            elem = false;
-        for ( auto &elem : nargeval )
-            elem = false;
-        for ( auto &elem : vector )
-            elem = false;
-        for ( auto &elem : tensor )
-            elem = false;
-    }
-    bool range;
-    bool success[NSUCCESS];
-    bool params;
-    bool nargeval[NARGEVAL];
-    bool unknown;
-    string name;
-    bool vector[NVECTOR];
-    bool isVector;
-    bool tensor[NTENSOR];
-    bool isTensor;
-};
-
-class MatTestResult
-{
-public:
-    MatTestResult() : undefined( false ), unknown( false ), creationGood( false ), name( "none" ) {}
-    bool undefined;
-    bool unknown;
-    bool creationGood;
-    string name;
-    vector<PropTestResult> propResults;
-};
-
-MatTestResult testMaterial( string &name )
+MatTestResult testMaterial( std::string &name )
 {
     using namespace AMP::Materials;
     MatTestResult results;
+    results.name = name;
 
     // create material object
     Material::shared_ptr mat;
@@ -114,25 +58,25 @@ MatTestResult testMaterial( string &name )
     }
 
     // test property evaluations
-    vector<string> proplist( mat->list() );
+    std::vector<std::string> proplist( mat->list() );
     size_t nprop = proplist.size();
     results.propResults.resize( nprop );
     for ( size_t type = 0; type < proplist.size(); type++ ) {
 
-        string propname                = proplist[type];
+        auto propname                  = proplist[type];
         results.propResults[type].name = propname;
         auto property                  = mat->property( propname );
 
         // test parameter get and set
         try {
-            valarray<double> params = property->get_parameters();
+            auto params = property->get_parameters();
             if ( params.size() > 0 ) {
                 params *= 10.0;
                 property->set_parameters( &params[0], params.size() );
                 params /= 10.0;
                 property->set_parameters( &params[0], params.size() );
-                valarray<double> nparams = property->get_parameters();
-                bool good = abs( nparams - params ).max() <= 1.e-10 * abs( params ).max();
+                auto nparams = property->get_parameters();
+                bool good    = abs( nparams - params ).max() <= 1.e-10 * abs( params ).max();
                 if ( good )
                     results.propResults[type].params = true;
                 else
@@ -148,15 +92,15 @@ MatTestResult testMaterial( string &name )
         }
 
         // get argument info
-        vector<string> argnames( property->get_arguments() );
+        std::vector<std::string> argnames( property->get_arguments() );
         size_t nargs = property->get_number_arguments();
 
         // get min and max arg values
-        vector<vector<double>> ranges = property->get_arg_ranges();
-        const size_t npoints          = 10;
-        vector<vector<double>> toosmall( nargs, vector<double>( npoints ) );
-        vector<vector<double>> justright( nargs, vector<double>( npoints ) );
-        vector<vector<double>> toobig( nargs, vector<double>( npoints ) );
+        auto ranges    = property->get_arg_ranges();
+        size_t npoints = 10;
+        std::vector<std::vector<double>> toosmall( nargs, std::vector<double>( npoints ) );
+        std::vector<std::vector<double>> justright( nargs, std::vector<double>( npoints ) );
+        std::vector<std::vector<double>> toobig( nargs, std::vector<double>( npoints ) );
         for ( size_t j = 0; j < npoints; j++ ) {
             for ( size_t i = 0; i < ranges.size(); i++ ) {
                 if ( ranges[i][0] > 0. )
@@ -205,30 +149,26 @@ MatTestResult testMaterial( string &name )
 
         // set up std::vector arguments to evalv
         std::vector<double> value( npoints ), nominal;
-        map<string, AMP::shared_ptr<vector<double>>> args;
+        std::map<std::string, AMP::shared_ptr<std::vector<double>>> args;
         for ( size_t i = 0; i < nargs; i++ ) {
-            args.insert(
-                std::make_pair( argnames[i], AMP::make_shared<vector<double>>( justright[i] ) ) );
+            args.insert( std::make_pair( argnames[i],
+                                         AMP::make_shared<std::vector<double>>( justright[i] ) ) );
         }
 
         // set up AMP::Vector arguments to evalv
-        AMP::LinearAlgebra::Variable::shared_ptr valueVar(
-            new AMP::LinearAlgebra::Variable( "value" ) );
-        AMP::LinearAlgebra::Vector::shared_ptr valueVec =
-            AMP::LinearAlgebra::SimpleVector<double>::create( npoints, valueVar );
-        AMP::LinearAlgebra::Variable::shared_ptr nominalVar(
-            new AMP::LinearAlgebra::Variable( "nominal" ) );
-        AMP::LinearAlgebra::Vector::shared_ptr nominalVec =
-            AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nominalVar );
-        map<string, AMP::LinearAlgebra::Vector::shared_ptr> argsVec;
+        auto valueVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "value" );
+        auto valueVec   = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, valueVar );
+        auto nominalVar = std::make_shared<AMP::LinearAlgebra::Variable>( "nominal" );
+        auto nominalVec = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nominalVar );
+        std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> argsVec;
         for ( size_t i = 0; i < nargs; i++ ) {
             argsVec.insert( std::make_pair( argnames[i], justrightVec[i] ) );
         }
 
         // set up AMP::MultiVector arguments to evalv
-        AMP::LinearAlgebra::Vector::shared_ptr argsMultiVecVec =
+        auto argsMultiVecVec =
             AMP::LinearAlgebra::MultiVector::create( "argsMultiVec", AMP_COMM_SELF );
-        AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> argsMultiVec =
+        auto argsMultiVec =
             AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( argsMultiVecVec );
         for ( size_t i = 0; i < nargs; i++ ) {
             argsMultiVec->addVector( toosmallVec[i] );  // extra junk, should be ignored
@@ -242,41 +182,38 @@ MatTestResult testMaterial( string &name )
             xlator.insert( std::make_pair( argnames[i], name ) );
             count++;
         }
-        AMP::LinearAlgebra::Variable::shared_ptr nominalMultiVar(
-            new AMP::LinearAlgebra::Variable( "nominalMulti" ) );
-        AMP::LinearAlgebra::Vector::shared_ptr nominalMultiVec =
+        auto nominalMultiVar = std::make_shared<AMP::LinearAlgebra::Variable>( "nominalMulti" );
+        auto nominalMultiVec =
             AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nominalMultiVar );
 
         // test material range functions
-        vector<double> range( 2 );
-        bool good = true;
-        good      = ( good && ( nargs == argnames.size() ) );
+        std::vector<double> range( 2 );
+        bool pass = nargs == argnames.size();
         for ( size_t i = 0; i < argnames.size(); i++ ) {
             range = property->get_arg_range( argnames[i] );
-            good  = good && range[0] <= range[1];
-            good  = good && ( range[0] == ranges[i][0] ) && ( range[1] == ranges[i][1] );
-            good  = good && property->in_range( argnames[i], justright[i] );
-            good  = good && !property->in_range( argnames[i], toosmall[i] );
-            good  = good && !property->in_range( argnames[i], toobig[i] );
-            good  = good && property->in_range( argnames[i], justright[i][0] );
-            good  = good && !property->in_range( argnames[i], toosmall[i][0] );
-            good  = good && !property->in_range( argnames[i], toobig[i][0] );
-
-            good = good && property->in_range( argnames[i], *justrightVec[i] );
-            good = good && !property->in_range( argnames[i], *toosmallVec[i] );
-            good = good && !property->in_range( argnames[i], *toobigVec[i] );
+            pass  = pass && range[0] <= range[1];
+            pass  = pass && ( range[0] == ranges[i][0] ) && ( range[1] == ranges[i][1] );
+            pass  = pass && property->in_range( argnames[i], justright[i] );
+            pass  = pass && !property->in_range( argnames[i], toosmall[i] );
+            pass  = pass && !property->in_range( argnames[i], toobig[i] );
+            pass  = pass && property->in_range( argnames[i], justright[i][0] );
+            pass  = pass && !property->in_range( argnames[i], toosmall[i][0] );
+            pass  = pass && !property->in_range( argnames[i], toobig[i][0] );
+            pass  = pass && property->in_range( argnames[i], *justrightVec[i] );
+            pass  = pass && !property->in_range( argnames[i], *toosmallVec[i] );
+            pass  = pass && !property->in_range( argnames[i], *toobigVec[i] );
         }
-        if ( good )
+        if ( pass )
             results.propResults[type].range = true;
 
         // test defaults get and set
         try {
             auto prop = property;
-            vector<double> defin( nargs );
+            std::vector<double> defin( nargs );
             for ( size_t i = 0; i < nargs; i++ )
                 defin[i] = justright[i][0];
             prop->set_defaults( defin );
-            vector<double> defaults( prop->get_defaults() );
+            std::vector<double> defaults( prop->get_defaults() );
             if ( defaults == defin )
                 results.propResults[type].nargeval[0] = true;
             else
@@ -500,23 +437,23 @@ MatTestResult testMaterial( string &name )
             }
 
             // check vector, Vector, MultiVector all agree
-            good = true;
+            pass = true;
             if ( results.propResults[type].success[0] && results.propResults[type].success[4] &&
                  results.propResults[type].success[9] ) {
                 for ( size_t i = 0; i < npoints; i++ ) {
                     double vstd      = nominal[i];
                     double vVec      = nominalVec->getValueByLocalID( i );
                     double vMultiVec = nominalMultiVec->getValueByLocalID( i );
-                    good             = good && ( vstd == vVec && vVec == vMultiVec );
+                    pass             = pass && ( vstd == vVec && vVec == vMultiVec );
                 }
-                if ( good )
+                if ( pass )
                     results.propResults[type].success[3] = true;
             } else {
                 results.propResults[type].success[3] = false;
             }
 
             // set up reduced argument list
-            map<string, AMP::shared_ptr<vector<double>>> argsm( args );
+            std::map<std::string, AMP::shared_ptr<std::vector<double>>> argsm( args );
             if ( nargs > 0 ) {
                 auto argend = argsm.end();
                 --argend;
@@ -546,7 +483,7 @@ MatTestResult testMaterial( string &name )
 
             results.propResults[type].isVector = true;
 
-            AMP::shared_ptr<AMP::Materials::VectorProperty<double>> vectorProperty =
+            auto vectorProperty =
                 AMP::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>( property );
 
             // check that scalar nature is not signaled
@@ -580,7 +517,7 @@ MatTestResult testMaterial( string &name )
 
             // test make_map, first without setting a translator or setting an empty translator
             std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> testMap;
-            std::map<std::string, std::string> currentXlator = vectorProperty->get_translator();
+            auto currentXlator = vectorProperty->get_translator();
             if ( !currentXlator.empty() ) {
                 currentXlator.clear();
                 vectorProperty->set_translator( currentXlator );
@@ -600,7 +537,7 @@ MatTestResult testMaterial( string &name )
                 xlateGood = true;
             }
             vectorProperty->set_translator( xlator );
-            std::map<std::string, std::string> testXlatorGet = vectorProperty->get_translator();
+            auto testXlatorGet = vectorProperty->get_translator();
             if ( testXlatorGet == xlator && xlateGood ) {
                 results.propResults[type].success[7] = true;
             }
@@ -846,7 +783,7 @@ MatTestResult testMaterial( string &name )
             }
 
             // check vector, Vector, MultiVector all agree
-            good = true;
+            pass = true;
             if ( results.propResults[type].success[0] && results.propResults[type].success[4] &&
                  results.propResults[type].success[9] ) {
                 for ( size_t j = 0; j < nvec; j++ ) {
@@ -854,17 +791,17 @@ MatTestResult testMaterial( string &name )
                         double vstd      = ( *nominalEval[j] )[i];
                         double vVec      = nominalAmpEval[j]->getValueByLocalID( i );
                         double vMultiVec = nominalMultiEval[j]->getValueByLocalID( i );
-                        good             = good && ( vstd == vVec && vVec == vMultiVec );
+                        pass             = pass && ( vstd == vVec && vVec == vMultiVec );
                     }
                 }
-                if ( good )
+                if ( pass )
                     results.propResults[type].success[3] = true;
             } else {
                 results.propResults[type].success[3] = false;
             }
 
             // set up reduced argument list
-            map<string, AMP::shared_ptr<vector<double>>> argsm( args );
+            std::map<std::string, AMP::shared_ptr<std::vector<double>>> argsm( args );
             if ( nargs > 0 ) {
                 auto argend = argsm.end();
                 --argend;
@@ -893,7 +830,7 @@ MatTestResult testMaterial( string &name )
 
             results.propResults[type].isTensor = true;
 
-            AMP::shared_ptr<AMP::Materials::TensorProperty<double>> tensorProperty =
+            auto tensorProperty =
                 AMP::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>( property );
 
             // check that scalar nature is not signaled
@@ -1207,7 +1144,7 @@ MatTestResult testMaterial( string &name )
             }
 
             // check vector, Vector, MultiVector all agree
-            good = true;
+            pass = true;
             if ( results.propResults[type].success[0] && results.propResults[type].success[4] &&
                  results.propResults[type].success[9] ) {
                 for ( size_t k = 0; k < nvecs[0]; k++ ) {
@@ -1216,18 +1153,18 @@ MatTestResult testMaterial( string &name )
                             double vstd      = ( *nominalEval[k][j] )[i];
                             double vVec      = nominalAmpEval[k][j]->getValueByLocalID( i );
                             double vMultiVec = nominalMultiEval[k][j]->getValueByLocalID( i );
-                            good             = good && ( vstd == vVec && vVec == vMultiVec );
+                            pass             = pass && ( vstd == vVec && vVec == vMultiVec );
                         }
                     }
                 }
-                if ( good )
+                if ( pass )
                     results.propResults[type].success[3] = true;
             } else {
                 results.propResults[type].success[3] = false;
             }
 
             // set up reduced argument list
-            map<string, AMP::shared_ptr<vector<double>>> argsm( args );
+            std::map<std::string, AMP::shared_ptr<std::vector<double>>> argsm( args );
             if ( nargs > 0 ) {
                 auto argend = argsm.end();
                 --argend;
@@ -1254,12 +1191,6 @@ MatTestResult testMaterial( string &name )
     return results;
 }
 
-string xlate( bool val )
-{
-    string y( "yes" ), n( "no " ), r;
-    r = val ? y : n;
-    return r;
-}
 
 int main( int argc, char **argv )
 {
@@ -1268,236 +1199,54 @@ int main( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv, amprops );
     AMP::UnitTest ut;
 
-    bool good = true;
+    { // Limit scope
 
-    using namespace AMP::Materials;
+        using namespace AMP::Materials;
 
-    // test all materials and all properties and print report
-    vector<string> matlist = AMP::voodoo::Factory<AMP::Materials::Material>::instance().getKeys();
-    vector<MatTestResult> scoreCard;
-    cout << "In the following output the labels have the following meaning:\n"
-         << "creation:  yes = material was created successfully\n"
-         << "undefined: undefined material create was correctly detected\n"
-         << "range:     yes=material range functions were successfully tested\n"
-         << "params:    yes=get and set property parameters successful\n"
-         << "nevalv:     # errors reported/max #, for calls to evalv\n"
-         << "nargsize:  # errors reported/max #, for incorrect number of arguments to evalv\n"
-         << "unknown:   yes=an unknown error occurred during property tests\n\n\n";
-    cout << "number of materials = " << matlist.size() << endl;
-    cout << "materials = ";
-    for ( auto &elem : matlist )
-        cout << elem << " ";
-    cout << endl;
-    for ( auto &elem : matlist ) {
-        MatTestResult score = testMaterial( elem );
-        score.name          = elem;
-        scoreCard.push_back( score );
-        cout << "for material " << elem << ": ";
-        cout << "creation=" << xlate( score.creationGood ) << " ";
-        cout << "undefined=" << xlate( score.undefined ) << " ";
-        cout << "unknown=" << xlate( score.unknown ) << " ";
-        cout << endl;
-        cout << "    property name                           range params nevalv nargsize "
-                "unknown"
-             << endl;
-        for ( auto &_j : score.propResults ) {
-            cout << "    ";
-            unsigned int osize = cout.width();
-            cout.width( 29 );
-            cout << _j.name << " ";
-            cout.width( osize );
-            cout << "          ";
-            cout << xlate( _j.range ) << "   ";
-            cout << xlate( _j.params ) << "    ";
-            unsigned int nsuccess = 0, nargeval = 0;
-            for ( bool succes : _j.success )
-                if ( succes )
-                    nsuccess++;
-            cout << nsuccess << "/" << NSUCCESS << "    ";
-            for ( bool k : _j.nargeval )
-                if ( k )
-                    nargeval++;
-            cout << nargeval << "/" << NARGEVAL << "      ";
-            if ( _j.isVector ) {
-                unsigned int nvector = 0;
-                for ( bool k : _j.vector )
-                    if ( k )
-                        nvector++;
-                cout << nvector << "/" << NVECTOR << "      ";
-            }
-            if ( _j.isTensor ) {
-                unsigned int ntensor = 0;
-                for ( bool k : _j.tensor )
-                    if ( k )
-                        ntensor++;
-                cout << ntensor << "/" << NTENSOR << "      ";
-            }
-            cout << xlate( _j.unknown ) << "     ";
-            cout << endl;
+        // test all materials and all properties and print report
+        auto matlist = AMP::voodoo::Factory<AMP::Materials::Material>::instance().getKeys();
+        std::vector<MatTestResult> scoreCard;
+        std::cout
+            << "In the following output the labels have the following meaning:\n"
+            << "creation:  yes = material was created successfully\n"
+            << "undefined: undefined material create was correctly detected\n"
+            << "range:     yes=material range functions were successfully tested\n"
+            << "params:    yes=get and set property parameters successful\n"
+            << "nevalv:     # errors reported/max #, for calls to evalv\n"
+            << "nargsize:  # errors reported/max #, for incorrect number of arguments to evalv\n"
+            << "unknown:   yes=an unknown error occurred during property tests\n\n\n";
+        std::cout << "number of materials = " << matlist.size() << std::endl;
+        std::cout << "materials = ";
+        for ( auto &elem : matlist )
+            std::cout << elem << " ";
+        std::cout << std::endl;
+        for ( auto &elem : matlist ) {
+            auto score = testMaterial( elem );
+            scoreCard.push_back( score );
+            score.record( ut );
+            score.print();
+            std::cout << std::endl << std::endl;
         }
-        cout << endl << endl << endl;
-    }
 
-    size_t maxpassed = 0;
-    for ( auto score : scoreCard ) {
-
-        string msg = "material " + score.name + " ";
-        if ( score.creationGood )
-            ut.passes( msg + "created" );
-        else
-            ut.failure( msg + "created" );
-        maxpassed += 1;
-        for ( auto j = score.propResults.begin(); j != score.propResults.end(); ++j ) {
-            msg = "material " + score.name + " property" + " " + j->name + " ";
-            if ( j->params )
-                ut.passes( msg + "get/set parameters" );
+        // check that undefined material name is caught
+        try {
+            std::string name( "flubber" );
+            auto mat = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
+            ut.failure( "Failed to catch unknown material" );
+        } catch ( const StackTrace::abort_error &err ) {
+            if ( err.message == "Unregistered creator" )
+                ut.passes( "detected undefined material" );
             else
-                ut.failure( msg + "get/set parameters" );
-
-            if ( !j->unknown )
-                ut.passes( msg + "unknown error" );
-            else
-                ut.failure( msg + "unknown error" );
-
-            if ( j->range )
-                ut.passes( msg + "in_range std::vector" );
-            else
-                ut.failure( msg + "in_range std::vector" );
-
-            if ( j->success[0] )
-                ut.passes( msg + "evalv std::vector" );
-            else
-                ut.failure( msg + "evalv std::vector" );
-
-            if ( j->success[1] )
-                ut.passes( msg + "evalv std::vector out of range lo 1" );
-            else
-                ut.failure( msg + "evalv std::vector out of range lo 1" );
-
-            if ( j->success[2] )
-                ut.passes( msg + "evalv std::vector out of range hi 1" );
-            else
-                ut.failure( msg + "evalv std::vector out of range hi 1" );
-
-            if ( j->success[4] )
-                ut.passes( msg + "evalv AMP::Vector" );
-            else
-                ut.failure( msg + "evalv AMP::Vector" );
-
-            if ( j->success[5] )
-                ut.passes( msg + "evalv AMP::Vector out of range lo 1" );
-            else
-                ut.failure( msg + "evalv AMP::Vector out of range lo 1" );
-
-            if ( j->success[6] )
-                ut.passes( msg + "evalv AMP::Vector out of range hi 1" );
-            else
-                ut.failure( msg + "evalv AMP::Vector out of range hi 1" );
-
-            if ( j->success[7] )
-                ut.passes( msg + "AMP::Multivector translator" );
-            else
-                ut.failure( msg + "AMP::Multivector translator" );
-
-            if ( j->success[8] )
-                ut.passes( msg + "make_map" );
-            else
-                ut.failure( msg + "make_map" );
-
-            if ( j->success[9] )
-                ut.passes( msg + "evalv AMP::MultiVector" );
-            else
-                ut.failure( msg + "evalv AMP::MultiVector" );
-
-            if ( j->success[10] )
-                ut.passes( msg + "evalv AMP::MultiVector out of range lo 1" );
-            else
-                ut.failure( msg + "evalv AMP::MultiVector out of range lo 1" );
-
-            if ( j->success[11] )
-                ut.passes( msg + "evalv AMP::MultiVector out of range hi 1" );
-            else
-                ut.failure( msg + "evalv AMP::MultiVector out of range hi 1" );
-
-            if ( j->success[3] )
-                ut.passes( msg + "evalv agrees std::vector, AMP::Vector, AMP::MultiVector" );
-            else
-                ut.failure( msg + "evalv agrees std::vector, AMP::Vector, AMP::MultiVector" );
-
-            if ( j->nargeval[0] )
-                ut.passes( msg + "set/get defaults" );
-            else
-                ut.failure( msg + "set/get defaults" );
-
-            if ( j->nargeval[1] )
-                ut.passes( msg + "evalv with missing arguments" );
-            else
-                ut.failure( msg + "evalv with missing arguments" );
-            maxpassed += 17;
-
-            if ( j->isVector ) {
-                if ( j->vector[0] )
-                    ut.passes( msg + "get_dimension() ok" );
-                else
-                    ut.failure( msg + "get_dimension() ok" );
-
-                if ( j->vector[1] )
-                    ut.passes( msg + "number of components positive" );
-                else
-                    ut.failure( msg + "number of components positive" );
-
-                if ( j->vector[2] )
-                    ut.passes( msg + "not a scalar" );
-                else
-                    ut.failure( msg + "not a scalar" );
-
-                if ( j->vector[3] )
-                    ut.passes( msg + "scalar evaluator std::vector disabled" );
-                else
-                    ut.failure( msg + "scalar evaluator std::vector disabled" );
-
-                if ( j->vector[4] )
-                    ut.passes( msg + "scalar evaluator AMP::Vector disabled" );
-                else
-                    ut.failure( msg + "scalar evaluator AMP::Vector disabled" );
-
-                if ( j->vector[5] )
-                    ut.passes( msg + "scalar evaluator AMP::Multivector disabled" );
-                else
-                    ut.failure( msg + "scalar evaluator AMP::Multivector disabled" );
-
-                maxpassed += 6;
-            }
+                ut.failure( "did not detect undefined material" );
+        } catch ( std::exception &err ) {
+            ut.failure( "Caught unknown exception type" );
         }
     }
-    cout << endl << endl << endl;
 
-    // check that undefined material name is caught
-    try {
-        string name( "flubber" );
-        Material::shared_ptr mat =
-            AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
-        if ( mat != nullptr )
-            maxpassed += 1;
-    } catch ( std::exception &err ) {
-        string msg = err.what();
-        bool check = ( msg == "Unregistered creator" );
-        good       = good && check;
-        if ( good )
-            ut.passes( "detected undefined material" );
-        else
-            ut.failure( "did not detect undefined material" );
-        maxpassed += 1;
-    }
-
-    cout << endl << endl << endl;
-    cout << "number of tests passed = " << ut.NumPassLocal() << "/" << maxpassed << " possible"
-         << endl;
-    cout << endl << endl << endl;
-
-    ut.report( 2 );
-
+    ut.report();
     int num_failed = ut.NumFailGlobal();
+    ut.reset();
+
     AMP::AMPManager::shutdown();
     return num_failed;
 }
