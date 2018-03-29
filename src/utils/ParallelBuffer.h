@@ -81,13 +81,23 @@ public:
      * Write a text string to the output stream.  Note that the string is
      * not actually written until an end-of-line is detected.
      */
-    void outputString( const std::string &text );
+    inline void outputString( const std::string &text ) {
+        outputString( text.c_str(), text.length() );
+    }
 
     /**
      * Write a text string of the specified length to the output file.  Note
      * that the string is not actually written until an end-of-line is detected.
      */
-    void outputString( const std::string &text, const int length );
+    inline void outputString( const std::string &text, size_t length ) {
+        outputString( text.c_str(), length );
+    }
+
+    /**
+     * Write a text string of the specified length to the output file.  Note
+     * that the string is not actually written until an end-of-line is detected.
+     */
+    void outputString( const char *text, size_t length );
 
     /**
      * Synchronize the parallel buffer (called from streambuf).
@@ -119,7 +129,7 @@ public:
 #endif
 
 private:
-    void copyToBuffer( const std::string &text, const int length );
+    void copyToBuffer( const char *text, const size_t length );
     void outputBuffer(); // output internal buffer data to streams
 
     bool d_active;            // whether this output stream is active
@@ -127,8 +137,8 @@ private:
     std::ostream *d_ostream1; // primary output stream for buffer
     std::ostream *d_ostream2; // secondary output stream (e.g., for log file)
     char *d_buffer;           // internal buffer to store accumulated string
-    int d_buffer_size;        // size of the internal output buffer
-    int d_buffer_ptr;         // number of charcters in the output buffer
+    size_t d_buffer_size;     // size of the internal output buffer
+    size_t d_buffer_ptr;      // number of charcters in the output buffer
 };
 } // namespace AMP
 

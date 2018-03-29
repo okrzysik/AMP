@@ -1,3 +1,4 @@
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -27,10 +28,10 @@ int main( int argc, char *argv[] )
     if ( procMax > 0 ) {
         MPI_Init( &argc, &argv );
         // Create a new comm to initialize AMPManager
-        int rank;
+        int rank = 0;
         MPI_Comm_rank( MPI_COMM_WORLD, &rank );
-        int color = rank % procMax;
-        MPI_Comm_split( MPI_COMM_WORLD, color, 0, &AMP_comm );
+        int color = rank / procMax;
+        MPI_Comm_split( MPI_COMM_WORLD, color, rank, &AMP_comm );
     }
 #endif
 
@@ -43,6 +44,7 @@ int main( int argc, char *argv[] )
 
     // Start AMP
     AMP::AMPManager::startup( argc, argv, startup_properties );
+
     // Limit the scope of variables
     {
         // Create the global comm
@@ -55,6 +57,7 @@ int main( int argc, char *argv[] )
         if ( x == nullptr )
             AMP_ERROR( "error" );
         // Test the abort
+        auto start = std::chrono::steady_clock::now();
         try {
             AMP_ERROR( "Catch this 1" );
             std::cout << "Failed to catch AMP_ERROR\n";
@@ -62,9 +65,13 @@ int main( int argc, char *argv[] )
         } catch ( ... ) {
             // This is correct
         }
+        auto stop = std::chrono::steady_clock::now();
+        int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
+        std::cout << "Time to throw/catch AMP_ERROR: " << ns/1000000 << " ms\n\n";
     }
 
     // Shutdown
+    int rank = AMP::AMP_MPI( MPI_COMM_WORLD ).getRank();
     AMP::AMPManager::shutdown();
     if ( procMax > 0 )
         MPI_Comm_free( &AMP_comm );
@@ -87,6 +94,7 @@ int main( int argc, char *argv[] )
 #endif
 
     // Finished successfully
-    std::cout << "Finished\n";
+    if ( rank == 0 )
+        std::cout << "Finished\n";
     return 0;
 }

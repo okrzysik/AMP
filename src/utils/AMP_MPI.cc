@@ -434,7 +434,7 @@ MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm )
     // Set and increment the count
     d_count = comm.d_count;
     if ( d_count != nullptr )
-        ( *d_count )++;
+        ++( *d_count );
     tmp_alignment = -1;
 }
 MPI_CLASS::MPI_CLASS( MPI_CLASS &&rhs ) : MPI_CLASS()
@@ -478,7 +478,7 @@ MPI_CLASS &MPI_CLASS::operator=( const MPI_CLASS &comm )
     // Set and increment the count
     this->d_count = comm.d_count;
     if ( this->d_count != nullptr )
-        ( *d_count )++;
+        ++( *d_count );
     this->tmp_alignment = -1;
     return *this;
 }
@@ -505,6 +505,14 @@ MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
 /************************************************************************
  *  Constructor from existing MPI communicator                           *
  ************************************************************************/
+#ifdef USE_MPI
+int d_global_currentTag_world1[2] = { 1, 1 };
+int d_global_currentTag_world2[2] = { 1, 1 };
+int d_global_currentTag_self[2] = { 1, 1 };
+std::atomic_int d_global_count_world1 = { 1 };
+std::atomic_int d_global_count_world2 = { 1 };
+std::atomic_int d_global_count_self = { 1 };
+#endif
 MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
 {
     d_count       = nullptr;
@@ -554,8 +562,21 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
          communicator != MPI_COMM_WORLD )
         d_manage = true;
     // Create the count (Note: we do not need to worry about thread safety)
-    d_count  = new std::atomic_int;
-    *d_count = 1;
+    if ( communicator == AMP::AMPManager::comm_world.communicator ) {
+        d_count = &d_global_count_world1;
+        ++( *d_count );
+    } else if ( communicator == MPI_COMM_WORLD ) {
+        d_count = &d_global_count_world2;
+        ++( *d_count );
+    } else if ( communicator == MPI_COMM_SELF ) {
+        d_count = &d_global_count_self;
+        ++( *d_count );
+    } else if ( communicator == MPI_COMM_NULL ) {
+        d_count = nullptr;
+    } else {
+        d_count  = new std::atomic_int;
+        *d_count = 1;
+    }
     if ( d_manage )
         ++N_MPI_Comm_created;
     // Create d_ranks
@@ -573,7 +594,16 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
     if ( d_isNull )
         comm_size    = 0;
 #endif
-    if ( d_isNull ) {
+    if ( communicator == AMP::AMPManager::comm_world.communicator ) {
+        d_currentTag = d_global_currentTag_world1;
+        ++( this->d_currentTag[1] );
+    } else if ( communicator == MPI_COMM_WORLD ) {
+        d_currentTag = d_global_currentTag_world2;
+        ++( this->d_currentTag[1] );
+    } else if ( communicator == MPI_COMM_SELF ) {
+        d_currentTag = d_global_currentTag_self;
+        ++( this->d_currentTag[1] );
+    } else if ( communicator == MPI_COMM_NULL ) {
         d_currentTag = nullptr;
     } else {
         d_currentTag    = new int[2];
