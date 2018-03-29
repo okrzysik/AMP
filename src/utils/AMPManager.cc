@@ -249,11 +249,11 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     if ( print_times && comm_world.getRank() == 0 ) {
         printf( "startup time = %0.3f s\n", time );
         if ( MPI_time != 0 )
-            printf( " MPI startup time = %0.3f s\n", MPI_time );
+            printf( "  MPI startup time = %0.3f s\n", MPI_time );
         if ( petsc_time != 0 )
-            printf( " PETSc startup time = %0.3f s\n", petsc_time );
+            printf( "  PETSc startup time = %0.3f s\n", petsc_time );
         if ( petsc_time != 0 )
-            printf( " SAMRAI startup time = %0.3f s\n", SAMRAI_time );
+            printf( "  SAMRAI startup time = %0.3f s\n", SAMRAI_time );
         printf( "\n" );
     }
 }
@@ -277,6 +277,7 @@ void AMPManager::shutdown()
     StackTrace::globalCallStackFinalize( );
     clearMPIErrorHandler();
     StackTrace::Utilities::clearErrorHandlers();
+    StackTrace::clearSignals();
     // Disable MPI_Abort
     AMPManager::use_MPI_Abort = false;
     // Shutdown the registry
@@ -305,11 +306,11 @@ void AMPManager::shutdown()
     if ( print_times && rank == 0 ) {
         printf( "shutdown time = %0.3f s\n", shutdown_time );
         if ( SAMRAI_time != 0 )
-            printf( " SAMRAI shutdown time = %0.3f s\n", SAMRAI_time );
+            printf( "  SAMRAI shutdown time = %0.3f s\n", SAMRAI_time );
         if ( petsc_time != 0 )
-            printf( " PETSc shutdown time = %0.3f s\n", petsc_time );
+            printf( "  PETSc shutdown time = %0.3f s\n", petsc_time );
         if ( MPI_time != 0 )
-            printf( " MPI shutdown time = %0.3f s\n", MPI_time );
+            printf( "  MPI shutdown time = %0.3f s\n", MPI_time );
         printf( "\n" );
     }
 // Print memory leaks on rank 0
