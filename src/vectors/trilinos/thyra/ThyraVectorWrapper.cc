@@ -122,15 +122,13 @@ size_t ThyraVectorWrapper::numColumns() const
  ****************************************************************/
 Teuchos::RCP<const Thyra::VectorSpaceBase<double>> ThyraVectorWrapper::range() const
 {
-    AMP::shared_ptr<const ThyraVectorWrapper> this_ptr = shared_from_this();
     return Teuchos::RCP<const Thyra::VectorSpaceBase<double>>(
-        new ThyraVectorSpaceWrapper( this_ptr, true ) );
+        new ThyraVectorSpaceWrapper( shared_from_this(), true ) );
 }
 Teuchos::RCP<const Thyra::VectorSpaceBase<double>> ThyraVectorWrapper::domain() const
 {
-    AMP::shared_ptr<const ThyraVectorWrapper> this_ptr = shared_from_this();
     return Teuchos::RCP<const Thyra::VectorSpaceBase<double>>(
-        new ThyraVectorSpaceWrapper( this_ptr, false ) );
+        new ThyraVectorSpaceWrapper( shared_from_this(), false ) );
 }
 Teuchos::RCP<const Thyra::VectorSpaceBase<double>> ThyraVectorWrapper::space() const
 {
@@ -333,7 +331,7 @@ void ThyraVectorWrapper::acquireDetachedVectorViewImpl(
     const Teuchos::Range1D &rng, RTOpPack::ConstSubVectorView<double> *sub_vec ) const
 {
     AMP_ASSERT( d_vecs.size() == 1 );
-    Vector::const_shared_ptr vec = getVec( 0 );
+    auto vec = getVec( 0 );
     AMP_ASSERT( vec->getLocalSize() > 0 );
     size_t lower = rng.lbound();
     size_t upper = std::min<size_t>( rng.ubound(), vec->getLocalSize() );
@@ -411,10 +409,10 @@ void ThyraVectorWrapper::applyOpImpl(
     for ( size_t i = 0; i < n_blocks; i++ )
         block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
     // Check that all vectors are compatible and get the pointers
-    std::vector<const ThyraVectorWrapper *> vecs_ptr = getConstPtr( block_size, vecs );
-    std::vector<ThyraVectorWrapper *> targ_vecs_ptr  = getPtr( block_size, targ_vecs );
+    auto vecs_ptr = getConstPtr( block_size, vecs );
+    auto targ_vecs_ptr  = getPtr( block_size, targ_vecs );
     // Apply the operation
-    Teuchos::RCP<RTOpPack::ReductTarget> reduct_obj2 = op.reduct_obj_create();
+    auto reduct_obj2 = op.reduct_obj_create();
     for ( size_t k = 0; k < d_vecs.size(); k++ ) {
         for ( size_t j = 0; j < n_blocks; j++ ) {
             std::vector<RTOpPack::ConstSubVectorView<double>> sub_vecs( vecs_ptr.size() );
@@ -433,10 +431,8 @@ void ThyraVectorWrapper::applyOpImpl(
                     block_size[j],
                     false ) );
             }
-            Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>> sub_vecs2 =
-                Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>>( sub_vecs );
-            Teuchos::ArrayView<const RTOpPack::SubVectorView<double>> targ_sub_vecs2 =
-                Teuchos::ArrayView<const RTOpPack::SubVectorView<double>>( targ_sub_vecs );
+            auto sub_vecs2 = Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>>( sub_vecs );
+            auto targ_sub_vecs2 = Teuchos::ArrayView<const RTOpPack::SubVectorView<double>>( targ_sub_vecs );
             op.apply_op( sub_vecs2, targ_sub_vecs2, reduct_obj2.ptr() );
         }
     }
@@ -472,8 +468,8 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
     for ( size_t i = 0; i < n_blocks; i++ )
         block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
     // Check that all vectors are compatible and get the pointers
-    std::vector<const ThyraVectorWrapper *> vecs_ptr = getConstPtr( block_size, multi_vecs );
-    std::vector<ThyraVectorWrapper *> targ_vecs_ptr  = getPtr( block_size, targ_multi_vecs );
+    auto vecs_ptr = getConstPtr( block_size, multi_vecs );
+    auto targ_vecs_ptr  = getPtr( block_size, targ_multi_vecs );
     // Apply the operation
     std::vector<Teuchos::RCP<RTOpPack::ReductTarget>> reduct_obj2( d_vecs.size() );
     for ( auto &i : reduct_obj2 )
@@ -496,10 +492,8 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
                     block_size[j],
                     false ) );
             }
-            Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>> sub_vecs2 =
-                Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>>( sub_vecs );
-            Teuchos::ArrayView<const RTOpPack::SubVectorView<double>> targ_sub_vecs2 =
-                Teuchos::ArrayView<const RTOpPack::SubVectorView<double>>( targ_sub_vecs );
+            auto sub_vecs2 = Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>>( sub_vecs );
+            auto targ_sub_vecs2 = Teuchos::ArrayView<const RTOpPack::SubVectorView<double>>( targ_sub_vecs );
             primary_op.apply_op( sub_vecs2, targ_sub_vecs2, reduct_obj2[k].ptr() );
         }
     }
@@ -554,8 +548,8 @@ void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
     for ( size_t i = 0; i < n_blocks; i++ )
         block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
     // Check that all vectors are compatible and get the pointers
-    std::vector<const ThyraVectorWrapper *> vecs_ptr = getConstPtr( block_size, multi_vecs );
-    std::vector<ThyraVectorWrapper *> targ_vecs_ptr  = getPtr( block_size, targ_multi_vecs );
+    auto vecs_ptr = getConstPtr( block_size, multi_vecs );
+    auto targ_vecs_ptr = getPtr( block_size, targ_multi_vecs );
     // Apply the operation
     Teuchos::RCP<RTOpPack::ReductTarget> reduct_obj2 = primary_op.reduct_obj_create();
     for ( size_t k = 0; k < d_vecs.size(); k++ ) {
@@ -576,10 +570,8 @@ void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
                     block_size[j],
                     false ) );
             }
-            Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>> sub_vecs2 =
-                Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>>( sub_vecs );
-            Teuchos::ArrayView<const RTOpPack::SubVectorView<double>> targ_sub_vecs2 =
-                Teuchos::ArrayView<const RTOpPack::SubVectorView<double>>( targ_sub_vecs );
+            auto sub_vecs2 = Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>>( sub_vecs );
+            auto targ_sub_vecs2 = Teuchos::ArrayView<const RTOpPack::SubVectorView<double>>( targ_sub_vecs );
             primary_op.apply_op( sub_vecs2, targ_sub_vecs2, reduct_obj2.ptr() );
         }
     }
@@ -618,8 +610,8 @@ static std::vector<ThyraVectorWrapper *> getPtr( std::vector<size_t> block_size,
         AMP_INSIST( ptr[i] != nullptr,
                     "All vectors used in applyOpImpl must be of the type ThyraVectorWrapper" );
         for ( size_t j = 0; j < ptr[i]->numVecs(); j++ ) {
-            AMP::LinearAlgebra::Vector::const_shared_ptr tmp = ptr[i]->getVec( j );
-            size_t N_blocks                                  = tmp->numberOfDataBlocks();
+            auto tmp = ptr[i]->getVec( j );
+            size_t N_blocks = tmp->numberOfDataBlocks();
             AMP_ASSERT( N_blocks == block_size.size() );
             for ( size_t k = 0; k < N_blocks; k++ )
                 AMP_ASSERT( block_size[k] == tmp->sizeOfDataBlock( k ) );
@@ -639,7 +631,7 @@ getConstPtr( std::vector<size_t> block_size,
         AMP_INSIST( ptr[i] != nullptr,
                     "All vectors used in applyOpImpl must be of the type ThyraVectorWrapper" );
         for ( size_t j = 0; j < ptr[i]->numVecs(); j++ ) {
-            AMP::LinearAlgebra::Vector::const_shared_ptr tmp = ptr[i]->getVec( j );
+            auto tmp = ptr[i]->getVec( j );
             AMP_ASSERT( tmp->numberOfDataBlocks() == block_size.size() );
             for ( size_t k = 0; k < block_size.size(); k++ )
                 AMP_ASSERT( block_size[k] == tmp->sizeOfDataBlock( k ) );
