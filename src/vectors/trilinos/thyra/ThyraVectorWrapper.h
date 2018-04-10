@@ -9,10 +9,7 @@
 
 // Trilinos includes
 DISABLE_WARNINGS
-#include "RTOpPack_RTOpT_decl.hpp"
-#include "Teuchos_ArrayViewDecl.hpp"
-#include "Thyra_VectorBase.hpp"
-#include "Thyra_VectorDefaultBase_decl.hpp"
+#include "Thyra_VectorDefaultBase.hpp"
 #include <Teuchos_Comm.hpp>
 ENABLE_WARNINGS
 

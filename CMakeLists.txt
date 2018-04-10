@@ -33,6 +33,10 @@ SET( ${PROJ}_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}" )
 INCLUDE_DIRECTORIES( "${${PROJ}_INSTALL_DIR}/include" )
 
 
+# Disable link-time optimization
+SET( DISABLE_LTO TRUE)
+
+
 # Build the TPLs if necessary
 IF ( TPL_URL )
     INCLUDE( cmake/configure_TPLs.cmake )

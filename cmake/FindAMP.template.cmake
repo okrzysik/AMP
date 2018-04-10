@@ -19,6 +19,7 @@
 #   AMP_SOURCE_DIR      - Source directory   
 #   AMP_MACRO_CMAKE     - File to macros.cmake provided by the TPL install
 
+
 # Check that PROJ and ${PROJ}_INSTALL_DIR have been set
 IF ( NOT PROJ )
     MESSAGE( FATAL_ERROR "PROJ must be set before calling FindTPLs")
@@ -26,6 +27,10 @@ ENDIF()
 IF ( NOT ${PROJ}_INSTALL_DIR )
     MESSAGE( FATAL_ERROR "${PROJ}_INSTALL_DIR must be set before calling FindTPLs")
 ENDIF()
+
+
+# Disable link-time optimization
+SET( DISABLE_LTO @DISABLE_LTO@ )
 
 
 # Call the TPL builder with the appropriate TPLs for the AMP
