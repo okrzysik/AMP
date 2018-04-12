@@ -36,8 +36,12 @@ public:
 
     //! Default constructor
     CommunicationListParameters();
+
     //! Copy constructor
     CommunicationListParameters( const CommunicationListParameters & );
+
+    //! Assignment operator
+    CommunicationListParameters& operator=( const CommunicationListParameters & ) = delete;
 };
 
 

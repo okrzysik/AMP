@@ -26,11 +26,14 @@ protected:
     //!  Parameters used to construct the matrix
     AMP::shared_ptr<ManagedEpetraMatrixParameters> d_pParameters;
 
-    //!  Unimplemented constructor
-    ManagedEpetraMatrix();
+    //!  Empty constructor
+    ManagedEpetraMatrix() = delete;
 
-    //!  Unimplemented constructor
+    //!  Copy constructor
     ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs );
+
+    //!  Assignment operator
+    ManagedEpetraMatrix& operator=( const ManagedEpetraMatrix &rhs ) = delete;
 
     //!  \f$A_{i,j}\f$ storage of off-core data
     std::map<int, std::map<int, double>> d_OtherData;

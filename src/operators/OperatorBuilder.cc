@@ -1451,7 +1451,7 @@ AMP::shared_ptr<BoundaryOperator> OperatorBuilder::createPressureBoundaryOperato
 
 AMP::shared_ptr<Operator> OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter1,
                                                            AMP::Mesh::Mesh::shared_ptr meshAdapter2,
-                                                           AMP::AMP_MPI comm,
+                                                           const AMP::AMP_MPI &comm,
                                                            AMP::shared_ptr<AMP::Database> input_db )
 {
     AMP::shared_ptr<Operator> retOperator;

@@ -34,7 +34,7 @@ void adjust( const AMP::LinearAlgebra::Vector::shared_ptr vec,
 }
 
 void applyTest( AMP::UnitTest *ut,
-                std::string msgPrefix,
+                const std::string &msgPrefix,
                 AMP::shared_ptr<AMP::Operator::Operator> &testOperator,
                 AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
                 AMP::LinearAlgebra::Vector::shared_ptr solVec,

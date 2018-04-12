@@ -61,7 +61,7 @@ public:
      * \param mesh The mesh in libmesh we want to use to construct the new mesh object
      * \param name The name of the new mesh object
      */
-    explicit libMesh( AMP::shared_ptr<::Mesh> mesh, std::string name );
+    explicit libMesh( AMP::shared_ptr<::Mesh> mesh, const std::string &name );
 
     //! Deconstructor
     virtual ~libMesh();

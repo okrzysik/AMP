@@ -59,7 +59,7 @@ public:
      */
     static AMP::shared_ptr<Operator> createOperator( AMP::Mesh::Mesh::shared_ptr mesh1,
                                                      AMP::Mesh::Mesh::shared_ptr mesh2,
-                                                     AMP::AMP_MPI comm,
+                                                     const AMP::AMP_MPI &comm,
                                                      AMP::shared_ptr<AMP::Database> input_db );
 
     /**

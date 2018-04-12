@@ -85,7 +85,7 @@ public:
     /**
       @param [in] zloc is the location vector in z direction.
       */
-    void setZLocations( std::vector<double> zloc ) { zPoints = zloc; }
+    void setZLocations( const std::vector<double> &zloc ) { zPoints = zloc; }
 
     void setVector( AMP::LinearAlgebra::Vector::shared_ptr frozenVec ) { d_cladVec = frozenVec; }
 

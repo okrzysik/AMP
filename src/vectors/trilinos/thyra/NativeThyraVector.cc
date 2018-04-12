@@ -19,15 +19,13 @@ namespace LinearAlgebra {
 NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
     : NativeVector(), ThyraVector(), VectorEngine()
 {
-    AMP::shared_ptr<NativeThyraVectorParameters> params =
-        AMP::dynamic_pointer_cast<NativeThyraVectorParameters>( in_params );
+    auto params = AMP::dynamic_pointer_cast<NativeThyraVectorParameters>( in_params );
     AMP_ASSERT( params != nullptr );
     AMP_ASSERT( !params->d_comm.isNull() );
     AMP_ASSERT( params->d_InVec.get() != nullptr );
     Thyra::Ordinal dim = params->d_InVec->space()->dim();
     AMP_ASSERT( params->d_comm.sumReduce( params->d_local ) == static_cast<size_t>( dim ) );
-    AMP::shared_ptr<CommunicationListParameters> communicationListParams(
-        new CommunicationListParameters() );
+    auto communicationListParams = AMP::make_shared<CommunicationListParameters>();
     communicationListParams->d_comm      = params->d_comm;
     communicationListParams->d_localsize = params->d_local;
     d_CommList   = AMP::make_shared<CommunicationList>( communicationListParams );

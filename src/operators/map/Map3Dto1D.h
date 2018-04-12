@@ -64,7 +64,7 @@ public:
     /**
       This member function is used to set the 1D Z locations std vector.
       */
-    void setZLocations( std::vector<double> zloc ) { d_zLocations = zloc; }
+    void setZLocations( const std::vector<double> &zloc ) { d_zLocations = zloc; }
 
     void makeZLocationsConsistent();
 

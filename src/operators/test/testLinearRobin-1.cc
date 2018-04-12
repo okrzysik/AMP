@@ -39,16 +39,13 @@ void bcTests( AMP::UnitTest *ut,
 //             AMP::shared_ptr<AMP::Operator::OperatorParameters> &bcParameters)
 {
 
-    bool passed = true;
-
     try {
-        AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
+        auto tmp_db = AMP::make_shared<AMP::InputDatabase>( "Dummy" );
         tmp_db->putBool( "skip_params", false );
         tmp_db->putInteger( "print_info_level", 3 );
         tmp_db->putDouble( "alpha", 0.0 );
 
-        AMP::shared_ptr<AMP::Operator::RobinMatrixCorrectionParameters> dummyParameters(
-            new AMP::Operator::RobinMatrixCorrectionParameters( tmp_db ) );
+        auto dummyParameters = AMP::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( tmp_db );
 
         bcOperator->reset( dummyParameters );
 
@@ -60,10 +57,8 @@ void bcTests( AMP::UnitTest *ut,
 
     ut->passes( msgPrefix );
 
-    passed = true;
     try {
-        AMP::shared_ptr<AMP::Operator::RobinMatrixCorrectionParameters> bcParameters(
-            new AMP::Operator::RobinMatrixCorrectionParameters( bcDatabase ) );
+        auto bcParameters = AMP::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( bcDatabase );
         bcParameters->d_inputMatrix =
             ( AMP::dynamic_pointer_cast<AMP::Operator::LinearFEOperator>( feOperator ) )
                 ->getMatrix();
@@ -81,12 +76,6 @@ void bcTests( AMP::UnitTest *ut,
     } catch ( ... ) {
 
         ut->failure( "Exception" );
-    }
-
-    if ( passed ) {
-        ut->passes( msgPrefix + ": Robin Matrix Correction for Linear Operator  " );
-    } else {
-        ut->failure( msgPrefix + ": Robin Matrix Correction for Linear Operator  " );
     }
 
     ut->passes( msgPrefix );

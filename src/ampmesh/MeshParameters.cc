@@ -24,7 +24,7 @@ MeshParameters::~MeshParameters() = default;
 /********************************************************
  * Set the desired communicator                          *
  ********************************************************/
-void MeshParameters::setComm( AMP::AMP_MPI comm_in ) { comm = comm_in; }
+void MeshParameters::setComm( const AMP::AMP_MPI& comm_in ) { comm = comm_in; }
 
 
 /********************************************************

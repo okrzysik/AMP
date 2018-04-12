@@ -38,7 +38,7 @@ public:
      * \details     Set the communicator that will be used to construct the mesh
      * \param comm  The desired communicator
      */
-    void setComm( AMP::AMP_MPI comm );
+    void setComm( const AMP::AMP_MPI& comm );
 
     //!  Get the database for the mesh
     AMP::shared_ptr<AMP::Database> getDatabase();

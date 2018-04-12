@@ -74,7 +74,7 @@ void MoabMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     for ( size_t meshIndex = 0; meshIndex < meshIDs.size(); meshIndex++ ) {
         // this is an accessor to all the mesh info.
         AMP::Mesh::Mesh::shared_ptr currentMesh = d_meshMgr->Subset( meshIDs[meshIndex] );
-        if ( currentMesh.get() == NULL )
+        if ( currentMesh.get() == nullptr )
             continue;
 
         std::vector<double> theseCoords;
@@ -198,7 +198,7 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
     // Extract coordinates of each Gauss point
     unsigned int zeroGhostWidth  = 0;
     AMP::Mesh::MeshIterator elem = mesh->getIterator( AMP::Mesh::GeomType::Volume, zeroGhostWidth );
-    int elem_ctr = 0, gp_ctr = 0;
+    int gp_ctr = 0;
     for ( ; elem != elem.end(); ++elem ) {
         std::vector<AMP::Mesh::MeshElement> currNodes;
         currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
@@ -227,12 +227,10 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
 
         for ( size_t j = 0; j < currElemPtr->n_nodes(); j++ ) {
             delete ( currElemPtr->get_node( j ) );
-            currElemPtr->set_node( j ) = NULL;
+            currElemPtr->set_node( j ) = nullptr;
         } // end for j
         delete currElemPtr;
-        currElemPtr = NULL;
-
-        elem_ctr++;
+        currElemPtr = nullptr;
     }
 }
 

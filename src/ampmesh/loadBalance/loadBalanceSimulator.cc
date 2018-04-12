@@ -119,6 +119,23 @@ loadBalanceSimulator::loadBalanceSimulator( const loadBalanceSimulator &rhs )
     d_min        = rhs.d_min;
     d_max        = rhs.d_max;
 }
+loadBalanceSimulator& loadBalanceSimulator::operator=( const loadBalanceSimulator &rhs )
+{
+    if ( this == &rhs )
+        return *this;
+    d_name       = rhs.d_name;
+    d_type       = rhs.d_type;
+    d_N_elements = rhs.d_N_elements;
+    d_max_ranks  = rhs.d_max_ranks;
+    d_params     = rhs.d_params;
+    d_decomp     = rhs.d_decomp;
+    cache_valid  = rhs.cache_valid;
+    d_min        = rhs.d_min;
+    d_max        = rhs.d_max;
+    d_ranks      = rhs.d_ranks;
+    d_submeshes  = rhs.d_submeshes;
+    return *this;
+}
 
 
 /************************************************************

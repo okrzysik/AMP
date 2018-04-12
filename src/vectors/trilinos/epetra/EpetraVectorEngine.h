@@ -28,7 +28,7 @@ public:
        \f$(0,1,\ldots,n-1)\f$, core 1
        has global ids \f$(n,n+1,n+2,\ldots,m)\f$, etc.
         */
-    EpetraVectorEngineParameters( size_t local_size, size_t global_size, AMP_MPI comm );
+    EpetraVectorEngineParameters( size_t local_size, size_t global_size, const AMP_MPI &comm );
 
     /** \brief Constructor
      * \param[in]  local_size    The number of elements on this core
@@ -40,7 +40,7 @@ public:
     EpetraVectorEngineParameters( size_t local_size,
                                   size_t global_size,
                                   AMP::shared_ptr<Epetra_Map> emap,
-                                  AMP_MPI ecomm );
+                                  const AMP_MPI &ecomm );
 
     //! Destructor
     virtual ~EpetraVectorEngineParameters();

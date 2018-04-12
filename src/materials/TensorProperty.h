@@ -50,7 +50,7 @@ public:
     bool variable_dimensions() { return d_variableDimensions; }
 
     /// set dimensions of evalv return value tensor
-    void set_dimensions( std::vector<size_t> dimensions )
+    void set_dimensions( const std::vector<size_t> &dimensions )
     {
         AMP_INSIST( d_variableDimensions, "can not change dimensions for this property" );
         d_dimensions = dimensions;

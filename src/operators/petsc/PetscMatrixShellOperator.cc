@@ -15,7 +15,7 @@ PetscMatrixShellOperator::PetscMatrixShellOperator(
     d_iMatLocalColumnSize = -5678;
 }
 
-void PetscMatrixShellOperator::setComm( AMP_MPI comm ) { d_comm = comm; }
+void PetscMatrixShellOperator::setComm( const AMP_MPI &comm ) { d_comm = comm; }
 
 void PetscMatrixShellOperator::setMatLocalRowSize( int val ) { d_iMatLocalRowSize = val; }
 

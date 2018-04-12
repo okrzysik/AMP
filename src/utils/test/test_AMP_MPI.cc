@@ -317,11 +317,11 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
     else
         ut->failure( message );
     // Test vector allGather
-    int N      = ( comm.getSize() * ( comm.getSize() + 1 ) ) / 2;
-    auto *x3   = new type[comm.getRank() + 1];
-    auto *x4   = new type[N];
-    auto *x5   = new type[N];
-    auto *size = new int[comm.getSize()];
+    int N     = ( comm.getSize() * ( comm.getSize() + 1 ) ) / 2;
+    auto *x3  = new type[comm.getRank() + 1];
+    auto *x4  = new type[N];
+    auto *x5  = new type[N];
+    int *size = new int[comm.getSize()];
     for ( int i = 0; i <= comm.getRank(); i++ )
         x3[i] = (type) comm.getRank();
     int tot1 = comm.allGather( x3, comm.getRank() + 1, x4 );

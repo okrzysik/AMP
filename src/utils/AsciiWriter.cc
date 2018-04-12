@@ -14,7 +14,7 @@ namespace Utilities {
  * Helper function to get a unique id for each vector        *
  ************************************************************/
 static unsigned int localID = 0;
-AsciiWriter::global_id AsciiWriter::getID( AMP_MPI local_comm, AMP_MPI global_comm )
+AsciiWriter::global_id AsciiWriter::getID( const AMP_MPI &local_comm, const AMP_MPI &global_comm )
 {
     AsciiWriter::global_id id( 0, 0 );
     if ( local_comm.getRank() == 0 ) {
@@ -52,7 +52,7 @@ void AsciiWriter::readFile( const std::string & )
  ************************************************************/
 template<class TYPE>
 std::set<AsciiWriter::global_id> getKeys( const std::map<AsciiWriter::global_id, TYPE> &local_map,
-                                          AMP_MPI comm )
+                                          const AMP_MPI &comm )
 {
     std::set<AsciiWriter::global_id> ids;
     typename std::map<AsciiWriter::global_id, TYPE>::const_iterator it;
@@ -191,7 +191,7 @@ void AsciiWriter::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat )
  ************************************************************/
 #ifdef USE_AMP_VECTORS
 AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
-    AMP::LinearAlgebra::Vector::const_shared_ptr src_vec, int vec_root, AMP_MPI comm )
+    AMP::LinearAlgebra::Vector::const_shared_ptr src_vec, int vec_root, const AMP_MPI &comm )
 {
     int rank = comm.getRank();
     // Boradcast the local vector size and name to all processors for simplicity
@@ -246,7 +246,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
  ************************************************************/
 #ifdef USE_AMP_MATRICES
 void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr mat,
-                                 AMP_MPI comm,
+                                 const AMP_MPI &comm,
                                  int row,
                                  std::vector<size_t> &cols,
                                  std::vector<double> &data )

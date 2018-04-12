@@ -132,7 +132,7 @@ public:
     /** \brief Constructor
      * \param[in]  comm  The new comm to use
      */
-    explicit VS_Comm( AMP_MPI comm );
+    explicit VS_Comm( const AMP_MPI &comm );
 
     /** \brief Returns the communicator for the subset
      * \param[in]  vec  The Vector to match

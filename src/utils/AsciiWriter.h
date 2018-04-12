@@ -130,14 +130,14 @@ private:
 #endif
 
     // Helper functions
-    static global_id getID( AMP_MPI local_comm, AMP_MPI global_comm );
+    static global_id getID( const AMP_MPI &local_comm, const AMP_MPI &global_comm );
 #ifdef USE_AMP_VECTORS
     static AMP::LinearAlgebra::Vector::const_shared_ptr sendVecToRoot(
-        AMP::LinearAlgebra::Vector::const_shared_ptr src_vec, int vec_root, AMP_MPI d_comm );
+        AMP::LinearAlgebra::Vector::const_shared_ptr src_vec, int vec_root, const AMP_MPI &d_comm );
 #endif
 #ifdef USE_AMP_MATRICES
     static void sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr mat,
-                               AMP_MPI d_comm,
+                               const AMP_MPI &d_comm,
                                int row,
                                std::vector<size_t> &col,
                                std::vector<double> &data );

@@ -39,14 +39,14 @@ static inline Epetra_Vector &getEpetraVector( VectorOperations &vec )
  ********************************************************/
 EpetraVectorEngineParameters::EpetraVectorEngineParameters( size_t local_size,
                                                             size_t global_size,
-                                                            AMP_MPI comm )
+                                                            const AMP_MPI &comm )
     : VectorEngineParameters( local_size, global_size, comm )
 {
 }
 EpetraVectorEngineParameters::EpetraVectorEngineParameters( size_t local_size,
                                                             size_t global_size,
                                                             AMP::shared_ptr<Epetra_Map> emap,
-                                                            AMP_MPI ecomm )
+                                                            const AMP_MPI &ecomm )
     : VectorEngineParameters( local_size, global_size, ecomm ), d_emap( std::move( emap ) )
 {
 }

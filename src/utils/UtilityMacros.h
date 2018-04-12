@@ -35,15 +35,14 @@
  *  \details  A null use of a variable, use to avoid GNU compiler warnings about unused variables.
  *  \param variable  Variable to pretend to use
  */
-#ifndef NULL_USE
-#define NULL_USE( variable )                \
-    do {                                    \
-        if ( 0 ) {                          \
-            auto temp = (char *) &variable; \
-            temp++;                         \
-        }                                   \
+#undef NULL_USE
+#define NULL_USE( variable )                    \
+    do {                                        \
+        if ( 0 ) {                              \
+            auto static t = (char *) &variable; \
+            t++;                                \
+        }                                       \
     } while ( 0 )
-#endif
 
 
 // Get a ostream

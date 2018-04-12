@@ -223,11 +223,9 @@ void ManagedEpetraMatrix::setOtherData()
     auto rows   = new int[dataLen + 1]; // Add one to have the new work
     auto cols   = new int[dataLen + 1];
     auto data   = new double[dataLen + 1];
-    int cur_ndx = 0;
     int cur_ptr = 0;
     cur_row     = d_OtherData.begin();
     while ( cur_row != d_OtherData.end() ) {
-        cur_ndx++;
         auto cur_elem = cur_row->second.begin();
         while ( cur_elem != cur_row->second.end() ) {
             rows[cur_ptr] = cur_row->first;

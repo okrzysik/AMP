@@ -106,7 +106,7 @@ public:
       Assign the reference x, y and z coordinates for
       the current element.
      */
-    void assignReferenceXYZ( std::vector<double> elementRefXYZ )
+    void assignReferenceXYZ( const std::vector<double> &elementRefXYZ )
     {
         d_elementRefXYZ = elementRefXYZ;
     }
@@ -144,6 +144,7 @@ protected:
 
 private:
 };
+
 } // namespace Operator
 } // namespace AMP
 

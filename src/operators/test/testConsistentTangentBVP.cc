@@ -28,11 +28,11 @@
 
 #include "AMP/utils/ReadTestMesh.h"
 
-void myTest( AMP::UnitTest *ut, std::string exeName, int callLinReset )
+void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinReset )
 {
-    std::string input_file = "input_" + exeName;
-    std::string log_file   = "output_" + exeName;
-    std::string msgName    = exeName;
+    auto input_file = "input_" + exeName;
+    auto log_file   = "output_" + exeName;
+    auto msgName    = exeName;
     if ( callLinReset ) {
         log_file = log_file + "-1";
         msgName  = msgName + "-1";
@@ -60,39 +60,32 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int callLinReset )
 
     mesh->prepare_for_use( false );
 
-    AMP::Mesh::Mesh::shared_ptr meshAdapter =
-        AMP::Mesh::Mesh::shared_ptr( new AMP::Mesh::libMesh( mesh, "TestMesh" ) );
+    auto meshAdapter = AMP::make_shared<AMP::Mesh::libMesh>( mesh, "TestMesh" );
 
-    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "NonlinearMechanicsOperator", input_db ) );
+    auto nonlinOperator = AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "NonlinearMechanicsOperator", input_db ) );
 
-    AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechNonlinOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
-            nonlinOperator->getVolumeOperator() );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
-        mechNonlinOperator->getMaterialModel();
+    auto mechNonlinOperator = AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+        nonlinOperator->getVolumeOperator() );
+    auto elementPhysicsModel = mechNonlinOperator->getMaterialModel();
 
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "LinearMechanicsOperator", input_db, elementPhysicsModel ) );
+    auto linOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "LinearMechanicsOperator", input_db, elementPhysicsModel ) );
 
-    AMP::Discretization::DOFManager::shared_ptr dofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto dofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
-    AMP::LinearAlgebra::Variable::shared_ptr var = nonlinOperator->getOutputVariable();
+    auto var = nonlinOperator->getOutputVariable();
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    AMP::LinearAlgebra::Vector::shared_ptr solVec =
-        AMP::LinearAlgebra::createVector( dofMap, var, true );
-    AMP::LinearAlgebra::Vector::shared_ptr resVecNonlin = solVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr resVecLin    = solVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr resDiffVec   = solVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr tmpNonlinVec = solVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr tmpLinVec    = solVec->cloneVector();
+    auto solVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
+    auto resVecNonlin = solVec->cloneVector();
+    auto resVecLin    = solVec->cloneVector();
+    auto resDiffVec   = solVec->cloneVector();
+    auto tmpNonlinVec = solVec->cloneVector();
+    auto tmpLinVec    = solVec->cloneVector();
 
     solVec->setToScalar( 0.0 );
     double solNorm = solVec->L2Norm();
@@ -195,8 +188,7 @@ int main( int argc, char *argv[] )
 {
 
     AMP::AMPManager::startup( argc, argv );
-    AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
-        new AMP::Mesh::initializeLibMesh( AMP_COMM_WORLD ) );
+    auto libmeshInit = AMP::make_shared<AMP::Mesh::initializeLibMesh>( AMP_COMM_WORLD );
 
     AMP::UnitTest ut;
 
