@@ -126,7 +126,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     AMP_ASSERT( !globalRanks.empty() );
     PROFILE_STOP( "constructor" );
 }
-libMesh::libMesh( AMP::shared_ptr<::Mesh> mesh, std::string name )
+libMesh::libMesh( AMP::shared_ptr<::Mesh> mesh, const std::string &name )
 {
     // Set the base properties
     d_libMesh = mesh;

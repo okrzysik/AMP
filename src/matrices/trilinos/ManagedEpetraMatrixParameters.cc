@@ -27,7 +27,7 @@ static inline T *getPtr( std::vector<T> &x )
 ManagedEpetraMatrixParameters::ManagedEpetraMatrixParameters(
     AMP::Discretization::DOFManager::shared_ptr left,
     AMP::Discretization::DOFManager::shared_ptr right,
-    AMP_MPI comm )
+    const AMP_MPI &comm )
     : MatrixParameters( left, right, comm )
 {
     d_vEntriesPerRow.resize( getLocalNumberOfRows() );

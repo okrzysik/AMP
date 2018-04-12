@@ -727,7 +727,7 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
         } else {
             if ( isGlobal )
                 new_comm = subset[0]->getComm();
-            AMP::shared_ptr<Mesh> subsetMultiMesh( new MultiMesh( new_comm, subset ) );
+            auto subsetMultiMesh = AMP::make_shared<MultiMesh>( new_comm, subset );
             subsetMultiMesh->setName( d_name + "_subset" );
             return subsetMultiMesh;
         }

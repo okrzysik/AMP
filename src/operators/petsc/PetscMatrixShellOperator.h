@@ -47,7 +47,7 @@ public:
 
     void setMatLocalColumnSize( int val );
 
-    void setComm( AMP_MPI comm );
+    void setComm( const AMP_MPI &comm );
 
     void setOperator( AMP::shared_ptr<Operator> op );
 

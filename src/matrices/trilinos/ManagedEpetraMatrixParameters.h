@@ -28,7 +28,7 @@ public:
      */
     explicit ManagedEpetraMatrixParameters( AMP::Discretization::DOFManager::shared_ptr left,
                                             AMP::Discretization::DOFManager::shared_ptr right,
-                                            AMP_MPI comm );
+                                            const AMP_MPI &comm );
 
 
     //! Deconstructor

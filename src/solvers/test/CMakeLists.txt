@@ -522,3 +522,6 @@ IF( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
 ENDIF()
 
 
+ADD_AMP_PROVISIONAL_TEST ( testNewFrozenVectorDesign )
+COPY_TEST_FILE( input_testNewFrozenVectorDesign )
+

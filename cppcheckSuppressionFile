@@ -92,6 +92,8 @@ unreadVariable:*/test/test*
 unusedVariable:*/test/maps/dtk/test*
 knownConditionTrueFalse:*/oxide/OxideModel.cc
 knownConditionTrueFalse:*/utils/test/test_AMP_MPI.cc
+knownConditionTrueFalse:*/ampmesh/testHelpers/meshTestLoop.cc
+knownConditionTrueFalse:*/utils/test/test_AsciiWriter.cc
 noExplicitConstructor:*/utils/AMP_MPI.h
 noExplicitConstructor:*/utils/test/test_AMP_MPI.cc
 postfixOperator:*/ampmesh/testHelpers/meshTests.cc
@@ -102,11 +104,22 @@ obsoleteFunctionsusleep
 // Suppress false warnings for useInitializationList
 useInitializationList:*/operators/map/AsyncMapOperator.cc
 
+// Suppress false warnings for uninitialized member variable
+uninitMemberVar:*/src/operators/boundary/libmesh/NeumannVectorCorrection.cc
+uninitMemberVar:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cc
+uninitMemberVar:*/src/vectors/trilinos/thyra/NativeThyraVector.cc
+uninitMemberVar:*/src/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.cc
+
 // Suppress graphics for now
 *:/*/graphics/ogre/*
 
 // Suppress warnings for external code
 memleak:*/utils/tinyexpr/tinyexpr.c
+
+// Suppress opposite inner 'if' condition leads to a dead code block
+
+oppositeInnerCondition:*/src/ampmesh/MultiMesh.cc
+oppositeInnerCondition:*/src/ampmesh/loadBalance/loadBalanceSimulator.cc
 
 // Suppress #error code paths (may not have complete #define statements)
 preprocessorErrorDirective:*/utils/AMPManager.cc

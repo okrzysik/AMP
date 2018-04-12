@@ -18,7 +18,7 @@
 #include "AMP/operators/newFrozenVectorDesign/SecondOperator.h"
 
 #include "AMP/solvers/ColumnSolver.h"
-#include "AMP/solvers/newFrozenVectorDesign/OnePointSolver.h"
+#include "AMP/solvers/OnePointSolver.h"
 
 int main( int argc, char *argv[] )
 {

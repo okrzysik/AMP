@@ -1041,9 +1041,10 @@ double PowerShape::choose( int n, int k )
  * \brief Computes the Zernike value for (m,n) of (rho, phi).           *
  *************************************************************************
  */
-double PowerShape::evalZernike( int n, int m, const double rho, const double phi )
+double PowerShape::evalZernike( int m, int n, const double rho, const double phi )
 {
     // For Steven's sake, n and m are reversed from Denovo usage
+    std::swap( n, m );
 
     double rhoFact = 0;
     bool even      = n >= 0;

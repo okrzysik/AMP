@@ -5,7 +5,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-CommVariable::CommVariable( const std::string &name, AMP_MPI comm ) : SubsetVariable( name )
+CommVariable::CommVariable( const std::string &name, const AMP_MPI &comm ) : SubsetVariable( name )
 {
     AMP_ASSERT( !comm.isNull() );
     d_comm = comm;

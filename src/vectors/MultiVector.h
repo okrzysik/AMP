@@ -54,7 +54,7 @@ public:
      */
     static AMP::shared_ptr<MultiVector>
     create( Variable::shared_ptr name,
-            AMP_MPI comm,
+            const AMP_MPI &comm,
             const std::vector<Vector::shared_ptr> &vecs = std::vector<Vector::shared_ptr>() );
 
     /** \brief Create a new multivector in parallel
@@ -64,7 +64,7 @@ public:
      */
     static AMP::shared_ptr<MultiVector>
     create( const std::string &name,
-            AMP_MPI comm,
+            const AMP_MPI &comm,
             const std::vector<Vector::shared_ptr> &vecs = std::vector<Vector::shared_ptr>() );
 
     /** \brief Create a new multivector in parallel
@@ -74,7 +74,7 @@ public:
      */
     static AMP::shared_ptr<const MultiVector>
     const_create( Variable::shared_ptr name,
-                  AMP_MPI comm,
+                  const AMP_MPI &comm,
                   const std::vector<Vector::const_shared_ptr> &vecs =
                       std::vector<Vector::const_shared_ptr>() );
 
@@ -85,7 +85,7 @@ public:
      */
     static AMP::shared_ptr<const MultiVector>
     const_create( const std::string &name,
-                  AMP_MPI comm,
+                  const AMP_MPI &comm,
                   const std::vector<Vector::const_shared_ptr> &vecs =
                       std::vector<Vector::const_shared_ptr>() );
 
@@ -97,7 +97,7 @@ public:
      * must be specified.
      */
     static AMP::shared_ptr<MultiVector> view( Vector::shared_ptr vec,
-                                              AMP_MPI comm = AMP_MPI( AMP_COMM_NULL ) );
+                                              const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
 
     /** \brief Create a multivector view of a vector
      * \param[in] vec  The vector to view
@@ -107,7 +107,7 @@ public:
      * must be specified.
      */
     static AMP::shared_ptr<const MultiVector> constView( Vector::const_shared_ptr vec,
-                                                         AMP_MPI comm = AMP_MPI( AMP_COMM_NULL ) );
+                                                         const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
 
     /** \brief Encapsulate a vector in a MultiVector
      * \param[in] vec  The vector to view
@@ -117,7 +117,7 @@ public:
      * must be specified.
      */
     static AMP::shared_ptr<MultiVector> encapsulate( Vector::shared_ptr vec,
-                                                     AMP_MPI comm = AMP_MPI( AMP_COMM_NULL ) );
+                                                     const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
 
     /** \brief Replace a vector in a MultiVector
      * \details  This function will replace a given vector in the multivector with a different

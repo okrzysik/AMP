@@ -52,6 +52,12 @@ public:
     //! Destructor
     ~UnitTest();
 
+    // Copy constructor
+    UnitTest( const UnitTest & ) = delete;
+
+    // Assignment operator
+    UnitTest& operator=( const UnitTest & ) = delete;
+
     //! Indicate a passed test
     inline void passes( const std::string &in )
     {
@@ -127,8 +133,6 @@ private:
     bool d_verbose;
 
 private:
-    // Make the copy constructor private
-    UnitTest( const UnitTest & ) {}
 
     // Function to pack the messages into a single data stream and send to the given processor
     // Note: This function does not return until the message stream has been sent

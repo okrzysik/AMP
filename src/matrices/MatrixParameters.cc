@@ -9,11 +9,12 @@ namespace LinearAlgebra {
 
 MatrixParameters::MatrixParameters( AMP::Discretization::DOFManager::shared_ptr left,
                                     AMP::Discretization::DOFManager::shared_ptr right,
-                                    AMP_MPI comm )
+                                    const AMP_MPI &comm ):
+    d_comm( comm )
+
 {
     AMP_ASSERT( left );
     AMP_ASSERT( right );
-    d_comm            = comm;
     d_DOFManagerLeft  = left;
     d_DOFManagerRight = right;
 }

@@ -19,7 +19,7 @@ public:
      * \param[in] name  The name of the new variable
      * \param[in] comm  The AMP_MPI communicator of the new variable
      */
-    CommVariable( const std::string &name, AMP_MPI comm );
+    CommVariable( const std::string &name, const AMP_MPI &comm );
 
     virtual AMP::Discretization::DOFManager::shared_ptr
         getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr ) const override;

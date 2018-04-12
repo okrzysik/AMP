@@ -31,10 +31,10 @@ NeumannVectorCorrection::NeumannVectorCorrection(
     d_isFluxGaussPtVector = false;
     d_numBndIds           = 0;
 
-    std::string feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "FIRST" );
-    std::string feFamilyName    = ( params->d_db )->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
-    std::string qruleTypeName   = ( params->d_db )->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
-    std::string qruleOrderName = ( params->d_db )->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
+    auto feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "FIRST" );
+    auto feFamilyName    = ( params->d_db )->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
+    auto qruleTypeName   = ( params->d_db )->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
+    auto qruleOrderName = ( params->d_db )->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
 
     // Create the libmesh qruleOrder, qruleType, and FEType
     auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
@@ -151,9 +151,7 @@ void NeumannVectorCorrection::addRHScorrection(
                     d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryIds[j], 0 );
                 AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
-                int count = 0;
                 for ( ; bnd != end_bnd; ++bnd ) {
-                    count++;
 
                     d_currNodes = bnd->getElements( AMP::Mesh::GeomType::Vertex );
                     unsigned int numNodesInCurrElem = d_currNodes.size();

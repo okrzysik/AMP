@@ -115,7 +115,7 @@ public:
      * \param name      Name of mesh generator
      * \param gen       Mesh generator to use
      */
-    static inline void registerGenerator( const std::string &name, generatorType gen )
+    static inline void registerGenerator( const std::string &name, const generatorType& gen )
     {
         d_generators[name] = gen;
     }

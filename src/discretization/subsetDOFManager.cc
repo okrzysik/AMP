@@ -75,7 +75,6 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
     subsetDOF->d_remoteSubsetDOFs  = std::vector<size_t>();
     subsetDOF->d_remoteParentDOFs.reserve( remoteDOFs.size() );
     subsetDOF->d_remoteSubsetDOFs.reserve( remoteDOFs.size() );
-    size_t k = 0;
     for ( auto &remoteDOF : remoteDOFs ) {
         size_t index = AMP::Utilities::findfirst( recv_data, remoteDOF );
         if ( index == recv_data.size() ) {
@@ -84,7 +83,6 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
         if ( recv_data[index] == remoteDOF ) {
             subsetDOF->d_remoteParentDOFs.push_back( remoteDOF );
             subsetDOF->d_remoteSubsetDOFs.push_back( index );
-            k++;
         }
     }
     PROFILE_STOP( "subsetDOFManager", 2 );

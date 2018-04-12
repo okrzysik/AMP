@@ -50,6 +50,9 @@ public:
     //! Copy constructor
     loadBalanceSimulator( const loadBalanceSimulator & );
 
+    //! Assignment operator
+    loadBalanceSimulator& operator=( const loadBalanceSimulator & );
+
     /**
      * \brief    Function to add a processor
      * \details  This function will add a processor with the given rank to the load balance,

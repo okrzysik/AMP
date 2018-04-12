@@ -24,10 +24,17 @@ RobinMatrixCorrection::RobinMatrixCorrection(
     const AMP::shared_ptr<RobinMatrixCorrectionParameters> &params )
     : BoundaryOperator( params )
 {
-    std::string feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "FIRST" );
-    std::string feFamilyName    = ( params->d_db )->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
-    std::string qruleTypeName   = ( params->d_db )->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
-    d_qruleOrderName = ( params->d_db )->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
+    d_hef   = 0;
+    d_alpha = 0;
+    d_beta  = 0;
+    d_gamma = 0;
+    d_JxW   = nullptr;
+    d_phi   = nullptr;
+
+    auto feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "FIRST" );
+    auto feFamilyName    = ( params->d_db )->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
+    auto qruleTypeName   = ( params->d_db )->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
+    d_qruleOrderName     = ( params->d_db )->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
 
     d_feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
     d_feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
@@ -41,21 +48,13 @@ RobinMatrixCorrection::RobinMatrixCorrection(
     d_NeumannParams->d_variableFlux = params->d_variableFlux;
     d_NeumannCorrection.reset( new NeumannVectorCorrection( d_NeumannParams ) );
 
-    d_hef   = 0;
-    d_alpha = 0;
-    d_beta  = 0;
-    d_gamma = 0;
-    d_JxW   = nullptr;
-    d_phi   = nullptr;
-
     reset( params );
 }
 
 void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &params )
 {
 
-    AMP::shared_ptr<RobinMatrixCorrectionParameters> myparams =
-        AMP::dynamic_pointer_cast<RobinMatrixCorrectionParameters>( params );
+    auto myparams = AMP::dynamic_pointer_cast<RobinMatrixCorrectionParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
