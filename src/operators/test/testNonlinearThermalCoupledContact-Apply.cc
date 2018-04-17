@@ -357,9 +357,9 @@ void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
-    auto neutronicsParams = AMP::make_shared<AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ) );
+    auto neutronicsParams = AMP::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
     neutronicsParams->d_MeshAdapter = meshAdapter1;
-    auto neutronicsOperator = AMP::make_shared<AMP::Operator::NeutronicsRhs( neutronicsParams ) );
+    auto neutronicsOperator = AMP::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
 
     auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
     auto SpecificPowerVec = meshAdapter1->createVector( SpecificPowerVar );
@@ -500,7 +500,7 @@ void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //-------------------------------------
     // Column of Coupled Operators
-    auto nonlinearParams = AMP::make_shared<AMP::Operator::OperatorParameters( tmp_db ) );
+    auto nonlinearParams = AMP::make_shared<AMP::Operator::OperatorParameters( tmp_db );
     auto nonlinearCoupledOperator = AMP::make_shared<AMP::Operator::ColumnOperator( nonlinearParams ) );
     nonlinearCoupledOperator->append( coupledNonlinearPellet );
     nonlinearCoupledOperator->append( coupledNonlinearClad );

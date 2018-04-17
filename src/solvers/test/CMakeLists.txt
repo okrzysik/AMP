@@ -598,5 +598,5 @@ ENDIF()
 IF ( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_HYPRE )
     ADD_AMP_TEST_1_2_4( testPetscSNESSolver-BoomerAMG-NonlinearThermal-1 )
     ADD_AMP_TEST_1_2_4( testPetscSNESSolver-JFNK-BoomerAMG-NonlinearMechanics-1 )
-
+ENDIF()
 
