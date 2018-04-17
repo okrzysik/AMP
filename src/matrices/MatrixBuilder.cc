@@ -27,7 +27,7 @@ namespace LinearAlgebra {
 AMP::LinearAlgebra::Matrix::shared_ptr
 createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                      AMP::LinearAlgebra::Vector::shared_ptr rightVec,
-                     std::function<std::vector<size_t>( size_t )> getRow,
+                     const std::function<std::vector<size_t>( size_t )> &getRow,
                      const std::string &type )
 {
 #if defined( USE_EXT_TRILINOS )
