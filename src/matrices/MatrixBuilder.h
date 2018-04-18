@@ -33,7 +33,7 @@ AMP::LinearAlgebra::Matrix::shared_ptr
 createMatrix( AMP::LinearAlgebra::Vector::shared_ptr right,
               AMP::LinearAlgebra::Vector::shared_ptr left,
               const std::string &type = "auto",
-              const std::function<std::vector<size_t>( size_t row )> &getColumnIDs =
+              std::function<std::vector<size_t>( size_t row )> getColumnIDs =
                   std::function<std::vector<size_t>( size_t )>() );
 
 #if 0
@@ -55,7 +55,7 @@ AMP::LinearAlgebra::Matrix::shared_ptr createMatrix(
     AMP::Discretization::DOFManager::shared_ptr right,
     AMP::Discretization::DOFManager::shared_ptr left,
     const std::string& type = "auto", 
-    const std::function<std::vector<size_t>(size_t)> &getRow = std::function<std::vector<size_t>(size_t)>() );
+    std::function<std::vector<size_t>(size_t)> getRow = std::function<std::vector<size_t>(size_t)>() );
 
 #endif
 
