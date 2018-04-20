@@ -500,8 +500,8 @@ void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //-------------------------------------
     // Column of Coupled Operators
-    auto nonlinearParams = AMP::make_shared<AMP::Operator::OperatorParameters( tmp_db );
-    auto nonlinearCoupledOperator = AMP::make_shared<AMP::Operator::ColumnOperator( nonlinearParams ) );
+    auto nonlinearParams = AMP::make_shared<AMP::Operator::OperatorParameters>( tmp_db );
+    auto nonlinearCoupledOperator = AMP::make_shared<AMP::Operator>::ColumnOperator( nonlinearParams );
     nonlinearCoupledOperator->append( coupledNonlinearPellet );
     nonlinearCoupledOperator->append( coupledNonlinearClad );
 
