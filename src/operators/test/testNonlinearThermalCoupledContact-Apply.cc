@@ -48,11 +48,10 @@
 
 
 void resetTests( AMP::UnitTest *ut,
-                 std::string msgPrefix,
+                 const std::string &msgPrefix,
                  AMP::shared_ptr<AMP::Mesh::MeshManager::Adapter>,
                  AMP::shared_ptr<AMP::Operator::Operator>,
                  AMP::shared_ptr<AMP::InputDatabase> )
-//             AMP::shared_ptr<AMP::Operator::OperatorParameters> &bcParameters)
 {
 
     ut.passes( msgPrefix );
@@ -63,13 +62,13 @@ void adjust( const AMP::LinearAlgebra::Vector::shared_ptr vec,
              AMP::LinearAlgebra::Vector::shared_ptr work )
 {
     work->setToScalar( 301. );
-    AMP::LinearAlgebra::Vector &x = *vec;
-    AMP::LinearAlgebra::Vector &y = *work;
+    auto &x = *vec;
+    auto &y = *work;
     vec->add( x, y );
 }
 
 void applyTest( AMP::UnitTest *ut,
-                std::string msgPrefix,
+                const std::string &msgPrefix,
                 AMP::shared_ptr<AMP::Operator::Operator> &testOperator,
                 AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
                 AMP::LinearAlgebra::Vector::shared_ptr solVec,
@@ -439,30 +438,24 @@ void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //------------------------------------------
 
-    AMP::Operator::Operator::shared_ptr boundaryOp1;
-    boundaryOp1 = nonlinearThermalOperator1->getBoundaryOperator();
+    auto boundaryOp1 = nonlinearThermalOperator1->getBoundaryOperator();
 
-    AMP::Operator::Operator::shared_ptr robinBoundaryOp1;
-    robinBoundaryOp1 =
+    auto robinBoundaryOp1 =
         ( AMP::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( boundaryOp1 ) );
 
-    AMP::shared_ptr<AMP::InputDatabase> boundaryDatabase1 =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>(
-            nonlinearThermalDatabase1->getDatabase( "BoundaryOperator" ) );
-    AMP::shared_ptr<AMP::InputDatabase> robinboundaryDatabase1 =
+    auto boundaryDatabase1 = nonlinearThermalDatabase1->getDatabase( "BoundaryOperator" );
+    auto robinboundaryDatabase1 = 
         AMP::dynamic_pointer_cast<AMP::InputDatabase>( boundaryDatabase1 );
 
     robinboundaryDatabase1->putBool( "constant_flux", false );
-    AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters1 = AMP::make_shared<AMP::Operator::NeumannVectorCorrectionParameters>( robinboundaryDatabase1 );
+    auto correctionParameters1 =
+        AMP::make_shared<AMP::Operator::NeumannVectorCorrectionParameters>( robinboundaryDatabase1 );
 
 
     //------------------------------------------
+    auto boundaryOp2 = nonlinearThermalOperator2->getBoundaryOperator();
 
-    AMP::Operator::Operator::shared_ptr boundaryOp2;
-    boundaryOp2 = nonlinearThermalOperator2->getBoundaryOperator();
-
-    AMP::Operator::Operator::shared_ptr robinBoundaryOp2;
-    robinBoundaryOp2 =
+    auto robinBoundaryOp2 =
         ( AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator>( boundaryOp2 ) )
             ->getBoundaryOperator( 0 );
 
