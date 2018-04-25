@@ -382,7 +382,7 @@ public:
      * @param args              Function arguments to pass
      */
     template<class Ret, class... Args>
-    static inline WorkItem* createWork( std::function<Ret(Args...)> routine, std::tuple<Args...> &&args );
+    static inline WorkItem* createWork( const std::function<Ret(Args...)> &routine, std::tuple<Args...> &&args );
 
 
     /*!
@@ -402,7 +402,7 @@ public:
      * @param args              Function arguments to pass
      */
     template<class Ret, class... Args>
-    static inline WorkItem* createWork( std::function<Ret(Args...)> routine, Args... args );
+    static inline WorkItem* createWork( const std::function<Ret(Args...)> &routine, Args... args );
 
 
     /*!

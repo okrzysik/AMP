@@ -107,11 +107,11 @@ private:
     WorkItemFull();
 
 public:
-    WorkItemFull( std::function<void( Args... )> &&routine2, Args... ts )
+    WorkItemFull( const std::function<void( Args... )> &routine2, Args... ts )
         : ThreadPool::WorkItemRet<void>(), routine( std::move( routine2 ) ), args( ts... )
     {
     }
-    WorkItemFull( std::function<void( Args... )> &&routine2, std::tuple<Args...> &&ts )
+    WorkItemFull( const std::function<void( Args... )> &routine2, std::tuple<Args...> &&ts )
         : ThreadPool::WorkItemRet<void>(), routine( std::move( routine2 ) ), args( ts )
     {
     }
@@ -127,11 +127,11 @@ private:
     WorkItemFull();
 
 public:
-    WorkItemFull( std::function<Ret( Args... )> &&routine2, Args... ts )
+    WorkItemFull( const std::function<Ret( Args... )> &routine2, Args... ts )
         : ThreadPool::WorkItemRet<Ret>(), routine( std::move( routine2 ) ), args( ts... )
     {
     }
-    WorkItemFull( std::function<Ret( Args... )> &&routine2, std::tuple<Args...> &&ts )
+    WorkItemFull( const std::function<Ret( Args... )> &routine2, std::tuple<Args...> &&ts )
         : ThreadPool::WorkItemRet<Ret>(), routine( std::move( routine2 ) ), args( ts )
     {
     }
@@ -141,11 +141,10 @@ public:
 
 
 // Functions to add work to the thread pool
+// clang-format off
 template<class Ret, class... Args>
 inline ThreadPool::thread_id_t ThreadPool_add_work( ThreadPool *tpool,
-                                                    int priority,
-                                                    std::function<Ret( Args... )> routine,
-                                                    Args... args )
+    int priority, const std::function<Ret( Args... )> &routine, Args... args )
 {
     auto work = new WorkItemFull<Ret, Args...>( routine, std::forward_as_tuple( args... ) );
     return ThreadPool::add_work( tpool, work, priority );
@@ -165,8 +164,8 @@ ThreadPool_add_work( ThreadPool *tpool, int priority, Ret ( *routine )(), void *
     return ThreadPool::add_work( tpool, work, priority );
 }
 template<class Ret, class... Args>
-inline ThreadPool::WorkItem *ThreadPool::createWork( std::function<Ret( Args... )> routine,
-                                                     Args... args )
+inline ThreadPool::WorkItem *ThreadPool::createWork(
+    const std::function<Ret( Args... )> &routine, Args... args )
 {
     return new WorkItemFull<Ret, Args...>( routine, std::forward_as_tuple( args... ) );
 }
@@ -176,17 +175,17 @@ inline ThreadPool::WorkItem *ThreadPool::createWork( Ret ( *routine )( Args... )
     return new WorkItemFull<Ret, Args...>( routine, std::forward_as_tuple( args... ) );
 }
 template<class Ret, class... Args>
-inline ThreadPool::WorkItem *ThreadPool::createWork( std::function<Ret( Args... )> routine,
-                                                     std::tuple<Args...> &&args )
+inline ThreadPool::WorkItem *ThreadPool::createWork(
+    const std::function<Ret( Args... )> &routine, std::tuple<Args...> &&args )
 {
     return new WorkItemFull<Ret, Args...>( routine, std::move( args ) );
 }
 template<class Ret, class... Args>
-inline ThreadPool::WorkItem *ThreadPool::createWork( Ret ( *routine )( Args... ),
-                                                     std::tuple<Args...> &&args )
+inline ThreadPool::WorkItem *ThreadPool::createWork( Ret ( *routine )( Args... ), std::tuple<Args...> &&args )
 {
     return new WorkItemFull<Ret, Args...>( routine, std::move( args ) );
 }
+// clang-format on
 
 
 /******************************************************************

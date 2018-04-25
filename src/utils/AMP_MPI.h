@@ -20,6 +20,7 @@
     // Building with SAMRAI and PETSc and without MPI is complicated
     #include "petsc/mpiuni/mpi.h"
     #undef MPI_REQUEST_NULL
+    #undef NULL_USE
     #define HAVE_MPI
     #ifndef included_tbox_SAMRAI_MPI
         extern void* MPI_REQUEST_NULL;

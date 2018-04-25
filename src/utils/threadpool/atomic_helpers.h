@@ -532,6 +532,25 @@ inline void atomic_swap( int64_atomic volatile *x, int64_atomic *y )
 }
 
 
+// Atomic operations for floating types
+inline double atomic_add( double volatile *x, double y )
+{
+    union U {
+        double d;
+        int64_atomic i;
+    };
+    U a, b;
+    bool swap = false;
+    auto x2   = reinterpret_cast<int64_atomic volatile *>( x );
+    while ( !swap ) {
+        a.i  = atomic_add( x2, 0 );
+        b.d  = a.d + y;
+        swap = atomic_compare_and_swap( x2, a.i, b.i );
+    }
+    return b.d;
+}
+
+
 // Define an atomic counter
 struct counter_t {
 public:
