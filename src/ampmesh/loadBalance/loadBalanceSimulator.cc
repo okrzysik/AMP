@@ -119,7 +119,7 @@ loadBalanceSimulator::loadBalanceSimulator( const loadBalanceSimulator &rhs )
     d_min        = rhs.d_min;
     d_max        = rhs.d_max;
 }
-loadBalanceSimulator& loadBalanceSimulator::operator=( const loadBalanceSimulator &rhs )
+loadBalanceSimulator &loadBalanceSimulator::operator=( const loadBalanceSimulator &rhs )
 {
     if ( this == &rhs )
         return *this;

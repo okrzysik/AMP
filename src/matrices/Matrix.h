@@ -274,11 +274,10 @@ protected:
     Matrix( const Matrix & );
 
     //! Protected assignment operator
-    Matrix& operator=( const Matrix & ) = delete;
+    Matrix &operator=( const Matrix & ) = delete;
 
 
 protected:
-
     /** \brief  Multiply two matrices and store in a third
      *    result = this * other_op
      * \param[in]  other_op  The other matrix to multiply

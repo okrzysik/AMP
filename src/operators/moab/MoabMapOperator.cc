@@ -198,7 +198,7 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
     // Extract coordinates of each Gauss point
     unsigned int zeroGhostWidth  = 0;
     AMP::Mesh::MeshIterator elem = mesh->getIterator( AMP::Mesh::GeomType::Volume, zeroGhostWidth );
-    int gp_ctr = 0;
+    int gp_ctr                   = 0;
     for ( ; elem != elem.end(); ++elem ) {
         std::vector<AMP::Mesh::MeshElement> currNodes;
         currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );

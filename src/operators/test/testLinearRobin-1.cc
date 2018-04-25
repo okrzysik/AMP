@@ -45,7 +45,8 @@ void bcTests( AMP::UnitTest *ut,
         tmp_db->putInteger( "print_info_level", 3 );
         tmp_db->putDouble( "alpha", 0.0 );
 
-        auto dummyParameters = AMP::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( tmp_db );
+        auto dummyParameters =
+            AMP::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( tmp_db );
 
         bcOperator->reset( dummyParameters );
 
@@ -58,7 +59,8 @@ void bcTests( AMP::UnitTest *ut,
     ut->passes( msgPrefix );
 
     try {
-        auto bcParameters = AMP::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( bcDatabase );
+        auto bcParameters =
+            AMP::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( bcDatabase );
         bcParameters->d_inputMatrix =
             ( AMP::dynamic_pointer_cast<AMP::Operator::LinearFEOperator>( feOperator ) )
                 ->getMatrix();

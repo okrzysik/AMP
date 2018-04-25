@@ -28,9 +28,7 @@ ThyraVectorSpaceWrapper::ThyraVectorSpaceWrapper(
 /****************************************************************
  * Destructor                                                    *
  ****************************************************************/
-ThyraVectorSpaceWrapper::~ThyraVectorSpaceWrapper()
-{
-}
+ThyraVectorSpaceWrapper::~ThyraVectorSpaceWrapper() {}
 
 
 /****************************************************************
@@ -104,8 +102,8 @@ Teuchos::RCP<Thyra::MultiVectorBase<double>> ThyraVectorSpaceWrapper::createMemb
 {
     AMP_ASSERT( !d_is_range );
     size_t N_rows = d_thyra_vec->numColumns();
-    auto space = Thyra::defaultSpmdVectorSpace<double>( N_rows );
-    auto view = Thyra::createMembersView<double>( space, raw_mv, "" );
+    auto space    = Thyra::defaultSpmdVectorSpace<double>( N_rows );
+    auto view     = Thyra::createMembersView<double>( space, raw_mv, "" );
     return view;
 }
 Teuchos::RCP<const Thyra::MultiVectorBase<double>> ThyraVectorSpaceWrapper::createMembersView(
@@ -113,8 +111,8 @@ Teuchos::RCP<const Thyra::MultiVectorBase<double>> ThyraVectorSpaceWrapper::crea
 {
     AMP_ASSERT( !d_is_range );
     size_t N_rows = d_thyra_vec->numColumns();
-    auto space = Thyra::defaultSpmdVectorSpace<double>( N_rows );
-    auto view = Thyra::createMembersView<double>( space, raw_mv, "" );
+    auto space    = Thyra::defaultSpmdVectorSpace<double>( N_rows );
+    auto view     = Thyra::createMembersView<double>( space, raw_mv, "" );
     return view;
 }
 void ThyraVectorSpaceWrapper::scalarProdsImpl( const Thyra::MultiVectorBase<double> &X,

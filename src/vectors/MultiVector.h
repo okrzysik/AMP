@@ -106,8 +106,8 @@ public:
      * and vec is added to it.  If vec is not a parallel vector(such as a SimpleVector), comm
      * must be specified.
      */
-    static AMP::shared_ptr<const MultiVector> constView( Vector::const_shared_ptr vec,
-                                                         const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
+    static AMP::shared_ptr<const MultiVector>
+    constView( Vector::const_shared_ptr vec, const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
 
     /** \brief Encapsulate a vector in a MultiVector
      * \param[in] vec  The vector to view
@@ -116,8 +116,8 @@ public:
      * and vec is added to it.  If vec is not a parallel vector(such as a SimpleVector), comm
      * must be specified.
      */
-    static AMP::shared_ptr<MultiVector> encapsulate( Vector::shared_ptr vec,
-                                                     const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
+    static AMP::shared_ptr<MultiVector>
+    encapsulate( Vector::shared_ptr vec, const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
 
     /** \brief Replace a vector in a MultiVector
      * \details  This function will replace a given vector in the multivector with a different

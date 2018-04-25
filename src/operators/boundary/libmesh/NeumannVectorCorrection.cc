@@ -34,7 +34,7 @@ NeumannVectorCorrection::NeumannVectorCorrection(
     auto feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "FIRST" );
     auto feFamilyName    = ( params->d_db )->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
     auto qruleTypeName   = ( params->d_db )->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
-    auto qruleOrderName = ( params->d_db )->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
+    auto qruleOrderName  = ( params->d_db )->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
 
     // Create the libmesh qruleOrder, qruleType, and FEType
     auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );

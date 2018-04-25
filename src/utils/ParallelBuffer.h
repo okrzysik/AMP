@@ -81,7 +81,8 @@ public:
      * Write a text string to the output stream.  Note that the string is
      * not actually written until an end-of-line is detected.
      */
-    inline void outputString( const std::string &text ) {
+    inline void outputString( const std::string &text )
+    {
         outputString( text.c_str(), text.length() );
     }
 
@@ -89,7 +90,8 @@ public:
      * Write a text string of the specified length to the output file.  Note
      * that the string is not actually written until an end-of-line is detected.
      */
-    inline void outputString( const std::string &text, size_t length ) {
+    inline void outputString( const std::string &text, size_t length )
+    {
         outputString( text.c_str(), length );
     }
 

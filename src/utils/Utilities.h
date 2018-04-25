@@ -322,9 +322,6 @@ void nullUse( void * );
 //! std::string version of sprintf
 inline std::string stringf( const char *format, ... );
 
-//! Wrap printf to pout
-inline int printp( const char *format, ... );
-
 
 } // namespace Utilities
 } // namespace AMP

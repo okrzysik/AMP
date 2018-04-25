@@ -51,7 +51,7 @@ public:
     loadBalanceSimulator( const loadBalanceSimulator & );
 
     //! Assignment operator
-    loadBalanceSimulator& operator=( const loadBalanceSimulator & );
+    loadBalanceSimulator &operator=( const loadBalanceSimulator & );
 
     /**
      * \brief    Function to add a processor

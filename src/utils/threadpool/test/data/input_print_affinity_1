@@ -1,0 +1,13 @@
+// Sample input file for print_thread_affinities
+
+Load_balance_method = 1     // Load balance method for MPI tasks
+N_min = -1                  // Minumum number of processors/process
+N_max = -1                  // Maximum number of processors/process
+N_threads = 2               // Number of threads for the primary thread pool
+share_tpool = FALSE         // Do the sub-solvers shared the thread pool?
+N_threads_E = 0             // Number of threads for the thread pool for Energy
+N_threads_T = 0             // Number of threads for the thread pool for Temperature
+procs = 1,2                 // Processors to use for the process
+                            //    Note: this adds the id of the first process of the current process
+                            //    affinities to get the final list, so normally this should start with 0
+

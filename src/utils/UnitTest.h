@@ -56,7 +56,7 @@ public:
     UnitTest( const UnitTest & ) = delete;
 
     // Assignment operator
-    UnitTest& operator=( const UnitTest & ) = delete;
+    UnitTest &operator=( const UnitTest & ) = delete;
 
     //! Indicate a passed test
     inline void passes( const std::string &in )
@@ -133,7 +133,6 @@ private:
     bool d_verbose;
 
 private:
-
     // Function to pack the messages into a single data stream and send to the given processor
     // Note: This function does not return until the message stream has been sent
     void pack_message_stream( const std::vector<std::string> &messages,

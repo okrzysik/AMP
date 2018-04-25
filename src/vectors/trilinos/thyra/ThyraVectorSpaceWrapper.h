@@ -34,7 +34,8 @@ public:
     // Virtual functions inherited from VectorSpaceBase
     virtual Teuchos::Ordinal dim() const override;
     virtual bool isCompatible( const Thyra::VectorSpaceBase<double> &vecSpc ) const override;
-    virtual Teuchos::RCP<const Thyra::VectorSpaceFactoryBase<double>> smallVecSpcFcty() const override;
+    virtual Teuchos::RCP<const Thyra::VectorSpaceFactoryBase<double>>
+    smallVecSpcFcty() const override;
     virtual double scalarProd( const Thyra::VectorBase<double> &x,
                                const Thyra::VectorBase<double> &y ) const override;
 
@@ -42,7 +43,8 @@ public:
 protected:
     // Virtual functions inherited from VectorSpaceBase
     virtual Teuchos::RCP<Thyra::VectorBase<double>> createMember() const override;
-    virtual Teuchos::RCP<Thyra::MultiVectorBase<double>> createMembers( int numMembers ) const override;
+    virtual Teuchos::RCP<Thyra::MultiVectorBase<double>>
+    createMembers( int numMembers ) const override;
     virtual Teuchos::RCP<Thyra::VectorBase<double>>
     createMemberView( const RTOpPack::SubVectorView<double> &raw_v ) const override;
     virtual Teuchos::RCP<const Thyra::VectorBase<double>>

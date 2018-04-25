@@ -9,8 +9,8 @@ namespace LinearAlgebra {
 
 MatrixParameters::MatrixParameters( AMP::Discretization::DOFManager::shared_ptr left,
                                     AMP::Discretization::DOFManager::shared_ptr right,
-                                    const AMP_MPI &comm ):
-    d_comm( comm )
+                                    const AMP_MPI &comm )
+    : d_comm( comm )
 
 {
     AMP_ASSERT( left );

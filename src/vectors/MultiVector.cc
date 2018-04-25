@@ -40,16 +40,20 @@ AMP::shared_ptr<MultiVector> MultiVector::create( const std::string &name,
     auto variable = AMP::make_shared<Variable>( name );
     return MultiVector::create( variable, comm, vecs );
 }
-AMP::shared_ptr<const MultiVector> MultiVector::const_create(
-    Variable::shared_ptr variable, const AMP_MPI &comm, const std::vector<Vector::const_shared_ptr> &vecs )
+AMP::shared_ptr<const MultiVector>
+MultiVector::const_create( Variable::shared_ptr variable,
+                           const AMP_MPI &comm,
+                           const std::vector<Vector::const_shared_ptr> &vecs )
 {
     std::vector<Vector::shared_ptr> vecs2( vecs.size() );
     for ( size_t i = 0; i < vecs.size(); i++ )
         vecs2[i] = AMP::const_pointer_cast<Vector>( vecs[i] );
     return MultiVector::create( variable, comm, vecs2 );
 }
-AMP::shared_ptr<const MultiVector> MultiVector::const_create(
-    const std::string &name, const AMP_MPI &comm, const std::vector<Vector::const_shared_ptr> &vecs )
+AMP::shared_ptr<const MultiVector>
+MultiVector::const_create( const std::string &name,
+                           const AMP_MPI &comm,
+                           const std::vector<Vector::const_shared_ptr> &vecs )
 {
     auto variable = AMP::make_shared<Variable>( name );
     std::vector<Vector::shared_ptr> vecs2( vecs.size() );
@@ -57,9 +61,10 @@ AMP::shared_ptr<const MultiVector> MultiVector::const_create(
         vecs2[i] = AMP::const_pointer_cast<Vector>( vecs[i] );
     return MultiVector::create( variable, comm, vecs2 );
 }
-AMP::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec, const AMP_MPI &comm_in )
+AMP::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec,
+                                                       const AMP_MPI &comm_in )
 {
-    auto comm = comm_in;
+    auto comm     = comm_in;
     auto multivec = AMP::dynamic_pointer_cast<MultiVector>( vec );
     if ( multivec ) {
         if ( !comm.isNull() )
@@ -68,7 +73,7 @@ AMP::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec, c
     }
     if ( comm.isNull() )
         comm = vec->getComm();
-    multivec = create( vec->getVariable()->getName(), comm, { vec } );
+    multivec   = create( vec->getVariable()->getName(), comm, { vec } );
     auto firer = dynamic_pointer_cast<DataChangeFirer>( vec );
     if ( firer )
         firer->registerListener( multivec.get() );
@@ -97,8 +102,7 @@ AMP::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr vec, const AM
     if ( !multivec ) {
         if ( comm.isNull() )
             comm = vec->getComm();
-        multivec = create(
-            vec->getVariable()->getName(), comm, { vec } );
+        multivec = create( vec->getVariable()->getName(), comm, { vec } );
     }
     return multivec;
 }
@@ -126,8 +130,7 @@ AMP::shared_ptr<const MultiVector> MultiVector::constView( Vector::const_shared_
     if ( !multivec ) {
         if ( comm.isNull() )
             comm = vec->getComm();
-        multivec = const_create(
-            vec->getVariable()->getName(), comm, { vec } );
+        multivec = const_create( vec->getVariable()->getName(), comm, { vec } );
     }
     return multivec;
 }
@@ -161,7 +164,7 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
         d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty(
             d_DOFManager->numLocalDOF(), d_Comm );
     } else {
-        auto params = AMP::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
+        auto params           = AMP::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
         params->d_comm        = d_Comm;
         params->d_localsize   = d_DOFManager->numLocalDOF();
         params->d_remote_DOFs = remote_DOFs;

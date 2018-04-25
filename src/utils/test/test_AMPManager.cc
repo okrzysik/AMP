@@ -65,9 +65,9 @@ int main( int argc, char *argv[] )
         } catch ( ... ) {
             // This is correct
         }
-        auto stop = std::chrono::steady_clock::now();
-        int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
-        std::cout << "Time to throw/catch AMP_ERROR: " << ns/1000000 << " ms\n\n";
+        auto stop  = std::chrono::steady_clock::now();
+        int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( stop - start ).count();
+        std::cout << "Time to throw/catch AMP_ERROR: " << ns / 1000000 << " ms\n\n";
     }
 
     // Shutdown

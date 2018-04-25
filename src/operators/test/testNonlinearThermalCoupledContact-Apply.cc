@@ -300,11 +300,15 @@ void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
     auto meshAdapter2 = manager->getMesh( "clad" );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    auto TemperatureVar  = AMP::make_shared<AMP::Mesh::NodalScalarVariable>( "Temperature" );
-    auto inputVariable1  = AMP::make_shared<AMP::Mesh::NodalScalarVariable>( "Temperature", meshAdapter1 );
-    auto inputVariable2  = AMP::make_shared<AMP::Mesh::NodalScalarVariable>( "Temperature", meshAdapter2 );
-    auto outputVariable1 = AMP::make_shared<AMP::Mesh::NodalScalarVariable>( "Temperature", meshAdapter1 );
-    auto outputVariable2 = AMP::make_shared<AMP::Mesh::NodalScalarVariable>( "Temperature", meshAdapter2 );
+    auto TemperatureVar = AMP::make_shared<AMP::Mesh::NodalScalarVariable>( "Temperature" );
+    auto inputVariable1 =
+        AMP::make_shared<AMP::Mesh::NodalScalarVariable>( "Temperature", meshAdapter1 );
+    auto inputVariable2 =
+        AMP::make_shared<AMP::Mesh::NodalScalarVariable>( "Temperature", meshAdapter2 );
+    auto outputVariable1 =
+        AMP::make_shared<AMP::Mesh::NodalScalarVariable>( "Temperature", meshAdapter1 );
+    auto outputVariable2 =
+        AMP::make_shared<AMP::Mesh::NodalScalarVariable>( "Temperature", meshAdapter2 );
 
     double intguess = input_db->getDoubleWithDefault( "InitialGuess", 400 );
 
@@ -329,15 +333,16 @@ void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
             meshAdapter1, nonlinearThermalDatabase1, thermalTransportModel1 ) );
 
     // initialize the input variable
-    auto thermalVolumeOperator1 = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
-        nonlinearThermalOperator1->getVolumeOperator() );
+    auto thermalVolumeOperator1 =
+        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
+            nonlinearThermalOperator1->getVolumeOperator() );
 
     // initialize the output variable
     // auto outputVariable1 = thermalVolumeOperator1->getOutputVariable();
 
     auto TemperatureInKelvinVec1 = TemperatureInKelvin->subsetVectorForVariable( inputVariable1 );
-    auto RightHandSideVec1 = RightHandSideVec->subsetVectorForVariable( outputVariable1 );
-    auto ResidualVec1 = ResidualVec->subsetVectorForVariable( outputVariable1 );
+    auto RightHandSideVec1       = RightHandSideVec->subsetVectorForVariable( outputVariable1 );
+    auto ResidualVec1            = ResidualVec->subsetVectorForVariable( outputVariable1 );
 
     //-------------------------------------
     //   CREATE THE LINEAR THERMAL OPERATOR 1 ----
@@ -356,7 +361,8 @@ void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
-    auto neutronicsParams = AMP::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
+    auto neutronicsParams =
+        AMP::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
     neutronicsParams->d_MeshAdapter = meshAdapter1;
     auto neutronicsOperator = AMP::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
 
@@ -401,16 +407,17 @@ void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
             meshAdapter2, nonlinearThermalDatabase2, thermalTransportModel2 ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
-    auto thermalVolumeOperator2 = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
-        nonlinearThermalOperator2->getVolumeOperator() );
+    auto thermalVolumeOperator2 =
+        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
+            nonlinearThermalOperator2->getVolumeOperator() );
 
     // initialize the output variable
     // AMP::LinearAlgebra::Variable::shared_ptr outputVariable2 =
     // thermalVolumeOperator2->getOutputVariable();
 
     auto TemperatureInKelvinVec2 = TemperatureInKelvin->subsetVectorForVariable( inputVariable2 );
-    auto RightHandSideVec2 = RightHandSideVec->subsetVectorForVariable( outputVariable2 );
-    auto ResidualVec2 = ResidualVec->subsetVectorForVariable( outputVariable2 );
+    auto RightHandSideVec2       = RightHandSideVec->subsetVectorForVariable( outputVariable2 );
+    auto ResidualVec2            = ResidualVec->subsetVectorForVariable( outputVariable2 );
 
     //--------------------------------------------
     //   CREATE THE LINEAR THERMAL OPERATOR 2 ----
@@ -424,14 +431,14 @@ void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
             meshAdapter2, bvpDatabase2, transportModel2 ) );
 
     //-------------------------------------
-    auto mapcladtopellet_db = AMP::dynamic_pointer_cast<AMP::InputDatabase>(
-        input_db->getDatabase( "MapCladtoPellet" ) );
+    auto mapcladtopellet_db =
+        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( "MapCladtoPellet" ) );
     auto mapcladtopellet = AMP::dynamic_pointer_cast<AMP::Operator::MapSurface>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter2, meshAdapter1, mapcladtopellet_db ) );
 
-    auto mappellettoclad_db = AMP::dynamic_pointer_cast<AMP::InputDatabase>(
-        input_db->getDatabase( "MapPellettoClad" ) );
+    auto mappellettoclad_db =
+        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( "MapPellettoClad" ) );
     auto mappellettoclad = AMP::dynamic_pointer_cast<AMP::Operator::MapSurface>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter1, meshAdapter2, mappellettoclad_db ) );
@@ -444,12 +451,12 @@ void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
         ( AMP::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( boundaryOp1 ) );
 
     auto boundaryDatabase1 = nonlinearThermalDatabase1->getDatabase( "BoundaryOperator" );
-    auto robinboundaryDatabase1 = 
+    auto robinboundaryDatabase1 =
         AMP::dynamic_pointer_cast<AMP::InputDatabase>( boundaryDatabase1 );
 
     robinboundaryDatabase1->putBool( "constant_flux", false );
-    auto correctionParameters1 =
-        AMP::make_shared<AMP::Operator::NeumannVectorCorrectionParameters>( robinboundaryDatabase1 );
+    auto correctionParameters1 = AMP::make_shared<AMP::Operator::NeumannVectorCorrectionParameters>(
+        robinboundaryDatabase1 );
 
 
     //------------------------------------------
@@ -465,7 +472,8 @@ void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
         boundaryDatabase2->getDatabase( "RobinVectorCorrection" ) );
 
     robinboundaryDatabase2->putBool( "constant_flux", false );
-    auto correctionParameters2 = AMP::make_shared<AMP::Operator::NeumannVectorCorrectionParameters>( robinboundaryDatabase2 );
+    auto correctionParameters2 = AMP::make_shared<AMP::Operator::NeumannVectorCorrectionParameters>(
+        robinboundaryDatabase2 );
 
 
     //-------------------------------------
@@ -480,39 +488,48 @@ void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
     //-------------------------------------
     // Coupling Map to the Nonlinear Operators
     auto tmp_db = AMP::make_shared<AMP::InputDatabase>( "Dummy" );
-    auto coupledNonlinearPelletParams = AMP::make_shared<AMP::Operator::CoupledOperatorParameter>s( tmp_db );
+    auto coupledNonlinearPelletParams =
+        AMP::make_shared<AMP::Operator::CoupledOperatorParameter> s( tmp_db );
 
     coupledNonlinearPelletParams->d_MapOperator = mapcladtopellet;
     coupledNonlinearPelletParams->d_BVPOperator = nonlinearThermalOperator1;
-    auto coupledNonlinearPellet = AMP::make_shared<AMP::Operator::CoupledOperator>( coupledNonlinearPelletParams );
+    auto coupledNonlinearPellet =
+        AMP::make_shared<AMP::Operator::CoupledOperator>( coupledNonlinearPelletParams );
     //-------------------------------------
-    auto coupledNonlinearCladParams = AMP::make_shared<AMP::Operator::CoupledOperatorParameters>( tmp_db );
+    auto coupledNonlinearCladParams =
+        AMP::make_shared<AMP::Operator::CoupledOperatorParameters>( tmp_db );
     coupledNonlinearCladParams->d_MapOperator = mappellettoclad;
     coupledNonlinearCladParams->d_BVPOperator = nonlinearThermalOperator2;
-    auto coupledNonlinearClad = AMP::make_shared<AMP::Operator::CoupledOperator>( coupledNonlinearCladParams );
+    auto coupledNonlinearClad =
+        AMP::make_shared<AMP::Operator::CoupledOperator>( coupledNonlinearCladParams );
 
     //-------------------------------------
     // Column of Coupled Operators
     auto nonlinearParams = AMP::make_shared<AMP::Operator::OperatorParameters>( tmp_db );
-    auto nonlinearCoupledOperator = AMP::make_shared<AMP::Operator>::ColumnOperator( nonlinearParams );
+    auto nonlinearCoupledOperator =
+        AMP::make_shared<AMP::Operator>::ColumnOperator( nonlinearParams );
     nonlinearCoupledOperator->append( coupledNonlinearPellet );
     nonlinearCoupledOperator->append( coupledNonlinearClad );
 
     //-------------------------------------
     // Coupling Map to the Linear Operators
-    auto coupledLinearPelletParams = AMP::make_shared<AMP::Operator::CoupledOperatorParameters>( tmp_db );
+    auto coupledLinearPelletParams =
+        AMP::make_shared<AMP::Operator::CoupledOperatorParameters>( tmp_db );
     coupledLinearPelletParams->d_MapOperator = mapcladtopellet;
     coupledLinearPelletParams->d_BVPOperator = linearThermalOperator1;
-    auto coupledLinearPellet = AMP::make_shared<AMP::Operator::CoupledOperator>( coupledLinearPelletParams );
+    auto coupledLinearPellet =
+        AMP::make_shared<AMP::Operator::CoupledOperator>( coupledLinearPelletParams );
     //-------------------------------------
-    autocoupledLinearCladParams = AMP::make_shared<AMP::Operator::CoupledOperatorParameters>( tmp_db );
+    autocoupledLinearCladParams =
+        AMP::make_shared<AMP::Operator::CoupledOperatorParameters>( tmp_db );
     coupledLinearCladParams->d_MapOperator = mappellettoclad;
     coupledLinearCladParams->d_BVPOperator = linearThermalOperator2;
-    auto coupledLinearClad = AMP::make_shared<AMP::Operator::CoupledOperator>( coupledLinearCladParams );
+    auto coupledLinearClad =
+        AMP::make_shared<AMP::Operator::CoupledOperator>( coupledLinearCladParams );
 
     //-------------------------------------
     // Column of Coupled Operators
-    auto linearParams = AMP::make_shared<AMP::Operator::OperatorParameters>( tmp_db );
+    auto linearParams          = AMP::make_shared<AMP::Operator::OperatorParameters>( tmp_db );
     auto linearCoupledOperator = AMP::make_shared<AMP::Operator::ColumnOperator>( linearParams );
     linearCoupledOperator->append( coupledLinearPellet );
     linearCoupledOperator->append( coupledLinearClad );
@@ -533,7 +550,8 @@ void thermalContactApplyTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // test apply
     std::string msgPrefix = exeName + " : apply";
-    auto testOperator = AMP::dynamic_pointer_cast<AMP::Operator::Operator>( nonlinearCoupledOperator );
+    auto testOperator =
+        AMP::dynamic_pointer_cast<AMP::Operator::Operator>( nonlinearCoupledOperator );
     applyTest(
         ut, msgPrefix, testOperator, RightHandSideVec, TemperatureInKelvin, ResidualVec, WorkVec );
     ut.passes( msgPrefix );

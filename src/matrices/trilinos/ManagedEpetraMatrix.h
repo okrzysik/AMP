@@ -33,7 +33,7 @@ protected:
     ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs );
 
     //!  Assignment operator
-    ManagedEpetraMatrix& operator=( const ManagedEpetraMatrix &rhs ) = delete;
+    ManagedEpetraMatrix &operator=( const ManagedEpetraMatrix &rhs ) = delete;
 
     //!  \f$A_{i,j}\f$ storage of off-core data
     std::map<int, std::map<int, double>> d_OtherData;

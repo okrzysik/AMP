@@ -409,8 +409,8 @@ void ThyraVectorWrapper::applyOpImpl(
     for ( size_t i = 0; i < n_blocks; i++ )
         block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
     // Check that all vectors are compatible and get the pointers
-    auto vecs_ptr = getConstPtr( block_size, vecs );
-    auto targ_vecs_ptr  = getPtr( block_size, targ_vecs );
+    auto vecs_ptr      = getConstPtr( block_size, vecs );
+    auto targ_vecs_ptr = getPtr( block_size, targ_vecs );
     // Apply the operation
     auto reduct_obj2 = op.reduct_obj_create();
     for ( size_t k = 0; k < d_vecs.size(); k++ ) {
@@ -431,8 +431,10 @@ void ThyraVectorWrapper::applyOpImpl(
                     block_size[j],
                     false ) );
             }
-            auto sub_vecs2 = Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>>( sub_vecs );
-            auto targ_sub_vecs2 = Teuchos::ArrayView<const RTOpPack::SubVectorView<double>>( targ_sub_vecs );
+            auto sub_vecs2 =
+                Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>>( sub_vecs );
+            auto targ_sub_vecs2 =
+                Teuchos::ArrayView<const RTOpPack::SubVectorView<double>>( targ_sub_vecs );
             op.apply_op( sub_vecs2, targ_sub_vecs2, reduct_obj2.ptr() );
         }
     }
@@ -468,8 +470,8 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
     for ( size_t i = 0; i < n_blocks; i++ )
         block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
     // Check that all vectors are compatible and get the pointers
-    auto vecs_ptr = getConstPtr( block_size, multi_vecs );
-    auto targ_vecs_ptr  = getPtr( block_size, targ_multi_vecs );
+    auto vecs_ptr      = getConstPtr( block_size, multi_vecs );
+    auto targ_vecs_ptr = getPtr( block_size, targ_multi_vecs );
     // Apply the operation
     std::vector<Teuchos::RCP<RTOpPack::ReductTarget>> reduct_obj2( d_vecs.size() );
     for ( auto &i : reduct_obj2 )
@@ -492,8 +494,10 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
                     block_size[j],
                     false ) );
             }
-            auto sub_vecs2 = Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>>( sub_vecs );
-            auto targ_sub_vecs2 = Teuchos::ArrayView<const RTOpPack::SubVectorView<double>>( targ_sub_vecs );
+            auto sub_vecs2 =
+                Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>>( sub_vecs );
+            auto targ_sub_vecs2 =
+                Teuchos::ArrayView<const RTOpPack::SubVectorView<double>>( targ_sub_vecs );
             primary_op.apply_op( sub_vecs2, targ_sub_vecs2, reduct_obj2[k].ptr() );
         }
     }
@@ -548,7 +552,7 @@ void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
     for ( size_t i = 0; i < n_blocks; i++ )
         block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
     // Check that all vectors are compatible and get the pointers
-    auto vecs_ptr = getConstPtr( block_size, multi_vecs );
+    auto vecs_ptr      = getConstPtr( block_size, multi_vecs );
     auto targ_vecs_ptr = getPtr( block_size, targ_multi_vecs );
     // Apply the operation
     Teuchos::RCP<RTOpPack::ReductTarget> reduct_obj2 = primary_op.reduct_obj_create();
@@ -570,8 +574,10 @@ void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
                     block_size[j],
                     false ) );
             }
-            auto sub_vecs2 = Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>>( sub_vecs );
-            auto targ_sub_vecs2 = Teuchos::ArrayView<const RTOpPack::SubVectorView<double>>( targ_sub_vecs );
+            auto sub_vecs2 =
+                Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double>>( sub_vecs );
+            auto targ_sub_vecs2 =
+                Teuchos::ArrayView<const RTOpPack::SubVectorView<double>>( targ_sub_vecs );
             primary_op.apply_op( sub_vecs2, targ_sub_vecs2, reduct_obj2.ptr() );
         }
     }
@@ -610,7 +616,7 @@ static std::vector<ThyraVectorWrapper *> getPtr( std::vector<size_t> block_size,
         AMP_INSIST( ptr[i] != nullptr,
                     "All vectors used in applyOpImpl must be of the type ThyraVectorWrapper" );
         for ( size_t j = 0; j < ptr[i]->numVecs(); j++ ) {
-            auto tmp = ptr[i]->getVec( j );
+            auto tmp        = ptr[i]->getVec( j );
             size_t N_blocks = tmp->numberOfDataBlocks();
             AMP_ASSERT( N_blocks == block_size.size() );
             for ( size_t k = 0; k < N_blocks; k++ )

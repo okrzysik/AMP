@@ -398,7 +398,7 @@ NodeToNodeMap::Point::Point( const Point &rhs ) : id( rhs.id ), proc( rhs.proc )
     pos[1] = rhs.pos[1];
     pos[2] = rhs.pos[2];
 }
-NodeToNodeMap::Point& NodeToNodeMap::Point::operator=( const Point &rhs )
+NodeToNodeMap::Point &NodeToNodeMap::Point::operator=( const Point &rhs )
 {
     if ( this == &rhs )
         return *this;

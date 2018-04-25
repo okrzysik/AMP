@@ -394,7 +394,7 @@ protected:
     // Constructor
     explicit BoxMesh( MeshParameters::shared_ptr );
     explicit BoxMesh( const BoxMesh & );
-    BoxMesh& operator=( const BoxMesh & ) = delete;
+    BoxMesh &operator=( const BoxMesh & ) = delete;
 
     // Function to initialize the mesh data once the logical mesh info has been created
     void initialize();
