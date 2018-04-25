@@ -27,7 +27,7 @@
 
 #include "AMP/utils/ReadTestMesh.h"
 
-void myTest( AMP::UnitTest *ut, const std::string& exeName, int callLinReset )
+void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinReset )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
@@ -77,7 +77,7 @@ void myTest( AMP::UnitTest *ut, const std::string& exeName, int callLinReset )
     auto var = nonlinOperator->getOutputVariable();
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    auto solVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
+    auto solVec       = AMP::LinearAlgebra::createVector( dofMap, var, true );
     auto resVecNonlin = solVec->cloneVector();
     auto resVecLin    = solVec->cloneVector();
     auto resDiffVec   = solVec->cloneVector();

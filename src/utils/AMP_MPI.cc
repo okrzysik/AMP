@@ -507,11 +507,11 @@ MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
  ************************************************************************/
 int d_global_currentTag_world1[2] = { 1, 1 };
 int d_global_currentTag_world2[2] = { 1, 1 };
-int d_global_currentTag_self[2] = { 1, 1 };
+int d_global_currentTag_self[2]   = { 1, 1 };
 #ifdef USE_MPI
 std::atomic_int d_global_count_world1 = { 1 };
 std::atomic_int d_global_count_world2 = { 1 };
-std::atomic_int d_global_count_self = { 1 };
+std::atomic_int d_global_count_self   = { 1 };
 #endif
 MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
 {

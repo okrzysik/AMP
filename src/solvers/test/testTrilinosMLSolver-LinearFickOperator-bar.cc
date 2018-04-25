@@ -202,8 +202,8 @@ void linearFickTest( AMP::UnitTest *ut )
                 file.precision( 14 );
 
                 size_t numNodes = iterator.size();
-                size_t iNode = 0;
-                iterator = iterator.begin();
+                size_t iNode    = 0;
+                iterator        = iterator.begin();
                 for ( ; iterator != iterator.end(); ++iterator ) {
                     std::vector<size_t> gid;
                     nodalDofMap->getDOFs( iterator->globalID(), gid );

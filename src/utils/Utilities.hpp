@@ -6,22 +6,6 @@
 
 
 /************************************************************************
- * Function to wrap printf to pout                                       *
- ************************************************************************/
-inline int AMP::Utilities::printp( const char *format, ... )
-{
-    va_list ap;
-    va_start( ap, format );
-    char tmp[1024];
-    int n = vsprintf( tmp, format, ap );
-    va_end( ap );
-    AMP::pout << tmp;
-    AMP::pout.flush();
-    return n;
-}
-
-
-/************************************************************************
  * Function to wrap printf to std::string                                *
  ************************************************************************/
 inline std::string AMP::Utilities::stringf( const char *format, ... )

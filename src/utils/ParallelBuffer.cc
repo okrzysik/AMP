@@ -110,7 +110,7 @@ void ParallelBuffer::setOutputStream2( std::ostream *stream ) { d_ostream2 = str
  *                                                                       *
  ************************************************************************/
 
-void ParallelBuffer::outputString( const char* text, const size_t length )
+void ParallelBuffer::outputString( const char *text, const size_t length )
 {
     if ( ( length > 0 ) && d_active ) {
 

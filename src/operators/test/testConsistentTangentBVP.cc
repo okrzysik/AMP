@@ -66,8 +66,9 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinReset )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "NonlinearMechanicsOperator", input_db ) );
 
-    auto mechNonlinOperator = AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
-        nonlinOperator->getVolumeOperator() );
+    auto mechNonlinOperator =
+        AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+            nonlinOperator->getVolumeOperator() );
     auto elementPhysicsModel = mechNonlinOperator->getMaterialModel();
 
     auto linOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -80,7 +81,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinReset )
     auto var = nonlinOperator->getOutputVariable();
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    auto solVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
+    auto solVec       = AMP::LinearAlgebra::createVector( dofMap, var, true );
     auto resVecNonlin = solVec->cloneVector();
     auto resVecLin    = solVec->cloneVector();
     auto resDiffVec   = solVec->cloneVector();

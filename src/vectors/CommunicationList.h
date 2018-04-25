@@ -41,7 +41,7 @@ public:
     CommunicationListParameters( const CommunicationListParameters & );
 
     //! Assignment operator
-    CommunicationListParameters& operator=( const CommunicationListParameters & ) = delete;
+    CommunicationListParameters &operator=( const CommunicationListParameters & ) = delete;
 };
 
 

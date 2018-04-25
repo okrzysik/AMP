@@ -375,7 +375,11 @@ double AMPManager::start_SAMRAI()
     double time = 0;
 #ifdef USE_EXT_SAMRAI
     double start = Utilities::time();
+#ifdef USE_MPI
     SAMRAI::tbox::SAMRAI_MPI::init( AMP_MPI( AMP_COMM_WORLD ).getCommunicator() );
+#else
+    SAMRAI::tbox::SAMRAI_MPI::initMPIDisabled();
+#endif
     SAMRAI::tbox::SAMRAIManager::initialize();
     SAMRAI::tbox::SAMRAIManager::startup();
     SAMRAI::tbox::SAMRAIManager::setMaxNumberPatchDataEntries( 2048 );

@@ -66,7 +66,7 @@ private:
         int proc;
         Point();
         Point( const Point &rhs );
-        Point& operator=( const Point &rhs );
+        Point &operator=( const Point &rhs );
         bool operator==( const Point &rhs ) const;
         bool operator!=( const Point &rhs ) const;
         bool operator<=( const Point &rhs ) const;
