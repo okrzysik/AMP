@@ -12,6 +12,15 @@
 #define MPI_CLASS_ERROR AMP_ERROR
 #define MPI_CLASS_ASSERT AMP_ASSERT
 
+#undef NULL_USE
+#define NULL_USE( variable )                    \
+    do {                                        \
+        if ( 0 ) {                              \
+            auto static t = (char *) &variable; \
+            t++;                                \
+        }                                       \
+    } while ( 0 )
+
 
 namespace AMP {
 

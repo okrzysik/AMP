@@ -81,6 +81,7 @@ nullPointer:*/materials/Property.h
 
 // Suppress utils warnings
 usleepCalled:*/utils/Utilities.cc
+invalidPointerCast:*/utils/threadpool/atomic_helpers.h
 
 // Suppress common test warnings (example: x==x)
 duplicateExpression:*/test/test*
