@@ -22,11 +22,9 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
     PROFILE_START( "VerifyGetMatrixTrivialTest", 1 );
 
     // Create the DOF_Manager
-    AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
-        new AMP::Discretization::DOFManagerParameters( mesh ) );
-    AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
+    auto DOFparams = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
+    auto DOFs      = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
 
     // Create a nodal variable
     auto variable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
@@ -54,10 +52,9 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
     else
         utils->failure( "did not obtain 0 matrix from mesh" );
 
-    // Need to get another matrix to store data due to Epetra insert/replace idiom.  Matrixa is
-    // fixed with no entires.
-    AMP::LinearAlgebra::Matrix::shared_ptr matrixb =
-        AMP::LinearAlgebra::createMatrix( vector1, vector2 );
+    // Need to get another matrix to store data due to Epetra insert/replace idiom.
+    // Matrixa is fixed with no entires.
+    auto matrixb = AMP::LinearAlgebra::createMatrix( vector1, vector2 );
 
     vector2->setToScalar( 1. );
     matrixb->makeConsistent();
@@ -79,30 +76,24 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
     PROFILE_START( "GhostWriteTest", 1 );
 
     // Create the DOF_Manager
-    AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
-        new AMP::Discretization::DOFManagerParameters( mesh ) );
-    AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
+    auto DOFparams = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
+    auto DOFs      = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
 
     // Create a nodal variable
-    AMP::LinearAlgebra::Variable::shared_ptr variable(
-        new AMP::LinearAlgebra::Variable( "test vector" ) );
+    auto variable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
 
     // Create the matrix and vectors
-    AMP::LinearAlgebra::Vector::shared_ptr vector1 =
-        AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
-    AMP::LinearAlgebra::Vector::shared_ptr vector2 =
-        AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
-    AMP::LinearAlgebra::Matrix::shared_ptr matrix =
-        AMP::LinearAlgebra::createMatrix( vector1, vector2 );
+    auto vector1 = AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
+    auto vector2 = AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
+    auto matrix  = AMP::LinearAlgebra::createMatrix( vector1, vector2 );
 
     // For each mesh, get a mapping of it's processor id's to the comm of the mesh
-    std::map<AMP::Mesh::MeshID, std::vector<int>> proc_map = createRankMap( mesh );
+    auto proc_map = createRankMap( mesh );
     NULL_USE( proc_map );
 
     // For each processor, make sure it can write to all entries
-    AMP::AMP_MPI comm = mesh->getComm();
+    auto comm = mesh->getComm();
     for ( int p = 0; p < comm.getSize(); p++ ) {
         matrix->setScalar( -1.0 );
         matrix->makeConsistent();
@@ -112,14 +103,13 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
                 double proc = mesh->getComm().getRank();
                 bool passes = true;
                 // Loop through the owned nodes
-                AMP::Mesh::MeshIterator iterator =
-                    mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-                for ( size_t i = 0; i < iterator.size(); i++ ) {
+                auto it = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+                for ( size_t i = 0; i < it.size(); i++, ++it ) {
                     // Get the DOFs for the node and it's neighbors
                     std::vector<size_t> localDOFs;
-                    DOFs->getDOFs( iterator->globalID(), localDOFs );
+                    DOFs->getDOFs( it->globalID(), localDOFs );
                     std::vector<size_t> neighborDOFs, dofs;
-                    auto neighbors = iterator->getNeighbors();
+                    auto neighbors = it->getNeighbors();
                     for ( const auto &neighbor : neighbors ) {
                         if ( neighbor == nullptr )
                             continue;
@@ -155,7 +145,6 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
                             }
                         }
                     }
-                    ++iterator;
                 }
                 if ( passes )
                     utils->passes( "Able to write to ghost entries in matrix" );
@@ -173,14 +162,13 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
         bool passes = true;
         // Get a list of all nodes owned by the given processor p
         std::set<AMP::Mesh::MeshElementID> nodes_p;
-        AMP::Mesh::MeshIterator iterator = mesh->getIterator(AMP::Mesh::GeomType::Vertex,1);
-        for (size_t i=0; i<iterator.size(); i++) {
-            AMP::Mesh::MeshElementID id = iterator->globalID();
+        auto it = mesh->getIterator(AMP::Mesh::GeomType::Vertex,1);
+        for (size_t i=0; i<it.size(); i++, ++it) {
+            AMP::Mesh::MeshElementID id = it->globalID();
             const std::vector<int> &map = proc_map.find(id.meshID())->second;
             int rank = map[id.owner_rank()];
             if ( rank == p )
-                nodes_p.insert( iterator->globalID() );
-            ++iterator;
+                nodes_p.insert( it->globalID() );
         }
         // Get a list of all DOFs associated with the given nodes
         std::vector<size_t> dofs_p;
@@ -189,11 +177,11 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
         if ( dofs_p.size()==0 )
             dofs_p.push_back( (size_t)-1 );
         AMP::Utilities::quicksort( dofs_p );
-        iterator = mesh->getIterator(AMP::Mesh::GeomType::Vertex,0);
+        it = mesh->getIterator(AMP::Mesh::GeomType::Vertex,0);
         double proc = p;
-        for (size_t i=0; i<iterator.size(); i++) {
+        for (size_t i=0; i<it.size(); i++, ++it) {
             std::vector<size_t> dofs;
-            DOFs->getDOFs( iterator->globalID(), dofs );
+            DOFs->getDOFs( it->globalID(), dofs );
             for (size_t j=0; j<dofs.size(); j++) {
                 size_t row = dofs[j];
                 size_t index = AMP::Utilities::findfirst( dofs_p, row );
@@ -215,7 +203,6 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
                     }
                 }
             }
-            ++iterator;
         }
         char msg[100];
         sprintf(msg,"Matrix entries set by processor %i read correctly on processor
