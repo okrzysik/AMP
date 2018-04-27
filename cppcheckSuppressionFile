@@ -11,10 +11,11 @@ passedByValue:*/libmesh/initializeLibMesh.cc
 passedByValue:*/vectors/MeshVariable.cc
 passedByValue:*/vectors/VectorEngine.cpp
 passedByValue:*/operators/subchannel/SubchannelHelpers.cc
-passedByValue:*/utils/test/test_AMP_MPI.cc
 passedByValue:*/operators/test/maps/testMultiDofDTKMapOperator-2.cc
 passedByValue:*/operators/test/maps/testMultiDofDTKMapOperator.cc
 passedByValue:*/solvers/test/testMeshRefinementDiffusion-1.cc
+passedByValue:*/utils/test/test_AMP_MPI.cc
+passedByValue:*/utils/threadpool/test/test_thread_pool.cpp
 
 // Suppress unmatched suppressions
 unmatchedSuppression

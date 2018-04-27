@@ -190,8 +190,11 @@ SET( CPPCLEAN_SUPPRESSIONS
     ".I' does not need to be #included"
     "'ProfilerApp.h' does not need to be #included"
     "'utils/shared_ptr.h' does not need to be #included"
-    "'utils/Utilities.h' does not need to be #included"
+    "'Utilities.h' does not need to be #included"
+    "'UtilityMacros.h' does not need to be #included"
     "'utils/Counter.h' does not need to be #included"
+    "'libmeshGenerators.h' does not need to be #included"
+    "should #include header file '.*/src/.*'"
 )
 SET( CPPCLEAN_UNNECESSARY_INCLUDE 1 )
 SET( CPPCLEAN_EXTRA_INCLUDE 1 )

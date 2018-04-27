@@ -353,8 +353,6 @@ int main( int argc, char *argv[] )
     if ( rank > 0 )
         ThreadPool::set_OS_warnings( 1 );
     NULL_USE( size );
-    NULL_USE( argc );
-    NULL_USE( argv );
 
 
     // Test the atomics
