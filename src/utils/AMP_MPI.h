@@ -88,13 +88,16 @@ namespace AMP {
  */
 class AMP_MPI final
 {
-public: // Constructors
+public:
+    enum class ThreadSupport : int { SINGLE, FUNNELED, SERIALIZED, MULTIPLE };
+
+public:// Constructors
+
     /**
      *\brief  Is MPI active
      *\details  This returns true if MPI is initailized and not finalized
      */
     static bool MPI_active();
-
 
     /**
      *\brief  Empty constructor
@@ -211,12 +214,8 @@ public: // Member functions
                                   const int N_max               = -1 );
 
 
-    /**
-     *\brief Query the level of thread support, returned in provided
-     * \param provided (valid values: MPI_THREAD_SINGLE, MPI_THREAD_FUNNELED, MPI_THREAD_SERIALIZED,
-     *MPI_THREAD_MULTIPLE )
-     */
-    static int queryThreadSupport( int *provided );
+    //! Query the level of thread support
+    static ThreadSupport queryThreadSupport( );
 
 
     /**

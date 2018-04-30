@@ -287,15 +287,22 @@ bool MPI_CLASS::MPI_active()
     return true;
 #endif
 }
-
-int MPI_CLASS::queryThreadSupport( int *provided )
+MPI_CLASS::ThreadSupport MPI_CLASS::queryThreadSupport( )
 {
 #ifdef USE_MPI
-    return MPI_Query_thread( provided );
+    int provided = 0;
+    MPI_Query_thread( &provided );
+    if ( provided == MPI_THREAD_SINGLE )
+        return ThreadSupport::SINGLE;
+    if ( provided == MPI_THREAD_FUNNELED )
+        return ThreadSupport::FUNNELED;
+    if ( provided == MPI_THREAD_SERIALIZED )
+        return ThreadSupport::SERIALIZED;
+    if ( provided == MPI_THREAD_MULTIPLE )
+        return ThreadSupport::MULTIPLE;
+    return ThreadSupport::SINGLE;
 #else
-    // for now set to no threads in serial
-    *provided = 0;
-    return 0;
+    return ThreadSupport::MULTIPLE;
 #endif
 }
 
