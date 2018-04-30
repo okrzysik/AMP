@@ -17,6 +17,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <mutex>
 #include <sstream>
 #include <stdexcept>
 #include <sys/stat.h>
@@ -70,6 +71,10 @@
 namespace AMP {
 
 
+// Mutex for Utility functions
+static std::mutex Utilities_mutex;
+
+
 /*
  * Routine to convert an integer to a string.
  */
@@ -111,9 +116,8 @@ unsigned int Utilities::hash_char( const char *name )
  ****************************************************************************/
 void Utilities::setenv( const char *name, const char *value )
 {
+    Utilities_mutex.lock();
 #if defined( USE_LINUX ) || defined( USE_MAC )
-    char env[100];
-    sprintf( env, "%s=%s", name, value );
     bool pass = false;
     if ( value != nullptr )
         pass = ::setenv( name, value, 1 ) == 0;
@@ -124,6 +128,7 @@ void Utilities::setenv( const char *name, const char *value )
 #else
 #error Unknown OS
 #endif
+    Utilities_mutex.unlock();
     if ( !pass ) {
         char msg[100];
         if ( value != nullptr )
