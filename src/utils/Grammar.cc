@@ -167,7 +167,7 @@ void yyerror( const char *const error ) { Parser::getParser()->error( error ); }
 #define KEY_CHAR ( 5 )
 #define KEY_STRING ( 6 )
 
-static string type_names[] = { "complex", "double", "int", "bool", "box", "char", "string" };
+static const char *type_names[] = { "complex", "double", "int", "bool", "box", "char", "string" };
 
 #define IS_NUMBER( X ) ( ( ( X ) >= 0 ) && ( ( X ) < KEY_BOOL ) )
 #define PROMOTE( X, Y ) ( ( X ) < ( Y ) ? ( X ) : ( Y ) )
