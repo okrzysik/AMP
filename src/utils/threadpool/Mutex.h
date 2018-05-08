@@ -38,6 +38,8 @@ public:
     bool tryLock() const;
     //! Return true if we already own the lock
     bool ownLock() const;
+    //! Invalidate and clear the mutex (advanced interface, use with caution)
+    void invalidate() { d_data.reset(); }
 
 private:
     struct data_struct {

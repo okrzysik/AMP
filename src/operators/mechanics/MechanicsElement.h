@@ -1,4 +1,3 @@
-
 #ifndef included_AMP_MechanicsElement
 #define included_AMP_MechanicsElement
 
@@ -6,15 +5,18 @@
 
 #include "AMP/utils/shared_ptr.h"
 
-/* AMP files */
+// AMP headers
 #include "AMP/operators/ElementOperation.h"
 #include "MechanicsMaterialModel.h"
 
-/* Libmesh files */
+// Libmesh headers
+DISABLE_WARNINGS
 #include "libmesh/elem.h"
 #include "libmesh/fe_base.h"
 #include "libmesh/fe_type.h"
 #include "libmesh/quadrature.h"
+ENABLE_WARNINGS
+
 
 namespace AMP {
 namespace Operator {

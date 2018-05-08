@@ -277,7 +277,7 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         ut->failure( "the Final Residual Norm has changed." );
     }
 
-        //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
 
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );

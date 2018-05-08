@@ -567,7 +567,7 @@ inline int ThreadPool::getThreadNumber() const
 }
 
 
-} // AMP namespace
+} // namespace AMP
 
 
 // \endcond

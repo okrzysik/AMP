@@ -4,7 +4,8 @@
 #include "ProfilerApp.h"
 
 
-/* Libmesh files */
+// Libmesh headers
+DISABLE_WARNINGS
 #include "libmesh/auto_ptr.h"
 #include "libmesh/elem.h"
 #include "libmesh/enum_fe_family.h"
@@ -14,6 +15,7 @@
 #include "libmesh/fe_type.h"
 #include "libmesh/quadrature.h"
 #include "libmesh/string_to_enum.h"
+ENABLE_WARNINGS
 
 #include <cstring>
 

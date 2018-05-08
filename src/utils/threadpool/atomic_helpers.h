@@ -574,7 +574,7 @@ private:
 };
 
 
-} // namespace atomic
+} // namespace AtomicOperations
 } // namespace AMP
 
 

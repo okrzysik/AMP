@@ -6,6 +6,7 @@
 #include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
+#include "StackTrace/ErrorHandlers.h"
 #include "StackTrace/StackTrace.h"
 
 // Include all other headers
@@ -287,7 +288,7 @@ bool MPI_CLASS::MPI_active()
     return true;
 #endif
 }
-MPI_CLASS::ThreadSupport MPI_CLASS::queryThreadSupport( )
+MPI_CLASS::ThreadSupport MPI_CLASS::queryThreadSupport()
 {
 #ifdef USE_MPI
     int provided = 0;
@@ -2578,7 +2579,7 @@ MPI_CLASS::Isend<char>( const char *buf, const int length, const int, const int 
     if ( it == global_isendrecv_list.end() ) {
         // We are calling isend first
         Isendrecv_struct data;
-        data.data = buf;
+        data.data   = buf;
         data.status = 1;
         global_isendrecv_list.insert( std::pair<MPI_Request, Isendrecv_struct>( id, data ) );
     } else {
@@ -2800,7 +2801,7 @@ MPI_Request MPI_CLASS::Irecv<char>( char *buf, const int length, const int, cons
     if ( it == global_isendrecv_list.end() ) {
         // We are calling Irecv first
         Isendrecv_struct data;
-        data.data = buf;
+        data.data   = buf;
         data.status = 2;
         global_isendrecv_list.insert( std::pair<MPI_Request, Isendrecv_struct>( id, data ) );
     } else {
@@ -3723,7 +3724,7 @@ int MPI_CLASS::waitAny( int count, MPI_Request *request )
         for ( int i = 0; i < count; i++ ) {
             if ( global_isendrecv_list.find( request[i] ) == global_isendrecv_list.end() ) {
                 found_any = true;
-                index = i;
+                index     = i;
             }
         }
         if ( found_any )
@@ -3828,7 +3829,7 @@ double MPI_CLASS::tick() { return MPI_Wtick(); }
 #else
 double MPI_CLASS::time()
 {
-    auto t = std::chrono::system_clock::now();
+    auto t  = std::chrono::system_clock::now();
     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t.time_since_epoch() );
     return 1e-9 * ns.count();
 }
@@ -3840,4 +3841,4 @@ double MPI_CLASS::tick()
 #endif
 
 
-} // namespace
+} // namespace AMP

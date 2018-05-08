@@ -1397,8 +1397,7 @@ static inline void incIterator( AMP::Mesh::Mesh::shared_ptr mesh )
     size_t N = 0;
     auto it  = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     auto end = it.end();
-    for ( ; it != end; N++, ++it ) {
-    }
+    for ( ; it != end; N++, ++it ) {}
     AMP_ASSERT( N == it.size() );
 }
 static inline void rangeLoop( AMP::Mesh::Mesh::shared_ptr mesh )

@@ -146,8 +146,8 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
         checkErr( PCSetType( pc, PCNONE ) );
     }
 
-        // PetscTruth useZeroGuess = (d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
-        // ierr = KSPSetInitialGuessNonzero(d_KrylovSolver, useZeroGuess);
+    // PetscTruth useZeroGuess = (d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
+    // ierr = KSPSetInitialGuessNonzero(d_KrylovSolver, useZeroGuess);
 
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     PetscTruth useNonzeroGuess = ( !d_bUseZeroInitialGuess ) ? PETSC_TRUE : PETSC_FALSE;
@@ -418,9 +418,9 @@ int PetscKrylovSolver::setupPreconditioner( void * )
 #elif PETSC_VERSION_GE( 3, 2, 0 )
 PetscErrorCode PetscKrylovSolver::setupPreconditioner( PC pc )
 {
-    int ierr = 0;
+    int ierr  = 0;
     void *ctx = nullptr;
-    ierr = PCShellGetContext( pc, &ctx );
+    ierr      = PCShellGetContext( pc, &ctx );
     return ierr;
 }
 #else
@@ -503,5 +503,5 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
 
     return ( ierr );
 }
-}
+} // namespace Solver
 } // namespace AMP

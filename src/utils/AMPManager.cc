@@ -8,6 +8,7 @@
 
 #include "LapackWrappers.h"
 #include "ProfilerApp.h"
+#include "StackTrace/ErrorHandlers.h"
 #include "StackTrace/StackTrace.h"
 #include "StackTrace/Utilities.h"
 
@@ -313,9 +314,10 @@ void AMPManager::shutdown()
             printf( "  MPI shutdown time = %0.3f s\n", MPI_time );
         printf( "\n" );
     }
-// Print memory leaks on rank 0
+    // Shutdown timer and print memory leaks on rank 0
+    PROFILE_DISABLE();
 #ifdef USE_TIMER
-    MemoryApp::MemoryStats memory = MemoryApp::getMemoryStats();
+    auto memory = MemoryApp::getMemoryStats();
     if ( rank == 0 && memory.N_new > memory.N_delete )
         MemoryApp::print( std::cout );
 #endif
@@ -392,6 +394,7 @@ double AMPManager::stop_SAMRAI()
     double time = 0;
 #ifdef USE_EXT_SAMRAI
     double start = Utilities::time();
+    SAMRAI::tbox::PIO::finalize();
     SAMRAI::tbox::SAMRAIManager::shutdown();
     SAMRAI::tbox::SAMRAIManager::finalize();
     SAMRAI::tbox::SAMRAI_MPI::finalize();
@@ -406,7 +409,7 @@ double AMPManager::stop_SAMRAI()
  ****************************************************************************/
 #ifdef USE_EXT_SAMRAI
 #include "SAMRAI/tbox/Logger.h"
-class SAMRUtilsAbortAppender : public SAMRAI::tbox::Logger::Appender
+class SAMRAIAbortAppender : public SAMRAI::tbox::Logger::Appender
 {
 public:
     void
@@ -414,8 +417,8 @@ public:
     {
         AMP::Utilities::abort( msg, file, line );
     }
-    SAMRUtilsAbortAppender() = default;
-    virtual ~SAMRUtilsAbortAppender() = default;
+    SAMRAIAbortAppender() = default;
+    virtual ~SAMRAIAbortAppender() = default;
 };
 #endif
 
@@ -456,6 +459,7 @@ double AMPManager::stop_PETSc()
     if ( called_PetscInitialize ) {
         double start = Utilities::time();
         PetscPopSignalHandler();
+        PetscPopErrorHandler();
         PetscFinalize();
         time = Utilities::time() - start;
     }
@@ -513,7 +517,7 @@ void AMPManager::setHandlers()
 #ifdef USE_EXT_SAMRAI
     SAMRAI::tbox::SAMRAI_MPI::setCallAbortInSerialInsteadOfExit( true );
     SAMRAI::tbox::SAMRAI_MPI::setCallAbortInParallelInsteadOfMPIAbort( true );
-    auto appender = AMP::make_shared<SAMRUtilsAbortAppender>();
+    auto appender = AMP::make_shared<SAMRAIAbortAppender>();
     SAMRAI::tbox::Logger::getInstance()->setAbortAppender( appender );
 #endif
     // Set the terminate routine for runtime errors

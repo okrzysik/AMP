@@ -1,13 +1,14 @@
-
 #include "FlowElement.h"
 #include "AMP/utils/Utilities.h"
 
-/* Libmesh files */
+// Libmesh headers
+DISABLE_WARNINGS
 #include "libmesh/auto_ptr.h"
 #include "libmesh/enum_fe_family.h"
 #include "libmesh/enum_order.h"
 #include "libmesh/enum_quadrature_type.h"
 #include "libmesh/string_to_enum.h"
+ENABLE_WARNINGS
 
 #include <string>
 

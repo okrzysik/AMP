@@ -13,8 +13,8 @@
 
 using namespace AMP::unit_test;
 using namespace AMP::LinearAlgebra;
-using AMP::LinearAlgebra::VectorTests;
 using AMP::LinearAlgebra::generateVectorFactory;
+using AMP::LinearAlgebra::VectorTests;
 
 
 // Define some factories

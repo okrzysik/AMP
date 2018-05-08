@@ -8,10 +8,12 @@
 //#include "AMP/operators/map/Map3Dto1D.h"
 //#include "AMP/operators/map/Map1Dto3D.h"
 
-/* Libmesh files */
+// Libmesh files
+DISABLE_WARNINGS
 #include "libmesh/fe_base.h"
 #include "libmesh/fe_type.h"
 #include "libmesh/quadrature.h"
+ENABLE_WARNINGS
 
 namespace AMP {
 namespace Operator {

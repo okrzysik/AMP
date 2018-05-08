@@ -2,12 +2,17 @@
 #ifndef included_AMP_LinearFEOperator
 #define included_AMP_LinearFEOperator
 
-/* AMP files */
+// AMP files
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/libmesh/LinearFEOperatorParameters.h"
+
+// Libmesh headers
+DISABLE_WARNINGS
 #include "libmesh/elem.h"
+ENABLE_WARNINGS
+
 
 namespace AMP {
 namespace Operator {

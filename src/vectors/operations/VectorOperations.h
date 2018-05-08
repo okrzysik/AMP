@@ -20,18 +20,14 @@ class VectorData;
 
   \details
 
-  VectorOperations is a temporary class that is helping disassociate data storage
-  and vector operations such as dot product, norms, etc.  Currently, there are
-  two classes that inherit from VectorOperations:  Vector and VectorEngine.  At
-  some time in the (not so) distant future, this class will be dissolved entirely
-  as the VectorEngine class and the Vector class will have two distinct interfaces.
-  Until then, the methods below will have two meanings, one for a Vector and one
-  for a VectorEngine.
+  VectorOperations is a class used to perform vector operations such as dot
+  product, norms, etc.  Currently, there are two classes that inherit from
+  VectorOperations:  Vector and VectorEngine.
 
-  Perhaps a word or two on the difference.  A Vector has data and a VectorEngine.
-  A VectorEngine operates on data.  The difference can be seen in the Vec interface
-  in PETSc.  A Vec holds data and keeps pointers to operation functions.  The
-  engine is the litany of Vec functions:  VecAbs, VecSetValues, VecNorm, etc.
+  Perhaps a word or two on the difference.  A Vector has data and a operations.
+  VectorOperations operates on data.  The difference can be seen in the Vec
+  interface in PETSc.  A Vec holds data and keeps pointers to operation functions.
+  The engine is the litany of Vec functions:  VecAbs, VecSetValues, VecNorm, etc.
 
   If you are reading this portion of the documentation, odds are you do not need
   to know about VectorOperations.

@@ -31,49 +31,6 @@ MACRO( CONFIGURE_OPENMP )
 ENDMACRO()
 
 
-# Macro to configure CUDA
-MACRO( CONFIGURE_CUDA )
-    CHECK_ENABLE_FLAG( USE_CUDA 0 )
-    IF ( USE_CUDA )
-        # Include FindCUDA
-        INCLUDE( FindCUDA )
-        IF ( NOT CUDA_FOUND )
-            MESSAGE ( FATAL_ERROR "CUDA not found" )
-        ENDIF()
-        # Initialize the cuda flags
-        IF ( CUDA_FLAGS )
-            SET( CUDA_NVCC_FLAGS "${CUDA_FLAGS}" )
-        ENDIF()
-        IF(NOT CUDA_NVCC_FLAGS)
-            # Set minimum requirements
-            SET( CUDA_NVCC_FLAGS "-arch=sm_20" )
-        ENDIF()
-        # SET( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} ${CXX_STD_FLAG}" )
-        IF( NOT CMAKE_BUILD_TYPE )
-            MESSAGE(FATAL_ERROR "CMAKE_BUILD_TYPE is not set")
-        ELSEIF( ${CMAKE_BUILD_TYPE} STREQUAL "Debug" )
-            SET( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -g -O0 ${CXX_STD_FLAG}" )
-        ELSEIF( ${CMAKE_BUILD_TYPE} STREQUAL "Release" )
-            SET( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -O3 ${CXX_STD_FLAG}" )
-        ENDIF()
-        SET( CUDA_PROPAGATE_HOST_FLAGS OFF )
-        SET( CUDA_FIND_QUIETLY )
-        STRING( REPLACE " " ";" CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} )
-    ENDIF()
-    IF ( NOT USE_CUDA )
-        MESSAGE( "Not using CUDA" ) 
-    ELSE ()
-        INCLUDE_DIRECTORIES ( ${CUDA_INCLUDE_DIRS} )
-        ADD_DEFINITIONS ( -DUSE_CUDA ) 
-        MESSAGE( "Using CUDA ${CUDA_VERSION}" ) 
-        MESSAGE( "  CUDA_LIBRARIES = ${CUDA_LIBRARIES}" )
-        MESSAGE( "  CUDA_INCLUDE   = ${CUDA_INCLUDE_DIRS}" )
-        MESSAGE( "  CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}" )
-        MESSAGE( "  CUDA_TOOLKIT_ROOT = ${CUDA_TOOLKIT_ROOT_DIR}" )
-    ENDIF()
-ENDMACRO()
-
-
 # Macro to find and configure the X11 libraries
 MACRO( CONFIGURE_X11_LIBRARIES )
     # Determine if we want to use X11

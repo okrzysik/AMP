@@ -1,18 +1,13 @@
-/*
- * DiffusionCylindricalTransportModel.cc
- *
- *  Created on: Aug 19, 2011
- *      Author: gad
- */
-
 #include "DiffusionCylindricalTransportModel.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include <cmath>
 #include <map>
 
-/* Libmesh files */
+// Libmesh headers
+DISABLE_WARNINGS
 #include "libmesh/point.h"
+ENABLE_WARNINGS
 
 namespace AMP {
 namespace Operator {

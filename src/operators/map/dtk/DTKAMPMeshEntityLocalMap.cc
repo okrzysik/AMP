@@ -14,7 +14,9 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor.
-AMPMeshEntityLocalMap::AMPMeshEntityLocalMap() : d_inclusion_tol( 1.0e-6 ) { /* ... */}
+AMPMeshEntityLocalMap::AMPMeshEntityLocalMap() : d_inclusion_tol( 1.0e-6 )
+{ /* ... */
+}
 
 //---------------------------------------------------------------------------//
 // Set parameters for mapping.

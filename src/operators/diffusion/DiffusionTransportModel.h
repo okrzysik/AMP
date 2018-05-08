@@ -12,8 +12,11 @@
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/diffusion/DiffusionConstants.h"
 
-/* Libmesh files */
+// Libmesh headers
+DISABLE_WARNINGS
 #include "libmesh/point.h"
+ENABLE_WARNINGS
+
 
 namespace AMP {
 namespace Operator {

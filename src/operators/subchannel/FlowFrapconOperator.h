@@ -6,10 +6,6 @@
 #include "AMP/operators/subchannel/FlowFrapconOperatorParameters.h"
 #include "AMP/vectors/SimpleVector.h"
 
-/* Libmesh files */
-#include "libmesh/fe_base.h"
-#include "libmesh/fe_type.h"
-#include "libmesh/quadrature.h"
 
 namespace AMP {
 namespace Operator {

@@ -68,8 +68,7 @@ void CoupledFlow1DSolver::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::V
 void CoupledFlow1DSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
 {
 
-    if ( d_pOperator.get() != nullptr ) {
-    }
+    if ( d_pOperator.get() != nullptr ) {}
 }
 
 void CoupledFlow1DSolver::resetOperator(

@@ -331,9 +331,8 @@ protected:
                                                        equilibrium Thermal Strain at each gauss
                                                        point. */
 
-    std::vector<double>
-        d_Lambda; /**< A gauss point vector which contains a plasticity parameter at each gauss
-                     point. */
+    std::vector<double> d_Lambda; /**< A gauss point vector which contains a plasticity parameter at
+                                     each gauss point. */
 
     std::vector<int> d_ElPl; /**< A gauss point vector which contains the information whether a
                                 particular gauss has
@@ -352,20 +351,17 @@ protected:
         d_tmp1EffectivePlasticStrain; /**< A gauss point vector which stores the equivalent plastic
                                          strain at the current configuration. */
 
-    std::vector<double>
-        d_tmp1CreepStrain; /**< A gauss point vector which stores the creep strain (scalar) at the
-                              current configuration. */
+    std::vector<double> d_tmp1CreepStrain; /**< A gauss point vector which stores the creep strain
+                                              (scalar) at the current configuration. */
 
-    std::vector<double>
-        d_tmp1Temperature; /**< A gauss point vector which stores the temperature at the current
-                              step. */
+    std::vector<double> d_tmp1Temperature; /**< A gauss point vector which stores the temperature at
+                                              the current step. */
 
     std::vector<double> d_tmp1ThermalStrain; /**< A gauss point vector containing the current
                                                 Thermal Strain at each gauss point. */
 
-    std::vector<double>
-        d_tmp2Stress; /**< A gauss point vector which stores the stress at the current step while
-                         jacobian is being calculated. */
+    std::vector<double> d_tmp2Stress; /**< A gauss point vector which stores the stress at the
+                                         current step while jacobian is being calculated. */
 
     std::vector<double> d_tmp2YieldStress; /**< A gauss point vector which stores the yield stress
                                               at the current step
