@@ -290,8 +290,8 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
         soretCoeffVec->setValuesByGlobalID( nnodes, &gids[0], &soretCoeff[0] );
     }
 
-        //----------------------------------------------------------------------------------------------------------------------------------------------//
-        // write graphical output
+    //----------------------------------------------------------------------------------------------------------------------------------------------//
+    // write graphical output
 
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );

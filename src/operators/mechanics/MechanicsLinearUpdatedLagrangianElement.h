@@ -133,10 +133,9 @@ protected:
 
     std::vector<std::vector<double>> *d_elementStiffnessMatrix; /**< Element stiffness matrix. */
 
-    std::vector<std::vector<double>>
-        d_elementInputVectors; /**< Element input vectors
-                                      (Displacement, temperature, burnup
-                                      etc). */
+    std::vector<std::vector<double>> d_elementInputVectors; /**< Element input vectors
+                                                                   (Displacement, temperature,
+                                                               burnup etc). */
 
     bool d_onePointShearIntegration;
 

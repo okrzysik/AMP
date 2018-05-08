@@ -8,6 +8,7 @@
 
 #include "LapackWrappers.h"
 #include "ProfilerApp.h"
+#include "StackTrace/ErrorHandlers.h"
 #include "StackTrace/StackTrace.h"
 #include "StackTrace/Utilities.h"
 

@@ -157,7 +157,7 @@ enum yytokentype {
 extern int yylex();
 void yyerror( const char *const error ) { Parser::getParser()->error( error ); }
 
-    // Do not change the numbering of keys without checking promotion logic
+// Do not change the numbering of keys without checking promotion logic
 
 #define KEY_COMPLEX ( 0 )
 #define KEY_DOUBLE ( 1 )
@@ -783,9 +783,9 @@ YYSTYPE const *const yyvaluep;
 }
 
 
-    /*--------------------------------.
-    | Print this symbol on YYOUTPUT.  |
-    `--------------------------------*/
+/*--------------------------------.
+| Print this symbol on YYOUTPUT.  |
+`--------------------------------*/
 
 #if ( defined __STDC__ || defined __C99__FUNC__ || defined __cplusplus || defined _MSC_VER )
 static void yy_symbol_print( FILE *yyoutput, int yytype, YYSTYPE const *const yyvaluep )
@@ -804,10 +804,10 @@ YYSTYPE const *const yyvaluep;
     YYFPRINTF( yyoutput, ")" );
 }
 
-    /*------------------------------------------------------------------.
-    | yy_stack_print -- Print the state stack from its BOTTOM up to its |
-    | TOP (included).                                                   |
-    `------------------------------------------------------------------*/
+/*------------------------------------------------------------------.
+| yy_stack_print -- Print the state stack from its BOTTOM up to its |
+| TOP (included).                                                   |
+`------------------------------------------------------------------*/
 
 #if ( defined __STDC__ || defined __C99__FUNC__ || defined __cplusplus || defined _MSC_VER )
 static void yy_stack_print( yytype_int16 *bottom, yytype_int16 *top )
@@ -829,9 +829,9 @@ yytype_int16 *top;
     } while ( YYID( 0 ) )
 
 
-    /*------------------------------------------------.
-    | Report that the YYRULE is going to be reduced.  |
-    `------------------------------------------------*/
+/*------------------------------------------------.
+| Report that the YYRULE is going to be reduced.  |
+`------------------------------------------------*/
 
 #if ( defined __STDC__ || defined __C99__FUNC__ || defined __cplusplus || defined _MSC_VER )
 static void yy_reduce_print( YYSTYPE *yyvsp, int yyrule )
@@ -1109,7 +1109,7 @@ YYSTYPE *yyvaluep;
 }
 
 
-    /* Prevent warnings from -Wmissing-prototypes.  */
+/* Prevent warnings from -Wmissing-prototypes.  */
 
 #ifdef YYPARSE_PARAM
 #if defined __STDC__ || defined __cplusplus
@@ -2713,4 +2713,4 @@ static KeyData *lookup_variable( const string &key, const int index, const bool 
     return ( result );
 }
 
-} // AMP namespace
+} // namespace AMP

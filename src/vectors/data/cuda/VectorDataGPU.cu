@@ -1,5 +1,5 @@
-#include "vectors/data/cuda/VectorDataGPU.h"
-#include "vectors/data/cuda/VectorDataGPU.hpp"
+#include "AMP/vectors/data/cuda/VectorDataGPU.h"
+#include "AMP/vectors/data/cuda/VectorDataGPU.hpp"
 
 
 // Specializations

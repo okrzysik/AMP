@@ -2,14 +2,19 @@
 #ifndef included_AMP_NonlinearFEOperator
 #define included_AMP_NonlinearFEOperator
 
-/* AMP files */
+// AMP headers
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/libmesh/FEOperatorParameters.h"
+
+// Libmesh headers
+DISABLE_WARNINGS
 #include "libmesh/elem.h"
+ENABLE_WARNINGS
 
 #include <vector>
+
 
 namespace AMP {
 namespace Operator {

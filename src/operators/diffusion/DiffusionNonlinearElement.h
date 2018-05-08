@@ -3,12 +3,10 @@
 
 #include <vector>
 
-#include "AMP/utils/shared_ptr.h"
-
-/* AMP files*/
-
 #include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionElement.h"
+#include "AMP/utils/shared_ptr.h"
+
 
 namespace AMP {
 namespace Operator {

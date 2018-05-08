@@ -91,8 +91,7 @@ class AMP_MPI final
 public:
     enum class ThreadSupport : int { SINGLE, FUNNELED, SERIALIZED, MULTIPLE };
 
-public:// Constructors
-
+public: // Constructors
     /**
      *\brief  Is MPI active
      *\details  This returns true if MPI is initailized and not finalized
@@ -215,7 +214,7 @@ public: // Member functions
 
 
     //! Query the level of thread support
-    static ThreadSupport queryThreadSupport( );
+    static ThreadSupport queryThreadSupport();
 
 
     /**

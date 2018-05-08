@@ -30,13 +30,13 @@ public:
     virtual MeshIterator &operator++() override;
 
     //! Increment
-    virtual MeshIterator operator++(int) override;
+    virtual MeshIterator operator++( int ) override;
 
     //! Decrement
     virtual MeshIterator &operator--() override;
 
     //! Decrement
-    virtual MeshIterator operator--(int) override;
+    virtual MeshIterator operator--( int ) override;
 
     //! Check if two iterators are equal
     virtual bool operator==( const MeshIterator &rhs ) const override;

@@ -121,4 +121,4 @@ typedef union YYSTYPE {
 #endif
 
 extern YYSTYPE AMP_yylval;
-}
+} // namespace AMP

@@ -46,8 +46,7 @@ void Flow1DSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const p
 void Flow1DSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
 {
 
-    if ( d_pOperator.get() != nullptr ) {
-    }
+    if ( d_pOperator.get() != nullptr ) {}
 }
 
 void Flow1DSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )

@@ -525,7 +525,7 @@ AMP::shared_ptr<AMP::LinearAlgebra::Vector> IDATimeIntegrator::getSourceTerm() c
 {
     return ( d_pSourceTerm );
 }
-}
+} // namespace TimeIntegrator
 } // namespace AMP
 
 #endif

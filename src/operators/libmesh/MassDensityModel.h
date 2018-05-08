@@ -6,12 +6,19 @@
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/utils/ManufacturedSolution.h"
 #include "AMP/utils/shared_ptr.h"
+
+// Libmesh headers
+DISABLE_WARNINGS
 #include "libmesh/point.h"
+ENABLE_WARNINGS
+
 #include <string>
 #include <valarray>
 
+
 namespace AMP {
 namespace Operator {
+
 
 typedef ElementPhysicsModelParameters MassDensityModelParameters;
 

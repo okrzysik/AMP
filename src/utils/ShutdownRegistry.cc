@@ -85,4 +85,4 @@ void ShutdownRegistry::initialize()
 
     s_initialized = true;
 }
-}
+} // namespace AMP

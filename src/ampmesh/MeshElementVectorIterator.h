@@ -42,13 +42,13 @@ public:
     MeshIterator &operator++() override;
 
     //! Increment
-    MeshIterator operator++(int) override;
+    MeshIterator operator++( int ) override;
 
     //! Decrement
     MeshIterator &operator--() override;
 
     //! Decrement
-    MeshIterator operator--(int) override;
+    MeshIterator operator--( int ) override;
 
     // Arithmetic operator+
     virtual MeshIterator operator+( int ) const override;

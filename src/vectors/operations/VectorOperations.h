@@ -22,7 +22,7 @@ class VectorData;
 
   VectorOperations is a class used to perform vector operations such as dot
   product, norms, etc.  Currently, there are two classes that inherit from
-  VectorOperations:  Vector and VectorEngine.  
+  VectorOperations:  Vector and VectorEngine.
 
   Perhaps a word or two on the difference.  A Vector has data and a operations.
   VectorOperations operates on data.  The difference can be seen in the Vec

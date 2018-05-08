@@ -166,10 +166,9 @@ protected:
 
     const std::vector<Point> *d_xyz; /**< Locations of the Gauss points in the current element. */
 
-    std::vector<std::vector<double>>
-        d_elementInputVectors; /**< Element input vectors
-                                      (Displacement, temperature, burnup
-                                      etc). */
+    std::vector<std::vector<double>> d_elementInputVectors; /**< Element input vectors
+                                                                   (Displacement, temperature,
+                                                               burnup etc). */
 
     std::vector<double> *d_elementOutputVector; /**< Element residual vector */
 

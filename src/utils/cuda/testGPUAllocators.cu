@@ -1,5 +1,5 @@
 #include <cuda.h>
-#include "utils/cuda/testGPUAllocators.hpp"
+#include "AMP/utils/cuda/testGPUAllocators.hpp"
 
 
 template <typename T>

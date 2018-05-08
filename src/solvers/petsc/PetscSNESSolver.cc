@@ -614,5 +614,5 @@ void PetscSNESSolver::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vecto
 }
 
 
-} // Solver
+} // namespace Solver
 } // namespace AMP

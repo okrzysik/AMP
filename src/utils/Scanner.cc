@@ -1288,42 +1288,42 @@ static yy_state_type yy_try_NUL_trans( yy_state_type yy_current_state )
     return yy_is_jam ? 0 : yy_current_state;
 }
 
-    //    static void yyunput (int c, char * yy_bp )
-    //{
-    //    char *yy_cp;
-    //
-    //    yy_cp = (yy_c_buf_p);
-    //
-    //    /* undo effects of setting up yytext */
-    //    *yy_cp = (yy_hold_char);
-    //
-    //    if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-    //        { /* need to shift things up to make room */
-    //        /* +2 for EOB chars. */
-    //        int number_to_move = (yy_n_chars) + 2;
-    //        char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
-    //                    YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
-    //        char *source =
-    //                &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move];
-    //
-    //        while ( source > YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
-    //            *--dest = *--source;
-    //
-    //        yy_cp += (int) (dest - source);
-    //        yy_bp += (int) (dest - source);
-    //        YY_CURRENT_BUFFER_LVALUE->yy_n_chars =
-    //            (yy_n_chars) = YY_CURRENT_BUFFER_LVALUE->yy_buf_size;
-    //
-    //        if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-    //            YY_FATAL_ERROR( "flex scanner push-back overflow" );
-    //        }
-    //
-    //    *--yy_cp = (char) c;
-    //
-    //    (yytext_ptr) = yy_bp;
-    //    (yy_hold_char) = *yy_cp;
-    //    (yy_c_buf_p) = yy_cp;
-    //}
+//    static void yyunput (int c, char * yy_bp )
+//{
+//    char *yy_cp;
+//
+//    yy_cp = (yy_c_buf_p);
+//
+//    /* undo effects of setting up yytext */
+//    *yy_cp = (yy_hold_char);
+//
+//    if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
+//        { /* need to shift things up to make room */
+//        /* +2 for EOB chars. */
+//        int number_to_move = (yy_n_chars) + 2;
+//        char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
+//                    YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
+//        char *source =
+//                &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move];
+//
+//        while ( source > YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
+//            *--dest = *--source;
+//
+//        yy_cp += (int) (dest - source);
+//        yy_bp += (int) (dest - source);
+//        YY_CURRENT_BUFFER_LVALUE->yy_n_chars =
+//            (yy_n_chars) = YY_CURRENT_BUFFER_LVALUE->yy_buf_size;
+//
+//        if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
+//            YY_FATAL_ERROR( "flex scanner push-back overflow" );
+//        }
+//
+//    *--yy_cp = (char) c;
+//
+//    (yytext_ptr) = yy_bp;
+//    (yy_hold_char) = *yy_cp;
+//    (yy_c_buf_p) = yy_cp;
+//}
 
 #ifndef YY_NO_INPUT
 #ifdef __cplusplus
@@ -1747,7 +1747,7 @@ static void yy_fatal_error( yyconst char *msg )
     exit( YY_EXIT_FAILURE );
 }
 
-    /* Redefine yyless() so it works in section 3 code. */
+/* Redefine yyless() so it works in section 3 code. */
 
 #undef yyless
 #define yyless( n )                                   \
@@ -1860,9 +1860,9 @@ int yylex_destroy()
     return 0;
 }
 
-    /*
-     * Internal utility routines.
-     */
+/*
+ * Internal utility routines.
+ */
 
 #ifndef yytext_ptr
 static void yy_flex_strncpy( char *s1, yyconst char *s2, int n )
@@ -1902,4 +1902,4 @@ void *yyrealloc( void *ptr, yy_size_t size )
 void yyfree( void *ptr ) { free( (char *) ptr ); /* see yyrealloc() for (char *) cast */ }
 
 #define YYTABLES_NAME "yytables"
-}
+} // namespace AMP

@@ -4,17 +4,23 @@
 
 #include <vector>
 
-#include "AMP/utils/shared_ptr.h"
-
-/* AMP files */
 #include "AMP/operators/ElementOperation.h"
 #include "AMP/operators/flow/FlowTransportModel.h"
+#include "AMP/utils/shared_ptr.h"
 
-/* Libmesh files */
+// Libmesh headers
+DISABLE_WARNINGS
+#include "libmesh/auto_ptr.h"
+#include "libmesh/cell_hex8.h"
 #include "libmesh/elem.h"
+#include "libmesh/enum_fe_family.h"
+#include "libmesh/enum_order.h"
+#include "libmesh/enum_quadrature_type.h"
 #include "libmesh/fe_base.h"
 #include "libmesh/fe_type.h"
 #include "libmesh/quadrature.h"
+#include "libmesh/string_to_enum.h"
+ENABLE_WARNINGS
 
 namespace AMP {
 namespace Operator {
