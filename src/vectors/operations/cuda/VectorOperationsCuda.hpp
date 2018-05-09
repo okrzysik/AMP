@@ -233,8 +233,8 @@ void VectorOperationsCuda<TYPE>::setToScalar( double alpha )
 {
     bool useGPU = checkData();
     if ( useGPU ) {
-        const TYPE *data = d_VectorData->getRawDataBlock<TYPE>( 0 );
-        size_t N         = d_VectorData->sizeOfDataBlock( 0 );
+        TYPE *data = d_VectorData->getRawDataBlock<TYPE>( 0 );
+        size_t N   = d_VectorData->sizeOfDataBlock( 0 );
         thrust::fill_n( thrust::device, data, N, static_cast<TYPE>( alpha ) );
     } else {
         // Default to cpu version

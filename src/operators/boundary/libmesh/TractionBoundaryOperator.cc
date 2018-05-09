@@ -1,6 +1,7 @@
-
 #include "AMP/operators/boundary/libmesh/TractionBoundaryOperator.h"
 
+// Libmesh includes
+DISABLE_WARNINGS
 #include "libmesh/auto_ptr.h"
 #include "libmesh/cell_hex8.h"
 #include "libmesh/elem.h"
@@ -12,6 +13,8 @@
 #include "libmesh/node.h"
 #include "libmesh/quadrature.h"
 #include "libmesh/string_to_enum.h"
+ENABLE_WARNINGS
+
 
 namespace AMP {
 namespace Operator {

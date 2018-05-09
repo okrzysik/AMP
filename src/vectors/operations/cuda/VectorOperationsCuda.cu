@@ -1,5 +1,5 @@
-#include "vectors/operations/cuda/VectorOperationsCuda.h"
-#include "vectors/operations/cuda/VectorOperationsCuda.hpp"
+#include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
+#include "AMP/vectors/operations/cuda/VectorOperationsCuda.hpp"
 
 
 // Explicit instantiations
