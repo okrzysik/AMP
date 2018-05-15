@@ -1,6 +1,7 @@
-
 #include "AMP/operators/boundary/libmesh/TractionBoundaryOperator.h"
 
+// Libmesh includes
+DISABLE_WARNINGS
 #include "libmesh/auto_ptr.h"
 #include "libmesh/cell_hex8.h"
 #include "libmesh/elem.h"
@@ -12,13 +13,15 @@
 #include "libmesh/node.h"
 #include "libmesh/quadrature.h"
 #include "libmesh/string_to_enum.h"
+ENABLE_WARNINGS
+
 
 namespace AMP {
 namespace Operator {
 
 TractionBoundaryOperator::TractionBoundaryOperator(
     const AMP::shared_ptr<TractionBoundaryOperatorParameters> &params )
-    : BoundaryOperator( params )
+    : BoundaryOperator( params ), d_residualMode( false )
 {
     AMP_INSIST( params->d_db->keyExists( "Variable" ), "key not found" );
     std::string varName = params->d_db->getString( "Variable" );

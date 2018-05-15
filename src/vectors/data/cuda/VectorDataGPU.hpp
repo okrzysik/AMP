@@ -6,22 +6,11 @@
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
+#include <string>
 
 
 namespace AMP {
 namespace LinearAlgebra {
-
-
-// Define some specializations
-template<>
-std::string VectorDataGPU<double>::VectorDataName() const;
-template<>
-std::string VectorDataGPU<float>::VectorDataName() const;
-
-
-// Suppresses implicit instantiation below
-extern template class VectorDataGPU<double>;
-extern template class VectorDataGPU<float>;
 
 
 /****************************************************************
@@ -30,7 +19,8 @@ extern template class VectorDataGPU<float>;
 template<typename TYPE>
 std::string VectorDataGPU<TYPE>::VectorDataName() const
 {
-    return "VectorDataGPU<" + std::string( typeid( TYPE ).name() ) + ">";
+    std::string type = typeid( TYPE ).name();
+    return "VectorDataGPU<" + type + ">";
 }
 
 

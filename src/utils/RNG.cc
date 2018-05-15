@@ -1,4 +1,4 @@
-#include "RNG.h"
+#include "AMP/utils/RNG.h"
 
 
 namespace AMP {

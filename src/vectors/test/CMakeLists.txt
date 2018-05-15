@@ -26,6 +26,9 @@
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+COPY_TEST_FILE( input_testMultiVector )
+COPY_MESH_FILE ( brick.e )
+
 ADD_AMP_TEST_1_2_4( test_Vector )
 ADD_AMP_TEST_1_2_4( test_VectorClone )
 ADD_AMP_TEST_1_2_4( test_VectorCloneView )
@@ -34,7 +37,10 @@ ADD_AMP_TEST_1_2_4( test_VectorSelector )
 ADD_AMP_TEST_1_2_4( testMultiVector )
 ADD_AMP_PROVISIONAL_TEST( test_VectorPerformance )
 
-COPY_TEST_FILE( input_testMultiVector )
-COPY_MESH_FILE ( brick.e )
+IF ( USE_CUDA )
+    ADD_RESOURCE( test_Vector GPU )
+    ADD_RESOURCE( test_Vector_2procs GPU )
+    ADD_RESOURCE( test_Vector_4procs GPU )
+ENDIF()
 
 ADD_SUBDIRECTORY ( extra_tests )
