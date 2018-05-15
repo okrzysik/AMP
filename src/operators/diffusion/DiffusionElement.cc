@@ -17,7 +17,11 @@ namespace Operator {
 
 
 DiffusionElement::DiffusionElement( const AMP::shared_ptr<ElementOperationParameters> &params )
-    : ElementOperation( params ), d_elem( nullptr )
+    : ElementOperation( params ),
+      d_JxW( nullptr ),
+      d_phi( nullptr ),
+      d_dphi( nullptr ),
+      d_elem( nullptr )
 {
 
     AMP_INSIST( ( params.get() != nullptr ), "''params'' is NULL" );

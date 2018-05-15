@@ -236,33 +236,36 @@
     #define DISABLE_WARNINGS __pragma( warning( push, 0 ) )
     #define ENABLE_WARNINGS __pragma( warning( pop ) )
 #elif defined( USING_CLANG )
-    #define DISABLE_WARNINGS                                                            \
-        _Pragma( "clang diagnostic push" ) _Pragma( "clang diagnostic ignored \"-Wall\"" ) \
-        _Pragma( "clang diagnostic ignored \"-Wextra\"" )                               \
-        _Pragma( "clang diagnostic ignored \"-Wunused-private-field\"" )                \
-        _Pragma( "clang diagnostic ignored \"-Wdeprecated-declarations\"" )             \
+    #define DISABLE_WARNINGS                                                \
+        _Pragma( "clang diagnostic push" )                                  \
+        _Pragma( "clang diagnostic ignored \"-Wall\"" )                     \
+        _Pragma( "clang diagnostic ignored \"-Wextra\"" )                   \
+        _Pragma( "clang diagnostic ignored \"-Wunused-private-field\"" )    \
+        _Pragma( "clang diagnostic ignored \"-Wdeprecated-declarations\"" ) \
         _Pragma( "clang diagnostic ignored \"-Winteger-overflow\"" )
     #define ENABLE_WARNINGS _Pragma( "clang diagnostic pop" )
 #elif defined( USING_GCC )
-    #define DISABLE_WARNINGS                                                            \
-        _Pragma( "GCC diagnostic push" ) _Pragma( "GCC diagnostic ignored \"-Wall\"" )  \
-        _Pragma( "GCC diagnostic ignored \"-Wextra\"" )                                 \
-        _Pragma( "GCC diagnostic ignored \"-Wunused-local-typedefs\"" )                 \
-        _Pragma( "GCC diagnostic ignored \"-Woverloaded-virtual\"" )                    \
-        _Pragma( "GCC diagnostic ignored \"-Wunused-parameter\"" )                      \
-        _Pragma( "GCC diagnostic ignored \"-Wdeprecated-declarations\"" )               \
-        _Pragma( "GCC diagnostic ignored \"-Wvirtual-move-assign\"" )                   \
-        _Pragma( "GCC diagnostic ignored \"-Wunused-function\"" )                       \
-        _Pragma( "GCC diagnostic ignored \"-Woverflow\"" )                              \
-        _Pragma( "GCC diagnostic ignored \"-Wunused-variable\"" )                       \
-        _Pragma( "GCC diagnostic ignored \"-Wignored-qualifiers\"" )                    \
-        _Pragma( "GCC diagnostic ignored \"-Wenum-compare\"" )                          \
-        _Pragma( "GCC diagnostic ignored \"-Wterminate\"" )                             \
-        _Pragma( "GCC diagnostic ignored \"-Wpragmas\"" )
-#define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
+    #define DISABLE_WARNINGS                                                \
+        _Pragma( "GCC diagnostic push" )                                    \
+        _Pragma( "GCC diagnostic ignored \"-Wpragmas\"" )                   \
+        _Pragma( "GCC diagnostic ignored \"-Wall\"" )                       \
+        _Pragma( "GCC diagnostic ignored \"-Wextra\"" )                     \
+        _Pragma( "GCC diagnostic ignored \"-Wpedantic\"" )                  \
+        _Pragma( "GCC diagnostic ignored \"-Wunused-local-typedefs\"" )     \
+        _Pragma( "GCC diagnostic ignored \"-Woverloaded-virtual\"" )        \
+        _Pragma( "GCC diagnostic ignored \"-Wunused-parameter\"" )          \
+        _Pragma( "GCC diagnostic ignored \"-Wdeprecated-declarations\"" )   \
+        _Pragma( "GCC diagnostic ignored \"-Wvirtual-move-assign\"" )       \
+        _Pragma( "GCC diagnostic ignored \"-Wunused-function\"" )           \
+        _Pragma( "GCC diagnostic ignored \"-Woverflow\"" )                  \
+        _Pragma( "GCC diagnostic ignored \"-Wunused-variable\"" )           \
+        _Pragma( "GCC diagnostic ignored \"-Wignored-qualifiers\"" )        \
+        _Pragma( "GCC diagnostic ignored \"-Wenum-compare\"" )              \
+        _Pragma( "GCC diagnostic ignored \"-Wterminate\"" )
+    #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
 #else
-#define DISABLE_WARNINGS
-#define ENABLE_WARNINGS
+    #define DISABLE_WARNINGS
+    #define ENABLE_WARNINGS
 #endif
 #endif
 // clang-format on

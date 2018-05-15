@@ -20,7 +20,7 @@ template<typename TYPE>
 std::string VectorDataGPU<TYPE>::VectorDataName() const
 {
     std::string type = typeid( TYPE ).name();
-    return "VectorDataGPU<" + type +">";
+    return "VectorDataGPU<" + type + ">";
 }
 
 

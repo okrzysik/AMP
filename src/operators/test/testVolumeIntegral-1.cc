@@ -303,7 +303,7 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv, startup_properties );
     PROFILE_ENABLE( 5 );
 #ifdef USE_TIMER
-    global_profiler.ignore_timer_errors( true );
+    global_profiler.ignoreTimerErrors( true );
 #endif
     PROFILE_START( "main" );
 

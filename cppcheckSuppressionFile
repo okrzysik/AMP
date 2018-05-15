@@ -1,10 +1,18 @@
 // Supress false warnings
-noConstructor:*/utils/RNG.h
-copyCtorPointerCopying:*/utils/AMP_MPI.cc
-redundantAssignment:*/utils/AMP_MPI.cpp
-multiCondition:*/utils/AMP_MPI.cpp
-incorrectLogicOperator:*/utils/AMP_MPI.cpp
-duplicateExpression:*/utils/AMP_MPI.cpp
+noConstructor:*/src/utils/RNG.h
+copyCtorPointerCopying:*/src/utils/AMP_MPI.cc
+redundantAssignment:*/src/utils/AMP_MPI.cpp
+multiCondition:*/src/utils/AMP_MPI.cpp
+incorrectLogicOperator:*/src/utils/AMP_MPI.cpp
+duplicateExpression:*/src/utils/AMP_MPI.cpp
+uninitMemberVar:*/src/operators/boundary/libmesh/TractionBoundaryOperator.cc
+uninitMemberVar:*/src/operators/diffusion/DiffusionElement.cc
+uninitMemberVar:*/src/operators/flow/FlowElement.cc
+uninitMemberVar:*/src/operators/libmesh/MassElement.cc
+uninitMemberVar:*/src/operators/libmesh/NodeToGaussPointOperator.cc
+uninitMemberVar:*/src/operators/libmesh/SourceNonlinearElement.cc
+uninitMemberVar:*/src/operators/mechanics/MechanicsElement.cc
+noConstructor:*/AMP/utils/RNG.h
 
 // Supress unnecessary passedByValue
 passedByValue:*/libmesh/initializeLibMesh.cc
@@ -116,7 +124,7 @@ uninitMemberVar:*/src/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.cc
 *:/*/graphics/ogre/*
 
 // Suppress warnings for external code
-memleak:*/utils/tinyexpr/tinyexpr.c
+*:*/utils/tinyexpr/tinyexpr.c
 
 // Suppress opposite inner 'if' condition leads to a dead code block
 
