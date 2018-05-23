@@ -77,7 +77,7 @@ void sleep_inc2( double x )
     sleep_ms( static_cast<int>( round( x * 1000 ) ) );
     ++global_sleep_count;
 }
-void sleep_msg( double x, std::string msg )
+void sleep_msg( double x, const std::string &msg )
 {
     PROFILE_START( msg );
     sleep_ms( static_cast<int>( round( x * 1000 ) ) );
