@@ -778,6 +778,7 @@ void ThreadPool::setNumThreads( int num_worker_threads,
 void ThreadPool::tpool_thread( int thread_id )
 {
     bool shutdown         = false;
+    bool printInfo        = false;
     d_threadId[thread_id] = std::this_thread::get_id();
     if ( get_bit( d_active, thread_id ) )
         throw std::logic_error( "Thread cannot already be active" );
@@ -786,6 +787,20 @@ void ThreadPool::tpool_thread( int thread_id )
     unset_bit( d_cancel, thread_id );
     AMP::Utilities::setenv( "OMP_NUM_THREADS", "1" );
     AMP::Utilities::setenv( "MKL_NUM_THREADS", "1" );
+    if ( printInfo ) {
+        // Print the pid
+        printp( "pid = %i\n", (int) getpid() );
+        // Print the processor affinities for the process
+        try {
+            auto cpus = ThreadPool::getProcessAffinity();
+            printp( "%i cpus for current thread: ", (int) cpus.size() );
+            for ( int cpu : cpus )
+                printp( "%i ", cpu );
+            printp( "\n" );
+        } catch ( ... ) {
+            printp( "Unable to get process affinity\n" );
+        }
+    }
     // Check for shutdown
     PROFILE_THREADPOOL_START( "thread active" );
     shutdown = false;

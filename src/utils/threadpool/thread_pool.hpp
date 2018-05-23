@@ -25,21 +25,10 @@ namespace AMP {
  *  \param args         The arguments to pass to the function in the form (arg1,arg2,...)
  *  \param priority     Optional argument specifying the priority of the work item
  */
-#define TPOOL_TUPLE_TO_SEQ( t ) TPOOL_TUPLE_TO_SEQ_##II t
-#define TPOOL_TUPLE_TO_SEQ_II( a, ... ) a, ##__VA_ARGS__
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
-#define TPOOL_GET_PRIORITY( a, N, c, ... ) N
-#define TPOOL_ADD_WORK( TPOOL, FUNCTION, ARGS, ... )                     \
-    ThreadPool_add_work( TPOOL,                                          \
-                         TPOOL_GET_PRIORITY( 0, __VA_ARGS__, 0, 0 ) + 0, \
-                         FUNCTION,                                       \
-                         TPOOL_TUPLE_TO_SEQ( ARGS ) )
-#else
-#define TPOOL_GET_PRIORITY( _0, N, ... ) N
-#define TPOOL_ADD_WORK( TPOOL, FUNCTION, ARGS, ... ) \
-    ThreadPool_add_work(                             \
-        TPOOL, TPOOL_GET_PRIORITY( _0, ##__VA_ARGS__, 0 ), FUNCTION, TPOOL_TUPLE_TO_SEQ( ARGS ) )
-#endif
+#define TPOOL_ADD_WORK2( TPOOL, FUNCTION, ARGS, PRIORITY, ... ) \
+    ThreadPool_add_work( TPOOL, PRIORITY, FUNCTION, std::make_tuple ARGS )
+#define TPOOL_ADD_WORK( TPOOL, FUNCTION, ... ) TPOOL_ADD_WORK2( TPOOL, FUNCTION, __VA_ARGS__, 0, 0 )
+
 
 /*! @} */
 
@@ -107,11 +96,11 @@ private:
     WorkItemFull();
 
 public:
-    WorkItemFull( const std::function<void( Args... )> &routine2, Args... ts )
+    WorkItemFull( std::function<void( Args... )> &&routine2, Args... ts )
         : ThreadPool::WorkItemRet<void>(), routine( std::move( routine2 ) ), args( ts... )
     {
     }
-    WorkItemFull( const std::function<void( Args... )> &routine2, std::tuple<Args...> &&ts )
+    WorkItemFull( std::function<void( Args... )> &&routine2, std::tuple<Args...> &&ts )
         : ThreadPool::WorkItemRet<void>(), routine( std::move( routine2 ) ), args( ts )
     {
     }
@@ -127,11 +116,11 @@ private:
     WorkItemFull();
 
 public:
-    WorkItemFull( const std::function<Ret( Args... )> &routine2, Args... ts )
+    WorkItemFull( std::function<Ret( Args... )> &&routine2, Args... ts )
         : ThreadPool::WorkItemRet<Ret>(), routine( std::move( routine2 ) ), args( ts... )
     {
     }
-    WorkItemFull( const std::function<Ret( Args... )> &routine2, std::tuple<Args...> &&ts )
+    WorkItemFull( std::function<Ret( Args... )> &&routine2, std::tuple<Args...> &&ts )
         : ThreadPool::WorkItemRet<Ret>(), routine( std::move( routine2 ) ), args( ts )
     {
     }
@@ -143,29 +132,50 @@ public:
 // Functions to add work to the thread pool
 // clang-format off
 template<class Ret, class... Args>
-inline ThreadPool::thread_id_t ThreadPool_add_work( ThreadPool *tpool,
-    int priority, const std::function<Ret( Args... )> &routine, Args... args )
+inline ThreadPool::thread_id_t ThreadPool_add_work(
+    ThreadPool *tpool, int priority, std::function<Ret( Args... )> routine, std::tuple<Args...> &&args )
+{
+    auto work = new WorkItemFull<Ret, Args...>( routine, std::move( args ) );
+    return ThreadPool::add_work( tpool, work, priority );
+}
+template<class Ret, class... Args>
+inline ThreadPool::thread_id_t ThreadPool_add_work(
+    ThreadPool *tpool, int priority, Ret ( *routine )( Args... ), std::tuple<Args...> &&args )
+{
+    auto work = new WorkItemFull<Ret, Args...>( routine, std::move( args ) );
+    return ThreadPool::add_work( tpool, work, priority );
+}
+template<class Ret, class... Args>
+inline ThreadPool::thread_id_t ThreadPool_add_work(
+    ThreadPool *tpool, int priority, Ret ( *routine )(), std::tuple<std::nullptr_t>&& )
+{
+    auto work = new WorkItemFull<Ret>( routine );
+    return ThreadPool::add_work( tpool, work, priority );
+}
+template<class Ret, class... Args>
+inline ThreadPool::thread_id_t ThreadPool_add_work(
+ThreadPool *tpool, int priority, std::function<Ret( Args... )> routine, Args... args )
 {
     auto work = new WorkItemFull<Ret, Args...>( routine, std::forward_as_tuple( args... ) );
     return ThreadPool::add_work( tpool, work, priority );
 }
 template<class Ret, class... Args>
-inline ThreadPool::thread_id_t
-ThreadPool_add_work( ThreadPool *tpool, int priority, Ret ( *routine )( Args... ), Args... args )
+inline ThreadPool::thread_id_t ThreadPool_add_work(
+    ThreadPool *tpool, int priority, Ret ( *routine )( Args... ), Args... args )
 {
     auto work = new WorkItemFull<Ret, Args...>( routine, std::forward_as_tuple( args... ) );
     return ThreadPool::add_work( tpool, work, priority );
 }
 template<class Ret>
-inline ThreadPool::thread_id_t
-ThreadPool_add_work( ThreadPool *tpool, int priority, Ret ( *routine )(), void * )
+inline ThreadPool::thread_id_t ThreadPool_add_work(
+    ThreadPool *tpool, int priority, Ret ( *routine )(), void * )
 {
     auto work = new WorkItemFull<Ret>( routine );
     return ThreadPool::add_work( tpool, work, priority );
 }
 template<class Ret, class... Args>
 inline ThreadPool::WorkItem *ThreadPool::createWork(
-    const std::function<Ret( Args... )> &routine, Args... args )
+    std::function<Ret( Args... )> routine, Args... args )
 {
     return new WorkItemFull<Ret, Args...>( routine, std::forward_as_tuple( args... ) );
 }
@@ -176,12 +186,13 @@ inline ThreadPool::WorkItem *ThreadPool::createWork( Ret ( *routine )( Args... )
 }
 template<class Ret, class... Args>
 inline ThreadPool::WorkItem *ThreadPool::createWork(
-    const std::function<Ret( Args... )> &routine, std::tuple<Args...> &&args )
+    std::function<Ret( Args... )> routine, std::tuple<Args...> &&args )
 {
     return new WorkItemFull<Ret, Args...>( routine, std::move( args ) );
 }
 template<class Ret, class... Args>
-inline ThreadPool::WorkItem *ThreadPool::createWork( Ret ( *routine )( Args... ), std::tuple<Args...> &&args )
+inline ThreadPool::WorkItem *ThreadPool::createWork(
+    Ret ( *routine )( Args... ), std::tuple<Args...> &&args )
 {
     return new WorkItemFull<Ret, Args...>( routine, std::move( args ) );
 }
