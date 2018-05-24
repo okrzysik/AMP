@@ -95,7 +95,9 @@ ThyraVectorWrapper::~ThyraVectorWrapper() { delete d_comm; }
  * Get a shared object to this                                   *
  ****************************************************************/
 template<class T>
-static void nullDeleter( T * ){};
+static void nullDeleter( T * )
+{
+}
 AMP::shared_ptr<const ThyraVectorWrapper> ThyraVectorWrapper::shared_from_this() const
 {
     return AMP::shared_ptr<const ThyraVectorWrapper>( this, nullDeleter<const ThyraVectorWrapper> );

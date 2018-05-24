@@ -18,14 +18,16 @@ public:
 
     virtual ~CoupledFlow1DSolver();
 
-    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
+    virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
-    void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
+    virtual void
+    setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override;
 
-    void reset( AMP::shared_ptr<SolverStrategyParameters> );
+    virtual void reset( AMP::shared_ptr<SolverStrategyParameters> ) override;
 
-    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params );
+    virtual void
+    resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
 
 protected:
     int d_numpoints; /**< Number of points in z direction */

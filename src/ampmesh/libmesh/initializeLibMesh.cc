@@ -58,7 +58,7 @@ static int add_libmesh_cmdline( const int argc, const char **argv, char ***argv_
 /************************************************************
  * Constructor initilize libmesh on the given comm           *
  ************************************************************/
-initializeLibMesh::initializeLibMesh( AMP_MPI comm )
+initializeLibMesh::initializeLibMesh( const AMP_MPI &comm )
 {
     if ( N_copies > 0 ) {
         // libmesh is already initialized, check if it is compatible with the current comm

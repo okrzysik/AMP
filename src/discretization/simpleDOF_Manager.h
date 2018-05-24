@@ -135,7 +135,7 @@ public:
 
 private:
     // Private constructor
-    simpleDOFManager() : d_isBaseMesh( false ), DOFsPerElement( 0 ) {}
+    simpleDOFManager();
 
     // Function to find the remote DOF given a set of mesh element IDs
     std::vector<size_t> getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids ) const;

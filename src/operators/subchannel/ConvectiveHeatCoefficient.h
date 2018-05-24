@@ -22,7 +22,7 @@ public:
 
     void getConductance( std::vector<double> &beta,
                          std::vector<double> &gamma,
-                         const std::vector<std::vector<double>> &arguments );
+                         const std::vector<std::vector<double>> &arguments ) override;
 
     AMP::Materials::Material::shared_ptr getMaterial() { return d_material; }
     AMP::shared_ptr<AMP::Materials::Property<double>> getProperty() { return d_property; }

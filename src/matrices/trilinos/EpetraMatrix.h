@@ -28,7 +28,6 @@ class EpetraMatrix : virtual public Matrix
 {
 private:
     EpetraMatrix();
-    EpetraMatrix( const EpetraMatrix &rhs );
     explicit EpetraMatrix( MatrixParameters::shared_ptr );
 
 protected:
@@ -79,6 +78,9 @@ public:
      */
     void setEpetraMaps( Vector::shared_ptr range, Vector::shared_ptr domain );
 
+    EpetraMatrix( const EpetraMatrix & ) = delete;
+    EpetraMatrix &operator=( const EpetraMatrix & ) = delete;
+
     /** \brief Destructor
      */
     virtual ~EpetraMatrix();
@@ -103,8 +105,10 @@ public:
      */
     virtual void fillComplete();
 
-    virtual Matrix::shared_ptr transpose() const;
+    virtual Matrix::shared_ptr transpose() const override;
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

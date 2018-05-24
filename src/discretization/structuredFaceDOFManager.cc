@@ -16,6 +16,11 @@ namespace Discretization {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
+structuredFaceDOFManager::structuredFaceDOFManager() : d_gcw( 0 )
+{
+    for ( int i = 0; i < 3; i++ )
+        d_DOFsPerFace[i] = 0;
+}
 DOFManager::shared_ptr structuredFaceDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
                                                          int DOFsPerFace[3],
                                                          int gcw )

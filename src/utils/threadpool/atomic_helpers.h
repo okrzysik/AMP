@@ -535,6 +535,7 @@ inline void atomic_swap( int64_atomic volatile *x, int64_atomic *y )
 // Atomic operations for floating types
 inline double atomic_add( double volatile *x, double y )
 {
+    static_assert( sizeof( double ) == sizeof( int64_atomic ), "Unexpected size" );
     union U {
         double d;
         int64_atomic i;

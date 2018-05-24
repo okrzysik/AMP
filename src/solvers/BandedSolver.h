@@ -42,7 +42,7 @@ public:
      * @param[out] u    shared pointer to approximate computed solution
      */
     virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
+                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Resets the operator registered with the solver with new parameters if necessary
@@ -50,14 +50,14 @@ public:
      *        OperatorParameters object that is NULL by default
      */
     virtual void
-    resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters );
+    resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
 
     /**
      * Resets the solver internally with new parameters if necessary
      * @param parameters
      *        BandedSolverParameters object that is NULL by default
      */
-    virtual void reset( AMP::shared_ptr<SolverStrategyParameters> parameters );
+    virtual void reset( AMP::shared_ptr<SolverStrategyParameters> parameters ) override;
 
 
 protected:

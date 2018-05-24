@@ -26,7 +26,7 @@ public:
     //! Destructor
     virtual ~SubchannelTwoEqLinearOperator() {}
 
-    void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
 
     //! Sets frozen vector
     void setFrozenVector( AMP::LinearAlgebra::Vector::shared_ptr frozenVec )

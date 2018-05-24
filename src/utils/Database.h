@@ -1133,7 +1133,7 @@ public:
      * Names for nested databases are the keyname of the database.
      *
      */
-    virtual std::string getName() = 0;
+    virtual std::string getName() const = 0;
 
     /**
      * Print the current database to the specified output stream.  If

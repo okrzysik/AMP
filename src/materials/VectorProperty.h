@@ -56,10 +56,10 @@ public:
     }
 
     /// indicator for scalar evaluator
-    virtual bool isScalar() { return false; }
+    virtual bool isScalar() override { return false; }
 
     /// indicator for vector evaluator
-    virtual bool isVector() { return true; }
+    virtual bool isVector() override { return true; }
 
 protected:
     size_t d_dimension;       ///< number of return values
@@ -130,29 +130,31 @@ public:
                         const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
     // disable scalar evaluator
-    virtual Number eval( std::vector<Number> & )
+    virtual Number eval( std::vector<Number> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from vector property" );
         return 0;
     }
 
     // disable scalar evaluator
-    virtual void evalv( std::vector<Number> &,
-                        const std::map<std::string, AMP::shared_ptr<std::vector<Number>>> & )
+    virtual void
+    evalv( std::vector<Number> &,
+           const std::map<std::string, AMP::shared_ptr<std::vector<Number>>> & ) override
+    {
+        AMP_ERROR( "cannot use scalar evaluator from vector property" );
+    }
+
+    // disable scalar evaluator
+    virtual void
+    evalv( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &,
+           const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from vector property" );
     }
 
     // disable scalar evaluator
     virtual void evalv( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &,
-                        const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> & )
-    {
-        AMP_ERROR( "cannot use scalar evaluator from vector property" );
-    }
-
-    // disable scalar evaluator
-    virtual void evalv( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &,
-                        const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> & )
+                        const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from vector property" );
     }

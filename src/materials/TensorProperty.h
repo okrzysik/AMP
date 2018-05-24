@@ -60,10 +60,10 @@ public:
     }
 
     /// indicator for scalar evaluator
-    virtual bool isScalar() { return false; }
+    virtual bool isScalar() override { return false; }
 
     /// indicator for tensor evaluator
-    virtual bool isTensor() { return true; }
+    virtual bool isTensor() override { return true; }
 
 protected:
     std::vector<size_t> d_dimensions; ///< dimensions of return value tensor
@@ -135,29 +135,31 @@ public:
                         const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
     // disable scalar evaluator
-    virtual Number eval( std::vector<Number> & )
+    virtual Number eval( std::vector<Number> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from tensor property" );
         return 0;
     }
 
     // disable scalar evaluator
-    virtual void evalv( std::vector<Number> &,
-                        const std::map<std::string, AMP::shared_ptr<std::vector<Number>>> & )
+    virtual void
+    evalv( std::vector<Number> &,
+           const std::map<std::string, AMP::shared_ptr<std::vector<Number>>> & ) override
+    {
+        AMP_ERROR( "cannot use scalar evaluator from tensor property" );
+    }
+
+    // disable scalar evaluator
+    virtual void
+    evalv( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &,
+           const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from tensor property" );
     }
 
     // disable scalar evaluator
     virtual void evalv( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &,
-                        const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> & )
-    {
-        AMP_ERROR( "cannot use scalar evaluator from tensor property" );
-    }
-
-    // disable scalar evaluator
-    virtual void evalv( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &,
-                        const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> & )
+                        const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from tensor property" );
     }

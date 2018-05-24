@@ -30,7 +30,7 @@ public:
                   Core 0 has global ids \f$(0,1,\ldots,n-1)\f$,
                   core 1 has global ids \f$(n,n+1,n+2,\ldots,m)\f$, etc.
       */
-    VectorEngineParameters( size_t local_size, size_t global_size, AMP_MPI comm );
+    VectorEngineParameters( size_t local_size, size_t global_size, const AMP_MPI &comm );
 
     //! destructor
     virtual ~VectorEngineParameters();

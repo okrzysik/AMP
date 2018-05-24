@@ -41,13 +41,14 @@ public:
     virtual ~AsciiWriter();
 
     //!  Function to return the file extension
-    virtual std::string getExtension();
+    virtual std::string getExtension() override;
 
     //!  Function to read a file
-    virtual void readFile( const std::string &fname );
+    virtual void readFile( const std::string &fname ) override;
 
     //!  Function to write a file
-    virtual void writeFile( const std::string &fname, size_t iteration_count, double time = 0 );
+    virtual void
+    writeFile( const std::string &fname, size_t iteration_count, double time = 0 ) override;
 
 #ifdef USE_AMP_MESH
     /**
@@ -65,7 +66,7 @@ public:
      */
     virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh,
                                int level        = 1,
-                               std::string path = std::string() );
+                               std::string path = std::string() ) override;
 #endif
 
 #if defined( USE_AMP_VECTORS ) && defined( USE_AMP_MESH )
@@ -89,7 +90,7 @@ public:
     virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                  AMP::Mesh::Mesh::shared_ptr mesh,
                                  AMP::Mesh::GeomType type,
-                                 const std::string &name = "" );
+                                 const std::string &name = "" ) override;
 #endif
 
 #if defined( USE_AMP_VECTORS )
@@ -100,7 +101,7 @@ public:
      * mesh.
      * \param vec   The vector we want to write
      */
-    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
+    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
 #endif
 
 #ifdef USE_AMP_MATRICES
@@ -111,7 +112,7 @@ public:
      * mesh.
      * \param mat   The matrix we want to write
      */
-    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat );
+    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat ) override;
 #endif
 
 
