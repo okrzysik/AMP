@@ -191,7 +191,9 @@ Teuchos::RCP<::Thyra::PreconditionerBase<double>> TrilinosThyraModelEvaluator::c
  * Return the views to the TrilinosLinearOP                      *
  ****************************************************************/
 template<class T>
-static void nullDeleter( T * ){};
+static void nullDeleter( T * )
+{
+}
 AMP::shared_ptr<AMP::Solver::TrilinosLinearOP>
 TrilinosThyraModelEvaluator::view( Teuchos::RCP<Thyra::LinearOpBase<double>> op )
 {

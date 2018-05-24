@@ -1,30 +1,3 @@
-// Supress false warnings
-noConstructor:*/src/utils/RNG.h
-copyCtorPointerCopying:*/src/utils/AMP_MPI.cc
-redundantAssignment:*/src/utils/AMP_MPI.cpp
-multiCondition:*/src/utils/AMP_MPI.cpp
-incorrectLogicOperator:*/src/utils/AMP_MPI.cpp
-duplicateExpression:*/src/utils/AMP_MPI.cpp
-uninitMemberVar:*/src/operators/boundary/libmesh/TractionBoundaryOperator.cc
-uninitMemberVar:*/src/operators/diffusion/DiffusionElement.cc
-uninitMemberVar:*/src/operators/flow/FlowElement.cc
-uninitMemberVar:*/src/operators/libmesh/MassElement.cc
-uninitMemberVar:*/src/operators/libmesh/NodeToGaussPointOperator.cc
-uninitMemberVar:*/src/operators/libmesh/SourceNonlinearElement.cc
-uninitMemberVar:*/src/operators/mechanics/MechanicsElement.cc
-noConstructor:*/AMP/utils/RNG.h
-
-// Supress unnecessary passedByValue
-passedByValue:*/libmesh/initializeLibMesh.cc
-passedByValue:*/vectors/MeshVariable.cc
-passedByValue:*/vectors/VectorEngine.cpp
-passedByValue:*/operators/subchannel/SubchannelHelpers.cc
-passedByValue:*/operators/test/maps/testMultiDofDTKMapOperator-2.cc
-passedByValue:*/operators/test/maps/testMultiDofDTKMapOperator.cc
-passedByValue:*/solvers/test/testMeshRefinementDiffusion-1.cc
-passedByValue:*/utils/test/test_AMP_MPI.cc
-passedByValue:*/utils/threadpool/test/test_thread_pool.cpp
-
 // Suppress unmatched suppressions
 unmatchedSuppression
 
@@ -32,65 +5,22 @@ unmatchedSuppression
 missingInclude
 
 // Suppress unusedFunction messages (functions may be used by subsequent packages)
-unusedPrivateFunction:*/materials/Property.h
 unusedFunction
 
 // Suppress redundantAssignment/Copy, they can be better practice in many instances
 redundantAssignment
 redundantCopy
 
-// Suppress operator test == warnings in tests
-duplicateExpression:*/utils/test/test_AMP_MPI.cc
-duplicateExpression:*/ampmesh/testHelpers/meshTests.cc
-duplicateExpression:*/ampmesh/structured/BoxMesh.cc
-duplicateExpression:*/discretization/test/DOFManager_tests.h
-duplicateExpression:*/utils/Array.hpp
+// Suppress #error messages (they may be valid and will always be caught by compiler if options are exercised)
+preprocessorErrorDirective
 
-// Suppress specific instances of "Upon exception there is memory leak"
-exceptNew:*/vectors/petsc/PetscVector.cc
-exceptNew:*/vectors/trilinos/thyra/ThyraVector.cc
-exceptNew:*/vectors/trilinos/thyra/ThyraVectorWrapper.cc
-exceptNew:*/matrices/trilinos/ManagedEpetraMatrix.cc
+// Suppress virtualCallInConstructor
+virtualCallInConstructor
 
 // Suppress huge input warnings
 invalidscanf
 invalidscanf_libc
 
-// Suppress specific errors for AMPManager
-variableScope:*/utils/AMPManager.cc
-knownConditionTrueFalse:*/utils/AMPManager.cc
-memleak:*/utils/test/test_AMPManager.cc
-
-// Suppress warnings for Scanner.cc, Database.cc, MemoryDatabase.cc, Parser.cc, and Grammar.cc
-toomanyconfigs:*/utils/Scanner.cc
-unusedStructMember:*/utils/Scanner.cc
-ConfigurationNotChecked:*/utils/Scanner.cc
-nullPointer:*/utils/Scanner.cc
-passedByValue:*/utils/Database.cc
-passedByValue:*/utils/Database.h
-stlSize:*/utils/Database.cc
-postfixOperator:*/utils/MemoryDatabase.cc
-unusedPrivateFunction:*/utils/MemoryDatabase.h
-uninitMemberVar:*/utils/Parser.cc
-postfixOperator:*/utils/Parser.cc
-toomanyconfigs:*/utils/Grammar.cc
-ConfigurationNotChecked:*/utils/Grammar.cc
-uselessAssignmentPtrArg:*/utils/Grammar.cc
-syntaxError:*/utils/ParallelBuffer.cc
-duplicateExpression:*/utils/Grammar.cc
-
-
-// Suppress warnings for ampmesh
-noExplicitConstructor:*/ampmesh/MeshID.h
-noExplicitConstructor:*/ampmesh/Geometry.h
-toomanyconfigs:*/ampmesh/test/test_Mesh.cc
-
-// Suppress material warnings
-nullPointer:*/materials/Property.h
-
-// Suppress utils warnings
-usleepCalled:*/utils/Utilities.cc
-invalidPointerCast:*/utils/threadpool/atomic_helpers.h
 
 // Suppress common test warnings (example: x==x)
 duplicateExpression:*/test/test*
@@ -101,49 +31,78 @@ variableScope:*/test/maps/dtk/test*
 unreadVariable:*/test/test*
 unusedVariable:*/test/maps/dtk/test*
 knownConditionTrueFalse:*/oxide/OxideModel.cc
-knownConditionTrueFalse:*/utils/test/test_AMP_MPI.cc
+
+
+// Suppress warnings for ampmesh
+duplicateExpression:*/ampmesh/testHelpers/meshTests.cc
+duplicateExpression:*/ampmesh/structured/BoxMesh.cc
+noExplicitConstructor:*/ampmesh/MeshID.h
+noExplicitConstructor:*/ampmesh/Geometry.h
 knownConditionTrueFalse:*/ampmesh/testHelpers/meshTestLoop.cc
-knownConditionTrueFalse:*/utils/test/test_AsciiWriter.cc
-noExplicitConstructor:*/utils/AMP_MPI.h
-noExplicitConstructor:*/utils/test/test_AMP_MPI.cc
 postfixOperator:*/ampmesh/testHelpers/meshTests.cc
-
-// Suppress warnings for usleep
-obsoleteFunctionsusleep
-
-// Suppress false warnings for useInitializationList
-useInitializationList:*/operators/map/AsyncMapOperator.cc
-
-// Suppress false warnings for uninitialized member variable
-uninitMemberVar:*/src/operators/boundary/libmesh/NeumannVectorCorrection.cc
-uninitMemberVar:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cc
-uninitMemberVar:*/src/vectors/trilinos/thyra/NativeThyraVector.cc
-uninitMemberVar:*/src/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.cc
-
-// Suppress graphics for now
-*:/*/graphics/ogre/*
-
-// Suppress warnings for external code
-*:*/utils/tinyexpr/tinyexpr.c
-
-// Suppress opposite inner 'if' condition leads to a dead code block
-
 oppositeInnerCondition:*/src/ampmesh/MultiMesh.cc
 oppositeInnerCondition:*/src/ampmesh/loadBalance/loadBalanceSimulator.cc
-
-// Suppress #error code paths (may not have complete #define statements)
-preprocessorErrorDirective:*/utils/AMPManager.cc
-preprocessorErrorDirective:*/vectors/petsc/PetscHelpers.h
-preprocessorErrorDirective:*/solvers/petsc/PetscKrylovSolver.cc
-preprocessorErrorDirective:*/solvers/petsc/PetscSNESSolver.h
-preprocessorErrorDirective:*/solvers/petsc/ManagedPetscVector.h
-
-// Suppress unsupported code
 *:*/ampmesh/dendro/*
 *:*/ampmesh/hex8_element_t.cc
+duplicateAssignExpression:*/src/ampmesh/testHelpers/meshTests.cc
 
-// Suppress #error messages (they may be valid and will always be caught by compiler if options are exercised)
-preprocessorErrorDirective
 
+// Suppress warnings for discretization
+duplicateExpression:*/discretization/test/DOFManager_tests.h
+
+
+// Suppress warnings for graphics
+*:/*/graphics/ogre/*
+
+
+// Suppress warnings for material
+unusedPrivateFunction:*/materials/Property.h
+nullPointer:*/materials/Property.h
+
+
+// Suppress warnings for matrices
+exceptNew:*/src/matrices/trilinos/ManagedEpetraMatrix.cc
+
+
+// Supress warnings for operators
+uninitMemberVar:*/src/operators/boundary/libmesh/TractionBoundaryOperator.cc
+uninitMemberVar:*/src/operators/diffusion/DiffusionElement.cc
+uninitMemberVar:*/src/operators/flow/FlowElement.cc
+uninitMemberVar:*/src/operators/libmesh/MassElement.cc
+uninitMemberVar:*/src/operators/libmesh/NodeToGaussPointOperator.cc
+uninitMemberVar:*/src/operators/libmesh/SourceNonlinearElement.cc
+uninitMemberVar:*/src/operators/mechanics/MechanicsElement.cc
+uninitMemberVar:*/src/operators/boundary/libmesh/NeumannVectorCorrection.cc
+uninitMemberVar:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cc
+passedByValue:*/src/operators/subchannel/SubchannelHelpers.cc
+passedByValue:*/src/operators/test/maps/testMultiDofDTKMapOperator-2.cc
+passedByValue:*/src/operators/test/maps/testMultiDofDTKMapOperator.cc
+useInitializationList:*/src/operators/map/AsyncMapOperator.cc
+
+
+// Supress warnings for vectors
+uninitMemberVar:*/src/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.cc
+
+
+// Supress warnings for solvers
+duplicateAssignExpression:*/src/solvers/test/testMaterialModels_VonMisesPlasticity-2.cc
+
+
+// Suppress warnings for utils
+*:*/utils/Database.*
+*:*/utils/Grammar.cc
+*:*/utils/Parser.cc
+noConstructor:*/AMP/utils/RNG.h
+duplicateExpression:*/utils/Array.hpp
+passedByValue:*/utils/test/test_AMP_MPI.cc
+noExplicitConstructor:*/utils/AMP_MPI.h
+noExplicitConstructor:*/utils/test/test_AMP_MPI.cc
+passedByValue:*/utils/threadpool/test/test_thread_pool.cpp
+memleak:*/utils/test/test_AMPManager.cc
+invalidPointerCast:*/utils/threadpool/atomic_helpers.h
+duplicateAssignExpression:*/src/utils/test/test_MathExpr.cc
+knownConditionTrueFalse:*/utils/test/test_AsciiWriter.cc
+knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
+*:*/utils/tinyexpr/tinyexpr.c
 
 

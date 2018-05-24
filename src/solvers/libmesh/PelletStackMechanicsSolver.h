@@ -18,10 +18,11 @@ public:
 
     virtual ~PelletStackMechanicsSolver() {}
 
-    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params );
+    virtual void
+    resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
 
-    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
+    virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
 protected:
     void solveSerial( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,

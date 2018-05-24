@@ -18,10 +18,9 @@ namespace LinearAlgebra {
  ****************************************************************/
 ThyraVectorSpaceWrapper::ThyraVectorSpaceWrapper(
     AMP::shared_ptr<const ThyraVectorWrapper> thyra_vec, bool is_range )
+    : d_thyra_vec( thyra_vec ), d_is_range( is_range )
 {
     AMP_INSIST( thyra_vec != nullptr, "thyra_vec may not be NULL" );
-    d_thyra_vec = thyra_vec;
-    d_is_range  = is_range;
 }
 
 

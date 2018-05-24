@@ -113,7 +113,9 @@ Teuchos::RCP<const Thyra::VectorBase<double>> ThyraVector::getVec() const { retu
  * Return the views to the AMP vectors                           *
  ****************************************************************/
 template<class T>
-static void nullDeleter( T * ){};
+static void nullDeleter( T * )
+{
+}
 AMP::LinearAlgebra::Vector::shared_ptr ThyraVector::view( Thyra::VectorBase<double> *vec )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vec_out;

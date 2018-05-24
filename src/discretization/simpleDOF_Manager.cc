@@ -13,6 +13,10 @@ namespace Discretization {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
+simpleDOFManager::simpleDOFManager()
+    : d_isBaseMesh( false ), d_type( AMP::Mesh::GeomType::null ), DOFsPerElement( 0 )
+{
+}
 DOFManager::shared_ptr simpleDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
                                                  AMP::Mesh::GeomType type,
                                                  int gcw,

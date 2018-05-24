@@ -92,11 +92,6 @@ public:
     virtual bool close() override;
 
     /**
-     * Return string name of memory database object.
-     */
-    virtual std::string getName() const;
-
-    /**
      * Return true if the specified key exists in the database and false
      * otherwise.
      */
@@ -671,7 +666,7 @@ public:
      * Names for nested databases are the keyname of the database.
      *
      */
-    virtual std::string getName() override;
+    virtual std::string getName() const override;
 
     /**
      * Return whether the specified key has been accessed by one of the
@@ -750,5 +745,3 @@ private:
 
 
 #endif
-
-#include "MemoryDatabase.I"

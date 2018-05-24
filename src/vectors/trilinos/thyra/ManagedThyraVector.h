@@ -45,13 +45,13 @@ public:
     virtual ~ManagedThyraVector();
 
     // These methods are adequately documented in a base class
-    virtual std::string type() const;
+    virtual std::string type() const override;
 
     using Vector::cloneVector;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const;
     virtual void copyVector( Vector::const_shared_ptr vec );
-    virtual void assemble() {}
-    ManagedVector *getNewRawPtr() const;
+    virtual void assemble() override {}
+    virtual ManagedVector *getNewRawPtr() const override;
 
 protected:
 };

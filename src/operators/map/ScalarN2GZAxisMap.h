@@ -49,13 +49,13 @@ protected:
     // Implimented buildMap routine
     virtual std::multimap<double, double> buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr,
                                                     const AMP::Mesh::Mesh::shared_ptr,
-                                                    const AMP::Mesh::MeshIterator & );
+                                                    const AMP::Mesh::MeshIterator & ) override;
 
     // Implimented buildReturn routine
     virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr,
                               const AMP::Mesh::Mesh::shared_ptr,
                               const AMP::Mesh::MeshIterator &,
-                              const std::map<double, double> & );
+                              const std::map<double, double> & ) override;
 
     // Function to return the coordinates of the gauss points
     AMP::LinearAlgebra::Vector::const_shared_ptr getGaussPoints( const AMP::Mesh::MeshIterator & );

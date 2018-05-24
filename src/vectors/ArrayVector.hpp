@@ -11,7 +11,7 @@ namespace LinearAlgebra {
  * Constructors                                                  *
  ****************************************************************/
 template<typename T, typename FUN, typename Allocator>
-ArrayVector<T, FUN, Allocator>::ArrayVector() : Vector()
+ArrayVector<T, FUN, Allocator>::ArrayVector() : Vector(), d_globalSize( 0 )
 {
 }
 

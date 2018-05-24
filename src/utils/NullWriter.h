@@ -23,12 +23,13 @@ public:
     virtual ~NullWriter() {}
 
     // Inherited functions
-    virtual std::string getExtension() { return ""; }
-    virtual void readFile( const std::string & ){};
-    virtual void writeFile( const std::string &, size_t, double = 0 ) {}
+    virtual std::string getExtension() override { return ""; }
+    virtual void readFile( const std::string & ) override{};
+    virtual void writeFile( const std::string &, size_t, double = 0 ) override {}
 #ifdef USE_AMP_MESH
-    virtual void
-    registerMesh( AMP::Mesh::Mesh::shared_ptr, int level = 1, std::string path = std::string() )
+    virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr,
+                               int level        = 1,
+                               std::string path = std::string() ) override
     {
         NULL_USE( level );
         NULL_USE( path );
@@ -38,14 +39,14 @@ public:
     virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr,
                                  AMP::Mesh::Mesh::shared_ptr,
                                  AMP::Mesh::GeomType,
-                                 const std::string &name = "" )
+                                 const std::string &name = "" ) override
     {
         NULL_USE( name );
     }
-    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr ) {}
+    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr ) override {}
 #endif
 #ifdef USE_AMP_MATRICES
-    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr ) {}
+    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr ) override {}
 #endif
 };
 } // namespace Utilities

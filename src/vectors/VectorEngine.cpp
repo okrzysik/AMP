@@ -10,7 +10,7 @@ namespace LinearAlgebra {
  ********************************************************/
 VectorEngineParameters::VectorEngineParameters( size_t local_size,
                                                 size_t global_size,
-                                                AMP_MPI comm )
+                                                const AMP_MPI &comm )
     : d_begin( 0 ), d_end( 0 ), d_global( 0 ), d_comm( comm )
 {
     d_global = global_size;

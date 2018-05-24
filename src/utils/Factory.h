@@ -113,7 +113,7 @@ struct Registration<BaseClass, Derived, Key, 0> : public RegistrationBase<BaseCl
     virtual ~Registration() {}
 
 private:
-    AMP::shared_ptr<BaseClass> create() const
+    virtual AMP::shared_ptr<BaseClass> create() const override
     {
         return AMP::shared_ptr<BaseClass>( new Derived() );
     }

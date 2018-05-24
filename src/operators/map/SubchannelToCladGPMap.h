@@ -41,7 +41,7 @@ protected:
                                    AMP::Mesh::Mesh::shared_ptr mesh,
                                    const std::vector<AMP::Mesh::MeshElementID> &ids,
                                    const std::vector<double> &z,
-                                   const std::vector<double> &f );
+                                   const std::vector<double> &f ) override;
 
 private:
     Discretization::createLibmeshElements libmeshElements;

@@ -22,6 +22,10 @@ public:
      */
     explicit DenseSerialMatrix( MatrixParameters::shared_ptr params );
 
+    DenseSerialMatrix( const DenseSerialMatrix & ) = delete;
+
+    DenseSerialMatrix &operator=( const DenseSerialMatrix & ) = delete;
+
     /** \brief Destructor
      */
     virtual ~DenseSerialMatrix();
@@ -221,9 +225,6 @@ public:
 protected:
     //! Unimplemented constructor
     DenseSerialMatrix();
-
-    //! Protected copy constructor
-    explicit DenseSerialMatrix( const DenseSerialMatrix & );
 
     /** \brief  Multiply two matrices and store in a third
      * \param[in]  other_op  The other matrix to multiply

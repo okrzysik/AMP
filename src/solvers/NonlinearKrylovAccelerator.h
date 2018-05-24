@@ -50,6 +50,9 @@ public:
     explicit NonlinearKrylovAccelerator(
         AMP::shared_ptr<NonlinearKrylovAcceleratorParameters> params );
 
+    NonlinearKrylovAccelerator( const NonlinearKrylovAccelerator & ) = delete;
+    NonlinearKrylovAccelerator &operator=( const NonlinearKrylovAccelerator & ) = delete;
+
     /**
      * Default destructor
      */

@@ -1051,7 +1051,13 @@ void MemoryDatabase::getStringArray( const std::string &key,
     }
 }
 
-std::string MemoryDatabase::getName() { return d_database_name; }
+std::string MemoryDatabase::getName() const { return d_database_name; }
+
+bool MemoryDatabase::keyAccessed( const std::string &key )
+{
+    KeyData *keydata = findKeyData( key );
+    return ( keydata ? keydata->d_accessed : false );
+}
 
 /************************************************************************
  *									*

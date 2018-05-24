@@ -94,7 +94,7 @@ public:
 
 private:
     // Empty constructor
-    structuredFaceDOFManager() {}
+    structuredFaceDOFManager();
 
 
 private:
