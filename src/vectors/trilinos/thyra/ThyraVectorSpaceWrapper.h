@@ -28,6 +28,11 @@ public:
     explicit ThyraVectorSpaceWrapper( AMP::shared_ptr<const ThyraVectorWrapper> thyra_vec,
                                       bool is_range = true );
 
+    // Deleted constuctors
+    ThyraVectorSpaceWrapper() = delete;
+    ThyraVectorSpaceWrapper( const ThyraVectorSpaceWrapper& ) = delete;
+    ThyraVectorSpaceWrapper& operator=( const ThyraVectorSpaceWrapper& ) = delete;
+
     //! Destructor
     virtual ~ThyraVectorSpaceWrapper();
 
@@ -61,10 +66,9 @@ protected:
     bool d_is_range;
     AMP::shared_ptr<const ThyraVectorWrapper> d_thyra_vec;
 
-private:
-    // Private constuctor
-    ThyraVectorSpaceWrapper() {}
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

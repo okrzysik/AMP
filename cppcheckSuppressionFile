@@ -82,9 +82,11 @@ useInitializationList:*/src/operators/map/AsyncMapOperator.cc
 
 // Supress warnings for vectors
 uninitMemberVar:*/src/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.cc
+uninitMemberVar:*/src/vectors/trilinos/thyra/NativeThyraVector.cc
 
 
 // Supress warnings for solvers
+duplicateAssignExpression:*/src/solvers/test/testMaterialModels_VonMisesPlasticity-2.cc
 duplicateAssignExpression:*/src/solvers/test/testMaterialModels_VonMisesPlasticity-2.cc
 
 
@@ -95,6 +97,7 @@ duplicateAssignExpression:*/src/solvers/test/testMaterialModels_VonMisesPlastici
 noConstructor:*/AMP/utils/RNG.h
 duplicateExpression:*/utils/Array.hpp
 passedByValue:*/utils/test/test_AMP_MPI.cc
+copyCtorPointerCopying:*/src/utils/AMP_MPI.cc
 noExplicitConstructor:*/utils/AMP_MPI.h
 noExplicitConstructor:*/utils/test/test_AMP_MPI.cc
 passedByValue:*/utils/threadpool/test/test_thread_pool.cpp
