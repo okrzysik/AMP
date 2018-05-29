@@ -29,9 +29,9 @@ public:
                                       bool is_range = true );
 
     // Deleted constuctors
-    ThyraVectorSpaceWrapper() = delete;
-    ThyraVectorSpaceWrapper( const ThyraVectorSpaceWrapper& ) = delete;
-    ThyraVectorSpaceWrapper& operator=( const ThyraVectorSpaceWrapper& ) = delete;
+    ThyraVectorSpaceWrapper()                                  = delete;
+    ThyraVectorSpaceWrapper( const ThyraVectorSpaceWrapper & ) = delete;
+    ThyraVectorSpaceWrapper &operator=( const ThyraVectorSpaceWrapper & ) = delete;
 
     //! Destructor
     virtual ~ThyraVectorSpaceWrapper();
@@ -65,7 +65,6 @@ protected:
     // Local data
     bool d_is_range;
     AMP::shared_ptr<const ThyraVectorWrapper> d_thyra_vec;
-
 };
 
 

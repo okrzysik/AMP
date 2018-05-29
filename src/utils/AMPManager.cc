@@ -213,6 +213,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     argv         = argv_in;
     properties   = properties_in;
     print_times  = properties.print_times;
+    abort_stackType = properties.stack_trace_type;
     // Initialize the timers (default is disabled)
     PROFILE_DISABLE();
     // Set the abort method
@@ -575,6 +576,7 @@ AMPManagerProperties::AMPManagerProperties()
     print_times       = false;
     profile_MPI_level = 2;
     print_startup     = false;
+    stack_trace_type  = 3;
     COMM_WORLD        = AMP_COMM_WORLD;
 }
 
@@ -671,25 +673,7 @@ std::string AMPManager::info()
     out << "SILO: " << SILO_VERS_MAJ << "." << SILO_VERS_MIN << "." << SILO_VERS_PAT << std::endl;
 #endif
 #ifdef USE_EXT_MPI
-    int MPI_version_length = 0;
-    char MPI_version_string[MPI_MAX_LIBRARY_VERSION_STRING];
-#if MPI_VERSION >= 3
-    MPI_Get_library_version( MPI_version_string, &MPI_version_length );
-#endif
-    if ( MPI_version_length > 0 ) {
-        std::string MPI_info( MPI_version_string, MPI_version_length );
-        size_t pos = MPI_info.find('\n');
-        while ( pos != std::string::npos ) {
-             MPI_info.insert( pos+1, "   " );
-             pos = MPI_info.find('\n',pos+1);
-        }
-        out << "MPI: " << MPI_info << std::endl;
-    } else {
-        int MPI_version;
-        int MPI_subversion;
-        MPI_Get_version( &MPI_version, &MPI_subversion );
-        out << "MPI: " << MPI_version << "." << MPI_subversion << std::endl;
-    }
+    out << "MPI: " << AMP::AMP_MPI::info() << std::endl;
 #endif
     out << "Lapack: " << Lapack<double>::info();
     return out.str();

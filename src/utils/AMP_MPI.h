@@ -3,6 +3,7 @@
 #define included_AMP_MPI
 
 
+#include <array>
 #include <atomic>
 #include <complex>
 #include <map>
@@ -1034,6 +1035,12 @@ public: // Member functions
 
     //! Return the total number of MPI_Comm objects that have been destroyed
     static size_t MPI_Comm_destroyed() { return N_MPI_Comm_destroyed; }
+
+    //! Return details about MPI
+    static std::string info();
+
+    //! Return the MPI version number { major, minor }
+    static std::array<int, 2> version();
 
 
 private: // Private helper functions for templated MPI operations;
