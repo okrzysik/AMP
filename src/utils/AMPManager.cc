@@ -138,7 +138,7 @@ void AMPManager::exitFun()
         return;
     auto stack = StackTrace::getCallStack();
     for ( auto &elem : stack ) {
-        if ( elem.function == "MPID_Abort" )
+        if ( strcmp( elem.function.data(), "MPID_Abort" ) == 0 )
             return;
     }
     std::stringstream msg;
