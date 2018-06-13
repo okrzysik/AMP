@@ -40,6 +40,14 @@ public:
     bool print_startup;
 
     /*!
+     * Stack trace to print on error:
+     *    1 - Current process/thread
+     *    2 - Current process, all threads
+     *    3 - Global call stack
+     */
+    int stack_trace_type;
+
+    /*!
      *  MPI communicator to use for AMP_COMM_WORLD.  By default this should be set to
      *  AMP_COMM_WORLD if MPI is not initialized.  If MPI is initialized, this can be
      *  set to AMP_COMM_WORLD, MPI_COMM_WORLD, or any valid MPI communicator.  If it

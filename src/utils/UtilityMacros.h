@@ -261,7 +261,8 @@
         _Pragma( "GCC diagnostic ignored \"-Wunused-variable\"" )           \
         _Pragma( "GCC diagnostic ignored \"-Wignored-qualifiers\"" )        \
         _Pragma( "GCC diagnostic ignored \"-Wenum-compare\"" )              \
-        _Pragma( "GCC diagnostic ignored \"-Wterminate\"" )
+        _Pragma( "GCC diagnostic ignored \"-Wterminate\"" )                 \
+        _Pragma( "GCC diagnostic ignored \"-Wimplicit-fallthrough\"" )
     #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
 #else
     #define DISABLE_WARNINGS

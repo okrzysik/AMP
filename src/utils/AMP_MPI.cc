@@ -213,6 +213,45 @@ static inline long long int unsigned_to_signed( unsigned long long int x )
 
 
 /************************************************************************
+ *  Get the MPI version                                                  *
+ ************************************************************************/
+std::array<int, 2> MPI_CLASS::version()
+{
+#ifdef USE_MPI
+    int MPI_version;
+    int MPI_subversion;
+    MPI_Get_version( &MPI_version, &MPI_subversion );
+    return { MPI_version, MPI_subversion };
+#else
+    return { 0, 0 };
+#endif
+}
+std::string MPI_CLASS::info()
+{
+#ifdef USE_MPI
+#if MPI_VERSION >= 3
+    int MPI_version_length = 0;
+    char MPI_version_string[MPI_MAX_LIBRARY_VERSION_STRING];
+    MPI_Get_library_version( MPI_version_string, &MPI_version_length );
+    if ( MPI_version_length > 0 ) {
+        std::string MPI_info( MPI_version_string, MPI_version_length );
+        size_t pos = MPI_info.find( '\n' );
+        while ( pos != std::string::npos ) {
+            MPI_info.insert( pos + 1, "   " );
+            pos = MPI_info.find( '\n', pos + 1 );
+        }
+        return MPI_info;
+    }
+#endif
+    auto tmp = version();
+    return std::to_string( tmp[0] ) + "." + std::to_string( tmp[0] );
+#else
+    return std::string();
+#endif
+}
+
+
+/************************************************************************
  *  Functions to get/set the process affinities                          *
  ************************************************************************/
 int MPI_CLASS::getNumberOfProcessors() { return std::thread::hardware_concurrency(); }
