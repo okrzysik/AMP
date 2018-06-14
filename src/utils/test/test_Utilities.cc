@@ -458,14 +458,6 @@ int main( int argc, char *argv[] )
         ts2        = Utilities::time();
         std::cout << "Time to get backtrace: " << ts2 - ts1 << std::endl;
 
-        // Test getting the symbols
-        std::vector<void *> address;
-        std::vector<char> type;
-        std::vector<std::string> obj;
-        int rtn = StackTrace::getSymbols( address, type, obj );
-        if ( rtn == 0 && !address.empty() )
-            ut.passes( "Read symbols from executable" );
-
         // Test getting the executable
         std::string exe = StackTrace::getExecutable();
         if ( globalComm.getRank() == 0 )
