@@ -105,6 +105,7 @@ memleak:*/utils/test/test_AMPManager.cc
 invalidPointerCast:*/utils/threadpool/atomic_helpers.h
 duplicateAssignExpression:*/src/utils/test/test_MathExpr.cc
 knownConditionTrueFalse:*/utils/test/test_AsciiWriter.cc
+knownConditionTrueFalse:*/src/utils/test/test_AMP_MPI.cc
 knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
 *:*/utils/tinyexpr/tinyexpr.c
 
