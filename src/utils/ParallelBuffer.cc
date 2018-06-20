@@ -122,26 +122,26 @@ void ParallelBuffer::outputString( const char *text, const size_t length )
         }
 
         // If the buffer pointer is zero, then prepend the prefix if not empty
-        if ( ( d_buffer_ptr == 0 ) && !d_prefix.empty() ) {
+        if ( ( d_buffer_ptr == 0 ) && !d_prefix.empty() )
             copyToBuffer( d_prefix.c_str(), d_prefix.length() );
-        }
 
         // Search for an end-of-line in the string
-        size_t eol_ptr = 0;
-        for ( ; ( eol_ptr < length ) && ( text[eol_ptr] != '\n' ); eol_ptr++ )
-            NULL_STATEMENT;
+        size_t eol = length;
+        for ( size_t i = 0; i < length; i++ ) {
+            if ( text[i] == '\n' )
+                eol = i;
+        }
 
-        if ( eol_ptr == length ) {
+        if ( eol == length ) {
             // If no end-of-line found, copy the entire text string but no output
             copyToBuffer( text, length );
         } else {
-            // If we found end-of-line, copy and output; recurse if more chars
-            const size_t ncopy = eol_ptr + 1;
+            // If we found end-of-line, copy and output; copy of more chars
+            const size_t ncopy = eol + 1;
             copyToBuffer( text, ncopy );
             outputBuffer();
-            if ( ncopy < length ) {
-                outputString( &text[ncopy], length - ncopy );
-            }
+            if ( ncopy < length )
+                copyToBuffer( &text[ncopy], length - ncopy );
         }
     }
 }
