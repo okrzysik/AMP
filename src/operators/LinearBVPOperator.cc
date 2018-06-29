@@ -10,12 +10,12 @@ namespace AMP {
 namespace Operator {
 
 LinearBVPOperator::LinearBVPOperator( const AMP::shared_ptr<BVPOperatorParameters> &params )
-    : LinearOperator( params )
+    : LinearOperator( params ),
+      d_volumeOperator( AMP::dynamic_pointer_cast<LinearOperator>( params->d_volumeOperator ) ),
+      d_boundaryOperator( params->d_boundaryOperator )
 {
-    d_volumeOperator   = AMP::dynamic_pointer_cast<LinearOperator>( params->d_volumeOperator );
-    d_boundaryOperator = params->d_boundaryOperator;
-    d_Mesh             = d_volumeOperator->getMesh();
-    d_matrix           = d_volumeOperator->getMatrix();
+    d_Mesh   = d_volumeOperator->getMesh();
+    d_matrix = d_volumeOperator->getMatrix();
 }
 
 void LinearBVPOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )

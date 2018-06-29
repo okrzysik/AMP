@@ -16,36 +16,35 @@ MultiVectorIterator::MultiVectorIterator()
 {
     d_typeID   = MultiVectorIteratorTypeID;
     d_iterator = nullptr;
-    d_elements = AMP::shared_ptr<std::vector<MeshElement>>();
     d_pos      = 0;
     d_size     = 0;
     d_element  = nullptr;
 }
 MultiVectorIterator::MultiVectorIterator( AMP::shared_ptr<std::vector<MeshElement>> elements,
                                           size_t pos )
+    : d_elements( elements )
 {
     d_typeID   = MultiVectorIteratorTypeID;
     d_iterator = nullptr;
-    d_elements = elements;
     d_pos      = pos;
     d_size     = d_elements->size();
     d_element  = d_pos < d_size ? &d_elements->operator[]( d_pos ) : nullptr;
 }
 MultiVectorIterator::MultiVectorIterator( const std::vector<MeshElement> &elements, size_t pos )
+    : d_elements( new std::vector<MeshElement>( elements ) )
 {
     d_typeID   = MultiVectorIteratorTypeID;
     d_iterator = nullptr;
-    d_elements.reset( new std::vector<MeshElement>( elements ) );
-    d_pos     = pos;
-    d_size    = d_elements->size();
-    d_element = d_pos < d_size ? &d_elements->operator[]( d_pos ) : nullptr;
+    d_pos      = pos;
+    d_size     = d_elements->size();
+    d_element  = d_pos < d_size ? &d_elements->operator[]( d_pos ) : nullptr;
 }
 MultiVectorIterator::MultiVectorIterator( const MultiVectorIterator &rhs )
-    : MeshIterator() // Note: we never want to call the base copy constructor
+    : MeshIterator(), // Note: we never want to call the base copy constructor
+      d_elements( rhs.d_elements )
 {
     d_typeID   = MultiVectorIteratorTypeID;
     d_iterator = nullptr;
-    d_elements = rhs.d_elements;
     d_pos      = rhs.d_pos;
     d_size     = rhs.d_size;
     d_element  = d_pos < d_size ? &d_elements->operator[]( d_pos ) : nullptr;

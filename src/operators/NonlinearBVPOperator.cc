@@ -8,11 +8,11 @@ namespace AMP {
 namespace Operator {
 
 NonlinearBVPOperator::NonlinearBVPOperator( const AMP::shared_ptr<BVPOperatorParameters> &params )
-    : Operator( params )
+    : Operator( params ),
+      d_volumeOperator( params->d_volumeOperator ),
+      d_boundaryOperator( params->d_boundaryOperator )
 {
-    d_volumeOperator   = params->d_volumeOperator;
-    d_boundaryOperator = params->d_boundaryOperator;
-    d_Mesh             = d_volumeOperator->getMesh();
+    d_Mesh = d_volumeOperator->getMesh();
 }
 
 void NonlinearBVPOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,

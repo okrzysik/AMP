@@ -12,9 +12,8 @@ namespace Operator {
  ****************************************************************/
 DirichletMatrixCorrection::DirichletMatrixCorrection(
     const AMP::shared_ptr<DirichletMatrixCorrectionParameters> &params )
-    : BoundaryOperator( params )
+    : BoundaryOperator( params ), d_variable( params->d_variable )
 {
-    d_variable                 = params->d_variable;
     d_computedAddRHScorrection = false;
     d_symmetricCorrection  = ( params->d_db )->getBoolWithDefault( "symmetric_correction", true );
     d_zeroDirichletBlock   = ( params->d_db )->getBoolWithDefault( "zero_dirichlet_block", false );

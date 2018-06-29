@@ -14,8 +14,8 @@ class OnePointSolver : public SolverStrategy
 public:
     explicit OnePointSolver( AMP::shared_ptr<SolverStrategyParameters> params )
         : SolverStrategy( params )
+        : d_onePointOp( AMP::dynamic_pointer_cast<AMP::Operator::OnePointOperator>( d_pOperator ) )
     {
-        d_onePointOp = AMP::dynamic_pointer_cast<AMP::Operator::OnePointOperator>( d_pOperator );
     }
 
     virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,

@@ -95,6 +95,7 @@ libMeshElement::libMeshElement( int dim,
 }
 libMeshElement::libMeshElement( const libMeshElement &rhs )
     : MeshElement(), // Note: we never want to call the base copy constructor
+      ptr2( rhs.ptr2 ),
       d_meshID( rhs.d_meshID ),
       d_delete_elem( false )
 {
@@ -103,7 +104,6 @@ libMeshElement::libMeshElement( const libMeshElement &rhs )
     d_globalID  = rhs.d_globalID;
     d_dim       = rhs.d_dim;
     ptr_element = rhs.ptr_element;
-    ptr2        = rhs.ptr2;
     d_rank      = rhs.d_rank;
     d_mesh      = rhs.d_mesh;
 }

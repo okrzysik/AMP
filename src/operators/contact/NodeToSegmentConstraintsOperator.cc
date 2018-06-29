@@ -25,29 +25,26 @@ void NodeToSegmentConstraintsOperator::reset( const AMP::shared_ptr<OperatorPara
     //  AMP::AMP_MPI comm = mesh->getComm();
     AMP::AMP_MPI comm = d_GlobalComm;
 
-    /** get the boundary slave vertices coordinates and global IDs */
-    size_t nSlaveVertices = 0;
+    // get the boundary slave vertices coordinates and global IDs
     std::vector<double> tmpSlaveVerticesCoord;
     std::vector<AMP::Mesh::MeshElementID> tmpSlaveVerticesGlobalIDs;
     AMP::Mesh::Mesh::shared_ptr slaveMesh = mesh->Subset( d_SlaveMeshID );
     if ( slaveMesh != NULL ) {
-        AMP::Mesh::MeshIterator slaveMeshIterator =
+        auto slaveMeshIterator =
             slaveMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_SlaveBoundaryID );
-        AMP::Mesh::MeshIterator slaveMeshIterator_begin = slaveMeshIterator.begin(),
-                                slaveMeshIterator_end   = slaveMeshIterator.end();
-        nSlaveVertices                                  = slaveMeshIterator.size();
+        auto slaveMeshIterator_begin = slaveMeshIterator.begin();
+        auto slaveMeshIterator_end   = slaveMeshIterator.end();
+        auto nSlaveVertices          = slaveMeshIterator.size();
         tmpSlaveVerticesCoord.resize( 3 * nSlaveVertices );
         tmpSlaveVerticesGlobalIDs.resize( nSlaveVertices );
-        std::vector<AMP::Mesh::MeshElementID>::iterator tmpSlaveVerticesGlobalIDsIterator =
-            tmpSlaveVerticesGlobalIDs.begin();
-        std::vector<double> tmpCoord( 3 );
-        std::vector<double>::iterator tmpSlaveVerticesCoordIterator = tmpSlaveVerticesCoord.begin();
+        auto tmpSlaveVerticesGlobalIDsIterator = tmpSlaveVerticesGlobalIDs.begin();
+        auto tmpSlaveVerticesCoordIterator     = tmpSlaveVerticesCoord.begin();
         for ( slaveMeshIterator = slaveMeshIterator_begin;
               slaveMeshIterator != slaveMeshIterator_end;
               ++slaveMeshIterator ) {
             *tmpSlaveVerticesGlobalIDsIterator = slaveMeshIterator->globalID();
             ++tmpSlaveVerticesGlobalIDsIterator;
-            tmpCoord = slaveMeshIterator->coord();
+            auto tmpCoord = slaveMeshIterator->coord();
             AMP_ASSERT( tmpCoord.size() == 3 );
             std::copy( tmpCoord.begin(), tmpCoord.end(), tmpSlaveVerticesCoordIterator );
             for ( size_t i = 0; i < 3; ++i ) {
@@ -125,29 +122,25 @@ void NodeToSegmentConstraintsOperator::reset( const AMP::shared_ptr<OperatorPara
     d_SlaveVerticesShift.resize( 3 * nConstraints );
     std::fill( d_SlaveVerticesShift.begin(), d_SlaveVerticesShift.end(), 0.0 );
 
-    std::vector<AMP::Mesh::MeshElementID>::const_iterator tmpSlaveVerticesGlobalIDsConstIterator =
-        tmpSlaveVerticesGlobalIDs.begin();
-    std::vector<AMP::Mesh::MeshElementID>::const_iterator tmpMasterVerticesGlobalIDsConstIterator =
-        tmpMasterVerticesGlobalIDs.begin();
+    auto tmpSlaveVerticesGlobalIDsConstIterator  = tmpSlaveVerticesGlobalIDs.begin();
+    auto tmpMasterVerticesGlobalIDsConstIterator = tmpMasterVerticesGlobalIDs.begin();
     double const *tmpSlaveVerticesLocalCoordOnGeomType::FacePointerToConst =
         &( tmpSlaveVerticesLocalCoordOnGeomType::Face[0] );
     std::vector<double>::const_iterator tmpSlaveVerticesShiftConstIterator =
         tmpSlaveVerticesShift.begin();
-    double *masterShapeFunctionsValuesPointer                = &( d_MasterShapeFunctionsValues[0] );
-    std::vector<double>::iterator slaveVerticesShiftIterator = d_SlaveVerticesShift.begin();
-    std::vector<AMP::Mesh::MeshElementID>::iterator slaveVerticesGlobalIDsIterator =
-        d_SlaveVerticesGlobalIDs.begin();
-    std::vector<AMP::Mesh::MeshElementID>::iterator masterVerticesGlobalIDsIterator =
-        masterVerticesGlobalIDs.begin();
-    std::vector<size_t>::iterator masterVerticesOwnerRanksIterator =
-        d_MasterVerticesOwnerRanks.begin();
+    double *masterShapeFunctionsValuesPointer = &( d_MasterShapeFunctionsValues[0] );
+    auto slaveVerticesShiftIterator           = d_SlaveVerticesShift.begin();
+    auto slaveVerticesGlobalIDsIterator       = d_SlaveVerticesGlobalIDs.begin();
+    auto masterVerticesGlobalIDsIterator      = masterVerticesGlobalIDs.begin();
+    auto masterVerticesOwnerRanksIterator     = d_MasterVerticesOwnerRanks.begin();
 
     //  double basis_functions_values_on_face[4];
-    std::vector<int>::const_iterator flagsIterator = flags.begin(), flagsIterator_end = flags.end();
+    auto flagsIterator     = flags.begin();
+    auto flagsIterator_end = flags.end();
     for ( ; flagsIterator != flagsIterator_end; ++flagsIterator ) {
         // TODO: the following if statement is debug only
         if ( *flagsIterator == AMP::Mesh::DendroSearch::NotFound ) {
-            std::vector<double> blackSheepCoord =
+            auto blackSheepCoord =
                 ( mesh->getElement( *tmpSlaveVerticesGlobalIDsConstIterator ) ).coord();
             d_fout << blackSheepCoord[0] << "  " << blackSheepCoord[1] << "  " << blackSheepCoord[2]
                    << "\n";
@@ -312,7 +305,7 @@ void NodeToSegmentConstraintsOperator::getVectorIndicesFromGlobalIDs(
                                                           globalIDsConstIterator_end =
                                                               globalIDs.end();
     vectorIndices.resize( globalIDs.size() * d_DOFsPerNode );
-    std::vector<size_t>::iterator vectorIndicesIterator = vectorIndices.begin();
+    auto vectorIndicesIterator = vectorIndices.begin();
     for ( ; globalIDsConstIterator != globalIDsConstIterator_end; ++globalIDsConstIterator ) {
         d_DOFManager->getDOFs( *globalIDsConstIterator, tmpIndices );
         AMP_ASSERT( *globalIDsConstIterator != AMP::Mesh::MeshElementID() );

@@ -84,9 +84,8 @@ Vector::const_shared_ptr VS_Comm::subset( Vector::const_shared_ptr p ) const
  ********************************************************/
 #ifdef USE_AMP_MESH
 VS_Mesh::VS_Mesh( AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
+    : d_useMeshComm( useMeshComm ), d_mesh( mesh )
 {
-    d_mesh        = mesh;
-    d_useMeshComm = useMeshComm;
 }
 AMP_MPI VS_Mesh::communicator( Vector::const_shared_ptr p ) const
 {

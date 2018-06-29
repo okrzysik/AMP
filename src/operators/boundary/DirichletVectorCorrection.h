@@ -31,9 +31,8 @@ public:
       */
     explicit DirichletVectorCorrection(
         const AMP::shared_ptr<DirichletVectorCorrectionParameters> &params )
-        : BoundaryOperator( params )
+        : BoundaryOperator( params ), d_variable( params->d_variable )
     {
-        d_variable                   = params->d_variable;
         d_isAttachedToVolumeOperator = false;
         d_setResidual                = false;
         d_valuesType                 = 0;

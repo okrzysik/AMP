@@ -12,15 +12,16 @@ namespace LinearAlgebra {
 /********************************************************
  * Constructor/Destructor                                *
  ********************************************************/
-DenseSerialMatrix::DenseSerialMatrix( MatrixParameters::shared_ptr params ) : Matrix( params )
+DenseSerialMatrix::DenseSerialMatrix( MatrixParameters::shared_ptr params )
+    : Matrix( params ),
+      d_VariableLeft( params->d_VariableLeft ),
+      d_VariableRight( params->d_VariableRight ),
+      d_DOFManagerLeft( params->getLeftDOFManager() ),
+      d_DOFManagerRight( params->getRightDOFManager() ),
+      d_rows( params->getGlobalNumberOfRows() ),
+      d_cols( params->getGlobalNumberOfColumns() )
 {
-    d_VariableLeft    = params->d_VariableLeft;
-    d_VariableRight   = params->d_VariableRight;
-    d_DOFManagerLeft  = params->getLeftDOFManager();
-    d_DOFManagerRight = params->getRightDOFManager();
-    d_rows            = params->getGlobalNumberOfRows();
-    d_cols            = params->getGlobalNumberOfColumns();
-    d_M               = new double[d_rows * d_cols];
+    d_M = new double[d_rows * d_cols];
     memset( d_M, 0, d_rows * d_cols * sizeof( double ) );
 }
 DenseSerialMatrix::~DenseSerialMatrix() { delete[] d_M; }

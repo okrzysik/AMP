@@ -13,9 +13,8 @@ AMPMeshEntityImpl::AMPMeshEntityImpl(
     const AMP::Mesh::MeshElement &element,
     const std::unordered_map<int, int> &rank_map,
     const std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId> &id_map )
+    : d_extra_data( new AMPMeshEntityExtraData( element ) )
 {
-    d_extra_data = Teuchos::rcp( new AMPMeshEntityExtraData( element ) );
-
     AMP_ASSERT( rank_map.count( element.globalOwnerRank() ) );
     d_owner_rank = rank_map.find( element.globalOwnerRank() )->second;
 
@@ -102,14 +101,12 @@ void AMPMeshEntityImpl::boundingBox( Teuchos::Tuple<double, 6> &bounds ) const
     bounds     = Teuchos::tuple( max, max, max, -max, -max, -max );
 
     // Get the vertices of the element.
-    std::vector<Mesh::MeshElement> vertices =
-        d_extra_data->d_element.getElements( Mesh::GeomType::Vertex );
+    auto vertices = d_extra_data->d_element.getElements( Mesh::GeomType::Vertex );
 
     // Create a bounding box from the vertex coordinates.
     int num_vertices = vertices.size();
-    std::vector<double> coords;
     for ( int i = 0; i < num_vertices; ++i ) {
-        coords = vertices[i].coord();
+        auto coords = vertices[i].coord();
         for ( unsigned d = 0; d < coords.size(); ++d ) {
             bounds[d]     = std::min( bounds[d], coords[d] );
             bounds[d + 3] = std::max( bounds[d + 3], coords[d] );

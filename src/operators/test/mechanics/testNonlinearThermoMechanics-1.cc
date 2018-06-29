@@ -160,17 +160,15 @@ void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     shift[1] = 0.;
     scale[0] = 1.;
     scale[1] = 1.;
-    std::vector<double> range( 2 );
-    AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel =
+    auto transportModel =
         AMP::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( thermalTransportModel );
-    AMP::Materials::Material::shared_ptr matTh = transportModel->getMaterial();
-    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
-            nonlinearThermalOperator->getVolumeOperator() );
+    auto matTh         = transportModel->getMaterial();
+    auto thermOperator = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
+        nonlinearThermalOperator->getVolumeOperator() );
     if ( thermOperator->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
         std::string property = "ThermalConductivity";
         if ( ( matTh->property( property ) )->is_argument( "temperature" ) ) {
-            range =
+            auto range =
                 ( matTh->property( property ) )->get_arg_range( "temperature" ); // Compile error
             scale[1] = range[1] - range[0];
             shift[1] = range[0] + 0.001 * scale[1];

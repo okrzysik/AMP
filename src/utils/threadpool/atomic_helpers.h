@@ -12,7 +12,6 @@
 #if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
 // Using windows
 #define USE_WINDOWS
-#define NOMINMAX
 #include <process.h>
 #include <stdlib.h>
 #include <windows.h>

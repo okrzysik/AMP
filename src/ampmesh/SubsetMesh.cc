@@ -18,8 +18,8 @@ namespace Mesh {
 SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
                         const AMP::Mesh::MeshIterator &iterator_in,
                         bool isGlobal )
+    : d_parent_mesh( mesh )
 {
-    this->d_parent_mesh = mesh;
     if ( isGlobal ) {
         this->d_comm = mesh->getComm();
     } else {

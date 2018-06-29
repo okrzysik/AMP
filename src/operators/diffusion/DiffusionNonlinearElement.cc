@@ -82,7 +82,6 @@ void DiffusionNonlinearElement::apply()
         }
 
         // set up storage for transport coefficients
-        std::vector<double> nodalTransportCoeff( num_nodes );
         std::vector<std::vector<AMP::shared_ptr<std::vector<double>>>> nodalTransportCoeffTensor(
             3, std::vector<AMP::shared_ptr<std::vector<double>>>( 3 ) );
 
@@ -97,6 +96,7 @@ void DiffusionNonlinearElement::apply()
 
         // evaluate for scalars
         if ( not d_transportModel->isaTensor() ) {
+            std::vector<double> nodalTransportCoeff( num_nodes );
             d_transportModel->getTransport( nodalTransportCoeff, transport_args, elem_nodes );
 
             // interpolate to gauss points

@@ -31,12 +31,12 @@ AMPMeshEntityIterator::AMPMeshEntityIterator(
  * \brief Copy constructor.
  */
 AMPMeshEntityIterator::AMPMeshEntityIterator( const AMPMeshEntityIterator &rhs )
-    : d_amp_iterator( rhs.d_amp_iterator )
+    : d_amp_iterator( rhs.d_amp_iterator ),
+      d_rank_map( rhs.d_rank_map ),
+      d_id_map( rhs.d_id_map ),
+      b_iterator_impl( nullptr ),
+      b_predicate( rhs.b_predicate )
 {
-    this->d_rank_map      = rhs.d_rank_map;
-    this->d_id_map        = rhs.d_id_map;
-    this->b_iterator_impl = NULL;
-    this->b_predicate     = rhs.b_predicate;
 }
 
 //---------------------------------------------------------------------------//
