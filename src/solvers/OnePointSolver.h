@@ -13,8 +13,8 @@ class OnePointSolver : public SolverStrategy
 {
 public:
     explicit OnePointSolver( AMP::shared_ptr<SolverStrategyParameters> params )
-        : SolverStrategy( params )
-        : d_onePointOp( AMP::dynamic_pointer_cast<AMP::Operator::OnePointOperator>( d_pOperator ) )
+        : SolverStrategy( params ),
+          d_onePointOp( AMP::dynamic_pointer_cast<AMP::Operator::OnePointOperator>( d_pOperator ) )
     {
     }
 
