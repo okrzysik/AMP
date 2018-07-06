@@ -1,28 +1,10 @@
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <iostream>
-#include <string>
-
-#include "AMP/utils/shared_ptr.h"
-
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
-#include "AMP/utils/PIO.h"
-
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/vectors/VectorBuilder.h"
-
-#include "libmesh/libmesh.h"
-
-#include "../ElementPhysicsModelFactory.h"
-#include "../ElementPhysicsModelParameters.h"
-#include "../OperatorBuilder.h"
+#include "AMP/materials/Material.h"
+#include "AMP/operators/ElementPhysicsModelFactory.h"
+#include "AMP/operators/ElementPhysicsModelParameters.h"
+#include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
@@ -33,10 +15,21 @@
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/operators/diffusion/FickSoretNonlinearFEOperator.h"
 #include "AMP/operators/diffusion/FickSoretNonlinearFEOperatorParameters.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #include "applyTests.h"
 
-#include "AMP/materials/Material.h"
+#include <iostream>
+#include <string>
 
 
 void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
@@ -55,16 +48,13 @@ void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
     input_db->printClassData( AMP::plog );
 
-    //--------------------------------------------------
-    //   Create the Mesh.
-    //--------------------------------------------------
+    // Create the Mesh.
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
     AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
         new AMP::Mesh::MeshParameters( mesh_db ) );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
-    //--------------------------------------------------
 
     AMP::shared_ptr<AMP::Operator::FickSoretNonlinearFEOperator> fsOp;
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
@@ -105,7 +95,6 @@ void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Variable::shared_ptr cVar( new AMP::LinearAlgebra::Variable( "conc" ) );
     AMP::LinearAlgebra::Variable::shared_ptr bVar( new AMP::LinearAlgebra::Variable( "burnup" ) );
 
-    //--------------------------------------------------------------------------------------------------------------//
     // Create a DOF manager for a nodal vector
     int DOFsPerNode     = 1;
     int nodalGhostWidth = 1;
@@ -113,7 +102,6 @@ void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
             meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-    //----------------------------------------------------------------------------------------------------------------//
 
     // create solution, rhs, and residual vectors
     AMP::LinearAlgebra::Vector::shared_ptr tVec =
@@ -196,9 +184,9 @@ void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
 
     // set default values of input variables
-    AMP::LinearAlgebra::Vector::shared_ptr inTempVec = solVec->subsetVectorForVariable( tVar );
-    AMP::LinearAlgebra::Vector::shared_ptr inConcVec = solVec->subsetVectorForVariable( cVar );
-    AMP::LinearAlgebra::Vector::shared_ptr inBurnVec = solVec->subsetVectorForVariable( bVar );
+    auto inTempVec = solVec->subsetVectorForVariable( tVar );
+    auto inConcVec = solVec->subsetVectorForVariable( cVar );
+    auto inBurnVec = solVec->subsetVectorForVariable( bVar );
     if ( defaults.size() > 0 )
         inTempVec->setToScalar( defaults[0] ); // compile error
     if ( defaults.size() > 1 )

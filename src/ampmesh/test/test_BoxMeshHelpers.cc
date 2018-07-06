@@ -1,5 +1,4 @@
 #include "AMP/ampmesh/structured/BoxMeshHelpers.h"
-
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 

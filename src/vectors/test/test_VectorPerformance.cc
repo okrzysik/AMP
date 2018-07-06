@@ -13,8 +13,8 @@
 
 #include "ProfilerApp.h"
 
-
 #include <chrono>
+
 
 static inline double speedup( size_t x, size_t y )
 {

@@ -1,10 +1,7 @@
-#include "meshGenerators.h"
-
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
 #include "AMP/ampmesh/testHelpers/meshTests.h"
-
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/InputDatabase.h"
@@ -12,6 +9,7 @@
 #include "AMP/utils/MemoryDatabase.h"
 #include "AMP/utils/UnitTest.h"
 
+#include "meshGenerators.h"
 
 #include "ProfilerApp.h"
 

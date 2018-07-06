@@ -1,13 +1,14 @@
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <cmath>
-#include <iostream>
-#include <limits>
-#include <string>
-
-#include "AMP/utils/shared_ptr.h"
-
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/diffusion/DiffusionLinearElement.h"
+#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearElement.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
+#include "AMP/operators/libmesh/MassDensityModel.h"
+#include "AMP/operators/libmesh/MassLinearElement.h"
+#include "AMP/operators/libmesh/MassLinearFEOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -15,25 +16,18 @@
 #include "AMP/utils/InputManager.h"
 #include "AMP/utils/ManufacturedSolution.h"
 #include "AMP/utils/PIO.h"
-
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include "AMP/utils/Writer.h"
-
-#include "libmesh/libmesh.h"
-
-#include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/diffusion/DiffusionLinearElement.h"
-#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
-#include "AMP/operators/diffusion/DiffusionNonlinearElement.h"
-#include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "AMP/operators/libmesh/MassDensityModel.h"
-#include "AMP/operators/libmesh/MassLinearFEOperator.h"
-
 #include "../applyTests.h"
+
+#include <cmath>
+#include <iostream>
+#include <limits>
+#include <string>
 
 
 void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )

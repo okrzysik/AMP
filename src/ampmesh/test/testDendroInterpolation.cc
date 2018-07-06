@@ -1,4 +1,7 @@
-
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/dendro/DendroSearch.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -7,17 +10,12 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/dendro/DendroSearch.h"
-
 #include <iomanip>
+
 
 double dummyFunction( const std::vector<double> &xyz, const int dof )
 {
