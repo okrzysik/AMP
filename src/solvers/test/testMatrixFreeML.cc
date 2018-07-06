@@ -443,11 +443,8 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
         vectorOfMeshes.push_back( secondMesh );
     } // end if
 
-    AMP::Mesh::Mesh::shared_ptr fusedMeshesAdapter(
-        new AMP::Mesh::MultiMesh( globalComm, vectorOfMeshes ) );
-    std::vector<AMP::Mesh::Mesh::shared_ptr> fusedMeshes =
-        AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( fusedMeshesAdapter )->getMeshes();
-    fusedMeshesAdapter->setName( "MultiMesh" );
+    auto fusedMeshes =
+        AMP::make_shared<AMP::Mesh::MultiMesh>( "MultiMesh", globalComm, vectorOfMeshes );
 
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> fusedElementPhysicsModel;
     AMP::shared_ptr<AMP::Operator::LinearBVPOperator> firstFusedOperator =
@@ -490,7 +487,7 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
 
     AMP::Discretization::DOFManager::shared_ptr dofManager =
         AMP::Discretization::simpleDOFManager::create(
-            fusedMeshesAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
+            fusedMeshes, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
     AMP::LinearAlgebra::Variable::shared_ptr fusedColumnVar =
         fusedColumnOperator->getOutputVariable();

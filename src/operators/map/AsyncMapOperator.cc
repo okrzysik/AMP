@@ -27,7 +27,7 @@ AsyncMapOperator::AsyncMapOperator( const AMP::shared_ptr<OperatorParameters> &p
         meshes.push_back( d_mesh1 );
     if ( d_mesh2.get() != nullptr )
         meshes.push_back( d_mesh2 );
-    d_Mesh = AMP::make_shared<AMP::Mesh::MultiMesh>( d_MapComm, meshes );
+    d_Mesh = AMP::make_shared<AMP::Mesh::MultiMesh>( "mesh", d_MapComm, meshes );
     // Get the input variable
     bool var  = params->d_db->keyExists( "VariableName" );
     bool var1 = params->d_db->keyExists( "VariableName1" );

@@ -42,10 +42,13 @@ public:
      * \brief Contructor to create a MultiMesh from existing meshes
      * \details  This constructor takes a list of meshes and a communicator
      *    and generates the appropriate multimesh
+     * \param name      Name of the new mesh
      * \param comm      Desired communicator for the multimesh
      * \param meshes    Meshes to be used as part of the multimesh
      */
-    MultiMesh( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> &meshes );
+    MultiMesh( const std::string &name,
+               const AMP_MPI &comm,
+               const std::vector<Mesh::shared_ptr> &meshes );
 
 
     //! Deconstructor
