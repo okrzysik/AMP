@@ -204,7 +204,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
 {
     // Check if AMP was previously initialized
     if ( initialized == 1 )
-        AMP_ERROR( "AMP was previously initialized and shutdown.  It cannot be reinitialized" );
+        AMP_ERROR( "AMP was previously initialized.  It cannot be reinitialized" );
     if ( initialized == -1 )
         AMP_ERROR( "AMP was previously initialized and shutdown.  It cannot be reinitialized" );
     // Begin startup procedure
@@ -275,11 +275,8 @@ void AMPManager::shutdown()
         AMP_ERROR(
             "AMP has been initialized and shutdown.  Calling shutdown more than once is invalid" );
     initialized = -1;
-    // Disable call stack and error handlers
-    StackTrace::globalCallStackFinalize( );
-    clearMPIErrorHandler();
-    StackTrace::Utilities::clearErrorHandlers();
-    StackTrace::clearSignals();
+    // Clear error handlers
+    clearHandlers();
     // Disable MPI_Abort
     AMPManager::use_MPI_Abort = false;
     // Shutdown the registry
@@ -531,11 +528,14 @@ void AMPManager::setHandlers()
 }
 void AMPManager::clearHandlers()
 {
-    initialized = 3;
     // Don't call the global version of the call stack
     StackTrace::globalCallStackFinalize();
     // Clear the MPI error handler for comm_world
     clearMPIErrorHandler();
+    // Clear error handlers for StackTrace
+    StackTrace::Utilities::clearErrorHandlers();
+    StackTrace::clearSignals();
+    StackTrace::clearSymbols();
     // Clear the error handlers for petsc
 #ifdef USE_EXT_PETSC
     PetscPopSignalHandler();
@@ -570,14 +570,14 @@ void AMPManager::clearMPIErrorHandler()
 /****************************************************************************
 * Empty constructor to setup default AMPManagerProperties                   *
 ****************************************************************************/
-AMPManagerProperties::AMPManagerProperties()
+AMPManagerProperties::AMPManagerProperties():
+    use_MPI_Abort( true ),
+    print_times( false ),
+    profile_MPI_level( 2 ),
+    print_startup( false ),
+    stack_trace_type( 3 ),
+    COMM_WORLD( AMP_COMM_WORLD )
 {
-    use_MPI_Abort     = true;
-    print_times       = false;
-    profile_MPI_level = 2;
-    print_startup     = false;
-    stack_trace_type  = 3;
-    COMM_WORLD        = AMP_COMM_WORLD;
 }
 
 

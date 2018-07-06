@@ -89,8 +89,7 @@ PetscKrylovSolver::~PetscKrylovSolver()
  ****************************************************************/
 void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
-    AMP::shared_ptr<PetscKrylovSolverParameters> parameters =
-        AMP::dynamic_pointer_cast<PetscKrylovSolverParameters>( params );
+    auto parameters = AMP::dynamic_pointer_cast<PetscKrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
@@ -103,7 +102,7 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
 
     if ( d_KSPAppendOptionsPrefix != "" ) {
         KSPAppendOptionsPrefix( d_KrylovSolver, d_KSPAppendOptionsPrefix.c_str() );
-        //      PCAppendOptionsPrefix(pc, d_KSPAppendOptionsPrefix.c_str());
+        // PCAppendOptionsPrefix(pc, d_KSPAppendOptionsPrefix.c_str());
     }
 
     if ( ( d_sKspType == "fgmres" ) || ( d_sKspType == "gmres" ) ) {
@@ -120,9 +119,8 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
             PCSetType( pc, d_sPcType.c_str() );
         } else {
             // for a shell preconditioner the user context is set to an instance of this class
-            // and the setup and apply preconditioner functions for the PCSHELL
-            // are set to static member functions of this class. By doing this we do not need to
-            // introduce
+            // and the setup and apply preconditioner functions for the PCSHELL are set to
+            // static member functions of this class. By doing this we do not need to introduce
             // static member functions into every SolverStrategy that might be used as a
             // preconditioner
             checkErr( PCSetType( pc, PCSHELL ) );
@@ -219,6 +217,7 @@ void PetscKrylovSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
         d_sPcType = "none";
     }
 }
+
 
 /****************************************************************
  *  Solve                                                        *
@@ -345,11 +344,10 @@ void PetscKrylovSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::O
 
     d_pOperator = op;
 
-    AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
+    auto linearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
     AMP_ASSERT( linearOperator.get() != nullptr );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix =
+    auto pMatrix =
         AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>( linearOperator->getMatrix() );
     AMP_ASSERT( pMatrix.get() != nullptr );
 
@@ -369,13 +367,12 @@ void PetscKrylovSolver::resetOperator(
 {
     if ( d_pOperator.get() != nullptr ) {
         d_pOperator->reset( params );
-        AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
+        auto linearOperator =
             AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
         AMP_ASSERT( linearOperator.get() != nullptr );
 
-        AMP::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix =
-            AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(
-                linearOperator->getMatrix() );
+        auto pMatrix = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(
+            linearOperator->getMatrix() );
         AMP_ASSERT( pMatrix.get() != nullptr );
 
         Mat mat;
@@ -468,8 +465,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
 
 
     // Call the preconditioner
-    AMP::shared_ptr<AMP::Solver::SolverStrategy> preconditioner =
-        ( (PetscKrylovSolver *) ctx )->getPreconditioner();
+    auto preconditioner = ( (PetscKrylovSolver *) ctx )->getPreconditioner();
     if ( preconditioner != nullptr ) {
         preconditioner->solve( sp_r, sp_z );
     } else {
@@ -498,5 +494,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
 
     return ( ierr );
 }
+
+
 } // namespace Solver
 } // namespace AMP

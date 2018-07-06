@@ -156,9 +156,9 @@ MatTestResult testMaterial( std::string &name )
         }
 
         // set up AMP::Vector arguments to evalv
-        auto valueVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "value" );
+        auto valueVar   = AMP::make_shared<AMP::LinearAlgebra::Variable>( "value" );
         auto valueVec   = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, valueVar );
-        auto nominalVar = std::make_shared<AMP::LinearAlgebra::Variable>( "nominal" );
+        auto nominalVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( "nominal" );
         auto nominalVec = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nominalVar );
         std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> argsVec;
         for ( size_t i = 0; i < nargs; i++ ) {
@@ -182,7 +182,7 @@ MatTestResult testMaterial( std::string &name )
             xlator.insert( std::make_pair( argnames[i], name ) );
             count++;
         }
-        auto nominalMultiVar = std::make_shared<AMP::LinearAlgebra::Variable>( "nominalMulti" );
+        auto nominalMultiVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( "nominalMulti" );
         auto nominalMultiVec =
             AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nominalMultiVar );
 
