@@ -7,7 +7,7 @@ VectorCopyOperator::VectorCopyOperator(
     const AMP::shared_ptr<VectorCopyOperatorParameters> &params )
     : AMP::Operator::Operator( params )
 {
-    AMP::shared_ptr<AMP::Operator::VectorCopyOperatorParameters> copyParams =
+    auto copyParams =
         AMP::dynamic_pointer_cast<AMP::Operator::VectorCopyOperatorParameters>( params );
     d_copyVariable = copyParams->d_copyVariable;
     d_copyVector   = copyParams->d_copyVector;

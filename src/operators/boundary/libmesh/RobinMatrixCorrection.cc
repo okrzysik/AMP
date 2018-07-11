@@ -219,7 +219,6 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
                     std::vector<std::vector<double>> inputArgsAtGpts(
                         elementInputVec.size(), std::vector<double>( numGaussPts ) );
                     std::vector<double> beta( numGaussPts, d_beta );
-                    std::vector<double> gamma( numGaussPts, d_gamma );
                     if ( d_robinPhysicsModel.get() != nullptr ) {
                         unsigned int startIdx = 0;
                         if ( d_isFluxGaussPtVector ) {
@@ -242,6 +241,7 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
                             }
                         }
 
+                        std::vector<double> gamma( numGaussPts, d_gamma );
                         d_robinPhysicsModel->getConductance( beta, gamma, inputArgsAtGpts );
                     }
 

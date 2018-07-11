@@ -15,13 +15,14 @@ namespace AMP {
  ******************************************************************/
 template<class TYPE, int MAX_SIZE, class COMPARE>
 AtomicList<TYPE, MAX_SIZE, COMPARE>::AtomicList( const TYPE &default_value, const COMPARE &comp )
-    : d_compare( comp ), d_default( default_value )
+    : d_compare( comp ),
+      d_default( default_value ),
+      d_N( 0 ),
+      d_unused( 1 ),
+      d_N_insert( 0 ),
+      d_N_remove( 0 )
 {
-    d_N        = 0;
-    d_next[0]  = -1;
-    d_unused   = 1;
-    d_N_insert = 0;
-    d_N_remove = 0;
+    d_next[0] = -1;
     for ( int i = 0; i < MAX_SIZE; i++ ) {
         d_next[i + 1] = -5 - i;
         d_objects[i]  = d_default;

@@ -3,7 +3,7 @@
 # To update format only:
 #   find src -name "*.cpp" -or -name "*.cc" -or -name "*.h" -or -name "*.hpp" -or -name "*.I" | xargs -I{} clang-format -i {}
 # To run modernize
-#   export CLANG_PATH=/packages/llvm/install/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04
+#   export CLANG_PATH=/packages/llvm/build/llvm-60
 #   export PATH=${CLANG_PATH}/bin:${CLANG_PATH}/share/clang:$PATH
 #   rpl -x'.cc' -x'.cpp' -x'.h' -x'.hpp' -x'.I' -R 'AMP::shared_ptr' 'std::shared_ptr' src
 #   rpl -x'.cc' -x'.cpp' -x'.h' -x'.hpp' -x'.I' -R 'AMP::make_shared' 'std::make_shared' src

@@ -1535,6 +1535,7 @@ int main( int argc, char *argv[] )
 
     // Shutdown
     PROFILE_SAVE( "test_AMP_MPI" );
+    ut.reset();
     AMP::AMPManager::shutdown();
     return num_failed;
 }

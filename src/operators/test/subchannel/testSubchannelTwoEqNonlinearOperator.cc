@@ -95,15 +95,15 @@ void Test( AMP::UnitTest *ut, const std::string &exeName )
 
     // reset the nonlinear operator
     subchannelOperator->reset( subchannelOpParams );
-    std::vector<size_t> dofs;
-    AMP::Mesh::MeshIterator face     = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
-    AMP::Mesh::MeshIterator end_face = face.end();
+    auto face     = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
+    auto end_face = face.end();
 
     const double h_scale = AMP::Operator::Subchannel::scaleEnthalpy;
     const double P_scale = AMP::Operator::Subchannel::scalePressure;
 
     {
         // Test apply with known residual evaluation
+        std::vector<size_t> dofs;
         face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
         faceDOFManager->getDOFs( face->globalID(), dofs );
         ++face;

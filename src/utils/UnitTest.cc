@@ -23,9 +23,10 @@ UnitTest::UnitTest() : d_verbose( false )
 UnitTest::~UnitTest() { reset(); }
 void UnitTest::reset()
 {
-    pass_messages.clear();
-    fail_messages.clear();
-    expected_fail_messages.clear();
+    // Clear the data forcing a reallocation
+    std::vector<std::string>().swap( pass_messages );
+    std::vector<std::string>().swap( fail_messages );
+    std::vector<std::string>().swap( expected_fail_messages );
 }
 
 

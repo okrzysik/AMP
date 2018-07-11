@@ -65,6 +65,7 @@ exceptNew:*/src/matrices/trilinos/ManagedEpetraMatrix.cc
 
 
 // Supress warnings for operators
+uninitMemberVar:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cc
 uninitMemberVar:*/src/operators/boundary/libmesh/TractionBoundaryOperator.cc
 uninitMemberVar:*/src/operators/diffusion/DiffusionElement.cc
 uninitMemberVar:*/src/operators/flow/FlowElement.cc
@@ -77,17 +78,24 @@ uninitMemberVar:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cc
 passedByValue:*/src/operators/subchannel/SubchannelHelpers.cc
 passedByValue:*/src/operators/test/maps/testMultiDofDTKMapOperator-2.cc
 passedByValue:*/src/operators/test/maps/testMultiDofDTKMapOperator.cc
+useInitializationList:*/src/operators/VectorCopyOperator.cc
 useInitializationList:*/src/operators/map/AsyncMapOperator.cc
 
 
-// Supress warnings for vectors
+// Suppress warnings for vectors
 uninitMemberVar:*/src/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.cc
 uninitMemberVar:*/src/vectors/trilinos/thyra/NativeThyraVector.cc
 
 
-// Supress warnings for solvers
+// Suppress warnings for solvers
 duplicateAssignExpression:*/src/solvers/test/testMaterialModels_VonMisesPlasticity-2.cc
 duplicateAssignExpression:*/src/solvers/test/testMaterialModels_VonMisesPlasticity-2.cc
+
+
+// Suppress warnings for time_integrators
+useInitializationList:*/src/time_integrators/ColumnTimeOperator.cc
+useInitializationList:*/src/time_integrators/LinearTimeOperator.cc
+useInitializationList:*/src/time_integrators/TimeOperator.cc
 
 
 // Suppress warnings for utils
@@ -105,7 +113,9 @@ memleak:*/utils/test/test_AMPManager.cc
 invalidPointerCast:*/utils/threadpool/atomic_helpers.h
 duplicateAssignExpression:*/src/utils/test/test_MathExpr.cc
 knownConditionTrueFalse:*/utils/test/test_AsciiWriter.cc
+knownConditionTrueFalse:*/src/utils/test/test_AMP_MPI.cc
 knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
 *:*/utils/tinyexpr/tinyexpr.c
-
+useInitializationList:*/src/utils/AMP_MPI.cc
+nullPointer:*/src/utils/Scanner.cc
 

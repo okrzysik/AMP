@@ -1,4 +1,9 @@
-
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/dendro/DendroSearch.h"
+#include "AMP/ampmesh/euclidean_geometry_tools.h"
+#include "AMP/ampmesh/latex_visualization_tools.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -6,17 +11,9 @@
 #include "AMP/utils/InputManager.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/dendro/DendroSearch.h"
-#include "AMP/ampmesh/euclidean_geometry_tools.h"
-#include "AMP/ampmesh/latex_visualization_tools.h"
 
 #include <fstream>
 #include <iomanip>

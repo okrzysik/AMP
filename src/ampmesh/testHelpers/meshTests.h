@@ -203,10 +203,10 @@ public: // Vector based tests
                            int gcw,
                            int dofs_per_node,
                            bool split )
-            : SPLIT( split )
+            : d_dofManager( AMP::Discretization::simpleDOFManager::create(
+                  mesh, type, gcw, dofs_per_node, split ) ),
+              SPLIT( split )
         {
-            d_dofManager = AMP::Discretization::simpleDOFManager::create(
-                mesh, type, gcw, dofs_per_node, split );
         }
         //! Get the Variable
         virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override

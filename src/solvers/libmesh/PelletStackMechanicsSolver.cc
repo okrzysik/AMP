@@ -6,10 +6,11 @@ namespace Solver {
 
 PelletStackMechanicsSolver::PelletStackMechanicsSolver(
     AMP::shared_ptr<PelletStackMechanicsSolverParameters> params )
-    : SolverStrategy( params )
+    : SolverStrategy( params ),
+      d_pelletStackOp(
+          AMP::dynamic_pointer_cast<AMP::Operator::PelletStackOperator>( d_pOperator ) ),
+      d_columnSolver( params->d_columnSolver )
 {
-    d_columnSolver  = params->d_columnSolver;
-    d_pelletStackOp = AMP::dynamic_pointer_cast<AMP::Operator::PelletStackOperator>( d_pOperator );
 }
 
 

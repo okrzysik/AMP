@@ -67,9 +67,8 @@ inline Vector::const_shared_ptr ManagedVector::selectInto( const VectorSelector 
 
 
 inline ManagedVectorParameters::ManagedVectorParameters()
+    : d_Buffer( nullptr ), d_CloneEngine( true )
 {
-    d_CloneEngine = true;
-    d_Buffer      = nullptr;
 }
 
 

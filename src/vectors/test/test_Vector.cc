@@ -2,9 +2,10 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
-#include <iostream>
 
 #include "test_VectorHelpers.h"
+
+#include <iostream>
 
 
 int main( int argc, char **argv )

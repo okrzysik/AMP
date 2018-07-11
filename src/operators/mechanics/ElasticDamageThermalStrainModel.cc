@@ -398,24 +398,19 @@ void ElasticDamageThermalStrainModel::computeEvalv( const std::vector<std::vecto
         std::vector<double> TEC_2( 1 );
         std::vector<double> DN( 1 );
 
-        std::string ymString       = "YoungsModulus";
-        std::string prString       = "PoissonRatio";
-        std::string tecString      = "ThermalExpansion";
-        std::string tecStringAxial = "ThermalExpansionAxial";
-
-        d_material->property( ymString )->evalv( YM, inputMaterialParameters );
-        d_material->property( prString )->evalv( PR, inputMaterialParameters );
+        d_material->property( "YoungsModulus" )->evalv( YM, inputMaterialParameters );
+        d_material->property( "PoissonRatio" )->evalv( PR, inputMaterialParameters );
         if ( d_checkCladOrPellet == false ) {
-            d_material->property( tecString )->evalv( TEC, inputMaterialParameters );
+            d_material->property( "ThermalExpansion" )->evalv( TEC, inputMaterialParameters );
         } else {
-            d_material->property( tecStringAxial )->evalv( TEC, inputMaterialParameters );
-            d_material->property( tecString )->evalv( TEC_2, inputMaterialParameters );
+            d_material->property( "ThermalExpansionAxial" )->evalv( TEC, inputMaterialParameters );
+            d_material->property( "ThermalExpansion" )->evalv( TEC_2, inputMaterialParameters );
         }
 
         if ( !( strain[Mechanics::TEMPERATURE].empty() ) ) {
             ( *tempVec )[0] = d_EquilibriumTemperature[d_gaussPtCnt];
         }
-        d_material->property( tecString )->evalv( TEC_1, inputMaterialParameters );
+        d_material->property( "ThermalExpansion" )->evalv( TEC_1, inputMaterialParameters );
 
         d_E[d_gaussPtCnt]  = YM[0];
         d_Nu[d_gaussPtCnt] = PR[0];

@@ -27,9 +27,10 @@ static inline AMP::shared_ptr<ManagedVector> getManaged( AMP::shared_ptr<Vector>
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in ) : Vector( params_in )
+ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
+    : Vector( params_in ),
+      d_pParameters( AMP::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
 {
-    d_pParameters = AMP::dynamic_pointer_cast<ManagedVectorParameters>( params_in );
     if ( d_pParameters->d_Buffer.get() != nullptr )
         d_vBuffer = d_pParameters->d_Buffer;
     else

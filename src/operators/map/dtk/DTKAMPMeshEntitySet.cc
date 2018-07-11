@@ -22,7 +22,6 @@ AMPMeshEntitySet::AMPMeshEntitySet( const AMP::shared_ptr<AMP::Mesh::Mesh> &mesh
     : d_amp_mesh( mesh ), d_id_maps( 4 )
 {
     // Build the rank map.
-    d_rank_map        = AMP::make_shared<std::unordered_map<int, int>>();
     auto global_ranks = d_amp_mesh->getComm().globalRanks();
     int size          = d_amp_mesh->getComm().getSize();
     for ( int n = 0; n < size; ++n ) {

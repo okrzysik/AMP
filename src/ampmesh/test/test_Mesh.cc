@@ -1,7 +1,6 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
 #include "AMP/ampmesh/testHelpers/meshTests.h"
-
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/InputDatabase.h"
@@ -343,8 +342,9 @@ int main( int argc, char **argv )
     PROFILE_SAVE( "test_Mesh" );
 
     // Print the results and return
-    ut.report();
     int num_failed = ut.NumFailGlobal();
+    ut.report();
+    ut.reset();
     AMP::AMPManager::shutdown();
     return num_failed;
 }

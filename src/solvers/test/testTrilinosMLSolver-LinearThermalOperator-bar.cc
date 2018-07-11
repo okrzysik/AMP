@@ -67,7 +67,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     //   Create the Mesh.
     //--------------------------------------------------
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    auto mesh_db = input_db->getDatabase( "Mesh" );
     AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
         new AMP::Mesh::MeshParameters( mesh_db ) );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );

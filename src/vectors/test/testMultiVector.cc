@@ -1,3 +1,6 @@
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -8,10 +11,6 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/utils/shared_ptr.h"
-
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"

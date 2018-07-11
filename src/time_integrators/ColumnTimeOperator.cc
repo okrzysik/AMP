@@ -11,11 +11,9 @@ ColumnTimeOperator::ColumnTimeOperator(
     AMP::shared_ptr<AMP::Operator::OperatorParameters> in_params )
     : ColumnOperator( in_params )
 {
-
-    AMP::shared_ptr<TimeOperatorParameters> params =
-        AMP::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
-    AMP::shared_ptr<AMP::Database> column_db = params->d_db;
-    d_Mesh                                   = params->d_Mesh;
+    auto params    = AMP::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    auto column_db = params->d_db;
+    d_Mesh         = params->d_Mesh;
     d_pRhsOperator = AMP::dynamic_pointer_cast<ColumnOperator>( params->d_pRhsOperator );
     AMP_INSIST( d_pRhsOperator.get() != nullptr,
                 "Error: ColumnTimeOperator::ColumnTimeOperator() rhs "

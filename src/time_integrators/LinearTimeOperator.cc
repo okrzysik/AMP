@@ -16,8 +16,7 @@ LinearTimeOperator::LinearTimeOperator(
     d_dScalingFactor = 0.0;
     d_dCurrentDt     = 0.0;
 
-    AMP::shared_ptr<TimeOperatorParameters> params =
-        AMP::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    auto params = AMP::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
 
     d_pRhsOperator  = AMP::dynamic_pointer_cast<LinearOperator>( params->d_pRhsOperator );
     d_pMassOperator = AMP::dynamic_pointer_cast<LinearOperator>( params->d_pMassOperator );

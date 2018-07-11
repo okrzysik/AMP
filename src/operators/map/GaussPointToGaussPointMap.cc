@@ -128,7 +128,8 @@ void GaussPointToGaussPointMap::createIdxMap(
     std::vector<AMP::Mesh::Mesh::shared_ptr> meshesForMap( 2 );
     meshesForMap[0] = d_mesh1;
     meshesForMap[1] = d_mesh2;
-    AMP::Mesh::Mesh::shared_ptr multiMesh( new AMP::Mesh::MultiMesh( d_MapComm, meshesForMap ) );
+    AMP::Mesh::Mesh::shared_ptr multiMesh(
+        new AMP::Mesh::MultiMesh( "MultiMesh", d_MapComm, meshesForMap ) );
 
     //      AMP::Mesh::MeshIterator surfIter =
     //      multiMesh->getSurfaceIterator(AMP::Mesh::GeomType::Face, 0);

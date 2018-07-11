@@ -10,8 +10,7 @@ TimeOperator::TimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> i
     : Operator( in_params )
 
 {
-    AMP::shared_ptr<TimeOperatorParameters> params =
-        AMP::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    auto params = AMP::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
 
     d_bLinearMassOperator = false;
     d_bLinearRhsOperator  = false;

@@ -179,9 +179,8 @@ size_t NodeToGeomType::FaceContactOperator::updateActiveSet(
             AMP_ASSERT( masterVolumeVertices.size() == 8 );
             std::vector<AMP::Mesh::MeshElementID> masterVolumeVerticesGlobalIDs( 8 );
             double masterVolumeVerticesCoordinates[24];
-            std::vector<double> vertexCoord( 3 );
             for ( size_t j = 0; j < masterVolumeVertices.size(); ++j ) {
-                vertexCoord = masterVolumeVertices[j].coord();
+                auto vertexCoord = masterVolumeVertices[j].coord();
                 std::copy( vertexCoord.begin(),
                            vertexCoord.end(),
                            &( masterVolumeVerticesCoordinates[3 * j] ) );
@@ -510,9 +509,8 @@ size_t NodeToGeomType::FaceContactOperator::updateActiveSet(
         std::vector<AMP::Mesh::MeshElementID> masterVolumeVerticesGlobalIDs( 8 );
         AMP_ASSERT( masterVolumeVertices.size() == 8 );
         double masterVolumeVerticesCoordinates[24];
-        std::vector<double> vertexCoord( 3 );
         for ( size_t j = 0; j < masterVolumeVertices.size(); ++j ) {
-            vertexCoord = masterVolumeVertices[j].coord();
+            auto vertexCoord = masterVolumeVertices[j].coord();
             std::copy( vertexCoord.begin(),
                        vertexCoord.end(),
                        &( masterVolumeVerticesCoordinates[3 * j] ) );

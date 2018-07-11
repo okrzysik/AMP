@@ -27,9 +27,9 @@ namespace LinearAlgebra {
  ********************************************************/
 ManagedEpetraMatrix::ManagedEpetraMatrix( AMP::shared_ptr<ManagedEpetraMatrixParameters> params )
     : EpetraMatrix( params->getEpetraRowMap(), params->getEpetraColMap(), params->entryList() ),
-      ManagedMatrix( params )
+      ManagedMatrix( params ),
+      d_pParameters( params )
 {
-    d_pParameters = params;
 }
 ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
     : Matrix(),
@@ -407,9 +407,8 @@ void ManagedEpetraMatrix::getRowByGlobalID( size_t row,
     cols.resize( numCols );
     values.resize( numCols );
 
-    std::vector<int> epetra_cols( numCols );
-
     if ( numCols ) {
+        std::vector<int> epetra_cols( numCols );
         VerifyEpetraReturn( d_epetraMatrix->ExtractGlobalRowCopy(
                                 row, numCols, numCols, &( values[0] ), &( epetra_cols[0] ) ),
                             "getRowByGlobalID" );
@@ -428,10 +427,10 @@ std::vector<size_t> ManagedEpetraMatrix::getColumnIDs( size_t row ) const
     size_t localRow = row - firstRow;
     int numCols     = d_pParameters->entriesInRow( localRow );
     std::vector<size_t> cols( numCols );
-    std::vector<double> values( numCols );
-    std::vector<int> epetra_cols( numCols );
 
     if ( numCols ) {
+        std::vector<double> values( numCols );
+        std::vector<int> epetra_cols( numCols );
         VerifyEpetraReturn( d_epetraMatrix->ExtractGlobalRowCopy(
                                 row, numCols, numCols, &( values[0] ), &( epetra_cols[0] ) ),
                             "getRowByGlobalID" );

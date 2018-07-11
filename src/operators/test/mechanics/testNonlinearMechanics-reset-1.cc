@@ -22,11 +22,6 @@
 #include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-// Libmesh headers
-DISABLE_WARNINGS
-#include "libmesh/libmesh.h"
-ENABLE_WARNINGS
-
 #include <iostream>
 #include <string>
 
