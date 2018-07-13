@@ -118,4 +118,8 @@ knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
 *:*/utils/tinyexpr/tinyexpr.c
 useInitializationList:*/src/utils/AMP_MPI.cc
 nullPointer:*/src/utils/Scanner.cc
+duplicateExpression:*/utils/Array.hpp
+nullPointer:*/utils/Array.hpp
+noExplicitConstructor:*/utils/Array.h
+
 

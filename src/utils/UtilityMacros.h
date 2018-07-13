@@ -5,6 +5,8 @@
 #include "AMP/utils/Logger.h"
 #include "AMP/utils/Utilities.h"
 
+#include <sstream>
+
 
 /*! \defgroup Macros Set of utility macro functions used in AMP
  *  \details  These functions are a list of C++ macros that are used within AMP
@@ -45,14 +47,6 @@
     } while ( 0 )
 
 
-// Get a ostream
-#ifndef LACKS_SSTREAM
-#define TBOXOSTREAM std::ostringstream
-#else
-#define TBOXOSTREAM std::ostrstream
-#endif
-
-
 /*! \def AMP_ERROR(MSG)
  *  \brief      Throw error
  *  \details    Throw an error exception from within any C++ source code.  The
@@ -62,9 +56,9 @@
  */
 #define AMP_ERROR( MSG )                                           \
     do {                                                           \
-        TBOXOSTREAM tboxos;                                        \
-        tboxos << MSG;                                             \
-        AMP::Utilities::abort( tboxos.str(), __FILE__, __LINE__ ); \
+        std::ostringstream stream;                                 \
+        stream << MSG;                                             \
+        AMP::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
     } while ( 0 )
 
 
@@ -75,13 +69,13 @@
  */
 #define AMP_WARNING( MSG )                                                          \
     do {                                                                            \
-        TBOXOSTREAM tboxos;                                                         \
-        tboxos << MSG << std::ends;                                                 \
+        std::ostringstream stream;                                                  \
+        stream << MSG << std::ends;                                                 \
         printf( "WARNING: %s\n   Warning called in %s on line %i\n",                \
-                tboxos.str().c_str(),                                               \
+                stream.str().c_str(),                                               \
                 __FILE__,                                                           \
                 __LINE__ );                                                         \
-        AMP::Logger::getInstance()->logWarning( tboxos.str(), __FILE__, __LINE__ ); \
+        AMP::Logger::getInstance()->logWarning( stream.str(), __FILE__, __LINE__ ); \
     } while ( 0 )
 
 
@@ -92,13 +86,13 @@
  */
 #define AMP_DEBUG( MSG )                                                          \
     do {                                                                          \
-        TBOXOSTREAM tboxos;                                                       \
-        tboxos << MSG << std::ends;                                               \
+        std::ostringstream stream;                                                \
+        stream << MSG << std::ends;                                               \
         printf( "WARNING: %s\n   Warning called in %s on line %i\n",              \
-                tboxos.str().c_str(),                                             \
+                stream.str().c_str(),                                             \
                 __FILE__,                                                         \
                 __LINE__ );                                                       \
-        AMP::Logger::getInstance()->logDebug( tboxos.str(), __FILE__, __LINE__ ); \
+        AMP::Logger::getInstance()->logDebug( stream.str(), __FILE__, __LINE__ ); \
     } while ( 0 )
 
 
@@ -113,7 +107,7 @@
 #define AMP_ASSERT( EXP )                                              \
     do {                                                               \
         if ( !( EXP ) ) {                                              \
-            TBOXOSTREAM tboxos;                                        \
+            std::ostringstream tboxos;                                 \
             tboxos << "Failed assertion: " << #EXP;                    \
             AMP::Utilities::abort( tboxos.str(), __FILE__, __LINE__ ); \
         }                                                              \
@@ -132,10 +126,10 @@
 #define AMP_INSIST( EXP, MSG )                                         \
     do {                                                               \
         if ( !( EXP ) ) {                                              \
-            TBOXOSTREAM tboxos;                                        \
-            tboxos << "Failed insist: " << #EXP << std::endl;          \
-            tboxos << "Message: " << MSG << std::ends;                 \
-            AMP::Utilities::abort( tboxos.str(), __FILE__, __LINE__ ); \
+            std::ostringstream stream;                                 \
+            stream << "Failed insist: " << #EXP << std::endl;          \
+            stream << "Message: " << MSG << std::ends;                 \
+            AMP::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
         }                                                              \
     } while ( 0 )
 
@@ -200,8 +194,8 @@
 #define PETSC_AMP_ERROR( ierr )                                        \
     do {                                                               \
         if ( ierr ) {                                                  \
-            std::ostringstream tboxos;                                 \
-            AMP::Utilities::abort( tboxos.str(), __FILE__, __LINE__ ); \
+            std::ostringstream stream;                                 \
+            AMP::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
         }                                                              \
     }                                                                  \
     }                                                                  \
@@ -210,9 +204,9 @@
 #define PETSC_AMP_ERROR( ierr )                                        \
     do {                                                               \
         if ( ierr ) {                                                  \
-            std::ostrstream tboxos;                                    \
+            std::ostrstream stream;                                    \
             CHKERRCONTINUE( ierr );                                    \
-            AMP::Utilities::abort( tboxos.str(), __FILE__, __LINE__ ); \
+            AMP::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
         }                                                              \
     }                                                                  \
     }                                                                  \
