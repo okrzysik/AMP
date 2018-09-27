@@ -9,9 +9,6 @@ namespace AMP {
 namespace Mesh {
 
 
-// Create a unique id for this class
-static unsigned int libMeshElementTypeID = TYPE_HASH( libMeshElement );
-
 // Functions to create new ids by mixing existing ids
 static unsigned int generate_id( const std::vector<unsigned int> &ids );
 
@@ -21,7 +18,7 @@ static unsigned int generate_id( const std::vector<unsigned int> &ids );
  ********************************************************/
 libMeshElement::libMeshElement()
 {
-    typeID     = libMeshElementTypeID;
+    typeID     = getTypeID();
     element    = nullptr;
     d_dim      = -1;
     d_globalID = MeshElementID();
@@ -34,7 +31,7 @@ libMeshElement::libMeshElement( int dim,
                                 const libMesh *mesh )
 {
     AMP_ASSERT( libmesh_element != nullptr );
-    typeID          = libMeshElementTypeID;
+    typeID          = getTypeID();
     element         = nullptr;
     d_dim           = dim;
     d_rank          = rank;
@@ -69,7 +66,7 @@ libMeshElement::libMeshElement( int dim,
     : d_delete_elem( false )
 {
     AMP_ASSERT( libmesh_element.get() != nullptr );
-    typeID          = libMeshElementTypeID;
+    typeID          = getTypeID();
     element         = nullptr;
     d_dim           = dim;
     d_rank          = rank;
@@ -99,7 +96,7 @@ libMeshElement::libMeshElement( const libMeshElement &rhs )
       d_meshID( rhs.d_meshID ),
       d_delete_elem( false )
 {
-    typeID      = libMeshElementTypeID;
+    typeID      = getTypeID();
     element     = nullptr;
     d_globalID  = rhs.d_globalID;
     d_dim       = rhs.d_dim;
@@ -111,7 +108,7 @@ libMeshElement &libMeshElement::operator=( const libMeshElement &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID        = libMeshElementTypeID;
+    this->typeID        = getTypeID();
     this->element       = nullptr;
     this->d_globalID    = rhs.d_globalID;
     this->d_dim         = rhs.d_dim;

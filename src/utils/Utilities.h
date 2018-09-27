@@ -302,7 +302,7 @@ double trilinear( const std::vector<double> &x,
                   double zi );
 
 //! Create a hash key from a char array
-unsigned int hash_char( const char * );
+constexpr unsigned int hash_char( const char * );
 
 //! Get the prime factors for a number
 std::vector<int> factor( size_t );

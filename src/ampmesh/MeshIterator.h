@@ -217,6 +217,9 @@ protected:
     size_t d_pos;
     // Pointer to the current element
     MeshElement *d_element;
+
+private:
+    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "MeshIterator" ); }
 };
 
 

@@ -9,9 +9,6 @@ namespace AMP {
 namespace Mesh {
 
 
-// Create a unique id for this class
-static unsigned int libMeshIteratorTypeID = TYPE_HASH( libMeshIterator );
-
 // unused global variable to prevent compiler warning
 static MeshElement nullElement;
 
@@ -21,7 +18,7 @@ static MeshElement nullElement;
  ********************************************************/
 libMeshIterator::libMeshIterator()
 {
-    d_typeID   = libMeshIteratorTypeID;
+    d_typeID   = getTypeID();
     d_iterator = nullptr;
     d_begin2   = nullptr;
     d_end2     = nullptr;
@@ -43,7 +40,7 @@ libMeshIterator::libMeshIterator( int type,
                                   int size,
                                   int pos2 )
 {
-    d_typeID   = libMeshIteratorTypeID;
+    d_typeID   = getTypeID();
     d_iterator = nullptr;
     d_type     = type;
     d_mesh     = mesh;
@@ -106,7 +103,7 @@ libMeshIterator::libMeshIterator( const libMeshIterator &rhs )
     : MeshIterator(), // Note: we never want to call the base copy constructor
       d_meshID( rhs.d_meshID )
 {
-    d_typeID   = libMeshIteratorTypeID;
+    d_typeID   = getTypeID();
     d_iterator = nullptr;
     d_type     = rhs.d_type;
     d_mesh     = rhs.d_mesh;
@@ -139,7 +136,7 @@ libMeshIterator &libMeshIterator::operator=( const libMeshIterator &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->d_typeID   = libMeshIteratorTypeID;
+    this->d_typeID   = getTypeID();
     this->d_iterator = nullptr;
     this->d_type     = rhs.d_type;
     this->d_mesh     = rhs.d_mesh;
@@ -313,11 +310,11 @@ bool libMeshIterator::operator==( const MeshIterator &rhs ) const
     const libMeshIterator *rhs2 = nullptr;
     // Convert rhs to a libMeshIterator* so we can access the base class members
     auto *tmp = reinterpret_cast<const libMeshIterator *>( &rhs );
-    if ( tmp->d_typeID == libMeshIteratorTypeID ) {
+    if ( tmp->d_typeID == getTypeID() ) {
         rhs2 = tmp; // We can safely cast rhs to a libMeshIterator
     } else if ( tmp->d_iterator != nullptr ) {
         tmp = reinterpret_cast<const libMeshIterator *>( tmp->d_iterator );
-        if ( tmp->d_typeID == libMeshIteratorTypeID )
+        if ( tmp->d_typeID == getTypeID() )
             rhs2 = tmp; // We can safely cast rhs.iterator to a libMeshIterator
     }
     // Perform direct comparisions if we are dealing with two libMeshIterators

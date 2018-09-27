@@ -7,9 +7,6 @@ namespace AMP {
 namespace Mesh {
 
 
-// Create a unique id for this class
-static unsigned int structuredMeshElementTypeID = TYPE_HASH( structuredMeshElement );
-
 // Function to evaluate the magnitude of a cross product in 3d
 double cross3magnitude( double a[3], double b[3] )
 {
@@ -36,7 +33,7 @@ double dot3cross( double a[3], double b[3], double c[3] )
 structuredMeshElement::structuredMeshElement() { reset(); }
 void structuredMeshElement::reset()
 {
-    typeID        = structuredMeshElementTypeID;
+    typeID        = getTypeID();
     element       = nullptr;
     d_index       = BoxMesh::MeshElementIndex();
     d_globalID    = MeshElementID();
@@ -51,7 +48,7 @@ structuredMeshElement::structuredMeshElement( const BoxMesh::MeshElementIndex &i
 void structuredMeshElement::reset( const BoxMesh::MeshElementIndex &index,
                                    const AMP::Mesh::BoxMesh *mesh )
 {
-    typeID        = structuredMeshElementTypeID;
+    typeID        = getTypeID();
     d_mesh        = mesh;
     d_meshType    = d_mesh->getGeomType();
     d_physicalDim = d_mesh->getDim();
@@ -66,7 +63,7 @@ structuredMeshElement::structuredMeshElement( const structuredMeshElement &rhs )
       d_index( rhs.d_index ),
       d_mesh( rhs.d_mesh )
 {
-    typeID     = structuredMeshElementTypeID;
+    typeID     = getTypeID();
     element    = nullptr;
     d_globalID = rhs.d_globalID;
 }
@@ -74,7 +71,7 @@ structuredMeshElement &structuredMeshElement::operator=( const structuredMeshEle
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID        = structuredMeshElementTypeID;
+    this->typeID        = getTypeID();
     this->element       = nullptr;
     this->d_globalID    = rhs.d_globalID;
     this->d_meshType    = rhs.d_meshType;

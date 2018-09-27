@@ -1,52 +1,69 @@
-#ifndef included_AMP_STKMeshElement
-#define included_AMP_STKMeshElement
+#ifndef included_AMP_TriangleMeshElement
+#define included_AMP_TriangleMeshElement
+
 
 #include "AMP/ampmesh/MeshElement.h"
-#include "AMP/ampmesh/STKmesh/STKMesh.h"
-#include "AMP/ampmesh/STKmesh/STKMeshIterator.h"
 #include "AMP/utils/shared_ptr.h"
 #include <vector>
+
 
 namespace AMP {
 namespace Mesh {
 
 
+template<size_t NG, size_t NP>
+class TriangleMesh;
+template<size_t NG, size_t NP>
+class TriangleMeshIterator;
+
+
 /**
- * \class STKMeshElement
+ * \class TriangleMeshElement
  * \brief A derived class used to define a mesh element
  * \details  This class provides routines for accessing and using a mesh element.
  * A mesh element can be thought of as the smallest unit of a mesh.  It is of a type
- * of GeomType.  This class is derived to store a STKMesh element.
+ * of GeomType.  This class is derived to store a TriangleMesh element.
  */
-class STKMeshElement : public MeshElement
+template<size_t NG, size_t NP>
+class TriangleMeshElement final : public MeshElement
 {
 public:
     //! Empty constructor for a MeshElement
-    STKMeshElement();
+    TriangleMeshElement();
 
     //! Copy constructor
-    STKMeshElement( const STKMeshElement & );
+    TriangleMeshElement( const TriangleMeshElement & );
 
     //! Assignment operator
-    STKMeshElement &operator=( const STKMeshElement & );
+    TriangleMeshElement &operator=( const TriangleMeshElement & );
+
+    //! Move operator
+    TriangleMeshElement( TriangleMeshElement && );
+
+    //! Move assignment operator
+    TriangleMeshElement &operator=( TriangleMeshElement && );
 
     //! De-constructor for a MeshElement
-    virtual ~STKMeshElement();
+    virtual ~TriangleMeshElement() = default;
 
     //! Return the element class
-    virtual inline std::string elementClass() const { return "STKMeshElement"; }
+    virtual inline std::string elementClass() const override { return "TriangleMeshElement"; }
 
     //! Return the elements composing the current element
-    virtual std::vector<MeshElement> getElements( const GeomType type ) const override;
+    virtual void getElements( const GeomType type,
+                              std::vector<MeshElement> &elements ) const override;
+
+    //! Return the IDs of the elements composing the current element
+    virtual void getElementsID( const GeomType type, std::vector<MeshElementID> &ID ) const override;
 
     //! Return the elements neighboring the current element
-    virtual std::vector<MeshElement::shared_ptr> getNeighbors() const override;
+    virtual void getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const override;
 
     //! Return the volume of the current element (does not apply to verticies)
     virtual double volume() const override;
 
     //! Return the coordinates of all verticies composing the element
-    virtual std::vector<double> coord() const override;
+    virtual void coord( size_t &N, double *pos ) const override;
 
     /**
      * \brief     Return the centroid of the element
@@ -54,7 +71,7 @@ public:
      *   centroid is defined as the average of the coordinates of the verticies.
      *   The centroid of a vertex is the vertex and will return the same result as coord().
      */
-    virtual std::vector<double> centroid() const override;
+    virtual void centroid( size_t &N, double *pos ) const override;
 
     /**
      * \brief     Return true if the element contains the point
@@ -83,43 +100,30 @@ public:
      */
     virtual bool isInBlock( int id ) const override;
 
+    //! Return the owner rank according to AMP_COMM_WORLD
+    virtual unsigned int globalOwnerRank() const override;
+
 
 protected:
-    /** Default constructors
-     * \param dim       Spatial dimension
-     * \param element   Underlying STKmesh element
-     * \param mesh      Underlying mesh
-     * \param rank      Rank of the current processor (must agree with STKmesh->processor_id())
-     * \param meshID    ID of the current mesh
-     *        type      Element type
-     */
-    STKMeshElement( int dim,
-                    stk::mesh::Entity *element,
-                    unsigned int rank,
-                    MeshID meshID,
-                    const STKMesh *mesh );
-    STKMeshElement( int dim,
-                    AMP::shared_ptr<stk::mesh::Entity> element,
-                    unsigned int rank,
-                    MeshID meshID,
-                    const STKMesh *mesh );
+
+    // Default constructors
+    TriangleMeshElement( const MeshElementID& id, const TriangleMesh<NG,NP> *mesh );
+
+    // Reset the element data
+    inline void resetElemId( const uint64_t& id ) { d_globalID.resetElemID( id ); }
 
     //! Clone the iterator
     virtual MeshElement *clone() const override;
 
-    // Internal data
-    int d_dim;                      // The dimension of the mesh
-    unsigned int d_rank;            // The rank of the current processor
-    stk::mesh::Entity *ptr_element; // The underlying STKmesh element properties (raw pointer)
-    const STKMesh *d_mesh;          // The pointer to the current mesh
-    MeshID d_meshID;                // The ID of the current mesh
-    bool d_delete_elem;             // Do we need to delete the STKMesh element
+    // The pointer to the current mesh
+    const TriangleMesh<NG,NP> *d_mesh;
 
-    friend class AMP::Mesh::STKMesh;
-    friend class AMP::Mesh::STKMeshIterator;
+    friend class AMP::Mesh::TriangleMesh<NG,NP>;
+    friend class AMP::Mesh::TriangleMeshIterator<NG,NP>;
 
 private:
-    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "STKMeshElement" ); }
+    static constexpr uint32_t getTypeID();
+
 };
 } // namespace Mesh
 } // namespace AMP

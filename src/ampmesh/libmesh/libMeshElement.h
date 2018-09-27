@@ -126,6 +126,9 @@ protected:
 
     friend class AMP::Mesh::libMesh;
     friend class AMP::Mesh::libMeshIterator;
+
+private:
+    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "libMeshElement" ); }
 };
 } // namespace Mesh
 } // namespace AMP

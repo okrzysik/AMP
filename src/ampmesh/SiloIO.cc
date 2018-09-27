@@ -328,14 +328,19 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     PROFILE_START( "writeMesh - get-elements", 2 );
     auto elem_iterator = mesh->getIterator( mesh->getGeomType(), 0 );
     AMP_ASSERT( elem_iterator.size() > 0 );
+    auto type     = elem_iterator->globalID().type();
     auto nodes    = elem_iterator->getElements( AMP::Mesh::GeomType::Vertex );
     int shapesize = nodes.size();
     int shapetype;
-    if ( shapesize == 8 )
+    if ( shapesize == 8 && type == GeomType::Volume )
         shapetype = DB_ZONETYPE_HEX;
-    else if ( shapesize == 4 )
+    else if ( shapesize == 4 && type == GeomType::Volume )
+        shapetype = DB_ZONETYPE_TET;
+    else if ( shapesize == 4 && type == GeomType::Face )
         shapetype = DB_ZONETYPE_QUAD;
-    else if ( shapesize == 2 )
+    else if ( shapesize == 3 && type == GeomType::Face )
+        shapetype = DB_ZONETYPE_TRIANGLE;
+    else if ( shapesize == 2 && type == GeomType::Edge )
         shapetype = DB_ZONETYPE_BEAM;
     else
         AMP_ERROR( "Unknown element type" );
@@ -346,10 +351,8 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     PROFILE_START( "writeMesh - get-nodelist-1", 3 );
     auto node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     std::vector<AMP::Mesh::MeshElementID> nodelist_ids( node_iterator.size() );
-    for ( size_t i = 0; i < node_iterator.size(); ++i ) {
+    for ( size_t i = 0; i < node_iterator.size(); ++i, ++node_iterator )
         nodelist_ids[i] = node_iterator->globalID();
-        ++node_iterator;
-    }
     AMP::Utilities::quicksort( nodelist_ids );
     PROFILE_STOP( "writeMesh - get-nodelist-1", 3 );
     PROFILE_START( "writeMesh - get-nodelist-2", 3 );
@@ -360,7 +363,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     for ( size_t i = 0; i < node_iterator.size(); ++i ) {
         size_t index = AMP::Utilities::findfirst( nodelist_ids, node_iterator->globalID() );
         AMP_ASSERT( nodelist_ids[index] == node_iterator->globalID() );
-        std::vector<double> elem_coord = node_iterator->coord();
+        auto elem_coord = node_iterator->coord();
         for ( int j = 0; j < d_dim; ++j )
             coord[j][index] = elem_coord[j];
         ++node_iterator;

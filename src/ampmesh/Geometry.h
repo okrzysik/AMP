@@ -112,8 +112,8 @@ public:
      *     ray will never intersect the object, this distance is inf.
      * \param[in] pos   Current position of ray
      * \param[in] dir   Direction of ray (should be normalized for most uses)
-     * @return          Returns the distance to the nearest surface (intersection = pos +
-     * dir*distance)
+     * @return          Returns the distance to the nearest surface
+     *                  (intersection = pos + dir*distance)
      */
     virtual double distance( const Point<double> &pos, const Point<double> &dir ) const = 0;
 
@@ -148,15 +148,15 @@ public:
      * \brief    Return the logical position
      * \details  This function will return logical coordinate given the physical coordinates
      * \param[in] x     Physical coordinate of the point
-     * @return          Returns the surface normal
+     * @return          Returns the logical coordinates
      */
     virtual Point<double> logical( const Point<double> &x ) const = 0;
 
     /**
      * \brief    Return the physical position
      * \details  This function will return physical coordinate given the logical coordinates
-     * \param[in] x     Physical coordinate of the point
-     * @return          Returns the surface normal
+     * \param[in] x     Logical coordinate of the point
+     * @return          Returns the physical coordinates
      */
     virtual Point<double> physical( const Point<double> &x ) const = 0;
 

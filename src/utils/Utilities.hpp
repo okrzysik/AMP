@@ -6,6 +6,21 @@
 
 
 /************************************************************************
+ * Functions to hash                                                     *
+ ************************************************************************/
+constexpr unsigned int AMP::Utilities::hash_char( const char *name )
+{
+    uint32_t hash = 5381;
+    unsigned char c = 0;
+    while ( ( c = *name++ ) ) {
+        // hash = hash * 33 ^ c
+        hash = ( ( hash << 5 ) + hash ) ^ c;
+    }
+    return hash;
+}
+
+
+/************************************************************************
  * Function to wrap printf to std::string                                *
  ************************************************************************/
 inline std::string AMP::Utilities::stringf( const char *format, ... )

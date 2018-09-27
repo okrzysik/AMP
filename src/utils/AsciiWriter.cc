@@ -76,14 +76,14 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
     }
 // Get the ids for the vectors and save the data
 #ifdef USE_AMP_VECTORS
-    std::set<global_id> vec_ids = getKeys( d_vectors, d_comm );
+    auto vec_ids = getKeys( d_vectors, d_comm );
     for ( const auto &vec_id : vec_ids ) {
         // Send the data to rank 0
         d_comm.barrier();
         AMP::LinearAlgebra::Vector::shared_ptr src_vec;
         if ( d_vectors.find( vec_id ) != d_vectors.end() )
             src_vec = d_vectors[vec_id];
-        AMP::LinearAlgebra::Vector::const_shared_ptr dst_vec =
+        auto dst_vec =
             sendVecToRoot( src_vec, vec_id.first, d_comm );
         // Write the data
         if ( d_comm.getRank() == 0 ) {
@@ -99,7 +99,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
 #endif
 // Get the ids for the matricies and save the data
 #ifdef USE_AMP_MATRICES
-    std::set<global_id> mat_ids = getKeys( d_matrices, d_comm );
+    auto mat_ids = getKeys( d_matrices, d_comm );
     for ( const auto &mat_id : mat_ids ) {
         // Send the header data to rank 0
         d_comm.barrier();
@@ -221,7 +221,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
     // Rank 0 needs to create the vector and recv all data
     AMP::LinearAlgebra::Vector::shared_ptr dst_vec;
     if ( rank == 0 ) {
-        AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( name ) );
+        auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( name );
         dst_vec = AMP::LinearAlgebra::SimpleVector<double>::create(
             global_size, var, AMP_MPI( AMP_COMM_SELF ) );
         AMP_ASSERT( dst_vec->numberOfDataBlocks() == 1 );
@@ -257,7 +257,7 @@ void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr ma
     // Determine who "owns" the row
     int own_rank = 0;
     if ( mat != nullptr ) {
-        AMP::Discretization::DOFManager::shared_ptr DOF = mat->getLeftDOFManager();
+        auto DOF = mat->getLeftDOFManager();
         if ( row >= (int) DOF->beginDOF() && row < (int) DOF->endDOF() )
             own_rank = rank;
     }

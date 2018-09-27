@@ -9,9 +9,6 @@ namespace AMP {
 namespace Mesh {
 
 
-// Create a unique id for this class
-static unsigned int structuredMeshIteratorTypeID = TYPE_HASH( structuredMeshIterator );
-
 // unused global variable to prevent compiler warning
 static MeshElement nullElement;
 
@@ -70,7 +67,7 @@ inline void structuredMeshIterator::setCurrentElement()
  ********************************************************/
 structuredMeshIterator::structuredMeshIterator()
 {
-    d_typeID   = structuredMeshIteratorTypeID;
+    d_typeID   = getTypeID();
     d_iterator = nullptr;
     d_pos      = 0;
     d_size     = 0;
@@ -89,7 +86,7 @@ structuredMeshIterator::structuredMeshIterator( const BoxMesh::MeshElementIndex 
       d_last( last ),
       d_mesh( mesh )
 {
-    d_typeID   = structuredMeshIteratorTypeID;
+    d_typeID   = getTypeID();
     d_iterator = nullptr;
     d_pos      = pos;
     d_size     = BoxMesh::MeshElementIndex::numElements( d_first, d_last );
@@ -105,7 +102,7 @@ structuredMeshIterator::structuredMeshIterator(
       d_elements( std::move( elements ) ),
       d_mesh( mesh )
 {
-    d_typeID   = structuredMeshIteratorTypeID;
+    d_typeID   = getTypeID();
     d_iterator = nullptr;
     d_pos      = pos;
     d_size     = d_elements->size();
@@ -123,7 +120,7 @@ structuredMeshIterator::structuredMeshIterator( const structuredMeshIterator &rh
 {
     d_pos      = rhs.d_pos;
     d_size     = rhs.d_size;
-    d_typeID   = structuredMeshIteratorTypeID;
+    d_typeID   = getTypeID();
     d_iterator = nullptr;
     d_element  = &d_cur_element;
     setCurrentElement();
@@ -132,7 +129,7 @@ structuredMeshIterator &structuredMeshIterator::operator=( const structuredMeshI
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    d_typeID     = structuredMeshIteratorTypeID;
+    d_typeID     = getTypeID();
     d_iterator   = nullptr;
     d_pos        = rhs.d_pos;
     d_size       = rhs.d_size;
@@ -252,11 +249,11 @@ bool structuredMeshIterator::operator==( const MeshIterator &rhs ) const
     const structuredMeshIterator *rhs2 = nullptr;
     // Convert rhs to a structuredMeshIterator* so we can access the base class members
     auto *tmp = reinterpret_cast<const structuredMeshIterator *>( &rhs );
-    if ( tmp->d_typeID == structuredMeshIteratorTypeID ) {
+    if ( tmp->d_typeID == getTypeID() ) {
         rhs2 = tmp; // We can safely cast rhs to a structuredMeshIterator
     } else if ( tmp->d_iterator != nullptr ) {
         tmp = reinterpret_cast<const structuredMeshIterator *>( tmp->d_iterator );
-        if ( tmp->d_typeID == structuredMeshIteratorTypeID )
+        if ( tmp->d_typeID == getTypeID() )
             rhs2 = tmp; // We can safely cast rhs.iterator to a structuredMeshIterator
     }
     // Perform direct comparisions if we are dealing with two structuredMeshIterators

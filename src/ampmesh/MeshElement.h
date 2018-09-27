@@ -3,6 +3,7 @@
 
 #include "AMP/ampmesh/MeshID.h"
 #include "AMP/utils/shared_ptr.h"
+#include "AMP/utils/Utilities.h"
 #include <vector>
 
 
@@ -187,6 +188,10 @@ protected:
 
     // Clone the element
     virtual inline MeshElement *clone() const;
+
+private:
+    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "MeshElement" ); }
+
 };
 
 

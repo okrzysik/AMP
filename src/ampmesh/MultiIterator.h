@@ -76,6 +76,9 @@ private:
     std::vector<size_t> d_iteratorSize;
     std::vector<AMP::shared_ptr<MeshIterator>> d_iterators;
     MeshIterator cur_iterator;
+
+private:
+    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "MultiIterator" ); }
 };
 
 

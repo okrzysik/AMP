@@ -152,15 +152,6 @@
 #endif
 
 
-/*! \def TYPE_HASH(X)
- *  \brief Get a hash key from the class type
- *  \details Get a hash key from the class type.
- *      This requires the RTTI (Run-time type information) to be available.
- *  \param X  Class to use for the hash key
- */
-#define TYPE_HASH( X ) AMP::Utilities::hash_char( typeid( X ).name() )
-
-
 /*! \def __VA_NARG__(...)
  *  \brief Macros to return the number of arguments in __VA_ARGS__
  *  \details These macros will return the number of arguments in __VA_ARGS__

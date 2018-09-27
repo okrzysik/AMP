@@ -7,33 +7,29 @@ namespace AMP {
 namespace Mesh {
 
 
-// Create a unique id for this class
-static unsigned int MeshElementTypeID = TYPE_HASH( MeshElement );
-
-
 /********************************************************
  * Constructors                                          *
  ********************************************************/
 MeshElement::MeshElement() : d_globalID()
 {
-    typeID  = MeshElementTypeID;
+    typeID  = getTypeID();
     element = nullptr;
 }
 MeshElement::MeshElement( const MeshElement &rhs )
-    : typeID( MeshElementTypeID ), element( nullptr ), d_globalID( rhs.d_globalID )
+    : typeID( getTypeID() ), element( nullptr ), d_globalID( rhs.d_globalID )
 {
-    if ( rhs.element == nullptr && rhs.typeID == MeshElementTypeID ) {
+    if ( rhs.element == nullptr && rhs.typeID == getTypeID() ) {
         element = nullptr;
-    } else if ( rhs.typeID != MeshElementTypeID ) {
+    } else if ( rhs.typeID != getTypeID() ) {
         element = rhs.clone();
     } else {
         element = rhs.element->clone();
     }
 }
 MeshElement::MeshElement( MeshElement &&rhs )
-    : typeID( MeshElementTypeID ), element( rhs.element ), d_globalID( rhs.d_globalID )
+    : typeID( getTypeID() ), element( rhs.element ), d_globalID( rhs.d_globalID )
 {
-    if ( rhs.typeID != MeshElementTypeID )
+    if ( rhs.typeID != getTypeID() )
         element = rhs.clone();
     rhs.element = nullptr;
 }
@@ -46,10 +42,10 @@ MeshElement &MeshElement::operator=( const MeshElement &rhs )
         delete element;
         element = nullptr;
     }
-    typeID = MeshElementTypeID;
-    if ( rhs.element == nullptr && rhs.typeID == MeshElementTypeID ) {
+    typeID = getTypeID();
+    if ( rhs.element == nullptr && rhs.typeID == getTypeID() ) {
         element = nullptr;
-    } else if ( rhs.typeID != MeshElementTypeID ) {
+    } else if ( rhs.typeID != getTypeID() ) {
         element = rhs.clone();
     } else {
         element = rhs.element->clone();
@@ -66,10 +62,10 @@ MeshElement &MeshElement::operator=( MeshElement &&rhs )
         delete element;
         element = nullptr;
     }
-    typeID     = MeshElementTypeID;
+    typeID     = getTypeID();
     d_globalID = rhs.d_globalID;
     std::swap( element, rhs.element );
-    if ( rhs.typeID != MeshElementTypeID )
+    if ( rhs.typeID != getTypeID() )
         element = rhs.clone();
     return *this;
 }
@@ -89,7 +85,7 @@ MeshElement::~MeshElement()
 /********************************************************
  * Is the element null                                   *
  ********************************************************/
-bool MeshElement::isNull() const { return typeID == MeshElementTypeID && element == nullptr; }
+bool MeshElement::isNull() const { return typeID == getTypeID() && element == nullptr; }
 
 
 /********************************************************

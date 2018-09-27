@@ -14,6 +14,7 @@ Mesh{
 		Range = -1, 1, -0.9, 0.9, -0.8, 0.8
 		x_offset = -2
 		y_offset = 2
+		z_offset = 0
         static = TRUE
 	}
 	Mesh_2 {
@@ -25,6 +26,7 @@ Mesh{
 		Range = -1, 1, -0.9, 0.9, -0.8, 0.8
 		x_offset = 2
 		y_offset = 2
+		z_offset = 0
         static = FALSE
 	}
 	
@@ -37,6 +39,7 @@ Mesh{
 		Range = 1, -0.5, 0.5
 		x_offset = -2
 		y_offset = 6
+		z_offset = 0
         static = TRUE
 	}
 	Mesh_4 {
@@ -48,6 +51,7 @@ Mesh{
 		Range = 1, -0.5, 0.5
 		x_offset = 2
 		y_offset = 6
+		z_offset = 0
         static = FALSE
 	}
 	
@@ -60,6 +64,7 @@ Mesh{
 		Range = 0.8, 1, -0.5, 0.5
 		x_offset = -2
 		y_offset = 10
+		z_offset = 0
         static = TRUE
 	}
 	Mesh_6 {
@@ -71,6 +76,7 @@ Mesh{
 		Range = 0.8, 1, -0.5, 0.5
 		x_offset = 2
 		y_offset = 10
+        z_offset = 0
         static = FALSE
 	}
 	
@@ -82,7 +88,8 @@ Mesh{
 		Size = 6
 		Range = 1
 		x_offset = -2
-		y_offset = 14
+		y_offset = 2
+		z_offset = 3
         static = TRUE
 	}
 	Mesh_8 {
@@ -93,7 +100,8 @@ Mesh{
 		Size = 6
 		Range = 1
 		x_offset = 2
-		y_offset = 14
+		y_offset = 2
+		z_offset = 3
         static = FALSE
 	}
 
@@ -102,10 +110,11 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "shell"
-		Size = 5, 10
+		Size = 10, 20
 		Range = 0.8, 1
 		x_offset = -2
-		y_offset = 18
+		y_offset = 6
+		z_offset = 3
         static = TRUE
 	}
 	Mesh_10 {
@@ -113,10 +122,11 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "shell"
-		Size = 5, 10
+		Size = 10, 20
 		Range = 0.8, 1
 		x_offset = 2
-		y_offset = 18
+		y_offset = 6
+		z_offset = 3
         static = FALSE
 	}
 
@@ -128,7 +138,8 @@ Mesh{
 		Size = 40
 		Range = 1
 		x_offset = -2
-		y_offset = 18
+		y_offset = 10
+		z_offset = 3
         static = TRUE
 	}
 	Mesh_12 {
@@ -139,9 +150,21 @@ Mesh{
 		Size = 40
 		Range = 1
 		x_offset = 2
-		y_offset = 18
+		y_offset = 10
+		z_offset = 3
         static = FALSE
 	}
+
+	/*Mesh_13 {
+		MeshName = "Utah_teapot"
+		MeshType = "AMP"
+        FileName = "Utah_teapot.stl"
+		dim = 3
+        scale = 0.2
+		x_offset = 2
+		y_offset = 2
+		z_offset = 5.4
+	}*/
 	
 }
 

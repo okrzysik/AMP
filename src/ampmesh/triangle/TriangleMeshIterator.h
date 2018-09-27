@@ -1,28 +1,34 @@
-#ifndef included_AMP_libMeshIterators
-#define included_AMP_libMeshIterators
+#ifndef included_AMP_TriangleMeshIterators
+#define included_AMP_TriangleMeshIterators
+
 
 #include "AMP/ampmesh/MeshIterator.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/triangle/TriangleMeshElement.h"
 
 
 namespace AMP {
 namespace Mesh {
 
 
-class libMeshIterator : public MeshIterator
+template<size_t NG, size_t NP>
+class TriangleMesh;
+
+
+template<size_t NG, size_t NP>
+class TriangleMeshIterator final : public MeshIterator
 {
 public:
     //! Empty MeshIterator constructor
-    libMeshIterator();
+    TriangleMeshIterator();
 
     //! Deconstructor
-    virtual ~libMeshIterator();
+    virtual ~TriangleMeshIterator() = default;
 
     //! Copy constructor
-    libMeshIterator( const libMeshIterator & );
+    TriangleMeshIterator( const TriangleMeshIterator & );
 
     //! Assignment operator
-    libMeshIterator &operator=( const libMeshIterator & );
+    TriangleMeshIterator &operator=( const TriangleMeshIterator & );
 
     // Increment
     virtual MeshIterator &operator++() override;
@@ -59,47 +65,28 @@ public:
 
 protected:
     /** Default constructor
-     * \param type      Entity type:  0: node, 1: element
      * \param mesh      Pointer to the libMesh mesh
-     * \param gcw       gcw to use
-     * \param begin     Pointer to iterator with the begining position
-     * \param end       Pointer to iterator with the end position
+     * \param list      List of elements
      * \param pos       Pointer to iterator with the current position
-     * \param size      Number of elements in the iterator (-1: unknown)
-     * \param pos2      Index of the current position in the iterator (-1: unknown)
      */
-    libMeshIterator( int type,
-                     const AMP::Mesh::libMesh *mesh,
-                     int gcw,
-                     void *begin,
-                     void *end,
-                     void *pos,
-                     int size = -1,
-                     int pos2 = -1 );
+    explicit TriangleMeshIterator( const AMP::Mesh::TriangleMesh<NG,NP> *mesh, AMP::shared_ptr<const std::vector<uint64_t>> list, size_t pos = 0 );
 
     //! Clone the iterator
     virtual MeshIterator *clone() const override;
 
-    friend class AMP::Mesh::libMesh;
+    friend class AMP::Mesh::TriangleMesh<NG,NP>;
 
 private:
     // Data members
-    int d_gcw;
-    int d_dim;
-    int d_type;
-    int d_rank;
-    void *d_begin2;
-    void *d_end2;
-    void *d_pos2;
-    MeshID d_meshID;
-    const AMP::Mesh::libMesh *d_mesh;
-    MeshElement d_cur_element;
-
-    void setCurrentElement();
+    const AMP::Mesh::TriangleMesh<NG,NP> *d_mesh;
+    AMP::shared_ptr<const std::vector<uint64_t>> d_list;
+    TriangleMeshElement<NG,NP> d_cur_element;
 
 private:
-    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "libMeshIterator" ); }
+    static constexpr uint32_t getTypeID();
 };
+
+
 } // namespace Mesh
 } // namespace AMP
 

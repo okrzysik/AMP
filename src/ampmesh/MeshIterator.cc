@@ -5,9 +5,6 @@ namespace AMP {
 namespace Mesh {
 
 
-// Create a unique id for this class
-static unsigned int MeshIteratorTypeID = TYPE_HASH( MeshIterator );
-
 // unused global variable to prevent compiler warning
 static MeshElement nullElement;
 
@@ -17,7 +14,7 @@ static MeshElement nullElement;
  ********************************************************/
 MeshIterator::MeshIterator()
     : d_iterator( nullptr ),
-      d_typeID( MeshIteratorTypeID ),
+      d_typeID( getTypeID() ),
       d_size( 0 ),
       d_pos( 0 ),
       d_element( nullptr )
@@ -25,14 +22,14 @@ MeshIterator::MeshIterator()
 }
 MeshIterator::MeshIterator( const MeshIterator &rhs )
     : d_iterator( nullptr ),
-      d_typeID( MeshIteratorTypeID ),
+      d_typeID( getTypeID() ),
       d_size( 0 ),
       d_pos( 0 ),
       d_element( nullptr )
 {
-    if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
+    if ( rhs.d_iterator == nullptr && rhs.d_typeID == getTypeID() ) {
         d_iterator = nullptr;
-    } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
+    } else if ( rhs.d_typeID != getTypeID() ) {
         d_iterator = rhs.clone();
     } else {
         d_iterator = rhs.d_iterator->clone();
@@ -47,13 +44,13 @@ MeshIterator &MeshIterator::operator=( const MeshIterator &rhs )
         delete d_iterator;
         d_iterator = nullptr;
     }
-    d_typeID  = MeshIteratorTypeID;
+    d_typeID  = getTypeID();
     d_size    = 0;
     d_pos     = 0;
     d_element = nullptr;
-    if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
+    if ( rhs.d_iterator == nullptr && rhs.d_typeID == getTypeID() ) {
         d_iterator = nullptr;
-    } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
+    } else if ( rhs.d_typeID != getTypeID() ) {
         d_iterator = rhs.clone();
     } else {
         d_iterator = rhs.d_iterator->clone();

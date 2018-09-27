@@ -20,11 +20,7 @@ namespace Mesh {
 
 // Create a unique id for this class
 namespace {
-unsigned int STKMeshElementTypeID()
-{
-    static const unsigned int id = TYPE_HASH( STKMeshElement );
-    return id;
-}
+
 AMP::Mesh::GeomType geom_type( const stk::mesh::EntityRank rank )
 {
     switch ( rank ) {
@@ -50,7 +46,7 @@ typedef stk::mesh::Field<double, stk::mesh::Cartesian> CartesianField;
 STKMeshElement::STKMeshElement()
     : d_dim( 0 ), d_rank( 0 ), d_mesh( 0 ), d_meshID( 0 ), ptr_element( 0 )
 {
-    typeID     = STKMeshElementTypeID();
+    typeID     = getTypeID();
     element    = 0;
     d_globalID = MeshElementID();
 }
@@ -65,7 +61,7 @@ STKMeshElement::STKMeshElement( int dim,
       d_meshID( meshID ),
       ptr_element( STKmesh_element )
 {
-    typeID  = STKMeshElementTypeID();
+    typeID  = getTypeID();
     element = NULL;
     AMP_ASSERT( STKmesh_element != NULL );
     unsigned int local_id   = ptr_element->identifier();
@@ -85,7 +81,7 @@ STKMeshElement::STKMeshElement( int dim,
       d_meshID( meshID ),
       ptr_element( STKmesh_element.get() )
 {
-    typeID  = STKMeshElementTypeID();
+    typeID  = getTypeID();
     element = NULL;
     AMP_ASSERT( STKmesh_element.get() != NULL );
     unsigned int local_id   = ptr_element->identifier();
@@ -101,7 +97,7 @@ STKMeshElement::STKMeshElement( const STKMeshElement &rhs )
       d_meshID( rhs.d_meshID ),
       ptr_element( rhs.ptr_element )
 {
-    typeID     = STKMeshElementTypeID();
+    typeID     = getTypeID();
     element    = rhs.element;
     d_globalID = rhs.d_globalID;
 }
@@ -110,7 +106,7 @@ STKMeshElement &STKMeshElement::operator=( const STKMeshElement &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID      = STKMeshElementTypeID();
+    this->typeID      = getTypeID();
     this->element     = 0;
     this->d_globalID  = rhs.d_globalID;
     this->d_dim       = rhs.d_dim;
