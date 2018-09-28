@@ -83,8 +83,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
         AMP::LinearAlgebra::Vector::shared_ptr src_vec;
         if ( d_vectors.find( vec_id ) != d_vectors.end() )
             src_vec = d_vectors[vec_id];
-        auto dst_vec =
-            sendVecToRoot( src_vec, vec_id.first, d_comm );
+        auto dst_vec = sendVecToRoot( src_vec, vec_id.first, d_comm );
         // Write the data
         if ( d_comm.getRank() == 0 ) {
             fprintf( fid,
@@ -222,7 +221,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
     AMP::LinearAlgebra::Vector::shared_ptr dst_vec;
     if ( rank == 0 ) {
         auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( name );
-        dst_vec = AMP::LinearAlgebra::SimpleVector<double>::create(
+        dst_vec  = AMP::LinearAlgebra::SimpleVector<double>::create(
             global_size, var, AMP_MPI( AMP_COMM_SELF ) );
         AMP_ASSERT( dst_vec->numberOfDataBlocks() == 1 );
         auto *ptr = dst_vec->getRawDataBlock<double>( 0 );

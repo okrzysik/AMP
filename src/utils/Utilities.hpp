@@ -10,7 +10,7 @@
  ************************************************************************/
 constexpr unsigned int AMP::Utilities::hash_char( const char *name )
 {
-    uint32_t hash = 5381;
+    uint32_t hash   = 5381;
     unsigned char c = 0;
     while ( ( c = *name++ ) ) {
         // hash = hash * 33 ^ c

@@ -26,8 +26,10 @@ struct MeshID {
 public:
     // Constructors used to initialize key values
     constexpr MeshID() : data( 0xFFFFFFFFFFFFFFFF ) {}
-    constexpr MeshID( unsigned int root, unsigned int local_id ):
-        data( ( static_cast<uint64_t>( root ) << 32 ) + local_id ) {}
+    constexpr MeshID( unsigned int root, unsigned int local_id )
+        : data( ( static_cast<uint64_t>( root ) << 32 ) + local_id )
+    {
+    }
     constexpr MeshID( uint64_t id ) : data( id ) {}
     constexpr uint64_t getData() const { return data; }
     // Overload key operators
@@ -37,12 +39,94 @@ public:
     constexpr bool operator<=( const MeshID &rhs ) const { return data <= rhs.data; }
     constexpr bool operator>( const MeshID &rhs ) const { return data > rhs.data; }
     constexpr bool operator<( const MeshID &rhs ) const { return data < rhs.data; }
+    // Check if id is null
+    constexpr bool isNull() const { return data == 0xFFFFFFFFFFFFFFFF; }
 
 private:
     // We will store the data as a 64-bit data type
     // We do not want the user to get direct access to the data
     uint64_t data;
-    friend struct MeshElementID;
+};
+
+
+/**
+ * \struct ElementID
+ * \brief  A structure used to identify an element within a mesh
+ * \details  This structure provides a unique id that can be used to identify
+ *     a mesh element within a single unique mesh.  To identify a global unique
+ *     element MeshElementID should be used.
+ */
+struct ElementID {
+
+public:
+    // Constructors used to initialize key values
+    constexpr ElementID() : data( 0x000000FFFFFFFFFF ) {}
+    constexpr explicit ElementID( bool isLocal,
+                                  GeomType type_id,
+                                  unsigned int local_ID,
+                                  unsigned int owner_rank_id )
+        : data( 0 )
+    {
+        // Set the bit for is_local
+        unsigned int tmp = 0x00000000;
+        if ( isLocal )
+            tmp = 0x80000000;
+        // Add the owner_rank
+        tmp += ( 0x007FFFFF & owner_rank_id ) << 8;
+        // Add the type_id
+        char type = (char) type_id;
+        tmp += ( (unsigned char) type );
+        // Combine the above data with the local_ID
+        data = ( ( (uint64_t) tmp ) << 32 ) + ( (uint64_t) local_ID );
+    }
+    constexpr explicit ElementID( uint64_t id ) : data( id ) {}
+    // Overload key operators
+    constexpr bool operator==( const ElementID &rhs ) const
+    {
+        return ( ( data ^ rhs.data ) << 1 ) == 0;
+    }
+    constexpr bool operator!=( const ElementID &rhs ) const
+    {
+        return ( ( data ^ rhs.data ) << 1 ) != 0;
+    }
+    constexpr bool operator>=( const ElementID &rhs ) const
+    {
+        return ( data << 1 ) >= ( rhs.data << 1 );
+    }
+    constexpr bool operator<=( const ElementID &rhs ) const
+    {
+        return ( data << 1 ) <= ( rhs.data << 1 );
+    }
+    constexpr bool operator>( const ElementID &rhs ) const
+    {
+        return ( data << 1 ) > ( rhs.data << 1 );
+    }
+    constexpr bool operator<( const ElementID &rhs ) const
+    {
+        return ( data << 1 ) < ( rhs.data << 1 );
+    }
+    // Access local data
+    constexpr bool is_local() const { return ( data >> 63 ) != 0; }
+    constexpr GeomType type() const { return static_cast<GeomType>( ( data >> 32 ) & 0x00FF ); }
+    constexpr unsigned int local_id() const { return data & 0x00000000FFFFFFFF; }
+    constexpr unsigned int owner_rank() const { return ( data >> 40 ) & 0x007FFFFF; }
+    constexpr bool isNull() const { return data == 0x000000FFFFFFFFFF; }
+    constexpr void set_is_local( bool isLocal )
+    {
+        if ( isLocal )
+            data |= 0x8000000000000000;
+        else
+            data &= 0x7FFFFFFFFFFFFFFF;
+    }
+
+private:
+    // We will store the data as a 128-bit data type
+    // The first 64 bits refer to the meshID
+    // The next  1 bits refer to if the element is local
+    // The next 23 bits refer to the processor id
+    // The next  8 bits refer to the element type
+    // The next 32 bits refer to the local id
+    uint64_t data;
 };
 
 
@@ -55,128 +139,63 @@ struct MeshElementID {
 
 public:
     // Constructors used to initialize key values
-    constexpr MeshElementID(): meshId( 0xFFFFFFFFFFFFFFFF ), elemId( 0x000000FFFFFFFFFF ) {}
-    constexpr explicit MeshElementID( bool isLocal,
-                            GeomType type_id,
-                            unsigned int local_ID,
-                            unsigned int owner_rank_id,
-                            MeshID mesh_ID ):
-        meshId( mesh_ID ), elemId( 0 )
+    constexpr MeshElementID() {}
+    constexpr explicit MeshElementID(
+        bool isLocal, GeomType type, unsigned int local_ID, unsigned int rank, MeshID mesh_ID )
+        : meshId( mesh_ID ), elemId( isLocal, type, local_ID, rank )
     {
-        // Set the bit for is_local
-        unsigned int tmp = 0x00000000;
-        if ( isLocal )
-            tmp = 0x80000000;
-        // Add the owner_rank
-        tmp += ( 0x007FFFFF & owner_rank_id ) << 8;
-        // Add the type_id
-        char type = (char) type_id;
-        tmp += ( (unsigned char) type );
-        // Combine the above data with the local_ID
-        elemId = ( ( (uint64_t) tmp ) << 32 ) + ( (uint64_t) local_ID );
     }
-    constexpr explicit MeshElementID( MeshID mesh_ID, uint64_t elem_id ) : meshId( mesh_ID ), elemId( elem_id ) {}
-    constexpr void resetElemID( uint64_t elem_id ) { elemId = elem_id; }
+    constexpr explicit MeshElementID( MeshID mesh_ID, ElementID elem_id )
+        : meshId( mesh_ID ), elemId( elem_id )
+    {
+    }
+    constexpr void resetElemID( ElementID elem_id ) { elemId = elem_id; }
     // Overload key operators
     constexpr bool operator==( const MeshElementID &rhs ) const
     {
-        uint64_t test = ( elemId ^ rhs.elemId ) << 1;
-        return meshId == rhs.meshId && test == 0;
+        return meshId == rhs.meshId && elemId == rhs.elemId;
     }
     constexpr bool operator!=( const MeshElementID &rhs ) const
     {
-        uint64_t test = ( elemId ^ rhs.elemId ) << 1;
-        return meshId != rhs.meshId || test != 0;
+        return meshId != rhs.meshId || elemId != rhs.elemId;
     }
     constexpr bool operator>=( const MeshElementID &rhs ) const
     {
-        // Sort by meshID first
-        if ( meshId < rhs.meshId )
-            return false;
-        else if ( meshId > rhs.meshId )
-            return true;
-        // Sort by the remaining data
-        uint64_t d1 = elemId << 1;
-        uint64_t d2 = rhs.elemId << 1;
-        return d1 >= d2;
+        if ( meshId != rhs.meshId )
+            return meshId > rhs.meshId;
+        return elemId >= rhs.elemId;
     }
     constexpr bool operator>( const MeshElementID &rhs ) const
     {
-        // Sort by meshID first
-        if ( meshId < rhs.meshId )
-            return false;
-        else if ( meshId > rhs.meshId )
-            return true;
-        // Sort by the remaining data
-        uint64_t d1 = elemId << 1;
-        uint64_t d2 = rhs.elemId << 1;
-        return d1 > d2;
+        if ( meshId != rhs.meshId )
+            return meshId > rhs.meshId;
+        return elemId > rhs.elemId;
     }
     constexpr bool operator<( const MeshElementID &rhs ) const
     {
-        // Sort by meshID first
-        if ( meshId > rhs.meshId )
-            return false;
-        else if ( meshId < rhs.meshId )
-            return true;
-        // Sort by the remaining data
-        uint64_t d1 = elemId << 1;
-        uint64_t d2 = rhs.elemId << 1;
-        return d1 < d2;
+        if ( meshId != rhs.meshId )
+            return meshId < rhs.meshId;
+        return elemId < rhs.elemId;
     }
     constexpr bool operator<=( const MeshElementID &rhs ) const
     {
-        // Sort by meshID first
-        if ( meshId > rhs.meshId )
-            return false;
-        else if ( meshId < rhs.meshId )
-            return true;
-        // Sort by the remaining data
-        uint64_t d1 = elemId << 1;
-        uint64_t d2 = rhs.elemId << 1;
-        return d1 <= d2;
+        if ( meshId != rhs.meshId )
+            return meshId < rhs.meshId;
+        return elemId <= rhs.elemId;
     }
     // Access local data
-    constexpr bool is_local() const { return ( elemId >> 63 ) != 0; }
-    constexpr GeomType type() const
-    {
-        unsigned char tmp = (unsigned char) ( ( elemId >> 32 ) & 0x00FF );
-        return (GeomType) tmp;
-    }
-    constexpr unsigned int local_id() const
-    {
-        unsigned int tmp = (unsigned int) ( elemId & 0x00000000FFFFFFFF );
-        return tmp;
-    }
-    constexpr unsigned int owner_rank() const
-    {
-        unsigned int tmp = elemId >> 32;
-        tmp              = ( tmp >> 8 ) & 0x007FFFFF;
-        return tmp;
-    }
+    constexpr bool is_local() const { return elemId.is_local(); }
+    constexpr GeomType type() const { return elemId.type(); }
+    constexpr unsigned int local_id() const { return elemId.local_id(); }
+    constexpr unsigned int owner_rank() const { return elemId.owner_rank(); }
     constexpr MeshID meshID() const { return meshId; }
-    constexpr uint64_t elemID() const { return elemId; }
-    constexpr void set_is_local( bool isLocal )
-    {
-        if ( isLocal )
-            elemId |= 0x8000000000000000;
-        else
-            elemId &= 0x7FFFFFFFFFFFFFFF;
-    }
-    constexpr bool isNull() const
-    {
-        return meshId == 0xFFFFFFFFFFFFFFFF || elemId == 0x000000FFFFFFFFFF;
-    }
+    constexpr ElementID elemID() const { return elemId; }
+    constexpr void set_is_local( bool isLocal ) { elemId.set_is_local( isLocal ); }
+    constexpr bool isNull() const { return meshId.isNull() || elemId.isNull(); }
 
 private:
-    // We will store the data as a 128-bit data type
-    // The first 64 bits refer to the meshID
-    // The next  1 bits refer to if the element is local
-    // The next 23 bits refer to the processor id
-    // The next  8 bits refer to the element type
-    // The next 32 bits refer to the local id
     MeshID meshId;
-    uint64_t elemId;
+    ElementID elemId;
 };
 
 

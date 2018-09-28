@@ -20,7 +20,8 @@ namespace Mesh {
 
 
 static_assert( sizeof( MeshID ) == 8, "unexpected size for MeshID" );
-static_assert( sizeof( MeshElementID ) == 16, "unexpected size for MeshID" );
+static_assert( sizeof( ElementID ) == 8, "unexpected size for ElementID" );
+static_assert( sizeof( MeshElementID ) == 16, "unexpected size for MeshElementID" );
 
 
 static unsigned int nextLocalMeshID = 1;

@@ -24,8 +24,10 @@ namespace AMP {
 namespace Mesh {
 
 
-template<size_t NG, size_t NP> class TriangleMeshIterator;
-template<size_t NG, size_t NP> class TriangleMeshElement;
+template<size_t NG, size_t NP>
+class TriangleMeshIterator;
+template<size_t NG, size_t NP>
+class TriangleMeshElement;
 
 
 /**
@@ -42,18 +44,21 @@ public:
      * \details Create triangle mesh data from the given parameters
      * \param params  Parameters for constructing a mesh from an input database
      */
-    static AMP::shared_ptr<TriangleMesh<NG,NP>> generate( MeshParameters::shared_ptr params );
+    static AMP::shared_ptr<TriangleMesh<NG, NP>> generate( MeshParameters::shared_ptr params );
 
     /**
      * \brief Generate a triangle mesh from local triangle coordinates
      * \details  Create a triangle mesh from the local triangle coordinates.
-     *    Note: Triangle list should be unique for each rank, load balance will be automatically adjusted.
-     * \param triangles  List of triangles (each rank may contribute a unique list)
-     * \param comm       Communicator to use (load balance wil be automatically generated on this comm)
-     * \param tol        Relative tolerance (based on range of points) to use to determine if two points are the same
+     *    Note: Triangle list should be unique for each rank, load balance will be automatically
+     * adjusted. \param triangles  List of triangles (each rank may contribute a unique list) \param
+     * comm       Communicator to use (load balance wil be automatically generated on this comm)
+     * \param tol        Relative tolerance (based on range of points) to use to determine if two
+     * points are the same
      */
-    static AMP::shared_ptr<TriangleMesh<NG,NP>> generate(
-        const std::vector<std::array<std::array<double,NP>,NG+1>>& triangles, const AMP_MPI& comm, double tol = 1e-12 );
+    static AMP::shared_ptr<TriangleMesh<NG, NP>>
+    generate( const std::vector<std::array<std::array<double, NP>, NG + 1>> &triangles,
+              const AMP_MPI &comm,
+              double tol = 1e-12 );
 
 
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
@@ -251,60 +256,79 @@ protected:
     // Constructors
     TriangleMesh();
     explicit TriangleMesh( MeshParameters::shared_ptr );
-    explicit TriangleMesh( const std::vector<std::array<double,NP>>& verticies,
-        const std::vector<std::array<uint64_t,NG+1>>& triangles, const std::vector<std::array<uint64_t,NG+1>>& tri_nab, const AMP_MPI& comm );
+    explicit TriangleMesh( const std::vector<std::array<double, NP>> &verticies,
+                           const std::vector<std::array<int64_t, NG + 1>> &triangles,
+                           const std::vector<std::array<int64_t, NG + 1>> &tri_nab,
+                           const AMP_MPI &comm );
     void initialize();
 
 protected:
-
-    typedef std::array<double,NP> Point;
-    typedef std::array<uint64_t,2> Edge;
-    typedef std::array<uint64_t,3> Triangle;
-    typedef std::array<uint64_t,4> Tetrahedron;
+    typedef std::array<double, NP> Point;
+    typedef std::array<ElementID, 2> Edge;
+    typedef std::array<ElementID, 3> Triangle;
+    typedef std::array<ElementID, 4> Tetrahedron;
 
     // Return the IDs of the elements composing the current element
-    void getElementsIDs( const MeshElementID& id, const GeomType type, MeshElementID* IDs ) const;
-    inline void getVerticies( const MeshElementID& id, int& N, uint64_t* IDs ) const;
+    void getElementsIDs( const ElementID &id, const GeomType type, ElementID *IDs ) const;
+    inline void getVerticies( const ElementID &id, int &N, ElementID *IDs ) const;
 
-    // Return the coordinated of the given vertex 
+    // Return the IDs of the neighboring elements
+    void getNeighborIDs( const ElementID &id, std::vector<ElementID> &IDs ) const;
+
+    // Return the IDs of the parent elements
+    std::vector<ElementID> getElementParents( const ElementID &id, const GeomType type ) const;
+
+    // Return the coordinated of the given vertex
     // Note: no error checking is done to make sure it is a valid vertex
-    const Point& getPos( const MeshElementID& id ) const;
+    const Point &getPos( const ElementID &id ) const;
+
+    // Check if the element is on the given boundry, block, etc
+    bool isOnSurface( const ElementID &elemID ) const;
+    bool isOnBoundary( const ElementID &elemID, int id ) const;
+    bool isInBlock( const ElementID &elemID, int id ) const;
+    static bool inIterator( const ElementID &id, const TriangleMeshIterator<NG, NP> &it );
 
     // Friends
-    friend TriangleMeshIterator<NG,NP>;
-    friend TriangleMeshElement<NG,NP>;
+    friend TriangleMeshIterator<NG, NP>;
+    friend TriangleMeshElement<NG, NP>;
 
 private: // Internal data
-
     // Store the locat start indicies
-    std::array<uint64_t,4> d_N_global;
-    
+    std::array<size_t, 4> d_N_global;
+
     // Store the local triangle data
     std::vector<Point> d_vert;
     std::vector<Edge> d_edge;
     std::vector<Triangle> d_tri;
     std::vector<Tetrahedron> d_tet;
-    std::vector<std::array<uint64_t,NG+1>> d_neighbors;
+    std::vector<std::array<ElementID, NG + 1>> d_neighbors;
 
     // Store the ghost data
-    std::map<MeshElementID,Point> d_remote_vert;
-    std::map<MeshElementID,Edge> d_remote_edge;
-    std::map<MeshElementID,Triangle> d_remote_tri;
-    std::map<MeshElementID,Tetrahedron> d_remote_tet;
-    std::map<MeshElementID,std::array<uint64_t,NG+1>> d_remote_neighbors;
+    std::map<ElementID, Point> d_remote_vert;
+    std::map<ElementID, Edge> d_remote_edge;
+    std::map<ElementID, Triangle> d_remote_tri;
+    std::map<ElementID, Tetrahedron> d_remote_tet;
+
+    // Store the parent data
+    std::vector<size_t> d_parent_size[NG][NG];
+    std::vector<size_t> d_parent_offset[NG][NG];
+    std::vector<ElementID> d_parent_ids[NG][NG];
+
+    // Store children data
+    std::vector<std::array<ElementID, 3>> d_tri_edge;
+    std::vector<std::array<ElementID, 4>> d_tet_tri;
+    std::vector<std::array<ElementID, 6>> d_tet_edge;
 
     // Store common iterators
-    std::vector<TriangleMeshIterator<NG,NP>> d_iterators;
-    std::vector<TriangleMeshIterator<NG,NP>> d_surface_iterators;
-    std::vector<std::vector<TriangleMeshIterator<NG,NP>>> d_boundary_iterators;
-    std::vector<std::vector<TriangleMeshIterator<NG,NP>>> d_block_iterators;
-
+    std::vector<TriangleMeshIterator<NG, NP>> d_iterators;
+    std::vector<TriangleMeshIterator<NG, NP>> d_surface_iterators;
+    std::vector<std::vector<TriangleMeshIterator<NG, NP>>> d_boundary_iterators;
+    std::vector<std::vector<TriangleMeshIterator<NG, NP>>> d_block_iterators;
 };
 
 
 } // namespace Mesh
 } // namespace AMP
-
 
 
 #endif

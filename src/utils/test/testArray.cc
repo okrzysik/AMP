@@ -386,7 +386,7 @@ int main( int argc, char *argv[] )
         pout << "Time to perform sum (sum()): " << ( t2 - t1 ) * 1e9 / N << " ns\n";
         pout << "Time to perform sum (raw): " << ( t3 - t2 ) * 1e9 / N << " ns\n";
     }
-	
+
     // Test the allocation of a non-trivial type
     {
         bool pass = true;
@@ -410,9 +410,9 @@ int main( int argc, char *argv[] )
     // Test cat
     {
         auto tmp = Array<double>::cat( { Array<double>( Range<double>( -3.5, -2, 0.1 ) ),
-            Array<double>( Range<double>( -1.96, 0, 0.02 ) ),
-            Array<double>( Range<double>( 0.05, 1, 0.05 ) ),
-            Array<double>( Range<double>( 1.1, 2, 0.1 ) ) } );
+                                         Array<double>( Range<double>( -1.96, 0, 0.02 ) ),
+                                         Array<double>( Range<double>( 0.05, 1, 0.05 ) ),
+                                         Array<double>( Range<double>( 1.1, 2, 0.1 ) ) } );
         if ( tmp.length() == 145 )
             ut.passes( "cat" );
         else
@@ -446,7 +446,7 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "resize" );
     }
-	
+
     // Test interpolation
     {
         test_interp<double>( ut, { 100 } );

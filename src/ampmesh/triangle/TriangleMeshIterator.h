@@ -69,18 +69,20 @@ protected:
      * \param list      List of elements
      * \param pos       Pointer to iterator with the current position
      */
-    explicit TriangleMeshIterator( const AMP::Mesh::TriangleMesh<NG,NP> *mesh, AMP::shared_ptr<const std::vector<uint64_t>> list, size_t pos = 0 );
+    explicit TriangleMeshIterator( const AMP::Mesh::TriangleMesh<NG, NP> *mesh,
+                                   AMP::shared_ptr<const std::vector<ElementID>> list,
+                                   size_t pos = 0 );
 
     //! Clone the iterator
     virtual MeshIterator *clone() const override;
 
-    friend class AMP::Mesh::TriangleMesh<NG,NP>;
+    friend class AMP::Mesh::TriangleMesh<NG, NP>;
 
 private:
     // Data members
-    const AMP::Mesh::TriangleMesh<NG,NP> *d_mesh;
-    AMP::shared_ptr<const std::vector<uint64_t>> d_list;
-    TriangleMeshElement<NG,NP> d_cur_element;
+    const AMP::Mesh::TriangleMesh<NG, NP> *d_mesh;
+    AMP::shared_ptr<const std::vector<ElementID>> d_list;
+    TriangleMeshElement<NG, NP> d_cur_element;
 
 private:
     static constexpr uint32_t getTypeID();

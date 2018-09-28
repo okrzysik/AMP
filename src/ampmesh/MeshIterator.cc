@@ -13,19 +13,11 @@ static MeshElement nullElement;
  * Constructors                                          *
  ********************************************************/
 MeshIterator::MeshIterator()
-    : d_iterator( nullptr ),
-      d_typeID( getTypeID() ),
-      d_size( 0 ),
-      d_pos( 0 ),
-      d_element( nullptr )
+    : d_iterator( nullptr ), d_typeID( getTypeID() ), d_size( 0 ), d_pos( 0 ), d_element( nullptr )
 {
 }
 MeshIterator::MeshIterator( const MeshIterator &rhs )
-    : d_iterator( nullptr ),
-      d_typeID( getTypeID() ),
-      d_size( 0 ),
-      d_pos( 0 ),
-      d_element( nullptr )
+    : d_iterator( nullptr ), d_typeID( getTypeID() ), d_size( 0 ), d_pos( 0 ), d_element( nullptr )
 {
     if ( rhs.d_iterator == nullptr && rhs.d_typeID == getTypeID() ) {
         d_iterator = nullptr;

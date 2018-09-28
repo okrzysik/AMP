@@ -97,7 +97,10 @@ private:
     void setCurrentElement();
 
 private:
-    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "structuredMeshIterator" ); }
+    static constexpr uint32_t getTypeID()
+    {
+        return AMP::Utilities::hash_char( "structuredMeshIterator" );
+    }
 };
 
 

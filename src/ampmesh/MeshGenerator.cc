@@ -44,9 +44,9 @@ AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
     } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
         auto filename = database->getStringWithDefault( "FileName", "" );
-        if ( filename.substr(std::max<int>(filename.length(),4)-4) == ".stl" ) {
+        if ( filename.substr( std::max<int>( filename.length(), 4 ) - 4 ) == ".stl" ) {
             // We are reading an stl file
-            mesh = AMP::Mesh::TriangleMesh<2,3>::generate( params );
+            mesh = AMP::Mesh::TriangleMesh<2, 3>::generate( params );
         } else {
             mesh = AMP::Mesh::BoxMesh::generate( params );
         }
@@ -114,9 +114,9 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
         auto filename = database->getStringWithDefault( "FileName", "" );
-        if ( filename.substr(std::max<int>(filename.length(),4)-4) == ".stl" ) {
+        if ( filename.substr( std::max<int>( filename.length(), 4 ) - 4 ) == ".stl" ) {
             // We are reading an stl file
-            meshSize = AMP::Mesh::TriangleMesh<2,3>::estimateMeshSize( params );
+            meshSize = AMP::Mesh::TriangleMesh<2, 3>::estimateMeshSize( params );
         } else {
             meshSize = AMP::Mesh::BoxMesh::estimateMeshSize( params );
         }

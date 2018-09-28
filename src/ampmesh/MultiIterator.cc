@@ -9,10 +9,7 @@ namespace Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-MultiIterator::MultiIterator() : d_localPos( 0 ), d_iteratorNum( 0 )
-{
-    d_typeID = getTypeID();
-}
+MultiIterator::MultiIterator() : d_localPos( 0 ), d_iteratorNum( 0 ) { d_typeID = getTypeID(); }
 MultiIterator::MultiIterator( std::vector<AMP::shared_ptr<MeshIterator>> iterators,
                               size_t global_pos )
 {

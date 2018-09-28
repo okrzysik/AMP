@@ -54,7 +54,8 @@ public:
                               std::vector<MeshElement> &elements ) const override;
 
     //! Return the IDs of the elements composing the current element
-    virtual void getElementsID( const GeomType type, std::vector<MeshElementID> &ID ) const override;
+    virtual void getElementsID( const GeomType type,
+                                std::vector<MeshElementID> &ID ) const override;
 
     //! Return the elements neighboring the current element
     virtual void getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const override;
@@ -105,25 +106,23 @@ public:
 
 
 protected:
-
     // Default constructors
-    TriangleMeshElement( const MeshElementID& id, const TriangleMesh<NG,NP> *mesh );
+    TriangleMeshElement( const MeshElementID &id, const TriangleMesh<NG, NP> *mesh );
 
     // Reset the element data
-    inline void resetElemId( const uint64_t& id ) { d_globalID.resetElemID( id ); }
+    inline void resetElemId( const ElementID &id ) { d_globalID.resetElemID( id ); }
 
     //! Clone the iterator
     virtual MeshElement *clone() const override;
 
     // The pointer to the current mesh
-    const TriangleMesh<NG,NP> *d_mesh;
+    const TriangleMesh<NG, NP> *d_mesh;
 
-    friend class AMP::Mesh::TriangleMesh<NG,NP>;
-    friend class AMP::Mesh::TriangleMeshIterator<NG,NP>;
+    friend class AMP::Mesh::TriangleMesh<NG, NP>;
+    friend class AMP::Mesh::TriangleMeshIterator<NG, NP>;
 
 private:
     static constexpr uint32_t getTypeID();
-
 };
 } // namespace Mesh
 } // namespace AMP

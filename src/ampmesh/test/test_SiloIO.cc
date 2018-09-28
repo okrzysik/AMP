@@ -89,7 +89,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
 
 #ifdef USE_AMP_VECTORS
     // Create a simple DOFManager
-    auto DOFparams = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
+    auto DOFparams  = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
     auto DOF_scalar = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 1, true );
     auto DOF_vector = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 3, true );
     auto DOF_gauss  = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 8, true );
