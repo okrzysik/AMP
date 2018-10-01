@@ -132,7 +132,7 @@ void myTest( AMP::UnitTest *ut )
         AMP::Mesh::MeshIterator end_nd = nd.end();
 
         for ( int i = 0; nd != end_nd; ++nd, ++i ) {
-            std::vector<double> pt = nd->coord();
+            auto pt = nd->coord();
             fprintf( fp, "nd = %d, x = %.15f, y = %.15f, z = %.15f \n", i, pt[0], pt[1], pt[2] );
             std::vector<size_t> globalIds;
             dofMap->getDOFs( nd->globalID(), globalIds );

@@ -54,7 +54,7 @@ PressureBoundaryOperator::PressureBoundaryOperator(
                 std::vector<AMP::Mesh::MeshElement> vertices =
                     el->getElements( AMP::Mesh::GeomType::Vertex );
                 for ( auto &vertice : vertices ) {
-                    std::vector<double> pt = vertice.coord();
+                    auto pt = vertice.coord();
                     for ( auto &elem : pt ) {
                         volElemMap[owner].push_back( elem );
                     } // end k

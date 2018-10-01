@@ -20,10 +20,10 @@ Circle::Circle( double R ) : d_R( R )
 /********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
-double Circle::distance( const Point<double> &pos, const Point<double> &ang ) const
+double Circle::distance( const Point &pos, const Point &ang ) const
 {
-    double x  = pos.x - d_offset[0];
-    double y  = pos.y - d_offset[1];
+    double x  = pos[0] - d_offset[0];
+    double y  = pos[1] - d_offset[1];
     double R2 = x * x + y * y;
     if ( R2 < d_R * d_R )
         return sqrt( R2 );
@@ -36,10 +36,10 @@ double Circle::distance( const Point<double> &pos, const Point<double> &ang ) co
 /********************************************************
  * Check if the ray is inside the geometry               *
  ********************************************************/
-bool Circle::inside( const Point<double> &pos ) const
+bool Circle::inside( const Point &pos ) const
 {
-    double x = pos.x - d_offset[0];
-    double y = pos.y - d_offset[1];
+    double x = pos[0] - d_offset[0];
+    double y = pos[1] - d_offset[1];
     return x * x + y * y <= d_R * d_R;
 }
 
@@ -47,28 +47,28 @@ bool Circle::inside( const Point<double> &pos ) const
 /********************************************************
  * Return the closest surface                            *
  ********************************************************/
-int Circle::surface( const Point<double> &pos ) const
+int Circle::surface( const Point &pos ) const
 {
     NULL_USE( pos );
     return 0;
 }
-Point<double> Circle::surfaceNorm( const Point<double> &pos ) const
+Point Circle::surfaceNorm( const Point &pos ) const
 {
     NULL_USE( pos );
     AMP_ERROR( "Not finished" );
-    return Point<double>();
+    return Point();
 }
 
 
 /********************************************************
  * Return the physical coordinates                       *
  ********************************************************/
-Point<double> Circle::physical( const Point<double> &pos ) const
+Point Circle::physical( const Point &pos ) const
 {
-    auto tmp = AMP::Mesh::BoxMeshHelpers::map_logical_circle( d_R, 2, pos.x, pos.y );
-    Point<double> point;
-    point.x = tmp.first + d_offset[0];
-    point.y = tmp.second + d_offset[1];
+    auto tmp = AMP::Mesh::BoxMeshHelpers::map_logical_circle( d_R, 2, pos[0], pos[1] );
+    Point point;
+    point[0] = tmp.first + d_offset[0];
+    point[1] = tmp.second + d_offset[1];
     return point;
 }
 
@@ -76,10 +76,10 @@ Point<double> Circle::physical( const Point<double> &pos ) const
 /********************************************************
  * Return the logical coordinates                        *
  ********************************************************/
-Point<double> Circle::logical( const Point<double> &pos ) const
+Point Circle::logical( const Point &pos ) const
 {
-    auto tmp = AMP::Mesh::BoxMeshHelpers::map_circle_logical( d_R, 2, pos.x, pos.y );
-    return Point<double>( tmp.first, tmp.second );
+    auto tmp = AMP::Mesh::BoxMeshHelpers::map_circle_logical( d_R, 2, pos[0], pos[1] );
+    return Point( tmp.first, tmp.second );
 }
 
 

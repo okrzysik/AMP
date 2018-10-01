@@ -31,9 +31,8 @@ void computeTemperatureRhsVector(
         rhsVec->subsetVectorForVariable( displacementVar );
     rInternal->zero();
 
-    AMP::shared_ptr<AMP::Database> elementRhsDatabase = input_db->getDatabase( "RhsElements" );
-    AMP::shared_ptr<AMP::Database> materialModelDatabase =
-        input_db->getDatabase( "RhsMaterialModel" );
+    auto elementRhsDatabase    = input_db->getDatabase( "RhsElements" );
+    auto materialModelDatabase = input_db->getDatabase( "RhsMaterialModel" );
 
     AMP::shared_ptr<::FEType> feType;
     AMP::shared_ptr<::FEBase> fe;
@@ -65,9 +64,9 @@ void computeTemperatureRhsVector(
     qrule.reset( (::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
     fe->attach_quadrature_rule( qrule.get() );
 
-    const std::vector<Real> &JxW                       = ( fe->get_JxW() );
-    const std::vector<std::vector<RealGradient>> &dphi = ( fe->get_dphi() );
-    const std::vector<std::vector<Real>> &phi          = ( fe->get_phi() );
+    const auto &JxW  = ( fe->get_JxW() );
+    const auto &dphi = ( fe->get_dphi() );
+    const auto &phi  = ( fe->get_phi() );
 
     AMP::shared_ptr<AMP::Materials::Material> material;
     double youngsModulus = 1.0e10, poissonsRatio = 0.33, thermalExpansionCoefficient = 2.0e-6;
@@ -107,8 +106,7 @@ void computeTemperatureRhsVector(
     AMP::Mesh::MeshIterator end_el = el.end();
 
     for ( ; el != end_el; ++el ) {
-        std::vector<AMP::Mesh::MeshElement> currNodes =
-            el->getElements( AMP::Mesh::GeomType::Vertex );
+        auto currNodes            = el->getElements( AMP::Mesh::GeomType::Vertex );
         size_t numNodesInCurrElem = currNodes.size();
 
         std::vector<std::vector<size_t>> type0DofIndices( currNodes.size() );
@@ -131,8 +129,8 @@ void computeTemperatureRhsVector(
 
         ::Elem *elem = new ::Hex8;
         for ( size_t j = 0; j < currNodes.size(); ++j ) {
-            std::vector<double> pt = currNodes[j].coord();
-            elem->set_node( j )    = new ::Node( pt[0], pt[1], pt[2], j );
+            auto pt             = currNodes[j].coord();
+            elem->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
         } // end j
 
         fe->reinit( elem );

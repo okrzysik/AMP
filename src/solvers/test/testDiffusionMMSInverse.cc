@@ -150,10 +150,10 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     for ( ; iterator != iterator.end(); ++iterator ) {
         double x, y, z;
         std::valarray<double> poly( 10 );
-        std::vector<double> coord = iterator->coord();
-        x                         = coord[0];
-        y                         = coord[1];
-        z                         = coord[2];
+        auto coord = iterator->coord();
+        x          = coord[0];
+        y          = coord[1];
+        z          = coord[2];
         if ( isCylindrical ) {
             double th = 0.;
             double r  = sqrt( x * x + y * y );
@@ -183,10 +183,10 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
         for ( iter = beg_bnd; iter != end_bnd; ++iter ) {
             std::valarray<double> poly( 10 );
             double x, y, z;
-            std::vector<double> coord = iterator->coord();
-            x                         = coord[0];
-            y                         = coord[1];
-            z                         = coord[2];
+            auto coord = iterator->coord();
+            x          = coord[0];
+            y          = coord[1];
+            z          = coord[2];
             if ( isCylindrical ) {
                 double th = 0.;
                 double r  = sqrt( x * x + y * y );
@@ -287,10 +287,10 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
             double l2err = 0.;
             for ( ; iterator != iterator.end(); ++iterator ) {
                 double x, y, z;
-                std::vector<double> coord = iterator->coord();
-                x                         = coord[0];
-                y                         = coord[1];
-                z                         = coord[2];
+                auto coord = iterator->coord();
+                x          = coord[0];
+                y          = coord[1];
+                z          = coord[2];
                 std::vector<size_t> gid;
                 DOF->getDOFs( iterator->globalID(), gid );
                 double val, res, sol, src, err;

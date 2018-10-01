@@ -125,6 +125,14 @@ static int intersect_sorted(
 }
 
 
+// Helper function to wrap fread
+static inline void fread2( void *ptr, size_t size, size_t count, FILE *stream )
+{
+    size_t bytes = fread( ptr, size, count, stream );
+    AMP_ASSERT( bytes == size * count );
+}
+
+
 /****************************************************************
  * Read stl file                                                 *
  ****************************************************************/
@@ -136,10 +144,10 @@ static std::vector<std::array<std::array<double, 3>, 3>> readSTL( const std::str
     // Read the file
     auto fid = fopen( filename.c_str(), "rb" );
     AMP_INSIST( fid, "Unable to open " + filename );
-    fread( header, sizeof( header ), 1, fid );
-    fread( &N, sizeof( N ), 1, fid );
+    fread2( header, sizeof( header ), 1, fid );
+    fread2( &N, sizeof( N ), 1, fid );
     auto tmp = new char[N * 50];
-    fread( tmp, 50, N, fid );
+    fread2( tmp, 50, N, fid );
     fclose( fid );
     // Get a list of the local triangles based on their coordinates
     std::vector<std::array<std::array<double, 3>, 3>> triangles( N );
@@ -624,8 +632,8 @@ size_t TriangleMesh<NG, NP>::estimateMeshSize( const MeshParameters::shared_ptr 
         uint32_t N2;
         auto fid = fopen( filename.c_str(), "rb" );
         AMP_INSIST( fid, "Unable to open " + filename );
-        fread( header, sizeof( header ), 1, fid );
-        fread( &N2, sizeof( N2 ), 1, fid );
+        fread2( header, sizeof( header ), 1, fid );
+        fread2( &N2, sizeof( N2 ), 1, fid );
         fclose( fid );
         N = N2;
     } else {

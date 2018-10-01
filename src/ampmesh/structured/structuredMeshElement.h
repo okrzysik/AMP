@@ -48,20 +48,13 @@ public:
     virtual double volume() const override;
 
     //! Return the coordinates of the vertex (only applies to verticies)
-    virtual inline void coord( size_t &N, double *x ) const override final
+    virtual Point coord() const override final
     {
-        N = d_physicalDim;
-        d_mesh->coord( d_index, x );
+        Point x;
+        x.setNdim( d_physicalDim );
+        d_mesh->coord( d_index, x.data() );
+        return x;
     }
-
-    /**
-     * \brief     Return the coordinate of the vertex
-     * \details   This function returns the coordinates of the vertex
-     *   Note: This is a faster access than a std::vector, but requires the user
-     *   to allocate the appropriate memory (number of dimensions)
-     * \param[out] pos      The coordinates
-     */
-    inline void coord( double *pos ) const { d_mesh->coord( d_index, pos ); }
 
     /**
      * \brief     Return true if the element contains the point
@@ -71,7 +64,7 @@ public:
      * \param pos   The coordinates of the point to check.
      * \param TOL   The tolerance to use for the computation.
      */
-    virtual bool containsPoint( const std::vector<double> &pos, double TOL = 1e-12 ) const override;
+    virtual bool containsPoint( const Point &pos, double TOL = 1e-12 ) const override;
 
     //! Check if the element is on the surface
     virtual bool isOnSurface() const override;

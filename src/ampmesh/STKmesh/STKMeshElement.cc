@@ -339,7 +339,7 @@ std::vector<double> STKMeshElement::centroid() const
         x[i] /= len;
     return x;
 }
-bool STKMeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
+bool STKMeshElement::containsPoint( const Point &pos, double TOL ) const
 {
     AMP_ERROR( "STKMeshElement::containPoint is is not defined" );
     if ( d_globalID.type() == GeomType::Vertex ) {

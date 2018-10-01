@@ -428,7 +428,7 @@ void TrilinosMLSolver::buildML()
 void TrilinosMLSolver::computeCoordinates( const AMP::shared_ptr<AMP::Operator::Operator> op )
 {
     // Get mesh adapter for this operator
-    AMP::Mesh::Mesh::shared_ptr myMesh = op->getMesh();
+    auto myMesh = op->getMesh();
 
     // Resize vectors to hold node values
     int numNodes = myMesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
@@ -437,12 +437,12 @@ void TrilinosMLSolver::computeCoordinates( const AMP::shared_ptr<AMP::Operator::
     d_z_values.resize( numNodes, 0.0 );
 
     // Get node iterators
-    AMP::Mesh::MeshIterator thisNode = myMesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-    AMP::Mesh::MeshIterator endNode  = thisNode.end();
+    auto thisNode = myMesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto endNode  = thisNode.end();
 
     int nodeCounter = 0;
     for ( ; thisNode != endNode; ++thisNode ) {
-        std::vector<double> coord = thisNode->coord();
+        auto coord = thisNode->coord();
         AMP_INSIST( coord.size() == 3, "Currently only programmed for 3d" );
         d_x_values[nodeCounter] = coord[0];
         d_y_values[nodeCounter] = coord[1];
@@ -455,9 +455,9 @@ void TrilinosMLSolver::computeCoordinates( const AMP::shared_ptr<AMP::Operator::
 void TrilinosMLSolver::computeNullSpace( const AMP::shared_ptr<AMP::Operator::Operator> op )
 {
     // Get mesh adapter for this operator
-    AMP::Mesh::Mesh::shared_ptr myMesh = op->getMesh();
-    int numPDE                         = d_mlOptions->d_pdeEquations;
-    int dimNS                          = d_mlOptions->d_nullSpaceDimension;
+    auto myMesh = op->getMesh();
+    int numPDE  = d_mlOptions->d_pdeEquations;
+    int dimNS   = d_mlOptions->d_nullSpaceDimension;
 
     AMP_INSIST( d_mlOptions->d_nullSpaceDimension == 6,
                 "Null space dimension must be 6 to use computed null space." );
@@ -468,13 +468,13 @@ void TrilinosMLSolver::computeNullSpace( const AMP::shared_ptr<AMP::Operator::Op
     d_null_space.resize( dimNS * vecLength, 0.0 );
 
     // Get node iterators
-    AMP::Mesh::MeshIterator thisNode = myMesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-    AMP::Mesh::MeshIterator endNode  = thisNode.end();
+    auto thisNode = myMesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto endNode  = thisNode.end();
 
     int nodeCounter = 0;
     int offset      = 0;
     for ( ; thisNode != endNode; ++thisNode ) {
-        std::vector<double> coord = thisNode->coord();
+        auto coord = thisNode->coord();
         AMP_INSIST( coord.size() == 3, "Currently only programmed for 3d" );
         double thisX = coord[0];
         double thisY = coord[1];

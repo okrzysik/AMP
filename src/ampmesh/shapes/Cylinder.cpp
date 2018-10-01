@@ -22,7 +22,7 @@ Cylinder::Cylinder( double r, double z_min, double z_max )
 /********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
-double Cylinder::distance( const Point<double> &pos, const Point<double> &ang ) const
+double Cylinder::distance( const Point &pos, const Point &ang ) const
 {
     NULL_USE( pos );
     NULL_USE( ang );
@@ -34,7 +34,7 @@ double Cylinder::distance( const Point<double> &pos, const Point<double> &ang ) 
 /********************************************************
  * Check if the ray is inside the geometry               *
  ********************************************************/
-bool Cylinder::inside( const Point<double> &pos ) const
+bool Cylinder::inside( const Point &pos ) const
 {
     NULL_USE( pos );
     AMP_ERROR( "Not finished" );
@@ -45,30 +45,30 @@ bool Cylinder::inside( const Point<double> &pos ) const
 /********************************************************
  * Return the closest surface                            *
  ********************************************************/
-int Cylinder::surface( const Point<double> &pos ) const
+int Cylinder::surface( const Point &pos ) const
 {
     NULL_USE( pos );
     AMP_ERROR( "Not finished" );
     return 0;
 }
-Point<double> Cylinder::surfaceNorm( const Point<double> &pos ) const
+Point Cylinder::surfaceNorm( const Point &pos ) const
 {
     NULL_USE( pos );
     AMP_ERROR( "Not finished" );
-    return Point<double>();
+    return Point();
 }
 
 
 /********************************************************
  * Return the physical coordinates                       *
  ********************************************************/
-Point<double> Cylinder::physical( const Point<double> &pos ) const
+Point Cylinder::physical( const Point &pos ) const
 {
-    auto tmp = AMP::Mesh::BoxMeshHelpers::map_logical_circle( d_r, 2, pos.x, pos.y );
-    Point<double> point;
-    point.x = tmp.first + d_offset[0];
-    point.y = tmp.second + d_offset[1];
-    point.z = d_z_min + pos.z * ( d_z_max - d_z_min ) + d_offset[2];
+    auto tmp = AMP::Mesh::BoxMeshHelpers::map_logical_circle( d_r, 2, pos[0], pos[1] );
+    Point point;
+    point[0] = tmp.first + d_offset[0];
+    point[1] = tmp.second + d_offset[1];
+    point[2] = d_z_min + pos[2] * ( d_z_max - d_z_min ) + d_offset[2];
     return point;
 }
 
@@ -76,11 +76,11 @@ Point<double> Cylinder::physical( const Point<double> &pos ) const
 /********************************************************
  * Return the logical coordinates                        *
  ********************************************************/
-Point<double> Cylinder::logical( const Point<double> &pos ) const
+Point Cylinder::logical( const Point &pos ) const
 {
     NULL_USE( pos );
     AMP_ERROR( "Not finished" );
-    return Point<double>();
+    return Point();
 }
 
 

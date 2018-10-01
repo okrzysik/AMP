@@ -67,9 +67,8 @@ public:
             AMP_ERROR( "DOF Manager is not finished to the point we can have different number of "
                        "DOFs for the two "
                        "matrix variables" );
-        AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
-            new AMP::Discretization::DOFManagerParameters( mesh ) );
-        DOFs = AMP::Discretization::simpleDOFManager::create(
+        auto DOFparams = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
+        DOFs           = AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, 1, NUM_DOF_ROW );
         PROFILE_STOP( "initMesh" );
     }
@@ -85,10 +84,8 @@ public:
     static AMP::LinearAlgebra::Vector::shared_ptr getVector()
     {
         PROFILE_START( "getVector" );
-        AMP::LinearAlgebra::Variable::shared_ptr variable(
-            new AMP::LinearAlgebra::Variable( "a" ) );
-        AMP::LinearAlgebra::Vector::shared_ptr vector =
-            AMP::LinearAlgebra::createVector( DOFs, variable );
+        auto variable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "a" );
+        auto vector   = AMP::LinearAlgebra::createVector( DOFs, variable );
         PROFILE_STOP( "getVector" );
         return vector;
     }
@@ -96,16 +93,11 @@ public:
     static AMP::LinearAlgebra::Matrix::shared_ptr getMatrix()
     {
         PROFILE_START( "getMatrix" );
-        AMP::LinearAlgebra::Variable::shared_ptr variable_a(
-            new AMP::LinearAlgebra::Variable( "a" ) );
-        AMP::LinearAlgebra::Variable::shared_ptr variable_b(
-            new AMP::LinearAlgebra::Variable( "b" ) );
-        AMP::LinearAlgebra::Vector::shared_ptr vector_a =
-            AMP::LinearAlgebra::createVector( DOFs, variable_a );
-        AMP::LinearAlgebra::Vector::shared_ptr vector_b =
-            AMP::LinearAlgebra::createVector( DOFs, variable_b );
-        AMP::LinearAlgebra::Matrix::shared_ptr matrix =
-            AMP::LinearAlgebra::createMatrix( vector_a, vector_b, type() );
+        auto variable_a = AMP::make_shared<AMP::LinearAlgebra::Variable>( "a" );
+        auto variable_b = AMP::make_shared<AMP::LinearAlgebra::Variable>( "b" );
+        auto vector_a   = AMP::LinearAlgebra::createVector( DOFs, variable_a );
+        auto vector_b   = AMP::LinearAlgebra::createVector( DOFs, variable_b );
+        auto matrix     = AMP::LinearAlgebra::createMatrix( vector_a, vector_b, type() );
         PROFILE_STOP( "getMatrix" );
         return matrix;
     }

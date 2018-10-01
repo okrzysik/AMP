@@ -25,53 +25,45 @@ void myTest( AMP::UnitTest *ut, std::string input_file )
     AMP::PIO::logOnlyNodeZero( log_file );
 
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
 
     // Get the Mesh database and create the mesh parameters
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto database = input_db->getDatabase( "Mesh" );
+    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Create the DOF manager
-    AMP::Discretization::DOFManager::shared_ptr scalarDOFs =
+    auto scalarDOFs =
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
-    AMP::Discretization::DOFManager::shared_ptr vectorDOFs =
+    auto vectorDOFs =
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
     // Create the vectors
-    AMP::LinearAlgebra::Variable::shared_ptr inVar(
-        new AMP::LinearAlgebra::Variable( "inputVar" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr outVar(
-        new AMP::LinearAlgebra::Variable( "outputVar" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr inVec =
-        AMP::LinearAlgebra::createVector( vectorDOFs, inVar );
-    AMP::LinearAlgebra::Vector::shared_ptr outVec =
-        AMP::LinearAlgebra::createVector( scalarDOFs, outVar );
+    auto inVar  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "inputVar" );
+    auto outVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( "outputVar" );
+    auto inVec  = AMP::LinearAlgebra::createVector( vectorDOFs, inVar );
+    auto outVec = AMP::LinearAlgebra::createVector( scalarDOFs, outVar );
 
     // Create the matrix
-    AMP::LinearAlgebra::Matrix::shared_ptr mat1 = AMP::LinearAlgebra::createMatrix( inVec, outVec );
+    auto mat1 = AMP::LinearAlgebra::createMatrix( inVec, outVec );
     if ( mat1.get() != nullptr ) {
         ut->passes( "Able to create a non-square matrices" );
     } else {
         ut->failure( "Unable to create a non-square matrices" );
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr scalarVar(
-        new AMP::LinearAlgebra::Variable( "scalarVar" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr vectorVar(
-        new AMP::LinearAlgebra::Variable( "multiVar" ) );
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> multiVarVec =
-        AMP::LinearAlgebra::MultiVector::create( "MultiVec", mesh->getComm() );
+    auto scalarVar   = AMP::make_shared<AMP::LinearAlgebra::Variable>( "scalarVar" );
+    auto vectorVar   = AMP::make_shared<AMP::LinearAlgebra::Variable>( "multiVar" );
+    auto multiVarVec = AMP::LinearAlgebra::MultiVector::create( "MultiVec", mesh->getComm() );
     multiVarVec->addVector( AMP::LinearAlgebra::createVector( vectorDOFs, vectorVar ) );
     multiVarVec->addVector( AMP::LinearAlgebra::createVector( scalarDOFs, scalarVar ) );
 
     // Create the matrix
-    AMP::LinearAlgebra::Matrix::shared_ptr mat2 =
-        AMP::LinearAlgebra::createMatrix( multiVarVec, multiVarVec );
+    auto mat2 = AMP::LinearAlgebra::createMatrix( multiVarVec, multiVarVec );
     if ( mat2.get() != nullptr ) {
         ut->passes( "Able to create a mutli-var matrices" );
     } else {

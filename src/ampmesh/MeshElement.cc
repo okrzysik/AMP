@@ -5,37 +5,35 @@ namespace Mesh {
 
 
 /********************************************************
- * Function to return the centroid of an element         *
+ * Function to return basic info         *
  ********************************************************/
-void MeshElement::centroid( size_t &N, double *center ) const
+std::string MeshElement::elementClass() const
 {
-    if ( element != nullptr )
-        return element->centroid( N, center );
-    if ( d_globalID.type() == GeomType::Vertex )
-        return coord( N, center );
-    std::vector<MeshElement> nodes;
-    ( element != nullptr ? element : this )->getElements( GeomType::Vertex, nodes );
-    AMP_ASSERT( !nodes.empty() );
-    nodes[0].coord( N, center );
-    for ( size_t i = 1; i < nodes.size(); i++ ) {
-        double pos[10];
-        nodes[i].coord( N, pos );
-        for ( size_t j = 0; j < N; j++ )
-            center[j] += pos[j];
-    }
-    for ( size_t j = 0; j < N; j++ )
-        center[j] /= nodes.size();
+    return element == nullptr ? std::string( "MeshElement" ) : element->elementClass();
 }
 
 
 /********************************************************
- * Function to return the coordinates of an element      *
+ * Function to return the centroid of an element         *
  ********************************************************/
-void MeshElement::coord( size_t &N, double *x ) const
+Point MeshElement::centroid() const
 {
-    if ( element == nullptr )
-        AMP_ERROR( "coord is not implimented for the base class (" + elementClass() + ")" );
-    return element->coord( N, x );
+    if ( element != nullptr )
+        return element->centroid();
+    if ( d_globalID.type() == GeomType::Vertex )
+        return coord();
+    std::vector<MeshElement> nodes;
+    ( element != nullptr ? element : this )->getElements( GeomType::Vertex, nodes );
+    AMP_ASSERT( !nodes.empty() );
+    auto center = nodes[0].coord();
+    for ( size_t i = 1; i < nodes.size(); i++ ) {
+        auto pos = nodes[i].coord();
+        for ( size_t j = 0; j < center.size(); j++ )
+            center[j] += pos[j];
+    }
+    for ( size_t j = 0; j < center.size(); j++ )
+        center[j] /= nodes.size();
+    return center;
 }
 
 
@@ -65,6 +63,67 @@ void MeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors 
     element->getNeighbors( neighbors );
 }
 
+
+/********************************************************
+ * Function to check if a point is within an element     *
+ ********************************************************/
+bool MeshElement::containsPoint( const Point &pos, double TOL ) const
+{
+    if ( element != nullptr )
+        return element->containsPoint( pos, TOL );
+    if ( d_globalID.type() == GeomType::Vertex ) {
+        // double dist = 0.0;
+        auto point   = this->coord();
+        double dist2 = 0.0;
+        for ( size_t i = 0; i < point.size(); i++ )
+            dist2 += ( point[i] - pos[i] ) * ( point[i] - pos[i] );
+        return dist2 <= TOL * TOL;
+    }
+    AMP_ERROR( "containsPoint is not finished for default elements yet" );
+    return false;
+}
+
+
+/********************************************************
+ * Functions that aren't implimented for the base class  *
+ ********************************************************/
+Point MeshElement::coord() const
+{
+    if ( element == nullptr )
+        AMP_ERROR( "coord is not implimented for the base class (" + elementClass() + ")" );
+    return element->coord();
+}
+double MeshElement::volume() const
+{
+    if ( element == nullptr )
+        AMP_ERROR( "volume is not implimented for the base class (" + elementClass() + ")" );
+    return element->volume();
+}
+bool MeshElement::isOnSurface() const
+{
+    if ( element == nullptr )
+        AMP_ERROR( "isOnSurface is not implimented for the base class (" + elementClass() + ")" );
+    return element->isOnSurface();
+}
+bool MeshElement::isOnBoundary( int id ) const
+{
+    if ( element == nullptr )
+        AMP_ERROR( "isOnBoundary is not implimented for the base class (" + elementClass() + ")" );
+    return element->isOnBoundary( id );
+}
+bool MeshElement::isInBlock( int id ) const
+{
+    if ( element == nullptr )
+        AMP_ERROR( "isInBlock is not implimented for the base class (" + elementClass() + ")" );
+    return element->isInBlock( id );
+}
+unsigned int MeshElement::globalOwnerRank() const
+{
+    if ( element == nullptr )
+        AMP_ERROR( "globalOwnerRank is not implimented for the base class (" + elementClass() +
+                   ")" );
+    return element->globalOwnerRank();
+}
 
 } // namespace Mesh
 } // namespace AMP

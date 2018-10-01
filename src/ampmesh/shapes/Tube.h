@@ -29,13 +29,12 @@ public:
 
     // Functions inherited from Geometry
     virtual uint8_t getDim() const override final { return 3; }
-    virtual double distance( const Point<double> &pos,
-                             const Point<double> &dir ) const override final;
-    virtual bool inside( const Point<double> &pos ) const override final;
-    virtual int surface( const Point<double> &x ) const override final;
-    virtual Point<double> surfaceNorm( const Point<double> &x ) const override final;
-    virtual Point<double> logical( const Point<double> &x ) const override final;
-    virtual Point<double> physical( const Point<double> &x ) const override final;
+    virtual double distance( const Point &pos, const Point &dir ) const override final;
+    virtual bool inside( const Point &pos ) const override final;
+    virtual int surface( const Point &x ) const override final;
+    virtual Point surfaceNorm( const Point &x ) const override final;
+    virtual Point logical( const Point &x ) const override final;
+    virtual Point physical( const Point &x ) const override final;
     virtual void displaceMesh( const double *x ) override final;
 
 protected:

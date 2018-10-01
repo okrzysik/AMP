@@ -176,10 +176,10 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
         std::vector<size_t> bndGlobalIds;
         nodalDofMap->getDOFs( node->globalID(), bndGlobalIds );
 
-        std::vector<double> pt = node->coord();
-        double px              = pt[0];
-        double py              = pt[1];
-        double pz              = pt[2];
+        auto pt   = node->coord();
+        double px = pt[0];
+        double py = pt[1];
+        double pz = pt[2];
 
         double val = __INIT_FN__( px, py, pz, 0 );
 

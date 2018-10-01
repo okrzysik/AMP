@@ -212,54 +212,51 @@ static inline std::array<double, 3> operator-( const std::array<double, 3> &x,
 template<size_t NG, size_t NP>
 double TriangleMeshElement<NG, NP>::volume() const
 {
-    if ( NG == 0 )
+    if ( NG == 0 ) { // Replace if statements with if constexpr when supported
         return 0;
-    ElementID ids[NG + 1];
-    d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
-    std::array<double, NP> coord[NG + 1];
-    for ( size_t i = 0; i <= NG; i++ )
-        coord[i] = d_mesh->getPos( ids[i] );
-    if ( NG == 1 ) {
+    } else if ( NG == 1 ) {
+        ElementID ids[2];
+        d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
+        auto p1     = d_mesh->getPos( ids[0] );
+        auto p2     = d_mesh->getPos( ids[1] );
         double dist = 0;
         for ( size_t d = 0; d < NP; d++ )
-            dist += ( coord[0][d] - coord[1][d] ) * ( coord[0][d] - coord[1][d] );
+            dist += ( p1[d] - p2[d] ) * ( p1[d] - p2[d] );
         return dist;
-    }
-    if ( NG == 2 ) {
-        auto AB  = coord[0] - coord[1];
-        auto AC  = coord[0] - coord[2];
+    } else if ( NG == 2 ) {
+        ElementID ids[3];
+        d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
+        auto p0  = d_mesh->getPos( ids[0] );
+        auto AB  = p0 - d_mesh->getPos( ids[1] );
+        auto AC  = p0 - d_mesh->getPos( ids[2] );
         double t = dot( AB, AC );
         return 0.5 * sqrt( dot( AB, AB ) * dot( AC, AC ) - t * t );
+    } else {
+        AMP_ERROR( "Not finished" );
+        return 0;
     }
-    AMP_ERROR( "Not finished" );
-    return 0;
 }
 template<size_t NG, size_t NP>
-void TriangleMeshElement<NG, NP>::coord( size_t &N, double *x ) const
+Point TriangleMeshElement<NG, NP>::coord() const
 {
     if ( d_globalID.type() == GeomType::Vertex ) {
-        N        = NP;
-        auto &x2 = d_mesh->getPos( d_globalID.elemID() );
-        for ( size_t d = 0; d < NP; d++ )
-            x[d] = x2[d];
+        auto &x = d_mesh->getPos( d_globalID.elemID() );
+        return Point( NP, x.data() );
     } else {
         AMP_ERROR( "coord is only valid for verticies" );
     }
+    return Point();
 }
 template<size_t NG, size_t NP>
-void TriangleMeshElement<NG, NP>::centroid( size_t &N, double *x ) const
+Point TriangleMeshElement<NG, NP>::centroid() const
 {
-    N = NP;
     if ( d_globalID.type() == GeomType::Vertex ) {
-        auto &x2 = d_mesh->getPos( d_globalID.elemID() );
-        for ( size_t d = 0; d < NP; d++ )
-            x[d] = x2[d];
-        return;
+        auto &x = d_mesh->getPos( d_globalID.elemID() );
+        return Point( NP, x.data() );
     }
     ElementID ids[NG + 1];
     d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
-    for ( size_t d = 0; d < NP; d++ )
-        x[d] = 0;
+    Point x( NP );
     for ( size_t i = 0; i <= NG; i++ ) {
         auto &x2 = d_mesh->getPos( ids[i] );
         for ( size_t d = 0; d < NP; d++ )
@@ -267,9 +264,10 @@ void TriangleMeshElement<NG, NP>::centroid( size_t &N, double *x ) const
     }
     for ( size_t d = 0; d < NP; d++ )
         x[d] /= ( NG + 1 );
+    return x;
 }
 template<size_t NG, size_t NP>
-bool TriangleMeshElement<NG, NP>::containsPoint( const std::vector<double> &pos, double TOL ) const
+bool TriangleMeshElement<NG, NP>::containsPoint( const Point &pos, double TOL ) const
 {
     NULL_USE( pos );
     NULL_USE( TOL );

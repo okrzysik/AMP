@@ -153,11 +153,10 @@ void MovableBoxMesh::coord( const MeshElementIndex &index, double *pos ) const
 /****************************************************************
  * Return the logical coordinates                                *
  ****************************************************************/
-AMP::Geometry::Point<double>
-MovableBoxMesh::physicalToLogical( const AMP::Geometry::Point<double> & ) const
+AMP::Geometry::Point MovableBoxMesh::physicalToLogical( const AMP::Geometry::Point & ) const
 {
     AMP_ERROR( "physicalToLogical is not supported in MovableBoxMesh" );
-    return AMP::Geometry::Point<double>();
+    return AMP::Geometry::Point();
 }
 
 

@@ -151,13 +151,12 @@ void GaussPointToGaussPointMap::createIdxMap(
     for ( auto &_i : d_sendList ) {
         AMP::Mesh::MeshElement el = multiMesh->getElement( _i );
 
-        std::vector<AMP::Mesh::MeshElement> currNodes =
-            el.getElements( AMP::Mesh::GeomType::Vertex );
+        auto currNodes = el.getElements( AMP::Mesh::GeomType::Vertex );
 
         ::Elem *elem = new ::Quad4;
         for ( size_t j = 0; j < currNodes.size(); ++j ) {
-            std::vector<double> pt = currNodes[j].coord();
-            elem->set_node( j )    = new ::Node( pt[0], pt[1], pt[2], j );
+            auto pt             = currNodes[j].coord();
+            elem->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
         } // end for j
 
         AMP::shared_ptr<::FEBase> fe( (::FEBase::build( faceDim, ( *feType ) ) ).release() );
@@ -193,15 +192,14 @@ void GaussPointToGaussPointMap::createIdxMap(
 
     d_idxMap.clear();
     for ( auto &_i : d_recvList ) {
-        AMP::Mesh::MeshElement el = multiMesh->getElement( _i );
+        auto el = multiMesh->getElement( _i );
 
-        std::vector<AMP::Mesh::MeshElement> currNodes =
-            el.getElements( AMP::Mesh::GeomType::Vertex );
+        auto currNodes = el.getElements( AMP::Mesh::GeomType::Vertex );
 
         ::Elem *elem = new ::Quad4;
         for ( size_t j = 0; j < currNodes.size(); ++j ) {
-            std::vector<double> pt = currNodes[j].coord();
-            elem->set_node( j )    = new ::Node( pt[0], pt[1], pt[2], j );
+            auto pt             = currNodes[j].coord();
+            elem->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
         } // end for j
 
         AMP::shared_ptr<::FEBase> fe( (::FEBase::build( faceDim, ( *feType ) ) ).release() );

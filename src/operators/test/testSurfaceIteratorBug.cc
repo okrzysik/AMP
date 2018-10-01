@@ -52,27 +52,24 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     bool setConstantValue = input_db->getBool( "SetConstantValue" );
 
     // Get the Mesh database and create the mesh parameters
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto database = input_db->getDatabase( "Mesh" );
+    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Create a nodal scalar vector
-    AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "myVar" ) );
-    AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    AMP::LinearAlgebra::Vector::shared_ptr vec =
-        AMP::LinearAlgebra::createVector( nodalScalarDOF, var, true );
+    auto var            = AMP::make_shared<AMP::LinearAlgebra::Variable>( "myVar" );
+    auto nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto vec = AMP::LinearAlgebra::createVector( nodalScalarDOF, var, true );
     vec->zero();
 
     auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-    AMP::Mesh::MeshIterator bnd =
-        mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, surfaceId, 0 );
+    auto bnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, surfaceId, 0 );
     std::cout << "Number of surface elements: " << bnd.size() << std::endl;
     AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
@@ -80,7 +77,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::vector<size_t> dofs;
     while ( bnd != end_bnd ) {
 
-        std::vector<AMP::Mesh::MeshElement> nodes = bnd->getElements( AMP::Mesh::GeomType::Vertex );
+        auto nodes = bnd->getElements( AMP::Mesh::GeomType::Vertex );
         std::vector<size_t> bndGlobalIds;
         for ( auto &node : nodes ) {
             nodalScalarDOF->getDOFs( node.globalID(), dofs );
@@ -106,7 +103,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
         fe->attach_quadrature_rule( qrule.get() );
         ::Elem *currElemPtr = new ::Quad4;
         for ( size_t i = 0; i < nodes.size(); i++ ) {
-            std::vector<double> pt     = nodes[i].coord();
+            auto pt                    = nodes[i].coord();
             currElemPtr->set_node( i ) = new ::Node( pt[0], pt[1], pt[2], i );
         }
         fe->reinit( currElemPtr );

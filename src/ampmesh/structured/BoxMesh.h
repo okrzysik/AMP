@@ -356,8 +356,7 @@ public: // BoxMesh specific functionality
      * \param[in] x         Physical coordinates
      * @return              Returns the logical coordinates
      */
-    virtual AMP::Geometry::Point<double>
-    physicalToLogical( const AMP::Geometry::Point<double> &x ) const = 0;
+    virtual AMP::Geometry::Point physicalToLogical( const AMP::Geometry::Point &x ) const = 0;
 
     /**
      * \brief    Return the element containing the point
@@ -368,8 +367,7 @@ public: // BoxMesh specific functionality
      *                      Note: it will return a null index (isNull) if no element of
      *                      the given type contains the point.
      */
-    MeshElementIndex getElementFromLogical( const AMP::Geometry::Point<double> &x,
-                                            GeomType type ) const;
+    MeshElementIndex getElementFromLogical( const AMP::Geometry::Point &x, GeomType type ) const;
 
     /**
      * \brief    Return the element containing the point
@@ -381,8 +379,7 @@ public: // BoxMesh specific functionality
      *                      Note: it will return a null index (isNull) if no element of
      *                      the given type contains the point.
      */
-    MeshElementIndex getElementFromPhysical( const AMP::Geometry::Point<double> &x,
-                                             GeomType type ) const;
+    MeshElementIndex getElementFromPhysical( const AMP::Geometry::Point &x, GeomType type ) const;
 
     //! Convert the MeshElementIndex to the MeshElementID
     inline MeshElementID convert( const MeshElementIndex &id ) const;

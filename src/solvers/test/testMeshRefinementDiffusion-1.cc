@@ -94,8 +94,8 @@ void calculateManufacturedSolution(
             dof_map->getDOFs( globalIDs, d_dofIndices );
 
             for ( unsigned int j = 0; j < d_currNodes.size(); j++ ) {
-                std::vector<double> pt = d_currNodes[j].coord();
-                double val1            = __INIT_FN__( pt[0], pt[1], pt[2] );
+                auto pt     = d_currNodes[j].coord();
+                double val1 = __INIT_FN__( pt[0], pt[1], pt[2] );
                 // double val2 = __INIT_FN__(pt[0],pt[1],pt[2]-20); // not used.
                 double val3 = __dTdn__( pt[0], pt[1], pt[2], 1 );
 
@@ -182,7 +182,7 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
         ::Elem *d_currElemPtr( new ::Hex8 );
         for ( size_t j = 0; j < d_currNodes.size(); j++ ) {
-            std::vector<double> pt       = d_currNodes[j].coord();
+            auto pt                      = d_currNodes[j].coord();
             d_currElemPtr->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
         } // end for j
 

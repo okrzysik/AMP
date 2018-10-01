@@ -59,14 +59,14 @@ public:
 
     //! Makes map of lateral gaps to their centroids
     void getLateralFaces( AMP::Mesh::Mesh::shared_ptr,
-                          std::map<std::vector<double>, AMP::Mesh::MeshElement> &,
-                          std::map<std::vector<double>, AMP::Mesh::MeshElement> & );
+                          std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> &,
+                          std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> & );
 
     //! Makes map of gap widths to their xy positions
-    std::map<std::vector<double>, double> getGapWidths( AMP::Mesh::Mesh::shared_ptr,
-                                                        const std::vector<double> &,
-                                                        const std::vector<double> &,
-                                                        const std::vector<double> & );
+    std::map<AMP::Mesh::Point, double> getGapWidths( AMP::Mesh::Mesh::shared_ptr,
+                                                     const std::vector<double> &,
+                                                     const std::vector<double> &,
+                                                     const std::vector<double> & );
 
     void getAxialFaces( const AMP::Mesh::MeshElement &,
                         AMP::Mesh::MeshElement &,
@@ -161,7 +161,7 @@ private:
     AMP::Mesh::MeshElement
     getAxiallyAdjacentLateralFace( AMP::Mesh::MeshElement *,
                                    const AMP::Mesh::MeshElement &,
-                                   std::map<std::vector<double>, AMP::Mesh::MeshElement> );
+                                   std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> );
 };
 } // namespace Operator
 } // namespace AMP

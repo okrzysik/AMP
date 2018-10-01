@@ -44,7 +44,7 @@ subsetForSubchannel( AMP::Mesh::Mesh::shared_ptr subchannel, size_t i, size_t j 
         new std::vector<AMP::Mesh::MeshElement>() );
     elements->reserve( el.size() / ( Nx * Ny ) );
     for ( size_t k = 0; k < el.size(); ++k, ++el ) {
-        std::vector<double> coord = el->centroid();
+        auto coord = el->centroid();
         if ( coord[0] >= x[i] && coord[0] <= x[i + 1] && coord[1] >= y[j] && coord[1] <= y[j + 1] )
             elements->push_back( *el );
     }
@@ -405,7 +405,7 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     size_t Nx = x.size() - 1;
     size_t Ny = y.size() - 1;
     for ( size_t i = 0; i < it.size(); i++ ) {
-        std::vector<double> pos = it->coord();
+        auto pos = it->coord();
         DOF->getDOFs( it->globalID(), dofs );
         AMP_ASSERT( dofs.size() == 1 );
         size_t ix = AMP::Utilities::findfirst( x, pos[0] );

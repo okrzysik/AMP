@@ -659,7 +659,7 @@ double structuredMeshElement::volume() const
         };
         // The centroid is a convenient point to use
         // for the apex of all the pyramids.
-        std::vector<double> R = this->centroid();
+        auto R = this->centroid();
         AMP_ASSERT( N == 8 );
         double x[8][3];
         for ( int i = 0; i < 8; i++ )
@@ -696,7 +696,7 @@ double structuredMeshElement::volume() const
 /****************************************************************
  * Misc functions                                                *
  ****************************************************************/
-bool structuredMeshElement::containsPoint( const std::vector<double> &, double ) const
+bool structuredMeshElement::containsPoint( const Point &, double ) const
 {
     AMP_ERROR( "Not finsihed" );
     return false;

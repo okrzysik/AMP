@@ -172,8 +172,8 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     for ( auto it = DOF_vector->getIterator(); it != it.end(); ++it ) {
         AMP::Mesh::MeshElementID id = it->globalID();
         DOF_vector->getDOFs( id, dofs );
-        std::vector<double> pos = it->coord();
-        position->setValuesByGlobalID( dofs.size(), &dofs[0], &pos[0] );
+        auto pos = it->coord();
+        position->setValuesByGlobalID( dofs.size(), dofs.data(), pos.data() );
     }
     position->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     if ( submesh != nullptr ) {

@@ -2,7 +2,7 @@
 #define included_AMP_BoxMeshHelpers
 
 
-#include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/MeshPoint.h"
 #include <set>
 
 
@@ -64,7 +64,7 @@ std::pair<double, double> map_circle_logical( double R, int method, double x, do
  * \param[in] z         Logical z coordinate
  * @return              Returns the physical point
  */
-AMP::Geometry::Point<double> map_logical_sphere( double R, double x, double y, double z );
+AMP::Mesh::Point map_logical_sphere( double R, double x, double y, double z );
 
 
 /**
@@ -79,7 +79,7 @@ AMP::Geometry::Point<double> map_logical_sphere( double R, double x, double y, d
  * \param[in] y         Logical y coordinate
  * @return              Returns the physical point
  */
-AMP::Geometry::Point<double> map_logical_sphere_surface( double R, double x, double y );
+AMP::Mesh::Point map_logical_sphere_surface( double R, double x, double y );
 
 /**
  * \brief   Map coordinates from the surface of a sphere to logical
@@ -111,8 +111,7 @@ std::pair<double, double> map_sphere_surface_logical( double R, double x, double
  * \param[in] z         Logical z coordinate
  * @return              Returns the physical point
  */
-AMP::Geometry::Point<double>
-map_logical_shell( double r1, double r2, double x, double y, double z );
+AMP::Mesh::Point map_logical_shell( double r1, double r2, double x, double y, double z );
 
 
 } // namespace BoxMeshHelpers

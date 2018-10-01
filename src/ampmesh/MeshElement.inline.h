@@ -114,20 +114,9 @@ inline const MeshElement *MeshElement::getRawElement() const
 /********************************************************
  * Function to check if a point is within an element     *
  ********************************************************/
-bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
+inline bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
 {
-    if ( element != nullptr )
-        return element->containsPoint( pos, TOL );
-    if ( d_globalID.type() == GeomType::Vertex ) {
-        // double dist = 0.0;
-        std::vector<double> point = this->coord();
-        double dist2              = 0.0;
-        for ( size_t i = 0; i < point.size(); i++ )
-            dist2 += ( point[i] - pos[i] ) * ( point[i] - pos[i] );
-        return dist2 <= TOL * TOL;
-    }
-    AMP_ERROR( "containsPoint is not finished for default elements yet" );
-    return false;
+    return containsPoint( Point( pos.size(), pos.data() ), TOL );
 }
 
 
@@ -139,36 +128,11 @@ inline const MeshElementID &MeshElement::globalID() const
     return element == nullptr ? d_globalID : element->d_globalID;
 }
 inline GeomType MeshElement::elementType() const { return globalID().type(); }
-inline std::string MeshElement::elementClass() const
-{
-    return element == nullptr ? std::string( "MeshElement" ) : element->elementClass();
-}
 
 
 /********************************************************
- * Functions that are wrappers to an anvanced version    *
+ * Functions that are wrappers to an advanced version    *
  ********************************************************/
-inline std::vector<double> MeshElement::coord() const
-{
-    size_t N = 10;
-    double x[10];
-    ( element != nullptr ? element : this )->coord( N, x );
-    return std::vector<double>( x, x + N );
-}
-inline double MeshElement::coord( int i ) const
-{
-    size_t N = 10;
-    double x[10];
-    ( element != nullptr ? element : this )->coord( N, x );
-    return x[i];
-}
-inline std::vector<double> MeshElement::centroid() const
-{
-    size_t N = 10;
-    double x[10];
-    ( element != nullptr ? element : this )->centroid( N, x );
-    return std::vector<double>( x, x + N );
-}
 inline std::vector<MeshElement> MeshElement::getElements( const GeomType type ) const
 {
     std::vector<MeshElement> elements;
@@ -180,42 +144,6 @@ inline std::vector<MeshElement::shared_ptr> MeshElement::getNeighbors() const
     std::vector<MeshElement::shared_ptr> neighbors;
     ( element != nullptr ? element : this )->getNeighbors( neighbors );
     return neighbors;
-}
-
-
-/********************************************************
- * Functions that aren't implimented for the base class  *
- ********************************************************/
-double MeshElement::volume() const
-{
-    if ( element == nullptr )
-        AMP_ERROR( "volume is not implimented for the base class (" + elementClass() + ")" );
-    return element->volume();
-}
-bool MeshElement::isOnSurface() const
-{
-    if ( element == nullptr )
-        AMP_ERROR( "isOnSurface is not implimented for the base class (" + elementClass() + ")" );
-    return element->isOnSurface();
-}
-bool MeshElement::isOnBoundary( int id ) const
-{
-    if ( element == nullptr )
-        AMP_ERROR( "isOnBoundary is not implimented for the base class (" + elementClass() + ")" );
-    return element->isOnBoundary( id );
-}
-bool MeshElement::isInBlock( int id ) const
-{
-    if ( element == nullptr )
-        AMP_ERROR( "isInBlock is not implimented for the base class (" + elementClass() + ")" );
-    return element->isInBlock( id );
-}
-unsigned int MeshElement::globalOwnerRank() const
-{
-    if ( element == nullptr )
-        AMP_ERROR( "globalOwnerRank is not implimented for the base class (" + elementClass() +
-                   ")" );
-    return element->globalOwnerRank();
 }
 
 

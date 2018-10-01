@@ -138,10 +138,10 @@ void SubchannelTwoEqNonlinearOperator::reset( const AMP::shared_ptr<OperatorPara
     d_ownSubChannel  = std::vector<bool>( d_numSubchannels, false );
     d_subchannelElem = std::vector<std::vector<AMP::Mesh::MeshElement>>(
         d_numSubchannels, std::vector<AMP::Mesh::MeshElement>( 0 ) );
-    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     for ( size_t i = 0; i < el.size(); i++ ) {
-        std::vector<double> center = el->centroid();
-        int index                  = getSubchannelIndex( center[0], center[1] );
+        auto center = el->centroid();
+        int index   = getSubchannelIndex( center[0], center[1] );
         if ( index >= 0 ) {
             d_ownSubChannel[index] = true;
             d_subchannelElem[index].push_back( *el );
@@ -233,10 +233,10 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
         // compute the enthalpy change in each interval
         std::vector<double> flux( numCells );
         if ( d_source == "averageCladdingTemperature" ) {
-            AMP::Mesh::MeshIterator face = localSubchannelIt.begin();
+            auto face = localSubchannelIt.begin();
             std::vector<AMP::Mesh::MeshElementID> face_ids( face.size() );
             for ( size_t j = 0; j < face.size(); j++ ) {
-                std::vector<double> center = face->centroid();
+                auto center = face->centroid();
                 AMP_ASSERT( Utilities::approx_equal( center[2], d_z[j] ) );
                 face_ids[j] = face->globalID();
                 ++face;
@@ -310,8 +310,8 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                                            dofs[0] ); // enthalpy evaluated at lower face
             double p_minus = P_scale * inputVec->getValueByGlobalID(
                                            dofs[1] ); // pressure evaluated at lower face
-            std::vector<double> minusFaceCentroid = face->centroid();
-            double z_minus = minusFaceCentroid[2]; // z-coordinate of lower face
+            auto minusFaceCentroid = face->centroid();
+            double z_minus         = minusFaceCentroid[2]; // z-coordinate of lower face
             if ( face == end_face - 1 ) {
                 R_p = p_minus - d_Pout;
             } else {
@@ -321,8 +321,8 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                                               dofs[0] ); // enthalpy evaluated at upper face
                 double p_plus = P_scale * inputVec->getValueByGlobalID(
                                               dofs[1] ); // pressure evaluated at upper face
-                std::vector<double> plusFaceCentroid = face->centroid();
-                double z_plus = plusFaceCentroid[2]; // z-coordinate of lower face
+                auto plusFaceCentroid = face->centroid();
+                double z_plus         = plusFaceCentroid[2]; // z-coordinate of lower face
                 --face;
 
                 double h_avg =

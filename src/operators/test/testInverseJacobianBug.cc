@@ -59,26 +59,22 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     ( elemPtr->point( 7 ) )( 0 ) -= 0.4;
 
-    AMP::Mesh::Mesh::shared_ptr ampMesh =
-        AMP::Mesh::Mesh::shared_ptr( new AMP::Mesh::libMesh( mesh, "TestMesh" ) );
+    auto ampMesh = AMP::Mesh::Mesh::shared_ptr( new AMP::Mesh::libMesh( mesh, "TestMesh" ) );
 
-    AMP::LinearAlgebra::Variable::shared_ptr myVar( new AMP::LinearAlgebra::Variable( "myVar" ) );
-    AMP::Discretization::DOFManager::shared_ptr dof_map =
-        AMP::Discretization::simpleDOFManager::create(
-            ampMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    AMP::LinearAlgebra::Vector::shared_ptr T =
-        AMP::LinearAlgebra::createVector( dof_map, myVar, true );
+    auto myVar   = AMP::make_shared<AMP::LinearAlgebra::Variable>( "myVar" );
+    auto dof_map = AMP::Discretization::simpleDOFManager::create(
+        ampMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto T = AMP::LinearAlgebra::createVector( dof_map, myVar, true );
 
-    FILE *fp;
-    fp = fopen( "InverseJacobian.txt", "w" );
+    FILE *fp = fopen( "InverseJacobian.txt", "w" );
 
-    AMP::Mesh::MeshIterator el     = ampMesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
-    AMP::Mesh::MeshIterator end_el = el.end();
+    auto el     = ampMesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto end_el = el.end();
 
     while ( el != end_el ) {
-        std::vector<AMP::Mesh::MeshElement> nodes = el->getElements( AMP::Mesh::GeomType::Vertex );
+        auto nodes = el->getElements( AMP::Mesh::GeomType::Vertex );
         for ( size_t i = 0; i < nodes.size(); i++ ) {
-            std::vector<double> pt = nodes[i].coord();
+            auto pt = nodes[i].coord();
             fprintf(
                 fp, "nd = %d, x = %.15f, y = %.15f, z = %.15f \n", (int) i, pt[0], pt[1], pt[2] );
         }
@@ -125,7 +121,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     ::Elem *currElemPtr;
     currElemPtr = new ::Hex8;
     for ( size_t j = 0; j < d_currNodes.size(); j++ ) {
-        std::vector<double> pt     = d_currNodes[j].coord();
+        auto pt                    = d_currNodes[j].coord();
         currElemPtr->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
     } // end for j
 

@@ -76,8 +76,7 @@
 // Function to get an arbitrary power profile (W/kg) assuming a density of 1 kg/m^3 for the volume
 // integral
 // P is the total power of the pin, V is the volume of the pin
-double
-getPower( const std::vector<double> &range, double P, double V, const std::vector<double> &pos )
+double getPower( const std::vector<double> &range, double P, double V, const AMP::Mesh::Point &pos )
 {
     const double pi = 3.1415926535897932;
     double x        = ( pos[0] - range[0] ) / ( range[1] - range[0] );

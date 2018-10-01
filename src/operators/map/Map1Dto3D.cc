@@ -91,14 +91,13 @@ void Map1Dto3D::computeZNodeLocations()
     std::vector<double> t_zLocations;
     if ( d_MapMesh.get() != nullptr ) {
         // Get an iterator over the nodes on the boundary
-        AMP::Mesh::MeshIterator bnd =
-            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryId, 0 );
+        auto bnd = d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryId, 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         double Xx = 0;
         double Yy = 0;
         if ( bnd != end_bnd ) {
-            std::vector<double> x = bnd->coord();
+            auto x = bnd->coord();
             AMP_ASSERT( x.size() == 3 );
             t_zLocations.push_back( x[2] );
             Xx = x[0];
@@ -106,7 +105,7 @@ void Map1Dto3D::computeZNodeLocations()
             ++bnd;
         }
         for ( ; bnd != end_bnd; ++bnd ) {
-            std::vector<double> x = bnd->coord();
+            auto x = bnd->coord();
             if ( ( fabs( Xx - x[0] ) <= 1.e-12 ) && ( fabs( Yy - x[1] ) <= 1.e-12 ) ) {
                 t_zLocations.push_back( x[2] );
             }
@@ -155,7 +154,7 @@ void Map1Dto3D::computeZGaussLocations()
         double Yy = 0;
         if ( bnd != end_bnd ) {
             // Get the current position and DOF
-            std::vector<Point> coordinates = d_fe->get_xyz();
+            auto coordinates = d_fe->get_xyz();
 
             for ( auto &coordinate : coordinates ) {
                 t_zLocations.push_back( coordinate( 2 ) );
@@ -236,10 +235,8 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // Subset the input vector, it is a simple vector and we need to subset for the current comm
     // before the variable
     AMP::LinearAlgebra::VS_Comm commSelector( d_MapComm );
-    AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetVec =
-        u->constSelect( commSelector, d_inpVariable->getName() );
-    AMP::LinearAlgebra::Vector::const_shared_ptr inputVec =
-        commSubsetVec->constSubsetVectorForVariable( d_inpVariable );
+    auto commSubsetVec = u->constSelect( commSelector, d_inpVariable->getName() );
+    auto inputVec      = commSubsetVec->constSubsetVectorForVariable( d_inpVariable );
 
     // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  subsetOutputVector( r );
     AMP_ASSERT( inputVec != nullptr );
@@ -252,10 +249,9 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP_ASSERT( d_zLocations.size() >= 2 );
     AMP_ASSERT( d_zLocations.size() == inputVec->getLocalSize() );
     AMP_ASSERT( d_zLocations.size() == inputVec->getGlobalSize() );
-    const double TOL                                    = 1e-12;
-    AMP::Discretization::DOFManager::shared_ptr dof_map = outputVec->getDOFManager();
-    AMP::Mesh::MeshIterator bnd =
-        d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryId, 0 );
+    const double TOL = 1e-12;
+    auto dof_map     = outputVec->getDOFManager();
+    auto bnd = d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryId, 0 );
     const double z1 = d_zLocations[0] - TOL;
     const double z2 = d_zLocations[d_zLocations.size() - 1] + TOL;
 
@@ -274,7 +270,7 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         d_fe->reinit( libmeshElements.getElement( bnd->globalID() ) );
 
         // Get the current position and DOF
-        std::vector<Point> coordinates = d_fe->get_xyz();
+        auto coordinates = d_fe->get_xyz();
 
         std::vector<size_t> ids;
         dof_map->getDOFs( bnd->globalID(), ids );
@@ -347,16 +343,15 @@ void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP_ASSERT( d_zLocations.size() >= 2 );
     AMP_ASSERT( d_zLocations.size() == inputVec->getLocalSize() );
     AMP_ASSERT( d_zLocations.size() == inputVec->getGlobalSize() );
-    const double TOL                                    = 1e-12;
-    AMP::Discretization::DOFManager::shared_ptr dof_map = outputVec->getDOFManager();
+    const double TOL = 1e-12;
+    auto dof_map     = outputVec->getDOFManager();
     std::vector<size_t> dofs( 1 );
-    AMP::Mesh::MeshIterator bnd =
-        d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryId, 0 );
+    auto bnd = d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryId, 0 );
     const double z1 = d_zLocations[0] - TOL;
     const double z2 = d_zLocations[d_zLocations.size() - 1] + TOL;
     for ( size_t i = 0; i < bnd.size(); i++ ) {
         dof_map->getDOFs( bnd->globalID(), dofs );
-        std::vector<double> x = bnd->coord();
+        auto x = bnd->coord();
         AMP_INSIST( dofs.size() == 1,
                     "Map1Dto3D is currently implemented for scalar quantities only" );
         AMP_INSIST( x.size() == 3, "Map1Dto3D is currently implemented for 3D" );
