@@ -127,6 +127,13 @@ protected:
     void getNeighborIndex( int &N, BoxMesh::MeshElementIndex *index ) const;
     void getElementIndex( const GeomType type, int &N, BoxMesh::MeshElementIndex *index ) const;
 
+    // Reset just the mesh element
+    void reset( const BoxMesh::MeshElementIndex &index )
+    {
+        d_index    = index;
+        d_globalID = d_mesh->convert( index );
+    }
+
     friend class AMP::Mesh::BoxMesh;
     friend class AMP::Mesh::structuredMeshIterator;
 

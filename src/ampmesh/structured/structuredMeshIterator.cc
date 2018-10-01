@@ -19,7 +19,9 @@ static MeshElement nullElement;
 inline BoxMesh::MeshElementIndex structuredMeshIterator::getIndex( int pos ) const
 {
     if ( d_elements ) {
-        return d_elements->operator[]( pos );
+        if ( pos < (int) d_size )
+            return d_elements->operator[]( pos );
+        return BoxMesh::MeshElementIndex();
     } else {
         int size[3] = { d_last.index( 0 ) - d_first.index( 0 ) + 1,
                         d_last.index( 1 ) - d_first.index( 1 ) + 1,
@@ -56,9 +58,9 @@ inline BoxMesh::MeshElementIndex structuredMeshIterator::getIndex( int pos ) con
 inline void structuredMeshIterator::setCurrentElement()
 {
     if ( d_pos < d_size )
-        d_cur_element.reset( getIndex( d_pos ), d_mesh );
+        d_cur_element.reset( getIndex( d_pos ) );
     else
-        d_cur_element.reset();
+        d_cur_element.reset( BoxMesh::MeshElementIndex() );
 }
 
 
@@ -86,12 +88,12 @@ structuredMeshIterator::structuredMeshIterator( const BoxMesh::MeshElementIndex 
       d_last( last ),
       d_mesh( mesh )
 {
-    d_typeID   = getTypeID();
-    d_iterator = nullptr;
-    d_pos      = pos;
-    d_size     = BoxMesh::MeshElementIndex::numElements( d_first, d_last );
-    d_element  = &d_cur_element;
-    setCurrentElement();
+    d_typeID      = getTypeID();
+    d_iterator    = nullptr;
+    d_pos         = pos;
+    d_size        = BoxMesh::MeshElementIndex::numElements( d_first, d_last );
+    d_element     = &d_cur_element;
+    d_cur_element = structuredMeshElement( getIndex( d_pos ), d_mesh );
 }
 structuredMeshIterator::structuredMeshIterator(
     AMP::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> elements,
@@ -102,12 +104,12 @@ structuredMeshIterator::structuredMeshIterator(
       d_elements( std::move( elements ) ),
       d_mesh( mesh )
 {
-    d_typeID   = getTypeID();
-    d_iterator = nullptr;
-    d_pos      = pos;
-    d_size     = d_elements->size();
-    d_element  = &d_cur_element;
-    setCurrentElement();
+    d_typeID      = getTypeID();
+    d_iterator    = nullptr;
+    d_pos         = pos;
+    d_size        = d_elements->size();
+    d_element     = &d_cur_element;
+    d_cur_element = structuredMeshElement( getIndex( d_pos ), d_mesh );
 }
 structuredMeshIterator::structuredMeshIterator( const structuredMeshIterator &rhs )
     : MeshIterator(),
@@ -118,29 +120,29 @@ structuredMeshIterator::structuredMeshIterator( const structuredMeshIterator &rh
       d_elements( rhs.d_elements ),
       d_mesh( rhs.d_mesh )
 {
-    d_pos      = rhs.d_pos;
-    d_size     = rhs.d_size;
-    d_typeID   = getTypeID();
-    d_iterator = nullptr;
-    d_element  = &d_cur_element;
-    setCurrentElement();
+    d_pos         = rhs.d_pos;
+    d_size        = rhs.d_size;
+    d_typeID      = getTypeID();
+    d_iterator    = nullptr;
+    d_element     = &d_cur_element;
+    d_cur_element = structuredMeshElement( getIndex( d_pos ), d_mesh );
 }
 structuredMeshIterator &structuredMeshIterator::operator=( const structuredMeshIterator &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    d_typeID     = getTypeID();
-    d_iterator   = nullptr;
-    d_pos        = rhs.d_pos;
-    d_size       = rhs.d_size;
-    d_isPeriodic = rhs.d_isPeriodic;
-    d_globalSize = rhs.d_globalSize;
-    d_mesh       = rhs.d_mesh;
-    d_first      = rhs.d_first;
-    d_last       = rhs.d_last;
-    d_elements   = rhs.d_elements;
-    d_element    = &d_cur_element;
-    setCurrentElement();
+    d_typeID      = getTypeID();
+    d_iterator    = nullptr;
+    d_pos         = rhs.d_pos;
+    d_size        = rhs.d_size;
+    d_isPeriodic  = rhs.d_isPeriodic;
+    d_globalSize  = rhs.d_globalSize;
+    d_mesh        = rhs.d_mesh;
+    d_first       = rhs.d_first;
+    d_last        = rhs.d_last;
+    d_elements    = rhs.d_elements;
+    d_element     = &d_cur_element;
+    d_cur_element = structuredMeshElement( getIndex( d_pos ), d_mesh );
     return *this;
 }
 
@@ -234,7 +236,7 @@ MeshIterator &structuredMeshIterator::operator+=( int n )
             AMP_ERROR( "Iterated past beginning of iterator" );
         d_pos -= n2;
     }
-    d_cur_element = structuredMeshElement( getIndex( d_pos ), d_mesh );
+    setCurrentElement();
     return *this;
 }
 
