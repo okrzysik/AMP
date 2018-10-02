@@ -43,7 +43,8 @@ void Property<double>::evalv(
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> &r,
     const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
 {
-    AMP_ASSERT( in_range( args ) );
+    bool in = in_range( args );
+    AMP_INSIST( in, "Property out of range" );
     evalvActual( *r, args );
 }
 

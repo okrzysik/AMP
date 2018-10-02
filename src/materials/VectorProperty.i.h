@@ -125,7 +125,8 @@ void VectorProperty<Number>::evalv(
     std::vector<AMP::shared_ptr<std::vector<Number>>> &r,
     const std::map<std::string, AMP::shared_ptr<std::vector<Number>>> &args )
 {
-    AMP_ASSERT( this->in_range( args ) );
+    bool in = this->in_range( args );
+    AMP_INSIST( in, "Property out of range" );
     evalvActual( r, args );
 }
 

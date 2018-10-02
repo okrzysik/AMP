@@ -30,6 +30,50 @@
 #endif
 
 
+// Test getting a value out of range
+static inline void set( std::vector<double> &vec, int index, double value ) { vec[index] = value; }
+static inline void set( AMP::LinearAlgebra::Vector &vec, int index, double value )
+{
+    vec.setValueByLocalID( index, value );
+}
+template<class VEC>
+static inline VEC &find( std::map<std::string, VEC> &args, const std::string &var )
+{
+    return args.find( var )->second;
+}
+static inline AMP::LinearAlgebra::Vector::shared_ptr
+find( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &multivec,
+      const AMP::shared_ptr<AMP::LinearAlgebra::Variable> &var )
+{
+    return multivec->subsetVectorForVariable( var );
+}
+template<class PROP, class ARGS, class VAR, class VAL>
+void testArgsRange( const PROP &property,
+                    ARGS &args,
+                    const VAR &var,
+                    VAL &value,
+                    double outOfRange,
+                    double justRight,
+                    bool &success,
+                    bool &unknown )
+{
+    auto vec = find( args, var );
+    try {
+        set( *vec, 5, outOfRange );
+        property->evalv( value, args );
+        set( *vec, 5, justRight );
+        success = false;
+    } catch ( std::exception & ) {
+        set( *vec, 5, justRight );
+        success = true;
+    } catch ( ... ) {
+        success = false;
+        unknown = true;
+    }
+}
+
+
+// Test a given material
 MatTestResult testMaterial( std::string &name )
 {
     using namespace AMP::Materials;
@@ -63,9 +107,10 @@ MatTestResult testMaterial( std::string &name )
     results.propResults.resize( nprop );
     for ( size_t type = 0; type < proplist.size(); type++ ) {
 
-        auto propname                  = proplist[type];
-        results.propResults[type].name = propname;
-        auto property                  = mat->property( propname );
+        auto propname     = proplist[type];
+        auto &propResults = results.propResults[type];
+        propResults.name  = propname;
+        auto property     = mat->property( propname );
 
         // test parameter get and set
         try {
@@ -78,17 +123,17 @@ MatTestResult testMaterial( std::string &name )
                 auto nparams = property->get_parameters();
                 bool good    = abs( nparams - params ).max() <= 1.e-10 * abs( params ).max();
                 if ( good )
-                    results.propResults[type].params = true;
+                    propResults.params = true;
                 else
-                    results.propResults[type].params = false;
+                    propResults.params = false;
             } else {
-                results.propResults[type].params = true;
+                propResults.params = true;
             }
         } catch ( std::exception & ) {
-            results.propResults[type].params = false;
+            propResults.params = false;
         } catch ( ... ) {
-            results.propResults[type].params  = false;
-            results.propResults[type].unknown = true;
+            propResults.params  = false;
+            propResults.unknown = true;
         }
 
         // get argument info
@@ -122,24 +167,21 @@ MatTestResult testMaterial( std::string &name )
         }
 
         // set up AMP::SimpleVector versions of above
-        std::vector<AMP::LinearAlgebra::Variable::shared_ptr> toosmallVar( nargs );
-        std::vector<AMP::LinearAlgebra::Variable::shared_ptr> justrightVar( nargs );
-        std::vector<AMP::LinearAlgebra::Variable::shared_ptr> toobigVar( nargs );
+        std::vector<std::string> justrightname( nargs );
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> toosmallVec( nargs );
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> justrightVec( nargs );
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> toobigVec( nargs );
         for ( size_t i = 0; i < nargs; i++ ) {
-            std::stringstream istr;
-            istr << i;
-            toosmallVar[i].reset( new AMP::LinearAlgebra::Variable( "toosmall" + istr.str() ) );
-            justrightVar[i].reset( new AMP::LinearAlgebra::Variable( "justright" + istr.str() ) );
-            toobigVar[i].reset( new AMP::LinearAlgebra::Variable( "toobig" + istr.str() ) );
+            std::string istr  = std::to_string( i );
+            justrightname[i]  = "justright" + istr;
+            auto toosmallVar  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "toosmall" + istr );
+            auto justrightVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( justrightname[i] );
+            auto toobigVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( "toobigVar" + istr );
             toosmallVec[i] =
-                AMP::LinearAlgebra::SimpleVector<double>::create( npoints, toosmallVar[i] );
+                AMP::LinearAlgebra::SimpleVector<double>::create( npoints, toosmallVar );
             justrightVec[i] =
-                AMP::LinearAlgebra::SimpleVector<double>::create( npoints, justrightVar[i] );
-            toobigVec[i] =
-                AMP::LinearAlgebra::SimpleVector<double>::create( npoints, toobigVar[i] );
+                AMP::LinearAlgebra::SimpleVector<double>::create( npoints, justrightVar );
+            toobigVec[i] = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, toobigVar );
             for ( size_t j = 0; j < npoints; j++ ) {
                 toosmallVec[i]->setValueByLocalID( j, toosmall[i][j] );
                 justrightVec[i]->setValueByLocalID( j, justright[i][j] );
@@ -166,10 +208,8 @@ MatTestResult testMaterial( std::string &name )
         }
 
         // set up AMP::MultiVector arguments to evalv
-        auto argsMultiVecVec =
-            AMP::LinearAlgebra::MultiVector::create( "argsMultiVec", AMP_COMM_SELF );
         auto argsMultiVec =
-            AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( argsMultiVecVec );
+            AMP::LinearAlgebra::MultiVector::create( "argsMultiVec", AMP_COMM_SELF );
         for ( size_t i = 0; i < nargs; i++ ) {
             argsMultiVec->addVector( toosmallVec[i] );  // extra junk, should be ignored
             argsMultiVec->addVector( justrightVec[i] ); // paydirt
@@ -178,7 +218,7 @@ MatTestResult testMaterial( std::string &name )
         std::map<std::string, std::string> xlator;
         int count = 0;
         for ( size_t i = 0; i < nargs; i++ ) {
-            std::string name = justrightVar[i]->getName();
+            std::string name = justrightname[i];
             xlator.insert( std::make_pair( argnames[i], name ) );
             count++;
         }
@@ -204,7 +244,7 @@ MatTestResult testMaterial( std::string &name )
             pass  = pass && !property->in_range( argnames[i], *toobigVec[i] );
         }
         if ( pass )
-            results.propResults[type].range = true;
+            propResults.range = true;
 
         // test defaults get and set
         try {
@@ -215,14 +255,14 @@ MatTestResult testMaterial( std::string &name )
             prop->set_defaults( defin );
             std::vector<double> defaults( prop->get_defaults() );
             if ( defaults == defin )
-                results.propResults[type].nargeval[0] = true;
+                propResults.nargeval[0] = true;
             else
-                results.propResults[type].nargeval[0] = false;
+                propResults.nargeval[0] = false;
         } catch ( std::exception & ) {
-            results.propResults[type].nargeval[0] = false;
+            propResults.nargeval[0] = false;
         } catch ( ... ) {
-            results.propResults[type].nargeval[0] = false;
-            results.propResults[type].unknown     = true;
+            propResults.nargeval[0] = false;
+            propResults.unknown     = true;
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////
@@ -233,101 +273,74 @@ MatTestResult testMaterial( std::string &name )
             // all in range, std::vector
             try {
                 property->evalv( value, args );
-                nominal                              = value;
-                results.propResults[type].success[0] = true;
+                nominal                = value;
+                propResults.success[0] = true;
             } catch ( std::exception & ) {
-                results.propResults[type].success[0] = false;
+                propResults.success[0] = false;
             } catch ( ... ) {
-                results.propResults[type].success[0] = false;
-                results.propResults[type].unknown    = true;
+                propResults.success[0] = false;
+                propResults.unknown    = true;
             }
 
-            // first out of range low, std::vector
+            // first out of range low/hi, std::vector
             if ( !args.empty() ) {
-                try {
-                    args.find( argnames[0] )->second->operator[]( 5 ) = toosmall[0][5];
-                    property->evalv( value, args );
-                    args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                    results.propResults[type].success[1]              = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[1]              = true;
-                    args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                } catch ( ... ) {
-                    results.propResults[type].success[1] = false;
-                    results.propResults[type].unknown    = true;
-                }
+                testArgsRange( property,
+                               args,
+                               argnames[0],
+                               value,
+                               toosmall[0][5],
+                               justright[0][5],
+                               propResults.success[1],
+                               propResults.unknown );
+                testArgsRange( property,
+                               args,
+                               argnames[0],
+                               value,
+                               toobig[0][5],
+                               justright[0][5],
+                               propResults.success[2],
+                               propResults.unknown );
             } else {
-                results.propResults[type].success[1] = true;
-            }
-
-            // first out of range hi, std::vector
-            if ( !args.empty() ) {
-                try {
-                    args.find( argnames[0] )->second->operator[]( 5 ) = toobig[0][5];
-                    property->evalv( value, args );
-                    args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                    results.propResults[type].success[2]              = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[2]              = true;
-                    args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                } catch ( ... ) {
-                    results.propResults[type].success[2] = false;
-                    results.propResults[type].unknown    = true;
-                }
-            } else {
-                results.propResults[type].success[2] = true;
+                propResults.success[1] = true;
+                propResults.success[2] = true;
             }
 
             // all in range, AMP::Vector
             try {
                 property->evalv( valueVec, argsVec );
                 nominalVec->copyVector( valueVec );
-                results.propResults[type].success[4] = true;
+                propResults.success[4] = true;
             } catch ( std::exception & ) {
-                results.propResults[type].success[4] = false;
+                propResults.success[4] = false;
             } catch ( ... ) {
-                results.propResults[type].success[4] = false;
-                results.propResults[type].unknown    = true;
+                propResults.success[4] = false;
+                propResults.unknown    = true;
             }
 
-            // first out of range low, AMP::Vector
+            // first out of range low/hi, AMP::Vector
             if ( nargs > 0 ) {
-                try {
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, toosmall[0][5] );
-                    property->evalv( valueVec, argsVec );
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                    results.propResults[type].success[5] = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[5] = true;
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                } catch ( ... ) {
-                    results.propResults[type].success[5] = false;
-                    results.propResults[type].unknown    = true;
-                }
+                testArgsRange( property,
+                               argsVec,
+                               argnames[0],
+                               valueVec,
+                               toosmall[0][5],
+                               justright[0][5],
+                               propResults.success[5],
+                               propResults.unknown );
+                testArgsRange( property,
+                               argsVec,
+                               argnames[0],
+                               valueVec,
+                               toobig[0][5],
+                               justright[0][5],
+                               propResults.success[6],
+                               propResults.unknown );
             } else {
-                results.propResults[type].success[5] = true;
-            }
-
-            // first out of range hi, AMP::Vector
-            if ( nargs > 0 ) {
-                try {
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, toobig[0][5] );
-                    property->evalv( valueVec, argsVec );
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                    results.propResults[type].success[6] = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[6] = true;
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                } catch ( ... ) {
-                    results.propResults[type].success[6] = false;
-                    results.propResults[type].unknown    = true;
-                }
-            } else {
-                results.propResults[type].success[6] = true;
+                propResults.success[5] = true;
+                propResults.success[6] = true;
             }
 
             // test make_map, first without setting a translator or setting an empty translator
-            std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> testMap;
             std::map<std::string, std::string> currentXlator = property->get_translator();
             if ( !currentXlator.empty() ) {
                 currentXlator.clear();
@@ -336,27 +349,27 @@ MatTestResult testMaterial( std::string &name )
             bool xlateGood = false;
             if ( nargs > 0 ) {
                 try {
-                    testMap                              = property->make_map( argsMultiVec );
-                    results.propResults[type].success[7] = false;
+                    auto testMap           = property->make_map( argsMultiVec );
+                    propResults.success[7] = false;
                 } catch ( std::exception & ) {
                     xlateGood = true;
                 } catch ( ... ) {
-                    results.propResults[type].success[7] = false;
-                    results.propResults[type].unknown    = true;
+                    propResults.success[7] = false;
+                    propResults.unknown    = true;
                 }
             } else {
                 xlateGood = true;
             }
             property->set_translator( xlator );
-            std::map<std::string, std::string> testXlatorGet = property->get_translator();
+            auto testXlatorGet = property->get_translator();
             if ( testXlatorGet == xlator && xlateGood ) {
-                results.propResults[type].success[7] = true;
+                propResults.success[7] = true;
             }
 
             // test make_map, now with a translator
             try {
-                testMap   = property->make_map( argsMultiVec );
-                bool good = true;
+                auto testMap = property->make_map( argsMultiVec );
+                bool good    = true;
                 for ( size_t i = 0; i < nargs; i++ ) {
                     auto vec1It = testMap.find( argnames[i] );
                     auto vec2It = argsVec.find( argnames[i] );
@@ -372,74 +385,54 @@ MatTestResult testMaterial( std::string &name )
                     }
                 }
                 if ( good )
-                    results.propResults[type].success[8] = true;
+                    propResults.success[8] = true;
                 else
-                    results.propResults[type].success[8] = false;
+                    propResults.success[8] = false;
             } catch ( std::exception & ) {
-                results.propResults[type].success[8] = false;
+                propResults.success[8] = false;
             } catch ( ... ) {
-                results.propResults[type].success[8] = false;
-                results.propResults[type].unknown    = true;
+                propResults.success[8] = false;
+                propResults.unknown    = true;
             }
 
             // all in range, AMP::MultiVector
             try {
                 property->evalv( valueVec, argsMultiVec );
                 nominalMultiVec->copyVector( valueVec );
-                results.propResults[type].success[9] = true;
+                propResults.success[9] = true;
             } catch ( std::exception & ) {
-                results.propResults[type].success[9] = false;
+                propResults.success[9] = false;
             } catch ( ... ) {
-                results.propResults[type].success[9] = false;
-                results.propResults[type].unknown    = true;
+                propResults.success[9] = false;
+                propResults.unknown    = true;
             }
 
-            // first out of range low, AMP::MultiVector
+            // first out of range low/hi, AMP::MultiVector
             if ( nargs > 0 ) {
-                try {
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, toosmall[0][5] );
-                    property->evalv( valueVec, argsMultiVec );
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, justright[0][5] );
-                    results.propResults[type].success[10] = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[10] = true;
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, justright[0][5] );
-                } catch ( ... ) {
-                    results.propResults[type].success[10] = false;
-                    results.propResults[type].unknown     = true;
-                }
+                testArgsRange( property,
+                               argsMultiVec,
+                               justrightVec[0]->getVariable(),
+                               valueVec,
+                               toosmall[0][5],
+                               justright[0][5],
+                               propResults.success[10],
+                               propResults.unknown );
+                testArgsRange( property,
+                               argsMultiVec,
+                               justrightVec[0]->getVariable(),
+                               valueVec,
+                               toobig[0][5],
+                               justright[0][5],
+                               propResults.success[11],
+                               propResults.unknown );
             } else {
-                results.propResults[type].success[10] = true;
-            }
-
-            // first out of range hi, AMP::MultiVector
-            if ( nargs > 0 ) {
-                try {
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, toobig[0][5] );
-                    property->evalv( valueVec, argsMultiVec );
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, justright[0][5] );
-                    results.propResults[type].success[11] = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[11] = true;
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, justright[0][5] );
-                } catch ( ... ) {
-                    results.propResults[type].success[11] = false;
-                    results.propResults[type].unknown     = true;
-                }
-            } else {
-                results.propResults[type].success[11] = true;
+                propResults.success[10] = true;
+                propResults.success[11] = true;
             }
 
             // check vector, Vector, MultiVector all agree
             pass = true;
-            if ( results.propResults[type].success[0] && results.propResults[type].success[4] &&
-                 results.propResults[type].success[9] ) {
+            if ( propResults.success[0] && propResults.success[4] && propResults.success[9] ) {
                 for ( size_t i = 0; i < npoints; i++ ) {
                     double vstd      = nominal[i];
                     double vVec      = nominalVec->getValueByLocalID( i );
@@ -447,9 +440,9 @@ MatTestResult testMaterial( std::string &name )
                     pass             = pass && ( vstd == vVec && vVec == vMultiVec );
                 }
                 if ( pass )
-                    results.propResults[type].success[3] = true;
+                    propResults.success[3] = true;
             } else {
-                results.propResults[type].success[3] = false;
+                propResults.success[3] = false;
             }
 
             // set up reduced argument list
@@ -461,18 +454,18 @@ MatTestResult testMaterial( std::string &name )
             }
 
             // check that evalv with fewer than normal number of arguments works
-            if ( results.propResults[type].success[0] ) {
+            if ( propResults.success[0] ) {
                 try {
                     property->evalv( value, argsm );
-                    results.propResults[type].nargeval[1] = true;
+                    propResults.nargeval[1] = true;
                 } catch ( std::exception & ) {
-                    results.propResults[type].nargeval[1] = false;
+                    propResults.nargeval[1] = false;
                 } catch ( ... ) {
-                    results.propResults[type].nargeval[1] = false;
-                    results.propResults[type].unknown     = true;
+                    propResults.nargeval[1] = false;
+                    propResults.unknown     = true;
                 }
             } else {
-                results.propResults[type].nargeval[1] = false;
+                propResults.nargeval[1] = false;
             }
 
 
@@ -481,42 +474,41 @@ MatTestResult testMaterial( std::string &name )
             /////////////////////////////////////////////////////////////////////////////////////////////
         } else if ( property->isVector() ) {
 
-            results.propResults[type].isVector = true;
+            propResults.isVector = true;
 
             auto vectorProperty =
                 AMP::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>( property );
 
             // check that scalar nature is not signaled
             if ( vectorProperty->isScalar() ) {
-                results.propResults[type].vector[2] = false;
+                propResults.vector[2] = false;
             } else {
-                results.propResults[type].vector[2] = true;
+                propResults.vector[2] = true;
             }
 
             // check scalar evaluator for std::vector disabled
             try {
                 vectorProperty->evalv( value, args );
-                results.propResults[type].vector[3] = false;
+                propResults.vector[3] = false;
             } catch ( std::exception & ) {
-                results.propResults[type].vector[3] = true;
+                propResults.vector[3] = true;
             } catch ( ... ) {
-                results.propResults[type].vector[3] = false;
-                results.propResults[type].unknown   = true;
+                propResults.vector[3] = false;
+                propResults.unknown   = true;
             }
 
             // check scalar evaluator for AMP::Vector disabled
             try {
                 vectorProperty->evalv( valueVec, argsVec );
-                results.propResults[type].vector[4] = false;
+                propResults.vector[4] = false;
             } catch ( std::exception & ) {
-                results.propResults[type].vector[4] = true;
+                propResults.vector[4] = true;
             } catch ( ... ) {
-                results.propResults[type].vector[4] = false;
-                results.propResults[type].unknown   = true;
+                propResults.vector[4] = false;
+                propResults.unknown   = true;
             }
 
             // test make_map, first without setting a translator or setting an empty translator
-            std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> testMap;
             auto currentXlator = vectorProperty->get_translator();
             if ( !currentXlator.empty() ) {
                 currentXlator.clear();
@@ -525,13 +517,13 @@ MatTestResult testMaterial( std::string &name )
             bool xlateGood = false;
             if ( nargs > 0 ) {
                 try {
-                    testMap                              = vectorProperty->make_map( argsMultiVec );
-                    results.propResults[type].success[7] = false;
+                    auto testMap           = vectorProperty->make_map( argsMultiVec );
+                    propResults.success[7] = false;
                 } catch ( std::exception & ) {
                     xlateGood = true;
                 } catch ( ... ) {
-                    results.propResults[type].success[7] = false;
-                    results.propResults[type].unknown    = true;
+                    propResults.success[7] = false;
+                    propResults.unknown    = true;
                 }
             } else {
                 xlateGood = true;
@@ -539,13 +531,13 @@ MatTestResult testMaterial( std::string &name )
             vectorProperty->set_translator( xlator );
             auto testXlatorGet = vectorProperty->get_translator();
             if ( testXlatorGet == xlator && xlateGood ) {
-                results.propResults[type].success[7] = true;
+                propResults.success[7] = true;
             }
 
             // test make_map, now with a translator
             try {
-                testMap   = vectorProperty->make_map( argsMultiVec );
-                bool good = true;
+                auto testMap = vectorProperty->make_map( argsMultiVec );
+                bool good    = true;
                 for ( size_t i = 0; i < nargs; i++ ) {
                     auto vec1It = testMap.find( argnames[i] );
                     auto vec2It = argsVec.find( argnames[i] );
@@ -561,37 +553,37 @@ MatTestResult testMaterial( std::string &name )
                     }
                 }
                 if ( good )
-                    results.propResults[type].success[8] = true;
+                    propResults.success[8] = true;
                 else
-                    results.propResults[type].success[8] = false;
+                    propResults.success[8] = false;
             } catch ( std::exception & ) {
-                results.propResults[type].success[8] = false;
+                propResults.success[8] = false;
             } catch ( ... ) {
-                results.propResults[type].success[8] = false;
-                results.propResults[type].unknown    = true;
+                propResults.success[8] = false;
+                propResults.unknown    = true;
             }
 
             // check scalar evaluator for AMP::MultiVector disabled
             try {
                 vectorProperty->evalv( valueVec, argsMultiVec );
-                results.propResults[type].vector[5] = false;
+                propResults.vector[5] = false;
             } catch ( std::exception & ) {
-                results.propResults[type].vector[5] = true;
+                propResults.vector[5] = true;
             } catch ( ... ) {
-                results.propResults[type].vector[5] = false;
-                results.propResults[type].unknown   = true;
+                propResults.vector[5] = false;
+                propResults.unknown   = true;
             }
 
             // prepare results vector, check for reasonable size info
             size_t nvec = 0;
             try {
-                nvec                                = vectorProperty->get_dimension();
-                results.propResults[type].vector[0] = true;
+                nvec                  = vectorProperty->get_dimension();
+                propResults.vector[0] = true;
             } catch ( std::exception & ) {
-                results.propResults[type].vector[0] = false;
+                propResults.vector[0] = false;
             } catch ( ... ) {
-                results.propResults[type].vector[0] = false;
-                results.propResults[type].unknown   = true;
+                propResults.vector[0] = false;
+                propResults.unknown   = true;
             }
             std::vector<AMP::shared_ptr<std::vector<double>>> stdEval( nvec );
             std::vector<AMP::shared_ptr<std::vector<double>>> nominalEval( nvec );
@@ -601,81 +593,61 @@ MatTestResult testMaterial( std::string &name )
             }
 
             // check that number of components is positive
-            if ( results.propResults[type].vector[0] && nvec > 0 ) {
-                results.propResults[type].vector[1] = true;
+            if ( propResults.vector[0] && nvec > 0 ) {
+                propResults.vector[1] = true;
             } else {
-                results.propResults[type].vector[1] = false;
+                propResults.vector[1] = false;
             }
 
             // all in range, std::vector
             try {
                 vectorProperty->evalv( stdEval, args );
-                nominalEval                          = stdEval;
-                results.propResults[type].success[0] = true;
+                nominalEval            = stdEval;
+                propResults.success[0] = true;
             } catch ( std::exception & ) {
-                results.propResults[type].success[0] = false;
+                propResults.success[0] = false;
             } catch ( ... ) {
-                results.propResults[type].success[0] = false;
-                results.propResults[type].unknown    = true;
+                propResults.success[0] = false;
+                propResults.unknown    = true;
             }
 
-            // first out of range low, std::vector
+            // first out of range low/hi, std::vector
             if ( !args.empty() ) {
-                try {
-                    args.find( argnames[0] )->second->operator[]( 5 ) = toosmall[0][5];
-                    vectorProperty->evalv( stdEval, args );
-                    args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                    results.propResults[type].success[1]              = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[1]              = true;
-                    args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                } catch ( ... ) {
-                    results.propResults[type].success[1] = false;
-                    results.propResults[type].unknown    = true;
-                }
+                testArgsRange( vectorProperty,
+                               args,
+                               argnames[0],
+                               stdEval,
+                               toosmall[0][5],
+                               justright[0][5],
+                               propResults.success[1],
+                               propResults.unknown );
+                testArgsRange( vectorProperty,
+                               args,
+                               argnames[0],
+                               stdEval,
+                               toobig[0][5],
+                               justright[0][5],
+                               propResults.success[2],
+                               propResults.unknown );
             } else {
-                results.propResults[type].success[1] = true;
-            }
-
-            // first out of range hi, std::vector
-            if ( !args.empty() ) {
-                try {
-                    args.find( argnames[0] )->second->operator[]( 5 ) = toobig[0][5];
-                    vectorProperty->evalv( stdEval, args );
-                    args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                    results.propResults[type].success[2]              = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[2]              = true;
-                    args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                } catch ( ... ) {
-                    results.propResults[type].success[2] = false;
-                    results.propResults[type].unknown    = true;
-                }
-            } else {
-                results.propResults[type].success[2] = true;
+                propResults.success[1] = true;
+                propResults.success[2] = true;
             }
 
             // setup AMP::Vector evalv results
-            std::vector<AMP::LinearAlgebra::Variable::shared_ptr> ampEvalVar( nvec );
             std::vector<AMP::LinearAlgebra::Vector::shared_ptr> ampEval( nvec );
-            std::vector<AMP::LinearAlgebra::Variable::shared_ptr> nominalAmpEvalVar( nvec );
             std::vector<AMP::LinearAlgebra::Vector::shared_ptr> nominalAmpEval( nvec );
-            std::vector<AMP::LinearAlgebra::Variable::shared_ptr> nominalMultiEvalVar( nvec );
             std::vector<AMP::LinearAlgebra::Vector::shared_ptr> nominalMultiEval( nvec );
             for ( size_t i = 0; i < nvec; i++ ) {
-                std::stringstream istr;
-                istr << i;
-                ampEvalVar[i].reset( new AMP::LinearAlgebra::Variable( "ampEval" + istr.str() ) );
-                ampEval[i] =
-                    AMP::LinearAlgebra::SimpleVector<double>::create( npoints, ampEvalVar[i] );
-                nominalAmpEvalVar[i].reset(
-                    new AMP::LinearAlgebra::Variable( "nominalAmpEval" + istr.str() ) );
-                nominalAmpEval[i] = AMP::LinearAlgebra::SimpleVector<double>::create(
-                    npoints, nominalAmpEvalVar[i] );
-                nominalMultiEvalVar[i].reset(
-                    new AMP::LinearAlgebra::Variable( "nominalMultiEval" + istr.str() ) );
-                nominalMultiEval[i] = AMP::LinearAlgebra::SimpleVector<double>::create(
-                    npoints, nominalMultiEvalVar[i] );
+                auto istr     = std::to_string( i );
+                auto evalVar  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "amp" + istr );
+                auto nomVar   = AMP::make_shared<AMP::LinearAlgebra::Variable>( "nominal" + istr );
+                auto multiVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( "multivec" + istr );
+                ampEval[i] = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, evalVar );
+                nominalAmpEval[i] =
+                    AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nomVar );
+                nominalMultiEval[i] =
+                    AMP::LinearAlgebra::SimpleVector<double>::create( npoints, multiVar );
             }
 
             // all in range, AMP::Vector
@@ -683,48 +655,35 @@ MatTestResult testMaterial( std::string &name )
                 vectorProperty->evalv( ampEval, argsVec );
                 for ( size_t i = 0; i < nvec; i++ )
                     nominalAmpEval[i]->copyVector( ampEval[i] );
-                results.propResults[type].success[4] = true;
+                propResults.success[4] = true;
             } catch ( std::exception & ) {
-                results.propResults[type].success[4] = false;
+                propResults.success[4] = false;
             } catch ( ... ) {
-                results.propResults[type].success[4] = false;
-                results.propResults[type].unknown    = true;
+                propResults.success[4] = false;
+                propResults.unknown    = true;
             }
 
-            // first out of range low, AMP::Vector
+            // first out of range low/hi, AMP::Vector
             if ( nargs > 0 ) {
-                try {
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, toosmall[0][5] );
-                    vectorProperty->evalv( ampEval, argsVec );
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                    results.propResults[type].success[5] = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[5] = true;
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                } catch ( ... ) {
-                    results.propResults[type].success[5] = false;
-                    results.propResults[type].unknown    = true;
-                }
+                testArgsRange( vectorProperty,
+                               argsVec,
+                               argnames[0],
+                               ampEval,
+                               toosmall[0][5],
+                               justright[0][5],
+                               propResults.success[5],
+                               propResults.unknown );
+                testArgsRange( vectorProperty,
+                               argsVec,
+                               argnames[0],
+                               ampEval,
+                               toobig[0][5],
+                               justright[0][5],
+                               propResults.success[6],
+                               propResults.unknown );
             } else {
-                results.propResults[type].success[5] = true;
-            }
-
-            // first out of range hi, AMP::Vector
-            if ( nargs > 0 ) {
-                try {
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, toobig[0][5] );
-                    vectorProperty->evalv( ampEval, argsVec );
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                    results.propResults[type].success[6] = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[6] = true;
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                } catch ( ... ) {
-                    results.propResults[type].success[6] = false;
-                    results.propResults[type].unknown    = true;
-                }
-            } else {
-                results.propResults[type].success[6] = true;
+                propResults.success[5] = true;
+                propResults.success[6] = true;
             }
 
             // all in range, AMP::MultiVector
@@ -732,60 +691,40 @@ MatTestResult testMaterial( std::string &name )
                 vectorProperty->evalv( ampEval, argsMultiVec );
                 for ( size_t i = 0; i < nvec; i++ )
                     nominalMultiEval[i]->copyVector( ampEval[i] );
-                results.propResults[type].success[9] = true;
+                propResults.success[9] = true;
             } catch ( std::exception & ) {
-                results.propResults[type].success[9] = false;
+                propResults.success[9] = false;
             } catch ( ... ) {
-                results.propResults[type].success[9] = false;
-                results.propResults[type].unknown    = true;
+                propResults.success[9] = false;
+                propResults.unknown    = true;
             }
 
-            // first out of range low, AMP::MultiVector
+            // first out of range low/hi, AMP::MultiVector
             if ( nargs > 0 ) {
-                try {
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, toosmall[0][5] );
-                    vectorProperty->evalv( ampEval, argsMultiVec );
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, justright[0][5] );
-                    results.propResults[type].success[10] = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[10] = true;
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, justright[0][5] );
-                } catch ( ... ) {
-                    results.propResults[type].success[10] = false;
-                    results.propResults[type].unknown     = true;
-                }
+                testArgsRange( vectorProperty,
+                               argsMultiVec,
+                               justrightVec[0]->getVariable(),
+                               ampEval,
+                               toosmall[0][5],
+                               justright[0][5],
+                               propResults.success[10],
+                               propResults.unknown );
+                testArgsRange( vectorProperty,
+                               argsMultiVec,
+                               justrightVec[0]->getVariable(),
+                               ampEval,
+                               toobig[0][5],
+                               justright[0][5],
+                               propResults.success[11],
+                               propResults.unknown );
             } else {
-                results.propResults[type].success[10] = true;
-            }
-
-            // first out of range hi, AMP::MultiVector
-            if ( nargs > 0 ) {
-                try {
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, toobig[0][5] );
-                    vectorProperty->evalv( ampEval, argsMultiVec );
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, justright[0][5] );
-                    results.propResults[type].success[11] = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[11] = true;
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, justright[0][5] );
-                } catch ( ... ) {
-                    results.propResults[type].success[11] = false;
-                    results.propResults[type].unknown     = true;
-                }
-            } else {
-                results.propResults[type].success[11] = true;
+                propResults.success[10] = true;
+                propResults.success[11] = true;
             }
 
             // check vector, Vector, MultiVector all agree
             pass = true;
-            if ( results.propResults[type].success[0] && results.propResults[type].success[4] &&
-                 results.propResults[type].success[9] ) {
+            if ( propResults.success[0] && propResults.success[4] && propResults.success[9] ) {
                 for ( size_t j = 0; j < nvec; j++ ) {
                     for ( size_t i = 0; i < npoints; i++ ) {
                         double vstd      = ( *nominalEval[j] )[i];
@@ -795,9 +734,9 @@ MatTestResult testMaterial( std::string &name )
                     }
                 }
                 if ( pass )
-                    results.propResults[type].success[3] = true;
+                    propResults.success[3] = true;
             } else {
-                results.propResults[type].success[3] = false;
+                propResults.success[3] = false;
             }
 
             // set up reduced argument list
@@ -809,18 +748,18 @@ MatTestResult testMaterial( std::string &name )
             }
 
             // check that evalv with fewer than normal number of arguments works
-            if ( results.propResults[type].success[0] ) {
+            if ( propResults.success[0] ) {
                 try {
                     vectorProperty->evalv( stdEval, argsm );
-                    results.propResults[type].nargeval[1] = true;
+                    propResults.nargeval[1] = true;
                 } catch ( std::exception & ) {
-                    results.propResults[type].nargeval[1] = false;
+                    propResults.nargeval[1] = false;
                 } catch ( ... ) {
-                    results.propResults[type].nargeval[1] = false;
-                    results.propResults[type].unknown     = true;
+                    propResults.nargeval[1] = false;
+                    propResults.unknown     = true;
                 }
             } else {
-                results.propResults[type].nargeval[1] = false;
+                propResults.nargeval[1] = false;
             }
 
             /////////////////////////////////////////////////////////////////////////////////////////////
@@ -828,43 +767,42 @@ MatTestResult testMaterial( std::string &name )
             /////////////////////////////////////////////////////////////////////////////////////////////
         } else if ( property->isTensor() ) {
 
-            results.propResults[type].isTensor = true;
+            propResults.isTensor = true;
 
             auto tensorProperty =
                 AMP::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>( property );
 
             // check that scalar nature is not signaled
             if ( tensorProperty->isScalar() ) {
-                results.propResults[type].tensor[2] = false;
+                propResults.tensor[2] = false;
             } else {
-                results.propResults[type].tensor[2] = true;
+                propResults.tensor[2] = true;
             }
 
             // check scalar evaluator for std::vector disabled
             try {
                 tensorProperty->evalv( value, args );
-                results.propResults[type].tensor[3] = false;
+                propResults.tensor[3] = false;
             } catch ( std::exception & ) {
-                results.propResults[type].tensor[3] = true;
+                propResults.tensor[3] = true;
             } catch ( ... ) {
-                results.propResults[type].tensor[3] = false;
-                results.propResults[type].unknown   = true;
+                propResults.tensor[3] = false;
+                propResults.unknown   = true;
             }
 
             // check scalar evaluator for AMP::Vector disabled
             try {
                 tensorProperty->evalv( valueVec, argsVec );
-                results.propResults[type].tensor[4] = false;
+                propResults.tensor[4] = false;
             } catch ( std::exception & ) {
-                results.propResults[type].tensor[4] = true;
+                propResults.tensor[4] = true;
             } catch ( ... ) {
-                results.propResults[type].tensor[4] = false;
-                results.propResults[type].unknown   = true;
+                propResults.tensor[4] = false;
+                propResults.unknown   = true;
             }
 
             // test make_map, first without setting a translator or setting an empty translator
-            std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> testMap;
-            std::map<std::string, std::string> currentXlator = tensorProperty->get_translator();
+            auto currentXlator = tensorProperty->get_translator();
             if ( !currentXlator.empty() ) {
                 currentXlator.clear();
                 tensorProperty->set_translator( currentXlator );
@@ -872,27 +810,27 @@ MatTestResult testMaterial( std::string &name )
             bool xlateGood = false;
             if ( nargs > 0 ) {
                 try {
-                    testMap                              = tensorProperty->make_map( argsMultiVec );
-                    results.propResults[type].success[7] = false;
+                    auto testMap           = tensorProperty->make_map( argsMultiVec );
+                    propResults.success[7] = false;
                 } catch ( std::exception & ) {
                     xlateGood = true;
                 } catch ( ... ) {
-                    results.propResults[type].success[7] = false;
-                    results.propResults[type].unknown    = true;
+                    propResults.success[7] = false;
+                    propResults.unknown    = true;
                 }
             } else {
                 xlateGood = true;
             }
             tensorProperty->set_translator( xlator );
-            std::map<std::string, std::string> testXlatorGet = tensorProperty->get_translator();
+            auto testXlatorGet = tensorProperty->get_translator();
             if ( testXlatorGet == xlator && xlateGood ) {
-                results.propResults[type].success[7] = true;
+                propResults.success[7] = true;
             }
 
             // test make_map, now with a translator
             try {
-                testMap   = tensorProperty->make_map( argsMultiVec );
-                bool good = true;
+                auto testMap = tensorProperty->make_map( argsMultiVec );
+                bool good    = true;
                 for ( size_t i = 0; i < nargs; i++ ) {
                     auto vec1It = testMap.find( argnames[i] );
                     auto vec2It = argsVec.find( argnames[i] );
@@ -908,37 +846,37 @@ MatTestResult testMaterial( std::string &name )
                     }
                 }
                 if ( good )
-                    results.propResults[type].success[8] = true;
+                    propResults.success[8] = true;
                 else
-                    results.propResults[type].success[8] = false;
+                    propResults.success[8] = false;
             } catch ( std::exception & ) {
-                results.propResults[type].success[8] = false;
+                propResults.success[8] = false;
             } catch ( ... ) {
-                results.propResults[type].success[8] = false;
-                results.propResults[type].unknown    = true;
+                propResults.success[8] = false;
+                propResults.unknown    = true;
             }
 
             // check scalar evaluator for AMP::MultiVector disabled
             try {
                 tensorProperty->evalv( valueVec, argsMultiVec );
-                results.propResults[type].tensor[5] = false;
+                propResults.tensor[5] = false;
             } catch ( std::exception & ) {
-                results.propResults[type].tensor[5] = true;
+                propResults.tensor[5] = true;
             } catch ( ... ) {
-                results.propResults[type].tensor[5] = false;
-                results.propResults[type].unknown   = true;
+                propResults.tensor[5] = false;
+                propResults.unknown   = true;
             }
 
             // prepare results vector, check for reasonable size info
             std::vector<size_t> nvecs( 2, 0U );
             try {
-                nvecs                               = tensorProperty->get_dimensions();
-                results.propResults[type].tensor[0] = true;
+                nvecs                 = tensorProperty->get_dimensions();
+                propResults.tensor[0] = true;
             } catch ( std::exception & ) {
-                results.propResults[type].tensor[0] = false;
+                propResults.tensor[0] = false;
             } catch ( ... ) {
-                results.propResults[type].tensor[0] = false;
-                results.propResults[type].unknown   = true;
+                propResults.tensor[0] = false;
+                propResults.unknown   = true;
             }
             std::vector<std::vector<AMP::shared_ptr<std::vector<double>>>> stdEval(
                 nvecs[0], std::vector<AMP::shared_ptr<std::vector<double>>>( nvecs[1] ) );
@@ -951,91 +889,69 @@ MatTestResult testMaterial( std::string &name )
                 }
 
             // check that number of components is positive
-            if ( results.propResults[type].tensor[0] && nvecs[0] > 0 && nvecs[1] > 0 &&
-                 nvecs.size() == 2 ) {
-                results.propResults[type].tensor[1] = true;
+            if ( propResults.tensor[0] && nvecs[0] > 0 && nvecs[1] > 0 && nvecs.size() == 2 ) {
+                propResults.tensor[1] = true;
             } else {
-                results.propResults[type].tensor[1] = false;
+                propResults.tensor[1] = false;
             }
 
             // all in range, std::vector
             try {
                 tensorProperty->evalv( stdEval, args );
-                nominalEval                          = stdEval;
-                results.propResults[type].success[0] = true;
+                nominalEval            = stdEval;
+                propResults.success[0] = true;
             } catch ( std::exception & ) {
-                results.propResults[type].success[0] = false;
+                propResults.success[0] = false;
             } catch ( ... ) {
-                results.propResults[type].success[0] = false;
-                results.propResults[type].unknown    = true;
+                propResults.success[0] = false;
+                propResults.unknown    = true;
             }
 
-            // first out of range low, std::vector
+            // first out of range low/hi, std::vector
             if ( !args.empty() ) {
-                try {
-                    args.find( argnames[0] )->second->operator[]( 5 ) = toosmall[0][5];
-                    tensorProperty->evalv( stdEval, args );
-                    args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                    results.propResults[type].success[1]              = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[1]              = true;
-                    args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                } catch ( ... ) {
-                    results.propResults[type].success[1] = false;
-                    results.propResults[type].unknown    = true;
-                }
+                testArgsRange( tensorProperty,
+                               args,
+                               argnames[0],
+                               stdEval,
+                               toosmall[0][5],
+                               justright[0][5],
+                               propResults.success[1],
+                               propResults.unknown );
+                testArgsRange( tensorProperty,
+                               args,
+                               argnames[0],
+                               stdEval,
+                               toobig[0][5],
+                               justright[0][5],
+                               propResults.success[2],
+                               propResults.unknown );
             } else {
-                results.propResults[type].success[1] = true;
-            }
-
-            // first out of range hi, std::vector
-            if ( !args.empty() ) {
-                try {
-                    args.find( argnames[0] )->second->operator[]( 5 ) = toobig[0][5];
-                    tensorProperty->evalv( stdEval, args );
-                    args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                    results.propResults[type].success[2]              = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[2]              = true;
-                    args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                } catch ( ... ) {
-                    results.propResults[type].success[2] = false;
-                    results.propResults[type].unknown    = true;
-                }
-            } else {
-                results.propResults[type].success[2] = true;
+                propResults.success[1] = true;
+                propResults.success[2] = true;
             }
 
             // setup AMP::Vector evalv results
-            std::vector<std::vector<AMP::LinearAlgebra::Variable::shared_ptr>> ampEvalVar(
-                nvecs[0], std::vector<AMP::LinearAlgebra::Variable::shared_ptr>( nvecs[1] ) );
-            std::vector<std::vector<AMP::LinearAlgebra::Vector::shared_ptr>> ampEval(
-                nvecs[0], std::vector<AMP::LinearAlgebra::Vector::shared_ptr>( nvecs[1] ) );
-            std::vector<std::vector<AMP::LinearAlgebra::Variable::shared_ptr>> nominalAmpEvalVar(
-                nvecs[0], std::vector<AMP::LinearAlgebra::Variable::shared_ptr>( nvecs[1] ) );
-            std::vector<std::vector<AMP::LinearAlgebra::Vector::shared_ptr>> nominalAmpEval(
-                nvecs[0], std::vector<AMP::LinearAlgebra::Vector::shared_ptr>( nvecs[1] ) );
-            std::vector<std::vector<AMP::LinearAlgebra::Variable::shared_ptr>> nominalMultiEvalVar(
-                nvecs[0], std::vector<AMP::LinearAlgebra::Variable::shared_ptr>( nvecs[1] ) );
-            std::vector<std::vector<AMP::LinearAlgebra::Vector::shared_ptr>> nominalMultiEval(
-                nvecs[0], std::vector<AMP::LinearAlgebra::Vector::shared_ptr>( nvecs[1] ) );
-            for ( size_t i = 0; i < nvecs[0]; i++ )
+            std::vector<std::vector<AMP::LinearAlgebra::Vector::shared_ptr>> ampEval( nvecs[0] ),
+                nominalAmpEval( nvecs[0] ), nominalMultiEval( nvecs[0] );
+            for ( size_t i = 0; i < nvecs[0]; i++ ) {
+                ampEval[i].resize( nvecs[1] );
+                nominalAmpEval[i].resize( nvecs[1] );
+                nominalMultiEval[i].resize( nvecs[1] );
                 for ( size_t j = 0; j < nvecs[1]; j++ ) {
-                    std::stringstream istr;
-                    istr << i;
-                    ampEvalVar[i][j].reset(
-                        new AMP::LinearAlgebra::Variable( "ampEval" + istr.str() ) );
-                    ampEval[i][j] = AMP::LinearAlgebra::SimpleVector<double>::create(
-                        npoints, ampEvalVar[i][j] );
-                    nominalAmpEvalVar[i][j].reset(
-                        new AMP::LinearAlgebra::Variable( "nominalAmpEval" + istr.str() ) );
-                    nominalAmpEval[i][j] = AMP::LinearAlgebra::SimpleVector<double>::create(
-                        npoints, nominalAmpEvalVar[i][j] );
-                    nominalMultiEvalVar[i][j].reset(
-                        new AMP::LinearAlgebra::Variable( "nominalMultiEval" + istr.str() ) );
-                    nominalMultiEval[i][j] = AMP::LinearAlgebra::SimpleVector<double>::create(
-                        npoints, nominalMultiEvalVar[i][j] );
+                    auto istr    = std::to_string( i );
+                    auto evalVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( "amp" + istr );
+                    auto nomVar =
+                        AMP::make_shared<AMP::LinearAlgebra::Variable>( "nominal" + istr );
+                    auto multiVar =
+                        AMP::make_shared<AMP::LinearAlgebra::Variable>( "multivec" + istr );
+                    ampEval[i][j] =
+                        AMP::LinearAlgebra::SimpleVector<double>::create( npoints, evalVar );
+                    nominalAmpEval[i][j] =
+                        AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nomVar );
+                    nominalMultiEval[i][j] =
+                        AMP::LinearAlgebra::SimpleVector<double>::create( npoints, multiVar );
                 }
+            }
 
             // all in range, AMP::Vector
             try {
@@ -1043,48 +959,35 @@ MatTestResult testMaterial( std::string &name )
                 for ( size_t i = 0; i < nvecs[0]; i++ )
                     for ( size_t j = 0; j < nvecs[1]; j++ )
                         nominalAmpEval[i][j]->copyVector( ampEval[i][j] );
-                results.propResults[type].success[4] = true;
+                propResults.success[4] = true;
             } catch ( std::exception & ) {
-                results.propResults[type].success[4] = false;
+                propResults.success[4] = false;
             } catch ( ... ) {
-                results.propResults[type].success[4] = false;
-                results.propResults[type].unknown    = true;
+                propResults.success[4] = false;
+                propResults.unknown    = true;
             }
 
-            // first out of range low, AMP::Vector
-            if ( nargs > 0 ) {
-                try {
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, toosmall[0][5] );
-                    tensorProperty->evalv( ampEval, argsVec );
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                    results.propResults[type].success[5] = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[5] = true;
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                } catch ( ... ) {
-                    results.propResults[type].success[5] = false;
-                    results.propResults[type].unknown    = true;
-                }
+            // first out of range low/hi, AMP::Vector
+            if ( !args.empty() ) {
+                testArgsRange( tensorProperty,
+                               argsVec,
+                               argnames[0],
+                               ampEval,
+                               toosmall[0][5],
+                               justright[0][5],
+                               propResults.success[5],
+                               propResults.unknown );
+                testArgsRange( tensorProperty,
+                               argsVec,
+                               argnames[0],
+                               ampEval,
+                               toobig[0][5],
+                               justright[0][5],
+                               propResults.success[6],
+                               propResults.unknown );
             } else {
-                results.propResults[type].success[5] = true;
-            }
-
-            // first out of range hi, AMP::Vector
-            if ( nargs > 0 ) {
-                try {
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, toobig[0][5] );
-                    tensorProperty->evalv( ampEval, argsVec );
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                    results.propResults[type].success[6] = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[6] = true;
-                    argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                } catch ( ... ) {
-                    results.propResults[type].success[6] = false;
-                    results.propResults[type].unknown    = true;
-                }
-            } else {
-                results.propResults[type].success[6] = true;
+                propResults.success[5] = true;
+                propResults.success[6] = true;
             }
 
             // all in range, AMP::MultiVector
@@ -1093,60 +996,40 @@ MatTestResult testMaterial( std::string &name )
                 for ( size_t i = 0; i < nvecs[0]; i++ )
                     for ( size_t j = 0; j < nvecs[1]; j++ )
                         nominalMultiEval[i][j]->copyVector( ampEval[i][j] );
-                results.propResults[type].success[9] = true;
+                propResults.success[9] = true;
             } catch ( std::exception & ) {
-                results.propResults[type].success[9] = false;
+                propResults.success[9] = false;
             } catch ( ... ) {
-                results.propResults[type].success[9] = false;
-                results.propResults[type].unknown    = true;
+                propResults.success[9] = false;
+                propResults.unknown    = true;
             }
 
-            // first out of range low, AMP::MultiVector
+            // first out of range low/hi, AMP::MultiVector
             if ( nargs > 0 ) {
-                try {
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, toosmall[0][5] );
-                    tensorProperty->evalv( ampEval, argsMultiVec );
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, justright[0][5] );
-                    results.propResults[type].success[10] = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[10] = true;
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, justright[0][5] );
-                } catch ( ... ) {
-                    results.propResults[type].success[10] = false;
-                    results.propResults[type].unknown     = true;
-                }
+                testArgsRange( tensorProperty,
+                               argsMultiVec,
+                               justrightVec[0]->getVariable(),
+                               ampEval,
+                               toosmall[0][5],
+                               justright[0][5],
+                               propResults.success[10],
+                               propResults.unknown );
+                testArgsRange( tensorProperty,
+                               argsMultiVec,
+                               justrightVec[0]->getVariable(),
+                               ampEval,
+                               toobig[0][5],
+                               justright[0][5],
+                               propResults.success[11],
+                               propResults.unknown );
             } else {
-                results.propResults[type].success[10] = true;
-            }
-
-            // first out of range hi, AMP::MultiVector
-            if ( nargs > 0 ) {
-                try {
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, toobig[0][5] );
-                    tensorProperty->evalv( ampEval, argsMultiVec );
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, justright[0][5] );
-                    results.propResults[type].success[11] = false;
-                } catch ( std::exception & ) {
-                    results.propResults[type].success[11] = true;
-                    argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
-                        ->setValueByLocalID( 5, justright[0][5] );
-                } catch ( ... ) {
-                    results.propResults[type].success[11] = false;
-                    results.propResults[type].unknown     = true;
-                }
-            } else {
-                results.propResults[type].success[11] = true;
+                propResults.success[10] = true;
+                propResults.success[11] = true;
             }
 
             // check vector, Vector, MultiVector all agree
             pass = true;
-            if ( results.propResults[type].success[0] && results.propResults[type].success[4] &&
-                 results.propResults[type].success[9] ) {
+            if ( propResults.success[0] && propResults.success[4] && propResults.success[9] ) {
                 for ( size_t k = 0; k < nvecs[0]; k++ ) {
                     for ( size_t j = 0; j < nvecs[1]; j++ ) {
                         for ( size_t i = 0; i < npoints; i++ ) {
@@ -1158,9 +1041,9 @@ MatTestResult testMaterial( std::string &name )
                     }
                 }
                 if ( pass )
-                    results.propResults[type].success[3] = true;
+                    propResults.success[3] = true;
             } else {
-                results.propResults[type].success[3] = false;
+                propResults.success[3] = false;
             }
 
             // set up reduced argument list
@@ -1172,18 +1055,18 @@ MatTestResult testMaterial( std::string &name )
             }
 
             // check that evalv with fewer than normal number of arguments works
-            if ( results.propResults[type].success[0] ) {
+            if ( propResults.success[0] ) {
                 try {
                     tensorProperty->evalv( stdEval, argsm );
-                    results.propResults[type].nargeval[1] = true;
+                    propResults.nargeval[1] = true;
                 } catch ( std::exception & ) {
-                    results.propResults[type].nargeval[1] = false;
+                    propResults.nargeval[1] = false;
                 } catch ( ... ) {
-                    results.propResults[type].nargeval[1] = false;
-                    results.propResults[type].unknown     = true;
+                    propResults.nargeval[1] = false;
+                    propResults.unknown     = true;
                 }
             } else {
-                results.propResults[type].nargeval[1] = false;
+                propResults.nargeval[1] = false;
             }
         }
     }

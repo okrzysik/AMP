@@ -145,7 +145,13 @@
  *  \param EXP  Expression to evaluate
  */
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
-#define AMP_CHECK_ASSERT( EXP ) AMP_ASSERT( EXP )
+#define AMP_CHECK_ASSERT( EXP )                     \
+    do {                                            \
+        if ( !( EXP ) ) {                           \
+            std::ostringstream tboxos;              \
+            tboxos << "Failed assertion: " << #EXP; \
+        }                                           \
+    } while ( 0 )
 #else
 #define AMP_CHECK_ASSERT( EXP )
 #endif

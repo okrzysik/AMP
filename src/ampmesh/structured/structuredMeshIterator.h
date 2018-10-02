@@ -94,8 +94,6 @@ private:
     const AMP::Mesh::BoxMesh *d_mesh;
     mutable structuredMeshElement d_cur_element;
 
-    void setCurrentElement();
-
 private:
     static constexpr uint32_t getTypeID()
     {

@@ -18,10 +18,10 @@ static MeshElement nullElement;
  ********************************************************/
 inline BoxMesh::MeshElementIndex structuredMeshIterator::getIndex( int pos ) const
 {
-    if ( d_elements ) {
-        if ( pos < (int) d_size )
-            return d_elements->operator[]( pos );
+    if ( pos < 0 || pos >= (int) d_size ) {
         return BoxMesh::MeshElementIndex();
+    } else if ( d_elements ) {
+        return d_elements->operator[]( pos );
     } else {
         int size[3] = { d_last.index( 0 ) - d_first.index( 0 ) + 1,
                         d_last.index( 1 ) - d_first.index( 1 ) + 1,
@@ -29,38 +29,14 @@ inline BoxMesh::MeshElementIndex structuredMeshIterator::getIndex( int pos ) con
         int i       = d_first.index( 0 ) + ( pos % size[0] );
         int j       = d_first.index( 1 ) + ( pos / size[0] % size[1] );
         int k       = d_first.index( 2 ) + ( pos / ( size[0] * size[1] ) % size[2] );
-        if ( d_isPeriodic[0] ) {
-            if ( i < 0 )
-                i += d_globalSize[0];
-            if ( i >= d_globalSize[0] )
-                i -= d_globalSize[0];
-        }
-        if ( d_isPeriodic[1] ) {
-            if ( j < 0 )
-                j += d_globalSize[1];
-            if ( j >= d_globalSize[1] )
-                j -= d_globalSize[1];
-        }
-        if ( d_isPeriodic[2] ) {
-            if ( k < 0 )
-                k += d_globalSize[2];
-            if ( k >= d_globalSize[2] )
-                k -= d_globalSize[2];
-        }
+        if ( d_isPeriodic[0] )
+            i = ( i + d_globalSize[0] ) % d_globalSize[0];
+        if ( d_isPeriodic[1] )
+            j = ( j + d_globalSize[1] ) % d_globalSize[1];
+        if ( d_isPeriodic[2] )
+            k = ( k + d_globalSize[2] ) % d_globalSize[2];
         return BoxMesh::MeshElementIndex( d_first.type(), d_first.side(), i, j, k );
     }
-}
-
-
-/********************************************************
- * set the current element                               *
- ********************************************************/
-inline void structuredMeshIterator::setCurrentElement()
-{
-    if ( d_pos < d_size )
-        d_cur_element.reset( getIndex( d_pos ) );
-    else
-        d_cur_element.reset( BoxMesh::MeshElementIndex() );
 }
 
 
@@ -185,9 +161,9 @@ MeshIterator &structuredMeshIterator::operator++()
 {
     // Prefix increment (increment and return this)
     d_pos++;
-    if ( d_pos > d_size )
+    if ( d_pos >= d_size )
         d_pos = d_size;
-    setCurrentElement();
+    d_cur_element.reset( getIndex( d_pos ) );
     return *this;
 }
 MeshIterator structuredMeshIterator::operator++( int )
@@ -202,7 +178,7 @@ MeshIterator &structuredMeshIterator::operator--()
     // Prefix decrement (increment and return this)
     if ( d_pos != 0 )
         d_pos--;
-    setCurrentElement();
+    d_cur_element.reset( getIndex( d_pos ) );
     return *this;
 }
 MeshIterator structuredMeshIterator::operator--( int )
@@ -236,7 +212,7 @@ MeshIterator &structuredMeshIterator::operator+=( int n )
             AMP_ERROR( "Iterated past beginning of iterator" );
         d_pos -= n2;
     }
-    setCurrentElement();
+    d_cur_element.reset( getIndex( d_pos ) );
     return *this;
 }
 
