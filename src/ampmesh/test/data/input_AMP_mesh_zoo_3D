@@ -155,14 +155,41 @@ Mesh{
         static = FALSE
 	}
 
-	/*Mesh_13 {
+	Mesh_13 {
+		MeshName = "square_frustrum"
+		MeshType = "AMP"
+		Generator = "square_frustrum"
+		Size = 15, 10, 6
+		Range = -1, 1, -0.9, 0.9, -0.5, 0.5
+		Dir = "+z"
+		Height = 3
+		x_offset = -2
+		y_offset = 2
+		z_offset = 5.4
+        static = TRUE
+	}
+	Mesh_14 {
+		MeshName = "square_frustrum_2"
+		MeshType = "AMP"
+		Generator = "square_frustrum"
+		Size = 12, 10, 8
+		Range = -1, 1, -0.9, 0.9, -0.5, 0.5
+		Dir = "-z"
+		Height = 3
+		x_offset = 2
+		y_offset = 2
+		z_offset = 5.4
+        static = FALSE
+	}
+
+	/*Mesh_15 {
 		MeshName = "Utah_teapot"
 		MeshType = "AMP"
         FileName = "Utah_teapot.stl"
 		dim = 3
         scale = 0.2
 		x_offset = 2
-		y_offset = 2
+		y_offset = 6
 		z_offset = 5.4
 	}*/
 	

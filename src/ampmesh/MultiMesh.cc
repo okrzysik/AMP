@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/MeshElement.h"
+#include "AMP/ampmesh/MultiGeometry.h"
 #include "AMP/ampmesh/MultiIterator.h"
 #include "AMP/ampmesh/MultiMeshParameters.h"
 #include "AMP/ampmesh/SubsetMesh.h"
@@ -155,6 +156,14 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
         if ( !meshes.empty() )
             d_meshes.push_back( AMP::make_shared<MultiMesh>( name, comm, meshes ) );
     }
+    // Construct the geometry object for the multimesh
+    std::vector<AMP::Geometry::Geometry::shared_ptr> geom;
+    for ( auto &mesh : d_meshes ) {
+        auto tmp = mesh->getGeometry();
+        if ( tmp )
+            geom.push_back( tmp );
+    }
+    d_geometry.reset( new AMP::Geometry::MultiGeometry( geom ) );
 }
 MultiMesh::MultiMesh( const std::string &name,
                       const AMP_MPI &comm,
@@ -208,6 +217,14 @@ MultiMesh::MultiMesh( const std::string &name,
         d_box[2 * i + 0] = d_comm.minReduce( d_box_local[2 * i + 0] );
         d_box[2 * i + 1] = d_comm.maxReduce( d_box_local[2 * i + 1] );
     }
+    // Construct the geometry object for the multimesh
+    std::vector<AMP::Geometry::Geometry::shared_ptr> geom;
+    for ( auto &mesh : d_meshes ) {
+        auto tmp = mesh->getGeometry();
+        if ( tmp )
+            geom.push_back( tmp );
+    }
+    d_geometry.reset( new AMP::Geometry::MultiGeometry( geom ) );
 }
 
 
@@ -869,7 +886,7 @@ static void copyKey( AMP::Database::shared_ptr database1,
     } break;
     case AMP::Database::AMP_BOOL: {
         // Copy a bool
-        std::vector<unsigned char> data = database1->getBoolArray( key );
+        auto data = database1->getBoolArray( key );
         AMP_INSIST( (int) data.size() == size, "Array size does not match key size" );
         for ( size_t i = 0; i < database2.size(); i++ ) {
             if ( N == size && select )

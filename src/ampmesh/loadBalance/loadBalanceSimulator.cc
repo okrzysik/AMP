@@ -182,7 +182,7 @@ size_t loadBalanceSimulator::avg() { return divide_double( d_N_elements, d_ranks
 /************************************************************
  * Function to print the load balance                        *
  ************************************************************/
-void loadBalanceSimulator::print( unsigned char detail, unsigned char indent_N )
+void loadBalanceSimulator::print( uint8_t detail, uint8_t indent_N )
 {
     int N_procs = 0;
     for ( auto &elem : d_ranks )

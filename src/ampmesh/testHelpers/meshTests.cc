@@ -1431,6 +1431,15 @@ static inline void coord2( AMP::Mesh::Mesh::shared_ptr mesh )
     }
     AMP_ASSERT( pass );
 }
+static inline void centroid( AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    bool pass = true;
+    for ( const auto &elem : mesh->getIterator( mesh->getGeomType(), 0 ) ) {
+        auto x = elem.centroid();
+        pass   = pass && x == x;
+    }
+    AMP_ASSERT( pass );
+}
 static inline void volume( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     bool pass = true;
@@ -1466,18 +1475,22 @@ void meshTests::MeshPerformance( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr 
     auto t4 = runAndTime( globalID, mesh, 10 );
     auto t5 = runAndTime( coord1, mesh, 10 );
     auto t6 = runAndTime( coord2, mesh, 10 );
-    auto t7 = runAndTime( getElements, mesh, 10 );
-    auto t8 = runAndTime( volume, mesh, 10 );
+    auto t7 = runAndTime( centroid, mesh, 10 );
+    auto t8 = runAndTime( getElements, mesh, 10 );
+    auto t9 = runAndTime( volume, mesh, 10 );
     // Print the results
+    auto to_ns = [N_nodes]( double time, size_t N ) {
+        return static_cast<int>( 1e9 * std::max( time, 0.0 ) / N );
+    };
     printf( "   getIterator: %i us\n", static_cast<int>( 1e6 * t1 ) );
-    printf( "   ++iterator: %i ns\n", static_cast<int>( 1e9 * t2 / N_nodes ) );
-    printf( "   rangeLoop: %i ns\n", static_cast<int>( 1e9 * t3 / N_nodes ) );
-    printf( "   globalID: %i ns\n", static_cast<int>( 1e9 * std::max( t4 - t3, 0.0 ) / N_nodes ) );
-    printf( "   coord (1): %i ns\n", static_cast<int>( 1e9 * std::max( t5 - t3, 0.0 ) / N_nodes ) );
-    printf( "   coord (2): %i ns\n", static_cast<int>( 1e9 * std::max( t6 - t3, 0.0 ) / N_nodes ) );
-    printf( "   getElements: %i ns\n",
-            static_cast<int>( 1e9 * std::max( t7 - t3, 0.0 ) / N_elem ) );
-    printf( "   volume: %i ns\n", static_cast<int>( 1e9 * std::max( t8 - t3, 0.0 ) / N_elem ) );
+    printf( "   ++iterator: %i ns\n", to_ns( t2, N_nodes ) );
+    printf( "   rangeLoop: %i ns\n", to_ns( t3, N_nodes ) );
+    printf( "   globalID: %i ns\n", to_ns( t4 - t3, N_nodes ) );
+    printf( "   coord (1): %i ns\n", to_ns( t5 - t3, N_nodes ) );
+    printf( "   coord (2): %i ns\n", to_ns( t6 - t3, N_nodes ) );
+    printf( "   centroid: %i ns\n", to_ns( t7 - t3, N_elem ) );
+    printf( "   getElements: %i ns\n", to_ns( t8 - t3, N_elem ) );
+    printf( "   volume: %i ns\n", to_ns( t9 - t3, N_elem ) );
     // Repeat the tests for all base meshes if we are dealing with a multimesh
     auto multimesh = AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( multimesh ) {

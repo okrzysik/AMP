@@ -44,6 +44,14 @@ public:
     //! Return the elements neighboring the current element
     virtual void getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const override;
 
+    /**
+     * \brief     Return the centroid of the element
+     * \details   This function returns the centroid of the element.  The
+     *   centroid is defined as the average of the coordinates of the verticies.
+     *   The centroid of a vertex is the vertex and will return the same result as coord().
+     */
+    virtual Point centroid() const override;
+
     //! Return the volume of the current element (does not apply to verticies)
     virtual double volume() const override;
 

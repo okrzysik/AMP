@@ -45,8 +45,19 @@ void meshTests::MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh
     // Bug_761<8>::run_test( ut, mesh );
     // MeshAdapterTest<AllPassTest>::run_test( ut, mesh );
     MeshPerformance( ut, mesh );
-    ;
     PROFILE_STOP( "MeshTestLoop" );
+}
+
+
+void meshTests::MeshGeometryTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+{
+    // Return if we do not have a geometry to work with
+    if ( !mesh->getGeometry() )
+        return;
+    PROFILE_START( "MeshGeometryTestLoop" );
+    // Run the geometry based tests
+    // TestInside( ut, mesh );
+    PROFILE_STOP( "MeshGeometryTestLoop" );
 }
 
 

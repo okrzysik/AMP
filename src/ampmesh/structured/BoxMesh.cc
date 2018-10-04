@@ -6,6 +6,7 @@
 #include "AMP/ampmesh/structured/ShellMesh.h"
 #include "AMP/ampmesh/structured/SphereMesh.h"
 #include "AMP/ampmesh/structured/SphereSurfaceMesh.h"
+#include "AMP/ampmesh/structured/SquareFrustumMesh.h"
 #include "AMP/ampmesh/structured/TubeMesh.h"
 
 #include "AMP/ampmesh/MultiIterator.h"
@@ -54,6 +55,8 @@ AMP::shared_ptr<BoxMesh> BoxMesh::generate( MeshParameters::shared_ptr params )
         mesh.reset( new SphereMesh( params ) );
     } else if ( generator.compare( "sphere_surface" ) == 0 ) {
         mesh.reset( new SphereSurfaceMesh( params ) );
+    } else if ( generator.compare( "square_frustrum" ) == 0 ) {
+        mesh.reset( new SquareFrustumMesh( params ) );
     } else {
         AMP_ERROR( "Unknown generator" );
     }
@@ -93,6 +96,8 @@ std::vector<size_t> BoxMesh::estimateLogicalMeshSize( const MeshParameters::shar
         N = SphereMesh::estimateLogicalMeshSize( params );
     } else if ( generator.compare( "sphere_surface" ) == 0 ) {
         N = SphereSurfaceMesh::estimateLogicalMeshSize( params );
+    } else if ( generator.compare( "square_frustrum" ) == 0 ) {
+        N = SquareFrustumMesh::estimateLogicalMeshSize( params );
     } else {
         AMP_ERROR( "Unknown generator" );
     }
@@ -187,7 +192,7 @@ void BoxMesh::initialize()
     } else {
         // We are dealing with a parallel mesh
         // First, get the prime factors for number of processors and divide the dimensions
-        std::vector<int> factors = AMP::Utilities::factor( d_comm.getSize() );
+        auto factors = AMP::Utilities::factor( d_comm.getSize() );
         for ( int d = 0; d < 3; d++ )
             d_numBlocks[d] = 1;
         while ( !factors.empty() ) {

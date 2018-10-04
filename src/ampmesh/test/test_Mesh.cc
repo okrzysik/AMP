@@ -23,18 +23,22 @@ void testMeshGenerators( AMP::UnitTest *ut )
     generator = AMP::make_shared<AMP::unit_test::AMPCubeGenerator<4>>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshGeometryTestLoop( ut, generator->getMesh() );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, generator->getMesh() );
     generator = AMP::make_shared<AMP::unit_test::AMPCylinderGenerator>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshGeometryTestLoop( ut, generator->getMesh() );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, generator->getMesh() );
     generator = AMP::make_shared<AMP::unit_test::AMPTubeGenerator>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshGeometryTestLoop( ut, generator->getMesh() );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, generator->getMesh() );
     generator = AMP::make_shared<AMP::unit_test::AMPMultiMeshGenerator>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshGeometryTestLoop( ut, generator->getMesh() );
 #ifdef USE_EXT_LIBMESH
     // libmesh generators
     // Test the libmesh cube generator
@@ -252,6 +256,7 @@ void testInputMesh( AMP::UnitTest *ut, std::string filename )
 
     // Run the mesh tests
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshGeometryTestLoop( ut, mesh );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh, true );
     AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh, true );
     PROFILE_STOP( "testInputMesh" );

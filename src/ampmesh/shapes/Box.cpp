@@ -150,7 +150,7 @@ Point Box<NDIM>::surfaceNorm( const Point &pos ) const
     // Get the surface id
     int s = surface( pos );
     // Set the normal
-    Point norm;
+    Point norm( NDIM );
     norm[s / 2] = s % 2 == 0 ? -1 : 1;
     return norm;
 }
@@ -160,7 +160,7 @@ Point Grid<NDIM>::surfaceNorm( const Point &pos ) const
     // Get the surface id
     int s = surface( pos );
     // Set the normal
-    Point norm;
+    Point norm( NDIM );
     norm[s / 2] = s % 2 == 0 ? -1 : 1;
     return norm;
 }

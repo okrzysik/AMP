@@ -120,8 +120,8 @@ public:
          * \param x     Logical coordinate of the element
          */
         inline explicit MeshElementIndex(
-            GeomType type, unsigned char side, int x, int y = 0, int z = 0 );
-        inline void reset( GeomType type, unsigned char side, int x, int y = 0, int z = 0 );
+            GeomType type, uint8_t side, int x, int y = 0, int z = 0 );
+        inline void reset( GeomType type, uint8_t side, int x, int y = 0, int z = 0 );
         inline bool isNull() const { return d_side == 255; }
         inline bool operator==( const MeshElementIndex &rhs ) const; //!< Operator ==
         inline bool operator!=( const MeshElementIndex &rhs ) const; //!< Operator !=
@@ -132,14 +132,14 @@ public:
         inline int index( int d ) const { return d_index[d]; }
         inline int &index( int d ) { return d_index[d]; }
         inline GeomType type() const { return static_cast<GeomType>( d_type ); }
-        inline unsigned char side() const { return d_side; }
+        inline uint8_t side() const { return d_side; }
         static inline size_t numElements( const MeshElementIndex &first,
                                           const MeshElementIndex &last );
 
     private:
-        unsigned char d_type; //!<  Mesh element type
-        unsigned char d_side; //!<  Are we dealing with x, y, or z faces/edges
-        int d_index[3];       //!<  Global x, y, z index (may be negitive with periodic boundaries)
+        uint8_t d_type; //!<  Mesh element type
+        uint8_t d_side; //!<  Are we dealing with x, y, or z faces/edges
+        int d_index[3]; //!<  Global x, y, z index (may be negitive with periodic boundaries)
         friend class structuredMeshElement;
     };
 

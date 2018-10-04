@@ -208,6 +208,55 @@ private:
 using Point = MeshPoint<double>;
 
 
+/****************************************************************
+ * Operator overloading                                          *
+ ****************************************************************/
+template<class TYPE>
+inline MeshPoint<TYPE> operator+( const MeshPoint<TYPE> &a, const MeshPoint<TYPE> &b )
+{
+    auto c = a;
+    c += b;
+    return c;
+}
+template<class TYPE, class TYPE2>
+inline MeshPoint<TYPE> operator+( const MeshPoint<TYPE> &a, const TYPE2 &b )
+{
+    auto c = a;
+    c += b;
+    return c;
+}
+template<class TYPE, class TYPE2>
+inline MeshPoint<TYPE> operator+( const TYPE2 &a, const MeshPoint<TYPE> &b )
+{
+    auto c = b;
+    c += a;
+    return c;
+}
+template<class TYPE>
+inline MeshPoint<TYPE> operator-( const MeshPoint<TYPE> &a, const MeshPoint<TYPE> &b )
+{
+    auto c = a;
+    c -= b;
+    return c;
+}
+template<class TYPE, class TYPE2>
+inline MeshPoint<TYPE> operator-( const MeshPoint<TYPE> &a, const TYPE2 &b )
+{
+    auto c = a;
+    c -= b;
+    return c;
+}
+template<class TYPE, class TYPE2>
+inline MeshPoint<TYPE> operator-( const TYPE2 &a, const MeshPoint<TYPE> &b )
+{
+    auto c = b;
+    c.x() -= a;
+    c.y() -= a;
+    c.z() -= a;
+    return c;
+}
+
+
 } // namespace Mesh
 } // namespace AMP
 

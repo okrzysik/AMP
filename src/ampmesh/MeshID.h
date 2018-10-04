@@ -10,7 +10,7 @@ namespace Mesh {
 
 
 //! Enumeration for basic mesh-based quantities
-enum class GeomType : unsigned char { Vertex = 0, Edge = 1, Face = 2, Volume = 3, null = 0xFF };
+enum class GeomType : uint8_t { Vertex = 0, Edge = 1, Face = 2, Volume = 3, null = 0xFF };
 
 
 struct MeshElementID;
@@ -63,19 +63,18 @@ public:
     constexpr ElementID() : data( 0x000000FFFFFFFFFF ) {}
     constexpr explicit ElementID( bool isLocal,
                                   GeomType type_id,
-                                  unsigned int local_ID,
-                                  unsigned int owner_rank_id )
+                                  uint32_t local_ID,
+                                  uint32_t owner_rank_id )
         : data( 0 )
     {
         // Set the bit for is_local
-        unsigned int tmp = 0x00000000;
+        uint32_t tmp = 0x00000000;
         if ( isLocal )
             tmp = 0x80000000;
         // Add the owner_rank
         tmp += ( 0x007FFFFF & owner_rank_id ) << 8;
         // Add the type_id
-        char type = (char) type_id;
-        tmp += ( (unsigned char) type );
+        tmp += static_cast<uint8_t>( type_id );
         // Combine the above data with the local_ID
         data = ( ( (uint64_t) tmp ) << 32 ) + ( (uint64_t) local_ID );
     }

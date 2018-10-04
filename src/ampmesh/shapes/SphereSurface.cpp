@@ -35,9 +35,11 @@ double SphereSurface::distance( const Point &pos, const Point &ang ) const
  ********************************************************/
 bool SphereSurface::inside( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return false;
+    double x  = pos.x() - d_offset[0];
+    double y  = pos.y() - d_offset[1];
+    double z  = pos.z() - d_offset[2];
+    double r2 = x * x + y * y + z * z;
+    return fabs( r2 - d_r * d_r ) <= 1e-12 * d_r * d_r;
 }
 
 

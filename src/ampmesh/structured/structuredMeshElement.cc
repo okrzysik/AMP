@@ -588,6 +588,35 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
 
 
 /****************************************************************
+ * Functions to get the centroid                                 *
+ ****************************************************************/
+Point structuredMeshElement::centroid() const
+{
+    auto type = d_globalID.type();
+    if ( type == GeomType::Vertex )
+        return this->coord();
+    // Get the number of verticies and their indicies
+    int N = 0;
+    BoxMesh::MeshElementIndex nodes[8];
+    getElementIndex( GeomType::Vertex, N, nodes );
+    // Calculate the centroid
+    Point p( 0, 0, 0 );
+    for ( int i = 0; i < N; i++ ) {
+        double x[3] = { 0, 0, 0 };
+        d_mesh->coord( nodes[i], x );
+        p.x() += x[0];
+        p.y() += x[1];
+        p.z() += x[2];
+    }
+    p.x() /= N;
+    p.y() /= N;
+    p.z() /= N;
+    p.setNdim( d_physicalDim );
+    return p;
+}
+
+
+/****************************************************************
  * Functions to get the element volume                           *
  ****************************************************************/
 double structuredMeshElement::volume() const
@@ -657,16 +686,26 @@ double structuredMeshElement::volume() const
             { 0, 3, 2, 1 }, { 6, 7, 4, 5 }, { 0, 1, 5, 4 },
             { 3, 7, 6, 2 }, { 0, 4, 7, 3 }, { 1, 2, 6, 5 }
         };
-        // The centroid is a convenient point to use
-        // for the apex of all the pyramids.
-        auto R = this->centroid();
+        // Get the verticies
         AMP_ASSERT( N == 8 );
         double x[8][3];
         for ( int i = 0; i < 8; i++ )
             d_mesh->coord( nodes[i], x[i] );
+        AMP_ASSERT( N == 8 );
+        // The centroid is a convenient point to use
+        // for the apex of all the pyramids
+        double R[3] = { 0, 0, 0 };
+        for ( int i = 0; i < 8; i++ ) {
+            R[0] += x[i][0];
+            R[1] += x[i][1];
+            R[2] += x[i][2];
+        }
+        R[0] *= 0.125;
+        R[1] *= 0.125;
+        R[2] *= 0.125;
+        // Compute the volume using 6 sub-pyramids
         int pyr_base[4];
         double vol = 0.0;
-        // Compute the volume using 6 sub-pyramids
         for ( auto &elem : sub_pyr ) {
             // Set the nodes of the pyramid base
             for ( unsigned int i = 0; i < 4; ++i )

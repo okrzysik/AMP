@@ -35,9 +35,10 @@ double Sphere::distance( const Point &pos, const Point &ang ) const
  ********************************************************/
 bool Sphere::inside( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return false;
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
+    return x * x + y * y + z * z <= d_r * d_r;
 }
 
 
