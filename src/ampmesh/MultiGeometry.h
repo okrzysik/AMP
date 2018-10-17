@@ -26,7 +26,7 @@ public:
      * \param comm      Desired communicator for the multimesh
      * \param meshes    Meshes to be used as part of the multimesh
      */
-    MultiGeometry( const std::vector<Geometry::shared_ptr> &geom );
+    explicit MultiGeometry( const std::vector<Geometry::shared_ptr> &geom );
 
 
     //! Destructor

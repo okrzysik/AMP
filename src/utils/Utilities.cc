@@ -135,6 +135,16 @@ bool Utilities::fileExists( const std::string &filename )
     return ifile.good();
 }
 
+std::string Utilities::path( const std::string &filename )
+{
+    size_t pos = 0;
+    if ( filename.find_last_of( 47 ) != std::string::npos )
+        pos = filename.find_last_of( 47 );
+    if ( filename.find_last_of( 92 ) != std::string::npos )
+        pos = std::max( pos, filename.find_last_of( 92 ) );
+    return filename.substr( 0, pos );
+}
+
 void Utilities::renameFile( const std::string &old_filename, const std::string &new_filename )
 {
     AMP_ASSERT( !old_filename.empty() );
@@ -219,51 +229,34 @@ void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_
 /****************************************************************************
  *  Print AMP Banner                                                         *
  ****************************************************************************/
+// clang-format off
 void Utilities::printBanner()
 {
-    std::ostringstream banner;
-    banner << std::endl;
-    banner << "            _____                    _____                    _____" << std::endl;
-    banner << R"(           /\    \                  /\    \                  /\    \ )"
-           << std::endl;
-    banner << R"(          /::\    \                /::\____\                /::\    \)"
-           << std::endl;
-    banner << R"(         /::::\    \              /::::|   |               /::::\    \)"
-           << std::endl;
-    banner << R"(        /::::::\    \            /:::::|   |              /::::::\    \)"
-           << std::endl;
-    banner << R"(       /:::/\:::\    \          /::::::|   |             /:::/\:::\    \)"
-           << std::endl;
-    banner << R"(      /:::/__\:::\    \        /:::/|::|   |            /:::/__\:::\    \)"
-           << std::endl;
-    banner << R"(     /::::\   \:::\    \      /:::/ |::|   |           /::::\   \:::\    \)"
-           << std::endl;
-    banner << R"(    /::::::\   \:::\    \    /:::/  |::|___|______    /::::::\   \:::\    \)"
-           << std::endl;
-    banner << "   /:::/\\:::\\   \\:::\\    \\  /:::/   |::::::::\\    \\  /:::/\\:::\\   "
-              "\\:::\\____\\"
-           << std::endl;
-    banner << R"(  /:::/  \:::\   \:::\____\/:::/    |:::::::::\____\/:::/  \:::\   \:::|    |)"
-           << std::endl;
-    banner << R"(  \::/    \:::\  /:::/    /\::/    / ~~~~~/:::/    /\::/    \:::\  /:::|____|)"
-           << std::endl;
-    banner << R"(   \/____/ \:::\/:::/    /  \/____/      /:::/    /  \/_____/\:::\/:::/    /)"
-           << std::endl;
-    banner << "            \\::::::/    /               /:::/    /            \\::::::/    /"
-           << std::endl;
-    banner << "             \\::::/    /               /:::/    /              \\::::/    /"
-           << std::endl;
-    banner << "             /:::/    /               /:::/    /                \\::/____/"
-           << std::endl;
-    banner << "            /:::/    /               /:::/    /" << std::endl;
-    banner << "           /:::/    /               /:::/    /" << std::endl;
-    banner << "          /:::/    /               /:::/    /" << std::endl;
-    banner << "          \\::/    /                \\::/    /" << std::endl;
-    banner << "           \\/____/                  \\/____/" << std::endl;
-    banner << std::endl << std::endl;
-
-    AMP::pout << banner.str();
+    constexpr char banner[] =
+        R"(            _____                    _____                    _____)" "\n"
+        R"(           /\    \                  /\    \                  /\    \)" "\n"
+        R"(          /::\    \                /::\____\                /::\    \)" "\n"
+        R"(         /::::\    \              /::::|   |               /::::\    \)" "\n"
+        R"(        /::::::\    \            /:::::|   |              /::::::\    \)" "\n"
+        R"(       /:::/\:::\    \          /::::::|   |             /:::/\:::\    \)" "\n"
+        R"(      /:::/__\:::\    \        /:::/|::|   |            /:::/__\:::\    \)" "\n"
+        R"(     /::::\   \:::\    \      /:::/ |::|   |           /::::\   \:::\    \)" "\n"
+        R"(    /::::::\   \:::\    \    /:::/  |::|___|______    /::::::\   \:::\    \)" "\n"
+        R"(   /:::/\:::\   \:::\    \  /:::/   |::::::::\    \  /:::/\:::\   \:::\____\)" "\n"
+        R"(  /:::/  \:::\   \:::\____\/:::/    |:::::::::\____\/:::/  \:::\   \:::|    |)" "\n"
+        R"(  \::/    \:::\  /:::/    /\::/    / ~~~~~/:::/    /\::/    \:::\  /:::|____|)" "\n"
+        R"(   \/____/ \:::\/:::/    /  \/____/      /:::/    /  \/_____/\:::\/:::/    /)" "\n"
+        R"(            \::::::/    /               /:::/    /            \::::::/    /)" "\n"
+        R"(             \::::/    /               /:::/    /              \::::/    /)" "\n"
+        R"(             /:::/    /               /:::/    /                \::/____/)" "\n"
+        R"(            /:::/    /               /:::/    /)" "\n"
+        R"(           /:::/    /               /:::/    /)" "\n"
+        R"(          /:::/    /               /:::/    /)" "\n"
+        R"(          \::/    /                \::/    /)" "\n"
+        R"(           \/____/                  \/____/)" "\n";
+    AMP::pout << "\n" << banner << "\n" << std::endl;
 }
+// clang-format on
 
 // Factor a number into it's prime factors
 std::vector<int> Utilities::factor( size_t number )

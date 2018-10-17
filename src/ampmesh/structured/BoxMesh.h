@@ -91,11 +91,11 @@ public:
          * \param kfirst  First z-coordinate
          * \param klast   Last z-coordinate
          */
-        inline explicit Box(
+        constexpr explicit Box(
             int ifirst, int ilast, int jfirst = 0, int jlast = 0, int kfirst = 0, int klast = 0 );
-        inline Box(); //!< Empty constructor
-        int first[3]; //!< Starting element
-        int last[3];  //!< Ending element
+        constexpr Box(); //!< Empty constructor
+        int first[3];    //!< Starting element
+        int last[3];     //!< Ending element
     private:
     };
 
@@ -109,7 +109,7 @@ public:
     {
     public:
         //! Empty constructor
-        inline MeshElementIndex();
+        constexpr MeshElementIndex();
         /**
          * \brief   Default constructor
          * \details  The default constructor
@@ -119,22 +119,22 @@ public:
          * \param y     Logical coordinate of the element
          * \param x     Logical coordinate of the element
          */
-        inline explicit MeshElementIndex(
+        constexpr explicit MeshElementIndex(
             GeomType type, uint8_t side, int x, int y = 0, int z = 0 );
-        inline void reset( GeomType type, uint8_t side, int x, int y = 0, int z = 0 );
-        inline bool isNull() const { return d_side == 255; }
-        inline bool operator==( const MeshElementIndex &rhs ) const; //!< Operator ==
-        inline bool operator!=( const MeshElementIndex &rhs ) const; //!< Operator !=
-        inline bool operator>( const MeshElementIndex &rhs ) const;  //!< Operator >
-        inline bool operator>=( const MeshElementIndex &rhs ) const; //!< Operator >=
-        inline bool operator<( const MeshElementIndex &rhs ) const;  //!< Operator <
-        inline bool operator<=( const MeshElementIndex &rhs ) const; //!< Operator <=
-        inline int index( int d ) const { return d_index[d]; }
-        inline int &index( int d ) { return d_index[d]; }
-        inline GeomType type() const { return static_cast<GeomType>( d_type ); }
-        inline uint8_t side() const { return d_side; }
-        static inline size_t numElements( const MeshElementIndex &first,
-                                          const MeshElementIndex &last );
+        constexpr void reset( GeomType type, uint8_t side, int x, int y = 0, int z = 0 );
+        constexpr bool isNull() const { return d_side == 255; }
+        constexpr bool operator==( const MeshElementIndex &rhs ) const; //!< Operator ==
+        constexpr bool operator!=( const MeshElementIndex &rhs ) const; //!< Operator !=
+        constexpr bool operator>( const MeshElementIndex &rhs ) const;  //!< Operator >
+        constexpr bool operator>=( const MeshElementIndex &rhs ) const; //!< Operator >=
+        constexpr bool operator<( const MeshElementIndex &rhs ) const;  //!< Operator <
+        constexpr bool operator<=( const MeshElementIndex &rhs ) const; //!< Operator <=
+        constexpr int index( int d ) const { return d_index[d]; }
+        constexpr int &index( int d ) { return d_index[d]; }
+        constexpr GeomType type() const { return static_cast<GeomType>( d_type ); }
+        constexpr uint8_t side() const { return d_side; }
+        static constexpr size_t numElements( const MeshElementIndex &first,
+                                             const MeshElementIndex &last );
 
     private:
         uint8_t d_type; //!<  Mesh element type
@@ -419,13 +419,13 @@ protected:
                                     std::vector<double> *coord );
 
     // Internal data
-    std::array<bool, 3> d_isPeriodic; // Which directions are periodic
-    std::array<int, 3> d_globalSize;  // The size of the logical domain in each direction
-    std::array<int, 3> d_numBlocks;   // The number of local box in each direction
-    std::array<int, 6> d_surfaceId;   // For each surface which id is it part of (if any)
-    std::array<bool, 6> d_onSurface;  // For each surface which id is it part of (if any)
-    ElementBlocks d_globalSurfaceList[6]
-                                     [4]; // List of logical surface elements for each surface/type
+    std::array<bool, 3> d_isPeriodic;        // Which directions are periodic
+    std::array<int, 3> d_globalSize;         // The size of the logical domain in each direction
+    std::array<int, 3> d_blockSize;          // The size of the logical blocks in each direction
+    std::array<int, 3> d_numBlocks;          // The number of local box in each direction
+    std::array<int, 6> d_surfaceId;          // For each surface which id is it part of (if any)
+    std::array<bool, 6> d_onSurface;         // For each surface which id is it part of (if any)
+    ElementBlocks d_globalSurfaceList[6][4]; // List of logical surface elements (surface/type)
 
     // Friend functions to access protected functions
     friend class structuredMeshElement;

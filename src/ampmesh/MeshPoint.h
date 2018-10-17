@@ -255,6 +255,67 @@ inline MeshPoint<TYPE> operator-( const TYPE2 &a, const MeshPoint<TYPE> &b )
     c.z() -= a;
     return c;
 }
+template<class TYPE>
+inline MeshPoint<TYPE> operator-( const MeshPoint<TYPE> &a )
+{
+    auto c = a;
+    c.x()  = -a.x();
+    c.y()  = -a.y();
+    c.z()  = -a.z();
+    return c;
+}
+template<class TYPE, class TYPE2>
+inline MeshPoint<TYPE> operator*( const MeshPoint<TYPE> &a, const TYPE2 &b )
+{
+    auto c = a;
+    c.x() *= b;
+    c.y() *= b;
+    c.z() *= b;
+    return c;
+}
+template<class TYPE, class TYPE2>
+inline MeshPoint<TYPE> operator*( const TYPE2 &a, const MeshPoint<TYPE> &b )
+{
+    auto c = b;
+    c.x() *= a;
+    c.y() *= a;
+    c.z() *= a;
+    return c;
+}
+
+
+/****************************************************************
+ * Helper functions                                              *
+ ****************************************************************/
+template<class TYPE>
+inline TYPE dot( const MeshPoint<TYPE> &a, const MeshPoint<TYPE> &b )
+{
+    return a.x() * b.x() + a.y() * b.y() + a.z() * b.z();
+}
+template<class TYPE>
+inline MeshPoint<TYPE> cross( const MeshPoint<TYPE> &a, const MeshPoint<TYPE> &b )
+{
+    return MeshPoint<TYPE>( a.y() * b.z() - a.z() * b.y(),
+                            a.z() * b.x() - a.x() * b.z(),
+                            a.x() * b.y() - a.y() * b.x() );
+}
+template<class TYPE>
+inline MeshPoint<TYPE> normalize( const MeshPoint<TYPE> &x )
+{
+    auto y   = x;
+    int ndim = x.ndim();
+    if ( ndim == 2 ) {
+        auto n = x.x() * x.x() + x.y() * x.y();
+        y.x() /= n;
+        y.y() /= n;
+    } else if ( ndim == 3 ) {
+        auto n = x.x() * x.x() + x.y() * x.y() + x.z() * x.z();
+        y.x() /= n;
+        y.y() /= n;
+        y.z() /= n;
+    }
+    return y;
+}
 
 
 } // namespace Mesh

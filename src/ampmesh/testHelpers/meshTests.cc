@@ -1449,7 +1449,34 @@ static inline void volume( AMP::Mesh::Mesh::shared_ptr mesh )
     }
     AMP_ASSERT( pass );
 }
-static inline void getElements( AMP::Mesh::Mesh::shared_ptr mesh )
+static inline void getElementIDs( AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    auto type = mesh->getGeomType();
+    if ( type > AMP::Mesh::GeomType::Vertex ) {
+        bool pass = true;
+        std::vector<AMP::Mesh::MeshElementID> ids;
+        for ( const auto &elem : mesh->getIterator( type, 0 ) ) {
+            elem.getElementsID( AMP::Mesh::GeomType::Vertex, ids );
+            pass = pass && !ids.empty();
+        }
+        AMP_ASSERT( pass );
+    }
+}
+
+static inline void getElements1( AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    auto type = mesh->getGeomType();
+    if ( type > AMP::Mesh::GeomType::Vertex ) {
+        bool pass = true;
+        std::vector<AMP::Mesh::MeshElement> x;
+        for ( const auto &elem : mesh->getIterator( type, 0 ) ) {
+            elem.getElements( AMP::Mesh::GeomType::Vertex, x );
+            pass = pass && !x.empty();
+        }
+        AMP_ASSERT( pass );
+    }
+}
+static inline void getElements2( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     auto type = mesh->getGeomType();
     if ( type > AMP::Mesh::GeomType::Vertex ) {
@@ -1469,15 +1496,17 @@ void meshTests::MeshPerformance( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr 
     const size_t N_nodes = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
     const size_t N_elem  = mesh->numLocalElements( mesh->getGeomType() );
     // Get the test timing
-    auto t1 = runAndTime( getIterator, mesh, 1000 );
-    auto t2 = runAndTime( incIterator, mesh, 10 );
-    auto t3 = runAndTime( rangeLoop, mesh, 10 );
-    auto t4 = runAndTime( globalID, mesh, 10 );
-    auto t5 = runAndTime( coord1, mesh, 10 );
-    auto t6 = runAndTime( coord2, mesh, 10 );
-    auto t7 = runAndTime( centroid, mesh, 10 );
-    auto t8 = runAndTime( getElements, mesh, 10 );
-    auto t9 = runAndTime( volume, mesh, 10 );
+    auto t1  = runAndTime( getIterator, mesh, 1000 );
+    auto t2  = runAndTime( incIterator, mesh, 10 );
+    auto t3  = runAndTime( rangeLoop, mesh, 10 );
+    auto t4  = runAndTime( globalID, mesh, 10 );
+    auto t5  = runAndTime( coord1, mesh, 10 );
+    auto t6  = runAndTime( coord2, mesh, 10 );
+    auto t7  = runAndTime( centroid, mesh, 10 );
+    auto t8  = runAndTime( getElementIDs, mesh, 10 );
+    auto t9  = runAndTime( getElements1, mesh, 10 );
+    auto t10 = runAndTime( getElements2, mesh, 10 );
+    auto t11 = runAndTime( volume, mesh, 10 );
     // Print the results
     auto to_ns = [N_nodes]( double time, size_t N ) {
         return static_cast<int>( 1e9 * std::max( time, 0.0 ) / N );
@@ -1489,8 +1518,10 @@ void meshTests::MeshPerformance( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr 
     printf( "   coord (1): %i ns\n", to_ns( t5 - t3, N_nodes ) );
     printf( "   coord (2): %i ns\n", to_ns( t6 - t3, N_nodes ) );
     printf( "   centroid: %i ns\n", to_ns( t7 - t3, N_elem ) );
-    printf( "   getElements: %i ns\n", to_ns( t8 - t3, N_elem ) );
-    printf( "   volume: %i ns\n", to_ns( t9 - t3, N_elem ) );
+    printf( "   getElementIDs: %i ns\n", to_ns( t8 - t3, N_elem ) );
+    printf( "   getElements (1): %i ns\n", to_ns( t9 - t3, N_elem ) );
+    printf( "   getElements (2): %i ns\n", to_ns( t10 - t3, N_elem ) );
+    printf( "   volume: %i ns\n", to_ns( t11 - t3, N_elem ) );
     // Repeat the tests for all base meshes if we are dealing with a multimesh
     auto multimesh = AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( multimesh ) {

@@ -56,7 +56,7 @@ void meshTests::MeshGeometryTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Me
         return;
     PROFILE_START( "MeshGeometryTestLoop" );
     // Run the geometry based tests
-    // TestInside( ut, mesh );
+    TestInside( ut, mesh );
     PROFILE_STOP( "MeshGeometryTestLoop" );
 }
 

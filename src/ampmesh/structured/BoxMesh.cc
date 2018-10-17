@@ -114,34 +114,28 @@ BoxMesh::BoxMesh( MeshParameters::shared_ptr params_in ) : Mesh( params_in )
     AMP_INSIST( d_params != nullptr, "Params must not be null" );
     AMP_INSIST( !d_comm.isNull(), "Communicator must be set" );
     AMP_INSIST( d_db.get(), "Database must exist" );
-    for ( int i = 0; i < 3; i++ ) {
-        d_isPeriodic[i] = false;
-        d_globalSize[i] = 1;
-        d_numBlocks[i]  = 1;
-    }
-    for ( int i = 0; i < 6; i++ ) {
-        d_surfaceId[i] = i;
-        d_onSurface[i] = true;
-    }
+    d_isPeriodic.fill( false );
+    d_globalSize.fill( 1 );
+    d_blockSize.fill( 1 );
+    d_numBlocks.fill( 1 );
+    d_surfaceId = { 0, 1, 2, 3, 4, 5 };
+    d_onSurface.fill( true );
 }
 BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh.d_params )
 {
-    PhysicalDim = mesh.PhysicalDim;
-    GeomDim     = mesh.GeomDim;
-    d_max_gcw   = mesh.d_max_gcw;
-    d_comm      = mesh.d_comm;
-    d_name      = mesh.d_name;
-    d_box       = mesh.d_box;
-    d_box_local = mesh.d_box_local;
-    for ( int d = 0; d < 3; d++ ) {
-        d_isPeriodic[d] = mesh.d_isPeriodic[d];
-        d_globalSize[d] = mesh.d_globalSize[d];
-        d_numBlocks[d]  = mesh.d_numBlocks[d];
-    }
-    for ( int i = 0; i < 6; i++ ) {
-        d_surfaceId[i] = mesh.d_surfaceId[i];
-        d_onSurface[i] = mesh.d_onSurface[i];
-    }
+    PhysicalDim  = mesh.PhysicalDim;
+    GeomDim      = mesh.GeomDim;
+    d_max_gcw    = mesh.d_max_gcw;
+    d_comm       = mesh.d_comm;
+    d_name       = mesh.d_name;
+    d_box        = mesh.d_box;
+    d_box_local  = mesh.d_box_local;
+    d_isPeriodic = mesh.d_isPeriodic;
+    d_globalSize = mesh.d_globalSize;
+    d_blockSize  = mesh.d_blockSize;
+    d_numBlocks  = mesh.d_numBlocks;
+    d_surfaceId  = mesh.d_surfaceId;
+    d_onSurface  = mesh.d_onSurface;
     for ( int d = 0; d < 4; d++ ) {
         for ( int i = 0; i < 6; i++ )
             d_globalSurfaceList[i][d] = mesh.d_globalSurfaceList[i][d];
@@ -211,13 +205,16 @@ void BoxMesh::initialize()
             factors.resize( factors.size() - 1 );
         }
     }
+    d_blockSize = { ( d_globalSize[0] + d_numBlocks[0] - 1 ) / d_numBlocks[0],
+                    ( d_globalSize[1] + d_numBlocks[1] - 1 ) / d_numBlocks[1],
+                    ( d_globalSize[2] + d_numBlocks[2] - 1 ) / d_numBlocks[2] };
     // Create the list of elements on each surface
-    const std::array<int, 6> globalRange = { { 0,
-                                               std::max( d_globalSize[0] - 1, 0 ),
-                                               0,
-                                               std::max( d_globalSize[1] - 1, 0 ),
-                                               0,
-                                               std::max( d_globalSize[2] - 1, 0 ) } };
+    const std::array<int, 6> globalRange = { 0,
+                                             std::max( d_globalSize[0] - 1, 0 ),
+                                             0,
+                                             std::max( d_globalSize[1] - 1, 0 ),
+                                             0,
+                                             std::max( d_globalSize[2] - 1, 0 ) };
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
         // Loop through the different geometry types;
         for ( int t = 0; t <= static_cast<int>( GeomDim ); t++ ) {
@@ -781,33 +778,29 @@ MeshIterator BoxMesh::getBlockIDIterator( const GeomType type, const int id, con
 }
 bool BoxMesh::isOnBoundary( const MeshElementIndex &index, int id ) const
 {
-    bool on_boundary = false;
+    bool test = false;
     for ( int i = 0; i < 6; i++ ) {
         if ( d_surfaceId[i] == id ) {
             int d = i / 2;
             int s = i % 2;
             if ( index.type() == GeomDim ) {
-                on_boundary = on_boundary || ( s == 0 && index.index( d ) == 0 );
-                on_boundary = on_boundary || ( s == 1 && index.index( d ) == d_globalSize[d] - 1 );
+                test |= ( s == 0 && index.index( d ) == 0 );
+                test |= ( s == 1 && index.index( d ) == d_globalSize[d] - 1 );
             } else if ( index.type() == GeomType::Vertex ) {
-                on_boundary = on_boundary || ( s == 0 && index.index( d ) == 0 );
-                on_boundary = on_boundary || ( s == 1 && index.index( d ) == d_globalSize[d] );
+                test |= ( s == 0 && index.index( d ) == 0 );
+                test |= ( s == 1 && index.index( d ) == d_globalSize[d] );
             } else if ( index.type() == GeomType::Edge ) {
-                on_boundary =
-                    on_boundary || ( s == 0 && index.side() == d && index.index( d ) == 0 );
-                on_boundary = on_boundary || ( s == 1 && index.side() == d &&
-                                               index.index( d ) == d_globalSize[d] );
+                test |= ( s == 0 && index.side() == d && index.index( d ) == 0 );
+                test |= ( s == 1 && index.side() == d && index.index( d ) == d_globalSize[d] );
             } else if ( index.type() == GeomType::Face ) {
-                on_boundary =
-                    on_boundary || ( s == 0 && index.side() == d && index.index( d ) == 0 );
-                on_boundary = on_boundary || ( s == 1 && index.side() == d &&
-                                               index.index( d ) == d_globalSize[d] );
+                test |= ( s == 0 && index.side() == d && index.index( d ) == 0 );
+                test |= ( s == 1 && index.side() == d && index.index( d ) == d_globalSize[d] );
             } else {
                 AMP_ERROR( "Unknown type" );
             }
         }
     }
-    return on_boundary;
+    return test;
 }
 
 

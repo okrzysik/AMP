@@ -116,6 +116,26 @@ public:
 protected:
     //!  Empty constructor for the base class
     Geometry() {}
+
+protected: // Helper functions
+    // Compute the normal to the plane formed by 3 points
+    static inline Point normal( const Point &a, const Point &b, const Point &c )
+    {
+        return normalize( cross( b - a, c - a ) );
+    }
+
+    // Compute the distance to the intersection of a ray with a plane
+    static inline double
+    intersectPlane( const Point &n, const Point &p0, const Point &x0, const Point &v )
+    {
+        double d = dot( n, v );
+        if ( d > 1e-12 ) {
+            double t = dot( p0 - x0, n ) / d;
+            if ( t >= 0 )
+                return t;
+        }
+        return std::numeric_limits<double>::infinity();
+    }
 };
 
 
