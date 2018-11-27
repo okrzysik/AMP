@@ -129,7 +129,7 @@ protected: // Helper functions
     intersectPlane( const Point &n, const Point &p0, const Point &x0, const Point &v )
     {
         double d = dot( n, v );
-        if ( d > 1e-12 ) {
+        if ( fabs( d ) > 1e-12 ) {
             double t = dot( p0 - x0, n ) / d;
             if ( t >= 0 )
                 return t;

@@ -38,7 +38,7 @@ SquareFrustumMesh::SquareFrustumMesh( MeshParameters::shared_ptr params )
     int dir2 = 0;
     if ( dir == "-x" )
         dir2 = 0;
-    else if ( dir == "-+x" )
+    else if ( dir == "+x" )
         dir2 = 1;
     else if ( dir == "-y" )
         dir2 = 2;

@@ -209,12 +209,9 @@ void BoxMesh::initialize()
                     ( d_globalSize[1] + d_numBlocks[1] - 1 ) / d_numBlocks[1],
                     ( d_globalSize[2] + d_numBlocks[2] - 1 ) / d_numBlocks[2] };
     // Create the list of elements on each surface
-    const std::array<int, 6> globalRange = { 0,
-                                             std::max( d_globalSize[0] - 1, 0 ),
-                                             0,
-                                             std::max( d_globalSize[1] - 1, 0 ),
-                                             0,
-                                             std::max( d_globalSize[2] - 1, 0 ) };
+    const std::array<int, 6> globalRange = { 0, std::max( d_globalSize[0] - 1, 0 ),
+                                             0, std::max( d_globalSize[1] - 1, 0 ),
+                                             0, std::max( d_globalSize[2] - 1, 0 ) };
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
         // Loop through the different geometry types;
         for ( int t = 0; t <= static_cast<int>( GeomDim ); t++ ) {
@@ -398,7 +395,7 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const AMP::Geometry::P
                                                           GeomType type ) const
 {
     // Correct x for periodic boundaries
-    auto x = x0;
+    double x[3] = { x0.x(), x0.y(), x0.z() };
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
         if ( d_isPeriodic[d] ) {
             while ( x[d] < 0 )

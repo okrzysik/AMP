@@ -81,9 +81,8 @@ Point SphereSurface::logical( const Point &pos ) const
     double x0 = pos[0] - d_offset[0];
     double y0 = pos[1] - d_offset[1];
     double z0 = pos[2] - d_offset[2];
-    double r  = sqrt( x0 * x0 + y0 * y0 + z0 * z0 );
     auto tmp  = AMP::Mesh::BoxMeshHelpers::map_sphere_surface_logical( d_r, x0, y0, z0 );
-    return Point( tmp.first, tmp.second, r / d_r - 1 );
+    return Point( tmp.first, tmp.second );
 }
 
 

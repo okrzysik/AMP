@@ -42,11 +42,11 @@ static inline std::pair<double, double> map_c2p( int method, double xc, double y
 }
 static inline double root( double a, double b, double c, int r )
 {
-    double x = 0;
-    if ( r == 1 )
-        x = ( -b + sqrt( b * b - 4 * a * c ) ) / ( 2 * a );
-    else
-        x = ( -b - sqrt( b * b - 4 * a * c ) ) / ( 2 * a );
+    double t = b * b - 4 * a * c;
+    if ( fabs( t ) < 1e-12 * fabs( b * b ) )
+        return -b / ( 2 * a );
+    double s = r == 1 ? 1 : -1;
+    double x = ( -b + s * sqrt( t ) ) / ( 2 * a );
     return x;
 }
 static inline std::pair<double, double> map_p2c( int method, double xp, double yp )
@@ -130,25 +130,55 @@ std::pair<double, double> map_circle_logical( double r, int method, double x, do
  ****************************************************************/
 AMP::Geometry::Point map_logical_sphere( double r, double x, double y, double z )
 {
+    constexpr double sqrt3 = 1.732050807568877; // sqrt(3)
     // This maps from a a logically rectangular 3D mesh to a sphere mesh using the mapping by:
     //    Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
     //       and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
     //       SIAM REVIEW, Vol. 50, No. 4, pp.723–752 (2008)
-    const double sqrt3 = 1.732050807568877;
-    double xc          = 2 * x - 1; // Change domain to [-1,1]
-    double yc          = 2 * y - 1; // Change domain to [-1,1]
-    double zc          = 2 * z - 1; // Change domain to [-1,1]
-    double d           = std::max( std::max( fabs( xc ), fabs( yc ) ), fabs( zc ) );
-    double r2          = sqrt( xc * xc + yc * yc + zc * zc );
-    r2                 = std::max( r2, 1e-10 );
-    double x2          = r * d * xc / r2;
-    double y2          = r * d * yc / r2;
-    double z2          = r * d * zc / r2;
-    double w           = d * d;
-    x2                 = w * x2 + r * ( 1 - w ) * xc / sqrt3;
-    y2                 = w * y2 + r * ( 1 - w ) * yc / sqrt3;
-    z2                 = w * z2 + r * ( 1 - w ) * zc / sqrt3;
-    return AMP::Geometry::Point( x2, y2, z2 );
+    double xc = 2 * x - 1; // Change domain to [-1,1]
+    double yc = 2 * y - 1; // Change domain to [-1,1]
+    double zc = 2 * z - 1; // Change domain to [-1,1]
+    double d  = std::max( { fabs( xc ), fabs( yc ), fabs( zc ) } );
+    double r2 = sqrt( xc * xc + yc * yc + zc * zc );
+    r2        = std::max( r2, 1e-10 );
+    double d2 = d * d;
+    double c  = r * ( d * d2 / r2 + ( 1.0 - d2 ) / sqrt3 );
+    double x2 = c * xc;
+    double y2 = c * yc;
+    double z2 = c * zc;
+    return { x2, y2, z2 };
+}
+AMP::Geometry::Point map_sphere_logical( double r, double x2, double y2, double z2 )
+{
+    constexpr double sqrt1_3 = 0.577350269189626; // 1/sqrt(3)
+    // This maps from a physical coordinates to logical coordinates using the mapping by:
+    //    Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
+    //       and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
+    //       SIAM REVIEW, Vol. 50, No. 4, pp.723–752 (2008)
+    double d1  = std::max( { fabs( x2 ), fabs( y2 ), fabs( z2 ) } );
+    double r21 = sqrt( x2 * x2 + y2 * y2 + z2 * z2 );
+    r21        = std::max( r21, 1e-10 );
+    // Solve c = a + b/c^2
+    double a  = r * sqrt1_3;
+    double a2 = a * a;
+    double b  = r * d1 * d1 * ( d1 / r21 - sqrt1_3 );
+    double c  = 0;
+    if ( fabs( b ) < 1e-8 * a ) {
+        c = a;
+        c = a + b / ( c * c );
+    } else {
+        c = 1.5 * sqrt( 12 * a2 * a * b + 81 * b * b ) + a2 * a + 13.5 * b;
+        c = cbrt( c );
+        c = 0.33333333333333333 * ( c + a2 / c + a );
+    }
+    // Compute (x,y,z)
+    double xc = x2 / c;
+    double yc = y2 / c;
+    double zc = z2 / c;
+    double x  = 0.5 + 0.5 * xc;
+    double y  = 0.5 + 0.5 * yc;
+    double z  = 0.5 + 0.5 * zc;
+    return { x, y, z };
 }
 
 
@@ -158,12 +188,10 @@ AMP::Geometry::Point map_logical_sphere( double r, double x, double y, double z 
  ****************************************************************/
 AMP::Geometry::Point map_logical_sphere_surface( double R, double x, double y )
 {
-    // This maps from a a logically rectangular 3D mesh to the surface of a sphere using the mapping
-    // by:
-    // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and Finite
-    // GeomType::Volume
-    //    Methods for PDEs in Circular and Spherical Domains", SIAM REVIEW, Vol. 50, No. 4, pp.
-    //    723–752 (2008)
+    // This maps from a a logically rectangular 3D mesh to the surface of a sphere using:
+    // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and
+    //    Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
+    //    SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
     double x2 = 2 * x - 1;  // Change domain to [-1,1]
     double x3 = fabs( x2 ); // We need to make x go from 1:0:1
     // Map x,y to the unit circle
@@ -180,15 +208,11 @@ AMP::Geometry::Point map_logical_sphere_surface( double R, double x, double y )
 }
 std::pair<double, double> map_sphere_surface_logical( double R, double x, double y, double z )
 {
-    // Map from the unit circle to logical
-    auto point = map_circle_logical( R, 3, x, y );
-    // Change logical coordinates to [0,1]
-    double xc = point.first;
-    double yc = point.second;
-    if ( z < 0 )
-        xc = -xc;
-    xc = 0.5 * ( xc + 1 );
-    return std::make_pair( xc, yc );
+    double xp  = x / R;
+    double yp  = y / R;
+    auto point = map_circle_logical( 1.0, 3, xp, yp );
+    double x2  = z < 0 ? -point.first : point.first;
+    return { 0.5 + 0.5 * x2, point.second };
 }
 
 
@@ -199,13 +223,22 @@ std::pair<double, double> map_sphere_surface_logical( double R, double x, double
 AMP::Geometry::Point map_logical_shell( double r1, double r2, double x, double y, double z )
 {
     // This maps from a a logically rectangular 3D mesh to a shell mesh using the mapping by:
-    // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and Finite
-    // GeomType::Volume
-    //    Methods for PDEs in Circular and Spherical Domains", SIAM REVIEW, Vol. 50, No. 4, pp.
-    //    723–752 (2008)
-    double dr = r2 - r1;
-    double Rz = r1 + z * dr; // radius based on z[0,1]
+    // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and
+    //    Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
+    //    SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+    double Rz = r1 + z * ( r2 - r1 ); // radius based on z[0,1]
     return map_logical_sphere_surface( Rz, x, y );
+}
+AMP::Geometry::Point map_shell_logical( double r1, double r2, double x0, double y0, double z0 )
+{
+    // This maps from a a logically rectangular 3D mesh to a shell mesh using the mapping by:
+    // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and
+    //    Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
+    //    SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+    double R = sqrt( x0 * x0 + y0 * y0 + z0 * z0 );
+    auto xy  = map_sphere_surface_logical( R, x0, y0, z0 );
+    double z = ( R - r1 ) / ( r2 - r1 );
+    return { std::get<0>( xy ), std::get<1>( xy ), z };
 }
 
 

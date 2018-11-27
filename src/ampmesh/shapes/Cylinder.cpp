@@ -32,14 +32,19 @@ double Cylinder::distance( const Point &pos, const Point &ang ) const
 
 
 /********************************************************
- * Check if the ray is inside the geometry               *
+ * Check if the point is inside the geometry             *
  ********************************************************/
 bool Cylinder::inside( const Point &pos ) const
 {
-    double x = pos.x() - d_offset[0];
-    double y = pos.y() - d_offset[1];
-    double z = pos.z() - d_offset[2];
-    return ( x * x + y * y ) <= d_r * d_r && z >= d_z_min && z <= d_z_max;
+    double x  = pos.x() - d_offset[0];
+    double y  = pos.y() - d_offset[1];
+    double z  = pos.z() - d_offset[2];
+    double t1 = 1e-12 * d_r * d_r;
+    double t2 = 1e-12 * std::max( fabs( d_z_min ), fabs( d_z_max ) );
+    double r2 = x * x + y * y;
+    bool in_r = r2 <= d_r * d_r + t1;
+    bool in_z = z >= d_z_min - t2 && z <= d_z_max + t2;
+    return in_r && in_z;
 }
 
 
@@ -66,11 +71,10 @@ Point Cylinder::surfaceNorm( const Point &pos ) const
 Point Cylinder::physical( const Point &pos ) const
 {
     auto tmp = AMP::Mesh::BoxMeshHelpers::map_logical_circle( d_r, 2, pos[0], pos[1] );
-    Point point;
-    point[0] = tmp.first + d_offset[0];
-    point[1] = tmp.second + d_offset[1];
-    point[2] = d_z_min + pos[2] * ( d_z_max - d_z_min ) + d_offset[2];
-    return point;
+    double x = tmp.first + d_offset[0];
+    double y = tmp.second + d_offset[1];
+    double z = d_z_min + pos[2] * ( d_z_max - d_z_min ) + d_offset[2];
+    return { x, y, z };
 }
 
 
@@ -79,9 +83,10 @@ Point Cylinder::physical( const Point &pos ) const
  ********************************************************/
 Point Cylinder::logical( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return Point();
+    auto tmp = AMP::Mesh::BoxMeshHelpers::map_circle_logical(
+        d_r, 2, pos[0] - d_offset[0], pos[1] - d_offset[1] );
+    double z = ( pos[2] - d_z_min - d_offset[2] ) / ( d_z_max - d_z_min );
+    return Point( tmp.first, tmp.second, z );
 }
 
 

@@ -56,18 +56,13 @@ SquareFrustum::SquareFrustum( const std::vector<double> &range, int dir, double 
     // Compute the face normals
     for ( int i = 0; i < 6; i++ )
         d_normal[i] = normal( d_face[i][0], d_face[i][1], d_face[i][2] );
-    if ( d_normal[0].x() > 0 )
-        d_normal[0] = -d_normal[0];
-    if ( d_normal[1].x() < 0 )
-        d_normal[1] = -d_normal[1];
-    if ( d_normal[2].y() > 0 )
-        d_normal[2] = -d_normal[2];
-    if ( d_normal[3].y() > 0 )
-        d_normal[3] = -d_normal[3];
-    if ( d_normal[4].z() > 0 )
-        d_normal[4] = -d_normal[4];
-    if ( d_normal[5].z() < 0 )
-        d_normal[5] = -d_normal[5];
+    // Ensure the normals are pointed out from the center
+    auto center = physical( { 0.5, 0.5, 0.5 } );
+    for ( int i = 0; i < 6; i++ ) {
+        double t = dot( d_face[i][0] - center, d_normal[i] );
+        if ( t < 0 )
+            d_normal[i] = -d_normal[i];
+    }
 }
 
 
@@ -77,22 +72,28 @@ SquareFrustum::SquareFrustum( const std::vector<double> &range, int dir, double 
 double SquareFrustum::distance( const Point &pos, const Point &ang ) const
 {
     double d = std::numeric_limits<double>::infinity();
-    bool in  = inside( pos );
+    // Get the position and angle in logical coordinates
+    auto pos2 = logical( pos );
     // Loop over each surface keeping the closest surface
+    constexpr double tol = 1e-5;
     for ( int i = 0; i < 6; i++ ) {
         // Get the distance from the ray to the plane
         double t = intersectPlane( d_normal[i], d_face[i][0], pos, ang );
-        if ( t >= d )
+        if ( fabs( t ) >= fabs( d ) )
             continue;
-        // Check if the point lies within the surface
+        // Check if the point lies outside the volume
         auto p = SquareFrustum::logical( pos + t * ang );
-        if ( fabs( p[i / 2] ) < 1e-12 || fabs( p[i / 2] - 1.0 ) < 1e-12 ) {
-            // The ray intersects the face
-            if ( in )
-                d = std::min( d, -t );
-            else
-                d = std::min( d, t );
-        }
+        if ( p[0] < -tol || p[1] < -tol || p[2] < -tol || p[0] > 1 + tol || p[1] > 1 + tol ||
+             p[2] > 1 + tol )
+            continue;
+        // Check if the distance is ~0
+        if ( fabs( pos2[i / 2] - p[i / 2] ) < tol )
+            continue;
+        // The ray intersects the face
+        if ( dot( d_normal[i], ang ) > 0 )
+            d = -t;
+        else
+            d = t;
     }
     return d;
 }
@@ -152,7 +153,7 @@ Point SquareFrustum::physical( const Point &pos ) const
     Point p = pos;
     // Get the point in [0,1,0,1,0,1]
     uint8_t dir2 = d_dir / 2;
-    p[d_dir / 2] /= d_scale_height;
+    p[dir2] /= d_scale_height;
     if ( dir2 == 0 ) {
         p = { p.x(), 0.5 + ( p.x() - 1 ) * ( 0.5 - p.y() ), 0.5 + ( p.x() - 1 ) * ( 0.5 - p.z() ) };
     } else if ( dir2 == 1 ) {
@@ -161,8 +162,11 @@ Point SquareFrustum::physical( const Point &pos ) const
         p = { 0.5 + ( p.z() - 1 ) * ( 0.5 - p.x() ), 0.5 + ( p.z() - 1 ) * ( 0.5 - p.y() ), p.z() };
     }
     p[dir2] *= d_scale_height;
-    if ( d_dir % 2 == 1 )
-        p = 1 - p;
+    if ( d_dir % 2 == 1 ) {
+        int dir3 = ( dir2 + 1 ) % 3;
+        p[dir2]  = 1 - p[dir2];
+        p[dir3]  = 1 - p[dir3];
+    }
     // Get the final coordinates
     p.x() = d_range[0] + p.x() * ( d_range[1] - d_range[0] );
     p.y() = d_range[2] + p.y() * ( d_range[3] - d_range[2] );
@@ -183,8 +187,11 @@ Point SquareFrustum::logical( const Point &pos ) const
     p.z() = ( p.z() - d_range[4] ) / ( d_range[5] - d_range[4] );
     // Get the final coordinates
     uint8_t dir2 = d_dir / 2;
-    if ( d_dir % 2 == 1 )
-        p = 1 - p;
+    if ( d_dir % 2 == 1 ) {
+        int dir3 = ( dir2 + 1 ) % 3;
+        p[dir2]  = 1 - p[dir2];
+        p[dir3]  = 1 - p[dir3];
+    }
     p[dir2] /= d_scale_height;
     if ( dir2 == 0 ) {
         p = { p.x(), 0.5 - ( p.y() - 0.5 ) / ( p.x() - 1 ), 0.5 - ( p.z() - 0.5 ) / ( p.x() - 1 ) };

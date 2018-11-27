@@ -304,7 +304,7 @@ double trilinear( const std::vector<double> &x,
 constexpr unsigned int hash_char( const char * );
 
 //! Get the prime factors for a number
-std::vector<int> factor( size_t );
+std::vector<int> factor( uint64_t );
 
 //! Sleep for the specified number of ms
 inline void sleepMs( unsigned int N )

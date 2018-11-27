@@ -77,9 +77,8 @@ Point Sphere::physical( const Point &pos ) const
  ********************************************************/
 Point Sphere::logical( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return Point();
+    return AMP::Mesh::BoxMeshHelpers::map_sphere_logical(
+        d_r, pos[0] - d_offset[0], pos[1] - d_offset[1], pos[2] - d_offset[2] );
 }
 
 

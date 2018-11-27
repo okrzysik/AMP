@@ -190,7 +190,7 @@ Point Box<3>::physical( const Point &pos ) const
 template<std::size_t NDIM>
 Point Grid<NDIM>::physical( const Point &pos ) const
 {
-    Point point;
+    Point point( NDIM );
     for ( size_t d = 0; d < NDIM; d++ ) {
         double p = pos[d] * ( d_coord[d].size() - 1 );
         int i    = std::min<int>( p, d_coord[d].size() - 2 );

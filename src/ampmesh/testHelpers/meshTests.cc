@@ -814,8 +814,7 @@ void meshTests::DisplaceMeshScalar( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
 {
     // Test the scalar displacement
     std::vector<double> box1 = mesh->getBoundingBox();
-    std::vector<double> displacement( mesh->getDim(), 1.0 );
-    mesh->displaceMesh( displacement );
+    mesh->displaceMesh( { 1, 1, 1 } );
     std::vector<double> box2 = mesh->getBoundingBox();
     double volume            = 1.0;
     for ( int i = 0; i < mesh->getDim(); i++ )
@@ -833,6 +832,7 @@ void meshTests::DisplaceMeshScalar( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
         utils->passes( "scalar displacement test" );
     else
         utils->failure( "scalar displacement test" );
+    mesh->displaceMesh( { -1, -1, -1 } );
 }
 void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
@@ -878,6 +878,9 @@ void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
         utils->passes( "displacement changed volumes" );
     else
         utils->failure( "displacement changed volumes" );
+    for ( auto &tmp : *dispVec )
+        tmp = -tmp;
+    mesh->displaceMesh( dispVec );
 #endif
 }
 

@@ -214,46 +214,38 @@ using Point = MeshPoint<double>;
 template<class TYPE>
 inline MeshPoint<TYPE> operator+( const MeshPoint<TYPE> &a, const MeshPoint<TYPE> &b )
 {
-    auto c = a;
-    c += b;
-    return c;
+    TYPE c[3] = { a.x() + b.x(), a.y() + b.y(), a.z() + b.z() };
+    return MeshPoint<TYPE>( a.size(), c );
 }
 template<class TYPE, class TYPE2>
 inline MeshPoint<TYPE> operator+( const MeshPoint<TYPE> &a, const TYPE2 &b )
 {
-    auto c = a;
-    c += b;
-    return c;
+    TYPE c[3] = { a.x() + b, a.y() + b, a.z() + b };
+    return MeshPoint<TYPE>( a.size(), c );
 }
 template<class TYPE, class TYPE2>
 inline MeshPoint<TYPE> operator+( const TYPE2 &a, const MeshPoint<TYPE> &b )
 {
-    auto c = b;
-    c += a;
-    return c;
+    TYPE c[3] = { a + b.x(), a + b.y(), a + b.z() };
+    return MeshPoint<TYPE>( b.size(), c );
 }
 template<class TYPE>
 inline MeshPoint<TYPE> operator-( const MeshPoint<TYPE> &a, const MeshPoint<TYPE> &b )
 {
-    auto c = a;
-    c -= b;
-    return c;
+    TYPE c[3] = { a.x() - b.x(), a.y() - b.y(), a.z() - b.z() };
+    return MeshPoint<TYPE>( a.size(), c );
 }
 template<class TYPE, class TYPE2>
 inline MeshPoint<TYPE> operator-( const MeshPoint<TYPE> &a, const TYPE2 &b )
 {
-    auto c = a;
-    c -= b;
-    return c;
+    TYPE c[3] = { a.x() - b, a.y() - b, a.z() - b };
+    return MeshPoint<TYPE>( a.size(), c );
 }
 template<class TYPE, class TYPE2>
 inline MeshPoint<TYPE> operator-( const TYPE2 &a, const MeshPoint<TYPE> &b )
 {
-    auto c = b;
-    c.x() -= a;
-    c.y() -= a;
-    c.z() -= a;
-    return c;
+    TYPE c[3] = { a - b.x(), a - b.y(), a - b.z() };
+    return MeshPoint<TYPE>( b.size(), c );
 }
 template<class TYPE>
 inline MeshPoint<TYPE> operator-( const MeshPoint<TYPE> &a )
@@ -303,17 +295,10 @@ template<class TYPE>
 inline MeshPoint<TYPE> normalize( const MeshPoint<TYPE> &x )
 {
     auto y   = x;
-    int ndim = x.ndim();
-    if ( ndim == 2 ) {
-        auto n = x.x() * x.x() + x.y() * x.y();
-        y.x() /= n;
-        y.y() /= n;
-    } else if ( ndim == 3 ) {
-        auto n = x.x() * x.x() + x.y() * x.y() + x.z() * x.z();
-        y.x() /= n;
-        y.y() /= n;
-        y.z() /= n;
-    }
+    double t = 1.0 / sqrt( x.x() * x.x() + x.y() * x.y() + x.z() * x.z() );
+    y.x() *= t;
+    y.y() *= t;
+    y.z() *= t;
     return y;
 }
 

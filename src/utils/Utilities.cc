@@ -259,53 +259,39 @@ void Utilities::printBanner()
 // clang-format on
 
 // Factor a number into it's prime factors
-std::vector<int> Utilities::factor( size_t number )
+std::vector<int> Utilities::factor( uint64_t number )
 {
-    if ( number <= 3 )
+    uint64_t n = number;
+    // Handle trival case
+    if ( n <= 3 )
         return std::vector<int>( 1, (int) number );
-    size_t i, n, n_max;
-    bool factor_found;
-    // Compute the maximum number of factors
-    int N_primes_max = 1;
-    n                = number;
-    while ( n >>= 1 )
-        ++N_primes_max;
-    // Initialize n, factors
-    n = number;
-    std::vector<int> factors;
-    factors.reserve( N_primes_max );
+    // Initialize factors
+    size_t N = 0;
+    int factors[64];
+    // Remove all factors of 2
+    while ( ( n & 0x01 ) == 0 ) {
+        factors[N++] = 2;
+        n >>= 1;
+        continue;
+    }
+    // Use brute force to find remaining factors
+    uint64_t f = 3;
     while ( true ) {
-        // Check if n is a trivial prime number
-        if ( n == 2 || n == 3 || n == 5 ) {
-            factors.push_back( (int) n );
-            break;
-        }
-        // Check if n is divisible by 2
-        if ( n % 2 == 0 ) {
-            factors.push_back( 2 );
-            n /= 2;
-            continue;
-        }
-        // Check each odd number until a factor is reached
-        n_max        = (size_t) floor( sqrt( (double) n ) );
-        factor_found = false;
-        for ( i = 3; i <= n_max; i += 2 ) {
-            if ( n % i == 0 ) {
-                factors.push_back( i );
-                n /= i;
-                factor_found = true;
-                break;
+        auto f_max = static_cast<uint64_t>( floor( sqrt( n ) ) );
+        bool found = false;
+        for ( ; f <= f_max && !found; f += 2 ) {
+            while ( n % f == 0 ) {
+                factors[N++] = f;
+                n /= f;
+                found = true;
             }
         }
-        if ( factor_found )
-            continue;
-        // No factors were found, the number must be prime
-        factors.push_back( (int) n );
-        break;
+        if ( !found ) {
+            factors[N++] = n;
+            break;
+        }
     }
-    // Sort the factors
-    AMP::Utilities::quicksort( factors );
-    return factors;
+    return std::vector<int>( factors, factors + N );
 }
 
 

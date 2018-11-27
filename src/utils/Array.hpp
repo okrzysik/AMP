@@ -1274,13 +1274,11 @@ Array_interp_3D( double x, double y, double z, int Nx, int Ny, int Nz, const TYP
     return h0 * dz2 + h1 * dz;
 }
 template<class TYPE, class FUN, class Allocator>
-inline TYPE Array<TYPE, FUN, Allocator>::interp( const std::vector<double> &x )
+inline TYPE Array<TYPE, FUN, Allocator>::interp( const double *x )
 {
     int ndim = 0, dim[5];
-    double x2[5];
     for ( int d = 0; d < d_size.ndim(); d++ ) {
         if ( d_size[d] > 1 ) {
-            x2[ndim]  = x[d];
             dim[ndim] = d_size[d];
             ndim++;
         }
@@ -1289,11 +1287,11 @@ inline TYPE Array<TYPE, FUN, Allocator>::interp( const std::vector<double> &x )
     if ( ndim == 0 ) {
         // No data, do nothing
     } else if ( ndim == 1 ) {
-        f = Array_interp_1D( x2[0], dim[0], d_data );
+        f = Array_interp_1D( x[0], dim[0], d_data );
     } else if ( ndim == 2 ) {
-        f = Array_interp_2D( x2[0], x2[1], dim[0], dim[1], d_data );
+        f = Array_interp_2D( x[0], x[1], dim[0], dim[1], d_data );
     } else if ( ndim == 3 ) {
-        f = Array_interp_3D( x2[0], x2[1], x2[2], dim[0], dim[1], dim[2], d_data );
+        f = Array_interp_3D( x[0], x[1], x[2], dim[0], dim[1], dim[2], d_data );
     } else {
         throw std::logic_error( "Not finished" );
     }

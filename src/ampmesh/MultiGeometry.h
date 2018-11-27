@@ -33,6 +33,9 @@ public:
     virtual ~MultiGeometry() = default;
 
 
+    //! Access the geometries
+    inline const auto &getGeometries() const { return d_geom; }
+
 public: // Functions inherited from Geometry
     virtual uint8_t getDim() const override final;
     virtual double distance( const Point &pos, const Point &dir ) const override final;

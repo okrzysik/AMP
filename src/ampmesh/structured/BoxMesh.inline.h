@@ -173,7 +173,8 @@ inline MeshElementID BoxMesh::convert( const BoxMesh::MeshElementIndex &index ) 
     j -= d_blockSize[1] * py;
     k -= d_blockSize[2] * pz;
     unsigned int local_id =
-        i + ( d_blockSize[0] + 1 ) * ( j + ( d_blockSize[1] + 1 ) * ( k + ( d_blockSize[2] + 1 ) * index.side() ) );
+        i + ( d_blockSize[0] + 1 ) *
+                ( j + ( d_blockSize[1] + 1 ) * ( k + ( d_blockSize[2] + 1 ) * index.side() ) );
     int owner_rank = px + d_numBlocks[0] * ( py + d_numBlocks[0] * pz );
     bool is_local  = owner_rank == d_comm.getRank();
     return MeshElementID( is_local, (GeomType) index.type(), local_id, owner_rank, d_meshID );
@@ -184,8 +185,8 @@ inline BoxMesh::MeshElementIndex BoxMesh::convert( const MeshElementID &id ) con
     int proc[3] = { rank % d_numBlocks[0],
                     rank / d_numBlocks[0] % d_numBlocks[1],
                     rank / ( d_numBlocks[0] * d_numBlocks[1] ) };
-    size_t ijk = id.local_id();
-    int i      = ijk % ( d_blockSize[0] + 1 );
+    size_t ijk  = id.local_id();
+    int i       = ijk % ( d_blockSize[0] + 1 );
     ijk /= ( d_blockSize[0] + 1 );
     int j = ijk % ( d_blockSize[1] + 1 );
     ijk /= ( d_blockSize[1] + 1 );

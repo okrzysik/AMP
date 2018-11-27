@@ -76,10 +76,10 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
 
     // Create the meshes from the input database
     PROFILE_START( "Load Mesh" );
-    AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( params );
-    auto pointType                   = AMP::Mesh::GeomType::Vertex;
-    auto volumeType                  = mesh->getGeomType();
-    auto surfaceType                 = getSurfaceType( volumeType );
+    auto mesh        = AMP::Mesh::Mesh::buildMesh( params );
+    auto pointType   = AMP::Mesh::GeomType::Vertex;
+    auto volumeType  = mesh->getGeomType();
+    auto surfaceType = getSurfaceType( volumeType );
     globalComm.barrier();
     PROFILE_STOP( "Load Mesh" );
     double t2 = AMP::AMP_MPI::time();

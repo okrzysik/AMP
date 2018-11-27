@@ -207,7 +207,15 @@ public: // Geometry based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void TestInside( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static void TestInside( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_shared_ptr mesh );
+
+    /**
+     * \brief Checks Geometry::inside
+     * \details  This test checks the physical-logical-physical transformation
+     * \param[in,out] ut        Unit test class to report the results
+     * \param[in] mesh          Mesh to test
+     */
+    static void TestPhysicalLogical( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_shared_ptr mesh );
 
 
 public: // Vector based tests

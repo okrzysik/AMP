@@ -7,6 +7,7 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <random>
 #include <sstream>
 #include <vector>
 
@@ -286,9 +287,9 @@ int main( int argc, char *argv[] )
         srand( static_cast<unsigned int>( time( nullptr ) ) );
         for ( size_t i = 0; i < N; i++ )
             data1[i] = rand();
-        std::vector<int> data2 = data1;
-        std::vector<int> data3 = data1;
-        double t1              = Utilities::time();
+        auto data2 = data1;
+        auto data3 = data1;
+        double t1  = Utilities::time();
         Utilities::quicksort( data1 );
         double t2 = Utilities::time();
         std::sort( data2.begin(), data2.end() );
@@ -315,11 +316,21 @@ int main( int argc, char *argv[] )
             ut.failure( "Got the expected hash key" );
 
         // Test the factor function
-        std::vector<int> factors = Utilities::factor( 13958 );
-        if ( factors.size() == 3 && factors[0] == 2 && factors[1] == 7 && factors[2] == 997 )
+        auto factors = Utilities::factor( 13958 );
+        if ( factors == std::vector<int>( { 2, 7, 997 } ) )
             ut.passes( "Correctly factored 13958" );
         else
             ut.failure( "Correctly factored 13958" );
+        std::default_random_engine gen;
+        std::uniform_int_distribution<int> dist( 1, 10000000 );
+        t1       = Utilities::time();
+        int N_it = 10000;
+        for ( int i = 0; i < N_it; i++ ) {
+            auto tmp = AMP::Utilities::factor( dist( gen ) );
+            NULL_USE( tmp );
+        }
+        t2 = Utilities::time();
+        std::cout << "factor = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;
 
         // Test getSystemMemory
         size_t system_bytes = Utilities::getSystemMemory();
