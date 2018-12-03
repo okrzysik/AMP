@@ -2,12 +2,8 @@
 #define included_AMP_Utilities
 
 
-// Include the utility macros
-#include "UtilityMacros.h"
-
-// Include utilities from StackTrace
+#include "AMP/utils/UtilityMacros.h"
 #include "StackTrace/Utilities.h"
-
 
 #include <chrono>
 #include <cstdarg>
@@ -20,8 +16,11 @@
 #include <sys/types.h>
 #include <vector>
 
+
 namespace AMP {
 
+
+class Database;
 
 #ifdef _MSC_VER
 #include <direct.h>
@@ -320,6 +319,10 @@ void nullUse( void * );
 
 //! std::string version of sprintf
 inline std::string stringf( const char *format, ... );
+
+
+//! Print a database
+void printDatabase( Database &, std::ostream &, const std::string &indent = "" );
 
 
 } // namespace Utilities

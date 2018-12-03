@@ -2,6 +2,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Logger.h"
 #include "AMP/utils/PIO.h"
 
@@ -408,5 +409,51 @@ double Utilities::trilinear( const std::vector<double> &x,
 // Dummy function to prevent compiler from optimizing away variable
 void Utilities::nullUse( void *data ) { NULL_USE( data ); }
 
+
+// Print a database to an output stream
+template<class TYPE>
+static void printVar( const std::string &name,
+                      const std::vector<TYPE> &data,
+                      std::ostream &os,
+                      const std::string &indent )
+{
+    os << indent << name << " = ";
+    if ( !data.empty() ) {
+        os << data[0];
+        for ( size_t i = 1; i < data.size(); i++ )
+            os << ", " << data[i];
+    }
+    os << std::endl;
+}
+void Utilities::printDatabase( Database &db, std::ostream &os, const std::string &indent )
+{
+    for ( const auto &name : db.getAllKeys() ) {
+        if ( db.isDatabase( name ) ) {
+            os << indent << name << "{\n";
+            printDatabase( *db.getDatabase( name ), os, indent + "   " );
+            os << indent << "}\n";
+        } else if ( db.isString( name ) ) {
+            auto data = db.getStringArray( name );
+            printVar( name, data, os, indent );
+        } else if ( db.isDouble( name ) ) {
+            auto data = db.getDoubleArray( name );
+            printVar( name, data, os, indent );
+        } else if ( db.isInteger( name ) ) {
+            auto data = db.getIntegerArray( name );
+            printVar( name, data, os, indent );
+        } else if ( db.isBool( name ) ) {
+            auto data = db.getBoolArray( name );
+            os << indent << name << " = ";
+            if ( !data.empty() ) {
+                os << ( data[0] ? "TRUE" : "FALSE" );
+                for ( size_t i = 1; i < data.size(); i++ )
+                    os << ", " << ( data[i] ? "TRUE" : "FALSE" );
+            }
+            os << std::endl;
+        } else {
+            AMP_ERROR( "Unknown type for field: " + name );
+        }
+    }
+}
 
 } // namespace AMP

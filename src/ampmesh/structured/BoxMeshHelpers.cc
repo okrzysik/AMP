@@ -2,6 +2,7 @@
 #include "AMP/ampmesh/Geometry.h"
 #include "AMP/utils/Utilities.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace AMP {
