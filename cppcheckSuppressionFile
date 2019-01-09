@@ -45,6 +45,7 @@ oppositeInnerCondition:*/src/ampmesh/loadBalance/loadBalanceSimulator.cc
 *:*/ampmesh/dendro/*
 *:*/ampmesh/hex8_element_t.cc
 duplicateAssignExpression:*/src/ampmesh/testHelpers/meshTests.cc
+useInitializationList:*/ampmesh/structured/BoxMesh.cc
 
 
 // Suppress warnings for discretization
@@ -110,7 +111,7 @@ noExplicitConstructor:*/utils/AMP_MPI.h
 noExplicitConstructor:*/utils/test/test_AMP_MPI.cc
 passedByValue:*/utils/threadpool/test/test_thread_pool.cpp
 memleak:*/utils/test/test_AMPManager.cc
-invalidPointerCast:*/utils/threadpool/atomic_helpers.h
+invalidPointerCast:*/utils/threadpool/atomic_helpers.cpp
 duplicateAssignExpression:*/src/utils/test/test_MathExpr.cc
 knownConditionTrueFalse:*/utils/test/test_AsciiWriter.cc
 knownConditionTrueFalse:*/src/utils/test/test_AMP_MPI.cc

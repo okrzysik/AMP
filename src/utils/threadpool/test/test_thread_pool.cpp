@@ -31,10 +31,10 @@ void waste_cpu( int N )
     if ( N > 10000 ) {
         PROFILE_START( "waste_cpu", 2 );
     }
-    double pi = 3.141592653589793;
-    double x  = 1.0;
-    N         = std::max( 10, N );
+    double x = 1.0;
+    N        = std::max( 10, N );
     {
+        double pi = 3.141592653589793;
         for ( int i = 0; i < N; i++ )
             x = sqrt( x * exp( pi / x ) );
     } // style to limit gcov hits
@@ -197,7 +197,7 @@ static int test_function_arguements( ThreadPool *tpool )
 /******************************************************************
  * Examples to derive a user work item                             *
  ******************************************************************/
-class UserWorkItemVoid : public ThreadPool::WorkItem
+class UserWorkItemVoid final : public ThreadPool::WorkItem
 {
 public:
     // User defined constructor (does not need to match any interfaces)
@@ -217,7 +217,7 @@ public:
     // User defined destructor
     ~UserWorkItemVoid() override = default;
 };
-class UserWorkItemInt : public ThreadPool::WorkItemRet<int>
+class UserWorkItemInt final : public ThreadPool::WorkItemRet<int>
 {
 public:
     // User defined constructor (does not need to match any interfaces)
@@ -422,8 +422,8 @@ int main( int argc, char *argv[] )
             pass = cpus.size() > 1;
         } else {
             auto cpus_orig = cpus;
-            std::vector<int> cpus_tmp( 1, cpus[0] );
             try {
+                std::vector<int> cpus_tmp( 1, cpus[0] );
                 ThreadPool::setProcessAffinity( cpus_tmp );
             } catch ( ... ) {
             }

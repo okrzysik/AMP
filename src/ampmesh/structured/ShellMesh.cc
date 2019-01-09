@@ -14,7 +14,7 @@ ShellMesh::ShellMesh( MeshParameters::shared_ptr params ) : StructuredGeometryMe
 {
     // Input options from the database
     PhysicalDim = d_db->getInteger( "dim" );
-    GeomDim     = (GeomType) PhysicalDim;
+    GeomDim     = AMP::Mesh::GeomType::Face;
     auto size   = d_db->getIntegerArray( "Size" );
     auto range  = d_db->getDoubleArray( "Range" );
     d_max_gcw   = d_db->getIntegerWithDefault( "GCW", 2 );
@@ -58,8 +58,8 @@ ShellMesh::ShellMesh( MeshParameters::shared_ptr params ) : StructuredGeometryMe
  ****************************************************************/
 std::vector<size_t> ShellMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
-    auto db               = params->getDatabase();
-    std::vector<int> size = db->getIntegerArray( "Size" );
+    auto db   = params->getDatabase();
+    auto size = db->getIntegerArray( "Size" );
     AMP_ASSERT( size.size() == 2u );
     std::vector<size_t> size2( 3 );
     size2[0] = size[1];

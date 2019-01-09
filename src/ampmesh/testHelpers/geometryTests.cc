@@ -16,15 +16,18 @@ void meshTests::TestInside( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_shared_ptr
         auto multimesh = AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
         for ( const auto &mesh2 : multimesh->getMeshes() )
             TestInside( ut, mesh2 );
+        return; // Eventually this should go away to test the multigeometry
     }
     // Get the geometry
     auto geom = mesh->getGeometry();
     if ( !geom )
         return;
     // Verify all elements in the mesh are inside the geometry
-    bool pass  = true;
-    int gcw    = mesh->getMaxGhostWidth();
-    auto types = { AMP::Mesh::GeomType::Vertex, mesh->getGeomType() };
+    bool pass                              = true;
+    int gcw                                = mesh->getMaxGhostWidth();
+    std::vector<AMP::Mesh::GeomType> types = { AMP::Mesh::GeomType::Vertex };
+    if ( mesh->getDim() == static_cast<int>( mesh->getGeomType() ) )
+        types.push_back( mesh->getGeomType() );
     for ( auto type : types ) {
         for ( const auto &elem : mesh->getIterator( type, gcw ) ) {
             auto p = elem.centroid();
@@ -60,8 +63,8 @@ void meshTests::TestPhysicalLogical( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_s
         auto p  = it->centroid();
         auto l  = geom->logical( p );
         auto p2 = geom->physical( l );
-        bool t  = fabs( p.x() - p2.x() ) < 1e-8 && fabs( p.y() - p2.y() ) < 1e-8 &&
-                 fabs( p.z() - p2.z() ) < 1e-8;
+        bool t  = fabs( p.x() - p2.x() ) < 1e-7 && fabs( p.y() - p2.y() ) < 1e-7 &&
+                 fabs( p.z() - p2.z() ) < 1e-7;
         pass = pass && t;
     }
     // Store the results

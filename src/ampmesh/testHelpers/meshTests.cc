@@ -34,11 +34,11 @@ std::map<AMP::Mesh::MeshID, std::vector<int>>
 meshTests::createRankMap( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     std::map<AMP::Mesh::MeshID, std::vector<int>> proc_map;
-    std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
+    auto meshIDs = mesh->getBaseMeshIDs();
     std::vector<std::pair<int, int>> tmp( mesh->getComm().getSize() );
     for ( auto &meshID : meshIDs ) {
-        AMP::Mesh::Mesh::shared_ptr mesh2 = mesh->Subset( meshID );
-        int N_send                        = 0;
+        auto mesh2 = mesh->Subset( meshID );
+        int N_send = 0;
         std::pair<int, int> map;
         if ( mesh2.get() != nullptr ) {
             map    = std::pair<int, int>( mesh2->getComm().getRank(), mesh->getComm().getRank() );
@@ -502,9 +502,9 @@ void meshTests::VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
         std::vector<AMP::Mesh::MeshElementID> owned, ghost;
         owned.reserve( mesh->numLocalElements( (AMP::Mesh::GeomType) type ) );
         ghost.reserve( mesh->numGhostElements( (AMP::Mesh::GeomType) type, gcw ) );
-        AMP::Mesh::MeshIterator iterator = mesh->getIterator( (AMP::Mesh::GeomType) type, gcw );
+        auto iterator = mesh->getIterator( (AMP::Mesh::GeomType) type, gcw );
         for ( size_t i = 0; i < iterator.size(); i++ ) {
-            AMP::Mesh::MeshElementID id = iterator->globalID();
+            auto id = iterator->globalID();
             if ( id.is_local() )
                 owned.push_back( id );
             else
@@ -526,9 +526,9 @@ void meshTests::VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
         AMP::Utilities::quicksort( owned );        // Sort for search
         AMP::Utilities::quicksort( ghost_global ); // Sort for speed
         std::vector<int> found( ghost_global.size(), 0 );
-        AMP::Mesh::Mesh::shared_ptr my_mesh = mesh;
-        unsigned int my_rank                = my_mesh->getComm().getRank();
-        AMP::Mesh::MeshID my_mesh_id        = my_mesh->meshID();
+        auto my_mesh    = mesh;
+        auto my_rank    = my_mesh->getComm().getRank();
+        auto my_mesh_id = my_mesh->meshID();
         for ( size_t i = 0; i < N_ghost_global; i++ ) {
             // Get the current mesh
             if ( ghost_global[i].meshID() != my_mesh_id ) {
@@ -541,7 +541,7 @@ void meshTests::VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
             // Check if we are the owning rank
             if ( my_mesh.get() == nullptr )
                 continue;
-            if ( ghost_global[i].owner_rank() != my_rank )
+            if ( (int) ghost_global[i].owner_rank() != my_rank )
                 continue;
             // Check if we have the element
             size_t index = AMP::Utilities::findfirst( owned, ghost_global[i] );
@@ -569,7 +569,7 @@ void meshTests::VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
 void meshTests::VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils,
                                               AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    const std::vector<int> bids = mesh->getBoundaryIDs();
+    const auto bids = mesh->getBoundaryIDs();
     for ( int bid : bids ) {
         for ( int gcw = 0; gcw <= 0; gcw++ ) {
             // Get the iterator over the current boundary id
@@ -813,10 +813,10 @@ void meshTests::getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_
 void meshTests::DisplaceMeshScalar( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Test the scalar displacement
-    std::vector<double> box1 = mesh->getBoundingBox();
-    mesh->displaceMesh( { 1, 1, 1 } );
-    std::vector<double> box2 = mesh->getBoundingBox();
-    double volume            = 1.0;
+    auto box1 = mesh->getBoundingBox();
+    mesh->displaceMesh( std::vector<double>( mesh->getDim(), 1 ) );
+    auto box2     = mesh->getBoundingBox();
+    double volume = 1.0;
     for ( int i = 0; i < mesh->getDim(); i++ )
         volume *= box1[2 * i + 1] - box1[2 * i + 0];
     if ( volume > 0.0 )
@@ -832,7 +832,8 @@ void meshTests::DisplaceMeshScalar( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
         utils->passes( "scalar displacement test" );
     else
         utils->failure( "scalar displacement test" );
-    mesh->displaceMesh( { -1, -1, -1 } );
+    std::vector<double> dist2( mesh->getDim(), -1 );
+    mesh->displaceMesh( std::vector<double>( mesh->getDim(), -1 ) );
 }
 void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {

@@ -35,11 +35,13 @@ double Shell::distance( const Point &pos, const Point &ang ) const
  ********************************************************/
 bool Shell::inside( const Point &pos ) const
 {
-    double x  = pos.x() - d_offset[0];
-    double y  = pos.y() - d_offset[1];
-    double z  = pos.z() - d_offset[2];
-    double r2 = x * x + y * y + z * z;
-    return r2 >= d_r_min * d_r_min && r2 <= d_r_max * d_r_max;
+    double x      = pos.x() - d_offset[0];
+    double y      = pos.y() - d_offset[1];
+    double z      = pos.z() - d_offset[2];
+    double r2     = x * x + y * y + z * z;
+    double r2_min = ( 1.0 - 1e-12 ) * d_r_min * d_r_min;
+    double r2_max = ( 1.0 + 1e-12 ) * d_r_max * d_r_max;
+    return r2 >= r2_min && r2 <= r2_max;
 }
 
 

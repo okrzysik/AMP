@@ -106,7 +106,10 @@ bool SquareFrustum::inside( const Point &pos ) const
 {
     // Compute the logical coordinates
     auto p = SquareFrustum::logical( pos );
-    return p.x() >= 0 && p.x() <= 1 && p.y() >= 0 && p.y() <= 1 && p.z() >= 0 && p.z() <= 1;
+    // Check if we are inside the volume
+    constexpr double TOL = 1e-12;
+    return p.x() >= -TOL && p.x() <= 1 + TOL && p.y() >= -TOL && p.y() <= 1 + TOL &&
+           p.z() >= -TOL && p.z() <= 1 + TOL;
 }
 
 

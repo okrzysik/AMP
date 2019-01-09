@@ -22,8 +22,8 @@ Circle::Circle( double R ) : d_R( R )
  ********************************************************/
 double Circle::distance( const Point &pos, const Point &ang ) const
 {
-    double x  = pos[0] - d_offset[0];
-    double y  = pos[1] - d_offset[1];
+    double x  = pos.x() - d_offset[0];
+    double y  = pos.y() - d_offset[1];
     double R2 = x * x + y * y;
     if ( R2 < d_R * d_R )
         return sqrt( R2 );
@@ -38,9 +38,11 @@ double Circle::distance( const Point &pos, const Point &ang ) const
  ********************************************************/
 bool Circle::inside( const Point &pos ) const
 {
-    double x = pos[0] - d_offset[0];
-    double y = pos[1] - d_offset[1];
-    return x * x + y * y <= d_R * d_R;
+    double x   = pos[0] - d_offset[0];
+    double y   = pos[1] - d_offset[1];
+    double R21 = x * x + y * y;
+    double R22 = d_R * d_R;
+    return R21 <= ( 1.0 + 1e-12 ) * R22;
 }
 
 
@@ -77,7 +79,9 @@ Point Circle::physical( const Point &pos ) const
  ********************************************************/
 Point Circle::logical( const Point &pos ) const
 {
-    auto tmp = AMP::Mesh::BoxMeshHelpers::map_circle_logical( d_R, 2, pos[0], pos[1] );
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    auto tmp = AMP::Mesh::BoxMeshHelpers::map_circle_logical( d_R, 2, x, y );
     return Point( tmp.first, tmp.second );
 }
 

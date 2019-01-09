@@ -38,7 +38,7 @@ bool Sphere::inside( const Point &pos ) const
     double x = pos.x() - d_offset[0];
     double y = pos.y() - d_offset[1];
     double z = pos.z() - d_offset[2];
-    return x * x + y * y + z * z <= d_r * d_r;
+    return x * x + y * y + z * z <= ( 1.0 + 1e-12 ) * d_r * d_r;
 }
 
 
@@ -77,8 +77,10 @@ Point Sphere::physical( const Point &pos ) const
  ********************************************************/
 Point Sphere::logical( const Point &pos ) const
 {
-    return AMP::Mesh::BoxMeshHelpers::map_sphere_logical(
-        d_r, pos[0] - d_offset[0], pos[1] - d_offset[1], pos[2] - d_offset[2] );
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
+    return AMP::Mesh::BoxMeshHelpers::map_sphere_logical( d_r, x, y, z );
 }
 
 

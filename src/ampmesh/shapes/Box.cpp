@@ -94,15 +94,36 @@ double Grid<NDIM>::distance( const Point &pos, const Point &ang ) const
 /********************************************************
  * Check if the ray is inside the geometry               *
  ********************************************************/
-template<std::size_t NDIM>
-bool Box<NDIM>::inside( const Point &pos ) const
+template<>
+bool Box<1>::inside( const Point &pos ) const
+{
+    return pos[0] >= d_range[0] && pos[0] <= d_range[1];
+}
+template<>
+bool Box<2>::inside( const Point &pos ) const
+{
+    return pos[0] >= d_range[0] && pos[0] <= d_range[1] && pos[1] >= d_range[2] &&
+           pos[1] <= d_range[3];
+}
+template<>
+bool Box<3>::inside( const Point &pos ) const
 {
     return pos[0] >= d_range[0] && pos[0] <= d_range[1] && pos[1] >= d_range[2] &&
            pos[1] <= d_range[3] && pos[2] >= d_range[4] && pos[2] <= d_range[5];
 }
-
-template<std::size_t NDIM>
-bool Grid<NDIM>::inside( const Point &pos ) const
+template<>
+bool Grid<1>::inside( const Point &pos ) const
+{
+    return pos[0] >= d_range[0] && pos[0] <= d_range[1] && pos[1];
+}
+template<>
+bool Grid<2>::inside( const Point &pos ) const
+{
+    return pos[0] >= d_range[0] && pos[0] <= d_range[1] && pos[1] >= d_range[2] &&
+           pos[1] <= d_range[3];
+}
+template<>
+bool Grid<3>::inside( const Point &pos ) const
 {
     return pos[0] >= d_range[0] && pos[0] <= d_range[1] && pos[1] >= d_range[2] &&
            pos[1] <= d_range[3] && pos[2] >= d_range[4] && pos[2] <= d_range[5];

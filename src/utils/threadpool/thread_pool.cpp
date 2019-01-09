@@ -233,18 +233,7 @@ void ThreadPool::setErrorHandler( std::function<void( const std::string & )> fun
 /******************************************************************
  * Function to return the number of processors availible           *
  ******************************************************************/
-int ThreadPool::getNumberOfProcessors()
-{
-#if defined( USE_LINUX ) || defined( USE_MAC )
-    return sysconf( _SC_NPROCESSORS_ONLN );
-#elif defined( USE_WINDOWS )
-    SYSTEM_INFO sysinfo;
-    GetSystemInfo( &sysinfo );
-    return sysinfo.dwNumberOfProcessors;
-#else
-#error Unknown OS
-#endif
-}
+int ThreadPool::getNumberOfProcessors() { return std::thread::hardware_concurrency(); }
 
 
 /******************************************************************

@@ -175,7 +175,7 @@ inline MeshElementID BoxMesh::convert( const BoxMesh::MeshElementIndex &index ) 
     unsigned int local_id =
         i + ( d_blockSize[0] + 1 ) *
                 ( j + ( d_blockSize[1] + 1 ) * ( k + ( d_blockSize[2] + 1 ) * index.side() ) );
-    int owner_rank = px + d_numBlocks[0] * ( py + d_numBlocks[0] * pz );
+    int owner_rank = px + d_numBlocks[0] * ( py + d_numBlocks[1] * pz );
     bool is_local  = owner_rank == d_comm.getRank();
     return MeshElementID( is_local, (GeomType) index.type(), local_id, owner_rank, d_meshID );
 }
