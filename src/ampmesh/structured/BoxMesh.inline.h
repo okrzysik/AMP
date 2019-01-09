@@ -11,61 +11,43 @@ namespace Mesh {
 
 
 // BoxMesh::Box
-BoxMesh::Box::Box()
+constexpr BoxMesh::Box::Box() : first{ 0, 0, 0 }, last{ 0, 0, 0 } {}
+constexpr BoxMesh::Box::Box( int ifirst, int ilast, int jfirst, int jlast, int kfirst, int klast )
+    : first{ ifirst, jfirst, kfirst }, last{ ilast, jlast, klast }
 {
-    first[0] = 0;
-    first[1] = 0;
-    first[2] = 0;
-    last[0]  = 0;
-    last[1]  = 0;
-    last[2]  = 0;
-}
-BoxMesh::Box::Box( int ifirst, int ilast, int jfirst, int jlast, int kfirst, int klast )
-{
-    first[0] = ifirst;
-    first[1] = jfirst;
-    first[2] = kfirst;
-    last[0]  = ilast;
-    last[1]  = jlast;
-    last[2]  = klast;
 }
 
 
 // BoxMesh::MeshElementIndex
-BoxMesh::MeshElementIndex::MeshElementIndex() : d_type( 0 ), d_side( 255 )
+constexpr BoxMesh::MeshElementIndex::MeshElementIndex()
+    : d_type( 0 ), d_side( 255 ), d_index{ 0, 0, 0 }
 {
-    d_index[0] = 0;
-    d_index[1] = 0;
-    d_index[2] = 0;
 }
-BoxMesh::MeshElementIndex::MeshElementIndex(
-    GeomType type_in, unsigned char side_in, int x, int y, int z )
-    : d_type( static_cast<unsigned char>( type_in ) ), d_side( side_in )
+constexpr BoxMesh::MeshElementIndex::MeshElementIndex(
+    GeomType type_in, uint8_t side_in, int x, int y, int z )
+    : d_type( static_cast<uint8_t>( type_in ) ), d_side( side_in ), d_index{ x, y, z }
 {
-    d_index[0] = x;
-    d_index[1] = y;
-    d_index[2] = z;
 }
-void BoxMesh::MeshElementIndex::reset(
-    GeomType type_in, unsigned char side_in, int x, int y, int z )
+constexpr void
+BoxMesh::MeshElementIndex::reset( GeomType type_in, uint8_t side_in, int x, int y, int z )
 {
-    d_type     = static_cast<unsigned char>( type_in );
+    d_type     = static_cast<uint8_t>( type_in );
     d_side     = side_in;
     d_index[0] = x;
     d_index[1] = y;
     d_index[2] = z;
 }
-inline bool BoxMesh::MeshElementIndex::operator==( const MeshElementIndex &rhs ) const
+constexpr bool BoxMesh::MeshElementIndex::operator==( const MeshElementIndex &rhs ) const
 {
     return d_type == rhs.d_type && d_side == rhs.d_side && d_index[0] == rhs.d_index[0] &&
            d_index[1] == rhs.d_index[1] && d_index[2] == rhs.d_index[2];
 }
-inline bool BoxMesh::MeshElementIndex::operator!=( const MeshElementIndex &rhs ) const
+constexpr bool BoxMesh::MeshElementIndex::operator!=( const MeshElementIndex &rhs ) const
 {
     return d_type != rhs.d_type || d_side != rhs.d_side || d_index[0] != rhs.d_index[0] ||
            d_index[1] != rhs.d_index[1] || d_index[2] != rhs.d_index[2];
 }
-inline bool BoxMesh::MeshElementIndex::operator>( const MeshElementIndex &rhs ) const
+constexpr bool BoxMesh::MeshElementIndex::operator>( const MeshElementIndex &rhs ) const
 {
     if ( d_type < rhs.d_type ) {
         return false;
@@ -86,20 +68,20 @@ inline bool BoxMesh::MeshElementIndex::operator>( const MeshElementIndex &rhs ) 
     }
     return false;
 }
-inline bool BoxMesh::MeshElementIndex::operator>=( const MeshElementIndex &rhs ) const
+constexpr bool BoxMesh::MeshElementIndex::operator>=( const MeshElementIndex &rhs ) const
 {
     return this->operator>( rhs ) || this->operator==( rhs );
 }
-inline bool BoxMesh::MeshElementIndex::operator<( const MeshElementIndex &rhs ) const
+constexpr bool BoxMesh::MeshElementIndex::operator<( const MeshElementIndex &rhs ) const
 {
     return !this->operator>( rhs ) && !this->operator==( rhs );
 }
-inline bool BoxMesh::MeshElementIndex::operator<=( const MeshElementIndex &rhs ) const
+constexpr bool BoxMesh::MeshElementIndex::operator<=( const MeshElementIndex &rhs ) const
 {
     return !this->operator>( rhs );
 }
-inline size_t BoxMesh::MeshElementIndex::numElements( const MeshElementIndex &first,
-                                                      const MeshElementIndex &last )
+constexpr size_t BoxMesh::MeshElementIndex::numElements( const MeshElementIndex &first,
+                                                         const MeshElementIndex &last )
 {
     if ( last.d_index[0] < first.d_index[0] || last.d_index[1] < first.d_index[1] ||
          last.d_index[2] < first.d_index[2] )
@@ -181,21 +163,19 @@ inline std::array<int, 6> BoxMesh::getLocalBlock( unsigned int rank ) const
  ****************************************************************/
 inline MeshElementID BoxMesh::convert( const BoxMesh::MeshElementIndex &index ) const
 {
-    int size[3] = { ( d_globalSize[0] + d_numBlocks[0] - 1 ) / d_numBlocks[0],
-                    ( d_globalSize[1] + d_numBlocks[1] - 1 ) / d_numBlocks[1],
-                    ( d_globalSize[2] + d_numBlocks[2] - 1 ) / d_numBlocks[2] };
-    int i       = index.index( 0 );
-    int j       = index.index( 1 );
-    int k       = index.index( 2 );
-    int px      = std::min( i / size[0], d_numBlocks[0] - 1 );
-    int py      = std::min( j / size[1], d_numBlocks[1] - 1 );
-    int pz      = std::min( k / size[2], d_numBlocks[2] - 1 );
-    i -= size[0] * px;
-    j -= size[1] * py;
-    k -= size[2] * pz;
+    int i  = index.index( 0 );
+    int j  = index.index( 1 );
+    int k  = index.index( 2 );
+    int px = std::min( i / d_blockSize[0], d_numBlocks[0] - 1 );
+    int py = std::min( j / d_blockSize[1], d_numBlocks[1] - 1 );
+    int pz = std::min( k / d_blockSize[2], d_numBlocks[2] - 1 );
+    i -= d_blockSize[0] * px;
+    j -= d_blockSize[1] * py;
+    k -= d_blockSize[2] * pz;
     unsigned int local_id =
-        i + ( size[0] + 1 ) * ( j + ( size[1] + 1 ) * ( k + ( size[2] + 1 ) * index.side() ) );
-    int owner_rank = px + py * d_numBlocks[0] + pz * d_numBlocks[0] * d_numBlocks[1];
+        i + ( d_blockSize[0] + 1 ) *
+                ( j + ( d_blockSize[1] + 1 ) * ( k + ( d_blockSize[2] + 1 ) * index.side() ) );
+    int owner_rank = px + d_numBlocks[0] * ( py + d_numBlocks[1] * pz );
     bool is_local  = owner_rank == d_comm.getRank();
     return MeshElementID( is_local, (GeomType) index.type(), local_id, owner_rank, d_meshID );
 }
@@ -205,20 +185,17 @@ inline BoxMesh::MeshElementIndex BoxMesh::convert( const MeshElementID &id ) con
     int proc[3] = { rank % d_numBlocks[0],
                     rank / d_numBlocks[0] % d_numBlocks[1],
                     rank / ( d_numBlocks[0] * d_numBlocks[1] ) };
-    int size[3] = { ( d_globalSize[0] + d_numBlocks[0] - 1 ) / d_numBlocks[0],
-                    ( d_globalSize[1] + d_numBlocks[1] - 1 ) / d_numBlocks[1],
-                    ( d_globalSize[2] + d_numBlocks[2] - 1 ) / d_numBlocks[2] };
     size_t ijk  = id.local_id();
-    int i       = ijk % ( size[0] + 1 );
-    ijk /= ( size[0] + 1 );
-    int j = ijk % ( size[1] + 1 );
-    ijk /= ( size[1] + 1 );
-    int k = ijk % ( size[2] + 1 );
-    ijk /= ( size[2] + 1 );
+    int i       = ijk % ( d_blockSize[0] + 1 );
+    ijk /= ( d_blockSize[0] + 1 );
+    int j = ijk % ( d_blockSize[1] + 1 );
+    ijk /= ( d_blockSize[1] + 1 );
+    int k = ijk % ( d_blockSize[2] + 1 );
+    ijk /= ( d_blockSize[2] + 1 );
     int side = ijk;
-    i += proc[0] * size[0];
-    j += proc[1] * size[1];
-    k += proc[2] * size[2];
+    i += proc[0] * d_blockSize[0];
+    j += proc[1] * d_blockSize[1];
+    k += proc[2] * d_blockSize[2];
     return MeshElementIndex( id.type(), side, i, j, k );
 }
 

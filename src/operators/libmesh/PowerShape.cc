@@ -133,11 +133,11 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
     d_radialBoundingBox              = min_max_pos;
     AMP::Mesh::MeshIterator iterator = d_Mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( size_t i = 0; i < iterator.size(); i++ ) {
-        std::vector<double> coord = iterator->coord();
-        double rx                 = ( coord[0] - centerx );
-        double ry                 = ( coord[1] - centery );
-        minR                      = std::min( minR, sqrt( rx * rx + ry * ry ) );
-        maxR                      = std::max( maxR, sqrt( rx * rx + ry * ry ) );
+        auto coord = iterator->coord();
+        double rx  = ( coord[0] - centerx );
+        double ry  = ( coord[1] - centery );
+        minR       = std::min( minR, sqrt( rx * rx + ry * ry ) );
+        maxR       = std::max( maxR, sqrt( rx * rx + ry * ry ) );
         ++iterator;
     }
     d_radialBoundingBox[0] = centerx;
@@ -889,7 +889,7 @@ void PowerShape::createCurrentLibMeshElement()
 {
     d_currElemPtr = new ::Hex8;
     for ( unsigned int j = 0; j < d_currNodes.size(); j++ ) {
-        std::vector<double> pt       = d_currNodes[j].coord();
+        auto pt                      = d_currNodes[j].coord();
         d_currElemPtr->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
     } // end for j
 }

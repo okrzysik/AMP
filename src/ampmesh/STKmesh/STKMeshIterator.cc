@@ -9,15 +9,6 @@ namespace AMP {
 namespace Mesh {
 
 
-// Create a unique id for this class
-namespace {
-unsigned int STKMeshIteratorTypeID()
-{
-    static const unsigned int id( TYPE_HASH( STKMeshIterator ) );
-    return id;
-}
-} // namespace
-
 // unused global variable to prevent compiler warning
 static MeshElement nullElement;
 
@@ -36,7 +27,7 @@ STKMeshIterator::STKMeshIterator()
       d_cur_element()
 {
     iterator = NULL;
-    typeID   = STKMeshIteratorTypeID();
+    typeID   = getTypeID();
 }
 
 STKMeshIterator::STKMeshIterator( const AMP::Mesh::STKMesh *mesh,
@@ -53,7 +44,7 @@ STKMeshIterator::STKMeshIterator( const AMP::Mesh::STKMesh *mesh,
       d_cur_element()
 {
     iterator = NULL;
-    typeID   = STKMeshIteratorTypeID();
+    typeID   = getTypeID();
 }
 STKMeshIterator::STKMeshIterator( const AMP::Mesh::STKMesh *mesh, int gcw, MeshPtr entries )
     : MeshIterator(),
@@ -67,7 +58,7 @@ STKMeshIterator::STKMeshIterator( const AMP::Mesh::STKMesh *mesh, int gcw, MeshP
       d_cur_element()
 {
     iterator = NULL;
-    typeID   = STKMeshIteratorTypeID();
+    typeID   = getTypeID();
 }
 STKMeshIterator::STKMeshIterator( const STKMeshIterator &rhs )
     : MeshIterator(),
@@ -81,14 +72,14 @@ STKMeshIterator::STKMeshIterator( const STKMeshIterator &rhs )
       d_cur_element( rhs.d_cur_element )
 {
     iterator = NULL;
-    typeID   = STKMeshIteratorTypeID();
+    typeID   = getTypeID();
 }
 STKMeshIterator &STKMeshIterator::operator=( const STKMeshIterator &rhs )
 {
     this->iterator = NULL;
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID        = STKMeshIteratorTypeID();
+    this->typeID        = getTypeID();
     this->d_gcw         = rhs.d_gcw;
     this->d_dim         = rhs.d_dim;
     this->d_rank        = rhs.d_rank;
@@ -179,11 +170,11 @@ bool STKMeshIterator::operator==( const MeshIterator &rhs ) const
     const STKMeshIterator *rhs2 = nullptr;
     // Convert rhs to a STKMeshIterator* so we can access the base class members
     const auto *tmp = reinterpret_cast<const STKMeshIterator *>( &rhs );
-    if ( tmp->typeID == STKMeshIteratorTypeID() ) {
+    if ( tmp->typeID == getTypeID() ) {
         rhs2 = tmp // We can safely cast rhs to a STKMeshIterator
     } else if ( tmp->d_iterator != nullptr ) {
         tmp = reinterpret_cast<const STKMeshIterator *>( tmp->d_iterator );
-        if ( tmp->d_typeID == STKMeshIteratorTypeID() )
+        if ( tmp->d_typeID == getTypeID() )
             rhs2 = tmp; // We can safely cast rhs.iterator to a STKMeshIterator
     }
     // Perform direct comparisions if we are dealing with two STKMeshIterators

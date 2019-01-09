@@ -121,15 +121,14 @@ void Map3Dto1D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             d_fe->reinit( libmeshElements.getElement( bnd->globalID() ) );
 
             // Get the current position and DOF
-            std::vector<Point> coordinates = d_fe->get_xyz();
+            auto coordinates = d_fe->get_xyz();
 
             std::vector<size_t> ids;
             dof_map->getDOFs( bnd->globalID(), ids );
 
             std::vector<double> zcoords;
-            for ( size_t i = 0; i < ids.size(); i++ ) {
+            for ( size_t i = 0; i < ids.size(); i++ )
                 zcoords.push_back( coordinates[i]( 2 ) );
-            }
 
             std::sort( zcoords.begin(), zcoords.end() );
 
@@ -251,7 +250,7 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
             std::vector<double> zcoords;
             for ( auto &node : nodes ) {
-                std::vector<double> coord = node.coord();
+                auto coord = node.coord();
                 zcoords.push_back( coord[2] );
             }
 
@@ -267,8 +266,8 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             std::vector<int> originalNodeOrder( zcoords.size() );
 
             for ( size_t i = 0; i < nodes.size(); i++ ) {
-                std::vector<double> coord = nodes[i].coord();
-                double myZ                = coord[2];
+                auto coord = nodes[i].coord();
+                double myZ = coord[2];
                 for ( unsigned int j = 0; j < tmpZcoords.size(); j++ ) {
                     if ( fabs( tmpZcoords[j] - myZ ) <= 1.e-12 ) {
                         originalNodeOrder[tmpIds[j]] = i;
@@ -283,10 +282,10 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             std::vector<double> y( 4, 0 );
             std::vector<double> x( 4, 0 );
             for ( int i = 0; i < 4; i++ ) {
-                std::vector<double> coord = nodes[originalNodeOrder[i]].coord();
-                x[i]                      = coord[0];
-                y[i]                      = coord[1];
-                z[i]                      = coord[2];
+                auto coord = nodes[originalNodeOrder[i]].coord();
+                x[i]       = coord[0];
+                y[i]       = coord[1];
+                z[i]       = coord[2];
             }
 
             int pickId;

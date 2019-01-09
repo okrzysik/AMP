@@ -76,22 +76,20 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
 
     // Create the meshes from the input database
     PROFILE_START( "Load Mesh" );
-    AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( params );
-    auto pointType                   = AMP::Mesh::GeomType::Vertex;
-    auto volumeType                  = mesh->getGeomType();
-    auto surfaceType                 = getSurfaceType( volumeType );
+    auto mesh        = AMP::Mesh::Mesh::buildMesh( params );
+    auto pointType   = AMP::Mesh::GeomType::Vertex;
+    auto volumeType  = mesh->getGeomType();
+    auto surfaceType = getSurfaceType( volumeType );
     globalComm.barrier();
     PROFILE_STOP( "Load Mesh" );
     double t2 = AMP::AMP_MPI::time();
 
     // Create a surface mesh
-    AMP::Mesh::Mesh::shared_ptr submesh =
-        mesh->Subset( mesh->getSurfaceIterator( surfaceType, 1 ) );
+    auto submesh = mesh->Subset( mesh->getSurfaceIterator( surfaceType, 1 ) );
 
 #ifdef USE_AMP_VECTORS
     // Create a simple DOFManager
-    AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
-        new AMP::Discretization::DOFManagerParameters( mesh ) );
+    auto DOFparams  = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
     auto DOF_scalar = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 1, true );
     auto DOF_vector = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 3, true );
     auto DOF_gauss  = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 8, true );
@@ -171,18 +169,18 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     rank_vec->setToScalar( globalComm.getRank() );
     rank_vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     std::vector<size_t> dofs;
-    for ( AMP::Mesh::MeshIterator it = DOF_vector->getIterator(); it != it.end(); ++it ) {
+    for ( auto it = DOF_vector->getIterator(); it != it.end(); ++it ) {
         AMP::Mesh::MeshElementID id = it->globalID();
         DOF_vector->getDOFs( id, dofs );
-        std::vector<double> pos = it->coord();
-        position->setValuesByGlobalID( dofs.size(), &dofs[0], &pos[0] );
+        auto pos = it->coord();
+        position->setValuesByGlobalID( dofs.size(), dofs.data(), pos.data() );
     }
     position->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     if ( submesh != nullptr ) {
         id_vec->setToScalar( -1 );
-        std::vector<int> ids = submesh->getBoundaryIDs();
+        auto ids = submesh->getBoundaryIDs();
         for ( auto &id : ids ) {
-            AMP::Mesh::MeshIterator it = submesh->getBoundaryIDIterator( surfaceType, id, 0 );
+            auto it = submesh->getBoundaryIDIterator( surfaceType, id, 0 );
             for ( size_t j = 0; j < it.size(); j++ ) {
                 DOF_surface->getDOFs( it->globalID(), dofs );
                 AMP_ASSERT( dofs.size() == 1 );

@@ -26,8 +26,7 @@ public: // Functions derived from BoxMesh
 #ifdef USE_AMP_VECTORS
     virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> ) override final;
 #endif
-    virtual AMP::Geometry::Point<double>
-    physicalToLogical( const AMP::Geometry::Point<double> &x ) const override;
+    virtual AMP::Geometry::Point physicalToLogical( const AMP::Geometry::Point &x ) const override;
     virtual void coord( const MeshElementIndex &index, double *pos ) const override;
     virtual AMP::shared_ptr<Mesh> clone() const override = 0;
 

@@ -19,37 +19,30 @@ namespace AMP {
 /********************************************************
  *  Random number initialization                         *
  ********************************************************/
+template<class TYPE>
+static inline typename std::enable_if<std::is_integral<TYPE>::value>::type genRand( size_t N,
+                                                                                    TYPE *x )
+{
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_int_distribution<TYPE> dis;
+    for ( size_t i = 0; i < N; i++ )
+        x[i] = dis( gen );
+}
+template<class TYPE>
+static inline typename std::enable_if<std::is_floating_point<TYPE>::value>::type genRand( size_t N,
+                                                                                          TYPE *x )
+{
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_real_distribution<TYPE> dis( 0, 1 );
+    for ( size_t i = 0; i < N; i++ )
+        x[i] = dis( gen );
+}
 template<class TYPE, class FUN>
-void FunctionTable::rand( Array<TYPE, FUN> &x )
+inline void FunctionTable::rand( Array<TYPE, FUN> &x )
 {
-    FunctionTable::rand<TYPE>( x.length(), x.data() );
-}
-template<>
-inline void FunctionTable::rand<double>( size_t N, double *x )
-{
-    std::random_device rd;
-    std::mt19937 gen( rd() );
-    std::uniform_real_distribution<> dis( 0, 1 );
-    for ( size_t i = 0; i < N; i++ )
-        x[i] = dis( gen );
-}
-template<>
-inline void FunctionTable::rand<float>( size_t N, float *x )
-{
-    std::random_device rd;
-    std::mt19937 gen( rd() );
-    std::uniform_real_distribution<> dis( 0, 1 );
-    for ( size_t i = 0; i < N; i++ )
-        x[i] = dis( gen );
-}
-template<>
-inline void FunctionTable::rand<int>( size_t N, int *x )
-{
-    std::random_device rd;
-    std::mt19937 gen( rd() );
-    std::uniform_int_distribution<> dis;
-    for ( size_t i = 0; i < N; i++ )
-        x[i] = dis( gen );
+    genRand<TYPE>( x.length(), x.data() );
 }
 
 
@@ -92,7 +85,8 @@ template<class TYPE, class FUN, typename LAMBDA>
 inline void FunctionTable::transform( LAMBDA &fun, const Array<TYPE, FUN> &x, Array<TYPE, FUN> &y )
 {
     y.resize( x.size() );
-    for ( size_t i = 0; i < x.length(); i++ )
+    const size_t N = x.length();
+    for ( size_t i = 0; i < N; i++ )
         y( i ) = fun( x( i ) );
 }
 template<class TYPE, class FUN, typename LAMBDA>
@@ -101,9 +95,11 @@ inline void FunctionTable::transform( LAMBDA &fun,
                                       const Array<TYPE, FUN> &y,
                                       Array<TYPE, FUN> &z )
 {
-    ARRAY_INSIST( x.sizeMatch( y ), "Sizes of x and y do not match" );
+    if ( !x.sizeMatch( y ) )
+        throw std::logic_error( "Sizes of x and y do not match" );
     z.resize( x.size() );
-    for ( size_t i = 0; i < x.length(); i++ )
+    const size_t N = x.length();
+    for ( size_t i = 0; i < N; i++ )
         z( i ) = fun( x( i ), y( i ) );
 }
 
@@ -116,8 +112,9 @@ void FunctionTable::multiply( const Array<TYPE, FUN> &a,
                               const Array<TYPE, FUN> &b,
                               Array<TYPE, FUN> &c )
 {
-    if ( a.d_ndim <= 2 && b.d_ndim <= 2 ) {
-        ARRAY_INSIST( a.size( 1 ) == b.size( 0 ), "Inner dimensions must match" );
+    if ( a.ndim() <= 2 && b.ndim() <= 2 ) {
+        if ( a.size( 1 ) != b.size( 0 ) )
+            throw std::logic_error( "Inner dimensions must match" );
         c.resize( a.size( 0 ), b.size( 1 ) );
         c.fill( 0 );
         for ( size_t k = 0; k < b.size( 1 ); k++ ) {
@@ -128,19 +125,42 @@ void FunctionTable::multiply( const Array<TYPE, FUN> &a,
             }
         }
     } else {
-        ARRAY_ERROR( "Not finished yet" );
+        throw std::logic_error( "Not finished yet" );
     }
 }
 
+
+/********************************************************
+ *  Check if two arrays are equal                        *
+ ********************************************************/
 template<class TYPE, class FUN>
-bool FunctionTable::equals( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, TYPE tol )
+inline typename std::enable_if<std::is_integral<TYPE>::value, bool>::type
+FunctionTableCompare( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, TYPE )
 {
     bool pass = true;
-    ARRAY_INSIST( a.sizeMatch( b ), "Sizes of x and y do not match" );
+    if ( !a.sizeMatch( b ) )
+        throw std::logic_error( "Sizes of x and y do not match" );
+    for ( size_t i = 0; i < a.length(); i++ )
+        pass = pass && a( i ) == b( i );
+    return pass;
+}
+template<class TYPE, class FUN>
+inline typename std::enable_if<std::is_floating_point<TYPE>::value, bool>::type
+FunctionTableCompare( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, TYPE tol )
+{
+    bool pass = true;
+    if ( !a.sizeMatch( b ) )
+        throw std::logic_error( "Sizes of x and y do not match" );
     for ( size_t i = 0; i < a.length(); i++ )
         pass = pass && ( std::abs( a( i ) - b( i ) ) < tol );
     return pass;
 }
+template<class TYPE, class FUN>
+bool FunctionTable::equals( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, TYPE tol )
+{
+    return FunctionTableCompare( a, b, tol );
+}
+
 
 /********************************************************
  *  Specialized Functions                                *

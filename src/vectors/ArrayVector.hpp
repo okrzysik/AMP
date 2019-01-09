@@ -21,12 +21,10 @@ Vector::shared_ptr ArrayVector<T, FUN, Allocator>::create( const std::vector<siz
 {
     AMP::shared_ptr<ArrayVector<T, FUN, Allocator>> retVal( new ArrayVector<T, FUN, Allocator>() );
     retVal->setVariable( var );
-
     retVal->resize( localSize );
     const auto N = retVal->getArray().length();
     AMP_MPI comm( AMP_COMM_SELF );
-    AMP::Discretization::DOFManager::shared_ptr DOFs(
-        new AMP::Discretization::DOFManager( N, comm ) );
+    auto DOFs            = AMP::make_shared<AMP::Discretization::DOFManager>( N, comm );
     retVal->d_DOFManager = DOFs;
     retVal->setCommunicationList(
         AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
@@ -43,9 +41,8 @@ Vector::shared_ptr ArrayVector<T, FUN, Allocator>::create( const std::vector<siz
     AMP::shared_ptr<ArrayVector<T, FUN, Allocator>> retVal( new ArrayVector<T, FUN, Allocator>() );
     retVal->setVariable( var );
     retVal->resize( localSize );
-    const auto N = retVal->getArray().length();
-    AMP::Discretization::DOFManager::shared_ptr DOFs(
-        new AMP::Discretization::DOFManager( N, comm ) );
+    const auto N         = retVal->getArray().length();
+    auto DOFs            = AMP::make_shared<AMP::Discretization::DOFManager>( N, comm );
     retVal->d_DOFManager = DOFs;
     retVal->setCommunicationList(
         AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
@@ -74,16 +71,16 @@ inline Vector::shared_ptr
 ArrayVector<T, FUN, Allocator>::cloneVector( const Variable::shared_ptr name ) const
 {
     const auto &array = this->getArray();
-    return create( array.size(), name, this->getComm() );
+    std::vector<size_t> size( array.size().begin(), array.size().end() );
+    return create( size, name, this->getComm() );
 }
 
 template<typename T, typename FUN, typename Allocator>
 void ArrayVector<T, FUN, Allocator>::swapVectors( Vector &rhs )
 {
     // get internal arrays
-    AMP::Array<T, FUN, Allocator> &internalArray = this->getArray();
-    AMP::Array<T, FUN, Allocator> &otherArray =
-        dynamic_cast<ArrayVector<T, FUN, Allocator> &>( rhs ).getArray();
+    auto &internalArray = this->getArray();
+    auto &otherArray    = dynamic_cast<ArrayVector<T, FUN, Allocator> &>( rhs ).getArray();
     // reset views
     internalArray.swap( otherArray );
 }

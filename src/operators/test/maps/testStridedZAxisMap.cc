@@ -14,13 +14,13 @@
 #include <functional>
 
 
-double fooFunctionOfSpace( std::vector<double> const &xyz )
+double fooFunctionOfSpace( AMP::Mesh::Point const &xyz )
 {
     AMP_ASSERT( xyz.size() == 3 );
     return 1.0 + xyz[2];
 }
 
-double barFunctionOfSpace( std::vector<double> const &xyz )
+double barFunctionOfSpace( AMP::Mesh::Point const &xyz )
 {
     AMP_ASSERT( xyz.size() == 3 );
     return 3.0 * std::cos( xyz[2] );
@@ -30,7 +30,7 @@ void project( AMP::Mesh::MeshIterator const &meshIterator,
               AMP::LinearAlgebra::Vector::shared_ptr vector,
               size_t const dof,
               size_t const dofsPerNode,
-              std::function<double( std::vector<double> const & )> functionOfSpace )
+              std::function<double( AMP::Mesh::Point const & )> functionOfSpace )
 {
     AMP_INSIST( dof < dofsPerNode, "WRONG!" );
     auto dofManager         = vector->getDOFManager();

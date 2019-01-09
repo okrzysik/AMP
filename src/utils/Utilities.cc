@@ -2,6 +2,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Logger.h"
 #include "AMP/utils/PIO.h"
 
@@ -97,20 +98,6 @@ std::string Utilities::levelToString( int num ) { return intToString( num, 4 ); 
 std::string Utilities::blockToString( int num ) { return intToString( num, 4 ); }
 
 
-// Function to create a 32-bit hash key from a character array
-unsigned int Utilities::hash_char( const char *name )
-{
-    AMP_INSIST( sizeof( unsigned int ) == 4, "Need unsigned 32-bit int" );
-    unsigned int hash = 5381;
-    unsigned char c;
-    while ( ( c = *name++ ) ) {
-        // hash = hash * 33 ^ c
-        hash = ( ( hash << 5 ) + hash ) ^ c;
-    }
-    return hash;
-}
-
-
 /****************************************************************************
  *  Function to set an environemental variable                               *
  ****************************************************************************/
@@ -147,6 +134,16 @@ bool Utilities::fileExists( const std::string &filename )
 {
     std::ifstream ifile( filename.c_str() );
     return ifile.good();
+}
+
+std::string Utilities::path( const std::string &filename )
+{
+    size_t pos = 0;
+    if ( filename.find_last_of( 47 ) != std::string::npos )
+        pos = filename.find_last_of( 47 );
+    if ( filename.find_last_of( 92 ) != std::string::npos )
+        pos = std::max( pos, filename.find_last_of( 92 ) );
+    return filename.substr( 0, pos );
 }
 
 void Utilities::renameFile( const std::string &old_filename, const std::string &new_filename )
@@ -233,100 +230,69 @@ void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_
 /****************************************************************************
  *  Print AMP Banner                                                         *
  ****************************************************************************/
+// clang-format off
 void Utilities::printBanner()
 {
-    std::ostringstream banner;
-    banner << std::endl;
-    banner << "            _____                    _____                    _____" << std::endl;
-    banner << R"(           /\    \                  /\    \                  /\    \ )"
-           << std::endl;
-    banner << R"(          /::\    \                /::\____\                /::\    \)"
-           << std::endl;
-    banner << R"(         /::::\    \              /::::|   |               /::::\    \)"
-           << std::endl;
-    banner << R"(        /::::::\    \            /:::::|   |              /::::::\    \)"
-           << std::endl;
-    banner << R"(       /:::/\:::\    \          /::::::|   |             /:::/\:::\    \)"
-           << std::endl;
-    banner << R"(      /:::/__\:::\    \        /:::/|::|   |            /:::/__\:::\    \)"
-           << std::endl;
-    banner << R"(     /::::\   \:::\    \      /:::/ |::|   |           /::::\   \:::\    \)"
-           << std::endl;
-    banner << R"(    /::::::\   \:::\    \    /:::/  |::|___|______    /::::::\   \:::\    \)"
-           << std::endl;
-    banner << "   /:::/\\:::\\   \\:::\\    \\  /:::/   |::::::::\\    \\  /:::/\\:::\\   "
-              "\\:::\\____\\"
-           << std::endl;
-    banner << R"(  /:::/  \:::\   \:::\____\/:::/    |:::::::::\____\/:::/  \:::\   \:::|    |)"
-           << std::endl;
-    banner << R"(  \::/    \:::\  /:::/    /\::/    / ~~~~~/:::/    /\::/    \:::\  /:::|____|)"
-           << std::endl;
-    banner << R"(   \/____/ \:::\/:::/    /  \/____/      /:::/    /  \/_____/\:::\/:::/    /)"
-           << std::endl;
-    banner << "            \\::::::/    /               /:::/    /            \\::::::/    /"
-           << std::endl;
-    banner << "             \\::::/    /               /:::/    /              \\::::/    /"
-           << std::endl;
-    banner << "             /:::/    /               /:::/    /                \\::/____/"
-           << std::endl;
-    banner << "            /:::/    /               /:::/    /" << std::endl;
-    banner << "           /:::/    /               /:::/    /" << std::endl;
-    banner << "          /:::/    /               /:::/    /" << std::endl;
-    banner << "          \\::/    /                \\::/    /" << std::endl;
-    banner << "           \\/____/                  \\/____/" << std::endl;
-    banner << std::endl << std::endl;
-
-    AMP::pout << banner.str();
+    constexpr char banner[] =
+        R"(            _____                    _____                    _____)" "\n"
+        R"(           /\    \                  /\    \                  /\    \)" "\n"
+        R"(          /::\    \                /::\____\                /::\    \)" "\n"
+        R"(         /::::\    \              /::::|   |               /::::\    \)" "\n"
+        R"(        /::::::\    \            /:::::|   |              /::::::\    \)" "\n"
+        R"(       /:::/\:::\    \          /::::::|   |             /:::/\:::\    \)" "\n"
+        R"(      /:::/__\:::\    \        /:::/|::|   |            /:::/__\:::\    \)" "\n"
+        R"(     /::::\   \:::\    \      /:::/ |::|   |           /::::\   \:::\    \)" "\n"
+        R"(    /::::::\   \:::\    \    /:::/  |::|___|______    /::::::\   \:::\    \)" "\n"
+        R"(   /:::/\:::\   \:::\    \  /:::/   |::::::::\    \  /:::/\:::\   \:::\____\)" "\n"
+        R"(  /:::/  \:::\   \:::\____\/:::/    |:::::::::\____\/:::/  \:::\   \:::|    |)" "\n"
+        R"(  \::/    \:::\  /:::/    /\::/    / ~~~~~/:::/    /\::/    \:::\  /:::|____|)" "\n"
+        R"(   \/____/ \:::\/:::/    /  \/____/      /:::/    /  \/_____/\:::\/:::/    /)" "\n"
+        R"(            \::::::/    /               /:::/    /            \::::::/    /)" "\n"
+        R"(             \::::/    /               /:::/    /              \::::/    /)" "\n"
+        R"(             /:::/    /               /:::/    /                \::/____/)" "\n"
+        R"(            /:::/    /               /:::/    /)" "\n"
+        R"(           /:::/    /               /:::/    /)" "\n"
+        R"(          /:::/    /               /:::/    /)" "\n"
+        R"(          \::/    /                \::/    /)" "\n"
+        R"(           \/____/                  \/____/)" "\n";
+    AMP::pout << "\n" << banner << "\n" << std::endl;
 }
+// clang-format on
 
 // Factor a number into it's prime factors
-std::vector<int> Utilities::factor( size_t number )
+std::vector<int> Utilities::factor( uint64_t number )
 {
-    if ( number <= 3 )
+    uint64_t n = number;
+    // Handle trival case
+    if ( n <= 3 )
         return std::vector<int>( 1, (int) number );
-    size_t i, n, n_max;
-    bool factor_found;
-    // Compute the maximum number of factors
-    int N_primes_max = 1;
-    n                = number;
-    while ( n >>= 1 )
-        ++N_primes_max;
-    // Initialize n, factors
-    n = number;
-    std::vector<int> factors;
-    factors.reserve( N_primes_max );
+    // Initialize factors
+    size_t N = 0;
+    int factors[64];
+    // Remove all factors of 2
+    while ( ( n & 0x01 ) == 0 ) {
+        factors[N++] = 2;
+        n >>= 1;
+        continue;
+    }
+    // Use brute force to find remaining factors
+    uint64_t f = 3;
     while ( true ) {
-        // Check if n is a trivial prime number
-        if ( n == 2 || n == 3 || n == 5 ) {
-            factors.push_back( (int) n );
-            break;
-        }
-        // Check if n is divisible by 2
-        if ( n % 2 == 0 ) {
-            factors.push_back( 2 );
-            n /= 2;
-            continue;
-        }
-        // Check each odd number until a factor is reached
-        n_max        = (size_t) floor( sqrt( (double) n ) );
-        factor_found = false;
-        for ( i = 3; i <= n_max; i += 2 ) {
-            if ( n % i == 0 ) {
-                factors.push_back( i );
-                n /= i;
-                factor_found = true;
-                break;
+        auto f_max = static_cast<uint64_t>( floor( sqrt( n ) ) );
+        bool found = false;
+        for ( ; f <= f_max && !found; f += 2 ) {
+            while ( n % f == 0 ) {
+                factors[N++] = f;
+                n /= f;
+                found = true;
             }
         }
-        if ( factor_found )
-            continue;
-        // No factors were found, the number must be prime
-        factors.push_back( (int) n );
-        break;
+        if ( !found ) {
+            factors[N++] = n;
+            break;
+        }
     }
-    // Sort the factors
-    AMP::Utilities::quicksort( factors );
-    return factors;
+    return std::vector<int>( factors, factors + N );
 }
 
 
@@ -443,5 +409,51 @@ double Utilities::trilinear( const std::vector<double> &x,
 // Dummy function to prevent compiler from optimizing away variable
 void Utilities::nullUse( void *data ) { NULL_USE( data ); }
 
+
+// Print a database to an output stream
+template<class TYPE>
+static void printVar( const std::string &name,
+                      const std::vector<TYPE> &data,
+                      std::ostream &os,
+                      const std::string &indent )
+{
+    os << indent << name << " = ";
+    if ( !data.empty() ) {
+        os << data[0];
+        for ( size_t i = 1; i < data.size(); i++ )
+            os << ", " << data[i];
+    }
+    os << std::endl;
+}
+void Utilities::printDatabase( Database &db, std::ostream &os, const std::string &indent )
+{
+    for ( const auto &name : db.getAllKeys() ) {
+        if ( db.isDatabase( name ) ) {
+            os << indent << name << "{\n";
+            printDatabase( *db.getDatabase( name ), os, indent + "   " );
+            os << indent << "}\n";
+        } else if ( db.isString( name ) ) {
+            auto data = db.getStringArray( name );
+            printVar( name, data, os, indent );
+        } else if ( db.isDouble( name ) ) {
+            auto data = db.getDoubleArray( name );
+            printVar( name, data, os, indent );
+        } else if ( db.isInteger( name ) ) {
+            auto data = db.getIntegerArray( name );
+            printVar( name, data, os, indent );
+        } else if ( db.isBool( name ) ) {
+            auto data = db.getBoolArray( name );
+            os << indent << name << " = ";
+            if ( !data.empty() ) {
+                os << ( data[0] ? "TRUE" : "FALSE" );
+                for ( size_t i = 1; i < data.size(); i++ )
+                    os << ", " << ( data[i] ? "TRUE" : "FALSE" );
+            }
+            os << std::endl;
+        } else {
+            AMP_ERROR( "Unknown type for field: " + name );
+        }
+    }
+}
 
 } // namespace AMP

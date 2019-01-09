@@ -2,7 +2,7 @@
 #define included_AMP_BoxMeshHelpers
 
 
-#include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/MeshPoint.h"
 #include <set>
 
 
@@ -64,7 +64,23 @@ std::pair<double, double> map_circle_logical( double R, int method, double x, do
  * \param[in] z         Logical z coordinate
  * @return              Returns the physical point
  */
-AMP::Geometry::Point<double> map_logical_sphere( double R, double x, double y, double z );
+AMP::Mesh::Point map_logical_sphere( double R, double x, double y, double z );
+
+
+/**
+ * \brief   Map logical coordinates to a sphere
+ * \details  This function will map physical coordinates in (x,y,z) to [0,1] locial
+ *   coordinates in a sphere.  It uses the mapping by:
+ *   Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
+ *      and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
+ *      SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+ * \param[in] R         Radius of sphere
+ * \param[in] x         Physical x coordinate
+ * \param[in] y         Physical y coordinate
+ * \param[in] z         Physical z coordinate
+ * @return              Returns the logical point
+ */
+AMP::Mesh::Point map_sphere_logical( double R, double x, double y, double z );
 
 
 /**
@@ -79,7 +95,7 @@ AMP::Geometry::Point<double> map_logical_sphere( double R, double x, double y, d
  * \param[in] y         Logical y coordinate
  * @return              Returns the physical point
  */
-AMP::Geometry::Point<double> map_logical_sphere_surface( double R, double x, double y );
+AMP::Mesh::Point map_logical_sphere_surface( double R, double x, double y );
 
 /**
  * \brief   Map coordinates from the surface of a sphere to logical
@@ -111,8 +127,24 @@ std::pair<double, double> map_sphere_surface_logical( double R, double x, double
  * \param[in] z         Logical z coordinate
  * @return              Returns the physical point
  */
-AMP::Geometry::Point<double>
-map_logical_shell( double r1, double r2, double x, double y, double z );
+AMP::Mesh::Point map_logical_shell( double r1, double r2, double x, double y, double z );
+
+
+/**
+ * \brief   Map a shell to logical coordinates
+ * \details  This function will map (x,y,z) coordinates
+ *   in a shell to logical coordinates in [0,1].  It uses the mapping by:
+ *   Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
+ *      and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
+ *      SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+ * \param[in] r1        Inner radius of shell
+ * \param[in] r2        Outer radius of shell
+ * \param[in] x         Logical x coordinate
+ * \param[in] y         Logical y coordinate
+ * \param[in] z         Logical z coordinate
+ * @return              Returns the physical point
+ */
+AMP::Mesh::Point map_shell_logical( double r1, double r2, double x, double y, double z );
 
 
 } // namespace BoxMeshHelpers

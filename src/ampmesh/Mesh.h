@@ -126,7 +126,15 @@ public:
      * \details  This function will return the geometry for the mesh if it exists.
      *    Not all meshes will have a geometry associated with them.
      */
-    inline AMP::Geometry::Geometry::shared_ptr getGeometry() { return d_geometry; }
+    inline auto getGeometry() { return d_geometry; }
+
+
+    /**
+     * \brief   Return the geometry of the mesh
+     * \details  This function will return the geometry for the mesh if it exists.
+     *    Not all meshes will have a geometry associated with them.
+     */
+    inline auto getGeometry() const { return d_geometry; }
 
 
     /**
@@ -330,7 +338,7 @@ public:
 
 
     //! Get the physical dimension of the mesh
-    inline unsigned char getDim() const { return PhysicalDim; }
+    inline uint8_t getDim() const { return PhysicalDim; }
 
 
     //! Get the communicator for the mesh
@@ -338,7 +346,7 @@ public:
 
 
     //! Get the maximum ghost width
-    inline unsigned char getMaxGhostWidth() const { return d_max_gcw; }
+    inline uint8_t getMaxGhostWidth() const { return d_max_gcw; }
 
 
     //! Get the mesh ID
@@ -463,10 +471,10 @@ protected:
     GeomType GeomDim;
 
     //! The physical dimension
-    unsigned char PhysicalDim;
+    uint8_t PhysicalDim;
 
     //! The physical dimension
-    unsigned char d_max_gcw;
+    uint8_t d_max_gcw;
 
     //! The communicator over which the mesh is stored
     AMP_MPI d_comm;

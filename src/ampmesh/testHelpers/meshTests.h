@@ -32,6 +32,14 @@ public:
      */
     static void MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
 
+    /**
+     * \brief Run all mesh geometry based tests
+     * \details  This test runs all the geometry-based tests
+     * \param[in,out] ut        Unit test class to report the results
+     * \param[in] mesh          Mesh to test
+     */
+    static void MeshGeometryTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+
 
     /**
      * \brief Run all vector based tests
@@ -190,6 +198,24 @@ public: // Mesh based tests
      * \param[in] mesh          Mesh to test
      */
     static void MeshPerformance( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh );
+
+
+public: // Geometry based tests
+    /**
+     * \brief Checks Geometry::inside
+     * \details  This test checks if all points in the mesh are inside the geometry
+     * \param[in,out] ut        Unit test class to report the results
+     * \param[in] mesh          Mesh to test
+     */
+    static void TestInside( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_shared_ptr mesh );
+
+    /**
+     * \brief Checks Geometry::inside
+     * \details  This test checks the physical-logical-physical transformation
+     * \param[in,out] ut        Unit test class to report the results
+     * \param[in] mesh          Mesh to test
+     */
+    static void TestPhysicalLogical( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_shared_ptr mesh );
 
 
 public: // Vector based tests

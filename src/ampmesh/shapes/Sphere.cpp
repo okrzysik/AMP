@@ -21,7 +21,7 @@ Sphere::Sphere( double r ) : d_r( r )
 /********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
-double Sphere::distance( const Point<double> &pos, const Point<double> &ang ) const
+double Sphere::distance( const Point &pos, const Point &ang ) const
 {
     NULL_USE( pos );
     NULL_USE( ang );
@@ -33,40 +33,41 @@ double Sphere::distance( const Point<double> &pos, const Point<double> &ang ) co
 /********************************************************
  * Check if the ray is inside the geometry               *
  ********************************************************/
-bool Sphere::inside( const Point<double> &pos ) const
+bool Sphere::inside( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return false;
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
+    return x * x + y * y + z * z <= ( 1.0 + 1e-12 ) * d_r * d_r;
 }
 
 
 /********************************************************
  * Return the closest surface                            *
  ********************************************************/
-int Sphere::surface( const Point<double> &pos ) const
+int Sphere::surface( const Point &pos ) const
 {
     NULL_USE( pos );
     AMP_ERROR( "Not finished" );
     return 0;
 }
-Point<double> Sphere::surfaceNorm( const Point<double> &pos ) const
+Point Sphere::surfaceNorm( const Point &pos ) const
 {
     NULL_USE( pos );
     AMP_ERROR( "Not finished" );
-    return Point<double>();
+    return Point();
 }
 
 
 /********************************************************
  * Return the physical coordinates                       *
  ********************************************************/
-Point<double> Sphere::physical( const Point<double> &pos ) const
+Point Sphere::physical( const Point &pos ) const
 {
-    auto point = AMP::Mesh::BoxMeshHelpers::map_logical_sphere( d_r, pos.x, pos.y, pos.z );
-    point.x += d_offset[0];
-    point.y += d_offset[1];
-    point.z += d_offset[2];
+    auto point = AMP::Mesh::BoxMeshHelpers::map_logical_sphere( d_r, pos[0], pos[1], pos[2] );
+    point[0] += d_offset[0];
+    point[1] += d_offset[1];
+    point[2] += d_offset[2];
     return point;
 }
 
@@ -74,11 +75,12 @@ Point<double> Sphere::physical( const Point<double> &pos ) const
 /********************************************************
  * Return the logical coordinates                        *
  ********************************************************/
-Point<double> Sphere::logical( const Point<double> &pos ) const
+Point Sphere::logical( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return Point<double>();
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
+    return AMP::Mesh::BoxMeshHelpers::map_sphere_logical( d_r, x, y, z );
 }
 
 

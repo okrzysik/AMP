@@ -24,8 +24,8 @@ void StructuredGeometryMesh::displaceMesh( AMP::shared_ptr<const AMP::LinearAlge
 {
     AMP_ERROR( "displaceMesh (vector) violates StructuredGeometryMesh properties" );
 }
-AMP::Geometry::Point<double>
-StructuredGeometryMesh::physicalToLogical( const AMP::Geometry::Point<double> &x ) const
+AMP::Geometry::Point
+StructuredGeometryMesh::physicalToLogical( const AMP::Geometry::Point &x ) const
 {
     return d_geometry->logical( x );
 }
@@ -35,7 +35,7 @@ void StructuredGeometryMesh::coord( const MeshElementIndex &index, double *pos )
     double x = static_cast<double>( index.index( 0 ) ) / static_cast<double>( d_globalSize[0] );
     double y = static_cast<double>( index.index( 1 ) ) / static_cast<double>( d_globalSize[1] );
     double z = static_cast<double>( index.index( 2 ) ) / static_cast<double>( d_globalSize[2] );
-    auto tmp = d_geometry->physical( AMP::Geometry::Point<double>( x, y, z ) );
+    auto tmp = d_geometry->physical( AMP::Geometry::Point( x, y, z ) );
     for ( int d = 0; d < PhysicalDim; d++ )
         pos[d] = tmp[d];
 }

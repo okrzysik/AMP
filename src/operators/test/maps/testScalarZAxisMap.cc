@@ -22,16 +22,14 @@ void setBoundary( int id,
     if ( mesh.get() == nullptr )
         return;
 
-    AMP::Discretization::DOFManager::shared_ptr d1 = v1->getDOFManager();
-
-    AMP::Mesh::MeshIterator curBnd =
-        mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, id, 0 );
-    AMP::Mesh::MeshIterator endBnd = curBnd.end();
+    auto d1     = v1->getDOFManager();
+    auto curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, id, 0 );
+    auto endBnd = curBnd.end();
 
     std::vector<size_t> ids;
     while ( curBnd != endBnd ) {
         d1->getDOFs( curBnd->globalID(), ids );
-        std::vector<double> x = curBnd->coord();
+        auto x = curBnd->coord();
         v1->setLocalValuesByGlobalID( ids.size(), &ids[0], &x[2] );
         ++curBnd;
     }

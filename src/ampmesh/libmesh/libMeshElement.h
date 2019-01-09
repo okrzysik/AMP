@@ -49,7 +49,7 @@ public:
     virtual double volume() const override;
 
     //! Return the coordinates of all verticies composing the element
-    virtual void coord( size_t &N, double *pos ) const override;
+    virtual Point coord() const override;
 
     /**
      * \brief     Return the centroid of the element
@@ -57,7 +57,7 @@ public:
      *   centroid is defined as the average of the coordinates of the verticies.
      *   The centroid of a vertex is the vertex and will return the same result as coord().
      */
-    virtual void centroid( size_t &N, double *pos ) const override;
+    virtual Point centroid() const override;
 
     /**
      * \brief     Return true if the element contains the point
@@ -67,7 +67,7 @@ public:
      * \param pos   The coordinates of the point to check.
      * \param TOL   The tolerance to use for the computation.
      */
-    virtual bool containsPoint( const std::vector<double> &pos, double TOL = 1e-12 ) const override;
+    virtual bool containsPoint( const Point &pos, double TOL = 1e-12 ) const override;
 
     //! Check if the element is on the surface
     virtual bool isOnSurface() const override;
@@ -126,6 +126,9 @@ protected:
 
     friend class AMP::Mesh::libMesh;
     friend class AMP::Mesh::libMeshIterator;
+
+private:
+    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "libMeshElement" ); }
 };
 } // namespace Mesh
 } // namespace AMP

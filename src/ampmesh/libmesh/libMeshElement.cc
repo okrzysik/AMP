@@ -9,9 +9,6 @@ namespace AMP {
 namespace Mesh {
 
 
-// Create a unique id for this class
-static unsigned int libMeshElementTypeID = TYPE_HASH( libMeshElement );
-
 // Functions to create new ids by mixing existing ids
 static unsigned int generate_id( const std::vector<unsigned int> &ids );
 
@@ -21,7 +18,7 @@ static unsigned int generate_id( const std::vector<unsigned int> &ids );
  ********************************************************/
 libMeshElement::libMeshElement()
 {
-    typeID     = libMeshElementTypeID;
+    typeID     = getTypeID();
     element    = nullptr;
     d_dim      = -1;
     d_globalID = MeshElementID();
@@ -34,7 +31,7 @@ libMeshElement::libMeshElement( int dim,
                                 const libMesh *mesh )
 {
     AMP_ASSERT( libmesh_element != nullptr );
-    typeID          = libMeshElementTypeID;
+    typeID          = getTypeID();
     element         = nullptr;
     d_dim           = dim;
     d_rank          = rank;
@@ -69,7 +66,7 @@ libMeshElement::libMeshElement( int dim,
     : d_delete_elem( false )
 {
     AMP_ASSERT( libmesh_element.get() != nullptr );
-    typeID          = libMeshElementTypeID;
+    typeID          = getTypeID();
     element         = nullptr;
     d_dim           = dim;
     d_rank          = rank;
@@ -99,7 +96,7 @@ libMeshElement::libMeshElement( const libMeshElement &rhs )
       d_meshID( rhs.d_meshID ),
       d_delete_elem( false )
 {
-    typeID      = libMeshElementTypeID;
+    typeID      = getTypeID();
     element     = nullptr;
     d_globalID  = rhs.d_globalID;
     d_dim       = rhs.d_dim;
@@ -111,7 +108,7 @@ libMeshElement &libMeshElement::operator=( const libMeshElement &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID        = libMeshElementTypeID;
+    this->typeID        = getTypeID();
     this->element       = nullptr;
     this->d_globalID    = rhs.d_globalID;
     this->d_dim         = rhs.d_dim;
@@ -261,34 +258,34 @@ double libMeshElement::volume() const
     auto *elem = (::Elem *) ptr_element;
     return elem->volume();
 }
-void libMeshElement::coord( size_t &N, double *x ) const
+Point libMeshElement::coord() const
 {
     if ( d_globalID.type() != GeomType::Vertex )
         AMP_ERROR( "coord is only defined for Nodes" );
     auto *node = (::Node *) ptr_element;
-    N          = std::min<size_t>( N, d_dim );
+    Point x( (size_t) d_dim );
     for ( int i = 0; i < d_dim; i++ )
         x[i] = ( *node )( i );
+    return x;
 }
-void libMeshElement::centroid( size_t &N, double *x ) const
+Point libMeshElement::centroid() const
 {
     if ( d_globalID.type() == GeomType::Vertex )
-        return coord( N, x );
+        return coord();
     auto *elem     = (::Elem *) ptr_element;
     ::Point center = elem->centroid();
-    N              = std::min<size_t>( N, d_dim );
+    Point x( (size_t) d_dim );
     for ( int i = 0; i < d_dim; i++ )
         x[i] = center( i );
+    return x;
 }
-bool libMeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
+bool libMeshElement::containsPoint( const Point &pos, double TOL ) const
 {
     if ( d_globalID.type() == GeomType::Vertex ) {
         // double dist = 0.0;
-        size_t N = 10;
-        double point[10];
-        this->coord( N, point );
+        auto point   = this->coord();
         double dist2 = 0.0;
-        for ( size_t i = 0; i < N; i++ )
+        for ( size_t i = 0; i < point.size(); i++ )
             dist2 += ( point[i] - pos[i] ) * ( point[i] - pos[i] );
         return dist2 <= TOL * TOL;
     }

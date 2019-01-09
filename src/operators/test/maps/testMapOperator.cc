@@ -121,13 +121,12 @@ void testMap( AMP::UnitTest *ut, const std::string &exeName )
 
     // Set the boundary for the source vector
     unsigned int d_boundaryId = map3dto1d_db1->getInteger( "BoundaryId" );
-    AMP::Mesh::MeshIterator bnd =
-        mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryId, 0 );
-    AMP::Mesh::MeshIterator end_bnd                     = bnd.end();
-    AMP::Discretization::DOFManager::shared_ptr dof_map = mapSolutionMaster->getDOFManager();
+    auto bnd     = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryId, 0 );
+    auto end_bnd = bnd.end();
+    auto dof_map = mapSolutionMaster->getDOFManager();
     std::vector<size_t> ids;
     for ( ; bnd != end_bnd; ++bnd ) {
-        std::vector<double> x = bnd->coord();
+        auto x = bnd->coord();
         dof_map->getDOFs( bnd->globalID(), ids );
         AMP_ASSERT( ids.size() == 1 );
         mapSolutionMaster->setValueByGlobalID( ids[0], x[2] );

@@ -81,7 +81,7 @@ public:
      *                  Bit 1: print the number of procs per mesh
      * \param indent    Number of spaces to indent the printing
      */
-    void print( unsigned char detail = 3, unsigned char indent = 0 );
+    void print( uint8_t detail = 3, uint8_t indent = 0 );
 
     //! Function to return the minimum number of elements on a processor
     size_t min();

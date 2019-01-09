@@ -21,7 +21,7 @@ Shell::Shell( double r_min, double r_max ) : d_r_min( r_min ), d_r_max( r_max )
 /********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
-double Shell::distance( const Point<double> &pos, const Point<double> &ang ) const
+double Shell::distance( const Point &pos, const Point &ang ) const
 {
     NULL_USE( pos );
     NULL_USE( ang );
@@ -33,41 +33,45 @@ double Shell::distance( const Point<double> &pos, const Point<double> &ang ) con
 /********************************************************
  * Check if the ray is inside the geometry               *
  ********************************************************/
-bool Shell::inside( const Point<double> &pos ) const
+bool Shell::inside( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return false;
+    double x      = pos.x() - d_offset[0];
+    double y      = pos.y() - d_offset[1];
+    double z      = pos.z() - d_offset[2];
+    double r2     = x * x + y * y + z * z;
+    double r2_min = ( 1.0 - 1e-12 ) * d_r_min * d_r_min;
+    double r2_max = ( 1.0 + 1e-12 ) * d_r_max * d_r_max;
+    return r2 >= r2_min && r2 <= r2_max;
 }
 
 
 /********************************************************
  * Return the closest surface                            *
  ********************************************************/
-int Shell::surface( const Point<double> &pos ) const
+int Shell::surface( const Point &pos ) const
 {
     NULL_USE( pos );
     AMP_ERROR( "Not finished" );
     return 0;
 }
-Point<double> Shell::surfaceNorm( const Point<double> &pos ) const
+Point Shell::surfaceNorm( const Point &pos ) const
 {
     NULL_USE( pos );
     AMP_ERROR( "Not finished" );
-    return Point<double>();
+    return Point();
 }
 
 
 /********************************************************
  * Return the physical coordinates                       *
  ********************************************************/
-Point<double> Shell::physical( const Point<double> &pos ) const
+Point Shell::physical( const Point &pos ) const
 {
     auto point =
-        AMP::Mesh::BoxMeshHelpers::map_logical_shell( d_r_min, d_r_max, pos.x, pos.y, pos.z );
-    point.x += d_offset[0];
-    point.y += d_offset[1];
-    point.z += d_offset[2];
+        AMP::Mesh::BoxMeshHelpers::map_logical_shell( d_r_min, d_r_max, pos[0], pos[1], pos[2] );
+    point[0] += d_offset[0];
+    point[1] += d_offset[1];
+    point[2] += d_offset[2];
     return point;
 }
 
@@ -75,11 +79,10 @@ Point<double> Shell::physical( const Point<double> &pos ) const
 /********************************************************
  * Return the logical coordinates                        *
  ********************************************************/
-Point<double> Shell::logical( const Point<double> &pos ) const
+Point Shell::logical( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return Point<double>();
+    return AMP::Mesh::BoxMeshHelpers::map_shell_logical(
+        d_r_min, d_r_max, pos[0] - d_offset[0], pos[1] - d_offset[1], pos[2] - d_offset[2] );
 }
 
 

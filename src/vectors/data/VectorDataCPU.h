@@ -197,7 +197,7 @@ private:
 
 public: // Deprecated functions
     //! return a const reference to the internal data container (deprecated)
-    inline const std::vector<TYPE> &getData( void ) const { return d_Data; }
+    [[deprecated]] inline const std::vector<TYPE> &getData( void ) const { return d_Data; }
 };
 
 

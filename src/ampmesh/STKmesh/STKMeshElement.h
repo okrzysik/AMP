@@ -64,7 +64,7 @@ public:
      * \param pos   The coordinates of the point to check.
      * \param TOL   The tolerance to use for the computation.
      */
-    virtual bool containsPoint( const std::vector<double> &pos, double TOL = 1e-12 ) const override;
+    virtual bool containsPoint( const Point &pos, double TOL = 1e-12 ) const override;
 
     //! Check if the element is on the surface
     virtual bool isOnSurface() const override;
@@ -117,6 +117,9 @@ protected:
 
     friend class AMP::Mesh::STKMesh;
     friend class AMP::Mesh::STKMeshIterator;
+
+private:
+    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "STKMeshElement" ); }
 };
 } // namespace Mesh
 } // namespace AMP

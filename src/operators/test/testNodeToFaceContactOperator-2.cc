@@ -57,7 +57,7 @@ void selectNodes( AMP::Mesh::Mesh::shared_ptr mesh,
     AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
     nodesGlobalIDs.clear();
     for ( meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator ) {
-        std::vector<double> coord = meshIterator->coord();
+        auto coord = meshIterator->coord();
         if ( std::abs( coord[2] - 0.0 ) < 1.0e-14 ) {
             nodesGlobalIDs.push_back( meshIterator->globalID() );
             //      std::cout<<nodesGlobalIDs.size()<<"  ("<<coord[0]<<", "<<coord[1]<<",
@@ -73,7 +73,7 @@ void printNodesValues( AMP::Mesh::Mesh::shared_ptr mesh,
 {
     AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
     for ( size_t i = 0; i < nodesGlobalIDs.size(); ++i ) {
-        std::vector<double> coord = mesh->getElement( nodesGlobalIDs[i] ).coord();
+        auto coord = mesh->getElement( nodesGlobalIDs[i] ).coord();
         std::vector<size_t> dofIndices;
         dofManager->getDOFs( nodesGlobalIDs[i], dofIndices );
         AMP_ASSERT( dofIndices.size() == 1 );
@@ -98,11 +98,10 @@ void getConcentratedLoadAtNodes( double loadParameter,
             meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4, 0 );
         AMP::Mesh::MeshIterator boundaryIterator_begin = boundaryIterator.begin(),
                                 boundaryIterator_end   = boundaryIterator.end();
-        std::vector<double> vertexCoordinates;
         std::vector<size_t> vertexDofIndices;
         for ( boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end;
               ++boundaryIterator ) {
-            vertexCoordinates = boundaryIterator->coord();
+            auto vertexCoordinates = boundaryIterator->coord();
             AMP_ASSERT( vertexCoordinates.size() == 3 );
             dofManager->getDOFs( boundaryIterator->globalID(), vertexDofIndices );
             AMP_ASSERT( vertexDofIndices.size() == 3 );

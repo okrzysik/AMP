@@ -39,16 +39,15 @@ void setBoundary( int id,
     if ( mesh.get() == nullptr )
         return;
 
-    AMP::Discretization::DOFManager::shared_ptr d1 = v1->getDOFManager();
+    auto d1 = v1->getDOFManager();
 
-    AMP::Mesh::MeshIterator curBnd =
-        mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, id, 0 );
-    AMP::Mesh::MeshIterator endBnd = curBnd.end();
+    auto curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, id, 0 );
+    auto endBnd = curBnd.end();
 
     std::vector<size_t> ids;
     while ( curBnd != endBnd ) {
         d1->getDOFs( curBnd->globalID(), ids );
-        std::vector<double> x = curBnd->coord();
+        auto x = curBnd->coord();
         v1->setLocalValuesByGlobalID( ids.size(), &ids[0], &x[2] );
         ++curBnd;
     }
@@ -74,18 +73,17 @@ void setGpBoundary( int id,
 
     AMP::Discretization::createLibmeshElements libmeshElements;
 
-    AMP::Discretization::DOFManager::shared_ptr d1 = v1->getDOFManager();
+    auto d1 = v1->getDOFManager();
 
-    AMP::Mesh::MeshIterator curBnd =
-        mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, id, 0 );
-    AMP::Mesh::MeshIterator endBnd = curBnd.end();
+    auto curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, id, 0 );
+    auto endBnd = curBnd.end();
 
     libmeshElements.reinit( curBnd );
 
     std::vector<size_t> ids;
     while ( curBnd != endBnd ) {
         d_fe->reinit( libmeshElements.getElement( curBnd->globalID() ) );
-        std::vector<Point> coordinates = d_fe->get_xyz();
+        auto coordinates = d_fe->get_xyz();
 
         d1->getDOFs( curBnd->globalID(), ids );
         for ( unsigned int qp = 0; qp < ids.size(); qp++ ) {
@@ -105,15 +103,15 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    auto mesh_db = input_db->getDatabase( "Mesh" );
     AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( mesh_db ) );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Get the database for the node to node maps
-    AMP::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
+    auto map_db = input_db->getDatabase( "MeshToMeshMaps" );
 
     // Create a simple DOFManager and the vectors
     int DOFsPerObject   = map_db->getInteger( "DOFsPerObject" );

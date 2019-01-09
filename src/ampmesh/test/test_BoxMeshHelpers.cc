@@ -47,8 +47,8 @@ void test_map_logical_sphere_surface( AMP::UnitTest &ut )
         double x  = dis( gen );
         double y  = dis( gen );
         auto p    = AMP::Mesh::BoxMeshHelpers::map_logical_sphere_surface( r, x, y );
-        auto p2   = AMP::Mesh::BoxMeshHelpers::map_sphere_surface_logical( r, p.x, p.y, p.z );
-        double r2 = sqrt( p.x * p.x + p.y * p.y + p.z * p.z );
+        auto p2   = AMP::Mesh::BoxMeshHelpers::map_sphere_surface_logical( r, p[0], p[1], p[2] );
+        double r2 = sqrt( p[0] * p[0] + p[1] * p[1] + p[2] * p[2] );
         pass      = pass && r2 < r + 1e-15;
         pass      = pass && fabs( p2.first - x ) < 1e-10 && fabs( p2.second - y ) < 1e-10;
         if ( fabs( p2.first - x ) > 1e-10 || fabs( p2.second - y ) > 1e-10 )

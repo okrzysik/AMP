@@ -189,10 +189,10 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
                                                                            // correct units
     for ( int i = 0; i < (int) face.size(); i++ ) {
         faceDOFManager->getDOFs( face->globalID(), dofs );
-        std::vector<double> coord = face->centroid();
-        double z                  = coord[2];
-        double h                  = getSolutionEnthalpy( Q, H, m, hin, z );
-        double P                  = getSolutionPressure( input_db, H, Pout, rho, z );
+        auto coord = face->centroid();
+        double z   = coord[2];
+        double h   = getSolutionEnthalpy( Q, H, m, hin, z );
+        double P   = getSolutionPressure( input_db, H, Pout, rho, z );
         manufacturedVec->setValueByGlobalID( dofs[0],
                                              AMP::Operator::Subchannel::scaleEnthalpy * h );
         manufacturedVec->setValueByGlobalID( dofs[1],

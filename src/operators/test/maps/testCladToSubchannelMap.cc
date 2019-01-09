@@ -17,10 +17,7 @@
 #include "AMP/vectors/VectorBuilder.h"
 
 
-double getTemp( const std::vector<double> &x )
-{
-    return 500 + x[0] * 100 + x[1] * 100 + x[2] * 100;
-}
+double getTemp( const AMP::Mesh::Point &x ) { return 500 + x[0] * 100 + x[1] * 100 + x[2] * 100; }
 
 
 AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth )
@@ -29,12 +26,11 @@ AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel
     AMP::Mesh::MeshIterator iterator =
         subChannel->getIterator( AMP::Mesh::GeomType::Face, ghostWidth );
     for ( size_t i = 0; i < iterator.size(); ++i ) {
-        std::vector<AMP::Mesh::MeshElement> nodes =
-            iterator->getElements( AMP::Mesh::GeomType::Vertex );
-        std::vector<double> center = iterator->centroid();
-        bool is_valid              = true;
+        auto nodes    = iterator->getElements( AMP::Mesh::GeomType::Vertex );
+        auto center   = iterator->centroid();
+        bool is_valid = true;
         for ( auto &node : nodes ) {
-            std::vector<double> coord = node.coord();
+            auto coord = node.coord();
             if ( !AMP::Utilities::approx_equal( coord[2], center[2], 1e-6 ) )
                 is_valid = false;
         }

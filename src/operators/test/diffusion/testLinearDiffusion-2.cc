@@ -145,10 +145,10 @@ void linearTest( AMP::UnitTest *ut,
     AMP::Mesh::MeshIterator endNode = curNode.end();
     std::vector<size_t> dofs;
     while ( curNode != endNode ) {
-        std::vector<double> pos = curNode->coord();
-        double x                = pos[0];
-        double y                = pos[1];
-        double z                = pos[2];
+        auto pos = curNode->coord();
+        double x = pos[0];
+        double y = pos[1];
+        double z = pos[2];
         NodalScalarDOF->getDOFs( curNode->globalID(), dofs );
         size_t i    = dofs[0];
         double fval = function( x, y, z );
@@ -173,10 +173,10 @@ void linearTest( AMP::UnitTest *ut,
         }
         curNode = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         for ( size_t i = 0; i < nnodes; i++ ) {
-            std::vector<double> pos = curNode->coord();
-            double x                = pos[0];
-            double y                = pos[1];
-            double z                = pos[2];
+            auto pos = curNode->coord();
+            double x = pos[0];
+            double y = pos[1];
+            double z = pos[2];
 
             int ii      = i;
             double rval = diffResVec->getValueByLocalID( ii );

@@ -1,6 +1,7 @@
 #ifndef included_AMP_Geometry
 #define included_AMP_Geometry
 
+#include "AMP/ampmesh/MeshPoint.h"
 #include "AMP/utils/shared_ptr.h"
 
 #include <vector>
@@ -10,66 +11,7 @@ namespace AMP {
 namespace Geometry {
 
 
-/**
- * \class Point
- * \brief A class used to store information for a point
- */
-template<class TYPE>
-struct Point final {
-    TYPE x; //! x-coordinate
-    TYPE y; //! y-coordinate
-    TYPE z; //! z-coordinate
-    Point() : x( 0 ), y( 0 ), z( 0 ) {}
-    template<class TYPE2>
-    Point( const Point<TYPE2> &rhs ) : x( rhs.x ), y( rhs.y ), z( rhs.z )
-    {
-    }
-    inline Point( TYPE x_, TYPE y_ = 0, TYPE z_ = 0 ) : x( x_ ), y( y_ ), z( z_ ) {}
-    inline TYPE &operator[]( size_t i )
-    {
-        if ( i == 0 )
-            return x;
-        else if ( i == 1 )
-            return y;
-        else if ( i == 2 )
-            return z;
-        else
-            throw std::out_of_range( "Invalid index" );
-    }
-    inline TYPE operator[]( size_t i ) const
-    {
-        if ( i == 0 )
-            return x;
-        else if ( i == 1 )
-            return y;
-        else if ( i == 2 )
-            return z;
-        else
-            throw std::out_of_range( "Invalid index" );
-    }
-    inline Point( std::initializer_list<TYPE> x_ )
-    {
-        auto it = x_.begin();
-        x       = *it;
-        y       = *( ++it );
-        z       = *( ++it );
-    }
-    inline Point &operator+=( const TYPE rhs )
-    {
-        x += rhs;
-        y += rhs;
-        z += rhs;
-        return *this;
-    }
-    template<class TYPE2>
-    inline Point &operator+=( const Point<TYPE2> &rhs )
-    {
-        x += rhs.x;
-        y += rhs.y;
-        z += rhs.z;
-        return *this;
-    }
-};
+using Point = AMP::Mesh::MeshPoint<double>;
 
 
 /**
@@ -112,10 +54,10 @@ public:
      *     ray will never intersect the object, this distance is inf.
      * \param[in] pos   Current position of ray
      * \param[in] dir   Direction of ray (should be normalized for most uses)
-     * @return          Returns the distance to the nearest surface (intersection = pos +
-     * dir*distance)
+     * @return          Returns the distance to the nearest surface
+     *                  (intersection = pos + dir*distance)
      */
-    virtual double distance( const Point<double> &pos, const Point<double> &dir ) const = 0;
+    virtual double distance( const Point &pos, const Point &dir ) const = 0;
 
     /**
      * \brief    Is the point in the geometry
@@ -124,7 +66,7 @@ public:
      * \param[in] pos   Current position
      * @return          Returns true if the point is inside the geometry (or on the surface)
      */
-    virtual bool inside( const Point<double> &pos ) const = 0;
+    virtual bool inside( const Point &pos ) const = 0;
 
     /**
      * \brief    Get the surface id
@@ -132,7 +74,7 @@ public:
      * \param[in] x     Current position
      * @return          Returns the surface id
      */
-    virtual int surface( const Point<double> &x ) const = 0;
+    virtual int surface( const Point &x ) const = 0;
 
     /**
      * \brief    Return the outward normal to a surface
@@ -142,23 +84,23 @@ public:
      * @return          Returns the surface normal
 
      */
-    virtual Point<double> surfaceNorm( const Point<double> &x ) const = 0;
+    virtual Point surfaceNorm( const Point &x ) const = 0;
 
     /**
      * \brief    Return the logical position
      * \details  This function will return logical coordinate given the physical coordinates
      * \param[in] x     Physical coordinate of the point
-     * @return          Returns the surface normal
+     * @return          Returns the logical coordinates
      */
-    virtual Point<double> logical( const Point<double> &x ) const = 0;
+    virtual Point logical( const Point &x ) const = 0;
 
     /**
      * \brief    Return the physical position
      * \details  This function will return physical coordinate given the logical coordinates
-     * \param[in] x     Physical coordinate of the point
-     * @return          Returns the surface normal
+     * \param[in] x     Logical coordinate of the point
+     * @return          Returns the physical coordinates
      */
-    virtual Point<double> physical( const Point<double> &x ) const = 0;
+    virtual Point physical( const Point &x ) const = 0;
 
     /**
      * \brief    Displace the entire mesh
@@ -174,6 +116,26 @@ public:
 protected:
     //!  Empty constructor for the base class
     Geometry() {}
+
+protected: // Helper functions
+    // Compute the normal to the plane formed by 3 points
+    static inline Point normal( const Point &a, const Point &b, const Point &c )
+    {
+        return normalize( cross( b - a, c - a ) );
+    }
+
+    // Compute the distance to the intersection of a ray with a plane
+    static inline double
+    intersectPlane( const Point &n, const Point &p0, const Point &x0, const Point &v )
+    {
+        double d = dot( n, v );
+        if ( fabs( d ) > 1e-12 ) {
+            double t = dot( p0 - x0, n ) / d;
+            if ( t >= 0 )
+                return t;
+        }
+        return std::numeric_limits<double>::infinity();
+    }
 };
 
 

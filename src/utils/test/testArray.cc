@@ -178,6 +178,12 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "Array constructors" );
 
+        // Test range based creation
+        Array<double> Mr( Range<double>( 1, 6, 0.5 ) );
+        if ( Mr.length() == 11 && Mr.ndim() == 1 && Mr( 2 ) == 2.0 )
+            ut.passes( "Array range-based constructor" );
+        else
+            ut.failure( "Array range-based constructor" );
         // Test std::string
         bool pass = true;
         Array<std::string> S;
@@ -207,16 +213,16 @@ int main( int argc, char *argv[] )
             ut.passes( "Caught failed allocation" );
         }
 
-        // Test math operators
-        if ( M1.min() == 0 )
+        // Test math opertors
+        if ( M1.min() == 0 && M1.min( 0 ).min() == 0 )
             ut.passes( "min" );
         else
             ut.failure( "min" );
-        if ( M1.max() == 49 )
+        if ( M1.max() == 49 && M1.max( 0 ).max() == 49 )
             ut.passes( "max" );
         else
             ut.failure( "max" );
-        if ( M1.sum() == 1225 )
+        if ( M1.sum() == 1225 && M1.sum( 0 ).sum() == 1225 )
             ut.passes( "sum" );
         else
             ut.failure( "sum" );
@@ -299,7 +305,18 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "view" );
         pout << "Time to create view: " << ( t2 - t1 ) * 1e9 / 100000 << " ns\n";
-
+        // Test time to access elements
+        {
+            Array<double> x( 100000 );
+            x.rand();
+            double s = 0;
+            t1       = Utilities::time();
+            for ( size_t i = 0; i < x.length(); i++ )
+                s += x( i );
+            t2 = Utilities::time();
+            AMP_ASSERT( s > 0 );
+            pout << "Time to access: " << ( t2 - t1 ) * 1e9 / x.length() << " ns\n";
+        }
         // Simple tests of +/-
         M2 = M1;
         M2.scale( 2 );
@@ -348,6 +365,7 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "swap" );
     }
+
     // Test sum
     {
         Array<double> x( 1000, 100 );
@@ -372,7 +390,7 @@ int main( int argc, char *argv[] )
     // Test the allocation of a non-trivial type
     {
         bool pass = true;
-        AMP::shared_ptr<TestAllocateClass> ptr;
+        std::shared_ptr<TestAllocateClass> ptr;
         {
             Array<TestAllocateClass> x( 3, 4 );
             pass = pass && TestAllocateClass::get_N_alloc() == 12;
@@ -389,6 +407,46 @@ int main( int argc, char *argv[] )
             ut.failure( "Allocator" );
     }
 
+    // Test cat
+    {
+        auto tmp = Array<double>::cat( { Array<double>( Range<double>( -3.5, -2, 0.1 ) ),
+                                         Array<double>( Range<double>( -1.96, 0, 0.02 ) ),
+                                         Array<double>( Range<double>( 0.05, 1, 0.05 ) ),
+                                         Array<double>( Range<double>( 1.1, 2, 0.1 ) ) } );
+        if ( tmp.length() == 145 )
+            ut.passes( "cat" );
+        else
+            ut.failure( "cat" );
+    }
+
+    // Test string range based constructor
+    {
+        bool pass = true;
+        auto tmp1 = Array<double>( "[ -3.5:0.1:-2 -1.96:0.02:0 0.05:0.05:1 1.1:0.1:2 ]" );
+        pass      = pass && tmp1.ndim() == 1 && tmp1.length() == 145;
+        auto tmp2 = Array<int>( "[ 0 1:1:10; 11:20 0 ]" );
+        pass      = pass && tmp2.ndim() == 2 && tmp2.size( 0 ) == 2 && tmp2.size( 1 ) == 11;
+        if ( pass )
+            ut.passes( "range-string" );
+        else
+            ut.failure( "range-string" );
+    }
+
+    // Test resize
+    {
+        Array<double> M1( 10, 10 );
+        M1.rand();
+        auto M2 = M1;
+        M2.resizeDim( 0, 20, -1 );
+        bool pass = M2.size( 0 ) == 20 && M2( 19, 0 ) == -1;
+        M2.resize( M1.size() );
+        pass = pass && M2 == M1;
+        if ( pass )
+            ut.passes( "resize" );
+        else
+            ut.failure( "resize" );
+    }
+
     // Test interpolation
     {
         test_interp<double>( ut, { 100 } );
@@ -401,6 +459,7 @@ int main( int argc, char *argv[] )
     auto num_failed = static_cast<int>( ut.NumFailGlobal() );
     if ( num_failed == 0 )
         pout << "All tests passed\n";
+    ut.reset();
     AMPManager::shutdown();
     return num_failed;
 }

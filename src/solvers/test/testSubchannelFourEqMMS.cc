@@ -155,7 +155,7 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     //=============================================================================
 
     // Get the problem parameters
-    std::vector<double> box = subchannelMesh->getBoundingBox();
+    auto box = subchannelMesh->getBoundingBox();
     AMP_ASSERT( box[4] == 0.0 );
     double H             = box[5] - box[4];
     double m_in          = nonlinearOperator_db->getDouble( "Inlet_Mass_Flow_Rate" );
@@ -210,24 +210,24 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // loop over axial faces
     for ( int i = 0; i < (int) face.size(); i++ ) {
         subchannelDOFManager->getDOFs( face->globalID(), axialDofs );
-        std::vector<double> coord = face->centroid();
-        double z                  = coord[2];
-        double h                  = getSolutionEnthalpy( Q, H, m_in, hin, z );
-        double P                  = getSolutionPressure( input_db, H, Pout, rho_in, z );
+        auto coord = face->centroid();
+        double z   = coord[2];
+        double h   = getSolutionEnthalpy( Q, H, m_in, hin, z );
+        double P   = getSolutionPressure( input_db, H, Pout, rho_in, z );
         manufacturedVec->setValueByGlobalID( axialDofs[0], m_in / m_scale );
         manufacturedVec->setValueByGlobalID( axialDofs[1], h / h_scale );
         manufacturedVec->setValueByGlobalID( axialDofs[2], P / P_scale );
         ++face;
     }
     // get lateral face map
-    std::map<std::vector<double>, AMP::Mesh::MeshElement> interiorLateralFaceMap;
-    std::map<std::vector<double>, AMP::Mesh::MeshElement> exteriorLateralFaceMap;
+    std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> interiorLateralFaceMap;
+    std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> exteriorLateralFaceMap;
     nonlinearOperator->getLateralFaces(
         nonlinearOpParams->d_Mesh, interiorLateralFaceMap, exteriorLateralFaceMap );
     // loop over lateral faces
     for ( face = face.begin(); face != face.end(); ++face ) {
-        std::vector<double> faceCentroid = face->centroid();
-        auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
+        auto faceCentroid        = face->centroid();
+        auto lateralFaceIterator = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
             // get lateral face
             AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
@@ -255,8 +255,8 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     }
     // loop over lateral faces
     for ( face = face.begin(); face != face.end(); ++face ) {
-        std::vector<double> faceCentroid = face->centroid();
-        auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
+        auto faceCentroid        = face->centroid();
+        auto lateralFaceIterator = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
             // get lateral face
             AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;

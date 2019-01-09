@@ -147,10 +147,10 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
     d_ownSubChannel  = std::vector<bool>( d_numSubchannels, false );
     d_subchannelElem = std::vector<std::vector<AMP::Mesh::MeshElement>>(
         d_numSubchannels, std::vector<AMP::Mesh::MeshElement>( 0 ) );
-    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     for ( size_t i = 0; i < el.size(); i++ ) {
-        std::vector<double> center = el->centroid();
-        int index                  = getSubchannelIndex( center[0], center[1] );
+        auto center = el->centroid();
+        int index   = getSubchannelIndex( center[0], center[1] );
         if ( index >= 0 ) {
             d_ownSubChannel[index] = true;
             d_subchannelElem[index].push_back( *el );
@@ -162,11 +162,9 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
     for ( size_t i = 0; i < d_numSubchannels; i++ ) {
         if ( !d_ownSubChannel[i] )
             continue;
-        AMP::Mesh::MeshIterator localSubchannelIt =
-            AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
-        AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt, false );
-        AMP::Mesh::MeshIterator face =
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( localSubchannel, 0 );
+        auto localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
+        auto localSubchannel   = d_Mesh->Subset( localSubchannelIt, false );
+        auto face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( localSubchannel, 0 );
         for ( size_t j = 0; j < face.size(); j++ ) {
             d_subchannelFace[i].push_back( *face );
             ++face;
@@ -201,8 +199,7 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
             continue;
 
         // Get the iterator over the faces in the local subchannel
-        AMP::Mesh::MeshIterator localSubchannelIt =
-            AMP::Mesh::MultiVectorIterator( d_subchannelFace[isub] );
+        auto localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelFace[isub] );
         AMP_ASSERT( localSubchannelIt.size() == d_z.size() );
 
         std::vector<size_t> dofs_minus;
@@ -210,12 +207,12 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
         std::vector<size_t> dofs_plus;
 
         // calculate residual for axial momentum equations
-        double A    = d_channelArea[isub]; // Channel area
-        double D    = d_channelDiam[isub]; // Channel hydraulic diameter
-        double mass = d_channelMass[isub]; // Mass flow rate in the current subchannel
-        int j       = 1;
-        AMP::Mesh::MeshIterator face     = localSubchannelIt.begin();
-        AMP::Mesh::MeshIterator end_face = localSubchannelIt.end();
+        double A      = d_channelArea[isub]; // Channel area
+        double D      = d_channelDiam[isub]; // Channel hydraulic diameter
+        double mass   = d_channelMass[isub]; // Mass flow rate in the current subchannel
+        int j         = 1;
+        auto face     = localSubchannelIt.begin();
+        auto end_face = localSubchannelIt.end();
         for ( size_t iface = 0; iface < localSubchannelIt.size(); ++iface, ++j ) {
             dofMap->getDOFs( face->globalID(), dofs );
             // ======================================================
@@ -247,16 +244,16 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
                                            dofs[0] ); // enthalpy evaluated at lower face
             double p_minus = P_scale * d_frozenVec->getValueByGlobalID(
                                            dofs[1] ); // pressure evaluated at lower face
-            std::vector<double> minusFaceCentroid = face->centroid();
-            double z_minus = minusFaceCentroid[2]; // z-coordinate of lower face
+            auto minusFaceCentroid = face->centroid();
+            double z_minus         = minusFaceCentroid[2]; // z-coordinate of lower face
             if ( face == end_face - 1 ) {
                 dofMap->getDOFs( face->globalID(), dofs );
                 d_matrix->setValueByGlobalID( dofs[1], dofs[1], 1.0 );
             } else {
                 ++face;
                 dofMap->getDOFs( face->globalID(), dofs_plus );
-                std::vector<double> plusFaceCentroid = face->centroid();
-                double z_plus = plusFaceCentroid[2]; // z-coordinate of lower face
+                auto plusFaceCentroid = face->centroid();
+                double z_plus         = plusFaceCentroid[2]; // z-coordinate of lower face
                 --face;
                 double h_plus = h_scale * d_frozenVec->getValueByGlobalID(
                                               dofs_plus[0] ); // enthalpy evaluated at upper face

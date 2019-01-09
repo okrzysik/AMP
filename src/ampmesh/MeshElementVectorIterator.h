@@ -77,6 +77,12 @@ protected:
 
     // A pointer to a std::vector containing the desired mesh elements
     AMP::shared_ptr<std::vector<MeshElement>> d_elements;
+
+private:
+    static constexpr uint32_t getTypeID()
+    {
+        return AMP::Utilities::hash_char( "MultiVectorIterator" );
+    }
 };
 } // namespace Mesh
 } // namespace AMP

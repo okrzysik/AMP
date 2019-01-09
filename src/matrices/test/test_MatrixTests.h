@@ -20,7 +20,7 @@ namespace LinearAlgebra {
 template<class MATRIX_FACTORY>
 void fillWithPseudoLaplacian( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
 {
-    AMP::Discretization::DOFManager::shared_ptr dofmap = MATRIX_FACTORY::getDOFMap();
+    auto dofmap = MATRIX_FACTORY::getDOFMap();
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
         std::vector<size_t> cols;
         std::vector<double> vals;
@@ -48,7 +48,7 @@ public:
     static void run_test( AMP::UnitTest *utils )
     {
         PROFILE_START( "InstantiateMatrix" );
-        AMP::LinearAlgebra::Matrix::shared_ptr matrix = FACTORY::getMatrix();
+        auto matrix = FACTORY::getMatrix();
         if ( matrix )
             utils->passes( "created" );
         else
@@ -68,8 +68,8 @@ public:
     {
         PROFILE_START( "VerifyGetLeftRightVector" );
         global_cached_matrix = FACTORY::getMatrix();
-        AMP::shared_ptr<VectorFactory> factory1( new AmpInterfaceRightVectorFactory() );
-        AMP::shared_ptr<VectorFactory> factory2( new AmpInterfaceLeftVectorFactory() );
+        auto factory1        = AMP::make_shared<AmpInterfaceRightVectorFactory>();
+        auto factory2        = AMP::make_shared<AmpInterfaceLeftVectorFactory>();
         VectorTests tests1( factory1 );
         VectorTests tests2( factory2 );
         tests1.testManagedVector( utils );
@@ -77,8 +77,8 @@ public:
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
         if ( dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscMatrix>(
                  global_cached_matrix ) ) {
-            AMP::shared_ptr<VectorFactory> factory3( new PETScInterfaceRightVectorFactory() );
-            AMP::shared_ptr<VectorFactory> factory4( new PETScInterfaceLeftVectorFactory() );
+            auto factory3 = AMP::make_shared<PETScInterfaceRightVectorFactory>();
+            auto factory4 = AMP::make_shared<PETScInterfaceLeftVectorFactory>();
             VectorTests tests3( factory3 );
             VectorTests tests4( factory4 );
             tests3.testManagedVector( utils );
@@ -103,8 +103,8 @@ public:
     static void run_test( AMP::UnitTest *utils )
     {
         PROFILE_START( "VerifyGetSetValuesMatrix" );
-        AMP::LinearAlgebra::Matrix::shared_ptr matrix      = FACTORY::getMatrix();
-        AMP::Discretization::DOFManager::shared_ptr dofmap = FACTORY::getDOFMap();
+        auto matrix = FACTORY::getMatrix();
+        auto dofmap = FACTORY::getDOFMap();
 
         matrix->makeConsistent();
         fillWithPseudoLaplacian<FACTORY>(
@@ -139,13 +139,13 @@ public:
         PROFILE_START( "VerifyAXPYMatrix" );
 
         // Create vectors/matricies from the factory
-        AMP::LinearAlgebra::Matrix::shared_ptr matrix1      = FACTORY::getMatrix();
-        AMP::LinearAlgebra::Matrix::shared_ptr matrix2      = FACTORY::getMatrix();
-        AMP::LinearAlgebra::Vector::shared_ptr vector1lhs   = matrix1->getRightVector();
-        AMP::LinearAlgebra::Vector::shared_ptr vector2lhs   = matrix2->getRightVector();
-        AMP::LinearAlgebra::Vector::shared_ptr vector1rhs   = matrix1->getRightVector();
-        AMP::LinearAlgebra::Vector::shared_ptr vector2rhs   = matrix2->getRightVector();
-        AMP::LinearAlgebra::Vector::shared_ptr vectorresult = matrix2->getRightVector();
+        auto matrix1      = FACTORY::getMatrix();
+        auto matrix2      = FACTORY::getMatrix();
+        auto vector1lhs   = matrix1->getRightVector();
+        auto vector2lhs   = matrix2->getRightVector();
+        auto vector1rhs   = matrix1->getRightVector();
+        auto vector2rhs   = matrix2->getRightVector();
+        auto vectorresult = matrix2->getRightVector();
         fillWithPseudoLaplacian<FACTORY>( matrix1 );
         fillWithPseudoLaplacian<FACTORY>( matrix2 );
 
@@ -169,9 +169,9 @@ public:
         std::vector<size_t> row( 7 );
         for ( size_t i = 0; i < row.size(); i++ )
             row[i] = i;
-        AMP::LinearAlgebra::Vector::shared_ptr smallVec =
+        auto smallVec =
             AMP::LinearAlgebra::SimpleVector<double>::create( 7, vector1lhs->getVariable() );
-        AMP::LinearAlgebra::Matrix::shared_ptr smallMat = AMP::LinearAlgebra::createMatrix(
+        auto smallMat = AMP::LinearAlgebra::createMatrix(
             smallVec, smallVec, FACTORY::type(), [row]( size_t ) { return row; } );
         try {
             matrix2->axpy( -2., smallMat ); // matrix2 = -matrix1
@@ -195,13 +195,13 @@ public:
     static void run_test( AMP::UnitTest *utils )
     {
         PROFILE_START( "VerifyScaleMatrix" );
-        AMP::LinearAlgebra::Matrix::shared_ptr matrix1      = FACTORY::getMatrix();
-        AMP::LinearAlgebra::Matrix::shared_ptr matrix2      = FACTORY::getMatrix();
-        AMP::LinearAlgebra::Vector::shared_ptr vector1lhs   = matrix1->getRightVector();
-        AMP::LinearAlgebra::Vector::shared_ptr vector2lhs   = matrix2->getRightVector();
-        AMP::LinearAlgebra::Vector::shared_ptr vector1rhs   = matrix1->getRightVector();
-        AMP::LinearAlgebra::Vector::shared_ptr vector2rhs   = matrix2->getRightVector();
-        AMP::LinearAlgebra::Vector::shared_ptr vectorresult = matrix2->getRightVector();
+        auto matrix1      = FACTORY::getMatrix();
+        auto matrix2      = FACTORY::getMatrix();
+        auto vector1lhs   = matrix1->getRightVector();
+        auto vector2lhs   = matrix2->getRightVector();
+        auto vector1rhs   = matrix1->getRightVector();
+        auto vector2rhs   = matrix2->getRightVector();
+        auto vectorresult = matrix2->getRightVector();
 
         fillWithPseudoLaplacian<FACTORY>( matrix1 );
         fillWithPseudoLaplacian<FACTORY>( matrix2 );
@@ -239,8 +239,8 @@ public:
     static void run_test( AMP::UnitTest *utils )
     {
         PROFILE_START( "VerifyExtractDiagonal" );
-        AMP::LinearAlgebra::Matrix::shared_ptr matrix = FACTORY::getMatrix();
-        AMP::LinearAlgebra::Vector::shared_ptr vector = matrix->getRightVector();
+        auto matrix     = FACTORY::getMatrix();
+        auto vector     = matrix->getRightVector();
         size_t firstRow = vector->getCommunicationList()->getStartGID();
         size_t maxCols  = matrix->numGlobalColumns();
         for ( size_t i = 0; i != vector->getCommunicationList()->numLocalRows(); i++ ) {
@@ -249,8 +249,8 @@ public:
                 break;
             matrix->setValueByGlobalID( row, row, static_cast<double>( row + 1 ) );
         }
-        AMP::LinearAlgebra::Vector::shared_ptr diag = matrix->extractDiagonal();
-        double l1norm                               = diag->L1Norm();
+        auto diag         = matrix->extractDiagonal();
+        double l1norm     = diag->L1Norm();
         double numRows    = static_cast<double>( matrix->numGlobalRows() );
         double numCols    = static_cast<double>( matrix->numGlobalColumns() );
         double compareVal = std::min( numRows, numCols );
@@ -273,9 +273,9 @@ public:
     static void run_test( AMP::UnitTest *utils )
     {
         PROFILE_START( "VerifyMultMatrix" );
-        AMP::LinearAlgebra::Matrix::shared_ptr matrix    = FACTORY::getMatrix();
-        AMP::LinearAlgebra::Vector::shared_ptr vectorlhs = matrix->getRightVector();
-        AMP::LinearAlgebra::Vector::shared_ptr vectorrhs = matrix->getRightVector();
+        auto matrix    = FACTORY::getMatrix();
+        auto vectorlhs = matrix->getRightVector();
+        auto vectorrhs = matrix->getRightVector();
         double normlhs, normrhs;
 
         // Verify 0 matrix from factory
@@ -333,13 +333,13 @@ public:
     static void run_test( AMP::UnitTest *utils )
     {
         PROFILE_START( "VerifyMatMultMatrix" );
-        AMP::LinearAlgebra::Matrix::shared_ptr matZero   = FACTORY::getMatrix();
-        AMP::LinearAlgebra::Matrix::shared_ptr matIdent  = FACTORY::getMatrix();
-        AMP::LinearAlgebra::Matrix::shared_ptr matLaplac = FACTORY::getMatrix();
-        AMP::LinearAlgebra::Matrix::shared_ptr matSol    = FACTORY::getMatrix();
-        AMP::LinearAlgebra::Vector::shared_ptr vector1   = matZero->getRightVector();
-        AMP::LinearAlgebra::Vector::shared_ptr vector2   = matZero->getRightVector();
-        AMP::LinearAlgebra::Vector::shared_ptr vector3   = matZero->getRightVector();
+        auto matZero   = FACTORY::getMatrix();
+        auto matIdent  = FACTORY::getMatrix();
+        auto matLaplac = FACTORY::getMatrix();
+        auto matSol    = FACTORY::getMatrix();
+        auto vector1   = matZero->getRightVector();
+        auto vector2   = matZero->getRightVector();
+        auto vector3   = matZero->getRightVector();
 
         if ( vector1->getGlobalSize() > 1000 ) {
             // Matrix-matrix multiplies take a long time (skip it)
@@ -404,19 +404,18 @@ public:
     static void run_test( AMP::UnitTest *utils )
     {
         PROFILE_START( "VerifySetElementNode" );
-        AMP::Mesh::Mesh::shared_ptr mesh                   = FACTORY::getMesh();
-        AMP::Discretization::DOFManager::shared_ptr dofmap = FACTORY::getDOFMap();
-        AMP::LinearAlgebra::Matrix::shared_ptr matrix      = FACTORY::getMatrix();
+        auto mesh   = FACTORY::getMesh();
+        auto dofmap = FACTORY::getDOFMap();
+        auto matrix = FACTORY::getMatrix();
         matrix->zero();
 
         // Fill all the node-node entries
-        AMP::Mesh::MeshIterator it  = mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
-        AMP::Mesh::MeshIterator end = it.end();
+        auto it  = mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+        auto end = it.end();
         std::vector<size_t> dofs;
         dofs.reserve( 24 );
         while ( it != end ) {
-            std::vector<AMP::Mesh::MeshElement> nodes =
-                it->getElements( AMP::Mesh::GeomType::Vertex );
+            auto nodes = it->getElements( AMP::Mesh::GeomType::Vertex );
             dofs.clear();
             for ( auto &node : nodes ) {
                 std::vector<size_t> dofsNode;

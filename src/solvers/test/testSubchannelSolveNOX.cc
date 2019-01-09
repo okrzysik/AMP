@@ -78,8 +78,7 @@ using doubleVec = std::vector<double>;
 // Function to get an arbitrary power profile (W/kg) assuming a density of 1 kg/m^3 for the volume
 // integral
 // P is the total power of the pin, V is the volume of the pin
-double
-getPower( const std::vector<double> &range, double P, double V, const std::vector<double> &pos )
+double getPower( const std::vector<double> &range, double P, double V, const AMP::Mesh::Point &pos )
 {
     const double pi = 3.1415926535897932;
     double x        = ( pos[0] - range[0] ) / ( range[1] - range[0] );
@@ -850,7 +849,7 @@ void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     if ( subchannelMesh != nullptr ) {
         AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
         for ( size_t i = 0; i < face.size(); i++ ) {
-            std::vector<double> pos = face->centroid();
+            auto pos = face->centroid();
             subchannelToPointMapParams->x.push_back( pos[0] );
             subchannelToPointMapParams->y.push_back( pos[1] );
             subchannelToPointMapParams->z.push_back( pos[2] );

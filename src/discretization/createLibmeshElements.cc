@@ -158,7 +158,7 @@ libMesh::Elem *createLibmeshElements::createElement( const AMP::Mesh::MeshElemen
         AMP_ERROR( "Unknown element type" );
     }
     for ( size_t j = 0; j < nodes.size(); j++ ) {
-        std::vector<double> pt = nodes[j].coord();
+        auto pt = nodes[j].coord();
         if ( pt.size() == 3 )
             element->set_node( j ) = new libMesh::Node( pt[0], pt[1], pt[2], j );
         else if ( pt.size() == 2 )

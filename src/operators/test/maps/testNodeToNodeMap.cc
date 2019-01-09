@@ -25,16 +25,14 @@ void setBoundary( int id,
     if ( mesh.get() == nullptr )
         return;
 
-    AMP::Discretization::DOFManager::shared_ptr d1 = v1->getDOFManager();
-
-    AMP::Mesh::MeshIterator curBnd =
-        mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, id, 0 );
-    AMP::Mesh::MeshIterator endBnd = curBnd.end();
+    auto d1     = v1->getDOFManager();
+    auto curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, id, 0 );
+    auto endBnd = curBnd.end();
 
     std::vector<size_t> ids;
     while ( curBnd != endBnd ) {
         d1->getDOFs( curBnd->globalID(), ids );
-        std::vector<double> x = curBnd->coord();
+        auto x = curBnd->coord();
         v1->setLocalValuesByGlobalID( ids.size(), &ids[0], &x[0] );
         ++curBnd;
     }
@@ -51,15 +49,15 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    auto mesh_db = input_db->getDatabase( "Mesh" );
     AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( mesh_db ) );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Get the database for the node to node maps
-    AMP::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "NodeToNodeMaps" );
+    auto map_db = input_db->getDatabase( "NodeToNodeMaps" );
 
     // Create a simple DOFManager and the vectors
     int DOFsPerNode     = map_db->getInteger( "DOFsPerObject" );
@@ -74,8 +72,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 
     // Test the creation/destruction of NodeToNodeMap (no apply call)
     try {
-        AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps;
-        n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap>(
+        auto n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap>(
             mesh, map_db );
         n2nmaps.reset();
         ut->passes( "Created / Destroyed NodeToNodeMap (" + fname + ")" );
@@ -93,10 +90,8 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr dummy;
-    AMP::LinearAlgebra::Vector::shared_ptr v1 =
-        AMP::LinearAlgebra::createVector( DOFs, nodalVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr v2 =
-        AMP::LinearAlgebra::createVector( DOFs, nodalVariable );
+    auto v1 = AMP::LinearAlgebra::createVector( DOFs, nodalVariable );
+    auto v2 = AMP::LinearAlgebra::createVector( DOFs, nodalVariable );
     n2nmaps->setVector( v2 );
 
     // Initialize the vectors
@@ -128,7 +123,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
             surface_id1 = surface1[0];
             surface_id2 = surface2[0];
         }
-        AMP::Mesh::Mesh::shared_ptr curMesh = mesh->Subset( meshname1 );
+        auto curMesh = mesh->Subset( meshname1 );
         setBoundary( surface_id1, v1, curMesh );
         curMesh = mesh->Subset( meshname2 );
         setBoundary( surface_id2, v1, curMesh );

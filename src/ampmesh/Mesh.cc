@@ -19,6 +19,11 @@ namespace AMP {
 namespace Mesh {
 
 
+static_assert( sizeof( MeshID ) == 8, "unexpected size for MeshID" );
+static_assert( sizeof( ElementID ) == 8, "unexpected size for ElementID" );
+static_assert( sizeof( MeshElementID ) == 16, "unexpected size for MeshElementID" );
+
+
 static unsigned int nextLocalMeshID = 1;
 
 
@@ -35,13 +40,9 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
     d_max_gcw   = 0;
     d_comm      = d_params->comm;
     d_db        = d_params->d_db;
-    AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ),
-                "Communicator in mesh params must be non NULL " );
+    AMP_INSIST( !d_comm.isNull(), "Communicator in mesh params must be non NULL" );
     setMeshID();
-    d_name = "NULL";
-    if ( d_db != nullptr ) {
-        d_name = d_db->getStringWithDefault( "MeshName", "NULL" );
-    }
+    d_name = d_db->getStringWithDefault( "MeshName", "NULL" );
 }
 
 

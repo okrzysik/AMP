@@ -79,8 +79,7 @@ public: // BoxMesh specific functionality
      * \param[in] x         Physical coordinates
      * @return              Returns the logical coordinates
      */
-    virtual AMP::Geometry::Point<double>
-    physicalToLogical( const AMP::Geometry::Point<double> &x ) const override;
+    virtual AMP::Geometry::Point physicalToLogical( const AMP::Geometry::Point &x ) const override;
 
 
 private:

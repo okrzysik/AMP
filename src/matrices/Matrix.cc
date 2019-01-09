@@ -59,6 +59,19 @@ size_t Matrix::endRow() const
     return DOF->endDOF();
 }
 
+
+// axpy
+void Matrix::axpy( double alpha, Matrix::const_shared_ptr x )
+{
+    AMP_ASSERT( x );
+    size_t N1 = x->numGlobalColumns();
+    size_t N2 = this->numGlobalRows();
+    if ( N1 != N2 )
+        AMP_ERROR( "Matrix sizes are not compatible" );
+    axpy( alpha, *x );
+}
+
+
 // Print the matrix to a IO stream
 std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
 {
@@ -70,10 +83,10 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
       out << "Variable name: " << v.getVariable()->getName() << "\n";
     }*/
     // Print the rank
-    Discretization::DOFManager::shared_ptr leftDOF  = M->getLeftDOFManager();
-    Discretization::DOFManager::shared_ptr rightDOF = M->getRightDOFManager();
-    AMP_MPI leftComm                                = leftDOF->getComm();
-    AMP_MPI rightComm                               = rightDOF->getComm();
+    auto leftDOF   = M->getLeftDOFManager();
+    auto rightDOF  = M->getRightDOFManager();
+    auto leftComm  = leftDOF->getComm();
+    auto rightComm = rightDOF->getComm();
     if ( leftComm == rightComm ) {
         int rank = leftComm.getRank();
         out << "Processor: " << rank << "\n";

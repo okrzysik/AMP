@@ -91,10 +91,10 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
                 AMP_ERROR( "Unknown output property" );
             }
             // Add it to the subchannel density vector
-            std::vector<double> center = it->centroid();
-            size_t ix = AMP::Utilities::findfirst( d_subchannel_x, center[0] - 1e-9 );
-            size_t iy = AMP::Utilities::findfirst( d_subchannel_y, center[1] - 1e-9 );
-            size_t iz = AMP::Utilities::findfirst( d_subchannel_z, center[2] - 1e-9 );
+            auto center = it->centroid();
+            size_t ix   = AMP::Utilities::findfirst( d_subchannel_x, center[0] - 1e-9 );
+            size_t iy   = AMP::Utilities::findfirst( d_subchannel_y, center[1] - 1e-9 );
+            size_t iz   = AMP::Utilities::findfirst( d_subchannel_z, center[2] - 1e-9 );
             AMP_ASSERT( AMP::Utilities::approx_equal( d_subchannel_x[ix], center[0] ) );
             AMP_ASSERT( AMP::Utilities::approx_equal( d_subchannel_y[iy], center[1] ) );
             AMP_ASSERT( AMP::Utilities::approx_equal( d_subchannel_z[iz], center[2] ) );

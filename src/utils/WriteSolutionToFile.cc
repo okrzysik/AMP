@@ -7,10 +7,10 @@ void printSolution( AMP::Mesh::Mesh::shared_ptr mesh,
                     std::string exeName )
 {
 
-    AMP::Discretization::DOFManager::shared_ptr dof_map = solVec->getDOFManager();
+    auto dof_map = solVec->getDOFManager();
 
-    AMP::Mesh::MeshIterator nd     = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-    AMP::Mesh::MeshIterator end_nd = nd.end();
+    auto nd     = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto end_nd = nd.end();
 
     std::string fname = "results_" + exeName + ".txt";
     FILE *fp          = fopen( fname.c_str(), "w" );
@@ -20,7 +20,7 @@ void printSolution( AMP::Mesh::Mesh::shared_ptr mesh,
 
     std::vector<size_t> dofs;
     for ( ; nd != end_nd; ++nd ) {
-        std::vector<double> x = nd->coord();
+        auto x = nd->coord();
         for ( auto &elem : x )
             fprintf( fp, "%lf, ", elem );
         fprintf( fp, ",    " );

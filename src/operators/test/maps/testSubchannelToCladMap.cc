@@ -18,21 +18,19 @@
 #include "AMP/vectors/VectorBuilder.h"
 
 
-double getTemp( const std::vector<double> &x ) { return 500 + x[2] * 100; }
+double getTemp( const AMP::Mesh::Point &x ) { return 500 + x[2] * 100; }
 
 
 AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth )
 {
     std::multimap<double, AMP::Mesh::MeshElement> xyFace;
-    AMP::Mesh::MeshIterator iterator =
-        subChannel->getIterator( AMP::Mesh::GeomType::Face, ghostWidth );
+    auto iterator = subChannel->getIterator( AMP::Mesh::GeomType::Face, ghostWidth );
     for ( size_t i = 0; i < iterator.size(); ++i ) {
-        std::vector<AMP::Mesh::MeshElement> nodes =
-            iterator->getElements( AMP::Mesh::GeomType::Vertex );
-        std::vector<double> center = iterator->centroid();
-        bool is_valid              = true;
+        auto nodes    = iterator->getElements( AMP::Mesh::GeomType::Vertex );
+        auto center   = iterator->centroid();
+        bool is_valid = true;
         for ( auto &node : nodes ) {
-            std::vector<double> coord = node.coord();
+            auto coord = node.coord();
             if ( !AMP::Utilities::approx_equal( coord[2], center[2], 1e-6 ) )
                 is_valid = false;
         }
@@ -41,8 +39,7 @@ AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel
         }
         ++iterator;
     }
-    AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elements(
-        new std::vector<AMP::Mesh::MeshElement>() );
+    auto elements = AMP::make_shared<std::vector<AMP::Mesh::MeshElement>>();
     elements->reserve( xyFace.size() );
     for ( auto &elem : xyFace )
         elements->push_back( elem.second );
@@ -53,25 +50,25 @@ AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel
 void runTest( const std::string &fname, AMP::UnitTest *ut )
 {
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( fname, input_db );
     input_db->printClassData( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db = input_db->getDatabase( "Mesh" );
+    auto params  = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    AMP::Mesh::Mesh::shared_ptr manager  = AMP::Mesh::Mesh::buildMesh( params );
-    AMP::Mesh::Mesh::shared_ptr pin_mesh = manager->Subset( "MultiPin" );
+    auto manager  = AMP::Mesh::Mesh::buildMesh( params );
+    auto pin_mesh = manager->Subset( "MultiPin" );
     AMP::Mesh::Mesh::shared_ptr clad_mesh;
     if ( pin_mesh.get() != nullptr ) {
         pin_mesh->setName( "MultiPin" );
         clad_mesh = pin_mesh->Subset( "clad" );
     }
-    AMP::Mesh::Mesh::shared_ptr subchannel_mesh = manager->Subset( "subchannel" );
+    auto subchannel_mesh = manager->Subset( "subchannel" );
     AMP::Mesh::Mesh::shared_ptr subchannel_face;
     if ( subchannel_mesh.get() != nullptr ) {
         subchannel_mesh->setName( "subchannel" );
@@ -79,16 +76,15 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     }
 
     // Get the database for the map
-    AMP::shared_ptr<AMP::Database> nodal_map_db = input_db->getDatabase( "SubchannelToNodeMap" );
-    AMP::shared_ptr<AMP::Database> gauss_map_db = input_db->getDatabase( "SubchannelToGPMap" );
+    auto nodal_map_db = input_db->getDatabase( "SubchannelToNodeMap" );
+    auto gauss_map_db = input_db->getDatabase( "SubchannelToGPMap" );
 
     // Create the DOFManagers and the vectors
     // int DOFsPerNode = map_db->getInteger("DOFsPerObject");
     // std::string varName = map_db->getString("VariableName");
     int DOFsPerNode     = 1;
     std::string varName = "Temperature";
-    AMP::LinearAlgebra::Variable::shared_ptr temperature(
-        new AMP::LinearAlgebra::Variable( varName ) );
+    auto temperature    = AMP::make_shared<AMP::LinearAlgebra::Variable>( varName );
     AMP::Discretization::DOFManager::shared_ptr pin_DOFs;
     AMP::Discretization::DOFManager::shared_ptr subchannel_DOFs;
     AMP::LinearAlgebra::Vector::shared_ptr T_clad;
@@ -109,7 +105,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 
     // Initialize the subchannel temperatures
     if ( subchannel_face.get() != nullptr ) {
-        AMP::Mesh::MeshIterator it = subchannel_face->getIterator( AMP::Mesh::GeomType::Face, 0 );
+        auto it = subchannel_face->getIterator( AMP::Mesh::GeomType::Face, 0 );
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
             subchannel_DOFs->getDOFs( it->globalID(), dofs );
@@ -121,8 +117,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 
     // Test the creation/destruction of SubchannelToCladMap (no apply call)
     try {
-        AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> map;
-        map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>(
+        auto map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>(
             manager, nodal_map_db );
         map.reset();
         ut->passes( "Created / Destroyed SubchannelToCladMap" );
@@ -130,9 +125,9 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
         ut->failure( "Created / Destroyed SubchannelToCladMap" );
     }
     try {
-        AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> map;
-        map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladGPMap>(
-            manager, gauss_map_db );
+        auto map =
+            AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladGPMap>(
+                manager, gauss_map_db );
         map.reset();
         ut->passes( "Created / Destroyed SubchannelToCladGPMap" );
     } catch ( ... ) {
@@ -141,8 +136,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 
 
     // Perform a complete test of SubchannelToCladMap
-    AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> map;
-    map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>(
+    auto map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>(
         manager, nodal_map_db );
     map->setVector( T_clad );
 
@@ -153,15 +147,14 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     // Check the results
     if ( pin_mesh.get() != nullptr ) {
         bool passes = true;
-        AMP::Mesh::MeshIterator it =
-            pin_mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4, 1 );
+        auto it     = pin_mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4, 1 );
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
             pin_DOFs->getDOFs( it->globalID(), dofs );
             AMP_ASSERT( dofs.size() == 1 );
-            std::vector<double> pos = it->centroid();
-            double v1               = T_clad->getValueByGlobalID( dofs[0] );
-            double v2               = getTemp( pos );
+            auto pos  = it->centroid();
+            double v1 = T_clad->getValueByGlobalID( dofs[0] );
+            double v2 = getTemp( pos );
             if ( !AMP::Utilities::approx_equal( v1, v2 ) )
                 passes = false;
         }
@@ -192,14 +185,13 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     // Check the results
     if ( clad_mesh.get() != nullptr ) {
         bool passes = true;
-        AMP::Mesh::MeshIterator it =
-            clad_mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 4, 1 );
+        auto it     = clad_mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 4, 1 );
         std::vector<size_t> dofs( 4 );
         std::vector<double> vals( 4 );
         for ( size_t i = 0; i < it.size(); i++ ) {
             gauss_DOFs->getDOFs( it->globalID(), dofs );
             AMP_ASSERT( dofs.size() == 4 );
-            std::vector<double> pos = it->centroid();
+            auto pos = it->centroid();
             vals.resize( dofs.size() );
             T_gauss->getValuesByGlobalID( dofs.size(), &dofs[0], &vals[0] );
             double v1 = ( vals[0] + vals[1] + vals[2] + vals[3] ) / 4;

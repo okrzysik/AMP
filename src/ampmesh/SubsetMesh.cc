@@ -189,7 +189,7 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
     }
     iterator = getIterator( GeomType::Vertex, 0 );
     for ( size_t i = 0; i < iterator.size(); i++ ) {
-        std::vector<double> coord = iterator->coord();
+        auto coord = iterator->coord();
         for ( int j = 0; j < PhysicalDim; j++ ) {
             if ( coord[j] < d_box[2 * j + 0] )
                 d_box[2 * j + 0] = coord[j];

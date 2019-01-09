@@ -26,7 +26,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     // build mesh database
-    AMP::shared_ptr<AMP::Database> database( new AMP::MemoryDatabase( "Mesh" ) );
+    auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
     database->putString( "MeshName", "cube" );
     database->putString( "MeshType", "AMP" );
     database->putInteger( "dim", 3 );
@@ -40,25 +40,21 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     range[1] = range[3] = range[5] = 1.0;
     database->putDoubleArray( "Range", range );
     // create mesh
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( globalComm );
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
     // create two different dof managers
-    AMP::Discretization::DOFManager::shared_ptr firstDofManager =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    AMP::Discretization::DOFManager::shared_ptr secondDofManager =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Volume, 0, 2, true );
+    auto firstDofManager = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto secondDofManager = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Volume, 0, 2, true );
     size_t n = firstDofManager->numGlobalDOF();
     size_t m = secondDofManager->numGlobalDOF();
     AMP_ASSERT( n != m );
     // create the two corresponding vectors
-    AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "var" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr firstVec =
-        AMP::LinearAlgebra::createVector( firstDofManager, var, true ); // n
-    AMP::LinearAlgebra::Vector::shared_ptr secondVec =
-        AMP::LinearAlgebra::createVector( secondDofManager, var, true ); // m
+    auto var       = AMP::make_shared<AMP::LinearAlgebra::Variable>( "var" );
+    auto firstVec  = AMP::LinearAlgebra::createVector( firstDofManager, var, true );  // n
+    auto secondVec = AMP::LinearAlgebra::createVector( secondDofManager, var, true ); // m
     firstVec->zero();
     secondVec->zero();
     // Loop through the valid matrix build types
@@ -72,22 +68,17 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     types.emplace_back( "ManagedPetscMatrix" );
 #endif
     for ( auto &type : types ) {
-        char tmp[100];
-        sprintf( tmp, "%s: %s", exeName.c_str(), type.c_str() );
+        auto tmp = exeName + ": " + type;
         // create four matrices
-        AMP::LinearAlgebra::Matrix::shared_ptr firstMat =
-            AMP::LinearAlgebra::createMatrix( firstVec, secondVec, type ); // mxn
-        AMP::LinearAlgebra::Matrix::shared_ptr secondMat =
-            AMP::LinearAlgebra::createMatrix( secondVec, firstVec, type ); // nxm
+        auto firstMat  = AMP::LinearAlgebra::createMatrix( firstVec, secondVec, type ); // mxn
+        auto secondMat = AMP::LinearAlgebra::createMatrix( secondVec, firstVec, type ); // nxm
         AMP_ASSERT( firstMat->numGlobalRows() == m && firstMat->numGlobalColumns() == n );
         firstMat->setScalar( 1.0 );
         secondMat->setScalar( 2.0 );
         // do matrix multiplications
         try {
-            AMP::LinearAlgebra::Matrix::shared_ptr thirdMat =
-                AMP::LinearAlgebra::Matrix::matMultiply( secondMat, firstMat );
-            AMP::LinearAlgebra::Matrix::shared_ptr fourthMat =
-                AMP::LinearAlgebra::Matrix::matMultiply( firstMat, secondMat );
+            auto thirdMat  = AMP::LinearAlgebra::Matrix::matMultiply( secondMat, firstMat );
+            auto fourthMat = AMP::LinearAlgebra::Matrix::matMultiply( firstMat, secondMat );
             AMP_ASSERT( thirdMat->numGlobalRows() == n && thirdMat->numGlobalColumns() == n );
             AMP_ASSERT( fourthMat->numGlobalRows() == m && fourthMat->numGlobalColumns() == m );
             ut->passes( tmp );

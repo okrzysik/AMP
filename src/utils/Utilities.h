@@ -2,12 +2,8 @@
 #define included_AMP_Utilities
 
 
-// Include the utility macros
-#include "UtilityMacros.h"
-
-// Include utilities from StackTrace
+#include "AMP/utils/UtilityMacros.h"
 #include "StackTrace/Utilities.h"
-
 
 #include <chrono>
 #include <cstdarg>
@@ -20,8 +16,11 @@
 #include <sys/types.h>
 #include <vector>
 
+
 namespace AMP {
 
+
+class Database;
 
 #ifdef _MSC_VER
 #include <direct.h>
@@ -99,21 +98,20 @@ void recursiveMkdir( const std::string &path,
                      mode_t mode                 = ( S_IRUSR | S_IWUSR | S_IXUSR ),
                      bool only_node_zero_creates = true );
 
-/*!
- * Check if a file exists and return true if it does
- */
+
+//! Return the path to the file
+std::string path( const std::string &filename );
+
+
+//! Check if a file exists and return true if it does
 bool fileExists( const std::string &filename );
 
 
-/*!
- * Rename a file from old file name to new file name.
- */
+//! Rename a file from old file name to new file name.
 void renameFile( const std::string &old_filename, const std::string &new_filename );
 
 
-/*!
- * Delete a file.  If the file does not exist, nothing will happen.
- */
+//! Delete a file.  If the file does not exist, nothing will happen.
 void deleteFile( const std::string &filename );
 
 
@@ -302,10 +300,10 @@ double trilinear( const std::vector<double> &x,
                   double zi );
 
 //! Create a hash key from a char array
-unsigned int hash_char( const char * );
+constexpr unsigned int hash_char( const char * );
 
 //! Get the prime factors for a number
-std::vector<int> factor( size_t );
+std::vector<int> factor( uint64_t );
 
 //! Sleep for the specified number of ms
 inline void sleepMs( unsigned int N )
@@ -321,6 +319,10 @@ void nullUse( void * );
 
 //! std::string version of sprintf
 inline std::string stringf( const char *format, ... );
+
+
+//! Print a database
+void printDatabase( Database &, std::ostream &, const std::string &indent = "" );
 
 
 } // namespace Utilities

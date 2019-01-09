@@ -11,6 +11,7 @@
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
 #include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/SubsetMesh.h"
 
 #ifdef USE_AMP_VECTORS
@@ -33,11 +34,11 @@ std::map<AMP::Mesh::MeshID, std::vector<int>>
 meshTests::createRankMap( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     std::map<AMP::Mesh::MeshID, std::vector<int>> proc_map;
-    std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
+    auto meshIDs = mesh->getBaseMeshIDs();
     std::vector<std::pair<int, int>> tmp( mesh->getComm().getSize() );
     for ( auto &meshID : meshIDs ) {
-        AMP::Mesh::Mesh::shared_ptr mesh2 = mesh->Subset( meshID );
-        int N_send                        = 0;
+        auto mesh2 = mesh->Subset( meshID );
+        int N_send = 0;
         std::pair<int, int> map;
         if ( mesh2.get() != nullptr ) {
             map    = std::pair<int, int>( mesh2->getComm().getRank(), mesh->getComm().getRank() );
@@ -501,9 +502,9 @@ void meshTests::VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
         std::vector<AMP::Mesh::MeshElementID> owned, ghost;
         owned.reserve( mesh->numLocalElements( (AMP::Mesh::GeomType) type ) );
         ghost.reserve( mesh->numGhostElements( (AMP::Mesh::GeomType) type, gcw ) );
-        AMP::Mesh::MeshIterator iterator = mesh->getIterator( (AMP::Mesh::GeomType) type, gcw );
+        auto iterator = mesh->getIterator( (AMP::Mesh::GeomType) type, gcw );
         for ( size_t i = 0; i < iterator.size(); i++ ) {
-            AMP::Mesh::MeshElementID id = iterator->globalID();
+            auto id = iterator->globalID();
             if ( id.is_local() )
                 owned.push_back( id );
             else
@@ -525,9 +526,9 @@ void meshTests::VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
         AMP::Utilities::quicksort( owned );        // Sort for search
         AMP::Utilities::quicksort( ghost_global ); // Sort for speed
         std::vector<int> found( ghost_global.size(), 0 );
-        AMP::Mesh::Mesh::shared_ptr my_mesh = mesh;
-        unsigned int my_rank                = my_mesh->getComm().getRank();
-        AMP::Mesh::MeshID my_mesh_id        = my_mesh->meshID();
+        auto my_mesh    = mesh;
+        auto my_rank    = my_mesh->getComm().getRank();
+        auto my_mesh_id = my_mesh->meshID();
         for ( size_t i = 0; i < N_ghost_global; i++ ) {
             // Get the current mesh
             if ( ghost_global[i].meshID() != my_mesh_id ) {
@@ -540,7 +541,7 @@ void meshTests::VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
             // Check if we are the owning rank
             if ( my_mesh.get() == nullptr )
                 continue;
-            if ( ghost_global[i].owner_rank() != my_rank )
+            if ( (int) ghost_global[i].owner_rank() != my_rank )
                 continue;
             // Check if we have the element
             size_t index = AMP::Utilities::findfirst( owned, ghost_global[i] );
@@ -568,7 +569,7 @@ void meshTests::VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
 void meshTests::VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils,
                                               AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    const std::vector<int> bids = mesh->getBoundaryIDs();
+    const auto bids = mesh->getBoundaryIDs();
     for ( int bid : bids ) {
         for ( int gcw = 0; gcw <= 0; gcw++ ) {
             // Get the iterator over the current boundary id
@@ -812,11 +813,10 @@ void meshTests::getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_
 void meshTests::DisplaceMeshScalar( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Test the scalar displacement
-    std::vector<double> box1 = mesh->getBoundingBox();
-    std::vector<double> displacement( mesh->getDim(), 1.0 );
-    mesh->displaceMesh( displacement );
-    std::vector<double> box2 = mesh->getBoundingBox();
-    double volume            = 1.0;
+    auto box1 = mesh->getBoundingBox();
+    mesh->displaceMesh( std::vector<double>( mesh->getDim(), 1 ) );
+    auto box2     = mesh->getBoundingBox();
+    double volume = 1.0;
     for ( int i = 0; i < mesh->getDim(); i++ )
         volume *= box1[2 * i + 1] - box1[2 * i + 0];
     if ( volume > 0.0 )
@@ -832,6 +832,8 @@ void meshTests::DisplaceMeshScalar( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
         utils->passes( "scalar displacement test" );
     else
         utils->failure( "scalar displacement test" );
+    std::vector<double> dist2( mesh->getDim(), -1 );
+    mesh->displaceMesh( std::vector<double>( mesh->getDim(), -1 ) );
 }
 void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
@@ -877,6 +879,9 @@ void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
         utils->passes( "displacement changed volumes" );
     else
         utils->failure( "displacement changed volumes" );
+    for ( auto &tmp : *dispVec )
+        tmp = -tmp;
+    mesh->displaceMesh( dispVec );
 #endif
 }
 
@@ -1407,7 +1412,7 @@ static inline void rangeLoop( AMP::Mesh::Mesh::shared_ptr mesh )
 }
 static inline void globalID( AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    for ( auto elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ) ) {
+    for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ) ) {
         auto id = elem.globalID();
         NULL_USE( id );
     }
@@ -1415,7 +1420,7 @@ static inline void globalID( AMP::Mesh::Mesh::shared_ptr mesh )
 static inline void coord1( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     bool pass = true;
-    for ( auto elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ) ) {
+    for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ) ) {
         auto x = elem.coord();
         pass   = pass && x.size() > 0;
     }
@@ -1424,8 +1429,17 @@ static inline void coord1( AMP::Mesh::Mesh::shared_ptr mesh )
 static inline void coord2( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     bool pass = true;
-    for ( auto elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ) ) {
+    for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ) ) {
         auto x = elem.coord( 0 );
+        pass   = pass && x == x;
+    }
+    AMP_ASSERT( pass );
+}
+static inline void centroid( AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    bool pass = true;
+    for ( const auto &elem : mesh->getIterator( mesh->getGeomType(), 0 ) ) {
+        auto x = elem.centroid();
         pass   = pass && x == x;
     }
     AMP_ASSERT( pass );
@@ -1433,55 +1447,94 @@ static inline void coord2( AMP::Mesh::Mesh::shared_ptr mesh )
 static inline void volume( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     bool pass = true;
-    for ( auto elem : mesh->getIterator( mesh->getGeomType(), 0 ) ) {
+    for ( const auto &elem : mesh->getIterator( mesh->getGeomType(), 0 ) ) {
         auto V = elem.volume();
         pass   = pass && V > 0;
     }
     AMP_ASSERT( pass );
 }
-static inline void getElements( AMP::Mesh::Mesh::shared_ptr mesh )
+static inline void getElementIDs( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     auto type = mesh->getGeomType();
     if ( type > AMP::Mesh::GeomType::Vertex ) {
         bool pass = true;
-        for ( auto elem : mesh->getIterator( type, 0 ) ) {
+        std::vector<AMP::Mesh::MeshElementID> ids;
+        for ( const auto &elem : mesh->getIterator( type, 0 ) ) {
+            elem.getElementsID( AMP::Mesh::GeomType::Vertex, ids );
+            pass = pass && !ids.empty();
+        }
+        AMP_ASSERT( pass );
+    }
+}
+
+static inline void getElements1( AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    auto type = mesh->getGeomType();
+    if ( type > AMP::Mesh::GeomType::Vertex ) {
+        bool pass = true;
+        std::vector<AMP::Mesh::MeshElement> x;
+        for ( const auto &elem : mesh->getIterator( type, 0 ) ) {
+            elem.getElements( AMP::Mesh::GeomType::Vertex, x );
+            pass = pass && !x.empty();
+        }
+        AMP_ASSERT( pass );
+    }
+}
+static inline void getElements2( AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    auto type = mesh->getGeomType();
+    if ( type > AMP::Mesh::GeomType::Vertex ) {
+        bool pass = true;
+        for ( const auto &elem : mesh->getIterator( type, 0 ) ) {
             auto x = elem.getElements( AMP::Mesh::GeomType::Vertex );
             pass   = pass && x.size() > 0;
         }
         AMP_ASSERT( pass );
     }
 }
-void meshTests::MeshPerformance( AMP::UnitTest *, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::MeshPerformance( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() != 0 )
         return;
     printf( "%s performance:\n", mesh->getName().c_str() );
-    double time;
     const size_t N_nodes = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
     const size_t N_elem  = mesh->numLocalElements( mesh->getGeomType() );
-    // Test getting iterator
-    time = runAndTime( getIterator, mesh, 1000 );
-    printf( "   getIterator: %i us\n", static_cast<int>( 1e6 * time ) );
-    // Test empty iteration
-    time = runAndTime( incIterator, mesh, 10 );
-    printf( "   ++iterator: %i ns\n", static_cast<int>( 1e9 * time / N_nodes ) );
-    // Test range-based loops
-    time = runAndTime( rangeLoop, mesh, 10 );
-    printf( "   rangeLoop: %i ns\n", static_cast<int>( 1e9 * time / N_nodes ) );
-    // Test getting global id in an iterator
-    time = runAndTime( globalID, mesh, 10 );
-    printf( "   globalID: %i ns\n", static_cast<int>( 1e9 * time / N_nodes ) );
-    // Test getting coordinates
-    time = runAndTime( coord1, mesh, 10 );
-    printf( "   coord (1): %i ns\n", static_cast<int>( 1e9 * time / N_nodes ) );
-    time = runAndTime( coord2, mesh, 10 );
-    printf( "   coord (2): %i ns\n", static_cast<int>( 1e9 * time / N_nodes ) );
-    // Test getting verticies for an element
-    time = runAndTime( getElements, mesh, 10 );
-    printf( "   getElements: %i ns\n", static_cast<int>( 1e9 * time / N_elem ) );
-    // Test getting volume for an element
-    time = runAndTime( volume, mesh, 10 );
-    printf( "   volume: %i ns\n", static_cast<int>( 1e9 * time / N_elem ) );
+    // Get the test timing
+    auto t1  = runAndTime( getIterator, mesh, 1000 );
+    auto t2  = runAndTime( incIterator, mesh, 10 );
+    auto t3  = runAndTime( rangeLoop, mesh, 10 );
+    auto t4  = runAndTime( globalID, mesh, 10 );
+    auto t5  = runAndTime( coord1, mesh, 10 );
+    auto t6  = runAndTime( coord2, mesh, 10 );
+    auto t7  = runAndTime( centroid, mesh, 10 );
+    auto t8  = runAndTime( getElementIDs, mesh, 10 );
+    auto t9  = runAndTime( getElements1, mesh, 10 );
+    auto t10 = runAndTime( getElements2, mesh, 10 );
+    auto t11 = runAndTime( volume, mesh, 10 );
+    // Print the results
+    auto to_ns = [N_nodes]( double time, size_t N ) {
+        return static_cast<int>( 1e9 * std::max( time, 0.0 ) / N );
+    };
+    printf( "   getIterator: %i us\n", static_cast<int>( 1e6 * t1 ) );
+    printf( "   ++iterator: %i ns\n", to_ns( t2, N_nodes ) );
+    printf( "   rangeLoop: %i ns\n", to_ns( t3, N_nodes ) );
+    printf( "   globalID: %i ns\n", to_ns( t4 - t3, N_nodes ) );
+    printf( "   coord (1): %i ns\n", to_ns( t5 - t3, N_nodes ) );
+    printf( "   coord (2): %i ns\n", to_ns( t6 - t3, N_nodes ) );
+    printf( "   centroid: %i ns\n", to_ns( t7 - t3, N_elem ) );
+    printf( "   getElementIDs: %i ns\n", to_ns( t8 - t3, N_elem ) );
+    printf( "   getElements (1): %i ns\n", to_ns( t9 - t3, N_elem ) );
+    printf( "   getElements (2): %i ns\n", to_ns( t10 - t3, N_elem ) );
+    printf( "   volume: %i ns\n", to_ns( t11 - t3, N_elem ) );
+    // Repeat the tests for all base meshes if we are dealing with a multimesh
+    auto multimesh = AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    if ( multimesh ) {
+        auto ids = multimesh->getLocalBaseMeshIDs();
+        for ( auto id : ids ) {
+            auto mesh2 = multimesh->Subset( id );
+            MeshPerformance( ut, mesh2 );
+        }
+    }
 }
 
 

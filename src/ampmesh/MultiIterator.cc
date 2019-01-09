@@ -6,24 +6,14 @@ namespace AMP {
 namespace Mesh {
 
 
-// Create a unique id for this class
-static unsigned int MultiIteratorTypeID = TYPE_HASH( MultiIterator );
-
-// unused global variable to prevent compiler warning
-static MeshElement nullElement;
-
-
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-MultiIterator::MultiIterator() : d_localPos( 0 ), d_iteratorNum( 0 )
-{
-    d_typeID = MultiIteratorTypeID;
-}
+MultiIterator::MultiIterator() : d_localPos( 0 ), d_iteratorNum( 0 ) { d_typeID = getTypeID(); }
 MultiIterator::MultiIterator( std::vector<AMP::shared_ptr<MeshIterator>> iterators,
                               size_t global_pos )
 {
-    d_typeID   = MultiIteratorTypeID;
+    d_typeID   = getTypeID();
     d_iterator = nullptr;
     d_iterators.resize( 0 );
     for ( auto &iterator : iterators ) {
@@ -71,7 +61,7 @@ MultiIterator::MultiIterator( const MultiIterator &rhs )
       d_iterators( rhs.d_iterators ),
       cur_iterator( rhs.cur_iterator )
 {
-    d_typeID   = MultiIteratorTypeID;
+    d_typeID   = getTypeID();
     d_iterator = nullptr;
     d_size     = rhs.d_size;
     d_pos      = rhs.d_pos;
@@ -81,7 +71,7 @@ MultiIterator &MultiIterator::operator=( const MultiIterator &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->d_typeID       = MultiIteratorTypeID;
+    this->d_typeID       = getTypeID();
     this->d_iterator     = nullptr;
     this->d_iterators    = rhs.d_iterators;
     this->d_iteratorSize = rhs.d_iteratorSize;
@@ -270,11 +260,11 @@ bool MultiIterator::operator==( const MeshIterator &rhs ) const
     const MultiIterator *rhs2 = nullptr;
     // Convert rhs to a MultiIterator* so we can access the base class members
     const MultiIterator *tmp = reinterpret_cast<const MultiIterator *>( &rhs );
-    if ( tmp->d_typeID == MultiIteratorTypeID ) {
+    if ( tmp->d_typeID == getTypeID() ) {
         rhs2 = tmp; // We can safely cast rhs to a MultiIterator
     } else if ( tmp->d_iterator != nullptr ) {
         tmp = reinterpret_cast<const MultiIterator *>( tmp->d_iterator );
-        if ( tmp->d_typeID == MultiIteratorTypeID )
+        if ( tmp->d_typeID == getTypeID() )
             rhs2 = tmp; // We can safely cast rhs.iterator to a MultiIterator
     }
     // Perform direct comparisions if we are dealing with two MultiIterator

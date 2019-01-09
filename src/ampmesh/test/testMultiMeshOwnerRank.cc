@@ -12,8 +12,8 @@
 
 
 union id_mask {
-    AMP::Mesh::uint64 id_i[2];
-    char id_c[sizeof( AMP::Mesh::uint64[2] )];
+    uint64_t id_i[2];
+    char id_c[sizeof( uint64_t[2] )];
 };
 
 auto hash_id( const AMP::Mesh::MeshElementID &id ) -> std::hash<std::string>::result_type
@@ -30,11 +30,11 @@ auto hash_id( const AMP::Mesh::MeshElementID &id ) -> std::hash<std::string>::re
     tmp += ( 0x007FFFFF & id.owner_rank() ) << 8;
     auto type = (char) id.type();
     tmp += ( (unsigned char) type );
-    m.id_i[1] = ( ( (AMP::Mesh::uint64) tmp ) << 32 ) + ( (AMP::Mesh::uint64) id.local_id() );
+    m.id_i[1] = ( ( (uint64_t) tmp ) << 32 ) + ( (uint64_t) id.local_id() );
 
     // hash the id
     std::hash<std::string> hasher;
-    return hasher( std::string( m.id_c, sizeof( AMP::Mesh::uint64[2] ) ) );
+    return hasher( std::string( m.id_c, sizeof( uint64_t[2] ) ) );
 }
 
 void makeCommRankMap( const AMP::AMP_MPI &comm, std::unordered_map<int, int> &rank_map )

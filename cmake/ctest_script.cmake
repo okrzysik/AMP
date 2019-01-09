@@ -28,6 +28,7 @@ SET( TPL_LIST_REQUIRED "$ENV{TPL_LIST_REQUIRED}" )
 SET( TPL_LIST_OPTIONAL "$ENV{TPL_LIST_OPTIONAL}" )
 SET( USE_CUDA           $ENV{USE_CUDA}          )
 SET( CUDA_FLAGS        "$ENV{CUDA_FLAGS}"       )
+SET( CTEST_SITE        "$ENV{CTEST_SITE}"       )
 
 
 # Get the source directory based on the current directory
@@ -240,7 +241,7 @@ SET( CTEST_DROP_METHOD "http" )
 SET( CTEST_DROP_LOCATION "/CDash/submit.php?project=AMP" )
 SET( CTEST_DROP_SITE_CDASH TRUE )
 SET( DROP_SITE_CDASH TRUE )
-SET( CTEST_DROP_SITE "vayu.ornl.gov" )
+SET( CTEST_DROP_SITE ${CTEST_SITE} )
 CTEST_SUBMIT()
 
 

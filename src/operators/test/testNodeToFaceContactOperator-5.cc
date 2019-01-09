@@ -562,16 +562,14 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     if ( fuelNeedALittleHelp != -1.0 ) {
         {
-            AMP::Mesh::MeshIterator it =
-                topPelletMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 );
+            auto it = topPelletMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 );
             AMP::Mesh::MeshIterator it_begin = it.begin(), it_end = it.end();
-            std::vector<double> coord;
             std::vector<size_t> dofs;
             double epsilon = 1.0e-12;
             double radius;
             for ( it = it_begin; it != it_end; ++it ) {
-                coord  = it->coord();
-                radius = std::sqrt( std::pow( coord[0], 2 ) + std::pow( coord[1], 2 ) );
+                auto coord = it->coord();
+                radius     = std::sqrt( std::pow( coord[0], 2 ) + std::pow( coord[1], 2 ) );
                 if ( radius > fuelNeedALittleHelp ) {
                     dispDofManager->getDOFs( it->globalID(), dofs );
                     columnSolVec->setValueByGlobalID( dofs[2], 0.0001 );
@@ -586,8 +584,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     } // end if
     if ( cladNeedALittleHelp != 0.0 ) {
         {
-            AMP::Mesh::MeshIterator it =
-                cladMeshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
+            auto it = cladMeshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
             AMP::Mesh::MeshIterator it_begin = it.begin(), it_end = it.end();
             std::vector<size_t> dofs;
             double epsilon = 1.0e-12;
