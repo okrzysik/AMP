@@ -333,21 +333,16 @@ void test_FIFO( AMP::UnitTest &ut, ThreadPool &tpool )
 /******************************************************************
  * The main program                                                *
  ******************************************************************/
-int main( int argc, char *argv[] )
+void run_tests( AMP::UnitTest &ut )
 {
 
-    int N_threads = 4;    // Number of threads
-    int N_work    = 2000; // Number of work items
-    int N_it      = 10;   // Number of cycles to run
-    int N_problem = 5;    // Problem size
-    PROFILE_ENABLE( 3 );
-    PROFILE_ENABLE_TRACE();
-    PROFILE_DISABLE_MEMORY();
-    AMP::AMPManager::startup( argc, argv );
-    AMP::UnitTest ut;
-    AMP::AMP_MPI comm( AMP_COMM_WORLD );
+    constexpr int N_threads = 4;    // Number of threads
+    constexpr int N_work    = 2000; // Number of work items
+    constexpr int N_it      = 10;   // Number of cycles to run
+    constexpr int N_problem = 5;    // Problem size
 
     // Disable OS specific warnings for all non-root ranks
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
     int rank = comm.getRank();
     int size = comm.getSize();
     if ( rank > 0 )
@@ -601,22 +596,11 @@ int main( int argc, char *argv[] )
     // Check that the threads are actually working in parallel
     comm.barrier();
     if ( N_procs_used > 1 ) {
-#ifdef USE_MPI
         // Use a non-blocking serialization of the MPI processes
         // if we do not have a sufficient number of processors
         bool serialize_mpi = N_procs < N_threads * size;
-        int buf;
-        MPI_Request request;
-        MPI_Status status;
-        if ( serialize_mpi && rank > 0 ) {
-            MPI_Irecv( &buf, 1, MPI_INT, rank - 1, 0, MPI_COMM_WORLD, &request );
-            int flag = false;
-            while ( !flag ) {
-                MPI_Test( &request, &flag, &status );
-                sleep_s( 1 );
-            }
-        }
-#endif
+        if ( serialize_mpi )
+            comm.serializeStart();
         int N = 20000000; // Enough work to keep the processor busy for ~ 1 s
         // Run in serial
         start = std::chrono::high_resolution_clock::now();
@@ -642,24 +626,8 @@ int main( int argc, char *argv[] )
             ut.failure( "Times do not indicate tests are running in parallel" );
 #endif
         }
-#ifdef USE_MPI
-        if ( serialize_mpi ) {
-            if ( rank < size - 1 )
-                MPI_Send( &N, 1, MPI_INT, rank + 1, 0, MPI_COMM_WORLD );
-            if ( rank == size - 1 ) {
-                for ( int i = 0; i < size - 1; i++ )
-                    MPI_Send( &N, 1, MPI_INT, i, 1, MPI_COMM_WORLD );
-            } else {
-                MPI_Irecv( &buf, 1, MPI_INT, size - 1, 1, MPI_COMM_WORLD, &request );
-                int flag = false;
-                MPI_Status status;
-                while ( !flag ) {
-                    MPI_Test( &request, &flag, &status );
-                    sleep_s( 1 );
-                }
-            }
-        }
-#endif
+        if ( serialize_mpi )
+            comm.serializeStop();
     } else {
         ut.expected_failure( "Testing thread performance with less than 1 processor" );
     }
@@ -894,7 +862,8 @@ int main( int argc, char *argv[] )
             pass = false;
         delete tpool2;
         // Check that tpool is invalid
-        // Note: valgrind will report this as an invalid memory read, but we want to keep the test)
+        // Note: valgrind will report this as an invalid memory read, but we want to keep the
+        // test)
         if ( ThreadPool::is_valid( tpool2 ) )
             pass = false;
     } catch ( ... ) {
@@ -904,12 +873,18 @@ int main( int argc, char *argv[] )
         ut.passes( "Created/destroyed thread pool with new" );
     else
         ut.failure( "Created/destroyed thread pool with new" );
-
-    // Finished
+}
+int main( int argc, char *argv[] )
+{
+    PROFILE_ENABLE( 3 );
+    PROFILE_ENABLE_TRACE();
+    PROFILE_DISABLE_MEMORY();
+    AMP::AMPManager::startup( argc, argv );
+    AMP::UnitTest ut;
+    run_tests( ut );
     ut.report();
     auto N_errors = static_cast<int>( ut.NumFailGlobal() );
     ut.reset();
-    comm.reset();
     AMP::AMPManager::shutdown();
     return N_errors;
 }

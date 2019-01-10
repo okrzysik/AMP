@@ -1005,6 +1005,23 @@ public: // Member functions
 
 
     /*!
+     * \brief   Start a serial region
+     * \details This function will serialize MPI processes so that they run
+     *    one at a time.  A call to serializeStart must be followed by a call
+     *    to serializeStop after the commands to be executed.
+     *    Note: the ranks will be run in order.
+     */
+    void serializeStart();
+
+
+    /*!
+     * \brief   Stop a serial region
+     * \details Stop a serial region.  See serializeStart for more information.
+     */
+    void serializeStop();
+
+
+    /*!
      * \brief   Elapsed time
      * \details This function returns the elapsed time on the calling processor
      *    since an arbitrary point in the past (seconds).  It is a wrapper to MPI_Wtime.

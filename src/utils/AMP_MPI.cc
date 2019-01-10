@@ -11,6 +11,7 @@
 
 // Include all other headers
 #include <algorithm>
+#include <chrono>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
@@ -3878,6 +3879,49 @@ double MPI_CLASS::tick()
     return static_cast<double>( period.num ) / static_cast<double>( period.den );
 }
 #endif
+
+
+/************************************************************************
+ *  Serialize a block of code across MPI processes                       *
+ ************************************************************************/
+void MPI_CLASS::serializeStart()
+{
+    using namespace std::chrono_literals;
+    if ( comm_rank == 0 ) {
+        // Start rank 0 immediately
+    } else {
+        // Wait for a message from the previous rank
+        MPI_Request request;
+        MPI_Status status;
+        int flag = false, buf = 0;
+        MPI_Irecv( &buf, 1, MPI_INT, comm_rank - 1, 5627, MPI_COMM_WORLD, &request );
+        while ( !flag ) {
+            MPI_Test( &request, &flag, &status );
+            std::this_thread::sleep_for( 50ms );
+        }
+    }
+}
+void MPI_CLASS::serializeStop()
+{
+    using namespace std::chrono_literals;
+    if ( comm_rank < comm_size - 1 ) {
+        // Send flag to next rank
+        MPI_Send( &comm_rank, 1, MPI_INT, comm_rank + 1, 5627, MPI_COMM_WORLD );
+        // Wait for final finished flag
+        int flag = false, buf = 0;
+        MPI_Request request;
+        MPI_Status status;
+        MPI_Irecv( &buf, 1, MPI_INT, comm_size - 1, 5627, MPI_COMM_WORLD, &request );
+        while ( !flag ) {
+            MPI_Test( &request, &flag, &status );
+            std::this_thread::sleep_for( 50ms );
+        }
+    } else {
+        // Send final flag to all ranks
+        for ( int i = 0; i < comm_size - 1; i++ )
+            MPI_Send( &comm_rank, 1, MPI_INT, i, 5627, MPI_COMM_WORLD );
+    }
+}
 
 
 } // namespace AMP
