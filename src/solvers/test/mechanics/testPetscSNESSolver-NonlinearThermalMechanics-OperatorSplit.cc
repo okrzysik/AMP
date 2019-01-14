@@ -37,12 +37,12 @@
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 
-#include "../PetscKrylovSolver.h"
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscSNESSolver.h"
-#include "../PetscSNESSolverParameters.h"
+#include "AMP/solvers/PetscKrylovSolver.h"
+#include "AMP/solvers/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/PetscSNESSolver.h"
+#include "AMP/solvers/PetscSNESSolverParameters.h"
 
-#include "../TrilinosMLSolver.h"
+#include "AMP/solvers/TrilinosMLSolver.h"
 
 
 AMP::shared_ptr<AMP::Solver::PetscSNESSolver>

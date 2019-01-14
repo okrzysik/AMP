@@ -283,7 +283,7 @@ create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri )
     // Note, if a triangle is a neighbor, it will share all but the current node
     int size[NG];
     int error = 0;
-    for ( int64_t i = 0; i < tri.size(); i++ ) {
+    for ( int64_t i = 0; i < (int64_t) tri.size(); i++ ) {
         // Loop through the different faces of the triangle
         for ( size_t j = 0; j <= NG; j++ ) {
             int64_t *list[NG] = { nullptr };
@@ -319,9 +319,9 @@ create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri )
             break;
     }
     // Check tri_nab
-    for ( int64_t i = 0; i < tri.size(); i++ ) {
+    for ( int64_t i = 0; i < (int64_t) tri.size(); i++ ) {
         for ( size_t d = 0; d <= NG; d++ ) {
-            if ( tri_nab[i][d] < -1 || tri_nab[i][d] >= tri.size() || tri_nab[i][d] == i )
+            if ( tri_nab[i][d] < -1 || tri_nab[i][d] >= (int64_t) tri.size() || tri_nab[i][d] == i )
                 error = 2;
         }
     }
@@ -408,6 +408,7 @@ AMP::shared_ptr<TriangleMesh<NG, NP>> TriangleMesh<NG, NP>::generate(
     createTriangles<NG, NP>( global_list, verticies, triangles, tol );
     // Get the triangle neighbors
     // auto neighbors = create_tri_neighbors<NG>( triangles );
+    AMP::Utilities::nullUse( (void *) create_tri_neighbors<NG> );
     std::vector<std::array<int64_t, NG + 1>> neighbors( triangles.size(),
                                                         make_array<int64_t, NG + 1>( -1 ) );
     // Create the mesh
@@ -586,20 +587,22 @@ void TriangleMesh<NG, NP>::initialize()
                            d_parent_size[0][1],
                            d_parent_offset[0][1],
                            d_parent_ids[0][1] );
-    computeNodeParents<2>( d_vert.size(),
-                           d_tri,
-                           d_remote_tri,
-                           rank,
-                           d_parent_size[0][2],
-                           d_parent_offset[0][2],
-                           d_parent_ids[0][2] );
-    computeNodeParents<3>( d_vert.size(),
-                           d_tet,
-                           d_remote_tet,
-                           rank,
-                           d_parent_size[0][3],
-                           d_parent_offset[0][3],
-                           d_parent_ids[0][3] );
+    if ( NG > 2 )
+        computeNodeParents<2>( d_vert.size(),
+                               d_tri,
+                               d_remote_tri,
+                               rank,
+                               d_parent_size[0][2],
+                               d_parent_offset[0][2],
+                               d_parent_ids[0][2] );
+    if ( NG > 3 )
+        computeNodeParents<3>( d_vert.size(),
+                               d_tet,
+                               d_remote_tet,
+                               rank,
+                               d_parent_size[0][3],
+                               d_parent_offset[0][3],
+                               d_parent_ids[0][3] );
     // Compute the parents for edges
     AMP_WARNING( "Not finished" );
 

@@ -1,29 +1,5 @@
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <iostream>
-#include <string>
-
-#include "AMP/utils/shared_ptr.h"
-
+#include "AMP/ampmesh/Mesh.h"
 #include "AMP/materials/Material.h"
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
-#include "AMP/utils/PIO.h"
-
-
-#include "AMP/ampmesh/MeshVariable.h"
-#include "AMP/utils/Writer.h"
-
-
-#include "../ColumnSolver.h"
-#include "../PetscKrylovSolver.h"
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscSNESSolver.h"
-#include "../PetscSNESSolverParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/DirichletVectorCorrection.h"
@@ -32,8 +8,25 @@
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
+#include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/PetscKrylovSolver.h"
+#include "AMP/solvers/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/PetscSNESSolver.h"
+#include "AMP/solvers/PetscSNESSolverParameters.h"
+#include "AMP/solvers/TrilinosMLSolver.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "../TrilinosMLSolver.h"
+#include <iostream>
+#include <string>
 
 
 void myTest( AMP::UnitTest *ut, const std::string &exeName )
@@ -43,64 +36,57 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
     input_db->printClassData( AMP::plog );
 
-    AMP::Mesh::MeshManagerParameters::shared_ptr meshmgrParams(
-        new AMP::Mesh::MeshManagerParameters( input_db ) );
-    AMP::Mesh::MeshManager::shared_ptr manager( new AMP::Mesh::MeshManager( meshmgrParams ) );
-    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh( "cylinder" );
+    auto meshmgrParams = AMP::make_shared<AMP::Mesh::MeshManagerParameters>( input_db );
+    auto manager       = AMP::make_shared<AMP::Mesh::MeshManager>( meshmgrParams );
+    auto meshAdapter   = manager->getMesh( "cylinder" );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear oxygen diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearOxygenOperator" ), "key missing!" );
 
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> oxygenTransportModel;
-    AMP::shared_ptr<AMP::Database> nonlinearOxygenDatabase =
-        input_db->getDatabase( "testNonlinearOxygenOperator" );
-    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearOxygenOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, nonlinearOxygenDatabase, oxygenTransportModel ) );
+    auto nonlinearOxygenDatabase = input_db->getDatabase( "testNonlinearOxygenOperator" );
+    auto nonlinearOxygenOperator = AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, nonlinearOxygenDatabase, oxygenTransportModel ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
 
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
-    AMP::shared_ptr<AMP::Database> nonlinearThermalDatabase =
-        input_db->getDatabase( "testNonlinearThermalOperator" );
-    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, nonlinearThermalDatabase, thermalTransportModel ) );
+    auto nonlinearThermalDatabase = input_db->getDatabase( "testNonlinearThermalOperator" );
+    auto nonlinearThermalOperator = AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, nonlinearThermalDatabase, thermalTransportModel ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a column operator object for nonlinear thermal-oxygen diffusion
     AMP::shared_ptr<AMP::Operator::OperatorParameters> params;
-    AMP::shared_ptr<AMP::Operator::ColumnOperator> nonlinearThermalOxygenOperator(
-        new AMP::Operator::ColumnOperator( params ) );
+    auto nonlinearThermalOxygenOperator = AMP::make_shared<AMP::Operator::ColumnOperator>( params );
     nonlinearThermalOxygenOperator->append( nonlinearOxygenOperator );
     nonlinearThermalOxygenOperator->append( nonlinearThermalOperator );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
-    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> oxygenVolumeOperator =
+    auto oxygenVolumeOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearOxygenOperator->getVolumeOperator() );
-    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator =
+    auto thermalVolumeOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearThermalOperator->getVolumeOperator() );
 
     // initialize the output multi-variable
-    AMP::LinearAlgebra::Variable::shared_ptr columnVariable =
-        nonlinearThermalOxygenOperator->getOutputVariable();
+    auto columnVariable = nonlinearThermalOxygenOperator->getOutputVariable();
 
     // create solution, rhs, and residual vectors
-    AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( columnVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( columnVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( columnVariable );
+    auto solVec = meshAdapter->createVector( columnVariable );
+    auto rhsVec = meshAdapter->createVector( columnVariable );
+    auto resVec = meshAdapter->createVector( columnVariable );
 
     // just making sure
     rhsVec->zero();
@@ -108,24 +94,16 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // create the following shared pointers for ease of use
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-    AMP::LinearAlgebra::Variable::shared_ptr oxygenVariable =
-        oxygenVolumeOperator->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr thermalVariable =
-        thermalVolumeOperator->getOutputVariable();
+    auto oxygenVariable  = oxygenVolumeOperator->getOutputVariable();
+    auto thermalVariable = thermalVolumeOperator->getOutputVariable();
 
-    AMP::LinearAlgebra::Vector::shared_ptr oxygenNlSolVec =
-        solVec->subsetVectorForVariable( oxygenVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr oxygenNlRhsVec =
-        rhsVec->subsetVectorForVariable( oxygenVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr oxygenNlResVec =
-        resVec->subsetVectorForVariable( oxygenVariable );
+    auto oxygenNlSolVec = solVec->subsetVectorForVariable( oxygenVariable );
+    auto oxygenNlRhsVec = rhsVec->subsetVectorForVariable( oxygenVariable );
+    auto oxygenNlResVec = resVec->subsetVectorForVariable( oxygenVariable );
 
-    AMP::LinearAlgebra::Vector::shared_ptr thermalNlSolVec =
-        solVec->subsetVectorForVariable( thermalVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr thermalNlRhsVec =
-        rhsVec->subsetVectorForVariable( thermalVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr thermalNlResVec =
-        resVec->subsetVectorForVariable( thermalVariable );
+    auto thermalNlSolVec = solVec->subsetVectorForVariable( thermalVariable );
+    auto thermalNlRhsVec = rhsVec->subsetVectorForVariable( thermalVariable );
+    auto thermalNlResVec = resVec->subsetVectorForVariable( thermalVariable );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // register some variables for plotting
@@ -137,27 +115,22 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for oxygen
     AMP_INSIST( input_db->keyExists( "testLinearOxygenOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Database> linearOxygenDatabase =
-        input_db->getDatabase( "testLinearOxygenOperator" );
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearOxygenOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, linearOxygenDatabase, oxygenTransportModel ) );
+    auto linearOxygenDatabase = input_db->getDatabase( "testLinearOxygenOperator" );
+    auto linearOxygenOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, linearOxygenDatabase, oxygenTransportModel ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Database> linearThermalDatabase =
-        input_db->getDatabase( "testLinearThermalOperator" );
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, linearThermalDatabase, thermalTransportModel ) );
+    auto linearThermalDatabase = input_db->getDatabase( "testLinearThermalOperator" );
+    auto linearThermalOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, linearThermalDatabase, thermalTransportModel ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a column operator object for linear thermal-oxygen
-    AMP::shared_ptr<AMP::Operator::ColumnOperator> linearThermalOxygenOperator(
-        new AMP::Operator::ColumnOperator( params ) );
+    auto linearThermalOxygenOperator = AMP::make_shared<AMP::Operator::ColumnOperator>( params );
     linearThermalOxygenOperator->append( linearOxygenOperator );
     linearThermalOxygenOperator->append( linearThermalOperator );
 
@@ -187,56 +160,50 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //----------------------------------------------------------------------------------------------------------------------------------------------/
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
-    AMP::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    AMP::shared_ptr<AMP::Database> linearSolver_db =
-        nonlinearSolver_db->getDatabase( "LinearSolver" );
+    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
+    auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the nonlinear solver
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
-        new AMP::Solver::PetscSNESSolverParameters( nonlinearSolver_db ) );
+    auto nonlinearSolverParams =
+        AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = nonlinearThermalOxygenOperator;
     nonlinearSolverParams->d_pInitialGuess = solVec;
 
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(
-        new AMP::Solver::PetscSNESSolver( nonlinearSolverParams ) );
+    auto nonlinearSolver = AMP::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the column preconditioner which is a diagonal block preconditioner
-    AMP::shared_ptr<AMP::Database> columnPreconditioner_db =
-        linearSolver_db->getDatabase( "Preconditioner" );
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(
-        new AMP::Solver::SolverStrategyParameters( columnPreconditioner_db ) );
+    auto columnPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
+    auto columnPreconditionerParams =
+        AMP::make_shared<AMP::Solver::SolverStrategyParameters>( columnPreconditioner_db );
     columnPreconditionerParams->d_pOperator = linearThermalOxygenOperator;
-    AMP::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(
-        new AMP::Solver::ColumnSolver( columnPreconditionerParams ) );
+    auto columnPreconditioner =
+        AMP::make_shared<AMP::Solver::ColumnSolver>( columnPreconditionerParams );
 
-    AMP::shared_ptr<AMP::Database> oxygenPreconditioner_db =
-        columnPreconditioner_db->getDatabase( "oxygenPreconditioner" );
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> oxygenPreconditionerParams(
-        new AMP::Solver::SolverStrategyParameters( oxygenPreconditioner_db ) );
+    auto oxygenPreconditioner_db = columnPreconditioner_db->getDatabase( "oxygenPreconditioner" );
+    auto oxygenPreconditionerParams =
+        AMP::make_shared<AMP::Solver::SolverStrategyParameters>( oxygenPreconditioner_db );
     oxygenPreconditionerParams->d_pOperator = linearOxygenOperator;
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> linearOxygenPreconditioner(
-        new AMP::Solver::TrilinosMLSolver( oxygenPreconditionerParams ) );
+    auto linearOxygenPreconditioner =
+        AMP::make_shared<AMP::Solver::TrilinosMLSolver>( oxygenPreconditionerParams );
 
-    AMP::shared_ptr<AMP::Database> thermalPreconditioner_db =
-        columnPreconditioner_db->getDatabase( "thermalPreconditioner" );
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams(
-        new AMP::Solver::SolverStrategyParameters( thermalPreconditioner_db ) );
+    auto thermalPreconditioner_db = columnPreconditioner_db->getDatabase( "thermalPreconditioner" );
+    auto thermalPreconditionerParams =
+        AMP::make_shared<AMP::Solver::SolverStrategyParameters>( thermalPreconditioner_db );
     thermalPreconditionerParams->d_pOperator = linearThermalOperator;
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> linearThermalPreconditioner(
-        new AMP::Solver::TrilinosMLSolver( thermalPreconditionerParams ) );
+    auto linearThermalPreconditioner =
+        AMP::make_shared<AMP::Solver::TrilinosMLSolver>( thermalPreconditionerParams );
 
     columnPreconditioner->append( linearOxygenPreconditioner );
     columnPreconditioner->append( linearThermalPreconditioner );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // register the preconditioner with the Jacobian free Krylov solver
-    AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
-        nonlinearSolver->getKrylovSolver();
+    auto linearSolver = nonlinearSolver->getKrylovSolver();
 
     linearSolver->setPreconditioner( columnPreconditioner );
 
