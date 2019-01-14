@@ -156,9 +156,9 @@ ADD_CUSTOM_TARGET( build-examples )
 ADD_CUSTOM_TARGET( check COMMAND  make test  )
 ADD_DISTCLEAN( src ampdir AMP compile_commands.json AMP-Data.tar.gz tpl-build tpl-builder )
 MACRO( ADD_AMP_TEST_1_2_4 EXENAME ${ARGN} )
-    ADD_AMP_TEST ( ${EXENAME} ${ARGN} )
-    ADD_AMP_TEST_PARALLEL ( ${EXENAME} 2 ${ARGN} )
-    ADD_AMP_TEST_PARALLEL ( ${EXENAME} 4 ${ARGN} )
+    ADD_AMP_TEST( ${EXENAME} ${ARGN} )
+    ADD_AMP_TEST_PARALLEL( ${EXENAME} 2 ${ARGN} )
+    ADD_AMP_TEST_PARALLEL( ${EXENAME} 4 ${ARGN} )
 ENDMACRO()
 
 

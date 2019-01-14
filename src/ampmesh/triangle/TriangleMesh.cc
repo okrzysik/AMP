@@ -587,20 +587,22 @@ void TriangleMesh<NG, NP>::initialize()
                            d_parent_size[0][1],
                            d_parent_offset[0][1],
                            d_parent_ids[0][1] );
-    computeNodeParents<2>( d_vert.size(),
-                           d_tri,
-                           d_remote_tri,
-                           rank,
-                           d_parent_size[0][2],
-                           d_parent_offset[0][2],
-                           d_parent_ids[0][2] );
-    computeNodeParents<3>( d_vert.size(),
-                           d_tet,
-                           d_remote_tet,
-                           rank,
-                           d_parent_size[0][3],
-                           d_parent_offset[0][3],
-                           d_parent_ids[0][3] );
+    if ( NG > 2 )
+        computeNodeParents<2>( d_vert.size(),
+                               d_tri,
+                               d_remote_tri,
+                               rank,
+                               d_parent_size[0][2],
+                               d_parent_offset[0][2],
+                               d_parent_ids[0][2] );
+    if ( NG > 3 )
+        computeNodeParents<3>( d_vert.size(),
+                               d_tet,
+                               d_remote_tet,
+                               rank,
+                               d_parent_size[0][3],
+                               d_parent_offset[0][3],
+                               d_parent_ids[0][3] );
     // Compute the parents for edges
     AMP_WARNING( "Not finished" );
 

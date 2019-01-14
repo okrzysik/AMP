@@ -89,8 +89,8 @@ uninitMemberVar:*/src/vectors/trilinos/thyra/NativeThyraVector.cc
 
 
 // Suppress warnings for solvers
-duplicateAssignExpression:*/src/solvers/test/testMaterialModels_VonMisesPlasticity-2.cc
-duplicateAssignExpression:*/src/solvers/test/testMaterialModels_VonMisesPlasticity-2.cc
+duplicateAssignExpression:*/src/solvers/test/mechanics/testMaterialModels_VonMisesPlasticity-2.cc
+duplicateAssignExpression:*/src/solvers/test/mechanics/testMaterialModels_VonMisesPlasticity-2.cc
 
 
 // Suppress warnings for time_integrators
