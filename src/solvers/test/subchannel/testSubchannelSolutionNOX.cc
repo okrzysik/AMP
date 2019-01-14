@@ -29,9 +29,6 @@
 #include <string>
 
 
-using doubleVec = std::vector<double>;
-
-
 // Function to get the linear heat generation rate
 double getLinearHeatGeneration( double Q, double H, double z )
 {
@@ -144,17 +141,17 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     for ( int i = 0; i < 3; i++ ) {
         std::map<std::string, AMP::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert(
-            std::make_pair( "temperature", AMP::make_shared<doubleVec>( 1, Tin ) ) );
+            std::make_pair( "temperature", AMP::make_shared<std::vector<double>>( 1, Tin ) ) );
         enthalpyArgMap.insert(
-            std::make_pair( "pressure", AMP::make_shared<doubleVec>( 1, Pin ) ) );
+            std::make_pair( "pressure", AMP::make_shared<std::vector<double>>( 1, Pin ) ) );
         std::vector<double> enthalpyResult( 1 );
         subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         hin = enthalpyResult[0];
         std::map<std::string, AMP::shared_ptr<std::vector<double>>> volumeArgMap_plus;
         volumeArgMap_plus.insert(
-            std::make_pair( "enthalpy", AMP::make_shared<doubleVec>( 1, hin ) ) );
+            std::make_pair( "enthalpy", AMP::make_shared<std::vector<double>>( 1, hin ) ) );
         volumeArgMap_plus.insert(
-            std::make_pair( "pressure", AMP::make_shared<doubleVec>( 1, Pin ) ) );
+            std::make_pair( "pressure", AMP::make_shared<std::vector<double>>( 1, Pin ) ) );
         std::vector<double> volumeResult_plus( 1 );
         subchannelPhysicsModel->getProperty(
             "SpecificVolume", volumeResult_plus, volumeArgMap_plus );
@@ -254,17 +251,18 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         double P = P_scale * solVec->getValueByGlobalID( dofs[1] );
         std::map<std::string, AMP::shared_ptr<std::vector<double>>> temperatureArgMap;
         temperatureArgMap.insert(
-            std::make_pair( "enthalpy", AMP::make_shared<doubleVec>( 1, h ) ) );
+            std::make_pair( "enthalpy", AMP::make_shared<std::vector<double>>( 1, h ) ) );
         temperatureArgMap.insert(
-            std::make_pair( "pressure", AMP::make_shared<doubleVec>( 1, P ) ) );
+            std::make_pair( "pressure", AMP::make_shared<std::vector<double>>( 1, P ) ) );
         std::vector<double> temperatureResult( 1 );
         subchannelPhysicsModel->getProperty( "Temperature", temperatureResult, temperatureArgMap );
         tempVec->setValueByGlobalID( tdofs[0], temperatureResult[0] );
         // Check that we recover the enthalapy from the temperature
         std::map<std::string, AMP::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert( std::make_pair(
-            "temperature", AMP::make_shared<doubleVec>( 1, temperatureResult[0] ) ) );
-        enthalpyArgMap.insert( std::make_pair( "pressure", AMP::make_shared<doubleVec>( 1, P ) ) );
+            "temperature", AMP::make_shared<std::vector<double>>( 1, temperatureResult[0] ) ) );
+        enthalpyArgMap.insert(
+            std::make_pair( "pressure", AMP::make_shared<std::vector<double>>( 1, P ) ) );
         std::vector<double> enthalpyResult( 1 );
         subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         double h2 = enthalpyResult[0];
@@ -298,18 +296,10 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "Outlet Computed Temperature = " << ToutSol << std::endl;
 
     // Compute the error
-    AMP::LinearAlgebra::Vector::shared_ptr absErrorVec = solVec->cloneVector();
+    auto absErrorVec = solVec->cloneVector();
     absErrorVec->axpy( -1.0, solVec, manufacturedVec );
-    AMP::LinearAlgebra::Vector::shared_ptr relErrorVec = solVec->cloneVector();
+    auto relErrorVec = solVec->cloneVector();
     relErrorVec->divide( absErrorVec, manufacturedVec );
-    /*face  = xyFaceMesh->getIterator(AMP::Mesh::GeomType::Face, 0);
-    for (int i=0; i<(int)face.size(); i++){
-        faceDOFManager->getDOFs( face->globalID(), dofs );
-        absErrorVec->setValueByGlobalID(dofs[1],0.0);   // We don't have the correct solution for
-    the pressure yet
-        relErrorVec->setValueByGlobalID(dofs[1],0.0);
-        ++face;
-    }*/
     double absErrorNorm = absErrorVec->L2Norm();
     double relErrorNorm = relErrorVec->L2Norm();
 
