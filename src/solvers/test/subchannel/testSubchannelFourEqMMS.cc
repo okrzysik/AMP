@@ -1,4 +1,8 @@
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/SiloIO.h"
+#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/discretization/structuredFaceDOFManager.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
@@ -21,13 +25,9 @@
 #include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
-#include <string>
-
-#include "AMP/ampmesh/SiloIO.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/discretization/structuredFaceDOFManager.h"
 #include "AMP/vectors/VectorBuilder.h"
+
+#include <string>
 
 
 // Function to get the linear heat generation rate
@@ -67,7 +67,7 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
 
     //=============================================================================
@@ -76,55 +76,45 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Get the Mesh database and create the mesh parameters
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db    = input_db->getDatabase( "Mesh" );
+    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( globalComm );
 
     // Create the meshes from the input database
-    AMP::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // get dof manager
     int DOFsPerFace[3] = { 1, 1, 3 };
-    AMP::Discretization::DOFManager::shared_ptr subchannelDOFManager =
+    auto subchannelDOFManager =
         AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
 
     //=============================================================================
     // physics model, parameters, and operator creation
     //=============================================================================
     // get input and output variables
-    AMP::LinearAlgebra::Variable::shared_ptr inputVariable(
-        new AMP::LinearAlgebra::Variable( "flow" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr outputVariable(
-        new AMP::LinearAlgebra::Variable( "flow" ) );
+    auto inputVariable  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
+    auto outputVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
 
     // create solution, rhs, and residual vectors
-    AMP::LinearAlgebra::Vector::shared_ptr manufacturedVec =
+    auto manufacturedVec =
         AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr solVec =
-        AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec =
-        AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr resVec =
-        AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
+    auto solVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable, true );
+    auto rhsVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
+    auto resVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
 
     // get subchannel physics model
-    AMP::shared_ptr<AMP::Database> subchannelPhysics_db =
-        input_db->getDatabase( "SubchannelPhysicsModel" );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params(
-        new AMP::Operator::ElementPhysicsModelParameters( subchannelPhysics_db ) );
-    AMP::shared_ptr<AMP::Operator::SubchannelPhysicsModel> subchannelPhysicsModel(
-        new AMP::Operator::SubchannelPhysicsModel( params ) );
+    auto subchannelPhysics_db = input_db->getDatabase( "SubchannelPhysicsModel" );
+    auto params =
+        AMP::make_shared<AMP::Operator::ElementPhysicsModelParameters>( subchannelPhysics_db );
+    auto subchannelPhysicsModel = AMP::make_shared<AMP::Operator::SubchannelPhysicsModel>( params );
 
     // Create the SubchannelOperatorParameters
-    AMP::shared_ptr<AMP::Database> nonlinearOperator_db =
-        input_db->getDatabase( "SubchannelFourEqNonlinearOperator" );
-    AMP::shared_ptr<AMP::Database> linearOperator_db =
-        input_db->getDatabase( "SubchannelFourEqLinearOperator" );
-    AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> nonlinearOpParams(
-        new AMP::Operator::SubchannelOperatorParameters( nonlinearOperator_db ) );
-    AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> linearOpParams(
-        new AMP::Operator::SubchannelOperatorParameters( linearOperator_db ) );
+    auto nonlinearOperator_db = input_db->getDatabase( "SubchannelFourEqNonlinearOperator" );
+    auto linearOperator_db    = input_db->getDatabase( "SubchannelFourEqLinearOperator" );
+    auto nonlinearOpParams =
+        AMP::make_shared<AMP::Operator::SubchannelOperatorParameters>( nonlinearOperator_db );
+    auto linearOpParams =
+        AMP::make_shared<AMP::Operator::SubchannelOperatorParameters>( linearOperator_db );
     nonlinearOpParams->d_Mesh                   = subchannelMesh;
     nonlinearOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
     nonlinearOpParams->clad_x = input_db->getDatabase( "CladProperties" )->getDoubleArray( "x" );
@@ -137,14 +127,14 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     linearOpParams->clad_d = input_db->getDatabase( "CladProperties" )->getDoubleArray( "d" );
 
     // create nonlinear operator
-    AMP::shared_ptr<AMP::Operator::SubchannelFourEqNonlinearOperator> nonlinearOperator(
-        new AMP::Operator::SubchannelFourEqNonlinearOperator( nonlinearOpParams ) );
+    auto nonlinearOperator =
+        AMP::make_shared<AMP::Operator::SubchannelFourEqNonlinearOperator>( nonlinearOpParams );
     // reset the nonlinear operator
     nonlinearOperator->reset( nonlinearOpParams );
 
     // create linear operator
-    AMP::shared_ptr<AMP::Operator::SubchannelFourEqLinearOperator> linearOperator(
-        new AMP::Operator::SubchannelFourEqLinearOperator( linearOpParams ) );
+    auto linearOperator =
+        AMP::make_shared<AMP::Operator::SubchannelFourEqLinearOperator>( linearOpParams );
 
     // pass creation test
     ut->passes( exeName + ": creation" );
@@ -198,9 +188,9 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "Enthalpy Solution:" << hin << std::endl;
 
     // Compute the manufactured solution
-    AMP::Mesh::Mesh::shared_ptr xyFaceMesh = subchannelMesh->Subset(
+    auto xyFaceMesh = subchannelMesh->Subset(
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 ) );
-    AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
+    auto face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     std::vector<size_t> axialDofs;
     // Scale to change the input vector back to correct units
     const double h_scale = 1.0 / AMP::Operator::Subchannel::scaleEnthalpy;
@@ -230,7 +220,7 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         auto lateralFaceIterator = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
             // get lateral face
-            AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
+            auto lateralFace = lateralFaceIterator->second;
             // get crossflow from solution vector
             std::vector<size_t> gapDofs;
             subchannelDOFManager->getDOFs( lateralFace.globalID(), gapDofs );
@@ -273,11 +263,10 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     //=============================================================================
 
     // get nonlinear solver database
-    AMP::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
+    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
 
     // get linear solver database
-    AMP::shared_ptr<AMP::Database> linearSolver_db =
-        nonlinearSolver_db->getDatabase( "LinearSolver" );
+    auto linearSolver_db = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
     // put manufactured RHS into resVec
     nonlinearOperator->reset( nonlinearOpParams );
@@ -285,8 +274,8 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     linearOperator->residual( rhsVec, solVec, resVec );
 
     // create nonlinear solver parameters
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
-        new AMP::Solver::PetscSNESSolverParameters( nonlinearSolver_db ) );
+    auto nonlinearSolverParams =
+        AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
@@ -294,21 +283,18 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolverParams->d_pInitialGuess = solVec;
 
     // create nonlinear solver
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(
-        new AMP::Solver::PetscSNESSolver( nonlinearSolverParams ) );
+    auto nonlinearSolver = AMP::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
     // create linear solver
-    AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
-        nonlinearSolver->getKrylovSolver();
+    auto linearSolver = nonlinearSolver->getKrylovSolver();
 
     // create preconditioner
-    AMP::shared_ptr<AMP::Database> Preconditioner_db =
-        linearSolver_db->getDatabase( "Preconditioner" );
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> PreconditionerParams(
-        new AMP::Solver::SolverStrategyParameters( Preconditioner_db ) );
+    auto Preconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
+    auto PreconditionerParams =
+        AMP::make_shared<AMP::Solver::SolverStrategyParameters>( Preconditioner_db );
     PreconditionerParams->d_pOperator = linearOperator;
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> linearFlowPreconditioner(
-        new AMP::Solver::TrilinosMLSolver( PreconditionerParams ) );
+    auto linearFlowPreconditioner =
+        AMP::make_shared<AMP::Solver::TrilinosMLSolver>( PreconditionerParams );
     // set preconditioner
     linearSolver->setPreconditioner( linearFlowPreconditioner );
 
@@ -354,17 +340,14 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     //=============================================================================
 
     // Compute the flow temperature
-    AMP::Discretization::DOFManager::shared_ptr tempDOFManager =
-        AMP::Discretization::simpleDOFManager::create(
-            subchannelMesh,
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 1 ),
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 ),
-            1 );
-    AMP::LinearAlgebra::Variable::shared_ptr tempVariable(
-        new AMP::LinearAlgebra::Variable( "Temperature" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr tempVec =
-        AMP::LinearAlgebra::createVector( tempDOFManager, tempVariable, true );
-    face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
+    auto tempDOFManager = AMP::Discretization::simpleDOFManager::create(
+        subchannelMesh,
+        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 1 ),
+        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 ),
+        1 );
+    auto tempVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
+    auto tempVec      = AMP::LinearAlgebra::createVector( tempDOFManager, tempVariable, true );
+    face              = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     std::vector<size_t> tdofs;
     bool pass = true;
     for ( int i = 0; i < (int) face.size(); i++ ) {
@@ -423,9 +406,9 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "Outlet Computed Temperature = " << ToutSol << std::endl;
 
     // Compute the error
-    AMP::LinearAlgebra::Vector::shared_ptr absErrorVec = solVec->cloneVector();
+    auto absErrorVec = solVec->cloneVector();
     absErrorVec->axpy( -1.0, solVec, manufacturedVec );
-    AMP::LinearAlgebra::Vector::shared_ptr relErrorVec = solVec->cloneVector();
+    auto relErrorVec = solVec->cloneVector();
     relErrorVec->divide( absErrorVec, manufacturedVec );
     for ( size_t i = 0; i < solVec->getLocalSize(); i++ ) {
         if ( manufacturedVec->getValueByLocalID( i ) == 0 ) {
@@ -480,51 +463,40 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     input_db.reset();
 
-    /*
-    #ifdef USE_EXT_SILO
-        // Rescale the solution to get the correct units
-        AMP::LinearAlgebra::Vector::shared_ptr mass, enthalpy, pressure;
-        mass = solVec->select( AMP::LinearAlgebra::VS_Stride(0,3), "M" );
-        enthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride(1,3), "H" );
-        pressure = solVec->select( AMP::LinearAlgebra::VS_Stride(2,3), "P" );
-        mass->scale(m_scale);
-        enthalpy->scale(h_scale);
-        pressure->scale(P_scale);
-        mass = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride(0,3), "M" );
-        enthalpy = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride(1,3), "H" );
-        pressure = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride(2,3), "P" );
-        mass->scale(m_scale);
-        enthalpy->scale(h_scale);
-        pressure->scale(P_scale);
-        // Register the quantities to plot
-        AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
-        AMP::LinearAlgebra::Vector::shared_ptr subchannelMass = solVec->select(
-    AMP::LinearAlgebra::VS_Stride(0,3), "M"
-    );
-        AMP::LinearAlgebra::Vector::shared_ptr subchannelEnthalpy = solVec->select(
-    AMP::LinearAlgebra::VS_Stride(1,3),
-    "H" );
-        AMP::LinearAlgebra::Vector::shared_ptr subchannelPressure = solVec->select(
-    AMP::LinearAlgebra::VS_Stride(2,3),
-    "P" );
-        subchannelMass->scale(m_scale);
-        subchannelEnthalpy->scale(h_scale);
-        subchannelPressure->scale(P_scale);
-        siloWriter->registerVector( manufacturedVec, xyFaceMesh, AMP::Mesh::GeomType::Face,
-    "ManufacturedSolution" );
-        siloWriter->registerVector( solVec, xyFaceMesh, AMP::Mesh::GeomType::Face,
-    "ComputedSolution" );
-        siloWriter->registerVector( subchannelMass, xyFaceMesh, AMP::Mesh::GeomType::Face, "Axial
-    Mass Flow
-    Rate" );
-        siloWriter->registerVector( subchannelEnthalpy, xyFaceMesh, AMP::Mesh::GeomType::Face,
-    "Enthalpy" );
-        siloWriter->registerVector( subchannelPressure, xyFaceMesh, AMP::Mesh::GeomType::Face,
-    "Pressure" );
-        siloWriter->registerVector( tempVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "Temperature" );
-        siloWriter->writeFile( silo_name , 0 );
-    #endif
-    */
+#if defined( USE_EXT_SILO ) && 0
+    // Rescale the solution to get the correct units
+    auto mass     = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "M" );
+    auto enthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "H" );
+    auto pressure = solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "P" );
+    mass->scale( m_scale );
+    enthalpy->scale( h_scale );
+    pressure->scale( P_scale );
+    mass     = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "M" );
+    enthalpy = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "H" );
+    pressure = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "P" );
+    mass->scale( m_scale );
+    enthalpy->scale( h_scale );
+    pressure->scale( P_scale );
+    // Register the quantities to plot
+    auto siloWriter         = AMP::make_shared<AMP::Mesh::SiloIO>();
+    auto subchannelMass     = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "M" );
+    auto subchannelEnthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "H" );
+    auto subchannelPressure = solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "P" );
+    subchannelMass->scale( m_scale );
+    subchannelEnthalpy->scale( h_scale );
+    subchannelPressure->scale( P_scale );
+    siloWriter->registerVector(
+        manufacturedVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "ManufacturedSolution" );
+    siloWriter->registerVector( solVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "ComputedSolution" );
+    siloWriter->registerVector(
+        subchannelMass, xyFaceMesh, AMP::Mesh::GeomType::Face, "Axial Mass Flow Rate" );
+    siloWriter->registerVector(
+        subchannelEnthalpy, xyFaceMesh, AMP::Mesh::GeomType::Face, "Enthalpy" );
+    siloWriter->registerVector(
+        subchannelPressure, xyFaceMesh, AMP::Mesh::GeomType::Face, "Pressure" );
+    siloWriter->registerVector( tempVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "Temperature" );
+    siloWriter->writeFile( silo_name, 0 );
+#endif
 }
 
 int main( int argc, char *argv[] )

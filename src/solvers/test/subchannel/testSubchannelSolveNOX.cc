@@ -62,9 +62,6 @@
 #include <string>
 
 
-using doubleVec = std::vector<double>;
-
-
 // Function to get an arbitrary power profile (W/kg) assuming a density of 1 kg/m^3 for the volume
 // integral
 // P is the total power of the pin, V is the volume of the pin
@@ -88,12 +85,10 @@ void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
     auto multivec     = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
     globalMultiVector = multivec;
 
-    auto thermalVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>(
-        "Temperature" ); // temperature on pellets and cladding
-    auto flowVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>(
-        "Flow" ); // enthalpy and pressure on z-faces
-    auto powerVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>(
-        "SpecificPowerInWattsPerGram" ); // specific power on gauss points
+    auto thermalVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
+    auto flowVariable    = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Flow" );
+    auto powerVariable =
+        AMP::make_shared<AMP::LinearAlgebra::Variable>( "SpecificPowerInWattsPerGram" );
 
     AMP::LinearAlgebra::Vector::shared_ptr thermalVec;
     if ( pinMesh.get() != nullptr ) {
@@ -157,12 +152,10 @@ void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // Variables
-    auto thermalVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>(
-        "Temperature" ); // temperature on pellets and cladding
-    auto flowVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>(
-        "Flow" ); // enthalpy and pressure on z-faces
-    auto powerVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>(
-        "SpecificPowerInWattsPerGram" ); // specific power on gauss points
+    auto thermalVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
+    auto flowVariable    = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Flow" );
+    auto powerVariable =
+        AMP::make_shared<AMP::LinearAlgebra::Variable>( "SpecificPowerInWattsPerGram" );
 
     AMP::shared_ptr<AMP::Operator::Operator> thermalCopyOperator;
 
@@ -184,7 +177,7 @@ void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
         // CREATE OPERATORS
         for ( auto pinMeshID : pinMeshIDs ) {
-            AMP::Mesh::Mesh::shared_ptr adapter = manager->Subset( pinMeshID );
+            auto adapter = manager->Subset( pinMeshID );
             if ( adapter.get() == nullptr )
                 continue;
 
@@ -375,7 +368,7 @@ void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
         int curOperator = 0;
         for ( auto pinMeshID : pinMeshIDs ) {
-            AMP::Mesh::Mesh::shared_ptr adapter = manager->Subset( pinMeshID );
+            auto adapter = manager->Subset( pinMeshID );
             if ( adapter.get() == nullptr )
                 continue;
 
@@ -537,7 +530,7 @@ void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         columnPreconditionerParams->d_pOperator = linearColumnOperator;
         columnPreconditioner.reset( new AMP::Solver::ColumnSolver( columnPreconditionerParams ) );
 
-        AMP::shared_ptr<AMP::Database> trilinosPreconditioner_db =
+        auto trilinosPreconditioner_db =
             columnPreconditioner_db->getDatabase( "TrilinosPreconditioner" );
         unsigned int N_preconditioners = linearColumnOperator->getNumberOfOperators();
         for ( unsigned int id = 0; id < N_preconditioners; id++ ) {
@@ -588,8 +581,8 @@ void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearSolver = AMP::make_shared<AMP::Solver::TrilinosNOXSolver>( nonlinearSolverParams );
 
         /*// create linear solver
-        AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
-            AMP::dynamic_pointer_cast<AMP::Solver::PetscSNESSolver>(nonlinearSolver)->getKrylovSolver();
+        auto linearSolver =
+        AMP::dynamic_pointer_cast<AMP::Solver::PetscSNESSolver>(nonlinearSolver)->getKrylovSolver();
         // set preconditioner
         linearSolver->setPreconditioner(columnPreconditioner);*/
     }
@@ -624,7 +617,7 @@ void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
             gaussPtDOFManager->getDOFs( it->globalID(), dofs );
-            for ( unsigned long dof : dofs ) {
+            for ( size_t dof : dofs ) {
                 specificPowerGpVec->setValueByGlobalID( dof,
                                                         getPower( range, P, V, it->centroid() ) );
             }
@@ -648,11 +641,11 @@ void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         double Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
                          ->getDouble( "Inlet_Temperature" );
         // compute inlet enthalpy
-        std::map<std::string, AMP::shared_ptr<doubleVec>> enthalpyArgMap;
+        std::map<std::string, AMP::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert(
-            std::make_pair( "temperature", AMP::make_shared<doubleVec>( 1, Tin ) ) );
-        enthalpyArgMap.insert( std::make_pair<std::string, AMP::shared_ptr<doubleVec>>(
-            "pressure", AMP::make_shared<doubleVec>( 1, Pout ) ) );
+            std::make_pair( "temperature", AMP::make_shared<std::vector<double>>( 1, Tin ) ) );
+        enthalpyArgMap.insert(
+            std::make_pair( "pressure", AMP::make_shared<std::vector<double>>( 1, Pout ) ) );
         std::vector<double> enthalpyResult( 1 );
         subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         double hin = enthalpyResult[0];
@@ -747,14 +740,12 @@ void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             faceDOFManager->getDOFs( face->globalID(), dofs );
             scalarFaceDOFManager->getDOFs( face->globalID(), scalarDofs );
             std::map<std::string, AMP::shared_ptr<std::vector<double>>> subchannelArgMap;
-            subchannelArgMap.insert(
-                std::make_pair( "enthalpy",
-                                AMP::make_shared<doubleVec>(
-                                    1, h_scale * flowSolVec->getValueByGlobalID( dofs[0] ) ) ) );
-            subchannelArgMap.insert(
-                std::make_pair( "pressure",
-                                AMP::make_shared<doubleVec>(
-                                    1, P_scale * flowSolVec->getValueByGlobalID( dofs[1] ) ) ) );
+            auto vec1 = AMP::make_shared<std::vector<double>>(
+                1, h_scale * flowSolVec->getValueByGlobalID( dofs[0] ) );
+            auto vec2 = AMP::make_shared<std::vector<double>>(
+                1, P_scale * flowSolVec->getValueByGlobalID( dofs[1] ) );
+            subchannelArgMap.insert( std::make_pair( "enthalpy", vec1 ) );
+            subchannelArgMap.insert( std::make_pair( "pressure", vec2 ) );
             std::vector<double> outTemperatureResult( 1 );
             subchannelPhysicsModel->getProperty(
                 "Temperature", outTemperatureResult, subchannelArgMap );
@@ -872,6 +863,7 @@ void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     siloWriter->writeFile( exeName, 0 );
 #endif
     ut->passes( "test runs to completion" );
+    globalComm.barrier();
     PROFILE_STOP( "Main" );
     PROFILE_SAVE( "exeName" );
 }
