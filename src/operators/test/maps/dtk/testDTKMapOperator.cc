@@ -22,7 +22,7 @@ double testFunction1( const std::vector<double> &coords )
     return coords[0] + coords[1] + coords[2] + 2.0;
 }
 
-void myTest( AMP::UnitTest *ut )
+static void myTest( AMP::UnitTest *ut )
 {
     std::string exeName( "testDTKMapOperator" );
     std::string log_file = "output_" + exeName;

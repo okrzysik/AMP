@@ -24,8 +24,8 @@
     if ( !( a ) )      \
         ut.failure( __LINE__ );
 
-void adjust( const AMP::LinearAlgebra::Vector::shared_ptr vec,
-             AMP::LinearAlgebra::Vector::shared_ptr work )
+static void adjust( const AMP::LinearAlgebra::Vector::shared_ptr vec,
+                    AMP::LinearAlgebra::Vector::shared_ptr work )
 {
     work->setToScalar( 301. );
     AMP::LinearAlgebra::Vector &x = *vec;
@@ -33,13 +33,13 @@ void adjust( const AMP::LinearAlgebra::Vector::shared_ptr vec,
     vec->add( x, y );
 }
 
-void applyTest( AMP::UnitTest *ut,
-                const std::string &msgPrefix,
-                AMP::shared_ptr<AMP::Operator::Operator> &testOperator,
-                AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
-                AMP::LinearAlgebra::Vector::shared_ptr solVec,
-                AMP::LinearAlgebra::Vector::shared_ptr resVec,
-                AMP::LinearAlgebra::Vector::shared_ptr workVec )
+static void applyTest( AMP::UnitTest *ut,
+                       const std::string &msgPrefix,
+                       AMP::shared_ptr<AMP::Operator::Operator> &testOperator,
+                       AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
+                       AMP::LinearAlgebra::Vector::shared_ptr solVec,
+                       AMP::LinearAlgebra::Vector::shared_ptr resVec,
+                       AMP::LinearAlgebra::Vector::shared_ptr workVec )
 {
     // first test for apply - random values in all three input vectors
     try {
@@ -190,7 +190,7 @@ void applyTest( AMP::UnitTest *ut,
 #endif
 }
 
-void flowTest( AMP::UnitTest *ut )
+static void flowTest( AMP::UnitTest *ut )
 {
     // Input and output file names
     //  #include <string>

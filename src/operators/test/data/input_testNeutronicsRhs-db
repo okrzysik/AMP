@@ -1,3 +1,4 @@
+ConstructStandAlone = FALSE
 
 Mesh{
   MeshType = "libMesh"

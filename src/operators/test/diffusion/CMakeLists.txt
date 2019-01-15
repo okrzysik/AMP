@@ -1,5 +1,4 @@
-COPY_MESH_FILE( brick.e )
-
+# Copy test inputs
 COPY_TEST_FILE( input_linearDiffusion-TUI-Soret-1 )
 COPY_TEST_FILE( input_linearDiffusion-TUI-Thermal-1 )
 COPY_TEST_FILE( input_linearDiffusion-UO2MSRZC09-Fick-1 )
@@ -17,16 +16,11 @@ COPY_TEST_FILE( input_linearBVPOperator-Diffusion-TUI-Thermal-RobinMatrixCorrect
 COPY_TEST_FILE( input_linearBVPOperator-Diffusion-UO2MSRZC09-Fick-RobinMatrixCorrection-1 )
 COPY_TEST_FILE( input_linearBVPOperator-Diffusion-UO2MSRZC09-Soret-RobinMatrixCorrection-1 )
 COPY_TEST_FILE( input_linearBVPOperator-Diffusion-UO2MSRZC09-Thermal-RobinMatrixCorrection-1 )
-
 COPY_TEST_FILE( input_nonlinearBVP-Thermal-Oxygen-UO2MSRZC09-1 )
-ADD_AMP_TEST_1_2_4 ( testNonlinearThermalOxygenDiffusion-1 )
-
 COPY_TEST_FILE( input_linearBVP-Thermal+Fick+Dirichlet-TUI-1 )
 COPY_TEST_FILE( input_linearBVP-Thermal+Fick+Dirichlet-UO2MSRZC09-1 )
 COPY_TEST_FILE( input_linearBVP-Thermal+Fick+Robin-TUI-1 )
 COPY_TEST_FILE( input_linearBVP-Thermal+Fick+Robin-UO2MSRZC09-1 )
-
-ADD_AMP_TEST_1_2_4 ( testLinearDiffusion-1 )
 COPY_TEST_FILE( input_Diffusion-TUI-Thermal-1  )
 COPY_TEST_FILE( input_Diffusion-TUI-Fick-1 )
 COPY_TEST_FILE( input_Diffusion-TUI-Soret-1 )
@@ -35,16 +29,12 @@ COPY_TEST_FILE( input_Diffusion-UO2MSRZC09-Fick-1 )
 COPY_TEST_FILE( input_Diffusion-UO2MSRZC09-Soret-1 )
 COPY_TEST_FILE( input_Diffusion-TUI-TensorFick-1 )
 COPY_TEST_FILE( input_Diffusion-CylindricalFick-1 )
-
-ADD_AMP_TEST_1_2_4 ( testLinearDiffusion-2 )
 COPY_TEST_FILE( input_Diffusion-TUI-Thermal-2  )
 COPY_TEST_FILE( input_Diffusion-TUI-Fick-2 )
 COPY_TEST_FILE( input_Diffusion-TUI-Soret-2 )
 COPY_TEST_FILE( input_Diffusion-UO2MSRZC09-Thermal-2 )
 COPY_TEST_FILE( input_Diffusion-UO2MSRZC09-Fick-2 )
 COPY_TEST_FILE( input_Diffusion-UO2MSRZC09-Soret-2 )
-
-ADD_AMP_TEST_1_2_4 ( testNonlinearDiffusion-1 )
 COPY_TEST_FILE( input_Diffusion-TUI-Thermal-1  )
 COPY_TEST_FILE( input_Diffusion-TUI-Fick-1 )
 COPY_TEST_FILE( input_Diffusion-TUI-Soret-1 )
@@ -59,35 +49,40 @@ COPY_TEST_FILE( input_Diffusion-UO2MSRZC09-Fick-ActiveTemperatureAndConcentratio
 COPY_TEST_FILE( input_Diffusion-UO2MSRZC09-Soret-ActiveTemperatureAndConcentration-1 )
 COPY_TEST_FILE( input_Diffusion-TUI-TensorFick-1 )
 COPY_TEST_FILE( input_Diffusion-CylindricalFick-1 )
-
-ADD_AMP_TEST_1_2_4 ( testNonlinearDiffusion-2 )
 COPY_TEST_FILE( input_Diffusion-TUI-Thermal-1  )
-
-ADD_AMP_TEST_1_2_4 ( testDiffusionBVP-1 )
 COPY_TEST_FILE( input_Diffusion-TUI-Thermal-2  )
 COPY_TEST_FILE( input_Diffusion-TUI-Fick-2 )
 COPY_TEST_FILE( input_Diffusion-TUI-Soret-2 )
 COPY_TEST_FILE( input_Diffusion-UO2MSRZC09-Thermal-2 )
 COPY_TEST_FILE( input_Diffusion-UO2MSRZC09-Fick-2 )
 COPY_TEST_FILE( input_Diffusion-UO2MSRZC09-Soret-2 )
-COPY_MESH_FILE ( cube64.with.boundary.labels.e )
-
-ADD_AMP_TEST_1_2_4 ( testDiffusionManufacturedSolution-1 )
 COPY_TEST_FILE( input_Diffusion-Fick-OxMSRZC09-MMS-1 )
 COPY_TEST_FILE( input_Diffusion-Fick-TUI-MMS-1 )
-COPY_MESH_FILE ( cube4096.e )
-
-ADD_AMP_TEST_1_2_4 ( testTensorDiffusionManufacturedSolution-1 )
 COPY_TEST_FILE( input_TensorDiffusion-Fick-MMS-1 )
 COPY_TEST_FILE( input_TensorDiffusion-Fick-MMS-2 )
-COPY_MESH_FILE ( cube4096.e )
-COPY_MESH_FILE ( cylinder4K.e )
-COPY_MESH_FILE ( shell3150mesh.e )
-
 COPY_TEST_FILE( input_linearThermalDiffusion+FickDiffusion-TUI-1 )
 COPY_TEST_FILE( input_linearThermalDiffusion+FickDiffusion-UO2MSRZC09-1 )
 
-ADD_AMP_PROVISIONAL_TEST ( testDiffusionMMSForward )
 
+# Copy test data
+COPY_MESH_FILE( brick.e )
+COPY_MESH_FILE( cube64.with.boundary.labels.e )
+COPY_MESH_FILE( cube4096.e )
+COPY_MESH_FILE( cylinder4K.e )
+COPY_MESH_FILE( shell3150mesh.e )
+
+
+# Add the tests
+INITIALIZE_TESTBUILDER()
+ADD_TB_TEST_1_2_4( testNonlinearThermalOxygenDiffusion_1 )
+ADD_TB_TEST_1_2_4( testLinearDiffusion_1 )
+ADD_TB_TEST_1_2_4( testLinearDiffusion_2 )
+ADD_TB_TEST_1_2_4( testNonlinearDiffusion_1 )
+ADD_TB_TEST_1_2_4( testNonlinearDiffusion_2 )
+ADD_TB_TEST_1_2_4( testDiffusionBVP_1 )
+ADD_TB_TEST_1_2_4( testDiffusionManufacturedSolution_1 )
+ADD_TB_TEST_1_2_4( testTensorDiffusionManufacturedSolution_1 )
+ADD_TB_PROVISIONAL_TEST( testDiffusionMMSForward )
+FINALIZE_TESTBUILDER()
 
 

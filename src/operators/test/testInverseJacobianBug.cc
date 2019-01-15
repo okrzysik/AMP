@@ -38,7 +38,7 @@
 #include "libmesh/enum_quadrature_type.h"
 #include "libmesh/string_to_enum.h"
 
-void myTest( AMP::UnitTest *ut, const std::string &exeName )
+static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string log_file = "output_" + exeName;
 
@@ -191,7 +191,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     ut->passes( "Ran to completion" );
 }
 
-int main( int argc, char *argv[] )
+int testInverseJacobianBug( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

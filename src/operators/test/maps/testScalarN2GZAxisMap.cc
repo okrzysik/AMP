@@ -32,9 +32,8 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-void setBoundary( int id,
-                  AMP::LinearAlgebra::Vector::shared_ptr &v1,
-                  AMP::Mesh::Mesh::shared_ptr mesh )
+static void
+setBoundary( int id, AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     if ( mesh.get() == nullptr )
         return;
@@ -53,9 +52,9 @@ void setBoundary( int id,
     }
 }
 
-void setGpBoundary( int id,
-                    AMP::LinearAlgebra::Vector::shared_ptr &v1,
-                    AMP::Mesh::Mesh::shared_ptr mesh )
+static void setGpBoundary( int id,
+                           AMP::LinearAlgebra::Vector::shared_ptr &v1,
+                           AMP::Mesh::Mesh::shared_ptr mesh )
 {
     if ( mesh.get() == nullptr )
         return;
@@ -94,7 +93,7 @@ void setGpBoundary( int id,
     }
 }
 
-void runTest( const std::string &fname, AMP::UnitTest *ut )
+static void runTest( const std::string &fname, AMP::UnitTest *ut )
 {
     // Read the input file
     AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
@@ -201,7 +200,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 }
 
 
-int main( int argc, char *argv[] )
+int testScalarN2GZAxisMap( int argc, char *argv[] )
 {
     AMP::AMPManagerProperties startup_properties;
     startup_properties.use_MPI_Abort = false;

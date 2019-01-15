@@ -27,25 +27,23 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
 
-// number of subchannels
-const size_t numSubchannels = 3 * 3; // 3x3 subchannel array
-// number of axial intervals
-const size_t numAxialIntervals = 3;
-// number of axial faces
-const size_t numAxialFaces = numAxialIntervals + 1;
-// number of gaps in MATLAB
-const size_t numGaps_MATLAB = 12;
-// total number of DoFs in MATLAB
-const unsigned int num_dofs_MATLAB =
+
+static constexpr size_t numSubchannels    = 3 * 3;                 // number of subchannels
+static constexpr size_t numAxialIntervals = 3;                     // number of axial intervals
+static constexpr size_t numAxialFaces     = numAxialIntervals + 1; // number of axial faces
+static constexpr size_t numGaps_MATLAB    = 12;                    // number of gaps in MATLAB
+// # of DoFs in MATLAB
+static constexpr size_t num_dofs_MATLAB =
     3 * numSubchannels * numAxialFaces + numGaps_MATLAB * numAxialIntervals;
-// number of gaps in AMP; AMP automatically puts DOFs on exterior gaps, as opposed to MATLAB
-const size_t numGaps_AMP = 24;
+// number of gaps in AMP; (AMP automatically puts DOFs on exterior gaps, as opposed to MATLAB)
+static constexpr size_t numGaps_AMP = 24;
 // total number of DoFs in AMP
-const unsigned int num_dofs_AMP =
+static constexpr size_t num_dofs_AMP =
     3 * numSubchannels * numAxialFaces + numGaps_AMP * numAxialIntervals;
 
+
 // function to get the MATLAB subchannel index
-size_t getMATLABSubchannelIndex( const AMP::Mesh::MeshElement &face )
+static size_t getMATLABSubchannelIndex( const AMP::Mesh::MeshElement &face )
 {
     double pitch = 0.0126; // pitch for test problem [m]
     double x1    = 0.5 * pitch;
@@ -91,7 +89,7 @@ size_t getMATLABSubchannelIndex( const AMP::Mesh::MeshElement &face )
 }
 
 // function to get the MATLAB gap index
-size_t getMATLABGapIndex( const AMP::Mesh::MeshElement &gapFace )
+static size_t getMATLABGapIndex( const AMP::Mesh::MeshElement &gapFace )
 {
     double pitch = 0.0126; // pitch for test problem [m]
     double x1    = 0.5 * pitch;
@@ -148,7 +146,7 @@ size_t getMATLABGapIndex( const AMP::Mesh::MeshElement &gapFace )
 }
 
 // function to determine the axial level
-size_t getMATLABAxialIndex( const AMP::Mesh::MeshElement &face, bool is_axial_face_quantity )
+static size_t getMATLABAxialIndex( const AMP::Mesh::MeshElement &face, bool is_axial_face_quantity )
 {
     double height = 3.66;
     double dz     = height / numAxialIntervals;
@@ -182,7 +180,7 @@ size_t getMATLABAxialIndex( const AMP::Mesh::MeshElement &face, bool is_axial_fa
 
 
 // function used to get all lateral gaps
-std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement>
+static std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement>
 getLateralFaces( AMP::Mesh::Mesh::shared_ptr mesh, bool )
 {
     // map of lateral gaps to their centroids
@@ -230,7 +228,7 @@ getLateralFaces( AMP::Mesh::Mesh::shared_ptr mesh, bool )
 }
 
 // find the MATLAB index for a variable on a given face
-size_t AMP_to_MATLAB( const AMP::Mesh::MeshElement &face, size_t variable_id )
+static size_t AMP_to_MATLAB( const AMP::Mesh::MeshElement &face, size_t variable_id )
 {
     // determine if variable is axial face quantity or lateral face quantity
     bool is_axial_face_quantity = false;
@@ -298,10 +296,10 @@ size_t AMP_to_MATLAB( const AMP::Mesh::MeshElement &face, size_t variable_id )
 }
 
 // function to create map of global IDs to elements and variables
-void createGlobalIDMaps( AMP::Discretization::DOFManager::shared_ptr dof_manager,
-                         AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
-                         std::map<size_t, AMP::Mesh::MeshElement> &elements_by_globalID,
-                         std::map<size_t, size_t> &variables_by_globalID )
+static void createGlobalIDMaps( AMP::Discretization::DOFManager::shared_ptr dof_manager,
+                                AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                std::map<size_t, AMP::Mesh::MeshElement> &elements_by_globalID,
+                                std::map<size_t, size_t> &variables_by_globalID )
 {
     // loop over axial faces
     AMP::Mesh::Mesh::shared_ptr xyMesh =
@@ -336,7 +334,7 @@ void createGlobalIDMaps( AMP::Discretization::DOFManager::shared_ptr dof_manager
 }
 
 // function to check that Jacobian matches known values
-bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
+static bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
                         double J_reference[num_dofs_MATLAB][num_dofs_MATLAB],
                         AMP::Discretization::DOFManager::shared_ptr dof_manager,
                         AMP::Mesh::Mesh::shared_ptr mesh,
@@ -449,7 +447,7 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
     return passed;
 }
 
-void Test( AMP::UnitTest *ut, const std::string &exeName )
+static void Test( AMP::UnitTest *ut, const std::string &exeName )
 {
     // create input and output file names
     std::string input_file = "input_" + exeName;
@@ -871,7 +869,7 @@ void Test( AMP::UnitTest *ut, const std::string &exeName )
         ut->failure( exeName + ": known residual test" );
 }
 
-int main( int argc, char *argv[] )
+int testSubchannelFourEqLinearOperator( int argc, char *argv[] )
 {
     AMP::AMPManagerProperties startup_properties;
     startup_properties.use_MPI_Abort = false;

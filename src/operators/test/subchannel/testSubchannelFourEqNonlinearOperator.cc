@@ -26,12 +26,12 @@
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 
-void compare_face( const std::string &variable,
-                   unsigned int i,
-                   unsigned int j,
-                   double value_array[][10],
-                   double known_value,
-                   bool &pass )
+static void compare_face( const std::string &variable,
+                          unsigned int i,
+                          unsigned int j,
+                          double value_array[][10],
+                          double known_value,
+                          bool &pass )
 {
     if ( !AMP::Utilities::approx_equal( value_array[i][j], known_value, 1.0e-6 ) ) {
         std::cout << "Residual value for " << variable << "[" << i << "][" << j << "]"
@@ -40,12 +40,12 @@ void compare_face( const std::string &variable,
     }
 }
 
-void compare_gap( const std::string &variable,
-                  unsigned int i,
-                  unsigned int j,
-                  double value_array[][9],
-                  double known_value,
-                  bool &pass )
+static void compare_gap( const std::string &variable,
+                         unsigned int i,
+                         unsigned int j,
+                         double value_array[][9],
+                         double known_value,
+                         bool &pass )
 {
     if ( !AMP::Utilities::approx_equal( value_array[i][j], known_value, 1.0e-6 ) ) {
         std::cout << "Residual value for " << variable << "[" << i << "][" << j << "]"
@@ -136,7 +136,7 @@ unsigned int getMATLABAxialIndex( const AMP::Mesh::MeshElement &gapFace )
     return j;
 }
 
-void Test( AMP::UnitTest *ut, const std::string &exeName )
+static void Test( AMP::UnitTest *ut, const std::string &exeName )
 {
     // create input and output file names
     std::string input_file = "input_" + exeName;
@@ -808,7 +808,7 @@ void Test( AMP::UnitTest *ut, const std::string &exeName )
         ut->failure( exeName + ": known residual test" );
 }
 
-int main( int argc, char *argv[] )
+int testSubchannelFourEqNonlinearOperator( int argc, char *argv[] )
 {
     AMP::AMPManagerProperties startup_properties;
     startup_properties.use_MPI_Abort = false;

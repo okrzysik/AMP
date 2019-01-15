@@ -30,7 +30,7 @@ ENABLE_WARNINGS
 
 // Using mesh and function calls from testLibmeshGeomType::FaceStuff.cc
 
-void calculateGrad( AMP::UnitTest *ut )
+static void calculateGrad( AMP::UnitTest *ut )
 {
     const unsigned int mesh_dim = 3;
     AMP::shared_ptr<Mesh> mesh( new Mesh( mesh_dim ) );
@@ -80,7 +80,7 @@ void calculateGrad( AMP::UnitTest *ut )
     ut->passes( "Ran to completion" );
 }
 
-int main( int argc, char *argv[] )
+int testJacobianMap( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

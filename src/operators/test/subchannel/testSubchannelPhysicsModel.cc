@@ -35,7 +35,7 @@ bool areEqual( double result, double known, const std::string &quantity )
 }
 
 // function with tests to be performed on each input file
-void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
+static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
 {
 
     //
@@ -247,7 +247,7 @@ void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         ut->failure( exeName + ": defaults evaluations" );
 }
 
-int main( int argc, char *argv[] )
+int testSubchannelPhysicsModel( int argc, char *argv[] )
 {
     AMP::AMPManagerProperties startup_properties;
     startup_properties.use_MPI_Abort = false;

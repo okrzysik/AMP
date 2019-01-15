@@ -26,11 +26,11 @@ double barFunctionOfSpace( AMP::Mesh::Point const &xyz )
     return 3.0 * std::cos( xyz[2] );
 }
 
-void project( AMP::Mesh::MeshIterator const &meshIterator,
-              AMP::LinearAlgebra::Vector::shared_ptr vector,
-              size_t const dof,
-              size_t const dofsPerNode,
-              std::function<double( AMP::Mesh::Point const & )> functionOfSpace )
+static void project( AMP::Mesh::MeshIterator const &meshIterator,
+                     AMP::LinearAlgebra::Vector::shared_ptr vector,
+                     size_t const dof,
+                     size_t const dofsPerNode,
+                     std::function<double( AMP::Mesh::Point const & )> functionOfSpace )
 {
     AMP_INSIST( dof < dofsPerNode, "WRONG!" );
     auto dofManager         = vector->getDOFManager();
@@ -47,7 +47,7 @@ void project( AMP::Mesh::MeshIterator const &meshIterator,
 }
 
 
-void myTest( AMP::UnitTest *ut, const std::string &exeName )
+static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string inputFile = "input_" + exeName;
     std::string logFile   = "output_" + exeName;
@@ -167,7 +167,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 }
 
 
-int main( int argc, char *argv[] )
+int testStridedZAxisMap( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );

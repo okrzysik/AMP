@@ -28,7 +28,7 @@
 
 
 # Function to add a serial or 1,2,4 processor test dependent on the existence of a parallel matrix
-FUNCTION( ADD_AMP_TEST_124_MATRIX EXEFILE ${ARGN} )
+MACRO( ADD_AMP_TEST_124_MATRIX EXEFILE ${ARGN} )
     IF ( USE_EXT_TRILINOS )
         # We have a parallel matrix
         ADD_AMP_TEST_1_2_4( ${EXEFILE} ${ARGN} )
@@ -36,25 +36,69 @@ FUNCTION( ADD_AMP_TEST_124_MATRIX EXEFILE ${ARGN} )
         # We do not have a parallel matrix
         ADD_AMP_TEST( ${EXEFILE} ${ARGN} )
     ENDIF()
-ENDFUNCTION()
+ENDMACRO()
+MACRO( ADD_TB_TEST_124_MATRIX EXEFILE ${ARGN} )
+    IF ( USE_EXT_TRILINOS )
+        # We have a parallel matrix
+        ADD_TB_TEST_1_2_4( ${EXEFILE} ${ARGN} )
+    ELSE()
+        # We do not have a parallel matrix
+        ADD_TB_TEST( ${EXEFILE} ${ARGN} )
+    ENDIF()
+ENDMACRO()
 
 
-COPY_MESH_FILE( cube8.with.boundary.labels.e )
-
-COPY_MESH_FILE( TC1-PELL-COARSE.e )
-
+# Copy test inputs
 COPY_TEST_FILE( input_testNonlinear_MatproDensificationMaterialModel-1 )
-
-ADD_AMP_TEST_1_2_4( testOperatorParameterUnitTest )
-
-COPY_MESH_FILE( pellet_1x.e )
-COPY_MESH_FILE( cube4096.e )
-COPY_MESH_FILE( cylinder270.e )
-
-COPY_MESH_FILE( multiElementMesh.e )
 COPY_TEST_FILE( input_testMultiBlockMatrix )
-
-# Copy some inputs
+COPY_TEST_FILE( input_testConsistentTangent-1-mesh1-normal )
+COPY_TEST_FILE( input_testConsistentTangent-1-mesh1-reduced )
+COPY_TEST_FILE( input_testConsistentTangent-1-cookMesh1-normal )
+COPY_TEST_FILE( input_testConsistentTangent-1-cookMesh1-reduced )
+COPY_TEST_FILE( input_testConsistentTangent-2-mesh1-normal )
+COPY_TEST_FILE( input_testConsistentTangent-2-mesh1-reduced )
+COPY_TEST_FILE( input_testConsistentTangent-2-cookMesh1-normal )
+COPY_TEST_FILE( input_testConsistentTangent-2-cookMesh1-reduced )
+COPY_TEST_FILE( input_testConsistentTangent-3-mesh1-normal )
+COPY_TEST_FILE( input_testConsistentTangent-3-mesh1-reduced )
+COPY_TEST_FILE( input_testConsistentTangent-3-cookMesh1-normal )
+COPY_TEST_FILE( input_testConsistentTangent-3-cookMesh1-reduced )
+COPY_TEST_FILE( input_testConsistentTangent-4-mesh1-normal )
+COPY_TEST_FILE( input_testConsistentTangent-4-mesh1-reduced )
+COPY_TEST_FILE( input_testConsistentTangent-4-cookMesh1-normal )
+COPY_TEST_FILE( input_testConsistentTangent-4-cookMesh1-reduced )
+COPY_TEST_FILE( input_testConsistentTangentBVP-1-mesh1-normal )
+COPY_TEST_FILE( input_testConsistentTangentBVP-2-mesh1-normal )
+COPY_TEST_FILE( input_testConsistentTangentBVP-3-mesh1-normal )
+COPY_TEST_FILE( input_testConsistentTangentBVP-4-mesh1-normal )
+COPY_TEST_FILE( input_testConsistentTangentBVP-4-mesh1-reduced )
+COPY_TEST_FILE( input_testNeutronicsRhs-db )
+COPY_TEST_FILE( input_testNeutronicsRhs-1 )
+COPY_TEST_FILE( input_testNeutronicsRhs-2 )
+COPY_TEST_FILE( input_testNeutronicsRhs-3 )
+COPY_TEST_FILE( input_testNeutronicsRhs-4 )
+COPY_TEST_FILE( input_FickSoret-BVP-TUI-1 )
+COPY_TEST_FILE( input_FickSoret-BVP-UO2MSRZC09-1 )
+COPY_TEST_FILE( input_testLinearColumnOperator-1 )
+COPY_TEST_FILE( input_FickSoret-TUI-1 )
+COPY_TEST_FILE( input_FickSoret-UO2MSRZC09-1 )
+COPY_TEST_FILE( input_testVolumeIntegral-1 )
+COPY_TEST_FILE( input_testVolumeIntegral-2 )
+COPY_TEST_FILE( input_testVolumeIntegral-3 )
+COPY_TEST_FILE( input_LinearOp-Robin-1 )
+COPY_TEST_FILE( input_testNonlinearRobin-1 )
+COPY_TEST_FILE( input_testLinearOperator-1 )
+COPY_TEST_FILE( input_testPowerShape-5 )
+COPY_TEST_FILE( input_testPowerShape-3 )
+COPY_TEST_FILE( input_testPowerShape-2 )
+COPY_TEST_FILE( input_testPowerShape-1 )
+COPY_TEST_FILE( input_testPowerShape-diffusion )
+COPY_TEST_FILE( input_testPowerShapeToVolIntOperator )
+COPY_TEST_FILE( input_testNeumannVectorCorrection )
+COPY_TEST_FILE( input_testElementOperationFactory-1 )
+COPY_TEST_FILE( input_MassLinearElement-create-1 )
+COPY_TEST_FILE( input_testSurfaceIteratorBug )
+COPY_TEST_FILE( input_testParameterFactory-1 )
 COPY_TEST_FILE( input_DiffusionLinearElement-create-1                              diffusion/data )
 COPY_TEST_FILE( input_DiffusionNonlinearElement-create-1                           diffusion/data )
 COPY_TEST_FILE( input_linearDiffusion-TUI-Soret-1                                  diffusion/data )
@@ -105,174 +149,56 @@ COPY_TEST_FILE( input_linearMechanics+ThermalDiffusion+FickDiffusion-TUI-1      
 COPY_TEST_FILE( input_linearMechanics+ThermalDiffusion+FickDiffusion-UO2MSRZC09-1  mechanics/data )
 
 
+# Copy test data
+COPY_MESH_FILE( cube8.with.boundary.labels.e )
+COPY_MESH_FILE( TC1-PELL-COARSE.e )
+COPY_MESH_FILE( pellet_1x.e )
+COPY_MESH_FILE( cube4096.e )
+COPY_MESH_FILE( cylinder270.e )
+COPY_MESH_FILE( multiElementMesh.e )
+COPY_MESH_FILE( brick.e )
+COPY_MESH_FILE( cylinder.e )
+COPY_MESH_FILE( cube.with.12.boundaries.e )
+COPY_MESH_FILE( cube64.with.boundary.labels.e )
+COPY_MESH_FILE( cube64.with.boundary.labels.e )
+COPY_MESH_FILE( mesh1 )
+COPY_MESH_FILE( cookMesh1 )
+COPY_MESH_FILE( distortedElementMesh )
+COPY_MESH_FILE( halden_1_pellet_9mil.e )
+COPY_MESH_FILE( halden_1_clad.e )
+
+
+# Add the tests
+INITIALIZE_TESTBUILDER()
+ADD_TB_TEST_1_2_4( testOperatorParameterUnitTest )
 IF ( USE_EXT_LIBMESH )
-
-    ADD_AMP_TEST_1_2_4(testParameterFactory-1 )
-    COPY_TEST_FILE( input_testParameterFactory-1 )
-
-    ADD_AMP_PROVISIONAL_TEST ( testMultiBlockMatrix )
-
-    ADD_AMP_TEST_1_2_4( testElementOperationFactory-1 )
-    COPY_TEST_FILE( input_testElementOperationFactory-1 )
-    COPY_TEST_FILE( input_MassLinearElement-create-1 )
-
-    COPY_TEST_FILE( input_testSurfaceIteratorBug )
-    ADD_AMP_TEST( testSurfaceIteratorBug )
-
-    ADD_AMP_TEST_1_2_4( testNeumannVectorCorrection )
-    COPY_TEST_FILE( input_testNeumannVectorCorrection )
-
-
-    ADD_AMP_TEST( testStiffnessTransformation )
-
-    ADD_AMP_TEST( testPolarDecomposition )
-
-    ADD_AMP_PROVISIONAL_TEST( testInverseJacobianBug )
-
-    ADD_AMP_TEST_1_2_4( testPowerShapeToVolIntOperator )
-    COPY_TEST_FILE( input_testPowerShapeToVolIntOperator )
-
-    ADD_AMP_TEST_1_2_4( testPowerShape-1 )
-    COPY_TEST_FILE( input_testPowerShape-1 )
-    COPY_TEST_FILE( input_testPowerShape-diffusion )
-
-    ADD_AMP_TEST_1_2_4( testPowerShape-2 )
-    COPY_TEST_FILE( input_testPowerShape-2 )
-
-    ADD_AMP_TEST_1_2_4( testPowerShape-3 )
-    COPY_TEST_FILE( input_testPowerShape-3 )
-
-    ADD_AMP_TEST_1_2_4( testPowerShape-5 )
-    ADD_AMP_TEST_1_2_4( testPowerShape-Zr )
-    COPY_TEST_FILE( input_testPowerShape-5 )
-
-    ADD_AMP_TEST_124_MATRIX( testLinearOperator-1 )
-    COPY_TEST_FILE( input_testLinearOperator-1 )
-    COPY_MESH_FILE ( brick.e )
-
-    ADD_AMP_TEST_124_MATRIX( testLinearRobin-1 )
-    ADD_AMP_TEST_124_MATRIX( testNonlinearRobin-1 )
-    COPY_TEST_FILE( input_LinearOp-Robin-1 )
-    COPY_TEST_FILE( input_testNonlinearRobin-1 )
-    COPY_MESH_FILE ( cylinder.e )
-
-    COPY_MESH_FILE ( cube.with.12.boundaries.e )
-
-    ADD_AMP_TEST_1_2_4( testVolumeIntegral-1 )
-    COPY_TEST_FILE( input_testVolumeIntegral-1 )
-    COPY_TEST_FILE( input_testVolumeIntegral-2 )
-    COPY_TEST_FILE( input_testVolumeIntegral-3 )
-    COPY_MESH_FILE ( cube64.with.boundary.labels.e )
-
-    ADD_AMP_TEST_1_2_4( testNonlinearFickSoret-1 )
-    COPY_TEST_FILE( input_FickSoret-TUI-1 )
-    COPY_TEST_FILE( input_FickSoret-UO2MSRZC09-1 )
-
-    ADD_AMP_TEST_124_MATRIX( testFickSoretBVP-1 )
-    COPY_TEST_FILE( input_FickSoret-BVP-TUI-1 )
-    COPY_TEST_FILE( input_FickSoret-BVP-UO2MSRZC09-1 )
-
-    ADD_AMP_TEST_124_MATRIX( testLinearColumnOperator-1 )
-    COPY_TEST_FILE( input_testLinearColumnOperator-1 )
-
-    ADD_AMP_TEST_1_2_4( testNeutronicsRhs-1 )
-    COPY_TEST_FILE( input_testNeutronicsRhs-1 )
-    COPY_TEST_FILE( input_testNeutronicsRhs-2 )
-    COPY_TEST_FILE( input_testNeutronicsRhs-3 )
-    COPY_TEST_FILE( input_testNeutronicsRhs-4 )
-    COPY_MESH_FILE ( cube64.with.boundary.labels.e )
-
-    ADD_AMP_TEST_1_2_4( testNeutronicsRhs-2 )
-    COPY_TEST_FILE( input_testNeutronicsRhs-db )
-
-    # Consistent Tangent tests
-    ADD_AMP_TEST_124_MATRIX( testConsistentTangent )
-    ADD_AMP_TEST_124_MATRIX( testConsistentTangentBVP )
-    COPY_TEST_FILE( input_testConsistentTangent-1-mesh1-normal )
-    COPY_TEST_FILE( input_testConsistentTangent-1-mesh1-reduced )
-    COPY_TEST_FILE( input_testConsistentTangent-1-cookMesh1-normal )
-    COPY_TEST_FILE( input_testConsistentTangent-1-cookMesh1-reduced )
-    COPY_TEST_FILE( input_testConsistentTangent-2-mesh1-normal )
-    COPY_TEST_FILE( input_testConsistentTangent-2-mesh1-reduced )
-    COPY_TEST_FILE( input_testConsistentTangent-2-cookMesh1-normal )
-    COPY_TEST_FILE( input_testConsistentTangent-2-cookMesh1-reduced )
-    COPY_TEST_FILE( input_testConsistentTangent-3-mesh1-normal )
-    COPY_TEST_FILE( input_testConsistentTangent-3-mesh1-reduced )
-    COPY_TEST_FILE( input_testConsistentTangent-3-cookMesh1-normal )
-    COPY_TEST_FILE( input_testConsistentTangent-3-cookMesh1-reduced )
-    COPY_TEST_FILE( input_testConsistentTangent-4-mesh1-normal )
-    COPY_TEST_FILE( input_testConsistentTangent-4-mesh1-reduced )
-    COPY_TEST_FILE( input_testConsistentTangent-4-cookMesh1-normal )
-    COPY_TEST_FILE( input_testConsistentTangent-4-cookMesh1-reduced )
-    COPY_TEST_FILE( input_testConsistentTangentBVP-1-mesh1-normal )
-    COPY_TEST_FILE( input_testConsistentTangentBVP-2-mesh1-normal )
-    COPY_TEST_FILE( input_testConsistentTangentBVP-3-mesh1-normal )
-    COPY_TEST_FILE( input_testConsistentTangentBVP-4-mesh1-normal )
-    COPY_TEST_FILE( input_testConsistentTangentBVP-4-mesh1-reduced )
-    COPY_MESH_FILE ( mesh1 )
-    COPY_MESH_FILE ( cookMesh1 )
-
+    ADD_TB_TEST_1_2_4(testParameterFactory )
+    ADD_TB_PROVISIONAL_TEST( testMultiBlockMatrix )
+    ADD_TB_TEST_1_2_4( testElementOperationFactory )
+    ADD_TB_TEST( testSurfaceIteratorBug )
+    ADD_TB_TEST_1_2_4( testNeumannVectorCorrection )
+    ADD_TB_TEST( testStiffnessTransformation )
+    ADD_TB_TEST( testPolarDecomposition )
+    ADD_TB_PROVISIONAL_TEST( testInverseJacobianBug )
+    ADD_TB_TEST_1_2_4( testPowerShapeToVolIntOperator )
+    ADD_TB_TEST_1_2_4( testPowerShape )
+    ADD_TB_TEST_1_2_4( testPowerShape_Zr )
+    ADD_TB_TEST_124_MATRIX( testLinearOperator )
+    ADD_TB_TEST_124_MATRIX( testLinearRobin )
+    ADD_TB_TEST_124_MATRIX( testNonlinearRobin )
+    ADD_TB_TEST_1_2_4( testVolumeIntegral )
+    ADD_TB_TEST_1_2_4( testNonlinearFickSoret )
+    ADD_TB_TEST_124_MATRIX( testFickSoretBVP )
+    ADD_TB_TEST_124_MATRIX( testLinearColumnOperator )
+    ADD_TB_TEST_1_2_4( testNeutronicsRhs )
+    ADD_TB_TEST_124_MATRIX( testConsistentTangent )
+    ADD_TB_TEST_124_MATRIX( testConsistentTangentBVP )
+    ADD_TB_PROVISIONAL_TEST( testDiscreteOperatorParameters )
 ENDIF()
-
-COPY_MESH_FILE ( distortedElementMesh )
-
-
-# ADD_AMP_TEST_1_2_4( testGapConductanceOperator )
-
-# COPY_TEST_FILE( input_testGapConductanceOperator )
-
-COPY_MESH_FILE ( halden_1_pellet_9mil.e )
-COPY_MESH_FILE ( halden_1_clad.e )
+FINALIZE_TESTBUILDER()
 
 
-#NEK-5000 tests
-IF( USE_EXT_NEK ) 
-  COPY_TEST_FILE( SESSION.NAME )
-  COPY_MESH_FILE( input.h5m )
-  COPY_TEST_FILE( pipe.rea )
-  ADD_AMP_TEST_PARALLEL( testMoabNekPipe 2 ) # This test doesn't work in serial
-  ADD_AMP_TEST_PARALLEL( testMoabNekPipe 4 )
-  ADD_AMP_TEST_PARALLEL( testMoabNekOperator 2 ) # By extension, neither does this
-  ADD_AMP_TEST_PARALLEL( testMoabNekOperator 4 )
-ENDIF()
-
-#MOAB tests
-IF( USE_EXT_MOAB )
-  COPY_TEST_FILE( input_testMoabBasedOperator )
-  ADD_AMP_TEST_1_2_4( testMoabBasedOperator )
-  
-  # Can be removed in new mesh design,
-  #  I haven't confirmed that I'm ready to delete 
-  #  it entirely yet.
-  ADD_AMP_PROVISIONAL_TEST( testMoabInterface )
-ENDIF()
-
-IF( USE_EXT_DENDRO AND USE_EXT_PETSC )
-   # R.S.: This needs to be fixed!
-    ## does not work in parallel - ADD_AMP_TEST_1_2_4( testNodeToFaceContactOperator )
-    ADD_AMP_TEST( testNodeToFaceContactOperator )
-    ADD_AMP_TEST_1_2_4( testNodeToSegmentConstraintsOperator )
-    COPY_TEST_FILE( input_testNodeToSegmentConstraintsOperator-cube )
-    COPY_TEST_FILE( input_testNodeToSegmentConstraintsOperator-cylinder )
-    COPY_TEST_FILE( input_testNodeToSegmentConstraintsOperator-pellet )
-    COPY_MESH_FILE( simple_pellet_1x.e )
-    COPY_MESH_FILE( two_fused_simple_pellets_1x.e )
-    ADD_AMP_TEST( testNodeToFaceContactOperator-1 )
-    ADD_AMP_TEST( testNodeToFaceContactOperator-2 )
-    ADD_AMP_TEST( testNodeToFaceContactOperator-3 )
-    COPY_MESH_FILE(my_cylinder.e)
-    ADD_AMP_WEEKLY_TEST( testNodeToFaceContactOperator-4 1 )
-    ADD_AMP_WEEKLY_TEST( testNodeToFaceContactOperator-5 1 )
-    COPY_TEST_FILE( input_testNodeToFaceContactOperator-1 )
-    COPY_TEST_FILE( input_testNodeToFaceContactOperator-2 )
-    COPY_TEST_FILE( input_testNodeToFaceContactOperator-2bis )
-    COPY_TEST_FILE( input_testNodeToFaceContactOperator-3 )
-    COPY_TEST_FILE( input_testNodeToFaceContactOperator-4 )
-    COPY_TEST_FILE( input_testNodeToFaceContactOperator-4bis )
-    COPY_TEST_FILE( input_testNodeToFaceContactOperator-5 )
-ENDIF()
-
-
+# Add subdirectories
 IF( USE_EXT_LIBMESH AND USE_EXT_TRILINOS AND USE_EXT_PETSC )
     ADD_SUBDIRECTORY( maps )
     ADD_SUBDIRECTORY( diffusion )
@@ -280,8 +206,13 @@ IF( USE_EXT_LIBMESH AND USE_EXT_TRILINOS AND USE_EXT_PETSC )
     ADD_SUBDIRECTORY( subchannel )
     ADD_SUBDIRECTORY( mechanics )
 ENDIF()
-
-# Test DTK implementation.
 IF( USE_EXT_DTK )
     ADD_SUBDIRECTORY( maps/dtk )
 ENDIF()
+IF( USE_EXT_DENDRO )
+    ADD_SUBDIRECTORY( dendro )
+ENDIF()
+IF( USE_EXT_MOAB )
+    ADD_SUBDIRECTORY( moab )
+ENDIF()
+

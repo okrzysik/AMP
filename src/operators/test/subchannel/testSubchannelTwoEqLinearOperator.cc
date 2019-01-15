@@ -89,7 +89,7 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian
     return passed;
 }
 
-void Test( AMP::UnitTest *ut, const std::string &exeName )
+static void Test( AMP::UnitTest *ut, const std::string &exeName )
 {
     // create input and output file names
     std::string input_file = "input_" + exeName;
@@ -297,7 +297,7 @@ void Test( AMP::UnitTest *ut, const std::string &exeName )
     } // end of test block
 }
 
-int main( int argc, char *argv[] )
+int testSubchannelTwoEqLinearOperator( int argc, char *argv[] )
 {
     AMP::AMPManagerProperties startup_properties;
     startup_properties.use_MPI_Abort = false;
