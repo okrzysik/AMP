@@ -39,7 +39,7 @@
 #include <string>
 
 
-void myTest( AMP::UnitTest *ut, const std::string &exeName )
+static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
@@ -175,7 +175,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 }
 
-int main( int argc, char *argv[] )
+int testPetscSNESSolver_NonlinearFick( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

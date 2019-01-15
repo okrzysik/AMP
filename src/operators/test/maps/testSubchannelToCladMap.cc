@@ -21,7 +21,8 @@
 static double getTemp( const AMP::Mesh::Point &x ) { return 500 + x[2] * 100; }
 
 
-static AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth )
+static AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel,
+                                                 int ghostWidth )
 {
     std::multimap<double, AMP::Mesh::MeshElement> xyFace;
     auto iterator = subChannel->getIterator( AMP::Mesh::GeomType::Face, ghostWidth );

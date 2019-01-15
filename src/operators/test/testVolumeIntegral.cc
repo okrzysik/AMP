@@ -10,17 +10,17 @@
 #include "AMP/vectors/Variable.h"
 #include <string>
 
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/NonlinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/libmesh/SourceNonlinearElement.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/NonlinearBVPOperator.h"
-#include "AMP/operators/OperatorBuilder.h"
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include "ProfilerApp.h"

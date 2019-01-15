@@ -37,7 +37,7 @@
     if ( !( a ) )      \
         ut.failure( __LINE__ );
 
-void linearThermalTest( AMP::UnitTest *ut )
+static void linearThermalTest( AMP::UnitTest *ut )
 {
     // Input and output file names
     //  #include <string>
@@ -303,7 +303,7 @@ void linearThermalTest( AMP::UnitTest *ut )
 }
 
 
-int main( int argc, char *argv[] )
+int testTrilinosMLSolver_LinearThermalOperator_bar( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

@@ -60,7 +60,7 @@
 
 double h_Size = 1.46286;
 
-void myTest( AMP::UnitTest *ut, const std::string &exeName )
+static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
 {
 
@@ -247,7 +247,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 }
 
 
-int main( int argc, char *argv[] )
+int testLinearFlow( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

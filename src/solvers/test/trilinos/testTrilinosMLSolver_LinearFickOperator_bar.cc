@@ -39,7 +39,7 @@
     if ( !( a ) )      \
         ut.failure( __LINE__ );
 
-void linearFickTest( AMP::UnitTest *ut )
+static void linearFickTest( AMP::UnitTest *ut )
 {
     // Input and output file names
     //  #include <string>
@@ -255,7 +255,7 @@ void linearFickTest( AMP::UnitTest *ut )
 }
 
 
-int main( int argc, char *argv[] )
+int testTrilinosMLSolver_LinearFickOperator_bar( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

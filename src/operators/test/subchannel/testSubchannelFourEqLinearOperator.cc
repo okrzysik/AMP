@@ -335,12 +335,12 @@ static void createGlobalIDMaps( AMP::Discretization::DOFManager::shared_ptr dof_
 
 // function to check that Jacobian matches known values
 static bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
-                        double J_reference[num_dofs_MATLAB][num_dofs_MATLAB],
-                        AMP::Discretization::DOFManager::shared_ptr dof_manager,
-                        AMP::Mesh::Mesh::shared_ptr mesh,
-                        std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> lateral_face_map,
-                        std::map<size_t, AMP::Mesh::MeshElement> elements_by_globalID,
-                        std::map<size_t, size_t> variables_by_globalID )
+                               double J_reference[num_dofs_MATLAB][num_dofs_MATLAB],
+                               AMP::Discretization::DOFManager::shared_ptr dof_manager,
+                               AMP::Mesh::Mesh::shared_ptr mesh,
+                               std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> lateral_face_map,
+                               std::map<size_t, AMP::Mesh::MeshElement> elements_by_globalID,
+                               std::map<size_t, size_t> variables_by_globalID )
 {
     double J_test_MATLAB[num_dofs_MATLAB][num_dofs_MATLAB] = { { 0.0 } };
     // loop over axial faces

@@ -3,8 +3,8 @@
 #include <iostream>
 
 static void createNodeSet( AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter,
-                    const unsigned int bndId,
-                    std::vector<PointAndId> &nodeSet )
+                           const unsigned int bndId,
+                           std::vector<PointAndId> &nodeSet )
 {
     AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator bnd =
         meshAdapter->beginOwnedBoundary( bndId );
@@ -29,13 +29,13 @@ static void createNodeSet( AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapt
 }
 
 static void createMasterSlaveMap( AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
-                           AMP::Mesh::MeshManager::Adapter::shared_ptr slaveMeshAdapter,
-                           const unsigned int masterId,
-                           const unsigned int slaveId,
-                           std::vector<unsigned int> &masterContactNodes,
-                           std::vector<unsigned int> &slaveContactNodes,
-                           std::vector<unsigned int> &masterVolumeNodes,
-                           std::vector<unsigned int> &slaveGeomType::VolumeNodes )
+                                  AMP::Mesh::MeshManager::Adapter::shared_ptr slaveMeshAdapter,
+                                  const unsigned int masterId,
+                                  const unsigned int slaveId,
+                                  std::vector<unsigned int> &masterContactNodes,
+                                  std::vector<unsigned int> &slaveContactNodes,
+                                  std::vector<unsigned int> &masterVolumeNodes,
+                                  std::vector<unsigned int> &slaveGeomType::VolumeNodes )
 {
     std::vector<PointAndId> masterContactSet;
     std::vector<PointAndId> slaveContactSet;

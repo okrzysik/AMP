@@ -25,7 +25,7 @@
 #include <string>
 
 
-void flowTest( AMP::UnitTest *ut, const std::string &exeName )
+static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
@@ -252,7 +252,7 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 }
 
 
-int main( int argc, char *argv[] )
+int testFlowSolution_1( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

@@ -65,7 +65,8 @@
 // Function to get an arbitrary power profile (W/kg) assuming a density of 1 kg/m^3 for the volume
 // integral
 // P is the total power of the pin, V is the volume of the pin
-static double getPower( const std::vector<double> &range, double P, double V, const AMP::Mesh::Point &pos )
+static double
+getPower( const std::vector<double> &range, double P, double V, const AMP::Mesh::Point &pos )
 {
     const double pi = 3.1415926535897932;
     double x        = ( pos[0] - range[0] ) / ( range[1] - range[0] );
@@ -77,9 +78,9 @@ static double getPower( const std::vector<double> &range, double P, double V, co
 
 // Function to create the solution vectors
 static void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
-                    AMP::Mesh::Mesh::shared_ptr subchannelMesh,
-                    AMP::LinearAlgebra::Vector::shared_ptr &globalMultiVector,
-                    AMP::LinearAlgebra::Vector::shared_ptr &specificPowerGpVec )
+                           AMP::Mesh::Mesh::shared_ptr subchannelMesh,
+                           AMP::LinearAlgebra::Vector::shared_ptr &globalMultiVector,
+                           AMP::LinearAlgebra::Vector::shared_ptr &specificPowerGpVec )
 {
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     auto multivec     = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );

@@ -42,7 +42,7 @@ struct null_deleter {
 };
 
 
-void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> &results )
+static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> &results )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
@@ -304,7 +304,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
 }
 
 
-int main( int argc, char *argv[] )
+int testPetscSNESSolver_NonlinearFickSoret_2( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

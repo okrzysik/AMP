@@ -36,7 +36,7 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
 
-void linearThermalTest( AMP::UnitTest *ut )
+static void linearThermalTest( AMP::UnitTest *ut )
 {
     // Input and output file names
     //  #include <string>
@@ -282,7 +282,7 @@ void linearThermalTest( AMP::UnitTest *ut )
 }
 
 
-int main( int argc, char *argv[] )
+int testTrilinosMLSolver_LinearThermalOperator_cylinder( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
