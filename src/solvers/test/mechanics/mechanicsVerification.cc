@@ -58,7 +58,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-void computeForcingTerms(
+static void computeForcingTerms(
     AMP::Mesh::Mesh::shared_ptr meshAdapter,
     AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeOp,
     AMP::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
@@ -143,7 +143,7 @@ void computeForcingTerms(
 
 
 // Compute exact solution
-void computeExactSolution(
+static void computeExactSolution(
     AMP::Mesh::Mesh::shared_ptr meshAdapter,
     AMP::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
     AMP::LinearAlgebra::Vector::shared_ptr exactSolutionsVec,
@@ -175,7 +175,7 @@ void computeExactSolution(
 }
 
 
-void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
+static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
 {
     std::string inputFile = "input_" + exeName;
     std::string logFile   = "output_" + exeName + ".txt";
@@ -479,7 +479,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
 }
 
 
-int main( int argc, char *argv[] )
+int mechanicsVerification( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

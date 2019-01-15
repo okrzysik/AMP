@@ -1,6 +1,13 @@
+
 #include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
+
 #include <iostream>
 #include <string>
 
@@ -9,46 +16,17 @@
 
 #include <sys/stat.h>
 
+/* Boost files */
 #include "AMP/utils/shared_ptr.h"
 
-// libMesh files
-DISABLE_WARNINGS
-#include "libmesh/boundary_info.h"
-#include "libmesh/cell_hex8.h"
-#include "libmesh/elem.h"
-#include "libmesh/enum_fe_family.h"
-#include "libmesh/enum_quadrature_type.h"
-#include "libmesh/fe_base.h"
-#include "libmesh/mesh.h"
-#include "libmesh/mesh_communication.h"
-#include "libmesh/mesh_generation.h"
-#include "libmesh/quadrature.h"
-#include "libmesh/string_to_enum.h"
-ENABLE_WARNINGS
-
-/* AMP files */
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
-#include "AMP/utils/PIO.h"
-
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/initializeLibMesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
-#include "AMP/materials/Material.h"
-
-#include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/boundary/DirichletVectorCorrection.h"
 
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
 
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
@@ -57,23 +35,27 @@ ENABLE_WARNINGS
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
+#include "AMP/ampmesh/libmesh/initializeLibMesh.h"
+#include "AMP/ampmesh/libmesh/libMesh.h"
 #include "AMP/utils/ReadTestMesh.h"
+#include "libmesh/mesh_communication.h"
 
-
-static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
+static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName + ".txt";
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
+#ifdef USE_EXT_SILO
+    // Create the silo writer and register the data
+    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+#endif
+
     AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
     input_db->printClassData( AMP::plog );
-
-    AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
-        new AMP::Mesh::initializeLibMesh( globalComm ) );
 
     const unsigned int mesh_dim = 3;
     AMP::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
@@ -85,7 +67,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
     MeshCommunication().broadcast( *( mesh.get() ) );
     mesh->prepare_for_use( false );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter( new AMP::Mesh::libMesh( mesh, "cook" ) );
+    AMP::Mesh::Mesh::shared_ptr meshAdapter( new AMP::Mesh::libMesh( mesh, "beam" ) );
 
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     AMP::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
@@ -109,10 +91,8 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
             meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
     AMP::LinearAlgebra::Vector::shared_ptr mechSolVec =
         AMP::LinearAlgebra::createVector( DOF_vector, bvpOperator->getOutputVariable(), true );
-    AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec =
-        AMP::LinearAlgebra::createVector( DOF_vector, bvpOperator->getOutputVariable(), true );
-    AMP::LinearAlgebra::Vector::shared_ptr mechResVec =
-        AMP::LinearAlgebra::createVector( DOF_vector, bvpOperator->getOutputVariable(), true );
+    AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = mechSolVec->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr mechResVec = mechSolVec->cloneVector();
 
     mechSolVec->setToScalar( 0.5 );
     mechRhsVec->setToScalar( 0.0 );
@@ -187,39 +167,79 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
     } else {
         ut->passes( exeName );
     }
+
+#ifdef USE_EXT_SILO
+    siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    char outFileName1[256];
+    sprintf( outFileName1, "undeformedBeam_%d", exampleNum );
+    siloWriter->writeFile( outFileName1, 0 );
+    meshAdapter->displaceMesh( mechSolVec );
+    char outFileName2[256];
+    sprintf( outFileName2, "deformedBeam_%d", exampleNum );
+    siloWriter->writeFile( outFileName2, 0 );
+#endif
 }
 
-int testCook( int argc, char *argv[] )
+int testMacNealstraightBeam_regular( int argc, char *argv[] )
 {
-
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+
+    AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
+        new AMP::Mesh::initializeLibMesh( AMP::AMP_MPI( AMP_COMM_WORLD ) ) );
 
     std::vector<std::string> exeNames;
 
     if ( argc == 1 ) {
-        exeNames.emplace_back( "testCook-normal-mesh0" );
-        exeNames.emplace_back( "testCook-reduced-mesh0" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-X-normal-mesh0" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-X-reduced-mesh0" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Y-normal-mesh0" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Y-reduced-mesh0" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Z-normal-mesh0" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Z-reduced-mesh0" );
 
-        exeNames.emplace_back( "testCook-normal-mesh1" );
-        exeNames.emplace_back( "testCook-reduced-mesh1" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-X-normal-mesh1" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-X-reduced-mesh1" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Y-normal-mesh1" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Y-reduced-mesh1" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Z-normal-mesh1" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Z-reduced-mesh1" );
 
-        exeNames.emplace_back( "testCook-normal-mesh2" );
-        exeNames.emplace_back( "testCook-reduced-mesh2" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-X-normal-mesh2" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-X-reduced-mesh2" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Y-normal-mesh2" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Y-reduced-mesh2" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Z-normal-mesh2" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Z-reduced-mesh2" );
     } else {
-        for ( int i = 1; i < argc; i += 2 ) {
+        for ( int i = 1; i < argc; i += 3 ) {
             char inpName[100];
-            sprintf( inpName, "testCook-%s-mesh%d", argv[i], atoi( argv[i + 1] ) );
+            sprintf( inpName,
+                     "testMacNealstraightBeam-regular-%s-%s-mesh%d",
+                     argv[i],
+                     argv[i + 1],
+                     atoi( argv[i + 2] ) );
             exeNames.emplace_back( inpName );
         } // end for i
     }
 
-    for ( auto &exeName : exeNames )
-        linearElasticTest( &ut, exeName );
+    for ( size_t i = 0; i < exeNames.size(); i++ ) {
+        try {
+            linearElasticTest( &ut, exeNames[i], i );
+            AMP::pout << exeNames[i] << " had " << ut.NumFailGlobal() << " failures." << std::endl;
+        } catch ( std::exception &err ) {
+            AMP::pout << "ERROR: " << err.what() << std::endl;
+        } catch ( ... ) {
+            AMP::pout << "ERROR: "
+                      << "An unknown exception was thrown." << std::endl;
+        }
+    } // end for i
 
     ut.report();
-
     int num_failed = ut.NumFailGlobal();
+
+    libmeshInit.reset();
+
     AMP::AMPManager::shutdown();
     return num_failed;
 }

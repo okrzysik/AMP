@@ -4,12 +4,12 @@
 
 #include <vector>
 
-void computeRGboundingBox( const double precision,
+static void computeRGboundingBox( const double precision,
                            AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
                            double *minXYZ,
                            double *maxXYZ );
 
-void computeRG2ElemMap( const double precision,
+static void computeRG2ElemMap( const double precision,
                         const unsigned int rgDim,
                         AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
                         double *minXYZ,
@@ -17,7 +17,7 @@ void computeRG2ElemMap( const double precision,
                         std::vector<std::vector<size_t>> &rg2ElemMap,
                         double *rgH );
 
-void computeSlave2MasterElem( const unsigned int slaveId,
+static void computeSlave2MasterElem( const unsigned int slaveId,
                               const unsigned int masterId,
                               const double precision,
                               double *rgH,
@@ -30,7 +30,7 @@ void computeSlave2MasterElem( const unsigned int slaveId,
                               std::vector<size_t> &slaveNodes,
                               std::vector<size_t> &slave2MasterElem );
 
-void computeSlave2MasterNodes( const double precision,
+static void computeSlave2MasterNodes( const double precision,
                                const unsigned int slaveId,
                                const unsigned int masterId,
                                AMP::Mesh::MeshManager::Adapter::shared_ptr slaveMeshAdapter,

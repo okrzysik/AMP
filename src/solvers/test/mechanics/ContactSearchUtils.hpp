@@ -11,7 +11,7 @@ bool myContainsPoint(::Elem *e, const ::Point &p, double tol )
     return ::FEInterface::on_reference_element( mapped_point, e->type(), tol );
 }
 
-void computeSlave2MasterNodes( const double precision,
+static void computeSlave2MasterNodes( const double precision,
                                const unsigned int slaveId,
                                const unsigned int masterId,
                                AMP::Mesh::MeshManager::Adapter::shared_ptr slaveMeshAdapter,
@@ -109,7 +109,7 @@ void computeSlave2MasterNodes( const double precision,
     } // end for i
 }
 
-void computeSlave2MasterElem( const unsigned int slaveId,
+static void computeSlave2MasterElem( const unsigned int slaveId,
                               const unsigned int masterId,
                               const double precision,
                               double *rgH,
@@ -213,7 +213,7 @@ void computeSlave2MasterElem( const unsigned int slaveId,
        */
 }
 
-void computeRG2ElemMap( const double precision,
+static void computeRG2ElemMap( const double precision,
                         const unsigned int rgDim,
                         AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
                         double *minXYZ,
@@ -293,7 +293,7 @@ void computeRG2ElemMap( const double precision,
     std::cout << "Max Elements per RG Cell: " << maxElemsPerCell << std::endl;
 }
 
-void computeRGboundingBox( const double precision,
+static void computeRGboundingBox( const double precision,
                            AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
                            double *minXYZ,
                            double *maxXYZ )

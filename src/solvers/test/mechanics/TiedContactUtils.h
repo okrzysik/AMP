@@ -140,11 +140,11 @@ public:
     }
 };
 
-void createNodeSet( AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter,
+static void createNodeSet( AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter,
                     const unsigned int bndId,
                     std::vector<PointAndId> &nodeSet );
 
-void createMasterSlaveMap( AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
+static void createMasterSlaveMap( AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
                            AMP::Mesh::MeshManager::Adapter::shared_ptr slaveMeshAdapter,
                            const unsigned int masterId,
                            const unsigned int slaveId,

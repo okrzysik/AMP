@@ -66,7 +66,7 @@
 // Function to get an arbitrary power profile (W/kg) assuming a density of 1 kg/m^3 for the volume
 // integral
 // P is the total power of the pin, V is the volume of the pin
-double getPower( const std::vector<double> &range, double P, double V, const AMP::Mesh::Point &pos )
+static double getPower( const std::vector<double> &range, double P, double V, const AMP::Mesh::Point &pos )
 {
     const double pi = 3.1415926535897932;
     double x        = ( pos[0] - range[0] ) / ( range[1] - range[0] );
@@ -77,10 +77,10 @@ double getPower( const std::vector<double> &range, double P, double V, const AMP
 
 
 // Function to create the solution vectors
-void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
-                    AMP::Mesh::Mesh::shared_ptr subchannelMesh,
-                    AMP::LinearAlgebra::Vector::shared_ptr &globalMultiVector,
-                    AMP::LinearAlgebra::Vector::shared_ptr &specificPowerGpVec )
+static void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
+                           AMP::Mesh::Mesh::shared_ptr subchannelMesh,
+                           AMP::LinearAlgebra::Vector::shared_ptr &globalMultiVector,
+                           AMP::LinearAlgebra::Vector::shared_ptr &specificPowerGpVec )
 {
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     auto multivec     = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
@@ -118,7 +118,7 @@ void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
 }
 
 
-void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
+static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 {
     PROFILE_START( "Main" );
     std::string input_file = "input_" + exeName;
@@ -874,7 +874,7 @@ void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 }
 
 
-int main( int argc, char *argv[] )
+int testSubchannelSolve( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

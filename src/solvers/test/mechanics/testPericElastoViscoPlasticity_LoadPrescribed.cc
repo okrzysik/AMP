@@ -73,47 +73,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
-    /*  AMP::shared_ptr<AMP::Mesh::initializeLibMesh>  libmeshInit(new
-      AMP::Mesh::initializeLibMesh(AMP::AMP_MPI(AMP_COMM_WORLD)));
-
-      AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new
-      AMP::Mesh::MeshManagerParameters ( input_db ) );
-      AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-      AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter;
-      //meshAdapter = manager->getMesh ( "cylinder" );
-      meshAdapter = manager->getMesh ( "brick" );
-    */
-    /*  std::string mesh_file = input_db->getString("mesh_file");
-      const unsigned int mesh_dim = 3;
-      AMP::shared_ptr< ::Mesh > mesh(new ::Mesh(mesh_dim));
-      AMP::readTestMesh(mesh_file, mesh);
-      MeshCommunication().broadcast(*(mesh.get()));
-      mesh->prepare_for_use(false);
-      AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter ( new AMP::Mesh::MeshManager::Adapter
-      (mesh) );
-      manager->addMesh(meshAdapter, "cook");
-    */
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
     int NumberOfLoadingSteps = input_db->getInteger( "NumberOfLoadingSteps" );
 
     // Create a nonlinear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "NonlinearMechanicsOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Database> nonlinearMechanicsDatabase =
-        input_db->getDatabase( "NonlinearMechanicsOperator" );
-    std::string dirichletVectorCorrectionDatabaseName =
-        nonlinearMechanicsDatabase->getString( "BoundaryOperator" );
-    AMP::shared_ptr<AMP::Database> dirichletVectorCorrectionDatabase =
-        input_db->getDatabase( dirichletVectorCorrectionDatabaseName );
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
     AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsBVPoperator =
         AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "NonlinearMechanicsOperator", input_db ) );
-    AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> nonlinearMechanicsVolumeOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
-            nonlinearMechanicsBVPoperator->getVolumeOperator() );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel =
-        nonlinearMechanicsVolumeOperator->getMaterialModel();
+                meshAdapter, "NonlinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
 
     // Create a Linear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
@@ -212,7 +182,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearSolver->setZeroInitialGuess( false );
 
-    double epsilon_dot  = 0.3;
+    // double epsilon_dot = 0.1;
     double delta_time   = 0.01;
     double current_time = 0.0;
 
@@ -220,7 +190,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "########################################" << std::endl;
         AMP::pout << "The current loading step is " << ( step + 1 ) << std::endl;
 
-        nonlinearMechanicsBVPoperator->modifyInitialSolutionVector( solVec );
+        // nonlinearMechanicsBVPoperator->modifyInitialSolutionVector(solVec);
 
         current_time = delta_time * ( (double) step + 1.0 );
         mechanicsNonlinearMaterialModel->updateTime( current_time );
@@ -242,7 +212,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                   << finalResidualNorm << std::endl;
 
-        if ( finalResidualNorm > ( 1.0e-10 * initialResidualNorm ) ) {
+        if ( finalResidualNorm > ( 1.0e-9 * initialResidualNorm ) ) {
             ut->failure( "Nonlinear solve for current loading step" );
         } else {
             ut->passes( "Nonlinear solve for current loading step" );
@@ -275,12 +245,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         current_time = delta_time * ( (double) step + 2.0 );
 
-        dirichletVectorCorrectionDatabase->putDouble( "value_3_0", ( epsilon_dot * current_time ) );
-        AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(
-            new AMP::Operator::DirichletVectorCorrectionParameters(
-                dirichletVectorCorrectionDatabase ) );
-        ( nonlinearMechanicsBVPoperator->getBoundaryOperator() )->reset( bndParams );
-
+        /*    dirichletVectorCorrectionDatabase->putDouble("value_3_0", (epsilon_dot *
+           current_time));
+            AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
+                AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
+            (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
+        */
         char num1[256];
         sprintf( num1, "%d", step );
         std::string number1 = num1;
@@ -309,14 +279,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     ut->passes( exeName );
 }
 
-int testPericElastoViscoPlasticity( int argc, char *argv[] )
+int testPericElastoViscoPlasticity_LoadPrescribed( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
     // exeNames.push_back("testPericElastoViscoPlasticity-1");
-    exeNames.emplace_back( "testPericElastoViscoPlasticity-2" );
+    exeNames.emplace_back( "testPericElastoViscoPlasticity-LoadPrescribed-1" );
+    // exeNames.push_back("testPericElastoViscoPlasticity-LoadPrescribed-2");
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

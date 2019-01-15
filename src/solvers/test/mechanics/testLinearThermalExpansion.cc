@@ -27,7 +27,7 @@
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
-void myTest( AMP::UnitTest *ut, const std::string &exeName )
+static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
@@ -128,7 +128,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     ut->passes( exeName );
 }
 
-int main( int argc, char *argv[] )
+int testLinearThermalExpansion( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

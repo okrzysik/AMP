@@ -39,7 +39,7 @@
 #include <string>
 
 
-void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
+static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 {
     // Tests diffusion Dirchlet BVP operator for temperature
 
@@ -332,7 +332,7 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     std::cout.flush();
 }
 
-int main( int argc, char *argv[] )
+int testDiffusionMMSInverse( int argc, char *argv[] )
 {
 
     AMP::AMPManager::startup( argc, argv );
