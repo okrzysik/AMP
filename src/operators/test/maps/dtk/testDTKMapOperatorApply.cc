@@ -17,7 +17,7 @@
 #include <discretization/simpleDOF_Manager.h>
 
 
-void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
+static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
 {
     std::string log_file = "log_DTKMapOperatorApply";
     std::string out_file = "out_DTKMapOperatorApply";

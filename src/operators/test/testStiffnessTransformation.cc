@@ -6,7 +6,7 @@
 #include "AMP/operators/mechanics/UpdatedLagrangianUtils.h"
 
 
-void myTest( AMP::UnitTest *ut )
+static void myTest( AMP::UnitTest *ut )
 {
 
     double A[3][3] = { { -2, 2, -2 }, { -1, 1, 3 }, { 2, 0, -1 } };
@@ -120,7 +120,7 @@ void myTest( AMP::UnitTest *ut )
     ut->passes( "testStiffnessTransformation" );
 }
 
-int main( int argc, char *argv[] )
+int testStiffnessTransformation( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

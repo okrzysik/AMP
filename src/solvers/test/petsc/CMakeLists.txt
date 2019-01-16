@@ -60,6 +60,7 @@ COPY_TEST_FILE( petsc_options6 )
 COPY_TEST_FILE( petsc_options7 )
 COPY_TEST_FILE( petsc_options8 )
 COPY_TEST_FILE( petsc_options9 )
+COPY_TEST_FILE( input_testPetscSNESSolver )
 
 
 # Copy test data
@@ -72,23 +73,20 @@ COPY_MESH_FILE( cylinder4K.e )
 COPY_MESH_FILE( halden_3pel_clad_1x.e )
 
 
-# Add the tests that only require petsc
+# Add the tests
+INITIALIZE_TESTBUILDER()
 IF ( USE_EXT_TRILINOS )
-    ADD_AMP_TEST_1_2_4( testPetscSNESSolver )
-    COPY_TEST_FILE( input_testPetscSNESSolver )
+    ADD_TB_TEST_1_2_4( testPetscSNESSolver )
 ENDIF()
-
-
-# Add the tests that require libmesh and petsc
 IF ( USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
-    ADD_AMP_TEST_1_2_4( testPetscSNESSolver-NonlinearThermal-1 )
-    ADD_AMP_WEEKLY_TEST( testPetscSNESSolver-NonlinearThermal-2 8 )
-    ADD_AMP_WEEKLY_TEST( testPetscSNESSolver-NonlinearFick-1 8 )
-    ADD_AMP_WEEKLY_TEST( testPetscSNESSolver-NonlinearFickSoret-1 1)
-    ADD_AMP_WEEKLY_TEST( testPetscSNESSolver-NonlinearFickSoret-1 2)
-    ADD_AMP_TEST_PARALLEL( testPetscSNESSolver-NonlinearFickSoret-1 4 )
-    ADD_AMP_TEST_1_2_4( testPetscSNESSolver-NonlinearFickSoret-2 )
-    ADD_AMP_PROVISIONAL_TEST( testPetscSNESSolver-IncompressibleFlow-1 1)
+    ADD_TB_TEST_1_2_4( testPetscSNESSolver_NonlinearThermal_1 )
+    ADD_TB_WEEKLY_TEST( testPetscSNESSolver_NonlinearThermal_2 8 )
+    ADD_TB_WEEKLY_TEST( testPetscSNESSolver_NonlinearFick 8 )
+    ADD_TB_WEEKLY_TEST( testPetscSNESSolver_NonlinearFickSoret_1 1)
+    ADD_TB_WEEKLY_TEST( testPetscSNESSolver_NonlinearFickSoret_1 2)
+    ADD_TB_TEST_PARALLEL( testPetscSNESSolver_NonlinearFickSoret_1 4 )
+    ADD_TB_TEST_1_2_4( testPetscSNESSolver_NonlinearFickSoret_2 )
+    ADD_TB_PROVISIONAL_TEST( testPetscSNESSolver_IncompressibleFlow 1)
 ENDIF()
-
+FINALIZE_TESTBUILDER()
 

@@ -17,7 +17,7 @@
 #include <string>
 
 
-void myTest( AMP::UnitTest *ut )
+static void myTest( AMP::UnitTest *ut )
 {
     std::string exeName( "testDTKAMPMeshManager" );
     std::string log_file = "output_" + exeName;

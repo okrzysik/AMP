@@ -30,7 +30,7 @@
 #include <string>
 
 
-void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
+static void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
 {
     // Tests diffusion operator for temperature
 
@@ -211,7 +211,7 @@ void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
     std::cout.flush();
 }
 
-int main( int argc, char *argv[] )
+int testDiffusionMMSForward( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

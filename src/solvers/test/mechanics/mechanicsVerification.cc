@@ -58,12 +58,12 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-void computeForcingTerms(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
-    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeOp,
-    AMP::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
-    AMP::LinearAlgebra::Vector::shared_ptr forcingTermsVec,
-    bool verbose = false )
+static void
+computeForcingTerms( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                     AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeOp,
+                     AMP::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
+                     AMP::LinearAlgebra::Vector::shared_ptr forcingTermsVec,
+                     bool verbose = false )
 {
     // Create integration point vectors and compute values
     NULL_USE( meshAdapter );
@@ -143,11 +143,11 @@ void computeForcingTerms(
 
 
 // Compute exact solution
-void computeExactSolution(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
-    AMP::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
-    AMP::LinearAlgebra::Vector::shared_ptr exactSolutionsVec,
-    bool verbose = false )
+static void
+computeExactSolution( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                      AMP::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
+                      AMP::LinearAlgebra::Vector::shared_ptr exactSolutionsVec,
+                      bool verbose = false )
 {
     // Loop over all nodes
     auto dofMap = exactSolutionsVec->getDOFManager();
@@ -175,7 +175,7 @@ void computeExactSolution(
 }
 
 
-void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
+static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
 {
     std::string inputFile = "input_" + exeName;
     std::string logFile   = "output_" + exeName + ".txt";
@@ -479,7 +479,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
 }
 
 
-int main( int argc, char *argv[] )
+int mechanicsVerification( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

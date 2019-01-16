@@ -35,7 +35,7 @@
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
-void myTest( AMP::UnitTest *ut )
+static void myTest( AMP::UnitTest *ut )
 {
     std::string exeName( "testConstraintsEliminationOperator" );
     std::string input_file = "input_" + exeName;
@@ -238,7 +238,7 @@ void myTest( AMP::UnitTest *ut )
     ut->passes( exeName );
 }
 
-int main( int argc, char *argv[] )
+int testConstraintsEliminationOperator( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

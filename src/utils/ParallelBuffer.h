@@ -12,12 +12,9 @@
 #define included_AMP_tbox_ParallelBuffer
 
 
-#include <iostream>
-
-#ifndef included_AMP_String
+#include <ostream>
 #include <string>
-#define included_AMP_String
-#endif
+
 
 namespace AMP {
 

@@ -1,11 +1,6 @@
 #ifndef included_AMP_VectorCopyOperator
 #define included_AMP_VectorCopyOperator
 
-#include <algorithm>
-#include <iostream>
-#include <string>
-#include <vector>
-
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/VectorCopyOperatorParameters.h"
 #include "AMP/utils/shared_ptr.h"

@@ -11,15 +11,15 @@ bool myContainsPoint(::Elem *e, const ::Point &p, double tol )
     return ::FEInterface::on_reference_element( mapped_point, e->type(), tol );
 }
 
-void computeSlave2MasterNodes( const double precision,
-                               const unsigned int slaveId,
-                               const unsigned int masterId,
-                               AMP::Mesh::MeshManager::Adapter::shared_ptr slaveMeshAdapter,
-                               AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
-                               std::vector<size_t> const &slaveNodes,
-                               std::vector<size_t> const &slave2MasterElem,
-                               std::vector<std::vector<size_t>> &slave2MasterNodes,
-                               std::vector<std::vector<double>> &slave2MasterFactors )
+static void computeSlave2MasterNodes( const double precision,
+                                      const unsigned int slaveId,
+                                      const unsigned int masterId,
+                                      AMP::Mesh::MeshManager::Adapter::shared_ptr slaveMeshAdapter,
+                                      AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
+                                      std::vector<size_t> const &slaveNodes,
+                                      std::vector<size_t> const &slave2MasterElem,
+                                      std::vector<std::vector<size_t>> &slave2MasterNodes,
+                                      std::vector<std::vector<double>> &slave2MasterFactors )
 {
 
     slave2MasterNodes.resize( slaveNodes.size() );
@@ -109,18 +109,18 @@ void computeSlave2MasterNodes( const double precision,
     } // end for i
 }
 
-void computeSlave2MasterElem( const unsigned int slaveId,
-                              const unsigned int masterId,
-                              const double precision,
-                              double *rgH,
-                              const unsigned int rgDim,
-                              AMP::Mesh::MeshManager::Adapter::shared_ptr slaveMeshAdapter,
-                              AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
-                              double *minXYZ,
-                              double *maxXYZ,
-                              std::vector<std::vector<size_t>> const &rg2ElemMap,
-                              std::vector<size_t> &slaveNodes,
-                              std::vector<size_t> &slave2MasterElem )
+static void computeSlave2MasterElem( const unsigned int slaveId,
+                                     const unsigned int masterId,
+                                     const double precision,
+                                     double *rgH,
+                                     const unsigned int rgDim,
+                                     AMP::Mesh::MeshManager::Adapter::shared_ptr slaveMeshAdapter,
+                                     AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
+                                     double *minXYZ,
+                                     double *maxXYZ,
+                                     std::vector<std::vector<size_t>> const &rg2ElemMap,
+                                     std::vector<size_t> &slaveNodes,
+                                     std::vector<size_t> &slave2MasterElem )
 {
 
     AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator bnd =
@@ -213,13 +213,13 @@ void computeSlave2MasterElem( const unsigned int slaveId,
        */
 }
 
-void computeRG2ElemMap( const double precision,
-                        const unsigned int rgDim,
-                        AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
-                        double *minXYZ,
-                        double *maxXYZ,
-                        std::vector<std::vector<size_t>> &rg2ElemMap,
-                        double *rgH )
+static void computeRG2ElemMap( const double precision,
+                               const unsigned int rgDim,
+                               AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
+                               double *minXYZ,
+                               double *maxXYZ,
+                               std::vector<std::vector<size_t>> &rg2ElemMap,
+                               double *rgH )
 {
 
     rg2ElemMap.resize( rgDim * rgDim * rgDim );
@@ -293,10 +293,10 @@ void computeRG2ElemMap( const double precision,
     std::cout << "Max Elements per RG Cell: " << maxElemsPerCell << std::endl;
 }
 
-void computeRGboundingBox( const double precision,
-                           AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
-                           double *minXYZ,
-                           double *maxXYZ )
+static void computeRGboundingBox( const double precision,
+                                  AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,
+                                  double *minXYZ,
+                                  double *maxXYZ )
 {
 
     AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator nd     = masterMeshAdapter->beginOwnedNode();

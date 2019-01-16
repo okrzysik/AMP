@@ -27,7 +27,7 @@
 
 #include "AMP/utils/ReadTestMesh.h"
 
-void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinReset )
+static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinReset )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
@@ -180,7 +180,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinReset )
     ut->passes( msgName );
 }
 
-int main( int argc, char *argv[] )
+int testConsistentTangent( int argc, char *argv[] )
 {
 
     AMP::AMPManager::startup( argc, argv );

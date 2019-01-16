@@ -21,7 +21,7 @@
 
 bool selectAll( DataTransferKit::Entity entity ) { return true; }
 
-void myTest( AMP::UnitTest *ut )
+static void myTest( AMP::UnitTest *ut )
 {
     std::string exeName( "testDTKEntitySet" );
     std::string log_file = "output_" + exeName;

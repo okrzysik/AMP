@@ -29,7 +29,7 @@
 #include "AMP/operators/map/MapOperatorParameters.h"
 
 
-void testMap( AMP::UnitTest *ut, const std::string &exeName )
+static void testMap( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
@@ -192,7 +192,7 @@ void testMap( AMP::UnitTest *ut, const std::string &exeName )
 }
 
 
-int main( int argc, char *argv[] )
+int testMapOperator( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

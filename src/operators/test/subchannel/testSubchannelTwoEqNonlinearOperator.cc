@@ -25,7 +25,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
 
-void Test( AMP::UnitTest *ut, const std::string &exeName )
+static void Test( AMP::UnitTest *ut, const std::string &exeName )
 {
     // create input and output file names
     std::string input_file = "input_" + exeName;
@@ -177,7 +177,7 @@ void Test( AMP::UnitTest *ut, const std::string &exeName )
     }
 }
 
-int main( int argc, char *argv[] )
+int testSubchannelTwoEqNonlinearOperator( int argc, char *argv[] )
 {
     AMP::AMPManagerProperties startup_properties;
     startup_properties.use_MPI_Abort = false;

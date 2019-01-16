@@ -20,7 +20,7 @@
 #include <iostream>
 #include <string>
 
-void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
+static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
 {
 
     const double pi = 3.1415926535897932;
@@ -197,7 +197,7 @@ void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
 }
 
 
-int main( int argc, char *argv[] )
+int testSubchannelHelpers( int argc, char *argv[] )
 {
     AMP::AMPManagerProperties startup_properties;
     startup_properties.use_MPI_Abort = false;

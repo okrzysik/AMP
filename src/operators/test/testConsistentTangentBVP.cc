@@ -28,7 +28,7 @@
 
 #include "AMP/utils/ReadTestMesh.h"
 
-void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinReset )
+static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinReset )
 {
     auto input_file = "input_" + exeName;
     auto log_file   = "output_" + exeName;
@@ -185,7 +185,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinReset )
 }
 
 
-int main( int argc, char *argv[] )
+int testConsistentTangentBVP( int argc, char *argv[] )
 {
 
     AMP::AMPManager::startup( argc, argv );

@@ -1,5 +1,7 @@
-#include "AsyncMapColumnOperator.h"
-#include "AsyncMapOperator.h"
+#include "AMP/operators/map/AsyncMapColumnOperator.h"
+#include "AMP/operators/map/AsyncMapOperator.h"
+#include "AMP/utils/MemoryDatabase.h"
+
 #include "ProfilerApp.h"
 
 namespace AMP {

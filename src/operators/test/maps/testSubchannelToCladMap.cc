@@ -18,10 +18,11 @@
 #include "AMP/vectors/VectorBuilder.h"
 
 
-double getTemp( const AMP::Mesh::Point &x ) { return 500 + x[2] * 100; }
+static double getTemp( const AMP::Mesh::Point &x ) { return 500 + x[2] * 100; }
 
 
-AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth )
+static AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel,
+                                                 int ghostWidth )
 {
     std::multimap<double, AMP::Mesh::MeshElement> xyFace;
     auto iterator = subChannel->getIterator( AMP::Mesh::GeomType::Face, ghostWidth );
@@ -47,7 +48,7 @@ AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel
 }
 
 
-void runTest( const std::string &fname, AMP::UnitTest *ut )
+static void runTest( const std::string &fname, AMP::UnitTest *ut )
 {
     // Read the input file
     auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
@@ -220,7 +221,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 }
 
 
-int main( int argc, char *argv[] )
+int testSubchannelToCladMap( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

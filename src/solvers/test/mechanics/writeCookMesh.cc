@@ -6,7 +6,7 @@
 #define __NODE__( xi, yi, zi, nx, ny ) \
     ( ( xi ) + ( ( yi ) * ( nx ) ) + ( ( zi ) * ( nx ) * ( ny ) ) )
 
-int main( int argc, char **argv )
+int writeCookMesh( int argc, char **argv )
 {
 
     if ( argc == 1 ) {

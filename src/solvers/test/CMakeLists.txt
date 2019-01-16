@@ -97,6 +97,7 @@ COPY_MESH_FILE( cube.with.12.boundaries.2.e )
 
 
 # Add the tests
+INITIALIZE_TESTBUILDER()
 IF( USE_EXT_TRILINOS AND USE_EXT_LIBMESH )
     ADD_AMP_TEST( testAMGuniform )
 ENDIF()
@@ -128,6 +129,8 @@ IF ( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_HYPRE )
     ADD_AMP_TEST_1_2_4( testPetscSNESSolver-BoomerAMG-NonlinearThermal-1 )
     ADD_AMP_TEST_1_2_4( testPetscSNESSolver-JFNK-BoomerAMG-NonlinearMechanics-1 )
 ENDIF()
+ADD_AMP_PROVISIONAL_TEST ( testNewFrozenVectorDesign )
+FINALIZE_TESTBUILDER()
 
 
 # Add subdirectories

@@ -1,20 +1,24 @@
-ADD_AMP_TEST(testSubchannelHelpers)
+# Copy test inputs
 COPY_TEST_FILE( input_testSubchannelUtilities)
-
-ADD_AMP_TEST_1_2_4 (testSubchannelPhysicsModel)
 COPY_TEST_FILE( input_testSubchannelPhysicsModel)
-
-ADD_AMP_TEST(testSubchannelTwoEqNonlinearOperator)
 COPY_TEST_FILE( input_testSubchannelTwoEqNonlinearOperator)
-
-ADD_AMP_TEST(testSubchannelTwoEqLinearOperator)
 COPY_TEST_FILE( input_testSubchannelTwoEqLinearOperator)
-
-ADD_AMP_TEST(testSubchannelFourEqNonlinearOperator)
 COPY_TEST_FILE( input_testSubchannelFourEqNonlinearOperator)
-
-ADD_AMP_TEST(testSubchannelFourEqLinearOperator)
 COPY_TEST_FILE( input_testSubchannelFourEqLinearOperator)
+
+
+# Copy test data
+
+
+# Add the tests
+INITIALIZE_TESTBUILDER()
+ADD_TB_TEST(testSubchannelHelpers)
+ADD_TB_TEST_1_2_4 (testSubchannelPhysicsModel)
+ADD_TB_TEST(testSubchannelTwoEqNonlinearOperator)
+ADD_TB_TEST(testSubchannelTwoEqLinearOperator)
+ADD_TB_TEST(testSubchannelFourEqNonlinearOperator)
+ADD_TB_TEST(testSubchannelFourEqLinearOperator)
+FINALIZE_TESTBUILDER()
 
 
 

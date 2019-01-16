@@ -1,16 +1,15 @@
 #ifndef included_AMP_DiffusionTransportModel
 #define included_AMP_DiffusionTransportModel
 
-#include "AMP/utils/shared_ptr.h"
-#include <iostream>
-#include <map>
-#include <string>
-#include <vector>
-
 #include "AMP/materials/Material.h"
 #include "AMP/materials/Property.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/diffusion/DiffusionConstants.h"
+#include "AMP/utils/shared_ptr.h"
+
+#include <map>
+#include <string>
+#include <vector>
 
 // Libmesh headers
 DISABLE_WARNINGS

@@ -14,11 +14,10 @@ namespace AMP {
 /********************************************************************
  *  Constructor/Destructor                                           *
  ********************************************************************/
-UnitTest::UnitTest() : d_verbose( false )
+UnitTest::UnitTest() : d_verbose( false ), d_comm( AMP_COMM_SELF )
 {
-    if ( !AMP::AMPManager::isInitialized() )
-        AMP_ERROR( "AMPManager must be initialized first" );
-    comm = MPI_COMM_WORLD;
+    if ( AMP_MPI::MPI_active() )
+        d_comm = MPI_COMM_WORLD;
 }
 UnitTest::~UnitTest() { reset(); }
 void UnitTest::reset()
@@ -39,19 +38,19 @@ void UnitTest::report( const int level0 ) const
     int size = this->size();
     int rank = this->rank();
     // Give all processors a chance to print any remaining messages
-    comm.barrier();
+    d_comm.barrier();
     Utilities::sleepMs( 10 );
     // Broadcast the print level from rank 0
-    int level = comm.bcast( level0, 0 );
+    int level = d_comm.bcast( level0, 0 );
     if ( level < 0 || level > 2 )
         AMP_ERROR( "Invalid print level" );
     // Perform a global all gather to get the number of failures per processor
     std::vector<int> N_pass( size, 0 );
     std::vector<int> N_fail( size, 0 );
     std::vector<int> N_expected_fail( size, 0 );
-    comm.allGather<int>( (int) pass_messages.size(), &N_pass[0] );
-    comm.allGather<int>( (int) fail_messages.size(), &N_fail[0] );
-    comm.allGather<int>( (int) expected_fail_messages.size(), &N_expected_fail[0] );
+    d_comm.allGather<int>( (int) pass_messages.size(), &N_pass[0] );
+    d_comm.allGather<int>( (int) fail_messages.size(), &N_fail[0] );
+    d_comm.allGather<int>( (int) expected_fail_messages.size(), &N_expected_fail[0] );
     int N_pass_tot          = 0;
     int N_fail_tot          = 0;
     int N_expected_fail_tot = 0;
@@ -62,9 +61,9 @@ void UnitTest::report( const int level0 ) const
     }
     NULL_USE( N_fail_tot );
     // Send all messages to rank 0 (if needed)
-    std::vector<std::vector<std::string>> pass_messages_rank( comm.getSize() );
-    std::vector<std::vector<std::string>> fail_messages_rank( comm.getSize() );
-    std::vector<std::vector<std::string>> expected_fail_rank( comm.getSize() );
+    std::vector<std::vector<std::string>> pass_messages_rank( d_comm.getSize() );
+    std::vector<std::vector<std::string>> fail_messages_rank( d_comm.getSize() );
+    std::vector<std::vector<std::string>> expected_fail_rank( d_comm.getSize() );
     // Get the pass messages
     if ( ( level == 1 && N_pass_tot <= 20 ) || level == 2 ) {
         if ( rank == 0 ) {
@@ -194,7 +193,7 @@ void UnitTest::report( const int level0 ) const
         std::cout << std::endl;
     }
     // Add a barrier to synchronize all processors (rank 0 is much slower)
-    comm.barrier();
+    d_comm.barrier();
     Utilities::sleepMs( 10 ); // Need a brief pause to allow any printing to finish
 }
 
@@ -228,7 +227,7 @@ void UnitTest::pack_message_stream( const std::vector<std::string> &messages,
         k += msg_size[i];
     }
     // Send the message stream (using a non-blocking send)
-    MPI_Request request = comm.Isend( data, size_data, rank, tag );
+    MPI_Request request = d_comm.Isend( data, size_data, rank, tag );
     // Wait for the communication to send and free the temporary memory
     AMP::AMP_MPI::wait( request );
     delete[] data;
@@ -242,11 +241,11 @@ void UnitTest::pack_message_stream( const std::vector<std::string> &messages,
 std::vector<std::string> UnitTest::unpack_message_stream( const int rank, const int tag ) const
 {
     // Probe the message to get the message size
-    int size_data = comm.probe( rank, tag );
+    int size_data = d_comm.probe( rank, tag );
     // Allocate memory to receive the data
     auto *data = new char[size_data];
     // Receive the data (using a non-blocking receive)
-    MPI_Request request = comm.Irecv( data, size_data, rank, tag );
+    MPI_Request request = d_comm.Irecv( data, size_data, rank, tag );
     // Wait for the communication to be received
     AMP::AMP_MPI::wait( request );
     // Unpack the message stream
@@ -268,13 +267,13 @@ std::vector<std::string> UnitTest::unpack_message_stream( const int rank, const 
 /********************************************************************
  *  Other functions                                                  *
  ********************************************************************/
-int UnitTest::rank() const { return comm.getRank(); }
-int UnitTest::size() const { return comm.getSize(); }
-size_t UnitTest::NumPassGlobal() const { return comm.sumReduce<size_t>( NumPassLocal() ); }
-size_t UnitTest::NumFailGlobal() const { return comm.sumReduce<size_t>( NumFailLocal() ); }
+int UnitTest::rank() const { return d_comm.getRank(); }
+int UnitTest::size() const { return d_comm.getSize(); }
+size_t UnitTest::NumPassGlobal() const { return d_comm.sumReduce<size_t>( NumPassLocal() ); }
+size_t UnitTest::NumFailGlobal() const { return d_comm.sumReduce<size_t>( NumFailLocal() ); }
 size_t UnitTest::NumExpectedFailGlobal() const
 {
-    return comm.sumReduce<size_t>( NumExpectedFailLocal() );
+    return d_comm.sumReduce<size_t>( NumExpectedFailLocal() );
 }
 
 

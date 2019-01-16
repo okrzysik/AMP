@@ -21,7 +21,7 @@
 
 #include "AMP/operators/map/dtk/DTKAMPMeshEntity.h"
 
-void myTest( AMP::UnitTest *ut )
+static void myTest( AMP::UnitTest *ut )
 {
     std::string exeName( "testDTKEntity" );
     std::string log_file = "output_" + exeName;

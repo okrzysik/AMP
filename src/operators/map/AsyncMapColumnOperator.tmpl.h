@@ -1,10 +1,7 @@
 #include "AMP/operators/map/AsyncMapOperator.h"
 #include "AMP/operators/map/AsyncMapOperatorParameters.h"
-//#include "AMP/operators/map/Map3to1to3.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/MemoryDatabase.h"
 
-#include <iostream>
 
 namespace AMP {
 namespace Operator {
@@ -33,9 +30,8 @@ AsyncMapColumnOperator::build( AMP::Mesh::Mesh::shared_ptr manager,
                                AMP::shared_ptr<Database> database )
 {
 
-    AMP::shared_ptr<AsyncMapColumnOperatorParameters> newParams(
-        new AsyncMapColumnOperatorParameters( database ) );
-    AMP::shared_ptr<AsyncMapColumnOperator> newMapColumn( new AsyncMapColumnOperator( newParams ) );
+    auto newParams    = AMP::make_shared<AsyncMapColumnOperatorParameters>( database );
+    auto newMapColumn = AMP::make_shared<AsyncMapColumnOperator>( newParams );
 
     // Check that the map type matches the maps we are building
     AMP_ASSERT( database->keyExists( "MapType" ) );
@@ -46,20 +42,20 @@ AsyncMapColumnOperator::build( AMP::Mesh::Mesh::shared_ptr manager,
     int N_maps = database->getInteger( "N_maps" );
 
     // Create the databases for the individual maps
-    std::vector<AMP::shared_ptr<AMP::Database>> map_databases = createDatabases( database );
+    auto map_databases = createDatabases( database );
 
     // Loop through the maps
     AMP_MPI managerComm = manager->getComm();
     for ( int i = 0; i < N_maps; i++ ) {
 
         // Get the names of the 2 meshes involved
-        std::string meshName1 = map_databases[i]->getString( "Mesh1" );
-        std::string meshName2 = map_databases[i]->getString( "Mesh2" );
+        auto meshName1 = map_databases[i]->getString( "Mesh1" );
+        auto meshName2 = map_databases[i]->getString( "Mesh2" );
 
         // Subset the multmesh for the 2 meshes
-        AMP::shared_ptr<AMP::Mesh::Mesh> mesh1 = manager->Subset( meshName1 );
-        AMP::shared_ptr<AMP::Mesh::Mesh> mesh2 = manager->Subset( meshName2 );
-        int inComm                             = -1;
+        auto mesh1 = manager->Subset( meshName1 );
+        auto mesh2 = manager->Subset( meshName2 );
+        int inComm = -1;
         if ( mesh1 || mesh2 )
             inComm = 1;
 

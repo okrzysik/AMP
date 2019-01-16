@@ -33,17 +33,9 @@
 #include <string>
 
 
-// Function to get the linear heat generation rate
-double getLinearHeatGeneration( double Q, double H, double z )
-{
-    const double pi = 3.141592653589793;
-    return 0.5 * pi * Q / H * sin( pi * z / H );
-}
-
-
 // Function to get the enthalpy solution
 // Note: this is only an approximation that assumes incompressible water and no friction
-double getSolutionEnthalpy( double Q, double H, double m, double hin, double z )
+static double getSolutionEnthalpy( double Q, double H, double m, double hin, double z )
 {
     const double pi = 3.141592653589793;
     return hin + 0.5 * Q / m * ( 1.0 - cos( pi * z / H ) );
@@ -52,7 +44,7 @@ double getSolutionEnthalpy( double Q, double H, double m, double hin, double z )
 
 // Function to get the pressure solution
 // Note: this is only an approximation for an incompressible fluid with a fixed density
-double
+static double
 getSolutionPressure( AMP::Database::shared_ptr db, double H, double Pout, double p, double z )
 {
     if ( db->keyExists( "Inlet_Pressure" ) )
@@ -62,7 +54,7 @@ getSolutionPressure( AMP::Database::shared_ptr db, double H, double Pout, double
 }
 
 
-void flowTest( AMP::UnitTest *ut, const std::string &exeName )
+static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
@@ -387,7 +379,7 @@ void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 #endif
 }
 
-int main( int argc, char *argv[] )
+int testSubchannelSolution( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

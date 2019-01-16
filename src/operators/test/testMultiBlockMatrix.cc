@@ -31,7 +31,7 @@
     if ( !( a ) )      \
         ut.failure( __LINE__ );
 
-void LinearTimeOperatorTest( AMP::UnitTest *ut )
+static void LinearTimeOperatorTest( AMP::UnitTest *ut )
 {
     std::string input_file = "input_testMultiBlockMatrix";
     std::string log_file   = "log_testMultiBlockMatrix";
@@ -106,7 +106,7 @@ void LinearTimeOperatorTest( AMP::UnitTest *ut )
 
 //---------------------------------------------------------------------------//
 
-int main( int argc, char *argv[] )
+int testMultiBlockMatrix( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

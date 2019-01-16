@@ -129,8 +129,8 @@ private:
     std::vector<std::string> pass_messages;
     std::vector<std::string> fail_messages;
     std::vector<std::string> expected_fail_messages;
-    AMP_MPI comm;
     bool d_verbose;
+    AMP_MPI d_comm;
 
 private:
     // Function to pack the messages into a single data stream and send to the given processor
@@ -147,7 +147,7 @@ private:
     inline void printUpdate( const char *operation, const std::string &msg ) const
     {
         if ( d_verbose ) {
-            printf( "UnitTest: %i %s: %s\n", comm.getRank(), operation, msg.c_str() );
+            printf( "UnitTest: %i %s: %s\n", d_comm.getRank(), operation, msg.c_str() );
         }
     }
 };

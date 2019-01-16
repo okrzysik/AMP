@@ -376,7 +376,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     return 1;
 }
 
-int main( int argc, char *argv[] )
+int testMultiDofDTKMapOperator( int argc, char *argv[] )
 {
     AMP::AMPManagerProperties startup_properties;
     startup_properties.use_MPI_Abort = false;

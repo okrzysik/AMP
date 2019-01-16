@@ -1,7 +1,6 @@
 #ifndef included_AMP_RobinPhysicsModel
 #define included_AMP_RobinPhysicsModel
 
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -9,7 +8,6 @@
 #include "AMP/materials/Property.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/utils/shared_ptr.h"
-//#include "RobinPhysicsModelParameters.h"
 
 namespace AMP {
 namespace Operator {

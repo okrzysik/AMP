@@ -14,7 +14,7 @@
 #include <discretization/simpleDOF_Manager.h>
 
 
-void dtkConsruction( AMP::UnitTest *ut, std::string input_file )
+static void dtkConsruction( AMP::UnitTest *ut, std::string input_file )
 {
     std::string log_file = "log_DTK";
     AMP::PIO::logOnlyNodeZero( log_file );
