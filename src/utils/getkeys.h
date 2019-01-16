@@ -7,8 +7,6 @@
  *	\author		Nathan Barnett
  */
 
-
-#include <iostream>
 #include <map>
 #include <vector>
 

@@ -4,7 +4,6 @@
 #include "AMP/utils/cuda/GPUDevAllocator.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <iostream>
 
 // Function for error checking CUDA calls
 // Future Work: Expand to dynamically handle insufficient memory

@@ -37,7 +37,7 @@
 #include "AMP/time_integrators/sundials/IDATimeOperator.h"
 
 
-void IDATimeIntegratorTest( AMP::UnitTest *ut )
+static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 {
     AMP::weak_ptr<AMP::Mesh::Mesh> mesh_ref;
     std::string input_file = "input_testIDA-LinearBVPOperator-1";
@@ -135,7 +135,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
 
 // Main
-int main( int argc, char *argv[] )
+int testIDATimeIntegrator( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

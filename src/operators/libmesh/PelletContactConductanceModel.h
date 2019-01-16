@@ -1,7 +1,6 @@
 #ifndef included_AMP_PelletContactConductanceModel
 #define included_AMP_PelletContactConductanceModel
 
-#include <iostream>
 #include <string>
 #include <vector>
 

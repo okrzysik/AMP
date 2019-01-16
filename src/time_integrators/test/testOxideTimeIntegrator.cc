@@ -1,18 +1,17 @@
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/time_integrators/oxide/OxideTimeIntegrator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
-
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include "AMP/time_integrators/oxide/OxideTimeIntegrator.h"
 
-void OxideTest( AMP::UnitTest *ut, std::string input_file )
+static void OxideTest( AMP::UnitTest *ut, std::string input_file )
 {
 
     // Load the input file
@@ -113,7 +112,7 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
 }
 
 
-int main( int argc, char *argv[] )
+int testOxideTimeIntegrator( int argc, char *argv[] )
 {
 
     AMP::AMPManager::startup( argc, argv );

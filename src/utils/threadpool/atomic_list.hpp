@@ -2,7 +2,6 @@
 #define included_AMP_AtomicList_hpp
 
 
-#include <iostream>
 #include <stdexcept>
 #include <thread>
 

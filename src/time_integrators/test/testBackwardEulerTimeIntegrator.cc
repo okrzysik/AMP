@@ -47,7 +47,7 @@
     ( 750.0 + 10000.0 * ( 0.5 + x ) * ( 0.5 - x ) * ( 0.5 + y ) * ( 0.5 - y ) * ( 0.5 + z ) * \
                   ( 0.5 - z ) )
 
-void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
+static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
 {
     std::string input_file = "input_testBackwardEulerTimeIntegrator";
     std::string log_file   = "output_testBackwardEulerTimeIntegrator";
@@ -215,7 +215,7 @@ void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
 
 //---------------------------------------------------------------------------//
 
-int main( int argc, char *argv[] )
+int testBackwardEulerTimeIntegrator( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

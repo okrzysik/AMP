@@ -1,7 +1,6 @@
 #ifndef included_AMP_ConvectiveHeatCoefficient
 #define included_AMP_ConvectiveHeatCoefficient
 
-#include <iostream>
 #include <string>
 #include <vector>
 

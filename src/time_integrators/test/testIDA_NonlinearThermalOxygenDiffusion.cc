@@ -53,7 +53,7 @@
 #define __INIT_OXYGEN_FN__( x, y, z, t ) \
     ( 0.01 + ( 0.5 + x ) * ( 0.5 - x ) * ( 0.5 + y ) * ( 0.5 - y ) * ( 0.5 + z ) * ( 0.5 - z ) )
 
-void IDATimeIntegratorTest( AMP::UnitTest *ut )
+static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 {
     std::string input_file = "input_testIDA-NonlinearThermalOxygenDiffusion-1";
     std::string log_file   = "output_testIDA-NonlinearThermalOxygenDiffusion-1";
@@ -422,7 +422,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
 //---------------------------------------------------------------------------//
 
-int main( int argc, char *argv[] )
+int testIDA_NonlinearThermalOxygenDiffusion( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

@@ -16,7 +16,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <fstream>
-#include <iostream>
+#include <iosfwd>
 #include <string>
 
 

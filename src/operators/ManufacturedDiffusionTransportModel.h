@@ -1,7 +1,6 @@
 #ifndef included_AMP_ManufacturedDiffusionTransportModel
 #define included_AMP_ManufacturedDiffusionTransportModel
 
-#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -36,8 +35,7 @@ public:
                                const std::vector<libMesh::Point> &Coordinates )
     {
         AMP_ASSERT( ( Coordinates.size() == result.size() ) );
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>>::iterator it =
-            args.find( "temperature" );
+        auto it = args.find( "temperature" );
         AMP_ASSERT( it != args.end() );
         std::vector<double> &T( *( it->second ) );
         AMP_ASSERT( T.size() == result.size() );

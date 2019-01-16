@@ -2,7 +2,7 @@
 #define included_AMP_Vector
 
 
-#include <iostream>
+#include <iosfwd>
 #include <string>
 
 #include "AMP/discretization/DOF_Manager.h"
