@@ -10,19 +10,16 @@
 // NOTE: This is a modification of the InputManager class from SAMRAI
 //       We have simply used it with modifications
 
-#include "InputManager.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMPManager.h"
-#include "PIO.h"
-#include "Parser.h"
-#include "ShutdownRegistry.h"
-#include "Utilities.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/Parser.h"
+#include "AMP/utils/ShutdownRegistry.h"
+#include "AMP/utils/Utilities.h"
+
 #include <cstdio>
 #include <cstdlib>
-
-#ifndef NULL
-#define NULL ( 0 )
-#endif
 
 namespace AMP {
 

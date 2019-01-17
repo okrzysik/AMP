@@ -1,28 +1,13 @@
-#ifndef included_ImplicitTimeIntegrator_C
-#define included_ImplicitTimeIntegrator_C
-
-#ifndef included_ImplicitTimeIntegrator
-#include "ImplicitTimeIntegrator.h"
-#endif
-
-#ifndef included_Impl0icitTimeIntegratorParameters
-#include "ImplicitTimeIntegratorParameters.h"
-#endif
-
-#include "TimeOperatorParameters.h"
-
-/*Design-By-Contract Macros*/
-#include "AMP/utils/Utilities.h"
-
+#include "AMP/time_integrators/ImplicitTimeIntegrator.h"
+#include "AMP/time_integrators/ImplicitTimeIntegratorParameters.h"
+#include "AMP/time_integrators/TimeOperatorParameters.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
 
-#ifndef NULL
-#define NULL ( 0 )
-#endif
 
 namespace AMP {
 namespace TimeIntegrator {
@@ -180,5 +165,3 @@ void ImplicitTimeIntegrator::printClassData( std::ostream &os ) const
 void ImplicitTimeIntegrator::initializeTimeOperator( AMP::shared_ptr<TimeIntegratorParameters> ) {}
 } // namespace TimeIntegrator
 } // namespace AMP
-
-#endif

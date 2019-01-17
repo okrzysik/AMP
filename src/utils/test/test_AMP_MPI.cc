@@ -1205,10 +1205,8 @@ void testCommDup( UnitTest *ut )
 //  This test will test the AMP::AMP_MPI class
 int main( int argc, char *argv[] )
 {
-    // Startup
-    AMP::AMPManagerProperties startup_properties;
-    startup_properties.use_MPI_Abort = false;
-    AMP::AMPManager::startup( argc, argv, startup_properties );
+    // Start MPI
+    AMP::AMP_MPI::start_MPI( argc, argv );
 
     // Create the unit test
     UnitTest ut;
@@ -1536,6 +1534,6 @@ int main( int argc, char *argv[] )
     // Shutdown
     PROFILE_SAVE( "test_AMP_MPI" );
     ut.reset();
-    AMP::AMPManager::shutdown();
+    AMP::AMP_MPI::stop_MPI();
     return num_failed;
 }

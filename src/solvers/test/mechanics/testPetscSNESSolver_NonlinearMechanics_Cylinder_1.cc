@@ -28,7 +28,6 @@
 #include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
-
 #include <iostream>
 #include <string>
 

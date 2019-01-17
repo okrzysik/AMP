@@ -124,9 +124,6 @@ public:
     static void setMPIErrorHandler();
     static void clearMPIErrorHandler();
 
-    //! Check if MPI is active
-    static bool MPI_Active();
-
     /*!
      * @brief  AMP version number
      * @details  This function returns the current version of AMP
@@ -147,7 +144,6 @@ private:
     // Static variables
     static int initialized;
     static int rank;
-    static bool called_MPI_Init;
     static bool called_PetscInitialize;
     static bool use_MPI_Abort;
     static bool print_times;
@@ -166,11 +162,9 @@ private:
     static void exitFun();
 
     // Functions to start/shutdown the various packages
-    static double start_MPI( int argc_in, char *argv_in[], int profile_level );
     static double start_SAMRAI();
     static double start_PETSc();
     static double start_CUDA();
-    static double stop_MPI();
     static double stop_SAMRAI();
     static double stop_PETSc();
 };

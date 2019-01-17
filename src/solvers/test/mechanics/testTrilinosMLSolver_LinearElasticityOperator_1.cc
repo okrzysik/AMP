@@ -1,29 +1,22 @@
-
-
-#include <iostream>
-#include <string>
-
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/utils/Writer.h"
-#include "AMP/vectors/VectorBuilder.h"
-
-/* AMP files */
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/InputDatabase.h"
 #include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/vectors/VectorBuilder.h"
 
-#include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/boundary/DirichletVectorCorrection.h"
+#include <iostream>
+#include <string>
 
-#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
 static void linearElasticTest( AMP::UnitTest *ut )
 {

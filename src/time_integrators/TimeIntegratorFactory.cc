@@ -1,31 +1,10 @@
+#include "AMP/time_integrators/TimeIntegratorFactory.h"
+#include "AMP/time_integrators/BackwardEulerTimeIntegrator.h"
+#include "AMP/time_integrators/ExplicitEuler.h"
+#include "AMP/time_integrators/RK23TimeIntegrator.h"
+#include "AMP/time_integrators/RK2TimeIntegrator.h"
+#include "AMP/time_integrators/RK4TimeIntegrator.h"
 #include "AMP/utils/Utilities.h"
-
-/*Design-By-Contract Macros*/
-#include "AMP/utils/Utilities.h"
-
-#ifndef included_TimeIntegratorFactory
-#include "TimeIntegratorFactory.h"
-#endif
-
-#ifndef included_ExplicitEuler
-#include "ExplicitEuler.h"
-#endif
-
-#ifndef included_RK2TimeIntegrator
-#include "RK2TimeIntegrator.h"
-#endif
-
-#ifndef included_RK23TimeIntegrator
-#include "RK23TimeIntegrator.h"
-#endif
-
-#ifndef included_RK4TimeIntegrator
-#include "RK4TimeIntegrator.h"
-#endif
-
-#ifndef included_BackwardEulerTimeIntegrator
-#include "BackwardEulerTimeIntegrator.h"
-#endif
 
 
 namespace AMP {

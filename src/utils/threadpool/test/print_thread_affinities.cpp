@@ -153,7 +153,7 @@ int main( int argc, char *argv[] )
 {
 
     // Initialize MPI and set the error handlers
-    AMP::AMPManager::startup( argc, argv );
+    AMP::AMP_MPI::start_MPI( argc, argv );
     AMP::UnitTest ut;
 
     { // Limit scope
@@ -242,6 +242,6 @@ int main( int argc, char *argv[] )
     } // limit scope
 
     // Finished
-    AMP::AMPManager::shutdown();
+    AMP::AMP_MPI::stop_MPI();
     return 0;
 }

@@ -1,8 +1,6 @@
 #ifndef included_AMP_ManufacturedSourceModel1
 #define included_AMP_ManufacturedSourceModel1
 
-#include "AMP/materials/Material.h"
-#include "AMP/materials/Property.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/utils/shared_ptr.h"
 
@@ -44,14 +42,12 @@ public:
         AMP_ASSERT( ( Coordinates.size() == T.size() ) && ( T.size() == result.size() ) );
 
         for ( unsigned int qp = 0; qp < Coordinates.size(); qp++ ) {
-            double x = Coordinates[qp]( 0 );
-            double y = Coordinates[qp]( 1 );
-            double z = Coordinates[qp]( 2 );
-            double r = sqrt( x * x + y * y + z * z );
-
+            double x    = Coordinates[qp]( 0 );
+            double y    = Coordinates[qp]( 1 );
+            double z    = Coordinates[qp]( 2 );
+            double r    = sqrt( x * x + y * y + z * z );
             double temp = d_beta * r * r * r + d_Dzero * exp( -r * T[qp] ) * ( 12 * r - 3 * r * r );
-
-            result[qp] = temp;
+            result[qp]  = temp;
         }
     }
 

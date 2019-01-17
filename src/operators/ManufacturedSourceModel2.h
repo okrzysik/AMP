@@ -1,13 +1,8 @@
 #ifndef included_AMP_ManufacturedSourceModel2
 #define included_AMP_ManufacturedSourceModel2
 
+#include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/utils/shared_ptr.h"
-#include <iostream>
-#include <string>
-
-#include "AMP/materials/Material.h"
-#include "AMP/materials/Property.h"
-#include "ElementPhysicsModel.h"
 
 
 namespace AMP {

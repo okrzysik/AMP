@@ -1,17 +1,16 @@
-
 #ifndef included_AMP_FlowTransportModel
 #define included_AMP_FlowTransportModel
 
 #include <cstring>
 
-#include "AMP/operators/ElementPhysicsModel.h"
-
 #include "AMP/materials/Material.h"
-
+#include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/utils/shared_ptr.h"
+
 
 namespace AMP {
 namespace Operator {
+
 
 typedef ElementPhysicsModelParameters FlowTransportModelParameters;
 

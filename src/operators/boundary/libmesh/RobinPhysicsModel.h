@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 
-#include "AMP/materials/Material.h"
-#include "AMP/materials/Property.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/utils/shared_ptr.h"
 
@@ -45,7 +43,7 @@ public:
         for ( unsigned int var = 0; var < d_numActiveVariables; var++ ) {
             char key[100];
             sprintf( key, "ActiveVariable_%u", var );
-            std::string varName        = activeDb->getString( key );
+            auto varName               = activeDb->getString( key );
             d_activeVariableNames[var] = varName;
         }
     }

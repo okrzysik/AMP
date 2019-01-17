@@ -1,4 +1,7 @@
-#include "ConstructLinearMechanicsRHSVector.h"
+#include "AMP/operators/mechanics/ConstructLinearMechanicsRHSVector.h"
+#include "AMP/materials/Material.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
 
 // Libmesh headers
 DISABLE_WARNINGS

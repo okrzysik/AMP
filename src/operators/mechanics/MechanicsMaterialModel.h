@@ -1,14 +1,11 @@
-
 #ifndef included_AMP_MechanicsMaterialModel
 #define included_AMP_MechanicsMaterialModel
 
 #include <cstring>
 
-#include "AMP/operators/ElementPhysicsModel.h"
-#include "UpdatedLagrangianUtils.h"
-
 #include "AMP/materials/Material.h"
-
+#include "AMP/operators/ElementPhysicsModel.h"
+#include "AMP/operators/mechanics/UpdatedLagrangianUtils.h"
 #include "AMP/utils/shared_ptr.h"
 
 namespace AMP {

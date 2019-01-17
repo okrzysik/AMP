@@ -1,10 +1,10 @@
-
-
-#include <fstream>
-#include <iostream>
-#include <string>
-
-/* AMP files */
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -15,21 +15,14 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/WriteSolutionToFile.h"
-
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
-
-#include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/vectors/VectorBuilder.h"
-
-#include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/boundary/DirichletVectorCorrection.h"
-
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
 
-#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
+#include <fstream>
+#include <iostream>
+#include <string>
+
 
 static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_file )
 {

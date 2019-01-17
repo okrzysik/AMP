@@ -72,6 +72,10 @@ size_t MPI_ERR_IN_STATUS = 4;
 namespace AMP {
 
 
+// Define the AMPManager comm_world
+AMP_MPI AMPManager::comm_world = AMP::AMP_MPI();
+
+
 // Some special structs to work with MPI
 #ifdef USE_MPI
 struct IntIntStruct {
@@ -2395,9 +2399,9 @@ void MPI_CLASS::call_maxReduce<double>( double *x, const int n, int *comm_rank_o
 template<>
 void MPI_CLASS::call_bcast<unsigned char>( unsigned char *x, const int n, const int root ) const
 {
-    PROFILE_START( "bcast<char>", profile_level );
+    PROFILE_START( "bcast<unsigned char>", profile_level );
     MPI_Bcast( x, n, MPI_UNSIGNED_CHAR, root, communicator );
-    PROFILE_STOP( "bcast<char>", profile_level );
+    PROFILE_STOP( "bcast<unsigned char>", profile_level );
 }
 template<>
 void MPI_CLASS::call_bcast<char>( char *x, const int n, const int root ) const
@@ -2410,9 +2414,9 @@ void MPI_CLASS::call_bcast<char>( char *x, const int n, const int root ) const
 template<>
 void MPI_CLASS::call_bcast<unsigned int>( unsigned int *x, const int n, const int root ) const
 {
-    PROFILE_START( "bcast<int>", profile_level );
+    PROFILE_START( "bcast<unsigned int>", profile_level );
     MPI_Bcast( x, n, MPI_UNSIGNED, root, communicator );
-    PROFILE_STOP( "bcast<int>", profile_level );
+    PROFILE_STOP( "bcast<unsigned int>", profile_level );
 }
 template<>
 void MPI_CLASS::call_bcast<int>( int *x, const int n, const int root ) const
@@ -3921,6 +3925,53 @@ void MPI_CLASS::serializeStop()
         for ( int i = 0; i < comm_size - 1; i++ )
             MPI_Send( &comm_rank, 1, MPI_INT, i, 5627, MPI_COMM_WORLD );
     }
+}
+
+
+/****************************************************************************
+ * Function to start/stop MPI                                                *
+ ****************************************************************************/
+static bool called_MPI_Init = false;
+bool MPI_CLASS::MPI_Active()
+{
+#ifdef USE_EXT_MPI
+    int MPI_initialized, MPI_finialized;
+    MPI_Initialized( &MPI_initialized );
+    MPI_Finalized( &MPI_finialized );
+    return MPI_initialized != 0 && MPI_finialized == 0;
+#else
+    return false;
+#endif
+}
+void MPI_CLASS::start_MPI( int argc, char *argv[], int profile_level )
+{
+    changeProfileLevel( profile_level );
+    NULL_USE( argc );
+    NULL_USE( argv );
+#ifdef USE_EXT_MPI
+    if ( MPI_Active() ) {
+        called_MPI_Init = false;
+    } else {
+        int provided;
+        int result = MPI_Init_thread( &argc, &argv, MPI_THREAD_MULTIPLE, &provided );
+        if ( result != MPI_SUCCESS )
+            AMP_ERROR( "AMP was unable to initialize MPI" );
+        if ( provided < MPI_THREAD_MULTIPLE )
+            AMP::perr << "Warning: Failed to start MPI with MPI_THREAD_MULTIPLE\n";
+        called_MPI_Init        = true;
+        AMPManager::comm_world = AMP_MPI( MPI_COMM_WORLD );
+    }
+#endif
+}
+void MPI_CLASS::stop_MPI()
+{
+    AMPManager::comm_world = AMP_MPI( AMP_COMM_NULL );
+#ifdef USE_EXT_MPI
+    int finalized;
+    MPI_Finalized( &finalized );
+    if ( called_MPI_Init && !finalized )
+        MPI_Finalize();
+#endif
 }
 
 

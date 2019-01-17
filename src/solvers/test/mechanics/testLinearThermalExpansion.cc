@@ -1,10 +1,19 @@
-
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/ColumnOperator.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/mechanics/ConstructLinearMechanicsRHSVector.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-
+#include "AMP/utils/Writer.h"
 #include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #include <algorithm>
 #include <cmath>
@@ -12,20 +21,6 @@
 #include <string>
 #include <vector>
 
-#include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/vectors/VectorBuilder.h"
-
-#include "AMP/utils/PIO.h"
-#include "AMP/utils/Writer.h"
-
-#include "AMP/operators/ColumnOperator.h"
-#include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/mechanics/ConstructLinearMechanicsRHSVector.h"
-
-#include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
-#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {

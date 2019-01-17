@@ -4,15 +4,15 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/ParameterBase.h"
 #include "AMP/utils/shared_ptr.h"
-#include "VectorIndexer.h"
-#include <map>
-#include <set>
+
 #include <vector>
+
 
 namespace AMP {
 namespace LinearAlgebra {
 
 class VectorData;
+class VectorIndexer;
 
 
 /**
@@ -85,7 +85,7 @@ public:
      * \brief Subset a communication list based on a VectorIndexer
      * \param[in] sub  A VectorIndexer pointer that describes a subset
      */
-    CommunicationList::shared_ptr subset( VectorIndexer::shared_ptr sub );
+    CommunicationList::shared_ptr subset( AMP::shared_ptr<VectorIndexer> sub );
 
     /**
      * \brief Retrieve list of global indices stored here and shared elsewhere

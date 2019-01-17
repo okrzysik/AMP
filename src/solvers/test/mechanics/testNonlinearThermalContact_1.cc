@@ -1,45 +1,13 @@
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <string>
-
-#include "AMP/materials/Material.h"
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
-#include "AMP/utils/PIO.h"
-#include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
-
-
-#include "AMP/vectors/SimpleVector.h"
-#include "AMP/vectors/Variable.h"
-#include "AMP/vectors/Vector.h"
-
-#include "AMP/utils/Writer.h"
-
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/vectors/VectorBuilder.h"
-
+#include "AMP/materials/Material.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
-#include "AMP/operators/diffusion/DiffusionLinearElement.h"
-#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
-#include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "AMP/operators/diffusion/DiffusionTransportModel.h"
-#include "AMP/operators/libmesh/MassLinearElement.h"
-#include "AMP/operators/libmesh/MassLinearFEOperator.h"
-
 #include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/map/Map1Dto3D.h"
-#include "AMP/operators/map/Map3Dto1D.h"
-#include "AMP/operators/map/MapOperatorParameters.h"
-
 #include "AMP/operators/boundary/ColumnBoundaryOperator.h"
 #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
@@ -47,16 +15,38 @@
 #include "AMP/operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
 #include "AMP/operators/boundary/libmesh/RobinMatrixCorrection.h"
 #include "AMP/operators/boundary/libmesh/RobinVectorCorrection.h"
-
-#include "AMP/operators/NeutronicsRhs.h"
+#include "AMP/operators/diffusion/DiffusionLinearElement.h"
+#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/operators/libmesh/MassLinearElement.h"
+#include "AMP/operators/libmesh/MassLinearFEOperator.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-
+#include "AMP/operators/map/Map1Dto3D.h"
+#include "AMP/operators/map/Map3Dto1D.h"
+#include "AMP/operators/map/MapOperatorParameters.h"
 #include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/petsc/PetscSNESSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/SimpleVector.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
+
+#include <string>
 
 
 static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )

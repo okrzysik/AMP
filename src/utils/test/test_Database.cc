@@ -1,18 +1,3 @@
-#include <cmath>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <vector>
-
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-
-#include <string>
-
-#include <fstream>
-
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -20,8 +5,18 @@
 #include "AMP/utils/InputManager.h"
 #include "AMP/utils/MemoryDatabase.h"
 #include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/shared_ptr.h"
+
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <string>
 #include <sys/stat.h>
+#include <vector>
 
 
 /************************************************************************
@@ -31,24 +26,21 @@
  ************************************************************************/
 void readInputDatabase( AMP::UnitTest *ut )
 {
-    std::string input_file = "input_Database-1";
-    std::string log_file   = "output_Database-1";
-
-    // Process command line arguments and dump to log file.
-    AMP::PIO::logOnlyNodeZero( log_file );
+    std::string input_file = "input_Database";
+    std::string log_file   = "output_Database";
 
     // Create input database and parse all data in input file.
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
 
-    AMP::shared_ptr<AMP::Database> tmp_db = input_db->getDatabase( "Try" );
-    int number                            = tmp_db->getInteger( "number" );
+    auto tmp_db = input_db->getDatabase( "Try" );
+    int number  = tmp_db->getInteger( "number" );
 
     if ( number > 0 ) {
-        std::vector<int> intArray = tmp_db->getIntegerArray( "intArray" );
+        auto intArray = tmp_db->getIntegerArray( "intArray" );
         if ( (int) intArray.size() != number )
             ut->failure( "intArray was the wrong size" );
-        std::vector<double> doubleArray = tmp_db->getDoubleArray( "doubleArray" );
+        auto doubleArray = tmp_db->getDoubleArray( "doubleArray" );
         if ( (int) doubleArray.size() != number )
             ut->failure( "doubleArray was the wrong size" );
     }
@@ -132,7 +124,7 @@ void testCreateDatabase( AMP::UnitTest *ut )
 
 int main( int argc, char *argv[] )
 {
-    AMP::AMPManager::startup( argc, argv );
+    AMP::AMP_MPI::start_MPI( argc, argv );
     AMP::UnitTest ut;
 
     readInputDatabase( &ut );
@@ -142,6 +134,6 @@ int main( int argc, char *argv[] )
     ut.report();
 
     int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
+    AMP::AMP_MPI::stop_MPI();
     return num_failed;
 }

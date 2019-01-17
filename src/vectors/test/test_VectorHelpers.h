@@ -87,35 +87,35 @@ const std::string StridedFactory = "StridedVectorFactory<" + SMEVFactory + ">";
 
 
 // Set the tests
-void testNullVector( AMP::UnitTest &ut, const std::string &factoryName )
+inline void testNullVector( AMP::UnitTest &ut, const std::string &factoryName )
 {
     auto factory = generateVectorFactory( factoryName );
     VectorTests tests( factory );
     tests.testNullVector( &ut );
     AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
 }
-void testBasicVector( AMP::UnitTest &ut, const std::string &factoryName )
+inline void testBasicVector( AMP::UnitTest &ut, const std::string &factoryName )
 {
     auto factory = generateVectorFactory( factoryName );
     VectorTests tests( factory );
     tests.testBasicVector( &ut );
     AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
 }
-void testManagedVector( AMP::UnitTest &ut, const std::string &factoryName )
+inline void testManagedVector( AMP::UnitTest &ut, const std::string &factoryName )
 {
     auto factory = generateVectorFactory( factoryName );
     VectorTests tests( factory );
     tests.testManagedVector( &ut );
     AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
 }
-void VectorIteratorTests( AMP::UnitTest &ut, const std::string &factoryName )
+inline void VectorIteratorTests( AMP::UnitTest &ut, const std::string &factoryName )
 {
     auto factory = generateVectorFactory( factoryName );
     VectorTests tests( factory );
     tests.VectorIteratorTests( &ut );
     AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
 }
-void testVectorSelector( AMP::UnitTest &ut, const std::string &factoryName )
+inline void testVectorSelector( AMP::UnitTest &ut, const std::string &factoryName )
 {
     auto factory = generateVectorFactory( factoryName );
     VectorTests tests( factory );

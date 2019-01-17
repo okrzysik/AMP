@@ -1,13 +1,5 @@
-#include "AMP/utils/Utilities.h"
-
-#ifndef included_TimeIntegratorParameters
-#include "TimeIntegratorParameters.h"
-#endif
-#ifndef included_RK23TimeIntegrator
-#include "RK23TimeIntegrator.h"
-#endif
-
-/*Design-By-Contract Macros*/
+#include "AMP/time_integrators/RK23TimeIntegrator.h"
+#include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/utils/Utilities.h"
 
 namespace AMP {

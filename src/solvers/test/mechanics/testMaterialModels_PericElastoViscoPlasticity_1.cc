@@ -1,4 +1,23 @@
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
+#include "AMP/operators/BVPOperatorParameters.h"
+#include "AMP/operators/ElementPhysicsModelFactory.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/NonlinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
+#include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include "AMP/operators/mechanics/PericElastoViscoPlasticModel.h"
+#include "AMP/operators/mechanics/VonMisesElastoPlasticModel.h"
+#include "AMP/operators/mechanics/VonMises_IsotropicKinematicHardening.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/petsc/PetscSNESSolver.h"
+#include "AMP/solvers/petsc/PetscSNESSolverParameters.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -7,36 +26,10 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-
-
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/utils/Writer.h"
-
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-
-#include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
-#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
-#include "AMP/operators/mechanics/PericElastoViscoPlasticModel.h"
-#include "AMP/operators/mechanics/VonMisesElastoPlasticModel.h"
-#include "AMP/operators/mechanics/VonMises_IsotropicKinematicHardening.h"
-
-#include "AMP/operators/boundary/DirichletVectorCorrection.h"
-
-#include "AMP/operators/BVPOperatorParameters.h"
-#include "AMP/operators/ElementPhysicsModelFactory.h"
-#include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/NonlinearBVPOperator.h"
-#include "AMP/operators/OperatorBuilder.h"
-
-#include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
-#include "AMP/solvers/petsc/PetscSNESSolver.h"
-#include "AMP/solvers/petsc/PetscSNESSolverParameters.h"
-#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
 #define ITFAILS ut.failure( __LINE__ );
 #define UNIT_TEST( a ) \

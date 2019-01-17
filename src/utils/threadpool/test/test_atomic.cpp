@@ -36,7 +36,7 @@ static void modify_counter( int N, AtomicOperations::counter_t &counter )
  ******************************************************************/
 int main( int argc, char *argv[] )
 {
-    AMP::AMPManager::startup( argc, argv );
+    AMP::AMP_MPI::start_MPI( argc, argv );
     AMP::UnitTest ut;
 
     int N_threads = 64;      // Number of threads
@@ -146,6 +146,6 @@ int main( int argc, char *argv[] )
     ut.report();
     auto N_errors = static_cast<int>( ut.NumFailGlobal() );
     ut.reset();
-    AMP::AMPManager::shutdown();
+    AMP::AMP_MPI::stop_MPI();
     return N_errors;
 }

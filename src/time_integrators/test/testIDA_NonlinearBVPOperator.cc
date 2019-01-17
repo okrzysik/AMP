@@ -1,5 +1,16 @@
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
+#include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NeutronicsRhs.h"
+#include "AMP/operators/NonlinearBVPOperator.h"
+#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
+#include "AMP/operators/libmesh/MassLinearFEOperator.h"
+#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/time_integrators/sundials/IDATimeIntegrator.h"
+#include "AMP/time_integrators/sundials/IDATimeOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -8,30 +19,14 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/Writer.h"
 #include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
-#include <string>
-
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/utils/Writer.h"
-
-#include "AMP/operators/NeutronicsRhs.h"
-#include "AMP/operators/NonlinearBVPOperator.h"
-#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/vectors/Vector.h"
-
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
-#include "AMP/operators/libmesh/MassLinearFEOperator.h"
+#include <string>
 
-#include "AMP/operators/LinearBVPOperator.h"
-
-#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
-#include "AMP/time_integrators/sundials/IDATimeIntegrator.h"
-#include "AMP/time_integrators/sundials/IDATimeOperator.h"
 
 #define ITFAILS ut.failure( __LINE__ );
 #define UNIT_TEST( a ) \

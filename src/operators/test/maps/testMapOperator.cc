@@ -1,32 +1,26 @@
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <string>
-
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/map/Map1Dto3D.h"
+#include "AMP/operators/map/Map3Dto1D.h"
+#include "AMP/operators/map/MapOperatorParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/InputDatabase.h"
 #include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/Writer.h"
 #include "AMP/utils/shared_ptr.h"
-
 #include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/utils/Writer.h"
-
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
-
-#include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/map/Map1Dto3D.h"
-#include "AMP/operators/map/Map3Dto1D.h"
-#include "AMP/operators/map/MapOperatorParameters.h"
+#include <string>
 
 
 static void testMap( AMP::UnitTest *ut, const std::string &exeName )

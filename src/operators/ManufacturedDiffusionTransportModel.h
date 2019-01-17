@@ -7,8 +7,6 @@
 
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/materials/Material.h"
-#include "AMP/materials/Property.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
@@ -39,16 +37,13 @@ public:
         AMP_ASSERT( it != args.end() );
         std::vector<double> &T( *( it->second ) );
         AMP_ASSERT( T.size() == result.size() );
-
         for ( unsigned int qp = 0; qp < Coordinates.size(); qp++ ) {
-            double x = Coordinates[qp]( 0 );
-            double y = Coordinates[qp]( 1 );
-            double z = Coordinates[qp]( 2 );
-            double r = sqrt( x * x + y * y + z * z );
-
+            double x    = Coordinates[qp]( 0 );
+            double y    = Coordinates[qp]( 1 );
+            double z    = Coordinates[qp]( 2 );
+            double r    = sqrt( x * x + y * y + z * z );
             double temp = exp( -r * T[qp] );
-
-            result[qp] = temp;
+            result[qp]  = temp;
         }
     }
 

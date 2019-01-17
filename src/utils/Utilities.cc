@@ -55,7 +55,6 @@
     #include <execinfo.h>
     #include <sched.h>
     #include <sys/time.h>
-    #include <ctime>
     #include <unistd.h>
 #endif
 #ifdef USE_LINUX
