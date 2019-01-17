@@ -13,7 +13,7 @@
 #include "AMP/vectors/VectorBuilder.h"
 
 
-void runTest( AMP::UnitTest *ut )
+static void runTest( AMP::UnitTest *ut )
 {
 
     // Get the Mesh database and create the mesh parameters

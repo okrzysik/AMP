@@ -1,17 +1,9 @@
+#include "AMP/time_integrators/BackwardEulerTimeIntegrator.h"
+#include "AMP/time_integrators/BackwardEulerTimeOperator.h"
+#include "AMP/time_integrators/TimeIntegratorParameters.h"
+#include "AMP/time_integrators/TimeOperatorParameters.h"
 #include "AMP/utils/Utilities.h"
 
-#ifndef included_TimeIntegratorParameters
-#include "TimeIntegratorParameters.h"
-#endif
-#ifndef included_BackwardEulerTimeIntegrator
-#include "BackwardEulerTimeIntegrator.h"
-#endif
-
-#include "BackwardEulerTimeOperator.h"
-#include "TimeOperatorParameters.h"
-
-/*Design-By-Contract Macros*/
-#include "AMP/utils/Utilities.h"
 
 namespace AMP {
 namespace TimeIntegrator {

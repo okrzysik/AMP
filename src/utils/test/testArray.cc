@@ -152,9 +152,7 @@ void test_interp( UnitTest &ut, const std::vector<size_t> &N )
 int main( int argc, char *argv[] )
 {
     // Startup
-    AMPManagerProperties startup_properties;
-    startup_properties.use_MPI_Abort = false;
-    AMPManager::startup( argc, argv, startup_properties );
+    AMP::AMP_MPI::start_MPI( argc, argv );
     UnitTest ut;
 
     // Limit the scope of variables
@@ -460,6 +458,6 @@ int main( int argc, char *argv[] )
     if ( num_failed == 0 )
         pout << "All tests passed\n";
     ut.reset();
-    AMPManager::shutdown();
+    AMP::AMP_MPI::stop_MPI();
     return num_failed;
 }

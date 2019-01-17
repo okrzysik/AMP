@@ -1,26 +1,6 @@
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-
-#include <iostream>
-#include <string>
-
-#include "AMP/utils/shared_ptr.h"
-
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
-#include "AMP/utils/PIO.h"
-
-
 #include "AMP/ampmesh/MeshOperations.h"
 #include "AMP/ampmesh/MeshUtils.h"
 #include "AMP/ampmesh/MeshVariable.h"
-#include "AMP/utils/Writer.h"
-
-
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/DirichletMatrixCorrection.h"
 #include "AMP/operators/DirichletVectorCorrection.h"
@@ -36,13 +16,24 @@
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-
 #include "AMP/solvers/PetscKrylovSolver.h"
 #include "AMP/solvers/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/PetscSNESSolver.h"
 #include "AMP/solvers/PetscSNESSolverParameters.h"
-
 #include "AMP/solvers/TrilinosMLSolver.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/utils/shared_ptr.h"
+
+#include <iostream>
+#include <string>
 
 
 AMP::shared_ptr<AMP::Solver::PetscSNESSolver>

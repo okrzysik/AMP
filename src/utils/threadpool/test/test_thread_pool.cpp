@@ -879,12 +879,12 @@ int main( int argc, char *argv[] )
     PROFILE_ENABLE( 3 );
     PROFILE_ENABLE_TRACE();
     PROFILE_DISABLE_MEMORY();
-    AMP::AMPManager::startup( argc, argv );
+    AMP::AMP_MPI::start_MPI( argc, argv );
     AMP::UnitTest ut;
     run_tests( ut );
     ut.report();
     auto N_errors = static_cast<int>( ut.NumFailGlobal() );
     ut.reset();
-    AMP::AMPManager::shutdown();
+    AMP::AMP_MPI::stop_MPI();
     return N_errors;
 }

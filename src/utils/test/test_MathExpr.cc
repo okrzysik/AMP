@@ -33,7 +33,7 @@ void test_Expression( const std::string &expression,
 
 int main( int argc, char *argv[] )
 {
-    AMPManager::startup( argc, argv );
+    AMP::AMP_MPI::start_MPI( argc, argv );
     UnitTest ut;
 
     // Basic sanity check
@@ -69,6 +69,6 @@ int main( int argc, char *argv[] )
     // Finished
     ut.report();
     int N_errors = ut.NumFailGlobal();
-    AMPManager::shutdown();
+    AMP::AMP_MPI::stop_MPI();
     return N_errors;
 }

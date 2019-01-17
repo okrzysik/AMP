@@ -26,10 +26,10 @@
 
 
 // Create a vector with the desired number of unknowns and run some simple tests
-void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
-                                 AMP::Mesh::Mesh::shared_ptr mesh,
-                                 size_t N_DOFs,
-                                 bool split )
+static void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
+                                        AMP::Mesh::Mesh::shared_ptr mesh,
+                                        size_t N_DOFs,
+                                        bool split )
 {
     // Calculate the number of DOFs per Node (we require that the # of DOFs is >= N_DOFs)
     double avgDOFsPerNode =
@@ -79,7 +79,7 @@ void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
 }
 
 
-void runTest( AMP::UnitTest *ut, std::string input_file )
+static void runTest( AMP::UnitTest *ut, std::string input_file )
 {
     // Read the input file
     AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );

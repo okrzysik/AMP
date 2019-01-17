@@ -1,42 +1,36 @@
-
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/VectorBuilder.h"
+
+#include "libmesh/auto_ptr.h"
+#include "libmesh/boundary_info.h"
+#include "libmesh/cell_hex8.h"
+#include "libmesh/elem.h"
+#include "libmesh/enum_fe_family.h"
+#include "libmesh/enum_order.h"
+#include "libmesh/enum_quadrature_type.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/fe_type.h"
+#include "libmesh/libmesh.h"
+#include "libmesh/mesh.h"
+#include "libmesh/mesh_communication.h"
+#include "libmesh/mesh_generation.h"
+#include "libmesh/node.h"
+#include "libmesh/quadrature.h"
+#include "libmesh/string_to_enum.h"
 
 #include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <iostream>
 
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/InputManager.h"
-#include "AMP/utils/PIO.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
-
-#include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/vectors/VectorBuilder.h"
-
-#include "libmesh/boundary_info.h"
-#include "libmesh/cell_hex8.h"
-#include "libmesh/elem.h"
-#include "libmesh/libmesh.h"
-#include "libmesh/mesh.h"
-#include "libmesh/mesh_communication.h"
-#include "libmesh/mesh_generation.h"
-#include "libmesh/node.h"
-
-#include "libmesh/elem.h"
-#include "libmesh/fe_base.h"
-#include "libmesh/fe_type.h"
-#include "libmesh/quadrature.h"
-
-#include "libmesh/auto_ptr.h"
-#include "libmesh/enum_fe_family.h"
-#include "libmesh/enum_order.h"
-#include "libmesh/enum_quadrature_type.h"
-#include "libmesh/string_to_enum.h"
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {

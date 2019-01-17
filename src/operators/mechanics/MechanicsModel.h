@@ -1,16 +1,14 @@
-
 #ifndef included_AMP_MechanicsModel
 #define included_AMP_MechanicsModel
 
 #include <cstring>
 
+#include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/MechanicsModelParameters.h"
-
-#include "AMP/materials/Material.h"
+#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
 
-#include "AMP/utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {

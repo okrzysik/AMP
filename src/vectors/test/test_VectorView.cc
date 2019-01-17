@@ -5,7 +5,7 @@
 #include "test_VectorHelpers.h"
 
 
-int main( int argc, char **argv )
+int test_VectorView( int argc, char **argv )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

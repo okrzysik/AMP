@@ -1,14 +1,7 @@
+#include "AMP/time_integrators/RK2TimeIntegrator.h"
+#include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/utils/Utilities.h"
 
-#ifndef included_TimeIntegratorParameters
-#include "TimeIntegratorParameters.h"
-#endif
-#ifndef included_RK2TimeIntegrator
-#include "RK2TimeIntegrator.h"
-#endif
-
-/*Design-By-Contract Macros*/
-#include "AMP/utils/Utilities.h"
 
 namespace AMP {
 namespace TimeIntegrator {

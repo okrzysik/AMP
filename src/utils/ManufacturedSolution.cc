@@ -1,11 +1,13 @@
-#include "ManufacturedSolution.h"
+#include "AMP/utils/ManufacturedSolution.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/shared_ptr.h"
+
 #include <cmath>
 #include <limits>
 #include <string>
 #include <valarray>
 #include <vector>
+
 
 namespace AMP {
 

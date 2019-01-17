@@ -1,23 +1,7 @@
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <iostream>
-#include <string>
-
-#include "AMP/utils/shared_ptr.h"
-
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
-#include "AMP/utils/PIO.h"
-
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/vectors/VectorBuilder.h"
-
+#include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -29,16 +13,23 @@
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperatorParameters.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
-
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include "../applyTests.h"
 
-#include "AMP/materials/Material.h"
+#include <iostream>
+#include <string>
 
 
 static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )

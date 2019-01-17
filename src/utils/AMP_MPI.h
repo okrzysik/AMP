@@ -1059,6 +1059,15 @@ public: // Member functions
     //! Return the MPI version number { major, minor }
     static std::array<int, 2> version();
 
+    //! Check if MPI is active
+    static bool MPI_Active();
+
+    //! Start MPI
+    static void start_MPI( int argc_in, char *argv_in[], int profile_level = 0 );
+
+    //! Stop MPI
+    static void stop_MPI();
+
 
 private: // Private helper functions for templated MPI operations;
     template<class type>

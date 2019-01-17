@@ -1,23 +1,19 @@
-
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <cstdlib>
-#include <iostream>
-#include <string>
-
-#include "AMP/utils/shared_ptr.h"
-
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/operators/map/dtk/DTKAMPMeshEntitySet.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/InputDatabase.h"
 #include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
 
-#include "AMP/ampmesh/Mesh.h"
+#include <cstdlib>
+#include <iostream>
+#include <string>
 
-#include "AMP/operators/map/dtk/DTKAMPMeshEntitySet.h"
 
 bool selectAll( DataTransferKit::Entity entity ) { return true; }
 

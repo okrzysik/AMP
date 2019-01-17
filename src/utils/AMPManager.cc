@@ -74,11 +74,9 @@ namespace AMP {
 // Initialize static member variables
 int AMPManager::initialized                 = 0;
 int AMPManager::rank                        = 0;
-bool AMPManager::called_MPI_Init            = false;
 bool AMPManager::called_PetscInitialize     = false;
 bool AMPManager::use_MPI_Abort              = true;
 bool AMPManager::print_times                = false;
-AMP_MPI AMPManager::comm_world              = AMP::AMP_MPI();
 int AMPManager::argc                        = 0;
 char **AMPManager::argv                     = nullptr;
 AMPManagerProperties AMPManager::properties = AMPManagerProperties();
@@ -219,7 +217,9 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     // Set the abort method
     AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
     // Initialize MPI
-    double MPI_time = start_MPI( argc, argv, properties.profile_MPI_level );
+    double MPI_start = Utilities::time();
+    AMP_MPI::start_MPI( argc, argv, properties.profile_MPI_level );
+    double MPI_time = Utilities::time() - MPI_start;
     // Initialize AMP's MPI
     if ( properties.COMM_WORLD == AMP_COMM_WORLD )
         comm_world = AMP_MPI( MPI_COMM_WORLD );
@@ -292,7 +292,9 @@ void AMPManager::shutdown()
     // Shutdown SAMRAI
     double SAMRAI_time = stop_SAMRAI();
     // Shutdown MPI
-    double MPI_time = stop_MPI();
+    double MPI_start = Utilities::time();
+    AMP_MPI::stop_MPI();
+    double MPI_time = Utilities::time() - MPI_start;
     // Print any AMP_MPI leaks
     if ( AMP_MPI::MPI_Comm_created() != AMP_MPI::MPI_Comm_destroyed() ) {
         printf( "Rank %i detected AMP_MPI comm leak: %i %i\n",
@@ -321,49 +323,6 @@ void AMPManager::shutdown()
 #endif
     // Wait 50 milli-seconds for all processors to finish
     Utilities::sleepMs( 50 );
-}
-
-
-/****************************************************************************
-* Function to start/stop MPI                                                *
-****************************************************************************/
-double AMPManager::start_MPI( int argc, char *argv[], int profile_level )
-{
-    double time = 0;
-    AMP::AMP_MPI::changeProfileLevel( profile_level );
-    NULL_USE( argc );
-    NULL_USE( argv );
-#ifdef USE_EXT_MPI
-    if ( MPI_Active() ) {
-        called_MPI_Init = false;
-    } else {
-        int provided;
-        double start = Utilities::time();
-        int result   = MPI_Init_thread( &argc, &argv, MPI_THREAD_MULTIPLE, &provided );
-        if ( result != MPI_SUCCESS )
-            AMP_ERROR( "AMP was unable to initialize MPI" );
-        if ( provided < MPI_THREAD_MULTIPLE )
-            AMP::perr << "Warning: Failed to start MPI with MPI_THREAD_MULTIPLE\n";
-        called_MPI_Init = true;
-        time            = Utilities::time() - start;
-    }
-#endif
-    return time;
-}
-double AMPManager::stop_MPI()
-{
-    double time = 0;
-    comm_world = AMP_MPI( AMP_COMM_NULL );
-#ifdef USE_EXT_MPI
-    int finalized;
-    MPI_Finalized( &finalized );
-    if ( called_MPI_Init && !finalized ) {
-        double start = Utilities::time();
-        MPI_Finalize();
-        time = Utilities::time() - start;
-    }
-#endif
-    return time;
 }
 
 
@@ -406,7 +365,6 @@ double AMPManager::stop_SAMRAI()
  *  Class to override the output appender for abort messages                 *
  ****************************************************************************/
 #ifdef USE_EXT_SAMRAI
-#include "SAMRAI/tbox/Logger.h"
 class SAMRAIAbortAppender : public SAMRAI::tbox::Logger::Appender
 {
 public:
@@ -598,17 +556,6 @@ AMPManagerProperties AMPManager::getAMPManagerProperties()
 {
     AMP_INSIST( initialized, "AMP has not been initialized" );
     return properties;
-}
-bool AMPManager::MPI_Active()
-{
-#ifdef USE_EXT_MPI
-    int MPI_initialized, MPI_finialized;
-    MPI_Initialized( &MPI_initialized );
-    MPI_Finalized( &MPI_finialized );
-    return MPI_initialized != 0 && MPI_finialized == 0;
-#else
-    return false;
-#endif
 }
 
 

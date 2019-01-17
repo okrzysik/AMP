@@ -8,7 +8,7 @@
 #include <iostream>
 
 
-int main( int argc, char **argv )
+int test_Vector( int argc, char **argv )
 {
 
     AMP::AMPManager::startup( argc, argv );

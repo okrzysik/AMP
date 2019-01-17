@@ -298,7 +298,7 @@ static int runParallel( const std::vector<int> &x, LIST &list, int N_threads )
  ******************************************************************/
 int main( int argc, char *argv[] )
 {
-    AMP::AMPManager::startup( argc, argv );
+    AMP::AMP_MPI::start_MPI( argc, argv );
     AMP::UnitTest ut;
 
     const int N_threads = 8;
@@ -410,6 +410,6 @@ int main( int argc, char *argv[] )
     ut.report();
     auto N_errors = static_cast<int>( ut.NumFailGlobal() );
     ut.reset();
-    AMP::AMPManager::shutdown();
+    AMP::AMP_MPI::stop_MPI();
     return N_errors;
 }

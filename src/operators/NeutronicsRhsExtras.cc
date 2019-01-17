@@ -1,18 +1,11 @@
-
-#include "NeutronicsRhsExtras.h"
-
-/*AMP Files */
+#include "AMP/operators/NeutronicsRhsExtras.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/NeutronicsRhsExtrasParameters.h"
 #include "AMP/operators/Operator.h"
-#include "AMP/utils/Utilities.h"
-#include "AMP/vectors/Vector.h"
-#include "NeutronicsRhsExtras.h"
-#include "NeutronicsRhsExtrasParameters.h"
-
 #include "AMP/utils/InputDatabase.h"
-
-/*Boost Files */
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 
 #include <cmath>
 #include <vector>

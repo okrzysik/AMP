@@ -1,44 +1,35 @@
-
+#include "AMP/ampmesh/libmesh/initializeLibMesh.h"
+#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/InputDatabase.h"
 #include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
+#include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-
-#include <iostream>
-#include <string>
-
-
-#include <fstream>
-
-#include <sys/stat.h>
-
-/* Boost files */
-#include "AMP/utils/shared_ptr.h"
-
-#include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/OperatorBuilder.h"
-
-#include "AMP/operators/boundary/DirichletVectorCorrection.h"
-
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/utils/Writer.h"
+#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
 
-#include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
-#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
-
-#include "AMP/ampmesh/libmesh/initializeLibMesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
-#include "AMP/utils/ReadTestMesh.h"
 #include "libmesh/mesh_communication.h"
+
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <sys/stat.h>
+
 
 static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
 {

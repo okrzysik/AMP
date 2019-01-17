@@ -1,35 +1,27 @@
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <iostream>
-#include <string>
-
-#include "AMP/utils/shared_ptr.h"
-
 #include "AMP/materials/Material.h"
+#include "AMP/operators/BVPOperatorParameters.h"
+#include "AMP/operators/ElementPhysicsModelFactory.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/NonlinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
+#include "AMP/operators/mechanics/IsotropicElasticModel.h"
+#include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include "AMP/operators/mechanics/VonMisesElastoPlasticModel.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/InputDatabase.h"
 #include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
-
-
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
+#include "AMP/utils/shared_ptr.h"
 
-
-#include "AMP/operators/mechanics/IsotropicElasticModel.h"
-#include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
-#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
-#include "AMP/operators/mechanics/VonMisesElastoPlasticModel.h"
-
-#include "AMP/operators/boundary/DirichletVectorCorrection.h"
-
-#include "AMP/operators/BVPOperatorParameters.h"
-#include "AMP/operators/ElementPhysicsModelFactory.h"
-#include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/NonlinearBVPOperator.h"
-#include "AMP/operators/OperatorBuilder.h"
+#include <iostream>
+#include <string>
 
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )

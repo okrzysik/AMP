@@ -1,20 +1,4 @@
-
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <string>
-
-#include "AMP/utils/shared_ptr.h"
-
-#include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
-#include "AMP/utils/PIO.h"
-#include "AMP/utils/Utilities.h"
-
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/utils/Writer.h"
-
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/ColumnOperator.h"
@@ -44,10 +28,21 @@
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/petsc/PetscSNESSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
+
+#include <string>
 
 
 static void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, const std::string &exeName )

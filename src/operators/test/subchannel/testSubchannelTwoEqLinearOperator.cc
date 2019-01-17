@@ -1,29 +1,25 @@
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <iostream>
-#include <string>
-
-#include "AMP/utils/shared_ptr.h"
-
+#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/discretization/structuredFaceDOFManager.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/subchannel/SubchannelConstants.h"
+#include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
+#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
+#include "AMP/operators/subchannel/SubchannelTwoEqLinearOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/InputDatabase.h"
 #include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
-
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/subchannel/SubchannelConstants.h"
-#include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
-#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
-#include "AMP/operators/subchannel/SubchannelTwoEqLinearOperator.h"
+#include <iostream>
+#include <string>
 
-#include "AMP/ampmesh/StructuredMeshHelper.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/discretization/structuredFaceDOFManager.h"
 
 const size_t dofs_per_var = 10;               // dofs per variable; number of axial faces
 const size_t num_dofs     = 2 * dofs_per_var; // total number of dofs

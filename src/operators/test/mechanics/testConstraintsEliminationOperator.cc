@@ -1,22 +1,4 @@
-
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <iostream>
-#include <string>
-
-#include "AMP/utils/shared_ptr.h"
-
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
-#include "AMP/utils/PIO.h"
-
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/vectors/VectorBuilder.h"
-
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/CustomConstraintsEliminationOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -27,13 +9,25 @@
 #include "AMP/operators/mechanics/MechanicsLinearElement.h"
 #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/operators/petsc/PetscMatrixShellOperator.h"
-
-
 #include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/ConstraintsEliminationSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/VectorBuilder.h"
+
+#include <iostream>
+#include <string>
+
 
 static void myTest( AMP::UnitTest *ut )
 {

@@ -1,13 +1,5 @@
-#include <algorithm>
-#include <cmath>
-#include <cstdio>
-#include <cstring>
-#include <iostream>
-#include <vector>
-
 #include "AMP/solvers/libmesh/PelletStackHelpers.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
-
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/InputManager.h"
@@ -15,6 +7,13 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+#include <iostream>
+#include <vector>
 
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )

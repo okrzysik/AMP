@@ -1,30 +1,26 @@
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <iomanip>
-#include <iostream>
-#include <string>
-
-#include "AMP/utils/shared_ptr.h"
-
+#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/discretization/MultiDOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/subchannel/SubchannelConstants.h"
+#include "AMP/operators/subchannel/SubchannelFourEqNonlinearOperator.h"
+#include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
+#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/InputDatabase.h"
 #include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
-
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/subchannel/SubchannelConstants.h"
-#include "AMP/operators/subchannel/SubchannelFourEqNonlinearOperator.h"
-#include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
-#include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
+#include <iomanip>
+#include <iostream>
+#include <string>
 
-#include "AMP/ampmesh/StructuredMeshHelper.h"
-#include "AMP/discretization/MultiDOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
 
 static void compare_face( const std::string &variable,
                           unsigned int i,

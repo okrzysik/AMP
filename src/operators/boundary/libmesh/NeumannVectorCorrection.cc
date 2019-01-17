@@ -1,8 +1,8 @@
-
-#include "NeumannVectorCorrection.h"
+#include "AMP/operators/boundary/libmesh/NeumannVectorCorrection.h"
+#include "AMP/operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
 #include "AMP/utils/InputDatabase.h"
 #include "AMP/utils/Utilities.h"
-#include "NeumannVectorCorrectionParameters.h"
+#include "AMP/vectors/MultiVector.h"
 
 // Libmesh files
 DISABLE_WARNINGS

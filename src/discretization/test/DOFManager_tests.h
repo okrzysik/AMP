@@ -16,6 +16,8 @@
 #include "AMP/vectors/VectorSelector.h"
 #endif
 
+#include "../../ampmesh/test/meshGenerators.h"
+
 using namespace AMP::unit_test;
 
 

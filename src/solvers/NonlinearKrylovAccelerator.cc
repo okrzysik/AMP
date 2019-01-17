@@ -1,8 +1,6 @@
 #include "NonlinearKrylovAccelerator.h"
-
 #include "AMP/utils/Utilities.h"
 
-#include "AMP/utils/Utilities.h"
 
 #define EOL -1
 

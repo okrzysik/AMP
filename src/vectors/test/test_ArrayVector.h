@@ -5,7 +5,7 @@ namespace AMP {
 namespace unit_test {
 
 template<typename T>
-void testArrayVectorDimensions( std::vector<size_t> &dims, AMP::UnitTest &ut )
+static void testArrayVectorDimensions( std::vector<size_t> &dims, AMP::UnitTest &ut )
 {
     AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "array" ) );
     AMP::LinearAlgebra::Vector::shared_ptr vec =
