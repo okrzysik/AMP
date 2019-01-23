@@ -1,5 +1,5 @@
 #include "AMP/ampmesh/shapes/Shell.h"
-#include "AMP/ampmesh/structured/BoxMeshHelpers.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -10,11 +10,13 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Shell::Shell( double r_min, double r_max ) : d_r_min( r_min ), d_r_max( r_max )
+Shell::Shell( double r_min, double r_max ) : Geometry(), d_r_min( r_min ), d_r_max( r_max )
 {
-    d_offset[0] = 0;
-    d_offset[1] = 0;
-    d_offset[2] = 0;
+    d_physicalDim = 3;
+    d_logicalDim  = 2;
+    d_offset[0]   = 0;
+    d_offset[1]   = 0;
+    d_offset[2]   = 0;
 }
 
 
@@ -23,10 +25,15 @@ Shell::Shell( double r_min, double r_max ) : d_r_min( r_min ), d_r_max( r_max )
  ********************************************************/
 double Shell::distance( const Point &pos, const Point &ang ) const
 {
-    NULL_USE( pos );
-    NULL_USE( ang );
-    AMP_ERROR( "Not finished" );
-    return 0;
+    double x    = pos.x() - d_offset[0];
+    double y    = pos.y() - d_offset[1];
+    double z    = pos.z() - d_offset[2];
+    double d1   = GeometryHelpers::distanceToSphere( d_r_min, { x, y, z }, ang );
+    double d2   = GeometryHelpers::distanceToSphere( d_r_max, { x, y, z }, ang );
+    double d    = std::min( std::abs( d1 ), std::abs( d2 ) );
+    double r2   = x * x + y * y + z * z;
+    bool inside = r2 >= d_r_min * d_r_min && r2 <= d_r_max * d_r_max;
+    return ( inside ? -1 : 1 ) * d;
 }
 
 
@@ -67,8 +74,7 @@ Point Shell::surfaceNorm( const Point &pos ) const
  ********************************************************/
 Point Shell::physical( const Point &pos ) const
 {
-    auto point =
-        AMP::Mesh::BoxMeshHelpers::map_logical_shell( d_r_min, d_r_max, pos[0], pos[1], pos[2] );
+    auto point = GeometryHelpers::map_logical_shell( d_r_min, d_r_max, pos[0], pos[1], pos[2] );
     point[0] += d_offset[0];
     point[1] += d_offset[1];
     point[2] += d_offset[2];
@@ -81,8 +87,20 @@ Point Shell::physical( const Point &pos ) const
  ********************************************************/
 Point Shell::logical( const Point &pos ) const
 {
-    return AMP::Mesh::BoxMeshHelpers::map_shell_logical(
+    return GeometryHelpers::map_shell_logical(
         d_r_min, d_r_max, pos[0] - d_offset[0], pos[1] - d_offset[1], pos[2] - d_offset[2] );
+}
+
+
+/********************************************************
+ * Return the centroid and bounding box                  *
+ ********************************************************/
+Point Shell::centroid() const { return { d_offset[0], d_offset[1], d_offset[2] }; }
+std::pair<Point, Point> Shell::box() const
+{
+    Point lb = { d_offset[0] - d_r_max, d_offset[1] - d_r_max, d_offset[2] - d_r_max };
+    Point ub = { d_offset[0] + d_r_max, d_offset[1] + d_r_max, d_offset[2] + d_r_max };
+    return { lb, ub };
 }
 
 

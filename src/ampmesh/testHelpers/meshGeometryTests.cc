@@ -1,11 +1,30 @@
 #include "AMP/ampmesh/Geometry.h"
 #include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/ampmesh/testHelpers/geometryTests.h"
 #include "AMP/ampmesh/testHelpers/meshTests.h"
 #include "AMP/utils/UnitTest.h"
 
 
 namespace AMP {
 namespace Mesh {
+
+
+// This runs the geometry only tests
+void meshTests::TestBasicGeometry( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
+{
+    // If we are dealing with a MultiMesh, check each mesh independently
+    if ( AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) ) {
+        auto multimesh = AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
+        for ( const auto &mesh2 : multimesh->getMeshes() )
+            TestBasicGeometry( ut, mesh2 );
+    }
+    // Get the geometry
+    auto geom = mesh->getGeometry();
+    if ( !geom )
+        return;
+    // Run basic geometry tests
+    Geometry::testGeometry( *geom, *ut );
+}
 
 
 // This tests loops over the boundary

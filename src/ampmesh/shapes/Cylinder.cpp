@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/shapes/Cylinder.h"
-#include "AMP/ampmesh/structured/BoxMeshHelpers.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
+
 #include "AMP/utils/Utilities.h"
 
 
@@ -11,11 +12,13 @@ namespace Geometry {
  * Constructor                                           *
  ********************************************************/
 Cylinder::Cylinder( double r, double z_min, double z_max )
-    : d_r( r ), d_z_min( z_min ), d_z_max( z_max )
+    : Geometry(), d_r( r ), d_z_min( z_min ), d_z_max( z_max )
 {
-    d_offset[0] = 0;
-    d_offset[1] = 0;
-    d_offset[2] = 0;
+    d_physicalDim = 3;
+    d_logicalDim  = 3;
+    d_offset[0]   = 0;
+    d_offset[1]   = 0;
+    d_offset[2]   = 0;
 }
 
 
@@ -28,41 +31,10 @@ double Cylinder::distance( const Point &pos, const Point &ang ) const
     // Get the current point in the reference frame of the cylinder
     double x = pos.x() - d_offset[0];
     double y = pos.y() - d_offset[1];
-    double z = pos.z() - d_offset[2];
-    // Compute the intersection of a line with the circle of the cylinder
-    double dx = ang.x();
-    double dy = ang.y();
-    double dr = sqrt( dx * dx + dy * dy );
-    double D  = x * ( y + ang.y() ) - ( x + ang.x() ) * y;
-    double t  = d_r * d_r * dr * dr - D * D;
-    if ( t < 0 )
-        return std::numeric_limits<double>::infinity();
-    t         = sqrt( t );
-    double s  = dy < 0 ? -1 : 1;
-    double x1 = ( D * dy + s * dx * t ) / ( dr * dr );
-    double x2 = ( D * dy - s * dx * t ) / ( dr * dr );
-    // double y1 = ( -D * dx + abs( dy ) *t ) / ( dr*dr);
-    // double y2 = ( -D * dx - abs( dy ) *t ) / ( dr*dr);
-    // Compute the distance to the point
-    double d1 = ( x1 - x ) / ang.x();
-    double d2 = ( x2 - x ) / ang.x();
-    if ( d1 < 0 )
-        d1 = std::numeric_limits<double>::infinity();
-    if ( d2 < 0 )
-        d2 = std::numeric_limits<double>::infinity();
-    // Check that the z-point is within the cylinder for each point
-    double z1 = z + d1 * ang.z();
-    double z2 = z + d2 * ang.z();
-    if ( z1 < d_z_min || z1 > d_z_max )
-        d1 = std::numeric_limits<double>::infinity();
-    if ( z2 < d_z_min || z2 > d_z_max )
-        d2 = std::numeric_limits<double>::infinity();
-    // Return the distance to the closest point
-    bool inside = d1 < 1e100 && d2 < 1e100;
-    if ( d1 < 1e100 && d2 < 1e100 )
-        return std::min( d1, d2 );
-    return ( inside ? -1 : 1 ) * std::min( d1, d2 );
-    ;
+    double z = pos.z() - d_offset[2] - 0.5 * ( d_z_min + d_z_max );
+    // Compute the distance to the cylinder
+    double d = GeometryHelpers::distanceToCylinder( d_r, d_z_max - d_z_min, { x, y, z }, ang );
+    return d;
 }
 
 
@@ -126,7 +98,7 @@ Point Cylinder::surfaceNorm( const Point &pos ) const
  ********************************************************/
 Point Cylinder::physical( const Point &pos ) const
 {
-    auto tmp = AMP::Mesh::BoxMeshHelpers::map_logical_circle( d_r, 2, pos[0], pos[1] );
+    auto tmp = GeometryHelpers::map_logical_circle( d_r, 2, pos[0], pos[1] );
     double x = tmp.first + d_offset[0];
     double y = tmp.second + d_offset[1];
     double z = d_z_min + pos[2] * ( d_z_max - d_z_min ) + d_offset[2];
@@ -139,10 +111,25 @@ Point Cylinder::physical( const Point &pos ) const
  ********************************************************/
 Point Cylinder::logical( const Point &pos ) const
 {
-    auto tmp = AMP::Mesh::BoxMeshHelpers::map_circle_logical(
-        d_r, 2, pos[0] - d_offset[0], pos[1] - d_offset[1] );
+    auto tmp =
+        GeometryHelpers::map_circle_logical( d_r, 2, pos[0] - d_offset[0], pos[1] - d_offset[1] );
     double z = ( pos[2] - d_z_min - d_offset[2] ) / ( d_z_max - d_z_min );
     return Point( tmp.first, tmp.second, z );
+}
+
+
+/********************************************************
+ * Return the centroid and bounding box                  *
+ ********************************************************/
+Point Cylinder::centroid() const
+{
+    return { d_offset[0], d_offset[1], d_offset[2] + 0.5 * ( d_z_max + d_z_min ) };
+}
+std::pair<Point, Point> Cylinder::box() const
+{
+    Point lb = { d_offset[0] - d_r, d_offset[1] - d_r, d_offset[2] + d_z_min };
+    Point ub = { d_offset[0] + d_r, d_offset[1] + d_r, d_offset[2] + d_z_max };
+    return { lb, ub };
 }
 
 

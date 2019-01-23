@@ -1,7 +1,6 @@
 #include "AMP/ampmesh/structured/CircleMesh.h"
 #include "AMP/ampmesh/shapes/Circle.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
-#include "AMP/ampmesh/structured/BoxMeshHelpers.h"
 
 
 namespace AMP {
@@ -54,8 +53,8 @@ CircleMesh::CircleMesh( MeshParameters::shared_ptr params ) : StructuredGeometry
  ****************************************************************/
 std::vector<size_t> CircleMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
-    auto db               = params->getDatabase();
-    std::vector<int> size = db->getIntegerArray( "Size" );
+    auto db   = params->getDatabase();
+    auto size = db->getIntegerArray( "Size" );
     AMP_ASSERT( size.size() == 1u );
     std::vector<size_t> size2( 1, 2 * size[0] );
     return size2;

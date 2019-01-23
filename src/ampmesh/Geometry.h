@@ -25,6 +25,9 @@ public:
     //! Destructor
     virtual ~Geometry() {}
 
+    //! Get the name of the geometry
+    virtual std::string getName() const = 0;
+
     /**
      *\typedef shared_ptr
      *\brief  Name for the shared pointer.
@@ -43,9 +46,9 @@ public:
     /**
      * \brief    Get the number of dimensions for the object
      * \details  This function returns the number of physical dimensions for the geometry
-     * @return      Returns the distance to the nearest surface (intersection = pos + dir*distance)
+     * @return      Returns the number of physical dimensions
      */
-    virtual uint8_t getDim() const = 0;
+    inline uint8_t getDim() const { return d_physicalDim; }
 
     /**
      * \brief    Calculate the distance to the object given a ray
@@ -103,19 +106,49 @@ public:
     virtual Point physical( const Point &x ) const = 0;
 
     /**
-     * \brief    Displace the entire mesh
-     * \details  This function will displace the entire mesh by a scalar value.
-     *   This function is a blocking call for the mesh communicator, and requires
-     *   the same value on all processors.  The displacement vector should be the
-     *   size of the physical dimension.
+     * \brief    Return the centroid
+     * \details  This function will return centroid of the object
+     * @return          Returns the physical coordinates
+     */
+    virtual Point centroid() const = 0;
+
+    /**
+     * \brief    Return the bounding box
+     * \details  This function will return the bounding box of the object
+     * @return          Returns the bounding box [lb,ub]
+     */
+    virtual std::pair<Point, Point> box() const = 0;
+
+    /**
+     * \brief    Displace the entire geometry
+     * \details  This function will displace the entire geometry by a scalar value.
+     *   The displacement vector should be the size of the physical dimension.
      * \param[int] x    Displacement vector
      */
     virtual void displaceMesh( const double *x ) = 0;
 
+    /**
+     * \brief    Is the geometry logically rectangular
+     * \details  This function will return true if the underlying geometry is logically
+     *    rectangular.  This would mean logical() and physical() are valid operations.
+     */
+    inline bool isLogical() const { return d_logicalDim != 0; }
+
+    /**
+     * \brief    Return the number of logical dimensions
+     * \details  This function will return the number of logical dimensions
+     *    of the underlying geometry.  If the geometry is not logically rectangular
+     *    this function should return 0.
+     */
+    inline uint8_t getLogicalDim() const { return d_logicalDim; }
 
 protected:
     //!  Empty constructor for the base class
-    Geometry() {}
+    Geometry() : d_physicalDim( 0 ), d_logicalDim( 0 ) {}
+
+    // Delete copy constructors
+    Geometry( const Geometry & ) = delete;
+    Geometry &operator=( const Geometry & ) = delete;
 
 protected: // Helper functions
     // Compute the normal to the plane formed by 3 points
@@ -124,18 +157,9 @@ protected: // Helper functions
         return normalize( cross( b - a, c - a ) );
     }
 
-    // Compute the distance to the intersection of a ray with a plane
-    static inline double
-    intersectPlane( const Point &n, const Point &p0, const Point &x0, const Point &v )
-    {
-        double d = dot( n, v );
-        if ( fabs( d ) > 1e-12 ) {
-            double t = dot( p0 - x0, n ) / d;
-            if ( t >= 0 )
-                return t;
-        }
-        return std::numeric_limits<double>::infinity();
-    }
+protected: // Internal data
+    uint8_t d_physicalDim;
+    uint8_t d_logicalDim;
 };
 
 

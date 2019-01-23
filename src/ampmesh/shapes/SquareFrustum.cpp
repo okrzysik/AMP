@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/shapes/SquareFrustum.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -13,8 +14,10 @@ namespace Geometry {
  * Constructors                                          *
  ********************************************************/
 SquareFrustum::SquareFrustum( const std::vector<double> &range, int dir, double height )
-    : d_dir( dir )
+    : Geometry(), d_dir( dir )
 {
+    d_physicalDim = 3;
+    d_logicalDim  = 3;
     // Initialize the frustrum
     AMP_INSIST( range.size() == 6, "Invalid size for range" );
     AMP_INSIST( dir >= 0 && dir < 6, "Invalid value for dir" );
@@ -72,14 +75,19 @@ SquareFrustum::SquareFrustum( const std::vector<double> &range, int dir, double 
 double SquareFrustum::distance( const Point &pos, const Point &ang ) const
 {
     double d = std::numeric_limits<double>::infinity();
-    // Get the position and angle in logical coordinates
+    // Get the position in logical coordinates
     auto pos2 = logical( pos );
+    // Check if we are inside the volume
+    double TOL  = 1e-12;
+    bool inside = ( pos2.x() >= -TOL && pos2.x() <= 1 + TOL ) &&
+                  ( pos2.y() >= -TOL && pos2.y() <= 1 + TOL ) &&
+                  ( pos2.z() >= -TOL && pos2.z() <= 1 + TOL );
     // Loop over each surface keeping the closest surface
-    constexpr double tol = 1e-5;
+    constexpr double tol = 1e-12;
     for ( int i = 0; i < 6; i++ ) {
         // Get the distance from the ray to the plane
-        double t = intersectPlane( d_normal[i], d_face[i][0], pos, ang );
-        if ( fabs( t ) >= fabs( d ) )
+        double t = GeometryHelpers::distanceToPlane( d_normal[i], d_face[i][0], pos, ang );
+        if ( t >= d )
             continue;
         // Check if the point lies outside the volume
         auto p = SquareFrustum::logical( pos + t * ang );
@@ -90,11 +98,11 @@ double SquareFrustum::distance( const Point &pos, const Point &ang ) const
         if ( fabs( pos2[i / 2] - p[i / 2] ) < tol )
             continue;
         // The ray intersects the face
-        if ( dot( d_normal[i], ang ) > 0 )
-            d = -t;
-        else
-            d = t;
+        d = t;
     }
+    // Check if we are inside the volume
+    if ( inside && d < 1e100 )
+        d = -d;
     return d;
 }
 
@@ -209,6 +217,24 @@ Point SquareFrustum::logical( const Point &pos ) const
 
 
 /********************************************************
+ * Return the centroid and bounding box                  *
+ ********************************************************/
+Point SquareFrustum::centroid() const
+{
+    Point p = { 0.5 * ( d_range[0] + d_range[1] ),
+                0.5 * ( d_range[2] + d_range[3] ),
+                0.5 * ( d_range[4] + d_range[5] ) };
+    return p;
+}
+std::pair<Point, Point> SquareFrustum::box() const
+{
+    Point lb = { d_range[0], d_range[2], d_range[4] };
+    Point ub = { d_range[1], d_range[3], d_range[5] };
+    return { lb, ub };
+}
+
+
+/********************************************************
  * Displace the mesh                                     *
  ********************************************************/
 void SquareFrustum::displaceMesh( const double *x )
@@ -219,6 +245,13 @@ void SquareFrustum::displaceMesh( const double *x )
     d_range[3] += x[1];
     d_range[4] += x[2];
     d_range[5] += x[2];
+    for ( int i = 0; i < 6; i++ ) {
+        for ( int j = 0; j < 4; j++ ) {
+            d_face[i][j].x() += x[0];
+            d_face[i][j].y() += x[1];
+            d_face[i][j].z() += x[2];
+        }
+    }
 }
 
 

@@ -42,7 +42,11 @@ static inline void strrep( std::string &str, const std::string &s, const std::st
 /************************************************************
  * Constructor/Destructor                                    *
  ************************************************************/
-SiloIO::SiloIO() : AMP::Utilities::Writer() { d_dim = -1; }
+SiloIO::SiloIO() : AMP::Utilities::Writer()
+{
+    d_dim = -1;
+    DBSetAllowEmptyObjects( true );
+}
 SiloIO::~SiloIO() = default;
 
 

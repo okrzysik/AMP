@@ -182,14 +182,43 @@ Mesh{
         static = FALSE
 	}
 
-	/*Mesh_15 {
+	Mesh_15 {
+		MeshName = "circle_frustrum"
+		MeshType = "AMP"
+		Generator = "circle_frustrum"
+		Size = 8, 6
+		BaseRadius = 0.8
+		TopRadius = 0.6
+		Height = 1
+		Dir = "+z"
+		x_offset = -2
+		y_offset = 6
+		z_offset = 5
+        static = TRUE
+	}
+	Mesh_16 {
+		MeshName = "circle_frustrum_2"
+		MeshType = "AMP"
+		Generator = "circle_frustrum"
+		Size = 8, 6
+		BaseRadius = 0.8
+		TopRadius = 0.6
+		Height = 1
+		Dir = "-z"
+		x_offset = 2
+		y_offset = 6
+		z_offset = 6
+        static = FALSE
+	}
+
+	/*Mesh_17 {
 		MeshName = "Utah_teapot"
 		MeshType = "AMP"
         FileName = "Utah_teapot.stl"
 		dim = 3
         scale = 0.2
 		x_offset = 2
-		y_offset = 6
+		y_offset = 10
 		z_offset = 5.4
 	}*/
 	
