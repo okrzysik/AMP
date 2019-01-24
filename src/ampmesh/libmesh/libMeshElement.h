@@ -35,6 +35,9 @@ public:
     //! De-constructor for a MeshElement
     virtual ~libMeshElement();
 
+    //! Return the unique global ID of the element
+    virtual MeshElementID globalID() const override { return d_globalID; }
+
     //! Return the element class
     virtual inline std::string elementClass() const override { return "libMeshElement"; }
 
@@ -129,7 +132,10 @@ protected:
 
 private:
     static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "libMeshElement" ); }
+    MeshElementID d_globalID;
 };
+
+
 } // namespace Mesh
 } // namespace AMP
 

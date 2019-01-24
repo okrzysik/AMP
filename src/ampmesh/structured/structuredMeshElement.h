@@ -30,6 +30,9 @@ public:
     //! De-constructor for a MeshElement
     virtual ~structuredMeshElement();
 
+    //! Return the unique global ID of the element
+    virtual MeshElementID globalID() const override { return d_mesh->convert( d_index ); }
+
     //! Return the element class
     virtual inline std::string elementClass() const override { return "structuredMeshElement"; }
 
@@ -136,11 +139,7 @@ protected:
     void getElementIndex( const GeomType type, int &N, BoxMesh::MeshElementIndex *index ) const;
 
     // Reset just the mesh element
-    void reset( const BoxMesh::MeshElementIndex &index )
-    {
-        d_index    = index;
-        d_globalID = d_mesh->convert( index );
-    }
+    inline void reset( const BoxMesh::MeshElementIndex &index ) { d_index = index; }
 
     friend class AMP::Mesh::BoxMesh;
     friend class AMP::Mesh::structuredMeshIterator;

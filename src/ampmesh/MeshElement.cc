@@ -20,7 +20,7 @@ Point MeshElement::centroid() const
 {
     if ( element != nullptr )
         return element->centroid();
-    if ( d_globalID.type() == GeomType::Vertex )
+    if ( globalID().type() == GeomType::Vertex )
         return coord();
     std::vector<MeshElement> nodes;
     ( element != nullptr ? element : this )->getElements( GeomType::Vertex, nodes );
@@ -71,7 +71,7 @@ bool MeshElement::containsPoint( const Point &pos, double TOL ) const
 {
     if ( element != nullptr )
         return element->containsPoint( pos, TOL );
-    if ( d_globalID.type() == GeomType::Vertex ) {
+    if ( globalID().type() == GeomType::Vertex ) {
         // double dist = 0.0;
         auto point   = this->coord();
         double dist2 = 0.0;
@@ -124,6 +124,13 @@ unsigned int MeshElement::globalOwnerRank() const
                    ")" );
     return element->globalOwnerRank();
 }
+MeshElementID MeshElement::globalID() const
+{
+    if ( element == nullptr )
+        return MeshElementID();
+    return element->globalID();
+}
+
 
 } // namespace Mesh
 } // namespace AMP

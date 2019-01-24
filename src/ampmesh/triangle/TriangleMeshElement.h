@@ -46,6 +46,9 @@ public:
     //! De-constructor for a MeshElement
     virtual ~TriangleMeshElement() = default;
 
+    //! Return the unique global ID of the element
+    virtual MeshElementID globalID() const override { return d_globalID; }
+
     //! Return the element class
     virtual inline std::string elementClass() const override { return "TriangleMeshElement"; }
 
@@ -123,7 +126,10 @@ protected:
 
 private:
     static constexpr uint32_t getTypeID();
+    MeshElementID d_globalID;
 };
+
+
 } // namespace Mesh
 } // namespace AMP
 

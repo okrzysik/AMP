@@ -59,24 +59,22 @@ public: // non-virtual functions
     inline const MeshElement *getRawElement() const;
 
     //! Return the element type
-    inline GeomType elementType() const;
+    inline GeomType elementType() const { return globalID().type(); }
 
-    //! Return the unique global ID of the element
-    inline const MeshElementID &globalID() const;
 
     // Overload operators
-    inline bool operator==( const MeshElement &rhs ) const { return d_globalID == rhs.d_globalID; }
-    inline bool operator!=( const MeshElement &rhs ) const { return d_globalID != rhs.d_globalID; }
-    inline bool operator<( const MeshElement &rhs ) const { return d_globalID < rhs.d_globalID; }
-    inline bool operator>( const MeshElement &rhs ) const { return d_globalID > rhs.d_globalID; }
-    inline bool operator<=( const MeshElement &rhs ) const { return d_globalID <= rhs.d_globalID; }
-    inline bool operator>=( const MeshElement &rhs ) const { return d_globalID >= rhs.d_globalID; }
-    inline bool operator==( const MeshElementID &rhs ) const { return d_globalID == rhs; }
-    inline bool operator!=( const MeshElementID &rhs ) const { return d_globalID != rhs; }
-    inline bool operator<( const MeshElementID &rhs ) const { return d_globalID < rhs; }
-    inline bool operator>( const MeshElementID &rhs ) const { return d_globalID > rhs; }
-    inline bool operator<=( const MeshElementID &rhs ) const { return d_globalID <= rhs; }
-    inline bool operator>=( const MeshElementID &rhs ) const { return d_globalID >= rhs; }
+    inline bool operator==( const MeshElement &rhs ) const { return globalID() == rhs.globalID(); }
+    inline bool operator!=( const MeshElement &rhs ) const { return globalID() != rhs.globalID(); }
+    inline bool operator<( const MeshElement &rhs ) const { return globalID() < rhs.globalID(); }
+    inline bool operator>( const MeshElement &rhs ) const { return globalID() > rhs.globalID(); }
+    inline bool operator<=( const MeshElement &rhs ) const { return globalID() <= rhs.globalID(); }
+    inline bool operator>=( const MeshElement &rhs ) const { return globalID() >= rhs.globalID(); }
+    inline bool operator==( const MeshElementID &rhs ) const { return globalID() == rhs; }
+    inline bool operator!=( const MeshElementID &rhs ) const { return globalID() != rhs; }
+    inline bool operator<( const MeshElementID &rhs ) const { return globalID() < rhs; }
+    inline bool operator>( const MeshElementID &rhs ) const { return globalID() > rhs; }
+    inline bool operator<=( const MeshElementID &rhs ) const { return globalID() <= rhs; }
+    inline bool operator>=( const MeshElementID &rhs ) const { return globalID() >= rhs; }
 
     //! Return the elements composing the current element
     inline std::vector<MeshElement> getElements( const GeomType type ) const;
@@ -111,6 +109,9 @@ public: // non-virtual functions
 
 
 public: // Virtual functions
+    //! Return the unique global ID of the element
+    virtual MeshElementID globalID() const;
+
     //! Return the owner rank according to AMP_COMM_WORLD
     virtual unsigned int globalOwnerRank() const;
 
@@ -182,9 +183,6 @@ protected:
 
     // A pointer to the derived class
     MeshElement *element;
-
-    //! The unique global id of the element
-    MeshElementID d_globalID;
 
     // Clone the element
     virtual inline MeshElement *clone() const;
