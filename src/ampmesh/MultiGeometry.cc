@@ -21,17 +21,6 @@ double MultiGeometry::distance( const Point &pos, const Point &dir ) const
         double d = geom->distance( pos, dir );
         if ( fabs( d ) < fabs( dist ) )
             dist = d;
-        if ( d < 1e100 ) {
-            bool test = geom->inside( pos + fabs( d ) * dir );
-            geom->distance( pos, dir );
-            geom->inside( pos + fabs( d ) * dir );
-            AMP_ASSERT( test );
-        }
-    }
-    if ( dist < 1e100 ) {
-        bool test = inside( pos + fabs( dist ) * dir );
-        inside( pos + fabs( dist ) * dir );
-        AMP_ASSERT( test );
     }
     return dist;
 }

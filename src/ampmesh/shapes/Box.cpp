@@ -2,6 +2,7 @@
 #include "AMP/utils/Utilities.h"
 
 
+#include <algorithm>
 #include <vector>
 
 
