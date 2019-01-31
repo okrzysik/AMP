@@ -27,10 +27,10 @@ DOFManager::shared_ptr simpleDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh
         return DOFManager::shared_ptr();
     if ( split && AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh ).get() != nullptr ) {
         // We want to split the DOFs by the mesh
-        std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getLocalBaseMeshIDs();
+        auto meshIDs = mesh->getLocalBaseMeshIDs();
         std::vector<DOFManager::shared_ptr> managers;
         for ( auto &meshID : meshIDs ) {
-            AMP::Mesh::Mesh::shared_ptr subMesh = mesh->Subset( meshID );
+            auto subMesh = mesh->Subset( meshID );
             if ( subMesh.get() != nullptr )
                 managers.push_back( create( subMesh, type, gcw, DOFsPerObject, false ) );
         }
@@ -54,19 +54,18 @@ DOFManager::shared_ptr simpleDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh
                                                  int DOFsPerElement )
 {
     // Check the iterators
-    AMP::Mesh::MeshIterator intersection =
-        AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, it1, it2 );
+    auto intersection = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, it1, it2 );
     AMP_INSIST( intersection.size() == it2.size(), "it1 must include it2" );
-    AMP::Mesh::MeshIterator tmp = it2.begin();
+    auto tmp = it2.begin();
     for ( size_t i = 0; i < tmp.size(); i++ ) {
-        AMP::Mesh::MeshElementID id = tmp->globalID();
+        auto id = tmp->globalID();
         AMP_INSIST( id.is_local(), "it2 may not contain any ghost elements" );
         ++tmp;
     }
-    tmp                      = it1.begin();
-    AMP::Mesh::GeomType type = tmp->globalID().type();
+    tmp       = it1.begin();
+    auto type = tmp->globalID().type();
     for ( size_t i = 0; i < tmp.size(); i++ ) {
-        AMP::Mesh::MeshElementID id = tmp->globalID();
+        auto id = tmp->globalID();
         AMP_INSIST( id.type() == type, "All elements in the iterator must be the same type" );
         ++tmp;
     }
@@ -85,10 +84,10 @@ DOFManager::shared_ptr simpleDOFManager::create( const AMP::Mesh::MeshIterator &
                                                  int DOFsPerElement )
 {
     // Check the iterator
-    AMP::Mesh::MeshIterator tmp = it.begin();
-    AMP::Mesh::GeomType type    = tmp->globalID().type();
+    auto tmp  = it.begin();
+    auto type = tmp->globalID().type();
     for ( size_t i = 0; i < tmp.size(); i++ ) {
-        AMP::Mesh::MeshElementID id = tmp->globalID();
+        auto id = tmp->globalID();
         AMP_INSIST( id.type() == type, "All elements in the iterator must be the same type" );
         ++tmp;
     }
@@ -131,23 +130,19 @@ void simpleDOFManager::initialize()
         d_baseMeshIDs.clear();
     }
     // Create a sorted list of the local and remote types
-    d_local_id.resize( d_localIterator.size() );
-    d_remote_id.resize( d_ghostIterator.size() - d_localIterator.size() );
-    AMP::Mesh::MeshIterator pos = d_ghostIterator.begin();
-    AMP::Mesh::MeshIterator end = d_ghostIterator.end();
-    int i                       = 0;
-    int j                       = 0;
-    while ( pos != end ) {
-        AMP::Mesh::MeshElementID id = pos->globalID();
-        if ( id.is_local() ) {
-            d_local_id[i] = id;
-            i++;
-        } else {
-            d_remote_id[j] = id;
-            j++;
-        }
-        ++pos;
+    d_local_id.clear();
+    d_remote_id.clear();
+    d_local_id.reserve( d_localIterator.size() );
+    d_remote_id.reserve( d_ghostIterator.size() - d_localIterator.size() );
+    for ( const auto &elem : d_ghostIterator ) {
+        auto id = elem.globalID();
+        if ( id.is_local() )
+            d_local_id.push_back( id );
+        else
+            d_remote_id.push_back( id );
     }
+    AMP_ASSERT( d_local_id.size() == d_localIterator.size() );
+    AMP_ASSERT( d_remote_id.size() == d_ghostIterator.size() - d_localIterator.size() );
     // Sort the elements (they will be sorted by the meshID, then the rank on the
     // comm of the given mesh, then the element type, and finally the local id)
     AMP::Utilities::quicksort( d_local_id );
@@ -188,9 +183,8 @@ AMP::shared_ptr<DOFManager> simpleDOFManager::subset( const AMP::Mesh::Mesh::sha
     }
     // Check if the desired mesh is a multimesh that contains the current mesh
     if ( AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) != nullptr ) {
-        AMP::shared_ptr<const AMP::Mesh::MultiMesh> multimesh =
-            AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
-        std::vector<AMP::Mesh::Mesh::const_shared_ptr> list = multimesh->getMeshes();
+        auto multimesh = AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
+        auto list      = multimesh->getMeshes();
         AMP::shared_ptr<DOFManager> subset_DOFs;
         bool found_local = false;
         for ( auto &elem : list ) {
@@ -308,12 +302,12 @@ std::vector<size_t> simpleDOFManager::getRemoteDOFs() const
 std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
     // Get a list of all element ids that are part of the row
-    AMP::Mesh::GeomType meshType = d_mesh->getGeomType();
-    AMP::Mesh::GeomType objType  = obj.elementType();
+    auto meshType = d_mesh->getGeomType();
+    auto objType  = obj.elementType();
     std::vector<AMP::Mesh::MeshElementID> ids;
     if ( objType == d_type && ( objType == AMP::Mesh::GeomType::Vertex || objType == meshType ) ) {
         // Use the getNeighbors function to get the neighbors of the current element
-        std::vector<Mesh::MeshElement::shared_ptr> neighbor_elements = obj.getNeighbors();
+        auto neighbor_elements = obj.getNeighbors();
         ids.reserve( neighbor_elements.size() + 1 );
         ids.push_back( obj.globalID() );
         for ( auto &neighbor_element : neighbor_elements ) {
@@ -322,9 +316,9 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
         }
     } else if ( objType == d_type ) {
         // We need to use the mesh to get the connectivity of the elements of the same type
-        std::vector<AMP::Mesh::MeshElement> parents = d_mesh->getElementParents( obj, meshType );
+        auto parents = d_mesh->getElementParents( obj, meshType );
         for ( auto &parent : parents ) {
-            std::vector<AMP::Mesh::MeshElement> children = parent.getElements( objType );
+            auto children = parent.getElements( objType );
             ids.reserve( ids.size() + children.size() );
             for ( auto &elem : children )
                 ids.push_back( elem.globalID() );
@@ -332,12 +326,12 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
         AMP::Utilities::unique( ids );
     } else if ( objType > d_type ) {
         // The desired element type is < the current element type, use getElements
-        std::vector<AMP::Mesh::MeshElement> children = obj.getElements( d_type );
+        auto children = obj.getElements( d_type );
         for ( auto &elem : children )
             ids.push_back( elem.globalID() );
     } else if ( objType < d_type ) {
         // The desired element type is < the current element type, use getElementParents
-        std::vector<AMP::Mesh::MeshElement> parents = d_mesh->getElementParents( obj, meshType );
+        auto parents = d_mesh->getElementParents( obj, meshType );
         for ( auto &parent : parents )
             ids.push_back( parent.globalID() );
     } else {
@@ -392,8 +386,7 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
     std::vector<int> owner_rank( remote_ids.size(), -1 );
     for ( auto meshID : meshIDs ) {
         // Get the mesh with the given meshID
-
-        AMP::Mesh::Mesh::shared_ptr submesh = d_mesh->Subset( meshID );
+        auto submesh = d_mesh->Subset( meshID );
         // Create a map from the rank of the submesh to the current mesh
         int rank_submesh = -1;
         int root_submesh = comm.getSize();
@@ -429,7 +422,7 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
     for ( size_t i = 0; i < remote_ids.size(); i++ )
         AMP_ASSERT( owner_rank[i] >= 0 && owner_rank[i] < commSize );
     // Resort the remote ids according the the owner rank
-    std::vector<AMP::Mesh::MeshElementID> remote_ids2 = remote_ids;
+    auto remote_ids2 = remote_ids;
     AMP::Utilities::quicksort( owner_rank, remote_ids2 );
     // Determine the send count and displacements for each processor
     std::vector<int> send_cnt( comm.getSize(), 0 );

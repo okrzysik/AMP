@@ -50,11 +50,6 @@ bool Circle::inside( const Point &pos ) const
 /********************************************************
  * Return the closest surface                            *
  ********************************************************/
-int Circle::surface( const Point &pos ) const
-{
-    NULL_USE( pos );
-    return 0;
-}
 Point Circle::surfaceNorm( const Point &pos ) const
 {
     NULL_USE( pos );

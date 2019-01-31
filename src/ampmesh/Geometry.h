@@ -72,10 +72,17 @@ public:
     virtual bool inside( const Point &pos ) const = 0;
 
     /**
+     * \brief    Get the number of surfaces
+     * \details     This function will return the number of unique surfaces
+     * @return          Returns the number of unique surfaces
+     */
+    virtual int NSurface() const = 0;
+
+    /**
      * \brief    Get the surface id
      * \details     This function will return the surface id closest to the point
      * \param[in] x     Current position
-     * @return          Returns the surface id
+     * @return          Returns the surface id (0:NSurface-1)
      */
     virtual int surface( const Point &x ) const = 0;
 

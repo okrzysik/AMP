@@ -242,13 +242,10 @@ static void moabInterface( AMP::UnitTest *ut )
 
     // Check to make sure we didn't just get a vector of zeros
     AMPVec::iterator myIter;
-    int ctr      = 0;
     bool nonZero = false;
     for ( myIter = nodalVec->begin(); myIter != nodalVec->end(); ++myIter ) {
         if ( *myIter != 0.0 )
             nonZero = true;
-
-        ctr++;
     }
 
     if ( nonZero )

@@ -49,11 +49,6 @@ bool SphereSurface::inside( const Point &pos ) const
 /********************************************************
  * Return the closest surface                            *
  ********************************************************/
-int SphereSurface::surface( const Point &pos ) const
-{
-    NULL_USE( pos );
-    return 0;
-}
 Point SphereSurface::surfaceNorm( const Point &pos ) const
 {
     NULL_USE( pos );

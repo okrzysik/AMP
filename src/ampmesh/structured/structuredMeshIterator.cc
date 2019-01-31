@@ -29,6 +29,9 @@ inline BoxMesh::MeshElementIndex structuredMeshIterator::getIndex( int i ) const
         i -= k * s2;
         int j = i / s1;
         i -= j * s1;
+        i += d_first.index( 0 );
+        j += d_first.index( 1 );
+        k += d_first.index( 2 );
         if ( d_isPeriodic[0] )
             i = ( i + d_globalSize[0] ) % d_globalSize[0];
         if ( d_isPeriodic[1] )

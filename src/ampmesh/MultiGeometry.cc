@@ -31,6 +31,11 @@ bool MultiGeometry::inside( const Point &pos ) const
         inside = inside || geom->inside( pos );
     return inside;
 }
+int MultiGeometry::NSurface() const
+{
+    AMP_ERROR( "NSurface is not valid for MultiGeometry" );
+    return 0;
+}
 int MultiGeometry::surface( const Point & ) const
 {
     AMP_ERROR( "surface is not valid for MultiGeometry" );

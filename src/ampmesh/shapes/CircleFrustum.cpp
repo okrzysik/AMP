@@ -21,7 +21,7 @@ CircleFrustum::CircleFrustum( const std::array<double, 2> &r, int dir, double he
     AMP_INSIST( r[0] > r[1] && r[1] > 0, "Invalid value for r" );
     AMP_INSIST( dir >= 0 && dir < 6, "Invalid value for dir" );
     // Compute the apex of the underlying cone
-    double h2    = height * r[0] / r[1];
+    double h2    = height * r[0] / ( r[0] - r[1] );
     d_C          = { 0, 0, 0 };
     d_C[dir / 2] = d_dir % 2 == 0 ? -h2 : h2;
     d_theta      = atan( r[0] / h2 );
@@ -110,12 +110,12 @@ int CircleFrustum::surface( const Point &pos ) const
 {
     auto p   = logical( pos );
     double t = std::min(
-        { std::abs( p.y() ), std::abs( 1 - p.y() ), std::abs( p.z() ), std::abs( 1 - p.z() ) } );
-    if ( std::abs( p.x() ) < t ) {
+        { std::abs( p.x() ), std::abs( 1 - p.x() ), std::abs( p.y() ), std::abs( 1 - p.y() ) } );
+    if ( std::abs( p.z() ) < t ) {
         // We are at the large face
         bool swap = d_dir == 0 || d_dir == 1 || d_dir == 3 || d_dir == 4;
         return swap ? 1 : 0;
-    } else if ( std::abs( 1 - p.x() ) < t ) {
+    } else if ( std::abs( 1 - p.z() ) < t ) {
         // We are at the small face
         bool swap = d_dir == 0 || d_dir == 1 || d_dir == 3 || d_dir == 4;
         return swap ? 0 : 1;
@@ -129,11 +129,29 @@ Point CircleFrustum::surfaceNorm( const Point &pos ) const
     int s   = surface( pos );
     Point v = { 0, 0, 0 };
     if ( s == 0 ) {
-        v[d_dir / 2] = d_dir % 2 == 0 ? -1 : 1;
-    } else if ( s == 1 ) {
         v[d_dir / 2] = d_dir % 2 == 0 ? 1 : -1;
+    } else if ( s == 1 ) {
+        v[d_dir / 2] = d_dir % 2 == 0 ? -1 : 1;
     } else {
-        AMP_ERROR( "Not finished" );
+        if ( d_dir == 0 ) {
+            double r = pos.y() * pos.y() + pos.z() * pos.z();
+            v = { sin( d_theta ), cos( d_theta ) * pos.y() / r, cos( d_theta ) * pos.z() / r };
+        } else if ( d_dir == 1 ) {
+            double r = pos.y() * pos.y() + pos.z() * pos.z();
+            v = { sin( d_theta ), cos( d_theta ) * pos.y() / r, cos( d_theta ) * pos.z() / r };
+        } else if ( d_dir == 2 ) {
+            double r = pos.x() * pos.x() + pos.z() * pos.z();
+            v = { cos( d_theta ) * pos.x() / r, sin( d_theta ), cos( d_theta ) * pos.z() / r };
+        } else if ( d_dir == 3 ) {
+            double r = pos.x() * pos.x() + pos.z() * pos.z();
+            v = { cos( d_theta ) * pos.x() / r, -sin( d_theta ), cos( d_theta ) * pos.z() / r };
+        } else if ( d_dir == 4 ) {
+            double r = pos.x() * pos.x() + pos.y() * pos.y();
+            v = { cos( d_theta ) * pos.x() / r, cos( d_theta ) * pos.y() / r, sin( d_theta ) };
+        } else {
+            double r = pos.x() * pos.x() + pos.y() * pos.y();
+            v = { cos( d_theta ) * pos.x() / r, cos( d_theta ) * pos.y() / r, -sin( d_theta ) };
+        }
     }
     return v;
 }

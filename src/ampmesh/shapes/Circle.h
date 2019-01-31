@@ -28,7 +28,8 @@ public:
     virtual std::string getName() const override final { return "Circle"; }
     virtual double distance( const Point &pos, const Point &dir ) const override final;
     virtual bool inside( const Point &pos ) const override final;
-    virtual int surface( const Point &x ) const override final;
+    virtual int NSurface() const override final { return 1; }
+    virtual int surface( const Point & ) const override final { return 0; }
     virtual Point surfaceNorm( const Point &x ) const override final;
     virtual Point logical( const Point &x ) const override final;
     virtual Point physical( const Point &x ) const override final;

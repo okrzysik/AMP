@@ -30,6 +30,7 @@ public: // Functions inherited from Geometry
     virtual std::string getName() const override final;
     virtual double distance( const Point &pos, const Point &dir ) const override final;
     virtual bool inside( const Point &pos ) const override final;
+    virtual int NSurface() const override final { return 2 * NDIM; }
     virtual int surface( const Point &x ) const override final;
     virtual Point surfaceNorm( const Point &x ) const override final;
     virtual Point logical( const Point &x ) const override final;
@@ -68,6 +69,7 @@ public: // Functions inherited from Geometry
     virtual std::string getName() const override final;
     virtual double distance( const Point &pos, const Point &dir ) const override final;
     virtual bool inside( const Point &pos ) const override final;
+    virtual int NSurface() const override final { return 2 * NDIM; }
     virtual int surface( const Point &x ) const override final;
     virtual Point surfaceNorm( const Point &x ) const override final;
     virtual Point logical( const Point &x ) const override final;
