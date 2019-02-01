@@ -163,8 +163,8 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::Mesh::shared_pt
             element_list.push_back( elem );
     }
     // Create the element iterator
-    auto elements = AMP::make_shared<std::vector<AMP::Mesh::MeshElement>>( element_list );
-    AMP::Mesh::MeshIterator subsetIterator = AMP::Mesh::MultiVectorIterator( elements, 0 );
+    auto elements       = AMP::make_shared<std::vector<AMP::Mesh::MeshElement>>( element_list );
+    auto subsetIterator = AMP::Mesh::MultiVectorIterator( elements, 0 );
     // Get the DOFs
     std::vector<AMP::Mesh::MeshElementID> id_list( elements->size() );
     for ( size_t i = 0; i < elements->size(); i++ )
@@ -197,7 +197,7 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::MeshIterator &i
                                                 const AMP_MPI &comm )
 {
     // Get the intesection of the current iterator with the given iterator
-    AMP::Mesh::MeshIterator intersection =
+    auto intersection =
         AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, iterator, getIterator() );
     if ( intersection.size() == getIterator().size() )
         intersection = getIterator();

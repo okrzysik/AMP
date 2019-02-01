@@ -20,7 +20,8 @@
 #define __INIT_FN2__( x, y, z ) ( 2 * x + y + z )
 #define __INIT_FN3__( x, y, z ) ( 4 * x + y + z )
 
-AMP::LinearAlgebra::VS_Comm createCommSelect( AMP::AMP_MPI globalComm, bool createOnThisRank )
+AMP::LinearAlgebra::VS_Comm createCommSelect( const AMP::AMP_MPI &globalComm,
+                                              bool createOnThisRank )
 {
     int inComm = createOnThisRank ? 1 : 0;
     // Create a comm spanning the meshes
@@ -28,7 +29,7 @@ AMP::LinearAlgebra::VS_Comm createCommSelect( AMP::AMP_MPI globalComm, bool crea
     return commSelect;
 }
 
-int runTest( std::string exeName, AMP::UnitTest *ut )
+int runTest( const std::string &exeName, AMP::UnitTest *ut )
 {
     std::string const inputFile = exeName;
     std::string const logFile   = "output_" + exeName;

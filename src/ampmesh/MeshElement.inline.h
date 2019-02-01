@@ -10,13 +10,12 @@ namespace Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-MeshElement::MeshElement() : d_globalID()
+MeshElement::MeshElement()
 {
     typeID  = getTypeID();
     element = nullptr;
 }
-MeshElement::MeshElement( const MeshElement &rhs )
-    : typeID( getTypeID() ), element( nullptr ), d_globalID( rhs.d_globalID )
+MeshElement::MeshElement( const MeshElement &rhs ) : typeID( getTypeID() ), element( nullptr )
 {
     if ( rhs.element == nullptr && rhs.typeID == getTypeID() ) {
         element = nullptr;
@@ -26,8 +25,7 @@ MeshElement::MeshElement( const MeshElement &rhs )
         element = rhs.element->clone();
     }
 }
-MeshElement::MeshElement( MeshElement &&rhs )
-    : typeID( getTypeID() ), element( rhs.element ), d_globalID( rhs.d_globalID )
+MeshElement::MeshElement( MeshElement &&rhs ) : typeID( getTypeID() ), element( rhs.element )
 {
     if ( rhs.typeID != getTypeID() )
         element = rhs.clone();
@@ -50,7 +48,6 @@ MeshElement &MeshElement::operator=( const MeshElement &rhs )
     } else {
         element = rhs.element->clone();
     }
-    d_globalID = rhs.d_globalID;
     return *this;
 }
 MeshElement &MeshElement::operator=( MeshElement &&rhs )
@@ -62,8 +59,7 @@ MeshElement &MeshElement::operator=( MeshElement &&rhs )
         delete element;
         element = nullptr;
     }
-    typeID     = getTypeID();
-    d_globalID = rhs.d_globalID;
+    typeID = getTypeID();
     std::swap( element, rhs.element );
     if ( rhs.typeID != getTypeID() )
         element = rhs.clone();
@@ -118,16 +114,6 @@ inline bool MeshElement::containsPoint( const std::vector<double> &pos, double T
 {
     return containsPoint( Point( pos.size(), pos.data() ), TOL );
 }
-
-
-/********************************************************
- * Function to return basic info                         *
- ********************************************************/
-inline const MeshElementID &MeshElement::globalID() const
-{
-    return element == nullptr ? d_globalID : element->d_globalID;
-}
-inline GeomType MeshElement::elementType() const { return globalID().type(); }
 
 
 /********************************************************

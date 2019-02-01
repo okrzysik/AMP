@@ -1,5 +1,5 @@
-#ifndef included_AMP_BoxMeshHelpers
-#define included_AMP_BoxMeshHelpers
+#ifndef included_AMP_GeometryHelpers
+#define included_AMP_GeometryHelpers
 
 
 #include "AMP/ampmesh/MeshPoint.h"
@@ -7,8 +7,8 @@
 
 
 namespace AMP {
-namespace Mesh {
-namespace BoxMeshHelpers {
+namespace Geometry {
+namespace GeometryHelpers {
 
 
 /**
@@ -147,8 +147,73 @@ AMP::Mesh::Point map_logical_shell( double r1, double r2, double x, double y, do
 AMP::Mesh::Point map_shell_logical( double r1, double r2, double x, double y, double z );
 
 
-} // namespace BoxMeshHelpers
-} // namespace Mesh
+/**
+ * \brief   Compute the intersection of a ray and an infinite plane
+ * \details  This function will compute the intersection of a ray with an infinite plane.
+ *    The plane is described by the normal and a point on the plane.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] n         Normal to the plane
+ * \param[in] p0        A point on the plane
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * @return              Returns the distance
+ */
+double distanceToPlane( const AMP::Mesh::Point &n,
+                        const AMP::Mesh::Point &p0,
+                        const AMP::Mesh::Point &pos,
+                        const AMP::Mesh::Point &ang );
+
+
+/**
+ * \brief   Compute the intersection of a ray and cylinder
+ * \details  This function will compute the intersection of a ray with a cylinder.
+ *    It assumes a cylinder of radius r and height h, centered at the origin
+ *    along the z axis: z=[-h/2,h/2].  If the ray is inside the cylinder the distance
+ *    is negative.  If the ray will never intersect the object, this distance is inf.
+ * \param[in] r         Radius of cylinder
+ * \param[in] h         Height of cylinder
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * @return              Returns the distance
+ */
+double
+distanceToCylinder( double r, double h, const AMP::Mesh::Point &pos, const AMP::Mesh::Point &ang );
+
+
+/**
+ * \brief   Compute the intersection of a ray and sphere
+ * \details  This function will compute the intersection of a ray with a cylinder.
+ *    It assumes a sphere of radius r and height h, centered at the origin.
+ *    If the ray is inside the cylinder the distance is negative.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] r         Radius of cylinder
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * @return              Returns the distance
+ */
+double distanceToSphere( double r, const AMP::Mesh::Point &pos, const AMP::Mesh::Point &ang );
+
+
+/**
+ * \brief   Compute the intersection of a ray and cone
+ * \details  This function will compute the intersection of a ray with a cone.
+ *    It assumes a cone with the apex at the origin in the direction given by V.
+ *    If the ray is inside the cone the distance is negative.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] V         Direction of cone
+ * \param[in] theta     Apex angle of cone
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * @return              Returns the distance
+ */
+double distanceToCone( const AMP::Mesh::Point &V,
+                       double theta,
+                       const AMP::Mesh::Point &pos,
+                       const AMP::Mesh::Point &ang );
+
+
+} // namespace GeometryHelpers
+} // namespace Geometry
 } // namespace AMP
 
 #endif

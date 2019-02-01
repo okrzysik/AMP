@@ -1,7 +1,6 @@
 #ifndef included_AMP_Mesh
 #define included_AMP_Mesh
 
-#include "AMP/ampmesh/Geometry.h"
 #include "AMP/ampmesh/MeshID.h"
 #include "AMP/ampmesh/MeshIterator.h"
 #include "AMP/ampmesh/MeshParameters.h"
@@ -9,13 +8,18 @@
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/utils/shared_ptr.h"
 
-#ifdef USE_AMP_VECTORS
+
+// Forward declerations
 namespace AMP {
+namespace Geometry {
+class Geometry;
+}
+#ifdef USE_AMP_VECTORS
 namespace LinearAlgebra {
 class Vector;
 }
-} // namespace AMP
 #endif
+} // namespace AMP
 
 
 namespace AMP {
@@ -464,7 +468,7 @@ protected:
     MeshParameters::shared_ptr d_params;
 
     //! The geometry parameters
-    Geometry::Geometry::shared_ptr d_geometry;
+    AMP::shared_ptr<Geometry::Geometry> d_geometry;
 
     //! The geometric dimension (equivalent to the highest geometric object that could be
     //! represented)

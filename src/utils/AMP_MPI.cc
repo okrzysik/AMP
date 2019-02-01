@@ -3931,7 +3931,9 @@ void MPI_CLASS::serializeStop()
 /****************************************************************************
  * Function to start/stop MPI                                                *
  ****************************************************************************/
+#ifdef USE_EXT_MPI
 static bool called_MPI_Init = false;
+#endif
 bool MPI_CLASS::MPI_Active()
 {
 #ifdef USE_EXT_MPI

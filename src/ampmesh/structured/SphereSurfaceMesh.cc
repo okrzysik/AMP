@@ -1,7 +1,6 @@
 #include "AMP/ampmesh/structured/SphereSurfaceMesh.h"
 #include "AMP/ampmesh/shapes/SphereSurface.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
-#include "AMP/ampmesh/structured/BoxMeshHelpers.h"
 
 namespace AMP {
 namespace Mesh {

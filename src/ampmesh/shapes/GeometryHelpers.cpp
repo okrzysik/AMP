@@ -1,4 +1,4 @@
-#include "AMP/ampmesh/structured/BoxMeshHelpers.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/ampmesh/Geometry.h"
 #include "AMP/utils/Utilities.h"
 
@@ -6,8 +6,8 @@
 #include <cmath>
 
 namespace AMP {
-namespace Mesh {
-namespace BoxMeshHelpers {
+namespace Geometry {
+namespace GeometryHelpers {
 
 
 /****************************************************************
@@ -243,6 +243,138 @@ AMP::Geometry::Point map_shell_logical( double r1, double r2, double x0, double 
 }
 
 
-} // namespace BoxMeshHelpers
-} // namespace Mesh
+/****************************************************************
+ * Compute the distance to the surface of a plane                *
+ ****************************************************************/
+double distanceToPlane( const AMP::Mesh::Point &n,
+                        const AMP::Mesh::Point &p0,
+                        const AMP::Mesh::Point &pos,
+                        const AMP::Mesh::Point &ang )
+{
+    double d = dot( n, ang );
+    if ( fabs( d ) > 1e-6 ) {
+        auto v = p0 - pos;
+        auto t = dot( v, n ) / d;
+        if ( t >= 0 )
+            return t;
+    }
+    return std::numeric_limits<double>::infinity();
+}
+
+
+/****************************************************************
+ * Compute the distance to the surface of a cylinder             *
+ ****************************************************************/
+double distanceToCylinder( double r, double h, const Point &pos, const Point &ang )
+{
+    // First check the distance to the faces
+    double d1 = ( 0.5 * h - pos.z() ) / ang.z();
+    double d2 = ( -0.5 * h - pos.z() ) / ang.z();
+    if ( d1 <= 0 )
+        d1 = std::numeric_limits<double>::infinity();
+    if ( d2 <= 0 )
+        d2 = std::numeric_limits<double>::infinity();
+    double d  = std::min( d1, d2 );
+    auto pos2 = pos + d * ang;
+    double r2 = pos2.x() * pos2.x() + pos2.y() * pos2.y();
+    if ( r2 > r * r )
+        d = std::numeric_limits<double>::infinity();
+    // Compute the intersection of a line with the circle of the cylinder
+    double dx = ang.x();
+    double dy = ang.y();
+    double dr = sqrt( dx * dx + dy * dy );
+    double D  = pos.x() * ( pos.y() + ang.y() ) - ( pos.x() + ang.x() ) * pos.y();
+    double t  = r * r * dr * dr - D * D;
+    if ( t >= 0 ) {
+        t         = sqrt( t );
+        double s  = dy < 0 ? -1 : 1;
+        double x1 = ( D * dy + s * dx * t ) / ( dr * dr );
+        double x2 = ( D * dy - s * dx * t ) / ( dr * dr );
+        // double y1 = ( -D * dx + abs( dy ) *t ) / ( dr*dr);
+        // double y2 = ( -D * dx - abs( dy ) *t ) / ( dr*dr);
+        // Compute the distance to the point
+        double d1 = ( x1 - pos.x() ) / ang.x();
+        double d2 = ( x2 - pos.x() ) / ang.x();
+        if ( d1 < 0 )
+            d1 = std::numeric_limits<double>::infinity();
+        if ( d2 < 0 )
+            d2 = std::numeric_limits<double>::infinity();
+        // Check that the z-point is within the cylinder for each point
+        double z1 = pos.z() + d1 * ang.z();
+        double z2 = pos.z() + d2 * ang.z();
+        if ( z1 < -0.5 * h || z1 > 0.5 * h )
+            d1 = std::numeric_limits<double>::infinity();
+        if ( z2 < -0.5 * h || z2 > 0.5 * h )
+            d2 = std::numeric_limits<double>::infinity();
+        d = std::min( d, std::min( d1, d2 ) );
+    }
+    // Return the distance to the closest point
+    r2          = pos.x() * pos.x() + pos.y() * pos.y();
+    bool inside = std::abs( pos.z() ) < 0.5 * h && r2 < r * r;
+    return ( inside ? -1 : 1 ) * d;
+}
+
+
+/****************************************************************
+ * Compute the distance to the surface of a sphere               *
+ *    http://paulbourke.net/geometry/circlesphere                *
+ ****************************************************************/
+double distanceToSphere( double r, const Point &pos, const Point &ang )
+{
+    double a = ang.x() * ang.x() + ang.y() * ang.y() + ang.z() * ang.z();
+    double b = 2 * ( ang.x() * pos.x() + ang.y() * pos.y() + ang.z() * pos.z() );
+    double c = pos.x() * pos.x() + pos.y() * pos.y() + pos.z() * pos.z() - r * r;
+    double t = b * b - 4 * a * c;
+    if ( t < 0 )
+        return std::numeric_limits<double>::infinity();
+    t         = sqrt( t );
+    double d1 = ( -b + t ) / ( 2 * a );
+    double d2 = ( -b - t ) / ( 2 * a );
+    if ( d1 < 0 )
+        d1 = std::numeric_limits<double>::infinity();
+    if ( d2 < 0 )
+        d2 = std::numeric_limits<double>::infinity();
+    double d    = std::min( d1, d2 );
+    double r2   = pos.x() * pos.x() + pos.y() * pos.y() + pos.z() * pos.z();
+    bool inside = r2 < r * r;
+    return ( inside ? -1 : 1 ) * d;
+}
+
+
+/****************************************************************
+ * Compute the distance to the surface of a cone                *
+ * http://lousodrome.net/blog/light/2017/01/03/intersection-of-a-ray-and-a-cone
+ ****************************************************************/
+double distanceToCone( const AMP::Mesh::Point &V,
+                       double theta,
+                       const AMP::Mesh::Point &pos,
+                       const AMP::Mesh::Point &ang )
+{
+    double DV  = dot( ang, V );
+    double CV  = dot( pos, V );
+    double ct  = cos( theta );
+    double ct2 = ct * ct;
+    double a   = DV * DV - ct2;
+    double b   = 2 * ( DV * CV - dot( ang, pos ) * ct2 );
+    double c   = CV * CV - dot( pos, pos ) * ct2;
+    double t   = b * b - 4 * a * c;
+    if ( t < 0 )
+        return std::numeric_limits<double>::infinity();
+    t         = sqrt( t );
+    double d1 = ( -b + t ) / ( 2 * a );
+    double d2 = ( -b - t ) / ( 2 * a );
+    if ( d1 < 0 )
+        d1 = std::numeric_limits<double>::infinity();
+    if ( d2 < 0 )
+        d2 = std::numeric_limits<double>::infinity();
+    if ( dot( pos + d1 * ang, V ) < 0 )
+        d1 = std::numeric_limits<double>::infinity();
+    if ( dot( pos + d2 * ang, V ) < 0 )
+        d2 = std::numeric_limits<double>::infinity();
+    return std::min( d1, d2 );
+}
+
+
+} // namespace GeometryHelpers
+} // namespace Geometry
 } // namespace AMP

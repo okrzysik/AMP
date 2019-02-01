@@ -1,5 +1,5 @@
 #include "AMP/ampmesh/shapes/SphereSurface.h"
-#include "AMP/ampmesh/structured/BoxMeshHelpers.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -10,11 +10,13 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-SphereSurface::SphereSurface( double r ) : d_r( r )
+SphereSurface::SphereSurface( double r ) : Geometry(), d_r( r )
 {
-    d_offset[0] = 0;
-    d_offset[1] = 0;
-    d_offset[2] = 0;
+    d_physicalDim = 3;
+    d_logicalDim  = 2;
+    d_offset[0]   = 0;
+    d_offset[1]   = 0;
+    d_offset[2]   = 0;
 }
 
 
@@ -23,10 +25,11 @@ SphereSurface::SphereSurface( double r ) : d_r( r )
  ********************************************************/
 double SphereSurface::distance( const Point &pos, const Point &ang ) const
 {
-    NULL_USE( pos );
-    NULL_USE( ang );
-    AMP_ERROR( "Not finished" );
-    return 0;
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
+    double d = GeometryHelpers::distanceToSphere( d_r, { x, y, z }, ang );
+    return std::abs( d );
 }
 
 
@@ -46,12 +49,6 @@ bool SphereSurface::inside( const Point &pos ) const
 /********************************************************
  * Return the closest surface                            *
  ********************************************************/
-int SphereSurface::surface( const Point &pos ) const
-{
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return 0;
-}
 Point SphereSurface::surfaceNorm( const Point &pos ) const
 {
     NULL_USE( pos );
@@ -65,7 +62,7 @@ Point SphereSurface::surfaceNorm( const Point &pos ) const
  ********************************************************/
 Point SphereSurface::physical( const Point &pos ) const
 {
-    auto point = AMP::Mesh::BoxMeshHelpers::map_logical_sphere_surface( d_r, pos[0], pos[1] );
+    auto point = GeometryHelpers::map_logical_sphere_surface( d_r, pos[0], pos[1] );
     point[0] += d_offset[0];
     point[1] += d_offset[1];
     point[2] += d_offset[2];
@@ -81,8 +78,20 @@ Point SphereSurface::logical( const Point &pos ) const
     double x0 = pos[0] - d_offset[0];
     double y0 = pos[1] - d_offset[1];
     double z0 = pos[2] - d_offset[2];
-    auto tmp  = AMP::Mesh::BoxMeshHelpers::map_sphere_surface_logical( d_r, x0, y0, z0 );
+    auto tmp  = GeometryHelpers::map_sphere_surface_logical( d_r, x0, y0, z0 );
     return Point( tmp.first, tmp.second );
+}
+
+
+/********************************************************
+ * Return the centroid and bounding box                  *
+ ********************************************************/
+Point SphereSurface::centroid() const { return { d_offset[0], d_offset[1], d_offset[2] }; }
+std::pair<Point, Point> SphereSurface::box() const
+{
+    Point lb = { d_offset[0] - d_r, d_offset[1] - d_r, d_offset[2] - d_r };
+    Point ub = { d_offset[0] + d_r, d_offset[1] + d_r, d_offset[2] + d_r };
+    return { lb, ub };
 }
 
 

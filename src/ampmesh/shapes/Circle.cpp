@@ -1,5 +1,5 @@
 #include "AMP/ampmesh/shapes/Circle.h"
-#include "AMP/ampmesh/structured/BoxMeshHelpers.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -10,10 +10,12 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Circle::Circle( double R ) : d_R( R )
+Circle::Circle( double R ) : Geometry(), d_R( R )
 {
-    d_offset[0] = 0;
-    d_offset[1] = 0;
+    d_physicalDim = 2;
+    d_logicalDim  = 2;
+    d_offset[0]   = 0;
+    d_offset[1]   = 0;
 }
 
 
@@ -22,14 +24,13 @@ Circle::Circle( double R ) : d_R( R )
  ********************************************************/
 double Circle::distance( const Point &pos, const Point &ang ) const
 {
-    double x  = pos.x() - d_offset[0];
-    double y  = pos.y() - d_offset[1];
-    double R2 = x * x + y * y;
-    if ( R2 < d_R * d_R )
-        return sqrt( R2 );
-    NULL_USE( ang );
-    AMP_ERROR( "Not finished" );
-    return 0;
+    // Get the current point in the reference frame of the cylinder
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = 0;
+    // Compute the distance to the cylinder
+    double d = GeometryHelpers::distanceToCylinder( d_R, 1e200, { x, y, z }, ang );
+    return d;
 }
 
 
@@ -49,11 +50,6 @@ bool Circle::inside( const Point &pos ) const
 /********************************************************
  * Return the closest surface                            *
  ********************************************************/
-int Circle::surface( const Point &pos ) const
-{
-    NULL_USE( pos );
-    return 0;
-}
 Point Circle::surfaceNorm( const Point &pos ) const
 {
     NULL_USE( pos );
@@ -67,7 +63,7 @@ Point Circle::surfaceNorm( const Point &pos ) const
  ********************************************************/
 Point Circle::physical( const Point &pos ) const
 {
-    auto tmp = AMP::Mesh::BoxMeshHelpers::map_logical_circle( d_R, 2, pos[0], pos[1] );
+    auto tmp = GeometryHelpers::map_logical_circle( d_R, 2, pos[0], pos[1] );
     double x = tmp.first + d_offset[0];
     double y = tmp.second + d_offset[1];
     return { x, y };
@@ -81,8 +77,20 @@ Point Circle::logical( const Point &pos ) const
 {
     double x = pos.x() - d_offset[0];
     double y = pos.y() - d_offset[1];
-    auto tmp = AMP::Mesh::BoxMeshHelpers::map_circle_logical( d_R, 2, x, y );
+    auto tmp = GeometryHelpers::map_circle_logical( d_R, 2, x, y );
     return Point( tmp.first, tmp.second );
+}
+
+
+/********************************************************
+ * Return the centroid and bounding box                  *
+ ********************************************************/
+Point Circle::centroid() const { return { d_offset[0], d_offset[1] }; }
+std::pair<Point, Point> Circle::box() const
+{
+    Point lb = { d_offset[0] - d_R, d_offset[1] - d_R };
+    Point ub = { d_offset[0] + d_R, d_offset[1] + d_R };
+    return { lb, ub };
 }
 
 

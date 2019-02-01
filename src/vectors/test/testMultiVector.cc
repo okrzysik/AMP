@@ -26,52 +26,43 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
 
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
 
     // Get the Mesh database and create the mesh parameters
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto database = input_db->getDatabase( "Mesh" );
+    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Construct Variables
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> Variable1(
-        new AMP::LinearAlgebra::Variable( "Var1" ) );
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> Variable2(
-        new AMP::LinearAlgebra::Variable( "Var2" ) );
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> Variable3(
-        new AMP::LinearAlgebra::Variable( "Var3" ) );
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> Variable4(
-        new AMP::LinearAlgebra::Variable( "Var4" ) );
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar(
-        new AMP::LinearAlgebra::Variable( "dummy" ) );
+    auto Variable1 = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Var1" );
+    auto Variable2 = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Var2" );
+    auto Variable3 = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Var3" );
+    auto Variable4 = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Var4" );
+    auto dummyVar  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "dummy" );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> subVariable(
-        new AMP::LinearAlgebra::MultiVariable( "subVar" ) );
+    auto subVariable = AMP::make_shared<AMP::LinearAlgebra::MultiVariable>( "subVar" );
     subVariable->add( Variable1 );
     subVariable->add( Variable2 );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> fullVariable(
-        new AMP::LinearAlgebra::MultiVariable( "fullVariable" ) );
+    auto fullVariable = AMP::make_shared<AMP::LinearAlgebra::MultiVariable>( "fullVariable" );
     fullVariable->add( Variable1 );
     fullVariable->add( Variable2 );
     fullVariable->add( Variable3 );
     fullVariable->add( Variable4 );
 
     // Create the DOF manager
-    AMP::Discretization::DOFManager::shared_ptr DOFs =
+    auto DOFs =
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
 
     // Create the vectors
-    AMP::LinearAlgebra::Vector::shared_ptr multiVector =
-        AMP::LinearAlgebra::createVector( DOFs, fullVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr singleVector =
+    auto multiVector = AMP::LinearAlgebra::createVector( DOFs, fullVariable, true );
+    auto singleVector =
         AMP::LinearAlgebra::createVector( multiVector->getDOFManager(), dummyVar, false );
-    AMP::LinearAlgebra::Vector::shared_ptr subVector =
-        multiVector->subsetVectorForVariable( subVariable );
+    auto subVector = multiVector->subsetVectorForVariable( subVariable );
     if ( singleVector->getGlobalSize() == multiVector->getGlobalSize() )
         ut->passes( "single and multivector are the right size" );
     else

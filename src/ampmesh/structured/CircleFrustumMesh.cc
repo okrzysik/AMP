@@ -1,5 +1,5 @@
-#include "AMP/ampmesh/structured/SquareFrustumMesh.h"
-#include "AMP/ampmesh/shapes/SquareFrustum.h"
+#include "AMP/ampmesh/structured/CircleFrustumMesh.h"
+#include "AMP/ampmesh/shapes/CircleFrustum.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
 
 
@@ -10,22 +10,22 @@ namespace Mesh {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-SquareFrustumMesh::SquareFrustumMesh( MeshParameters::shared_ptr params )
+CircleFrustumMesh::CircleFrustumMesh( MeshParameters::shared_ptr params )
     : StructuredGeometryMesh( params )
 {
+    PhysicalDim = 3;
+    GeomDim     = GeomType::Volume;
     // Input options from the database
-    PhysicalDim   = 3;
-    GeomDim       = GeomType::Volume;
-    auto size     = d_db->getIntegerArray( "Size" );
-    auto range    = d_db->getDoubleArray( "Range" );
-    auto dir      = d_db->getString( "Dir" );
-    double height = d_db->getDouble( "Height" );
-    d_max_gcw     = d_db->getIntegerWithDefault( "GCW", 2 );
-    AMP_INSIST( size.size() == 3u, "Size must be an array of length 3" );
-    AMP_INSIST( range.size() == 6u, "Range must be an array of length 6" );
-    d_globalSize[0] = size[0];
-    d_globalSize[1] = size[1];
-    d_globalSize[2] = size[2];
+    auto size = d_db->getIntegerArray( "Size" );
+    double r1 = d_db->getDouble( "BaseRadius" );
+    double r2 = d_db->getDouble( "TopRadius" );
+    double h  = d_db->getDouble( "Height" );
+    auto dir  = d_db->getString( "Dir" );
+    d_max_gcw = d_db->getIntegerWithDefault( "GCW", 2 );
+    AMP_INSIST( size.size() == 2u, "Size must be an array of length 2" );
+    d_globalSize[0] = 2 * size[0];
+    d_globalSize[1] = 2 * size[0];
+    d_globalSize[2] = size[1];
     // Change the surface ids to match the standard ids
     for ( int i = 0; i < 6; i++ ) {
         d_surfaceId[i] = i;
@@ -49,7 +49,7 @@ SquareFrustumMesh::SquareFrustumMesh( MeshParameters::shared_ptr params )
         dir2 = 5;
     else
         AMP_ERROR( "Invalid value for Dir" );
-    d_geometry.reset( new Geometry::SquareFrustum( range, dir2, height ) );
+    d_geometry.reset( new Geometry::CircleFrustum( { r1, r2 }, dir2, h ) );
     // Finalize the logical mesh
     BoxMesh::finalize();
 }
@@ -59,21 +59,21 @@ SquareFrustumMesh::SquareFrustumMesh( MeshParameters::shared_ptr params )
  * Estimate the mesh size                                        *
  ****************************************************************/
 std::vector<size_t>
-SquareFrustumMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
+CircleFrustumMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
     auto db   = params->getDatabase();
     auto size = db->getIntegerArray( "Size" );
-    AMP_INSIST( size.size() == 3u, "Size must be an array of length 3" );
-    return { (size_t) size[0], (size_t) size[1], (size_t) size[2] };
+    AMP_INSIST( size.size() == 2, "Size must be an array of length 2" );
+    return { (size_t) size[0], (size_t) size[0], (size_t) size[1] };
 }
 
 
 /****************************************************************
  * Copy the mesh                                                 *
  ****************************************************************/
-AMP::shared_ptr<Mesh> SquareFrustumMesh::clone() const
+AMP::shared_ptr<Mesh> CircleFrustumMesh::clone() const
 {
-    return AMP::make_shared<SquareFrustumMesh>( *this );
+    return AMP::make_shared<CircleFrustumMesh>( *this );
 }
 
 

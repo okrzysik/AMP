@@ -65,8 +65,21 @@ public:
     }
     constexpr explicit MeshPoint( const size_t ndim, const TYPE *x ) noexcept : d_ndim( ndim )
     {
+        d_data[0] = 0;
+        d_data[1] = 0;
+        d_data[2] = 0;
         for ( size_t d = 0; d < d_ndim; d++ )
             d_data[d] = x[d];
+    }
+    constexpr MeshPoint( const size_t ndim, std::initializer_list<TYPE> x ) : d_ndim( ndim )
+    {
+        AMP_CHECK_ASSERT( d_ndim <= 3 );
+        auto it   = x.begin();
+        d_data[0] = *it;
+        d_data[1] = 0;
+        d_data[2] = 0;
+        for ( size_t d = 1; d < std::min<size_t>( d_ndim, x.size() ); d++ )
+            d_data[d] = *( ++it );
     }
 
     // Copy/assigment operators

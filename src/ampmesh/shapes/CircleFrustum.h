@@ -1,8 +1,9 @@
-#ifndef included_AMP_Geometry_SquareFrustum
-#define included_AMP_Geometry_SquareFrustum
+#ifndef included_AMP_Geometry_CircleFrustum
+#define included_AMP_Geometry_CircleFrustum
 
 #include "AMP/ampmesh/Geometry.h"
 
+#include <array>
 #include <vector>
 
 
@@ -11,26 +12,26 @@ namespace Geometry {
 
 
 /**
- * \class SquareFrustum
+ * \class CircleFrustum
  * \brief A geometry for a square frustum
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
-class SquareFrustum : public Geometry
+class CircleFrustum : public Geometry
 {
 public:
     /**
-     * \brief Construct a SquareFrustum
-     * \param range     The range of the SquareFrustum [xmin, xmax, ymin, ymax, zmin, zmax, ...]
+     * \brief Construct a CircleFrustum
+     * \param r         The the radii of the frustrum (base/top)
      * \param dir       The direction of the pyramid { -x, x, -y, y, -z, z }
-     * \param height    The height of the pyramid
+     * \param height    The height of the frustrum
      */
-    explicit SquareFrustum( const std::vector<double> &range, int dir, double height );
+    explicit CircleFrustum( const std::array<double, 2> &r, int dir, double height );
 
 public: // Functions inherited from Geometry
-    virtual std::string getName() const override final { return "SquareFrustum"; }
+    virtual std::string getName() const override final { return "CircleFrustum"; }
     virtual double distance( const Point &pos, const Point &dir ) const override final;
     virtual bool inside( const Point &pos ) const override final;
-    virtual int NSurface() const override final { return 6; }
+    virtual int NSurface() const override final { return 3; }
     virtual int surface( const Point &x ) const override final;
     virtual Point surfaceNorm( const Point &x ) const override final;
     virtual Point logical( const Point &x ) const override final;
@@ -39,18 +40,17 @@ public: // Functions inherited from Geometry
     virtual std::pair<Point, Point> box() const override final;
     virtual void displaceMesh( const double *x ) override final;
 
-protected:
-    // Internal data
-    uint8_t d_dir;
-    double d_range[6];        // The bounding box size
-    double d_pyramid_size[3]; // The underlying rotated pyramid size
-    double d_scale_height;    // Ratio of frustum to pyramid height
-    Point d_face[6][4];       // Points forming each face
-    Point d_normal[6];        // Normal to each face
+protected:              // Internal data
+    uint8_t d_dir;      // The direction of the center axis
+    double d_r[2];      // The two radii
+    double d_h;         // The height of the frustrum
+    double d_offset[3]; // The offset
+    Point d_C;          // Apex of cone
+    double d_theta;     // Apex angle
 
 private:
     // Private constuctor
-    SquareFrustum();
+    CircleFrustum();
 };
 
 

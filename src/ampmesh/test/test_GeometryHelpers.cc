@@ -1,4 +1,4 @@
-#include "AMP/ampmesh/structured/BoxMeshHelpers.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 
@@ -18,8 +18,9 @@ void test_map_logical_circle( AMP::UnitTest &ut )
         for ( int i = 0; i < 10000; i++ ) {
             double x = dis( gen );
             double y = dis( gen );
-            auto p   = AMP::Mesh::BoxMeshHelpers::map_logical_circle( r, method, x, y );
-            auto p2 = AMP::Mesh::BoxMeshHelpers::map_circle_logical( r, method, p.first, p.second );
+            auto p   = AMP::Geometry::GeometryHelpers::map_logical_circle( r, method, x, y );
+            auto p2 =
+                AMP::Geometry::GeometryHelpers::map_circle_logical( r, method, p.first, p.second );
             double r2 = sqrt( p.first * p.first + p.second * p.second );
             pass      = pass && r2 < r + 1e-15;
             pass      = pass && fabs( p2.first - x ) < 1e-10 && fabs( p2.second - y ) < 1e-10;
@@ -44,10 +45,10 @@ void test_map_logical_sphere_surface( AMP::UnitTest &ut )
     const double r = 2.0;
     bool pass      = true;
     for ( int i = 0; i < 10000; i++ ) {
-        double x  = dis( gen );
-        double y  = dis( gen );
-        auto p    = AMP::Mesh::BoxMeshHelpers::map_logical_sphere_surface( r, x, y );
-        auto p2   = AMP::Mesh::BoxMeshHelpers::map_sphere_surface_logical( r, p[0], p[1], p[2] );
+        double x = dis( gen );
+        double y = dis( gen );
+        auto p   = AMP::Geometry::GeometryHelpers::map_logical_sphere_surface( r, x, y );
+        auto p2 = AMP::Geometry::GeometryHelpers::map_sphere_surface_logical( r, p[0], p[1], p[2] );
         double r2 = sqrt( p[0] * p[0] + p[1] * p[1] + p[2] * p[2] );
         pass      = pass && r2 < r + 1e-15;
         pass      = pass && fabs( p2.first - x ) < 1e-10 && fabs( p2.second - y ) < 1e-10;

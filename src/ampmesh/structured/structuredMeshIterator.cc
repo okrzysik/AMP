@@ -16,19 +16,22 @@ static MeshElement nullElement;
 /********************************************************
  * Get the index                                         *
  ********************************************************/
-inline BoxMesh::MeshElementIndex structuredMeshIterator::getIndex( int pos ) const
+inline BoxMesh::MeshElementIndex structuredMeshIterator::getIndex( int i ) const
 {
-    if ( pos < 0 || pos >= (int) d_size ) {
+    if ( i < 0 || i >= (int) d_size ) {
         return BoxMesh::MeshElementIndex();
     } else if ( d_elements ) {
-        return d_elements->operator[]( pos );
+        return d_elements->operator[]( i );
     } else {
-        int size[3] = { d_last.index( 0 ) - d_first.index( 0 ) + 1,
-                        d_last.index( 1 ) - d_first.index( 1 ) + 1,
-                        d_last.index( 2 ) - d_first.index( 2 ) + 1 };
-        int i       = d_first.index( 0 ) + ( pos % size[0] );
-        int j       = d_first.index( 1 ) + ( pos / size[0] % size[1] );
-        int k       = d_first.index( 2 ) + ( pos / ( size[0] * size[1] ) % size[2] );
+        int s1 = d_last.index( 0 ) - d_first.index( 0 ) + 1;
+        int s2 = s1 * ( d_last.index( 1 ) - d_first.index( 1 ) + 1 );
+        int k  = i / s2;
+        i -= k * s2;
+        int j = i / s1;
+        i -= j * s1;
+        i += d_first.index( 0 );
+        j += d_first.index( 1 );
+        k += d_first.index( 2 );
         if ( d_isPeriodic[0] )
             i = ( i + d_globalSize[0] ) % d_globalSize[0];
         if ( d_isPeriodic[1] )

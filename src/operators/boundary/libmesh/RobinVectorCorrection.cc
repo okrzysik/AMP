@@ -60,8 +60,8 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
     AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL Residual Vector" );
     AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Solution Vector" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr rInternal       = this->subsetInputVector( r );
-    AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = this->subsetInputVector( u );
+    auto rInternal = this->subsetInputVector( r );
+    auto uInternal = this->subsetInputVector( u );
 
     AMP_ASSERT( uInternal->getUpdateStatus() ==
                 AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
@@ -105,7 +105,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
     }
 
     // Get the DOF managers
-    AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
+    auto dofManager = rInternal->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr gpDOFManager;
     if ( d_isFluxGaussPtVector && d_variableFlux != nullptr )
         gpDOFManager = d_variableFlux->getDOFManager();
@@ -118,7 +118,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
             AMP_ASSERT( *dofManager == *( d_variableFlux->getDOFManager() ) );
     }
 
-    unsigned int numIds = d_boundaryIds.size();
+    auto numIds = d_boundaryIds.size();
     std::vector<size_t> gpDofs;
     std::vector<size_t> dofs;
     std::vector<std::vector<size_t>> dofIndices;
@@ -129,16 +129,15 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
 
         for ( unsigned int k = 0; k < numDofIds; k++ ) {
 
-            AMP::Mesh::MeshIterator bnd1 =
+            auto bnd1 =
                 d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryIds[nid], 0 );
-            const AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
 
-            for ( ; bnd1 != end_bnd1; ++bnd1 ) {
+            for ( const auto &elem : bnd1 ) {
                 PROFILE_START( "prepare element", 2 );
 
                 // Get the nodes for the current element
-                d_currNodes                     = bnd1->getElements( AMP::Mesh::GeomType::Vertex );
-                unsigned int numNodesInCurrElem = d_currNodes.size();
+                d_currNodes             = elem.getElements( AMP::Mesh::GeomType::Vertex );
+                auto numNodesInCurrElem = d_currNodes.size();
 
                 dofIndices.resize( numNodesInCurrElem );
                 // Get the dofs for the vectors
@@ -156,19 +155,19 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                 AMP_ASSERT( dofs.size() == numNodesInCurrElem );
 
                 if ( d_isFluxGaussPtVector && d_IsCoupledBoundary[nid] ) {
-                    gpDOFManager->getDOFs( bnd1->globalID(), gpDofs );
+                    gpDOFManager->getDOFs( elem.globalID(), gpDofs );
                     AMP_ASSERT( gpDofs.size() > 0 );
                 }
 
                 // Get the current libmesh element
-                const libMesh::FEBase *fe  = d_libmeshElements.getFEBase( bnd1->globalID() );
-                const libMesh::QBase *rule = d_libmeshElements.getQBase( bnd1->globalID() );
+                auto fe   = d_libmeshElements.getFEBase( elem.globalID() );
+                auto rule = d_libmeshElements.getQBase( elem.globalID() );
                 AMP_ASSERT( fe != nullptr );
                 AMP_ASSERT( rule != nullptr );
-                const unsigned int numGaussPts = rule->n_points();
+                auto numGaussPts = rule->n_points();
 
-                const std::vector<Real> JxW              = fe->get_JxW();
-                const std::vector<std::vector<Real>> phi = fe->get_phi();
+                auto JxW = fe->get_JxW();
+                auto phi = fe->get_phi();
                 PROFILE_STOP( "prepare element", 2 );
 
                 std::vector<std::vector<double>> inputArgs(

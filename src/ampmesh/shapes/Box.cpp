@@ -2,6 +2,7 @@
 #include "AMP/utils/Utilities.h"
 
 
+#include <algorithm>
 #include <vector>
 
 
@@ -13,8 +14,10 @@ namespace Geometry {
  * Constructors                                          *
  ********************************************************/
 template<std::size_t NDIM>
-Box<NDIM>::Box( const std::vector<double> &range )
+Box<NDIM>::Box( const std::vector<double> &range ) : Geometry()
 {
+    d_physicalDim = NDIM;
+    d_logicalDim  = NDIM;
     static_assert( NDIM >= 0 && NDIM <= 3, "Invalid number of dimensions" );
     for ( int i = 0; i < 3; i++ ) {
         d_range[2 * i + 0] = -1e100;
@@ -24,8 +27,10 @@ Box<NDIM>::Box( const std::vector<double> &range )
         d_range[i] = range[i];
 }
 template<std::size_t NDIM>
-Grid<NDIM>::Grid( const std::vector<std::vector<double>> &coord )
+Grid<NDIM>::Grid( const std::vector<std::vector<double>> &coord ) : Geometry()
 {
+    d_physicalDim = NDIM;
+    d_logicalDim  = NDIM;
     static_assert( NDIM >= 0 && NDIM <= 3, "Invalid number of dimensions" );
     for ( int i = 0; i < 3; i++ ) {
         d_range[2 * i + 0] = -1e100;
@@ -40,44 +45,95 @@ Grid<NDIM>::Grid( const std::vector<std::vector<double>> &coord )
     }
 }
 
+/********************************************************
+ * Get the object name                                   *
+ ********************************************************/
+template<>
+std::string Box<1>::getName() const
+{
+    return "Box<1>";
+}
+template<>
+std::string Box<2>::getName() const
+{
+    return "Box<2>";
+}
+template<>
+std::string Box<3>::getName() const
+{
+    return "Box<3>";
+}
+template<>
+std::string Grid<1>::getName() const
+{
+    return "Grid<1>";
+}
+template<>
+std::string Grid<2>::getName() const
+{
+    return "Grid<2>";
+}
+template<>
+std::string Grid<3>::getName() const
+{
+    return "Grid<3>";
+}
+
 
 /********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
 static inline double calcDist( const Point &pos, const Point &ang, const double *range )
 {
-    constexpr double tol = 1e-5;
+    constexpr double tol = 1e-12;
     // Compute the distance to each surface
-    double d1 = ( range[0] - pos[0] ) / ang[0];
-    double d2 = ( range[1] - pos[0] ) / ang[0];
-    double d3 = ( range[2] - pos[1] ) / ang[1];
-    double d4 = ( range[3] - pos[1] ) / ang[1];
-    double d5 = ( range[4] - pos[2] ) / ang[2];
-    double d6 = ( range[5] - pos[2] ) / ang[2];
-    // Check if point is inside volume (within the tolerance)
-    bool inside = ( ang[0] >= 0 ? ( d1 < tol && d2 > tol ) : d2 < tol && d1 > tol ) &&
-                  ( ang[1] >= 0 ? ( d3 < tol && d4 > tol ) : d4 < tol && d3 > tol ) &&
-                  ( ang[2] >= 0 ? ( d5 < tol && d6 > tol ) : d6 < tol && d5 > tol );
-    // Compute the distance
-    double dist = std::numeric_limits<double>::quiet_NaN();
-    if ( inside ) {
-        dist = std::max( d1, d2 );
-        dist = std::min( dist, std::max( d3, d4 ) );
-        dist = std::min( dist, std::max( d5, d6 ) );
-        dist = -dist;
-    } else {
-        double distx = std::numeric_limits<double>::infinity();
-        double disty = std::numeric_limits<double>::infinity();
-        double distz = std::numeric_limits<double>::infinity();
-        distx        = d1 > 0 ? std::min( distx, d1 ) : distx;
-        distx        = d2 > 0 ? std::min( distx, d2 ) : distx;
-        disty        = d3 > 0 ? std::min( disty, d3 ) : disty;
-        disty        = d4 > 0 ? std::min( disty, d4 ) : disty;
-        distz        = d5 > 0 ? std::min( distz, d5 ) : distz;
-        distz        = d6 > 0 ? std::min( distz, d6 ) : distz;
-        dist         = std::max( distx, std::max( disty, distz ) );
-    }
-    return dist;
+    double d1 = ( range[0] - pos.x() ) / ang.x();
+    double d2 = ( range[1] - pos.x() ) / ang.x();
+    double d3 = ( range[2] - pos.y() ) / ang.y();
+    double d4 = ( range[3] - pos.y() ) / ang.y();
+    double d5 = ( range[4] - pos.z() ) / ang.z();
+    double d6 = ( range[5] - pos.z() ) / ang.z();
+    if ( d1 < 0 )
+        d1 = std::numeric_limits<double>::infinity();
+    if ( d2 < 0 )
+        d2 = std::numeric_limits<double>::infinity();
+    if ( d3 < 0 )
+        d3 = std::numeric_limits<double>::infinity();
+    if ( d4 < 0 )
+        d4 = std::numeric_limits<double>::infinity();
+    if ( d5 < 0 )
+        d5 = std::numeric_limits<double>::infinity();
+    if ( d6 < 0 )
+        d6 = std::numeric_limits<double>::infinity();
+    // Check if the intersection of each surface is within the bounds of the box
+    auto p1     = pos + d1 * ang;
+    auto p2     = pos + d2 * ang;
+    auto p3     = pos + d3 * ang;
+    auto p4     = pos + d4 * ang;
+    auto p5     = pos + d5 * ang;
+    auto p6     = pos + d6 * ang;
+    auto inside = [tol, range]( const Point &p ) {
+        return ( ( p.x() >= range[0] - tol ) && ( p.x() <= range[1] + tol ) ) &&
+               ( ( p.y() >= range[2] - tol ) && ( p.y() <= range[3] + tol ) ) &&
+               ( ( p.z() >= range[4] - tol ) && ( p.z() <= range[5] + tol ) );
+    };
+    if ( !inside( p1 ) )
+        d1 = std::numeric_limits<double>::infinity();
+    if ( !inside( p2 ) )
+        d2 = std::numeric_limits<double>::infinity();
+    if ( !inside( p3 ) )
+        d3 = std::numeric_limits<double>::infinity();
+    if ( !inside( p4 ) )
+        d4 = std::numeric_limits<double>::infinity();
+    if ( !inside( p5 ) )
+        d5 = std::numeric_limits<double>::infinity();
+    if ( !inside( p6 ) )
+        d6 = std::numeric_limits<double>::infinity();
+    // Return the closest surface
+    double d = std::min( { d1, d2, d3, d4, d5, d6 } );
+    if ( inside( pos ) && d < 1e100 )
+        d = -d;
+    return d;
 }
 template<std::size_t NDIM>
 double Box<NDIM>::distance( const Point &pos, const Point &ang ) const
@@ -97,36 +153,56 @@ double Grid<NDIM>::distance( const Point &pos, const Point &ang ) const
 template<>
 bool Box<1>::inside( const Point &pos ) const
 {
-    return pos[0] >= d_range[0] && pos[0] <= d_range[1];
+    double x  = ( pos.x() - d_range[0] ) / ( d_range[1] - d_range[0] );
+    double t1 = -1e-12;
+    double t2 = 1.0 + 1e-12;
+    return x >= t1 && x <= t2;
 }
 template<>
 bool Box<2>::inside( const Point &pos ) const
 {
-    return pos[0] >= d_range[0] && pos[0] <= d_range[1] && pos[1] >= d_range[2] &&
-           pos[1] <= d_range[3];
+    double x  = ( pos.x() - d_range[0] ) / ( d_range[1] - d_range[0] );
+    double y  = ( pos.y() - d_range[2] ) / ( d_range[3] - d_range[2] );
+    double t1 = -1e-12;
+    double t2 = 1.0 + 1e-12;
+    return x >= t1 && x <= t2 && y >= t1 && y <= t2;
 }
 template<>
 bool Box<3>::inside( const Point &pos ) const
 {
-    return pos[0] >= d_range[0] && pos[0] <= d_range[1] && pos[1] >= d_range[2] &&
-           pos[1] <= d_range[3] && pos[2] >= d_range[4] && pos[2] <= d_range[5];
+    double x  = ( pos.x() - d_range[0] ) / ( d_range[1] - d_range[0] );
+    double y  = ( pos.y() - d_range[2] ) / ( d_range[3] - d_range[2] );
+    double z  = ( pos.z() - d_range[4] ) / ( d_range[5] - d_range[4] );
+    double t1 = -1e-12;
+    double t2 = 1.0 + 1e-12;
+    return x >= t1 && x <= t2 && y >= t1 && y <= t2 && z >= t1 && z <= t2;
 }
 template<>
 bool Grid<1>::inside( const Point &pos ) const
 {
-    return pos[0] >= d_range[0] && pos[0] <= d_range[1] && pos[1];
+    double x  = ( pos.x() - d_range[0] ) / ( d_range[1] - d_range[0] );
+    double t1 = -1e-12;
+    double t2 = 1.0 + 1e-12;
+    return x >= t1 && x <= t2;
 }
 template<>
 bool Grid<2>::inside( const Point &pos ) const
 {
-    return pos[0] >= d_range[0] && pos[0] <= d_range[1] && pos[1] >= d_range[2] &&
-           pos[1] <= d_range[3];
+    double x  = ( pos.x() - d_range[0] ) / ( d_range[1] - d_range[0] );
+    double y  = ( pos.y() - d_range[2] ) / ( d_range[3] - d_range[2] );
+    double t1 = -1e-12;
+    double t2 = 1.0 + 1e-12;
+    return x >= t1 && x <= t2 && y >= t1 && y <= t2;
 }
 template<>
 bool Grid<3>::inside( const Point &pos ) const
 {
-    return pos[0] >= d_range[0] && pos[0] <= d_range[1] && pos[1] >= d_range[2] &&
-           pos[1] <= d_range[3] && pos[2] >= d_range[4] && pos[2] <= d_range[5];
+    double x  = ( pos.x() - d_range[0] ) / ( d_range[1] - d_range[0] );
+    double y  = ( pos.y() - d_range[2] ) / ( d_range[3] - d_range[2] );
+    double z  = ( pos.z() - d_range[4] ) / ( d_range[5] - d_range[4] );
+    double t1 = -1e-12;
+    double t2 = 1.0 + 1e-12;
+    return x >= t1 && x <= t2 && y >= t1 && y <= t2 && z >= t1 && z <= t2;
 }
 
 
@@ -136,9 +212,9 @@ bool Grid<3>::inside( const Point &pos ) const
 template<std::size_t NDIM>
 int Box<NDIM>::surface( const Point &pos ) const
 {
-    double d[6] = { fabs( pos[0] - d_range[0] ), fabs( pos[0] - d_range[1] ),
-                    fabs( pos[1] - d_range[2] ), fabs( pos[1] - d_range[3] ),
-                    fabs( pos[2] - d_range[4] ), fabs( pos[2] - d_range[5] ) };
+    double d[6] = { fabs( pos.x() - d_range[0] ), fabs( pos.x() - d_range[1] ),
+                    fabs( pos.y() - d_range[2] ), fabs( pos.y() - d_range[3] ),
+                    fabs( pos.z() - d_range[4] ), fabs( pos.z() - d_range[5] ) };
     double d0   = d[0];
     int s       = 0;
     for ( int i = 1; i < 6; i++ ) {
@@ -152,9 +228,9 @@ int Box<NDIM>::surface( const Point &pos ) const
 template<std::size_t NDIM>
 int Grid<NDIM>::surface( const Point &pos ) const
 {
-    double d[6] = { fabs( pos[0] - d_range[0] ), fabs( pos[0] - d_range[1] ),
-                    fabs( pos[1] - d_range[2] ), fabs( pos[1] - d_range[3] ),
-                    fabs( pos[2] - d_range[4] ), fabs( pos[2] - d_range[5] ) };
+    double d[6] = { fabs( pos.x() - d_range[0] ), fabs( pos.x() - d_range[1] ),
+                    fabs( pos.y() - d_range[2] ), fabs( pos.y() - d_range[3] ),
+                    fabs( pos.z() - d_range[4] ), fabs( pos.z() - d_range[5] ) };
     double d0   = d[0];
     int s       = 0;
     for ( int i = 1; i < 6; i++ ) {
@@ -193,20 +269,20 @@ Point Grid<NDIM>::surfaceNorm( const Point &pos ) const
 template<>
 Point Box<1>::physical( const Point &pos ) const
 {
-    return Point( d_range[0] + pos[0] * ( d_range[1] - d_range[0] ) );
+    return Point( d_range[0] + pos.x() * ( d_range[1] - d_range[0] ) );
 }
 template<>
 Point Box<2>::physical( const Point &pos ) const
 {
-    return Point( d_range[0] + pos[0] * ( d_range[1] - d_range[0] ),
-                  d_range[2] + pos[1] * ( d_range[3] - d_range[2] ) );
+    return Point( d_range[0] + pos.x() * ( d_range[1] - d_range[0] ),
+                  d_range[2] + pos.y() * ( d_range[3] - d_range[2] ) );
 }
 template<>
 Point Box<3>::physical( const Point &pos ) const
 {
-    return Point( d_range[0] + pos[0] * ( d_range[1] - d_range[0] ),
-                  d_range[2] + pos[1] * ( d_range[3] - d_range[2] ),
-                  d_range[4] + pos[2] * ( d_range[5] - d_range[4] ) );
+    return Point( d_range[0] + pos.x() * ( d_range[1] - d_range[0] ),
+                  d_range[2] + pos.y() * ( d_range[3] - d_range[2] ),
+                  d_range[4] + pos.z() * ( d_range[5] - d_range[4] ) );
 }
 template<std::size_t NDIM>
 Point Grid<NDIM>::physical( const Point &pos ) const
@@ -227,20 +303,20 @@ Point Grid<NDIM>::physical( const Point &pos ) const
 template<>
 Point Box<1>::logical( const Point &pos ) const
 {
-    return Point( ( pos[0] - d_range[0] ) / ( d_range[1] - d_range[0] ) );
+    return Point( ( pos.x() - d_range[0] ) / ( d_range[1] - d_range[0] ) );
 }
 template<>
 Point Box<2>::logical( const Point &pos ) const
 {
-    return Point( ( pos[0] - d_range[0] ) / ( d_range[1] - d_range[0] ),
-                  ( pos[1] - d_range[2] ) / ( d_range[3] - d_range[2] ) );
+    return Point( ( pos.x() - d_range[0] ) / ( d_range[1] - d_range[0] ),
+                  ( pos.y() - d_range[2] ) / ( d_range[3] - d_range[2] ) );
 }
 template<>
 Point Box<3>::logical( const Point &pos ) const
 {
-    return Point( ( pos[0] - d_range[0] ) / ( d_range[1] - d_range[0] ),
-                  ( pos[1] - d_range[2] ) / ( d_range[3] - d_range[2] ),
-                  ( pos[2] - d_range[4] ) / ( d_range[5] - d_range[4] ) );
+    return Point( ( pos.x() - d_range[0] ) / ( d_range[1] - d_range[0] ),
+                  ( pos.y() - d_range[2] ) / ( d_range[3] - d_range[2] ),
+                  ( pos.z() - d_range[4] ) / ( d_range[5] - d_range[4] ) );
 }
 template<std::size_t NDIM>
 Point Grid<NDIM>::logical( const Point &pos ) const
@@ -255,6 +331,43 @@ Point Grid<NDIM>::logical( const Point &pos ) const
         logical[d] /= d_coord[d].size();
     }
     return logical;
+}
+
+
+/********************************************************
+ * Return the centroid and bounding box                  *
+ ********************************************************/
+template<std::size_t NDIM>
+Point Box<NDIM>::centroid() const
+{
+    Point p( NDIM );
+    p.x() = 0.5 * ( d_range[0] + d_range[1] );
+    p.y() = 0.5 * ( d_range[2] + d_range[3] );
+    p.z() = 0.5 * ( d_range[4] + d_range[5] );
+    return p;
+}
+template<std::size_t NDIM>
+Point Grid<NDIM>::centroid() const
+{
+    Point p( NDIM );
+    p.x() = 0.5 * ( d_range[0] + d_range[1] );
+    p.y() = 0.5 * ( d_range[2] + d_range[3] );
+    p.z() = 0.5 * ( d_range[4] + d_range[5] );
+    return p;
+}
+template<std::size_t NDIM>
+std::pair<Point, Point> Box<NDIM>::box() const
+{
+    Point lb( NDIM, { d_range[0], d_range[2], d_range[4] } );
+    Point ub( NDIM, { d_range[1], d_range[3], d_range[5] } );
+    return { lb, ub };
+}
+template<std::size_t NDIM>
+std::pair<Point, Point> Grid<NDIM>::box() const
+{
+    Point lb( NDIM, { d_range[0], d_range[2], d_range[4] } );
+    Point ub( NDIM, { d_range[1], d_range[3], d_range[5] } );
+    return { lb, ub };
 }
 
 

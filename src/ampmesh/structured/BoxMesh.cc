@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/structured/BoxMesh.h"
+#include "AMP/ampmesh/structured/CircleFrustumMesh.h"
 #include "AMP/ampmesh/structured/CircleMesh.h"
 #include "AMP/ampmesh/structured/CubeMesh.h"
 #include "AMP/ampmesh/structured/CylinderMesh.h"
@@ -57,6 +58,8 @@ AMP::shared_ptr<BoxMesh> BoxMesh::generate( MeshParameters::shared_ptr params )
         mesh.reset( new SphereSurfaceMesh( params ) );
     } else if ( generator.compare( "square_frustrum" ) == 0 ) {
         mesh.reset( new SquareFrustumMesh( params ) );
+    } else if ( generator.compare( "circle_frustrum" ) == 0 ) {
+        mesh.reset( new CircleFrustumMesh( params ) );
     } else {
         AMP_ERROR( "Unknown generator" );
     }
@@ -98,6 +101,8 @@ std::vector<size_t> BoxMesh::estimateLogicalMeshSize( const MeshParameters::shar
         N = SphereSurfaceMesh::estimateLogicalMeshSize( params );
     } else if ( generator.compare( "square_frustrum" ) == 0 ) {
         N = SquareFrustumMesh::estimateLogicalMeshSize( params );
+    } else if ( generator.compare( "circle_frustrum" ) == 0 ) {
+        N = CircleFrustumMesh::estimateLogicalMeshSize( params );
     } else {
         AMP_ERROR( "Unknown generator" );
     }

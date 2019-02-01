@@ -202,6 +202,14 @@ public: // Mesh based tests
 
 public: // Geometry based tests
     /**
+     * \brief Basic geometry class tests
+     * \details  This runs the geometry only tests
+     * \param[in,out] ut        Unit test class to report the results
+     * \param[in] mesh          Mesh contaning geometry to test
+     */
+    static void TestBasicGeometry( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_shared_ptr mesh );
+
+    /**
      * \brief Checks Geometry::inside
      * \details  This test checks if all points in the mesh are inside the geometry
      * \param[in,out] ut        Unit test class to report the results
