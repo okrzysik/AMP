@@ -36,6 +36,7 @@ COPY_TEST_FILE( input_testSubchannelSolution-2 )
 COPY_TEST_FILE( input_testSubchannelFourEqMMS-1)
 COPY_TEST_FILE( input_testSubchannelFourEqMMS-2)
 COPY_TEST_FILE( input_testSubchannelSolveNOX-1 )
+COPY_TEST_FILE( input_testSubchannelSolveNOX-3 )
 
 
 # Copy test data

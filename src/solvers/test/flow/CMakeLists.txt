@@ -29,8 +29,7 @@
 
 # Copy test inputs
 COPY_TEST_FILE( input_testLinearFlow-1 )
-COPY_TEST_FILE( input_testFlowSolution-1 )
-COPY_TEST_FILE( input_testFlowSolution-2 )
+COPY_TEST_FILE( input_testFlowSolution )
 COPY_TEST_FILE( input_testThermalRobinFlow-1 )
 COPY_TEST_FILE( input_testFlowSolver )
 COPY_TEST_FILE( input_testThermalRobinFlow-2 )
@@ -49,10 +48,7 @@ COPY_MESH_FILE( halden_1_clad.e )
 # Add the tests
 INITIALIZE_TESTBUILDER()
 IF( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
-    ADD_TB_TEST_1_2_4( testFlowSolution_1 )
-    ADD_TB_PROVISIONAL_TEST( testFlowSolution_2 1)
-    ADD_TB_PROVISIONAL_TEST( testFlowSolution_2 2)
-    ADD_TB_PROVISIONAL_TEST( testFlowSolution_2 4 )
+    ADD_TB_TEST_1_2_4( testFlowSolution )
     ADD_TB_PROVISIONAL_TEST( testLinearFlow )
     #ADD_TB_TEST_1_2_4( testThermalRobinFlow_1 )
     ADD_TB_TEST_1_2_4( testThermalRobinFlow_2 )

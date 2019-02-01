@@ -28,7 +28,9 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     std::uniform_real_distribution<double> dis( -1, 1 );
     bool all_hit = true;
     for ( int i = 0; i < 10000; i++ ) {
-        Point dir   = { dis( gen ), dis( gen ), dis( gen ) };
+        Point dir( ndim, { 0, 0, 0 } );
+        for ( int d = 0; d < ndim; d++ )
+            dir[d] = dis( gen );
         double norm = sqrt( dir.x() * dir.x() + dir.y() * dir.y() + dir.z() * dir.z() );
         dir         = { dir.x() / norm, dir.y() / norm, dir.z() / norm };
         double dist = geom.distance( center, dir );
@@ -64,11 +66,11 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     // Get a set of interior points by randomly sampling the space
     auto range = geom.box();
     std::uniform_real_distribution<double> dis_x( range.first.x(), range.second.x() );
-    std::uniform_real_distribution<double> dis_y( range.first.y(), range.second.y() );
-    std::uniform_real_distribution<double> dis_z( range.first.z(), range.second.z() );
     std::vector<Point> interiorPoints;
     for ( int i = 0; i < 10000; i++ ) {
-        Point pos( ndim, { dis_x( gen ), dis_y( gen ), dis_z( gen ) } );
+        Point pos( ndim, { 0, 0, 0 } );
+        for ( int d = 0; d < ndim; d++ )
+            pos[d] = dis_x( gen );
         if ( geom.inside( pos ) )
             interiorPoints.push_back( pos );
     }

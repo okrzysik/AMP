@@ -65,6 +65,9 @@ public:
     }
     constexpr explicit MeshPoint( const size_t ndim, const TYPE *x ) noexcept : d_ndim( ndim )
     {
+        d_data[0] = 0;
+        d_data[1] = 0;
+        d_data[2] = 0;
         for ( size_t d = 0; d < d_ndim; d++ )
             d_data[d] = x[d];
     }

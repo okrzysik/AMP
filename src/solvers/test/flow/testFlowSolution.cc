@@ -252,12 +252,12 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 }
 
 
-int testFlowSolution_1( int argc, char *argv[] )
+int testFlowSolution( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    flowTest( &ut, "testFlowSolution-1" );
+    flowTest( &ut, "testFlowSolution" );
 
     ut.report();
 
