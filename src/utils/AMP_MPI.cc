@@ -3971,8 +3971,10 @@ void MPI_CLASS::stop_MPI()
 #ifdef USE_EXT_MPI
     int finalized;
     MPI_Finalized( &finalized );
-    if ( called_MPI_Init && !finalized )
+    if ( called_MPI_Init && !finalized ) {
+        MPI_Barrier( MPI_COMM_WORLD );
         MPI_Finalize();
+    }
 #endif
 }
 
