@@ -1,11 +1,15 @@
 #ifndef MMS_H
 #define MMS_H
 
-#include "AMP/utils/Utilities.h"
-#include "Database.h"
+#include "AMP/utils/shared_ptr.h"
+
 #include <valarray>
 
 namespace AMP {
+
+class Database;
+
+
 /**
  * Manufactured solution functions. These are the most general
  * 3d tri-quadratic and tri-cubic polynomials that satisfy the

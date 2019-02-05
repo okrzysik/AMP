@@ -1,26 +1,38 @@
+// Suppress all operatorEq (false positives if we use = default)
+operatorEq:*
+
+// Suppress all useStlAlgorithm (too aggressive)
+useStlAlgorithm:*
+
+// Suppress all operatorEq (too many false positives)
+shadowFunction:*
+shadowVar:*
+
+// Suppress all returnDanglingLifetime (false positives with std::tie)
+returnDanglingLifetime:*
+
 // Suppress unmatched suppressions
-unmatchedSuppression
+unmatchedSuppression:*
 
 // Suppress missing include message (we are not checking dependencies)
-missingInclude
+missingInclude:*
 
 // Suppress unusedFunction messages (functions may be used by subsequent packages)
-unusedFunction
+unusedFunction:*
 
 // Suppress redundantAssignment/Copy, they can be better practice in many instances
-redundantAssignment
-redundantCopy
+redundantAssignment:*
+redundantCopy:*
 
 // Suppress #error messages (they may be valid and will always be caught by compiler if options are exercised)
-preprocessorErrorDirective
+preprocessorErrorDirective:*
 
 // Suppress virtualCallInConstructor
-virtualCallInConstructor
+virtualCallInConstructor:*
 
 // Suppress huge input warnings
-invalidscanf
-invalidscanf_libc
-
+invalidscanf:*
+invalidscanf_libc:*
 
 // Suppress common test warnings (example: x==x)
 duplicateExpression:*/test/test*
@@ -31,7 +43,6 @@ variableScope:*/test/maps/dtk/test*
 unreadVariable:*/test/test*
 unusedVariable:*/test/maps/dtk/test*
 knownConditionTrueFalse:*/oxide/OxideModel.cc
-
 
 // Suppress warnings for ampmesh
 duplicateExpression:*/ampmesh/testHelpers/meshTests.cc
