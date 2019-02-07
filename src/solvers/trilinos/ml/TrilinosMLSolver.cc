@@ -472,7 +472,6 @@ void TrilinosMLSolver::computeNullSpace( const AMP::shared_ptr<AMP::Operator::Op
     auto endNode  = thisNode.end();
 
     int nodeCounter = 0;
-    int offset      = 0;
     for ( ; thisNode != endNode; ++thisNode ) {
         auto coord = thisNode->coord();
         AMP_INSIST( coord.size() == 3, "Currently only programmed for 3d" );
@@ -484,12 +483,12 @@ void TrilinosMLSolver::computeNullSpace( const AMP::shared_ptr<AMP::Operator::Op
 
         // Constant vector for each PDE
         for ( int i = 0; i < numPDE; ++i ) {
-            offset               = i * vecLength + dof + i;
+            int offset           = i * vecLength + dof + i;
             d_null_space[offset] = 1.0;
         }
 
         // Rotation around X
-        offset                   = 3 * vecLength + dof;
+        int offset               = 3 * vecLength + dof;
         d_null_space[offset + 1] = -thisZ;
         d_null_space[offset + 2] = thisY;
 

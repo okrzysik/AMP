@@ -815,14 +815,9 @@ void PowerShape::putToDatabase( AMP::shared_ptr<AMP::Database> db )
  */
 double PowerShape::evalLegendre( const int n, const double x )
 {
-    double result;
-    double a;
-    double b;
-    int i;
-
-    result = 1;
-    a      = 1;
-    b      = x;
+    double result = 1;
+    double a      = 1;
+    double b      = x;
     if ( n == 0 ) {
         result = a;
         return result;
@@ -831,7 +826,7 @@ double PowerShape::evalLegendre( const int n, const double x )
         result = b;
         return result;
     }
-    for ( i = 2; i <= n; i++ ) {
+    for ( int i = 2; i <= n; i++ ) {
         result = ( ( 2 * i - 1 ) * x * b - ( i - 1 ) * a ) / i;
         a      = b;
         b      = result;

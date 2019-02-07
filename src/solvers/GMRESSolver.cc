@@ -325,6 +325,7 @@ void GMRESSolver::computeGivensRotation( const int k )
     auto c = f;
     auto s = c;
     auto r = c;
+    NULL_USE( r );
 
     if ( g == 0.0 ) {
 

@@ -1,12 +1,8 @@
 #include "test_Matrix.h"
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include "ProfilerApp.h"
 #include "test_MatrixTests.h"
 
 #include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/vectors/SimpleVector.h"
 
 
@@ -97,6 +93,7 @@ int main( int argc, char **argv )
     ut.report();
     PROFILE_SAVE( "test_Matrix" );
     int num_failed = ut.NumFailGlobal();
+    ut.reset();
     AMP::AMPManager::shutdown();
     return num_failed;
 }

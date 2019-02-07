@@ -77,17 +77,16 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
     const Teuchos::RCP<Thyra::PreconditionerBase<double>> W_prec_out = outArgs.get_W_prec();
     if ( nonnull( W_prec_out ) ) {
         // Reset the preconditioner
-        AMP::LinearAlgebra::Vector::shared_ptr x2 =
-            AMP::const_pointer_cast<AMP::LinearAlgebra::Vector>( x );
-        AMP::shared_ptr<AMP::Operator::OperatorParameters> op_params =
-            d_nonlinearOp->getParameters( "Jacobian", x2 );
+        auto x2        = AMP::const_pointer_cast<AMP::LinearAlgebra::Vector>( x );
+        auto op_params = d_nonlinearOp->getParameters( "Jacobian", x2 );
+        NULL_USE( op_params );
     }
 
     if ( f_out != nullptr ) {
         // Evaluate the residual:  r = A(u) - rhs
         f_out->zero();
-        ::Thyra::ModelEvaluatorBase::Evaluation<::Thyra::VectorBase<double>> eval = outArgs.get_f();
-        bool exact                                                                = true;
+        auto eval  = outArgs.get_f();
+        bool exact = true;
         if ( eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_EXACT ) {
             exact = true;
         } else if ( eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_APPROX_DERIV ) {
@@ -120,8 +119,8 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
 Teuchos::RCP<const ::Thyra::VectorSpaceBase<double>>
 TrilinosThyraModelEvaluator::get_x_space() const
 {
-    AMP::shared_ptr<LinearAlgebra::ThyraVectorWrapper> vec( new LinearAlgebra::ThyraVectorWrapper(
-        std::vector<LinearAlgebra::Vector::shared_ptr>( 1, d_icVec ) ) );
+    auto vec = AMP::make_shared<LinearAlgebra::ThyraVectorWrapper>(
+        std::vector<LinearAlgebra::Vector::shared_ptr>( 1, d_icVec ) );
     Teuchos::RCP<LinearAlgebra::ThyraVectorSpaceWrapper> vector_space(
         new LinearAlgebra::ThyraVectorSpaceWrapper( vec ) );
     return vector_space;
@@ -129,8 +128,8 @@ TrilinosThyraModelEvaluator::get_x_space() const
 Teuchos::RCP<const ::Thyra::VectorSpaceBase<double>>
 TrilinosThyraModelEvaluator::get_f_space() const
 {
-    AMP::shared_ptr<LinearAlgebra::ThyraVectorWrapper> vec( new LinearAlgebra::ThyraVectorWrapper(
-        std::vector<LinearAlgebra::Vector::shared_ptr>( 1, d_icVec ) ) );
+    auto vec = AMP::make_shared<LinearAlgebra::ThyraVectorWrapper>(
+        std::vector<LinearAlgebra::Vector::shared_ptr>( 1, d_icVec ) );
     Teuchos::RCP<LinearAlgebra::ThyraVectorSpaceWrapper> vector_space(
         new LinearAlgebra::ThyraVectorSpaceWrapper( vec ) );
     return vector_space;

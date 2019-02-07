@@ -11,7 +11,7 @@ namespace Operator {
 
 VonMises_IsotropicKinematicHardening::VonMises_IsotropicKinematicHardening(
     const AMP::shared_ptr<MechanicsMaterialModelParameters> &params )
-    : MechanicsMaterialModel( params )
+    : MechanicsMaterialModel( params ), d_constitutiveMatrix{ { 0 } }
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 
@@ -632,6 +632,8 @@ void VonMises_IsotropicKinematicHardening::radialReturn(
     }
     double H_alpha_prime = 1.0;
     double a_n[6], xi_trial, xi_trial_dev[6], alpha_n_kk;
+    NULL_USE( h_alpha );
+    NULL_USE( h_alpha_prime );
 
     double dstra[6];
 

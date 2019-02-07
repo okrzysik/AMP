@@ -31,18 +31,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
     input_db->printClassData( AMP::plog );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    AMP::shared_ptr<AMP::Operator::VonMises_IsotropicKinematicHardening> vmikModel;
-
-    AMP::shared_ptr<AMP::Database> matModelDatabase =
-        input_db->getDatabase( "MechanicsMaterialModel" );
-    elementPhysicsModel =
+    auto matModelDatabase = input_db->getDatabase( "MechanicsMaterialModel" );
+    auto elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( matModelDatabase );
-    vmikModel = AMP::dynamic_pointer_cast<AMP::Operator::VonMises_IsotropicKinematicHardening>(
+    auto vmikModel = AMP::dynamic_pointer_cast<AMP::Operator::VonMises_IsotropicKinematicHardening>(
         elementPhysicsModel );
 
     vmikModel->preNonlinearInit( true, true );

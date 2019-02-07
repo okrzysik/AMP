@@ -2888,7 +2888,7 @@ MPI_CLASS::IrecvBytes( void *buf, const int number_bytes, const int send_proc, c
 #ifdef USE_MPI
 // unsigned char
 template<>
-void MPI_CLASS::call_allGather<unsigned char>( const unsigned char x_in,
+void MPI_CLASS::call_allGather<unsigned char>( const unsigned char &x_in,
                                                unsigned char *x_out ) const
 {
     PROFILE_START( "allGather<unsigned char>", profile_level );
@@ -2916,7 +2916,7 @@ void MPI_CLASS::call_allGather<unsigned char>( const unsigned char *x_in,
 }
 // char
 template<>
-void MPI_CLASS::call_allGather<char>( const char x_in, char *x_out ) const
+void MPI_CLASS::call_allGather<char>( const char &x_in, char *x_out ) const
 {
     PROFILE_START( "allGather<char>", profile_level );
     MPI_Allgather( (void *) &x_in, 1, MPI_CHAR, (void *) x_out, 1, MPI_CHAR, communicator );
@@ -2939,7 +2939,7 @@ void MPI_CLASS::call_allGather<char>(
 }
 // unsigned int
 template<>
-void MPI_CLASS::call_allGather<unsigned int>( const unsigned int x_in, unsigned int *x_out ) const
+void MPI_CLASS::call_allGather<unsigned int>( const unsigned int &x_in, unsigned int *x_out ) const
 {
     PROFILE_START( "allGather<unsigned int>", profile_level );
     MPI_Allgather( (void *) &x_in, 1, MPI_UNSIGNED, (void *) x_out, 1, MPI_UNSIGNED, communicator );
@@ -2962,7 +2962,7 @@ void MPI_CLASS::call_allGather<unsigned int>(
 }
 // int
 template<>
-void MPI_CLASS::call_allGather<int>( const int x_in, int *x_out ) const
+void MPI_CLASS::call_allGather<int>( const int &x_in, int *x_out ) const
 {
     PROFILE_START( "allGather<int>", profile_level );
     MPI_Allgather( (void *) &x_in, 1, MPI_INT, (void *) x_out, 1, MPI_INT, communicator );
@@ -2985,7 +2985,7 @@ void MPI_CLASS::call_allGather<int>(
 }
 // unsigned long int
 template<>
-void MPI_CLASS::call_allGather<unsigned long int>( const unsigned long int x_in,
+void MPI_CLASS::call_allGather<unsigned long int>( const unsigned long int &x_in,
                                                    unsigned long int *x_out ) const
 {
     PROFILE_START( "allGather<unsigned long>", profile_level );
@@ -3013,7 +3013,7 @@ void MPI_CLASS::call_allGather<unsigned long int>( const unsigned long int *x_in
 }
 // long int
 template<>
-void MPI_CLASS::call_allGather<long int>( const long int x_in, long int *x_out ) const
+void MPI_CLASS::call_allGather<long int>( const long int &x_in, long int *x_out ) const
 {
     PROFILE_START( "allGather<long int>", profile_level );
     MPI_Allgather( (void *) &x_in, 1, MPI_LONG, (void *) x_out, 1, MPI_LONG, communicator );
@@ -3036,7 +3036,7 @@ void MPI_CLASS::call_allGather<long int>(
 }
 // float
 template<>
-void MPI_CLASS::call_allGather<float>( const float x_in, float *x_out ) const
+void MPI_CLASS::call_allGather<float>( const float &x_in, float *x_out ) const
 {
     PROFILE_START( "allGather<float>", profile_level );
     MPI_Allgather( (void *) &x_in, 1, MPI_FLOAT, (void *) x_out, 1, MPI_FLOAT, communicator );
@@ -3059,7 +3059,7 @@ void MPI_CLASS::call_allGather<float>(
 }
 // double
 template<>
-void MPI_CLASS::call_allGather<double>( const double x_in, double *x_out ) const
+void MPI_CLASS::call_allGather<double>( const double &x_in, double *x_out ) const
 {
     PROFILE_START( "allGather<double>", profile_level );
     MPI_Allgather( (void *) &x_in, 1, MPI_DOUBLE, (void *) x_out, 1, MPI_DOUBLE, communicator );
@@ -3971,8 +3971,10 @@ void MPI_CLASS::stop_MPI()
 #ifdef USE_EXT_MPI
     int finalized;
     MPI_Finalized( &finalized );
-    if ( called_MPI_Init && !finalized )
+    if ( called_MPI_Init && !finalized ) {
+        MPI_Barrier( MPI_COMM_WORLD );
         MPI_Finalize();
+    }
 #endif
 }
 

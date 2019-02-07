@@ -231,7 +231,7 @@ public:
     protected:
         return_type d_result;
     protected:
-        inline WorkItemRet() { }
+        inline WorkItemRet() : d_result( return_type() ) { }
     private:
         WorkItemRet( const WorkItemRet & );            // Private copy constructor
         WorkItemRet &operator=( const WorkItemRet & ); // Private assignment operator
@@ -292,7 +292,7 @@ public:
      *  Function to set the affinity of the current thread
      *  @param procs    The processors to use
      */
-    static void setThreadAffinity( std::vector<int> procs );
+    static void setThreadAffinity( const std::vector<int>& procs );
 
 
     /*!
@@ -300,7 +300,7 @@ public:
      *  @param thread   The index of the thread
      *  @param procs    The processors to use
      */
-    void setThreadAffinity( int thread, std::vector<int> procs ) const;
+    void setThreadAffinity( int thread, const std::vector<int>& procs ) const;
 
 
     //! Function to return the number of threads in the thread pool

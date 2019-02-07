@@ -634,7 +634,7 @@ public: // Member functions
      * \param root      The processor performing the broadcast
      */
     template<class type>
-    type bcast( const type value, const int root ) const;
+    type bcast( const type &value, const int root ) const;
 
 
     /**
@@ -820,7 +820,7 @@ public: // Member functions
      * communicator)
      */
     template<class type>
-    void allGather( const type x_in, type *x_out ) const;
+    void allGather( const type &x_in, type *x_out ) const;
 
 
     /*!
@@ -1087,7 +1087,7 @@ private: // Private helper functions for templated MPI operations;
     template<class type>
     void call_bcast( type *x, const int n, const int root ) const;
     template<class type>
-    void call_allGather( const type x_in, type *x_out ) const;
+    void call_allGather( const type &x_in, type *x_out ) const;
     template<class type>
     void call_allGather(
         const type *x_in, int size_in, type *x_out, int *size_out, int *disp_out ) const;

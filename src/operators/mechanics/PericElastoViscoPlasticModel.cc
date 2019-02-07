@@ -12,7 +12,7 @@ namespace Operator {
 
 PericElastoViscoPlasticModel::PericElastoViscoPlasticModel(
     const AMP::shared_ptr<MechanicsMaterialModelParameters> &params )
-    : MechanicsMaterialModel( params )
+    : MechanicsMaterialModel( params ), d_constitutiveMatrix{ { 0 } }
 {
     AMP_INSIST( params.get() != nullptr, "NULL parameter" );
     AMP_INSIST( params->d_db.get() != nullptr, "NULL database" );

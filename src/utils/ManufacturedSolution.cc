@@ -1,4 +1,5 @@
 #include "AMP/utils/ManufacturedSolution.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/shared_ptr.h"
 

@@ -209,11 +209,11 @@ void readTestMesh( std::string mesh_file, AMP::shared_ptr<::Mesh> mesh )
 
 void readTestMesh( AMP::shared_ptr<AMP::InputDatabase> mesh_file_db, AMP::shared_ptr<::Mesh> mesh )
 {
-    AMP::shared_ptr<AMP::Database> mesh_db = mesh_file_db->getDatabase( "Mesh" );
-    int num_elem                           = mesh_db->getInteger( "NumberOfElements" );
-    int num_nodes                          = mesh_db->getInteger( "NumberOfNodes" );
-    int num_boundaryNodeIds                = mesh_db->getInteger( "NumberOfBoundaryNodeIds" );
-    int num_boundarySideIds                = mesh_db->getInteger( "NumberOfBoundarySideIds" );
+    auto mesh_db            = mesh_file_db->getDatabase( "Mesh" );
+    int num_elem            = mesh_db->getInteger( "NumberOfElements" );
+    int num_nodes           = mesh_db->getInteger( "NumberOfNodes" );
+    int num_boundaryNodeIds = mesh_db->getInteger( "NumberOfBoundaryNodeIds" );
+    int num_boundarySideIds = mesh_db->getInteger( "NumberOfBoundarySideIds" );
 
     mesh->reserve_elem( num_elem );
     mesh->reserve_nodes( num_nodes );

@@ -10,7 +10,7 @@ namespace Operator {
 
 ThermalVonMisesMatModel::ThermalVonMisesMatModel(
     const AMP::shared_ptr<MechanicsMaterialModelParameters> &params )
-    : MechanicsMaterialModel( params )
+    : MechanicsMaterialModel( params ), d_constitutiveMatrix{ { 0 } }
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 

@@ -184,9 +184,8 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
     xyz.resize( num_nodes );
     xyz_np1.resize( num_nodes );
 
-    Point p1;
     for ( unsigned int ijk = 0; ijk < num_nodes; ijk++ ) {
-        p1       = d_elem->point( ijk );
+        Point p1 = d_elem->point( ijk );
         xyz[ijk] = p1;
     }
 
@@ -498,9 +497,9 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
     xyz.resize( num_nodes );
     xyz_np1.resize( num_nodes );
 
-    Point p1;
     for ( unsigned int ijk = 0; ijk < num_nodes; ijk++ ) {
-        p1 = d_elem->point( ijk );
+        auto p1 = d_elem->point( ijk );
+        NULL_USE( p1 );
         // xyz[ijk] = p1;
         xyz[ijk]( 0 ) = d_elementRefXYZ[( 3 * ijk ) + 0];
         xyz[ijk]( 1 ) = d_elementRefXYZ[( 3 * ijk ) + 1];
@@ -846,9 +845,8 @@ void MechanicsLinearUpdatedLagrangianElement::initializeReferenceXYZ(
 
     xyz.resize( num_nodes );
 
-    Point p1;
     for ( unsigned int ijk = 0; ijk < num_nodes; ijk++ ) {
-        p1       = d_elem->point( ijk );
+        auto p1  = d_elem->point( ijk );
         xyz[ijk] = p1;
 
         elementRefXYZ[( 3 * ijk ) + 0] = xyz[ijk]( 0 );

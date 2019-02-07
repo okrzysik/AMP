@@ -88,7 +88,7 @@ public:
 template<class Ret, class... Args>
 class WorkItemFull;
 template<class... Args>
-class WorkItemFull<void, Args...> : public ThreadPool::WorkItemRet<void>
+class WorkItemFull<void, Args...> final : public ThreadPool::WorkItemRet<void>
 {
 private:
     std::function<void( Args... )> routine;
@@ -108,7 +108,7 @@ public:
     virtual ~WorkItemFull() {}
 };
 template<class Ret, class... Args>
-class WorkItemFull : public ThreadPool::WorkItemRet<Ret>
+class WorkItemFull final : public ThreadPool::WorkItemRet<Ret>
 {
 private:
     std::function<Ret( Args... )> routine;
@@ -135,14 +135,14 @@ template<class Ret, class... Args>
 inline ThreadPool::thread_id_t ThreadPool_add_work(
     ThreadPool *tpool, int priority, std::function<Ret( Args... )> routine, std::tuple<Args...> &&args )
 {
-    auto work = new WorkItemFull<Ret, Args...>( std::move( routine ), std::move( args ) );
+    auto work = new WorkItemFull<Ret, Args...>( routine, std::move( args ) );
     return ThreadPool::add_work( tpool, work, priority );
 }
 template<class Ret, class... Args>
 inline ThreadPool::thread_id_t ThreadPool_add_work(
     ThreadPool *tpool, int priority, Ret ( *routine )( Args... ), std::tuple<Args...> &&args )
 {
-    auto work = new WorkItemFull<Ret, Args...>( std::move( routine ), std::move( args ) );
+    auto work = new WorkItemFull<Ret, Args...>( routine, std::move( args ) );
     return ThreadPool::add_work( tpool, work, priority );
 }
 template<class Ret, class... Args>
