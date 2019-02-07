@@ -344,7 +344,6 @@ DWORD GetThreadAffinityMask( HANDLE thread )
         }
         mask <<= 1;
     }
-
     return 0;
 }
 #endif
@@ -385,9 +384,9 @@ std::vector<int> ThreadPool::getThreadAffinity( int thread ) const
     if ( thread >= getNumThreads() )
         std::logic_error( "Invalid thread number" );
     std::vector<int> procs;
-    auto handle = const_cast<std::thread &>( d_thread[thread] ).native_handle();
 #ifdef USE_LINUX
 #ifdef _GNU_SOURCE
+    auto handle = const_cast<std::thread &>( d_thread[thread] ).native_handle();
     cpu_set_t mask;
     int error = pthread_getaffinity_np( handle, sizeof( cpu_set_t ), &mask );
     if ( error != 0 )
@@ -402,9 +401,9 @@ std::vector<int> ThreadPool::getThreadAffinity( int thread ) const
 #endif
 #elif defined( USE_MAC )
     // MAC does not support getting or setting the affinity
-    NULL_USE( handle );
     OS_warning( "MAC does not support getting the thread affinity" );
 #elif defined( USE_WINDOWS )
+    auto handle     = const_cast<std::thread &>( d_thread[thread] ).native_handle();
     size_t procMask = GetThreadAffinityMask( handle );
     for ( size_t i = 0; i < sizeof( size_t ) * CHAR_BIT; i++ ) {
         if ( ( procMask & 0x1 ) != 0 )
@@ -421,7 +420,7 @@ std::vector<int> ThreadPool::getThreadAffinity( int thread ) const
 /******************************************************************
  * Function to set the thread affinity                             *
  ******************************************************************/
-void ThreadPool::setThreadAffinity( std::vector<int> procs )
+void ThreadPool::setThreadAffinity( const std::vector<int> &procs )
 {
 #ifdef USE_LINUX
 #ifdef _GNU_SOURCE
@@ -449,18 +448,18 @@ void ThreadPool::setThreadAffinity( std::vector<int> procs )
 #error Unknown OS
 #endif
 }
-void ThreadPool::setThreadAffinity( int thread, std::vector<int> procs ) const
+void ThreadPool::setThreadAffinity( int thread, const std::vector<int> &procs ) const
 {
     if ( thread >= getNumThreads() )
         std::logic_error( "Invalid thread number" );
-    auto handle = const_cast<std::thread &>( d_thread[thread] ).native_handle();
 #ifdef USE_LINUX
 #ifdef __USE_GNU
     cpu_set_t mask;
     CPU_ZERO( &mask );
     for ( size_t i = 0; i < procs.size(); i++ )
         CPU_SET( procs[i], &mask );
-    int error = pthread_setaffinity_np( handle, sizeof( cpu_set_t ), &mask );
+    auto handle = const_cast<std::thread &>( d_thread[thread] ).native_handle();
+    int error   = pthread_setaffinity_np( handle, sizeof( cpu_set_t ), &mask );
     if ( error != 0 )
         throw std::logic_error( "Error setting thread affinity" );
 #else
@@ -469,13 +468,13 @@ void ThreadPool::setThreadAffinity( int thread, std::vector<int> procs ) const
 #endif
 #elif defined( USE_MAC )
     // MAC does not support getting or setting the affinity
-    NULL_USE( handle );
     NULL_USE( procs );
     OS_warning( "MAC does not support getting the process affinity" );
 #elif defined( USE_WINDOWS )
     DWORD mask = 0;
     for ( size_t i = 0; i < procs.size(); i++ )
         mask |= ( (DWORD) 1 ) << procs[i];
+    auto handle = const_cast<std::thread &>( d_thread[thread] ).native_handle();
     SetThreadAffinityMask( handle, mask );
 #else
 #error Unknown OS

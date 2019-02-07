@@ -98,11 +98,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto thermalVariable = thermalVolumeOperator->getOutputVariable();
 
     auto oxygenNlSolVec = solVec->subsetVectorForVariable( oxygenVariable );
-    auto oxygenNlRhsVec = rhsVec->subsetVectorForVariable( oxygenVariable );
     auto oxygenNlResVec = resVec->subsetVectorForVariable( oxygenVariable );
 
     auto thermalNlSolVec = solVec->subsetVectorForVariable( thermalVariable );
-    auto thermalNlRhsVec = rhsVec->subsetVectorForVariable( thermalVariable );
     auto thermalNlResVec = resVec->subsetVectorForVariable( thermalVariable );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//

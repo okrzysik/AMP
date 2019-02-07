@@ -34,8 +34,7 @@ GMRESSolver::~GMRESSolver() = default;
  ****************************************************************/
 void GMRESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
-    AMP::shared_ptr<KrylovSolverParameters> parameters =
-        AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
+    auto parameters = AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
@@ -266,6 +265,7 @@ void GMRESSolver::computeGivensRotation( const int k )
     auto c = f;
     auto s = c;
     auto r = c;
+    NULL_USE( r );
 
     if ( g == 0.0 ) {
 

@@ -419,7 +419,7 @@ void MPI_CLASS::call_bcast( type *x, const int n, const int root ) const
 }
 // Specialization of bcast for std::string
 template<>
-inline std::string MPI_CLASS::bcast<std::string>( const std::string value, const int root ) const
+inline std::string MPI_CLASS::bcast<std::string>( const std::string &value, const int root ) const
 {
     if ( comm_size == 1 )
         return value;
@@ -445,7 +445,7 @@ inline void MPI_CLASS::bcast<std::string>( std::string *, const int, const int )
 }
 // Default implimentation of bcast
 template<class type>
-inline type MPI_CLASS::bcast( const type value, const int root ) const
+inline type MPI_CLASS::bcast( const type &value, const int root ) const
 {
     if ( root >= comm_size )
         MPI_CLASS_ERROR( "root cannot be >= size in bcast" );
@@ -608,7 +608,7 @@ std::vector<type> MPI_CLASS::allGather( const std::vector<type> &x ) const
 }
 // Specialization of MPI_CLASS::allGather for std::string
 template<>
-inline void MPI_CLASS::allGather<std::string>( const std::string x_in, std::string *x_out ) const
+inline void MPI_CLASS::allGather<std::string>( const std::string &x_in, std::string *x_out ) const
 {
     // Get the bytes recvied per processor
     std::vector<int> recv_cnt( comm_size, 0 );
@@ -626,7 +626,7 @@ inline void MPI_CLASS::allGather<std::string>( const std::string x_in, std::stri
 }
 // Default instantiation of MPI_CLASS::allGather
 template<class type>
-inline void MPI_CLASS::allGather( const type x_in, type *x_out ) const
+inline void MPI_CLASS::allGather( const type &x_in, type *x_out ) const
 {
     if ( comm_size > 1 ) {
         // We can use the vector form of allGather with a char array to ge the data we want
@@ -647,22 +647,22 @@ inline int MPI_CLASS::allGather<std::string>(
 // Define specializations of call_allGather(const type, type*)
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
 template<>
-void MPI_CLASS::call_allGather<unsigned char>( const unsigned char, unsigned char * ) const;
+void MPI_CLASS::call_allGather<unsigned char>( const unsigned char &, unsigned char * ) const;
 template<>
-void MPI_CLASS::call_allGather<char>( const char, char * ) const;
+void MPI_CLASS::call_allGather<char>( const char &, char * ) const;
 template<>
-void MPI_CLASS::call_allGather<unsigned int>( const unsigned int, unsigned int * ) const;
+void MPI_CLASS::call_allGather<unsigned int>( const unsigned int &, unsigned int * ) const;
 template<>
-void MPI_CLASS::call_allGather<int>( const int, int * ) const;
+void MPI_CLASS::call_allGather<int>( const int &, int * ) const;
 template<>
-void MPI_CLASS::call_allGather<unsigned long int>( const unsigned long int,
+void MPI_CLASS::call_allGather<unsigned long int>( const unsigned long int &,
                                                    unsigned long int * ) const;
 template<>
-void MPI_CLASS::call_allGather<long int>( const long int, long int * ) const;
+void MPI_CLASS::call_allGather<long int>( const long int &, long int * ) const;
 template<>
-void MPI_CLASS::call_allGather<float>( const float, float * ) const;
+void MPI_CLASS::call_allGather<float>( const float &, float * ) const;
 template<>
-void MPI_CLASS::call_allGather<double>( const double, double * ) const;
+void MPI_CLASS::call_allGather<double>( const double &, double * ) const;
 #endif
 // Default instantiation of MPI_CLASS::allGather
 template<class type>
@@ -722,7 +722,7 @@ int MPI_CLASS::allGather( const type *send_data,
 }
 // Default instantiations of call_allGather(const type, type*)
 template<class type>
-void MPI_CLASS::call_allGather( const type x_in, type *x_out ) const
+void MPI_CLASS::call_allGather( const type &x_in, type *x_out ) const
 {
     allGather<char>( (const char *) &x_in, (int) sizeof( type ), (char *) x_out );
 }

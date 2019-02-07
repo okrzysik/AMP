@@ -35,18 +35,18 @@ static void myTest( AMP::UnitTest *ut )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    AMP::shared_ptr<AMP::InputDatabase> outerInput_db( new AMP::InputDatabase( "outerInput_db" ) );
+    auto outerInput_db = AMP::make_shared<AMP::InputDatabase>( "outerInput_db" );
     AMP::InputManager::getManager()->parseInputFile( outerInput_file, outerInput_db );
     outerInput_db->printClassData( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP_INSIST( outerInput_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> database = outerInput_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto database = outerInput_db->getDatabase( "Mesh" );
+    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
 
     AMP_INSIST( outerInput_db->keyExists( "number_of_tests" ), "key missing!" );
     int numTests = outerInput_db->getInteger( "number_of_tests" );
@@ -60,8 +60,7 @@ static void myTest( AMP::UnitTest *ut )
         std::cout << "Running test " << i + 1 << " of " << numTests << ": " << innerInput_file
                   << std::endl;
 
-        AMP::shared_ptr<AMP::InputDatabase> innerInput_db(
-            new AMP::InputDatabase( "innerInput_db" ) );
+        auto innerInput_db = AMP::make_shared<AMP::InputDatabase>( "innerInput_db" );
         AMP::InputManager::getManager()->parseInputFile( innerInput_file, innerInput_db );
         innerInput_db->printClassData( AMP::plog );
 
@@ -77,15 +76,14 @@ static void myTest( AMP::UnitTest *ut )
 
         // create a column operator object
         AMP::shared_ptr<AMP::Operator::OperatorParameters> params;
-        AMP::shared_ptr<AMP::Operator::ColumnOperator> columnOperator(
-            new AMP::Operator::ColumnOperator( params ) );
+        auto columnOperator = AMP::make_shared<AMP::Operator::ColumnOperator>( params );
 
         std::vector<AMP::LinearAlgebra::Variable::shared_ptr> inputVariables;
         std::vector<AMP::Discretization::DOFManager::shared_ptr> dofMapVec;
 
         double defTemp = -1.0;
         double defConc = -1.0;
-        size_t nVars   = 0;
+        int nVars      = 0;
         for ( int opN = 1; opN <= numberOfOperators; opN++ ) {
             dofMapVec.push_back( AMP::Discretization::simpleDOFManager::create(
                 meshAdapter, AMP::Mesh::GeomType::Vertex, 1, dofsPerNodeArr[opN - 1], true ) );
@@ -96,13 +94,11 @@ static void myTest( AMP::UnitTest *ut )
                         "key missing!  " + innerInput_file );
 
             AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-            AMP::shared_ptr<AMP::Database> testOp_db = innerInput_db->getDatabase( testOpName );
-            AMP::shared_ptr<AMP::Operator::Operator> testOperator =
-                AMP::Operator::OperatorBuilder::createOperator(
-                    meshAdapter, testOpName, innerInput_db, elementPhysicsModel );
+            auto testOp_db    = innerInput_db->getDatabase( testOpName );
+            auto testOperator = AMP::Operator::OperatorBuilder::createOperator(
+                meshAdapter, testOpName, innerInput_db, elementPhysicsModel );
 
-            AMP::shared_ptr<AMP::Operator::LinearOperator> myLinOp =
-                AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( testOperator );
+            auto myLinOp = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( testOperator );
             AMP_INSIST( myLinOp != nullptr, "Is not a linear operator!" );
 
             columnOperator->append( testOperator );
@@ -115,7 +111,7 @@ static void myTest( AMP::UnitTest *ut )
             // its transport model has defaults defined
             AMP::shared_ptr<AMP::Database> model_db;
             if ( testOp_db->keyExists( "VolumeOperator" ) ) {
-                AMP::shared_ptr<AMP::Database> volOp_db =
+                auto volOp_db =
                     innerInput_db->getDatabase( testOp_db->getString( "VolumeOperator" ) );
                 if ( ( volOp_db->getName() == "DiffusionNonlinearFEOperator" ) ||
                      ( volOp_db->getName() == "DiffusionLinearFEOperator" ) ) {
@@ -134,8 +130,8 @@ static void myTest( AMP::UnitTest *ut )
 
         {
             // Create the vectors
-            AMP::LinearAlgebra::Variable::shared_ptr tmp_var(
-                new AMP::LinearAlgebra::MultiVariable( "columnInputVariable" ) );
+            auto tmp_var =
+                AMP::make_shared<AMP::LinearAlgebra::MultiVariable>( "columnInputVariable" );
             AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> solVec =
                 AMP::LinearAlgebra::MultiVector::create( tmp_var, meshAdapter->getComm() );
             for ( size_t i = 0; i < inputVariables.size(); i++ ) {
@@ -143,19 +139,17 @@ static void myTest( AMP::UnitTest *ut )
                     solVec->addVector(
                         AMP::LinearAlgebra::createVector( dofMapVec[i], inputVariables[i] ) );
             }
-            AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
-            AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
+            auto rhsVec = solVec->cloneVector();
+            auto resVec = solVec->cloneVector();
 
-            for ( size_t i = 0; i < nVars; i++ ) {
-                AMP::LinearAlgebra::Variable::shared_ptr opVar = inputVariables[i];
+            for ( int i = 0; i < nVars; i++ ) {
+                auto opVar = inputVariables[i];
                 if ( opVar->getName() == "temperature" ) {
-                    AMP::LinearAlgebra::Vector::shared_ptr tVec =
-                        solVec->subsetVectorForVariable( inputVariables[i] );
+                    auto tVec = solVec->subsetVectorForVariable( inputVariables[i] );
                     tVec->setToScalar( defTemp );
                 }
                 if ( opVar->getName() == "concentration" ) {
-                    AMP::LinearAlgebra::Vector::shared_ptr cVec =
-                        solVec->subsetVectorForVariable( inputVariables[i] );
+                    auto cVec = solVec->subsetVectorForVariable( inputVariables[i] );
                     cVec->setToScalar( defConc );
                 }
             }

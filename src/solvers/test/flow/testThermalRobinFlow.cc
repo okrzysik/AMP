@@ -1,39 +1,15 @@
-#include "AMP/materials/Material.h"
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
-#include "AMP/utils/PIO.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
-#include "AMP/vectors/Variable.h"
-#include <string>
-
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/vectors/VectorBuilder.h"
-
-#include "AMP/utils/Writer.h"
-#include "AMP/vectors/Vector.h"
-
-#include "AMP/operators/libmesh/MassLinearElement.h"
-#include "AMP/operators/libmesh/MassLinearFEOperator.h"
-
-#include "AMP/operators/diffusion/DiffusionLinearElement.h"
-#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
-#include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "AMP/operators/diffusion/DiffusionTransportModel.h"
-
-#include "AMP/operators/NeutronicsRhs.h"
-#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-#include "AMP/operators/subchannel/FlowFrapconJacobian.h"
-#include "AMP/operators/subchannel/FlowFrapconOperator.h"
-
+#include "AMP/materials/Material.h"
+#include "AMP/operators/CoupledOperator.h"
+#include "AMP/operators/CoupledOperatorParameters.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
-
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/NeutronicsRhs.h"
+#include "AMP/operators/NonlinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/ColumnBoundaryOperator.h"
 #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
@@ -41,17 +17,18 @@
 #include "AMP/operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
 #include "AMP/operators/boundary/libmesh/RobinMatrixCorrection.h"
 #include "AMP/operators/boundary/libmesh/RobinVectorCorrection.h"
-
-#include "AMP/operators/CoupledOperator.h"
-#include "AMP/operators/CoupledOperatorParameters.h"
-#include "AMP/operators/NonlinearBVPOperator.h"
-
-#include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/diffusion/DiffusionLinearElement.h"
+#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/operators/libmesh/MassLinearElement.h"
+#include "AMP/operators/libmesh/MassLinearFEOperator.h"
+#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/operators/map/Map1Dto3D.h"
 #include "AMP/operators/map/Map3Dto1D.h"
 #include "AMP/operators/map/MapOperatorParameters.h"
-
+#include "AMP/operators/subchannel/FlowFrapconJacobian.h"
+#include "AMP/operators/subchannel/FlowFrapconOperator.h"
 #include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/libmesh/Flow1DSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
@@ -59,13 +36,27 @@
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/petsc/PetscSNESSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/InputManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
+
+#include <string>
 
 
 static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db          = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
     input_db->printClassData( AMP::plog );
 
@@ -76,9 +67,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     //   Create the Mesh.
     //--------------------------------------------------
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db   = input_db->getDatabase( "Mesh" );
+    auto mgrParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
     //--------------------------------------------------
@@ -91,12 +81,10 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     int nodalGhostWidth      = 1;
     int gaussPointGhostWidth = 1;
     bool split               = true;
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-    AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+    auto nodalDofMap         = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+    auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
     //--------------------------------------------------
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -108,13 +96,12 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     //-----------------------------------------------
     AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator" ), "key missing!" );
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
-    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "NonlinearThermalOperator", input_db, thermalTransportModel ) );
+    auto thermalNonlinearOperator = AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "NonlinearThermalOperator", input_db, thermalTransportModel ) );
 
     // initialize the input variable
-    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator =
+    auto thermalVolumeOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             thermalNonlinearOperator->getVolumeOperator() );
 
@@ -133,26 +120,22 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     //-------------------------------------
 
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> thermalLinearOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "LinearThermalOperator", input_db, transportModel ) );
+    auto thermalLinearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "LinearThermalOperator", input_db, transportModel ) );
 
     //-------------------------------------
     //  CREATE THE NEUTRONICS SOURCE  //
     //-------------------------------------
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
-    AMP::shared_ptr<AMP::Database> neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
-    AMP::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(
-        new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ) );
-    AMP::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(
-        new AMP::Operator::NeutronicsRhs( neutronicsParams ) );
+    auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
+    auto neutronicsParams =
+        AMP::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
+    auto neutronicsOperator = AMP::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
 
-    AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar =
-        neutronicsOperator->getOutputVariable();
-    AMP::LinearAlgebra::Vector::shared_ptr SpecificPowerVec =
-        AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
+    auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
+    auto SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
 
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
@@ -163,15 +146,13 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
-    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
+    auto sourceOperator = AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
 
     // Create the power (heat source) vector.
-    AMP::LinearAlgebra::Variable::shared_ptr PowerInWattsVar = sourceOperator->getOutputVariable();
-    AMP::LinearAlgebra::Vector::shared_ptr PowerInWattsVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
+    auto PowerInWattsVar = sourceOperator->getOutputVariable();
+    auto PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
     PowerInWattsVec->zero();
 
     // convert the vector of specific power to power for a given basis.
@@ -189,8 +170,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
 
     //-------------------------------------
-    AMP::Operator::Operator::shared_ptr boundaryOp =
-        thermalNonlinearOperator->getBoundaryOperator();
+    auto boundaryOp = thermalNonlinearOperator->getBoundaryOperator();
 
     //  AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> robinBoundaryOp =
     //  AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
@@ -202,38 +182,34 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     //  robinBoundaryOp->setVariableFlux( robinRHSVec );
 
     //------------------------------------------------------------------
-    AMP::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    AMP::shared_ptr<AMP::Database> linearSolver_db =
-        nonlinearSolver_db->getDatabase( "LinearSolver" );
+    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
+    auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
     //----------------------------------------------------------------//
     // initialize the nonlinear solver
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
-        new AMP::Solver::PetscSNESSolverParameters( nonlinearSolver_db ) );
+    auto nonlinearSolverParams =
+        AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = thermalNonlinearOperator;
     nonlinearSolverParams->d_pInitialGuess = globalSolVec;
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(
-        new AMP::Solver::PetscSNESSolver( nonlinearSolverParams ) );
+    auto nonlinearSolver = AMP::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
     //-------------------------------------------------------------------------//
     // initialize the column preconditioner which is a diagonal block preconditioner
-    AMP::shared_ptr<AMP::Database> columnPreconditioner_db =
-        linearSolver_db->getDatabase( "Preconditioner" );
+    auto columnPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
 
-    AMP::shared_ptr<AMP::Database> thermalPreconditioner_db =
+    auto thermalPreconditioner_db =
         columnPreconditioner_db->getDatabase( "pelletThermalPreconditioner" );
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams(
-        new AMP::Solver::SolverStrategyParameters( thermalPreconditioner_db ) );
+    auto thermalPreconditionerParams =
+        AMP::make_shared<AMP::Solver::SolverStrategyParameters>( thermalPreconditioner_db );
     thermalPreconditionerParams->d_pOperator = thermalLinearOperator;
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> thermalPreconditioner(
-        new AMP::Solver::TrilinosMLSolver( thermalPreconditionerParams ) );
+    auto thermalPreconditioner =
+        AMP::make_shared<AMP::Solver::TrilinosMLSolver>( thermalPreconditionerParams );
 
     //--------------------------------------------------------------------//
     // register the preconditioner with the Jacobian free Krylov solver
-    AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
-        nonlinearSolver->getKrylovSolver();
+    auto linearSolver = nonlinearSolver->getKrylovSolver();
     linearSolver->setPreconditioner( thermalPreconditioner );
 
     //-------------------------------------
@@ -280,7 +256,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     //---------------------------------------------------------------------------
 
 #ifdef USE_EXT_SILO
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
 
     siloWriter->registerVector(
@@ -309,7 +285,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     ut->passes( exeName );
 }
 
-int testThermalRobinFlow_2( int argc, char *argv[] )
+int testThermalRobinFlow( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

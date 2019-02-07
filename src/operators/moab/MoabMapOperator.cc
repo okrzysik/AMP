@@ -70,7 +70,7 @@ void MoabMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     std::vector<double> allCoords;
 
     // Loop over meshes
-    std::vector<AMP::Mesh::MeshID> meshIDs = d_meshMgr->getBaseMeshIDs();
+    auto meshIDs = d_meshMgr->getBaseMeshIDs();
     for ( size_t meshIndex = 0; meshIndex < meshIDs.size(); meshIndex++ ) {
         // this is an accessor to all the mesh info.
         AMP::Mesh::Mesh::shared_ptr currentMesh = d_meshMgr->Subset( meshIDs[meshIndex] );
@@ -163,12 +163,7 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
     AMP_INSIST( d_interpType == GAUSS_POINTS, "Wrong interpolation type" );
 
     // Create Gauss point DOF manager
-    size_t DOFsPerElement    = 8;
-    int gaussPointGhostWidth = 0;
-    bool split               = true;
-    AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+    size_t DOFsPerElement = 8;
 
     // Get size of Gauss-point vectors
     // We're explicitly assuming every element has 8 Gauss points
@@ -176,10 +171,6 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
 
     // Resize vector
     xyz.resize( 3 * numGauss, 0.0 );
-
-    // Create a variable for the coordinates
-    AMP::LinearAlgebra::Variable::shared_ptr gpVariable(
-        new AMP::LinearAlgebra::Variable( "coords" ) );
 
     // Convert from distance in m (AMP) to cm (Moab)
     // This should probably be specified on an input database
@@ -196,9 +187,9 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
     SP_FEBase fe_ptr = volIntOp->getSourceElement()->getFEBase();
 
     // Extract coordinates of each Gauss point
-    unsigned int zeroGhostWidth  = 0;
-    AMP::Mesh::MeshIterator elem = mesh->getIterator( AMP::Mesh::GeomType::Volume, zeroGhostWidth );
-    int gp_ctr                   = 0;
+    unsigned int zeroGhostWidth = 0;
+    auto elem                   = mesh->getIterator( AMP::Mesh::GeomType::Volume, zeroGhostWidth );
+    int gp_ctr                  = 0;
     for ( ; elem != elem.end(); ++elem ) {
         std::vector<AMP::Mesh::MeshElement> currNodes;
         currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
@@ -250,17 +241,13 @@ void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl 
     // Resize vector
     xyz.resize( 3 * numNodes, 0.0 );
 
-    // Create Gauss point variable
-    AMP::LinearAlgebra::Variable::shared_ptr gpVariable(
-        new AMP::LinearAlgebra::Variable( "coords" ) );
-
     // Convert from distance in m (AMP) to cm (Moab)
     double m_to_cm = 100.0;
 
     // Extract coordinates of each node
-    unsigned int zeroGhostWidth  = 0;
-    AMP::Mesh::MeshIterator node = mesh->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
-    int node_ctr                 = 0;
+    unsigned int zeroGhostWidth = 0;
+    auto node                   = mesh->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+    int node_ctr                = 0;
     for ( ; node != node.end(); ++node ) {
         xyz[3 * node_ctr]     = ( node->coord() )[0] * m_to_cm;
         xyz[3 * node_ctr + 1] = ( node->coord() )[1] * m_to_cm;
@@ -345,8 +332,8 @@ void MoabMapOperator::buildMoabCoupler()
     // Build Coupler
     int couplerID = 0;
     AMP::plog << "Calling Coupler constructor" << std::endl;
-    d_coupler = AMP::shared_ptr<moab::Coupler>(
-        new moab::Coupler( d_moabInterface, moabParComm, srcElems, couplerID ) );
+    d_coupler = =
+        AMP::make_shared<moab::Coupler>( d_moabInterface, moabParComm, srcElems, couplerID );
 }
 
 

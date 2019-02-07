@@ -1,8 +1,8 @@
 #include "test_Matrix.h"
 #include "test_MatrixTests.h"
 
-#include "AMP/utils/AMPManager.h"
 #include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/vectors/SimpleVector.h"
 
 

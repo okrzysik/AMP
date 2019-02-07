@@ -33,8 +33,7 @@ BiCGSTABSolver::~BiCGSTABSolver() = default;
  ****************************************************************/
 void BiCGSTABSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
-    AMP::shared_ptr<KrylovSolverParameters> parameters =
-        AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
+    auto parameters = AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
@@ -122,6 +121,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     double beta  = 0.0;
     double omega = 1.0;
     std::vector<double> rho( 2, 1.0 );
+    NULL_USE( beta );
 
     // r_tilde is a non-zero initial direction chosen to be r
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> r_tilde;
@@ -129,8 +129,8 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     r_tilde = res->cloneVector();
     r_tilde->copyVector( res );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> p = res->cloneVector();
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> v = res->cloneVector();
+    auto p = res->cloneVector();
+    auto v = res->cloneVector();
     p->zero();
     v->zero();
 
@@ -148,6 +148,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             r_tilde->copyVector( res );
             res_norm = res->L2Norm();
             rho[1] = r_tilde_norm = res_norm;
+            NULL_USE( rho[1] );
             d_restarts++;
             break;
         }

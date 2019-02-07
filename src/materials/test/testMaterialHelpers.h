@@ -19,10 +19,14 @@ class PropTestResult
 public:
     PropTestResult()
         : range( false ),
+          success{ false },
           params( false ),
+          nargeval{ false },
           unknown( false ),
           name( "none" ),
+          vector{ false },
           isVector( false ),
+          tensor{ false },
           isTensor( false )
     {
         for ( auto &elem : success )

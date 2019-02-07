@@ -24,6 +24,9 @@ unusedFunction:*
 redundantAssignment:*
 redundantCopy:*
 
+// Suppress duplicateCondition
+duplicateCondition:*
+
 // Suppress #error messages (they may be valid and will always be caught by compiler if options are exercised)
 preprocessorErrorDirective:*
 
@@ -34,6 +37,7 @@ virtualCallInConstructor:*
 invalidscanf:*
 invalidscanf_libc:*
 
+
 // Suppress common test warnings (example: x==x)
 duplicateExpression:*/test/test*
 uselessCallsCompare:*/test/test*
@@ -43,8 +47,13 @@ variableScope:*/test/maps/dtk/test*
 unreadVariable:*/test/test*
 unusedVariable:*/test/maps/dtk/test*
 knownConditionTrueFalse:*/oxide/OxideModel.cc
+knownConditionTrueFalse:*/ampmesh/test/testDendroSearch.cc
+constArgument:*/ampmesh/test/testDendroSearch.cc
+constArgument:*/ampmesh/test/testHex8ElementMapping.cc
+
 
 // Suppress warnings for ampmesh
+syntaxError:*/AMP/ampmesh/*Iterator.h
 duplicateExpression:*/ampmesh/testHelpers/meshTests.cc
 duplicateExpression:*/ampmesh/structured/BoxMesh.cc
 noExplicitConstructor:*/ampmesh/MeshID.h
@@ -92,7 +101,7 @@ passedByValue:*/src/operators/test/maps/testMultiDofDTKMapOperator-2.cc
 passedByValue:*/src/operators/test/maps/testMultiDofDTKMapOperator.cc
 useInitializationList:*/src/operators/VectorCopyOperator.cc
 useInitializationList:*/src/operators/map/AsyncMapOperator.cc
-
+knownConditionTrueFalse:*/src/operators/libmesh/PowerShape.cc
 
 // Suppress warnings for vectors
 uninitMemberVar:*/src/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.cc
@@ -100,8 +109,8 @@ uninitMemberVar:*/src/vectors/trilinos/thyra/NativeThyraVector.cc
 
 
 // Suppress warnings for solvers
-duplicateAssignExpression:*/src/solvers/test/mechanics/testMaterialModels_VonMisesPlasticity-2.cc
-duplicateAssignExpression:*/src/solvers/test/mechanics/testMaterialModels_VonMisesPlasticity-2.cc
+duplicateAssignExpression:*/src/solvers/test/mechanics/testMaterialModels_VonMisesPlasticity_2.cc
+knownConditionTrueFalse:*/src/solvers/test/trilinos/testTrilinosMLSolver_LinearFickOperator_bar.cc
 
 
 // Suppress warnings for time_integrators
@@ -130,8 +139,11 @@ knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
 *:*/utils/tinyexpr/tinyexpr.c
 useInitializationList:*/src/utils/AMP_MPI.cc
 nullPointer:*/src/utils/Scanner.cc
+nullPointerRedundantCheck:*/src/utils/Scanner.cc
 duplicateExpression:*/utils/Array.hpp
 nullPointer:*/utils/Array.hpp
 noExplicitConstructor:*/utils/Array.h
+unreadVariable:*/utils/ReadTestMesh.cc
+
 
 

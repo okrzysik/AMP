@@ -448,8 +448,7 @@ int testMapGather( MPI_CLASS comm, UnitTest *ut )
     bool pass = true;
     for ( int i = 0; i < comm.getSize(); i++ ) {
         type x2 = i;
-        typename std::map<int, type>::iterator it;
-        it = map.find( i );
+        auto it = map.find( i );
         if ( it == map.end() )
             pass = false;
         else if ( it->second != x2 )
@@ -757,12 +756,10 @@ int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
         int index = comm.waitAny( sendRequest.size(), &( sendRequest[0] ) );
         sendRequest.erase( sendRequest.begin() + index );
     }
-    std::vector<int> finished = MPI_CLASS::waitSome( recvRequest.size(), &( recvRequest[0] ) );
+    auto finished = MPI_CLASS::waitSome( recvRequest.size(), recvRequest.data() );
     if ( !recvRequest.empty() ) {
         MPI_ASSERT( !finished.empty() );
-        for ( std::vector<int>::const_reverse_iterator it = finished.rbegin();
-              it != finished.rend();
-              ++it )
+        for ( auto it = finished.rbegin(); it != finished.rend(); ++it )
             recvRequest.erase( recvRequest.begin() + ( *it ) );
     }
     if ( !recvRequest.empty() )

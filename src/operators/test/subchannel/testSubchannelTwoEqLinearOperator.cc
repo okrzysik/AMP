@@ -93,46 +93,38 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
 
     // get input database from input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
     input_db->printClassData( AMP::plog );
 
     // create mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db    = input_db->getDatabase( "Mesh" );
+    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
     AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
     xyFaceMesh = subchannelMesh->Subset(
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 ) );
 
     // get dof manager
     int DOFsPerFace[3] = { 0, 0, 2 };
-    AMP::Discretization::DOFManager::shared_ptr faceDOFManager =
+    auto faceDOFManager =
         AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
 
     // get input and output variables
-    AMP::LinearAlgebra::Variable::shared_ptr inputVariable(
-        new AMP::LinearAlgebra::Variable( "flow" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr outputVariable(
-        new AMP::LinearAlgebra::Variable( "flow" ) );
+    auto inputVariable  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
+    auto outputVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
 
     // create solution, rhs, and residual vectors
-    AMP::LinearAlgebra::Vector::shared_ptr FrozenVec =
-        AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr SolVec =
-        AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr RhsVec =
-        AMP::LinearAlgebra::createVector( faceDOFManager, outputVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr ResVec =
-        AMP::LinearAlgebra::createVector( faceDOFManager, outputVariable, true );
+    auto FrozenVec = AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable, true );
+    auto SolVec    = AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable, true );
+    auto ResVec    = AMP::LinearAlgebra::createVector( faceDOFManager, outputVariable, true );
 
     // set frozen vector before construction of linear operator to prevent reset from being applied
     // with a zero frozen vector
     std::vector<size_t> dofs;
-    AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
+    auto face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
 
     const double h_scale = AMP::Operator::Subchannel::scaleEnthalpy;
     const double P_scale = AMP::Operator::Subchannel::scalePressure;
@@ -144,34 +136,31 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 900.0e3 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 15.0e6 );
-        ;
         SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
         SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
     }
 
     // create subchannel physics model
-    AMP::shared_ptr<AMP::Database> subchannelPhysics_db =
-        input_db->getDatabase( "SubchannelPhysicsModel" );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params(
-        new AMP::Operator::ElementPhysicsModelParameters( subchannelPhysics_db ) );
-    AMP::shared_ptr<AMP::Operator::SubchannelPhysicsModel> subchannelPhysicsModel(
-        new AMP::Operator::SubchannelPhysicsModel( params ) );
+    auto subchannelPhysics_db = input_db->getDatabase( "SubchannelPhysicsModel" );
+    auto params =
+        AMP::make_shared<AMP::Operator::ElementPhysicsModelParameters>( subchannelPhysics_db );
+    auto subchannelPhysicsModel = AMP::make_shared<AMP::Operator::SubchannelPhysicsModel>( params );
 
     // create linear operator
     // get linear operator database
     AMP::shared_ptr<AMP::Database> subchannelOperator_db =
         input_db->getDatabase( "SubchannelTwoEqLinearOperator" );
     // set operator parameters
-    AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(
-        new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ) );
+    auto subchannelOpParams =
+        AMP::make_shared<AMP::Operator::SubchannelOperatorParameters>( subchannelOperator_db );
     subchannelOpParams->d_Mesh                   = subchannelMesh;
     subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
     subchannelOpParams->d_frozenSolution         = FrozenVec;
     subchannelOpParams->clad_x = input_db->getDatabase( "CladProperties" )->getDoubleArray( "x" );
     subchannelOpParams->clad_y = input_db->getDatabase( "CladProperties" )->getDoubleArray( "y" );
     subchannelOpParams->clad_d = input_db->getDatabase( "CladProperties" )->getDoubleArray( "d" );
-    AMP::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelOperator(
-        new AMP::Operator::SubchannelTwoEqLinearOperator( subchannelOpParams ) );
+    auto subchannelOperator =
+        AMP::make_shared<AMP::Operator::SubchannelTwoEqLinearOperator>( subchannelOpParams );
 
     // report successful creation
     ut->passes( exeName + ": creation" );
@@ -183,7 +172,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     { // test block
         std::cout << std::endl << "Test Computed Jacobian:" << std::endl;
         std::vector<size_t> dofs;
-        AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
+        auto face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 700.0e3 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 12.4e6 );
@@ -259,7 +248,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
         subchannelOperator->apply( SolVec, ResVec );
 
         // get the matrix
-        AMP::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian = subchannelOperator->getMatrix();
+        auto testJacobian = subchannelOperator->getMatrix();
         // clang-format off
         double knownJacobian[num_dofs][num_dofs] = {
             { 0.99999999749821, 0.000778407237773775, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },

@@ -20,8 +20,7 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
     PROFILE_START( "VerifyGetMatrixTrivialTest", 1 );
 
     // Create the DOF_Manager
-    auto DOFparams = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
-    auto DOFs      = AMP::Discretization::simpleDOFManager::create(
+    auto DOFs = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
 
     // Create a nodal variable
@@ -74,8 +73,7 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
     PROFILE_START( "GhostWriteTest", 1 );
 
     // Create the DOF_Manager
-    auto DOFparams = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
-    auto DOFs      = AMP::Discretization::simpleDOFManager::create(
+    auto DOFs = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
 
     // Create a nodal variable

@@ -171,7 +171,6 @@ private:
     {
         int N_pellet = 2;
         // Create the multimesh database
-        auto meshDatabase = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
         db->putString( "MeshName", "PelletMeshes" );
         db->putString( "MeshType", "Multimesh" );
         db->putString( "MeshDatabasePrefix", "Mesh_" );
@@ -217,7 +216,6 @@ private:
         range[2] = 0;
         range[3] = 0.042;
         // Create the multimesh database
-        auto meshDatabase = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
         db->putString( "MeshName", "clad" );
         db->putString( "MeshType", "AMP" );
         db->putString( "Generator", "tube" );

@@ -24,7 +24,7 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db( new AMP::InputDatabase( "input_db" ) );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // PROFILE_START("SetupDriver");
@@ -32,46 +32,34 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
     input_db->printClassData( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db   = input_db->getDatabase( "Mesh" );
+    auto mgrParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr manager( AMP::Mesh::Mesh::buildMesh( mgrParams ) );
+    auto manager = AMP::Mesh::Mesh::buildMesh( mgrParams );
     AMP::pout << "Finished loading meshes" << std::endl;
 
     int DOFsPerNode     = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            manager, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+    auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
+        manager, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
-    AMP::LinearAlgebra::Variable::shared_ptr thermalVariable(
-        new AMP::LinearAlgebra::Variable( "Temperature" ) );
+    auto thermalVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr SolutionVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr RightHandSideVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr ResidualVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr RankVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
+    auto SolutionVec      = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
+    auto RightHandSideVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
+    auto ResidualVec      = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
+    auto RankVec          = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
 
-    AMP::LinearAlgebra::Vector::shared_ptr thermalMapVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable, true );
+    auto thermalMapVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable, true );
 
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( manager );
     siloWriter->registerVector( SolutionVec, manager, AMP::Mesh::GeomType::Vertex, "SolutionVec" );
     siloWriter->registerVector( thermalMapVec, manager, AMP::Mesh::GeomType::Vertex, "MapVec" );
     siloWriter->registerVector( RankVec, manager, AMP::Mesh::GeomType::Vertex, "RankVec" );
 
     RightHandSideVec->setToScalar( 0.0 );
-
-
-    AMP::Mesh::Mesh::shared_ptr cellSandwichMesh = manager->Subset( "CellSandwich" );
-    AMP::Mesh::Mesh::shared_ptr ccMesh           = manager->Subset( "CellCurrentCollectors" );
 
     double initialMapValue = input_db->getDoubleWithDefault( "IMapValue", 1. );
     SolutionVec->setToScalar( 298. );
@@ -81,23 +69,21 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
 
     siloWriter->writeFile( out_file, 0 );
 
-    AMP::shared_ptr<AMP::Database> DTKdb = input_db->getDatabase( "DTKMaps" );
-    AMP::shared_ptr<AMP::Operator::ColumnOperatorParameters> mapColParams(
-        new AMP::Operator::ColumnOperatorParameters( input_db ) );
-    AMP::shared_ptr<AMP::Operator::ColumnOperator> mapsColumn(
-        new AMP::Operator::ColumnOperator( mapColParams ) );
+    auto DTKdb        = input_db->getDatabase( "DTKMaps" );
+    auto mapColParams = AMP::make_shared<AMP::Operator::ColumnOperatorParameters>( input_db );
+    auto mapsColumn   = AMP::make_shared<AMP::Operator::ColumnOperator>( mapColParams );
 
-    std::vector<int> nmaps          = DTKdb->getIntegerArray( "N_maps" );
-    std::vector<std::string> mesh1  = DTKdb->getStringArray( "Mesh1" );
-    std::vector<std::string> mesh2  = DTKdb->getStringArray( "Mesh2" );
-    std::vector<int> surfaceID1     = DTKdb->getIntegerArray( "Surface1" );
-    std::vector<int> surfaceID2     = DTKdb->getIntegerArray( "Surface2" );
-    std::vector<std::string> var1   = DTKdb->getStringArray( "Variable1" );
-    std::vector<std::string> var2   = DTKdb->getStringArray( "Variable2" );
-    std::vector<int> inputDofsSize  = DTKdb->getIntegerArray( "InputDOFsPerObject" );
-    std::vector<int> inputStride    = DTKdb->getIntegerArray( "InputStride" );
-    std::vector<int> outputDofsSize = DTKdb->getIntegerArray( "OutputDOFsPerObject" );
-    std::vector<int> outputStride   = DTKdb->getIntegerArray( "OutputStride" );
+    auto nmaps          = DTKdb->getIntegerArray( "N_maps" );
+    auto mesh1          = DTKdb->getStringArray( "Mesh1" );
+    auto mesh2          = DTKdb->getStringArray( "Mesh2" );
+    auto surfaceID1     = DTKdb->getIntegerArray( "Surface1" );
+    auto surfaceID2     = DTKdb->getIntegerArray( "Surface2" );
+    auto var1           = DTKdb->getStringArray( "Variable1" );
+    auto var2           = DTKdb->getStringArray( "Variable2" );
+    auto inputDofsSize  = DTKdb->getIntegerArray( "InputDOFsPerObject" );
+    auto inputStride    = DTKdb->getIntegerArray( "InputStride" );
+    auto outputDofsSize = DTKdb->getIntegerArray( "OutputDOFsPerObject" );
+    auto outputStride   = DTKdb->getIntegerArray( "OutputStride" );
 
     AMP::pout << "----------------------------\n";
     AMP::pout << "     CREATE MAP OPERATOR    \n";
@@ -105,8 +91,8 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
     AMP::shared_ptr<AMP::Database> nullDatabase;
     for ( size_t i = 0; i < nmaps.size(); i++ ) {
         AMP::pout << "interface b/w" << std::endl;
-        AMP::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters> mapOperatorParams(
-            new AMP::Operator::MultiDofDTKMapOperatorParameters( nullDatabase ) );
+        auto mapOperatorParams =
+            AMP::make_shared<AMP::Operator::MultiDofDTKMapOperatorParameters>( nullDatabase );
         mapOperatorParams->d_globalComm    = AMP_COMM_WORLD;
         mapOperatorParams->d_Mesh1         = manager->Subset( mesh1[i] );
         mapOperatorParams->d_BoundaryID1   = surfaceID1[i];
@@ -120,13 +106,10 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
         mapOperatorParams->d_StrideLength2 = outputDofsSize[i];
         mapOperatorParams->d_SourceVector  = SolutionVec;
         mapOperatorParams->d_TargetVector  = thermalMapVec;
-        AMP::shared_ptr<AMP::Operator::Operator> mapOperator(
-            new AMP::Operator::MultiDofDTKMapOperator( mapOperatorParams ) );
-
+        auto mapOperator =
+            AMP::make_shared<AMP::Operator::MultiDofDTKMapOperator>( mapOperatorParams );
         mapsColumn->append( mapOperator );
     }
-
-    AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
     siloWriter->writeFile( out_file, 1 );
     mapsColumn->apply( SolutionVec, ResidualVec );
