@@ -135,7 +135,7 @@ template<class Ret, class... Args>
 inline ThreadPool::thread_id_t ThreadPool_add_work(
     ThreadPool *tpool, int priority, std::function<Ret( Args... )> routine, std::tuple<Args...> &&args )
 {
-    auto work = new WorkItemFull<Ret, Args...>( routine, std::move( args ) );
+    auto work = new WorkItemFull<Ret, Args...>( std::move( routine ), std::move( args ) );
     return ThreadPool::add_work( tpool, work, priority );
 }
 template<class Ret, class... Args>
