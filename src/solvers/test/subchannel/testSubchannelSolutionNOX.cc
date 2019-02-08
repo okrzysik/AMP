@@ -191,7 +191,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
 
     // get linear solver database
-    auto linearSolver_db = nonlinearSolver_db->getDatabase( "LinearSolver" );
+    // auto linearSolver_db = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
     // put manufactured RHS into resVec
     nonlinearOperator->reset( subchannelOpParams );

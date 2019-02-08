@@ -140,33 +140,27 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
 
     // get input database from input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
     input_db->printClassData( AMP::plog );
 
     // create mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db    = input_db->getDatabase( "Mesh" );
+    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
-    AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
-    xyFaceMesh = subchannelMesh->Subset(
-        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 ) );
+    auto subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // get dof manager
     AMP::Discretization::DOFManager::shared_ptr subchannelDOFManager;
     if ( subchannelMesh.get() != nullptr ) {
-        AMP::Mesh::MeshIterator axialFaces0 =
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 );
-        AMP::Mesh::MeshIterator axialFaces1 =
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 1 );
-        AMP::Mesh::MeshIterator gapFaces0 = AMP::Mesh::Mesh::getIterator(
+        auto axialFaces0 = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 );
+        auto axialFaces1 = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 1 );
+        auto gapFaces0   = AMP::Mesh::Mesh::getIterator(
             AMP::Mesh::SetOP::Union,
             AMP::Mesh::StructuredMeshHelper::getXZFaceIterator( subchannelMesh, 0 ),
             AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( subchannelMesh, 0 ) );
-        AMP::Mesh::MeshIterator gapFaces1 = AMP::Mesh::Mesh::getIterator(
+        auto gapFaces1 = AMP::Mesh::Mesh::getIterator(
             AMP::Mesh::SetOP::Union,
             AMP::Mesh::StructuredMeshHelper::getXZFaceIterator( subchannelMesh, 1 ),
             AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( subchannelMesh, 1 ) );
@@ -175,47 +169,37 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
             subchannelMesh, axialFaces1, axialFaces0, 3 );
         subchannelChildrenDOFManagers[1] = AMP::Discretization::simpleDOFManager::create(
             subchannelMesh, gapFaces1, gapFaces0, 1 );
-        subchannelDOFManager =
-            AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::multiDOFManager(
-                subchannelMesh->getComm(), subchannelChildrenDOFManagers ) );
+        subchannelDOFManager = AMP::make_shared<AMP::Discretization::multiDOFManager>(
+            subchannelMesh->getComm(), subchannelChildrenDOFManagers );
     }
 
     // get input and output variables
-    AMP::LinearAlgebra::Variable::shared_ptr inputVariable(
-        new AMP::LinearAlgebra::Variable( "flow" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr outputVariable(
-        new AMP::LinearAlgebra::Variable( "flow" ) );
+    auto inputVariable  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
+    auto outputVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
 
     // create solution, rhs, and residual vectors
-    AMP::LinearAlgebra::Vector::shared_ptr SolVec =
-        AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr RhsVec =
-        AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr ResVec =
-        AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
+    auto SolVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable, true );
+    auto ResVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
 
     // create subchannel physics model
-    AMP::shared_ptr<AMP::Database> subchannelPhysics_db =
-        input_db->getDatabase( "SubchannelPhysicsModel" );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params(
-        new AMP::Operator::ElementPhysicsModelParameters( subchannelPhysics_db ) );
-    AMP::shared_ptr<AMP::Operator::SubchannelPhysicsModel> subchannelPhysicsModel(
-        new AMP::Operator::SubchannelPhysicsModel( params ) );
+    auto subchannelPhysics_db = input_db->getDatabase( "SubchannelPhysicsModel" );
+    auto params =
+        AMP::make_shared<AMP::Operator::ElementPhysicsModelParameters>( subchannelPhysics_db );
+    auto subchannelPhysicsModel = AMP::make_shared<AMP::Operator::SubchannelPhysicsModel>( params );
 
     // get nonlinear operator database
-    AMP::shared_ptr<AMP::Database> subchannelOperator_db =
-        input_db->getDatabase( "SubchannelFourEqNonlinearOperator" );
+    auto subchannelOperator_db = input_db->getDatabase( "SubchannelFourEqNonlinearOperator" );
     // set operator parameters
-    AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(
-        new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ) );
+    auto subchannelOpParams =
+        AMP::make_shared<AMP::Operator::SubchannelOperatorParameters>( subchannelOperator_db );
     subchannelOpParams->d_Mesh                   = subchannelMesh;
     subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
     subchannelOpParams->clad_x = input_db->getDatabase( "CladProperties" )->getDoubleArray( "x" );
     subchannelOpParams->clad_y = input_db->getDatabase( "CladProperties" )->getDoubleArray( "y" );
     subchannelOpParams->clad_d = input_db->getDatabase( "CladProperties" )->getDoubleArray( "d" );
     // create nonlinear operator
-    AMP::shared_ptr<AMP::Operator::SubchannelFourEqNonlinearOperator> subchannelOperator(
-        new AMP::Operator::SubchannelFourEqNonlinearOperator( subchannelOpParams ) );
+    auto subchannelOperator =
+        AMP::make_shared<AMP::Operator::SubchannelFourEqNonlinearOperator>( subchannelOpParams );
     // reset the nonlinear operator
     subchannelOperator->reset( subchannelOpParams );
 
@@ -255,9 +239,9 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     // put all cells in an array by subchannel
     AMP::Mesh::MeshElement
         d_elem[numSubchannels][numAxialIntervals]; // array of array of elements for each subchannel
-    AMP::Mesh::MeshIterator cell = subchannelOpParams->d_Mesh->getIterator(
-        AMP::Mesh::GeomType::Volume, 0 );  // iterator for cells of mesh
-    for ( ; cell != cell.end(); ++cell ) { // loop over all cells
+    auto cell = subchannelOpParams->d_Mesh->getIterator( AMP::Mesh::GeomType::Volume,
+                                                         0 ); // iterator for cells of mesh
+    for ( ; cell != cell.end(); ++cell ) {                    // loop over all cells
         auto center = cell->centroid();
         // get the index of the subchannel
         int isub               = subchannelOperator->getSubchannelIndex( center[0], center[1] );
@@ -813,8 +797,7 @@ int testSubchannelFourEqNonlinearOperator( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     // create list of input files
-    const int NUMFILES          = 1;
-    std::string files[NUMFILES] = { "testSubchannelFourEqNonlinearOperator" };
+    std::string files[] = { "testSubchannelFourEqNonlinearOperator" };
 
     // execute unit test for each input file
     for ( auto &file : files )

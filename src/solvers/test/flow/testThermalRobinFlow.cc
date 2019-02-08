@@ -170,15 +170,11 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
 
     //-------------------------------------
-    auto boundaryOp = thermalNonlinearOperator->getBoundaryOperator();
-
     //  AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> robinBoundaryOp =
     //  AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
     //  thermalNonlinearOperator->getBoundaryOperator() );
-    //  AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters =
-    //  AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp->getParameters())
-    //  ;
-
+    //  auto correctionParameters =
+    //  AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp->getParameters());
     //  robinBoundaryOp->setVariableFlux( robinRHSVec );
 
     //------------------------------------------------------------------
@@ -225,7 +221,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         ut->failure( "the PowerInWattsVec norm has changed." );
     }
 
-    //    robinBoundaryOp->reset(correctionParameters);
+    // robinBoundaryOp->reset(correctionParameters);
 
     thermalNonlinearOperator->modifyRHSvector( globalRhsVec );
     thermalNonlinearOperator->modifyInitialSolutionVector( globalSolVec );

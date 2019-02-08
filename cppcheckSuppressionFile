@@ -102,6 +102,8 @@ passedByValue:*/src/operators/test/maps/testMultiDofDTKMapOperator.cc
 useInitializationList:*/src/operators/VectorCopyOperator.cc
 useInitializationList:*/src/operators/map/AsyncMapOperator.cc
 knownConditionTrueFalse:*/src/operators/libmesh/PowerShape.cc
+*:*/operators/test/dendro/*
+
 
 // Suppress warnings for vectors
 uninitMemberVar:*/src/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.cc

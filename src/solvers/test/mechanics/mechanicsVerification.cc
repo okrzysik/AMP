@@ -223,6 +223,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
             meshAdapter = manager->Subset( "brick" );
         }
     }
+    NULL_USE( libmeshInit );
 
     double scaleMeshFactor = inputDatabase->getDoubleWithDefault( "scale_mesh", 1.0 );
     AMP::pout << "Scaling mesh by a factor " << scaleMeshFactor << "\n";
