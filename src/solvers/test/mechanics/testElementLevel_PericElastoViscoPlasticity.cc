@@ -262,6 +262,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         mechanicsNonlinearVolumeOperator->printStressAndStrain( solVec, output_file );
     }
+    NULL_USE( libmeshInit );
 
     ut->passes( exeName );
 }

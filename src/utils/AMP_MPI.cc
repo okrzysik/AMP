@@ -865,7 +865,7 @@ MPI_CLASS MPI_CLASS::dup() const
     if ( d_isNull )
         return MPI_CLASS( MPI_CLASS_COMM_NULL );
     MPI_Comm new_MPI_comm = communicator;
-#if defined( USE_MPI ) || defined( USE_PETSC )
+#if defined( USE_MPI )
     // USE MPI to duplicate the communicator
     MPI_Comm_dup( communicator, &new_MPI_comm );
 #else
@@ -1149,6 +1149,7 @@ void MPI_CLASS::abort() const
  ************************************************************************/
 int MPI_CLASS::newTag()
 {
+#ifdef USE_MPI
     // Syncronize the processes to ensure all ranks enter this call
     // Needed so the count will match
     barrier();
@@ -1156,6 +1157,10 @@ int MPI_CLASS::newTag()
     int tag = ( *d_currentTag )++;
     MPI_INSIST( tag <= d_maxTag, "Maximum number of tags exceeded\n" );
     return tag;
+#else
+    static int globalCurrentTag = 1;
+    return globalCurrentTag++;
+#endif
 }
 
 

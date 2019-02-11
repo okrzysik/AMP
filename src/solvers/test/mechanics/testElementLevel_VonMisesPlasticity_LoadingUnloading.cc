@@ -276,6 +276,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             fclose( fin );
         }
     }
+    NULL_USE( libmeshInit );
 
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
