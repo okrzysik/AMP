@@ -1140,6 +1140,10 @@ void testCommDup( UnitTest *ut )
         ut->failure( "dup comm" );
         return;
     }
+#if defined( USE_PETSC ) && !defined( USE_MPI )
+    ut->expected_failure( "Skipping dup tests, PETSc (no-mpi) has a limit of 128 unique comms" );
+    return;
+#endif
     int N_comm_try = 2000; // Maximum number of comms to try and create
     std::vector<MPI_CLASS> comms;
     comms.reserve( N_comm_try );
@@ -1299,7 +1303,10 @@ int main( int argc, char *argv[] )
             ut.failure( "Communicator == MPI_COMM_NULL" );
 #endif
 
-        // Test dup
+            // Test dup
+#if !defined( USE_EXT_MPI ) && defined( USE_EXT_PETSC )
+        MPI_CLASS dupComm2 = globalComm.dup();
+#endif
         MPI_CLASS dupComm = globalComm.dup();
         if ( nullComm.dup().isNull() )
             ut.passes( "Null communicator duplicates a Null communicator" );

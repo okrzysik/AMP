@@ -865,7 +865,7 @@ MPI_CLASS MPI_CLASS::dup() const
     if ( d_isNull )
         return MPI_CLASS( MPI_CLASS_COMM_NULL );
     MPI_Comm new_MPI_comm = communicator;
-#if defined( USE_MPI )
+#if defined( USE_MPI ) || defined( USE_PETSC )
     // USE MPI to duplicate the communicator
     MPI_Comm_dup( communicator, &new_MPI_comm );
 #else
@@ -3968,6 +3968,8 @@ void MPI_CLASS::start_MPI( int argc, char *argv[], int profile_level )
         called_MPI_Init        = true;
         AMPManager::comm_world = AMP_MPI( MPI_COMM_WORLD );
     }
+#else
+    AMPManager::comm_world = AMP_MPI( MPI_COMM_WORLD );
 #endif
 }
 void MPI_CLASS::stop_MPI()
@@ -3979,6 +3981,7 @@ void MPI_CLASS::stop_MPI()
     if ( called_MPI_Init && !finalized ) {
         MPI_Barrier( MPI_COMM_WORLD );
         MPI_Finalize();
+        called_MPI_Init = true;
     }
 #endif
 }
