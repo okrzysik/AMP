@@ -61,15 +61,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //--------------------------------------------------
     // Create a DOF manager for a nodal vector
     //--------------------------------------------------
-    int DOFsPerNode          = 10;
-    int DOFsPerElement       = 8;
-    int nodalGhostWidth      = 1;
-    int gaussPointGhostWidth = 1;
-    bool split               = true;
-    auto nodalDofMap         = AMP::Discretization::simpleDOFManager::create(
+    int DOFsPerNode     = 10;
+    int nodalGhostWidth = 1;
+    bool split          = true;
+    auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-    auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear flow
@@ -190,7 +186,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         ut->failure( "the Final Rhs Norm has changed." );
 
 #ifdef USE_EXT_SILO
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );

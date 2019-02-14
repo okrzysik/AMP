@@ -1303,7 +1303,10 @@ int main( int argc, char *argv[] )
             ut.failure( "Communicator == MPI_COMM_NULL" );
 #endif
 
-        // Test dup
+            // Test dup
+#if !defined( USE_EXT_MPI ) && defined( USE_EXT_PETSC )
+        MPI_CLASS dupComm2 = globalComm.dup();
+#endif
         MPI_CLASS dupComm = globalComm.dup();
         if ( nullComm.dup().isNull() )
             ut.passes( "Null communicator duplicates a Null communicator" );

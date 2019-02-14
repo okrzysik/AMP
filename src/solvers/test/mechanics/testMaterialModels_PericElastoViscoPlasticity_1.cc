@@ -43,21 +43,16 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
     input_db->printClassData( AMP::plog );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    AMP::shared_ptr<AMP::Operator::MechanicsMaterialModel> mechanicsMaterialModel;
-    AMP::shared_ptr<AMP::Operator::PericElastoViscoPlasticModel> pevpModel;
-
-    AMP::shared_ptr<AMP::Database> matModelDatabase =
-        input_db->getDatabase( "MechanicsMaterialModel" );
-    elementPhysicsModel =
+    auto matModelDatabase = input_db->getDatabase( "MechanicsMaterialModel" );
+    auto elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( matModelDatabase );
-    mechanicsMaterialModel =
+    auto mechanicsMaterialModel =
         AMP::dynamic_pointer_cast<AMP::Operator::MechanicsMaterialModel>( elementPhysicsModel );
-    pevpModel = AMP::dynamic_pointer_cast<AMP::Operator::PericElastoViscoPlasticModel>(
+    auto pevpModel = AMP::dynamic_pointer_cast<AMP::Operator::PericElastoViscoPlasticModel>(
         mechanicsMaterialModel );
 
     pevpModel->preNonlinearInit( true, true );
@@ -81,8 +76,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     strain[0].push_back( 0.0 );
     strain[0].push_back( 0.0 );
 
-    double current_time = 0.0;
-    double epsilon_dot  = 0.1;
+    double epsilon_dot = 0.1;
     // double strain_const = 0.0;
     double time_multiplier = 1.0;
     double previous_time   = 0.0;
@@ -129,9 +123,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
           time_multiplier = 0.001;
         }*/
 
-        current_time = previous_time + time_multiplier;
-        time[i]      = current_time;
-        strain[0][0] = previous_strain + ( time_multiplier * epsilon_dot );
+        double current_time = previous_time + time_multiplier;
+        time[i]             = current_time;
+        strain[0][0]        = previous_strain + ( time_multiplier * epsilon_dot );
         mechanicsMaterialModel->updateTime( current_time );
 
         eph11[i] = strain[0][0];

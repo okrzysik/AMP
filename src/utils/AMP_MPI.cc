@@ -1149,6 +1149,7 @@ void MPI_CLASS::abort() const
  ************************************************************************/
 int MPI_CLASS::newTag()
 {
+#ifdef USE_MPI
     // Syncronize the processes to ensure all ranks enter this call
     // Needed so the count will match
     barrier();
@@ -1156,6 +1157,10 @@ int MPI_CLASS::newTag()
     int tag = ( *d_currentTag )++;
     MPI_INSIST( tag <= d_maxTag, "Maximum number of tags exceeded\n" );
     return tag;
+#else
+    static int globalCurrentTag = 1;
+    return globalCurrentTag++;
+#endif
 }
 
 
@@ -3963,6 +3968,8 @@ void MPI_CLASS::start_MPI( int argc, char *argv[], int profile_level )
         called_MPI_Init        = true;
         AMPManager::comm_world = AMP_MPI( MPI_COMM_WORLD );
     }
+#else
+    AMPManager::comm_world = AMP_MPI( MPI_COMM_WORLD );
 #endif
 }
 void MPI_CLASS::stop_MPI()
@@ -3974,6 +3981,7 @@ void MPI_CLASS::stop_MPI()
     if ( called_MPI_Init && !finalized ) {
         MPI_Barrier( MPI_COMM_WORLD );
         MPI_Finalize();
+        called_MPI_Init = true;
     }
 #endif
 }

@@ -450,20 +450,16 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
 
     // get input database from input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
     input_db->printClassData( AMP::plog );
 
     // create mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db    = input_db->getDatabase( "Mesh" );
+    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
-    AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
-    xyFaceMesh = subchannelMesh->Subset(
-        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 ) );
+    auto subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // check number of cells
     size_t expected_number_of_cells = numSubchannels * numAxialIntervals;
@@ -495,35 +491,25 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // get input and output variables
-    AMP::LinearAlgebra::Variable::shared_ptr inputVariable(
-        new AMP::LinearAlgebra::Variable( "flow" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr outputVariable(
-        new AMP::LinearAlgebra::Variable( "flow" ) );
+    auto inputVariable  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
+    auto outputVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
 
     // create solution, rhs, and residual vectors
-    AMP::LinearAlgebra::Vector::shared_ptr FrozenVec =
-        AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable, false );
-    AMP::LinearAlgebra::Vector::shared_ptr SolVec =
-        AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable, false );
-    AMP::LinearAlgebra::Vector::shared_ptr RhsVec =
-        AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, false );
-    AMP::LinearAlgebra::Vector::shared_ptr ResVec =
-        AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, false );
+    auto FrozenVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable, false );
+    auto SolVec    = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable, false );
+    auto ResVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, false );
 
     // create subchannel physics model
-    AMP::shared_ptr<AMP::Database> subchannelPhysics_db =
-        input_db->getDatabase( "SubchannelPhysicsModel" );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params(
-        new AMP::Operator::ElementPhysicsModelParameters( subchannelPhysics_db ) );
-    AMP::shared_ptr<AMP::Operator::SubchannelPhysicsModel> subchannelPhysicsModel(
-        new AMP::Operator::SubchannelPhysicsModel( params ) );
+    auto subchannelPhysics_db = input_db->getDatabase( "SubchannelPhysicsModel" );
+    auto params =
+        AMP::make_shared<AMP::Operator::ElementPhysicsModelParameters>( subchannelPhysics_db );
+    auto subchannelPhysicsModel = AMP::make_shared<AMP::Operator::SubchannelPhysicsModel>( params );
 
     // get linear operator database
-    AMP::shared_ptr<AMP::Database> subchannelOperator_db =
-        input_db->getDatabase( "SubchannelFourEqLinearOperator" );
+    auto subchannelOperator_db = input_db->getDatabase( "SubchannelFourEqLinearOperator" );
     // set operator parameters
-    AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(
-        new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ) );
+    auto subchannelOpParams =
+        AMP::make_shared<AMP::Operator::SubchannelOperatorParameters>( subchannelOperator_db );
     subchannelOpParams->d_Mesh                   = subchannelMesh;
     subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
     subchannelOpParams->d_frozenSolution         = FrozenVec;
@@ -531,8 +517,8 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     subchannelOpParams->clad_y = input_db->getDatabase( "CladProperties" )->getDoubleArray( "y" );
     subchannelOpParams->clad_d = input_db->getDatabase( "CladProperties" )->getDoubleArray( "d" );
     // create linear operator
-    AMP::shared_ptr<AMP::Operator::SubchannelFourEqLinearOperator> subchannelOperator(
-        new AMP::Operator::SubchannelFourEqLinearOperator( subchannelOpParams ) );
+    auto subchannelOperator =
+        AMP::make_shared<AMP::Operator::SubchannelFourEqLinearOperator>( subchannelOpParams );
 
     // report successful creation
     ut->passes( exeName + ": linear operator creation" );
@@ -561,7 +547,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     // put all cells in an array by subchannel
     AMP::Mesh::MeshElement
         d_elem[numSubchannels][numAxialIntervals]; // array of array of elements for each subchannel
-    AMP::Mesh::MeshIterator cell =
+    auto cell =
         subchannelMesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ); // iterator for cells of mesh
     for ( ; cell != cell.end(); ++cell ) {                             // loop over all cells
         auto center = cell->centroid();
@@ -648,7 +634,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     // array of gap faces
     AMP::Mesh::MeshElement gapFaces[numGaps_MATLAB][numAxialIntervals]; // gap faces
     // loop over all faces in mesh
-    AMP::Mesh::MeshIterator face = subchannelMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
+    auto face = subchannelMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     for ( ; face != face.end(); ++face ) { // loop over all faces in mesh
         auto faceCentroid = face->centroid();
         // try to find face in lateral face map
@@ -832,9 +818,8 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 } };
     // clang-format on
 
-    AMP::Discretization::DOFManager::shared_ptr left_DOFManager = testJacobian->getLeftDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr right_DOFManager =
-        testJacobian->getRightDOFManager();
+    auto left_DOFManager         = testJacobian->getLeftDOFManager();
+    auto right_DOFManager        = testJacobian->getRightDOFManager();
     bool equal_to_leftDOFManager = false, equal_to_rightDOFManager = false;
     if ( *left_DOFManager == *subchannelDOFManager )
         equal_to_leftDOFManager = true;
@@ -873,8 +858,7 @@ int testSubchannelFourEqLinearOperator( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     // create list of input files
-    const int NUMFILES          = 1;
-    std::string files[NUMFILES] = { "testSubchannelFourEqLinearOperator" };
+    std::string files[] = { "testSubchannelFourEqLinearOperator" };
 
     // execute unit test for each input file
     for ( auto &file : files )

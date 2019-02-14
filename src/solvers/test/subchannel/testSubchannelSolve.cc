@@ -516,7 +516,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     auto flowResVec           = globalResMultiVector->subsetVectorForVariable( flowVariable );
     auto globalThermalSolVec  = globalSolMultiVector->subsetVectorForVariable( thermalVariable );
     auto globalThermalRhsVec  = globalRhsMultiVector->subsetVectorForVariable( thermalVariable );
-    auto globalThermalResVec  = globalResMultiVector->subsetVectorForVariable( thermalVariable );
+    // auto globalThermalResVec  = globalResMultiVector->subsetVectorForVariable( thermalVariable );
 
     // create nonlinear solver
 #if 0

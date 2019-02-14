@@ -876,15 +876,18 @@ void run_tests( AMP::UnitTest &ut )
 }
 int main( int argc, char *argv[] )
 {
+    // Initialize MPI and profiler
     PROFILE_ENABLE( 3 );
     PROFILE_ENABLE_TRACE();
     PROFILE_DISABLE_MEMORY();
-    AMP::AMP_MPI::start_MPI( argc, argv );
+    AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+    // Run the tests
     run_tests( ut );
+    // Shutdown
     ut.report();
-    auto N_errors = static_cast<int>( ut.NumFailGlobal() );
+    int N_errors = ut.NumFailGlobal();
     ut.reset();
-    AMP::AMP_MPI::stop_MPI();
+    AMP::AMPManager::shutdown();
     return N_errors;
 }
