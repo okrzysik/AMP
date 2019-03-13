@@ -57,15 +57,22 @@ bool Shell::inside( const Point &pos ) const
  ********************************************************/
 int Shell::surface( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return 0;
+    double x  = pos.x() - d_offset[0];
+    double y  = pos.y() - d_offset[1];
+    double z  = pos.z() - d_offset[2];
+    double r2 = x * x + y * y + z * z;
+    bool test = fabs( r2 - d_r_min * d_r_min ) < fabs( r2 - d_r_max * d_r_max );
+    return test ? 0:1;
 }
 Point Shell::surfaceNorm( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return Point();
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
+    double r = sqrt( x * x + y * y + z * z );
+    if ( fabs( r - d_r_min  ) < fabs( r - d_r_max ) )
+        return { -x / r, -y / r, -z / r };
+    return { x / r, y / r, z / r };
 }
 
 

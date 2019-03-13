@@ -93,6 +93,19 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         if ( !pass_inside )
             ut.failure( "testGeometry physical-logical-physical: " + geom.getName() );
     }
+    // Test getting surface normals
+    if ( geom.isLogical() ) {
+        bool passNorm = true;
+        for ( const auto &p : surfacePoints ) {
+            auto norm = geom.surfaceNorm( p );
+            double n  = sqrt( norm.x() * norm.x() + norm.y() * norm.y() + norm.z() * norm.z() );
+            passNorm  = passNorm && fabs(n-1.0) < 1e-6;
+        }
+        pass = pass && passNorm;
+        if ( !passNorm )
+            ut.failure( "testGeometry surfaceNorm: " + geom.getName() );
+    }
+    // Finished with all tests
     if ( pass )
         ut.passes( "testGeometry: " + geom.getName() );
 }

@@ -126,31 +126,36 @@ int CircleFrustum::surface( const Point &pos ) const
 }
 Point CircleFrustum::surfaceNorm( const Point &pos ) const
 {
-    int s   = surface( pos );
-    Point v = { 0, 0, 0 };
+    int s    = surface( pos );
+    Point v  = { 0, 0, 0 };
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];    
     if ( s == 0 ) {
         v[d_dir / 2] = d_dir % 2 == 0 ? 1 : -1;
     } else if ( s == 1 ) {
         v[d_dir / 2] = d_dir % 2 == 0 ? -1 : 1;
     } else {
+        double sin_t = sin( d_theta );
+        double cos_t = cos( d_theta );
         if ( d_dir == 0 ) {
-            double r = pos.y() * pos.y() + pos.z() * pos.z();
-            v = { sin( d_theta ), cos( d_theta ) * pos.y() / r, cos( d_theta ) * pos.z() / r };
+            double r = sqrt( y * y + z * z );
+            v = { -sin_t, cos_t * y / r, cos_t * z / r };
         } else if ( d_dir == 1 ) {
-            double r = pos.y() * pos.y() + pos.z() * pos.z();
-            v = { sin( d_theta ), cos( d_theta ) * pos.y() / r, cos( d_theta ) * pos.z() / r };
+            double r = sqrt( y * y + z * z );
+            v = { sin_t, cos_t * y / r, cos_t * z / r };
         } else if ( d_dir == 2 ) {
-            double r = pos.x() * pos.x() + pos.z() * pos.z();
-            v = { cos( d_theta ) * pos.x() / r, sin( d_theta ), cos( d_theta ) * pos.z() / r };
+            double r = sqrt( x * x + z * z );
+            v = { cos_t * x / r, -sin_t, cos_t * z / r };
         } else if ( d_dir == 3 ) {
-            double r = pos.x() * pos.x() + pos.z() * pos.z();
-            v = { cos( d_theta ) * pos.x() / r, -sin( d_theta ), cos( d_theta ) * pos.z() / r };
+            double r = sqrt( x * x + z * z );
+            v = { cos_t * x / r, sin_t, cos_t * z / r };
         } else if ( d_dir == 4 ) {
-            double r = pos.x() * pos.x() + pos.y() * pos.y();
-            v = { cos( d_theta ) * pos.x() / r, cos( d_theta ) * pos.y() / r, sin( d_theta ) };
+            double r = sqrt( x * x + y * y );
+            v = { cos_t * x / r, cos_t * y / r, -sin_t };
         } else {
-            double r = pos.x() * pos.x() + pos.y() * pos.y();
-            v = { cos( d_theta ) * pos.x() / r, cos( d_theta ) * pos.y() / r, -sin( d_theta ) };
+            double r = sqrt( x * x + y * y );
+            v = { cos_t * x / r, cos_t * y / r, sin_t };
         }
     }
     return v;

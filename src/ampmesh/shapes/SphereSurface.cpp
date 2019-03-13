@@ -51,9 +51,13 @@ bool SphereSurface::inside( const Point &pos ) const
  ********************************************************/
 Point SphereSurface::surfaceNorm( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return Point();
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
+    double r = sqrt( x * x + y * y + z * z );
+    if ( r < d_r )
+        return { -x / r, -y / r, -z / r };
+    return { x / r, y / r, z / r };
 }
 
 

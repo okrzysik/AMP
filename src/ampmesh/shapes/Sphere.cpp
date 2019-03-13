@@ -50,9 +50,11 @@ bool Sphere::inside( const Point &pos ) const
  ********************************************************/
 Point Sphere::surfaceNorm( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return Point();
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
+    double r = sqrt( x * x + y * y + z * z );
+    return { x / r, y / r, z / r };
 }
 
 
@@ -61,7 +63,7 @@ Point Sphere::surfaceNorm( const Point &pos ) const
  ********************************************************/
 Point Sphere::physical( const Point &pos ) const
 {
-    auto point = GeometryHelpers::map_logical_sphere( d_r, pos[0], pos[1], pos[2] );
+    auto point = GeometryHelpers::map_logical_sphere( d_r, pos.x(), pos.y(), pos.z() );
     point[0] += d_offset[0];
     point[1] += d_offset[1];
     point[2] += d_offset[2];
