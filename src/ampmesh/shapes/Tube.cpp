@@ -2,6 +2,8 @@
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
 
+#include <algorithm>
+
 
 namespace AMP {
 namespace Geometry {

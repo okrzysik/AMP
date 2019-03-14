@@ -408,17 +408,20 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const AMP::Geometry::P
             while ( x[d] >= 1.0 )
                 x[d] -= 1.0;
         }
-        if ( fabs( x[d] ) < 1e-12 )
-            x[d] = 0.0;
-        if ( fabs( x[d] - 1.0 ) < 1e-12 )
-            x[d] = 1.0 - 1e-12;
-        if ( x[d] < 0 || x[d] > 1 )
-            return {};
     }
     // Convert x to [0,size]
     x[0] = x[0] * d_globalSize[0];
     x[1] = x[1] * d_globalSize[1];
     x[2] = x[2] * d_globalSize[2];
+    // Check if element is outside domain
+    for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
+        if ( fabs( x[d] ) < 1e-6 )
+            x[d] = 0;
+        if ( fabs( x[d] - d_globalSize[d] ) < 1e-6 )
+            x[d] = d_globalSize[d];
+        if ( x[d] < 0 || x[d] > d_globalSize[d] )
+            return MeshElementIndex();
+    }
     // Compute the index
     MeshElementIndex index;
     if ( type == GeomDim ) {

@@ -75,14 +75,14 @@ Map3to1to3::~Map3to1to3() { waitForAllRequests(); }
  ********************************************************/
 void Map3to1to3::addTo1DMap( std::multimap<double, double> &map, double z, double val )
 {
-    map.insert( std::pair<double, double>( z, val ) );
+    map.insert( std::make_pair( z, val ) );
 }
 void Map3to1to3::addTo1DMap( std::multimap<double, double> &map,
                              const std::vector<double> &z,
                              const std::vector<double> &val )
 {
     for ( size_t i = 0; i < z.size(); i++ )
-        map.insert( std::pair<double, double>( z[i], val[i] ) );
+        map.insert( std::make_pair( z[i], val[i] ) );
 }
 
 
@@ -97,33 +97,31 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     // Subset the vector (we only need to deal with the locally owned portion)
     PROFILE_START( "subset" );
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    auto var = getInputVariable();
     AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI( AMP_COMM_SELF ) );
-    AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-        u->constSelect( commSelector, u->getVariable()->getName() );
-    AMP::LinearAlgebra::Vector::const_shared_ptr vec = commVec->constSubsetVectorForVariable( var );
+    auto commVec = u->constSelect( commSelector, u->getVariable()->getName() );
+    auto vec     = commVec->constSubsetVectorForVariable( var );
     PROFILE_STOP( "subset" );
 
     // Build the local maps
     PROFILE_START( "prepare data" );
-    std::multimap<double, double> map1 = buildMap( vec, d_mesh1, d_srcIterator1 );
-    std::multimap<double, double> map2 = buildMap( vec, d_mesh2, d_srcIterator2 );
+    auto map1 = buildMap( vec, d_mesh1, d_srcIterator1 );
+    auto map2 = buildMap( vec, d_mesh2, d_srcIterator2 );
 
     // Get the local 1D map coordinates
-    std::multimap<double, double>::const_iterator iterator;
     double z_last = -1e100;
     std::vector<double> z1;
-    for ( iterator = map1.begin(); iterator != map1.end(); ++iterator ) {
-        if ( fabs( iterator->first - z_last ) > tol ) {
-            z_last = iterator->first;
+    for ( const auto &tmp : map1 ) {
+        if ( fabs( tmp.first - z_last ) > tol ) {
+            z_last = tmp.first;
             z1.push_back( z_last );
         }
     }
     z_last = -1e100;
     std::vector<double> z2;
-    for ( iterator = map2.begin(); iterator != map2.end(); ++iterator ) {
-        if ( fabs( iterator->first - z_last ) > tol ) {
-            z_last = iterator->first;
+    for ( const auto &tmp : map2 ) {
+        if ( fabs( tmp.first - z_last ) > tol ) {
+            z_last = tmp.first;
             z2.push_back( z_last );
         }
     }
@@ -131,8 +129,8 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // Create the send buffers and sum the local data
     d_SendBuf1.resize( 0 ); // Reset the entries
     d_SendBuf1.resize( z1.size() );
-    for ( iterator = map1.begin(); iterator != map1.end(); ++iterator ) {
-        double z  = iterator->first;
+    for ( const auto &tmp : map1 ) {
+        double z  = tmp.first;
         size_t i1 = std::min( AMP::Utilities::findfirst( z1, z ), z1.size() - 1 );
         size_t i2 = std::max( i1, (size_t) 1 ) - 1;
         size_t i3 = std::min( i1 + 1, z1.size() - 1 );
@@ -147,12 +145,12 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP_ERROR( "Internal error" );
         d_SendBuf1[i].N++;
         d_SendBuf1[i].z = z1[i];
-        d_SendBuf1[i].sum += iterator->second;
+        d_SendBuf1[i].sum += tmp.second;
     }
     d_SendBuf2.resize( 0 ); // Reset the entries
     d_SendBuf2.resize( z2.size() );
-    for ( iterator = map2.begin(); iterator != map2.end(); ++iterator ) {
-        double z  = iterator->first;
+    for ( const auto &tmp : map2 ) {
+        double z  = tmp.first;
         size_t i1 = std::min( AMP::Utilities::findfirst( z2, z ), z2.size() - 1 );
         size_t i2 = std::max( i1, (size_t) 1 ) - 1;
         size_t i3 = std::min( i1 + 1, z2.size() - 1 );
@@ -167,7 +165,7 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP_ERROR( "Internal error" );
         d_SendBuf2[i].N++;
         d_SendBuf2[i].z = z2[i];
-        d_SendBuf2[i].sum += iterator->second;
+        d_SendBuf2[i].sum += tmp.second;
     }
     PROFILE_STOP( "prepare data" );
 
@@ -253,20 +251,16 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     }
 
     // Smear the data to create the final map
-    std::map<double, std::pair<int, double>>::iterator iterator;
-    std::map<double, double> final_map1;
-    for ( iterator = map1.begin(); iterator != map1.end(); ++iterator ) {
-        double sum = iterator->second.second;
-        double N   = iterator->second.first;
-        std::pair<double, double> tmp( iterator->first, sum / N );
-        final_map1.insert( tmp );
+    std::map<double, double> final_map1, final_map2;
+    for ( const auto &tmp : map1 ) {
+        double sum = tmp.second.second;
+        double N   = tmp.second.first;
+        final_map1.insert( std::make_pair( tmp.first, sum / N ) );
     }
-    std::map<double, double> final_map2;
-    for ( iterator = map2.begin(); iterator != map2.end(); ++iterator ) {
-        double sum = iterator->second.second;
-        double N   = iterator->second.first;
-        std::pair<double, double> tmp( iterator->first, sum / N );
-        final_map2.insert( tmp );
+    for ( const auto &tmp : map2 ) {
+        double sum = tmp.second.second;
+        double N   = tmp.second.first;
+        final_map2.insert( std::make_pair( tmp.first, sum / N ) );
     }
 
     // Build the return vector
@@ -291,16 +285,15 @@ void Map3to1to3::unpackBuffer( const std::vector<comm_data> &buffer,
                                std::map<double, std::pair<int, double>> &map )
 {
     const double tol = 1e-8;
-    std::map<double, std::pair<int, double>>::iterator iterator, it1, it2, it3;
     for ( auto &elem : buffer ) {
-        iterator = map.end();
+        auto iterator = map.end();
         if ( !map.empty() ) {
-            it1 = map.lower_bound( elem.z );
+            auto it1 = map.lower_bound( elem.z );
             if ( it1 == map.end() ) {
                 --it1;
             }
-            it2 = it1;
-            it3 = it1;
+            auto it2 = it1;
+            auto it3 = it1;
             if ( it1 != map.begin() )
                 --it1;
             ++it3;
