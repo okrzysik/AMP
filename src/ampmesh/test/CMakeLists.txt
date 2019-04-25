@@ -27,15 +27,15 @@
 #
 
 # Copy meshes and input files
-COPY_MESH_FILE ( pellet_1x.e )
-COPY_MESH_FILE ( clad_1x_1pellet.e )
-COPY_MESH_FILE ( clad_1x_2pellet.e )
-COPY_MESH_FILE ( clad_1x_3pellet.e )
-COPY_MESH_FILE ( cube343H27.e )
-COPY_MESH_FILE ( pellet_lo_res.e )
-COPY_MESH_FILE ( clad_lo_res_4pellet.e )
-COPY_MESH_FILE ( multiElementMesh.e )
-COPY_MESH_FILE ( Utah_teapot.stl )
+COPY_MESH_FILE( pellet_1x.e )
+COPY_MESH_FILE( clad_1x_1pellet.e )
+COPY_MESH_FILE( clad_1x_2pellet.e )
+COPY_MESH_FILE( clad_1x_3pellet.e )
+COPY_MESH_FILE( cube343H27.e )
+COPY_MESH_FILE( pellet_lo_res.e )
+COPY_MESH_FILE( clad_lo_res_4pellet.e )
+COPY_MESH_FILE( multiElementMesh.e )
+COPY_MESH_FILE( Utah_teapot.stl )
 COPY_TEST_FILE( input_Mesh )
 COPY_TEST_FILE( input_SiloIO-1 )
 COPY_TEST_FILE( input_SiloIO-2 )
@@ -47,6 +47,7 @@ COPY_TEST_FILE( 17x17_denovo_thermal_1x )
 COPY_TEST_FILE( input_AMP_mesh_zoo_1D )
 COPY_TEST_FILE( input_AMP_mesh_zoo_2D )
 COPY_TEST_FILE( input_AMP_mesh_zoo_3D )
+COPY_TEST_FILE( input_circle_frustrum )
 
 # test the load balancer
 ADD_AMP_PROVISIONAL_TEST( test_LoadBalance )

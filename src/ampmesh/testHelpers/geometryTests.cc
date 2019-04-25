@@ -99,7 +99,10 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         for ( const auto &p : surfacePoints ) {
             auto norm = geom.surfaceNorm( p );
             double n  = sqrt( norm.x() * norm.x() + norm.y() * norm.y() + norm.z() * norm.z() );
-            passNorm  = passNorm && fabs(n-1.0) < 1e-6;
+            auto p1   = p - 1e-5 * norm;
+            auto p2   = p + 1e-5 * norm;
+            passNorm  = passNorm && fabs( n - 1.0 ) < 1e-6;
+            passNorm  = passNorm && geom.inside( p1 ) && !geom.inside( p2 );
         }
         pass = pass && passNorm;
         if ( !passNorm )

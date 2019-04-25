@@ -32,6 +32,12 @@ public: // Functions inherited from Geometry
     virtual double distance( const Point &pos, const Point &dir ) const override final;
     virtual bool inside( const Point &pos ) const override final;
     virtual int NSurface() const override final { return 3; }
+    /**
+     * \brief    Get the surface id
+     * \details     This function will return the surface id closest to the point
+     * \param[in] x     Current position
+     * @return          Returns the surface id [-,+,cylinder]
+     */
     virtual int surface( const Point &x ) const override final;
     virtual Point surfaceNorm( const Point &x ) const override final;
     virtual Point logical( const Point &x ) const override final;

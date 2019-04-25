@@ -60,8 +60,8 @@ double CircleFrustum::distance( const Point &pos, const Point &ang ) const
     // Compute the intersection with the planes slicing the cone
     bool swap = d_dir == 0 || d_dir == 1 || d_dir == 3 || d_dir == 4;
     double s  = swap ? -1 : 1;
-    double d1 = -p0[dir2] / ( s * ang[dir2] );
-    double d2 = ( s * d_h - p0[dir2] ) / ( s * ang[dir2] );
+    double d1 = -p0[dir2] / ang[dir2];
+    double d2 = ( s * d_h - p0[dir2] ) / ang[dir2];
     auto p1   = p0 + d1 * ang;
     auto p2   = p0 + d2 * ang;
     double r1, r2;
@@ -112,13 +112,11 @@ int CircleFrustum::surface( const Point &pos ) const
     double t = std::min(
         { std::abs( p.x() ), std::abs( 1 - p.x() ), std::abs( p.y() ), std::abs( 1 - p.y() ) } );
     if ( std::abs( p.z() ) < t ) {
-        // We are at the large face
-        bool swap = d_dir == 0 || d_dir == 1 || d_dir == 3 || d_dir == 4;
-        return swap ? 1 : 0;
+        // We are at the - face
+        return 0;
     } else if ( std::abs( 1 - p.z() ) < t ) {
-        // We are at the small face
-        bool swap = d_dir == 0 || d_dir == 1 || d_dir == 3 || d_dir == 4;
-        return swap ? 0 : 1;
+        // We are at the + face
+        return 1;
     } else {
         // We are at the cone face
         return 2;
@@ -130,7 +128,7 @@ Point CircleFrustum::surfaceNorm( const Point &pos ) const
     Point v  = { 0, 0, 0 };
     double x = pos.x() - d_offset[0];
     double y = pos.y() - d_offset[1];
-    double z = pos.z() - d_offset[2];    
+    double z = pos.z() - d_offset[2];
     if ( s == 0 ) {
         v[d_dir / 2] = d_dir % 2 == 0 ? 1 : -1;
     } else if ( s == 1 ) {
@@ -140,22 +138,22 @@ Point CircleFrustum::surfaceNorm( const Point &pos ) const
         double cos_t = cos( d_theta );
         if ( d_dir == 0 ) {
             double r = sqrt( y * y + z * z );
-            v = { -sin_t, cos_t * y / r, cos_t * z / r };
+            v        = { -sin_t, cos_t * y / r, cos_t * z / r };
         } else if ( d_dir == 1 ) {
             double r = sqrt( y * y + z * z );
-            v = { sin_t, cos_t * y / r, cos_t * z / r };
+            v        = { sin_t, cos_t * y / r, cos_t * z / r };
         } else if ( d_dir == 2 ) {
             double r = sqrt( x * x + z * z );
-            v = { cos_t * x / r, -sin_t, cos_t * z / r };
+            v        = { cos_t * x / r, -sin_t, cos_t * z / r };
         } else if ( d_dir == 3 ) {
             double r = sqrt( x * x + z * z );
-            v = { cos_t * x / r, sin_t, cos_t * z / r };
+            v        = { cos_t * x / r, sin_t, cos_t * z / r };
         } else if ( d_dir == 4 ) {
             double r = sqrt( x * x + y * y );
-            v = { cos_t * x / r, cos_t * y / r, -sin_t };
+            v        = { cos_t * x / r, cos_t * y / r, -sin_t };
         } else {
             double r = sqrt( x * x + y * y );
-            v = { cos_t * x / r, cos_t * y / r, sin_t };
+            v        = { cos_t * x / r, cos_t * y / r, sin_t };
         }
     }
     return v;
