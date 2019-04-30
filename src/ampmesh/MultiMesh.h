@@ -24,7 +24,7 @@ namespace Mesh {
  *                       1 - Use independent processor sets for all meshes (default)
  *                       2 - Use all processors for all meshes
  */
-class MultiMesh : public Mesh
+class MultiMesh final : public Mesh
 {
 public:
     /**
@@ -314,16 +314,17 @@ public:
                                    int rank,
                                    char &decomp );
 
-private:
-    //! Empty constructor for a mesh
-    MultiMesh(){};
+public: // Default constructors
+    MultiMesh()                           = delete;
+    explicit MultiMesh( MultiMesh &&rhs ) = default;
+    explicit MultiMesh( const MultiMesh &rhs );
+    MultiMesh &operator=( MultiMesh &&rhs ) = default;
+    MultiMesh &operator=( const MultiMesh &rhs ) = delete;
 
+private:
     //! Function to create the databases for the meshes within the multimesh
     static std::vector<AMP::shared_ptr<AMP::Database>>
     createDatabases( AMP::shared_ptr<AMP::Database> database );
-
-    //! A list of all meshes in the multimesh
-    std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
 
     //! A convienence typedef to hold a list of ranks
     typedef std::vector<int> rank_list;
@@ -378,6 +379,10 @@ private:
     // (comm size = 1)
     static std::vector<comm_groups> independentGroups2( int N_procs,
                                                         std::vector<std::pair<double, int>> &ids );
+
+private:
+    //! A list of all meshes in the multimesh
+    std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
 };
 
 } // namespace Mesh

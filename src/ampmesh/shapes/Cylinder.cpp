@@ -1,6 +1,6 @@
 #include "AMP/ampmesh/shapes/Cylinder.h"
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
-
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -11,6 +11,19 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
+Cylinder::Cylinder( AMP::shared_ptr<AMP::Database> db )
+{
+    d_physicalDim = 3;
+    d_logicalDim  = 3;
+    d_offset[0]   = 0;
+    d_offset[1]   = 0;
+    d_offset[2]   = 0;
+    auto range    = db->getDoubleArray( "Range" );
+    AMP_INSIST( range.size() == 3u, "Range must be an array of length 3" );
+    d_r     = range[0];
+    d_z_min = range[1];
+    d_z_max = range[2];
+}
 Cylinder::Cylinder( double r, double z_min, double z_max )
     : Geometry(), d_r( r ), d_z_min( z_min ), d_z_max( z_max )
 {
@@ -134,6 +147,18 @@ std::pair<Point, Point> Cylinder::box() const
 
 
 /********************************************************
+ * Return the logical grid                               *
+ ********************************************************/
+std::vector<int> Cylinder::getLogicalGridSize( const std::vector<int> &x ) const
+{
+    AMP_INSIST( x.size() == 2u, "Size must be an array of length 2" );
+    return { x[1], x[1] / 2, x[0] };
+}
+std::vector<bool> Cylinder::getPeriodicDim() const { return { false, false, false }; }
+std::vector<int> Cylinder::getLogicalSurfaceIds() const { return { 4, 4, 4, 4, 2, 1 }; }
+
+
+/********************************************************
  * Displace the mesh                                     *
  ********************************************************/
 void Cylinder::displaceMesh( const double *x )
@@ -141,6 +166,15 @@ void Cylinder::displaceMesh( const double *x )
     d_offset[0] += x[0];
     d_offset[1] += x[1];
     d_offset[2] += x[2];
+}
+
+
+/********************************************************
+ * Clone the object                                      *
+ ********************************************************/
+AMP::shared_ptr<AMP::Geometry::Geometry> Cylinder::clone() const
+{
+    return AMP::make_shared<Cylinder>( *this );
 }
 
 

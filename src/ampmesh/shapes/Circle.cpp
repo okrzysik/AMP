@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/shapes/Circle.h"
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -10,6 +11,16 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
+Circle::Circle( AMP::shared_ptr<AMP::Database> db )
+{
+    d_physicalDim = 2;
+    d_logicalDim  = 2;
+    d_offset[0]   = 0;
+    d_offset[1]   = 0;
+    auto range    = db->getDoubleArray( "Range" );
+    AMP_INSIST( range.size() == 1u, "Range must be an array of length 1" );
+    d_R = range[0];
+}
 Circle::Circle( double R ) : Geometry(), d_R( R )
 {
     d_physicalDim = 2;
@@ -52,9 +63,10 @@ bool Circle::inside( const Point &pos ) const
  ********************************************************/
 Point Circle::surfaceNorm( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return Point();
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double n = sqrt( x * x + y * y );
+    return { x / n, y / n, 0 };
 }
 
 
@@ -95,12 +107,33 @@ std::pair<Point, Point> Circle::box() const
 
 
 /********************************************************
+ * Return the logical grid                               *
+ ********************************************************/
+std::vector<int> Circle::getLogicalGridSize( const std::vector<int> &x ) const
+{
+    AMP_INSIST( x.size() == 1u, "Size must be an array of length 1" );
+    return { 2 * x[0], 2 * x[0] };
+}
+std::vector<bool> Circle::getPeriodicDim() const { return { false, false }; }
+std::vector<int> Circle::getLogicalSurfaceIds() const { return { 1, 1, 1, 1 }; }
+
+
+/********************************************************
  * Displace the mesh                                     *
  ********************************************************/
 void Circle::displaceMesh( const double *x )
 {
     d_offset[0] += x[0];
     d_offset[1] += x[1];
+}
+
+
+/********************************************************
+ * Clone the object                                      *
+ ********************************************************/
+AMP::shared_ptr<AMP::Geometry::Geometry> Circle::clone() const
+{
+    return AMP::make_shared<Circle>( *this );
 }
 
 

@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/shapes/Box.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -14,6 +15,21 @@ namespace Geometry {
  * Constructors                                          *
  ********************************************************/
 template<std::size_t NDIM>
+Box<NDIM>::Box( AMP::shared_ptr<AMP::Database> db )
+{
+    d_physicalDim = NDIM;
+    d_logicalDim  = NDIM;
+    static_assert( NDIM >= 0 && NDIM <= 3, "Invalid number of dimensions" );
+    auto range = db->getDoubleArray( "Range" );
+    AMP_INSIST( range.size() == 2 * NDIM, "Range must be 2*dim for cube generator" );
+    for ( int i = 0; i < 3; i++ ) {
+        d_range[2 * i + 0] = -1e100;
+        d_range[2 * i + 1] = 1e100;
+    }
+    for ( size_t i = 0; i < 2 * NDIM; i++ )
+        d_range[i] = range[i];
+}
+template<std::size_t NDIM>
 Box<NDIM>::Box( const std::vector<double> &range ) : Geometry()
 {
     d_physicalDim = NDIM;
@@ -25,6 +41,25 @@ Box<NDIM>::Box( const std::vector<double> &range ) : Geometry()
     }
     for ( size_t i = 0; i < 2 * NDIM; i++ )
         d_range[i] = range[i];
+}
+template<std::size_t NDIM>
+Grid<NDIM>::Grid( AMP::shared_ptr<AMP::Database> db ) : Geometry()
+{
+    d_physicalDim = NDIM;
+    d_logicalDim  = NDIM;
+    static_assert( NDIM >= 0 && NDIM <= 3, "Invalid number of dimensions" );
+    for ( int i = 0; i < 3; i++ ) {
+        d_range[2 * i + 0] = -1e100;
+        d_range[2 * i + 1] = 1e100;
+    }
+    const char *names[3] = { "x_grid", "y_grid", "z_grid" };
+    for ( size_t i = 0; i < NDIM; i++ ) {
+        d_coord[i] = std::move( db->getDoubleArray( names[i] ) );
+        for ( const auto tmp : d_coord[i] ) {
+            d_range[2 * i + 0] = std::min( d_range[2 * i + 0], tmp );
+            d_range[2 * i + 1] = std::max( d_range[2 * i + 1], tmp );
+        }
+    }
 }
 template<std::size_t NDIM>
 Grid<NDIM>::Grid( const std::vector<std::vector<double>> &coord ) : Geometry()
@@ -44,6 +79,7 @@ Grid<NDIM>::Grid( const std::vector<std::vector<double>> &coord ) : Geometry()
         }
     }
 }
+
 
 /********************************************************
  * Get the object name                                   *
@@ -372,6 +408,49 @@ std::pair<Point, Point> Grid<NDIM>::box() const
 
 
 /********************************************************
+ * Return the logical grid                               *
+ ********************************************************/
+template<std::size_t NDIM>
+std::vector<int> Box<NDIM>::getLogicalGridSize( const std::vector<int> &x ) const
+{
+    AMP_ASSERT( x.size() == NDIM );
+    return x;
+}
+template<std::size_t NDIM>
+std::vector<int> Grid<NDIM>::getLogicalGridSize( const std::vector<int> &x ) const
+{
+    AMP_ASSERT( x.size() == NDIM );
+    return x;
+}
+template<std::size_t NDIM>
+std::vector<bool> Box<NDIM>::getPeriodicDim() const
+{
+    return std::vector<bool>( NDIM, false );
+}
+template<std::size_t NDIM>
+std::vector<bool> Grid<NDIM>::getPeriodicDim() const
+{
+    return std::vector<bool>( NDIM, false );
+}
+template<std::size_t NDIM>
+std::vector<int> Box<NDIM>::getLogicalSurfaceIds() const
+{
+    std::vector<int> ids( NDIM );
+    for ( size_t i = 0; i < NDIM; i++ )
+        ids[i] = i;
+    return ids;
+}
+template<std::size_t NDIM>
+std::vector<int> Grid<NDIM>::getLogicalSurfaceIds() const
+{
+    std::vector<int> ids( NDIM );
+    for ( size_t i = 0; i < NDIM; i++ )
+        ids[i] = i;
+    return ids;
+}
+
+
+/********************************************************
  * Displace the mesh                                     *
  ********************************************************/
 template<std::size_t NDIM>
@@ -391,6 +470,21 @@ void Grid<NDIM>::displaceMesh( const double *x )
         for ( auto &tmp : d_coord[d] )
             tmp += x[d];
     }
+}
+
+
+/********************************************************
+ * Clone the object                                      *
+ ********************************************************/
+template<std::size_t NDIM>
+AMP::shared_ptr<AMP::Geometry::Geometry> Box<NDIM>::clone() const
+{
+    return AMP::make_shared<Box<NDIM>>( *this );
+}
+template<std::size_t NDIM>
+AMP::shared_ptr<AMP::Geometry::Geometry> Grid<NDIM>::clone() const
+{
+    return AMP::make_shared<Grid<NDIM>>( *this );
 }
 
 

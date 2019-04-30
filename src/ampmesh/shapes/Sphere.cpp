@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/shapes/Sphere.h"
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -10,6 +11,17 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
+Sphere::Sphere( AMP::shared_ptr<AMP::Database> db )
+{
+    d_physicalDim = 3;
+    d_logicalDim  = 2;
+    d_offset[0]   = 0;
+    d_offset[1]   = 0;
+    d_offset[2]   = 0;
+    auto range    = db->getDoubleArray( "Range" );
+    AMP_INSIST( range.size() == 1u, "Range must be an array of length 1" );
+    d_r = range[0];
+}
 Sphere::Sphere( double r ) : Geometry(), d_r( r )
 {
     d_physicalDim = 3;
@@ -96,6 +108,18 @@ std::pair<Point, Point> Sphere::box() const
 
 
 /********************************************************
+ * Return the logical grid                               *
+ ********************************************************/
+std::vector<int> Sphere::getLogicalGridSize( const std::vector<int> &x ) const
+{
+    AMP_INSIST( x.size() == 1u, "Size must be an array of length 1" );
+    return { 2 * x[0], 2 * x[0], 2 * x[0] };
+}
+std::vector<bool> Sphere::getPeriodicDim() const { return { false, false, false }; }
+std::vector<int> Sphere::getLogicalSurfaceIds() const { return { 4, 4, 4, 4, 2, 1 }; }
+
+
+/********************************************************
  * Displace the mesh                                     *
  ********************************************************/
 void Sphere::displaceMesh( const double *x )
@@ -103,6 +127,15 @@ void Sphere::displaceMesh( const double *x )
     d_offset[0] += x[0];
     d_offset[1] += x[1];
     d_offset[2] += x[2];
+}
+
+
+/********************************************************
+ * Clone the object                                      *
+ ********************************************************/
+AMP::shared_ptr<AMP::Geometry::Geometry> Sphere::clone() const
+{
+    return AMP::make_shared<Sphere>( *this );
 }
 
 

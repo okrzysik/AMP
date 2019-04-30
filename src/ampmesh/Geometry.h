@@ -149,12 +149,58 @@ public:
      */
     inline uint8_t getLogicalDim() const { return d_logicalDim; }
 
+    /**
+     * \brief    Return the logical grid size
+     * \details  This function will return the dimensions of a logical grid
+     *    given a size that makes sense for the object.
+     *    If the coordinates cannot map to a logical grid, this function should throw
+     *    a runtime exception.
+     * \param[int] x    Input size
+     * @return          Return the logical boundary ids (2*logicalDim)
+     */
+    virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const = 0;
+
+    /**
+     * \brief    Return the logical grid periodic dimensions
+     * \details  This function will return a vector indicating which logical grid
+     *    dimensions are periodic.  If the coordinates cannot map to a logical grid,
+     *    this function should throw a runtime exception.
+     * @return          Return the periodic dimensions
+     */
+    virtual std::vector<bool> getPeriodicDim() const = 0;
+
+    /**
+     * \brief    Return the surface ids for the logical boundaries
+     * \details  This function will return the surface ids for each logical boundary.
+     *    If a logical boundary does not map to a surface, it will return -1.
+     *    If the coordinates cannot map to a logical grid, this function should
+     *    throw a runtime exception.
+     * @return          Return the logical boundary ids (2*logicalDim)
+     */
+    virtual std::vector<int> getLogicalSurfaceIds() const = 0;
+
+    //! Clone the object
+    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const = 0;
+
+public:
+    /**
+     * \brief   Create a geometry
+     * \details  This function will create a geometry based on
+     *   the input database.
+     * \param params Parameters for constructing a geometry from an input database
+     */
+    static AMP::shared_ptr<AMP::Geometry::Geometry>
+    buildGeometry( AMP::shared_ptr<AMP::Database> db );
+
+
 protected:
     //!  Empty constructor for the base class
     Geometry() : d_physicalDim( 0 ), d_logicalDim( 0 ) {}
 
     // Delete copy constructors
-    Geometry( const Geometry & ) = delete;
+    Geometry( Geometry && )      = delete;
+    Geometry( const Geometry & ) = default;
+    Geometry &operator=( Geometry && ) = delete;
     Geometry &operator=( const Geometry & ) = delete;
 
 protected: // Helper functions

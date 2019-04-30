@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/shapes/Tube.h"
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 #include <algorithm>
@@ -12,11 +13,25 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
+Tube::Tube( AMP::shared_ptr<AMP::Database> db )
+{
+    d_physicalDim = 3;
+    d_logicalDim  = 3;
+    d_offset[0]   = 0;
+    d_offset[1]   = 0;
+    d_offset[2]   = 0;
+    auto range    = db->getDoubleArray( "Range" );
+    AMP_INSIST( range.size() == 4u, "Range must be an array of length 4" );
+    d_r_min = range[0];
+    d_r_max = range[1];
+    d_z_min = range[2];
+    d_z_max = range[3];
+}
 Tube::Tube( double r_min, double r_max, double z_min, double z_max )
     : Geometry(), d_r_min( r_min ), d_r_max( r_max ), d_z_min( z_min ), d_z_max( z_max )
 {
     d_physicalDim = 3;
-    d_logicalDim  = 2;
+    d_logicalDim  = 3;
     d_offset[0]   = 0;
     d_offset[1]   = 0;
     d_offset[2]   = 0;
@@ -65,10 +80,12 @@ bool Tube::inside( const Point &pos ) const
     double y  = pos.y() - d_offset[1];
     double z  = pos.z() - d_offset[2];
     double r2 = x * x + y * y;
-    double t1 = 1e-12 * std::max( d_r_min * d_r_min, d_r_max * d_r_max );
+    double R1 = d_r_min * d_r_min;
+    double R2 = d_r_max * d_r_max;
+    double t1 = 1e-12 * std::max( R1, R2 );
     double t2 = 1e-12 * std::max( fabs( d_z_min ), fabs( d_z_max ) );
-    bool in_r = r2 >= d_r_min * d_r_min - t1 && r2 <= d_r_max * d_r_max + t1;
-    bool in_z = z >= d_z_min - t2 && z <= d_z_max + t2;
+    bool in_r = r2 >= ( R1 - t1 ) && r2 <= ( R2 + t1 );
+    bool in_z = z >= ( d_z_min - t2 ) && z <= ( d_z_max + t2 );
     return in_r && in_z;
 }
 
@@ -173,6 +190,18 @@ std::pair<Point, Point> Tube::box() const
 
 
 /********************************************************
+ * Return the logical grid                               *
+ ********************************************************/
+std::vector<int> Tube::getLogicalGridSize( const std::vector<int> &x ) const
+{
+    AMP_INSIST( x.size() == 3u, "Size must be an array of length 1" );
+    return { x[0], x[1], x[2] };
+}
+std::vector<bool> Tube::getPeriodicDim() const { return { false, true, false }; }
+std::vector<int> Tube::getLogicalSurfaceIds() const { return { 8, 4, -1, -1, 2, 1 }; }
+
+
+/********************************************************
  * Displace the mesh                                     *
  ********************************************************/
 void Tube::displaceMesh( const double *x )
@@ -180,6 +209,15 @@ void Tube::displaceMesh( const double *x )
     d_offset[0] += x[0];
     d_offset[1] += x[1];
     d_offset[2] += x[2];
+}
+
+
+/********************************************************
+ * Clone the object                                      *
+ ********************************************************/
+AMP::shared_ptr<AMP::Geometry::Geometry> Tube::clone() const
+{
+    return AMP::make_shared<Tube>( *this );
 }
 
 

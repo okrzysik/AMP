@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/shapes/Shell.h"
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -10,6 +11,18 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
+Shell::Shell( AMP::shared_ptr<AMP::Database> db )
+{
+    d_physicalDim = 3;
+    d_logicalDim  = 2;
+    d_offset[0]   = 0;
+    d_offset[1]   = 0;
+    d_offset[2]   = 0;
+    auto range    = db->getDoubleArray( "Range" );
+    AMP_INSIST( range.size() == 2u, "Range must be an array of length 2" );
+    d_r_min = range[0];
+    d_r_max = range[1];
+}
 Shell::Shell( double r_min, double r_max ) : Geometry(), d_r_min( r_min ), d_r_max( r_max )
 {
     d_physicalDim = 3;
@@ -62,7 +75,7 @@ int Shell::surface( const Point &pos ) const
     double z  = pos.z() - d_offset[2];
     double r2 = x * x + y * y + z * z;
     bool test = fabs( r2 - d_r_min * d_r_min ) < fabs( r2 - d_r_max * d_r_max );
-    return test ? 0:1;
+    return test ? 0 : 1;
 }
 Point Shell::surfaceNorm( const Point &pos ) const
 {
@@ -70,7 +83,7 @@ Point Shell::surfaceNorm( const Point &pos ) const
     double y = pos.y() - d_offset[1];
     double z = pos.z() - d_offset[2];
     double r = sqrt( x * x + y * y + z * z );
-    if ( fabs( r - d_r_min  ) < fabs( r - d_r_max ) )
+    if ( fabs( r - d_r_min ) < fabs( r - d_r_max ) )
         return { -x / r, -y / r, -z / r };
     return { x / r, y / r, z / r };
 }
@@ -112,6 +125,18 @@ std::pair<Point, Point> Shell::box() const
 
 
 /********************************************************
+ * Return the logical grid                               *
+ ********************************************************/
+std::vector<int> Shell::getLogicalGridSize( const std::vector<int> &x ) const
+{
+    AMP_INSIST( x.size() == 2u, "Size must be an array of length 2" );
+    return { 2 * x[0], 2 * x[0], x[1] };
+}
+std::vector<bool> Shell::getPeriodicDim() const { return { true, false, false }; }
+std::vector<int> Shell::getLogicalSurfaceIds() const { return { -1, -1, 1, 2, 3, 4 }; }
+
+
+/********************************************************
  * Displace the mesh                                     *
  ********************************************************/
 void Shell::displaceMesh( const double *x )
@@ -119,6 +144,15 @@ void Shell::displaceMesh( const double *x )
     d_offset[0] += x[0];
     d_offset[1] += x[1];
     d_offset[2] += x[2];
+}
+
+
+/********************************************************
+ * Clone the object                                      *
+ ********************************************************/
+AMP::shared_ptr<AMP::Geometry::Geometry> Shell::clone() const
+{
+    return AMP::make_shared<Shell>( *this );
 }
 
 

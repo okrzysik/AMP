@@ -387,6 +387,9 @@ public: // BoxMesh specific functionality
     //! Convert the MeshElementID to the MeshElementIndex
     inline MeshElementIndex convert( const MeshElementID &id ) const;
 
+protected: // Convenience typedef
+    typedef std::vector<std::pair<MeshElementIndex, MeshElementIndex>> ElementBlocks;
+
 protected:
     // Constructor
     explicit BoxMesh( MeshParameters::shared_ptr );
@@ -403,7 +406,6 @@ protected:
     inline std::array<int, 6> getLocalBlock( unsigned int rank ) const;
 
     // Helper functions to identify the iterator blocks
-    typedef std::vector<std::pair<MeshElementIndex, MeshElementIndex>> ElementBlocks;
     ElementBlocks
     getIteratorRange( std::array<int, 6> range, const GeomType type, const int gcw ) const;
     static ElementBlocks intersect( const ElementBlocks &v1, const ElementBlocks &v2 );
@@ -418,16 +420,15 @@ protected:
                                     const std::vector<MeshElementIndex> &index,
                                     std::vector<double> *coord );
 
-    // Internal data
-    std::array<bool, 3> d_isPeriodic;        // Which directions are periodic
-    std::array<int, 3> d_globalSize;         // The size of the logical domain in each direction
-    std::array<int, 3> d_blockSize;          // The size of the logical blocks in each direction
-    std::array<int, 3> d_numBlocks;          // The number of local box in each direction
-    std::array<int, 6> d_surfaceId;          // For each surface which id is it part of (if any)
-    std::array<bool, 6> d_onSurface;         // For each surface which id is it part of (if any)
+protected:                            // Internal data
+    std::array<bool, 3> d_isPeriodic; // Which directions are periodic
+    std::array<int, 3> d_globalSize;  // The size of the logical domain in each direction
+    std::array<int, 3> d_blockSize;   // The size of the logical blocks in each direction
+    std::array<int, 3> d_numBlocks;   // The number of local box in each direction
+    std::array<int, 6> d_surfaceId;   // For each surface which id is it part of (if any, -1 if not)
     ElementBlocks d_globalSurfaceList[6][4]; // List of logical surface elements (surface/type)
 
-    // Friend functions to access protected functions
+protected: // Friend functions to access protected functions
     friend class structuredMeshElement;
     friend class structuredMeshIterator;
 

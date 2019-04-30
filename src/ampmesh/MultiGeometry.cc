@@ -18,9 +18,16 @@ double MultiGeometry::distance( const Point &pos, const Point &dir ) const
 {
     double dist = std::numeric_limits<double>::infinity();
     for ( const auto &geom : d_geom ) {
-        double d = geom->distance( pos, dir );
-        if ( fabs( d ) < fabs( dist ) )
+        double d  = geom->distance( pos, dir );
+        double d1 = fabs( d );
+        double d2 = fabs( dist );
+        if ( fabs( d1 - d2 ) < 1e-6 * d1 ) {
+            // The two distances are ~ equal, take the inside distance if it exists
+            dist = std::min( d, dist );
+        } else if ( d1 < d2 ) {
+            // Keep the smallest distance
             dist = d;
+        }
     }
     return dist;
 }
@@ -83,10 +90,29 @@ std::pair<Point, Point> MultiGeometry::box() const
     range.second.setNdim( d_physicalDim );
     return range;
 }
+std::vector<int> MultiGeometry::getLogicalGridSize( const std::vector<int> & ) const
+{
+    throw std::logic_error( "MultiMesh is not a logical mesh" );
+}
+std::vector<bool> MultiGeometry::getPeriodicDim() const
+{
+    throw std::logic_error( "MultiMesh is not a logical mesh" );
+}
+std::vector<int> MultiGeometry::getLogicalSurfaceIds() const
+{
+    throw std::logic_error( "MultiMesh is not a logical mesh" );
+}
 void MultiGeometry::displaceMesh( const double *x )
 {
     for ( const auto &geom : d_geom )
         geom->displaceMesh( x );
+}
+AMP::shared_ptr<AMP::Geometry::Geometry> MultiGeometry::clone() const
+{
+    std::vector<Geometry::shared_ptr> geom2;
+    for ( const auto &geom : d_geom )
+        geom2.push_back( geom->clone() );
+    return AMP::make_shared<MultiGeometry>( geom2 );
 }
 
 

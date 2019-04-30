@@ -19,7 +19,13 @@ class Shell : public Geometry
 {
 public:
     /**
-     * \brief Construct a Shell
+     * \brief Construct a Shell geometry
+     * \param db        Input database
+     */
+    explicit Shell( AMP::shared_ptr<AMP::Database> db );
+
+    /**
+     * \brief Construct a Shell geometry
      * \param r_min     The minimum radius of the shell
      * \param r_max     The maximum radius of the shell
      */
@@ -37,6 +43,10 @@ public:
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
     virtual void displaceMesh( const double *x ) override final;
+    virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
+    virtual std::vector<bool> getPeriodicDim() const override final;
+    virtual std::vector<int> getLogicalSurfaceIds() const override final;
+    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data

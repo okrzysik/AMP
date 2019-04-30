@@ -507,7 +507,10 @@ protected:
     void setMeshID();
 
     // Private copy constructor
-    explicit Mesh( const Mesh::shared_ptr &old_mesh );
+    explicit Mesh( const Mesh &old_mesh );
+
+    // Private assigment operator
+    Mesh &operator=( const Mesh &old_mesh ) = delete;
 };
 
 } // namespace Mesh

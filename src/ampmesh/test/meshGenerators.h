@@ -37,22 +37,13 @@ class AMPCubeGenerator3 : public MeshGenerator
 public:
     virtual void build_mesh() override
     {
-        // Set the dimensions of the mesh
-        std::vector<int> size( 3 );
-        size[0] = SIZE_X;
-        size[1] = SIZE_Y;
-        size[2] = SIZE_Z;
-        std::vector<double> range( 6, 0.0 );
-        range[1] = 1.0;
-        range[3] = 1.0;
-        range[5] = 1.0;
         // Create a generic MeshParameters object
         auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
         database->putInteger( "dim", 3 );
         database->putString( "MeshName", "AMP::cube" );
         database->putString( "Generator", "cube" );
-        database->putIntegerArray( "Size", size );
-        database->putDoubleArray( "Range", range );
+        database->putIntegerArray( "Size", { SIZE_X, SIZE_Y, SIZE_Z } );
+        database->putDoubleArray( "Range", { 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 } );
         auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create an AMP mesh
@@ -84,21 +75,13 @@ class AMPCylinderGenerator : public MeshGenerator
 public:
     virtual void build_mesh() override
     {
-        // Set the dimensions of the mesh
-        std::vector<int> size( 2 );
-        size[0] = 10;
-        size[1] = 10;
-        std::vector<double> range( 3 );
-        range[0] = 1.0;
-        range[1] = 0.0;
-        range[2] = 1.0;
         // Create a generic MeshParameters object
         auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
         database->putInteger( "dim", 3 );
         database->putString( "MeshName", "AMP::cylinder" );
         database->putString( "Generator", "cylinder" );
-        database->putIntegerArray( "Size", size );
-        database->putDoubleArray( "Range", range );
+        database->putIntegerArray( "Size", { 10, 10 } );
+        database->putDoubleArray( "Range", { 1.0, 0.0, 1.0 } );
         auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create an AMP mesh
@@ -114,23 +97,13 @@ class AMPTubeGenerator : public MeshGenerator
 public:
     virtual void build_mesh() override
     {
-        // Set the dimensions of the mesh
-        std::vector<int> size( 3 );
-        size[0] = 3;
-        size[1] = 12;
-        size[2] = 10;
-        std::vector<double> range( 4 );
-        range[0] = 0.7;
-        range[1] = 1.0;
-        range[2] = 0.0;
-        range[3] = 1.0;
         // Create a generic MeshParameters object
         auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
         database->putInteger( "dim", 3 );
         database->putString( "MeshName", "AMP::tube" );
         database->putString( "Generator", "tube" );
-        database->putIntegerArray( "Size", size );
-        database->putDoubleArray( "Range", range );
+        database->putIntegerArray( "Size", { 3, 12, 10 } );
+        database->putDoubleArray( "Range", { 0.7, 1.0, 0.0, 1.0 } );
         auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create an AMP mesh
@@ -169,7 +142,7 @@ public:
 private:
     void createPelletMeshDatabase( AMP::shared_ptr<Database> db )
     {
-        int N_pellet = 2;
+        int N_pellet = 3;
         // Create the multimesh database
         db->putString( "MeshName", "PelletMeshes" );
         db->putString( "MeshType", "Multimesh" );
@@ -184,17 +157,10 @@ private:
             indexArray[i] = i + 1;
         meshArrayDatabase->putIntegerArray( "indicies", indexArray );
         meshArrayDatabase->putString( "MeshName", "pellet_%i" );
-        std::vector<int> size( 2 );
-        size[0] = 5;
-        size[1] = 8;
-        std::vector<double> range( 3 );
-        range[0] = 0.004025;
-        range[1] = 0;
-        range[2] = 0.0105;
         meshArrayDatabase->putString( "MeshType", "AMP" );
         meshArrayDatabase->putString( "Generator", "cylinder" );
-        meshArrayDatabase->putIntegerArray( "Size", size );
-        meshArrayDatabase->putDoubleArray( "Range", range );
+        meshArrayDatabase->putIntegerArray( "Size", { 5, 8 } );
+        meshArrayDatabase->putDoubleArray( "Range", { 0.004025, 0.0, 0.0105 } );
         meshArrayDatabase->putInteger( "dim", 3 );
         meshArrayDatabase->putDouble( "x_offset", 0.0 );
         meshArrayDatabase->putDouble( "y_offset", 0.0 );
@@ -203,24 +169,14 @@ private:
             offsetArray[i] = ( (double) i ) * 0.0105;
         meshArrayDatabase->putDoubleArray( "z_offset", offsetArray );
     }
-
     void createCladMeshDatabase( AMP::shared_ptr<Database> db )
     {
-        std::vector<int> size( 3 );
-        std::vector<double> range( 4 );
-        size[0]  = 3;
-        size[1]  = 36;
-        size[2]  = 32;
-        range[0] = 0.00411;
-        range[1] = 0.00475;
-        range[2] = 0;
-        range[3] = 0.042;
         // Create the multimesh database
         db->putString( "MeshName", "clad" );
         db->putString( "MeshType", "AMP" );
         db->putString( "Generator", "tube" );
-        db->putIntegerArray( "Size", size );
-        db->putDoubleArray( "Range", range );
+        db->putIntegerArray( "Size", { 3, 36, 32 } );
+        db->putDoubleArray( "Range", { 0.00411, 0.00475, 0, 0.0315 } );
         db->putInteger( "dim", 3 );
     }
 };
@@ -233,16 +189,18 @@ class SurfaceSubsetGenerator : public MeshGenerator
 public:
     virtual void build_mesh() override
     {
-        AMP::shared_ptr<MeshGenerator> generator( new GENERATOR );
-        generator->build_mesh();
-        AMP::Mesh::Mesh::shared_ptr mesh1 = generator->getMesh();
-        AMP::Mesh::GeomType type          = mesh1->getGeomType();
-        AMP::Mesh::GeomType type2         = ( AMP::Mesh::GeomType )( (int) type - 1 );
-        AMP::Mesh::MeshIterator iterator  = mesh1->getSurfaceIterator( type2, GCW );
-        mesh                              = mesh1->Subset( iterator );
+        GENERATOR generator;
+        generator.build_mesh();
+        auto mesh1 = generator.getMesh();
+        auto type  = mesh1->getGeomType();
+        auto type2 = ( AMP::Mesh::GeomType )( (int) type - 1 );
+        auto it    = mesh1->getSurfaceIterator( type2, GCW );
+        mesh       = mesh1->Subset( it );
     }
     static std::string name() { return "SurfaceSubsetGenerator"; }
 };
+
+
 } // namespace unit_test
 } // namespace AMP
 

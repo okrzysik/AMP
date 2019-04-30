@@ -239,6 +239,18 @@ MultiMesh::MultiMesh( const std::string &name,
     }
     d_geometry.reset( new AMP::Geometry::MultiGeometry( geom ) );
 }
+MultiMesh::MultiMesh( const MultiMesh &rhs ) : Mesh( rhs )
+{
+    for ( const auto &mesh : rhs.d_meshes )
+        d_meshes.push_back( mesh->clone() );
+    std::vector<AMP::Geometry::Geometry::shared_ptr> geom;
+    for ( auto &mesh : d_meshes ) {
+        auto tmp = mesh->getGeometry();
+        if ( tmp )
+            geom.push_back( tmp );
+    }
+    d_geometry.reset( new AMP::Geometry::MultiGeometry( geom ) );
+}
 
 
 /********************************************************
