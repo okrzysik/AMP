@@ -160,8 +160,8 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
         std::set<AMP::Mesh::MeshElementID> nodes_p;
         auto it = mesh->getIterator(AMP::Mesh::GeomType::Vertex,1);
         for (size_t i=0; i<it.size(); i++, ++it) {
-            AMP::Mesh::MeshElementID id = it->globalID();
-            const std::vector<int> &map = proc_map.find(id.meshID())->second;
+            auto id = it->globalID();
+            const auto &map = proc_map.find(id.meshID())->second;
             int rank = map[id.owner_rank()];
             if ( rank == p )
                 nodes_p.insert( it->globalID() );

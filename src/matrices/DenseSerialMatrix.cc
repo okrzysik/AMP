@@ -33,14 +33,13 @@ DenseSerialMatrix::~DenseSerialMatrix() { delete[] d_M; }
 Matrix::shared_ptr DenseSerialMatrix::transpose() const
 {
     // Create the matrix parameters
-    AMP::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params(
-        new AMP::LinearAlgebra::MatrixParameters( d_DOFManagerRight, d_DOFManagerLeft, d_comm ) );
+    auto params = AMP::make_shared<AMP::LinearAlgebra::MatrixParameters>(
+        d_DOFManagerRight, d_DOFManagerLeft, d_comm );
     params->d_VariableLeft  = d_VariableRight;
     params->d_VariableRight = d_VariableLeft;
     // Create the matrix
-    AMP::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix> newMatrix(
-        new AMP::LinearAlgebra::DenseSerialMatrix( params ) );
-    double *M2 = newMatrix->d_M;
+    auto newMatrix = AMP::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( params );
+    double *M2     = newMatrix->d_M;
     for ( size_t i = 0; i < d_rows; i++ ) {
         for ( size_t j = 0; j < d_cols; j++ ) {
             M2[j + i * d_cols] = d_M[i + j * d_rows];
@@ -51,14 +50,13 @@ Matrix::shared_ptr DenseSerialMatrix::transpose() const
 Matrix::shared_ptr DenseSerialMatrix::cloneMatrix() const
 {
     // Create the matrix parameters
-    AMP::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params(
-        new AMP::LinearAlgebra::MatrixParameters( d_DOFManagerLeft, d_DOFManagerRight, d_comm ) );
+    auto params = AMP::make_shared<AMP::LinearAlgebra::MatrixParameters>(
+        d_DOFManagerLeft, d_DOFManagerRight, d_comm );
     params->d_VariableLeft  = d_VariableLeft;
     params->d_VariableRight = d_VariableRight;
     // Create the matrix
-    AMP::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix> newMatrix(
-        new AMP::LinearAlgebra::DenseSerialMatrix( params ) );
-    double *M2 = newMatrix->d_M;
+    auto newMatrix = AMP::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( params );
+    double *M2     = newMatrix->d_M;
     memcpy( M2, d_M, d_cols * d_rows * sizeof( double ) );
     return newMatrix;
 }
@@ -324,15 +322,13 @@ void DenseSerialMatrix::multiply( Matrix::shared_ptr other_op, Matrix::shared_pt
     size_t K = this->numGlobalColumns();
     size_t M = other_op->numGlobalColumns();
     // Create the matrix parameters
-    AMP::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params(
-        new AMP::LinearAlgebra::MatrixParameters(
-            other_op->getRightDOFManager(), d_DOFManagerLeft, d_comm ) );
+    auto params = AMP::make_shared<AMP::LinearAlgebra::MatrixParameters>(
+        other_op->getRightDOFManager(), d_DOFManagerLeft, d_comm );
     params->d_VariableLeft  = d_VariableLeft;
     params->d_VariableRight = d_VariableRight;
     // Create the matrix
-    AMP::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix> newMatrix(
-        new AMP::LinearAlgebra::DenseSerialMatrix( params ) );
-    result = newMatrix;
+    auto newMatrix = AMP::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( params );
+    result         = newMatrix;
     memset( newMatrix->d_M, 0, N * M * sizeof( double ) );
     // Perform the muliplication
     if ( AMP::dynamic_pointer_cast<DenseSerialMatrix>( other_op ) == nullptr ) {
