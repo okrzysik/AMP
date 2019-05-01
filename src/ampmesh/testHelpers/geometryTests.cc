@@ -1,6 +1,7 @@
 #include "AMP/ampmesh/Geometry.h"
 #include "AMP/utils/UnitTest.h"
 
+#include <algorithm>
 #include <random>
 
 
