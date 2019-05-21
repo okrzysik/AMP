@@ -371,9 +371,9 @@ MeshIterator SubsetMesh::getIterator( const GeomType type, const int gcw ) const
         gcw2 = (int) d_elements[type2].size() - 1;
     if ( gcw2 == 0 )
         return MultiVectorIterator( d_elements[type2][0], 0 );
-    std::vector<AMP::shared_ptr<MeshIterator>> iterators( gcw2 + 1 );
+    std::vector<MeshIterator> iterators( gcw2 + 1 );
     for ( int i = 0; i <= gcw2; i++ )
-        iterators[i] = AMP::make_shared<MultiVectorIterator>( d_elements[type2][i], 0 );
+        iterators[i] = MultiVectorIterator( d_elements[type2][i], 0 );
     return MultiIterator( iterators, 0 );
 }
 MeshIterator SubsetMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
@@ -383,16 +383,16 @@ MeshIterator SubsetMesh::getSurfaceIterator( const GeomType type, const int gcw 
         return MultiVectorIterator( d_surface[type2][0], 0 );
     if ( gcw >= (int) d_surface[type2].size() )
         AMP_ERROR( "Maximum ghost width exceeded" );
-    std::vector<AMP::shared_ptr<MeshIterator>> iterators( gcw + 1 );
+    std::vector<MeshIterator> iterators( gcw + 1 );
     for ( int i = 0; i <= gcw; i++ )
-        iterators[i] = AMP::make_shared<MultiVectorIterator>( d_surface[type2][i], 0 );
+        iterators[i] = MultiVectorIterator( d_surface[type2][i], 0 );
     return MultiIterator( iterators, 0 );
 }
 std::vector<int> SubsetMesh::getBoundaryIDs() const { return d_boundaryIdSets; }
 MeshIterator
 SubsetMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw ) const
 {
-    std::vector<AMP::shared_ptr<MeshIterator>> iterators;
+    std::vector<MeshIterator> iterators;
     iterators.reserve( gcw + 1 );
     for ( int i = 0; i <= gcw; i++ ) {
         map_id_struct map_id;
@@ -402,12 +402,12 @@ SubsetMesh::getBoundaryIDIterator( const GeomType type, const int id, const int 
         auto map_it = d_boundarySets.find( map_id );
         if ( map_it == d_boundarySets.end() )
             continue;
-        iterators.push_back( AMP::make_shared<MultiVectorIterator>( map_it->second, 0 ) );
+        iterators.push_back( MultiVectorIterator( map_it->second, 0 ) );
     }
     if ( iterators.empty() )
         return MeshIterator();
     if ( iterators.size() == 1 )
-        return *iterators[0];
+        return iterators[0];
     return MultiIterator( iterators, 0 );
 }
 std::vector<int> SubsetMesh::getBlockIDs() const { return d_blockIdSets; }

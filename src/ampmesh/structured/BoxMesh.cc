@@ -606,12 +606,11 @@ inline MeshIterator BoxMesh::createIterator( const ElementBlocks &list ) const
     } else if ( list.size() == 1 ) {
         return structuredMeshIterator( list[0].first, list[0].second, this, 0 );
     } else {
-        std::vector<AMP::shared_ptr<MeshIterator>> iterator_list;
+        std::vector<MeshIterator> iterator_list;
         iterator_list.reserve( list.size() );
         for ( const auto item : list ) {
             if ( MeshElementIndex::numElements( item.first, item.second ) ) {
-                AMP::shared_ptr<structuredMeshIterator> it(
-                    new structuredMeshIterator( item.first, item.second, this, 0 ) );
+                structuredMeshIterator it( item.first, item.second, this, 0 );
                 iterator_list.push_back( it );
             }
         }

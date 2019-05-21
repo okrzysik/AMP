@@ -15,20 +15,26 @@ namespace Mesh {
  *  specifically, this class combines multiple iterators into one.  This
  *  is primarily needed for MultiMesh, but may be used for other applicaitons.
  */
-class MultiIterator : public MeshIterator
+class MultiIterator final : public MeshIterator
 {
 public:
     //! Empty MultiIterator constructor
     MultiIterator();
 
     //! Default MultiIterator constructor
-    MultiIterator( std::vector<AMP::shared_ptr<MeshIterator>> iterators, size_t global_pos = 0 );
+    MultiIterator( std::vector<MeshIterator> iterators, size_t global_pos = 0 );
 
     //! Deconstructor
     virtual ~MultiIterator();
 
+    //! Move constructor
+    MultiIterator( MultiIterator && ) = default;
+
     //! Copy constructor
     MultiIterator( const MultiIterator & );
+
+    //! Move operator
+    MultiIterator &operator=( MultiIterator && ) = default;
 
     //! Assignment operator
     MultiIterator &operator=( const MultiIterator & );
@@ -74,7 +80,7 @@ private:
     // Data members
     size_t d_localPos, d_iteratorNum;
     std::vector<size_t> d_iteratorSize;
-    std::vector<AMP::shared_ptr<MeshIterator>> d_iterators;
+    std::vector<MeshIterator> d_iterators;
     MeshIterator cur_iterator;
 
 private:

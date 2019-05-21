@@ -192,11 +192,10 @@ AMP::Mesh::MeshElement structuredFaceDOFManager::getElement( size_t dof ) const
  ****************************************************************/
 AMP::Mesh::MeshIterator structuredFaceDOFManager::getIterator() const
 {
-    std::vector<AMP::Mesh::MeshIterator::shared_ptr> faces( 3 );
+    std::vector<AMP::Mesh::MeshIterator> faces( 3 );
     for ( int i = 0; i < 3; i++ ) {
         if ( d_DOFsPerFace[i] > 0 )
-            faces[i].reset( new AMP::Mesh::MeshIterator(
-                AMP::Mesh::StructuredMeshHelper::getFaceIterator( d_mesh, 0, i ) ) );
+            faces[i] = AMP::Mesh::StructuredMeshHelper::getFaceIterator( d_mesh, 0, i );
     }
     return AMP::Mesh::MultiIterator( faces, 0 );
 }

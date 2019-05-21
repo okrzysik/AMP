@@ -93,12 +93,9 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
         if ( meshlist.size() == 1 ) {
             return getFaceIterator( meshlist[0], gcw, direction );
         } else {
-            std::vector<AMP::shared_ptr<AMP::Mesh::MeshIterator>> iterators( meshlist.size() );
-            for ( size_t i = 0; i < meshlist.size(); i++ ) {
-                auto iterator_ptr = AMP::make_shared<AMP::Mesh::MeshIterator>(
-                    getFaceIterator( meshlist[i], gcw, direction ) );
-                iterators[i] = iterator_ptr;
-            }
+            std::vector<AMP::Mesh::MeshIterator> iterators( meshlist.size() );
+            for ( size_t i = 0; i < meshlist.size(); i++ )
+                iterators[i] = getFaceIterator( meshlist[i], gcw, direction );
             return AMP::Mesh::MultiIterator( iterators );
         }
     } else if ( boxmesh != nullptr ) {
