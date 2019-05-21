@@ -33,7 +33,7 @@ StructuredGeometryMesh::StructuredGeometryMesh( MeshParameters::shared_ptr param
     for ( size_t d = 0; d < isPeriodic.size(); d++ )
         d_isPeriodic[d] = isPeriodic[d];
     auto surfaceIds = d_geometry->getLogicalSurfaceIds();
-    for ( size_t d = 0; d < isPeriodic.size(); d++ )
+    for ( size_t d = 0; d < surfaceIds.size(); d++ )
         d_surfaceId[d] = surfaceIds[d];
     // Initialize the logical mesh
     BoxMesh::initialize();

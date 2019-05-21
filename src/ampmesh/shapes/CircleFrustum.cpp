@@ -305,7 +305,7 @@ std::vector<int> CircleFrustum::getLogicalGridSize( const std::vector<int> &x ) 
     return { x[0], x[0], x[1] };
 }
 std::vector<bool> CircleFrustum::getPeriodicDim() const { return { false, false, false }; }
-std::vector<int> CircleFrustum::getLogicalSurfaceIds() const { return { 1, 1, 1, 1 }; }
+std::vector<int> CircleFrustum::getLogicalSurfaceIds() const { return { 2, 2, 2, 2, 0, 1 }; }
 
 
 /********************************************************
