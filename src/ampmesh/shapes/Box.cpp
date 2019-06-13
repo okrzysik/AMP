@@ -435,16 +435,16 @@ std::vector<bool> Grid<NDIM>::getPeriodicDim() const
 template<std::size_t NDIM>
 std::vector<int> Box<NDIM>::getLogicalSurfaceIds() const
 {
-    std::vector<int> ids( NDIM );
-    for ( size_t i = 0; i < NDIM; i++ )
+    std::vector<int> ids( 2 * NDIM );
+    for ( size_t i = 0; i < ids.size(); i++ )
         ids[i] = i;
     return ids;
 }
 template<std::size_t NDIM>
 std::vector<int> Grid<NDIM>::getLogicalSurfaceIds() const
 {
-    std::vector<int> ids( NDIM );
-    for ( size_t i = 0; i < NDIM; i++ )
+    std::vector<int> ids( 2 * NDIM );
+    for ( size_t i = 0; i < ids.size(); i++ )
         ids[i] = i;
     return ids;
 }
