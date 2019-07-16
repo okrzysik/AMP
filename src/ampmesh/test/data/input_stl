@@ -1,0 +1,10 @@
+Mesh{
+    MeshName = "Utah_teapot"
+    MeshType = "AMP"
+    FileName = "Utah_teapot.stl"
+    dim = 3
+    scale = 0.2
+    x_offset = 2
+    y_offset = 10
+    z_offset = 5.4
+}

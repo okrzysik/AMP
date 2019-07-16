@@ -37,6 +37,11 @@ class TriangleMeshElement;
 template<size_t NG, size_t NP>
 class TriangleMesh : public AMP::Mesh::Mesh
 {
+public: // Convenience typedefs
+    typedef std::array<double, NP> Point;
+    typedef std::array<ElementID, 2> Edge;
+    typedef std::array<ElementID, 3> Triangle;
+    typedef std::array<ElementID, 4> Tetrahedron;
 
 public:
     /**
@@ -56,7 +61,7 @@ public:
      * points are the same
      */
     static AMP::shared_ptr<TriangleMesh<NG, NP>>
-    generate( const std::vector<std::array<std::array<double, NP>, NG + 1>> &triangles,
+    generate( const std::vector<std::array<Point, NG + 1>> &triangles,
               const AMP_MPI &comm,
               double tol = 1e-12 );
 
@@ -263,11 +268,6 @@ protected:
     void initialize();
 
 protected:
-    typedef std::array<double, NP> Point;
-    typedef std::array<ElementID, 2> Edge;
-    typedef std::array<ElementID, 3> Triangle;
-    typedef std::array<ElementID, 4> Tetrahedron;
-
     // Return the IDs of the elements composing the current element
     void getElementsIDs( const ElementID &id, const GeomType type, ElementID *IDs ) const;
     inline void getVerticies( const ElementID &id, int &N, ElementID *IDs ) const;

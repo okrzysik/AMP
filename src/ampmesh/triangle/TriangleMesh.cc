@@ -128,8 +128,8 @@ static int intersect_sorted(
 // Helper function to wrap fread
 static inline void fread2( void *ptr, size_t size, size_t count, FILE *stream )
 {
-    size_t bytes = fread( ptr, size, count, stream );
-    AMP_ASSERT( bytes == size * count );
+    size_t N = fread( ptr, size, count, stream );
+    AMP_ASSERT( N == count );
 }
 
 
