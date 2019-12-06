@@ -497,14 +497,11 @@ static AMP::shared_ptr<std::vector<ElementID>> createLocalList( size_t N, GeomTy
     return list;
 }
 template<size_t NG>
-static void
+static StoreCompressedList<ElementID>
 computeNodeParents( size_t N_points,
                     const std::vector<std::array<ElementID, NG + 1>> &tri,
                     const std::map<ElementID, std::array<ElementID, NG + 1>> &remote_tri,
-                    int rank,
-                    std::vector<size_t> &size,
-                    std::vector<size_t> &offset,
-                    std::vector<ElementID> &ids )
+                    int rank )
 {
     // Construct a parent list
     std::vector<std::vector<ElementID>> parents( N_points );
@@ -524,34 +521,18 @@ computeNodeParents( size_t N_points,
                 parents[node_id.local_id()].push_back( tri_id );
         }
     }
-    // Compress memory
-    size_t Nt = 0;
-    for ( size_t i = 0; i < N_points; i++ )
-        Nt += parents[i].size();
-    size.resize( N_points );
-    offset.resize( N_points );
-    ids.resize( Nt );
-    size_t count = 0;
-    for ( size_t i = 0; i < N_points; i++ ) {
-        size[i]   = parents[i].size();
-        offset[i] = count;
-        for ( size_t j = 0; j < size[i]; j++, count++ )
-            ids[count] = parents[i][j];
-    }
+    // Return the parents
+    return StoreCompressedList<ElementID>( parents );
 }
 template<size_t NG, size_t NP>
-void TriangleMesh<NG, NP>::initialize()
+void TriangleMesh<NG, NP>::initializeBoundingBox()
 {
-    int rank = d_comm.getRank();
-    int size = d_comm.getSize();
-    // Get the global size
-    d_N_global[0] = d_comm.sumReduce( d_vert.size() );
-    d_N_global[1] = d_comm.sumReduce( d_edge.size() );
-    d_N_global[2] = d_comm.sumReduce( d_tri.size() );
-    d_N_global[3] = d_comm.sumReduce( d_tet.size() );
-    // Get the bounding boxes
     d_box.resize( 2 * NP );
     d_box_local.resize( 2 * NP );
+    for ( size_t d = 0; d < NP; d++ ) {
+        d_box_local[2 * d + 0] = 1e100;
+        d_box_local[2 * d + 1] = -1e100;
+    }
     for ( const auto &p : d_vert ) {
         for ( size_t d = 0; d < NP; d++ ) {
             d_box_local[2 * d + 0] = std::min( d_box_local[2 * d + 0], p[d] );
@@ -562,6 +543,20 @@ void TriangleMesh<NG, NP>::initialize()
         d_box[2 * d + 0] = d_comm.minReduce( d_box_local[2 * d + 0] );
         d_box[2 * d + 1] = d_comm.maxReduce( d_box_local[2 * d + 1] );
     }
+}
+template<size_t NG, size_t NP>
+void TriangleMesh<NG, NP>::initialize()
+{
+    int rank = d_comm.getRank();
+    int size = d_comm.getSize();
+    // Create the edges
+    // Get the global size
+    d_N_global[0] = d_comm.sumReduce( d_vert.size() );
+    d_N_global[1] = d_comm.sumReduce( d_edge.size() );
+    d_N_global[2] = d_comm.sumReduce( d_tri.size() );
+    d_N_global[3] = d_comm.sumReduce( d_tet.size() );
+    // Get the bounding boxes
+    initializeBoundingBox();
     // Initialize the iterators
     int max_gcw = size == 1 ? 0 : d_max_gcw;
     d_iterators.resize( ( max_gcw + 1 ) * ( NG + 1 ) );
@@ -580,29 +575,11 @@ void TriangleMesh<NG, NP>::initialize()
         AMP_ERROR( "Not finished" );
     }
     // Compute the parents for the verticies
-    computeNodeParents<1>( d_vert.size(),
-                           d_edge,
-                           d_remote_edge,
-                           rank,
-                           d_parent_size[0][1],
-                           d_parent_offset[0][1],
-                           d_parent_ids[0][1] );
+    d_parents[0][1] = computeNodeParents<1>( d_vert.size(), d_edge, d_remote_edge, rank );
     if ( NG > 2 )
-        computeNodeParents<2>( d_vert.size(),
-                               d_tri,
-                               d_remote_tri,
-                               rank,
-                               d_parent_size[0][2],
-                               d_parent_offset[0][2],
-                               d_parent_ids[0][2] );
+        d_parents[0][2] = computeNodeParents<2>( d_vert.size(), d_tri, d_remote_tri, rank );
     if ( NG > 3 )
-        computeNodeParents<3>( d_vert.size(),
-                               d_tet,
-                               d_remote_tet,
-                               rank,
-                               d_parent_size[0][3],
-                               d_parent_offset[0][3],
-                               d_parent_ids[0][3] );
+        d_parents[0][3] = computeNodeParents<3>( d_vert.size(), d_tet, d_remote_tet, rank );
     // Compute the parents for edges
     AMP_WARNING( "Not finished" );
 
@@ -673,9 +650,7 @@ TriangleMesh<NG, NP>::TriangleMesh( const TriangleMesh &rhs ) : Mesh( rhs.d_para
     d_remote_tet  = rhs.d_remote_tet;
     for ( size_t i = 0; i < NG; i++ ) {
         for ( size_t j = 0; j < NG; j++ ) {
-            d_parent_size[i][j]   = rhs.d_parent_size[i][j];
-            d_parent_offset[i][j] = rhs.d_parent_offset[i][j];
-            d_parent_ids[i][j]    = rhs.d_parent_ids[i][j];
+            d_parents[i][j] = rhs.d_parents[i][j];
         }
     }
 }
@@ -730,13 +705,7 @@ std::vector<ElementID> TriangleMesh<NG, NP>::getElementParents( const ElementID 
     if ( type2 <= type1 )
         AMP_ERROR( "Trying to get parents of the same or smaller type as the current element" );
     // Get the parents
-    size_t N      = d_parent_size[type1][type2][id.local_id()];
-    size_t offset = d_parent_offset[type1][type2][id.local_id()];
-    auto ptr      = &d_parent_ids[type1][type2][offset];
-    std::vector<ElementID> parents( N );
-    for ( size_t i = 0; i < N; i++ )
-        parents[i] = ptr[i];
-    return parents;
+    return d_parents[type1][type2].get( id.local_id() );
 }
 template<size_t NG, size_t NP>
 std::vector<MeshElement> TriangleMesh<NG, NP>::getElementParents( const MeshElement &elem,
@@ -877,13 +846,40 @@ void TriangleMesh<NG, NP>::displaceMesh( const std::vector<double> &x )
         for ( size_t d = 0; d < NP; d++ )
             p.second[d] += x[d];
     }
+    for ( size_t d = 0; d < NP; d++ ) {
+        d_box[2 * d + 0] += x[d];
+        d_box[2 * d + 1] += x[d];
+        d_box_local[2 * d + 0] += x[d];
+        d_box_local[2 * d + 1] += x[d];
+    }
 }
 #ifdef USE_AMP_VECTORS
 template<size_t NG, size_t NP>
 void TriangleMesh<NG, NP>::displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x )
 {
-    NULL_USE( x );
-    AMP_ERROR( "Not finished" );
+#ifdef USE_AMP_DISCRETIZATION
+    // Update the local coordinates
+    int rank  = d_comm.getRank();
+    auto DOFs = x->getDOFManager();
+    std::vector<size_t> dofs;
+    double offset[NP];
+    for ( size_t i = 0; i < d_vert.size(); i++ ) {
+        MeshElementID id( true, AMP::Mesh::GeomType::Vertex, i, rank, d_meshID );
+        DOFs->getDOFs( id, dofs );
+        AMP_ASSERT( dofs.size() == NP );
+        x->getValuesByGlobalID( NP, dofs.data(), offset );
+        for ( size_t d = 0; d < NP; d++ )
+            d_vert[i][d] += offset[d];
+    }
+    // Update the remote coordinates
+    if ( !d_remote_vert.empty() ) {
+        AMP_ERROR( "Not finished" );
+    }
+    // Update the bounding box
+    initializeBoundingBox();
+#else
+    AMP_ERROR( "displaceMesh requires DISCRETIZATION" );
+#endif
 }
 #endif
 

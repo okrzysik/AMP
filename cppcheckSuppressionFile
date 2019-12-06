@@ -129,7 +129,9 @@ noConstructor:*/AMP/utils/RNG.h
 duplicateExpression:*/utils/Array.hpp
 passedByValue:*/utils/test/test_AMP_MPI.cc
 copyCtorPointerCopying:*/src/utils/AMP_MPI.cc
-noExplicitConstructor:*/utils/AMP_MPI.h
+noExplicitConstructor:*/AMP/utils/Array.h
+noExplicitConstructor:*/AMP/utils/ArraySize.h
+noExplicitConstructor:*/AMP/utils/AMP_MPI.h
 noExplicitConstructor:*/utils/test/test_AMP_MPI.cc
 passedByValue:*/utils/threadpool/test/test_thread_pool.cpp
 memleak:*/utils/test/test_AMPManager.cc
@@ -144,7 +146,6 @@ nullPointer:*/src/utils/Scanner.cc
 nullPointerRedundantCheck:*/src/utils/Scanner.cc
 duplicateExpression:*/utils/Array.hpp
 nullPointer:*/utils/Array.hpp
-noExplicitConstructor:*/utils/Array.h
 unreadVariable:*/utils/ReadTestMesh.cc
 
 

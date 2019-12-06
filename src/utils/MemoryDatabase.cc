@@ -879,7 +879,6 @@ void MemoryDatabase::getFloatArray( const std::string &key, float *data, const i
  * Member functions that manage integer values within the database.	*
  *									*
  ************************************************************************/
-
 bool MemoryDatabase::isInteger( const std::string &key )
 {
     KeyData *keydata = findKeyData( key );
@@ -961,12 +960,12 @@ void MemoryDatabase::getIntegerArray( const std::string &key, int *data, const i
     }
 }
 
+
 /************************************************************************
  *									*
  * Member functions that manage string values within the database.	*
  *									*
  ************************************************************************/
-
 bool MemoryDatabase::isString( const std::string &key )
 {
     KeyData *keydata = findKeyData( key );
@@ -1059,6 +1058,7 @@ bool MemoryDatabase::keyAccessed( const std::string &key )
     return ( keydata ? keydata->d_accessed : false );
 }
 
+
 /************************************************************************
  *									*
  * Search the current database for a matching key.  If found, delete	*
@@ -1084,7 +1084,6 @@ bool MemoryDatabase::deleteKeyIfFound( const std::string &key )
  * pointer to the record.  If no such key data exists, then return NULL.	*
  *									*
  ************************************************************************/
-
 MemoryDatabase::KeyData *MemoryDatabase::findKeyData( const std::string &key )
 {
     for ( auto &elem : d_keyvalues ) {
@@ -1094,6 +1093,7 @@ MemoryDatabase::KeyData *MemoryDatabase::findKeyData( const std::string &key )
     return ( nullptr );
 }
 
+
 /************************************************************************
  *									*
  * Find the key data associated with the specified key and return a	*
@@ -1101,7 +1101,6 @@ MemoryDatabase::KeyData *MemoryDatabase::findKeyData( const std::string &key )
  * an error message.							*
  *									*
  ************************************************************************/
-
 MemoryDatabase::KeyData *MemoryDatabase::findKeyDataOrExit( const std::string &key )
 {
     for ( auto &elem : d_keyvalues ) {
@@ -1112,16 +1111,17 @@ MemoryDatabase::KeyData *MemoryDatabase::findKeyDataOrExit( const std::string &k
     return ( nullptr );
 }
 
+
 /************************************************************************
  *									*
  * Print the entire database to the specified output stream.	        *
  *									*
  ************************************************************************/
-
 void MemoryDatabase::printClassData( std::ostream &os )
 {
     printDatabase( os, 0, PRINT_DEFAULT | PRINT_INPUT | PRINT_UNUSED );
 }
+
 
 /************************************************************************
  *									*
@@ -1139,18 +1139,17 @@ void MemoryDatabase::printUnusedKeys( std::ostream &os ) const
  * Print default database keys to the specified output stream.     	*
  *									*
  ************************************************************************/
-
 void MemoryDatabase::printDefaultKeys( std::ostream &os ) const
 {
     printDatabase( os, 0, PRINT_DEFAULT );
 }
+
 
 /************************************************************************
  *									*
  * Indent the output stream by the specified indentation factor.		*
  *									*
  ************************************************************************/
-
 void MemoryDatabase::indentStream( std::ostream &os, const int indent )
 {
     for ( int i = 0; i < indent; i++ ) {
@@ -1158,216 +1157,215 @@ void MemoryDatabase::indentStream( std::ostream &os, const int indent )
     }
 }
 
+
 /************************************************************************
  *									*
  * Print database data to the specified output stream.			*
  *									*
  ************************************************************************/
-
-void MemoryDatabase::printDatabase( std::ostream &, const int, const int ) const
+void MemoryDatabase::printDatabase( std::ostream &os, const int indent, const int toprint ) const
 {
-
-#if 0
-    /*
-     * Get the maximum key width in the output (excluding databases)
-     */
-
+    // Get the maximum key width in the output (excluding databases)
     int width = 0;
-    for (std::list<KeyData>::iterator k = d_keyvalues.begin(); k!=d_keyvalues.end(); k++) {
-      if ( ( ((*k).d_from_default) && (toprint & PRINT_DEFAULT))
-          || ( ((*k).d_accessed)     && (toprint & PRINT_INPUT  ))
-          || (!((*k).d_accessed)     && (toprint & PRINT_UNUSED ))) {
-        if ((*k).d_type != Database::AMP_DATABASE) {
-          const int keywidth = (*k).d_key.length();
-          if (keywidth > width) width = keywidth;
+    for ( const auto &k : d_keyvalues ) {
+        if ( ( ( k.d_from_default ) && ( toprint & PRINT_DEFAULT ) ) ||
+             ( ( k.d_accessed ) && ( toprint & PRINT_INPUT ) ) ||
+             ( !( k.d_accessed ) && ( toprint & PRINT_UNUSED ) ) ) {
+            if ( k.d_type != Database::AMP_DATABASE ) {
+                const int keywidth = k.d_key.length();
+                if ( keywidth > width )
+                    width = keywidth;
+            }
         }
-      }
     }
 
-    /*
-     * Iterate over all non-database keys in the database and output key values
-     */
-
-    indentStream(os, indent);
+    // Iterate over all non-database keys in the database and output key values
+    indentStream( os, indent );
     os << d_database_name << " {\n";
-    for (std::list<KeyData>::iterator i = d_keyvalues.begin(); i!=d_keyvalues.end(); i++) {
+    for ( const auto &i : d_keyvalues ) {
 
-      if ( ( ((*i).d_from_default) && (toprint & PRINT_DEFAULT))
-          || ( ((*i).d_accessed)     && (toprint & PRINT_INPUT  ))
-          || (!((*i).d_accessed)     && (toprint & PRINT_UNUSED ))) {
+        if ( ( ( i.d_from_default ) && ( toprint & PRINT_DEFAULT ) ) ||
+             ( ( i.d_accessed ) && ( toprint & PRINT_INPUT ) ) ||
+             ( !( i.d_accessed ) && ( toprint & PRINT_UNUSED ) ) ) {
 
 #ifndef LACKS_SSTREAM
-        std::ostringstream sstream;
+            std::ostringstream sstream;
 #else
-        char sstream_buffer[SSTREAM_BUFFER];
-        std::ostrstream sstream(sstream_buffer, SSTREAM_BUFFER);
+            char sstream_buffer[SSTREAM_BUFFER];
+            std::ostrstream sstream( sstream_buffer, SSTREAM_BUFFER );
 #endif
 
-        switch((*i).d_type) {
+            switch ( i.d_type ) {
 
-          case Database::AMP_INVALID: {
-                                        break;
-                                      }
+            case Database::AMP_INVALID: {
+                break;
+            }
 
-          case Database::AMP_DATABASE: {
-                                         break;
-                                       }
+            case Database::AMP_DATABASE: {
+                break;
+            }
 
-          case Database::AMP_BOOL: {
-                                     indentStream(sstream, indent+3);
-                                     sstream << (*i).d_key;
-                                     indentStream(sstream, width-(*i).d_key.length());
-                                     sstream << " = ";
-                                     const int n = (*i).d_boolean.size();
-                                     for (int j = 0; j < n; j++) {
-                                       sstream << ((*i).d_boolean[j] ? "TRUE" : "FALSE");
-                                       if (j < n-1) sstream << ", ";
-                                     }
-                                     break;
-                                   }
+            case Database::AMP_BOOL: {
+                indentStream( sstream, indent + 3 );
+                sstream << i.d_key;
+                indentStream( sstream, width - i.d_key.length() );
+                sstream << " = ";
+                const int n = i.d_boolean.size();
+                for ( int j = 0; j < n; j++ ) {
+                    sstream << ( i.d_boolean[j] ? "TRUE" : "FALSE" );
+                    if ( j < n - 1 )
+                        sstream << ", ";
+                }
+                break;
+            }
 
-          case Database::AMP_BOX: {
-                                    indentStream(sstream, indent+3);
-                                    sstream << (*i).d_key;
-                                    indentStream(sstream, width-(*i).d_key.length());
-                                    sstream << " = ";
-                                    const int n = (*i).d_box.size();
-                                    for (int j = 0; j < n; j++) {
-                                      const int m = (*i).d_box[j].getDimension();
-                                      sstream << "[(";
-                                      for (int k = 0; k < m; k++) {
-                                        sstream << (*i).d_box[j].lower(k);
-                                        if (k < m-1) sstream << ",";
-                                      }
-                                      sstream << "),(";
-                                      for (int l = 0; l < m; l++) {
-                                        sstream << (*i).d_box[j].upper(l);
-                                        if (l < m-1) sstream << ",";
-                                      }
-                                      sstream << ")]";
-                                      if (j < n-1) sstream << ", ";
-                                    }
-                                    break;
-                                  }
+            case Database::AMP_BOX: {
+                indentStream( sstream, indent + 3 );
+                sstream << i.d_key;
+                indentStream( sstream, width - i.d_key.length() );
+                sstream << " = ";
+                const int n = i.d_box.size();
+                for ( int j = 0; j < n; j++ ) {
+                    const int m = i.d_box[j].getDimension();
+                    sstream << "[(";
+                    for ( int k = 0; k < m; k++ ) {
+                        sstream << i.d_box[j].lower( k );
+                        if ( k < m - 1 )
+                            sstream << ",";
+                    }
+                    sstream << "),(";
+                    for ( int l = 0; l < m; l++ ) {
+                        sstream << i.d_box[j].upper( l );
+                        if ( l < m - 1 )
+                            sstream << ",";
+                    }
+                    sstream << ")]";
+                    if ( j < n - 1 )
+                        sstream << ", ";
+                }
+                break;
+            }
 
-          case Database::AMP_CHAR: {
-                                     indentStream(sstream, indent+3);
-                                     sstream << (*i).d_key;
-                                     indentStream(sstream, width-(*i).d_key.length());
-                                     sstream << " = ";
-                                     const int n = (*i).d_char.size();
-                                     for (int j = 0; j < n; j++) {
-                                       sstream << "'" << (*i).d_char[j] << "'";
-                                       if (j < n-1) sstream << ", ";
-                                     }
-                                     break;
-                                   }
+            case Database::AMP_CHAR: {
+                indentStream( sstream, indent + 3 );
+                sstream << i.d_key;
+                indentStream( sstream, width - i.d_key.length() );
+                sstream << " = ";
+                const int n = i.d_char.size();
+                for ( int j = 0; j < n; j++ ) {
+                    sstream << "'" << i.d_char[j] << "'";
+                    if ( j < n - 1 )
+                        sstream << ", ";
+                }
+                break;
+            }
 
-          case Database::AMP_COMPLEX: {
-                                        indentStream(sstream, indent+3);
-                                        sstream << (*i).d_key;
-                                        indentStream(sstream, width-(*i).d_key.length());
-                                        sstream << " = ";
-                                        const int n = (*i).d_complex.size();
-                                        for (int j = 0; j < n; j++) {
-                                          sstream << (*i).d_complex[j];
-                                          if (j < n-1) sstream << ", ";
-                                        }
-                                        break;
-                                      }
+            case Database::AMP_COMPLEX: {
+                indentStream( sstream, indent + 3 );
+                sstream << i.d_key;
+                indentStream( sstream, width - i.d_key.length() );
+                sstream << " = ";
+                const int n = i.d_complex.size();
+                for ( int j = 0; j < n; j++ ) {
+                    sstream << i.d_complex[j];
+                    if ( j < n - 1 )
+                        sstream << ", ";
+                }
+                break;
+            }
 
-          case Database::AMP_DOUBLE: {
-                                       indentStream(sstream, indent+3);
-                                       sstream << (*i).d_key;
-                                       indentStream(sstream, width-(*i).d_key.length());
-                                       sstream << " = ";
-                                       const int n = (*i).d_double.size();
-                                       for (int j = 0; j < n; j++) {
-                                         sstream << (*i).d_double[j];
-                                         if (j < n-1) sstream << ", ";
-                                       }
-                                       break;
-                                     }
+            case Database::AMP_DOUBLE: {
+                indentStream( sstream, indent + 3 );
+                sstream << i.d_key;
+                indentStream( sstream, width - i.d_key.length() );
+                sstream << " = ";
+                const int n = i.d_double.size();
+                for ( int j = 0; j < n; j++ ) {
+                    sstream << i.d_double[j];
+                    if ( j < n - 1 )
+                        sstream << ", ";
+                }
+                break;
+            }
 
-          case Database::AMP_FLOAT: {
-                                      indentStream(sstream, indent+3);
-                                      sstream << (*i).d_key;
-                                      indentStream(sstream, width-(*i).d_key.length());
-                                      sstream << " = ";
-                                      const int n = (*i).d_float.size();
-                                      for (int j = 0; j < n; j++) {
-                                        sstream << (*i).d_float[j];
-                                        if (j < n-1) sstream << ", ";
-                                      }
-                                      break;
-                                    }
+            case Database::AMP_FLOAT: {
+                indentStream( sstream, indent + 3 );
+                sstream << i.d_key;
+                indentStream( sstream, width - i.d_key.length() );
+                sstream << " = ";
+                const int n = i.d_float.size();
+                for ( int j = 0; j < n; j++ ) {
+                    sstream << i.d_float[j];
+                    if ( j < n - 1 )
+                        sstream << ", ";
+                }
+                break;
+            }
 
-          case Database::AMP_INT: {
-                                    indentStream(sstream, indent+3);
-                                    sstream << (*i).d_key;
-                                    indentStream(sstream, width-(*i).d_key.length());
-                                    sstream << " = ";
-                                    const int n = (*i).d_integer.size();
-                                    for (int j = 0; j < n; j++) {
-                                      sstream << (*i).d_integer[j];
-                                      if (j < n-1) sstream << ", ";
-                                    }
-                                    break;
-                                  }
+            case Database::AMP_INT: {
+                indentStream( sstream, indent + 3 );
+                sstream << i.d_key;
+                indentStream( sstream, width - i.d_key.length() );
+                sstream << " = ";
+                const int n = i.d_integer.size();
+                for ( int j = 0; j < n; j++ ) {
+                    sstream << i.d_integer[j];
+                    if ( j < n - 1 )
+                        sstream << ", ";
+                }
+                break;
+            }
 
-          case Database::AMP_STRING: {
-                                       indentStream(sstream, indent+3);
-                                       sstream << (*i).d_key;
-                                       indentStream(sstream, width-(*i).d_key.length());
-                                       sstream << " = ";
-                                       const int n = (*i).d_string.size();
-                                       for (int j = 0; j < n; j++) {
-                                         sstream << "\"" << (*i).d_string[j] << "\"";
-                                         if (j < n-1) sstream << ", ";
-                                       }
-                                       break;
-                                     }
-        }
+            case Database::AMP_STRING: {
+                indentStream( sstream, indent + 3 );
+                sstream << i.d_key;
+                indentStream( sstream, width - i.d_key.length() );
+                sstream << " = ";
+                const int n = i.d_string.size();
+                for ( int j = 0; j < n; j++ ) {
+                    sstream << "\"" << i.d_string[j] << "\"";
+                    if ( j < n - 1 )
+                        sstream << ", ";
+                }
+                break;
+            }
+            }
 
-        /*
-         * Output whether the key was used or default in column 60
-         */
-
-        if ((*i).d_type != Database::AMP_DATABASE) {
+            // Output whether the key was used or default in column 60
+            if ( i.d_type != Database::AMP_DATABASE ) {
 #ifndef LACKS_SSTREAM
-          const int tab = 59 - sstream.str().length();
+                const int tab = 59 - sstream.str().length();
 #else
-          const int tab = 59 - sstream.pcount();
+                const int tab = 59 - sstream.pcount();
 #endif
-          if (tab > 0) indentStream(sstream, tab);
-          if ((*i).d_from_default) {
-            sstream << " // from default";
-          } else if ((*i).d_accessed) {
-            sstream << " // input used";
-          } else {
-            sstream << " // input not used";
-          }
+                if ( tab > 0 )
+                    indentStream( sstream, tab );
+                if ( i.d_from_default ) {
+                    sstream << " // from default";
+                } else if ( i.d_accessed ) {
+                    sstream << " // input used";
+                } else {
+                    sstream << " // input not used";
+                }
 
-          //            sstream << std::endl << ends;
-          sstream << std::endl;
-          os << sstream.str();
+                //            sstream << std::endl << ends;
+                sstream << std::endl;
+                os << sstream.str();
+            }
         }
-      }
     }
 
-    /*
-     * Finally, output all databases in the current key list
-     */
-
-    for (std::list<KeyData>::iterator j = d_keyvalues.begin(); j!=d_keyvalues.end(); j++) {
-      if ((*j).d_type == Database::AMP_DATABASE) {
-        AMP::shared_ptr<MemoryDatabase> db = (*j).d_database;
-        db->printDatabase(os, indent+3, toprint);
-      }
+    // Finally, output all databases in the current key list
+    for ( const auto &j : d_keyvalues ) {
+        if ( j.d_type == Database::AMP_DATABASE ) {
+            auto db = AMP::dynamic_pointer_cast<MemoryDatabase>( j.d_database );
+            db->printDatabase( os, indent + 3, toprint );
+        }
     }
 
-    indentStream(os, indent);
+    indentStream( os, indent );
     os << "}\n";
-#endif
 }
+
+
 } // namespace AMP

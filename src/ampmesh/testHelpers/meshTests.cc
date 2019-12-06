@@ -400,9 +400,9 @@ void meshTests::MeshCountTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mes
         const size_t N_ghost1 = comm.sumReduce( mesh->numGhostElements( type, 1 ) );
         const size_t N_sum    = comm.sumReduce( N_local );
         if ( N_global > 0 )
-            ut->passes( "Non-trival mesh created" );
+            ut->passes( "Non-trivial mesh created" );
         else
-            ut->failure( "Non-trival mesh created" );
+            ut->failure( "Non-trivial mesh created" );
         if ( N_sum == N_global )
             ut->passes( "Sum of local mesh counts matches global count" );
         else

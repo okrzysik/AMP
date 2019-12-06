@@ -30,6 +30,52 @@ template<size_t NG, size_t NP>
 class TriangleMeshElement;
 
 
+// Class to store parent data
+template<class TYPE>
+class StoreCompressedList
+{
+public:
+    inline StoreCompressedList() {}
+    inline explicit StoreCompressedList( const std::vector<std::vector<TYPE>> &data )
+    {
+        size_t Nt = 0;
+        for ( size_t i = 0; i < data.size(); i++ )
+            Nt += data[i].size();
+        d_size.resize( data.size() );
+        d_offset.resize( data.size() );
+        d_data.resize( Nt );
+        size_t count = 0;
+        for ( size_t i = 0; i < data.size(); i++ ) {
+            d_size[i]   = data[i].size();
+            d_offset[i] = count;
+            for ( size_t j = 0; j < d_size[i]; j++, count++ )
+                d_data[count] = data[i][j];
+        }
+    }
+    inline const ElementID *begin( size_t i ) const
+    {
+        if ( i >= d_size.size() )
+            return nullptr;
+        return &d_data[d_offset[i]];
+    }
+    inline const ElementID *end( size_t i ) const
+    {
+        if ( i >= d_size.size() )
+            return nullptr;
+        return &d_data[d_offset[i] + d_size[i]];
+    }
+    inline std::vector<TYPE> get( size_t i ) const
+    {
+        return std::vector<TYPE>( begin( i ), end( i ) );
+    }
+
+private:
+    std::vector<size_t> d_size;
+    std::vector<size_t> d_offset;
+    std::vector<TYPE> d_data;
+};
+
+
 /**
  * \class TriangleMesh
  * \brief A class used to represent an unstructured mesh of Triangles/Tetrahedrals
@@ -266,6 +312,7 @@ protected:
                            const std::vector<std::array<int64_t, NG + 1>> &tri_nab,
                            const AMP_MPI &comm );
     void initialize();
+    void initializeBoundingBox();
 
 protected:
     // Return the IDs of the elements composing the current element
@@ -292,6 +339,7 @@ protected:
     friend TriangleMeshIterator<NG, NP>;
     friend TriangleMeshElement<NG, NP>;
 
+
 private: // Internal data
     // Store the locat start indicies
     std::array<size_t, 4> d_N_global;
@@ -310,9 +358,7 @@ private: // Internal data
     std::map<ElementID, Tetrahedron> d_remote_tet;
 
     // Store the parent data
-    std::vector<size_t> d_parent_size[NG][NG];
-    std::vector<size_t> d_parent_offset[NG][NG];
-    std::vector<ElementID> d_parent_ids[NG][NG];
+    StoreCompressedList<ElementID> d_parents[NG][NG + 1];
 
     // Store children data
     std::vector<std::array<ElementID, 3>> d_tri_edge;

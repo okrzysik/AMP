@@ -95,7 +95,7 @@ inline void FunctionTable::transform( LAMBDA &fun,
                                       const Array<TYPE, FUN> &y,
                                       Array<TYPE, FUN> &z )
 {
-    if ( !x.sizeMatch( y ) )
+    if ( x.size() != y.size() )
         throw std::logic_error( "Sizes of x and y do not match" );
     z.resize( x.size() );
     const size_t N = x.length();
@@ -138,7 +138,7 @@ inline typename std::enable_if<std::is_integral<TYPE>::value, bool>::type
 FunctionTableCompare( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, TYPE )
 {
     bool pass = true;
-    if ( !a.sizeMatch( b ) )
+    if ( a.size() != b.size() )
         throw std::logic_error( "Sizes of x and y do not match" );
     for ( size_t i = 0; i < a.length(); i++ )
         pass = pass && a( i ) == b( i );
@@ -149,7 +149,7 @@ inline typename std::enable_if<std::is_floating_point<TYPE>::value, bool>::type
 FunctionTableCompare( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, TYPE tol )
 {
     bool pass = true;
-    if ( !a.sizeMatch( b ) )
+    if ( a.size() != b.size() )
         throw std::logic_error( "Sizes of x and y do not match" );
     for ( size_t i = 0; i < a.length(); i++ )
         pass = pass && ( std::abs( a( i ) - b( i ) ) < tol );
