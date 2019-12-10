@@ -27,7 +27,7 @@ inline std::string AMP::Utilities::stringf( const char *format, ... )
 {
     va_list ap;
     va_start( ap, format );
-    char tmp[1024];
+    char tmp[4096];
     vsprintf( tmp, format, ap );
     va_end( ap );
     return std::string( tmp );

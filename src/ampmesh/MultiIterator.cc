@@ -10,22 +10,19 @@ namespace Mesh {
  * Constructors                                          *
  ********************************************************/
 MultiIterator::MultiIterator() : d_localPos( 0 ), d_iteratorNum( 0 ) { d_typeID = getTypeID(); }
-MultiIterator::MultiIterator( std::vector<AMP::shared_ptr<MeshIterator>> iterators,
-                              size_t global_pos )
+MultiIterator::MultiIterator( const std::vector<MeshIterator>& iterators, size_t global_pos )
 {
     d_typeID   = getTypeID();
     d_iterator = nullptr;
     d_iterators.resize( 0 );
     for ( auto &iterator : iterators ) {
-        if ( iterator == nullptr )
-            continue;
-        if ( iterator->size() > 0 )
+        if ( iterator.size() > 0 )
             d_iterators.push_back( iterator );
     }
     d_iteratorSize = std::vector<size_t>( d_iterators.size(), 0 );
     d_size         = 0;
     for ( size_t i = 0; i < d_iterators.size(); i++ ) {
-        d_iteratorSize[i] = d_iterators[i]->size();
+        d_iteratorSize[i] = d_iterators[i].size();
         d_size += d_iteratorSize[i];
     }
     d_pos        = global_pos;
@@ -47,7 +44,7 @@ MultiIterator::MultiIterator( std::vector<AMP::shared_ptr<MeshIterator>> iterato
             d_iteratorNum++;
             d_localPos -= d_iteratorSize[d_iteratorNum];
         }
-        cur_iterator = d_iterators[d_iteratorNum]->begin();
+        cur_iterator = d_iterators[d_iteratorNum].begin();
         for ( size_t i = 0; i < d_localPos; i++ )
             ++cur_iterator;
     }
@@ -123,7 +120,7 @@ MeshIterator &MultiIterator::operator++()
         d_pos++;
         d_localPos = 0;
         d_iteratorNum++;
-        cur_iterator = d_iterators[d_iteratorNum]->begin();
+        cur_iterator = d_iterators[d_iteratorNum].begin();
     } else {
         // We are within the same iterator
         d_localPos++;
@@ -150,14 +147,14 @@ MeshIterator &MultiIterator::operator--()
         d_pos         = d_size + 1;
         d_iteratorNum = d_iterators.size() - 1;
         d_localPos    = d_iteratorSize[d_iteratorNum] - 1;
-        cur_iterator  = d_iterators[d_iteratorNum]->end();
+        cur_iterator  = d_iterators[d_iteratorNum].end();
         --cur_iterator;
     } else if ( d_localPos == 0 ) {
         // We need to change the internal iterator
         d_pos--;
         d_iteratorNum--;
         d_localPos   = d_iteratorSize[d_iteratorNum] - 1;
-        cur_iterator = d_iterators[d_iteratorNum]->end();
+        cur_iterator = d_iterators[d_iteratorNum].end();
         --cur_iterator;
     } else {
         // We are within the same iterator
@@ -209,7 +206,7 @@ MeshIterator &MultiIterator::operator+=( int n )
                 n2 -= d_iteratorSize[d_iteratorNum];
                 d_iteratorNum++;
             }
-            cur_iterator = d_iterators[d_iteratorNum]->begin();
+            cur_iterator = d_iterators[d_iteratorNum].begin();
             d_localPos   = 0;
         }
         // Increment local iterator
@@ -225,7 +222,7 @@ MeshIterator &MultiIterator::operator+=( int n )
             d_pos         = 0;
             d_iteratorNum = 0;
             d_localPos    = 0;
-            cur_iterator  = d_iterators[0]->begin();
+            cur_iterator  = d_iterators[0].begin();
             return *this;
         }
         // Move to the correct iterator
@@ -237,7 +234,7 @@ MeshIterator &MultiIterator::operator+=( int n )
                 n2 -= d_iteratorSize[d_iteratorNum];
                 d_iteratorNum--;
             }
-            cur_iterator = d_iterators[d_iteratorNum]->end();
+            cur_iterator = d_iterators[d_iteratorNum].end();
             d_localPos   = d_iteratorSize[d_iteratorNum];
         }
         // Increment local iterator

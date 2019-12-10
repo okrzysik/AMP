@@ -19,13 +19,20 @@ class Tube : public Geometry
 {
 public:
     /**
-     * \brief Construct a SphereSurface
+     * \brief Construct a Tube geometry
+     * \param db        Input database
+     */
+    explicit Tube( AMP::shared_ptr<AMP::Database> db );
+
+    /**
+     * \brief Construct a Tube geometry
      * \param r_min     The minimum radius
      * \param r_max     The maximum radius
      * \param z_min     The minimum z coordinate
      * \param z_max     The maximum z coordinate
      */
     explicit Tube( double r_min, double r_max, double z_min, double z_max );
+
 
     // Functions inherited from Geometry
     virtual std::string getName() const override final { return "Tube"; }
@@ -39,6 +46,10 @@ public:
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
     virtual void displaceMesh( const double *x ) override final;
+    virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
+    virtual std::vector<bool> getPeriodicDim() const override final;
+    virtual std::vector<int> getLogicalSurfaceIds() const override final;
+    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data

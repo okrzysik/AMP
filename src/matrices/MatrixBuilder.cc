@@ -32,8 +32,8 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 {
 #if defined( USE_EXT_TRILINOS )
     // Get the DOFs
-    AMP::Discretization::DOFManager::shared_ptr leftDOF  = leftVec->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr rightDOF = rightVec->getDOFManager();
+    auto leftDOF  = leftVec->getDOFManager();
+    auto rightDOF = rightVec->getDOFManager();
     if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
         AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested, and needs to "
                    "be fixed" );
@@ -105,8 +105,8 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                          AMP::LinearAlgebra::Vector::shared_ptr rightVec )
 {
     // Get the DOFs
-    AMP::Discretization::DOFManager::shared_ptr leftDOF  = leftVec->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr rightDOF = rightVec->getDOFManager();
+    auto leftDOF  = leftVec->getDOFManager();
+    auto rightDOF = rightVec->getDOFManager();
     if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
         AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested, and needs to "
                    "be fixed" );
@@ -116,13 +116,11 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     else
         AMP_ERROR( "serial dense matrix does not support parallel matrices" );
     // Create the matrix parameters
-    AMP::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params(
-        new AMP::LinearAlgebra::MatrixParameters( leftDOF, rightDOF, comm ) );
+    auto params = AMP::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
     params->d_VariableLeft  = leftVec->getVariable();
     params->d_VariableRight = rightVec->getVariable();
     // Create the matrix
-    AMP::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix> newMatrix(
-        new AMP::LinearAlgebra::DenseSerialMatrix( params ) );
+    auto newMatrix = AMP::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( params );
     // Initialize the matrix
     newMatrix->zero();
     newMatrix->makeConsistent();

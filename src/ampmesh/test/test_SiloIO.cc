@@ -56,7 +56,7 @@ AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr m
 }
 
 
-void test_Silo( AMP::UnitTest *ut, std::string input_file )
+void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
 {
 
     AMP::PIO::logOnlyNodeZero( "output_test_SiloIO" );
@@ -235,7 +235,7 @@ int main( int argc, char **argv )
     PROFILE_ENABLE();
 
 #ifdef USE_EXT_SILO
-    std::string filename = "input_SiloIO-1";
+    const char *filename = "input_SiloIO-1";
     if ( argc == 2 )
         filename = argv[1];
     test_Silo( &ut, filename );
@@ -244,8 +244,8 @@ int main( int argc, char **argv )
 #endif
 
     ut.report();
+    ut.reset();
     PROFILE_SAVE( "test_Silo" );
-
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
     return num_failed;

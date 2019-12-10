@@ -16,15 +16,27 @@ namespace Geometry {
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
 template<std::size_t NDIM>
-class Box : public Geometry
+class Box final : public Geometry
 {
 public:
+    /**
+     * \brief Construct a Box geometry
+     * \param db        Input database
+     */
+    explicit Box( AMP::shared_ptr<AMP::Database> db );
+
     /**
      * \brief Construct a box
      * \param range     The range of the box [xmin, xmax, ymin, ymax, zmin, zmax, ...]
      * \param coord     Optional list of coordinates to adjust the logical - physical mapping
      */
     explicit Box( const std::vector<double> &range );
+
+public: // Default constructors
+    explicit Box( Box<NDIM> &&range )      = default;
+    explicit Box( const Box<NDIM> &range ) = default;
+    Box<NDIM> &operator=( Box<NDIM> &&range ) = default;
+    Box<NDIM> &operator=( const Box<NDIM> &range ) = default;
 
 public: // Functions inherited from Geometry
     virtual std::string getName() const override final;
@@ -38,6 +50,10 @@ public: // Functions inherited from Geometry
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
     virtual void displaceMesh( const double *x ) override final;
+    virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
+    virtual std::vector<bool> getPeriodicDim() const override final;
+    virtual std::vector<int> getLogicalSurfaceIds() const override final;
+    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data
@@ -55,15 +71,27 @@ private:
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
 template<std::size_t NDIM>
-class Grid : public Geometry
+class Grid final : public Geometry
 {
 public:
+    /**
+     * \brief Construct a Grid geometry
+     * \param db        Input database
+     */
+    explicit Grid( AMP::shared_ptr<AMP::Database> db );
+
     /**
      * \brief Construct a grid geometry
      * \param range     The range of the box [xmin, xmax, ymin, ymax, zmin, zmax, ...]
      * \param coord     Optional list of coordinates to adjust the logical - physical mapping
      */
     explicit Grid( const std::vector<std::vector<double>> &coord );
+
+public: // Default constructors
+    explicit Grid( Grid<NDIM> &&rhs )      = default;
+    explicit Grid( const Grid<NDIM> &rhs ) = default;
+    Grid<NDIM> &operator=( Grid<NDIM> &&rhs ) = default;
+    Grid<NDIM> &operator=( const Grid<NDIM> &rhs ) = default;
 
 public: // Functions inherited from Geometry
     virtual std::string getName() const override final;
@@ -77,6 +105,10 @@ public: // Functions inherited from Geometry
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
     virtual void displaceMesh( const double *x ) override final;
+    virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
+    virtual std::vector<bool> getPeriodicDim() const override final;
+    virtual std::vector<int> getLogicalSurfaceIds() const override final;
+    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data

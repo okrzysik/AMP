@@ -192,6 +192,15 @@ public: // Mesh based tests
 
 
     /**
+     * \brief Check clone
+     * \details  Test cloning a mesh
+     * \param[in,out] ut        Unit test class to report the results
+     * \param[in] mesh          Mesh to test
+     */
+    static void cloneMesh( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh );
+
+
+    /**
      * \brief Check mesh performance
      * \details Test the performance of some common mesh operations
      * \param[in,out] ut        Unit test class to report the results
@@ -199,6 +208,12 @@ public: // Mesh based tests
      */
     static void MeshPerformance( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh );
 
+
+public: // Old tests
+    static void VerifyNodeElemMapIteratorTest( AMP::UnitTest *ut,
+                                               AMP::Mesh::Mesh::shared_ptr mesh );
+    static void VerifyBoundaryIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void VerifyElementForNode( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh );
 
 public: // Geometry based tests
     /**

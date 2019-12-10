@@ -239,6 +239,18 @@ MultiMesh::MultiMesh( const std::string &name,
     }
     d_geometry.reset( new AMP::Geometry::MultiGeometry( geom ) );
 }
+MultiMesh::MultiMesh( const MultiMesh &rhs ) : Mesh( rhs )
+{
+    for ( const auto &mesh : rhs.d_meshes )
+        d_meshes.push_back( mesh->clone() );
+    std::vector<AMP::Geometry::Geometry::shared_ptr> geom;
+    for ( auto &mesh : d_meshes ) {
+        auto tmp = mesh->getGeometry();
+        if ( tmp )
+            geom.push_back( tmp );
+    }
+    d_geometry.reset( new AMP::Geometry::MultiGeometry( geom ) );
+}
 
 
 /********************************************************
@@ -500,21 +512,16 @@ std::vector<Mesh::const_shared_ptr> MultiMesh::getMeshes() const
  ********************************************************/
 MeshIterator MultiMesh::getIterator( const GeomType type, const int gcw ) const
 {
-    std::vector<AMP::shared_ptr<MeshIterator>> iterators( d_meshes.size() );
-    for ( size_t i = 0; i < d_meshes.size(); i++ ) {
-        auto iterator_ptr = AMP::make_shared<MeshIterator>( d_meshes[i]->getIterator( type, gcw ) );
-        iterators[i]      = iterator_ptr;
-    }
+    std::vector<MeshIterator> iterators( d_meshes.size() );
+    for ( size_t i = 0; i < d_meshes.size(); i++ )
+        iterators[i] = MeshIterator( d_meshes[i]->getIterator( type, gcw ) );
     return MultiIterator( iterators );
 }
 MeshIterator MultiMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
-    std::vector<AMP::shared_ptr<MeshIterator>> iterators( d_meshes.size() );
-    for ( size_t i = 0; i < d_meshes.size(); i++ ) {
-        auto iterator_ptr =
-            AMP::make_shared<MeshIterator>( d_meshes[i]->getSurfaceIterator( type, gcw ) );
-        iterators[i] = iterator_ptr;
-    }
+    std::vector<MeshIterator> iterators( d_meshes.size() );
+    for ( size_t i = 0; i < d_meshes.size(); i++ )
+        iterators[i] = MeshIterator( d_meshes[i]->getSurfaceIterator( type, gcw ) );
     return MultiIterator( iterators );
 }
 std::vector<int> MultiMesh::getBoundaryIDs() const
@@ -550,12 +557,12 @@ std::vector<int> MultiMesh::getBoundaryIDs() const
 MeshIterator
 MultiMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw ) const
 {
-    std::vector<AMP::shared_ptr<MeshIterator>> iterators;
+    std::vector<MeshIterator> iterators;
     iterators.reserve( d_meshes.size() );
     for ( auto &elem : d_meshes ) {
         MeshIterator it = elem->getBoundaryIDIterator( type, id, gcw );
         if ( it.size() > 0 )
-            iterators.push_back( AMP::make_shared<MeshIterator>( it ) );
+            iterators.push_back( it );
     }
     return MultiIterator( iterators );
 }
@@ -591,12 +598,12 @@ std::vector<int> MultiMesh::getBlockIDs() const
 }
 MeshIterator MultiMesh::getBlockIDIterator( const GeomType type, const int id, const int gcw ) const
 {
-    std::vector<AMP::shared_ptr<MeshIterator>> iterators;
+    std::vector<MeshIterator> iterators;
     iterators.reserve( d_meshes.size() );
     for ( auto &elem : d_meshes ) {
         MeshIterator it = elem->getBlockIDIterator( type, id, gcw );
         if ( it.size() > 0 )
-            iterators.push_back( AMP::make_shared<MeshIterator>( it ) );
+            iterators.push_back( it );
     }
     return MultiIterator( iterators );
 }

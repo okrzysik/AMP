@@ -1,23 +1,21 @@
 #include "AMP/ampmesh/testHelpers/meshTests.h"
-
-#include <set>
-#include <vector>
-
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
 #include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/ampmesh/MultiGeometry.h"
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/SubsetMesh.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Vector.h"
 #endif
 
+#include <set>
+#include <vector>
 
 namespace AMP {
 namespace Mesh {
@@ -402,24 +400,24 @@ void meshTests::MeshCountTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mes
         const size_t N_ghost1 = comm.sumReduce( mesh->numGhostElements( type, 1 ) );
         const size_t N_sum    = comm.sumReduce( N_local );
         if ( N_global > 0 )
-            ut->passes( "Non-trival mesh created" );
+            ut->passes( "Non-trivial mesh created" );
         else
-            ut->failure( "Non-trival mesh created" );
+            ut->failure( "Non-trivial mesh created" );
         if ( N_sum == N_global )
             ut->passes( "Sum of local mesh counts matches global count" );
         else
-            ut->failure( "Sum of local mesh counts matches global count" );
+            ut->failure( "Sum of local mesh counts matches global count: " + mesh->getName() );
         if ( N_ghost0 == 0 )
             ut->passes( "gcw=0 has no ghost elements" );
         else
-            ut->failure( "gcw=0 has no ghost elements" );
+            ut->failure( "gcw=0 has no ghost elements: " + mesh->getName() );
         auto ids          = mesh->getBaseMeshIDs();
         bool is_base_mesh = ids.size() == 1 && ids[0] == mesh->meshID();
         if ( N_local != N_global && is_base_mesh ) {
             if ( N_ghost1 > 0 )
                 ut->passes( "gcw=1 has ghost elements" );
             else
-                ut->failure( "gcw=1 has ghost elements" );
+                ut->failure( "gcw=1 has ghost elements: " + mesh->getName() );
         }
     }
 }
@@ -489,7 +487,7 @@ void meshTests::MeshBasicTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mes
     if ( pass )
         ut->passes( "sum(numLocalElements) matches numGlobalElements" );
     else
-        ut->failure( "sum(numLocalElements) matches numGlobalElements" );
+        ut->failure( "sum(numLocalElements) matches numGlobalElements: " + mesh->getName() );
 }
 
 
@@ -627,7 +625,7 @@ void meshTests::VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::s
             if ( passes )
                 utils->passes( "Non-trivial surface iterator created" );
             else
-                utils->failure( "Non-trivial surface iterator created" );
+                utils->failure( "Non-trivial surface iterator created: " + mesh->getName() );
         }
     }
 }
@@ -775,8 +773,7 @@ void meshTests::getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_
     bool passed          = true;
     auto elementIterator = mesh->getIterator( mesh->getGeomType(), 1 );
     for ( size_t i = 0; i < elementIterator.size(); i++ ) {
-        std::vector<AMP::Mesh::MeshElement> nodes =
-            elementIterator->getElements( AMP::Mesh::GeomType::Vertex );
+        auto nodes = elementIterator->getElements( AMP::Mesh::GeomType::Vertex );
         for ( size_t j = 0; j < nodes.size(); j++ ) {
             if ( !nodes[j].globalID().is_local() )
                 continue; // Node is not owned, move on
@@ -831,7 +828,7 @@ void meshTests::DisplaceMeshScalar( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
     if ( passes )
         utils->passes( "scalar displacement test" );
     else
-        utils->failure( "scalar displacement test" );
+        utils->failure( "scalar displacement test: " + mesh->getName() );
     std::vector<double> dist2( mesh->getDim(), -1 );
     mesh->displaceMesh( std::vector<double>( mesh->getDim(), -1 ) );
 }
@@ -861,7 +858,7 @@ void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
     if ( diff->equals( dispVec ) )
         utils->passes( "displacement successfully applied" );
     else
-        utils->failure( "displacement failed" );
+        utils->failure( "displacement failed: " + mesh->getName() );
     // Get the new volumes
     bool volume_passed = true;
     cur_elem           = mesh->getIterator( mesh->getGeomType(), 0 );
@@ -878,7 +875,7 @@ void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
     if ( volume_passed )
         utils->passes( "displacement changed volumes" );
     else
-        utils->failure( "displacement changed volumes" );
+        utils->failure( "displacement changed volumes: " + mesh->getName() );
     for ( auto &tmp : *dispVec )
         tmp = -tmp;
     mesh->displaceMesh( dispVec );
@@ -932,453 +929,122 @@ void meshTests::getParents( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr me
 }
 
 
-/*
-
-class  VerifyElementForNode
+// VerifyElementForNode
+void meshTests::VerifyElementForNode( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-public:
-    static const char * get_test_name () { return "verify beginElementForNode"; }
-
-    static  bool element_has_node ( AMP::Mesh::MeshAdapter::Element e , AMP::Mesh::MeshAdapter::Node
-n ) {
-        for ( size_t i = 0 ; i != e.numNodes(); i++ )
-        {
-            if ( n.globalID() == e.getNodeID ( i ) )
-            {
-              return true;
-            }
+    auto element_has_node = []( const AMP::Mesh::MeshElement &elem,
+                                const AMP::Mesh::MeshElement &n ) {
+        std::vector<MeshElementID> ids;
+        elem.getElementsID( AMP::Mesh::GeomType::Vertex, ids );
+        auto id0 = n.globalID();
+        for ( auto id : ids ) {
+            if ( id == id0 )
+                return true;
         }
         return false;
-    }
-
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-          AMP::Mesh::MeshAdapter::OwnedNodeIterator curOwned = mesh->beginOwnedNode();
-          bool passedTest = true;
-          while ( curOwned != mesh->endOwnedNode() )
-          {
-            AMP::Mesh::MeshAdapter::NodeElementIterator  curElem = mesh->beginElementForNode (
-*curOwned );
-            if ( !element_has_node ( *curElem , *curOwned ) )
-            {
-              passedTest = false;
-            }
-            curOwned++;
-          }
-          if ( passedTest )
-            utils->passes ( "All elements found are correct" );
-          else
-            utils->failure ( "Found an incorrect element" );
-        }
     };
-
-    struct ElementHelper
-    {
-        typedef AMP::Mesh::MeshAdapter::ElementIterator  Iterator;
-        static Iterator  begin ( AMP::Mesh::MeshAdapter::shared_ptr &p ) { return p->beginElement();
+    auto type = mesh->getGeomType();
+    bool pass = true;
+    for ( auto node : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) ) {
+        for ( auto elem : mesh->getElementParents( node, type ) )
+            pass = pass && element_has_node( elem, node );
+    }
+    if ( pass )
+        utils->passes( "All elements found are correct" );
+    else
+        utils->failure( "Found an incorrect element" );
 }
-        static Iterator  end ( AMP::Mesh::MeshAdapter::shared_ptr &p ) { return p->endElement(); }
+
+
+// VerifyNodeElemMapIteratorTest
+void meshTests::VerifyNodeElemMapIteratorTest( AMP::UnitTest *utils,
+                                               AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    auto verify_node = []( const AMP::Mesh::MeshElement &node, AMP::Mesh::Mesh::shared_ptr mesh ) {
+        std::set<AMP::Mesh::MeshElementID> elems_from_node, elems_from_mesh;
+        auto elements = mesh->getElementParents( node, mesh->getGeomType() );
+        for ( const auto &elem : elements )
+            elems_from_node.insert( elem.globalID() );
+        std::vector<MeshElementID> ids;
+        for ( const auto &elem : mesh->getIterator( mesh->getGeomType() ) ) {
+            elem.getElementsID( AMP::Mesh::GeomType::Vertex, ids );
+            for ( const auto &id : ids )
+                if ( id == node.globalID() )
+                    elems_from_mesh.insert( elem.globalID() );
+        }
+        return elems_from_node == elems_from_mesh;
     };
-    struct NodeHelper
-    {
-        typedef AMP::Mesh::MeshAdapter::NodeIterator  Iterator;
-        static Iterator  begin ( AMP::Mesh::MeshAdapter::shared_ptr &p ) { return p->beginNode(); }
-        static Iterator  end ( AMP::Mesh::MeshAdapter::shared_ptr &p ) { return p->endNode(); }
-};
-
-
-template <typename HELPER>
-class  VerifyProcAndIsOwnedInterface
-{
-public:
-    static const char * get_test_name () { return "Verify isOwned Interface"; }
-
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-        AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-        std::map<size_t , std::vector<size_t> > Ids;
-        typename HELPER::Iterator cur = HELPER::begin ( mesh );
-        bool totalTest = true;
-        while ( cur != HELPER::end ( mesh ) )
-        {
-            Ids[cur->procID()].push_back ( cur->globalID() );
-            if ( (int)cur->procID() == utils->rank() )
-            {
-              if ( !cur->isOwned() )
-                totalTest = false;
-            }
-            else
-            {
-              if ( cur->isOwned() )
-                totalTest = false;
-            }
-            cur++;
-        }
-        if ( totalTest )
-            utils->passes ( "isOwned works" );
-        else
-            utils->failure ( "isOwned fails" );
-
-        totalTest = true;
-        for (int i=0; i!=utils->size(); i++ )
-        {
-            size_t res = Ids[i].size();
-            res = globalComm.bcast(res,i);
-            if ( res > 0 )
-            {
-              std::vector<size_t>  incoming;
-              if ( i == utils->rank() )
-              {
-                globalComm.bcast(&(Ids[i][0]),(int)res,i);
-              }
-              else
-              {
-                incoming.resize ( res );
-                globalComm.bcast(&(incoming[0]),(int)res,i);
-                for (size_t j=0; j!=Ids[i].size(); i++ )
-                {
-                  bool found = false;
-                  for ( size_t k = 0 ; k != incoming.size() ; k++ )
-                  {
-                    if ( Ids[i][j] == incoming[k] )
-                    {
-                      found = true;
-                      break;
-                    }
-                  }
-                  if ( !found )
-                    totalTest = false;
-                }
-              }
-            }
-        }
-        if ( totalTest )
-            utils->passes ( "procID is set correctly" );
-        else
-            utils->failure ( "procID is not set correctly" );
-    }
-};
-
-
-
-AMP::Mesh::MeshAdapter::shared_ptr globalMeshForMeshVectorFactory =
-AMP::Mesh::MeshAdapter::shared_ptr();
-template <int SIZE, bool NODAL, bool RUNTIME>
-class  MeshVectorFactory
-{
-public:
-    typedef  AMP::LinearAlgebra::Vector               vector;
-
-    static  AMP::LinearAlgebra::Variable::shared_ptr  getVariable ()
-    {
-        if ( NODAL ) {
-            return AMP::LinearAlgebra::Variable::shared_ptr ( new
-AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable,SIZE>( "test vector" ) );
-        } else {
-            if ( RUNTIME )
-                return AMP::LinearAlgebra::Variable::shared_ptr ( new
-AMP::Mesh::RunTimeIntegrationPointVariable ( "test
-vector" , SIZE ) );
-            else
-                return AMP::LinearAlgebra::Variable::shared_ptr ( new
-AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable,SIZE>( "test vector" ) );
-        }
-    }
-
-    static  AMP::LinearAlgebra::Vector::shared_ptr getVector()
-    {
-        if ( globalMeshForMeshVectorFactory.get()==NULL )
-            AMP_ERROR("mesh must be set before this can be called");
-        return globalMeshForMeshVectorFactory->createVector ( getVariable() );
-    }
-
-    static  AMP::Mesh::DOFMap::shared_ptr getDOFMap()
-    {
-        if ( globalMeshForMeshVectorFactory.get()==NULL )
-            AMP_ERROR("mesh must be set before this can be called");
-        return globalMeshForMeshVectorFactory->getDOFMap ( getVariable() );
-    }
-
-};
-
-
-// Test bug when subsetting a multivector for a variable
-class Bug_758
-{
-public:
-        static const char * get_test_name () { return "Bug_758"; }
-
-        static  bool verify_memory_address ( AMP::LinearAlgebra::Vector::shared_ptr  multi ,
-AMP::LinearAlgebra::Vector::shared_ptr first , AMP::LinearAlgebra::Vector::shared_ptr second )
-        {
-          multi->setRandomValues ();
-          auto cur_multi = multi->begin();
-          auto cur_sub = first->begin();
-          bool retVal = true;
-          size_t i = 0;
-          while ( cur_multi != multi->end() )
-          {
-            if ( cur_sub == first->end() )
-            {
-              cur_sub = second->begin();
-            }
-            if ( cur_sub == second->end() )
-            {
-              retVal = false;
-              break;
-            }
-            if ( *cur_sub != *cur_multi )
-            {
-              retVal = false;
-              break;
-            }
-            i++;
-            cur_multi++;
-            cur_sub++;
-          }
-          if ( i != multi->getLocalSize() )
-          {
-            retVal = false;
-          }
-          if ( cur_sub != second->end() )
-          {
-            retVal = false;
-          }
-          return retVal;
-        }
-
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-          AMP::LinearAlgebra::Variable::shared_ptr var1 ( new AMP::Mesh::NodalScalarVariable (
-"number_1" ) );
-          AMP::LinearAlgebra::Variable::shared_ptr var2 ( new AMP::Mesh::Nodal3VectorVariable (
-"number_2" ) );
-          auto multivar = AMP::make_shared<AMP::LinearAlgebra::MultiVariable>( "multi" );
-          multivar->add( var1 );
-          multivar->add( var2 );
-
-          AMP::LinearAlgebra::Vector::shared_ptr  p1 = mesh->createVector ( multivar );
-          AMP::LinearAlgebra::Vector::shared_ptr  p2 = p1->subsetVectorForVariable ( var1 );
-          AMP::LinearAlgebra::Vector::shared_ptr  p3 = p1->subsetVectorForVariable ( var2 );
-          if ( *(p2->getVariable()) == *var1 )
-            utils->passes ( "First variable is correct" );
-          else
-            utils->failure ( "First variable is incorrect" );
-          if ( *(p3->getVariable()) == *var2 )
-            utils->passes ( "Second variable is correct" );
-          else
-            utils->failure ( "Second variable is incorrect" );
-          if ( verify_memory_address ( p1 , p2 , p3 ) )
-            utils->passes ( "Subset vector pulls out the correct vectors 1" );
-          else
-            utils->failure ( "Subset vector fails to pull out the correct vectors 1" );
-          AMP::LinearAlgebra::Vector::shared_ptr  p4 = AMP::LinearAlgebra::PetscVector::view ( p1 );
-          AMP::LinearAlgebra::Vector::shared_ptr  p5 = p4->subsetVectorForVariable ( var1 );
-          AMP::LinearAlgebra::Vector::shared_ptr  p6 = p4->subsetVectorForVariable ( var2 );
-          if ( *(p5->getVariable()) == *var1 )
-            utils->passes ( "First variable is correct" );
-          else
-            utils->failure ( "First variable is incorrect" );
-          if ( *(p6->getVariable()) == *var2 )
-            utils->passes ( "Second variable is correct" );
-          else
-            utils->failure ( "Second variable is incorrect" );
-          if ( verify_memory_address ( p4 , p5 , p6 ) )
-            utils->passes ( "Subset vector pulls out the correct vectors 2" );
-          else
-            utils->failure ( "Subset vector fails to pull out the correct vectors 2" );
-
-          Vec vec = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(p4)->getVec();
-          AMP::LinearAlgebra::Vector::shared_ptr p7 (
-reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> (
-vec->data ) , AMP::LinearAlgebra::ExternalVectorDeleter() );
-          AMP::LinearAlgebra::Vector::shared_ptr p8 = p7->subsetVectorForVariable ( var1 );
-          AMP::LinearAlgebra::Vector::shared_ptr p9 = p7->subsetVectorForVariable ( var2 );
-          if ( *(p8->getVariable()) == *var1 )
-            utils->passes ( "First variable is correct" );
-          else
-            utils->failure ( "First variable is incorrect" );
-          if ( *(p9->getVariable()) == *var2 )
-            utils->passes ( "Second variable is correct" );
-          else
-            utils->failure ( "Second variable is incorrect" );
-          if ( verify_memory_address ( p7 , p8 , p9 ) )
-            utils->passes ( "Subset vector pulls out the correct vectors 3" );
-          else
-            utils->failure ( "Subset vector fails to pull out the correct vectors 3" );
-
-        }
-};
-
-
-
-template <int SIZE>
-class Bug_761
-{
-public:
-        static const char * get_test_name () { return "Verify fix to Bug 761"; }
-
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-        AMP::LinearAlgebra::Variable::shared_ptr  var ( new
-AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable , SIZE> ( "t" ) );
-        AMP::Mesh::DOFMap::shared_ptr  dofmap = mesh->getDOFMap ( var );
-        AMP::LinearAlgebra::Vector::shared_ptr  vector = mesh->createVector ( var );
-
-        vector->setToScalar ( 123.4 );
-        bool testPass = true;
-        AMP::Mesh::MeshAdapter::ElementIterator curElem = mesh->beginElement();
-        while ( curElem != mesh->endElement() )
-        {
-            for ( size_t i = 0 ; i != SIZE ; i++ )
-            {
-              if ( vector->getValueByGlobalID ( dofmap->getGlobalID ( curElem->globalID() , i ) ) !=
-123.4 )
-              {
-                testPass = false;
-              }
-            }
-            curElem++;
-        }
-        if ( testPass )
-            utils->passes ( "Every value of a integration point vector found" );
-        else
-            utils->failure ( "Failed to find an integration point vector" );
-    }
-};
-
-
-class Bug_623
-{
-public:
-        static const char * get_test_name () { return "Verify fix to Bug 623"; }
-
-    static  void run_test ( AMP::UnitTest *utils ) {
-          AMP::Mesh::MeshAdapter::shared_ptr  mesh1 ( new AMP::Mesh::LibMeshAdapter () );
-          AMP::Mesh::MeshAdapter::shared_ptr  mesh2 ( new AMP::Mesh::LibMeshAdapter () );
-          AMP::LinearAlgebra::Variable::shared_ptr     var ( new AMP::Mesh::NodalScalarVariable (
-"temp" ) );
-
-          // Create new meshes
-          mesh1->generateCube ( 5 );
-          mesh2->generateCube ( 5 );
-
-          // On mesh1, create matrix then vector
-          mesh1->createMatrix ( var );
-          mesh1->createVector ( var );
-
-          // On mesh2, create vector then matrix
-          mesh2->createVector ( var );
-          mesh2->createMatrix ( var );
-          utils->passes ( "Bug 623" );
-        }
-};
-
-
-class  VerifyNodeElemMapIteratorTest
-{
-public:
-        static const char * get_test_name () { return "Verify Node<->Element iterator"; }
-
-        static bool  verify_node ( AMP::Mesh::MeshAdapter::Node n ,
-AMP::Mesh::MeshAdapter::shared_ptr mesh )
-        {
-          std::set<size_t>  elems_from_node , elems_from_mesh;
-          AMP::Mesh::MeshAdapter::NodeElementIterator  cur_elem = mesh->beginElementForNode ( n );
-          while ( cur_elem != mesh->endElementForNode ( n ) )
-          {
-            elems_from_node.insert ( cur_elem->globalID() );
-            cur_elem++;
-          }
-          AMP::Mesh::MeshAdapter::ElementIterator  cur_elem2 = mesh->beginElement ();
-          while ( cur_elem2 != mesh->endElement() )
-          {
-            for ( size_t i = 0 ; i != cur_elem2->numNodes() ; i++ )
-              if ( cur_elem2->getNodeID(i) == n.globalID() )
-                elems_from_mesh.insert ( cur_elem2->globalID() );
-            cur_elem2++;
-          }
-
-          if ( elems_from_node.size() == 0 ) return false;
-          if ( std::equal ( elems_from_node.begin() , elems_from_node.end() ,
-elems_from_mesh.begin() ) )
-              return true;
-          return false;
-        }
-
-
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-
-          int i = 0;
-          int SKIP = (utils->size() * mesh->numTotalNodes()) / 20;
-
-          AMP::Mesh::MeshAdapter::NodeIterator  cur_node = mesh->beginNode();
-          while ( cur_node != mesh->endNode() )
-          {
-            if ( i == SKIP )
-            {
-              if ( !verify_node ( *cur_node , mesh ) )
-              {
-                utils->failure ("Verify Node<->Element iterator");
+    int i    = 0;
+    int SKIP = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex ) / 20;
+    for ( const auto &node : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) ) {
+        if ( i % SKIP == 0 ) {
+            if ( !verify_node( node, mesh ) ) {
+                utils->failure( "Verify Node<->Element iterator" );
                 return;
-              }
-              i = 0;
             }
-            else
-              i++;
-            cur_node++;
-          }
-
-          utils->passes ("Verify Node<->Element iterator");
         }
-};
+        i++;
+    }
+    utils->passes( "Verify Node<->Element iterator" );
+}
 
 
-class VerifyBoundaryIteratorTest
+// VerifyBoundaryIteratorTest
+void meshTests::VerifyBoundaryIteratorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-public:
-        static const char * get_test_name () { return "Verify BoundaryIterator"; }
-
-        static int  isBoundaryElement ( AMP::Mesh::MeshAdapter::Element e )
-        {
-          for ( size_t i = 0 ; i != e.numSides() ; i++ )
-            if ( !e.hasNeighbor ( i ) ) return true;
-          return false;
+    auto isBoundaryElement = []( const AMP::Mesh::MeshElement &elem ) {
+        auto neighbors = elem.getNeighbors();
+        for ( const auto neighbor : neighbors )
+            if ( !neighbor )
+                return true;
+        return false;
+    };
+    auto isNodeOnBoundary = [isBoundaryElement]( const AMP::Mesh::MeshElement &node,
+                                                 AMP::Mesh::Mesh::shared_ptr mesh ) {
+        auto elements = mesh->getElementParents( node, mesh->getGeomType() );
+        for ( const auto &elem : elements ) {
+            if ( !isBoundaryElement( elem ) )
+                return false;
         }
-
-        static bool isNodeOnBoundary ( AMP::Mesh::MeshAdapter::Node  n ,
-AMP::Mesh::MeshAdapter::shared_ptr  mesh )
-        {
-          AMP::Mesh::MeshAdapter::NodeElementIterator  cur_elem = mesh->beginElementForNode ( n );
-          while ( cur_elem != mesh->endElementForNode ( n ) )
-          {
-            if ( !isBoundaryElement ( *cur_elem ) )
-              return false;
-            cur_elem++;
-          }
-          return true;
-        }
-
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-
-          std::set<short int>::const_iterator  cur_bid = mesh->getBoundaryIds().begin();
-          while ( cur_bid != mesh->getBoundaryIds().end() )
-          {
-            AMP::Mesh::MeshAdapter::BoundaryNodeIterator  cur_b_node = mesh->beginBoundary (
-*cur_bid );
-            while ( cur_b_node != mesh->endBoundary ( *cur_bid ) )
-            {
-              if ( !isNodeOnBoundary ( *cur_b_node , mesh ) )
-              {
-                utils->failure ("Verify Node<->Element iterator");
+        return true;
+    };
+    for ( auto bid : mesh->getBoundaryIDs() ) {
+        for ( const auto &node : mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, bid ) ) {
+            if ( !isNodeOnBoundary( node, mesh ) ) {
+                utils->failure( "Verify Node<->Element iterator" );
                 return;
-              }
-              cur_b_node++;
             }
-            cur_bid++;
-          }
-          utils->passes ("Verify Node<->Element iterator");
         }
-};
+    }
+    utils->passes( "Verify Node<->Element iterator" );
+}
 
 
-*/
+// Test that cloning a mesh does not modify the existing mesh
+void meshTests::cloneMesh( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    // Get the coordinates of the mesh points
+    std::vector<AMP::Mesh::Point> coord;
+    for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) )
+        coord.push_back( elem.coord() );
+    // Clone the mesh
+    auto mesh2 = mesh->clone();
+    // Displace the mesh
+    mesh2->displaceMesh( std::vector<double>( mesh2->getDim(), 1 ) );
+    auto geom1 = dynamic_cast<AMP::Geometry::MultiGeometry *>( mesh->getGeometry().get() );
+    auto geom2 = dynamic_cast<AMP::Geometry::MultiGeometry *>( mesh2->getGeometry().get() );
+    NULL_USE( geom1 );
+    NULL_USE( geom2 );
+    // Get the original coordinates and make sure they match
+    std::vector<AMP::Mesh::Point> coord2;
+    for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) )
+        coord2.push_back( elem.coord() );
+    bool pass = coord == coord2;
+    if ( pass )
+        utils->passes( "clone" );
+    else
+        utils->failure( "clone " + mesh->getName() );
+}
 
 
 // Test the performance of some common mesh operations
@@ -1466,7 +1132,6 @@ static inline void getElementIDs( AMP::Mesh::Mesh::shared_ptr mesh )
         AMP_ASSERT( pass );
     }
 }
-
 static inline void getElements1( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     auto type = mesh->getGeomType();

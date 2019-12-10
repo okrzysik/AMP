@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/shapes/CircleFrustum.h"
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 #include <algorithm>
@@ -13,18 +14,47 @@ namespace Geometry {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
+CircleFrustum::CircleFrustum( AMP::shared_ptr<AMP::Database> db ) : d_offset{ 0, 0, 0 }
+{
+    d_r[0]   = db->getDouble( "BaseRadius" );
+    d_r[1]   = db->getDouble( "TopRadius" );
+    d_h      = db->getDouble( "Height" );
+    auto dir = db->getString( "Dir" );
+    if ( dir == "-x" )
+        d_dir = 0;
+    else if ( dir == "+x" )
+        d_dir = 1;
+    else if ( dir == "-y" )
+        d_dir = 2;
+    else if ( dir == "+y" )
+        d_dir = 3;
+    else if ( dir == "-z" )
+        d_dir = 4;
+    else if ( dir == "+z" )
+        d_dir = 5;
+    else
+        AMP_ERROR( "Invalid value for Dir" );
+    d_physicalDim = 3;
+    d_logicalDim  = 3;
+    AMP_INSIST( d_r[0] > d_r[1] && d_r[1] > 0, "Invalid value for r" );
+    // Compute the apex of the underlying cone
+    double h2      = d_h * d_r[0] / ( d_r[0] - d_r[1] );
+    d_C            = { 0, 0, 0 };
+    d_C[d_dir / 2] = d_dir % 2 == 0 ? -h2 : h2;
+    d_theta        = atan( d_r[0] / h2 );
+}
 CircleFrustum::CircleFrustum( const std::array<double, 2> &r, int dir, double height )
     : Geometry(), d_dir( dir ), d_r{ r[0], r[1] }, d_h( height ), d_offset{ 0, 0, 0 }
 {
     d_physicalDim = 3;
     d_logicalDim  = 3;
-    AMP_INSIST( r[0] > r[1] && r[1] > 0, "Invalid value for r" );
-    AMP_INSIST( dir >= 0 && dir < 6, "Invalid value for dir" );
+    AMP_INSIST( d_r[0] > d_r[1] && d_r[1] > 0, "Invalid value for r" );
+    AMP_INSIST( d_dir < 6, "Invalid value for dir" );
     // Compute the apex of the underlying cone
-    double h2    = height * r[0] / ( r[0] - r[1] );
-    d_C          = { 0, 0, 0 };
-    d_C[dir / 2] = d_dir % 2 == 0 ? -h2 : h2;
-    d_theta      = atan( r[0] / h2 );
+    double h2      = d_h * d_r[0] / ( d_r[0] - d_r[1] );
+    d_C            = { 0, 0, 0 };
+    d_C[d_dir / 2] = d_dir % 2 == 0 ? -h2 : h2;
+    d_theta        = atan( d_r[0] / h2 );
 }
 
 
@@ -60,8 +90,8 @@ double CircleFrustum::distance( const Point &pos, const Point &ang ) const
     // Compute the intersection with the planes slicing the cone
     bool swap = d_dir == 0 || d_dir == 1 || d_dir == 3 || d_dir == 4;
     double s  = swap ? -1 : 1;
-    double d1 = -p0[dir2] / ( s * ang[dir2] );
-    double d2 = ( s * d_h - p0[dir2] ) / ( s * ang[dir2] );
+    double d1 = -p0[dir2] / ang[dir2];
+    double d2 = ( s * d_h - p0[dir2] ) / ang[dir2];
     auto p1   = p0 + d1 * ang;
     auto p2   = p0 + d2 * ang;
     double r1, r2;
@@ -112,13 +142,11 @@ int CircleFrustum::surface( const Point &pos ) const
     double t = std::min(
         { std::abs( p.x() ), std::abs( 1 - p.x() ), std::abs( p.y() ), std::abs( 1 - p.y() ) } );
     if ( std::abs( p.z() ) < t ) {
-        // We are at the large face
-        bool swap = d_dir == 0 || d_dir == 1 || d_dir == 3 || d_dir == 4;
-        return swap ? 1 : 0;
+        // We are at the - face
+        return 0;
     } else if ( std::abs( 1 - p.z() ) < t ) {
-        // We are at the small face
-        bool swap = d_dir == 0 || d_dir == 1 || d_dir == 3 || d_dir == 4;
-        return swap ? 0 : 1;
+        // We are at the + face
+        return 1;
     } else {
         // We are at the cone face
         return 2;
@@ -126,31 +154,36 @@ int CircleFrustum::surface( const Point &pos ) const
 }
 Point CircleFrustum::surfaceNorm( const Point &pos ) const
 {
-    int s   = surface( pos );
-    Point v = { 0, 0, 0 };
+    int s    = surface( pos );
+    Point v  = { 0, 0, 0 };
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
     if ( s == 0 ) {
         v[d_dir / 2] = d_dir % 2 == 0 ? 1 : -1;
     } else if ( s == 1 ) {
         v[d_dir / 2] = d_dir % 2 == 0 ? -1 : 1;
     } else {
+        double sin_t = sin( d_theta );
+        double cos_t = cos( d_theta );
         if ( d_dir == 0 ) {
-            double r = pos.y() * pos.y() + pos.z() * pos.z();
-            v = { sin( d_theta ), cos( d_theta ) * pos.y() / r, cos( d_theta ) * pos.z() / r };
+            double r = sqrt( y * y + z * z );
+            v        = { -sin_t, cos_t * y / r, cos_t * z / r };
         } else if ( d_dir == 1 ) {
-            double r = pos.y() * pos.y() + pos.z() * pos.z();
-            v = { sin( d_theta ), cos( d_theta ) * pos.y() / r, cos( d_theta ) * pos.z() / r };
+            double r = sqrt( y * y + z * z );
+            v        = { sin_t, cos_t * y / r, cos_t * z / r };
         } else if ( d_dir == 2 ) {
-            double r = pos.x() * pos.x() + pos.z() * pos.z();
-            v = { cos( d_theta ) * pos.x() / r, sin( d_theta ), cos( d_theta ) * pos.z() / r };
+            double r = sqrt( x * x + z * z );
+            v        = { cos_t * x / r, -sin_t, cos_t * z / r };
         } else if ( d_dir == 3 ) {
-            double r = pos.x() * pos.x() + pos.z() * pos.z();
-            v = { cos( d_theta ) * pos.x() / r, -sin( d_theta ), cos( d_theta ) * pos.z() / r };
+            double r = sqrt( x * x + z * z );
+            v        = { cos_t * x / r, sin_t, cos_t * z / r };
         } else if ( d_dir == 4 ) {
-            double r = pos.x() * pos.x() + pos.y() * pos.y();
-            v = { cos( d_theta ) * pos.x() / r, cos( d_theta ) * pos.y() / r, sin( d_theta ) };
+            double r = sqrt( x * x + y * y );
+            v        = { cos_t * x / r, cos_t * y / r, -sin_t };
         } else {
-            double r = pos.x() * pos.x() + pos.y() * pos.y();
-            v = { cos( d_theta ) * pos.x() / r, cos( d_theta ) * pos.y() / r, -sin( d_theta ) };
+            double r = sqrt( x * x + y * y );
+            v        = { cos_t * x / r, cos_t * y / r, sin_t };
         }
     }
     return v;
@@ -264,6 +297,18 @@ std::pair<Point, Point> CircleFrustum::box() const
 
 
 /********************************************************
+ * Return the logical grid                               *
+ ********************************************************/
+std::vector<int> CircleFrustum::getLogicalGridSize( const std::vector<int> &x ) const
+{
+    AMP_INSIST( x.size() == 2, "Size must be an array of length 2" );
+    return { x[0], x[0], x[1] };
+}
+std::vector<bool> CircleFrustum::getPeriodicDim() const { return { false, false, false }; }
+std::vector<int> CircleFrustum::getLogicalSurfaceIds() const { return { 2, 2, 2, 2, 0, 1 }; }
+
+
+/********************************************************
  * Displace the mesh                                     *
  ********************************************************/
 void CircleFrustum::displaceMesh( const double *x )
@@ -273,6 +318,14 @@ void CircleFrustum::displaceMesh( const double *x )
     d_offset[2] += x[2];
 }
 
+
+/********************************************************
+ * Clone the object                                      *
+ ********************************************************/
+AMP::shared_ptr<AMP::Geometry::Geometry> CircleFrustum::clone() const
+{
+    return AMP::make_shared<CircleFrustum>( *this );
+}
 
 } // namespace Geometry
 } // namespace AMP

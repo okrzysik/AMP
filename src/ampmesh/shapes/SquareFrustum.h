@@ -19,7 +19,13 @@ class SquareFrustum : public Geometry
 {
 public:
     /**
-     * \brief Construct a SquareFrustum
+     * \brief Construct a SquareFrustum geometry
+     * \param db        Input database
+     */
+    explicit SquareFrustum( AMP::shared_ptr<AMP::Database> db );
+
+    /**
+     * \brief Construct a SquareFrustum geometry
      * \param range     The range of the SquareFrustum [xmin, xmax, ymin, ymax, zmin, zmax, ...]
      * \param dir       The direction of the pyramid { -x, x, -y, y, -z, z }
      * \param height    The height of the pyramid
@@ -38,6 +44,10 @@ public: // Functions inherited from Geometry
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
     virtual void displaceMesh( const double *x ) override final;
+    virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
+    virtual std::vector<bool> getPeriodicDim() const override final;
+    virtual std::vector<int> getLogicalSurfaceIds() const override final;
+    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data
@@ -51,6 +61,8 @@ protected:
 private:
     // Private constuctor
     SquareFrustum();
+    // Initialize the data
+    void initialize( const std::vector<double> &range, int dir, double height );
 };
 
 

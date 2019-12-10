@@ -29,21 +29,14 @@ void meshTests::MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh
         DisplaceMeshScalar( ut, mesh );
     if ( mesh->isMeshMovable() >= AMP::Mesh::Mesh::Movable::Deform )
         DisplaceMeshVector( ut, mesh );
-    // VerifyNodeElemMapIteratorTest::run_test( ut, mesh );
+    // Test cloneMesh
+    // if ( mesh->isMeshMovable() >= AMP::Mesh::Mesh::Movable::Displace )
+    //    cloneMesh( ut, mesh );
+    // VerifyNodeElemMapIteratorTest( ut, mesh );
     // Test the elements
-    // VerifyBoundaryIteratorTest::run_test( ut, mesh );
-    // Test Interface
-    // VerifyProcAndIsOwnedInterface<ElementHelper>::run_test( ut, mesh );
-    // VerifyProcAndIsOwnedInterface<NodeHelper>::run_test( ut, mesh );
-    // Test element for node
-    // VerifyElementForNode::run_test( ut, mesh );
-    // Bug tests
-    // Bug_758::run_test( ut, mesh );
-    // Bug_761<1>::run_test( ut, mesh );
-    // Bug_761<2>::run_test( ut, mesh );
-    // Bug_761<7>::run_test( ut, mesh );
-    // Bug_761<8>::run_test( ut, mesh );
-    // MeshAdapterTest<AllPassTest>::run_test( ut, mesh );
+    // VerifyBoundaryIteratorTest( ut, mesh );
+    // VerifyElementForNode( ut, mesh );
+    // Test performance
     MeshPerformance( ut, mesh );
     PROFILE_STOP( "MeshTestLoop" );
 }

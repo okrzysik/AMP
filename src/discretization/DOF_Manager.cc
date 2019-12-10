@@ -153,12 +153,10 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::Mesh::shared_pt
     if ( mesh.get() == nullptr )
         return AMP::shared_ptr<DOFManager>();
     // Get a list of the elements in the mesh
-    AMP::Mesh::MeshIterator iterator = getIterator();
-    size_t N                         = iterator.size();
+    auto iterator = getIterator();
     std::vector<AMP::Mesh::MeshElement> element_list;
-    element_list.reserve( N );
-    for ( size_t i = 0; i < N; i++, ++iterator ) {
-        const AMP::Mesh::MeshElement elem = *iterator;
+    element_list.reserve( iterator.size() );
+    for ( const auto &elem : iterator ) {
         if ( mesh->isMember( elem.globalID() ) )
             element_list.push_back( elem );
     }

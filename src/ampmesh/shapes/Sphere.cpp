@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/shapes/Sphere.h"
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -10,6 +11,17 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
+Sphere::Sphere( AMP::shared_ptr<AMP::Database> db )
+{
+    d_physicalDim = 3;
+    d_logicalDim  = 2;
+    d_offset[0]   = 0;
+    d_offset[1]   = 0;
+    d_offset[2]   = 0;
+    auto range    = db->getDoubleArray( "Range" );
+    AMP_INSIST( range.size() == 1u, "Range must be an array of length 1" );
+    d_r = range[0];
+}
 Sphere::Sphere( double r ) : Geometry(), d_r( r )
 {
     d_physicalDim = 3;
@@ -50,9 +62,11 @@ bool Sphere::inside( const Point &pos ) const
  ********************************************************/
 Point Sphere::surfaceNorm( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return Point();
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
+    double r = sqrt( x * x + y * y + z * z );
+    return { x / r, y / r, z / r };
 }
 
 
@@ -61,7 +75,7 @@ Point Sphere::surfaceNorm( const Point &pos ) const
  ********************************************************/
 Point Sphere::physical( const Point &pos ) const
 {
-    auto point = GeometryHelpers::map_logical_sphere( d_r, pos[0], pos[1], pos[2] );
+    auto point = GeometryHelpers::map_logical_sphere( d_r, pos.x(), pos.y(), pos.z() );
     point[0] += d_offset[0];
     point[1] += d_offset[1];
     point[2] += d_offset[2];
@@ -94,6 +108,18 @@ std::pair<Point, Point> Sphere::box() const
 
 
 /********************************************************
+ * Return the logical grid                               *
+ ********************************************************/
+std::vector<int> Sphere::getLogicalGridSize( const std::vector<int> &x ) const
+{
+    AMP_INSIST( x.size() == 1u, "Size must be an array of length 1" );
+    return { 2 * x[0], 2 * x[0], 2 * x[0] };
+}
+std::vector<bool> Sphere::getPeriodicDim() const { return { false, false, false }; }
+std::vector<int> Sphere::getLogicalSurfaceIds() const { return { 4, 4, 4, 4, 2, 1 }; }
+
+
+/********************************************************
  * Displace the mesh                                     *
  ********************************************************/
 void Sphere::displaceMesh( const double *x )
@@ -101,6 +127,15 @@ void Sphere::displaceMesh( const double *x )
     d_offset[0] += x[0];
     d_offset[1] += x[1];
     d_offset[2] += x[2];
+}
+
+
+/********************************************************
+ * Clone the object                                      *
+ ********************************************************/
+AMP::shared_ptr<AMP::Geometry::Geometry> Sphere::clone() const
+{
+    return AMP::make_shared<Sphere>( *this );
 }
 
 

@@ -1,21 +1,11 @@
 #include "AMP/ampmesh/structured/BoxMesh.h"
-#include "AMP/ampmesh/structured/CircleFrustumMesh.h"
-#include "AMP/ampmesh/structured/CircleMesh.h"
-#include "AMP/ampmesh/structured/CubeMesh.h"
-#include "AMP/ampmesh/structured/CylinderMesh.h"
-#include "AMP/ampmesh/structured/MovableBoxMesh.h"
-#include "AMP/ampmesh/structured/ShellMesh.h"
-#include "AMP/ampmesh/structured/SphereMesh.h"
-#include "AMP/ampmesh/structured/SphereSurfaceMesh.h"
-#include "AMP/ampmesh/structured/SquareFrustumMesh.h"
-#include "AMP/ampmesh/structured/TubeMesh.h"
-
 #include "AMP/ampmesh/MultiIterator.h"
+#include "AMP/ampmesh/structured/MovableBoxMesh.h"
+#include "AMP/ampmesh/structured/StructuredGeometryMesh.h"
 #include "AMP/ampmesh/structured/structuredMeshElement.h"
 #include "AMP/ampmesh/structured/structuredMeshIterator.h"
-
-
 #include "AMP/utils/Utilities.h"
+
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
@@ -38,31 +28,9 @@ namespace Mesh {
  ****************************************************************/
 AMP::shared_ptr<BoxMesh> BoxMesh::generate( MeshParameters::shared_ptr params )
 {
-    auto db               = params->getDatabase();
-    std::string generator = db->getString( "Generator" );
-    bool static_mesh      = db->getBoolWithDefault( "static", false );
-    AMP::shared_ptr<BoxMesh> mesh;
-    if ( generator.compare( "cube" ) == 0 ) {
-        mesh.reset( new CubeMesh( params ) );
-    } else if ( generator.compare( "tube" ) == 0 ) {
-        mesh.reset( new TubeMesh( params ) );
-    } else if ( generator.compare( "circle" ) == 0 ) {
-        mesh.reset( new CircleMesh( params ) );
-    } else if ( generator.compare( "cylinder" ) == 0 ) {
-        mesh.reset( new CylinderMesh( params ) );
-    } else if ( generator.compare( "shell" ) == 0 ) {
-        mesh.reset( new ShellMesh( params ) );
-    } else if ( generator.compare( "sphere" ) == 0 ) {
-        mesh.reset( new SphereMesh( params ) );
-    } else if ( generator.compare( "sphere_surface" ) == 0 ) {
-        mesh.reset( new SphereSurfaceMesh( params ) );
-    } else if ( generator.compare( "square_frustrum" ) == 0 ) {
-        mesh.reset( new SquareFrustumMesh( params ) );
-    } else if ( generator.compare( "circle_frustrum" ) == 0 ) {
-        mesh.reset( new CircleFrustumMesh( params ) );
-    } else {
-        AMP_ERROR( "Unknown generator" );
-    }
+    auto db          = params->getDatabase();
+    bool static_mesh = db->getBoolWithDefault( "static", false );
+    AMP::shared_ptr<BoxMesh> mesh( new StructuredGeometryMesh( params ) );
     if ( !static_mesh )
         mesh.reset( new MovableBoxMesh( *mesh ) );
     return mesh;
@@ -82,30 +50,12 @@ size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 }
 std::vector<size_t> BoxMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
-    auto db               = params->getDatabase();
-    std::string generator = db->getString( "Generator" );
-    std::vector<size_t> N;
-    if ( generator.compare( "cube" ) == 0 ) {
-        N = CubeMesh::estimateLogicalMeshSize( params );
-    } else if ( generator.compare( "tube" ) == 0 ) {
-        N = TubeMesh::estimateLogicalMeshSize( params );
-    } else if ( generator.compare( "circle" ) == 0 ) {
-        N = CircleMesh::estimateLogicalMeshSize( params );
-    } else if ( generator.compare( "cylinder" ) == 0 ) {
-        N = CylinderMesh::estimateLogicalMeshSize( params );
-    } else if ( generator.compare( "shell" ) == 0 ) {
-        N = ShellMesh::estimateLogicalMeshSize( params );
-    } else if ( generator.compare( "sphere" ) == 0 ) {
-        N = SphereMesh::estimateLogicalMeshSize( params );
-    } else if ( generator.compare( "sphere_surface" ) == 0 ) {
-        N = SphereSurfaceMesh::estimateLogicalMeshSize( params );
-    } else if ( generator.compare( "square_frustrum" ) == 0 ) {
-        N = SquareFrustumMesh::estimateLogicalMeshSize( params );
-    } else if ( generator.compare( "circle_frustrum" ) == 0 ) {
-        N = CircleFrustumMesh::estimateLogicalMeshSize( params );
-    } else {
-        AMP_ERROR( "Unknown generator" );
-    }
+    auto db   = params->getDatabase();
+    auto geom = AMP::Geometry::Geometry::buildGeometry( db );
+    auto size = geom->getLogicalGridSize( db->getIntegerArray( "Size" ) );
+    std::vector<size_t> N( size.size() );
+    for ( size_t i = 0; i < N.size(); i++ )
+        N[i] = size[i];
     return N;
 }
 
@@ -123,10 +73,9 @@ BoxMesh::BoxMesh( MeshParameters::shared_ptr params_in ) : Mesh( params_in )
     d_globalSize.fill( 1 );
     d_blockSize.fill( 1 );
     d_numBlocks.fill( 1 );
-    d_surfaceId = { 0, 1, 2, 3, 4, 5 };
-    d_onSurface.fill( true );
+    d_surfaceId.fill( -1 );
 }
-BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh.d_params )
+BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh )
 {
     PhysicalDim  = mesh.PhysicalDim;
     GeomDim      = mesh.GeomDim;
@@ -140,7 +89,6 @@ BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh.d_params )
     d_blockSize  = mesh.d_blockSize;
     d_numBlocks  = mesh.d_numBlocks;
     d_surfaceId  = mesh.d_surfaceId;
-    d_onSurface  = mesh.d_onSurface;
     for ( int d = 0; d < 4; d++ ) {
         for ( int i = 0; i < 6; i++ )
             d_globalSurfaceList[i][d] = mesh.d_globalSurfaceList[i][d];
@@ -156,18 +104,11 @@ void BoxMesh::initialize()
     PROFILE_START( "initialize" );
     // Check some assumptions/variables
     AMP_INSIST( static_cast<int>( GeomDim ) <= 3, "Geometric dimension must be <= 3" );
-    for ( int i = 2 * static_cast<int>( GeomDim ); i < 6; i++ ) {
-        d_onSurface[i] = false;
+    for ( int i = 2 * static_cast<int>( GeomDim ); i < 6; i++ )
         d_surfaceId[i] = -1;
-    }
     for ( int i = 0; i < 6; i++ ) {
-        if ( d_isPeriodic[i / 2] ) {
-            AMP_ASSERT( d_onSurface[i] == false );
+        if ( d_isPeriodic[i / 2] )
             AMP_ASSERT( d_surfaceId[i] == -1 );
-        } else {
-            if ( !d_onSurface[i] )
-                AMP_ASSERT( d_surfaceId[i] == -1 );
-        }
     }
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
         AMP_ASSERT( d_globalSize[d] > 0 );
@@ -284,7 +225,7 @@ void BoxMesh::initialize()
         }
     }
     for ( int i = 0; i < 6; i++ ) {
-        if ( !d_onSurface[i] ) {
+        if ( d_surfaceId[i] == -1 ) {
             for ( int j = 0; j < static_cast<int>( GeomDim ); j++ )
                 d_globalSurfaceList[i][j].clear();
         }
@@ -408,17 +349,20 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const AMP::Geometry::P
             while ( x[d] >= 1.0 )
                 x[d] -= 1.0;
         }
-        if ( fabs( x[d] ) < 1e-12 )
-            x[d] = 0.0;
-        if ( fabs( x[d] - 1.0 ) < 1e-12 )
-            x[d] = 1.0 - 1e-12;
-        if ( x[d] < 0 || x[d] > 1 )
-            return {};
     }
     // Convert x to [0,size]
     x[0] = x[0] * d_globalSize[0];
     x[1] = x[1] * d_globalSize[1];
     x[2] = x[2] * d_globalSize[2];
+    // Check if element is outside domain
+    for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
+        if ( fabs( x[d] ) < 1e-6 )
+            x[d] = 0;
+        if ( fabs( x[d] - d_globalSize[d] ) < 1e-6 )
+            x[d] = d_globalSize[d];
+        if ( x[d] < 0 || x[d] > d_globalSize[d] )
+            return MeshElementIndex();
+    }
     // Compute the index
     MeshElementIndex index;
     if ( type == GeomDim ) {
@@ -662,12 +606,11 @@ inline MeshIterator BoxMesh::createIterator( const ElementBlocks &list ) const
     } else if ( list.size() == 1 ) {
         return structuredMeshIterator( list[0].first, list[0].second, this, 0 );
     } else {
-        std::vector<AMP::shared_ptr<MeshIterator>> iterator_list;
+        std::vector<MeshIterator> iterator_list;
         iterator_list.reserve( list.size() );
         for ( const auto item : list ) {
             if ( MeshElementIndex::numElements( item.first, item.second ) ) {
-                AMP::shared_ptr<structuredMeshIterator> it(
-                    new structuredMeshIterator( item.first, item.second, this, 0 ) );
+                structuredMeshIterator it( item.first, item.second, this, 0 );
                 iterator_list.push_back( it );
             }
         }
@@ -695,7 +638,7 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
     // Include each surface as needed
     ElementBlocks sufaceSet;
     for ( int i = 0; i < 2 * static_cast<int>( GeomDim ); i++ ) {
-        if ( d_onSurface[i] ) {
+        if ( d_surfaceId[i] != -1 ) {
             for ( const auto &item : d_globalSurfaceList[i][static_cast<int>( type )] )
                 sufaceSet.emplace_back( item );
         }

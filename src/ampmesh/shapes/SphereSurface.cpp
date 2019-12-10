@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/shapes/SphereSurface.h"
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -10,6 +11,17 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
+SphereSurface::SphereSurface( AMP::shared_ptr<AMP::Database> db )
+{
+    d_physicalDim = 3;
+    d_logicalDim  = 2;
+    d_offset[0]   = 0;
+    d_offset[1]   = 0;
+    d_offset[2]   = 0;
+    auto range    = db->getDoubleArray( "Range" );
+    AMP_INSIST( range.size() == 1u, "Range must be an array of length 1" );
+    d_r = range[0];
+}
 SphereSurface::SphereSurface( double r ) : Geometry(), d_r( r )
 {
     d_physicalDim = 3;
@@ -51,9 +63,13 @@ bool SphereSurface::inside( const Point &pos ) const
  ********************************************************/
 Point SphereSurface::surfaceNorm( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return Point();
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
+    double r = sqrt( x * x + y * y + z * z );
+    if ( r < d_r )
+        return { -x / r, -y / r, -z / r };
+    return { x / r, y / r, z / r };
 }
 
 
@@ -96,6 +112,18 @@ std::pair<Point, Point> SphereSurface::box() const
 
 
 /********************************************************
+ * Return the logical grid                               *
+ ********************************************************/
+std::vector<int> SphereSurface::getLogicalGridSize( const std::vector<int> &x ) const
+{
+    AMP_INSIST( x.size() == 1u, "Size must be an array of length 1" );
+    return { x[0], x[0] / 2, 1 };
+}
+std::vector<bool> SphereSurface::getPeriodicDim() const { return { true, false, false }; }
+std::vector<int> SphereSurface::getLogicalSurfaceIds() const { return { -1, -1, -1, -1, -1, -1 }; }
+
+
+/********************************************************
  * Displace the mesh                                     *
  ********************************************************/
 void SphereSurface::displaceMesh( const double *x )
@@ -103,6 +131,15 @@ void SphereSurface::displaceMesh( const double *x )
     d_offset[0] += x[0];
     d_offset[1] += x[1];
     d_offset[2] += x[2];
+}
+
+
+/********************************************************
+ * Clone the object                                      *
+ ********************************************************/
+AMP::shared_ptr<AMP::Geometry::Geometry> SphereSurface::clone() const
+{
+    return AMP::make_shared<SphereSurface>( *this );
 }
 
 

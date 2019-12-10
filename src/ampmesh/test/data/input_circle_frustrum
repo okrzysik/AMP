@@ -1,0 +1,95 @@
+Mesh{
+    MeshName = "zoo"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+    LoadBalanceMethod = 2
+
+
+    Mesh_1 {
+        MeshName = "circle_frustrum1"
+        MeshType = "AMP"
+        Generator = "circle_frustrum"
+        Size = 8, 6
+        BaseRadius = 0.8
+        TopRadius = 0.6
+        Height = 1
+        Dir = "-x"
+        x_offset = 0
+        y_offset = 0
+        z_offset = 0
+        static = TRUE
+    }
+    Mesh_2 {
+        MeshName = "circle_frustrum2"
+        MeshType = "AMP"
+        Generator = "circle_frustrum"
+        Size = 8, 6
+        BaseRadius = 0.8
+        TopRadius = 0.6
+        Height = 1
+        Dir = "+x"
+        x_offset = 2
+        y_offset = 0
+        z_offset = 0
+        static = TRUE
+    }
+    Mesh_3 {
+        MeshName = "circle_frustrum3"
+        MeshType = "AMP"
+        Generator = "circle_frustrum"
+        Size = 8, 6
+        BaseRadius = 0.8
+        TopRadius = 0.6
+        Height = 1
+        Dir = "-y"
+        x_offset = 0
+        y_offset = 2
+        z_offset = 0
+        static = TRUE
+    }
+    Mesh_4 {
+        MeshName = "circle_frustrum4"
+        MeshType = "AMP"
+        Generator = "circle_frustrum"
+        Size = 8, 6
+        BaseRadius = 0.8
+        TopRadius = 0.6
+        Height = 1
+        Dir = "+y"
+        x_offset = 2
+        y_offset = 2
+        z_offset = 0
+        static = TRUE
+    }
+    Mesh_5 {
+        MeshName = "circle_frustrum5"
+        MeshType = "AMP"
+        Generator = "circle_frustrum"
+        Size = 8, 6
+        BaseRadius = 0.8
+        TopRadius = 0.6
+        Height = 1
+        Dir = "-z"
+        x_offset = 0
+        y_offset = 4
+        z_offset = 0
+        static = TRUE
+    }
+    Mesh_6 {
+        MeshName = "circle_frustrum6"
+        MeshType = "AMP"
+        Generator = "circle_frustrum"
+        Size = 8, 6
+        BaseRadius = 0.8
+        TopRadius = 0.6
+        Height = 1
+        Dir = "+z"
+        x_offset = 2
+        y_offset = 4
+        z_offset = 0
+        static = TRUE
+    }
+    
+}
+

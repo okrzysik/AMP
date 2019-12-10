@@ -16,6 +16,18 @@ MeshIterator::MeshIterator()
     : d_iterator( nullptr ), d_typeID( getTypeID() ), d_size( 0 ), d_pos( 0 ), d_element( nullptr )
 {
 }
+MeshIterator::MeshIterator( MeshIterator &&rhs )
+    : d_iterator( nullptr ), d_typeID( getTypeID() ), d_size( 0 ), d_pos( 0 ), d_element( nullptr )
+{
+    if ( rhs.d_iterator == nullptr && rhs.d_typeID == getTypeID() ) {
+        d_iterator = nullptr;
+    } else if ( rhs.d_typeID != getTypeID() ) {
+        d_iterator = rhs.clone();
+    } else {
+        d_iterator     = rhs.d_iterator;
+        rhs.d_iterator = nullptr;
+    }
+}
 MeshIterator::MeshIterator( const MeshIterator &rhs )
     : d_iterator( nullptr ), d_typeID( getTypeID() ), d_size( 0 ), d_pos( 0 ), d_element( nullptr )
 {
@@ -26,6 +38,29 @@ MeshIterator::MeshIterator( const MeshIterator &rhs )
     } else {
         d_iterator = rhs.d_iterator->clone();
     }
+}
+MeshIterator &MeshIterator::operator=( MeshIterator &&rhs )
+{
+    if ( this == &rhs ) // protect against invalid self-assignment
+        return *this;
+    if ( d_iterator != nullptr ) {
+        // Delete the existing element
+        delete d_iterator;
+        d_iterator = nullptr;
+    }
+    d_typeID  = getTypeID();
+    d_size    = 0;
+    d_pos     = 0;
+    d_element = nullptr;
+    if ( rhs.d_iterator == nullptr && rhs.d_typeID == getTypeID() ) {
+        d_iterator = nullptr;
+    } else if ( rhs.d_typeID != getTypeID() ) {
+        d_iterator = rhs.clone();
+    } else {
+        d_iterator     = rhs.d_iterator;
+        rhs.d_iterator = nullptr;
+    }
+    return *this;
 }
 MeshIterator &MeshIterator::operator=( const MeshIterator &rhs )
 {

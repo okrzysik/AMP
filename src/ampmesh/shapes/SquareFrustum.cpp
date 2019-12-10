@@ -1,7 +1,7 @@
 #include "AMP/ampmesh/shapes/SquareFrustum.h"
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-
 
 #include <vector>
 
@@ -13,9 +13,37 @@ namespace Geometry {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-SquareFrustum::SquareFrustum( const std::vector<double> &range, int dir, double height )
-    : Geometry(), d_dir( dir )
+SquareFrustum::SquareFrustum( AMP::shared_ptr<AMP::Database> db ) : Geometry()
 {
+    auto dir      = db->getString( "Dir" );
+    double height = db->getDouble( "Height" );
+    auto range    = db->getDoubleArray( "Range" );
+    AMP_INSIST( range.size() == 6u, "Range must be an array of length 6" );
+    int dir2 = 0;
+    if ( dir == "-x" )
+        dir2 = 0;
+    else if ( dir == "+x" )
+        dir2 = 1;
+    else if ( dir == "-y" )
+        dir2 = 2;
+    else if ( dir == "+y" )
+        dir2 = 3;
+    else if ( dir == "-z" )
+        dir2 = 4;
+    else if ( dir == "+z" )
+        dir2 = 5;
+    else
+        AMP_ERROR( "Invalid value for Dir" );
+    initialize( range, dir2, height );
+}
+SquareFrustum::SquareFrustum( const std::vector<double> &range, int dir, double height )
+    : Geometry()
+{
+    initialize( range, dir, height );
+}
+void SquareFrustum::initialize( const std::vector<double> &range, int dir, double height )
+{
+    d_dir         = dir;
     d_physicalDim = 3;
     d_logicalDim  = 3;
     // Initialize the frustrum
@@ -235,6 +263,18 @@ std::pair<Point, Point> SquareFrustum::box() const
 
 
 /********************************************************
+ * Return the logical grid                               *
+ ********************************************************/
+std::vector<int> SquareFrustum::getLogicalGridSize( const std::vector<int> &x ) const
+{
+    AMP_INSIST( x.size() == 3u, "Size must be an array of length 3" );
+    return { x[0], x[1], x[2] };
+}
+std::vector<bool> SquareFrustum::getPeriodicDim() const { return { false, false, false }; }
+std::vector<int> SquareFrustum::getLogicalSurfaceIds() const { return { 1, 2, 3, 4, 5, 6 }; }
+
+
+/********************************************************
  * Displace the mesh                                     *
  ********************************************************/
 void SquareFrustum::displaceMesh( const double *x )
@@ -252,6 +292,15 @@ void SquareFrustum::displaceMesh( const double *x )
             d_face[i][j].z() += x[2];
         }
     }
+}
+
+
+/********************************************************
+ * Clone the object                                      *
+ ********************************************************/
+AMP::shared_ptr<AMP::Geometry::Geometry> SquareFrustum::clone() const
+{
+    return AMP::make_shared<SquareFrustum>( *this );
 }
 
 

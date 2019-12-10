@@ -19,7 +19,13 @@ class Cylinder : public Geometry
 {
 public:
     /**
-     * \brief Construct a Cylinder
+     * \brief Construct a Cylinder geometry
+     * \param db        Input database
+     */
+    explicit Cylinder( AMP::shared_ptr<AMP::Database> db );
+
+    /**
+     * \brief Construct a Cylinder geometry
      * \param range     The range of the Cylinder [xmin, xmax, ymin, ymax, zmin, zmax, ...]
      */
     explicit Cylinder( double r, double z_min, double z_max );
@@ -36,6 +42,10 @@ public:
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
     virtual void displaceMesh( const double *x ) override final;
+    virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
+    virtual std::vector<bool> getPeriodicDim() const override final;
+    virtual std::vector<int> getLogicalSurfaceIds() const override final;
+    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data

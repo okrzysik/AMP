@@ -20,7 +20,13 @@ class CircleFrustum : public Geometry
 {
 public:
     /**
-     * \brief Construct a CircleFrustum
+     * \brief Construct a CircleFrustum geometry
+     * \param db        Input database
+     */
+    explicit CircleFrustum( AMP::shared_ptr<AMP::Database> db );
+
+    /**
+     * \brief Construct a CircleFrustum geometry
      * \param r         The the radii of the frustrum (base/top)
      * \param dir       The direction of the pyramid { -x, x, -y, y, -z, z }
      * \param height    The height of the frustrum
@@ -32,6 +38,12 @@ public: // Functions inherited from Geometry
     virtual double distance( const Point &pos, const Point &dir ) const override final;
     virtual bool inside( const Point &pos ) const override final;
     virtual int NSurface() const override final { return 3; }
+    /**
+     * \brief    Get the surface id
+     * \details     This function will return the surface id closest to the point
+     * \param[in] x     Current position
+     * @return          Returns the surface id [-,+,cylinder]
+     */
     virtual int surface( const Point &x ) const override final;
     virtual Point surfaceNorm( const Point &x ) const override final;
     virtual Point logical( const Point &x ) const override final;
@@ -39,6 +51,10 @@ public: // Functions inherited from Geometry
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
     virtual void displaceMesh( const double *x ) override final;
+    virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
+    virtual std::vector<bool> getPeriodicDim() const override final;
+    virtual std::vector<int> getLogicalSurfaceIds() const override final;
+    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:              // Internal data
     uint8_t d_dir;      // The direction of the center axis

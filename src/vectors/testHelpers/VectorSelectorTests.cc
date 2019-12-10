@@ -22,14 +22,11 @@ inline void testSelector( AMP::UnitTest *ut,
                           const AMP::LinearAlgebra::VectorSelector &selector,
                           AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vec1 = selector.subset( vec );
-    AMP::LinearAlgebra::Vector::const_shared_ptr vec2 =
-        selector.subset( AMP::LinearAlgebra::Vector::const_shared_ptr( vec ) );
-    AMP::LinearAlgebra::Vector::shared_ptr vec3 =
-        vec->select( selector, vec->getVariable()->getName() );
-    AMP::LinearAlgebra::Vector::const_shared_ptr vec4 =
-        vec->constSelect( selector, vec->getVariable()->getName() );
-    if ( vec1 == nullptr || vec2 == nullptr || vec3 == nullptr || vec4 == nullptr ) {
+    auto vec1 = selector.subset( vec );
+    auto vec2 = selector.subset( AMP::LinearAlgebra::Vector::const_shared_ptr( vec ) );
+    auto vec3 = vec->select( selector, vec->getVariable()->getName() );
+    auto vec4 = vec->constSelect( selector, vec->getVariable()->getName() );
+    if ( !vec1 || !vec2 || !vec3 || !vec4 ) {
         ut->failure( "Failed to select (" + test_name + ")" );
         return;
     }
@@ -42,7 +39,7 @@ inline void testSelector( AMP::UnitTest *ut,
 }
 void AMP::LinearAlgebra::VectorTests::testAllSelectors( AMP::UnitTest *ut )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vec( d_factory->getVector() );
+    auto vec = d_factory->getVector();
     vec->setVariable( AMP::make_shared<AMP::LinearAlgebra::Variable>( "test_selector" ) );
     AMP::AMP_MPI vec_comm = vec->getComm();
     AMP::AMP_MPI world_comm( AMP_COMM_WORLD );
@@ -77,9 +74,8 @@ void AMP::LinearAlgebra::VectorTests::test_VS_ByVariableName( AMP::UnitTest *ut 
     vec3->addVector( vec3a );
     vec3->addVector( vec3b );
 
-    bool pass = true;
-    AMP::LinearAlgebra::Vector::shared_ptr selection1 =
-        vec2->select( AMP::LinearAlgebra::VS_ByVariableName( "None" ), "None" );
+    bool pass       = true;
+    auto selection1 = vec2->select( AMP::LinearAlgebra::VS_ByVariableName( "None" ), "None" );
     if ( selection1 ) {
         ut->failure( "Found vector where there should be none" );
         pass = false;
@@ -124,13 +120,12 @@ void AMP::LinearAlgebra::VectorTests::test_VS_ByVariableName( AMP::UnitTest *ut 
 // Test the behavior of VS_Comm
 void AMP::LinearAlgebra::VectorTests::test_VS_Comm( AMP::UnitTest *ut )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vec1 = d_factory->getVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vec2;
+    auto vec1             = d_factory->getVector();
     AMP::AMP_MPI vec_comm = vec1->getComm();
     AMP::AMP_MPI world_comm( AMP_COMM_WORLD );
     AMP::AMP_MPI self_comm( AMP_COMM_SELF );
     bool pass = true;
-    vec2      = AMP::LinearAlgebra::VS_Comm( vec_comm ).subset( vec1 );
+    auto vec2 = AMP::LinearAlgebra::VS_Comm( vec_comm ).subset( vec1 );
     if ( !compareVecSubset( vec1, vec2 ) ) {
         ut->failure( "Subset for vec comm" );
         pass = false;

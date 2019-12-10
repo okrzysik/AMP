@@ -32,8 +32,14 @@ public:
     //! Empty MeshIterator constructor
     MeshIterator();
 
+    //! Move constructor
+    MeshIterator( MeshIterator && );
+
     //! Copy constructor
     MeshIterator( const MeshIterator & );
+
+    //! Move operator
+    MeshIterator &operator=( MeshIterator && );
 
     //! Assignment operator
     MeshIterator &operator=( const MeshIterator & );

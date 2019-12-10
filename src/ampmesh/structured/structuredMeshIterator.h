@@ -13,7 +13,7 @@ namespace AMP {
 namespace Mesh {
 
 
-class structuredMeshIterator : public MeshIterator
+class structuredMeshIterator final : public MeshIterator
 {
 public:
     //! Empty MultiVectorIterator constructor
@@ -33,8 +33,14 @@ public:
     //! Deconstructor
     virtual ~structuredMeshIterator();
 
+    //! Move constructor
+    structuredMeshIterator( structuredMeshIterator && ) = default;
+
     //! Copy constructor
     structuredMeshIterator( const structuredMeshIterator & );
+
+    //! Move operator
+    structuredMeshIterator &operator=( structuredMeshIterator && ) = default;
 
     //! Assignment operator
     structuredMeshIterator &operator=( const structuredMeshIterator & );

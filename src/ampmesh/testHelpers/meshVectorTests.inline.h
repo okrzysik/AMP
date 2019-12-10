@@ -37,17 +37,17 @@ void meshTests::simpleNodalVectorTests( AMP::UnitTest *utils,
     if ( vectora->getGlobalSize() == num_dofs )
         utils->passes( "global vector size" );
     else
-        utils->failure( "global vector size" );
+        utils->failure( "global vector size: " + mesh->getName() );
     num_dofs = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex ) * DOF_PER_NODE;
     if ( vectora->getLocalSize() == num_dofs )
         utils->passes( "local vector size" );
     else
-        utils->failure( "local vector size" );
+        utils->failure( "local vector size: " + mesh->getName() );
     num_dofs = mesh->numGhostElements( AMP::Mesh::GeomType::Vertex, gcw ) * DOF_PER_NODE;
     if ( vectora->getGhostSize() == num_dofs )
         utils->passes( "ghost vector size" );
     else
-        utils->failure( "ghost vector size" );
+        utils->failure( "ghost vector size: " + mesh->getName() );
 
     // Try some trival operations
     vectora->setRandomValues();
@@ -56,13 +56,13 @@ void meshTests::simpleNodalVectorTests( AMP::UnitTest *utils,
     if ( fabs( vectora->L2Norm() - t1 ) < 0.0000001 )
         utils->passes( "non-trivial random vector" );
     else
-        utils->failure( "non-trivial random vector" );
+        utils->failure( "non-trivial random vector: + " + mesh->getName() );
     vectorb->setToScalar( 3. );
     vectora->multiply( vectora, vectorb );
     if ( fabs( vectora->L2Norm() - 3. * t1 ) < 0.00000001 )
         utils->passes( "trivial usage" );
     else
-        utils->failure( "trivial usage" );
+        utils->failure( "trivial usage: " + mesh->getName() );
 }
 
 

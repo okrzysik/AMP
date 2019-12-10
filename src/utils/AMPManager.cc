@@ -53,7 +53,7 @@
     #include <cuda_runtime_api.h>
     #include <cuda.h>
 #endif
-// clang-format off
+// clang-format on
 
 
 #include <iostream>
@@ -66,6 +66,7 @@
 #include <csignal>
 #include <stdexcept>
 #include <cstdio>
+#include <memory>
 
 
 namespace AMP {
@@ -83,10 +84,10 @@ AMPManagerProperties AMPManager::properties = AMPManagerProperties();
 
 
 /****************************************************************************
-*  Function to terminate AMP with a message for exceptions                  *
-****************************************************************************/
-static int force_exit     = 0;
-static bool printed_stack = false;
+ *  Function to terminate AMP with a message for exceptions                  *
+ ****************************************************************************/
+static int force_exit      = 0;
+static bool printed_stack  = false;
 static int abort_stackType = 3;
 void AMPManager::terminate_AMP( std::string message )
 {
@@ -150,8 +151,8 @@ void AMPManager::exitFun()
 
 
 /****************************************************************************
-*  Function to PETSc errors                                                 *
-****************************************************************************/
+ *  Function to PETSc errors                                                 *
+ ****************************************************************************/
 #ifdef USE_EXT_PETSC
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
 PetscErrorCode petsc_err_handler( int line,
@@ -196,8 +197,8 @@ PetscErrorCode petsc_err_handler( MPI_Comm,
 
 
 /****************************************************************************
-* Initialize the AMP package.  This routine performs the following tasks:   *
-****************************************************************************/
+ * Initialize the AMP package.  This routine performs the following tasks:   *
+ ****************************************************************************/
 void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperties &properties_in )
 {
     // Check if AMP was previously initialized
@@ -206,11 +207,11 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     if ( initialized == -1 )
         AMP_ERROR( "AMP was previously initialized and shutdown.  It cannot be reinitialized" );
     // Begin startup procedure
-    double start = Utilities::time();
-    argc         = argc_in;
-    argv         = argv_in;
-    properties   = properties_in;
-    print_times  = properties.print_times;
+    double start    = Utilities::time();
+    argc            = argc_in;
+    argv            = argv_in;
+    properties      = properties_in;
+    print_times     = properties.print_times;
     abort_stackType = properties.stack_trace_type;
     // Initialize the timers (default is disabled)
     PROFILE_DISABLE();
@@ -262,12 +263,12 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
 
 
 /****************************************************************************
-* Shutdown the AMP package                                                  *
-****************************************************************************/
+ * Shutdown the AMP package                                                  *
+ ****************************************************************************/
 void AMPManager::shutdown()
 {
     double start_time = Utilities::time();
-    int rank = comm_world.getRank();
+    int rank          = comm_world.getRank();
     if ( initialized == 0 )
         AMP_ERROR( "AMP is not initialized, did you forget to call startup or call shutdown more "
                    "than once" );
@@ -327,8 +328,8 @@ void AMPManager::shutdown()
 
 
 /****************************************************************************
-* Function to start/stop SAMRAI                                             *
-****************************************************************************/
+ * Function to start/stop SAMRAI                                             *
+ ****************************************************************************/
 double AMPManager::start_SAMRAI()
 {
     double time = 0;
@@ -368,21 +369,20 @@ double AMPManager::stop_SAMRAI()
 class SAMRAIAbortAppender : public SAMRAI::tbox::Logger::Appender
 {
 public:
-    void
-    logMessage( const std::string &msg, const std::string &file, const int line ) override
+    void logMessage( const std::string &msg, const std::string &file, const int line ) override
     {
         AMP::Utilities::abort( msg, file, line );
     }
-    SAMRAIAbortAppender() = default;
+    SAMRAIAbortAppender()          = default;
     virtual ~SAMRAIAbortAppender() = default;
 };
 #endif
 
 
 /****************************************************************************
-* Function to start/stop PETSc                                              *
-****************************************************************************/
-double AMPManager::start_PETSc( )
+ * Function to start/stop PETSc                                              *
+ ****************************************************************************/
+double AMPManager::start_PETSc()
 {
     double time = 0;
 #ifdef USE_EXT_PETSC
@@ -400,10 +400,10 @@ double AMPManager::start_PETSc( )
         for ( auto &petscArg : petscArgs )
             delete[] petscArg;
     }
-    #ifndef USE_MPI
-        // Fix minor bug in petsc where first call to dup returns MPI_COMM_WORLD instead of a new comm
-        AMP::AMP_MPI( MPI_COMM_WORLD ).dup();
-    #endif
+#ifndef USE_MPI
+    // Fix minor bug in petsc where first call to dup returns MPI_COMM_WORLD instead of a new comm
+    AMP::AMP_MPI( MPI_COMM_WORLD ).dup();
+#endif
     time = Utilities::time() - start;
 #endif
     return time;
@@ -425,8 +425,8 @@ double AMPManager::stop_PETSc()
 
 
 /****************************************************************************
-* Function to create the arguments for petsc                                *
-****************************************************************************/
+ * Function to create the arguments for petsc                                *
+ ****************************************************************************/
 static inline void addArg( std::string arg, std::vector<char *> &args )
 {
     auto *tmp = new char[arg.length() + 1];
@@ -443,9 +443,9 @@ std::vector<char *> AMPManager::getPetscArgs()
 
 
 /****************************************************************************
-* Function to start/stop CUDA                                               *
-****************************************************************************/
-double AMPManager::start_CUDA( )
+ * Function to start/stop CUDA                                               *
+ ****************************************************************************/
+double AMPManager::start_CUDA()
 {
 #ifdef USE_CUDA
     void *tmp;
@@ -457,8 +457,8 @@ double AMPManager::start_CUDA( )
 
 
 /****************************************************************************
-* Functions to set/clear the error handlers                                 *
-****************************************************************************/
+ * Functions to set/clear the error handlers                                 *
+ ****************************************************************************/
 void AMPManager::setHandlers()
 {
     // Set the MPI error handler for comm_world
@@ -473,11 +473,11 @@ void AMPManager::setHandlers()
 #ifdef USE_EXT_SAMRAI
     SAMRAI::tbox::SAMRAI_MPI::setCallAbortInSerialInsteadOfExit( true );
     SAMRAI::tbox::SAMRAI_MPI::setCallAbortInParallelInsteadOfMPIAbort( true );
-    auto appender = AMP::make_shared<SAMRAIAbortAppender>();
+    auto appender = std::make_shared<SAMRAIAbortAppender>();
     SAMRAI::tbox::Logger::getInstance()->setAbortAppender( appender );
 #endif
     // Set the terminate routine for runtime errors
-    StackTrace::Utilities::setErrorHandlers( );
+    StackTrace::Utilities::setErrorHandlers();
     // Set atexit function
     std::atexit( exitFun );
 #ifdef USE_LINUX
@@ -503,9 +503,9 @@ void AMPManager::clearHandlers()
 
 
 /****************************************************************************
-*  Functions to handle MPI errors                                           *
-****************************************************************************/
-void AMPManager::setMPIErrorHandler( )
+ *  Functions to handle MPI errors                                           *
+ ****************************************************************************/
+void AMPManager::setMPIErrorHandler()
 {
 #ifdef USE_EXT_MPI
     StackTrace::setMPIErrorHandler( comm_world.getCommunicator() );
@@ -519,29 +519,30 @@ void AMPManager::clearMPIErrorHandler()
 #ifdef USE_EXT_MPI
     StackTrace::clearMPIErrorHandler( comm_world.getCommunicator() );
 #ifdef USE_EXT_SAMRAI
-    StackTrace::clearMPIErrorHandler( SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator() );
+    StackTrace::clearMPIErrorHandler(
+        SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator() );
 #endif
 #endif
 }
 
 
 /****************************************************************************
-* Empty constructor to setup default AMPManagerProperties                   *
-****************************************************************************/
-AMPManagerProperties::AMPManagerProperties():
-    use_MPI_Abort( true ),
-    print_times( false ),
-    profile_MPI_level( 2 ),
-    print_startup( false ),
-    stack_trace_type( 3 ),
-    COMM_WORLD( AMP_COMM_WORLD )
+ * Empty constructor to setup default AMPManagerProperties                   *
+ ****************************************************************************/
+AMPManagerProperties::AMPManagerProperties()
+    : use_MPI_Abort( true ),
+      print_times( false ),
+      profile_MPI_level( 2 ),
+      print_startup( false ),
+      stack_trace_type( 3 ),
+      COMM_WORLD( AMP_COMM_WORLD )
 {
 }
 
 
 /****************************************************************************
-*  Some simple functions                                                    *
-****************************************************************************/
+ *  Some simple functions                                                    *
+ ****************************************************************************/
 int AMPManager::get_argc()
 {
     AMP_INSIST( initialized, "AMP has not been initialized" );
@@ -560,19 +561,18 @@ AMPManagerProperties AMPManager::getAMPManagerProperties()
 
 
 /****************************************************************************
-*  Functions to return version info                                         *
-****************************************************************************/
-std::array<int,3> AMPManager::revision()
+ *  Functions to return version info                                         *
+ ****************************************************************************/
+std::array<int, 3> AMPManager::revision()
 {
-    return { {AMP::Version::major, AMP::Version::minor, AMP::Version::build} };
+    return { { AMP::Version::major, AMP::Version::minor, AMP::Version::build } };
 }
 std::string AMPManager::info()
 {
-    std::stringstream out; 
+    std::stringstream out;
     out << "AMP:" << std::endl;
-    out << "   Version: " << AMP::Version::major << "." <<
-                              AMP::Version::minor << "." <<
-                              AMP::Version::build << std::endl;
+    out << "   Version: " << AMP::Version::major << "." << AMP::Version::minor << "."
+        << AMP::Version::build << std::endl;
     out << "   Hash: " << AMP::Version::short_hash << std::endl;
     out << "   C Compiler: " << AMP::Version::C << std::endl;
     out << "   C++ Compiler: " << AMP::Version::CXX << std::endl;
@@ -590,14 +590,12 @@ std::string AMPManager::info()
     out << "ProfilerApp: " << TIMER_VERSION << std::endl;
 #endif
 #ifdef USE_EXT_SAMRAI
-    out << "SAMRAI: " << SAMRAI_VERSION_MAJOR << "." <<
-                        SAMRAI_VERSION_MINOR << "." <<
-                        SAMRAI_VERSION_PATCHLEVEL << std::endl;
+    out << "SAMRAI: " << SAMRAI_VERSION_MAJOR << "." << SAMRAI_VERSION_MINOR << "."
+        << SAMRAI_VERSION_PATCHLEVEL << std::endl;
 #endif
 #ifdef USE_EXT_PETSC
-    out << "PETSc: " << PETSC_VERSION_MAJOR << "." <<
-                        PETSC_VERSION_MINOR << "." <<
-                        PETSC_VERSION_SUBMINOR << std::endl;
+    out << "PETSc: " << PETSC_VERSION_MAJOR << "." << PETSC_VERSION_MINOR << "."
+        << PETSC_VERSION_SUBMINOR << std::endl;
 #endif
 #ifdef USE_EXT_TRILINOS
     out << "Trilinos: " << TRILINOS_VERSION_STRING << std::endl;
@@ -607,7 +605,7 @@ std::string AMPManager::info()
 #endif
 #ifdef HYPRE_RELEASE_VERSION
     out << "Hypre: " << HYPRE_RELEASE_VERSION << std::endl;
-#elif defined(HYPRE_PACKAGE_VERSION)
+#elif defined( HYPRE_PACKAGE_VERSION )
     out << "Hypre: " << HYPRE_PACKAGE_VERSION << std::endl;
 #endif
 #ifdef USE_EXT_LIBMESH

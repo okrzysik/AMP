@@ -2,6 +2,7 @@
 #   cd to AMP directory (source dir)
 # To update format only:
 #   find src -name "*.cpp" -or -name "*.cc" -or -name "*.h" -or -name "*.hpp" -or -name "*.I" | xargs -I{} clang-format -i {}
+#   hg status . -amn | grep -E "(\.cpp|\.h|\.cc|\.hpp|\.I)" | xargs -I{} clang-format -i {}
 # To run modernize
 #   export CLANG_PATH=/packages/llvm/build/llvm-60
 #   export PATH=${CLANG_PATH}/bin:${CLANG_PATH}/share/clang:$PATH

@@ -25,7 +25,6 @@ static inline int lround( double x ) { return x >= 0 ? floor( x ) : ceil( x ); }
 
 void VectorTests::InstantiateVector( AMP::UnitTest *utils )
 {
-
     auto vector = d_factory->getVector();
     if ( vector )
         utils->passes( "created " + d_factory->name() );
@@ -44,7 +43,6 @@ void VectorTests::CopyVectorConsistency( AMP::UnitTest *utils )
     double *t2       = nullptr;
     size_t *ndx      = nullptr;
     size_t numGhosts = commList->getGhostIDList().size();
-
     vec1->setRandomValues();
     vec2->copyVector( vec1 );
     if ( numGhosts ) {
@@ -78,15 +76,11 @@ void VectorTests::CopyVectorConsistency( AMP::UnitTest *utils )
 
 void VectorTests::Bug_728( AMP::UnitTest *utils )
 {
-    auto vector                                   = d_factory->getVector();
-    AMP::LinearAlgebra::Variable::shared_ptr var1 = vector->getVariable();
-
-    // Exit if there is no associated variable
+    auto vector = d_factory->getVector();
+    auto var1   = vector->getVariable();
     if ( !var1 )
         return;
-
-    AMP::LinearAlgebra::Variable::shared_ptr var2 = var1->cloneVariable( var1->getName() );
-
+    auto var2 = var1->cloneVariable( var1->getName() );
     if ( vector->subsetVectorForVariable( var1 ) )
         utils->passes( "Found vector for same variable pointer " + d_factory->name() );
     else
@@ -132,8 +126,8 @@ void VectorTests::SetToScalarVector( AMP::UnitTest *utils )
         utils->passes( "Set data to 5 " + d_factory->name() );
     else
         utils->failure( "Failed to set scalar to 5 " + d_factory->name() );
-    std::vector<size_t> remoteDofs = vector->getDOFManager()->getRemoteDOFs();
-    fail                           = false;
+    auto remoteDofs = vector->getDOFManager()->getRemoteDOFs();
+    fail            = false;
     for ( auto &remoteDof : remoteDofs ) {
         if ( vector->getValueByGlobalID( remoteDof ) != 5. )
             fail = true;
@@ -147,8 +141,8 @@ void VectorTests::SetToScalarVector( AMP::UnitTest *utils )
 
 void VectorTests::CloneVector( AMP::UnitTest *utils )
 {
-    auto vector                                  = d_factory->getVector();
-    AMP::LinearAlgebra::Vector::shared_ptr clone = vector->cloneVector( "cloned vector" );
+    auto vector = d_factory->getVector();
+    auto clone  = vector->cloneVector( "cloned vector" );
     clone->setToScalar( 0. );
     utils->passes( "Clone created " + d_factory->name() );
     bool pass = true;
@@ -171,7 +165,6 @@ void VectorTests::DotProductVector( AMP::UnitTest *utils )
     auto vector2( d_factory->getVector() );
     vector1->setToScalar( 1. );
     vector2->setToScalar( 2. );
-
     auto d11 = vector1->dot( vector1 );
     auto d12 = vector1->dot( vector2 );
     auto d21 = vector2->dot( vector1 );
@@ -203,7 +196,6 @@ void VectorTests::L2NormVector( AMP::UnitTest *utils )
 {
     auto vector = d_factory->getVector();
     vector->setToScalar( 1. );
-
     auto norm  = vector->L2Norm();
     auto norm2 = vector->dot( vector );
     if ( fabs( norm * norm - norm2 ) < 0.000001 )
@@ -222,8 +214,8 @@ void VectorTests::L2NormVector( AMP::UnitTest *utils )
 
 void VectorTests::AbsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vec1( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vec2 = vec1->cloneVector();
+    auto vec1 = d_factory->getVector();
+    auto vec2 = vec1->cloneVector();
     vec1->setRandomValues();
     vec2->copyVector( vec1 );
     vec2->scale( -1.0 );
@@ -311,10 +303,9 @@ void VectorTests::Bug_491( AMP::UnitTest *utils )
     auto petsc_vec  = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( managed_petsc );
     Vec managed_vec = petsc_vec->getVec();
 
-    double n1, n2, ninf;
-    double sp_n1, sp_n2, sp_inf;
 
     // This sets the petsc cache
+    double n1, n2, ninf;
     VecNormBegin( managed_vec, NORM_1, &n1 );
     VecNormBegin( managed_vec, NORM_2, &n2 );
     VecNormBegin( managed_vec, NORM_INFINITY, &ninf );
@@ -327,9 +318,9 @@ void VectorTests::Bug_491( AMP::UnitTest *utils )
 
     // Now, we perform some math on vector1
     vector1->scale( 100000 );
-    sp_n1  = vector1->L1Norm();
-    sp_n2  = vector1->L2Norm();
-    sp_inf = vector1->maxNorm();
+    double sp_n1  = vector1->L1Norm();
+    double sp_n2  = vector1->L2Norm();
+    double sp_inf = vector1->maxNorm();
 
     // Check to see if petsc cache has been invalidated
     VecNormBegin( managed_vec, NORM_1, &n1 );
@@ -486,24 +477,15 @@ void VectorTests::DivideVector( AMP::UnitTest *utils )
         utils->passes( "vector::divide " + d_factory->name() );
     else
         utils->failure( "vector::divide " + d_factory->name() );
-
-    // if ( utils->rank() == 2 )
-    //{
-    //  std::cout << vector2 << std::endl;
-    //}
 }
 
 
 void VectorTests::VectorIteratorLengthTest( AMP::UnitTest *utils )
 {
     auto vector1( d_factory->getVector() );
-    auto curEntry = vector1->begin();
-    auto endEntry = vector1->end();
-    size_t i      = 0;
-    while ( curEntry != endEntry ) {
+    size_t i = 0;
+    for ( auto it = vector1->begin(); it != vector1->end(); ++it )
         i++;
-        ++curEntry;
-    }
     size_t k = vector1->getLocalSize();
     if ( i == k )
         utils->passes( "Iterated over the correct number of entries " + d_factory->name() );
@@ -743,7 +725,6 @@ void VectorTests::CopyRawDataBlockVector( AMP::UnitTest *utils )
     auto vectora = d_factory->getVector();
     auto vectorb = d_factory->getVector();
     auto vectorc = d_factory->getVector();
-
     vectora->setRandomValues();
     vectorb->zero();
     auto buf = new double[vectora->getLocalSize()];
@@ -764,7 +745,6 @@ void VectorTests::VerifyVectorGhostCreate( AMP::UnitTest *utils )
     int num_ghosts     = vector->getGhostSize();
     AMP_MPI globalComm = AMP_MPI( AMP_COMM_WORLD );
     num_ghosts         = globalComm.sumReduce( num_ghosts );
-
     if ( utils->size() == 1 )
         utils->expected_failure( "No ghost cells for single processor " + d_factory->name() );
     else if ( num_ghosts > 0 )
@@ -889,10 +869,9 @@ void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
         utils->failure( "makeConsistent leaves vector in UpdateState::UNCHANGED state " +
                         d_factory->name() );
     if ( vector->getGhostSize() > 0 ) {
-        AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list =
-            vector->getCommunicationList();
+        auto comm_list = vector->getCommunicationList();
         std::vector<double> ghostList( vector->getGhostSize() );
-        std::vector<size_t> ghostIDList = comm_list->getGhostIDList();
+        auto ghostIDList = comm_list->getGhostIDList();
         vector->getValuesByGlobalID(
             vector->getGhostSize(), (size_t *) &( ghostIDList[0] ), &( ghostList[0] ) );
         bool testPassed = true;
@@ -906,10 +885,9 @@ void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
             utils->failure( "ghost not set correctly in vector " + d_factory->name() );
     }
     if ( vector->getGhostSize() > 0 ) {
-        AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list =
-            vector->getCommunicationList();
-        std::vector<size_t> ghostIDList = comm_list->getGhostIDList();
-        bool testPassed                 = true;
+        auto comm_list   = vector->getCommunicationList();
+        auto ghostIDList = comm_list->getGhostIDList();
+        bool testPassed  = true;
         for ( size_t i = 0; i != vector->getGhostSize(); i++ ) {
             size_t ghostNdx = ghostIDList[i];
             double ghostVal = vector->getValueByGlobalID( ghostNdx );

@@ -12,8 +12,8 @@ namespace LinearAlgebra {
 template<typename VIEWER>
 void VectorTests::DeepCloneOfView( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
-    if ( AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vector1 ) == nullptr )
+    auto vector1 = d_factory->getVector();
+    if ( !AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vector1 ) )
         return;
     vector1      = VIEWER::view( vector1 );
     auto vector2 = vector1->cloneVector();
@@ -43,9 +43,9 @@ void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_p
     else
         utils->failure( "Subtracting end from beginning " );
 
-    VectorDataIterator<double> cur1, cur2;
-    cur1 = cur2                    = p->begin();
-    VectorDataIterator<double> end = p->end();
+    auto cur1 = p->begin();
+    auto cur2 = p->begin();
+    auto end  = p->end();
     ++cur1;
     ++cur2;
     int i = 0;

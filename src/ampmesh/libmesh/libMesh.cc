@@ -669,9 +669,9 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw ) const
             it2 = d_ghostElements.find( type );
             if ( it1 == d_localElements.end() || it2 == d_ghostElements.end() )
                 AMP_ERROR( "Internal error in libMesh::getIterator" );
-            std::vector<AMP::shared_ptr<MeshIterator>> iterators( 2 );
-            iterators[0] = AMP::make_shared<MultiVectorIterator>( it1->second, 0 );
-            iterators[1] = AMP::make_shared<MultiVectorIterator>( it2->second, 0 );
+            std::vector<MeshIterator> iterators( 2 );
+            iterators[0] = MultiVectorIterator( it1->second, 0 );
+            iterators[1] = MultiVectorIterator( it2->second, 0 );
             return MultiIterator( iterators, 0 );
         } else {
             AMP_ERROR( "Unsupported ghost cell width" );
@@ -696,9 +696,9 @@ MeshIterator libMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
     if ( gcw == 0 ) {
         return MultiVectorIterator( local, 0 );
     } else if ( gcw == 1 ) {
-        std::vector<MeshIterator::shared_ptr> iterators( 2 );
-        iterators[0] = AMP::make_shared<MultiVectorIterator>( local, 0 );
-        iterators[1] = AMP::make_shared<MultiVectorIterator>( ghost, 0 );
+        std::vector<MeshIterator> iterators( 2 );
+        iterators[0] = MultiVectorIterator( local, 0 );
+        iterators[1] = MultiVectorIterator( ghost, 0 );
         return MultiIterator( iterators, 0 );
     } else {
         AMP_ERROR( "libmesh has maximum ghost width of 1" );

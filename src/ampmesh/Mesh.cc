@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/Geometry.h"
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
 #include "AMP/ampmesh/SubsetMesh.h"
 #include "AMP/utils/Utilities.h"
@@ -43,6 +44,22 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
     AMP_INSIST( !d_comm.isNull(), "Communicator in mesh params must be non NULL" );
     setMeshID();
     d_name = d_db->getStringWithDefault( "MeshName", "NULL" );
+}
+Mesh::Mesh( const Mesh &rhs )
+    : d_params( rhs.d_params ),
+      d_geometry( nullptr ),
+      GeomDim( rhs.GeomDim ),
+      PhysicalDim( rhs.PhysicalDim ),
+      d_max_gcw( rhs.d_max_gcw ),
+      d_comm( rhs.d_comm ),
+      d_db( rhs.d_db ),
+      d_meshID( rhs.d_meshID ),
+      d_name( rhs.d_name ),
+      d_box( rhs.d_box ),
+      d_box_local( rhs.d_box_local )
+{
+    if ( rhs.d_geometry )
+        d_geometry = rhs.d_geometry->clone();
 }
 
 

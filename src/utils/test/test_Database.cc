@@ -24,7 +24,7 @@
  * This tests whether we can create and use an InputManager object       *
  *                                                                       *
  ************************************************************************/
-void readInputDatabase( AMP::UnitTest *ut )
+void readInputDatabase( AMP::UnitTest &ut )
 {
     std::string input_file = "input_Database";
     std::string log_file   = "output_Database";
@@ -39,17 +39,17 @@ void readInputDatabase( AMP::UnitTest *ut )
     if ( number > 0 ) {
         auto intArray = tmp_db->getIntegerArray( "intArray" );
         if ( (int) intArray.size() != number )
-            ut->failure( "intArray was the wrong size" );
+            ut.failure( "intArray was the wrong size" );
         auto doubleArray = tmp_db->getDoubleArray( "doubleArray" );
         if ( (int) doubleArray.size() != number )
-            ut->failure( "doubleArray was the wrong size" );
+            ut.failure( "doubleArray was the wrong size" );
     }
 
     std::cout << "tmp_db created and destroyed successfully." << std::endl;
 
     input_db.reset();
 
-    ut->passes( "Get Database Works and the Destructor of AMP::Database works." );
+    ut.passes( "Get Database Works and the Destructor of AMP::Database works." );
 }
 
 
@@ -59,9 +59,9 @@ void readInputDatabase( AMP::UnitTest *ut )
  *                                                                       *
  ************************************************************************/
 template<class DATABASE>
-void testCreateDatabase( AMP::UnitTest *ut )
+void testCreateDatabase( AMP::UnitTest &ut )
 {
-    AMP::shared_ptr<DATABASE> db( new DATABASE( "database" ) );
+    auto db = AMP::make_shared<DATABASE>( "database" );
     db->create( "database" );
 
     int lower[3] = { 0, 0, 0 }, upper[3] = { 10, 10, 10 };
@@ -73,10 +73,13 @@ void testCreateDatabase( AMP::UnitTest *ut )
         AMP_ASSERT( box.upper( i ) == upper[i] );
     }
 
+    std::complex<double> zero( 0, 0 );
+    std::complex<double> onetwo( 1, 2 );
+
     db->putScalar( "scalar_int", (int) 1 );
     db->putScalar( "scalar_float", (float) 1 );
     db->putScalar( "scalar_double", (double) 1 );
-    db->putScalar( "scalar_complex", std::complex<double>( 1, 0 ) );
+    db->putScalar( "scalar_complex", onetwo );
     db->putScalar( "scalar_char", (char) 1 );
     db->putScalar( "scalar_bool", true );
     db->putDatabaseBox( "box", box );
@@ -95,7 +98,7 @@ void testCreateDatabase( AMP::UnitTest *ut )
     AMP_ASSERT( db->getInteger( "scalar_int" ) == 1 );
     AMP_ASSERT( db->getFloat( "scalar_float" ) == 1.0 );
     AMP_ASSERT( db->getDouble( "scalar_double" ) == 1.0 );
-    AMP_ASSERT( db->getComplex( "scalar_complex" ) == std::complex<double>( 1, 0 ) );
+    AMP_ASSERT( db->getComplex( "scalar_complex" ) == onetwo );
     AMP_ASSERT( db->getChar( "scalar_char" ) == 1 );
     AMP_ASSERT( db->getBool( "scalar_bool" ) == true );
     AMP_ASSERT( db->getDatabaseBox( "box" ) == box );
@@ -104,8 +107,7 @@ void testCreateDatabase( AMP::UnitTest *ut )
     AMP_ASSERT( db->getIntegerWithDefault( "scalar_int", 0 ) == 1 );
     AMP_ASSERT( db->getFloatWithDefault( "scalar_float", 0 ) == 1.0 );
     AMP_ASSERT( db->getDoubleWithDefault( "scalar_double", 0 ) == 1.0 );
-    AMP_ASSERT( db->getComplexWithDefault( "scalar_complex", std::complex<double>( 0, 0 ) ) ==
-                std::complex<double>( 1, 0 ) );
+    AMP_ASSERT( db->getComplexWithDefault( "scalar_complex", zero ) == onetwo );
     AMP_ASSERT( db->getCharWithDefault( "scalar_char", 0 ) == 1 );
     AMP_ASSERT( db->getBoolWithDefault( "scalar_bool", false ) == true );
 
@@ -116,7 +118,30 @@ void testCreateDatabase( AMP::UnitTest *ut )
     AMP_ASSERT( db->getCharArray( "scalar_char" ).size() == 1 );
     AMP_ASSERT( db->getBoolArray( "scalar_bool" ).size() == 1 );
 
-    ut->passes( "Create database passes" );
+    // Test base class functions
+    db->AMP::Database::putScalar( "int2", (int) 1 );
+    db->AMP::Database::putScalar( "float2", (float) 1 );
+    db->AMP::Database::putScalar( "double2", (double) 1 );
+    db->AMP::Database::putScalar( "complex2", onetwo );
+    db->AMP::Database::putScalar( "char2", (char) 1 );
+    db->AMP::Database::putScalar( "bool2", true );
+    db->AMP::Database::putDatabaseBox( "box2", box );
+    AMP_ASSERT( db->AMP::Database::getInteger( "int2" ) == 1 );
+    AMP_ASSERT( db->AMP::Database::getFloat( "float2" ) == 1.0 );
+    AMP_ASSERT( db->AMP::Database::getDouble( "double2" ) == 1.0 );
+    AMP_ASSERT( db->AMP::Database::getComplex( "complex2" ) == onetwo );
+    AMP_ASSERT( db->AMP::Database::getChar( "char2" ) == 1 );
+    AMP_ASSERT( db->AMP::Database::getBool( "bool2" ) == true );
+    AMP_ASSERT( db->AMP::Database::getDatabaseBox( "box2" ) == box );
+    AMP_ASSERT( db->AMP::Database::getIntegerWithDefault( "scalar_int", 0 ) == 1 );
+    AMP_ASSERT( db->AMP::Database::getFloatWithDefault( "scalar_float", 0 ) == 1.0 );
+    AMP_ASSERT( db->AMP::Database::getDoubleWithDefault( "scalar_double", 0 ) == 1.0 );
+    AMP_ASSERT( db->AMP::Database::getComplexWithDefault( "scalar_complex", zero ) == onetwo );
+    AMP_ASSERT( db->AMP::Database::getCharWithDefault( "scalar_char", 0 ) == 1 );
+    AMP_ASSERT( db->AMP::Database::getBoolWithDefault( "scalar_bool", false ) == true );
+
+    // Finished
+    ut.passes( "Create database passes" );
 }
 
 
@@ -127,9 +152,9 @@ int main( int argc, char *argv[] )
     AMP::AMP_MPI::start_MPI( argc, argv );
     AMP::UnitTest ut;
 
-    readInputDatabase( &ut );
-    testCreateDatabase<AMP::MemoryDatabase>( &ut );
-    testCreateDatabase<AMP::InputDatabase>( &ut );
+    readInputDatabase( ut );
+    testCreateDatabase<AMP::MemoryDatabase>( ut );
+    testCreateDatabase<AMP::InputDatabase>( ut );
 
     ut.report();
 

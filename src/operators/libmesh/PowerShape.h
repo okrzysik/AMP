@@ -38,9 +38,6 @@ class PowerShape : public Operator
 {
 
 public:
-    // typedef AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>
-    // HexGaussPointVariable;
-    // typedef AMP::shared_ptr<HexGaussPointVariable>      SP_HexGaussPointVariable;
     typedef AMP::shared_ptr<PowerShapeParameters> SP_Parameters;
     typedef AMP::shared_ptr<OperatorParameters> SP_OperatorParameters;
     typedef std::vector<double> Vec_Dbl;
