@@ -16,8 +16,6 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -43,19 +41,12 @@ static void linearThermalTest( AMP::UnitTest *ut )
     //    INITIALIZE THE PROBLEM      //
     ////////////////////////////////////
 
-    // Construct a smart pointer to a new database.
-    //  #include "AMP/utils/shared_ptr.h"
-    //  #include "AMP/utils/InputDatabase.h"
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-
     // Fill the database from the input file.
-    //  #include "AMP/utils/InputManager.h"
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
 
     // Print from all cores into the output files
-    //   #include "AMP/utils/PIO.h"
     AMP::PIO::logAllNodes( log_file );
 
     //--------------------------------------------------
@@ -162,8 +153,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     AMP::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
     // Fill in the parameters fo the class with the info on the database.
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams =
-        AMP::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
+    auto mlSolverParams = AMP::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
 
     // Define the operature to be used by the Solver.
     mlSolverParams->d_pOperator = diffusionOperator;

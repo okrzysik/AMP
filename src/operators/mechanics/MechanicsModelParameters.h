@@ -15,7 +15,7 @@ class MechanicsModelParameters : public ElementPhysicsModelParameters
 {
 public:
     /** Constructor */
-    explicit MechanicsModelParameters( const AMP::shared_ptr<AMP::Database> &db )
+    explicit MechanicsModelParameters( AMP::shared_ptr<AMP::Database> db )
         : ElementPhysicsModelParameters( db )
     {
     }

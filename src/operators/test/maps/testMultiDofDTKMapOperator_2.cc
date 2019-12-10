@@ -4,8 +4,7 @@
 #include "AMP/operators/map/dtk/MultiDofDTKMapOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -38,8 +37,8 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Parse input file
-    AMP::shared_ptr<AMP::InputDatabase> inputDatabase( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( inputFile, inputDatabase );
+    AMP::shared_ptr<AMP::Database> inputDatabase( new AMP::Database( "input_db" ) );
+    AMP::Database::parseInputFile( inputFile, inputDatabase );
 
     // Read the mesh
     AMP::pout << "--------------------\n";

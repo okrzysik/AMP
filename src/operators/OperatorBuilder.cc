@@ -48,14 +48,13 @@
 #endif
 
 
-#define resetOperation( NAME )                                            \
-    do {                                                                  \
-        if ( name == #NAME ) {                                            \
-            AMP::shared_ptr<NAME##Parameters> params =                    \
-                AMP::dynamic_pointer_cast<NAME##Parameters>( in_params ); \
-            AMP_ASSERT( params.get() == in_params.get() );                \
-            retOperator.reset( new NAME( params ) );                      \
-        }                                                                 \
+#define resetOperation( NAME )                                                      \
+    do {                                                                            \
+        if ( name == #NAME ) {                                                      \
+            auto params = AMP::dynamic_pointer_cast<NAME##Parameters>( in_params ); \
+            AMP_ASSERT( params.get() == in_params.get() );                          \
+            retOperator.reset( new NAME( params ) );                                \
+        }                                                                           \
     } while ( 0 )
 
 
@@ -140,10 +139,10 @@ AMP::shared_ptr<Operator> OperatorBuilder::createOperator(
     AMP::shared_ptr<Operator> retOperator;
 
     AMP::shared_ptr<AMP::Database> input_db =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( tmp_input_db );
+        AMP::dynamic_pointer_cast<AMP::Database>( tmp_input_db );
 
     AMP::shared_ptr<AMP::Database> operator_db =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( operatorName ) );
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( operatorName ) );
 
     AMP_INSIST( operator_db.get() != nullptr,
                 "Error:: OperatorBuilder::createOperator(): No operator database entry with "
@@ -258,11 +257,9 @@ OperatorBuilder::createIdentityOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter
     AMP_INSIST( input_db.get() != nullptr,
                 "Error: The database object for SubchannelTwoEqLinearOperator is NULL" );
 
-    AMP::shared_ptr<AMP::Operator::OperatorParameters> params(
-        new AMP::Operator::OperatorParameters( input_db ) );
-    params->d_Mesh = meshAdapter;
-    AMP::shared_ptr<AMP::Operator::IdentityOperator> subchannelOp(
-        new AMP::Operator::IdentityOperator( params ) );
+    auto params       = AMP::make_shared<AMP::Operator::OperatorParameters>( input_db );
+    params->d_Mesh    = meshAdapter;
+    auto subchannelOp = AMP::make_shared<AMP::Operator::IdentityOperator>( params );
 
     return subchannelOp;
 }
@@ -285,11 +282,9 @@ OperatorBuilder::createFlowFrapconOperator( AMP::Mesh::Mesh::shared_ptr meshAdap
     AMP_INSIST( flowOp_db.get() != nullptr,
                 "Error: The database object for FlowFrapconOperator is NULL" );
 
-    AMP::shared_ptr<AMP::Operator::FlowFrapconOperatorParameters> flowOpParams(
-        new AMP::Operator::FlowFrapconOperatorParameters( flowOp_db ) );
+    auto flowOpParams = AMP::make_shared<AMP::Operator::FlowFrapconOperatorParameters>( flowOp_db );
     flowOpParams->d_Mesh = meshAdapter;
-    AMP::shared_ptr<AMP::Operator::FlowFrapconOperator> flowOp(
-        new AMP::Operator::FlowFrapconOperator( flowOpParams ) );
+    auto flowOp          = AMP::make_shared<AMP::Operator::FlowFrapconOperator>( flowOpParams );
 
     return flowOp;
 }
@@ -329,13 +324,13 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqLinear
     AMP_INSIST( subchannel_db.get() != nullptr,
                 "Error: The database object for SubchannelTwoEqLinearOperator is NULL" );
 
-    AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(
-        new AMP::Operator::SubchannelOperatorParameters( subchannel_db ) );
+    auto subchannelParams =
+        AMP::make_shared<AMP::Operator::SubchannelOperatorParameters>( subchannel_db );
     subchannelParams->d_Mesh                   = meshAdapter;
     subchannelParams->d_subchannelPhysicsModel = transportModel;
 
-    AMP::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelOp(
-        new AMP::Operator::SubchannelTwoEqLinearOperator( subchannelParams ) );
+    auto subchannelOp =
+        AMP::make_shared<AMP::Operator::SubchannelTwoEqLinearOperator>( subchannelParams );
 
     return subchannelOp;
 }
@@ -378,12 +373,12 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqNonlin
     AMP_INSIST( subchannel_db.get() != nullptr,
                 "Error: The database object for SubchannelTwoEqNonlinearOperator is NULL" );
 
-    AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(
-        new AMP::Operator::SubchannelOperatorParameters( subchannel_db ) );
+    auto subchannelParams =
+        AMP::make_shared<AMP::Operator::SubchannelOperatorParameters>( subchannel_db );
     subchannelParams->d_Mesh                   = meshAdapter;
     subchannelParams->d_subchannelPhysicsModel = transportModel;
-    AMP::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOp(
-        new AMP::Operator::SubchannelTwoEqNonlinearOperator( subchannelParams ) );
+    auto subchannelOp =
+        AMP::make_shared<AMP::Operator::SubchannelTwoEqNonlinearOperator>( subchannelParams );
 
     return subchannelOp;
 }
@@ -426,12 +421,12 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createSubchannelFourEqNonli
     AMP_INSIST( subchannel_db.get() != nullptr,
                 "Error: The database object for SubchannelFourEqNonlinearOperator is NULL" );
 
-    AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(
-        new AMP::Operator::SubchannelOperatorParameters( subchannel_db ) );
+    auto subchannelParams =
+        AMP::make_shared<AMP::Operator::SubchannelOperatorParameters>( subchannel_db );
     subchannelParams->d_Mesh                   = meshAdapter;
     subchannelParams->d_subchannelPhysicsModel = transportModel;
-    AMP::shared_ptr<AMP::Operator::SubchannelFourEqNonlinearOperator> subchannelOp(
-        new AMP::Operator::SubchannelFourEqNonlinearOperator( subchannelParams ) );
+    auto subchannelOp =
+        AMP::make_shared<AMP::Operator::SubchannelFourEqNonlinearOperator>( subchannelParams );
 
     return subchannelOp;
 }
@@ -453,11 +448,10 @@ OperatorBuilder::createNeutronicsRhsOperator( AMP::Mesh::Mesh::shared_ptr meshAd
     AMP_INSIST( NeutronicsOp_db.get() != nullptr,
                 "Error: The database object for Neutronics Source Operator is NULL" );
 
-    AMP::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsOpParams(
-        new AMP::Operator::NeutronicsRhsParameters( NeutronicsOp_db ) );
+    auto neutronicsOpParams =
+        AMP::make_shared<AMP::Operator::NeutronicsRhsParameters>( NeutronicsOp_db );
     neutronicsOpParams->d_Mesh = meshAdapter;
-    AMP::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOp(
-        new AMP::Operator::NeutronicsRhs( neutronicsOpParams ) );
+    auto neutronicsOp = AMP::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsOpParams );
 
     return neutronicsOp;
 }
@@ -506,8 +500,8 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createLinearDiffusionOperat
     AMP_INSIST( diffusionLinFEOp_db.get() != nullptr,
                 "Error: The database object for DiffusionLinearFEOperator is NULL" );
 
-    AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperatorParameters> diffusionOpParams(
-        new AMP::Operator::DiffusionLinearFEOperatorParameters( diffusionLinFEOp_db ) );
+    auto diffusionOpParams =
+        AMP::make_shared<AMP::Operator::DiffusionLinearFEOperatorParameters>( diffusionLinFEOp_db );
     diffusionOpParams->d_transportModel = transportModel;
     diffusionOpParams->d_elemOp         = diffusionLinElem;
     diffusionOpParams->d_Mesh           = meshAdapter;
@@ -515,8 +509,8 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createLinearDiffusionOperat
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     diffusionOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffusionOp(
-        new AMP::Operator::DiffusionLinearFEOperator( diffusionOpParams ) );
+    auto diffusionOp =
+        AMP::make_shared<AMP::Operator::DiffusionLinearFEOperator>( diffusionOpParams );
 
     AMP::LinearAlgebra::Matrix::shared_ptr matrix = diffusionOp->getMatrix();
     matrix->makeConsistent();
@@ -559,13 +553,13 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createVolumeIntegralOperato
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
-    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperatorParameters> volumeIntegralParameters(
-        new AMP::Operator::VolumeIntegralOperatorParameters( input_db ) );
+    auto volumeIntegralParameters =
+        AMP::make_shared<AMP::Operator::VolumeIntegralOperatorParameters>( input_db );
     volumeIntegralParameters->d_sourcePhysicsModel = sourcePhysicsModel;
     volumeIntegralParameters->d_elemOp             = sourceNonlinearElem;
     volumeIntegralParameters->d_Mesh               = meshAdapter;
-    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> nonlinearSourceOp(
-        new AMP::Operator::VolumeIntegralOperator( volumeIntegralParameters ) );
+    auto nonlinearSourceOp =
+        AMP::make_shared<AMP::Operator::VolumeIntegralOperator>( volumeIntegralParameters );
 
     return nonlinearSourceOp;
 }
@@ -612,8 +606,9 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOpe
     }
     AMP_INSIST( diffusionNLinFEOp_db.get() != nullptr,
                 "Error: The database object for DiffusionNonlinearFEOperator is NULL" );
-    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperatorParameters> diffusionNLOpParams(
-        new AMP::Operator::DiffusionNonlinearFEOperatorParameters( diffusionNLinFEOp_db ) );
+    auto diffusionNLOpParams =
+        AMP::make_shared<AMP::Operator::DiffusionNonlinearFEOperatorParameters>(
+            diffusionNLinFEOp_db );
     diffusionNLOpParams->d_transportModel = transportModel;
     diffusionNLOpParams->d_elemOp         = diffusionNonlinearElem;
     diffusionNLOpParams->d_Mesh           = meshAdapter;
@@ -638,31 +633,31 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOpe
     AMP::LinearAlgebra::Vector::shared_ptr cVec;
     AMP::LinearAlgebra::Variable::shared_ptr bVar;
     AMP::LinearAlgebra::Vector::shared_ptr bVec;
-    name = active_db->getStringWithDefault( "Temperature", "not_specified" );
+    name = active_db->getWithDefault<std::string>( "Temperature", "not_specified" );
     if ( name != "not_specified" ) {
         tVar.reset( new AMP::LinearAlgebra::Variable( name ) );
         tVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, tVar, true );
-        if ( diffusionNLinFEOp_db->getBoolWithDefault( "FreezeTemperature", false ) )
+        if ( diffusionNLinFEOp_db->getWithDefault( "FreezeTemperature", false ) )
             diffusionNLOpParams->d_FrozenTemperature = tVec;
     }
-    name = active_db->getStringWithDefault( "Concentration", "not_specified" );
+    name = active_db->getWithDefault<std::string>( "Concentration", "not_specified" );
     if ( name != "not_specified" ) {
         cVar.reset( new AMP::LinearAlgebra::Variable( name ) );
         cVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, cVar, true );
-        if ( diffusionNLinFEOp_db->getBoolWithDefault( "FreezeConcentration", false ) )
+        if ( diffusionNLinFEOp_db->getWithDefault( "FreezeConcentration", false ) )
             diffusionNLOpParams->d_FrozenConcentration = cVec;
     }
-    name = active_db->getStringWithDefault( "Burnup", "not_specified" );
+    name = active_db->getWithDefault<std::string>( "Burnup", "not_specified" );
     if ( name != "not_specified" ) {
         bVar.reset( new AMP::LinearAlgebra::Variable( name ) );
         bVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, bVar, true );
-        if ( diffusionNLinFEOp_db->getBoolWithDefault( "FreezeBurnup", false ) )
+        if ( diffusionNLinFEOp_db->getWithDefault( "FreezeBurnup", false ) )
             diffusionNLOpParams->d_FrozenBurnup = bVec;
     }
 
     // create the nonlinear diffusion operator
-    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nonlinearDiffusionOp(
-        new AMP::Operator::DiffusionNonlinearFEOperator( diffusionNLOpParams ) );
+    auto nonlinearDiffusionOp =
+        AMP::make_shared<AMP::Operator::DiffusionNonlinearFEOperator>( diffusionNLOpParams );
 
     return nonlinearDiffusionOp;
 }
@@ -679,7 +674,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearFickSoretOpe
     AMP_INSIST( input_db.get() != nullptr, "NULL database object passed" );
 
     AMP::shared_ptr<AMP::Database> operator_db =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( operatorName ) );
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( operatorName ) );
     AMP_INSIST( operator_db.get() != nullptr, "NULL database object passed" );
 
     std::string fickOperatorName  = operator_db->getString( "FickOperator" );
@@ -703,15 +698,14 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearFickSoretOpe
         "Error: unable to create Soret operator in OperatorBuilder::createFickSoretOperator" );
 
     AMP::shared_ptr<AMP::Database> db = AMP::dynamic_pointer_cast<AMP::Database>( input_db );
-    AMP::shared_ptr<FickSoretNonlinearFEOperatorParameters> params(
-        new FickSoretNonlinearFEOperatorParameters( db ) );
+    auto params    = AMP::make_shared<FickSoretNonlinearFEOperatorParameters>( db );
     params->d_Mesh = meshAdapter;
     params->d_FickOperator =
         AMP::dynamic_pointer_cast<DiffusionNonlinearFEOperator>( fickOperator );
     params->d_SoretOperator =
         AMP::dynamic_pointer_cast<DiffusionNonlinearFEOperator>( soretOperator );
     params->d_name = operatorName;
-    FickSoretNonlinearFEOperator::shared_ptr fsOp( new FickSoretNonlinearFEOperator( params ) );
+    auto fsOp      = AMP::make_shared<FickSoretNonlinearFEOperator>( params );
 
     return fsOp;
 }
@@ -753,8 +747,8 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createLinearMechanicsOperat
     AMP_INSIST( mechanicsLinFEOp_db.get() != nullptr,
                 "Error: The database object for MechanicsLinearFEOperator is NULL" );
 
-    AMP::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechanicsOpParams(
-        new AMP::Operator::MechanicsLinearFEOperatorParameters( mechanicsLinFEOp_db ) );
+    auto mechanicsOpParams =
+        AMP::make_shared<AMP::Operator::MechanicsLinearFEOperatorParameters>( mechanicsLinFEOp_db );
     mechanicsOpParams->d_materialModel =
         AMP::dynamic_pointer_cast<MechanicsMaterialModel>( elementPhysicsModel );
     mechanicsOpParams->d_elemOp   = mechanicsLinElem;
@@ -764,8 +758,8 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createLinearMechanicsOperat
     mechanicsOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
-    AMP::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechanicsOp(
-        new AMP::Operator::MechanicsLinearFEOperator( mechanicsOpParams ) );
+    auto mechanicsOp =
+        AMP::make_shared<AMP::Operator::MechanicsLinearFEOperator>( mechanicsOpParams );
 
     return mechanicsOp;
 }
@@ -807,8 +801,8 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearMechanicsOpe
     AMP_INSIST( mechanicsFEOp_db.get() != nullptr,
                 "Error: The database object for MechanicsNonlinearFEOperator is NULL" );
 
-    AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperatorParameters> mechanicsOpParams(
-        new AMP::Operator::MechanicsNonlinearFEOperatorParameters( mechanicsFEOp_db ) );
+    auto mechanicsOpParams =
+        AMP::make_shared<AMP::Operator::MechanicsNonlinearFEOperatorParameters>( mechanicsFEOp_db );
     mechanicsOpParams->d_materialModel =
         AMP::dynamic_pointer_cast<MechanicsMaterialModel>( elementPhysicsModel );
     mechanicsOpParams->d_elemOp = mechanicsElem;
@@ -827,8 +821,8 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearMechanicsOpe
     mechanicsOpParams->d_dofMap[Mechanics::LHGR] = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
-    AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsOp(
-        new AMP::Operator::MechanicsNonlinearFEOperator( mechanicsOpParams ) );
+    auto mechanicsOp =
+        AMP::make_shared<AMP::Operator::MechanicsNonlinearFEOperator>( mechanicsOpParams );
 
     return mechanicsOp;
 }
@@ -867,8 +861,8 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createLinearNavierStokesLSW
     AMP_INSIST( flowLinFEOp_db.get() != nullptr,
                 "Error: The database object for FlowLinearFEOperator is NULL" );
 
-    AMP::shared_ptr<AMP::Operator::NavierStokesLinearFEOperatorParameters> flowOpParams(
-        new AMP::Operator::NavierStokesLinearFEOperatorParameters( flowLinFEOp_db ) );
+    auto flowOpParams =
+        AMP::make_shared<AMP::Operator::NavierStokesLinearFEOperatorParameters>( flowLinFEOp_db );
     flowOpParams->d_transportModel =
         AMP::dynamic_pointer_cast<FlowTransportModel>( elementPhysicsModel );
     flowOpParams->d_elemOp   = flowLinElem;
@@ -878,8 +872,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createLinearNavierStokesLSW
     flowOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 10, true );
 
-    AMP::shared_ptr<AMP::Operator::NavierStokesLSWFLinearFEOperator> flowOp(
-        new AMP::Operator::NavierStokesLSWFLinearFEOperator( flowOpParams ) );
+    auto flowOp = AMP::make_shared<AMP::Operator::NavierStokesLSWFLinearFEOperator>( flowOpParams );
 
     return flowOp;
 }
@@ -919,16 +912,15 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearNavierStokes
     AMP_INSIST( flowFEOp_db.get() != nullptr,
                 "Error: The database object for FlowNonlinearFEOperator is NULL" );
 
-    AMP::shared_ptr<AMP::Operator::NavierStokesLSWFFEOperatorParameters> flowOpParams(
-        new AMP::Operator::NavierStokesLSWFFEOperatorParameters( flowFEOp_db ) );
+    auto flowOpParams =
+        AMP::make_shared<AMP::Operator::NavierStokesLSWFFEOperatorParameters>( flowFEOp_db );
     flowOpParams->d_transportModel =
         AMP::dynamic_pointer_cast<FlowTransportModel>( elementPhysicsModel );
     flowOpParams->d_elemOp = flowElem;
     flowOpParams->d_Mesh   = meshAdapter;
     flowOpParams->d_dofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 10, true );
-    AMP::shared_ptr<AMP::Operator::NavierStokesLSWFFEOperator> flowOp(
-        new AMP::Operator::NavierStokesLSWFFEOperator( flowOpParams ) );
+    auto flowOp = AMP::make_shared<AMP::Operator::NavierStokesLSWFFEOperator>( flowOpParams );
 
     return flowOp;
 }
@@ -974,8 +966,8 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createMassLinearFEOperator(
     AMP_INSIST( densityLinFEOp_db.get() != nullptr,
                 "Error: The database object for MassLinearFEOperator is NULL" );
 
-    AMP::shared_ptr<AMP::Operator::MassLinearFEOperatorParameters> densityOpParams(
-        new AMP::Operator::MassLinearFEOperatorParameters( densityLinFEOp_db ) );
+    auto densityOpParams =
+        AMP::make_shared<AMP::Operator::MassLinearFEOperatorParameters>( densityLinFEOp_db );
     densityOpParams->d_densityModel = densityModel;
     densityOpParams->d_elemOp       = densityLinElem;
     densityOpParams->d_Mesh         = meshAdapter;
@@ -983,8 +975,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createMassLinearFEOperator(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     densityOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    AMP::shared_ptr<AMP::Operator::MassLinearFEOperator> densityOp(
-        new AMP::Operator::MassLinearFEOperator( densityOpParams ) );
+    auto densityOp = AMP::make_shared<AMP::Operator::MassLinearFEOperator>( densityOpParams );
 
     return densityOp;
 }
@@ -1001,7 +992,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createLinearBVPOperator(
     AMP_INSIST( input_db.get() != nullptr, "NULL database object passed" );
 
     AMP::shared_ptr<AMP::Database> operator_db =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( operatorName ) );
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( operatorName ) );
     AMP_INSIST( operator_db.get() != nullptr, "NULL database object passed" );
 
     // create the volume operator
@@ -1009,7 +1000,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createLinearBVPOperator(
     // if this flag is true the same local physics model will be used for both boundary and volume
     // operators
     bool useSameLocalModelForVolumeAndBoundaryOperators =
-        operator_db->getBoolWithDefault( "useSameLocalModelForVolumeAndBoundaryOperators", false );
+        operator_db->getWithDefault( "useSameLocalModelForVolumeAndBoundaryOperators", false );
 
     AMP::Operator::Operator::shared_ptr volumeOperator = OperatorBuilder::createOperator(
         meshAdapter, volumeOperatorName, input_db, elementPhysicsModel, localModelFactory );
@@ -1023,12 +1014,11 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createLinearBVPOperator(
     // create the boundary operator
     std::string boundaryOperatorName = operator_db->getString( "BoundaryOperator" );
     AMP::shared_ptr<AMP::Database> boundaryOperator_db =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>(
-            input_db->getDatabase( boundaryOperatorName ) );
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( boundaryOperatorName ) );
     AMP_INSIST( boundaryOperator_db.get() != nullptr,
                 "NULL database object passed for boundary operator" );
 
-    boundaryOperator_db->putBool( "isAttachedToVolumeOperator", true );
+    boundaryOperator_db->putScalar( "isAttachedToVolumeOperator", true );
 
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> boundaryLocalModel;
 
@@ -1044,8 +1034,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createLinearBVPOperator(
                                                  boundaryLocalModel,
                                                  localModelFactory );
 
-    AMP::shared_ptr<AMP::Operator::BVPOperatorParameters> bvpOperatorParams(
-        new AMP::Operator::BVPOperatorParameters( input_db ) );
+    auto bvpOperatorParams = AMP::make_shared<AMP::Operator::BVPOperatorParameters>( input_db );
     bvpOperatorParams->d_volumeOperator   = volumeOperator;
     bvpOperatorParams->d_boundaryOperator = boundaryOperator;
 
@@ -1066,7 +1055,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
     AMP_INSIST( input_db.get() != nullptr, "NULL database object passed" );
 
     AMP::shared_ptr<AMP::Database> operator_db =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( operatorName ) );
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( operatorName ) );
     AMP_INSIST( operator_db.get() != nullptr, "NULL database object passed" );
 
     // create the volume operator
@@ -1074,7 +1063,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
     // if this flag is true the same local physics model will be used for both boundary and volume
     // operators
     bool useSameLocalModelForVolumeAndBoundaryOperators =
-        operator_db->getBoolWithDefault( "useSameLocalModelForVolumeAndBoundaryOperators", false );
+        operator_db->getWithDefault( "useSameLocalModelForVolumeAndBoundaryOperators", false );
 
     AMP::Operator::Operator::shared_ptr volumeOperator = OperatorBuilder::createOperator(
         meshAdapter, volumeOperatorName, input_db, elementPhysicsModel, localModelFactory );
@@ -1085,12 +1074,11 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
     // create the boundary operator
     std::string boundaryOperatorName = operator_db->getString( "BoundaryOperator" );
     AMP::shared_ptr<AMP::Database> boundaryOperator_db =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>(
-            input_db->getDatabase( boundaryOperatorName ) );
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( boundaryOperatorName ) );
     AMP_INSIST( boundaryOperator_db.get() != nullptr,
                 "NULL database object passed for boundary operator" );
 
-    boundaryOperator_db->putBool( "isAttachedToVolumeOperator", true );
+    boundaryOperator_db->putScalar( "isAttachedToVolumeOperator", true );
 
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> boundaryLocalModel;
 
@@ -1106,8 +1094,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
                                                  boundaryLocalModel,
                                                  localModelFactory );
 
-    AMP::shared_ptr<AMP::Operator::BVPOperatorParameters> bvpOperatorParams(
-        new AMP::Operator::BVPOperatorParameters( input_db ) );
+    auto bvpOperatorParams = AMP::make_shared<AMP::Operator::BVPOperatorParameters>( input_db );
     bvpOperatorParams->d_volumeOperator   = volumeOperator;
     bvpOperatorParams->d_boundaryOperator = boundaryOperator;
 
@@ -1133,8 +1120,7 @@ OperatorBuilder::createFlowFrapconJacobian( AMP::Mesh::Mesh::shared_ptr meshAdap
     AMP_INSIST( flowOp_db.get() != nullptr,
                 "Error: The database object for FlowFrapconJacobian is NULL" );
 
-    AMP::shared_ptr<AMP::Operator::FlowFrapconJacobianParameters> flowOpParams(
-        new AMP::Operator::FlowFrapconJacobianParameters( flowOp_db ) );
+    auto flowOpParams = AMP::make_shared<AMP::Operator::FlowFrapconJacobianParameters>( flowOp_db );
     flowOpParams->d_Mesh = meshAdapter;
     AMP::shared_ptr<AMP::Operator::FlowFrapconJacobian> flowOp(
         new AMP::Operator::FlowFrapconJacobian( flowOpParams ) );
@@ -1153,8 +1139,8 @@ AMP::shared_ptr<BoundaryOperator> OperatorBuilder::createBoundaryOperator(
     AMP::shared_ptr<BoundaryOperator> retOperator;
     AMP_INSIST( input_db.get() != nullptr, "NULL database object passed" );
 
-    AMP::shared_ptr<AMP::Database> operator_db = AMP::dynamic_pointer_cast<AMP::InputDatabase>(
-        input_db->getDatabase( boundaryOperatorName ) );
+    AMP::shared_ptr<AMP::Database> operator_db =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( boundaryOperatorName ) );
     AMP_INSIST( operator_db.get() != nullptr,
                 "Error: OperatorBuilder::createBoundaryOperator(): "
                 "database object with given name not in database" );
@@ -1243,23 +1229,21 @@ AMP::shared_ptr<BoundaryOperator> OperatorBuilder::createColumnBoundaryOperator(
 
     AMP_INSIST( input_db.get() != nullptr, "NULL database object passed" );
 
-    AMP::shared_ptr<AMP::Database> operator_db = AMP::dynamic_pointer_cast<AMP::InputDatabase>(
-        input_db->getDatabase( boundaryOperatorName ) );
+    AMP::shared_ptr<AMP::Database> operator_db =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( boundaryOperatorName ) );
     AMP_INSIST( operator_db.get() != nullptr,
                 "Error: OperatorBuilder::createBoundaryOperator(): "
                 "database object with given name not in database" );
 
-    int numberOfBoundaryOperators =
-        operator_db->getIntegerWithDefault( "numberOfBoundaryOperators", 1 );
+    int numberOfBoundaryOperators = operator_db->getWithDefault( "numberOfBoundaryOperators", 1 );
 
-    auto boundaryOps = new std::string[numberOfBoundaryOperators];
-    operator_db->getStringArray( "boundaryOperators", boundaryOps, numberOfBoundaryOperators );
+    auto boundaryOps = operator_db->getVector<std::string>( "boundaryOperators" );
+    AMP_ASSERT( numberOfBoundaryOperators == (int) boundaryOps.size() );
 
-    AMP::shared_ptr<OperatorParameters> params( new OperatorParameters( operator_db ) );
+    auto params    = AMP::make_shared<OperatorParameters>( operator_db );
     params->d_Mesh = meshAdapter;
 
-    AMP::shared_ptr<AMP::Operator::ColumnBoundaryOperator> columnBoundaryOperator(
-        new AMP::Operator::ColumnBoundaryOperator( params ) );
+    auto columnBoundaryOperator = AMP::make_shared<AMP::Operator::ColumnBoundaryOperator>( params );
 
     for ( int i = 0; i < numberOfBoundaryOperators; i++ ) {
         AMP::shared_ptr<BoundaryOperator> bcOperator =
@@ -1272,7 +1256,6 @@ AMP::shared_ptr<BoundaryOperator> OperatorBuilder::createColumnBoundaryOperator(
         AMP_ASSERT( bcOperator );
         columnBoundaryOperator->append( bcOperator );
     }
-    delete[] boundaryOps;
 
     return columnBoundaryOperator;
 }
@@ -1287,8 +1270,8 @@ AMP::shared_ptr<BoundaryOperator> OperatorBuilder::createDirichletMatrixCorrecti
     AMP::shared_ptr<BoundaryOperator> retOperator;
     AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( volumeOperator );
-    AMP::shared_ptr<AMP::Operator::DirichletMatrixCorrectionParameters> matrixCorrectionParameters(
-        new AMP::Operator::DirichletMatrixCorrectionParameters( input_db ) );
+    auto matrixCorrectionParameters =
+        AMP::make_shared<AMP::Operator::DirichletMatrixCorrectionParameters>( input_db );
     matrixCorrectionParameters->d_variable    = linearOperator->getOutputVariable();
     matrixCorrectionParameters->d_inputMatrix = linearOperator->getMatrix();
     matrixCorrectionParameters->d_Mesh        = meshAdapter;
@@ -1308,8 +1291,8 @@ OperatorBuilder::createMassMatrixCorrection( AMP::Mesh::Mesh::shared_ptr meshAda
     AMP::shared_ptr<BoundaryOperator> retOperator;
     AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( volumeOperator );
-    AMP::shared_ptr<AMP::Operator::DirichletMatrixCorrectionParameters> matrixCorrectionParameters(
-        new AMP::Operator::DirichletMatrixCorrectionParameters( input_db ) );
+    auto matrixCorrectionParameters =
+        AMP::make_shared<AMP::Operator::DirichletMatrixCorrectionParameters>( input_db );
     matrixCorrectionParameters->d_variable    = linearOperator->getOutputVariable();
     matrixCorrectionParameters->d_inputMatrix = linearOperator->getMatrix();
     matrixCorrectionParameters->d_Mesh        = meshAdapter;
@@ -1329,8 +1312,8 @@ AMP::shared_ptr<BoundaryOperator> OperatorBuilder::createRobinMatrixCorrection(
     AMP::shared_ptr<BoundaryOperator> retOperator;
     AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( volumeOperator );
-    AMP::shared_ptr<AMP::Operator::RobinMatrixCorrectionParameters> matrixCorrectionParameters(
-        new AMP::Operator::RobinMatrixCorrectionParameters( input_db ) );
+    auto matrixCorrectionParameters =
+        AMP::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( input_db );
     matrixCorrectionParameters->d_variable    = linearOperator->getOutputVariable();
     matrixCorrectionParameters->d_inputMatrix = linearOperator->getMatrix();
     matrixCorrectionParameters->d_Mesh        = meshAdapter;
@@ -1356,8 +1339,8 @@ AMP::shared_ptr<BoundaryOperator> OperatorBuilder::createRobinVectorCorrection(
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel )
 {
     AMP::shared_ptr<BoundaryOperator> retOperator;
-    AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> vectorCorrectionParameters(
-        new AMP::Operator::NeumannVectorCorrectionParameters( input_db ) );
+    auto vectorCorrectionParameters =
+        AMP::make_shared<AMP::Operator::NeumannVectorCorrectionParameters>( input_db );
     vectorCorrectionParameters->d_variable = volumeOperator->getOutputVariable();
     vectorCorrectionParameters->d_Mesh     = meshAdapter;
 
@@ -1381,8 +1364,8 @@ AMP::shared_ptr<BoundaryOperator> OperatorBuilder::createNeumannVectorCorrection
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel )
 {
     AMP::shared_ptr<BoundaryOperator> retOperator;
-    AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> vectorCorrectionParameters(
-        new AMP::Operator::NeumannVectorCorrectionParameters( input_db ) );
+    auto vectorCorrectionParameters =
+        AMP::make_shared<AMP::Operator::NeumannVectorCorrectionParameters>( input_db );
     vectorCorrectionParameters->d_variable = volumeOperator->getOutputVariable();
     vectorCorrectionParameters->d_Mesh     = meshAdapter;
 
@@ -1406,8 +1389,8 @@ AMP::shared_ptr<BoundaryOperator> OperatorBuilder::createDirichletVectorCorrecti
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> )
 {
     AMP::shared_ptr<BoundaryOperator> retOperator;
-    AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> vectorCorrectionParameters(
-        new AMP::Operator::DirichletVectorCorrectionParameters( input_db ) );
+    auto vectorCorrectionParameters =
+        AMP::make_shared<AMP::Operator::DirichletVectorCorrectionParameters>( input_db );
     vectorCorrectionParameters->d_variable = volumeOperator->getOutputVariable();
     vectorCorrectionParameters->d_Mesh     = meshAdapter;
 
@@ -1423,8 +1406,8 @@ AMP::shared_ptr<BoundaryOperator> OperatorBuilder::createDirichletVectorCorrecti
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> )
 {
     AMP::shared_ptr<BoundaryOperator> retOperator;
-    AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> vectorCorrectionParameters(
-        new AMP::Operator::DirichletVectorCorrectionParameters( input_db ) );
+    auto vectorCorrectionParameters =
+        AMP::make_shared<AMP::Operator::DirichletVectorCorrectionParameters>( input_db );
     vectorCorrectionParameters->d_Mesh = meshAdapter;
 
     retOperator.reset( new AMP::Operator::DirichletVectorCorrection( vectorCorrectionParameters ) );
@@ -1439,8 +1422,7 @@ AMP::shared_ptr<BoundaryOperator> OperatorBuilder::createPressureBoundaryOperato
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> )
 {
     AMP::shared_ptr<BoundaryOperator> retOperator;
-    AMP::shared_ptr<AMP::Operator::OperatorParameters> params(
-        new AMP::Operator::OperatorParameters( input_db ) );
+    auto params    = AMP::make_shared<AMP::Operator::OperatorParameters>( input_db );
     params->d_Mesh = meshAdapter;
 
     retOperator.reset( new AMP::Operator::PressureBoundaryOperator( params ) );
@@ -1458,8 +1440,8 @@ AMP::shared_ptr<Operator> OperatorBuilder::createOperator( AMP::Mesh::Mesh::shar
 
     std::string name = input_db->getString( "name" );
     if ( name == "MapSurface" ) {
-        AMP::shared_ptr<AMP::Operator::MapOperatorParameters> mapOperatorParameters(
-            new AMP::Operator::MapOperatorParameters( input_db ) );
+        auto mapOperatorParameters =
+            AMP::make_shared<AMP::Operator::MapOperatorParameters>( input_db );
         mapOperatorParameters->d_Mesh    = meshAdapter1;
         mapOperatorParameters->d_MapMesh = meshAdapter2;
         mapOperatorParameters->d_MapComm = comm;

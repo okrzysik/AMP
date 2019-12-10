@@ -7,8 +7,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -23,12 +21,11 @@ static void ElementOperationFactoryTest( AMP::UnitTest *ut )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    auto outerInput_db = AMP::make_shared<AMP::InputDatabase>( "outerInput_db" );
-    AMP::InputManager::getManager()->parseInputFile( outerInput_file, outerInput_db );
-    outerInput_db->printClassData( AMP::plog );
+    auto outerInput_db = AMP::Database::parseInputFile( outerInput_file );
+    outerInput_db->print( AMP::plog );
 
     AMP_INSIST( outerInput_db->keyExists( "number_of_tests" ), "key missing!" );
-    int numTests = outerInput_db->getInteger( "number_of_tests" );
+    int numTests = outerInput_db->getScalar<int>( "number_of_tests" );
 
     for ( int i = 0; i < numTests; i++ ) {
         char key[256];
@@ -36,9 +33,8 @@ static void ElementOperationFactoryTest( AMP::UnitTest *ut )
 
         AMP_INSIST( outerInput_db->keyExists( key ), "key missing!" );
         auto inputFile     = outerInput_db->getString( key );
-        auto innerInput_db = AMP::make_shared<AMP::InputDatabase>( "innerInput_db" );
-        AMP::InputManager::getManager()->parseInputFile( inputFile, innerInput_db );
-        innerInput_db->printClassData( AMP::plog );
+        auto innerInput_db = AMP::Database::parseInputFile( inputFile );
+        innerInput_db->print( AMP::plog );
 
         AMP_INSIST( innerInput_db->keyExists( "ElementOperation" ),
                     "Key ''ElementOperation'' is missing!" );

@@ -10,9 +10,9 @@ ColumnSolver::ColumnSolver( AMP::shared_ptr<SolverStrategyParameters> parameters
     : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
-    const AMP::shared_ptr<AMP::Database> &db = parameters->d_db;
-    d_IterationType       = db->getStringWithDefault( "IterationType", "GaussSeidel" );
-    d_resetColumnOperator = db->getBoolWithDefault( "ResetColumnOperator", false );
+    AMP::shared_ptr<AMP::Database> db = parameters->d_db;
+    d_IterationType       = db->getWithDefault<std::string>( "IterationType", "GaussSeidel" );
+    d_resetColumnOperator = db->getWithDefault( "ResetColumnOperator", false );
 }
 
 void ColumnSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,

@@ -14,7 +14,7 @@
 #include "AMP/solvers/petsc/PetscSNESSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
@@ -34,9 +34,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db    = input_db->getDatabase( "Mesh" );
@@ -46,7 +45,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
-    int NumberOfLoadingSteps = input_db->getInteger( "NumberOfLoadingSteps" );
+    int NumberOfLoadingSteps = input_db->getScalar<int>( "NumberOfLoadingSteps" );
 
     // Create a nonlinear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "NonlinearMechanicsOperator" ), "key missing!" );
@@ -198,7 +197,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
             AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
 
-            auto tmp_db = AMP::make_shared<AMP::InputDatabase>( "Dummy" );
+            auto tmp_db = AMP::make_shared<AMP::Database>( "Dummy" );
             auto tmpParams =
                 AMP::make_shared<AMP::Operator::MechanicsNonlinearFEOperatorParameters>( tmp_db );
             ( nonlinearMechanicsBVPoperator->getVolumeOperator() )->reset( tmpParams );

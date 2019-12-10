@@ -3,8 +3,7 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/loadBalance/loadBalanceSimulator.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 
 #include <cmath>
 #include <iomanip>
@@ -29,8 +28,7 @@ int main( int argc, char **argv )
         ratio = atof( argv[3] );
 
     // Simulate loading the mesh
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
+    auto input_db = AMP::Database::parseInputFile( input_file );
     auto database = input_db->getDatabase( "Mesh" );
     auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     std::vector<int> comm_ranks( N_procs );

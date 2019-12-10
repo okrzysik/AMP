@@ -13,8 +13,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -51,9 +49,9 @@ static void linearTest( AMP::UnitTest *ut,
     std::cout.flush();
 
     // Test create
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
@@ -64,8 +62,8 @@ static void linearTest( AMP::UnitTest *ut,
     AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
 
     AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffOp;
-    AMP::shared_ptr<AMP::InputDatabase> diffFEOp_db = AMP::dynamic_pointer_cast<AMP::InputDatabase>(
-        input_db->getDatabase( "LinearDiffusionOp" ) );
+    AMP::shared_ptr<AMP::Database> diffFEOp_db =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "LinearDiffusionOp" ) );
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
     AMP::shared_ptr<AMP::Operator::Operator> linearOperator =
         AMP::Operator::OperatorBuilder::createOperator(
@@ -80,9 +78,9 @@ static void linearTest( AMP::UnitTest *ut,
     AMP::shared_ptr<AMP::Database> transportModel_db;
     if ( input_db->keyExists( "DiffusionTransportModel" ) )
         transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
-    double defTemp = transportModel_db->getDoubleWithDefault( "Default_Temperature", 400.0 );
-    double defConc = transportModel_db->getDoubleWithDefault( "Default_Concentration", .33 );
-    double defBurn = transportModel_db->getDoubleWithDefault( "Default_Burnup", .5 );
+    double defTemp = transportModel_db->getWithDefault<double>( "Default_Temperature", 400.0 );
+    double defConc = transportModel_db->getWithDefault<double>( "Default_Concentration", .33 );
+    double defBurn = transportModel_db->getWithDefault<double>( "Default_Burnup", .5 );
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
     AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel =
@@ -99,15 +97,15 @@ static void linearTest( AMP::UnitTest *ut,
     AMP::LinearAlgebra::Variable::shared_ptr burnVar(
         new AMP::LinearAlgebra::Variable( "testBurnVar" ) );
     AMP::LinearAlgebra::Vector::shared_ptr tempVec, concVec, burnVec;
-    if ( not diffFEOp_db->getBoolWithDefault( "FixedTemperature", false ) ) {
+    if ( not diffFEOp_db->getWithDefault( "FixedTemperature", false ) ) {
         tempVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, tempVar, true );
         tempVec->setToScalar( defTemp );
     }
-    if ( not diffFEOp_db->getBoolWithDefault( "FixedConcentration", false ) ) {
+    if ( not diffFEOp_db->getWithDefault( "FixedConcentration", false ) ) {
         concVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, concVar, true );
         concVec->setToScalar( defConc );
     }
-    if ( not diffFEOp_db->getBoolWithDefault( "FixedBurnup", false ) ) {
+    if ( not diffFEOp_db->getWithDefault( "FixedBurnup", false ) ) {
         burnVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, burnVar, true );
         burnVec->setToScalar( defBurn );
     }

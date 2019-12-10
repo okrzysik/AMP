@@ -43,7 +43,7 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
     d_db        = d_params->d_db;
     AMP_INSIST( !d_comm.isNull(), "Communicator in mesh params must be non NULL" );
     setMeshID();
-    d_name = d_db->getStringWithDefault( "MeshName", "NULL" );
+    d_name = d_db->getWithDefault<std::string>( "MeshName", "NULL" );
 }
 Mesh::Mesh( const Mesh &rhs )
     : d_params( rhs.d_params ),

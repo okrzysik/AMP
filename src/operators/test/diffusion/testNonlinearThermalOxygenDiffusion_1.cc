@@ -12,8 +12,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -35,9 +33,9 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );

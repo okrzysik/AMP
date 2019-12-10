@@ -43,7 +43,7 @@ ConvectiveHeatCoefficient::ConvectiveHeatCoefficient(
 
         // load defaults into the material property, checking range validity
         for ( size_t i = 0; i < d_argNames.size(); ++i ) {
-            d_defaults[i] = defaults_db->getDouble( d_argNames[i] );
+            d_defaults[i] = defaults_db->getScalar<double>( d_argNames[i] );
             AMP_INSIST( d_property->in_range( d_argNames[i], d_defaults[i] ),
                         std::string( "Default for argument " ) + d_argNames[i] +
                             std::string( " is out of range" ) );

@@ -1,8 +1,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -18,21 +16,15 @@
 #include <vector>
 
 
-/************************************************************************
- *                                                                       *
- * This tests whether we can create and use an InputManager object       *
- *                                                                       *
- ************************************************************************/
 void mytest( AMP::UnitTest *ut )
 {
     std::string input_file = "input_InputManager";
     std::string log_file   = "output_InputManager";
 
-    // Create input database and parse all data in input file.
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
+    // Create input database and parse all data in input file
+    auto input_db = AMP::Database::parseInputFile( input_file );
 
-    if ( !input_db->getBool( "filename" ) )
+    if ( !input_db->getScalar<bool>( "filename" ) )
         ut->failure( "InputManager-1" );
 
     input_db.reset();
@@ -40,8 +32,6 @@ void mytest( AMP::UnitTest *ut )
     ut->passes( "InputManager read successfully." );
 }
 
-
-//---------------------------------------------------------------------------//
 
 int main( int argc, char *argv[] )
 {

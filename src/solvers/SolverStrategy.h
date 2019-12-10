@@ -182,7 +182,7 @@ public:
     virtual AMP::shared_ptr<AMP::Operator::Operator> getOperator( void ) { return d_pOperator; }
 
 protected:
-    void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
+    void getFromInput( AMP::shared_ptr<AMP::Database> db );
 
     int d_iNumberIterations; // iterations in solver
 

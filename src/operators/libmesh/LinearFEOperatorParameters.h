@@ -14,7 +14,7 @@ public:
     /**
       Constructor.
       */
-    explicit LinearFEOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+    explicit LinearFEOperatorParameters( AMP::shared_ptr<AMP::Database> db )
         : FEOperatorParameters( db )
     {
     }

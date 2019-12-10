@@ -26,34 +26,34 @@ PericElastoViscoPlasticModel::PericElastoViscoPlasticModel(
     AMP_INSIST( params->d_db->keyExists( "Strain_Exponent" ), "Missing key: Strain_Exponent" );
 
     if ( d_useMaterialsLibrary == false ) {
-        default_E  = params->d_db->getDouble( "Youngs_Modulus" );
-        default_Nu = params->d_db->getDouble( "Poissons_Ratio" );
+        default_E  = params->d_db->getScalar<double>( "Youngs_Modulus" );
+        default_Nu = params->d_db->getScalar<double>( "Poissons_Ratio" );
     }
 
-    d_H = params->d_db->getDouble( "Linear_Strain_Hardening" );
+    d_H = params->d_db->getScalar<double>( "Linear_Strain_Hardening" );
 
-    d_Viscosity = params->d_db->getDouble( "Viscosity" );
+    d_Viscosity = params->d_db->getScalar<double>( "Viscosity" );
 
-    d_Epsilon = params->d_db->getDouble( "Strain_Exponent" );
+    d_Epsilon = params->d_db->getScalar<double>( "Strain_Exponent" );
 
     if ( d_useMaterialsLibrary == false ) {
         AMP_INSIST( params->d_db->keyExists( "Elastic_Yield_Stress" ),
                     "Missing key: Elastic_Yield_Stress" );
-        d_Sig0 = params->d_db->getDouble( "Elastic_Yield_Stress" );
+        d_Sig0 = params->d_db->getScalar<double>( "Elastic_Yield_Stress" );
     }
 
     if ( d_useMaterialsLibrary == true ) {
-        d_Sig0 = params->d_db->getDoubleWithDefault( "Elastic_Yield_Stress", 1000000.0 );
+        d_Sig0 = params->d_db->getWithDefault<double>( "Elastic_Yield_Stress", 1000000.0 );
     }
 
     mat_name = 0;
 
-    default_TEMPERATURE = params->d_db->getDoubleWithDefault( "Default_Temperature", 310.0 );
+    default_TEMPERATURE = params->d_db->getWithDefault<double>( "Default_Temperature", 310.0 );
 
-    default_BURNUP = params->d_db->getDoubleWithDefault( "Default_Burnup", 0.0 );
+    default_BURNUP = params->d_db->getWithDefault<double>( "Default_Burnup", 0.0 );
 
     default_OXYGEN_CONCENTRATION =
-        params->d_db->getDoubleWithDefault( "Default_Oxygen_Concentration", 0.0 );
+        params->d_db->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
 
     for ( auto &elem : d_constitutiveMatrix ) {
         for ( double &j : elem )

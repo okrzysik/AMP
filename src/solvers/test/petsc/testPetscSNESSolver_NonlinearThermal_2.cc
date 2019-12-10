@@ -23,8 +23,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -45,9 +43,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
 
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // Create the Mesh.
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
@@ -133,7 +130,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::pout << "RHS min after corrections = " << precision << rhsVec->min() << "\n";
 
     // Initial guess
-    double initGuess = input_db->getDoubleWithDefault( "InitialGuess", 400.0 );
+    double initGuess = input_db->getWithDefault<double>( "InitialGuess", 400.0 );
     solVec->setToScalar( initGuess );
     AMP::pout << "initial guess L2 norm before corrections = " << solVec->L2Norm() << "\n";
     AMP::pout << "initial guess max before corrections = " << solVec->max() << "\n";

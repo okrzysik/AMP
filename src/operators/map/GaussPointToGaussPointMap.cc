@@ -31,7 +31,7 @@ GaussPointToGaussPointMap::GaussPointToGaussPointMap(
     : NodeToNodeMap( params )
 {
     createIdxMap( params );
-    d_useFrozenInputVec = params->d_db->getBoolWithDefault( "FrozenInput", false );
+    d_useFrozenInputVec = params->d_db->getWithDefault( "FrozenInput", false );
 }
 
 
@@ -92,18 +92,18 @@ void GaussPointToGaussPointMap::createIdxMap(
     AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     AMP::shared_ptr<AMP::Database> db = params->d_db;
-    std::string feTypeOrderName       = db->getStringWithDefault( "FE_ORDER", "FIRST" );
+    std::string feTypeOrderName       = db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
     auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
-    std::string feFamilyName = db->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
+    std::string feFamilyName = db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
     auto feFamily            = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
-    std::string qruleTypeName = db->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
+    std::string qruleTypeName = db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
     auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
-    std::string qruleOrderName = db->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
+    std::string qruleOrderName = db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
-    int faceDim = db->getIntegerWithDefault( "DIMENSION", 2 );
+    int faceDim = db->getWithDefault( "DIMENSION", 2 );
 
     AMP::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
 
@@ -181,8 +181,8 @@ void GaussPointToGaussPointMap::createIdxMap(
         elem = nullptr;
     } // end i
 
-    db->putInteger( "DOFsPerObject", dofsPerElem );
-    db->putString( "VariableName", "GaussPoints" );
+    db->putScalar( "DOFsPerObject", dofsPerElem );
+    db->putScalar( "VariableName", "GaussPoints" );
     AMP::shared_ptr<AMP::Operator::NodeToNodeMap> n2nMap(
         new AMP::Operator::NodeToNodeMap( params ) );
     n2nMap->setVector( outVec );

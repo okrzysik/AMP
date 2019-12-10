@@ -18,8 +18,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
@@ -45,9 +43,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #endif
 
     // Read the input file
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db    = input_db->getDatabase( "Mesh" );
@@ -57,7 +54,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
-    int NumberOfLoadingSteps = input_db->getInteger( "NumberOfLoadingSteps" );
+    int NumberOfLoadingSteps = input_db->getScalar<int>( "NumberOfLoadingSteps" );
 
     // Create a nonlinear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "NonlinearMechanicsOperator" ), "key missing!" );
@@ -205,7 +202,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
         AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
 
-        auto tmp_db = AMP::make_shared<AMP::InputDatabase>( "Dummy" );
+        auto tmp_db = AMP::make_shared<AMP::Database>( "Dummy" );
         auto tmpParams =
             AMP::make_shared<AMP::Operator::MechanicsNonlinearFEOperatorParameters>( tmp_db );
         ( nonlinearMechanicsBVPoperator->getVolumeOperator() )->reset( tmpParams );
@@ -213,7 +210,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         current_time = delta_time * ( (double) step + 2.0 );
 
-        dirichletVectorCorrectionDatabase->putDouble( "value_3_0", ( epsilon_dot * current_time ) );
+        dirichletVectorCorrectionDatabase->putScalar( "value_3_0", ( epsilon_dot * current_time ) );
         auto bndParams = AMP::make_shared<AMP::Operator::DirichletVectorCorrectionParameters>(
             dirichletVectorCorrectionDatabase );
         ( nonlinearMechanicsBVPoperator->getBoundaryOperator() )->reset( bndParams );

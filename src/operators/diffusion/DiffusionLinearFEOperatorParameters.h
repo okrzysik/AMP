@@ -10,7 +10,7 @@ namespace Operator {
 class DiffusionLinearFEOperatorParameters : public LinearFEOperatorParameters
 {
 public:
-    explicit DiffusionLinearFEOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+    explicit DiffusionLinearFEOperatorParameters( AMP::shared_ptr<AMP::Database> db )
         : LinearFEOperatorParameters( db )
     {
     }

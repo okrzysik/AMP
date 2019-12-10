@@ -15,7 +15,7 @@ public:
      * Construct and initialize a parameter list according to input
      * data.  Guess what the required and optional keywords are.
      */
-    explicit TimeOperatorParameters( const AMP::shared_ptr<AMP::Database> &db );
+    explicit TimeOperatorParameters( AMP::shared_ptr<AMP::Database> db );
     /**
      * Destructor.
      */

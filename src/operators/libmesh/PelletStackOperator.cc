@@ -10,15 +10,15 @@ PelletStackOperator::PelletStackOperator(
     const AMP::shared_ptr<PelletStackOperatorParameters> &params )
     : Operator( params )
 {
-    d_totalNumberOfPellets = ( params->d_db )->getInteger( "TOTAL_NUMBER_OF_PELLETS" );
-    d_useSerial            = ( params->d_db )->getBoolWithDefault( "USE_SERIAL", false );
-    d_onlyZcorrection      = ( params->d_db )->getBoolWithDefault( "ONLY_Z_CORRECTION", false );
+    d_totalNumberOfPellets = ( params->d_db )->getScalar<int>( "TOTAL_NUMBER_OF_PELLETS" );
+    d_useSerial            = ( params->d_db )->getWithDefault( "USE_SERIAL", false );
+    d_onlyZcorrection      = ( params->d_db )->getWithDefault( "ONLY_Z_CORRECTION", false );
     AMP_ASSERT( !( d_useSerial && d_onlyZcorrection ) );
-    d_masterId = ( params->d_db )->getInteger( "MASTER" );
-    d_slaveId  = ( params->d_db )->getInteger( "SLAVE" );
+    d_masterId = ( params->d_db )->getScalar<int>( "MASTER" );
+    d_slaveId  = ( params->d_db )->getScalar<int>( "SLAVE" );
     if ( ( params->d_db )->keyExists( "SCALING_FACTOR" ) ) {
         d_useScaling    = true;
-        d_scalingFactor = ( params->d_db )->getDouble( "SCALING_FACTOR" );
+        d_scalingFactor = ( params->d_db )->getScalar<double>( "SCALING_FACTOR" );
     } else {
         d_useScaling = false;
     }

@@ -3,7 +3,7 @@
 #include "AMP/time_integrators/oxide/OxideTimeIntegrator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Writer.h"
@@ -17,9 +17,8 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
     // Load the input file
     std::string log_file = input_file + ".log";
     AMP::PIO::logOnlyNodeZero( log_file );
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );
@@ -42,7 +41,7 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
     auto temp_var = AMP::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto temp_vec = AMP::LinearAlgebra::createVector( DOF, temp_var, true );
     auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
-    double T0     = input_db->getDoubleWithDefault( "T0", 650 );
+    double T0     = input_db->getWithDefault<double>( "T0", 650 );
     std::vector<size_t> dofs;
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         auto coord = iterator->coord();
@@ -76,7 +75,7 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
 
     // Run the time integration
     double time = 0.0;
-    auto times  = input_db->getDoubleArray( "Time" );
+    auto times  = input_db->getVector<double>( "Time" );
     for ( size_t i = 0; i < times.size(); i++ ) {
         // Advance the solution
         double dT = times[i] - timeIntegrator->getCurrentTime();
@@ -92,8 +91,8 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
         if ( input_db->keyExists( "oxide" ) && input_db->keyExists( "alpha" ) ) {
             if ( times[i] == 0.0 )
                 continue;
-            auto oxide_solution = input_db->getDoubleArray( "oxide" );
-            auto alpha_solution = input_db->getDoubleArray( "alpha" );
+            auto oxide_solution = input_db->getVector<double>( "oxide" );
+            auto alpha_solution = input_db->getVector<double>( "alpha" );
             double err_oxide    = oxide->min() - oxide_solution[i];
             double err_alpha    = alpha->min() - alpha_solution[i];
             if ( fabs( err_oxide / oxide_solution[i] ) < 1e-3 )

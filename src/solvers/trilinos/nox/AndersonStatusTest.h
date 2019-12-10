@@ -3,6 +3,7 @@
 
 // AMP includes
 #include "AMP/utils/Database.h"
+#include "AMP/utils/UtilityMacros.h"
 
 // Trilinos includes
 DISABLE_WARNINGS

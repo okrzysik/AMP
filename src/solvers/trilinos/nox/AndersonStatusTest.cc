@@ -21,9 +21,9 @@ namespace Solver {
 AndersonStatusTest::AndersonStatusTest( AMP::shared_ptr<AMP::Database> db )
 {
     if ( db->keyExists( "AndersonConvergenceVariables" ) ) {
-        d_variableNames = db->getStringArray( "AndersonConvergenceVariables" );
+        d_variableNames = db->getVector<std::string>( "AndersonConvergenceVariables" );
         if ( db->keyExists( "AndersonConvergenceTolerances" ) ) {
-            d_tolerances = db->getDoubleArray( "AndersonConvergenceTolerances" );
+            d_tolerances = db->getVector<double>( "AndersonConvergenceTolerances" );
         }
     }
     AMP_ASSERT( d_variableNames.size() == d_tolerances.size() );

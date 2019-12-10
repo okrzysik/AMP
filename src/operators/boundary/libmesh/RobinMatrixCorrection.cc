@@ -1,6 +1,6 @@
 
 #include "RobinMatrixCorrection.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "RobinMatrixCorrectionParameters.h"
 
@@ -31,10 +31,10 @@ RobinMatrixCorrection::RobinMatrixCorrection(
     d_JxW   = nullptr;
     d_phi   = nullptr;
 
-    auto feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "FIRST" );
-    auto feFamilyName    = ( params->d_db )->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
-    auto qruleTypeName   = ( params->d_db )->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
-    d_qruleOrderName     = ( params->d_db )->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
+    auto feTypeOrderName = ( params->d_db )->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
+    auto feFamilyName    = ( params->d_db )->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    auto qruleTypeName   = ( params->d_db )->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
+    d_qruleOrderName = ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     d_feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
     d_feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
@@ -60,26 +60,25 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
 
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
-    bool skipParams = ( myparams->d_db )->getBoolWithDefault( "skip_params", true );
+    bool skipParams = ( myparams->d_db )->getWithDefault( "skip_params", true );
 
-    bool d_isFluxGaussPtVector =
-        ( myparams->d_db )->getBoolWithDefault( "IsFluxGaussPtVector", true );
+    bool d_isFluxGaussPtVector = ( myparams->d_db )->getWithDefault( "IsFluxGaussPtVector", true );
 
     if ( !skipParams ) {
         AMP_INSIST( ( myparams->d_db )->keyExists( "alpha" ), "Missing key: prefactor alpha" );
-        d_alpha = ( myparams->d_db )->getDouble( "alpha" );
+        d_alpha = ( myparams->d_db )->getScalar<double>( "alpha" );
         AMP_INSIST( d_alpha != 0.0, "prefactor alpha must be != 0.0" );
 
         AMP_INSIST( ( myparams->d_db )->keyExists( "beta" ), "Missing key: prefactor beta" );
-        d_beta = ( myparams->d_db )->getDouble( "beta" );
+        d_beta = ( myparams->d_db )->getScalar<double>( "beta" );
 
         AMP_INSIST( ( myparams->d_db )->keyExists( "gamma" ),
                     "Missing key: total prefactor gamma" );
-        d_gamma = ( myparams->d_db )->getDouble( "gamma" );
+        d_gamma = ( myparams->d_db )->getScalar<double>( "gamma" );
 
         AMP_INSIST( ( params->d_db )->keyExists( "number_of_ids" ),
                     "Key ''number_of_ids'' is missing!" );
-        int numIds = ( params->d_db )->getInteger( "number_of_ids" );
+        int numIds = ( params->d_db )->getScalar<int>( "number_of_ids" );
 
         d_boundaryIds.resize( numIds );
         d_dofIds.resize( numIds );
@@ -90,22 +89,22 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
 
             sprintf( key, "id_%d", j );
             AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-            d_boundaryIds[j] = ( myparams->d_db )->getInteger( key );
+            d_boundaryIds[j] = ( myparams->d_db )->getScalar<int>( key );
 
             sprintf( key, "number_of_dofs_%d", j );
             AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-            int numDofIds = ( myparams->d_db )->getInteger( key );
+            int numDofIds = ( myparams->d_db )->getScalar<int>( key );
 
             d_dofIds[j].resize( numDofIds );
             d_robinValues[j].resize( numDofIds );
             for ( int i = 0; i < numDofIds; i++ ) {
                 sprintf( key, "dof_%d_%d", j, i );
                 AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-                d_dofIds[j][i] = ( myparams->d_db )->getInteger( key );
+                d_dofIds[j][i] = ( myparams->d_db )->getScalar<int>( key );
 
                 sprintf( key, "value_%d_%d", j, i );
                 AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-                d_robinValues[j][i] = ( myparams->d_db )->getDouble( key );
+                d_robinValues[j][i] = ( myparams->d_db )->getScalar<double>( key );
             }
         }
     }
@@ -113,14 +112,14 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
     d_robinPhysicsModel = myparams->d_robinPhysicsModel;
 
     ( d_NeumannParams->d_db )
-        ->putBool( "constant_flux", myparams->d_db->getBoolWithDefault( "constant_flux", true ) );
+        ->putScalar( "constant_flux", myparams->d_db->getWithDefault( "constant_flux", true ) );
     d_NeumannParams->d_variableFlux      = myparams->d_variableFlux;
     d_NeumannParams->d_robinPhysicsModel = myparams->d_robinPhysicsModel;
-    ( d_NeumannParams->d_db )->putDouble( "gamma", d_gamma );
+    ( d_NeumannParams->d_db )->putScalar( "gamma", d_gamma );
     d_NeumannCorrection->reset( d_NeumannParams );
 
     bool skipMatrixCorrection =
-        ( myparams->d_db )->getBoolWithDefault( "skip_matrix_correction", false );
+        ( myparams->d_db )->getWithDefault( "skip_matrix_correction", false );
     if ( !skipMatrixCorrection ) {
         // Create the libmesh elements
         AMP::Mesh::MeshIterator iterator;

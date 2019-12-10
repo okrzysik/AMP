@@ -5,7 +5,7 @@
 #include "AMP/ampmesh/STKmesh/STKMeshIterator.h"
 #include "AMP/ampmesh/STKmesh/initializeSTKMesh.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/MemoryDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
 
@@ -60,7 +60,7 @@ STKMesh::STKMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
         // Database exists
         AMP_INSIST( d_db->keyExists( "dim" ), "Variable 'dim' must be set in the database" );
         AMP_INSIST( d_db->keyExists( "MeshName" ), "MeshName must exist in input database" );
-        PhysicalDim = d_db->getInteger( "dim" );
+        PhysicalDim = d_db->getScalar<int>( "dim" );
         d_name      = d_db->getString( "MeshName" );
         AMP_INSIST( PhysicalDim > 0 && PhysicalDim < 10, "Invalid dimension" );
         GeomDim = (GeomType) PhysicalDim;
@@ -90,11 +90,11 @@ STKMesh::STKMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
         // Displace the mesh
         std::vector<double> displacement( PhysicalDim, 0.0 );
         if ( d_db->keyExists( "x_offset" ) )
-            displacement[0] = d_db->getDouble( "x_offset" );
+            displacement[0] = d_db->getScalar<double>( "x_offset" );
         if ( d_db->keyExists( "y_offset" ) )
-            displacement[1] = d_db->getDouble( "y_offset" );
+            displacement[1] = d_db->getScalar<double>( "y_offset" );
         if ( d_db->keyExists( "z_offset" ) )
-            displacement[2] = d_db->getDouble( "z_offset" );
+            displacement[2] = d_db->getScalar<double>( "z_offset" );
         bool test = false;
         for ( size_t i = 0; i < displacement.size() && !test; i++ )
             test = displacement[i];
@@ -510,7 +510,7 @@ size_t STKMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     size_t NumberOfElements = 0;
     if ( database->keyExists( "NumberOfElements" ) ) {
         // User specified the number of elements, this should override everything
-        NumberOfElements = (size_t) database->getInteger( "NumberOfElements" );
+        NumberOfElements = (size_t) database->getScalar<int>( "NumberOfElements" );
     } else if ( database->keyExists( "FileName" ) ) {
         // Read an existing mesh
         std::string fname = database->getString( "FileName" );
@@ -539,7 +539,7 @@ size_t STKMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
             // Generate a cube mesh
             AMP_INSIST( database->keyExists( "size" ),
                         "Variable 'size' must be set in the database" );
-            std::vector<int> size = database->getIntegerArray( "size" );
+            std::vector<int> size = database->getVector<int>( "size" );
             NumberOfElements      = 1;
             for ( size_t i = 0; i < size.size(); i++ )
                 NumberOfElements *= size[i];
@@ -551,7 +551,7 @@ size_t STKMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     }
     // Adjust the number of elements by a weight if desired
     if ( database->keyExists( "Weight" ) ) {
-        double weight    = database->getDouble( "Weight" );
+        double weight    = database->getScalar<double>( "Weight" );
         NumberOfElements = (size_t) ceil( weight * ( (double) NumberOfElements ) );
     }
     return NumberOfElements;

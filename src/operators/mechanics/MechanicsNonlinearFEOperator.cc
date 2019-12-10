@@ -1,6 +1,6 @@
 
 #include "MechanicsNonlinearFEOperator.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "MechanicsLinearFEOperatorParameters.h"
@@ -18,12 +18,11 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database!" );
 
     d_resetReusesRadialReturn =
-        ( params->d_db )->getBoolWithDefault( "RESET_REUSES_RADIAL_RETURN", true );
+        ( params->d_db )->getWithDefault( "RESET_REUSES_RADIAL_RETURN", true );
     d_jacobianReusesRadialReturn =
-        ( params->d_db )->getBoolWithDefault( "JACOBIAN_REUSES_RADIAL_RETURN", true );
+        ( params->d_db )->getWithDefault( "JACOBIAN_REUSES_RADIAL_RETURN", true );
 
-    d_useUpdatedLagrangian =
-        ( params->d_db )->getBoolWithDefault( "USE_UPDATED_LAGRANGIAN", false );
+    d_useUpdatedLagrangian = ( params->d_db )->getWithDefault( "USE_UPDATED_LAGRANGIAN", false );
 
     if ( d_useUpdatedLagrangian ) {
         d_mechNULElem =
@@ -80,7 +79,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
         } else {
             d_isActive[i] = activeInpVar_db->keyExists( keysForVariables[i] );
             d_isFrozen[i] =
-                ( params->d_db )->getBoolWithDefault( "FREEZE_" + keysForVariables[i], true );
+                ( params->d_db )->getWithDefault( "FREEZE_" + keysForVariables[i], true );
         }
         if ( d_isActive[i] ) {
             std::string varName = activeInpVar_db->getString( keysForVariables[i] );
@@ -444,10 +443,10 @@ AMP::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
         std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
 
     // set up a database for the linear operator params
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
-    tmp_db->putBool( "reset_reuses_matrix", true );
-    tmp_db->putBool( "isAttachedToNonlinearOperator", true );
-    tmp_db->putBool( "isNonlinearOperatorInitialized", true );
+    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    tmp_db->putScalar( "reset_reuses_matrix", true );
+    tmp_db->putScalar( "isAttachedToNonlinearOperator", true );
+    tmp_db->putScalar( "isNonlinearOperatorInitialized", true );
 
     // create the linear operator params
     AMP::shared_ptr<MechanicsLinearFEOperatorParameters> outParams(

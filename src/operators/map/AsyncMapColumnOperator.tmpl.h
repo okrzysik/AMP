@@ -39,7 +39,7 @@ AsyncMapColumnOperator::build( AMP::Mesh::Mesh::shared_ptr manager,
 
     // Get the number of maps in the database
     AMP_INSIST( database->keyExists( "N_maps" ), "N_maps must exist in input database" );
-    int N_maps = database->getInteger( "N_maps" );
+    int N_maps = database->getScalar<int>( "N_maps" );
 
     // Create the databases for the individual maps
     auto map_databases = createDatabases( database );
@@ -73,8 +73,8 @@ AsyncMapColumnOperator::build( AMP::Mesh::Mesh::shared_ptr manager,
         mapParams->d_MapComm             = mapComm;
         mapParams->d_Mesh1               = mesh1;
         mapParams->d_Mesh2               = mesh2;
-        mapParams->d_BoundaryID1         = map_databases[i]->getInteger( "Surface1" );
-        mapParams->d_BoundaryID2         = map_databases[i]->getInteger( "Surface2" );
+        mapParams->d_BoundaryID1         = map_databases[i]->getScalar<int>( "Surface1" );
+        mapParams->d_BoundaryID2         = map_databases[i]->getScalar<int>( "Surface2" );
         mapParams->d_commTag             = globalMapTagOffset;
         mapParams->callMakeConsistentSet = false;
 

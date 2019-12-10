@@ -72,7 +72,7 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
     modelParams->d_icVec       = d_initialGuess;
     modelParams->d_preconditioner.reset();
     modelParams->d_prePostOperator = params->d_prePostOperator;
-    if ( linear_db->getBoolWithDefault( "uses_preconditioner", false ) )
+    if ( linear_db->getWithDefault( "uses_preconditioner", false ) )
         modelParams->d_preconditioner = params->d_preconditioner;
     d_thyraModel =
         Teuchos::RCP<TrilinosThyraModelEvaluator>( new TrilinosThyraModelEvaluator( modelParams ) );
@@ -81,11 +81,12 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
     // Create the linear solver factory
     ::Stratimikos::DefaultLinearSolverBuilder builder;
     Teuchos::RCP<Teuchos::ParameterList> p( new Teuchos::ParameterList );
-    std::string linearSolverType   = linear_db->getString( "linearSolverType" );
-    std::string linearSolver       = linear_db->getString( "linearSolver" );
-    int maxLinearIterations        = linear_db->getIntegerWithDefault( "max_iterations", 100 );
-    double linearRelativeTolerance = linear_db->getDoubleWithDefault( "relative_tolerance", 1e-3 );
-    bool flexGmres                 = linear_db->getBoolWithDefault( "flexibleGmres", true );
+    std::string linearSolverType = linear_db->getString( "linearSolverType" );
+    std::string linearSolver     = linear_db->getString( "linearSolver" );
+    int maxLinearIterations      = linear_db->getWithDefault( "max_iterations", 100 );
+    double linearRelativeTolerance =
+        linear_db->getWithDefault<double>( "relative_tolerance", 1e-3 );
+    bool flexGmres = linear_db->getWithDefault( "flexibleGmres", true );
     p->set( "Linear Solver Type", linearSolverType );
     p->set( "Preconditioner Type", "None" );
     p->sublist( "Linear Solver Types" )
@@ -102,7 +103,7 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
         linearSolverParams.sublist( "Solver Types" )
             .sublist( linearSolver )
             .set( "Flexible Gmres", flexGmres );
-    if ( linear_db->getIntegerWithDefault( "print_info_level", 0 ) >= 2 ) {
+    if ( linear_db->getWithDefault( "print_info_level", 0 ) >= 2 ) {
         linearSolverParams.sublist( "Solver Types" )
             .sublist( linearSolver )
             .set( "Output Frequency", 1 );
@@ -115,7 +116,7 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
                       Belos::Warnings + Belos::IterationDetails + Belos::OrthoDetails +
                           Belos::FinalSummary + Belos::Debug + Belos::StatusTestDetails );
         }
-    } else if ( linear_db->getIntegerWithDefault( "print_info_level", 0 ) >= 1 ) {
+    } else if ( linear_db->getWithDefault( "print_info_level", 0 ) >= 1 ) {
         linearSolverParams.sublist( "Solver Types" )
             .sublist( linearSolver )
             .set( "Output Frequency", 1 );
@@ -151,8 +152,8 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
         d_nlParams->set( "Nonlinear Solver", "Line Search Based" );
     } else if ( solverType == "Anderson" ) {
         d_nlParams->set( "Nonlinear Solver", "Anderson Accelerated Fixed-Point" );
-        int depth     = nonlinear_db->getIntegerWithDefault( "StorageDepth", 5 );
-        double mixing = nonlinear_db->getDoubleWithDefault( "MixingParameter", 1.0 );
+        int depth     = nonlinear_db->getWithDefault( "StorageDepth", 5 );
+        double mixing = nonlinear_db->getWithDefault<double>( "MixingParameter", 1.0 );
         d_nlParams->sublist( "Anderson Parameters" ).set( "Storage Depth", depth );
         d_nlParams->sublist( "Anderson Parameters" ).set( "Mixing Parameter", mixing );
         d_nlParams->sublist( "Anderson Parameters" )
@@ -166,7 +167,7 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
         d_status->addStatusTest( andersonTest );
     }
     std::string lineSearchMethod =
-        nonlinear_db->getStringWithDefault( "lineSearchMethod", "Polynomial" );
+        nonlinear_db->getWithDefault<std::string>( "lineSearchMethod", "Polynomial" );
     d_nlParams->sublist( "Line Search" ).set( "Method", lineSearchMethod );
     d_nlParams->sublist( "Direction" )
         .sublist( "Newton" )

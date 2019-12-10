@@ -99,7 +99,7 @@ public:
     resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
 
 protected:
-    void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
+    void getFromInput( AMP::shared_ptr<AMP::Database> db );
 
 private:
     AMP_MPI d_comm;

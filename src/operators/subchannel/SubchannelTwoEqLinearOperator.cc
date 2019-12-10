@@ -6,7 +6,7 @@
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
 #include "AMP/ampmesh/StructuredMeshHelper.h"
 #include "AMP/matrices/MatrixBuilder.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "ProfilerApp.h"
@@ -129,9 +129,9 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
 
     // get form loss parameters if there are grid spacers
     if ( d_NGrid > 0 ) {
-        d_zMinGrid = ( myparams->d_db )->getDoubleArray( "zMin_GridSpacers" );
-        d_zMaxGrid = ( myparams->d_db )->getDoubleArray( "zMax_GridSpacers" );
-        d_lossGrid = ( myparams->d_db )->getDoubleArray( "LossCoefficient_GridSpacers" );
+        d_zMinGrid = ( myparams->d_db )->getVector<double>( "zMin_GridSpacers" );
+        d_zMaxGrid = ( myparams->d_db )->getVector<double>( "zMax_GridSpacers" );
+        d_lossGrid = ( myparams->d_db )->getVector<double>( "LossCoefficient_GridSpacers" );
         // check that sizes of grid spacer loss vectors are consistent with the provided number of
         // grid spacers
         if ( !( d_NGrid == d_zMinGrid.size() && d_NGrid == d_zMaxGrid.size() &&
@@ -382,7 +382,7 @@ double SubchannelTwoEqLinearOperator::getDoubleParameter(
 {
     bool keyExists = ( myparams->d_db )->keyExists( paramString );
     if ( keyExists ) {
-        return ( myparams->d_db )->getDouble( paramString );
+        return myparams->d_db->getScalar<double>( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue << "\n" );
@@ -398,7 +398,7 @@ int SubchannelTwoEqLinearOperator::getIntegerParameter(
 {
     bool keyExists = ( myparams->d_db )->keyExists( paramString );
     if ( keyExists ) {
-        return ( myparams->d_db )->getInteger( paramString );
+        return myparams->d_db->getScalar<int>( paramString );
     } else {
         AMP::pout << "Key '" + paramString + "' was not provided. Using default value: "
                   << defaultValue << "\n";

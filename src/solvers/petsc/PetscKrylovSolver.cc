@@ -170,10 +170,10 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
     }
 }
 // Function to get values from input
-void PetscKrylovSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
+void PetscKrylovSolver::getFromInput( AMP::shared_ptr<AMP::Database> db )
 {
     // fill this in
-    std::string petscOptions = db->getStringWithDefault( "KSPOptions", "" );
+    std::string petscOptions = db->getWithDefault<std::string>( "KSPOptions", "" );
     if ( petscOptions.find( "monitor" ) != std::string::npos ) {
         petscOptions = PetscMonitor::removeMonitor( petscOptions );
         d_PetscMonitor.reset( new PetscMonitor( d_comm ) );
@@ -189,30 +189,30 @@ void PetscKrylovSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 #endif
 
 
-    d_sKspType             = db->getStringWithDefault( "ksp_type", "fgmres" );
-    d_dRelativeTolerance   = db->getDoubleWithDefault( "relative_tolerance", 1.0e-9 );
-    d_dAbsoluteTolerance   = db->getDoubleWithDefault( "absolute_tolerance", 1.0e-14 );
-    d_dDivergenceTolerance = db->getDoubleWithDefault( "divergence_tolerance", 1.0e+03 );
-    d_iMaxIterations       = db->getDoubleWithDefault( "max_iterations", 1000 );
+    d_sKspType             = db->getWithDefault<std::string>( "ksp_type", "fgmres" );
+    d_dRelativeTolerance   = db->getWithDefault<double>( "relative_tolerance", 1.0e-9 );
+    d_dAbsoluteTolerance   = db->getWithDefault<double>( "absolute_tolerance", 1.0e-14 );
+    d_dDivergenceTolerance = db->getWithDefault<double>( "divergence_tolerance", 1.0e+03 );
+    d_iMaxIterations       = db->getWithDefault<double>( "max_iterations", 1000 );
 
-    d_KSPAppendOptionsPrefix = db->getStringWithDefault( "KSPAppendOptionsPrefix", "" );
+    d_KSPAppendOptionsPrefix = db->getWithDefault<std::string>( "KSPAppendOptionsPrefix", "" );
 
     if ( ( d_sKspType == "fgmres" ) || ( d_sKspType == "gmres" ) ) {
-        d_iMaxKrylovDimension = db->getIntegerWithDefault( "max_krylov_dimension", 20 );
-        d_sGmresOrthogonalizationAlgorithm =
-            db->getStringWithDefault( "gmres_orthogonalization_algorithm", "modifiedgramschmidt" );
+        d_iMaxKrylovDimension              = db->getWithDefault( "max_krylov_dimension", 20 );
+        d_sGmresOrthogonalizationAlgorithm = db->getWithDefault<std::string>(
+            "gmres_orthogonalization_algorithm", "modifiedgramschmidt" );
     }
 
-    d_bUsesPreconditioner = db->getBoolWithDefault( "uses_preconditioner", false );
+    d_bUsesPreconditioner = db->getWithDefault( "uses_preconditioner", false );
 
     if ( d_bUsesPreconditioner ) {
         if ( db->keyExists( "pc_type" ) ) {
-            d_sPcType = db->getStringWithDefault( "pc_type", "none" );
+            d_sPcType = db->getWithDefault<std::string>( "pc_type", "none" );
         } else {
             // call error here
             AMP_ERROR( "pc_type does not exist" );
         }
-        d_PcSide = db->getStringWithDefault( "pc_side", "RIGHT" );
+        d_PcSide = db->getWithDefault<std::string>( "pc_side", "RIGHT" );
     } else {
         d_sPcType = "none";
     }

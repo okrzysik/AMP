@@ -110,7 +110,7 @@ void ParallelBuffer::setOutputStream2( std::ostream *stream ) { d_ostream2 = str
  *                                                                       *
  ************************************************************************/
 
-void ParallelBuffer::outputString( const char *text, const size_t length )
+void ParallelBuffer::outputScalar( const char *text, const size_t length )
 {
     if ( ( length > 0 ) && d_active ) {
 
@@ -209,7 +209,7 @@ int ParallelBuffer::sync()
 {
     const int n = pptr() - pbase();
     if ( n > 0 )
-        outputString( pbase(), n );
+        outputScalar( pbase(), n );
     return ( 0 );
 }
 
@@ -229,7 +229,7 @@ std::streamsize ParallelBuffer::xsputn( const char *text, std::streamsize n )
 {
     sync();
     if ( n > 0 )
-        outputString( text, n );
+        outputScalar( text, n );
     return ( n );
 }
 #endif
@@ -251,7 +251,7 @@ int ParallelBuffer::overflow( int ch )
         char character[2];
         character[0] = (char) ch;
         character[1] = 0;
-        outputString( character, 1 );
+        outputScalar( character, 1 );
     }
     pbump( -n );
     return ( 0 );

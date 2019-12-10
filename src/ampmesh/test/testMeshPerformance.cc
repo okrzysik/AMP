@@ -4,9 +4,7 @@
 #include "AMP/ampmesh/testHelpers/meshTests.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
-#include "AMP/utils/MemoryDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
 
 #include "meshGenerators.h"
@@ -47,8 +45,7 @@ void testInputMesh( AMP::UnitTest &ut, std::string filename )
 {
     PROFILE_START( "testInputMesh" );
     // Read the input file
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( filename, input_db );
+    auto input_db = AMP::Database::parseInputFile( filename );
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );

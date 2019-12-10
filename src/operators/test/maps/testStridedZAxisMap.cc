@@ -2,8 +2,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/map/StridedZAxisMap.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Writer.h"
@@ -56,9 +55,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // parse input file
-    auto inputDatabase = AMP::make_shared<AMP::InputDatabase>( "inputDatabase" );
-    AMP::InputManager::getManager()->parseInputFile( inputFile, inputDatabase );
-    inputDatabase->printClassData( AMP::plog );
+    auto inputDatabase = AMP::Database::parseInputFile( inputFile );
+    inputDatabase->print( AMP::plog );
 
     // read the meshe
     auto meshDatabase = inputDatabase->getDatabase( "Mesh" );

@@ -2,7 +2,7 @@
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -29,21 +29,18 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
 #endif
 
-    AMP::shared_ptr<AMP::InputDatabase> global_input_db(
-        new AMP::InputDatabase( "global_input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, global_input_db );
-    global_input_db->printClassData( AMP::plog );
+    auto global_input_db = AMP::Database::parseInputFile( input_file );
+    global_input_db->print( AMP::plog );
 
-    unsigned int NumberOfLoadingSteps = global_input_db->getInteger( "NumberOfLoadingSteps" );
-    bool usePointLoad                 = global_input_db->getBool( "USE_POINT_LOAD" );
-    bool useThermalLoad               = global_input_db->getBool( "USE_THERMAL_LOAD" );
+    unsigned int NumberOfLoadingSteps = global_input_db->getScalar<int>( "NumberOfLoadingSteps" );
+    bool usePointLoad                 = global_input_db->getScalar<bool>( "USE_POINT_LOAD" );
+    bool useThermalLoad               = global_input_db->getScalar<bool>( "USE_THERMAL_LOAD" );
 
     AMP_INSIST( global_input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = global_input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db    = global_input_db->getDatabase( "Mesh" );
+    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( globalComm );
-    AMP::Mesh::Mesh::shared_ptr manager = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto manager = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     AMP::shared_ptr<AMP::Operator::CoupledOperator> coupledOp;
     AMP::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator;
@@ -67,7 +64,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     if ( useThermalLoad ) {
-        double initialTemp = global_input_db->getDouble( "InitialTemperature" );
+        double initialTemp = global_input_db->getScalar<double>( "InitialTemperature" );
         initialTemperatureVec->setToScalar( initialTemp );
         helperSetReferenceTemperatureForPelletMechanics( coupledOp, initialTemperatureVec );
     }
@@ -75,27 +72,22 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     solVec->zero();
     helperApplyBoundaryCorrectionsForPelletMechanics( coupledOp, solVec, rhsVec );
 
-    AMP::shared_ptr<AMP::Database> nonlinearSolver_db =
-        global_input_db->getDatabase( "NonlinearSolver" );
-    AMP::shared_ptr<AMP::Database> linearSolver_db =
-        nonlinearSolver_db->getDatabase( "LinearSolver" );
-    AMP::shared_ptr<AMP::Database> pelletStackSolver_db =
-        linearSolver_db->getDatabase( "PelletStackSolver" );
+    auto nonlinearSolver_db   = global_input_db->getDatabase( "NonlinearSolver" );
+    auto linearSolver_db      = nonlinearSolver_db->getDatabase( "LinearSolver" );
+    auto pelletStackSolver_db = linearSolver_db->getDatabase( "PelletStackSolver" );
 
     AMP::shared_ptr<AMP::Solver::SolverStrategy> pelletStackSolver;
     helperBuildStackSolverForPelletMechanics(
         pelletStackSolver_db, pelletStackOp, linearColumnOperator, pelletStackSolver );
 
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
-        new AMP::Solver::PetscSNESSolverParameters( nonlinearSolver_db ) );
+    auto nonlinearSolverParams =
+        AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = coupledOp;
     nonlinearSolverParams->d_pInitialGuess = solVec;
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(
-        new AMP::Solver::PetscSNESSolver( nonlinearSolverParams ) );
+    auto nonlinearSolver = AMP::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
-    AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
-        nonlinearSolver->getKrylovSolver();
+    auto linearSolver = nonlinearSolver->getKrylovSolver();
     linearSolver->setPreconditioner( pelletStackSolver );
 
 #ifdef USE_EXT_SILO
@@ -111,8 +103,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         scaledRhsVec->scale( scaleValue, rhsVec );
 
         if ( useThermalLoad ) {
-            double initialTemp = global_input_db->getDouble( "InitialTemperature" );
-            double finalTemp   = global_input_db->getDouble( "FinalTemperature" );
+            double initialTemp = global_input_db->getScalar<double>( "InitialTemperature" );
+            double finalTemp   = global_input_db->getScalar<double>( "FinalTemperature" );
             double deltaTemp =
                 initialTemp + ( ( static_cast<double>( step + 1 ) ) * ( finalTemp - initialTemp ) /
                                 ( static_cast<double>( NumberOfLoadingSteps ) ) );
@@ -120,7 +112,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             helperSetFinalTemperatureForPelletMechanics( coupledOp, finalTemperatureVec );
         }
 
-        AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
+        auto resVec = solVec->cloneVector();
         resVec->zero();
         coupledOp->residual( scaledRhsVec, solVec, resVec );
         AMP::pout << "initial, rhsVec: " << scaledRhsVec->L2Norm() << std::endl;

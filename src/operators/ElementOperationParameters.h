@@ -22,7 +22,7 @@ public:
     /**
       Constructor.
       */
-    explicit ElementOperationParameters( const AMP::shared_ptr<AMP::Database> &db ) : d_db( db ) {}
+    explicit ElementOperationParameters( AMP::shared_ptr<AMP::Database> db ) : d_db( db ) {}
 
     /**
       Destructor.

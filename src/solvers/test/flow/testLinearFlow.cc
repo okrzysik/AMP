@@ -22,8 +22,6 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -51,10 +49,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
 
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
+    auto input_db           = AMP::Database::parseInputFile( input_file );
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
-    input_db->printClassData( AMP::plog );
+    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );

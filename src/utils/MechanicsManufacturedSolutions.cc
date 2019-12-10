@@ -513,7 +513,7 @@ std::vector<double> MMSTrigonometric::getStressTensor( double x, double y, doubl
 AMP::shared_ptr<MMS> MMSBuilder::createMMS( AMP::shared_ptr<AMP::Database> mmsDatabase )
 {
     AMP::shared_ptr<MMS> mms;
-    std::string name = mmsDatabase->getStringWithDefault( "name", "One" );
+    std::string name = mmsDatabase->getWithDefault<std::string>( "name", "One" );
     if ( name == "Trigonometric" ) {
         mms = AMP::shared_ptr<MMS>( new MMSTrigonometric );
     } else if ( name == "Linear" ) {
@@ -524,28 +524,28 @@ AMP::shared_ptr<MMS> MMSBuilder::createMMS( AMP::shared_ptr<AMP::Database> mmsDa
         AMP_ASSERT( false );
     }
     if ( mmsDatabase->keyExists( "scale_x" ) ) {
-        mms->scaleX( mmsDatabase->getDouble( "scale_x" ) );
+        mms->scaleX( mmsDatabase->getScalar<double>( "scale_x" ) );
     }
     if ( mmsDatabase->keyExists( "scale_y" ) ) {
-        mms->scaleY( mmsDatabase->getDouble( "scale_y" ) );
+        mms->scaleY( mmsDatabase->getScalar<double>( "scale_y" ) );
     }
     if ( mmsDatabase->keyExists( "scale_z" ) ) {
-        mms->scaleZ( mmsDatabase->getDouble( "scale_z" ) );
+        mms->scaleZ( mmsDatabase->getScalar<double>( "scale_z" ) );
     }
     if ( mmsDatabase->keyExists( "scale_xyz" ) ) {
-        mms->scaleXYZ( mmsDatabase->getDouble( "scale_xyz" ) );
+        mms->scaleXYZ( mmsDatabase->getScalar<double>( "scale_xyz" ) );
     }
     if ( mmsDatabase->keyExists( "mult_x" ) ) {
-        mms->multX( mmsDatabase->getDouble( "mult_x" ) );
+        mms->multX( mmsDatabase->getScalar<double>( "mult_x" ) );
     }
     if ( mmsDatabase->keyExists( "mult_y" ) ) {
-        mms->multY( mmsDatabase->getDouble( "mult_y" ) );
+        mms->multY( mmsDatabase->getScalar<double>( "mult_y" ) );
     }
     if ( mmsDatabase->keyExists( "mult_z" ) ) {
-        mms->multZ( mmsDatabase->getDouble( "mult_z" ) );
+        mms->multZ( mmsDatabase->getScalar<double>( "mult_z" ) );
     }
     if ( mmsDatabase->keyExists( "mult_xyz" ) ) {
-        mms->multXYZ( mmsDatabase->getDouble( "mult_xyz" ) );
+        mms->multXYZ( mmsDatabase->getScalar<double>( "mult_xyz" ) );
     }
     return mms;
 }

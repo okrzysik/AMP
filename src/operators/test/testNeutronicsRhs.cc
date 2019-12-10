@@ -10,8 +10,6 @@
 #include "AMP/operators/libmesh/SourceNonlinearElement.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -33,9 +31,8 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logAllNodes( log_file );
     std::cout << "testing with input file " << input_file << std::endl;
 
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
@@ -49,7 +46,7 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
     auto ntx_db = input_db->getDatabase( "NeutronicsRhs" );
 
     // Construct stand-alone.
-    if ( input_db->getBoolWithDefault( "ConstructStandAlone", true ) ) {
+    if ( input_db->getWithDefault( "ConstructStandAlone", true ) ) {
         // construct it.
         auto ntxPrm = AMP::make_shared<AMP::Operator::NeutronicsRhsParameters>( ntx_db );
         auto ntxRhs = AMP::make_shared<AMP::Operator::NeutronicsRhs>( ntxPrm );

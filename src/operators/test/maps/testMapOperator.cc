@@ -8,8 +8,6 @@
 #include "AMP/operators/map/MapOperatorParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -31,9 +29,8 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logAllNodes( log_file );
 
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( input_file ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -65,8 +62,8 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
     mapSolution->setToScalar( 0.0 );
 
     // Create the map operators
-    AMP::shared_ptr<AMP::InputDatabase> map3dto1d_db1 =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( "MapPelletto1D" ) );
+    AMP::shared_ptr<AMP::Database> map3dto1d_db1 =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "MapPelletto1D" ) );
     AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams1(
         new AMP::Operator::MapOperatorParameters( map3dto1d_db1 ) );
     map3dto1dParams1->d_MapComm = globalComm;
@@ -74,8 +71,8 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
     AMP::shared_ptr<AMP::Operator::Map3Dto1D> map1ToLowDim(
         new AMP::Operator::Map3Dto1D( map3dto1dParams1 ) );
 
-    AMP::shared_ptr<AMP::InputDatabase> map1dto3d_db1 =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( "Map1DtoClad" ) );
+    AMP::shared_ptr<AMP::Database> map1dto3d_db1 =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "Map1DtoClad" ) );
     AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams1(
         new AMP::Operator::MapOperatorParameters( map1dto3d_db1 ) );
     map1dto3dParams1->d_MapComm = globalComm;
@@ -85,8 +82,8 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
 
     map1ToLowDim->setZLocations( map1ToHighDim->getZLocations() );
 
-    AMP::shared_ptr<AMP::InputDatabase> map3dto1d_db2 =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( "MapCladto1D" ) );
+    AMP::shared_ptr<AMP::Database> map3dto1d_db2 =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "MapCladto1D" ) );
     AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams2(
         new AMP::Operator::MapOperatorParameters( map3dto1d_db2 ) );
     map3dto1dParams2->d_MapComm = globalComm;
@@ -94,8 +91,8 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
     AMP::shared_ptr<AMP::Operator::Map3Dto1D> map2ToLowDim(
         new AMP::Operator::Map3Dto1D( map3dto1dParams2 ) );
 
-    AMP::shared_ptr<AMP::InputDatabase> map1dto3d_db2 =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( "Map1DtoPellet" ) );
+    AMP::shared_ptr<AMP::Database> map1dto3d_db2 =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "Map1DtoPellet" ) );
     AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams2(
         new AMP::Operator::MapOperatorParameters( map1dto3d_db2 ) );
     map1dto3dParams2->d_MapComm = globalComm;
@@ -114,7 +111,7 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
         AMP::LinearAlgebra::SimpleVector<double>::create( gapVecPelletSize, gapVariable );
 
     // Set the boundary for the source vector
-    unsigned int d_boundaryId = map3dto1d_db1->getInteger( "BoundaryId" );
+    unsigned int d_boundaryId = map3dto1d_db1->getScalar<int>( "BoundaryId" );
     auto bnd     = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryId, 0 );
     auto end_bnd = bnd.end();
     auto dof_map = mapSolutionMaster->getDOFManager();

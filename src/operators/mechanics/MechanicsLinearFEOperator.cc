@@ -12,8 +12,7 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
     : LinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
-    d_useUpdatedLagrangian =
-        ( params->d_db )->getBoolWithDefault( "USE_UPDATED_LAGRANGIAN", false );
+    d_useUpdatedLagrangian = ( params->d_db )->getWithDefault( "USE_UPDATED_LAGRANGIAN", false );
     if ( d_useUpdatedLagrangian ) {
         d_mechLinULElem =
             AMP::dynamic_pointer_cast<MechanicsLinearUpdatedLagrangianElement>( d_elemOp );
@@ -69,11 +68,11 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
     } // end of UpdatedLagrangian condition.
 
     bool isAttachedToNonlinearOperator =
-        params->d_db->getBoolWithDefault( "isAttachedToNonlinearOperator", false );
+        params->d_db->getWithDefault( "isAttachedToNonlinearOperator", false );
 
     if ( isAttachedToNonlinearOperator ) {
         bool isNonlinearOperatorInitialized =
-            params->d_db->getBoolWithDefault( "isNonlinearOperatorInitialized", false );
+            params->d_db->getWithDefault( "isNonlinearOperatorInitialized", false );
         if ( isNonlinearOperatorInitialized ) {
             reset( params );
         } else {

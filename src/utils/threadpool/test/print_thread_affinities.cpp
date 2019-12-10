@@ -10,8 +10,7 @@
 
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/InputManager.h"
-#include "AMP/utils/MemoryDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/threadpool/thread_pool.h"
@@ -30,22 +29,22 @@ AMP::shared_ptr<ThreadPool> create_thread_pool( AMP::shared_ptr<AMP::Database> t
     if ( tpool_db != nullptr ) {
         AMP_ASSERT( tpool_db->keyExists( "N_threads" ) );
         AMP_ASSERT( tpool_db->keyExists( "share_tpool" ) );
-        if ( !tpool_db->getBool( "share_tpool" ) ) {
+        if ( !tpool_db->getScalar<bool>( "share_tpool" ) ) {
             AMP_ASSERT( tpool_db->keyExists( "N_threads_E" ) );
             AMP_ASSERT( tpool_db->keyExists( "N_threads_T" ) );
         }
         // Get the number threads needed and the processors availible
-        int N_threads     = tpool_db->getIntegerWithDefault( "N_threads", 0 );
+        int N_threads     = tpool_db->getWithDefault( "N_threads", 0 );
         int N_threads_max = std::max( N_threads, 1 );
-        if ( !tpool_db->getBool( "share_tpool" ) ) {
-            int N_threads_T = tpool_db->getIntegerWithDefault( "N_threads_T", 0 );
-            int N_threads_E = tpool_db->getIntegerWithDefault( "N_threads_E", 0 );
+        if ( !tpool_db->getScalar<bool>( "share_tpool" ) ) {
+            int N_threads_T = tpool_db->getWithDefault( "N_threads_T", 0 );
+            int N_threads_E = tpool_db->getWithDefault( "N_threads_E", 0 );
             N_threads_max   = std::max( N_threads_max, N_threads_T + N_threads_E );
         }
         // First we need to check and modify the affinities of the current process
-        int method = tpool_db->getIntegerWithDefault( "Load_balance_method", 1 );
-        int N_min  = tpool_db->getIntegerWithDefault( "N_min", -1 );
-        int N_max  = tpool_db->getIntegerWithDefault( "N_max", -1 );
+        int method = tpool_db->getWithDefault( "Load_balance_method", 1 );
+        int N_min  = tpool_db->getWithDefault( "N_min", -1 );
+        int N_max  = tpool_db->getWithDefault( "N_max", -1 );
         if ( N_min == -1 )
             N_min = std::min( N_threads_max, N_max );
         auto procs = ThreadPool::getProcessAffinity();
@@ -54,7 +53,7 @@ AMP::shared_ptr<ThreadPool> create_thread_pool( AMP::shared_ptr<AMP::Database> t
             AMP::pout << "Warning: OS does not support process affinities\n";
         } else if ( tpool_db->keyExists( "procs" ) ) {
             int offset = procs[0];
-            procs      = tpool_db->getIntegerArray( "procs" );
+            procs      = tpool_db->getVector<int>( "procs" );
             for ( int &proc : procs )
                 proc += offset;
             ThreadPool::setProcessAffinity( procs );
@@ -82,9 +81,9 @@ void create_nested_thread_pool( AMP::shared_ptr<AMP::Database> tpool_db,
                                 AMP::shared_ptr<ThreadPool> &tpool_E,
                                 AMP::shared_ptr<ThreadPool> &tpool_T )
 {
-    int N_threads_E = tpool_db->getIntegerWithDefault( "N_threads_E", 0 );
-    int N_threads_T = tpool_db->getIntegerWithDefault( "N_threads_T", 0 );
-    if ( tpool_db->getBool( "share_tpool" ) || N_threads_E + N_threads_T == 0 ) {
+    int N_threads_E = tpool_db->getWithDefault( "N_threads_E", 0 );
+    int N_threads_T = tpool_db->getWithDefault( "N_threads_T", 0 );
+    if ( tpool_db->getScalar<bool>( "share_tpool" ) || N_threads_E + N_threads_T == 0 ) {
         tpool_E.reset();
         tpool_T.reset();
     } else {
@@ -159,20 +158,20 @@ int main( int argc, char *argv[] )
     { // Limit scope
 
         // Create the tpool database
-        auto tpool_db = AMP::make_shared<AMP::MemoryDatabase>( "ThreadPool" );
+        auto tpool_db = AMP::make_shared<AMP::Database>( "ThreadPool" );
         if ( argc == 1 ) {
             // Create a default database
-            tpool_db.reset( new AMP::MemoryDatabase( "ThreadPool" ) );
-            tpool_db->putInteger( "Load_balance_method", 2 );
-            tpool_db->putInteger( "N_min", -1 );
-            tpool_db->putInteger( "N_max", -1 );
-            tpool_db->putInteger( "N_threads", 2 );
-            tpool_db->putBool( "share_tpool", false );
-            tpool_db->putInteger( "N_threads_E", 0 );
-            tpool_db->putInteger( "N_threads_T", 0 );
+            tpool_db.reset( new AMP::Database( "ThreadPool" ) );
+            tpool_db->putScalar( "Load_balance_method", 2 );
+            tpool_db->putScalar( "N_min", -1 );
+            tpool_db->putScalar( "N_max", -1 );
+            tpool_db->putScalar( "N_threads", 2 );
+            tpool_db->putScalar( "share_tpool", false );
+            tpool_db->putScalar( "N_threads_E", 0 );
+            tpool_db->putScalar( "N_threads_T", 0 );
         } else if ( argc == 2 ) {
             // Read the database from the file
-            AMP::InputManager::getManager()->parseInputFile( argv[1], tpool_db );
+            tpool_db = AMP::Database::parseInputFile( argv[1] );
         } else {
             AMP_ERROR( "Invalid number of inputs" );
         }

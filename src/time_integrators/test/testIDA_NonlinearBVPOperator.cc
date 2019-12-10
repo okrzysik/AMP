@@ -14,8 +14,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -55,10 +53,10 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
@@ -201,14 +199,13 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     // ---------------------------------------------------------------------------------------
     // create a linear time operator
-    AMP::shared_ptr<AMP::InputDatabase> timeOperator_db(
-        new AMP::InputDatabase( "TimeOperatorDatabase" ) );
-    timeOperator_db->putDouble( "CurrentDt", 0.01 );
-    timeOperator_db->putString( "name", "TimeOperator" );
-    timeOperator_db->putBool( "bLinearMassOperator", true );
-    timeOperator_db->putBool( "bLinearRhsOperator", false );
-    timeOperator_db->putDouble( "ScalingFactor", 1.0 / 0.01 );
-    timeOperator_db->putDouble( "CurrentTime", .0 );
+    AMP::shared_ptr<AMP::Database> timeOperator_db( new AMP::Database( "TimeOperatorDatabase" ) );
+    timeOperator_db->putScalar<double>( "CurrentDt", 0.01 );
+    timeOperator_db->putScalar<std::string>( "name", "TimeOperator" );
+    timeOperator_db->putScalar<bool>( "bLinearMassOperator", true );
+    timeOperator_db->putScalar<bool>( "bLinearRhsOperator", false );
+    timeOperator_db->putScalar<double>( "ScalingFactor", 1.0 / 0.01 );
+    timeOperator_db->putScalar<double>( "CurrentTime", .0 );
 
     AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(
         new AMP::TimeIntegrator::TimeOperatorParameters( timeOperator_db ) );

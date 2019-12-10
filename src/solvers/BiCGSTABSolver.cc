@@ -48,13 +48,13 @@ void BiCGSTABSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const
 }
 
 // Function to get values from input
-void BiCGSTABSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
+void BiCGSTABSolver::getFromInput( AMP::shared_ptr<AMP::Database> db )
 {
 
-    d_dRelativeTolerance = db->getDoubleWithDefault( "relative_tolerance", 1.0e-9 );
-    d_iMaxIterations     = db->getDoubleWithDefault( "max_iterations", 1000 );
+    d_dRelativeTolerance = db->getWithDefault<double>( "relative_tolerance", 1.0e-9 );
+    d_iMaxIterations     = db->getWithDefault<double>( "max_iterations", 1000 );
 
-    d_bUsesPreconditioner = db->getBoolWithDefault( "uses_preconditioner", false );
+    d_bUsesPreconditioner = db->getWithDefault( "uses_preconditioner", false );
 }
 
 /****************************************************************

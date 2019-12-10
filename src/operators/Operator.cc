@@ -68,11 +68,11 @@ void Operator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
-void Operator::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
+void Operator::getFromInput( AMP::shared_ptr<AMP::Database> db )
 {
     AMP_INSIST( ( ( db.get() ) != nullptr ), "NULL database" );
 
-    d_iDebugPrintInfoLevel = db->getIntegerWithDefault( "print_info_level", 0 );
+    d_iDebugPrintInfoLevel = db->getWithDefault( "print_info_level", 0 );
 }
 
 

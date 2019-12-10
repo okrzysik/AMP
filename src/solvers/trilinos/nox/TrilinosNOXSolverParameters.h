@@ -21,7 +21,7 @@ class TrilinosNOXSolverParameters : public SolverStrategyParameters
 {
 public:
     TrilinosNOXSolverParameters() {}
-    explicit TrilinosNOXSolverParameters( const AMP::shared_ptr<AMP::Database> &db )
+    explicit TrilinosNOXSolverParameters( AMP::shared_ptr<AMP::Database> db )
         : SolverStrategyParameters( db )
     {
     }

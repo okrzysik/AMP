@@ -17,8 +17,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
@@ -39,9 +37,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     std::string mesh_file       = input_db->getString( "mesh_file" );
     const unsigned int mesh_dim = 3;
@@ -55,7 +52,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
-    int NumberOfLoadingSteps = input_db->getInteger( "NumberOfLoadingSteps" );
+    int NumberOfLoadingSteps = input_db->getScalar<int>( "NumberOfLoadingSteps" );
 
     AMP_INSIST( input_db->keyExists( "OutputFileName" ), "Key ''OutputFileName'' is missing!" );
     std::string outFileName = input_db->getString( "OutputFileName" );
@@ -258,15 +255,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
         AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
 
-        AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
+        AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
         AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperatorParameters> tmpParams(
             new AMP::Operator::MechanicsNonlinearFEOperatorParameters( tmp_db ) );
         ( nonlinearMechanicsBVPoperator->getVolumeOperator() )->reset( tmpParams );
 
         /*    if(step < (No4 - 1)) {
-              dirichletVectorCorrectionDatabase->putDouble("value_1_0", (((double)(step +
+              dirichletVectorCorrectionDatabase->putScalar("value_1_0", (((double)(step +
            2))*delta_displacement_axial));
-              dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.0);
+              dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.0);
               AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
               (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
@@ -274,8 +271,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
            2))*delta_displacement_axial),0.0);
               }
               if((step >= (No4 - 1)) && (step < (No2 - 1))) {
-              dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.6);
-              dirichletVectorCorrectionDatabase->putDouble("value_2_0", (((double)(step + 2 -
+              dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.6);
+              dirichletVectorCorrectionDatabase->putScalar("value_2_0", (((double)(step + 2 -
            No4))*delta_displacement_shear));
               AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
@@ -284,9 +281,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
            No4))*delta_displacement_shear));
               }
               if((step >= (No2 - 1)) && (step < (N3o4 - 1))) {
-              dirichletVectorCorrectionDatabase->putDouble("value_1_0", (0.6 - (((double)(step + 2 -
+              dirichletVectorCorrectionDatabase->putScalar("value_1_0", (0.6 - (((double)(step + 2 -
            No2))*delta_displacement_axial)));
-              dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.6);
+              dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.6);
               AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
               (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
@@ -294,8 +291,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
            No2))*delta_displacement_axial)),0.3);
               }
               if((step >= (N3o4 - 1)) && (step < N)) {
-              dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.0);
-              dirichletVectorCorrectionDatabase->putDouble("value_2_0", (0.6 - (((double)(step + 2 -
+              dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.0);
+              dirichletVectorCorrectionDatabase->putScalar("value_2_0", (0.6 - (((double)(step + 2 -
            N3o4))*delta_displacement_shear)));
               AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
@@ -306,24 +303,24 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
               */
 
         /*    if(step == 0) {
-              dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.3);
-              dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.3);
+              dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.3);
+              dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.3);
               AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
               (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
               fprintf(fout1,"%d %le %le\n",step,(((double)(step + 2))*0.003),0.0);
               }
               if(step == 1) {
-              dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.0);
-              dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.3);
+              dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.0);
+              dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.3);
               AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
               (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
               fprintf(fout1,"%d %le %le\n",step,0.3,(((double)(step + 2 - No4))*0.003));
               }
               if((step == 2) || (step == 3)) {
-              dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.0);
-              dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.0);
+              dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.0);
+              dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.0);
               AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
               (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
@@ -331,7 +328,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
               }
               */
         scaleValue = ( (double) ( step + 2 ) ) * 0.16;
-        dirichletVectorCorrectionDatabase->putDouble( "value_2_0", scaleValue );
+        dirichletVectorCorrectionDatabase->putScalar( "value_2_0", scaleValue );
         AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(
             new AMP::Operator::DirichletVectorCorrectionParameters(
                 dirichletVectorCorrectionDatabase ) );

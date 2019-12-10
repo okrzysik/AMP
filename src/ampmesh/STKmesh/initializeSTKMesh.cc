@@ -1,7 +1,7 @@
 #include "AMP/ampmesh/STKmesh/initializeSTKMesh.h"
 #include "AMP/ampmesh/STKmesh/STKMeshIterator.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/MemoryDatabase.h"
+#include "AMP/utils/Database.h"
 
 #include <string.h>
 

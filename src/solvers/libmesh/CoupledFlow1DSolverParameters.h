@@ -14,7 +14,7 @@ class CoupledFlow1DSolverParameters : public SolverStrategyParameters
 {
 public:
     CoupledFlow1DSolverParameters() {}
-    explicit CoupledFlow1DSolverParameters( const AMP::shared_ptr<AMP::Database> &db )
+    explicit CoupledFlow1DSolverParameters( AMP::shared_ptr<AMP::Database> db )
         : SolverStrategyParameters( db )
     {
     }

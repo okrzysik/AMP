@@ -6,7 +6,7 @@
 
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -44,12 +44,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
 
-    int surfaceId         = input_db->getInteger( "SurfaceId" );
-    bool setConstantValue = input_db->getBool( "SetConstantValue" );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
+
+    int surfaceId         = input_db->getScalar<int>( "SurfaceId" );
+    bool setConstantValue = input_db->getScalar<bool>( "SetConstantValue" );
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );

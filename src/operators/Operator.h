@@ -137,7 +137,7 @@ public:
 
 
 protected:
-    void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
+    void getFromInput( AMP::shared_ptr<AMP::Database> db );
 
     /**
      * This function returns a OperatorParameters object

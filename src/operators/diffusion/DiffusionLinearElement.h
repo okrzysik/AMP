@@ -18,7 +18,7 @@ public:
         : DiffusionElement( params ), d_elementStiffnessMatrix( nullptr )
     {
         d_num_dofs         = 0;
-        d_transportAtGauss = params->d_db->getBoolWithDefault( "TransportAtGaussPoints", true );
+        d_transportAtGauss = params->d_db->getWithDefault( "TransportAtGaussPoints", true );
     }
 
     virtual ~DiffusionLinearElement() {}

@@ -94,7 +94,7 @@ public:
                 return i;
         return std::string::npos;
     }
-    constexpr size_t find( string_view v, size_t pos = 0 ) const noexcept
+    constexpr size_t find( const AMP::string_view &v, size_t pos = 0 ) const noexcept
     {
         size_t i = pos;
         size_t N = v.size();
@@ -110,6 +110,15 @@ public:
         return std::string::npos;
     }
 
+    // find_first_not_of
+    size_t find_first_not_of( char ch, size_t pos = 0 ) const noexcept
+    {
+        for ( size_t i = pos; i < d_size; i++ )
+            if ( d_data[i] != ch )
+                return i;
+        return std::string::npos;
+    }
+
     // compare()
     constexpr int compare( const string_view &other ) const noexcept
     {
@@ -117,9 +126,9 @@ public:
         int result = 0;
         for ( int i = 0; i < N && result == 0; i++ )
             if ( d_data[i] != other[i] )
-                result = d_data[i] < other[i] ? -i : i;
-        if ( result == 0 )
-            result = size() == other.size() ? 0 : size() < other.size() ? -1 : 1;
+                result = d_data[i] < other[i] ? -i - 1 : i + 1;
+        if ( result == 0 && size() != other.size() )
+            result = size() < other.size() ? -size() - 1 : other.size() + 1;
         return result;
     }
     constexpr int compare( size_t pos1, size_t n1, string_view other ) const

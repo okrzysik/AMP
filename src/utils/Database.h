@@ -1,1151 +1,389 @@
-//
-// File:	$URL:
-// file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/database/Database.h $
-// Package:	AMP toolbox
-// Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
-// Revision:	$LastChangedRevision: 2620 $
-// Modified:	$LastChangedDate: 2008-11-19 14:24:28 -0800 (Wed, 19 Nov 2008) $
-// Description:	An abstract base class for the AMP database objects
-//
-// NOTE: This is a modification of the Database class from SAMRAI
-//       We have simply used it with modifications
 #ifndef included_AMP_Database
 #define included_AMP_Database
 
-#include "AMP/utils/DatabaseBox.h"
-#include "AMP/utils/shared_ptr.h"
-
-#include <complex>
+#include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
+
+#include "AMP/utils/Units.h"
+#include "AMP/utils/shared_ptr.h"
+#include "AMP/utils/string_view.h"
 
 
 namespace AMP {
 
 
-// External definitions
-extern std::ostream pout;
-
-
-/**
- * @brief Class Database is an abstract base class for the input, restart,
- * and visualization databases.
- *
- * AMP databases store (key,value) pairs in a hierarchical
- * database.  Each value may be another database or a boolean, box,
- * character, double complex, double, float, integer, or string.
- * DatabaseBoxes are stored using the toolbox box structure.
- *
- * Data is entered into the database through methods of the general form
- * putTYPE(key, TYPE) or putTYPEArray(key, TYPE array), where TYPE is the
- * type of value created.  If the specified key already exists in the
- * database, then the existing key is silently deleted.
- *
- * Data is extracted from the database through methods of the general form
- * TYPE = getTYPE(key), where TYPE is the type of value to be returned
- * from the database.  There are two general lookup methods.  In the first,
- * a default value is provided (for scalars only).  If the specified key is
- * not found in the database, then the specified default is returned.  In
- * the second form, no default is provided, and the database exists with
- * an error message and program exits if the key is not found.  The array
- * version of getTYPE() works in a similar fashion.
- */
-
-class Database
+//! Base class to hold data of a given type
+class KeyData
 {
 public:
-    typedef AMP::shared_ptr<Database> shared_ptr;
+    //! Destructor
+    virtual ~KeyData() {}
+    //! Copy the data
+    virtual std::unique_ptr<KeyData> clone() const = 0;
+    //! Print the data to a stream
+    virtual void print( std::ostream &os, const AMP::string_view &indent = "" ) const = 0;
+    //! Return the native data type
+    virtual AMP::string_view type() const = 0;
+    //! Return true if the type is a floating point type
+    virtual bool is_floating_point() const = 0;
+    //! Return true if the type is a integer point type
+    virtual bool is_integral() const = 0;
+    //! Return the data as a std::vector<double> (throw error if this is not valid)
+    virtual std::vector<double> convertToDouble() const = 0;
+    //! Return the data as a std::vector<int64_t> (throw error if this is not valid)
+    virtual std::vector<int64_t> convertToInt64() const = 0;
+    //! Check if two sets of data are equal
+    virtual bool operator==( const KeyData &rhs ) const = 0;
+    //! Check if two sets of data are not equal
+    inline bool operator!=( const KeyData &rhs ) const { return !operator==( rhs ); }
+    //! Return the units
+    const Units &unit() const { return d_unit; }
+
+protected:
+    KeyData() {}
+    KeyData( const Units &unit ) : d_unit( unit ) {}
+    KeyData( KeyData && )      = delete;
+    KeyData( const KeyData & ) = delete;
+    KeyData &operator=( KeyData && ) = delete;
+    KeyData &operator=( const KeyData & ) = delete;
+
+protected:
+    Units d_unit;
+};
+
+
+//! Class to a database
+class Database final : public KeyData
+{
+public:
+    /**
+     *\typedef shared_ptr
+     *\brief  Name for the shared pointer.
+     *\details  Use this typedef for a reference counted pointer to a mesh manager object.
+     */
+    typedef AMP::shared_ptr<AMP::Database> shared_ptr;
 
     /**
-     * Enumerated type indicating what type of values is stored in
-     * a database entry.  Returned from getType() method.
-     *
-     * Note: The AMP_ prefix is needed since some poorly written
-     *       packages do "#define CHAR" etc.
+     *\typedef const_shared_ptr
+     *\brief  Name for the const shared pointer.
+     *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    enum DataType {
-        AMP_INVALID,
-        AMP_DATABASE,
-        AMP_BOOL,
-        AMP_CHAR,
-        AMP_INT,
-        AMP_COMPLEX,
-        AMP_DOUBLE,
-        AMP_FLOAT,
-        AMP_STRING,
-        AMP_BOX
-    };
+    typedef AMP::shared_ptr<const AMP::Database> const_shared_ptr;
+
+    //! Empty constructor
+    Database() = default;
+
+    //! Basic constructor
+    Database( std::string name ) : d_name( std::move( name ) ) {}
 
     /**
-     * The constructor for the database base class does nothing interesting.
+     * Open an database file.
+     * @param filename       Name of input file to open
      */
-    Database();
+    static std::shared_ptr<Database> parseInputFile( const std::string &filename );
+
+    // Read a YAML database
+    static std::unique_ptr<KeyData> readYAML( const AMP::string_view &filename );
 
     /**
-     * The virtual destructor for the database base class does nothing
-     * interesting.
+     * Create database from string
+     * @param data       String containing the database data
      */
-    virtual ~Database();
+    static std::unique_ptr<Database> createFromString( const AMP::string_view &data );
 
-    /**
-     * Create a new database file.
-     *
-     * Returns true if successful.
-     *
-     * @param name name of database. Normally a filename.
-     */
-    virtual bool create( const std::string &name ) = 0;
+    //! Copy constructor
+    Database( const Database & ) = delete;
 
+    //! Assignment operator
+    Database &operator=( const Database & ) = delete;
 
-    /**
-     * Open an existing database file.
-     *
-     * Returns true if successful.
-     *
-     * @param name name of database. Normally a filename.
-     */
-    virtual bool open( const std::string &name ) = 0;
+    //! Move constructor
+    Database( Database &&rhs );
 
+    //! Move assignment operator
+    Database &operator=( Database &&rhs );
 
-    /**
-     * Close the database.
-     *
-     * Returns true if successful.
-     *
-     * If the database is currently open then close it.  This should
-     * flush all data to the file (if the database is on disk).
-     */
-    virtual bool close() = 0;
+    //! Destructor
+    virtual ~Database() = default;
+
+    //! Copy the data
+    virtual std::unique_ptr<KeyData> clone() const override;
+
+    //! Copy the data
+    void copy( const Database &rhs );
+
+    //! Copy the data
+    std::unique_ptr<Database> cloneDatabase() const;
+
+    //! Get the name of the database
+    inline const std::string &getName() const { return d_name; }
+
+    //! Get the name of the database
+    inline void setName( std::string name ) { d_name = std::move( name ); }
 
     /**
      * Return true if the specified key exists in the database and false
-     * otherwise.
-     *
-     * @param key Key name to lookup.
+     *     otherwise.
+     * @param[in] key           Key name to lookup.
      */
-    virtual bool keyExists( const std::string &key ) = 0;
+    bool keyExists( const AMP::string_view &key ) const;
+
 
     /**
      * Return all keys in the database.
      */
-    virtual std::vector<std::string> getAllKeys() = 0;
+    std::vector<std::string> getAllKeys() const;
+
+
+    //! Return true if the database is empty
+    inline size_t empty() const { return d_data.size() == 0; }
+
+
+    //! Return the number of entries in the database
+    inline size_t size() const { return d_data.size(); }
+
+
+    //! Return true if the databases are equivalent
+    bool operator==( const Database &rhs ) const;
+
+
+    //! Return true if the databases are equivalent
+    bool operator==( const KeyData &rhs ) const override;
+
+
+    //! Return the number of entries in the database
+    inline bool operator!=( const Database &rhs ) const { return !operator==( rhs ); }
 
 
     /**
-     * @brief Return the type of data associated with the key.
+     * Get the key as a string
      *
-     * If the key does not exist, then INVALID is returned
+     * @param[in] key           Key name in database.
+     */
+    inline std::string getString( const AMP::string_view &key ) const
+    {
+        return getScalar<std::string>( key );
+    }
+
+
+    /**
+     * Get the scalar entry from the database with the specified key
+     * name.  If the specified key does not exist in the database or
+     * is not a scalar of the given type, then an error message is printed and
+     * the program exits.
+     *
+     * @param[in] key           Key name in database.
+     * @param[in] unit          Desired units
+     */
+    template<class TYPE>
+    TYPE getScalar( const AMP::string_view &key, Units unit = Units() ) const;
+
+
+    /**
+     * Get the scalar entry from the database with the specified key
+     * name.  If the specified key does not exist in the database the
+     * the default value will be printed
+     *
+     * @param[in] key           Key name in database
+     * @param[in] value         Default value
+     * @param[in] unit          Desired units
+     */
+    template<class TYPE>
+    TYPE
+    getWithDefault( const AMP::string_view &key, const TYPE &value, Units unit = Units() ) const;
+
+
+    /**
+     * Get the vector entries from the database with the specified key
+     * name.  If the specified key does not exist in the database or
+     * is not of the given type, then an error message is printed and
+     * the program exits.
+     *
+     * @param key           Key name in database.
+     * @param unit          Desired units
+     */
+    template<class TYPE>
+    std::vector<TYPE> getVector( const AMP::string_view &key, Units unit = Units() ) const;
+
+
+    /**
+     * Put the scalar entry into the database with the specified key name.
+     * @param key           Key name in database.
+     * @param value         Value to store
+     * @param unit          Desired units
+     */
+    template<class TYPE>
+    inline void putScalar( const AMP::string_view &key, TYPE value, Units unit = Units() );
+
+
+    /**
+     * Put the vector entries into the database with the specified key
+     * name.  If the specified key does not exist in the database or
+     * is not of the given type, then an error message is printed and
+     * the program exits.
+     *
+     * @param key           Key name in database.
+     * @param data          Data to store
+     * @param unit          Desired units
+     */
+    template<class TYPE>
+    inline void
+    putVector( const AMP::string_view &key, std::vector<TYPE> data, Units unit = Units() );
+
+
+    /**
+     * Get a raw pointer to the data for a key in the database.
+     * If the specified key does not exist, a null pointer is returned.
      *
      * @param key Key name in database.
      */
-    virtual enum DataType getArrayType( const std::string &key ) = 0;
+    KeyData *getData( const AMP::string_view &key );
 
     /**
-     * @brief Return the size of the array associated with the key.
-     *
-     * If the key does not exist, then zero is returned.  If the key is
-     * a database then zero is returned.
+     * Get a raw pointer to the data for a key in the database.
+     * If the specified key does not exist, a null pointer is returned.
      *
      * @param key Key name in database.
      */
-    virtual int getArraySize( const std::string &key ) = 0;
+    const KeyData *getData( const AMP::string_view &key ) const;
+
 
     /**
-     * Return whether the specified key represents a database entry.  If
-     * the key does not exist, then false is returned.
-     *
-     * @param key Key name in database.
-     */
-    virtual bool isDatabase( const std::string &key ) = 0;
-
-    /**
-     * Create a new database with the specified key name.  If the key already
-     * exists in the database, then the old key record is deleted and the new
-     * one is silently created in its place.
-     *
-     * @param key Key name in database.
-     */
-    virtual AMP::shared_ptr<Database> putDatabase( const std::string &key ) = 0;
-
-    /**
-     * Get the database with the specified key name.  If the specified
-     * key does not exist in the database or it is not a database, then
-     * an error message is printed and the program exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual AMP::shared_ptr<Database> getDatabase( const std::string &key ) = 0;
-
-    /**
-     * Return whether the specified key represents a boolean entry.  If
-     * the key does not exist, then false is returned.
-     *
-     * @param key Key name in database.
-     */
-    virtual bool isBool( const std::string &key ) = 0;
-
-    /**
-     * Create a boolean scalar entry in the database with the specified
-     * key name.  If thoe key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key Key name in database.
-     * @param data Value to put into database.
-     */
-    virtual void putBool( const std::string &key, const bool &data );
-
-    /**
-     * Create a boolean array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key  Key name in database.
-     * @param data Array with data to put into database.
-     */
-    virtual void putBoolArray( const std::string &key, const std::vector<unsigned char> &data );
-
-    /**
-     * Create a boolean array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
+     * Put the data for a key in the database.
      *
      * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
+     * @param data      Data to store
+     * @param check     Check if the key exists and throw an error if does
      */
-    virtual void putBoolArray( const std::string &key,
-                               const unsigned char *const data,
-                               const int nelements ) = 0;
+    void putData( const AMP::string_view &key, std::unique_ptr<KeyData> data, bool check = false );
+
+
+    // Check if the key is a database object
+    bool isDatabase( const AMP::string_view &key ) const;
+
+
+    // Check if the key is a database object
+    bool isString( const AMP::string_view &key ) const;
+
+
+    // Check if the entry can be stored as the given type
+    template<class TYPE>
+    bool isType( const AMP::string_view &key ) const;
+
 
     /**
-     * Get a boolean entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not a
-     * boolean scalar, then an error message is printed and the program
-     * exits.
+     * Get a raw pointer to the database for a key in the database.
+     * If the specified key does not exist, a null pointer is returned.
      *
      * @param key Key name in database.
      */
-    virtual bool getBool( const std::string &key );
+    AMP::shared_ptr<Database> getDatabase( const AMP::string_view &key );
 
     /**
-     * Get a boolean entry in the database with the specified key name.
-     * If the specified key does not exist in the database, then the default
-     * value is returned.  If the key exists but is not a boolean scalar,
-     * then an error message is printed and the program exits.
-     */
-    virtual bool getBoolWithDefault( const std::string &key, const bool &defaultvalue );
-
-    /**
-     * Get a boolean entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a boolean array, then an error message is printed and
-     * the program exits.
+     * Get a raw pointer to the database for a key in the database.
+     * If the specified key does not exist, a null pointer is returned.
      *
      * @param key Key name in database.
      */
-    virtual std::vector<unsigned char> getBoolArray( const std::string &key ) = 0;
+    AMP::shared_ptr<const Database> getDatabase( const AMP::string_view &key ) const;
+
 
     /**
-     * Get a boolean entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a boolean array, then an error message is printed and
-     * the program exits.  The specified number of elements must match
-     * exactly the number of elements in the array in the database.
+     * Put the database for a key in the database.
+     * If the specified key already exists in the database an error is thrown.
      *
      * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
+     * @param db        Database to store
      */
-    virtual void getBoolArray( const std::string &key, bool *data, const int nelements );
+    inline void putDatabase( const AMP::string_view &key, std::unique_ptr<Database> db )
+    {
+        putData( key, std::move( db ) );
+    }
+
 
     /**
-     * Return whether the specified key represents a box entry.  If
-     * the key does not exist, then false is returned.
-     *
-     * @param key Key name in database.
-     */
-    virtual bool isDatabaseBox( const std::string &key ) = 0;
-
-    /**
-     * Create a box scalar entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key  Key name in database.
-     * @param data Data to put into database.
-     */
-    virtual void putDatabaseBox( const std::string &key, const DatabaseBox &data );
-
-    /**
-     * Create a box array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key  Key name in database.
-     * @param data Array with data to put into database.
-     */
-    virtual void putDatabaseBoxArray( const std::string &key,
-                                      const std::vector<DatabaseBox> &data );
-
-    /**
-     * Create a box array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
+     * Create a database and return it
+     * If the specified key already exists in the database an error is thrown.
      *
      * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
+     * @param db        Database to store
      */
-    virtual void putDatabaseBoxArray( const std::string &key,
-                                      const DatabaseBox *const data,
-                                      const int nelements ) = 0;
+    inline AMP::shared_ptr<Database> putDatabase( const AMP::string_view &key )
+    {
+        putData( key, std::make_unique<Database>( std::string( key.data(), key.size() ) ) );
+        return getDatabase( key );
+    }
+
 
     /**
-     * Get a box entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not a
-     * box scalar, then an error message is printed and the program
-     * exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual DatabaseBox getDatabaseBox( const std::string &key );
-
-    /**
-     * Get a box entry in the database with the specified key name.
-     * If the specified key does not exist in the database, then the default
-     * value is returned.  If the key exists but is not a box scalar,
-     * then an error message is printed and the program exits.
-     *
-     * @param key          Key name in database.
-     * @param defaultvalue Default value to return if not found.
-     */
-    virtual DatabaseBox getDatabaseBoxWithDefault( const std::string &key,
-                                                   const DatabaseBox &defaultvalue );
-
-    /**
-     * Get a box entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a box array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual std::vector<DatabaseBox> getDatabaseBoxArray( const std::string &key ) = 0;
-
-    /**
-     * Get a box entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a box array, then an error message is printed and
-     * the program exits.  The specified number of elements must match
-     * exactly the number of elements in the array in the database.
+     * Erase
+     * If the specified key does not exists in the database an error is thrown.
      *
      * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
      */
-    virtual void
-    getDatabaseBoxArray( const std::string &key, DatabaseBox *data, const int nelements );
+    void erase( const AMP::string_view &key );
 
-    /**
-     * Return whether the specified key represents a character entry.  If
-     * the key does not exist, then false is returned.
-     *
-     * @param key Key name in database.
-     */
-    virtual bool isChar( const std::string &key ) = 0;
-
-    /**
-     * Create a character scalar entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key Key name in database.
-     * @param data Value to put into database.
-     */
-    virtual void putChar( const std::string &key, const char &data );
-
-    /**
-     * Create a character array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key Key name in database.
-     *
-     * @param key  Key name in database.
-     * @param data Array with data to put into database.
-     */
-    virtual void putCharArray( const std::string &key, const std::vector<char> &data );
-
-    /**
-     * Create a character array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
-     */
-    virtual void
-    putCharArray( const std::string &key, const char *const data, const int nelements ) = 0;
-
-    /**
-     * Get a character entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not an
-     * character scalar, then an error message is printed and the program
-     * exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual char getChar( const std::string &key );
-
-    /**
-     * Get a character entry in the database with the specified key name.
-     * If the specified key does not exist in the database, then the default
-     * value is returned.  If the key exists but is not a character scalar,
-     * then an error message is printed and the program exits.
-     *
-     * @param key          Key name in database.
-     * @param defaultvalue Default value to return if not found.
-     */
-    virtual char getCharWithDefault( const std::string &key, const char &defaultvalue );
-
-    /**
-     * Get a character entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a character array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual std::vector<char> getCharArray( const std::string &key ) = 0;
-
-    /**
-     * Get a character entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a character array, then an error message is printed and
-     * the program exits.  The specified number of elements must match
-     * exactly the number of elements in the array in the database.
-     *
-     * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
-     */
-    virtual void getCharArray( const std::string &key, char *data, const int nelements );
-
-    /**
-     * Return whether the specified key represents a complex entry.  If
-     * the key does not exist, then false is returned.
-     *
-     * @param key Key name in database.
-     */
-    virtual bool isComplex( const std::string &key ) = 0;
-
-    /**
-     * Create a complex scalar entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key Key name in database.
-     * @param data Value to put into database.
-     */
-    virtual void putComplex( const std::string &key, const std::complex<double> &data );
-
-    /**
-     * Create a complex array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key  Key name in database.
-     * @param data Array with data to put into database.
-     */
-    virtual void putComplexArray( const std::string &key,
-                                  const std::vector<std::complex<double>> &data );
-
-    /**
-     * Create a complex array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
-     */
-    virtual void putComplexArray( const std::string &key,
-                                  const std::complex<double> *const data,
-                                  const int nelements ) = 0;
-
-    /**
-     * Get a complex entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not a
-     * complex scalar, then an error message is printed and the program
-     * exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual std::complex<double> getComplex( const std::string &key );
-
-    /**
-     * Get a complex entry in the database with the specified key name.
-     * If the specified key does not exist in the database, then the default
-     * value is returned.  If the key exists but is not a complex scalar,
-     * then an error message is printed and the program exits.
-     *
-     * @param key          Key name in database.
-     * @param defaultvalue Default value to return if not found.
-     */
-    virtual std::complex<double> getComplexWithDefault( const std::string &key,
-                                                        const std::complex<double> &defaultvalue );
-
-    /**
-     * Get a complex entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a complex array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual std::vector<std::complex<double>> getComplexArray( const std::string &key ) = 0;
-
-    /**
-     * Get a complex entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a complex array, then an error message is printed and
-     * the program exits.  The specified number of elements must match
-     * exactly the number of elements in the array in the database.
-     *
-     * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
-     */
-    virtual void
-    getComplexArray( const std::string &key, std::complex<double> *data, const int nelements );
-
-    /**
-     * Return whether the specified key represents a double entry.  If
-     * the key does not exist, then false is returned.
-     *
-     * @param key Key name in database.
-     */
-    virtual bool isDouble( const std::string &key ) = 0;
-
-    /**
-     * Create a double scalar entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key Key name in database.
-     * @param data Value to put into database.
-     */
-    virtual void putDouble( const std::string &key, const double &data );
-
-    /**
-     * Create a double array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key  Key name in database.
-     * @param data Array with data to put into database.
-     */
-    virtual void putDoubleArray( const std::string &key, const std::vector<double> &data );
-
-    /**
-     * Create a double array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
-     */
-    virtual void
-    putDoubleArray( const std::string &key, const double *const data, const int nelements ) = 0;
-
-    /**
-     * Get a double entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not a
-     * double scalar, then an error message is printed and the program
-     * exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual double getDouble( const std::string &key );
-
-    /**
-     * Get a double entry in the database with the specified key name.
-     * If the specified key does not exist in the database, then the default
-     * value is returned.  If the key exists but is not a double scalar,
-     * then an error message is printed and the program exits.
-     *
-     * @param key          Key name in database.
-     * @param defaultvalue Default value to return if not found.
-     */
-    virtual double getDoubleWithDefault( const std::string &key, const double &defaultvalue );
-
-    /**
-     * Get a double entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a double array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual std::vector<double> getDoubleArray( const std::string &key ) = 0;
-
-    /**
-     * Get a double entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a double array, then an error message is printed and
-     * the program exits.  The specified number of elements must match
-     * exactly the number of elements in the array in the database.
-     *
-     * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
-     */
-    virtual void getDoubleArray( const std::string &key, double *data, const int nelements );
-
-    /**
-     * Return whether the specified key represents a float entry.  If
-     * the key does not exist, then false is returned.
-     *
-     * @param key Key name in database.
-     */
-    virtual bool isFloat( const std::string &key ) = 0;
-
-    /**
-     * Create a float scalar entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key Key name in database.
-     * @param data Value to put into database.
-     */
-    virtual void putFloat( const std::string &key, const float &data );
-
-    /**
-     * Create a float array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key  Key name in database.
-     * @param data Array with data to put into database.
-     */
-    virtual void putFloatArray( const std::string &key, const std::vector<float> &data );
-
-    /**
-     * Create a float array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
-     */
-    virtual void
-    putFloatArray( const std::string &key, const float *const data, const int nelements ) = 0;
-
-    /**
-     * Get a float entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not a
-     * float scalar, then an error message is printed and the program
-     * exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual float getFloat( const std::string &key );
-
-    /**
-     * Get a float entry in the database with the specified key name.
-     * If the specified key does not exist in the database, then the default
-     * value is returned.  If the key exists but is not a float scalar,
-     * then an error message is printed and the program exits.
-     *
-     * @param key          Key name in database.
-     * @param defaultvalue Default value to return if not found.
-     */
-    virtual float getFloatWithDefault( const std::string &key, const float &defaultvalue );
-
-    /**
-     * Get a float entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a float array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual std::vector<float> getFloatArray( const std::string &key ) = 0;
-
-    /**
-     * Get a float entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a float array, then an error message is printed and
-     * the program exits.  The specified number of elements must match
-     * exactly the number of elements in the array in the database.
-     *
-     * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
-     */
-    virtual void getFloatArray( const std::string &key, float *data, const int nelements );
-
-    /**
-     * Return whether the specified key represents an integer entry.  If
-     * the key does not exist, then false is returned.
-     *
-     * @param key Key name in database.
-     */
-    virtual bool isInteger( const std::string &key ) = 0;
-
-    /**
-     * Create an integer scalar entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key Key name in database.
-     * @param data Value to put into database.
-     */
-    virtual void putInteger( const std::string &key, const int &data );
-
-    /**
-     * Create an integer array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key  Key name in database.
-     * @param data Array with data to put into database.
-     */
-    virtual void putIntegerArray( const std::string &key, const std::vector<int> &data );
-
-    /**
-     * Create an integer array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
-     */
-    virtual void
-    putIntegerArray( const std::string &key, const int *const data, const int nelements ) = 0;
-
-    /**
-     * Get an integer entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not an
-     * integer scalar, then an error message is printed and the program
-     * exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual int getInteger( const std::string &key );
-
-    /**
-     * Get an integer entry in the database with the specified key name.
-     * If the specified key does not exist in the database, then the default
-     * value is returned.  If the key exists but is not an integer scalar,
-     * then an error message is printed and the program exits.
-     *
-     * @param key          Key name in database.
-     * @param defaultvalue Default value to return if not found.
-     */
-    virtual int getIntegerWithDefault( const std::string &key, const int &defaultvalue );
-
-    /**
-     * Get an integer entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not an integer array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual std::vector<int> getIntegerArray( const std::string &key ) = 0;
-
-    /**
-     * Get an integer entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not an integer array, then an error message is printed and
-     * the program exits.  The specified number of elements must match
-     * exactly the number of elements in the array in the database.
-     *
-     * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
-     */
-    virtual void getIntegerArray( const std::string &key, int *data, const int nelements );
-
-    /**
-     * Return whether the specified key represents a std::string entry.  If
-     * the key does not exist, then false is returned.
-     *
-     * @param key Key name in database.
-     */
-    virtual bool isString( const std::string &key ) = 0;
-
-    /**
-     * Create a string scalar entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key Key name in database.
-     * @param data Value to put into database.
-     */
-    virtual void putString( const std::string &key, const std::string &data );
-
-    /**
-     * Create a string array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key  Key name in database.
-     * @param data Array with data to put into database.
-     */
-    virtual void putStringArray( const std::string &key, const std::vector<std::string> &data );
-
-    /**
-     * Create a string array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
-     */
-    virtual void putStringArray( const std::string &key,
-                                 const std::string *const data,
-                                 const int nelements ) = 0;
-
-    /**
-     * Get a string entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not an
-     * string scalar, then an error message is printed and the program
-     * exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual std::string getString( const std::string &key );
-
-    /**
-     * Get a string entry in the database with the specified key name.
-     * If the specified key does not exist in the database, then the default
-     * value is returned.  If the key exists but is not a string scalar,
-     * then an error message is printed and the program exits.
-     *
-     * @param key          Key name in database.
-     * @param defaultvalue Default value to return if not found.
-     */
-    virtual std::string getStringWithDefault( const std::string &key,
-                                              const std::string &defaultvalue );
-
-    /**
-     * Get a string entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a string array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key Key name in database.
-     */
-    virtual std::vector<std::string> getStringArray( const std::string &key ) = 0;
-
-    /**
-     * Get a string entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a string array, then an error message is printed and
-     * the program exits.  The specified number of elements must match
-     * exactly the number of elements in the array in the database.
-     *
-     * @param key       Key name in database.
-     * @param data      Array with data to put into database.
-     * @param nelements Number of elements to write from array.
-     */
-    virtual void getStringArray( const std::string &key, std::string *data, const int nelements );
-
-    /**
-     * Get a bool entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not an
-     * bool scalar, then an error message is printed and the program
-     * exits.
-     *
-     * @param key    Key name in database.
-     * @param scalar Returns scalar that was read.
-     */
-    void getScalar( const std::string &key, bool &scalar );
-
-    /**
-     * Get a bool entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a bool array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key    Key name in database.
-     * @param scalar Value to put into database.
-     */
-    void putScalar( const std::string &key, const bool scalar );
-
-
-    /**
-     * Get a bool entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a bool array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key    Key name in database.
-     * @param array  Returns array that was read.
-     */
-    void getArray( const std::string &key, std::vector<unsigned char> &array );
-
-    /**
-     * Create an bool array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key    Key name in database.
-     * @param array  Array to put into database.
-     */
-    void putArray( const std::string &key, const std::vector<unsigned char> array );
-
-    /**
-     * Get a char entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not an
-     * char scalar, then an error message is printed and the program
-     * exits.
-     *
-     * @param key    Key name in database.
-     * @param scalar Returns scalar that was read.
-     */
-    void getScalar( const std::string &key, char &scalar );
-
-    /**
-     * Get a char entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a char array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key    Key name in database.
-     * @param scalar Value to put into database.
-     */
-    void putScalar( const std::string &key, const char scalar );
 
-
-    /**
-     * Get a char entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a char array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key    Key name in database.
-     * @param array  Returns array that was read.
-     */
-    void getArray( const std::string &key, std::vector<char> &array );
-
-    /**
-     * Create an char array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key    Key name in database.
-     * @param array  Array to put into database.
-     */
-    void putArray( const std::string &key, const std::vector<char> array );
-
-
-    /**
-     * Get a complex entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not an
-     * complex scalar, then an error message is printed and the program
-     * exits.
-     *
-     * @param key    Key name in database.
-     * @param scalar Returns scalar that was read.
-     */
-    void getScalar( const std::string &key, std::complex<double> &scalar );
-
-    /**
-     * Get a complex entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a complex array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key    Key name in database.
-     * @param scalar Value to put into database.
-     */
-    void putScalar( const std::string &key, const std::complex<double> scalar );
-
-
-    /**
-     * Get a complex entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a complex array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key    Key name in database.
-     * @param array  Returns array that was read.
-     */
-    void getArray( const std::string &key, std::vector<std::complex<double>> &array );
-
-    /**
-     * Create an complex array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key    Key name in database.
-     * @param array  Array to put into database.
-     */
-    void putArray( const std::string &key, const std::vector<std::complex<double>> array );
-
-
-    /**
-     * Get a float entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not an
-     * float scalar, then an error message is printed and the program
-     * exits.
-     *
-     * @param key    Key name in database.
-     * @param scalar Returns scalar that was read.
-     */
-    void getScalar( const std::string &key, float &scalar );
-
-    /**
-     * Get a float entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a float array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key    Key name in database.
-     * @param scalar Value to put into database.
-     */
-    void putScalar( const std::string &key, const float scalar );
-
-
-    /**
-     * Get a float entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a float array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key    Key name in database.
-     * @param array  Returns array that was read.
-     */
-    void getArray( const std::string &key, std::vector<float> &array );
-
-    /**
-     * Create an float array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key    Key name in database.
-     * @param array  Array to put into database.
-     */
-    void putArray( const std::string &key, const std::vector<float> array );
-
-
     /**
-     * Get a double entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not an
-     * double scalar, then an error message is printed and the program
-     * exits.
-     *
-     * @param key    Key name in database.
-     * @param scalar Returns scalar that was read.
+     * Print the data to a stream
+     * @param os        Output stream
+     * @param indent    Indenting to use before each line
      */
-    void getScalar( const std::string &key, double &scalar );
-
-    /**
-     * Get a double entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a double array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key    Key name in database.
-     * @param scalar Value to put into database.
-     */
-    void putScalar( const std::string &key, const double scalar );
-
+    virtual void print( std::ostream &os, const AMP::string_view &indent = "" ) const override;
 
-    /**
-     * Get a double entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a double array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key    Key name in database.
-     * @param array  Returns array that was read.
-     */
-    void getArray( const std::string &key, std::vector<double> &array );
 
-    /**
-     * Create an double array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key    Key name in database.
-     * @param array  Array to put into database.
-     */
-    void putArray( const std::string &key, const std::vector<double> array );
+    //! Print the type
+    virtual AMP::string_view type() const override { return "database"; }
 
-    /**
-     * Get a integer entry in the database with the specified key name.
-     * If the specified key does not exist in the database or is not an
-     * integer scalar, then an error message is printed and the program
-     * exits.
-     *
-     * @param key    Key name in database.
-     * @param scalar Returns scalar that was read.
-     */
-    void getScalar( const std::string &key, int &scalar );
 
     /**
-     * Get a integer entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a integer array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key    Key name in database.
-     * @param scalar Value to put into database.
+     * Print the data to a string
+     * @return          Output string
      */
-    void putScalar( const std::string &key, const int scalar );
+    std::string print( const AMP::string_view &indent = "" ) const;
 
 
-    /**
-     * Get a integer entry from the database with the specified key
-     * name.  If the specified key does not exist in the database or
-     * is not a integer array, then an error message is printed and
-     * the program exits.
-     *
-     * @param key    Key name in database.
-     * @param array  Returns array that was read.
-     */
-    void getArray( const std::string &key, std::vector<int> &array );
+protected:
+    std::string d_name;
+    std::vector<uint32_t> d_hash;
+    std::vector<std::string> d_keys;
+    std::vector<std::shared_ptr<KeyData>> d_data;
 
-    /**
-     * Create an integer array entry in the database with the specified
-     * key name.  If the key already exists in the database, then the old
-     * key record is deleted and the new one is silently created in its place.
-     *
-     * @param key    Key name in database.
-     * @param array  Array to put into database.
-     */
-    void putArray( const std::string &key, const std::vector<int> array );
+    // Function to load a database from a buffer
+    static size_t loadDatabase( const char *buffer, Database &db );
 
+    // Hash a AMP::string_view
+    static constexpr uint32_t hashString( const AMP::string_view &s )
+    {
+        uint32_t hash = 5381;
+        for ( size_t i = 0; i < s.size(); i++ )
+            hash = ( ( hash << 5 ) + hash ) ^ s[i];
+        return hash;
+    }
 
-    /**
-     * @brief Returns the name of this database.
-     *
-     * The name for the root of the database is the name supplied when creating it.
-     * Names for nested databases are the keyname of the database.
-     *
-     */
-    virtual std::string getName() const = 0;
+    // Find an entry
+    inline int find( uint32_t hash ) const
+    {
+        int index = -1;
+        for ( size_t i = 0; i < d_hash.size(); i++ )
+            if ( hash == d_hash[i] )
+                index = i;
+        return index;
+    }
 
-    /**
-     * Print the current database to the specified output stream.  If
-     * no output stream is specified, then data is written to stream pout.
-     *
-     * @param os Output stream.
-     */
-    virtual void printClassData( std::ostream &os = pout ) = 0;
+    // Functions inherited from KeyData that really aren't valid
+    virtual std::vector<double> convertToDouble() const override;
+    virtual std::vector<int64_t> convertToInt64() const override;
+    virtual bool is_floating_point() const override;
+    virtual bool is_integral() const override;
 };
 
 
 } // namespace AMP
 
+
+#include "AMP/utils/Database.hpp"
 
 #endif

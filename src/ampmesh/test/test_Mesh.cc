@@ -3,9 +3,7 @@
 #include "AMP/ampmesh/testHelpers/meshTests.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
-#include "AMP/utils/MemoryDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
 
 #include "ProfilerApp.h"
@@ -155,11 +153,11 @@ void testSTKMesh( AMP::UnitTest *ut )
 #ifdef USE_TRILINOS_STKCLASSIC
     PROFILE_START( "testSTKMesh" );
     // Create a generic MeshParameters object
-    auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
-    database->putInteger( "dim", 3 );
-    database->putString( "MeshType", "STKMesh" );
-    database->putString( "MeshName", "pellet_lo_res.e" );
-    database->putString( "FileName", "pellet_lo_res.e" );
+    auto database = AMP::make_shared<AMP::Database>( "Mesh" );
+    database->putScalar( "dim", 3 );
+    database->putScalar( "MeshType", "STKMesh" );
+    database->putScalar( "MeshName", "pellet_lo_res.e" );
+    database->putScalar( "FileName", "pellet_lo_res.e" );
     auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
@@ -185,11 +183,11 @@ void testlibMesh( AMP::UnitTest *ut )
 #ifdef USE_EXT_LIBMESH
     PROFILE_START( "testlibMesh" );
     // Create a generic MeshParameters object
-    auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
-    database->putInteger( "dim", 3 );
-    database->putString( "MeshType", "libMesh" );
-    database->putString( "MeshName", "pellet_lo_res.e" );
-    database->putString( "FileName", "pellet_lo_res.e" );
+    auto database = AMP::make_shared<AMP::Database>( "Mesh" );
+    database->putScalar( "dim", 3 );
+    database->putScalar( "MeshType", "libMesh" );
+    database->putScalar( "MeshName", "pellet_lo_res.e" );
+    database->putScalar( "FileName", "pellet_lo_res.e" );
     auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
@@ -214,11 +212,11 @@ void testMoabMesh( AMP::UnitTest *ut )
 #ifdef USE_EXT_MOAB
     PROFILE_START( "testMoabMesh" );
     // Create a generic MeshParameters object
-    auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
-    database->putInteger( "dim", 3 );
-    database->putString( "MeshType", "MOAB" );
-    database->putString( "MeshName", "pellet_lo_res.e" );
-    database->putString( "FileName", "pellet_lo_res.e" );
+    auto database = AMP::make_shared<AMP::Database>( "Mesh" );
+    database->putScalar( "dim", 3 );
+    database->putScalar( "MeshType", "MOAB" );
+    database->putScalar( "MeshName", "pellet_lo_res.e" );
+    database->putScalar( "FileName", "pellet_lo_res.e" );
     auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
@@ -242,8 +240,7 @@ void testInputMesh( AMP::UnitTest *ut, std::string filename )
 {
     PROFILE_START( "testInputMesh" );
     // Read the input file
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( filename, input_db );
+    auto input_db = AMP::Database::parseInputFile( filename );
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );

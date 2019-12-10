@@ -118,7 +118,7 @@ protected:
     //! squares minimization problem
     void backwardSolve( void );
 
-    void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
+    void getFromInput( AMP::shared_ptr<AMP::Database> db );
 
 private:
     AMP_MPI d_comm;

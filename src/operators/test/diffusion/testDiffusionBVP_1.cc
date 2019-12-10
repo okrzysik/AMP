@@ -14,8 +14,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -39,9 +37,9 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
 
     // Input database
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     //--------------------------------------------------
     //   Create the Mesh.
@@ -55,7 +53,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     //--------------------------------------------------
 
     // Create nonlinear Diffusion BVP operator and access volume nonlinear Diffusion operator
-    AMP::shared_ptr<AMP::InputDatabase> nbvp_db = AMP::dynamic_pointer_cast<AMP::InputDatabase>(
+    AMP::shared_ptr<AMP::Database> nbvp_db = AMP::dynamic_pointer_cast<AMP::Database>(
         input_db->getDatabase( "ThermalNonlinearBVPOperator" ) );
     AMP::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
         AMP::Operator::OperatorBuilder::createOperator(

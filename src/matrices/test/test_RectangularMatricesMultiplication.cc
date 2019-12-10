@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -26,19 +26,19 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     // build mesh database
-    auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
-    database->putString( "MeshName", "cube" );
-    database->putString( "MeshType", "AMP" );
-    database->putInteger( "dim", 3 );
-    database->putString( "Generator", "cube" );
-    database->putDouble( "x_offset", 0.0 );
-    database->putDouble( "y_offset", 0.0 );
-    database->putDouble( "z_offset", 0.0 );
+    auto database = AMP::make_shared<AMP::Database>( "Mesh" );
+    database->putScalar( "MeshName", "cube" );
+    database->putScalar( "MeshType", "AMP" );
+    database->putScalar( "dim", 3 );
+    database->putScalar( "Generator", "cube" );
+    database->putScalar( "x_offset", 0.0 );
+    database->putScalar( "y_offset", 0.0 );
+    database->putScalar( "z_offset", 0.0 );
     std::vector<int> size( 3, 8 );
-    database->putIntegerArray( "Size", size );
+    database->putVector<int>( "Size", size );
     std::vector<double> range( 6, 0.0 );
     range[1] = range[3] = range[5] = 1.0;
-    database->putDoubleArray( "Range", range );
+    database->putVector( "Range", range );
     // create mesh
     auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( globalComm );

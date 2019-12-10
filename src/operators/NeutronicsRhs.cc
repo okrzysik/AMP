@@ -3,7 +3,7 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/Operator.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
 #include "NeutronicsRhsParameters.h"
@@ -30,13 +30,13 @@ NeutronicsRhs::NeutronicsRhs( SP_Parameters parameters ) : Operator( parameters 
     getFromInput( parameters->d_db );
     if ( !d_useFixedValue ) {
         int numValues;
-        numValues = parameters->d_db->getInteger( "numValues" );
-        d_values.resize( d_numTimeSteps, Vec_Dbl( numValues, 0.0 ) );
+        numValues = parameters->d_db->getScalar<int>( "numValues" );
+        d_values.resize( d_numTimeSteps, std::vector( numValues, 0.0 ) );
         char key[100];
         for ( int step = 0; step < d_numTimeSteps; step++ ) {
             sprintf( key, "value_%d", step );
             AMP_INSIST( parameters->d_db->keyExists( key ), "Key is missing!" );
-            parameters->d_db->getDoubleArray( key, &d_values[step][0], numValues );
+            d_values[step] = parameters->d_db->getVector<double>( key );
         }
     }
 }
@@ -60,14 +60,14 @@ void NeutronicsRhs::getFromInput( SP_Database db )
     AMP_ASSERT( db );
 
     // define the source type and create the output variable.
-    std::string str = db->getStringWithDefault( "type", "Power" );
+    std::string str = db->getWithDefault<std::string>( "type", "Power" );
     d_type          = str2id( str );
 
-    std::string outVarName = db->getStringWithDefault( "OutputVariable", str );
+    std::string outVarName = db->getWithDefault<std::string>( "OutputVariable", str );
     d_outputVariable.reset( new AMP::LinearAlgebra::Variable( outVarName ) );
 
     // number of time steps
-    d_numTimeSteps = db->getIntegerWithDefault( "numTimeSteps", 1 );
+    d_numTimeSteps = db->getWithDefault( "numTimeSteps", 1 );
     AMP_ASSERT( d_numTimeSteps > 0 );
     d_timeStepsInDays.resize( d_numTimeSteps );
     d_fixedValues.resize( d_numTimeSteps );
@@ -75,8 +75,7 @@ void NeutronicsRhs::getFromInput( SP_Database db )
     if ( db->keyExists( "numTimeSteps" ) ) {
         // time-step sizes
         if ( db->keyExists( "timeSteps" ) ) {
-            std::string tmp = "timeSteps";
-            db->getDoubleArray( tmp, &d_timeStepsInDays[0], d_numTimeSteps );
+            d_timeStepsInDays = db->getVector<double>( "timeSteps" );
         } else {
             // default value is only valid if the default number of time steps is used.
             AMP_ASSERT( d_numTimeSteps == 1 );
@@ -86,11 +85,10 @@ void NeutronicsRhs::getFromInput( SP_Database db )
     }
 
     // Power in Watts per gram
-    d_useFixedValue = db->getBoolWithDefault( "useFixedValue", true );
+    d_useFixedValue = db->getWithDefault( "useFixedValue", true );
     if ( d_useFixedValue ) {
         if ( db->keyExists( "fixedValues" ) ) {
-            std::string tmp = "fixedValues";
-            db->getDoubleArray( tmp, &d_fixedValues[0], d_numTimeSteps );
+            d_fixedValues = db->getVector<double>( "fixedValues" );
         } else {
             // default value is only valid if the default number of time steps is used.
             AMP_ASSERT( d_numTimeSteps == 1 );
@@ -107,9 +105,9 @@ void NeutronicsRhs::getFromInput( SP_Database db )
 void NeutronicsRhs::putToDatabase( SP_Database db )
 {
     AMP_ASSERT( !db.use_count() );
-    db->putInteger( "numTimeSteps", d_numTimeSteps );
-    db->putDoubleArray( "timeSteps", d_timeStepsInDays );
-    db->putDoubleArray( "fixedValues", d_fixedValues );
+    db->putScalar( "numTimeSteps", d_numTimeSteps );
+    db->putVector( "timeSteps", d_timeStepsInDays );
+    db->putVector( "fixedValues", d_fixedValues );
 }
 
 /*
@@ -141,13 +139,14 @@ void NeutronicsRhs::reset( const SP_OperatorParameters &parameters )
 
     if ( !d_useFixedValue ) {
         int numValues;
-        numValues = params->d_db->getInteger( "numValues" );
-        d_values.resize( d_numTimeSteps, Vec_Dbl( numValues, 0.0 ) );
+        numValues = params->d_db->getScalar<int>( "numValues" );
+        d_values.resize( d_numTimeSteps, std::vector( numValues, 0.0 ) );
         char key[100];
         for ( int step = 0; step < d_numTimeSteps; step++ ) {
             sprintf( key, "value_%d", step );
             AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
-            params->d_db->getDoubleArray( key, &d_values[step][0], numValues );
+            d_values[step] = params->d_db->getVector<double>( key );
+            AMP_ASSERT( numValues == (int) d_values.size() );
         }
     }
 }

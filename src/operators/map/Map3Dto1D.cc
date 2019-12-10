@@ -1,7 +1,7 @@
 
 #include "AMP/operators/map/Map3Dto1D.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 // Libmesh files
@@ -46,7 +46,7 @@ void Map3Dto1D::reset( const AMP::shared_ptr<OperatorParameters> &params )
     AMP_INSIST( d_MapComm.sumReduce<int>( d_MapMesh.get() != nullptr ? 1 : 0 ) > 0,
                 "Somebody must own the mesh" );
 
-    d_useGaussVec = myparams->d_db->getBoolWithDefault( "UseGaussVec", false );
+    d_useGaussVec = myparams->d_db->getWithDefault( "UseGaussVec", false );
 
     if ( d_useGaussVec ) {
         AMP::Mesh::MeshIterator iterator =

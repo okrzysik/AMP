@@ -21,7 +21,7 @@ class PetscSNESSolverParameters : public SolverStrategyParameters
 {
 public:
     PetscSNESSolverParameters() {}
-    explicit PetscSNESSolverParameters( const AMP::shared_ptr<AMP::Database> &db );
+    explicit PetscSNESSolverParameters( AMP::shared_ptr<AMP::Database> db );
     virtual ~PetscSNESSolverParameters() {}
 
     AMP_MPI d_comm;

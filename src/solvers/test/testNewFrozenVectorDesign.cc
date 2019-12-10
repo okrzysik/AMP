@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 
@@ -30,8 +30,8 @@ int main( int argc, char *argv[] )
     std::string log_file   = "output_" + exeName;
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
 
     AMP::shared_ptr<AMP::Database> firstOp_db = input_db->getDatabase( "FirstOperator" );
     AMP::shared_ptr<AMP::Operator::OperatorParameters> firstOpParams(

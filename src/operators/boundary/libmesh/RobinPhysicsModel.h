@@ -5,7 +5,9 @@
 #include <vector>
 
 #include "AMP/operators/ElementPhysicsModel.h"
+#include "AMP/utils/UtilityMacros.h"
 #include "AMP/utils/shared_ptr.h"
+
 
 namespace AMP {
 namespace Operator {
@@ -26,7 +28,7 @@ public:
     virtual void reset( const AMP::shared_ptr<RobinPhysicsModelParameters> &params )
     {
         if ( params->d_db->keyExists( "Number_Active_Variables" ) ) {
-            d_numActiveVariables = ( params->d_db )->getInteger( "Number_Active_Variables" );
+            d_numActiveVariables = ( params->d_db )->getScalar<int>( "Number_Active_Variables" );
         }
         AMP::shared_ptr<AMP::Database> activeDb;
         if ( params->d_db->keyExists( "ActiveInputVariables" ) ) {

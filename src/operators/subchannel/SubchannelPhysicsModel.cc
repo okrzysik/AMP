@@ -116,7 +116,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
                 // if found,
                 if ( hit != defaultkeys.end() ) {
                     // use the value provided with the Defaults key
-                    prop_defaults[i] = defaults_db->getDouble( argnames[i] );
+                    prop_defaults[i] = defaults_db->getScalar<double>( argnames[i] );
                     // ensure that the default value is within the argument range
                     AMP_INSIST( property->in_range( argnames[i], prop_defaults[i] ),
                                 std::string( "Default for argument " ) + argnames[i] +

@@ -4,7 +4,7 @@
 #include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
 
@@ -115,12 +115,12 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
         params->d_db->getDatabase( "ActiveInputVariables" );
 
     for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
-        std::string namespec =
-            activeVariables_db->getStringWithDefault( Diffusion::names[var], "not_specified" );
+        std::string namespec = activeVariables_db->getWithDefault<std::string>(
+            Diffusion::names[var], "not_specified" );
         bool isthere           = namespec != "not_specified";
         d_isActive[var]        = isthere;
         std::string frozenName = "Freeze" + Diffusion::names[var];
-        d_isFrozen[var]        = params->d_db->getBoolWithDefault( frozenName, false );
+        d_isFrozen[var]        = params->d_db->getWithDefault( frozenName, false );
         if ( d_isFrozen[var] )
             AMP_INSIST( d_isActive[var], "can not freeze a variable unless it is active" );
     }
@@ -135,7 +135,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
     }
 
     AMP_INSIST( params->d_db->keyExists( "PrincipalVariable" ), "must specify PrincipalVariable" );
-    int value = params->d_db->getInteger( "PrincipalVariable" );
+    int value = params->d_db->getScalar<int>( "PrincipalVariable" );
     AMP_INSIST( value >= 0, "can not specify negative PrincipalVariable" );
     AMP_INSIST( static_cast<unsigned int>( value ) < Diffusion::NUMBER_VARIABLES,
                 "PrincipalVariable is too large" );
@@ -357,25 +357,25 @@ AMP::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
 {
     //    AMP::LinearAlgebra::Vector::shared_ptr u  =
     //    std::const_pointer_cast<AMP::LinearAlgebra::Vector>(u_in);
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
+    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
     auto u_meshVec = u->constSelect( meshSelector, "u_mesh" );
 
     // set up a database for the linear operator params
-    tmp_db->putString( "name", "DiffusionLinearFEOperator" );
-    tmp_db->putString( "InputVariable", Diffusion::names[d_PrincipalVariable] );
-    tmp_db->putString( "OutputVariable", d_outVariable->getName() );
-    tmp_db->putBool( "FixedTemperature", d_isActive[Diffusion::TEMPERATURE] ? false : true );
-    tmp_db->putBool( "FixedConcentration", d_isActive[Diffusion::CONCENTRATION] ? false : true );
-    tmp_db->putBool( "FixedBurnup", d_isActive[Diffusion::BURNUP] ? false : true );
+    tmp_db->putScalar( "name", "DiffusionLinearFEOperator" );
+    tmp_db->putScalar( "InputVariable", Diffusion::names[d_PrincipalVariable] );
+    tmp_db->putScalar( "OutputVariable", d_outVariable->getName() );
+    tmp_db->putScalar( "FixedTemperature", d_isActive[Diffusion::TEMPERATURE] ? false : true );
+    tmp_db->putScalar( "FixedConcentration", d_isActive[Diffusion::CONCENTRATION] ? false : true );
+    tmp_db->putScalar( "FixedBurnup", d_isActive[Diffusion::BURNUP] ? false : true );
 
     // create the linear operator params
     AMP::shared_ptr<DiffusionLinearFEOperatorParameters> outParams(
         new DiffusionLinearFEOperatorParameters( tmp_db ) );
 
     // create the linear element object
-    AMP::shared_ptr<AMP::InputDatabase> elem_db( new AMP::InputDatabase( "Dummy" ) );
-    tmp_db->putBool( "TransportAtGaussPoints", d_diffNonlinElem->getTransportAtGauss() );
+    AMP::shared_ptr<AMP::Database> elem_db( new AMP::Database( "Dummy" ) );
+    tmp_db->putScalar( "TransportAtGaussPoints", d_diffNonlinElem->getTransportAtGauss() );
     AMP::shared_ptr<ElementOperationParameters> eparams(
         new ElementOperationParameters( elem_db ) );
     AMP::shared_ptr<DiffusionLinearElement> linearElement( new DiffusionLinearElement( eparams ) );

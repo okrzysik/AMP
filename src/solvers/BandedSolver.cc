@@ -37,8 +37,8 @@ void BandedSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )
     AB   = nullptr;
     IPIV = nullptr;
     if ( parameters != nullptr ) {
-        KL = parameters->d_db->getInteger( "KL" );
-        KU = parameters->d_db->getInteger( "KU" );
+        KL = parameters->d_db->getScalar<int>( "KL" );
+        KU = parameters->d_db->getScalar<int>( "KU" );
     }
 
     // Get the linear operator

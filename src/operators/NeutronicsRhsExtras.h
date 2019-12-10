@@ -9,7 +9,7 @@
 #include "AMP/vectors/Variable.h"
 #include "NeutronicsRhsExtrasParameters.h"
 
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 
 /*Boost files */
 #include "AMP/utils/shared_ptr.h"

@@ -18,8 +18,6 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -48,7 +46,7 @@ static double
 getSolutionPressure( AMP::Database::shared_ptr db, double H, double Pout, double p, double z )
 {
     if ( db->keyExists( "Inlet_Pressure" ) )
-        return Pout + ( 1. - z / H ) * ( db->getDouble( "Inlet_Pressure" ) - Pout );
+        return Pout + ( 1. - z / H ) * ( db->getScalar<double>( "Inlet_Pressure" ) - Pout );
     else
         return Pout + ( H - z ) * 9.80665 * p;
 }
@@ -62,8 +60,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
+    auto input_db = AMP::Database::parseInputFile( input_file );
 
     // Get the Mesh database and create the mesh parameters
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
@@ -86,9 +83,12 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::make_shared<AMP::Operator::SubchannelOperatorParameters>( nonlinearOperator_db );
     subchannelOpParams->d_Mesh                   = subchannelMesh;
     subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
-    subchannelOpParams->clad_x = input_db->getDatabase( "CladProperties" )->getDoubleArray( "x" );
-    subchannelOpParams->clad_y = input_db->getDatabase( "CladProperties" )->getDoubleArray( "y" );
-    subchannelOpParams->clad_d = input_db->getDatabase( "CladProperties" )->getDoubleArray( "d" );
+    subchannelOpParams->clad_x =
+        input_db->getDatabase( "CladProperties" )->getVector<double>( "x" );
+    subchannelOpParams->clad_y =
+        input_db->getDatabase( "CladProperties" )->getVector<double>( "y" );
+    subchannelOpParams->clad_d =
+        input_db->getDatabase( "CladProperties" )->getVector<double>( "d" );
 
     // create nonlinear operator
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
@@ -124,10 +124,10 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto box = subchannelMesh->getBoundingBox();
     AMP_ASSERT( box[4] == 0.0 );
     double H    = box[5] - box[4];
-    double m    = nonlinearOperator_db->getDouble( "Inlet_Mass_Flow_Rate" );
-    double Q    = nonlinearOperator_db->getDouble( "Rod_Power" );
-    double Pout = nonlinearOperator_db->getDouble( "Exit_Pressure" );
-    double Tin  = nonlinearOperator_db->getDouble( "Inlet_Temperature" );
+    double m    = nonlinearOperator_db->getScalar<double>( "Inlet_Mass_Flow_Rate" );
+    double Q    = nonlinearOperator_db->getScalar<double>( "Rod_Power" );
+    double Pout = nonlinearOperator_db->getScalar<double>( "Exit_Pressure" );
+    double Tin  = nonlinearOperator_db->getScalar<double>( "Inlet_Temperature" );
 
     // compute inlet enthalpy
     double Pin = Pout;
@@ -231,8 +231,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
             AMP::make_shared<AMP::Solver::TrilinosMLSolver>( PreconditionerParams );
         linearSolver->setPreconditioner( linearFlowPreconditioner );
     } else if ( preconditioner == "Banded" ) {
-        Preconditioner_db->putInteger( "KL", 3 );
-        Preconditioner_db->putInteger( "KU", 3 );
+        Preconditioner_db->putScalar( "KL", 3 );
+        Preconditioner_db->putScalar( "KU", 3 );
         auto linearFlowPreconditioner =
             AMP::make_shared<AMP::Solver::BandedSolver>( PreconditionerParams );
         linearSolver->setPreconditioner( linearFlowPreconditioner );
@@ -317,7 +317,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     double relErrorNorm = relErrorVec->L2Norm();
 
     // check that norm of relative error is less than tolerance
-    double tol = input_db->getDoubleWithDefault( "TOLERANCE", 1e-6 );
+    double tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );
     if ( relErrorNorm <= tol && fabs( Tin - TinSol ) < tol ) {
         ut->passes( exeName + ": manufactured solution test" );
     } else {

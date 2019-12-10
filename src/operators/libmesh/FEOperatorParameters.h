@@ -20,10 +20,7 @@ public:
     /**
       Constructor.
       */
-    explicit FEOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
-        : OperatorParameters( db )
-    {
-    }
+    explicit FEOperatorParameters( AMP::shared_ptr<AMP::Database> db ) : OperatorParameters( db ) {}
 
     /**
       Destructor.

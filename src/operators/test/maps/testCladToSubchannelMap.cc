@@ -7,8 +7,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -51,25 +49,24 @@ AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel
 static void runTest( const std::string &fname, AMP::UnitTest *ut )
 {
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( fname, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( fname );
+    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db = input_db->getDatabase( "Mesh" );
+    auto params  = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    AMP::Mesh::Mesh::shared_ptr manager  = AMP::Mesh::Mesh::buildMesh( params );
-    AMP::Mesh::Mesh::shared_ptr pin_mesh = manager->Subset( "MultiPin" );
+    auto manager  = AMP::Mesh::Mesh::buildMesh( params );
+    auto pin_mesh = manager->Subset( "MultiPin" );
     AMP::Mesh::Mesh::shared_ptr clad_mesh;
     if ( pin_mesh.get() != nullptr ) {
         pin_mesh->setName( "MultiPin" );
         clad_mesh = pin_mesh->Subset( "clad" );
     }
-    AMP::Mesh::Mesh::shared_ptr subchannel_mesh = manager->Subset( "subchannel" );
+    auto subchannel_mesh = manager->Subset( "subchannel" );
     AMP::Mesh::Mesh::shared_ptr subchannel_face;
     if ( subchannel_mesh.get() != nullptr ) {
         subchannel_mesh->setName( "subchannel" );
@@ -77,15 +74,14 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     }
 
     // Get the database for the map
-    AMP::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
+    auto map_db = input_db->getDatabase( "MeshToMeshMaps" );
 
     // Create the DOFManagers and the vectors
-    // int DOFsPerNode = map_db->getInteger("DOFsPerObject");
+    // int DOFsPerNode = map_db->getScalar<int>("DOFsPerObject");
     // std::string varName = map_db->getString("VariableName");
     int DOFsPerNode     = 1;
     std::string varName = "Temperature";
-    AMP::LinearAlgebra::Variable::shared_ptr temperature(
-        new AMP::LinearAlgebra::Variable( varName ) );
+    auto temperature    = AMP::make_shared<AMP::LinearAlgebra::Variable>( varName );
     AMP::Discretization::DOFManager::shared_ptr pin_DOFs;
     AMP::Discretization::DOFManager::shared_ptr subchannel_DOFs;
     AMP::LinearAlgebra::Vector::shared_ptr T1;
@@ -106,7 +102,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
 
     // Initialize the pin temperatures
     if ( pin_mesh.get() != nullptr ) {
-        AMP::Mesh::MeshIterator it = pin_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        auto it = pin_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
             pin_DOFs->getDOFs( it->globalID(), dofs );
@@ -117,8 +113,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
 
     // Test the creation/destruction of CladToSubchannelMap (no apply call)
     try {
-        AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> map;
-        map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>(
+        auto map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>(
             manager, map_db );
         map.reset();
         ut->passes( "Created / Destroyed CladToSubchannelMap" );
@@ -127,8 +122,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     }
 
     // Perform a complete test of CladToSubchannelMap
-    AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> map;
-    map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>(
+    auto map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>(
         manager, map_db );
     map->setVector( T2 );
 

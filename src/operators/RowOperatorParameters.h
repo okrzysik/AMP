@@ -11,8 +11,7 @@ namespace Operator {
 class RowOperatorParameters : public OperatorParameters
 {
 public:
-    explicit RowOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
-        : OperatorParameters( db )
+    explicit RowOperatorParameters( AMP::shared_ptr<AMP::Database> db ) : OperatorParameters( db )
     {
     }
 

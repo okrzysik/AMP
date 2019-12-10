@@ -3,7 +3,7 @@
 namespace AMP {
 namespace TimeIntegrator {
 
-TimeOperatorParameters::TimeOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+TimeOperatorParameters::TimeOperatorParameters( AMP::shared_ptr<AMP::Database> db )
     : OperatorParameters( db )
 {
     d_pRhsOperator.reset();

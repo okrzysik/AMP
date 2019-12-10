@@ -20,7 +20,7 @@ Box<NDIM>::Box( AMP::shared_ptr<AMP::Database> db )
     d_physicalDim = NDIM;
     d_logicalDim  = NDIM;
     static_assert( NDIM >= 0 && NDIM <= 3, "Invalid number of dimensions" );
-    auto range = db->getDoubleArray( "Range" );
+    auto range = db->getVector<double>( "Range" );
     AMP_INSIST( range.size() == 2 * NDIM, "Range must be 2*dim for cube generator" );
     for ( int i = 0; i < 3; i++ ) {
         d_range[2 * i + 0] = -1e100;
@@ -54,7 +54,7 @@ Grid<NDIM>::Grid( AMP::shared_ptr<AMP::Database> db ) : Geometry()
     }
     const char *names[3] = { "x_grid", "y_grid", "z_grid" };
     for ( size_t i = 0; i < NDIM; i++ ) {
-        d_coord[i] = std::move( db->getDoubleArray( names[i] ) );
+        d_coord[i] = std::move( db->getVector<double>( names[i] ) );
         for ( const auto tmp : d_coord[i] ) {
             d_range[2 * i + 0] = std::min( d_range[2 * i + 0], tmp );
             d_range[2 * i + 1] = std::max( d_range[2 * i + 1], tmp );

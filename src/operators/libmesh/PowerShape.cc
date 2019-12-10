@@ -22,7 +22,7 @@
 #include "libmesh/cell_hex8.h"
 
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "VolumeIntegralOperator.h"
 #include "libmesh/string_to_enum.h"
 
@@ -121,7 +121,7 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
     // d_Variable = createOutputVariable("RelativePower");
 
     // Coordinate System
-    d_coordinateSystem = db->getStringWithDefault( "coordinateSystem", "cartesian" );
+    d_coordinateSystem = db->getWithDefault<std::string>( "coordinateSystem", "cartesian" );
 
     // Create the cylindrical bounding box
     std::vector<double> min_max_pos = d_Mesh->getBoundingBox();
@@ -149,40 +149,37 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
 
     if ( d_coordinateSystem == "cartesian" ) {
 
-        d_type = db->getStringWithDefault( "type", "legendre" );
+        d_type = db->getWithDefault<std::string>( "type", "legendre" );
         if ( d_type == "legendre" ) {
 
             // Number of moments in the X direction. Default = 0
-            d_numXmoments = db->getIntegerWithDefault( "numXmoments", 0 );
+            d_numXmoments = db->getWithDefault( "numXmoments", 0 );
             AMP_ASSERT( (int) d_numXmoments > -1 );
             if ( d_numXmoments > 0 ) {
                 AMP_ASSERT( db->keyExists( "Xmoments" ) );
-                d_Xmoments.resize( d_numXmoments, 0. );
-                db->getDoubleArray( "Xmoments", &d_Xmoments[0], d_numXmoments );
+                d_Xmoments = db->getVector<double>( "Xmoments" );
                 for ( unsigned int i = 0; i < d_numXmoments; i++ ) {
                     AMP_ASSERT( fabs( d_Xmoments[i] ) <= 1.0 );
                 }
             }
 
             // Number of moments in the Y direction. Default = 0
-            d_numYmoments = db->getIntegerWithDefault( "numYmoments", 0 );
+            d_numYmoments = db->getWithDefault( "numYmoments", 0 );
             AMP_ASSERT( (int) d_numYmoments > -1 );
             if ( d_numYmoments > 0 ) {
                 AMP_ASSERT( db->keyExists( "Ymoments" ) );
-                d_Ymoments.resize( d_numYmoments, 0. );
-                db->getDoubleArray( "Ymoments", &d_Ymoments[0], d_numYmoments );
+                d_Ymoments = db->getVector<double>( "Ymoments" );
                 for ( unsigned int i = 0; i < d_numYmoments; i++ ) {
                     AMP_ASSERT( fabs( d_Ymoments[i] ) <= 1.0 );
                 }
             }
 
             // Number of moments in the Z direction. Default = 0
-            d_numZmoments = db->getIntegerWithDefault( "numZmoments", 0 );
+            d_numZmoments = db->getWithDefault( "numZmoments", 0 );
             AMP_ASSERT( (int) d_numZmoments > -1 );
             if ( d_numZmoments > 0 ) {
                 AMP_ASSERT( db->keyExists( "Zmoments" ) );
-                d_Zmoments.resize( d_numZmoments, 0. );
-                db->getDoubleArray( "Zmoments", &d_Zmoments[0], d_numZmoments );
+                d_Zmoments = db->getVector<double>( "Zmoments" );
                 for ( unsigned int i = 0; i < d_numZmoments; i++ ) {
                     AMP_ASSERT( fabs( d_Zmoments[i] ) <= 1.0 );
                 }
@@ -194,18 +191,17 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
             double centery                  = 0.5 * ( min_max_pos[2] + min_max_pos[3] );
 
             // Read mu and sigma for gaussian distribution.
-            d_muX    = db->getDoubleWithDefault( "muX", centerx );
-            d_muY    = db->getDoubleWithDefault( "muY", centery );
-            d_sigmaX = db->getDoubleWithDefault( "sigmaX", 3.0 );
-            d_sigmaY = db->getDoubleWithDefault( "sigmaY", 3.0 );
+            d_muX    = db->getWithDefault<double>( "muX", centerx );
+            d_muY    = db->getWithDefault<double>( "muY", centery );
+            d_sigmaX = db->getWithDefault<double>( "sigmaX", 3.0 );
+            d_sigmaY = db->getWithDefault<double>( "sigmaY", 3.0 );
 
             // Number of moments in the Z direction. Default = 0
-            d_numZmoments = db->getIntegerWithDefault( "numZmoments", 0 );
+            d_numZmoments = db->getWithDefault( "numZmoments", 0 );
             AMP_ASSERT( (int) d_numZmoments > -1 );
             if ( d_numZmoments > 0 ) {
                 AMP_ASSERT( db->keyExists( "Zmoments" ) );
-                d_Zmoments.resize( d_numZmoments, 0. );
-                db->getDoubleArray( "Zmoments", &d_Zmoments[0], d_numZmoments );
+                d_Zmoments = db->getVector<double>( "Zmoments" );
                 for ( unsigned int i = 0; i < d_numZmoments; i++ ) {
                     AMP_ASSERT( fabs( d_Zmoments[i] ) <= 1.0 );
                 }
@@ -217,33 +213,32 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
     } else if ( d_coordinateSystem == "cylindrical" ) {
 
         // Number of moments in the Z direction. Default =0
-        d_numZmoments = db->getIntegerWithDefault( "numZmoments", 0 );
+        d_numZmoments = db->getWithDefault( "numZmoments", 0 );
         AMP_ASSERT( (int) d_numZmoments > -1 );
         if ( d_numZmoments > 0 ) {
             AMP_ASSERT( db->keyExists( "Zmoments" ) );
-            d_Zmoments.resize( d_numZmoments, 0. );
-            db->getDoubleArray( "Zmoments", &d_Zmoments[0], d_numZmoments );
+            d_Zmoments = db->getVector<double>( "Zmoments" );
             for ( unsigned int i = 0; i < d_numZmoments; i++ ) {
                 AMP_ASSERT( fabs( d_Zmoments[i] ) <= 1.0 );
             }
         }
 
         // Read the powershope model from input database.
-        d_type = db->getStringWithDefault( "type", "frapcon" );
+        d_type = db->getWithDefault<std::string>( "type", "frapcon" );
 
         // frapcon power shape
         if ( d_type == "frapcon" ) {
 
             // Read the Frapcon constant from input database.
-            d_frapconConstant = db->getDoubleWithDefault( "frapconConstant", 3.45 );
+            d_frapconConstant = db->getWithDefault<double>( "frapconConstant", 3.45 );
 
             // Read the angular constant from input database.
-            d_angularConstant = db->getDoubleWithDefault( "angularConstant", 0.0 );
+            d_angularConstant = db->getWithDefault<double>( "angularConstant", 0.0 );
             AMP_ASSERT( fabs( d_angularConstant ) <= 1.0 );
         } else if ( d_type == "zernikeRadial" ) {
 
             // Number of moments in the Radial direction. Default =0
-            d_numMoments = db->getIntegerWithDefault( "numMoments", 4 );
+            d_numMoments = db->getWithDefault( "numMoments", 4 );
             d_Moments.resize( d_numMoments );
 
             // Establish default values
@@ -264,8 +259,7 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
                                 "default is not used, you must define "
                                 "the Moments to use." );
                 if ( db->keyExists( "Moments" ) ) {
-                    d_Moments.resize( d_numMoments, 0. );
-                    db->getDoubleArray( "Moments", &d_Moments[0], d_numMoments );
+                    d_Moments = db->getVector<double>( "Moments" );
                     for ( unsigned int i = 0; i < d_numMoments; i++ ) {
                         AMP_ASSERT( fabs( d_Moments[i] ) <= 1.0 );
                     }
@@ -273,12 +267,12 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
             }
 
             // Read the angular constant from input database.
-            d_angularConstant = db->getDoubleWithDefault( "angularConstant", 0.0 );
+            d_angularConstant = db->getWithDefault<double>( "angularConstant", 0.0 );
             AMP_ASSERT( fabs( d_angularConstant ) <= 1.0 );
         } else if ( d_type == "zernike" ) {
 
             // Number of "m" moments in the zernike polynomial. Default =0
-            d_numMoments = db->getIntegerWithDefault( "numMoments", 0 );
+            d_numMoments = db->getWithDefault( "numMoments", 0 );
             // m=1; n=-1, 1
             // m=2; n=-2, 0, 2
             // m=3; n=-3, -1, 1, 3
@@ -288,8 +282,7 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
             AMP_ASSERT( (int) d_numMoments > -1 );
             if ( d_numMoments > 0 ) {
                 AMP_ASSERT( db->keyExists( "Moments" ) );
-                d_Moments.resize( d_numMNmoments, 0. );
-                db->getDoubleArray( "Moments", &d_Moments[0], d_numMNmoments );
+                d_Moments = db->getVector<double>( "Moments" );
                 for ( unsigned int i = 0; i < d_numMNmoments; i++ ) {
                     AMP_ASSERT( fabs( d_Moments[i] ) <= 1.0 );
                 }
@@ -306,17 +299,17 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
 
     // create a shape function.
     {
-        // std::string feTypeOrderName = d_db->getStringWithDefault("FE_ORDER", "SECOND");
-        std::string feTypeOrderName = d_db->getStringWithDefault( "FE_ORDER", "FIRST" );
+        // std::string feTypeOrderName = d_db->getWithDefault<std::string>("FE_ORDER", "SECOND");
+        std::string feTypeOrderName = d_db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
         auto feTypeOrder          = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
-        std::string feFamilyName  = d_db->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
+        std::string feFamilyName  = d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
         auto feFamily             = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
-        std::string qruleTypeName = d_db->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
+        std::string qruleTypeName = d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
         auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
         const unsigned int dimension = 3;
         d_feType.reset( new ::FEType( feTypeOrder, feFamily ) );
         d_fe.reset( (::FEBase::build( dimension, ( *d_feType ) ) ).release() );
-        std::string qruleOrderName = d_db->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
+        std::string qruleOrderName = d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
         libMeshEnums::Order qruleOrder;
         if ( qruleOrderName == "DEFAULT" ) {
             qruleOrder = d_feType->default_quadrature_order();
@@ -626,22 +619,22 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP::shared_ptr<AMP::Database> volume_db = d_db->getDatabase( "VolumeIntegral" );
             AMP::shared_ptr<AMP::Database> act_db;
 
-            volume_db->putString( "name", "VolumeIntegralOperator" );
+            volume_db->putScalar( "name", "VolumeIntegralOperator" );
 
-            volume_db->putString( "InputVariableType", "IntegrationPointScalar" );
-            volume_db->putInteger( "Number_Active_Variables", 1 );
-            volume_db->putInteger( "Number_Auxillary_Variables", 0 );
-            volume_db->putBool( "Constant_Source", true );
-            volume_db->putString( "OutputVariable", "Temperature" );
-            volume_db->putInteger( "print_info_level", 1 );
+            volume_db->putScalar( "InputVariableType", "IntegrationPointScalar" );
+            volume_db->putScalar( "Number_Active_Variables", 1 );
+            volume_db->putScalar( "Number_Auxillary_Variables", 0 );
+            volume_db->putScalar( "Constant_Source", true );
+            volume_db->putScalar( "OutputVariable", "Temperature" );
+            volume_db->putScalar( "print_info_level", 1 );
             volume_db->putDatabase( "ActiveInputVariables" );
             volume_db->putDatabase( "SourceElement" );
 
             AMP::shared_ptr<AMP::Database> source_db = volume_db->getDatabase( "SourceElement" );
-            source_db->putString( "name", "SourceNonlinearElement" );
+            source_db->putScalar( "name", "SourceNonlinearElement" );
 
             act_db = volume_db->getDatabase( "ActiveInputVariables" );
-            act_db->putString( "ActiveVariable_0", ( u->getVariable() )->getName() );
+            act_db->putScalar( "ActiveVariable_0", ( u->getVariable() )->getName() );
             AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> emptyModel;
             AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeIntegralOperator =
                 AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
@@ -804,8 +797,8 @@ void PowerShape::printClassData( std::ostream &os ) const
 void PowerShape::putToDatabase( AMP::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( !db.use_count() );
-    db->putInteger( "numXmoments", d_numXmoments );
-    db->putDoubleArray( "Xmoments", d_Xmoments );
+    db->putScalar( "numXmoments", d_numXmoments );
+    db->putVector( "Xmoments", d_Xmoments );
 }
 
 /*!

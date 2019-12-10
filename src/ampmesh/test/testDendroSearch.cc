@@ -7,8 +7,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
@@ -214,16 +212,16 @@ void run( const std::string &meshFileName,
     // Load the mesh
     globalComm.barrier();
     double meshBeginTime = MPI_Wtime();
-    AMP::shared_ptr<AMP::InputDatabase> mesh_db( new AMP::InputDatabase( "input_db" ) );
-    mesh_db->putString( "MeshName", "PelletMeshes" );
-    mesh_db->putString( "MeshType", "Multimesh" );
-    mesh_db->putString( "MeshDatabasePrefix", "Mesh_" );
-    mesh_db->putString( "MeshArrayDatabasePrefix", "MeshArray_" );
+    AMP::shared_ptr<AMP::Database> mesh_db( new AMP::Database( "input_db" ) );
+    mesh_db->putScalar( "MeshName", "PelletMeshes" );
+    mesh_db->putScalar( "MeshType", "Multimesh" );
+    mesh_db->putScalar( "MeshDatabasePrefix", "Mesh_" );
+    mesh_db->putScalar( "MeshArrayDatabasePrefix", "MeshArray_" );
     if ( false ) {
         mesh_db->putDatabase( "MeshArray_1" );
         AMP::shared_ptr<AMP::Database> meshArray_db = mesh_db->getDatabase( "MeshArray_1" );
-        meshArray_db->putInteger( "N", numberOfMeshes );
-        meshArray_db->putString( "iterator", "%i" );
+        meshArray_db->putScalar( "N", numberOfMeshes );
+        meshArray_db->putScalar( "iterator", "%i" );
         std::vector<int> meshIndices;
         std::vector<double> x_offset, y_offset, z_offset;
         for ( int i = 0; i < numberOfMeshes; ++i ) {
@@ -232,27 +230,27 @@ void run( const std::string &meshFileName,
             y_offset.push_back( 0.0 );
             z_offset.push_back( 0.0105 * static_cast<double>( i ) );
         } // end for i
-        meshArray_db->putIntegerArray( "indicies", meshIndices );
-        meshArray_db->putString( "MeshName", "Pellet_%i" );
-        meshArray_db->putString( "MeshType", "libMesh" );
-        meshArray_db->putString( "FileName", meshFileName );
-        meshArray_db->putInteger( "dim", 3 );
-        meshArray_db->putDoubleArray( "x_offset", x_offset );
-        meshArray_db->putDoubleArray( "y_offset", y_offset );
-        meshArray_db->putDoubleArray( "z_offset", z_offset );
+        meshArray_db->putVector<int>( "indicies", meshIndices );
+        meshArray_db->putScalar( "MeshName", "Pellet_%i" );
+        meshArray_db->putScalar( "MeshType", "libMesh" );
+        meshArray_db->putScalar( "FileName", meshFileName );
+        meshArray_db->putScalar( "dim", 3 );
+        meshArray_db->putVector( "x_offset", x_offset );
+        meshArray_db->putVector( "y_offset", y_offset );
+        meshArray_db->putVector( "z_offset", z_offset );
     } else {
         // WEAK SCALING
         numRandomPts *= static_cast<size_t>( npes );
 
         mesh_db->putDatabase( "Mesh_1" );
         AMP::shared_ptr<AMP::Database> meshArray_db = mesh_db->getDatabase( "Mesh_1" );
-        meshArray_db->putString( "MeshName", "Cylinder_1" );
-        meshArray_db->putString( "MeshType", "AMP" );
-        meshArray_db->putInteger( "dim", 3 );
-        meshArray_db->putDouble( "x_offset", 0.0 );
-        meshArray_db->putDouble( "y_offset", 0.0 );
-        meshArray_db->putDouble( "z_offset", 0.0 );
-        meshArray_db->putString( "Generator", "cylinder" );
+        meshArray_db->putScalar( "MeshName", "Cylinder_1" );
+        meshArray_db->putScalar( "MeshType", "AMP" );
+        meshArray_db->putScalar( "dim", 3 );
+        meshArray_db->putScalar( "x_offset", 0.0 );
+        meshArray_db->putScalar( "y_offset", 0.0 );
+        meshArray_db->putScalar( "z_offset", 0.0 );
+        meshArray_db->putScalar( "Generator", "cylinder" );
         std::vector<int> size;
         // if (true) {
         //  numRandomPts = 3200000;
@@ -294,8 +292,8 @@ void run( const std::string &meshFileName,
         range.push_back( 0.004095 );
         range.push_back( 0.0 );
         range.push_back( 0.01 );
-        meshArray_db->putIntegerArray( "Size", size );
-        meshArray_db->putDoubleArray( "Range", range );
+        meshArray_db->putVector<int>( "Size", size );
+        meshArray_db->putVector( "Range", range );
     }
 
 

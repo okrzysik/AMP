@@ -24,7 +24,7 @@ Geometry::buildGeometry( AMP::shared_ptr<AMP::Database> db )
     auto generator = db->getString( "Generator" );
     AMP::shared_ptr<AMP::Geometry::Geometry> geom;
     if ( generator.compare( "cube" ) == 0 ) {
-        int dim = db->getInteger( "dim" );
+        int dim = db->getScalar<int>( "dim" );
         if ( db->keyExists( "Range" ) ) {
             if ( dim == 1 ) {
                 geom.reset( new Box<1>( db ) );

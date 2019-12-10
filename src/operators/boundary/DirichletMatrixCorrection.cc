@@ -1,6 +1,6 @@
 
 #include "DirichletMatrixCorrection.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 namespace AMP {
@@ -15,11 +15,11 @@ DirichletMatrixCorrection::DirichletMatrixCorrection(
     : BoundaryOperator( params ), d_variable( params->d_variable )
 {
     d_computedAddRHScorrection = false;
-    d_symmetricCorrection  = ( params->d_db )->getBoolWithDefault( "symmetric_correction", true );
-    d_zeroDirichletBlock   = ( params->d_db )->getBoolWithDefault( "zero_dirichlet_block", false );
-    d_skipRHSsetCorrection = ( params->d_db )->getBoolWithDefault( "skip_rhs_correction", true );
+    d_symmetricCorrection      = ( params->d_db )->getWithDefault( "symmetric_correction", true );
+    d_zeroDirichletBlock       = ( params->d_db )->getWithDefault( "zero_dirichlet_block", false );
+    d_skipRHSsetCorrection     = ( params->d_db )->getWithDefault( "skip_rhs_correction", true );
     d_skipRHSaddCorrection =
-        ( params->d_db )->getBoolWithDefault( "skip_rhs_add_correction", d_skipRHSsetCorrection );
+        ( params->d_db )->getWithDefault( "skip_rhs_add_correction", d_skipRHSsetCorrection );
     d_applyMatrixCorrectionWasCalled = false;
 
     reset( params );
@@ -61,19 +61,15 @@ void DirichletMatrixCorrection::parseParams(
     const AMP::shared_ptr<DirichletMatrixCorrectionParameters> &params )
 {
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
-    bool skipParams = ( params->d_db )->getBoolWithDefault( "skip_params", false );
+    bool skipParams = ( params->d_db )->getWithDefault( "skip_params", false );
 
     if ( !skipParams ) {
-        d_symmetricCorrection =
-            ( params->d_db )->getBoolWithDefault( "symmetric_correction", true );
-        d_zeroDirichletBlock =
-            ( params->d_db )->getBoolWithDefault( "zero_dirichlet_block", false );
+        d_symmetricCorrection = ( params->d_db )->getWithDefault( "symmetric_correction", true );
+        d_zeroDirichletBlock  = ( params->d_db )->getWithDefault( "zero_dirichlet_block", false );
 
-        d_skipRHSsetCorrection =
-            ( params->d_db )->getBoolWithDefault( "skip_rhs_correction", true );
+        d_skipRHSsetCorrection = ( params->d_db )->getWithDefault( "skip_rhs_correction", true );
         d_skipRHSaddCorrection =
-            ( params->d_db )
-                ->getBoolWithDefault( "skip_rhs_add_correction", d_skipRHSsetCorrection );
+            ( params->d_db )->getWithDefault( "skip_rhs_add_correction", d_skipRHSsetCorrection );
 
         if ( d_symmetricCorrection == false ) {
             d_skipRHSaddCorrection = true;
@@ -81,7 +77,7 @@ void DirichletMatrixCorrection::parseParams(
 
         AMP_INSIST( ( params->d_db )->keyExists( "number_of_ids" ),
                     "Key ''number_of_ids'' is missing!" );
-        int numIds = ( params->d_db )->getInteger( "number_of_ids" );
+        int numIds = ( params->d_db )->getScalar<int>( "number_of_ids" );
 
         d_boundaryIds.resize( numIds );
         d_dofIds.resize( numIds );
@@ -90,17 +86,17 @@ void DirichletMatrixCorrection::parseParams(
         for ( int j = 0; j < numIds; ++j ) {
             sprintf( key, "id_%d", j );
             AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-            d_boundaryIds[j] = ( params->d_db )->getInteger( key );
+            d_boundaryIds[j] = ( params->d_db )->getScalar<int>( key );
 
             sprintf( key, "number_of_dofs_%d", j );
             AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-            int numDofIds = ( params->d_db )->getInteger( key );
+            int numDofIds = ( params->d_db )->getScalar<int>( key );
 
             d_dofIds[j].resize( numDofIds );
             for ( int i = 0; i < numDofIds; ++i ) {
                 sprintf( key, "dof_%d_%d", j, i );
                 AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-                d_dofIds[j][i] = ( params->d_db )->getInteger( key );
+                d_dofIds[j][i] = ( params->d_db )->getScalar<int>( key );
             } // end for i
         }     // end for j
 
@@ -112,7 +108,7 @@ void DirichletMatrixCorrection::parseParams(
 
                 for ( int i = 0; i < numDofIds; ++i ) {
                     sprintf( key, "value_%d_%d", j, i );
-                    d_dirichletValues[j][i] = ( params->d_db )->getDoubleWithDefault( key, 0.0 );
+                    d_dirichletValues[j][i] = ( params->d_db )->getWithDefault<double>( key, 0.0 );
                 } // end for i
             }     // end for j
         }
@@ -189,26 +185,26 @@ void DirichletMatrixCorrection::initRhsCorrectionSet()
     if ( !d_skipRHSsetCorrection ) {
         int numIds = d_dofIds.size();
         char key[100];
-        AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
-        tmp_db->putBool( "skip_params", false );
-        tmp_db->putBool( "isAttachedToVolumeOperator", false );
-        tmp_db->putInteger( "number_of_ids", numIds );
-        tmp_db->putInteger( "print_info_level", d_iDebugPrintInfoLevel );
+        AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+        tmp_db->putScalar( "skip_params", false );
+        tmp_db->putScalar( "isAttachedToVolumeOperator", false );
+        tmp_db->putScalar( "number_of_ids", numIds );
+        tmp_db->putScalar( "print_info_level", d_iDebugPrintInfoLevel );
         for ( int j = 0; j < numIds; j++ ) {
             int numDofIds = d_dofIds[j].size();
 
             sprintf( key, "id_%d", j );
-            tmp_db->putInteger( key, d_boundaryIds[j] );
+            tmp_db->putScalar( key, d_boundaryIds[j] );
 
             sprintf( key, "number_of_dofs_%d", j );
-            tmp_db->putInteger( key, numDofIds );
+            tmp_db->putScalar( key, numDofIds );
 
             for ( int i = 0; i < numDofIds; i++ ) {
                 sprintf( key, "dof_%d_%d", j, i );
-                tmp_db->putInteger( key, d_dofIds[j][i] );
+                tmp_db->putScalar( key, d_dofIds[j][i] );
 
                 sprintf( key, "value_%d_%d", j, i );
-                tmp_db->putDouble( key, d_dirichletValues[j][i] );
+                tmp_db->putScalar( key, d_dirichletValues[j][i] );
             } // end for i
         }     // end for j
 

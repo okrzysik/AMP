@@ -2,8 +2,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -69,9 +67,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     globalComm.barrier();
     double inpReadBeginTime = MPI_Wtime();
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     globalComm.barrier();
     double inpReadEndTime = MPI_Wtime();
@@ -84,9 +82,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     globalComm.barrier();
     double meshBeginTime = MPI_Wtime();
 
-    bool bis                   = input_db->getBoolWithDefault( "bis", false );
-    bool useALittleHelp        = input_db->getBoolWithDefault( "useALittleHelp", false );
-    std::string prefixFileName = input_db->getStringWithDefault( "prefixFileName", "prout" );
+    bool bis                   = input_db->getWithDefault( "bis", false );
+    bool useALittleHelp        = input_db->getWithDefault( "useALittleHelp", false );
+    std::string prefixFileName = input_db->getWithDefault<std::string>( "prefixFileName", "prout" );
     if ( bis ) {
         prefixFileName.append( "bis" );
     }
@@ -157,14 +155,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         new AMP::Operator::NodeToGeomType::FaceContactOperator( contactOperatorParams ) );
     contactOperator->initialize();
     contactOperator->setContactIsFrictionless(
-        input_db->getBoolWithDefault( "contactIsFrictionless", false ) );
+        input_db->getWithDefault( "contactIsFrictionless", false ) );
 
-    bool useML = input_db->getBoolWithDefault( "useML", false );
-    bool cladExpansionConstrained =
-        input_db->getBoolWithDefault( "cladExpansionConstrained", true );
-    bool useLevitatingFuel = input_db->getBoolWithDefault( "useLevitatingFuel", true );
-    double scaleSolution   = input_db->getDoubleWithDefault( "scaleSolution", 1.0 );
-    double shrinkFactor    = input_db->getDoubleWithDefault( "shrinkFactor", 0.0 );
+    bool useML                    = input_db->getWithDefault( "useML", false );
+    bool cladExpansionConstrained = input_db->getWithDefault( "cladExpansionConstrained", true );
+    bool useLevitatingFuel        = input_db->getWithDefault( "useLevitatingFuel", true );
+    double scaleSolution          = input_db->getWithDefault<double>( "scaleSolution", 1.0 );
+    double shrinkFactor           = input_db->getWithDefault<double>( "shrinkFactor", 0.0 );
 
     // Build the master and slave operators
     AMP::shared_ptr<AMP::Operator::LinearBVPOperator> masterBVPOperator;
@@ -249,7 +246,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>> slaveConstraints;
     if ( bis ) {
         if ( !useLevitatingFuel ) {
-            double fuelOuterRadius = input_db->getDouble( "FuelOuterRadius" );
+            double fuelOuterRadius = input_db->getScalar<double>( "FuelOuterRadius" );
             makeConstraintsOnFuel(
                 masterMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1 ),
                 fuelOuterRadius,
@@ -273,9 +270,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         }
     } else {
         if ( !cladExpansionConstrained ) {
-            double cladInnerRadius = input_db->getDouble( "CladInnerRadius" );
-            double cladOuterRadius = input_db->getDouble( "CladOuterRadius" );
-            double cladHeight      = input_db->getDouble( "CladHeight" );
+            double cladInnerRadius = input_db->getScalar<double>( "CladInnerRadius" );
+            double cladOuterRadius = input_db->getScalar<double>( "CladOuterRadius" );
+            double cladHeight      = input_db->getScalar<double>( "CladHeight" );
             makeConstraintsOnClad( slaveMeshAdapter->getIterator( AMP::Mesh::GeomType::Vertex ),
                                    cladInnerRadius,
                                    cladOuterRadius,
@@ -283,7 +280,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                    slaveConstraints );
         }
         if ( !useLevitatingFuel ) {
-            double fuelOuterRadius = input_db->getDouble( "FuelOuterRadius" );
+            double fuelOuterRadius = input_db->getScalar<double>( "FuelOuterRadius" );
             makeConstraintsOnFuel(
                 masterMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1 ),
                 fuelOuterRadius,
@@ -346,18 +343,18 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     double tempCompBeginTime = MPI_Wtime();
 
     double dummyFuelThermalConductivity = 0.0; // not used k_f = a+b/(c+Td)
-    double linearHeatGenerationRate     = input_db->getDouble( "LinearHeatGenerationRate" );
-    double fuelOuterRadius              = input_db->getDouble( "FuelOuterRadius" );
-    double cladInnerRadius              = input_db->getDouble( "CladInnerRadius" );
-    double cladOuterRadius              = input_db->getDouble( "CladOuterRadius" );
-    double cladThermalConductivity      = input_db->getDouble( "CladThermalConductivity" );
+    double linearHeatGenerationRate     = input_db->getScalar<double>( "LinearHeatGenerationRate" );
+    double fuelOuterRadius              = input_db->getScalar<double>( "FuelOuterRadius" );
+    double cladInnerRadius              = input_db->getScalar<double>( "CladInnerRadius" );
+    double cladOuterRadius              = input_db->getScalar<double>( "CladOuterRadius" );
+    double cladThermalConductivity      = input_db->getScalar<double>( "CladThermalConductivity" );
 
-    double gapThermalConductivity = input_db->getDouble( "GapThermalConductivity" );
-    double moderatorTemperature   = input_db->getDouble( "ModeratorTemperature" );
+    double gapThermalConductivity = input_db->getScalar<double>( "GapThermalConductivity" );
+    double moderatorTemperature   = input_db->getScalar<double>( "ModeratorTemperature" );
     double moderatorHeatTransferCoefficient =
-        input_db->getDouble( "ModeratorHeatTransferCoefficient" );
+        input_db->getScalar<double>( "ModeratorHeatTransferCoefficient" );
 
-    double referenceTemperature = input_db->getDouble( "ReferenceTemperature" );
+    double referenceTemperature = input_db->getScalar<double>( "ReferenceTemperature" );
 
     double cladOuterRadiusTemperature =
         moderatorTemperature + linearHeatGenerationRate / ( 2.0 * M_PI ) /
@@ -428,13 +425,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // AMP::shared_ptr<AMP::Database> tmp_db =
     // masterTemperatureRhs_db->getDatabase("RhsMaterialModel");
     // double masterThermalExpansionCoefficient =
-    // tmp_db->getDouble("THERMAL_EXPANSION_COEFFICIENT");
+    // tmp_db->getScalar<double>("THERMAL_EXPANSION_COEFFICIENT");
     double masterThermalExpansionCoefficient =
         ( masterTemperatureRhs_db->getDatabase( "RhsMaterialModel" ) )
-            ->getDouble( "THERMAL_EXPANSION_COEFFICIENT" );
+            ->getScalar<double>( "THERMAL_EXPANSION_COEFFICIENT" );
     double slaveThermalExpansionCoefficient =
         ( slaveTemperatureRhs_db->getDatabase( "RhsMaterialModel" ) )
-            ->getDouble( "THERMAL_EXPANSION_COEFFICIENT" );
+            ->getScalar<double>( "THERMAL_EXPANSION_COEFFICIENT" );
     contactOperator->uglyHack(
         tempVec, tempDofManager, masterThermalExpansionCoefficient, referenceTemperature );
 
@@ -574,7 +571,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     int TOTO_count = 0;
     size_t const maxThermalLoadingIterations =
-        input_db->getIntegerWithDefault( "maxThermalLoadingIterations", 5 );
+        input_db->getWithDefault( "maxThermalLoadingIterations", 5 );
     for ( size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoadingIterations;
           ++thermalLoadingIteration ) {
         if ( !rank ) {
@@ -586,7 +583,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         tempVec->axpy( scalingFactor, fullThermalLoadingTempMinusRefTempVec, refTempVec );
 
         size_t const maxActiveSetIterations =
-            input_db->getIntegerWithDefault( "maxActiveSetIterations", 5 );
+            input_db->getWithDefault( "maxActiveSetIterations", 5 );
         for ( size_t activeSetIteration = 0; activeSetIteration < maxActiveSetIterations;
               ++activeSetIteration ) {
             if ( !rank ) {

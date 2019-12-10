@@ -3,7 +3,7 @@
 
 #include "AMP/operators/Operator.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"

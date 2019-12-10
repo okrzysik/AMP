@@ -14,8 +14,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
@@ -55,10 +53,10 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db           = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
         new AMP::Mesh::initializeLibMesh( globalComm ) );

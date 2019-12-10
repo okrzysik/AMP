@@ -24,13 +24,13 @@ public:
     virtual void build_mesh() override
     {
         // Create the parameter object
-        auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
-        database->putInteger( "dim", 3 );
-        database->putString( "MeshName", "cube_mesh" );
-        database->putString( "Generator", "cube" );
-        database->putIntegerArray( "size", std::vector<int>( 3, SIZE ) );
-        database->putDoubleArray( "xmin", std::vector<double>( 3, -1.0 ) );
-        database->putDoubleArray( "xmax", std::vector<double>( 3, 1.0 ) );
+        auto database = AMP::make_shared<AMP::Database>( "Mesh" );
+        database->putScalar<int>( "dim", 3 );
+        database->putScalar<std::string>( "MeshName", "cube_mesh" );
+        database->putScalar<std::string>( "Generator", "cube" );
+        database->putVector<int>( "size", std::vector<int>( 3, SIZE ) );
+        database->putVector<double>( "xmin", std::vector<double>( 3, -1.0 ) );
+        database->putVector<double>( "xmax", std::vector<double>( 3, 1.0 ) );
         auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create a libMesh mesh
@@ -49,15 +49,15 @@ public:
     virtual void build_mesh() override
     {
         // Create the parameter object
-        auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
-        database->putInteger( "dim", 3 );
-        database->putString( "MeshName", "exodus reader mesh" );
+        auto database = AMP::make_shared<AMP::Database>( "Mesh" );
+        database->putScalar( "dim", 3 );
+        database->putScalar<std::string>( "MeshName", "exodus reader mesh" );
         if ( FILE == 1 ) {
-            database->putString( "FileName", "clad_1x_1pellet.e" );
+            database->putScalar<std::string>( "FileName", "clad_1x_1pellet.e" );
         } else if ( FILE == 2 ) {
-            database->putString( "FileName", "multiElementMesh.e" );
+            database->putScalar<std::string>( "FileName", "multiElementMesh.e" );
         } else if ( FILE == 3 ) {
-            database->putString( "FileName", "pellet_1x.e" );
+            database->putScalar<std::string>( "FileName", "pellet_1x.e" );
         } else {
             AMP_ERROR( "Bad file for generator" );
         }
@@ -79,23 +79,23 @@ public:
     {
         int N_meshes = 4;
         // Create the multimesh database
-        auto meshDatabase = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
-        meshDatabase->putString( "MeshName", "PelletMeshes" );
-        meshDatabase->putString( "MeshType", "Multimesh" );
-        meshDatabase->putString( "MeshDatabasePrefix", "Mesh_" );
-        meshDatabase->putString( "MeshArrayDatabasePrefix", "MeshArray_" );
+        auto meshDatabase = AMP::make_shared<AMP::Database>( "Mesh" );
+        meshDatabase->putScalar<std::string>( "MeshName", "PelletMeshes" );
+        meshDatabase->putScalar<std::string>( "MeshType", "Multimesh" );
+        meshDatabase->putScalar<std::string>( "MeshDatabasePrefix", "Mesh_" );
+        meshDatabase->putScalar<std::string>( "MeshArrayDatabasePrefix", "MeshArray_" );
         // Create the mesh array database
         auto meshArrayDatabase = meshDatabase->putDatabase( "MeshArray_1" );
-        meshArrayDatabase->putInteger( "N", N_meshes );
-        meshArrayDatabase->putString( "iterator", "%i" );
+        meshArrayDatabase->putScalar<int>( "N", N_meshes );
+        meshArrayDatabase->putScalar<std::string>( "iterator", "%i" );
         std::vector<int> indexArray( N_meshes );
         for ( int i = 0; i < N_meshes; i++ )
             indexArray[i] = i + 1;
-        meshArrayDatabase->putIntegerArray( "indicies", indexArray );
-        meshArrayDatabase->putString( "MeshName", "pellet_%i" );
+        meshArrayDatabase->putVector<int>( "indicies", indexArray );
+        meshArrayDatabase->putScalar<std::string>( "MeshName", "pellet_%i" );
 #ifdef USE_EXT_LIBMESH
-        meshArrayDatabase->putString( "FileName", "pellet_lo_res.e" );
-        meshArrayDatabase->putString( "MeshType", "libMesh" );
+        meshArrayDatabase->putScalar<std::string>( "FileName", "pellet_lo_res.e" );
+        meshArrayDatabase->putScalar<std::string>( "MeshType", "libMesh" );
 #else
         std::vector<int> size( 3, 10 );
         std::vector<double> range( 6, 0.0 );
@@ -103,18 +103,18 @@ public:
         range[3] = 0.005;
         range[5] = 0.005;
         // Create a generic MeshParameters object
-        meshArrayDatabase->putString( "MeshType", "AMP" );
-        meshArrayDatabase->putString( "Generator", "cube" );
-        meshArrayDatabase->putIntegerArray( "Size", size );
-        meshArrayDatabase->putDoubleArray( "Range", range );
+        meshArrayDatabase->putScalar<std::string>( "MeshType", "AMP" );
+        meshArrayDatabase->putScalar<std::string>( "Generator", "cube" );
+        meshArrayDatabase->putVector<int>( "Size", size );
+        meshArrayDatabase->putVector<double>( "Range", range );
 #endif
-        meshArrayDatabase->putInteger( "dim", 3 );
-        meshArrayDatabase->putDouble( "x_offset", 0.0 );
-        meshArrayDatabase->putDouble( "y_offset", 0.0 );
+        meshArrayDatabase->putScalar<double>( "dim", 3 );
+        meshArrayDatabase->putScalar<double>( "x_offset", 0.0 );
+        meshArrayDatabase->putScalar<double>( "y_offset", 0.0 );
         std::vector<double> offsetArray( N_meshes );
         for ( int i = 0; i < N_meshes; i++ )
             offsetArray[i] = ( (double) i ) * 0.0105;
-        meshArrayDatabase->putDoubleArray( "z_offset", offsetArray );
+        meshArrayDatabase->putVector<double>( "z_offset", offsetArray );
         // Create the parameter object
         auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );

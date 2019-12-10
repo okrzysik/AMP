@@ -20,8 +20,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -42,9 +40,8 @@ static void myTest( AMP::UnitTest *ut )
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );
@@ -62,7 +59,7 @@ static void myTest( AMP::UnitTest *ut )
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
-    int NumberOfLoadingSteps = input_db->getInteger( "NumberOfLoadingSteps" );
+    int NumberOfLoadingSteps = input_db->getScalar<int>( "NumberOfLoadingSteps" );
 
     auto nonlinBvpOperator = AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
@@ -89,12 +86,12 @@ static void myTest( AMP::UnitTest *ut )
     double Temp_1 = 2000.0;
     initTempVec->setToScalar( Temp_0 );
     initTempVec->abs( initTempVec );
-    double initTempConst = input_db->getDoubleWithDefault( "INIT_TEMP_CONST", 1.0 );
+    double initTempConst = input_db->getWithDefault<double>( "INIT_TEMP_CONST", 1.0 );
     initTempVec->scale( initTempConst );
     initTempVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     bool setFinalTempEqualsInitialTemp =
-        input_db->getBoolWithDefault( "SET_FINAL_TEMP_EQUALS_INIT_TEMP", false );
+        input_db->getWithDefault( "SET_FINAL_TEMP_EQUALS_INIT_TEMP", false );
 
     if ( setFinalTempEqualsInitialTemp ) {
         finalTempVec->copyVector( initTempVec );
@@ -102,7 +99,7 @@ static void myTest( AMP::UnitTest *ut )
         double Temp_n = Temp_0 + ( ( Temp_1 - Temp_0 ) / ( (double) ( NumberOfLoadingSteps ) ) );
         AMP::pout << "Temp_n = " << Temp_n << std::endl;
         finalTempVec->setToScalar( Temp_n );
-        double finalTempConst = input_db->getDoubleWithDefault( "FINAL_TEMP_CONST", 1.0 );
+        double finalTempConst = input_db->getWithDefault<double>( "FINAL_TEMP_CONST", 1.0 );
         finalTempVec->scale( finalTempConst );
     }
     finalTempVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
@@ -243,7 +240,7 @@ static void myTest( AMP::UnitTest *ut )
         AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
         AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
 
-        auto tmp_db = AMP::make_shared<AMP::InputDatabase>( "Dummy" );
+        auto tmp_db = AMP::make_shared<AMP::Database>( "Dummy" );
         auto tmpParams =
             AMP::make_shared<AMP::Operator::MechanicsNonlinearFEOperatorParameters>( tmp_db );
         ( nonlinBvpOperator->getVolumeOperator() )->reset( tmpParams );

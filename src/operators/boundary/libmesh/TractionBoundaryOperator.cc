@@ -27,7 +27,7 @@ TractionBoundaryOperator::TractionBoundaryOperator(
     std::string varName = params->d_db->getString( "Variable" );
     d_var.reset( new AMP::LinearAlgebra::Variable( varName ) );
     AMP_INSIST( params->d_db->keyExists( "ResidualMode" ), "key not found" );
-    d_residualMode   = params->d_db->getBool( "ResidualMode" );
+    d_residualMode   = params->d_db->getScalar<bool>( "ResidualMode" );
     d_traction       = params->d_traction;
     d_volumeElements = params->d_volumeElements;
     d_sideNumbers    = params->d_sideNumbers;

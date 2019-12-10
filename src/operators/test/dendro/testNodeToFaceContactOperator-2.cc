@@ -2,8 +2,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -156,9 +154,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     globalComm.barrier();
     double inpReadBeginTime = MPI_Wtime();
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     globalComm.barrier();
     double inpReadEndTime = MPI_Wtime();
@@ -238,9 +236,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         new AMP::Operator::NodeToGeomType::FaceContactOperator( contactOperatorParams ) );
     contactOperator->initialize();
     contactOperator->setContactIsFrictionless(
-        contact_db->getBoolWithDefault( "ContactIsFrictionless", false ) );
+        contact_db->getWithDefault( "ContactIsFrictionless", false ) );
 
-    bool useML = input_db->getBoolWithDefault( "useML", false );
+    bool useML = input_db->getWithDefault( "useML", false );
 
     // Build the master and slave operators
     AMP::shared_ptr<AMP::Operator::LinearBVPOperator> masterBVPOperator;
@@ -482,7 +480,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     sigma_xz->zero();
     sigma_xy->zero();
 
-    double yDisplacementHelper = input_db->getDoubleWithDefault( "yDisplacementHelper", 0.0 );
+    double yDisplacementHelper = input_db->getWithDefault<double>( "yDisplacementHelper", 0.0 );
     if ( yDisplacementHelper != 0.0 ) {
         AMP::LinearAlgebra::Vector::shared_ptr yDispVec =
             columnSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "help" );
@@ -563,9 +561,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     selectNodes( slaveMeshAdapter, slaveNodesGlobalIDs );
     printNodesValues( slaveMeshAdapter, slaveNodesGlobalIDs, contactPressureVec );
 
-    int TOTO_count = 0;
-    size_t const maxLoadingIterations =
-        input_db->getIntegerWithDefault( "maxLoadingIterations", 5 );
+    int TOTO_count                    = 0;
+    size_t const maxLoadingIterations = input_db->getWithDefault( "maxLoadingIterations", 5 );
     for ( size_t loadingIteration = 0; loadingIteration < maxLoadingIterations;
           ++loadingIteration ) {
         double scalingFactor = static_cast<double>( loadingIteration + 1 ) /
@@ -578,7 +575,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         }
 
         size_t const maxActiveSetIterations =
-            input_db->getIntegerWithDefault( "maxActiveSetIterations", 5 );
+            input_db->getWithDefault( "maxActiveSetIterations", 5 );
         for ( size_t activeSetIteration = 0; activeSetIteration < maxActiveSetIterations;
               ++activeSetIteration ) {
             if ( !rank ) {
@@ -590,8 +587,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             columnRhsVec->zero();
 
             // compute rhs
-            double loadParameter = input_db->getDouble( "LoadParameter" );
-            double loadCutoff    = input_db->getDouble( "LoadCutoff" );
+            double loadParameter = input_db->getScalar<double>( "LoadParameter" );
+            double loadCutoff    = input_db->getScalar<double>( "LoadCutoff" );
             //  getConcentratedLoadAtNodes(loadParameter, loadCutoff, slaveMeshAdapter,
             //  columnRhsVec, dispDofManager);
             getConcentratedLoadAtNodes(

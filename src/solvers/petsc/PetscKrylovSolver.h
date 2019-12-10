@@ -146,7 +146,7 @@ public:
     resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
 
 protected:
-    void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
+    void getFromInput( AMP::shared_ptr<AMP::Database> db );
 
 private:
     // static functions to interface with PETSc

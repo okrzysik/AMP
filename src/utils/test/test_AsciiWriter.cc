@@ -4,8 +4,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -45,12 +43,12 @@ AMP::LinearAlgebra::Vector::shared_ptr createVector( AMP::LinearAlgebra::Variabl
     range[3] = 1.0;
     range[5] = 1.0;
     // Create a generic MeshParameters object
-    AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
-    database->putInteger( "dim", 3 );
-    database->putString( "MeshName", "mesh1" );
-    database->putString( "Generator", "cube" );
-    database->putIntegerArray( "Size", size );
-    database->putDoubleArray( "Range", range );
+    AMP::shared_ptr<AMP::Database> database( new AMP::Database( "Mesh" ) );
+    database->putScalar<int>( "dim", 3 );
+    database->putScalar<std::string>( "MeshName", "mesh1" );
+    database->putScalar<std::string>( "Generator", "cube" );
+    database->putVector<int>( "Size", size );
+    database->putVector<double>( "Range", range );
     AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( comm );
     // Create an AMP mesh
