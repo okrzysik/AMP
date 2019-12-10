@@ -39,9 +39,9 @@ NodeToNodeMap::NodeToNodeMap( const AMP::shared_ptr<AMP::Operator::OperatorParam
         dim = d_mesh1->getDim();
     dim = d_MapComm.maxReduce( dim );
     AMP_INSIST( dim <= 3, "Node to Node map only works up to 3d (see Point)" );
-    DofsPerObj = Params.d_db->getIntegerWithDefault( "DOFsPerObject", 1 );
+    DofsPerObj = Params.d_db->getWithDefault( "DOFsPerObject", 1 );
     AMP::Mesh::GeomType geomType =
-        static_cast<AMP::Mesh::GeomType>( Params.d_db->getIntegerWithDefault( "GeomType", 0 ) );
+        static_cast<AMP::Mesh::GeomType>( Params.d_db->getWithDefault( "GeomType", 0 ) );
     d_commTag               = Params.d_commTag;
     d_callMakeConsistentSet = Params.callMakeConsistentSet;
 

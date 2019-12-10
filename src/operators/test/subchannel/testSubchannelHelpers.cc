@@ -7,8 +7,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -25,9 +23,8 @@ static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
     const double pi = 3.1415926535897932;
 
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -125,8 +122,8 @@ static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
         new AMP::Operator::ElementPhysicsModelParameters( subchannel_db ) );
     AMP::shared_ptr<AMP::Operator::SubchannelPhysicsModel> subchannelPhysicsModel(
         new AMP::Operator::SubchannelPhysicsModel( params ) );
-    double reynolds = subchannel_db->getDatabase( "Defaults" )->getDouble( "reynolds" );
-    double prandtl  = subchannel_db->getDatabase( "Defaults" )->getDouble( "prandtl" );
+    double reynolds = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "reynolds" );
+    double prandtl  = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "prandtl" );
     AMP::LinearAlgebra::Vector::shared_ptr flowVec, cladTemp;
     if ( subchannelMesh.get() != nullptr ) {
         int DOFsPerFace[3] = { 0, 0, 2 };

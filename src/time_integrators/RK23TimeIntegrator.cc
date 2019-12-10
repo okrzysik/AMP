@@ -177,16 +177,16 @@ void RK23TimeIntegrator::updateSolution()
 void RK23TimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 {
     if ( input_db->keyExists( "initial_timestep" ) ) {
-        d_initial_dt = input_db->getDouble( "initial_timestep" );
+        d_initial_dt = input_db->getScalar<double>( "initial_timestep" );
         d_current_dt = d_initial_dt;
     } else {
         AMP_ERROR( d_object_name << " -- Key data `initial_timestep'"
                                  << " missing in input." );
     }
 
-    d_safety_factor = input_db->getDoubleWithDefault( "safety_factor", 0.9 );
+    d_safety_factor = input_db->getWithDefault<double>( "safety_factor", 0.9 );
 
-    d_atol = input_db->getDoubleWithDefault( "absolute_tolerance", 1.0e-09 );
+    d_atol = input_db->getWithDefault<double>( "absolute_tolerance", 1.0e-09 );
 }
 
 double RK23TimeIntegrator::getNextDt( const bool )

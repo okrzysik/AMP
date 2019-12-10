@@ -17,8 +17,6 @@
 #include "AMP/solvers/trilinos/muelu/TrilinosMueLuSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -32,27 +30,16 @@
 void linearThermalTest( AMP::UnitTest *ut )
 {
     // Input and output file names
-    //  #include <string>
     std::string exeName( "testTrilinosMueLuSolver-LinearThermalOperator-cylinder" );
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    ////////////////////////////////////
-    //    INITIALIZE THE PROBLEM      //
-    ////////////////////////////////////
-
-    // Construct a smart pointer to a new database.
-    //  #include "utils/shared_ptr.h"
-    //  #include "utils/InputDatabase.h"
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
 
     // Fill the database from the input file.
-    //  #include "utils/InputManager.h"
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
 
     // Print from all cores into the output files
-    //   #include "utils/PIO.h"
     AMP::PIO::logAllNodes( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 

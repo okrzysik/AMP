@@ -3,7 +3,7 @@
 #include "AMP/operators/map/Map3Dto1D.h"
 #include "AMP/operators/subchannel/FlowFrapconJacobian.h"
 #include "AMP/solvers/libmesh/Flow1DSolver.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 
@@ -27,20 +27,20 @@ CoupledFlow1DSolver::CoupledFlow1DSolver( AMP::shared_ptr<SolverStrategyParamete
     d_flow1DSolver         = AMP::dynamic_pointer_cast<Flow1DSolver>( params->d_flow1DSolver );
     std::string flowInpVar = ( d_flow1DSolver->getInputVariable() )->getName();
 
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db1( new AMP::InputDatabase( "Dummy" ) );
-    tmp_db1->putInteger( "BoundaryId", 4 );
-    tmp_db1->putString( "InputVariable", flowOutVar );
-    tmp_db1->putString( "OutputVariable", flowInpVar );
+    AMP::shared_ptr<AMP::Database> tmp_db1( new AMP::Database( "Dummy" ) );
+    tmp_db1->putScalar( "BoundaryId", 4 );
+    tmp_db1->putScalar( "InputVariable", flowOutVar );
+    tmp_db1->putScalar( "OutputVariable", flowInpVar );
     AMP::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowInternal3to1Params(
         new AMP::Operator::MapOperatorParameters( tmp_db1 ) );
     mapflowInternal3to1Params->d_MapMesh = ( d_flow1DSolver->getOperator() )->getMesh();
     mapflowInternal3to1Params->d_MapComm = mapflowInternal3to1Params->d_MapMesh->getComm();
     d_flowInternal3to1.reset( new AMP::Operator::Map3Dto1D( mapflowInternal3to1Params ) );
 
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db2( new AMP::InputDatabase( "Dummy" ) );
-    tmp_db2->putInteger( "BoundaryId", 4 );
-    tmp_db2->putString( "InputVariable", flowInpVar );
-    tmp_db2->putString( "OutputVariable", flowOutVar );
+    AMP::shared_ptr<AMP::Database> tmp_db2( new AMP::Database( "Dummy" ) );
+    tmp_db2->putScalar( "BoundaryId", 4 );
+    tmp_db2->putScalar( "InputVariable", flowInpVar );
+    tmp_db2->putScalar( "OutputVariable", flowOutVar );
     AMP::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowInternal1to3Params(
         new AMP::Operator::MapOperatorParameters( tmp_db2 ) );
     mapflowInternal1to3Params->d_MapMesh = ( d_flow1DSolver->getOperator() )->getMesh();

@@ -1,6 +1,6 @@
 
 #include "NavierStokesGalWFFEOperator.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "NavierStokesLinearFEOperatorParameters.h"
 
@@ -20,7 +20,7 @@ namespace Operator {
         d_isFrozen.resize(NavierStokes::TOTAL_NUMBER_OF_VARIABLES);
         d_inVec.resize(NavierStokes::TOTAL_NUMBER_OF_VARIABLES);
 
-        d_coupledFormulation = (params->d_db)->getBoolWithDefault("VELOCITY_PRESSURE_COUPLING",
+        d_coupledFormulation = (params->d_db)->getWithDefault("VELOCITY_PRESSURE_COUPLING",
    true);
 
         AMP_INSIST( params->d_db->keyExists("ActiveInputVariables"), "key not found" );
@@ -37,7 +37,7 @@ namespace Operator {
         d_isFrozen[NavierStokes::VELOCITY] = false;
         d_isFrozen[NavierStokes::PRESSURE] = false;
         d_isFrozen[NavierStokes::TEMPERATURE] =
-   (params->d_db)->getBoolWithDefault("FREEZE_TEMPERATURE", true);
+   (params->d_db)->getWithDefault("FREEZE_TEMPERATURE", true);
 
         d_inpVariables.reset(new AMP::LinearAlgebra::MultiVariable("myInpVar"));
         d_outVariables.reset(new AMP::LinearAlgebra::MultiVariable("myOutVar"));
@@ -243,16 +243,16 @@ namespace Operator {
         }
 
         // set up a database for the linear operator params
-        AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
-        tmp_db->putBool("isAttachedToNonlinearOperator", true);
-        tmp_db->putBool("isNonlinearOperatorInitialized", true);
+        AMP::shared_ptr<AMP::Database> tmp_db (new AMP::Database("Dummy"));
+        tmp_db->putScalar("isAttachedToNonlinearOperator", true);
+        tmp_db->putScalar("isNonlinearOperatorInitialized", true);
 
         if(d_coupledFormulation)
         {
-          tmp_db->putString("name", "NavierStokesGalWFLinearFEOperator");
-          tmp_db->putString("InputVariable", NavierStokes::VELOCITY);
-          tmp_db->putString("OutputVariable", d_outVariables->getName());
-          tmp_db->putBool("FixedTemperature", d_isActive[NavierStokes::TEMPERATURE]?false:true);
+          tmp_db->putScalar("name", "NavierStokesGalWFLinearFEOperator");
+          tmp_db->putScalar("InputVariable", NavierStokes::VELOCITY);
+          tmp_db->putScalar("OutputVariable", d_outVariables->getName());
+          tmp_db->putScalar("FixedTemperature", d_isActive[NavierStokes::TEMPERATURE]?false:true);
         }
 
         // create the linear operator params

@@ -49,13 +49,13 @@ SolverStrategy::~SolverStrategy() = default;
 /****************************************************************
  * Initialize                                                    *
  ****************************************************************/
-void SolverStrategy::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
+void SolverStrategy::getFromInput( AMP::shared_ptr<AMP::Database> db )
 {
     AMP_INSIST( db.get() != nullptr, "InputDatabase object must be non-NULL" );
-    d_iMaxIterations       = db->getIntegerWithDefault( "max_iterations", 1 );
-    d_dMaxError            = db->getDoubleWithDefault( "max_error", 1.0e-12 );
-    d_iDebugPrintInfoLevel = db->getIntegerWithDefault( "print_info_level", 0 );
-    d_bUseZeroInitialGuess = db->getBoolWithDefault( "zero_initial_guess", true );
+    d_iMaxIterations       = db->getWithDefault( "max_iterations", 1 );
+    d_dMaxError            = db->getWithDefault<double>( "max_error", 1.0e-12 );
+    d_iDebugPrintInfoLevel = db->getWithDefault( "print_info_level", 0 );
+    d_bUseZeroInitialGuess = db->getWithDefault( "zero_initial_guess", true );
 }
 void SolverStrategy::initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters )
 {

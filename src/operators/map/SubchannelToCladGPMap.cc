@@ -43,11 +43,11 @@ SubchannelToCladGPMap::SubchannelToCladGPMap(
     AMP::shared_ptr<SubchannelToCladMapParameters> params =
         AMP::dynamic_pointer_cast<SubchannelToCladGPMapParameters>( p );
     AMP_ASSERT( params );
-    int DofsPerObj = params->d_db->getInteger( "DOFsPerObject" );
+    int DofsPerObj = params->d_db->getScalar<int>( "DOFsPerObject" );
     AMP_INSIST( DofsPerObj == 4,
                 "SubchannelToCladGPMap is currently only designed for 4 Gp per elem" );
     AMP_INSIST( params->d_db->keyExists( "GeomType" ), "GeomType must exist in database" );
-    int type = params->d_db->getInteger( "GeomType" );
+    int type = params->d_db->getScalar<int>( "GeomType" );
     AMP_INSIST( type == 2,
                 "SubchannelToCladGPMap is currently only designed for face elements (GeomType)" );
     if ( d_iterator2.size() > 0 ) {

@@ -14,7 +14,7 @@ public:
     int d_MasterValue;
     int d_NumToSend;
 
-    explicit Map3to1to3Parameters( const AMP::shared_ptr<AMP::Database> &db )
+    explicit Map3to1to3Parameters( AMP::shared_ptr<AMP::Database> db )
         : AsyncMapOperatorParameters( db ), d_MasterValue( 0 ), d_NumToSend( 0 )
     {
     }

@@ -1,5 +1,5 @@
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
 
@@ -31,8 +31,8 @@ VolumeIntegralOperator::VolumeIntegralOperator(
 
     AMP::shared_ptr<AMP::Database> primaryDb = params->d_db->getDatabase( "ActiveInputVariables" );
 
-    int numPrimaryVariables   = ( params->d_db )->getInteger( "Number_Active_Variables" );
-    int numAuxillaryVariables = ( params->d_db )->getInteger( "Number_Auxillary_Variables" );
+    int numPrimaryVariables   = ( params->d_db )->getScalar<int>( "Number_Active_Variables" );
+    int numAuxillaryVariables = ( params->d_db )->getScalar<int>( "Number_Auxillary_Variables" );
 
     d_inpVariables.reset( new AMP::LinearAlgebra::MultiVariable( "myInpVar" ) );
     d_auxVariables.reset( new AMP::LinearAlgebra::MultiVariable( "myAuxVar" ) );
@@ -67,7 +67,7 @@ VolumeIntegralOperator::VolumeIntegralOperator(
     d_outVariable.reset( new AMP::LinearAlgebra::Variable( outVar ) );
 
     d_isInputType =
-        params->d_db->getStringWithDefault( "InputVariableType", "IntegrationPointScalar" );
+        params->d_db->getWithDefault<std::string>( "InputVariableType", "IntegrationPointScalar" );
 
     // d_bMatrixAndVectorsCloned=false;
 
@@ -226,8 +226,8 @@ void VolumeIntegralOperator::reset( const AMP::shared_ptr<OperatorParameters> & 
 AMP::shared_ptr<OperatorParameters>
 VolumeIntegralOperator::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u )
 {
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
-    tmp_db->putString( "name", "VolumeIntegralOperator" );
+    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    tmp_db->putScalar( "name", "VolumeIntegralOperator" );
     AMP::shared_ptr<VolumeIntegralOperatorParameters> outParams(
         new VolumeIntegralOperatorParameters( tmp_db ) );
 

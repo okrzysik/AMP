@@ -38,7 +38,7 @@ AMP::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( AMP::shared_ptr<AMP
     std::string type                               = db->getString( "Name" );
     AMP::shared_ptr<AMP::Utilities::Writer> writer = Writer::buildWriter( type );
     if ( db->keyExists( "Decomposition" ) )
-        writer->setDecomposition( db->getInteger( "Decomposition" ) );
+        writer->setDecomposition( db->getScalar<int>( "Decomposition" ) );
     return writer;
 }
 

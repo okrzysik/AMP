@@ -17,8 +17,6 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -38,9 +36,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // Read the mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
@@ -97,13 +94,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Set Initial Temperature
     AMP_INSIST( input_db->keyExists( "INIT_TEMP_CONST" ), "key missing!" );
-    double initTempVal = input_db->getDouble( "INIT_TEMP_CONST" );
+    double initTempVal = input_db->getScalar<double>( "INIT_TEMP_CONST" );
     initTempVec->setToScalar( initTempVal );
     mechanicsNonlinearVolumeOperator->setReferenceTemperature( initTempVec );
 
     // Set Final Temperature
     AMP_INSIST( input_db->keyExists( "FINAL_TEMP_CONST" ), "key missing!" );
-    double finalTempVal = input_db->getDouble( "FINAL_TEMP_CONST" );
+    double finalTempVal = input_db->getScalar<double>( "FINAL_TEMP_CONST" );
     finalTempVec->setToScalar( finalTempVal );
     mechanicsNonlinearVolumeOperator->setVector( AMP::Operator::Mechanics::TEMPERATURE,
                                                  finalTempVec );
@@ -125,7 +122,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver;
 
     AMP_INSIST( nonlinearSolver_db->keyExists( "usesJacobian" ), "key missing!" );
-    bool usesJacobian = nonlinearSolver_db->getBool( "usesJacobian" );
+    bool usesJacobian = nonlinearSolver_db->getScalar<bool>( "usesJacobian" );
 
     if ( usesJacobian ) {
         AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(

@@ -4,8 +4,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -18,11 +16,11 @@ static void runTest( AMP::UnitTest *ut )
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::shared_ptr<AMP::MemoryDatabase> mesh_db( new AMP::MemoryDatabase( "Mesh" ) );
-    mesh_db->putInteger( "dim", 3 );
-    mesh_db->putString( "MeshName", "mesh1" );
-    mesh_db->putString( "MeshType", "libMesh" );
-    mesh_db->putString( "FileName", "pellet_1x.e" );
+    AMP::shared_ptr<AMP::Database> mesh_db( new AMP::Database( "Mesh" ) );
+    mesh_db->putScalar( "dim", 3 );
+    mesh_db->putScalar( "MeshName", "mesh1" );
+    mesh_db->putScalar( "MeshType", "libMesh" );
+    mesh_db->putScalar( "FileName", "pellet_1x.e" );
     AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( mesh_db ) );
     params->setComm( globalComm );
 

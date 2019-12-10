@@ -88,7 +88,7 @@ void BackwardEulerTimeIntegrator::updateSolution()
 void BackwardEulerTimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 {
     if ( input_db->keyExists( "initial_timestep" ) ) {
-        d_initial_dt = input_db->getDouble( "initial_timestep" );
+        d_initial_dt = input_db->getScalar<double>( "initial_timestep" );
     } else {
         AMP_ERROR( d_object_name << " -- Key data `initial_timestep'"
                                  << " missing in input." );

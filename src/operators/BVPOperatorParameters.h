@@ -19,8 +19,7 @@ namespace Operator {
 class BVPOperatorParameters : public OperatorParameters
 {
 public:
-    explicit BVPOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
-        : OperatorParameters( db )
+    explicit BVPOperatorParameters( AMP::shared_ptr<AMP::Database> db ) : OperatorParameters( db )
     {
     }
 

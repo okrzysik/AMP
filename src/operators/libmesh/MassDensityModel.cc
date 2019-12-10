@@ -19,13 +19,13 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
     : ElementPhysicsModel( params )
 {
     AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Mass Key ''Material'' is missing!" );
-    std::string matname = params->d_db->getStringWithDefault( "Material", "Independent" );
+    std::string matname = params->d_db->getWithDefault<std::string>( "Material", "Independent" );
     d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
 
     if ( params->d_db->keyExists( "Property" ) ) {
         d_PropertyName = params->d_db->getString( "Property" );
         if ( params->d_db->keyExists( "Parameters" ) ) {
-            d_Parameters = params->d_db->getDoubleArray( "Parameters" );
+            d_Parameters = params->d_db->getVector<double>( "Parameters" );
         }
     } else {
         d_PropertyName = "unspecified";
@@ -51,10 +51,10 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
     else
         AMP_INSIST( false, "Mass Equation name is invalid" );
 
-    d_UseBilogScaling = params->d_db->getBoolWithDefault( "UseBilogScaling", false );
+    d_UseBilogScaling = params->d_db->getWithDefault( "UseBilogScaling", false );
     if ( d_UseBilogScaling ) {
         AMP_INSIST( params->d_db->keyExists( "BilogVariable" ), "must specify BilogVariable" );
-        d_BilogVariable = params->d_db->getStringWithDefault( "BilogVariable", "NONE" );
+        d_BilogVariable = params->d_db->getWithDefault<std::string>( "BilogVariable", "NONE" );
 
         if ( d_equation == MassEquation::Thermal ) {
             d_BilogRange =
@@ -153,7 +153,7 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
 
                 // load defaults into the material property, checking range validity
                 for ( size_t i = 0; i < argnames.size(); ++i ) {
-                    defaults[i] = defaults_db->getDouble( argnames[i] );
+                    defaults[i] = defaults_db->getScalar<double>( argnames[i] );
                     AMP_INSIST( property->in_range( argnames[i], defaults[i] ),
                                 std::string( "Default for argument " ) + argnames[i] +
                                     std::string( " is out of range" ) );

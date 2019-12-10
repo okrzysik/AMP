@@ -1,6 +1,6 @@
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 
@@ -13,7 +13,7 @@ public:
     template<typename UTILS>
     static void run_test( UTILS *utils )
     {
-        AMP::shared_ptr<AMP::InputDatabase> new_db( new AMP::InputDatabase( "Dummy db" ) );
+        AMP::shared_ptr<AMP::Database> new_db( new AMP::Database( "Dummy db" ) );
         AMP::TimeIntegrator::TimeIntegratorParameters params( new_db );
         utils->passes( "instantiate TimeIntegratorParameters" );
     }

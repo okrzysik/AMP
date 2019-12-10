@@ -2,7 +2,7 @@
 #include "AMP/ampmesh/libmesh/libMesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"

@@ -22,23 +22,27 @@ FlowElement::FlowElement( const AMP::shared_ptr<ElementOperationParameters> &par
 
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    const unsigned int dimension = ( params->d_db )->getIntegerWithDefault( "DIMENSION", 3 );
-    // int numApprox = (params->d_db)->getIntegerWithDefault("NUM_APPROX", 2);
+    const unsigned int dimension = ( params->d_db )->getWithDefault( "DIMENSION", 3 );
+    // int numApprox = (params->d_db)->getScalar<int>WithDefault("NUM_APPROX", 2);
 
-    std::string U_feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "SECOND" );
+    std::string U_feTypeOrderName =
+        ( params->d_db )->getWithDefault<std::string>( "FE_ORDER", "SECOND" );
     auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( U_feTypeOrderName );
 
-    std::string feFamilyName = ( params->d_db )->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
-    auto feFamily            = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    std::string feFamilyName =
+        ( params->d_db )->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    auto feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
-    std::string qruleTypeName = ( params->d_db )->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
+    std::string qruleTypeName =
+        ( params->d_db )->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
     auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     d_feType.reset( new ::FEType( feTypeOrder, feFamily ) );
 
     d_fe.reset( (::FEBase::build( dimension, ( *d_feType ) ) ).release() );
 
-    std::string qruleOrderName = ( params->d_db )->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
+    std::string qruleOrderName =
+        ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     libMeshEnums::Order qruleOrder;
 

@@ -21,7 +21,7 @@ class DTKMapOperatorParameters : public OperatorParameters
 {
 public:
     // Constructor.
-    explicit DTKMapOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+    explicit DTKMapOperatorParameters( AMP::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     { /* ... */
     }

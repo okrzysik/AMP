@@ -1,5 +1,5 @@
 #include "BackwardEulerTimeOperator.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 namespace AMP {

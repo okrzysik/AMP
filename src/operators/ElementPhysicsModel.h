@@ -20,7 +20,7 @@ public:
       */
     explicit ElementPhysicsModel( const AMP::shared_ptr<ElementPhysicsModelParameters> &params )
     {
-        d_iDebugPrintInfoLevel = ( params->d_db )->getIntegerWithDefault( "print_info_level", 0 );
+        d_iDebugPrintInfoLevel = ( params->d_db )->getWithDefault( "print_info_level", 0 );
     }
 
     /**

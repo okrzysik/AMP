@@ -5,8 +5,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -40,9 +38,9 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Load the input file
     globalComm.barrier();
     double inpReadBeginTime = MPI_Wtime();
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
     globalComm.barrier();
     double inpReadEndTime = MPI_Wtime();
     if ( !rank ) {
@@ -96,7 +94,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
         maxCoords[i] = box[2 * i + 1];
     }
 
-    int totalNumPts = input_db->getInteger( "TotalNumberOfPoints" );
+    int totalNumPts = input_db->getScalar<int>( "TotalNumberOfPoints" );
     int avgNumPts   = totalNumPts / npes;
     int extraNumPts = totalNumPts % npes;
 
@@ -124,7 +122,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
                   << std::endl;
     }
 
-    bool dendroVerbose = input_db->getBool( "DENDRO_VERBOSE" );
+    bool dendroVerbose = input_db->getScalar<bool>( "DENDRO_VERBOSE" );
     globalComm.barrier();
     double dendroConBeginTime = MPI_Wtime();
     AMP::Mesh::DendroSearch dendroSearch( meshAdapter, dendroVerbose );

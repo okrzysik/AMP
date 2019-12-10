@@ -2,8 +2,6 @@
 #include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -41,12 +39,9 @@ static void linearThermalTest( AMP::UnitTest *ut )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    // Construct a smart pointer to a new database.
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-
     // Fill the database from the input file.
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
 
     // Print from all cores into the output files

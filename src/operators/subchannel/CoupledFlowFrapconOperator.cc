@@ -29,10 +29,10 @@ CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(
     d_flowOutput =
         AMP::LinearAlgebra::SimpleVector<double>::create( d_numpoints, d_SimpleVariable );
 
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db1( new AMP::InputDatabase( "Dummy" ) );
-    tmp_db1->putInteger( "BoundaryId", 4 );
-    tmp_db1->putString( "InputVariable", flowOutVar );
-    tmp_db1->putString( "OutputVariable", "FlowInternal" );
+    AMP::shared_ptr<AMP::Database> tmp_db1( new AMP::Database( "Dummy" ) );
+    tmp_db1->putScalar( "BoundaryId", 4 );
+    tmp_db1->putScalar( "InputVariable", flowOutVar );
+    tmp_db1->putScalar( "OutputVariable", "FlowInternal" );
     AMP::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowInternal3to1Params(
         new AMP::Operator::MapOperatorParameters( tmp_db1 ) );
     mapflowInternal3to1Params->d_Mesh =
@@ -48,10 +48,10 @@ CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(
     d_Operators.push_back( d_flowInternal3to1 );
     d_Operators.push_back( myparams->d_FlowOperator );
 
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db2( new AMP::InputDatabase( "Dummy" ) );
-    tmp_db2->putInteger( "BoundaryId", 4 );
-    tmp_db2->putString( "InputVariable", "FlowInternal" );
-    tmp_db2->putString( "OutputVariable", flowOutVar );
+    AMP::shared_ptr<AMP::Database> tmp_db2( new AMP::Database( "Dummy" ) );
+    tmp_db2->putScalar( "BoundaryId", 4 );
+    tmp_db2->putScalar( "InputVariable", "FlowInternal" );
+    tmp_db2->putScalar( "OutputVariable", flowOutVar );
     AMP::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowInternal1to3Params(
         new AMP::Operator::MapOperatorParameters( tmp_db2 ) );
     mapflowInternal1to3Params->d_Mesh =

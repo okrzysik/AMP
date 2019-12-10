@@ -1,6 +1,6 @@
 #include "AMP/operators/boundary/libmesh/NeumannVectorCorrection.h"
 #include "AMP/operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 
@@ -31,10 +31,10 @@ NeumannVectorCorrection::NeumannVectorCorrection(
     d_isFluxGaussPtVector = false;
     d_numBndIds           = 0;
 
-    auto feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "FIRST" );
-    auto feFamilyName    = ( params->d_db )->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
-    auto qruleTypeName   = ( params->d_db )->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
-    auto qruleOrderName  = ( params->d_db )->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
+    auto feTypeOrderName = ( params->d_db )->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
+    auto feFamilyName    = ( params->d_db )->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    auto qruleTypeName   = ( params->d_db )->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
+    auto qruleOrderName = ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     // Create the libmesh qruleOrder, qruleType, and FEType
     auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
@@ -63,10 +63,10 @@ void NeumannVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters> &
 
     AMP_INSIST( ( myparams->d_db )->keyExists( "number_of_ids" ),
                 "Key ''number_of_ids'' is missing!" );
-    d_numBndIds = ( myparams->d_db )->getInteger( "number_of_ids" );
+    d_numBndIds = ( myparams->d_db )->getScalar<int>( "number_of_ids" );
 
-    d_isConstantFlux      = ( myparams->d_db )->getBoolWithDefault( "constant_flux", true );
-    d_isFluxGaussPtVector = ( myparams->d_db )->getBoolWithDefault( "IsFluxGaussPtVector", true );
+    d_isConstantFlux      = ( myparams->d_db )->getWithDefault( "constant_flux", true );
+    d_isFluxGaussPtVector = ( myparams->d_db )->getWithDefault( "IsFluxGaussPtVector", true );
 
     d_boundaryIds.resize( d_numBndIds );
     d_dofIds.resize( d_numBndIds );
@@ -78,26 +78,26 @@ void NeumannVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters> &
     for ( int j = 0; j < d_numBndIds; j++ ) {
         sprintf( key, "id_%d", j );
         AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-        d_boundaryIds[j] = ( myparams->d_db )->getInteger( key );
+        d_boundaryIds[j] = ( myparams->d_db )->getScalar<int>( key );
 
         sprintf( key, "number_of_dofs_%d", j );
         AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-        d_numDofIds[j] = ( myparams->d_db )->getInteger( key );
+        d_numDofIds[j] = ( myparams->d_db )->getScalar<int>( key );
 
         sprintf( key, "IsCoupledBoundary_%d", j );
-        d_IsCoupledBoundary[j] = ( params->d_db )->getBoolWithDefault( key, false );
+        d_IsCoupledBoundary[j] = ( params->d_db )->getWithDefault( key, false );
 
         d_dofIds[j].resize( d_numDofIds[j] );
         d_neumannValues[j].resize( d_numDofIds[j] );
         for ( int i = 0; i < d_numDofIds[j]; i++ ) {
             sprintf( key, "dof_%d_%d", j, i );
             AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-            d_dofIds[j][i] = ( myparams->d_db )->getInteger( key );
+            d_dofIds[j][i] = ( myparams->d_db )->getScalar<int>( key );
 
             if ( d_isConstantFlux ) {
                 sprintf( key, "value_%d_%d", j, i );
                 AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-                d_neumannValues[j][i] = ( myparams->d_db )->getDouble( key );
+                d_neumannValues[j][i] = ( myparams->d_db )->getScalar<double>( key );
             } else {
                 d_variableFlux = myparams->d_variableFlux;
             }
@@ -125,7 +125,7 @@ void NeumannVectorCorrection::addRHScorrection(
 
     AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetInputVector( rhsCorrection );
 
-    double gammaValue = ( d_params->d_db )->getDoubleWithDefault( "gamma", 1.0 );
+    double gammaValue = ( d_params->d_db )->getWithDefault<double>( "gamma", 1.0 );
 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal       = myRhs->cloneVector();
     AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
@@ -240,38 +240,38 @@ void NeumannVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_pt
 AMP::shared_ptr<OperatorParameters>
     NeumannVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
+    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
 
-    tmp_db->putString( "FE_ORDER", "FIRST" );
-    tmp_db->putString( "FE_FAMILY", "LAGRANGE" );
-    tmp_db->putString( "QRULE_TYPE", "QGAUSS" );
-    tmp_db->putInteger( "DIMENSION", 2 );
-    tmp_db->putString( "QRULE_ORDER", "DEFAULT" );
-    tmp_db->putInteger( "number_of_ids", d_numBndIds );
-    tmp_db->putBool( "constant_flux", d_isConstantFlux );
+    tmp_db->putScalar( "FE_ORDER", "FIRST" );
+    tmp_db->putScalar( "FE_FAMILY", "LAGRANGE" );
+    tmp_db->putScalar( "QRULE_TYPE", "QGAUSS" );
+    tmp_db->putScalar( "DIMENSION", 2 );
+    tmp_db->putScalar( "QRULE_ORDER", "DEFAULT" );
+    tmp_db->putScalar( "number_of_ids", d_numBndIds );
+    tmp_db->putScalar( "constant_flux", d_isConstantFlux );
 
     char key[100];
     for ( int j = 0; j < d_numBndIds; j++ ) {
         sprintf( key, "id_%d", j );
-        tmp_db->putInteger( key, d_boundaryIds[j] );
+        tmp_db->putScalar( key, d_boundaryIds[j] );
         sprintf( key, "number_of_dofs_%d", j );
-        tmp_db->putInteger( key, d_numDofIds[j] );
+        tmp_db->putScalar( key, d_numDofIds[j] );
         sprintf( key, "IsCoupledBoundary_%d", j );
-        tmp_db->putBool( key, d_IsCoupledBoundary[j] );
+        tmp_db->putScalar( key, d_IsCoupledBoundary[j] );
 
         for ( int i = 0; i < d_numDofIds[j]; i++ ) {
             sprintf( key, "dof_%d_%d", j, i );
-            tmp_db->putInteger( key, d_dofIds[j][i] );
+            tmp_db->putScalar( key, d_dofIds[j][i] );
             if ( d_isConstantFlux ) {
                 sprintf( key, "value_%d_%d", j, i );
-                tmp_db->putInteger( key, d_neumannValues[j][i] );
+                tmp_db->putScalar( key, d_neumannValues[j][i] );
             } else {
                 // d_variableFlux ??
             }
         }
     }
 
-    tmp_db->putBool( "skip_params", true );
+    tmp_db->putScalar( "skip_params", true );
 
     AMP::shared_ptr<NeumannVectorCorrectionParameters> outParams(
         new NeumannVectorCorrectionParameters( tmp_db ) );

@@ -8,8 +8,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -51,9 +49,8 @@ static AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr sub
 static void runTest( const std::string &fname, AMP::UnitTest *ut )
 {
     // Read the input file
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( fname, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( fname );
+    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -81,7 +78,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     auto gauss_map_db = input_db->getDatabase( "SubchannelToGPMap" );
 
     // Create the DOFManagers and the vectors
-    // int DOFsPerNode = map_db->getInteger("DOFsPerObject");
+    // int DOFsPerNode = map_db->getScalar<int>("DOFsPerObject");
     // std::string varName = map_db->getString("VariableName");
     int DOFsPerNode     = 1;
     std::string varName = "Temperature";

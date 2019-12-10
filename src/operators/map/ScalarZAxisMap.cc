@@ -17,7 +17,7 @@ ScalarZAxisMap::ScalarZAxisMap( const AMP::shared_ptr<AMP::Operator::OperatorPar
     auto params = AMP::dynamic_pointer_cast<Map3to1to3Parameters>( p );
     AMP_ASSERT( params );
 
-    int DofsPerObj = params->d_db->getInteger( "DOFsPerObject" );
+    int DofsPerObj = params->d_db->getScalar<int>( "DOFsPerObject" );
     AMP_INSIST( DofsPerObj == 1, "ScalarZAxis is currently only designed for 1 DOF per node" );
 
     // Create the element iterators

@@ -1,5 +1,5 @@
 #include "LinearTimeOperator.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "TimeOperatorParameters.h"
 
 
@@ -28,14 +28,14 @@ LinearTimeOperator::LinearTimeOperator(
 
 LinearTimeOperator::~LinearTimeOperator() = default;
 
-void LinearTimeOperator::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
+void LinearTimeOperator::getFromInput( AMP::shared_ptr<AMP::Database> db )
 {
 
     AMP_INSIST( db->keyExists( "ScalingFactor" ), "key ScalingFactor missing in input" );
 
-    d_dScalingFactor      = db->getDouble( "ScalingFactor" );
-    d_current_time        = db->getDoubleWithDefault( "CurrentTime", 0.0 );
-    d_bAlgebraicComponent = db->getBoolWithDefault( "bAlgebraicComponent", false );
+    d_dScalingFactor      = db->getScalar<double>( "ScalingFactor" );
+    d_current_time        = db->getWithDefault<double>( "CurrentTime", 0.0 );
+    d_bAlgebraicComponent = db->getWithDefault( "bAlgebraicComponent", false );
 }
 
 void LinearTimeOperator::reset(
@@ -103,11 +103,11 @@ LinearTimeOperator::getParameters( const std::string &type,
                                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                    AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
-    AMP::shared_ptr<AMP::InputDatabase> timeOperator_db(
-        new AMP::InputDatabase( "LinearTimeOperatorDatabase" ) );
-    timeOperator_db->putDouble( "CurrentDt", d_dCurrentDt );
-    timeOperator_db->putString( "name", "LinearTimeOperator" );
-    timeOperator_db->putDouble( "ScalingFactor", 1.0 / d_dCurrentDt );
+    AMP::shared_ptr<AMP::Database> timeOperator_db(
+        new AMP::Database( "LinearTimeOperatorDatabase" ) );
+    timeOperator_db->putScalar( "CurrentDt", d_dCurrentDt );
+    timeOperator_db->putScalar( "name", "LinearTimeOperator" );
+    timeOperator_db->putScalar( "ScalingFactor", 1.0 / d_dCurrentDt );
 
     AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(
         new AMP::TimeIntegrator::TimeOperatorParameters( timeOperator_db ) );

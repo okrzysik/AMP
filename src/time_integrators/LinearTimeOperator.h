@@ -81,7 +81,7 @@ public:
 protected:
     LinearTimeOperator();
 
-    void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
+    void getFromInput( AMP::shared_ptr<AMP::Database> db );
 
     bool d_bModifyRhsOperatorMatrix;
 

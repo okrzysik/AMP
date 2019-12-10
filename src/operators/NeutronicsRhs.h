@@ -9,7 +9,7 @@
 #include "AMP/vectors/Variable.h"
 #include "NeutronicsRhsParameters.h"
 
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 
 /*Boost files */
 #include "AMP/utils/shared_ptr.h"
@@ -32,8 +32,7 @@ class NeutronicsRhs : public Operator
 public:
     typedef AMP::shared_ptr<NeutronicsRhsParameters> SP_Parameters;
     typedef AMP::shared_ptr<OperatorParameters> SP_OperatorParameters;
-    typedef std::vector<double> Vec_Dbl;
-    typedef AMP::shared_ptr<Vec_Dbl> SP_Vec_Dbl;
+    typedef AMP::shared_ptr<std::vector<double>> SP_Vec_Dbl;
     typedef AMP::shared_ptr<AMP::Database> SP_Database;
 
     //! Neutronics Input Types
@@ -97,13 +96,13 @@ protected:
     SP_Database d_db;
     bool d_useFixedValue;
     int d_numTimeSteps;
-    Vec_Dbl d_timeStepsInDays;
+    std::vector<double> d_timeStepsInDays;
     SourceType d_type;
-    Vec_Dbl d_fixedValues;
+    std::vector<double> d_fixedValues;
     int d_timeStep;
     double d_timeStepInSeconds;
     AMP::LinearAlgebra::Variable::shared_ptr d_outputVariable;
-    std::vector<Vec_Dbl> d_values;
+    std::vector<std::vector<double>> d_values;
     double d_secondsPerDay;
     SourceType str2id( const std::string &str );
 };

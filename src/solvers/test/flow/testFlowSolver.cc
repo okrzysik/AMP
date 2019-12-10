@@ -13,8 +13,6 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -31,9 +29,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    auto input_db          = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db          = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     AMP::PIO::logAllNodes( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -60,8 +57,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
                 "Key ''FlowFrapconOperator'' is missing!" );
 
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
-    auto flowDatabase = AMP::dynamic_pointer_cast<AMP::InputDatabase>(
-        input_db->getDatabase( "FlowFrapconOperator" ) );
+    auto flowDatabase =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "FlowFrapconOperator" ) );
     auto flowOperator = AMP::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "FlowFrapconOperator", input_db, flowtransportModel ) );
@@ -88,13 +85,13 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     double Tin = 300;
     double Cp, De, G, K, Re, Pr, heff, dz, nP;
 
-    Cp = ( flowDatabase )->getDouble( "Heat_Capacity" );
-    De = ( flowDatabase )->getDouble( "Channel_Diameter" );
-    G  = ( flowDatabase )->getDouble( "Mass_Flux" );
-    K  = ( flowDatabase )->getDouble( "Conductivity" );
-    Re = ( flowDatabase )->getDouble( "Reynolds" );
-    Pr = ( flowDatabase )->getDouble( "Prandtl" );
-    nP = ( flowDatabase )->getDouble( "numpoints" );
+    Cp = ( flowDatabase )->getScalar<double>( "Heat_Capacity" );
+    De = ( flowDatabase )->getScalar<double>( "Channel_Diameter" );
+    G  = ( flowDatabase )->getScalar<double>( "Mass_Flux" );
+    K  = ( flowDatabase )->getScalar<double>( "Conductivity" );
+    Re = ( flowDatabase )->getScalar<double>( "Reynolds" );
+    Pr = ( flowDatabase )->getScalar<double>( "Prandtl" );
+    nP = ( flowDatabase )->getScalar<double>( "numpoints" );
 
     heff = ( 0.023 * K / De ) * pow( Re, 0.8 ) * pow( Pr, 0.4 );
     dz   = 2. / nP;

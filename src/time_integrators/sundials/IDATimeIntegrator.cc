@@ -66,9 +66,9 @@ void IDATimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> pa
 
     // reuse the time integrator database, and put additional fields in
     AMP::shared_ptr<AMP::Database> timeOperator_db = params->d_db;
-    timeOperator_db->putDouble( "CurrentDt", d_current_dt );
-    timeOperator_db->putDouble( "CurrentTime", d_current_time );
-    timeOperator_db->putString( "name", "TimeOperator" );
+    timeOperator_db->putScalar( "CurrentDt", d_current_dt );
+    timeOperator_db->putScalar( "CurrentTime", d_current_time );
+    timeOperator_db->putScalar( "name", "TimeOperator" );
 
     // setup the parameter object for the IDATimeOperator
     AMP::shared_ptr<AMP::TimeIntegrator::IDATimeOperatorParameters> idaTimeOp_Params(
@@ -92,9 +92,9 @@ void IDATimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> pa
                 AMP::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperatorParameters>(
                     idaTimeOp->getParameters( "Jacobian", d_solution ) );
             AMP::shared_ptr<AMP::Database> timeOperator_db = linearTimeOperatorParams->d_db;
-            timeOperator_db->putDouble( "CurrentDt", d_current_dt );
-            timeOperator_db->putDouble( "CurrentTime", d_current_time );
-            timeOperator_db->putString( "name", "TimeOperator" );
+            timeOperator_db->putScalar( "CurrentDt", d_current_dt );
+            timeOperator_db->putScalar( "CurrentTime", d_current_time );
+            timeOperator_db->putScalar( "name", "TimeOperator" );
 
             d_pLinearTimeOperator.reset( new LinearTimeOperator( linearTimeOperatorParams ) );
         } else {
@@ -240,41 +240,41 @@ void IDATimeIntegrator::updateSolution()
 void IDATimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 {
     if ( input_db->keyExists( "bLinearMassOperator" ) ) {
-        d_bLinearMassOperator = input_db->getBool( "bLinearMassOperator" );
+        d_bLinearMassOperator = input_db->getScalar<bool>( "bLinearMassOperator" );
     } else {
         AMP_ERROR( d_object_name << " -- Key data `bLinearMassOperator' missing in input." );
     }
 
     if ( input_db->keyExists( "bLinearRhsOperator" ) ) {
-        d_bLinearRhsOperator = input_db->getBool( "bLinearRhsOperator" );
+        d_bLinearRhsOperator = input_db->getScalar<bool>( "bLinearRhsOperator" );
     } else {
         AMP_ERROR( d_object_name << " -- Key data `bLinearRhsOperator' missing in input." );
     }
 
     if ( input_db->keyExists( "linear_solver_type" ) ) {
-        d_linear_solver_type = input_db->getInteger( "linear_solver_type" );
+        d_linear_solver_type = input_db->getScalar<int>( "linear_solver_type" );
     } else {
         AMP_ERROR( d_object_name << " -- Key data `linear_solver_type' missing in input." );
     }
 
     if ( input_db->keyExists( "relative_tolerance" ) ) {
-        d_relative_tolerance = input_db->getDouble( "relative_tolerance" );
+        d_relative_tolerance = input_db->getScalar<double>( "relative_tolerance" );
     } else {
         AMP_ERROR( d_object_name << " -- Key data `relative_tolerance' missing in input." );
     }
 
     if ( input_db->keyExists( "absolute_tolerance" ) ) {
-        d_absolute_tolerance = input_db->getDouble( "absolute_tolerance" );
+        d_absolute_tolerance = input_db->getScalar<double>( "absolute_tolerance" );
     } else {
         AMP_ERROR( d_object_name << " -- Key data `absolute_tolerance' missing in input." );
     }
 
-    d_bCallCalcIC        = input_db->getBoolWithDefault( "CallCalcIC", true );
-    d_bUsePreconditioner = input_db->getBoolWithDefault( "usePreconditioner", true );
+    d_bCallCalcIC        = input_db->getWithDefault( "CallCalcIC", true );
+    d_bUsePreconditioner = input_db->getWithDefault( "usePreconditioner", true );
 
     d_createLinearOperatorInternally =
-        input_db->getBoolWithDefault( "createLinearTimeOperatorInternally", false );
-    d_bManufacturedProblem = input_db->getBoolWithDefault( "bManufacturedProblem", false );
+        input_db->getWithDefault( "createLinearTimeOperatorInternally", false );
+    d_bManufacturedProblem = input_db->getWithDefault( "bManufacturedProblem", false );
 }
 
 
@@ -453,8 +453,8 @@ int IDATimeIntegrator::IDAPrecSetup( realtype tt,
         AMP::shared_ptr<AMP::Operator::OperatorParameters> jacParams =
             user_data->getIDATimeOperator()->getParameters( "Jacobian", amp_yy );
         AMP::shared_ptr<AMP::Database> &db = jacParams->d_db;
-        db->putDouble( "ScalingFactor", cj );
-        db->putDouble( "CurrentTime", tt );
+        db->putScalar( "ScalingFactor", cj );
+        db->putScalar( "CurrentTime", tt );
         AMP::shared_ptr<AMP::Solver::SolverStrategy> pSolver = user_data->getPreconditioner();
         // double currentTime = user_data->getCurrentTime();
 

@@ -43,7 +43,7 @@ AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
         mesh = AMP::make_shared<AMP::Mesh::MultiMesh>( params );
     } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
-        auto filename = database->getStringWithDefault( "FileName", "" );
+        auto filename = database->getWithDefault<std::string>( "FileName", "" );
         if ( filename.substr( std::max<int>( filename.length(), 4 ) - 4 ) == ".stl" ) {
             // We are reading an stl file
             mesh = AMP::Mesh::TriangleMesh<2, 3>::generate( params );
@@ -97,10 +97,10 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     size_t meshSize = 0;
     if ( database->keyExists( "NumberOfElements" ) ) {
         // User specified the number of elements, this should override everything
-        meshSize = (size_t) database->getInteger( "NumberOfElements" );
+        meshSize = (size_t) database->getScalar<int>( "NumberOfElements" );
         // Adjust the number of elements by a weight if desired
         if ( database->keyExists( "Weight" ) ) {
-            double weight = database->getDouble( "Weight" );
+            double weight = database->getScalar<double>( "Weight" );
             meshSize      = (size_t) ceil( weight * ( (double) meshSize ) );
         }
         return meshSize;
@@ -113,7 +113,7 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         meshSize = AMP::Mesh::MultiMesh::estimateMeshSize( params );
     } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
-        auto filename = database->getStringWithDefault( "FileName", "" );
+        auto filename = database->getWithDefault<std::string>( "FileName", "" );
         if ( filename.substr( std::max<int>( filename.length(), 4 ) - 4 ) == ".stl" ) {
             // We are reading an stl file
             meshSize = AMP::Mesh::TriangleMesh<2, 3>::estimateMeshSize( params );
@@ -136,7 +136,7 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         AMP_ERROR( "AMP was compiled without support for STKMesh" );
 #endif
     } else if ( database->keyExists( "NumberOfElements" ) ) {
-        int NumberOfElements = database->getInteger( "NumberOfElements" );
+        int NumberOfElements = database->getScalar<int>( "NumberOfElements" );
         meshSize             = NumberOfElements;
     } else {
         // Unknown mesh type

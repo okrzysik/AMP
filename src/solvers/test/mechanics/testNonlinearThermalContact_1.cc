@@ -34,8 +34,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -57,9 +55,9 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     //  AMP::AMPManager::startup();
     //  AMP::Materials::initialize();
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     AMP::PIO::logAllNodes( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -110,7 +108,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Variable::shared_ptr TemperatureVar(
         new AMP::LinearAlgebra::Variable( "Temperature" ) );
 
-    double intguess = input_db->getDoubleWithDefault( "InitialGuess", 400 );
+    double intguess = input_db->getWithDefault<double>( "InitialGuess", 400 );
 
     AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvin =
         AMP::LinearAlgebra::createVector( nodalDofMap, TemperatureVar );
@@ -240,10 +238,10 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     //---------------------------------------------
 
     AMP_INSIST( input_db->keyExists( "GapOperator" ), "Key ''GapOperator'' is missing!" );
-    AMP::shared_ptr<AMP::InputDatabase> gapDatabase =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( "GapOperator" ) );
+    AMP::shared_ptr<AMP::Database> gapDatabase =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "GapOperator" ) );
 
-    double heff = ( gapDatabase )->getDouble( "Convective_Coefficient" );
+    double heff = ( gapDatabase )->getScalar<double>( "Convective_Coefficient" );
     AMP::shared_ptr<AMP::LinearAlgebra::Variable> gapVariable(
         new AMP::LinearAlgebra::Variable( "Gap" ) );
 
@@ -299,16 +297,16 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //-------------------------------------
 
-    AMP::shared_ptr<AMP::InputDatabase> map3dto1d_db1 =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( "MapPelletto1D" ) );
+    AMP::shared_ptr<AMP::Database> map3dto1d_db1 =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "MapPelletto1D" ) );
     AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams1(
         new AMP::Operator::MapOperatorParameters( map3dto1d_db1 ) );
     map3dto1dParams1->d_Mesh = meshAdapter1;
     AMP::shared_ptr<AMP::Operator::Map3Dto1D> map1ToLowDim(
         new AMP::Operator::Map3Dto1D( map3dto1dParams1 ) );
 
-    AMP::shared_ptr<AMP::InputDatabase> map1dto3d_db1 =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( "Map1DtoClad" ) );
+    AMP::shared_ptr<AMP::Database> map1dto3d_db1 =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "Map1DtoClad" ) );
     AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams1(
         new AMP::Operator::MapOperatorParameters( map1dto3d_db1 ) );
     map1dto3dParams1->d_Mesh = meshAdapter2;
@@ -322,16 +320,16 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     map1ToLowDim->setZLocations( map1ToHighDim->getZLocations() );
 
-    AMP::shared_ptr<AMP::InputDatabase> map3dto1d_db2 =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( "MapCladto1D" ) );
+    AMP::shared_ptr<AMP::Database> map3dto1d_db2 =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "MapCladto1D" ) );
     AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams2(
         new AMP::Operator::MapOperatorParameters( map3dto1d_db2 ) );
     map3dto1dParams2->d_Mesh = meshAdapter2;
     AMP::shared_ptr<AMP::Operator::Map3Dto1D> map2ToLowDim(
         new AMP::Operator::Map3Dto1D( map3dto1dParams2 ) );
 
-    AMP::shared_ptr<AMP::InputDatabase> map1dto3d_db2 =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase( "Map1DtoPellet" ) );
+    AMP::shared_ptr<AMP::Database> map1dto3d_db2 =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "Map1DtoPellet" ) );
     AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams2(
         new AMP::Operator::MapOperatorParameters( map1dto3d_db2 ) );
     map1dto3dParams2->d_Mesh = meshAdapter1;
@@ -352,17 +350,16 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     robinBoundaryOp1 =
         ( AMP::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( boundaryOp1 ) );
 
-    AMP::shared_ptr<AMP::InputDatabase> boundaryDatabase1 =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>(
-            input_db->getDatabase( nonlinearThermalDatabase1->getString( "BoundaryOperator" ) ) );
-    //  AMP::shared_ptr<AMP::InputDatabase> robinboundaryDatabase1 =
-    //  AMP::dynamic_pointer_cast<AMP::InputDatabase>(
+    AMP::shared_ptr<AMP::Database> boundaryDatabase1 = AMP::dynamic_pointer_cast<AMP::Database>(
+        input_db->getDatabase( nonlinearThermalDatabase1->getString( "BoundaryOperator" ) ) );
+    //  AMP::shared_ptr<AMP::Database> robinboundaryDatabase1 =
+    //  AMP::dynamic_pointer_cast<AMP::Database>(
     //  boundaryDatabase1->getDatabase("RobinVectorCorrection"));
-    AMP::shared_ptr<AMP::InputDatabase> robinboundaryDatabase1 =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>( boundaryDatabase1 );
+    AMP::shared_ptr<AMP::Database> robinboundaryDatabase1 =
+        AMP::dynamic_pointer_cast<AMP::Database>( boundaryDatabase1 );
 
-    robinboundaryDatabase1->putBool( "constant_flux", false );
-    robinboundaryDatabase1->putBool( "skip_matrix_correction", true );
+    robinboundaryDatabase1->putScalar( "constant_flux", false );
+    robinboundaryDatabase1->putScalar( "skip_matrix_correction", true );
     AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters1(
         new AMP::Operator::NeumannVectorCorrectionParameters( robinboundaryDatabase1 ) );
 
@@ -375,12 +372,12 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         ( AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator>( boundaryOp2 ) )
             ->getBoundaryOperator( 0 );
 
-    AMP::shared_ptr<AMP::InputDatabase> robinboundaryDatabase2 =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>(
+    AMP::shared_ptr<AMP::Database> robinboundaryDatabase2 =
+        AMP::dynamic_pointer_cast<AMP::Database>(
             input_db->getDatabase( "RobinMatrixCorrection" ) );
 
-    robinboundaryDatabase2->putBool( "constant_flux", false );
-    robinboundaryDatabase2->putBool( "skip_matrix_correction", true );
+    robinboundaryDatabase2->putScalar( "constant_flux", false );
+    robinboundaryDatabase2->putScalar( "skip_matrix_correction", true );
     AMP::shared_ptr<AMP::Operator::RobinMatrixCorrectionParameters> correctionParameters2(
         new AMP::Operator::RobinMatrixCorrectionParameters( robinboundaryDatabase2 ) );
 
@@ -410,7 +407,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     bool testPassed = false;
 
-    int maxIt = input_db->getIntegerWithDefault( "max_iterations", 100 );
+    int maxIt = input_db->getWithDefault( "max_iterations", 100 );
 
     while ( cnt < maxIt ) {
         cnt++;

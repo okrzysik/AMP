@@ -48,14 +48,14 @@ public:
 
         std::vector<AMP::Mesh::MeshID> meshIDs = params->d_Mesh->getBaseMeshIDs();
         AMP_INSIST( params->d_db->keyExists( "MasterMeshIndex" ), "key not found" );
-        d_MasterMeshID = meshIDs[params->d_db->getInteger( "MasterMeshIndex" )];
+        d_MasterMeshID = meshIDs[params->d_db->getScalar<int>( "MasterMeshIndex" )];
         AMP_INSIST( params->d_db->keyExists( "SlaveMeshIndex" ), "key not found" );
-        d_SlaveMeshID = meshIDs[params->d_db->getInteger( "SlaveMeshIndex" )];
+        d_SlaveMeshID = meshIDs[params->d_db->getScalar<int>( "SlaveMeshIndex" )];
 
         AMP_INSIST( params->d_db->keyExists( "MasterBoundaryID" ), "key not found" );
-        d_MasterBoundaryID = params->d_db->getInteger( "MasterBoundaryID" );
+        d_MasterBoundaryID = params->d_db->getScalar<int>( "MasterBoundaryID" );
         AMP_INSIST( params->d_db->keyExists( "SlaveBoundaryID" ), "key not found" );
-        d_SlaveBoundaryID = params->d_db->getInteger( "SlaveBoundaryID" );
+        d_SlaveBoundaryID = params->d_db->getScalar<int>( "SlaveBoundaryID" );
 
         size_t rank          = d_GlobalComm.getRank();
         std::string fileName = "debug_operator_" + AMP::Utilities::intToString( rank );

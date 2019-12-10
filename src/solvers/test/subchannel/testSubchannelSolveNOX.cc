@@ -44,8 +44,6 @@
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -128,9 +126,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     globalComm.barrier();
 
     // Read the input file
-    auto global_input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, global_input_db );
-    global_input_db->printClassData( AMP::plog );
+    auto global_input_db = AMP::Database::parseInputFile( input_file );
+    global_input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     auto database   = global_input_db->getDatabase( "Mesh" );
@@ -395,8 +392,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             auto operator_db = global_input_db->getDatabase( prefix + "NonlinearThermalOperator" );
             auto curBCdb =
                 global_input_db->getDatabase( operator_db->getString( "BoundaryOperator" ) );
-            auto opNames = curBCdb->getStringArray( "boundaryOperators" );
-            int opNumber = curBCdb->getInteger( "numberOfBoundaryOperators" );
+            auto opNames = curBCdb->getVector<std::string>( "boundaryOperators" );
+            int opNumber = curBCdb->getScalar<int>( "numberOfBoundaryOperators" );
             for ( int curBCentry = 0; curBCentry != opNumber; curBCentry++ ) {
                 if ( opNames[curBCentry] == "P2CRobinVectorCorrection" ) {
                     auto gapBC = AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
@@ -414,7 +411,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                     p2pBC->reset( p2pBC->getOperatorParameters() );
                 } else if ( opNames[curBCentry] == "C2WBoundaryVectorCorrection" ) {
                     auto thisDb    = global_input_db->getDatabase( opNames[curBCentry] );
-                    bool isCoupled = thisDb->getBoolWithDefault( "IsCoupledBoundary_0", false );
+                    bool isCoupled = thisDb->getWithDefault( "IsCoupledBoundary_0", false );
                     if ( isCoupled ) {
                         auto c2wBC =
                             AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
@@ -465,8 +462,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         thermalSubchannelToCladMap->setVector( subsetTheramlVec );
         densitySubchannelToCladMap->setVector( density_map_vec );
     }
-    auto emptyDb = AMP::make_shared<AMP::InputDatabase>( "empty" );
-    emptyDb->putInteger( "print_info_level", 0 );
+    auto emptyDb = AMP::make_shared<AMP::Database>( "empty" );
+    emptyDb->putScalar( "print_info_level", 0 );
     auto coupledChannelMapOperatorParams =
         AMP::make_shared<AMP::Operator::CoupledChannelToCladMapOperatorParameters>( emptyDb );
     coupledChannelMapOperatorParams->d_variable               = flowVariable;
@@ -482,7 +479,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     mapsColumn->append( coupledChannelMapOperator );
 
     if ( pinMesh.get() != nullptr ) {
-        auto copyOp_db = AMP::dynamic_pointer_cast<AMP::InputDatabase>(
+        auto copyOp_db = AMP::dynamic_pointer_cast<AMP::Database>(
             global_input_db->getDatabase( "CopyOperator" ) );
         auto vecCopyOperatorParams =
             AMP::make_shared<AMP::Operator::VectorCopyOperatorParameters>( copyOp_db );
@@ -560,8 +557,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                 linearColumnOperator->append( subchannelLinearOperator );
                 columnPreconditioner->append( subchannelPreconditioner );
             } else if ( preconditioner == "Banded" ) {
-                subchannelPreconditioner_db->putInteger( "KL", 3 );
-                subchannelPreconditioner_db->putInteger( "KU", 3 );
+                subchannelPreconditioner_db->putScalar( "KL", 3 );
+                subchannelPreconditioner_db->putScalar( "KU", 3 );
                 auto subchannelPreconditioner =
                     AMP::make_shared<AMP::Solver::BandedSolver>( subchannelPreconditionerParams );
                 linearColumnOperator->append( subchannelLinearOperator );
@@ -607,7 +604,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     globalComm.bcast( &range[0], 6, root_subchannel );
     // Desired power of the fuel pin (W)
     double P = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
-                   ->getDouble( "Rod_Power" );
+                   ->getScalar<double>( "Rod_Power" );
     // GeomType::Volume of fuel in a 3.81m pin
     if ( pinMesh.get() != nullptr ) {
         const double V = 1.939e-4;
@@ -637,10 +634,10 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     if ( subchannelMesh.get() != nullptr ) {
         // get exit pressure
         double Pout = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
-                          ->getDouble( "Exit_Pressure" );
+                          ->getScalar<double>( "Exit_Pressure" );
         // get inlet temperature
         double Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
-                         ->getDouble( "Inlet_Temperature" );
+                         ->getScalar<double>( "Inlet_Temperature" );
         // compute inlet enthalpy
         std::map<std::string, AMP::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert(
@@ -759,7 +756,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         }
         flowTempVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         double Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
-                         ->getDouble( "Inlet_Temperature" );
+                         ->getScalar<double>( "Inlet_Temperature" );
         deltaFlowTempVec = flowTempVec->cloneVector();
         deltaFlowTempVec->copyVector( flowTempVec );
         deltaFlowTempVec->addScalar( deltaFlowTempVec, -Tin );

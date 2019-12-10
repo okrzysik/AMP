@@ -11,7 +11,7 @@ namespace Operator {
 class MapOperatorParameters : public OperatorParameters
 {
 public:
-    explicit MapOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+    explicit MapOperatorParameters( AMP::shared_ptr<AMP::Database> db )
         : OperatorParameters( db ), d_MapComm( AMP_COMM_NULL )
     {
     }

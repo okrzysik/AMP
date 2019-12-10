@@ -133,7 +133,7 @@ public:
 protected:
     ColumnTimeOperator();
 
-    void getFromInput( const AMP::shared_ptr<AMP::Database> & );
+    void getFromInput( AMP::shared_ptr<AMP::Database> );
 
     /**
      * rhs and mass operators are intentionally chosen to be column

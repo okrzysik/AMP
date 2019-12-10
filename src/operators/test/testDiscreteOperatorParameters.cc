@@ -2,8 +2,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/shared_ptr.h"
@@ -17,7 +15,7 @@
 class TestParameters : public AMP::Operator::OperatorParameters
 {
 public:
-    explicit TestParameters( const AMP::shared_ptr<AMP::Database> &db )
+    explicit TestParameters( AMP::shared_ptr<AMP::Database> db )
         : AMP::Operator::OperatorParameters( db )
     {
     }
@@ -31,9 +29,8 @@ static void runTest( AMP::UnitTest *ut )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     AMP::shared_ptr<AMP::Database> test_db = input_db->getDatabase( "Test" );
 

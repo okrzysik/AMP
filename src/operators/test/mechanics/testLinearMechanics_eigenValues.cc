@@ -9,8 +9,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -34,9 +32,9 @@ static void myTest( AMP::UnitTest *ut )
     int npes = globalComm.getSize();
 
     if ( npes == 1 ) {
-        AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-        AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-        input_db->printClassData( AMP::plog );
+
+        auto input_db = AMP::Database::parseInputFile( input_file );
+        input_db->print( AMP::plog );
 
         AMP_INSIST( input_db->keyExists( "OutputFileName" ), "Key ''OutputFileName'' is missing!" );
         std::string outFileName = input_db->getString( "OutputFileName" );
@@ -47,7 +45,7 @@ static void myTest( AMP::UnitTest *ut )
 
         AMP_INSIST( input_db->keyExists( "DISTORT_ELEMENT" ),
                     "Key ''DISTORT_ELEMENT'' is missing!" );
-        bool distortElement = input_db->getBool( "DISTORT_ELEMENT" );
+        bool distortElement = input_db->getScalar<bool>( "DISTORT_ELEMENT" );
 
         AMP::shared_ptr<::Mesh> mesh( new ::Mesh( 3 ) );
         MeshTools::Generation::build_cube(

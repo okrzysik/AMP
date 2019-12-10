@@ -36,23 +36,23 @@ ThermalVonMisesMatModel::ThermalVonMisesMatModel(
 
     if ( d_useMaterialsLibrary == false ) {
 
-        default_E = ( params->d_db )->getDouble( "Youngs_Modulus" );
+        default_E = ( params->d_db )->getScalar<double>( "Youngs_Modulus" );
 
-        default_Nu = ( params->d_db )->getDouble( "Poissons_Ratio" );
+        default_Nu = ( params->d_db )->getScalar<double>( "Poissons_Ratio" );
 
-        default_alpha = ( params->d_db )->getDouble( "THERMAL_EXPANSION_COEFFICIENT" );
+        default_alpha = ( params->d_db )->getScalar<double>( "THERMAL_EXPANSION_COEFFICIENT" );
     }
 
-    d_H = ( params->d_db )->getDouble( "Linear_Strain_Hardening" );
+    d_H = ( params->d_db )->getScalar<double>( "Linear_Strain_Hardening" );
 
-    d_Sig0 = ( params->d_db )->getDouble( "Elastic_Yield_Stress" );
+    d_Sig0 = ( params->d_db )->getScalar<double>( "Elastic_Yield_Stress" );
 
-    default_TEMPERATURE = ( params->d_db )->getDoubleWithDefault( "Default_Temperature", 310.0 );
+    default_TEMPERATURE = ( params->d_db )->getWithDefault<double>( "Default_Temperature", 310.0 );
 
-    default_BURNUP = ( params->d_db )->getDoubleWithDefault( "Default_Burnup", 0.0 );
+    default_BURNUP = ( params->d_db )->getWithDefault<double>( "Default_Burnup", 0.0 );
 
     default_OXYGEN_CONCENTRATION =
-        ( params->d_db )->getDoubleWithDefault( "Default_Oxygen_Concentration", 0.0 );
+        ( params->d_db )->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
 
     d_Is_Init_Called = false;
 

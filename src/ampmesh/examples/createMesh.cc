@@ -3,8 +3,7 @@
 
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 
@@ -18,8 +17,7 @@ void createMesh( AMP::UnitTest *ut, const std::string &input_file )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
+    auto input_db = AMP::Database::parseInputFile( input_file );
 
     // Get the Mesh database and create the mesh parameters
     AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );

@@ -24,8 +24,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -50,9 +48,8 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     //--------------------------------------------------
     //   Create the Mesh.
@@ -125,7 +122,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto fickFrozen  = fickOp->getFrozen();
     auto soretFrozen = soretOp->getFrozen();
 
-    double lenscale = input_db->getDouble( "LengthScale" );
+    double lenscale = input_db->getScalar<double>( "LengthScale" );
     soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setToScalar(
         300. ); // Fill in manufactured solution
     int zeroGhostWidth = 0;
@@ -145,7 +142,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial guess
 
-    double initialValue = input_db->getDouble( "InitialValue" );
+    double initialValue = input_db->getScalar<double>( "InitialValue" );
     solVec->setToScalar( initialValue );
     double initialGuessNorm = solVec->L2Norm();
     std::cout << "initial guess norm = " << initialGuessNorm << "\n";

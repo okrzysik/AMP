@@ -9,8 +9,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -93,9 +91,8 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
 
     // get input database from input file
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // create mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
@@ -156,9 +153,12 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     subchannelOpParams->d_Mesh                   = subchannelMesh;
     subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
     subchannelOpParams->d_frozenSolution         = FrozenVec;
-    subchannelOpParams->clad_x = input_db->getDatabase( "CladProperties" )->getDoubleArray( "x" );
-    subchannelOpParams->clad_y = input_db->getDatabase( "CladProperties" )->getDoubleArray( "y" );
-    subchannelOpParams->clad_d = input_db->getDatabase( "CladProperties" )->getDoubleArray( "d" );
+    subchannelOpParams->clad_x =
+        input_db->getDatabase( "CladProperties" )->getVector<double>( "x" );
+    subchannelOpParams->clad_y =
+        input_db->getDatabase( "CladProperties" )->getVector<double>( "y" );
+    subchannelOpParams->clad_d =
+        input_db->getDatabase( "CladProperties" )->getVector<double>( "d" );
     auto subchannelOperator =
         AMP::make_shared<AMP::Operator::SubchannelTwoEqLinearOperator>( subchannelOpParams );
 

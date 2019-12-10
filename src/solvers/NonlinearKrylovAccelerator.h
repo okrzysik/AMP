@@ -164,7 +164,7 @@ public:
 
 protected:
 private:
-    void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
+    void getFromInput( AMP::shared_ptr<AMP::Database> db );
 
     bool d_bIsSubspace;                 /* boolean: a nonempty subspace */
     bool d_bContainsPendingVecs;        /* contains pending vectors -- boolean */

@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -47,8 +47,8 @@ static void nekPipeOperator( AMP::UnitTest *ut )
 
     // Build new database
     AMP::pout << "Building Input Database" << std::endl;
-    AMP::shared_ptr<AMP::InputDatabase> nekDB( new AMP::InputDatabase( "Nek_DB" ) );
-    nekDB->putString( "NekProblemName", "pipe" );
+    AMP::shared_ptr<AMP::Database> nekDB( new AMP::Database( "Nek_DB" ) );
+    nekDB->putScalar<std::string>( "NekProblemName", "pipe" );
 
     // Build operator params
     typedef AMP::Operator::NekMoabOperatorParameters NekOpParams;
@@ -73,14 +73,14 @@ static void nekPipeOperator( AMP::UnitTest *ut )
 
     // Read AMP pellet mesh from file
     AMP::shared_ptr<AMP::Database> meshDB = nekDB->putDatabase( "Mesh" );
-    meshDB->putString( "FileName", "pellet_1x.e" );
-    meshDB->putString( "MeshName", "fuel" );
-    meshDB->putString( "MeshType", "libMesh" );
-    meshDB->putInteger( "dim", 3 );
-    meshDB->putDouble( "x_offset", 0.0 );
-    meshDB->putDouble( "y_offset", 0.0 );
-    meshDB->putDouble( "z_offset", 0.0 );
-    meshDB->putInteger( "NumberOfElements", 300 );
+    meshDB->putScalar<std::string>( "FileName", "pellet_1x.e" );
+    meshDB->putScalar<std::string>( "MeshName", "fuel" );
+    meshDB->putScalar<std::string>( "MeshType", "libMesh" );
+    meshDB->putScalar<int>( "dim", 3 );
+    meshDB->putScalar<double>( "x_offset", 0.0 );
+    meshDB->putScalar<double>( "y_offset", 0.0 );
+    meshDB->putScalar<double>( "z_offset", 0.0 );
+    meshDB->putScalar<int>( "NumberOfElements", 300 );
 
 
     // Create Mesh
@@ -104,8 +104,8 @@ static void nekPipeOperator( AMP::UnitTest *ut )
     typedef AMP::Operator::MoabMapOperator MoabMap;
     typedef AMP::shared_ptr<MoabMap> SP_MoabMap;
 
-    nekDB->putString( "MoabMapVariable", "VPRESS" );
-    nekDB->putString( "InterpolateToType", "GaussPoint" );
+    nekDB->putScalar<std::string>( "MoabMapVariable", "VPRESS" );
+    nekDB->putScalar<std::string>( "InterpolateToType", "GaussPoint" );
     SP_MoabMapParams mapParams( new MoabMapParams( nekDB ) );
     mapParams->setMoabOperator( nekOp );
     mapParams->setMesh( mesh );
@@ -146,7 +146,7 @@ static void nekPipeOperator( AMP::UnitTest *ut )
     moabGPMap->apply( nullVec, nullVec, r_gp, 0.0, 0.0 );
 
     AMP::pout << "Creating Node-Based Moab Map Operator" << std::endl;
-    nekDB->putString( "InterpolateToType", "GeomType::Vertex" );
+    nekDB->putScalar<std::string>( "InterpolateToType", "GeomType::Vertex" );
     SP_MoabMap moabNodeMap( new MoabMap( mapParams ) );
 
     moabNodeMap->apply( nullVec, nullVec, r_node, 0.0, 0.0 );

@@ -21,10 +21,7 @@ namespace Operator {
 class PowerShapeParameters : public OperatorParameters
 {
 public:
-    explicit PowerShapeParameters( const AMP::shared_ptr<AMP::Database> &db )
-        : OperatorParameters( db )
-    {
-    }
+    explicit PowerShapeParameters( AMP::shared_ptr<AMP::Database> db ) : OperatorParameters( db ) {}
 };
 } // namespace Operator
 } // namespace AMP

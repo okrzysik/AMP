@@ -41,13 +41,16 @@ void computeTemperatureRhsVector(
     AMP::shared_ptr<::FEBase> fe;
     AMP::shared_ptr<::QBase> qrule;
 
-    std::string feTypeOrderName = elementRhsDatabase->getStringWithDefault( "FE_ORDER", "FIRST" );
-    auto feTypeOrder            = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+    std::string feTypeOrderName =
+        elementRhsDatabase->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
+    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
-    std::string feFamilyName = elementRhsDatabase->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
-    auto feFamily            = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    std::string feFamilyName =
+        elementRhsDatabase->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    auto feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
-    std::string qruleTypeName = elementRhsDatabase->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
+    std::string qruleTypeName =
+        elementRhsDatabase->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
     auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     const unsigned int dimension = 3;
@@ -56,7 +59,7 @@ void computeTemperatureRhsVector(
     fe.reset( (::FEBase::build( dimension, ( *feType ) ) ).release() );
 
     std::string qruleOrderName =
-        elementRhsDatabase->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
+        elementRhsDatabase->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
     libMeshEnums::Order qruleOrder;
     if ( qruleOrderName == "DEFAULT" ) {
         qruleOrder = feType->default_quadrature_order();
@@ -76,7 +79,7 @@ void computeTemperatureRhsVector(
     double default_BURNUP, default_OXYGEN_CONCENTRATION;
 
     bool useMaterialsLibrary =
-        materialModelDatabase->getBoolWithDefault( "USE_MATERIALS_LIBRARY", false );
+        materialModelDatabase->getWithDefault( "USE_MATERIALS_LIBRARY", false );
     if ( useMaterialsLibrary == true ) {
         AMP_INSIST( ( materialModelDatabase->keyExists( "Material" ) ),
                     "Key ''Material'' is missing!" );
@@ -93,14 +96,14 @@ void computeTemperatureRhsVector(
                     "Missing key: Poissons_Ratio" );
 
         thermalExpansionCoefficient =
-            materialModelDatabase->getDouble( "THERMAL_EXPANSION_COEFFICIENT" );
-        youngsModulus = materialModelDatabase->getDouble( "Youngs_Modulus" );
-        poissonsRatio = materialModelDatabase->getDouble( "Poissons_Ratio" );
+            materialModelDatabase->getScalar<double>( "THERMAL_EXPANSION_COEFFICIENT" );
+        youngsModulus = materialModelDatabase->getScalar<double>( "Youngs_Modulus" );
+        poissonsRatio = materialModelDatabase->getScalar<double>( "Poissons_Ratio" );
     }
 
-    default_BURNUP = materialModelDatabase->getDoubleWithDefault( "Default_Burnup", 0.0 );
+    default_BURNUP = materialModelDatabase->getWithDefault<double>( "Default_Burnup", 0.0 );
     default_OXYGEN_CONCENTRATION =
-        materialModelDatabase->getDoubleWithDefault( "Default_Oxygen_Concentration", 0.0 );
+        materialModelDatabase->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
 
     AMP::Discretization::DOFManager::shared_ptr dof_map_0 = rInternal->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr dof_map_1 = currTemperatureVec->getDOFManager();

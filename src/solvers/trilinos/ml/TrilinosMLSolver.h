@@ -186,7 +186,7 @@ protected:
     void reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                         AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
-    void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
+    void getFromInput( AMP::shared_ptr<AMP::Database> db );
 
     void convertMLoptionsToTeuchosParameterList();
 

@@ -8,8 +8,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -35,9 +33,8 @@ static void myTest( AMP::UnitTest *ut )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    auto outerInput_db = AMP::make_shared<AMP::InputDatabase>( "outerInput_db" );
-    AMP::InputManager::getManager()->parseInputFile( outerInput_file, outerInput_db );
-    outerInput_db->printClassData( AMP::plog );
+    auto outerInput_db = AMP::Database::parseInputFile( outerInput_file );
+    outerInput_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP_INSIST( outerInput_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
@@ -49,7 +46,7 @@ static void myTest( AMP::UnitTest *ut )
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
 
     AMP_INSIST( outerInput_db->keyExists( "number_of_tests" ), "key missing!" );
-    int numTests = outerInput_db->getInteger( "number_of_tests" );
+    int numTests = outerInput_db->getScalar<int>( "number_of_tests" );
 
     for ( int i = 0; i < numTests; i++ ) {
         char key[256];
@@ -60,19 +57,18 @@ static void myTest( AMP::UnitTest *ut )
         std::cout << "Running test " << i + 1 << " of " << numTests << ": " << innerInput_file
                   << std::endl;
 
-        auto innerInput_db = AMP::make_shared<AMP::InputDatabase>( "innerInput_db" );
-        AMP::InputManager::getManager()->parseInputFile( innerInput_file, innerInput_db );
-        innerInput_db->printClassData( AMP::plog );
+        auto innerInput_db = AMP::Database::parseInputFile( innerInput_file );
+        innerInput_db->print( AMP::plog );
 
         AMP_INSIST( innerInput_db->keyExists( "numberOfOperators" ),
                     "key missing!  " + innerInput_file );
 
-        const int numberOfOperators = innerInput_db->getInteger( "numberOfOperators" );
+        const int numberOfOperators = innerInput_db->getScalar<int>( "numberOfOperators" );
 
         AMP_INSIST( numberOfOperators >= 1, "more than zero operators need to be specified" );
 
         AMP_INSIST( innerInput_db->keyExists( "dofsPerNode" ), "key missing!  " + innerInput_file );
-        std::vector<int> dofsPerNodeArr = innerInput_db->getIntegerArray( "dofsPerNode" );
+        std::vector<int> dofsPerNodeArr = innerInput_db->getVector<int>( "dofsPerNode" );
 
         // create a column operator object
         AMP::shared_ptr<AMP::Operator::OperatorParameters> params;
@@ -120,8 +116,8 @@ static void myTest( AMP::UnitTest *ut )
             }
 
             if ( model_db ) {
-                defTemp = model_db->getDouble( "Default_Temperature" );
-                defConc = model_db->getDouble( "Default_Concentration" );
+                defTemp = model_db->getScalar<double>( "Default_Temperature" );
+                defConc = model_db->getScalar<double>( "Default_Concentration" );
             }
         }
 

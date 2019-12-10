@@ -6,8 +6,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -96,14 +94,13 @@ static void setGpBoundary( int id,
 static void runTest( const std::string &fname, AMP::UnitTest *ut )
 {
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( fname, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( fname );
+    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     auto mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto params  = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
@@ -113,23 +110,20 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     auto map_db = input_db->getDatabase( "MeshToMeshMaps" );
 
     // Create a simple DOFManager and the vectors
-    int DOFsPerObject   = map_db->getInteger( "DOFsPerObject" );
+    int DOFsPerObject   = map_db->getScalar<int>( "DOFsPerObject" );
     std::string varName = map_db->getString( "VariableName" );
-    AMP::LinearAlgebra::Variable::shared_ptr Variable(
-        new AMP::LinearAlgebra::Variable( varName ) );
-    AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
-        new AMP::Discretization::DOFManagerParameters( mesh ) );
-    AMP::Discretization::DOFManager::shared_ptr DOFs =
+    auto Variable       = AMP::make_shared<AMP::LinearAlgebra::Variable>( varName );
+    auto DOFparams      = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
+    auto DOFs =
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
-    AMP::Discretization::DOFManager::shared_ptr GpDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Face, 1, DOFsPerObject, true );
+    auto GpDofMap = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Face, 1, DOFsPerObject, true );
 
     // Test the creation/destruction of ScalarN2GZAxisMap (no apply call)
     try {
-        AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> gapmaps;
-        gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarN2GZAxisMap>(
-            mesh, map_db );
+        auto gapmaps =
+            AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarN2GZAxisMap>(
+                mesh, map_db );
         gapmaps.reset();
         ut->passes( "Created / Destroyed ScalarN2GZAxisMap" );
     } catch ( ... ) {
@@ -137,27 +131,24 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     }
 
     // Perform a complete test of ScalarN2GZAxisMap
-    AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> gapmaps;
-    gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarN2GZAxisMap>(
+    auto gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarN2GZAxisMap>(
         mesh, map_db );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr dummy;
-    AMP::LinearAlgebra::Vector::shared_ptr v1 = AMP::LinearAlgebra::createVector( DOFs, Variable );
-    AMP::LinearAlgebra::Vector::shared_ptr v2 =
-        AMP::LinearAlgebra::createVector( GpDofMap, Variable );
-    AMP::LinearAlgebra::Vector::shared_ptr v3 =
-        AMP::LinearAlgebra::createVector( GpDofMap, Variable );
+    auto v1 = AMP::LinearAlgebra::createVector( DOFs, Variable );
+    auto v2 = AMP::LinearAlgebra::createVector( GpDofMap, Variable );
+    auto v3 = AMP::LinearAlgebra::createVector( GpDofMap, Variable );
     gapmaps->setVector( v2 );
 
     // Initialize the vectors
     v1->setToScalar( 0.0 );
     v2->setToScalar( 0.0 );
-    size_t N_maps                  = (size_t) map_db->getInteger( "N_maps" );
-    std::vector<std::string> mesh1 = map_db->getStringArray( "Mesh1" );
-    std::vector<std::string> mesh2 = map_db->getStringArray( "Mesh2" );
-    std::vector<int> surface1      = map_db->getIntegerArray( "Surface1" );
-    std::vector<int> surface2      = map_db->getIntegerArray( "Surface2" );
+    size_t N_maps = (size_t) map_db->getScalar<int>( "N_maps" );
+    auto mesh1    = map_db->getVector<std::string>( "Mesh1" );
+    auto mesh2    = map_db->getVector<std::string>( "Mesh2" );
+    auto surface1 = map_db->getVector<int>( "Surface1" );
+    auto surface2 = map_db->getVector<int>( "Surface2" );
     AMP_ASSERT( mesh1.size() == N_maps || mesh1.size() == 1 );
     AMP_ASSERT( mesh2.size() == N_maps || mesh2.size() == 1 );
     AMP_ASSERT( surface1.size() == N_maps || surface1.size() == 1 );
@@ -179,7 +170,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
             surface_id1 = surface1[0];
             surface_id2 = surface2[0];
         }
-        AMP::Mesh::Mesh::shared_ptr curMesh = mesh->Subset( meshname1 );
+        auto curMesh = mesh->Subset( meshname1 );
         setBoundary( surface_id1, v1, curMesh );
         setGpBoundary( surface_id1, v3, curMesh );
         curMesh = mesh->Subset( meshname2 );

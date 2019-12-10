@@ -2,7 +2,7 @@
 #include "AMP/operators/boundary/libmesh/PressureBoundaryOperator.h"
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
@@ -28,7 +28,7 @@ PressureBoundaryOperator::PressureBoundaryOperator(
     : BoundaryOperator( params )
 {
     AMP_ASSERT( ( params->d_db )->keyExists( "BoundaryID" ) );
-    short int bndId = ( params->d_db )->getInteger( "BoundaryID" );
+    short int bndId = ( params->d_db )->getScalar<int>( "BoundaryID" );
 
     // ASSUMPTION: Each boundary face element is associated with an unique volume element. This will
     // be true
@@ -181,7 +181,7 @@ PressureBoundaryOperator::PressureBoundaryOperator(
     AMP::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 2, qruleOrder ) ).release() );
 
     AMP_ASSERT( ( params->d_db )->keyExists( "Value" ) );
-    const double val = ( params->d_db )->getDouble( "Value" );
+    const double val = ( params->d_db )->getScalar<double>( "Value" );
 
     std::vector<double> pressure( 12 * ( recvSideList.size() ) );
 
@@ -218,12 +218,12 @@ PressureBoundaryOperator::PressureBoundaryOperator(
         elem = nullptr;
     } // end i
 
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
+    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
     AMP_ASSERT( ( params->d_db )->keyExists( "Variable" ) );
     std::string varName = params->d_db->getString( "Variable" );
-    tmp_db->putString( "Variable", varName );
+    tmp_db->putScalar( "Variable", varName );
     AMP_ASSERT( ( params->d_db )->keyExists( "ResidualMode" ) );
-    tmp_db->putBool( "ResidualMode", ( ( params->d_db )->getBool( "ResidualMode" ) ) );
+    tmp_db->putScalar( "ResidualMode", ( ( params->d_db )->getScalar<bool>( "ResidualMode" ) ) );
 
     AMP::shared_ptr<TractionBoundaryOperatorParameters> tracOpParams(
         new TractionBoundaryOperatorParameters( tmp_db ) );

@@ -5,7 +5,7 @@
 #include "AMP/ampmesh/libmesh/libMeshElement.h"
 #include "AMP/ampmesh/libmesh/libMeshIterator.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/MemoryDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_VECTORS
@@ -54,7 +54,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
         // Database exists
         AMP_INSIST( d_db->keyExists( "dim" ), "Variable 'dim' must be set in the database" );
         AMP_INSIST( d_db->keyExists( "MeshName" ), "MeshName must exist in input database" );
-        PhysicalDim = d_db->getInteger( "dim" );
+        PhysicalDim = d_db->getScalar<int>( "dim" );
         d_name      = d_db->getString( "MeshName" );
         AMP_INSIST( PhysicalDim > 0 && PhysicalDim < 10, "Invalid dimension" );
         GeomDim = (GeomType) PhysicalDim;
@@ -72,17 +72,17 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
                             "libMesh cube generation currently supports only 3d meshes" );
                 AMP_INSIST( d_db->keyExists( "size" ),
                             "Variable 'size' must be set in the database" );
-                auto size = d_db->getIntegerArray( "size" );
+                auto size = d_db->getVector<int>( "size" );
                 AMP_INSIST( size.size() == (size_t) PhysicalDim,
                             "Variable 'size' must by an integer array of size dim" );
                 AMP_INSIST( d_db->keyExists( "xmin" ),
                             "Variable 'xmin' must be set in the database" );
-                auto xmin = d_db->getDoubleArray( "xmin" );
+                auto xmin = d_db->getVector<double>( "xmin" );
                 AMP_INSIST( xmin.size() == (size_t) PhysicalDim,
                             "Variable 'xmin' must by an integer array of size dim" );
                 AMP_INSIST( d_db->keyExists( "xmax" ),
                             "Variable 'xmax' must be set in the database" );
-                auto xmax = d_db->getDoubleArray( "xmax" );
+                auto xmax = d_db->getVector<double>( "xmax" );
                 AMP_INSIST( xmax.size() == (size_t) PhysicalDim,
                             "Variable 'xmax' must by an integer array of size dim" );
                 MeshTools::Generation::build_cube( *d_libMesh,
@@ -107,11 +107,11 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
         // Displace the mesh
         std::vector<double> displacement( PhysicalDim, 0.0 );
         if ( d_db->keyExists( "x_offset" ) )
-            displacement[0] = d_db->getDouble( "x_offset" );
+            displacement[0] = d_db->getScalar<double>( "x_offset" );
         if ( d_db->keyExists( "y_offset" ) )
-            displacement[1] = d_db->getDouble( "y_offset" );
+            displacement[1] = d_db->getScalar<double>( "y_offset" );
         if ( d_db->keyExists( "z_offset" ) )
-            displacement[2] = d_db->getDouble( "z_offset" );
+            displacement[2] = d_db->getScalar<double>( "z_offset" );
         bool test = false;
         for ( auto &elem : displacement ) {
             if ( elem != 0.0 )
@@ -544,7 +544,7 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     size_t NumberOfElements = 0;
     if ( database->keyExists( "NumberOfElements" ) ) {
         // User specified the number of elements, this should override everything
-        NumberOfElements = (size_t) database->getInteger( "NumberOfElements" );
+        NumberOfElements = (size_t) database->getScalar<int>( "NumberOfElements" );
     } else if ( database->keyExists( "FileName" ) ) {
         // Read an existing mesh
         auto fname = database->getString( "FileName" );
@@ -566,7 +566,7 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
             // Generate a cube mesh
             AMP_INSIST( database->keyExists( "size" ),
                         "Variable 'size' must be set in the database" );
-            auto size        = database->getIntegerArray( "size" );
+            auto size        = database->getVector<int>( "size" );
             NumberOfElements = 1;
             for ( auto &elem : size )
                 NumberOfElements *= elem;
@@ -578,7 +578,7 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     }
     // Adjust the number of elements by a weight if desired
     if ( database->keyExists( "Weight" ) ) {
-        double weight    = database->getDouble( "Weight" );
+        double weight    = database->getScalar<double>( "Weight" );
         NumberOfElements = (size_t) ceil( weight * ( (double) NumberOfElements ) );
     }
     return NumberOfElements;

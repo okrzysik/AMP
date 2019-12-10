@@ -19,8 +19,6 @@
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -34,7 +32,7 @@
 
 
 AMP::shared_ptr<AMP::Solver::SolverStrategy>
-buildSolver( const AMP::shared_ptr<AMP::InputDatabase> &input_db,
+buildSolver( const AMP::shared_ptr<AMP::Database> &input_db,
              const std::string &solver_name,
              const AMP::AMP_MPI &comm,
              AMP::shared_ptr<AMP::Operator::Operator> &op )
@@ -55,12 +53,12 @@ buildSolver( const AMP::shared_ptr<AMP::InputDatabase> &input_db,
              ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" ) ) {
 
             // check if we need to construct a preconditioner
-            auto use_preconditioner = db->getBoolWithDefault( "use_preconditioner", false );
+            auto use_preconditioner = db->getWithDefault<bool>( "use_preconditioner", false );
             AMP::shared_ptr<AMP::Solver::SolverStrategy> pcSolver;
 
             if ( use_preconditioner ) {
 
-                auto pc_name = db->getStringWithDefault( "pc_name", "Preconditioner" );
+                auto pc_name = db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
 
                 pcSolver = buildSolver( input_db, pc_name, comm, op );
 
@@ -90,30 +88,16 @@ buildSolver( const AMP::shared_ptr<AMP::InputDatabase> &input_db,
 
 void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
 {
-    // double t1;
     // Input and output file names
-    //  #include <string>
     std::string input_file = inputFileName;
     std::string log_file   = "output_" + inputFileName;
-    ////////////////////////////////////
-    //    INITIALIZE THE PROBLEM      //
-    ////////////////////////////////////
-
-    size_t N_error0 = ut->NumFailLocal();
-
-    // Construct a smart pointer to a new database.
-    //  #include "utils/shared_ptr.h"
-    //  #include "utils/InputDatabase.h"
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    size_t N_error0        = ut->NumFailLocal();
 
     // Fill the database from the input file.
-    //  #include "utils/InputManager.h"
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
-
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // Print from all cores into the output files
-    //   #include "utils/PIO.h"
     AMP::PIO::logAllNodes( log_file );
 
     //--------------------------------------------------

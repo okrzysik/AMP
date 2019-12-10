@@ -1,6 +1,6 @@
 
 #include "NavierStokesLSWFFEOperator.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "NavierStokesLSWFFEOperatorParameters.h"
@@ -220,9 +220,9 @@ AMP::shared_ptr<OperatorParameters> NavierStokesLSWFFEOperator::getJacobianParam
     auto u = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
 
     // set up a database for the linear operator params
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
-    tmp_db->putBool( "reset_reuses_matrix", true );
-    tmp_db->putBool( "isAttachedToNonlinearOperator", true );
+    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    tmp_db->putScalar( "reset_reuses_matrix", true );
+    tmp_db->putScalar( "isAttachedToNonlinearOperator", true );
 
     // create the linear operator params
     AMP::shared_ptr<NavierStokesLinearFEOperatorParameters> outParams(

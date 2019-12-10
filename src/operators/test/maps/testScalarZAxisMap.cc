@@ -6,8 +6,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -34,9 +32,8 @@ setBoundary( int id, AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Mesh::Mesh
 static void runTest( const std::string &fname, AMP::UnitTest *ut )
 {
     // Read the input file
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( fname, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( fname );
+    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -51,7 +48,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     auto map_db = input_db->getDatabase( "MeshToMeshMaps" );
 
     // Create a simple DOFManager and the vectors
-    int DOFsPerNode    = map_db->getInteger( "DOFsPerObject" );
+    int DOFsPerNode    = map_db->getScalar<int>( "DOFsPerObject" );
     auto varName       = map_db->getString( "VariableName" );
     auto nodalVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( varName );
     auto DOFparams     = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
@@ -80,11 +77,11 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     // Initialize the vectors
     v1->setToScalar( 0.0 );
     v2->setToScalar( 0.0 );
-    size_t N_maps = (size_t) map_db->getInteger( "N_maps" );
-    auto mesh1    = map_db->getStringArray( "Mesh1" );
-    auto mesh2    = map_db->getStringArray( "Mesh2" );
-    auto surface1 = map_db->getIntegerArray( "Surface1" );
-    auto surface2 = map_db->getIntegerArray( "Surface2" );
+    size_t N_maps = (size_t) map_db->getScalar<int>( "N_maps" );
+    auto mesh1    = map_db->getVector<std::string>( "Mesh1" );
+    auto mesh2    = map_db->getVector<std::string>( "Mesh2" );
+    auto surface1 = map_db->getVector<int>( "Surface1" );
+    auto surface2 = map_db->getVector<int>( "Surface2" );
     AMP_ASSERT( mesh1.size() == N_maps || mesh1.size() == 1 );
     AMP_ASSERT( mesh2.size() == N_maps || mesh2.size() == 1 );
     AMP_ASSERT( surface1.size() == N_maps || surface1.size() == 1 );

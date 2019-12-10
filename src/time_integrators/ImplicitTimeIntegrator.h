@@ -2,7 +2,7 @@
 #define included_AMP_ImplicitTimeIntegrator
 
 #include "AMP/solvers/SolverStrategy.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"

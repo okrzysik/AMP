@@ -50,7 +50,7 @@ public:
     // Typedefs
     typedef AMP::Operator::Operator Base;
     typedef AMP::Database Database;
-    typedef AMP::InputDatabase InpDatabase;
+    typedef AMP::Database InpDatabase;
     typedef AMP::Mesh::Mesh MeshManager;
     typedef AMP::Operator::ElementPhysicsModel ElemPhysModel;
     typedef AMP::Operator::VolumeIntegralOperator VolIntOp;

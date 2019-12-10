@@ -77,10 +77,10 @@ NonlinearKrylovAccelerator::~NonlinearKrylovAccelerator()
 }
 
 
-void NonlinearKrylovAccelerator::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
+void NonlinearKrylovAccelerator::getFromInput( AMP::shared_ptr<AMP::Database> db )
 {
     if ( db->keyExists( "max_vectors" ) ) {
-        d_iMaximumNumberOfVectors = db->getInteger( "max_vectors" );
+        d_iMaximumNumberOfVectors = db->getScalar<int>( "max_vectors" );
     } else {
         AMP_ERROR( "NonlinearKrylovAccelerator"
                    << " -- Key data `max_vectors'"
@@ -88,7 +88,7 @@ void NonlinearKrylovAccelerator::getFromInput( const AMP::shared_ptr<AMP::Databa
     }
 
     if ( db->keyExists( "angle_tolerance" ) ) {
-        d_dVectorAngleDropTolerance = db->getDouble( "angle_tolerance" );
+        d_dVectorAngleDropTolerance = db->getScalar<double>( "angle_tolerance" );
     } else {
         AMP_ERROR( "NonlinearKrylovAccelerator"
                    << " -- Key data `angle_tolerance'"
@@ -96,19 +96,19 @@ void NonlinearKrylovAccelerator::getFromInput( const AMP::shared_ptr<AMP::Databa
     }
 
     if ( db->keyExists( "maximum_function_evals" ) ) {
-        d_iMaximumFunctionEvals = db->getInteger( "maximum_function_evals" );
+        d_iMaximumFunctionEvals = db->getScalar<int>( "maximum_function_evals" );
     }
 
     if ( db->keyExists( "absolute_tolerance" ) ) {
-        d_dAbsoluteTolerance = db->getDouble( "absolute_tolerance" );
+        d_dAbsoluteTolerance = db->getScalar<double>( "absolute_tolerance" );
     }
 
     if ( db->keyExists( "relative_tolerance" ) ) {
-        d_dRelativeTolerance = db->getDouble( "relative_tolerance" );
+        d_dRelativeTolerance = db->getScalar<double>( "relative_tolerance" );
     }
 
     if ( db->keyExists( "freeze_pc" ) ) {
-        d_bFreezePc = db->getBool( "freeze_pc" );
+        d_bFreezePc = db->getScalar<bool>( "freeze_pc" );
     }
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
@@ -504,11 +504,11 @@ void NonlinearKrylovAccelerator::putToDatabase( AMP::shared_ptr<AMP::Database> &
 
     AMP_INSIST( db.get() != nullptr, "database object cannot be NULL" );
 
-    db->putInteger( "d_MaxIterations", d_iMaxIterations );
-    db->putInteger( "d_iMaximumFunctionEvals", d_iMaximumFunctionEvals );
+    db->putScalar( "d_MaxIterations", d_iMaxIterations );
+    db->putScalar( "d_iMaximumFunctionEvals", d_iMaximumFunctionEvals );
 
-    db->putDouble( "d_dAbsoluteTolerance", d_dAbsoluteTolerance );
-    db->putDouble( "d_dRelativeTolerance", d_dRelativeTolerance );
+    db->putScalar( "d_dAbsoluteTolerance", d_dAbsoluteTolerance );
+    db->putScalar( "d_dRelativeTolerance", d_dRelativeTolerance );
 }
 } // namespace Solver
 } // namespace AMP

@@ -15,7 +15,7 @@ void MapOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
     AMP_INSIST( !myparams->d_MapComm.isNull(), "NULL communicator" );
 
     AMP_INSIST( ( myparams->d_db )->keyExists( "BoundaryId" ), "Key ''tflow_id'' is missing!" );
-    d_boundaryId = ( myparams->d_db )->getInteger( "BoundaryId" );
+    d_boundaryId = ( myparams->d_db )->getScalar<int>( "BoundaryId" );
 
     d_MapComm = myparams->d_MapComm;
     d_MapMesh = myparams->d_MapMesh;

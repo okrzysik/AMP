@@ -14,8 +14,6 @@
 
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -171,8 +169,8 @@ static void moabInterface( AMP::UnitTest *ut )
     //  Read Input File.
     //--------------------------------------------------
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
 
     //--------------------------------------------------
     //   Create the Mesh.
@@ -185,7 +183,7 @@ static void moabInterface( AMP::UnitTest *ut )
 
     // Put moab mesh filename onto DB
     std::string moabMeshFile = "input.h5m";
-    input_db->putString( "moabMeshName", moabMeshFile );
+    input_db->putScalar( "moabMeshName", moabMeshFile );
 
     // Build operator params
     typedef AMP::Operator::MoabBasedOperatorParameters MoabOpParams;
@@ -213,7 +211,7 @@ static void moabInterface( AMP::UnitTest *ut )
     typedef AMP::Operator::MoabMapOperator MoabMap;
     typedef AMP::shared_ptr<MoabMap> SP_MoabMap;
 
-    input_db->putString( "MoabMapVariable", "TEMPERATURE" );
+    input_db->putScalar( "MoabMapVariable", "TEMPERATURE" );
     SP_MoabMapParams mapParams( new MoabMapParams( input_db ) );
     mapParams->setMoabOperator( moabOp );
     mapParams->setMesh( mesh );
@@ -234,7 +232,7 @@ static void moabInterface( AMP::UnitTest *ut )
 
     // Now create Moab map operator
     AMP::pout << "Creating Node-Based Moab Map Operator" << std::endl;
-    input_db->putString( "InterpolateToType", "GeomType::Vertex" );
+    input_db->putScalar( "InterpolateToType", "GeomType::Vertex" );
     SP_MoabMap moabNodeMap( new MoabMap( mapParams ) );
 
     // Do interpolation

@@ -458,7 +458,7 @@ public:
     getPositionVector( std::string name, const int gcw = 0 ) const;
 #endif
 
-    const AMP::shared_ptr<AMP::Database> &DB() const { return d_db; }
+    AMP::shared_ptr<AMP::Database> DB() const { return d_db; }
 
 protected:
     //!  Empty constructor for a mesh

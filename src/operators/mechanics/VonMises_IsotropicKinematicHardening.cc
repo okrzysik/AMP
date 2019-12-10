@@ -24,9 +24,9 @@ VonMises_IsotropicKinematicHardening::VonMises_IsotropicKinematicHardening(
         AMP_INSIST( ( params->d_db )->keyExists( "Poissons_Ratio" ),
                     "Missing key: Poissons_Ratio" );
 
-        default_E = ( params->d_db )->getDouble( "Youngs_Modulus" );
+        default_E = ( params->d_db )->getScalar<double>( "Youngs_Modulus" );
 
-        default_Nu = ( params->d_db )->getDouble( "Poissons_Ratio" );
+        default_Nu = ( params->d_db )->getScalar<double>( "Poissons_Ratio" );
     }
 
     AMP_INSIST( ( params->d_db )->keyExists( "Cook_Membrane_Plasticity_Test" ),
@@ -35,9 +35,9 @@ VonMises_IsotropicKinematicHardening::VonMises_IsotropicKinematicHardening(
     AMP_INSIST( ( params->d_db )->keyExists( "Thick_Walled_Cylinder_Plasticity_Test" ),
                 "Missing key: Thick_Walled_Cylinder_Plasticity_Test" );
 
-    d_CM_Test = ( params->d_db )->getBool( "Cook_Membrane_Plasticity_Test" );
+    d_CM_Test = ( params->d_db )->getScalar<bool>( "Cook_Membrane_Plasticity_Test" );
 
-    d_TW_Test = ( params->d_db )->getBool( "Thick_Walled_Cylinder_Plasticity_Test" );
+    d_TW_Test = ( params->d_db )->getScalar<bool>( "Thick_Walled_Cylinder_Plasticity_Test" );
 
     AMP_INSIST( ( ( ( d_CM_Test == true ) && ( d_TW_Test == false ) ) ||
                   ( ( d_CM_Test == false ) && ( d_TW_Test == true ) ) ),
@@ -57,15 +57,15 @@ VonMises_IsotropicKinematicHardening::VonMises_IsotropicKinematicHardening(
 
         AMP_INSIST( ( params->d_db )->keyExists( "Fraction_Beta" ), "Missing key: Fraction_Beta" );
 
-        d_H = ( params->d_db )->getDouble( "Linear_Strain_Hardening" );
+        d_H = ( params->d_db )->getScalar<double>( "Linear_Strain_Hardening" );
 
-        d_delta = ( params->d_db )->getDouble( "Exponent_Delta" );
+        d_delta = ( params->d_db )->getScalar<double>( "Exponent_Delta" );
 
-        d_K_0 = ( params->d_db )->getDouble( "Value_K_0" );
+        d_K_0 = ( params->d_db )->getScalar<double>( "Value_K_0" );
 
-        d_K_inf = ( params->d_db )->getDouble( "K_Infinity" );
+        d_K_inf = ( params->d_db )->getScalar<double>( "K_Infinity" );
 
-        d_beta = ( params->d_db )->getDouble( "Fraction_Beta" );
+        d_beta = ( params->d_db )->getScalar<double>( "Fraction_Beta" );
     }
 
     if ( d_CM_Test == true ) {
@@ -78,19 +78,19 @@ VonMises_IsotropicKinematicHardening::VonMises_IsotropicKinematicHardening(
         AMP_INSIST( ( params->d_db )->keyExists( "Initial_Yield_Strength" ),
                     "Missing key: Initial_Yield_Strength" );
 
-        d_Ep = ( params->d_db )->getDouble( "Isotropic_Linear_Hardening" );
+        d_Ep = ( params->d_db )->getScalar<double>( "Isotropic_Linear_Hardening" );
 
-        d_Kin = ( params->d_db )->getDouble( "Kinematic_Linear_Hardening" );
+        d_Kin = ( params->d_db )->getScalar<double>( "Kinematic_Linear_Hardening" );
 
-        d_Sig_0 = ( params->d_db )->getDouble( "Initial_Yield_Strength" );
+        d_Sig_0 = ( params->d_db )->getScalar<double>( "Initial_Yield_Strength" );
     }
 
-    default_TEMPERATURE = ( params->d_db )->getDoubleWithDefault( "Default_Temperature", 310.0 );
+    default_TEMPERATURE = ( params->d_db )->getWithDefault<double>( "Default_Temperature", 310.0 );
 
-    default_BURNUP = ( params->d_db )->getDoubleWithDefault( "Default_Burnup", 0.0 );
+    default_BURNUP = ( params->d_db )->getWithDefault<double>( "Default_Burnup", 0.0 );
 
     default_OXYGEN_CONCENTRATION =
-        ( params->d_db )->getDoubleWithDefault( "Default_Oxygen_Concentration", 0.0 );
+        ( params->d_db )->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
 
     for ( auto &elem : d_constitutiveMatrix ) {
         for ( double &j : elem )

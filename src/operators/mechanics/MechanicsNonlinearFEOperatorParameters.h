@@ -22,7 +22,7 @@ public:
     /**
       Constructor.
       */
-    explicit MechanicsNonlinearFEOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+    explicit MechanicsNonlinearFEOperatorParameters( AMP::shared_ptr<AMP::Database> db )
         : FEOperatorParameters( db )
     {
     }

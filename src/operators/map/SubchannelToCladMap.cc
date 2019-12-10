@@ -30,7 +30,7 @@ SubchannelToCladMap::SubchannelToCladMap(
     if ( d_mesh1.get() != nullptr )
         d_iterator1 = getSubchannelIterator( d_mesh1 );
     if ( d_mesh2.get() != nullptr ) {
-        int type    = params->d_db->getIntegerWithDefault( "GeomType", 0 );
+        int type    = params->d_db->getWithDefault( "GeomType", 0 );
         d_iterator2 = d_mesh2->getBoundaryIDIterator(
             static_cast<AMP::Mesh::GeomType>( type ), params->d_BoundaryID2, 0 );
     }

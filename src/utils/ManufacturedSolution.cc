@@ -25,7 +25,7 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
     d_Pi           = 3.1415926535898;
     d_MaximumTheta = 2. * d_Pi;
 
-    std::string name = db->getName();
+    auto name = db->getName();
     AMP_INSIST( name == "ManufacturedSolution", "incorrect database name" );
 
     if ( db->keyExists( "Geometry" ) && db->keyExists( "Order" ) &&
@@ -221,17 +221,14 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
             hasBoundaryData = true;
         }
         if ( hasCoefficients && ( hasBoundaryData || ( d_bcType == BCType::NONE ) ) ) {
-            std::vector<double> array( 0 );
-            db->getArray( "Coefficients", array );
+            auto array = db->getVector<double>( "Coefficients" );
             AMP_INSIST( array.size() >= d_NumberOfParameters, "wrong number of coefficients" );
             d_a.resize( d_NumberOfParameters );
             for ( size_t i = 0; i < d_NumberOfParameters; i++ )
                 d_a[i] = array[i];
         }
         if ( hasCoefficients && hasBoundaryData ) {
-            std::vector<double> array( 0 );
-            array.resize( 0 );
-            db->getArray( "BoundaryData", array );
+            auto array = db->getVector<double>( "BoundaryData" );
             AMP_INSIST( array.size() >= d_NumberOfInputs, "wrong number of boundary data" );
             d_c.resize( d_NumberOfInputs );
             for ( size_t i = 0; i < d_NumberOfInputs; i++ )
@@ -248,7 +245,7 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
             d_functionPointer = &general_quadratic_exponential_sinusoid;
         else
             AMP_INSIST( false, "invalid value for QuadraticFunction" );
-        std::vector<double> distortion = db->getDoubleArray( "QuadraticDistortion" );
+        auto distortion = db->getVector<double>( "QuadraticDistortion" );
         AMP_INSIST( distortion.size() == 9, "distortion array must have 9 elements" );
         d_hs = std::valarray<std::valarray<double>>( std::valarray<double>( 3 ), 3 );
         for ( int i = 0; i < 3; i++ )
@@ -262,12 +259,12 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
     }
 
     if ( !d_CylindricalCoords ) {
-        d_MinX = db->getDoubleWithDefault( "MinX", 0. );
-        d_MinY = db->getDoubleWithDefault( "MinY", 0. );
-        d_MinZ = db->getDoubleWithDefault( "MinZ", 0. );
-        d_MaxX = db->getDoubleWithDefault( "MaxX", 1. );
-        d_MaxY = db->getDoubleWithDefault( "MaxY", 1. );
-        d_MaxZ = db->getDoubleWithDefault( "MaxZ", 1. );
+        d_MinX = db->getWithDefault<double>( "MinX", 0. );
+        d_MinY = db->getWithDefault<double>( "MinY", 0. );
+        d_MinZ = db->getWithDefault<double>( "MinZ", 0. );
+        d_MaxX = db->getWithDefault<double>( "MaxX", 1. );
+        d_MaxY = db->getWithDefault<double>( "MaxY", 1. );
+        d_MaxZ = db->getWithDefault<double>( "MaxZ", 1. );
         AMP_ASSERT( d_MaxX >= d_MinX );
         AMP_ASSERT( d_MaxY >= d_MinY );
         AMP_ASSERT( d_MaxZ >= d_MinZ );
@@ -275,15 +272,15 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
         d_ScaleY = 1. / ( d_MaxY - d_MinY + std::numeric_limits<double>::epsilon() );
         d_ScaleZ = 1. / ( d_MaxZ - d_MinZ + std::numeric_limits<double>::epsilon() );
     } else {
-        d_MinR  = db->getDoubleWithDefault( "MinR", 0. );
+        d_MinR  = db->getWithDefault<double>( "MinR", 0. );
         d_MinTh = 0.;
-        d_MinZ  = db->getDoubleWithDefault( "MinZ", 0. );
-        d_MaxR  = db->getDoubleWithDefault( "MaxR", 1. );
+        d_MinZ  = db->getWithDefault<double>( "MinZ", 0. );
+        d_MaxR  = db->getWithDefault<double>( "MaxR", 1. );
         d_MaxTh = 2. * d_Pi;
-        d_MaxZ  = db->getDoubleWithDefault( "MaxZ", 1. );
+        d_MaxZ  = db->getWithDefault<double>( "MaxZ", 1. );
         if ( d_MaximumTheta < 2. * d_Pi ) {
-            d_MinTh = db->getDoubleWithDefault( "MinTh", 0. );
-            d_MaxTh = db->getDoubleWithDefault( "MaxTh", 2. * d_Pi );
+            d_MinTh = db->getWithDefault<double>( "MinTh", 0. );
+            d_MaxTh = db->getWithDefault<double>( "MaxTh", 2. * d_Pi );
         }
         d_ScaleR  = 1. / ( d_MaxR - d_MinR + std::numeric_limits<double>::epsilon() );
         d_ScaleTh = 1. / ( d_MaxTh - d_MinTh + std::numeric_limits<double>::epsilon() );

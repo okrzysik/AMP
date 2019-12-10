@@ -93,7 +93,7 @@ int ImplicitTimeIntegrator::advanceSolution( const double dt, const bool first_s
 
         d_current_dt = dt;
 
-        d_pTimeOperatorParameters->d_db->putDouble( "CurrentDt", dt );
+        d_pTimeOperatorParameters->d_db->putScalar( "CurrentDt", dt );
 
         d_operator->reset( d_pTimeOperatorParameters );
 

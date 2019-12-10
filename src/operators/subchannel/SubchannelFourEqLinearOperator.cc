@@ -5,7 +5,7 @@
 
 #include "AMP/ampmesh/StructuredMeshHelper.h"
 #include "AMP/matrices/MatrixBuilder.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "ProfilerApp.h"
@@ -90,7 +90,7 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
     if ( ( d_source == "totalHeatGeneration" ) ||
          ( d_source == "totalHeatGenerationWithDiscretizationError" ) ) {
         d_Q         = getDoubleParameter( myparams, "Max_Rod_Power", 66.0e3 );
-        d_QFraction = ( myparams->d_db )->getDoubleArray( "Rod_Power_Fraction" );
+        d_QFraction = myparams->d_db->getVector<double>( "Rod_Power_Fraction" );
         d_heatShape = getStringParameter( myparams, "Heat_Shape", "Sinusoidal" );
     }
 
@@ -105,9 +105,9 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
     // get form loss parameters if there are grid spacers
     d_NGrid = getIntegerParameter( myparams, "Number_GridSpacers", 0 );
     if ( d_NGrid > 0 ) {
-        d_zMinGrid = ( myparams->d_db )->getDoubleArray( "zMin_GridSpacers" );
-        d_zMaxGrid = ( myparams->d_db )->getDoubleArray( "zMax_GridSpacers" );
-        d_lossGrid = ( myparams->d_db )->getDoubleArray( "LossCoefficient_GridSpacers" );
+        d_zMinGrid = ( myparams->d_db )->getVector<double>( "zMin_GridSpacers" );
+        d_zMaxGrid = ( myparams->d_db )->getVector<double>( "zMax_GridSpacers" );
+        d_lossGrid = ( myparams->d_db )->getVector<double>( "LossCoefficient_GridSpacers" );
         // check that sizes of grid spacer loss vectors are consistent with the provided number of
         // grid spacers
         if ( !( d_NGrid == d_zMinGrid.size() && d_NGrid == d_zMaxGrid.size() &&
@@ -1039,9 +1039,9 @@ double SubchannelFourEqLinearOperator::getDoubleParameter(
     std::string paramString,
     double defaultValue )
 {
-    bool keyExists = ( myparams->d_db )->keyExists( paramString );
+    bool keyExists = myparams->d_db->keyExists( paramString );
     if ( keyExists ) {
-        return ( myparams->d_db )->getDouble( paramString );
+        return myparams->d_db->getScalar<double>( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue << "\n" );
@@ -1055,9 +1055,9 @@ int SubchannelFourEqLinearOperator::getIntegerParameter(
     std::string paramString,
     int defaultValue )
 {
-    bool keyExists = ( myparams->d_db )->keyExists( paramString );
+    bool keyExists = myparams->d_db->keyExists( paramString );
     if ( keyExists ) {
-        return ( myparams->d_db )->getInteger( paramString );
+        return myparams->d_db->getScalar<int>( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue << "\n" );
@@ -1089,7 +1089,7 @@ bool SubchannelFourEqLinearOperator::getBoolParameter(
 {
     bool keyExists = ( myparams->d_db )->keyExists( paramString );
     if ( keyExists ) {
-        return ( myparams->d_db )->getBool( paramString );
+        return ( myparams->d_db )->getScalar<bool>( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue << "\n" );
@@ -1305,9 +1305,9 @@ AMP::shared_ptr<OperatorParameters> SubchannelFourEqLinearOperator::getJacobianP
 {
     NULL_USE( u );
 
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
+    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
 
-    tmp_db->putString( "name", "SubchannelFourEqLinearOperator" );
+    tmp_db->putScalar( "name", "SubchannelFourEqLinearOperator" );
 
     AMP::shared_ptr<SubchannelOperatorParameters> outParams(
         new SubchannelOperatorParameters( tmp_db ) );

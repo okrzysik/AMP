@@ -61,7 +61,7 @@ DiffusionTransportModel::DiffusionTransportModel(
 
         // load defaults into the material property, checking range validity
         for ( size_t i = 0; i < argnames.size(); ++i ) {
-            d_defaults[i] = defaults_db->getDouble( argnames[i] );
+            d_defaults[i] = defaults_db->getScalar<double>( argnames[i] );
             AMP_INSIST( d_property->in_range( argnames[i], d_defaults[i] ),
                         std::string( "Default for argument " ) + argnames[i] +
                             std::string( " is out of range" ) );
@@ -70,18 +70,18 @@ DiffusionTransportModel::DiffusionTransportModel(
     d_property->set_defaults( d_defaults );
 
     // process bilog scaling details
-    d_UseBilogScaling = params->d_db->getBoolWithDefault( "UseBilogScaling", false );
+    d_UseBilogScaling = params->d_db->getWithDefault( "UseBilogScaling", false );
     if ( d_UseBilogScaling ) {
         AMP_INSIST( params->d_db->keyExists( "BilogVariable" ), "must specify BilogVariable" );
-        d_BilogVariable = params->d_db->getStringWithDefault( "BilogVariable", "NONE" );
+        d_BilogVariable = params->d_db->getWithDefault<std::string>( "BilogVariable", "NONE" );
 
         d_BilogRange = d_property->get_arg_range( d_BilogVariable );
         AMP_INSIST( d_BilogRange[1] > d_BilogRange[0],
                     "material argument upper bound <= lower bound" );
 
-        d_BilogScaleCoefficient = params->d_db->getBoolWithDefault( "BilogScaleCoefficient", true );
+        d_BilogScaleCoefficient = params->d_db->getWithDefault( "BilogScaleCoefficient", true );
         d_BilogEpsilonRangeLimit =
-            params->d_db->getDoubleWithDefault( "BilogEpsilonRangeLimit", 1.0e-06 );
+            params->d_db->getWithDefault<double>( "BilogEpsilonRangeLimit", 1.0e-06 );
     }
 
     // for tensor properties, set or change dimension
@@ -90,7 +90,7 @@ DiffusionTransportModel::DiffusionTransportModel(
             AMP::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>( d_property );
         if ( tensprop->variable_dimensions() ) {
             if ( params->d_db->keyExists( "Dimensions" ) ) {
-                std::vector<int> dims = params->d_db->getIntegerArray( "Dimensions" );
+                std::vector<int> dims = params->d_db->getVector<int>( "Dimensions" );
                 AMP_INSIST( dims.size() == 2, "only two dimensions allowed for tensor property" );
                 std::vector<size_t> dims2( dims.size() );
                 dims2[0] = dims[0];
@@ -102,9 +102,9 @@ DiffusionTransportModel::DiffusionTransportModel(
 
     // set property parameters
     if ( params->d_db->keyExists( "Parameters" ) ) {
-        params->d_db->getArray( "Parameters", d_MaterialParameters );
-        size_t nparams    = d_MaterialParameters.size();
-        size_t ndefparams = d_property->get_parameters().size();
+        d_MaterialParameters = params->d_db->getVector<double>( "Parameters" );
+        size_t nparams       = d_MaterialParameters.size();
+        size_t ndefparams    = d_property->get_parameters().size();
         if ( d_property->variable_number_parameters() ) {
             d_property->set_parameters_and_number( &d_MaterialParameters[0],
                                                    d_MaterialParameters.size() );

@@ -27,8 +27,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/MechanicsManufacturedSolutions.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
@@ -184,21 +182,20 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Reading the input file
-    auto inputDatabase = AMP::make_shared<AMP::InputDatabase>( "inputDB" );
-    AMP::InputManager::getManager()->parseInputFile( inputFile, inputDatabase );
-    inputDatabase->printClassData( AMP::plog );
+    auto inputDatabase = AMP::Database::parseInputFile( inputFile );
+    inputDatabase->print( AMP::plog );
 
     AMP::Mesh::Mesh::shared_ptr meshAdapter;
     AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
 
     // Regular grid mesh file
-    bool useRegularGridMesh = inputDatabase->getBool( "UseRegularGridMesh" );
+    bool useRegularGridMesh = inputDatabase->getScalar<bool>( "UseRegularGridMesh" );
     if ( useRegularGridMesh ) {
         libmeshInit =
             AMP::make_shared<AMP::Mesh::initializeLibMesh>( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         auto mesh_file    = inputDatabase->getString( "mesh_file" );
         auto myMesh       = AMP::make_shared<Mesh>( 3 );
-        bool binaryMeshes = inputDatabase->getBool( "BinaryMeshes" );
+        bool binaryMeshes = inputDatabase->getScalar<bool>( "BinaryMeshes" );
         if ( binaryMeshes ) {
             AMP::readBinaryTestMesh( mesh_file, myMesh );
         } else {
@@ -225,7 +222,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     }
     NULL_USE( libmeshInit );
 
-    double scaleMeshFactor = inputDatabase->getDoubleWithDefault( "scale_mesh", 1.0 );
+    double scaleMeshFactor = inputDatabase->getWithDefault<double>( "scale_mesh", 1.0 );
     AMP::pout << "Scaling mesh by a factor " << scaleMeshFactor << "\n";
 
     // Create the linear mechanics operator
@@ -251,7 +248,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     // default values Mi=1.0, Lj=1.0, aij=0, and bij=1
     // Linear        -> u_i = Mi*product_j (aij*j/Lj+bij) where i,j = x,y,z
     // Trigonometric -> u_i = Mi*product_j sin((aij*j/Lj+bij)*pi/2) where i,j = x,y,z
-    auto typeCoeffAB = mmsDatabase->getStringWithDefault( "type_coeff_ab", "simple" );
+    auto typeCoeffAB = mmsDatabase->getWithDefault<std::string>( "type_coeff_ab", "simple" );
     AMP::pout << "Manufactured solution = " << mmsDatabase->getString( "name" ) << "\n";
     AMP::pout << "Type of coefficient = " << typeCoeffAB << "\n";
     if ( typeCoeffAB == "simple" ) {

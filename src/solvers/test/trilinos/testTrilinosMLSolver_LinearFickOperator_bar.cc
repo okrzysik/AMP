@@ -3,8 +3,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -54,13 +52,13 @@ static void linearFickTest( AMP::UnitTest *ut )
 
     // Construct a smart pointer to a new database.
     //  #include "AMP/utils/shared_ptr.h"
-    //  #include "AMP/utils/InputDatabase.h"
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    //  #include "AMP/utils/Database.h"
+
 
     // Fill the database from the input file.
-    //  #include "AMP/utils/InputManager.h"
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    //  #include "AMP/utils/Database.h"
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // Print from all cores into the output files
     //   #include "AMP/utils/PIO.h"

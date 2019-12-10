@@ -8,8 +8,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
@@ -43,13 +41,11 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
 
     if ( globalComm.getSize() == 1 ) {
-        AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-        AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-        input_db->printClassData( AMP::plog );
 
-        AMP::shared_ptr<AMP::InputDatabase> mesh_file_db(
-            new AMP::InputDatabase( "mesh_file_db" ) );
-        AMP::InputManager::getManager()->parseInputFile( mesh_file, mesh_file_db );
+        auto input_db = AMP::Database::parseInputFile( input_file );
+        input_db->print( AMP::plog );
+
+        auto mesh_file_db = AMP::Database::parseInputFile( mesh_file );
 
         const unsigned int mesh_dim = 3;
         AMP::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
@@ -57,20 +53,17 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
         AMP::readTestMesh( mesh_file_db, mesh );
         mesh->prepare_for_use( false );
 
-        AMP::Mesh::Mesh::shared_ptr meshAdapter =
-            AMP::Mesh::Mesh::shared_ptr( new AMP::Mesh::libMesh( mesh, "TestMesh" ) );
+        auto meshAdapter = AMP::make_shared<AMP::Mesh::libMesh>( mesh, "TestMesh" );
 
         AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-        AMP::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
-            AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-                AMP::Operator::OperatorBuilder::createOperator(
-                    meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
+        auto bvpOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+            AMP::Operator::OperatorBuilder::createOperator(
+                meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
         AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-        AMP::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletVecOp =
-            AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-                AMP::Operator::OperatorBuilder::createOperator(
-                    meshAdapter, "Load_Boundary", input_db, dummyModel ) );
+        auto dirichletVecOp = AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+            AMP::Operator::OperatorBuilder::createOperator(
+                meshAdapter, "Load_Boundary", input_db, dummyModel ) );
 
         AMP::LinearAlgebra::Variable::shared_ptr var = bvpOperator->getOutputVariable();
 
@@ -78,15 +71,13 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
         // the output variable is the same as what it is operating on.
         dirichletVecOp->setVariable( var );
 
-        AMP::Discretization::DOFManager::shared_ptr dofMap =
-            AMP::Discretization::simpleDOFManager::create(
-                meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+        auto dofMap = AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-        AMP::LinearAlgebra::Vector::shared_ptr mechSolVec =
-            AMP::LinearAlgebra::createVector( dofMap, var, true );
-        AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = mechSolVec->cloneVector();
-        AMP::LinearAlgebra::Vector::shared_ptr mechResVec = mechSolVec->cloneVector();
+        auto mechSolVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
+        auto mechRhsVec = mechSolVec->cloneVector();
+        auto mechResVec = mechSolVec->cloneVector();
 
         mechSolVec->setToScalar( 0.5 );
         mechRhsVec->setToScalar( 0.0 );
@@ -110,14 +101,13 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
 
         AMP::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
-        AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams(
-            new AMP::Solver::SolverStrategyParameters( mlSolver_db ) );
+        auto mlSolverParams =
+            AMP::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
 
         mlSolverParams->d_pOperator = bvpOperator;
 
         // create the ML solver interface
-        AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver(
-            new AMP::Solver::TrilinosMLSolver( mlSolverParams ) );
+        auto mlSolver = AMP::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
 
         mlSolver->setZeroInitialGuess( false );
 
@@ -149,8 +139,7 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
 int testLinearElasticity_2_element( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
-    AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
-        new AMP::Mesh::initializeLibMesh( AMP_COMM_WORLD ) );
+    auto libmeshInit = AMP::make_shared<AMP::Mesh::initializeLibMesh>( AMP_COMM_WORLD );
 
     AMP::UnitTest ut;
 

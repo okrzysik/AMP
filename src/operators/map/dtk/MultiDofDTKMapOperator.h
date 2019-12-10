@@ -15,7 +15,7 @@ class MultiDofDTKMapOperatorParameters : public OperatorParameters
 {
 public:
     // Constructor.
-    explicit MultiDofDTKMapOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+    explicit MultiDofDTKMapOperatorParameters( AMP::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     { /* ... */
     }

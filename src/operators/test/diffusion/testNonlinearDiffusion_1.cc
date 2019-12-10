@@ -16,8 +16,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -45,9 +43,9 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout.flush();
 
     // Test create
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
@@ -60,8 +58,8 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     // nonlinear operator
     AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> diffOp;
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    AMP::shared_ptr<AMP::InputDatabase> diffFEOp_db = AMP::dynamic_pointer_cast<AMP::InputDatabase>(
-        input_db->getDatabase( "NonlinearDiffusionOp" ) );
+    AMP::shared_ptr<AMP::Database> diffFEOp_db =
+        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "NonlinearDiffusionOp" ) );
     AMP::shared_ptr<AMP::Operator::Operator> nonlinearOperator =
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "NonlinearDiffusionOp", input_db, elementModel );
@@ -88,9 +86,9 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel =
         AMP::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( elementPhysicsModel );
 
-    double defTemp = transportModel_db->getDoubleWithDefault( "Default_Temperature", 400.0 );
-    double defConc = transportModel_db->getDoubleWithDefault( "Default_Concentration", .33 );
-    double defBurn = transportModel_db->getDoubleWithDefault( "Default_Burnup", .5 );
+    double defTemp = transportModel_db->getWithDefault<double>( "Default_Temperature", 400.0 );
+    double defConc = transportModel_db->getWithDefault<double>( "Default_Concentration", .33 );
+    double defBurn = transportModel_db->getWithDefault<double>( "Default_Burnup", .5 );
 
     std::string property = transportModel_db->getString( "Property" );
 
@@ -106,11 +104,11 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     // create vectors for parameters
     AMP::shared_ptr<AMP::Database> active_db = diffFEOp_db->getDatabase( "ActiveInputVariables" );
     AMP::LinearAlgebra::Variable::shared_ptr tVar( new AMP::LinearAlgebra::Variable(
-        active_db->getStringWithDefault( "temperature", "not_specified" ) ) );
+        active_db->getWithDefault<std::string>( "temperature", "not_specified" ) ) );
     AMP::LinearAlgebra::Variable::shared_ptr cVar( new AMP::LinearAlgebra::Variable(
-        active_db->getStringWithDefault( "concentration", "not_specified" ) ) );
+        active_db->getWithDefault<std::string>( "concentration", "not_specified" ) ) );
     AMP::LinearAlgebra::Variable::shared_ptr bVar( new AMP::LinearAlgebra::Variable(
-        active_db->getStringWithDefault( "burnup", "not_specified" ) ) );
+        active_db->getWithDefault<std::string>( "burnup", "not_specified" ) ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Create a DOF manager for a nodal vector
@@ -161,11 +159,11 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // set frozen vectors in parameters
-    if ( diffFEOp_db->getBoolWithDefault( "Freezetemperature", false ) )
+    if ( diffFEOp_db->getWithDefault( "Freezetemperature", false ) )
         diffOpParams->d_FrozenTemperature = tVec;
-    if ( diffFEOp_db->getBoolWithDefault( "Freezeconcentration", false ) )
+    if ( diffFEOp_db->getWithDefault( "Freezeconcentration", false ) )
         diffOpParams->d_FrozenConcentration = cVec;
-    if ( diffFEOp_db->getBoolWithDefault( "Freezeburnup", false ) )
+    if ( diffFEOp_db->getWithDefault( "Freezeburnup", false ) )
         diffOpParams->d_FrozenBurnup = bVec;
 
     // set transport model

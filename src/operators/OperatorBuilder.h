@@ -4,7 +4,7 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/boundary/BoundaryOperator.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "ElementPhysicsModel.h"
 #include "ElementPhysicsModelFactory.h"
 

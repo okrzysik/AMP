@@ -271,19 +271,19 @@ void MoabMapOperator::buildGeomType::VolumeIntOp( SP_VolIntOp &volIntOp,
 
     // Create volume database
     SP_Database volume_db = d_params->d_db->getDatabase( name );
-    volume_db->putString( "name", "VolumeIntegralOperator" );
-    volume_db->putString( "InputVariableType", "IntegrationPointScalar" );
-    volume_db->putInteger( "Number_Active_Variables", 1 );
-    volume_db->putInteger( "Number_Auxillary_Variables", 0 );
-    volume_db->putBool( "Constant_Source", 1 );
-    volume_db->putString( "OutputVariable", "GeomType::VolumeIntegrated" );
-    volume_db->putInteger( "print_info_level", 1 );
+    volume_db->putScalar( "name", "VolumeIntegralOperator" );
+    volume_db->putScalar( "InputVariableType", "IntegrationPointScalar" );
+    volume_db->putScalar( "Number_Active_Variables", 1 );
+    volume_db->putScalar( "Number_Auxillary_Variables", 0 );
+    volume_db->putScalar( "Constant_Source", 1 );
+    volume_db->putScalar( "OutputVariable", "GeomType::VolumeIntegrated" );
+    volume_db->putScalar( "print_info_level", 1 );
     volume_db->putDatabase( "ActiveInputVariables" );
     volume_db->putDatabase( "SourceElement" );
 
     // Source db
     SP_Database source_db = volume_db->getDatabase( "SourceElement" );
-    source_db->putString( "name", "SourceNonlinearElement" );
+    source_db->putScalar( "name", "SourceNonlinearElement" );
 
     // Active variable db
     SP_Database act_db;
@@ -291,7 +291,7 @@ void MoabMapOperator::buildGeomType::VolumeIntOp( SP_VolIntOp &volIntOp,
 
     // Define active variable as Specific Power
     std::string interfaceVarName = "SpecificPowerInWattsPerGram";
-    act_db->putString( "ActiveVariable_0", interfaceVarName );
+    act_db->putScalar( "ActiveVariable_0", interfaceVarName );
 
     // Global DB
     SP_InpDatabase global_db = AMP::dynamic_pointer_cast<InpDatabase>( d_params->d_db );

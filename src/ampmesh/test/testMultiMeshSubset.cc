@@ -1,8 +1,7 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 
@@ -17,8 +16,7 @@ void testMultiMeshSubset( AMP::UnitTest &ut )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Parse the input File
-    auto inputDatabase = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( inputFile, inputDatabase );
+    auto inputDatabase = AMP::Database::parseInputFile( inputFile );
 
     // Read the mesh database
     auto meshDatabase = inputDatabase->getDatabase( "Mesh" );

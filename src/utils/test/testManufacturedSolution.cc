@@ -9,11 +9,10 @@
 #include <iostream>
 #include <valarray>
 
-#include "../Database.h"
-#include "../ManufacturedSolution.h"
-#include "../MemoryDatabase.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/ManufacturedSolution.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/shared_ptr.h"
@@ -28,21 +27,21 @@ void testit( AMP::UnitTest *ut,
              double z )
 {
     AMP::shared_ptr<AMP::Database> db( AMP::dynamic_pointer_cast<AMP::Database>(
-        AMP::make_shared<AMP::MemoryDatabase>( "ManufacturedSolution" ) ) );
+        AMP::make_shared<AMP::Database>( "ManufacturedSolution" ) ) );
 
-    db->putString( "Geometry", geom );
-    db->putString( "Order", order );
-    db->putString( "BoundaryType", bc );
-    db->putDouble( "MinX", 4. );
-    db->putDouble( "MaxX", 14. );
-    db->putDouble( "MinY", 40. );
-    db->putDouble( "MaxY", 80. );
-    db->putDouble( "MinZ", 400. );
-    db->putDouble( "MaxZ", 1000. );
-    db->putDouble( "MinR", 30. );
-    db->putDouble( "MaxR", 100. );
-    db->putDouble( "MinTh", 0. );
-    db->putDouble( "MaxTh", 6.284 );
+    db->putScalar( "Geometry", geom );
+    db->putScalar( "Order", order );
+    db->putScalar( "BoundaryType", bc );
+    db->putScalar( "MinX", 4. );
+    db->putScalar( "MaxX", 14. );
+    db->putScalar( "MinY", 40. );
+    db->putScalar( "MaxY", 80. );
+    db->putScalar( "MinZ", 400. );
+    db->putScalar( "MaxZ", 1000. );
+    db->putScalar( "MinR", 30. );
+    db->putScalar( "MaxR", 100. );
+    db->putScalar( "MinTh", 0. );
+    db->putScalar( "MaxTh", 6.284 );
 
     AMP::ManufacturedSolution ms( db );
     size_t nc = ms.getNumberOfInputs();

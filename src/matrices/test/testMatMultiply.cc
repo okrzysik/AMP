@@ -5,7 +5,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
@@ -31,8 +31,7 @@ void myTest( AMP::UnitTest *ut, std::string mesh_file )
     std::string log_file = "output_testMatMultiply";
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    auto mesh_file_db = AMP::make_shared<AMP::InputDatabase>( "mesh_file_db" );
-    AMP::InputManager::getManager()->parseInputFile( mesh_file, mesh_file_db );
+    auto mesh_file_db = AMP::Database::parseInputFile( mesh_file );
 
     // Create a libmesh mesh
     AMP::AMP_MPI comm( AMP_COMM_SELF );

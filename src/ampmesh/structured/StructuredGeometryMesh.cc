@@ -24,9 +24,9 @@ StructuredGeometryMesh::StructuredGeometryMesh( MeshParameters::shared_ptr param
     // Fill basic mesh information
     PhysicalDim = d_geometry->getDim();
     GeomDim     = static_cast<AMP::Mesh::GeomType>( d_geometry->getLogicalDim() );
-    d_max_gcw   = d_db->getIntegerWithDefault( "GCW", 2 );
-    AMP_ASSERT( PhysicalDim == d_db->getIntegerWithDefault( "dim", PhysicalDim ) );
-    auto size = d_geometry->getLogicalGridSize( d_db->getIntegerArray( "Size" ) );
+    d_max_gcw   = d_db->getWithDefault( "GCW", 2 );
+    AMP_ASSERT( PhysicalDim == d_db->getWithDefault( "dim", PhysicalDim ) );
+    auto size = d_geometry->getLogicalGridSize( d_db->getVector<int>( "Size" ) );
     for ( size_t d = 0; d < size.size(); d++ )
         d_globalSize[d] = size[d];
     auto isPeriodic = d_geometry->getPeriodicDim();

@@ -269,47 +269,50 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
 
 void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 {
-    d_bRobustMode = db->getBoolWithDefault( "ROBUST_MODE", false );
-    d_bUseEpetra  = db->getBoolWithDefault( "USE_EPETRA", true );
+    d_bRobustMode = db->getWithDefault<bool>( "ROBUST_MODE", false );
+    d_bUseEpetra  = db->getWithDefault<bool>( "USE_EPETRA", true );
 
 #if 1
-    d_build_hierarchy = db->getBoolWithDefault( "build_hierarchy", true );
+    d_build_hierarchy = db->getWithDefault<bool>( "build_hierarchy", true );
     d_build_hierarchy_from_defaults =
-        db->getBoolWithDefault( "build_hierarchy_from_defaults", false );
+        db->getWithDefault<bool>( "build_hierarchy_from_defaults", false );
 #else
-    d_build_hierarchy = db->getBoolWithDefault( "build_hierarchy", false );
+    d_build_hierarchy = db->getWithDefault<bool>( "build_hierarchy", false );
     d_build_hierarchy_from_defaults =
-        db->getBoolWithDefault( "build_hierarchy_from_defaults", true );
+        db->getWithDefault<bool>( "build_hierarchy_from_defaults", true );
 #endif
     // general parameters
-    d_MueLuParameterList.set( "verbosity", db->getStringWithDefault( "verbosity", "medium" ) );
+    d_MueLuParameterList.set( "verbosity",
+                              db->getWithDefault<std::string>( "verbosity", "medium" ) );
     d_MueLuParameterList.set( "problem: type",
-                              db->getStringWithDefault( "problem_type", "unknown" ) );
+                              db->getWithDefault<std::string>( "problem_type", "unknown" ) );
     d_MueLuParameterList.set( "number of equations",
-                              db->getIntegerWithDefault( "number_of_equations", 1 ) );
-    d_maxLevels = db->getIntegerWithDefault( "max_levels", 10 );
+                              db->getWithDefault<int>( "number_of_equations", 1 ) );
+    d_maxLevels = db->getWithDefault<int>( "max_levels", 10 );
     d_MueLuParameterList.set( "max levels", (int) d_maxLevels );
-    d_MueLuParameterList.set( "cycle type", db->getStringWithDefault( "cycle_type", "V" ) );
+    d_MueLuParameterList.set( "cycle type", db->getWithDefault<std::string>( "cycle_type", "V" ) );
     d_MueLuParameterList.set( "problem: symmetric",
-                              db->getBoolWithDefault( "problem_symmetric", false ) );
+                              db->getWithDefault<bool>( "problem_symmetric", false ) );
     d_MueLuParameterList.set( "xml parameter file",
-                              db->getStringWithDefault( "xml_parameter_file", "" ) );
+                              db->getWithDefault<std::string>( "xml_parameter_file", "" ) );
 
     // smoothing and coarse solver options
-    d_smoother_type = db->getStringWithDefault( "smoother_type", "IfpackSmoother" );
+    d_smoother_type = db->getWithDefault<std::string>( "smoother_type", "IfpackSmoother" );
 
     d_MueLuParameterList.set( "smoother: pre or post",
-                              db->getStringWithDefault( "smoother_pre_or_post", "both" ) );
-    d_MueLuParameterList.set( "smoother: pre type",
-                              db->getStringWithDefault( "smoother_pre_type", "RELAXATION" ) );
-    d_MueLuParameterList.set( "smoother: post type",
-                              db->getStringWithDefault( "smoother_post_type", "RELAXATION" ) );
+                              db->getWithDefault<std::string>( "smoother_pre_or_post", "both" ) );
+    d_MueLuParameterList.set(
+        "smoother: pre type",
+        db->getWithDefault<std::string>( "smoother_pre_type", "RELAXATION" ) );
+    d_MueLuParameterList.set(
+        "smoother: post type",
+        db->getWithDefault<std::string>( "smoother_post_type", "RELAXATION" ) );
     d_MueLuParameterList.set( "smoother: overlap",
-                              db->getIntegerWithDefault( "smoother_overlap", 0 ) );
+                              db->getWithDefault<int>( "smoother_overlap", 0 ) );
     d_MueLuParameterList.set( "smoother: pre overlap",
-                              db->getIntegerWithDefault( "smoother_pre_overlap", 0 ) );
+                              db->getWithDefault<int>( "smoother_pre_overlap", 0 ) );
     d_MueLuParameterList.set( "smoother: post overlap",
-                              db->getIntegerWithDefault( "smoother_post_overlap", 0 ) );
+                              db->getWithDefault<int>( "smoother_post_overlap", 0 ) );
 
     Teuchos::ParameterList relaxationParams;
 
@@ -319,50 +322,54 @@ void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db
 
         relaxationParams.set(
             "relaxation: type",
-            smoother_db->getStringWithDefault( "relaxation_type", "Gauss-Seidel" ) );
+            smoother_db->getWithDefault<std::string>( "relaxation_type", "Gauss-Seidel" ) );
         relaxationParams.set( "relaxation: sweeps",
-                              smoother_db->getIntegerWithDefault( "relaxation_sweeps", 1 ) );
+                              smoother_db->getWithDefault<int>( "relaxation_sweeps", 1 ) );
         relaxationParams.set(
             "relaxation: damping factor",
-            smoother_db->getDoubleWithDefault( "relaxation_damping_factor", 1.0 ) );
+            smoother_db->getWithDefault<double>( "relaxation_damping_factor", 1.0 ) );
 
         if ( smoother_db->keyExists( "relaxation_zero_starting_solution" ) ) {
-            relaxationParams.set( "relaxation: zero starting solution",
-                                  smoother_db->getBool( "relaxation_zero_starting_solution" ) );
+            relaxationParams.set(
+                "relaxation: zero starting solution",
+                smoother_db->getScalar<bool>( "relaxation_zero_starting_solution" ) );
         }
 
         if ( smoother_db->keyExists( "relaxation_backward_mode" ) ) {
             relaxationParams.set( "relaxation: backward mode",
-                                  smoother_db->getBool( "relaxation_backward_mode" ) );
+                                  smoother_db->getScalar<bool>( "relaxation_backward_mode" ) );
         }
 
         if ( smoother_db->keyExists( "relaxation_use_l1" ) ) {
             relaxationParams.set( "relaxation: use l1",
-                                  smoother_db->getBool( "relaxation_use_l1" ) );
+                                  smoother_db->getScalar<bool>( "relaxation_use_l1" ) );
         }
 
         if ( smoother_db->keyExists( "relaxation_l1_eta" ) ) {
             relaxationParams.set( "relaxation: l1 eta",
-                                  smoother_db->getDouble( "relaxation_l1_eta" ) );
+                                  smoother_db->getScalar<double>( "relaxation_l1_eta" ) );
         }
 
         if ( smoother_db->keyExists( "relaxation_min_diagonal_value" ) ) {
-            relaxationParams.set( "relaxation: min diagonal value",
-                                  smoother_db->getDouble( "relaxation_min_diagonal_value" ) );
+            relaxationParams.set(
+                "relaxation: min diagonal value",
+                smoother_db->getScalar<double>( "relaxation_min_diagonal_value" ) );
         }
 
         if ( smoother_db->keyExists( "relaxation_fix_tiny_diagonal_entries" ) ) {
-            relaxationParams.set( "relaxation: fix tiny diagonal entries",
-                                  smoother_db->getBool( "relaxation_fix_tiny_diagonal_entries" ) );
+            relaxationParams.set(
+                "relaxation: fix tiny diagonal entries",
+                smoother_db->getScalar<bool>( "relaxation_fix_tiny_diagonal_entries" ) );
         }
 
         if ( smoother_db->keyExists( "relaxation_check_diagonal_entries" ) ) {
-            relaxationParams.set( "relaxation: check diagonal entries",
-                                  smoother_db->getBool( "relaxation_check_diagonal_entries" ) );
+            relaxationParams.set(
+                "relaxation: check diagonal entries",
+                smoother_db->getScalar<bool>( "relaxation_check_diagonal_entries" ) );
         }
 #if 0
         if ( smoother_db->keyExists("relaxation_local_smoothing_indices") ) { 
-            relaxationParams.set( "relaxation: local smoothing indices", smoother_db->getIntegerWithDefault("relaxation_local_smoothing_indices") );
+            relaxationParams.set( "relaxation: local smoothing indices", smoother_db->getWithDefault<int>("relaxation_local_smoothing_indices") );
         }
 #endif
     }
@@ -370,63 +377,66 @@ void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db
     d_MueLuParameterList.set( "smoother: params", relaxationParams );
 
     d_MueLuParameterList.set( "coarse: max size",
-                              db->getIntegerWithDefault( "coarse_max_size", 2000 ) );
+                              db->getWithDefault<int>( "coarse_max_size", 2000 ) );
     d_MueLuParameterList.set( "coarse: type",
-                              db->getStringWithDefault( "coarse_type", "SuperLU" ) );
-    d_MueLuParameterList.set( "coarse: overlap", db->getIntegerWithDefault( "coarse_overlap", 0 ) );
+                              db->getWithDefault<std::string>( "coarse_type", "SuperLU" ) );
+    d_MueLuParameterList.set( "coarse: overlap", db->getWithDefault<int>( "coarse_overlap", 0 ) );
 
     // aggregation options: incomplete list
     d_MueLuParameterList.set( "aggregation: type",
-                              db->getStringWithDefault( "aggregation_type", "uncoupled" ) );
-    d_MueLuParameterList.set( "aggregation: ordering",
-                              db->getStringWithDefault( "aggregation_ordering", "natural" ) );
-    d_MueLuParameterList.set( "aggregation: drop scheme",
-                              db->getStringWithDefault( "aggregation_drop_scheme", "classical" ) );
+                              db->getWithDefault<std::string>( "aggregation_type", "uncoupled" ) );
+    d_MueLuParameterList.set(
+        "aggregation: ordering",
+        db->getWithDefault<std::string>( "aggregation_ordering", "natural" ) );
+    d_MueLuParameterList.set(
+        "aggregation: drop scheme",
+        db->getWithDefault<std::string>( "aggregation_drop_scheme", "classical" ) );
     d_MueLuParameterList.set( "aggregation: drop tol",
-                              db->getDoubleWithDefault( "aggregation_drop_tol", 0.0 ) );
+                              db->getWithDefault<double>( "aggregation_drop_tol", 0.0 ) );
     d_MueLuParameterList.set( "aggregation: min agg size",
-                              db->getIntegerWithDefault( "aggregation_min_agg_size", 2 ) );
+                              db->getWithDefault<int>( "aggregation_min_agg_size", 2 ) );
     d_MueLuParameterList.set( "aggregation: max agg size",
-                              db->getIntegerWithDefault( "aggregation_max_agg_size", -1 ) );
+                              db->getWithDefault<int>( "aggregation_max_agg_size", -1 ) );
     d_MueLuParameterList.set( "aggregation: brick x size",
-                              db->getIntegerWithDefault( "aggregation_brick_x_size", 2 ) );
+                              db->getWithDefault<int>( "aggregation_brick_x_size", 2 ) );
     d_MueLuParameterList.set( "aggregation: brick y size",
-                              db->getIntegerWithDefault( "aggregation_brick_y_size", 2 ) );
+                              db->getWithDefault<int>( "aggregation_brick_y_size", 2 ) );
     d_MueLuParameterList.set( "aggregation: brick z size",
-                              db->getIntegerWithDefault( "aggregation_brick_z_size", 2 ) );
+                              db->getWithDefault<int>( "aggregation_brick_z_size", 2 ) );
 
     // rebalance options
     d_MueLuParameterList.set( "repartition: enable",
-                              db->getBoolWithDefault( "repartition_enable", false ) );
-    d_MueLuParameterList.set( "repartition: partitioner",
-                              db->getStringWithDefault( "repartition_partitioner", "zoltan2" ) );
+                              db->getWithDefault<bool>( "repartition_enable", false ) );
+    d_MueLuParameterList.set(
+        "repartition: partitioner",
+        db->getWithDefault<std::string>( "repartition_partitioner", "zoltan2" ) );
     d_MueLuParameterList.set( "repartition: start level",
-                              db->getIntegerWithDefault( "repartition_start_level", 2 ) );
+                              db->getWithDefault<int>( "repartition_start_level", 2 ) );
     d_MueLuParameterList.set( "repartition: min rows per proc",
-                              db->getIntegerWithDefault( "repartition_min_rows_per_proc", 800 ) );
+                              db->getWithDefault<int>( "repartition_min_rows_per_proc", 800 ) );
     d_MueLuParameterList.set( "repartition: max imbalance",
-                              db->getDoubleWithDefault( "repartition_max_imbalance", 1.2 ) );
+                              db->getWithDefault<double>( "repartition_max_imbalance", 1.2 ) );
     d_MueLuParameterList.set( "repartition: remap parts",
-                              db->getBoolWithDefault( "repartition_remap_parts", true ) );
+                              db->getWithDefault<bool>( "repartition_remap_parts", true ) );
     d_MueLuParameterList.set( "repartition: rebalance P and R",
-                              db->getBoolWithDefault( "repartition_P_and_R", false ) );
+                              db->getWithDefault<bool>( "repartition_P_and_R", false ) );
 
     // mg algorithm options, incomplete list
     d_MueLuParameterList.set( "multigrid algorithm",
-                              db->getStringWithDefault( "multigrid_algorithm", "sa" ) );
+                              db->getWithDefault<std::string>( "multigrid_algorithm", "sa" ) );
     d_MueLuParameterList.set( "sa: damping factor",
-                              db->getDoubleWithDefault( "sa_damping_factor", 1.33 ) );
+                              db->getWithDefault<double>( "sa_damping_factor", 1.33 ) );
 
     // mg reuse options: none at present
 
     // miscellaneous options
     d_MueLuParameterList.set( "print initial parameters",
-                              db->getBoolWithDefault( "print_initial_parameters", true ) );
+                              db->getWithDefault<bool>( "print_initial_parameters", true ) );
     d_MueLuParameterList.set( "print unused parameters",
-                              db->getBoolWithDefault( "print_unused_parameters", true ) );
+                              db->getWithDefault<bool>( "print_unused_parameters", true ) );
 
     d_MueLuParameterList.set( "transpose: use implicit",
-                              db->getBoolWithDefault( "transpose_use_implicit", false ) );
+                              db->getWithDefault<bool>( "transpose_use_implicit", false ) );
 }
 
 void TrilinosMueLuSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
@@ -649,8 +659,7 @@ void TrilinosMueLuSolver::reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebr
         AMP_ERROR( "Robust mode can only be used with Epetra matrices." );
     }
 
-    AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+    auto linearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
     AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
 
     d_matrix =

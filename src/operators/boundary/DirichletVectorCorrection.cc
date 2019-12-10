@@ -1,6 +1,6 @@
 
 #include "DirichletVectorCorrection.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "DirichletMatrixCorrectionParameters.h"
 
@@ -15,19 +15,19 @@ void DirichletVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters>
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    bool skipParams = ( params->d_db )->getBoolWithDefault( "skip_params", false );
+    bool skipParams = ( params->d_db )->getWithDefault( "skip_params", false );
 
     if ( !skipParams ) {
-        d_scalingFactor = ( params->d_db )->getDoubleWithDefault( "SCALING_FACTOR", 1.0 );
-        d_setResidual   = ( params->d_db )->getBoolWithDefault( "setResidual", false );
+        d_scalingFactor = ( params->d_db )->getWithDefault<double>( "SCALING_FACTOR", 1.0 );
+        d_setResidual   = ( params->d_db )->getWithDefault( "setResidual", false );
         d_isAttachedToVolumeOperator =
-            ( params->d_db )->getBoolWithDefault( "isAttachedToVolumeOperator", false );
-        d_valuesType = ( params->d_db )->getIntegerWithDefault( "valuesType", 1 );
+            ( params->d_db )->getWithDefault( "isAttachedToVolumeOperator", false );
+        d_valuesType = ( params->d_db )->getWithDefault( "valuesType", 1 );
         AMP_INSIST( ( ( d_valuesType == 1 ) || ( d_valuesType == 2 ) ), "Wrong value." );
 
         AMP_INSIST( ( params->d_db )->keyExists( "number_of_ids" ),
                     "Key ''number_of_ids'' is missing!" );
-        int numIds = ( params->d_db )->getInteger( "number_of_ids" );
+        int numIds = ( params->d_db )->getScalar<int>( "number_of_ids" );
 
         d_boundaryIds.resize( numIds );
         d_dofIds.resize( numIds );
@@ -40,11 +40,11 @@ void DirichletVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters>
         for ( int j = 0; j < numIds; j++ ) {
             sprintf( key, "id_%d", j );
             AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-            d_boundaryIds[j] = ( params->d_db )->getInteger( key );
+            d_boundaryIds[j] = ( params->d_db )->getScalar<int>( key );
 
             sprintf( key, "number_of_dofs_%d", j );
             AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-            int numDofIds = ( params->d_db )->getInteger( key );
+            int numDofIds = ( params->d_db )->getScalar<int>( key );
 
             d_dofIds[j].resize( numDofIds );
 
@@ -54,11 +54,11 @@ void DirichletVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters>
             for ( int i = 0; i < numDofIds; i++ ) {
                 sprintf( key, "dof_%d_%d", j, i );
                 AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-                d_dofIds[j][i] = ( params->d_db )->getInteger( key );
+                d_dofIds[j][i] = ( params->d_db )->getScalar<int>( key );
 
                 if ( d_valuesType == 1 ) {
                     sprintf( key, "value_%d_%d", j, i );
-                    d_dirichletValues1[j][i] = ( params->d_db )->getDoubleWithDefault( key, 0.0 );
+                    d_dirichletValues1[j][i] = ( params->d_db )->getWithDefault<double>( key, 0.0 );
                 }
             } // end for i
         }     // end for j
@@ -177,8 +177,8 @@ void DirichletVectorCorrection::applyResidual( AMP::LinearAlgebra::Vector::const
 AMP::shared_ptr<OperatorParameters>
     DirichletVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
-    tmp_db->putBool( "skip_params", true );
+    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    tmp_db->putScalar( "skip_params", true );
 
     AMP::shared_ptr<DirichletMatrixCorrectionParameters> outParams(
         new DirichletMatrixCorrectionParameters( tmp_db ) );

@@ -1,15 +1,154 @@
-// This file contains a list of enums for units until we have a Units class
 #ifndef included_AMP_Units
 #define included_AMP_Units
 
-namespace AMP {
-namespace Units {
+#include <array>
 
-enum class Time { unknown = 0, seconds, minutes, hours, days };
-enum class Length { unknown = 0, meters };
-enum class Temperature { unknown = 0, kelvin };
-enum class Mass { unknown = 0, kilograms };
-} // namespace Units
+#include "AMP/utils/string_view.h"
+
+
+namespace AMP {
+
+
+//! Unit system class
+class alignas( 2 ) Units final
+{
+public:
+    //! Enum to hold prefix
+    enum class UnitPrefix : int8_t {
+        yocto   = 0,
+        zepto   = 1,
+        atto    = 2,
+        femto   = 3,
+        pico    = 4,
+        nano    = 5,
+        micro   = 6,
+        milli   = 7,
+        centi   = 8,
+        deci    = 9,
+        none    = 10,
+        deca    = 11,
+        hecto   = 12,
+        kilo    = 13,
+        mega    = 14,
+        giga    = 15,
+        tera    = 16,
+        peta    = 17,
+        exa     = 18,
+        zetta   = 19,
+        yotta   = 20,
+        unknown = 21
+    };
+
+    //! Enum to unit type
+    enum class UnitType : uint8_t {
+        length,
+        mass,
+        time,
+        current,
+        temperature,
+        energy,
+        angle,
+        unknown
+    };
+
+    //! Enum to hold unit
+    enum class UnitValue : uint8_t {
+        meter,
+        gram,
+        second,
+        ampere,
+        kelvin,
+        joule,
+        erg,
+        degree,
+        radian,
+        unknown
+    };
+
+
+public:
+    //! Constructor
+    constexpr Units();
+
+    //! Constructor
+    constexpr Units( const char *unit ) : Units( AMP::string_view( unit ) ) {}
+
+    //! Constructor
+    constexpr Units( const AMP::string_view &unit );
+
+    //! Constructor
+    explicit constexpr Units( UnitPrefix, UnitValue );
+
+    //! Get the prefix
+    constexpr UnitPrefix getPrefix() const noexcept { return d_prefix; }
+
+    //! Get the unit
+    constexpr UnitValue getUnit() const noexcept { return d_unit; }
+
+    //! Get the unit
+    constexpr UnitType getUnitType() const noexcept { return getUnitType( d_unit ); }
+
+    //! Get the unit
+    static constexpr UnitType getUnitType( UnitValue ) noexcept;
+
+    //! Get the prefix from a string
+    static constexpr UnitPrefix getUnitPrefix( const AMP::string_view & ) noexcept;
+
+    //! Get the unit value from a string
+    static constexpr UnitValue getUnitValue( const AMP::string_view & ) noexcept;
+
+    //! Convert to the given unit system
+    constexpr double convert( const Units & ) const noexcept;
+
+    //! Convert a prefix to a scalar
+    static constexpr double convert( UnitPrefix x ) noexcept
+    {
+        return d_pow10[static_cast<int8_t>( x )];
+    }
+
+    //! Get a string representation of the units
+    std::string str() const;
+
+    //! Get a string representation for the prefix
+    static std::array<char, 3> str( UnitPrefix ) noexcept;
+
+    //! Get a string representation for the unit value
+    static AMP::string_view str( UnitValue ) noexcept;
+
+    //! Operator ==
+    constexpr bool operator==( const Units &rhs ) const noexcept
+    {
+        return d_prefix == rhs.d_prefix && d_unit == rhs.d_unit;
+    }
+
+    //! Operator !=
+    constexpr bool operator!=( const Units &rhs ) const noexcept
+    {
+        return d_prefix != rhs.d_prefix || d_unit != rhs.d_unit;
+    }
+
+    //! Check if unit is null
+    constexpr bool isNull() const
+    {
+        return d_prefix == UnitPrefix::unknown || d_unit == UnitValue::unknown;
+    }
+
+protected:
+    UnitPrefix d_prefix;
+    UnitValue d_unit;
+
+private:
+    constexpr static double d_pow10[22]    = { 1e-24, 1e-21, 1e-18, 1e-15, 1e-12, 1e-9, 1e-6, 1e-3,
+                                            1e-2,  0.1,   1,     10,    100,   1000, 1e6,  1e9,
+                                            1e12,  1e15,  1e18,  1e21,  1e24,  0 };
+    constexpr static char d_prefixSymbol[] = "yzafpnumcd\0dhkMGTPEZYu";
+};
+
+
 } // namespace AMP
+
+
+#include "AMP/utils/Units.hpp"
+
 
 #endif

@@ -47,15 +47,15 @@ void CGSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const param
 }
 
 // Function to get values from input
-void CGSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
+void CGSolver::getFromInput( AMP::shared_ptr<AMP::Database> db )
 {
 
-    d_dRelativeTolerance   = db->getDoubleWithDefault( "relative_tolerance", 1.0e-9 );
-    d_dAbsoluteTolerance   = db->getDoubleWithDefault( "absolute_tolerance", 1.0e-14 );
-    d_dDivergenceTolerance = db->getDoubleWithDefault( "divergence_tolerance", 1.0e+03 );
-    d_iMaxIterations       = db->getDoubleWithDefault( "max_iterations", 1000 );
+    d_dRelativeTolerance   = db->getWithDefault<double>( "relative_tolerance", 1.0e-9 );
+    d_dAbsoluteTolerance   = db->getWithDefault<double>( "absolute_tolerance", 1.0e-14 );
+    d_dDivergenceTolerance = db->getWithDefault<double>( "divergence_tolerance", 1.0e+03 );
+    d_iMaxIterations       = db->getWithDefault<double>( "max_iterations", 1000 );
 
-    d_bUsesPreconditioner = db->getBoolWithDefault( "uses_preconditioner", false );
+    d_bUsesPreconditioner = db->getWithDefault( "uses_preconditioner", false );
 }
 
 /****************************************************************

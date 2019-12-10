@@ -20,8 +20,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/ManufacturedSolution.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
@@ -50,9 +48,8 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
@@ -79,11 +76,10 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
             nlinBVPOp->getBoundaryOperator() );
     // AMP::shared_ptr<AMP::Database> dirichlet_db =
     // input_db->getDatabase("FickDirichletVectorCorrection");
-    // AMP_INSIST(dirichlet_db->getInteger("valuesType")==2, "DirichletVectorCorrection::valuesType
-    // must be 2");
-    // dirichlet_db->putBool("isAttachedToVolumeOperator",false); // OperatorBuilder forces this to
-    // be true for some
-    // reason.
+    // AMP_INSIST(dirichlet_db->getScalar<int>("valuesType")==2,
+    // "DirichletVectorCorrection::valuesType must be 2");
+    // dirichlet_db->putScalar("isAttachedToVolumeOperator",false); // OperatorBuilder forces this
+    // to be true for some reason.
     // AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> dirichletParams(
     //      new AMP::Operator::DirichletVectorCorrectionParameters(dirichlet_db));
     // AMP::shared_ptr<AMP::Operator::OperatorParameters> dirichletOpParams =

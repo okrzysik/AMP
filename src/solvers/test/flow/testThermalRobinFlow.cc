@@ -38,8 +38,6 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -56,9 +54,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    auto input_db          = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db          = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     AMP::PIO::logAllNodes( log_file );
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
@@ -89,7 +86,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-    double intguess = input_db->getDoubleWithDefault( "InitialGuess", 400 );
+    double intguess = input_db->getWithDefault<double>( "InitialGuess", 400 );
 
     //-----------------------------------------------
     //   CREATE THE NONLINEAR THERMAL OPERATOR 1 ----

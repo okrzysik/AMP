@@ -2,8 +2,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -188,9 +186,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     globalComm.barrier();
     double inpReadBeginTime = MPI_Wtime();
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     globalComm.barrier();
     double inpReadEndTime = MPI_Wtime();
@@ -298,7 +296,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> slaveSolverParams(
             new AMP::Solver::PetscKrylovSolverParameters( slaveSolver_db ) );
 
-        bool useSlaveBVPOperator = input_db->getBool( "useSlaveBVPOperator" );
+        bool useSlaveBVPOperator = input_db->getScalar<bool>( "useSlaveBVPOperator" );
         if ( useSlaveBVPOperator ) {
             slaveBVPOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
                 AMP::Operator::OperatorBuilder::createOperator(
@@ -389,7 +387,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // u_s = C u_m
     contactOperator->copyMasterToSlave( columnSolVec );
 
-    bool usePetscKrylovSolver = input_db->getBool( "usePetscKrylovSolver" );
+    bool usePetscKrylovSolver = input_db->getScalar<bool>( "usePetscKrylovSolver" );
     if ( usePetscKrylovSolver ) {
         // Build a matrix shell operator to use the column operator with the petsc krylov solvers
         AMP::shared_ptr<AMP::Database> matrixShellDatabase =
@@ -427,9 +425,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         linearSolver->solve( columnRhsVec, columnSolVec );
     } else {
-        size_t myPCGmaxIters = input_db->getInteger( "myPCGmaxIters" );
-        double myPCGrelTol   = input_db->getDouble( "myPCGrelTol" );
-        double myPCGabsTol   = input_db->getDouble( "myPCGabsTol" );
+        size_t myPCGmaxIters = input_db->getScalar<int>( "myPCGmaxIters" );
+        double myPCGrelTol   = input_db->getScalar<double>( "myPCGrelTol" );
+        double myPCGabsTol   = input_db->getScalar<double>( "myPCGabsTol" );
         myPCG( columnRhsVec,
                columnSolVec,
                columnOperator,
@@ -493,9 +491,9 @@ static void myTest2( AMP::UnitTest *ut, const std::string &exeName )
     globalComm.barrier();
     double inpReadBeginTime = MPI_Wtime();
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     globalComm.barrier();
     double inpReadEndTime = MPI_Wtime();
@@ -504,7 +502,7 @@ static void myTest2( AMP::UnitTest *ut, const std::string &exeName )
                   << " seconds." << std::endl;
     }
 
-    bool skipFusedMesh = input_db->getBool( "skipFusedMesh" );
+    bool skipFusedMesh = input_db->getScalar<bool>( "skipFusedMesh" );
     if ( skipFusedMesh ) {
         return;
     }
@@ -552,7 +550,7 @@ static void myTest2( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> masterElementPhysicsModel;
     AMP::shared_ptr<AMP::Operator::LinearBVPOperator> masterOperator;
-    bool useSlaveBVPOperator = input_db->getBool( "useSlaveBVPOperator" );
+    bool useSlaveBVPOperator = input_db->getScalar<bool>( "useSlaveBVPOperator" );
     if ( useSlaveBVPOperator ) {
         masterOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
@@ -598,7 +596,7 @@ static void myTest2( AMP::UnitTest *ut, const std::string &exeName )
         slaveLoadOperator->apply( nullVec, nullVec, columnRhsVec, 1.0, 0.0 );
     }
 
-    bool usePetscKrylovSolver = input_db->getBool( "usePetscKrylovSolver" );
+    bool usePetscKrylovSolver = input_db->getScalar<bool>( "usePetscKrylovSolver" );
     if ( usePetscKrylovSolver ) {
         // Build a matrix shell operator to use the column operator with the petsc krylov solvers
         AMP::shared_ptr<AMP::Database> matrixShellDatabase =
@@ -627,9 +625,9 @@ static void myTest2( AMP::UnitTest *ut, const std::string &exeName )
 
         linearSolver->solve( columnRhsVec, columnSolVec );
     } else {
-        size_t myPCGmaxIters = input_db->getInteger( "myPCGmaxIters" );
-        double myPCGrelTol   = input_db->getDouble( "myPCGrelTol" );
-        double myPCGabsTol   = input_db->getDouble( "myPCGabsTol" );
+        size_t myPCGmaxIters = input_db->getScalar<int>( "myPCGmaxIters" );
+        double myPCGrelTol   = input_db->getScalar<double>( "myPCGrelTol" );
+        double myPCGabsTol   = input_db->getScalar<double>( "myPCGabsTol" );
         myPCG( columnRhsVec,
                columnSolVec,
                columnOperator,

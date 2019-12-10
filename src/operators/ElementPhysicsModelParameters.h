@@ -23,9 +23,7 @@ public:
     /**
       Constructor.
       */
-    explicit ElementPhysicsModelParameters( const AMP::shared_ptr<AMP::Database> &db ) : d_db( db )
-    {
-    }
+    explicit ElementPhysicsModelParameters( AMP::shared_ptr<AMP::Database> db ) : d_db( db ) {}
 
     /**
       Destructor.

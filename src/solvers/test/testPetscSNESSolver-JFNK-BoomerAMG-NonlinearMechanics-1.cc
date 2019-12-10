@@ -15,8 +15,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -35,9 +33,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
@@ -48,7 +45,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
-    int NumberOfLoadingSteps = input_db->getInteger( "NumberOfLoadingSteps" );
+    int NumberOfLoadingSteps = input_db->getScalar<int>( "NumberOfLoadingSteps" );
 
     AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinBvpOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
@@ -166,7 +163,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             ut->passes( "Nonlinear solve for current loading step" );
         }
 
-        AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
+        AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
         AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperatorParameters> tmpParams(
             new AMP::Operator::MechanicsNonlinearFEOperatorParameters( tmp_db ) );
         ( nonlinBvpOperator->getVolumeOperator() )->reset( tmpParams );

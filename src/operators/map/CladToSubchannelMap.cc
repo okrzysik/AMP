@@ -25,7 +25,7 @@ CladToSubchannelMap::CladToSubchannelMap(
     auto params = AMP::dynamic_pointer_cast<CladToSubchannelMapParameters>( p );
     AMP_ASSERT( params );
 
-    int DofsPerObj = params->d_db->getInteger( "DOFsPerObject" );
+    int DofsPerObj = params->d_db->getScalar<int>( "DOFsPerObject" );
     AMP_INSIST( DofsPerObj == 1,
                 "CladToSubchannelMap is currently only designed for 1 DOF per node" );
 

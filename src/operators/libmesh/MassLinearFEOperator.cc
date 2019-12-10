@@ -39,11 +39,12 @@ MassLinearFEOperator::MassLinearFEOperator(
 
     d_useConstantBurnup = params->d_db->keyExists( "FixedBurnup" );
 
-    d_constantTemperatureValue = params->d_db->getDoubleWithDefault( "FixedTemperature", 273.0 );
+    d_constantTemperatureValue = params->d_db->getWithDefault<double>( "FixedTemperature", 273.0 );
 
-    d_constantConcentrationValue = params->d_db->getDoubleWithDefault( "FixedConcentration", 0.0 );
+    d_constantConcentrationValue =
+        params->d_db->getWithDefault<double>( "FixedConcentration", 0.0 );
 
-    d_constantBurnupValue = params->d_db->getDoubleWithDefault( "FixedBurnup", 0.0 );
+    d_constantBurnupValue = params->d_db->getWithDefault<double>( "FixedBurnup", 0.0 );
     // d_inpVariable.reset(new AMP::Mesh::NodalScalarVariable("inpVar"));
     // d_outVariable.reset(new AMP::Mesh::NodalScalarVariable("outVar"));
     std::string inpVar = params->d_db->getString( "InputVariable" );

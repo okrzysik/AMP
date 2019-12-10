@@ -36,7 +36,7 @@ ScalarN2GZAxisMap::ScalarN2GZAxisMap( const AMP::shared_ptr<AMP::Operator::Opera
         AMP::dynamic_pointer_cast<Map3to1to3Parameters>( p );
     AMP_ASSERT( params );
 
-    int DofsPerObj = params->d_db->getInteger( "DOFsPerObject" );
+    int DofsPerObj = params->d_db->getScalar<int>( "DOFsPerObject" );
     AMP_INSIST( DofsPerObj == 4, "ScalarZAxis is currently only designed for 4 Gp per elem" );
 
     // Create the element iterators

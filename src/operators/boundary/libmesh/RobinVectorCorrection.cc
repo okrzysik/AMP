@@ -1,5 +1,5 @@
 #include "RobinVectorCorrection.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
 #include "RobinMatrixCorrectionParameters.h"
@@ -40,16 +40,16 @@ void RobinVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    d_skipParams = ( params->d_db )->getBoolWithDefault( "skip_params", false );
+    d_skipParams = ( params->d_db )->getWithDefault( "skip_params", false );
 
     AMP_INSIST( ( params->d_db )->keyExists( "alpha" ), "Missing key: prefactor alpha" );
-    d_alpha = ( params->d_db )->getDouble( "alpha" );
+    d_alpha = ( params->d_db )->getScalar<double>( "alpha" );
 
     AMP_INSIST( ( params->d_db )->keyExists( "beta" ), "Missing key: prefactor beta" );
-    d_beta = ( params->d_db )->getDouble( "beta" );
+    d_beta = ( params->d_db )->getScalar<double>( "beta" );
 
     AMP_INSIST( ( params->d_db )->keyExists( "gamma" ), "Missing key: total prefactor gamma" );
-    d_gamma = ( params->d_db )->getDouble( "gamma" );
+    d_gamma = ( params->d_db )->getScalar<double>( "gamma" );
 }
 
 
@@ -250,11 +250,11 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
 AMP::shared_ptr<OperatorParameters>
     RobinVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    auto tmp_db = AMP::make_shared<AMP::InputDatabase>( "Dummy" );
-    tmp_db->putBool( "skip_params", true );
-    tmp_db->putBool( "skip_rhs_correction", true );
-    tmp_db->putBool( "skip_matrix_correction", false );
-    tmp_db->putBool( "IsFluxGaussPtVector", d_isFluxGaussPtVector );
+    auto tmp_db = AMP::make_shared<AMP::Database>( "Dummy" );
+    tmp_db->putScalar( "skip_params", true );
+    tmp_db->putScalar( "skip_rhs_correction", true );
+    tmp_db->putScalar( "skip_matrix_correction", false );
+    tmp_db->putScalar( "IsFluxGaussPtVector", d_isFluxGaussPtVector );
     auto outParams                 = AMP::make_shared<RobinMatrixCorrectionParameters>( tmp_db );
     outParams->d_robinPhysicsModel = d_robinPhysicsModel;
     outParams->d_elementInputVec   = d_elementInputVec;

@@ -2,7 +2,7 @@
 #include <string>
 
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
@@ -25,8 +25,7 @@ void myTest( AMP::UnitTest *ut, std::string input_file )
     AMP::PIO::logOnlyNodeZero( log_file );
 
     // Read the input file
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
+    auto input_db = AMP::Database::parseInputFile( input_file );
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );

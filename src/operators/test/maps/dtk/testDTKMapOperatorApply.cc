@@ -4,8 +4,7 @@
 #include "AMP/operators/map/dtk/MultiDofDTKMapOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -24,12 +23,12 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    auto input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db( new AMP::Database( "input_db" ) );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // PROFILE_START("SetupDriver");
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
@@ -61,7 +60,7 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
 
     RightHandSideVec->setToScalar( 0.0 );
 
-    double initialMapValue = input_db->getDoubleWithDefault( "IMapValue", 1. );
+    double initialMapValue = input_db->getWithDefault<double>( "IMapValue", 1. );
     SolutionVec->setToScalar( 298. );
     thermalMapVec->setToScalar( initialMapValue );
     RankVec->setToScalar( globalComm.getRank() );
@@ -73,17 +72,17 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
     auto mapColParams = AMP::make_shared<AMP::Operator::ColumnOperatorParameters>( input_db );
     auto mapsColumn   = AMP::make_shared<AMP::Operator::ColumnOperator>( mapColParams );
 
-    auto nmaps          = DTKdb->getIntegerArray( "N_maps" );
-    auto mesh1          = DTKdb->getStringArray( "Mesh1" );
-    auto mesh2          = DTKdb->getStringArray( "Mesh2" );
-    auto surfaceID1     = DTKdb->getIntegerArray( "Surface1" );
-    auto surfaceID2     = DTKdb->getIntegerArray( "Surface2" );
-    auto var1           = DTKdb->getStringArray( "Variable1" );
-    auto var2           = DTKdb->getStringArray( "Variable2" );
-    auto inputDofsSize  = DTKdb->getIntegerArray( "InputDOFsPerObject" );
-    auto inputStride    = DTKdb->getIntegerArray( "InputStride" );
-    auto outputDofsSize = DTKdb->getIntegerArray( "OutputDOFsPerObject" );
-    auto outputStride   = DTKdb->getIntegerArray( "OutputStride" );
+    auto nmaps          = DTKdb->getVector<int>( "N_maps" );
+    auto mesh1          = DTKdb->getVector<std::string>( "Mesh1" );
+    auto mesh2          = DTKdb->getVector<std::string>( "Mesh2" );
+    auto surfaceID1     = DTKdb->getVector<int>( "Surface1" );
+    auto surfaceID2     = DTKdb->getVector<int>( "Surface2" );
+    auto var1           = DTKdb->getVector<std::string>( "Variable1" );
+    auto var2           = DTKdb->getVector<std::string>( "Variable2" );
+    auto inputDofsSize  = DTKdb->getVector<int>( "InputDOFsPerObject" );
+    auto inputStride    = DTKdb->getVector<int>( "InputStride" );
+    auto outputDofsSize = DTKdb->getVector<int>( "OutputDOFsPerObject" );
+    auto outputStride   = DTKdb->getVector<int>( "OutputStride" );
 
     AMP::pout << "----------------------------\n";
     AMP::pout << "     CREATE MAP OPERATOR    \n";

@@ -10,7 +10,7 @@ namespace Operator {
 class PelletStackOperatorParameters : public OperatorParameters
 {
 public:
-    explicit PelletStackOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+    explicit PelletStackOperatorParameters( AMP::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     {
         d_currentPellet = static_cast<unsigned int>( -1 );

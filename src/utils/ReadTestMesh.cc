@@ -207,13 +207,13 @@ void readTestMesh( std::string mesh_file, AMP::shared_ptr<::Mesh> mesh )
     fclose( fp );
 }
 
-void readTestMesh( AMP::shared_ptr<AMP::InputDatabase> mesh_file_db, AMP::shared_ptr<::Mesh> mesh )
+void readTestMesh( AMP::shared_ptr<AMP::Database> mesh_file_db, AMP::shared_ptr<::Mesh> mesh )
 {
     auto mesh_db            = mesh_file_db->getDatabase( "Mesh" );
-    int num_elem            = mesh_db->getInteger( "NumberOfElements" );
-    int num_nodes           = mesh_db->getInteger( "NumberOfNodes" );
-    int num_boundaryNodeIds = mesh_db->getInteger( "NumberOfBoundaryNodeIds" );
-    int num_boundarySideIds = mesh_db->getInteger( "NumberOfBoundarySideIds" );
+    int num_elem            = mesh_db->getScalar<int>( "NumberOfElements" );
+    int num_nodes           = mesh_db->getScalar<int>( "NumberOfNodes" );
+    int num_boundaryNodeIds = mesh_db->getScalar<int>( "NumberOfBoundaryNodeIds" );
+    int num_boundarySideIds = mesh_db->getScalar<int>( "NumberOfBoundarySideIds" );
 
     mesh->reserve_elem( num_elem );
     mesh->reserve_nodes( num_nodes );
@@ -221,8 +221,7 @@ void readTestMesh( AMP::shared_ptr<AMP::InputDatabase> mesh_file_db, AMP::shared
     for ( int i = 0; i < num_nodes; i++ ) {
         char key[100];
         sprintf( key, "Point%d", i );
-        double point[3];
-        mesh_db->getDoubleArray( key, point, 3 );
+        auto point = mesh_db->getVector<double>( key );
         mesh->add_point(::Point( point[0], point[1], point[2] ), i );
     } // end for i
 
@@ -231,13 +230,7 @@ void readTestMesh( AMP::shared_ptr<AMP::InputDatabase> mesh_file_db, AMP::shared
     for ( int i = 0; i < num_elem; i++ ) {
         char key[100];
         sprintf( key, "Elem%d", i );
-        int nodesForElem[8];
-        mesh_db->getIntegerArray( key, nodesForElem, 8 );
-        std::vector<int> tmpArr( 8 );
-        for ( int j = 0; j < 8; j++ ) {
-            tmpArr[j] = nodesForElem[j];
-        } // end for j
-        elemNodeMap.push_back( tmpArr );
+        elemNodeMap.push_back( mesh_db->getVector<int>( key ) );
     } // end for i
 
     for ( int i = 0; i < num_elem; i++ ) {
@@ -252,14 +245,12 @@ void readTestMesh( AMP::shared_ptr<AMP::InputDatabase> mesh_file_db, AMP::shared
         sprintf( key, "BoundaryNodeId%d", bid );
         char newKey[100];
         sprintf( newKey, "NumberOfBoundaryNodes%d", bid );
-        int bndDofSize = mesh_db->getInteger( newKey );
+        int bndDofSize = mesh_db->getScalar<int>( newKey );
         if ( bndDofSize > 0 ) {
-            auto *bndDofIndices = new int[bndDofSize];
-            mesh_db->getIntegerArray( key, bndDofIndices, bndDofSize );
+            auto bndDofIndices = mesh_db->getVector<int>( key );
             for ( int i = 0; i < bndDofSize; i++ ) {
                 mesh->boundary_info->add_node( mesh->node_ptr( bndDofIndices[i] ), bid );
             } // end for i
-            delete[] bndDofIndices;
         }
     } // end for bid
 
@@ -268,15 +259,13 @@ void readTestMesh( AMP::shared_ptr<AMP::InputDatabase> mesh_file_db, AMP::shared
         sprintf( key, "BoundarySideId%d", bid );
         char newKey[100];
         sprintf( newKey, "NumberOfBoundarySides%d", bid );
-        int bndDofSize = mesh_db->getInteger( newKey );
+        int bndDofSize = mesh_db->getScalar<int>( newKey );
         if ( bndDofSize > 0 ) {
-            auto *bndDofIndices = new int[2 * bndDofSize];
-            mesh_db->getIntegerArray( key, bndDofIndices, ( 2 * bndDofSize ) );
+            auto bndDofIndices = mesh_db->getVector<int>( key );
             for ( int i = 0; i < bndDofSize; i++ ) {
                 mesh->boundary_info->add_side(
                     mesh->elem( bndDofIndices[2 * i] ), bndDofIndices[( 2 * i ) + 1], bid );
             } // end for i
-            delete[] bndDofIndices;
         }
     } // end for bid
 }

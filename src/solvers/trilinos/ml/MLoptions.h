@@ -12,12 +12,11 @@ namespace Solver {
 class MLoptions
 {
 public:
-    explicit MLoptions( const AMP::shared_ptr<AMP::Database> &db );
+    explicit MLoptions( AMP::shared_ptr<AMP::Database> db );
 
     ~MLoptions() {}
 
-    static void addDefaults( const std::string &problemType,
-                             const AMP::shared_ptr<AMP::Database> &db );
+    static void addDefaults( const std::string &problemType, AMP::shared_ptr<AMP::Database> db );
 
     std::string d_problemType;
     int d_maxLevels;

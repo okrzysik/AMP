@@ -174,7 +174,7 @@ void PetscSNESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> para
 }
 void PetscSNESSolver::getFromInput( const AMP::shared_ptr<AMP::Database> db )
 {
-    std::string petscOptions = db->getStringWithDefault( "SNESOptions", "" );
+    std::string petscOptions = db->getWithDefault<std::string>( "SNESOptions", "" );
     d_PetscMonitor.reset();
     if ( petscOptions.find( "monitor" ) != std::string::npos ) {
         petscOptions = PetscMonitor::removeMonitor( petscOptions );
@@ -198,36 +198,36 @@ void PetscSNESSolver::getFromInput( const AMP::shared_ptr<AMP::Database> db )
 #error This version of PETSc is not supported.  Check!!!
 #endif
 
-    d_bUsesJacobian = db->getBoolWithDefault( "usesJacobian", false );
+    d_bUsesJacobian = db->getWithDefault( "usesJacobian", false );
     d_sMFFDDifferencingStrategy =
-        db->getStringWithDefault( "MFFDDifferencingStrategy", MATMFFD_WP );
+        db->getWithDefault<std::string>( "MFFDDifferencingStrategy", MATMFFD_WP );
     d_dMFFDFunctionDifferencingError =
-        db->getDoubleWithDefault( "MFFDFunctionDifferencingError", PETSC_DEFAULT );
+        db->getWithDefault<double>( "MFFDFunctionDifferencingError", PETSC_DEFAULT );
 
-    d_SNESAppendOptionsPrefix = db->getStringWithDefault( "SNESAppendOptionsPrefix", "" );
+    d_SNESAppendOptionsPrefix = db->getWithDefault<std::string>( "SNESAppendOptionsPrefix", "" );
 
     if ( db->keyExists( "maximumFunctionEvals" ) )
-        d_iMaximumFunctionEvals = db->getInteger( "maximumFunctionEvals" );
+        d_iMaximumFunctionEvals = db->getScalar<int>( "maximumFunctionEvals" );
 
     if ( db->keyExists( "absoluteTolerance" ) )
-        d_dAbsoluteTolerance = db->getDouble( "absoluteTolerance" );
+        d_dAbsoluteTolerance = db->getScalar<double>( "absoluteTolerance" );
 
     if ( db->keyExists( "relativeTolerance" ) )
-        d_dRelativeTolerance = db->getDouble( "relativeTolerance" );
+        d_dRelativeTolerance = db->getScalar<double>( "relativeTolerance" );
 
     if ( db->keyExists( "stepTolerance" ) )
-        d_dStepTolerance = db->getDouble( "stepTolerance" );
+        d_dStepTolerance = db->getScalar<double>( "stepTolerance" );
 
-    d_bEnableLineSearchPreCheck = db->getBoolWithDefault( "enableLineSearchPreCheck", false );
+    d_bEnableLineSearchPreCheck = db->getWithDefault( "enableLineSearchPreCheck", false );
 
     if ( d_bEnableLineSearchPreCheck )
         d_iNumberOfLineSearchPreCheckAttempts =
-            db->getIntegerWithDefault( "numberOfLineSearchPreCheckAttempts", 5 );
+            db->getWithDefault( "numberOfLineSearchPreCheckAttempts", 5 );
 
-    d_bEnableMFFDBoundsCheck = db->getBoolWithDefault( "enableMFFDBoundsCheck", false );
+    d_bEnableMFFDBoundsCheck = db->getWithDefault( "enableMFFDBoundsCheck", false );
     if ( d_bEnableMFFDBoundsCheck )
         d_operatorComponentToEnableBoundsCheck =
-            db->getInteger( "operatorComponentToEnableBoundsCheck" );
+            db->getScalar<int>( "operatorComponentToEnableBoundsCheck" );
 }
 
 

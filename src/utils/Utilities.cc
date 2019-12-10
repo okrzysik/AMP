@@ -431,17 +431,8 @@ void Utilities::printDatabase( Database &db, std::ostream &os, const std::string
             os << indent << name << "{\n";
             printDatabase( *db.getDatabase( name ), os, indent + "   " );
             os << indent << "}\n";
-        } else if ( db.isString( name ) ) {
-            auto data = db.getStringArray( name );
-            printVar( name, data, os, indent );
-        } else if ( db.isDouble( name ) ) {
-            auto data = db.getDoubleArray( name );
-            printVar( name, data, os, indent );
-        } else if ( db.isInteger( name ) ) {
-            auto data = db.getIntegerArray( name );
-            printVar( name, data, os, indent );
-        } else if ( db.isBool( name ) ) {
-            auto data = db.getBoolArray( name );
+        } else if ( db.isType<bool>( name ) ) {
+            auto data = db.getVector<bool>( name );
             os << indent << name << " = ";
             if ( !data.empty() ) {
                 os << ( data[0] ? "TRUE" : "FALSE" );
@@ -449,6 +440,15 @@ void Utilities::printDatabase( Database &db, std::ostream &os, const std::string
                     os << ", " << ( data[i] ? "TRUE" : "FALSE" );
             }
             os << std::endl;
+        } else if ( db.isType<double>( name ) ) {
+            auto data = db.getVector<double>( name );
+            printVar( name, data, os, indent );
+        } else if ( db.isType<int>( name ) ) {
+            auto data = db.getVector<int>( name );
+            printVar( name, data, os, indent );
+        } else if ( db.isString( name ) ) {
+            auto data = db.getVector<std::string>( name );
+            printVar( name, data, os, indent );
         } else {
             AMP_ERROR( "Unknown type for field: " + name );
         }

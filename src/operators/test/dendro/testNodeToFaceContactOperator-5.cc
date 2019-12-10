@@ -2,8 +2,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -71,9 +69,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     globalComm.barrier();
     double inpReadBeginTime = MPI_Wtime();
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     globalComm.barrier();
     double inpReadEndTime = MPI_Wtime();
@@ -82,16 +80,16 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                   << " seconds." << std::endl;
     }
 
-    bool useML = input_db->getBoolWithDefault( "useML", false );
-    bool cladExpansionConstrained =
-        input_db->getBoolWithDefault( "cladExpansionConstrained", true );
-    bool useLevitatingFuel     = input_db->getBoolWithDefault( "useLevitatingFuel", true );
-    std::string prefixFileName = input_db->getStringWithDefault( "prefixFileName", "TATA_0" );
-    double scaleSolution       = input_db->getDoubleWithDefault( "scaleSolution", 1.0 );
-    double cladNeedALittleHelp = input_db->getDoubleWithDefault( "cladNeedALittleHelp", 0.0 );
-    double fuelNeedALittleHelp = input_db->getDoubleWithDefault( "fuelNeedALittleHelp", -1.0 );
-    bool contactIsFrictionless = input_db->getBoolWithDefault( "contactIsFrictionless", false );
-    double shrinkFactor        = input_db->getDoubleWithDefault( "shrinkFactor", 0.0 );
+    bool useML                    = input_db->getWithDefault( "useML", false );
+    bool cladExpansionConstrained = input_db->getWithDefault( "cladExpansionConstrained", true );
+    bool useLevitatingFuel        = input_db->getWithDefault( "useLevitatingFuel", true );
+    std::string prefixFileName =
+        input_db->getWithDefault<std::string>( "prefixFileName", "TATA_0" );
+    double scaleSolution       = input_db->getWithDefault<double>( "scaleSolution", 1.0 );
+    double cladNeedALittleHelp = input_db->getWithDefault<double>( "cladNeedALittleHelp", 0.0 );
+    double fuelNeedALittleHelp = input_db->getWithDefault<double>( "fuelNeedALittleHelp", -1.0 );
+    bool contactIsFrictionless = input_db->getWithDefault( "contactIsFrictionless", false );
+    double shrinkFactor        = input_db->getWithDefault<double>( "shrinkFactor", 0.0 );
 
     // Load the meshes
     globalComm.barrier();
@@ -173,7 +171,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 bottomPelletTopPelletContactOperatorParams ) );
     bottomPelletTopPelletContactOperator->initialize();
     bottomPelletTopPelletContactOperator->setContactIsFrictionless( contactIsFrictionless );
-    //  bottomPelletTopPelletContactOperator->setContactIsFrictionless(bottomPelletTopPelletContact_db->getBoolWithDefault("ContactIsFrictionless",
+    //  bottomPelletTopPelletContactOperator->setContactIsFrictionless(bottomPelletTopPelletContact_db->getWithDefault("ContactIsFrictionless",
     //  false));
 
     AMP::shared_ptr<AMP::Database> bottomPelletCladContact_db =
@@ -193,7 +191,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 bottomPelletCladContactOperatorParams ) );
     bottomPelletCladContactOperator->initialize();
     bottomPelletCladContactOperator->setContactIsFrictionless( contactIsFrictionless );
-    //  bottomPelletCladContactOperator->setContactIsFrictionless(bottomPelletCladContact_db->getBoolWithDefault("ContactIsFrictionless",
+    //  bottomPelletCladContactOperator->setContactIsFrictionless(bottomPelletCladContact_db->getWithDefault("ContactIsFrictionless",
     //  false));
 
     AMP::shared_ptr<AMP::Database> topPelletCladContact_db =
@@ -212,7 +210,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 topPelletCladContactOperatorParams ) );
     topPelletCladContactOperator->initialize();
     topPelletCladContactOperator->setContactIsFrictionless( contactIsFrictionless );
-    //  topPelletCladContactOperator->setContactIsFrictionless(topPelletCladContact_db->getBoolWithDefault("ContactIsFrictionless",
+    //  topPelletCladContactOperator->setContactIsFrictionless(topPelletCladContact_db->getWithDefault("ContactIsFrictionless",
     //  false));
 
     // Build the BVP operators
@@ -369,8 +367,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>> topPelletConstraints;
     std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>> cladConstraints;
     if ( !useLevitatingFuel ) {
-        double fuelOuterRadius = input_db->getDouble( "FuelOuterRadius" );
-        double dishRadius      = input_db->getDoubleWithDefault( "DishRadius", 0.0 );
+        double fuelOuterRadius = input_db->getScalar<double>( "FuelOuterRadius" );
+        double dishRadius      = input_db->getWithDefault<double>( "DishRadius", 0.0 );
         makeConstraintsOnFuel(
             bottomPelletMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1 ),
             fuelOuterRadius,
@@ -395,9 +393,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             false );
     } // end if
     if ( !cladExpansionConstrained ) {
-        double cladInnerRadius = input_db->getDouble( "CladInnerRadius" );
-        double cladOuterRadius = input_db->getDouble( "CladOuterRadius" );
-        double cladHeight      = input_db->getDouble( "CladHeight" );
+        double cladInnerRadius = input_db->getScalar<double>( "CladInnerRadius" );
+        double cladOuterRadius = input_db->getScalar<double>( "CladOuterRadius" );
+        double cladHeight      = input_db->getScalar<double>( "CladHeight" );
         makeConstraintsOnClad( cladMeshAdapter->getIterator( AMP::Mesh::GeomType::Vertex ),
                                cladInnerRadius,
                                cladOuterRadius,
@@ -453,18 +451,18 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     double tempCompBeginTime = MPI_Wtime();
 
     double dummyFuelThermalConductivity = 0.0; // not used k_f = a+b/(c+Td)
-    double linearHeatGenerationRate     = input_db->getDouble( "LinearHeatGenerationRate" );
-    double fuelOuterRadius              = input_db->getDouble( "FuelOuterRadius" );
-    double cladInnerRadius              = input_db->getDouble( "CladInnerRadius" );
-    double cladOuterRadius              = input_db->getDouble( "CladOuterRadius" );
-    double cladThermalConductivity      = input_db->getDouble( "CladThermalConductivity" );
+    double linearHeatGenerationRate     = input_db->getScalar<double>( "LinearHeatGenerationRate" );
+    double fuelOuterRadius              = input_db->getScalar<double>( "FuelOuterRadius" );
+    double cladInnerRadius              = input_db->getScalar<double>( "CladInnerRadius" );
+    double cladOuterRadius              = input_db->getScalar<double>( "CladOuterRadius" );
+    double cladThermalConductivity      = input_db->getScalar<double>( "CladThermalConductivity" );
 
-    double gapThermalConductivity = input_db->getDouble( "GapThermalConductivity" );
-    double moderatorTemperature   = input_db->getDouble( "ModeratorTemperature" );
+    double gapThermalConductivity = input_db->getScalar<double>( "GapThermalConductivity" );
+    double moderatorTemperature   = input_db->getScalar<double>( "ModeratorTemperature" );
     double moderatorHeatTransferCoefficient =
-        input_db->getDouble( "ModeratorHeatTransferCoefficient" );
+        input_db->getScalar<double>( "ModeratorHeatTransferCoefficient" );
 
-    double referenceTemperature = input_db->getDouble( "ReferenceTemperature" );
+    double referenceTemperature = input_db->getScalar<double>( "ReferenceTemperature" );
 
     double cladOuterRadiusTemperature =
         moderatorTemperature + linearHeatGenerationRate / ( 2.0 * M_PI ) /
@@ -526,10 +524,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     double fuelThermalExpansionCoefficient =
         ( fuelTemperatureRhs_db->getDatabase( "RhsMaterialModel" ) )
-            ->getDouble( "THERMAL_EXPANSION_COEFFICIENT" );
+            ->getScalar<double>( "THERMAL_EXPANSION_COEFFICIENT" );
     double cladThermalExpansionCoefficient =
         ( cladTemperatureRhs_db->getDatabase( "RhsMaterialModel" ) )
-            ->getDouble( "THERMAL_EXPANSION_COEFFICIENT" );
+            ->getScalar<double>( "THERMAL_EXPANSION_COEFFICIENT" );
     bottomPelletTopPelletContactOperator->uglyHack(
         tempVec, tempDofManager, fuelThermalExpansionCoefficient, referenceTemperature );
     bottomPelletCladContactOperator->uglyHack(
@@ -708,15 +706,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         tempVec->cloneVector();
     fullThermalLoadingTempMinusRefTempVec->subtract( tempVec, refTempVec );
 
-    size_t maxActiveSetIterations = input_db->getIntegerWithDefault( "maxActiveSetIterations", 5 );
+    size_t maxActiveSetIterations = input_db->getWithDefault( "maxActiveSetIterations", 5 );
     size_t maxThermalLoadingIterations =
-        input_db->getIntegerWithDefault( "maxThermalLoadingIterations", 5 );
+        input_db->getWithDefault( "maxThermalLoadingIterations", 5 );
     std::vector<double> scalingFactors;
     std::vector<int> maxIterations;
-    bool customLoading = input_db->getBoolWithDefault( "customLoading", false );
+    bool customLoading = input_db->getWithDefault( "customLoading", false );
     if ( customLoading ) {
-        scalingFactors = input_db->getDoubleArray( "scalingFactors" );
-        maxIterations  = input_db->getIntegerArray( "maxIterations" );
+        scalingFactors = input_db->getVector<double>( "scalingFactors" );
+        maxIterations  = input_db->getVector<int>( "maxIterations" );
         AMP_ASSERT( scalingFactors.size() == maxIterations.size() );
         maxThermalLoadingIterations = scalingFactors.size();
     } // end if

@@ -3,8 +3,6 @@
 #include "AMP/operators/libmesh/PowerShape.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -26,8 +24,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::PIO::logAllNodes( log_file );
 
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
+    auto input_db = AMP::Database::parseInputFile( input_file );
 
     //   Create the Mesh
     auto mesh_db   = input_db->getDatabase( "Mesh" );

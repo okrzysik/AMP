@@ -13,7 +13,7 @@
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
@@ -127,13 +127,11 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
     std::string mesh_file = input_db->getString( "mesh_file" );
 
-    auto mesh_file_db = AMP::make_shared<AMP::InputDatabase>( "mesh_file_db" );
-    AMP::InputManager::getManager()->parseInputFile( mesh_file, mesh_file_db );
+    auto mesh_file_db = AMP::Database::parseInputFile( mesh_file );
 
     auto libmeshInit = AMP::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
 
@@ -221,10 +219,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         Teuchos::ParameterList paramsList;
         ML_Epetra::SetDefaults( "SA", paramsList );
-        paramsList.set( "ML output", mlSolver_db->getInteger( "print_info_level" ) );
-        paramsList.set( "PDE equations", mlSolver_db->getInteger( "PDE_equations" ) );
-        paramsList.set( "cycle applications", mlSolver_db->getInteger( "max_iterations" ) );
-        paramsList.set( "max levels", mlSolver_db->getInteger( "max_levels" ) );
+        paramsList.set( "ML output", mlSolver_db->getScalar<int>( "print_info_level" ) );
+        paramsList.set( "PDE equations", mlSolver_db->getScalar<int>( "PDE_equations" ) );
+        paramsList.set( "cycle applications", mlSolver_db->getScalar<int>( "max_iterations" ) );
+        paramsList.set( "max levels", mlSolver_db->getScalar<int>( "max_levels" ) );
 
         auto mlSolver = AMP::make_shared<ML_Epetra::MultiLevelPreconditioner>( ml_op, paramsList );
 
@@ -268,8 +266,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         std::cout << "Matrix-Free ML Type-2: " << std::endl;
         fusedSolVec->zero();
 
-        int numGrids = mlSolver_db->getInteger( "max_levels" );
-        int numPDEs  = mlSolver_db->getInteger( "PDE_equations" );
+        int numGrids = mlSolver_db->getScalar<int>( "max_levels" );
+        int numPDEs  = mlSolver_db->getScalar<int>( "PDE_equations" );
 
         ML *ml_object;
         ML_Create( &ml_object, numGrids );
@@ -277,10 +275,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         ML_Init_Amatrix( ml_object, 0, localSize, localSize, fusedOperator.get() );
         ML_Set_Amatrix_Getrow( ml_object, 0, &myGetRow, nullptr, localSize );
         ML_Set_Amatrix_Matvec( ml_object, 0, &myMatVec );
-        ML_Set_MaxIterations( ml_object, 1 + mlSolver_db->getInteger( "max_iterations" ) );
+        ML_Set_MaxIterations( ml_object, 1 + mlSolver_db->getScalar<int>( "max_iterations" ) );
         ML_Set_ResidualOutputFrequency( ml_object, 1 );
-        ML_Set_PrintLevel( mlSolver_db->getInteger( "print_info_level" ) );
-        ML_Set_OutputLevel( ml_object, mlSolver_db->getInteger( "print_info_level" ) );
+        ML_Set_PrintLevel( mlSolver_db->getScalar<int>( "print_info_level" ) );
+        ML_Set_OutputLevel( ml_object, mlSolver_db->getScalar<int>( "print_info_level" ) );
 
         ML_Aggregate *agg_object;
         ML_Aggregate_Create( &agg_object );
@@ -340,9 +338,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         auto columnOperator = AMP::make_shared<AMP::Operator::ColumnOperator>( emptyParams );
         columnOperator->append( fusedOperator );
 
-        auto matrixShellDatabase = AMP::make_shared<AMP::MemoryDatabase>( "MatrixShellOperator" );
-        matrixShellDatabase->putString( "name", "MatShellOperator" );
-        matrixShellDatabase->putInteger( "print_info_level", 1 );
+        auto matrixShellDatabase = AMP::make_shared<AMP::Database>( "MatrixShellOperator" );
+        matrixShellDatabase->putScalar( "name", "MatShellOperator" );
+        matrixShellDatabase->putScalar( "print_info_level", 1 );
         auto matrixShellParams =
             AMP::make_shared<AMP::Operator::OperatorParameters>( matrixShellDatabase );
         auto trilinosMatrixShellOperator =
@@ -352,7 +350,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         // trilinosMatrixShellOperator->setOperator(fusedOperator);
         trilinosMatrixShellOperator->setOperator( columnOperator );
 
-        mlSolver_db->putBool( "USE_EPETRA", false );
+        mlSolver_db->putScalar( "USE_EPETRA", false );
         auto mlSolverParams =
             AMP::make_shared<AMP::Solver::TrilinosMLSolverParameters>( mlSolver_db );
         mlSolverParams->d_pOperator = trilinosMatrixShellOperator;
@@ -392,13 +390,11 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
     std::string mesh_file = input_db->getString( "mesh_file" );
 
-    auto mesh_file_db = AMP::make_shared<AMP::InputDatabase>( "mesh_file_db" );
-    AMP::InputManager::getManager()->parseInputFile( mesh_file, mesh_file_db );
+    auto mesh_file_db = AMP::Database::parseInputFile( mesh_file );
 
     auto libmeshInit = AMP::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
 
@@ -473,9 +469,9 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
 
     std::cout << std::endl;
 
-    auto matrixShellDatabase = AMP::make_shared<AMP::MemoryDatabase>( "MatrixShellOperator" );
-    matrixShellDatabase->putString( "name", "MatShellOperator" );
-    matrixShellDatabase->putInteger( "print_info_level", 1 );
+    auto matrixShellDatabase = AMP::make_shared<AMP::Database>( "MatrixShellOperator" );
+    matrixShellDatabase->putScalar( "name", "MatShellOperator" );
+    matrixShellDatabase->putScalar( "print_info_level", 1 );
     auto matrixShellParams =
         AMP::make_shared<AMP::Operator::OperatorParameters>( matrixShellDatabase );
     auto trilinosMatrixShellOperator =
@@ -490,7 +486,7 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
 
 
     auto mlSolver_db = input_db->getDatabase( "MLoptions" );
-    mlSolver_db->putBool( "USE_EPETRA", false );
+    mlSolver_db->putScalar( "USE_EPETRA", false );
     auto mlSolverParams = AMP::make_shared<AMP::Solver::TrilinosMLSolverParameters>( mlSolver_db );
     mlSolverParams->d_pOperator = trilinosMatrixShellOperator;
     auto mlSolver               = AMP::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );

@@ -28,13 +28,16 @@ DiffusionElement::DiffusionElement( const AMP::shared_ptr<ElementOperationParame
 
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    std::string feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "FIRST" );
-    auto feTypeOrder            = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+    std::string feTypeOrderName =
+        ( params->d_db )->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
+    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
-    std::string feFamilyName = ( params->d_db )->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
-    auto feFamily            = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    std::string feFamilyName =
+        ( params->d_db )->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    auto feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
-    std::string qruleTypeName = ( params->d_db )->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
+    std::string qruleTypeName =
+        ( params->d_db )->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
     auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     const unsigned int dimension = 3;
@@ -43,7 +46,8 @@ DiffusionElement::DiffusionElement( const AMP::shared_ptr<ElementOperationParame
 
     d_fe.reset( (::FEBase::build( dimension, ( *d_feType ) ) ).release() );
 
-    std::string qruleOrderName = ( params->d_db )->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
+    std::string qruleOrderName =
+        ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     libMeshEnums::Order qruleOrder;
 

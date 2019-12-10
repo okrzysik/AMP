@@ -24,8 +24,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -50,9 +48,8 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     //--------------------------------------------------
     //   Create the Mesh.
@@ -278,8 +275,8 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
         soretCoeffVec->setValuesByGlobalID( nnodes, &gids[0], &soretCoeff[0] );
     }
 
-        //----------------------------------------------------------------------------------------------------------------------------------------------//
-        // write graphical output
+    //----------------------------------------------------------------------------------------------------------------------------------------------//
+    // write graphical output
 
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );

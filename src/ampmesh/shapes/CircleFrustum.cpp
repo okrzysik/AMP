@@ -16,9 +16,9 @@ namespace Geometry {
  ********************************************************/
 CircleFrustum::CircleFrustum( AMP::shared_ptr<AMP::Database> db ) : d_offset{ 0, 0, 0 }
 {
-    d_r[0]   = db->getDouble( "BaseRadius" );
-    d_r[1]   = db->getDouble( "TopRadius" );
-    d_h      = db->getDouble( "Height" );
+    d_r[0]   = db->getScalar<double>( "BaseRadius" );
+    d_r[1]   = db->getScalar<double>( "TopRadius" );
+    d_h      = db->getScalar<double>( "Height" );
     auto dir = db->getString( "Dir" );
     if ( dir == "-x" )
         d_dir = 0;

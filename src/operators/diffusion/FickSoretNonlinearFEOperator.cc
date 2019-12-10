@@ -42,8 +42,8 @@ FickSoretNonlinearFEOperator::FickSoretNonlinearFEOperator(
                 "ThermalDiffusionCoefficient property was not specified" );
 
     // verify principal variables are correct
-    int fickPrincipal  = fickDb->getIntegerWithDefault( "PrincipalVariable", false );
-    int soretPrincipal = soretDb->getIntegerWithDefault( "PrincipalVariable", false );
+    int fickPrincipal  = fickDb->getWithDefault( "PrincipalVariable", 0 );
+    int soretPrincipal = soretDb->getWithDefault( "PrincipalVariable", 0 );
     AMP_INSIST( fickPrincipal == 1, "Fick operator must have concentration PrincipalVariable" );
     AMP_INSIST( soretPrincipal == 0, "Soret operator cannot have temperature PrincipalVariable" );
 
@@ -65,12 +65,12 @@ FickSoretNonlinearFEOperator::FickSoretNonlinearFEOperator(
         "Fick and Soret operators must agree on names of concentration and temperature variables" );
 
     // verify frozen variables are correct
-    bool fickNotFrozen  = not fickActiveDb->getBoolWithDefault( "Freezeconcentration", false );
-    bool soretNotFrozen = not soretActiveDb->getBoolWithDefault( "Freezeconcentration", false );
+    bool fickNotFrozen  = not fickActiveDb->getWithDefault( "Freezeconcentration", false );
+    bool soretNotFrozen = not soretActiveDb->getWithDefault( "Freezeconcentration", false );
     AMP_INSIST( fickNotFrozen, "Fick operator must not have concentration frozen" );
     AMP_INSIST( soretNotFrozen, "Soret operator must not have concentration frozen" );
-    fickNotFrozen  = not fickActiveDb->getBoolWithDefault( "Freezetemperature", false );
-    soretNotFrozen = not soretActiveDb->getBoolWithDefault( "Freezetemperature", false );
+    fickNotFrozen  = not fickActiveDb->getWithDefault( "Freezetemperature", false );
+    soretNotFrozen = not soretActiveDb->getWithDefault( "Freezetemperature", false );
     AMP_INSIST( fickNotFrozen == soretNotFrozen,
                 "Fick and Soret operators must freeze temperature the same way" );
 
@@ -83,7 +83,7 @@ FickSoretNonlinearFEOperator::FickSoretNonlinearFEOperator(
     d_OutputVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( fickOut );
 
     // get the switch to add the Soret term
-    d_AddSoretTerm = ficksoretDb->getBoolWithDefault( "AddSoretTerm", true );
+    d_AddSoretTerm = ficksoretDb->getWithDefault( "AddSoretTerm", true );
 
     // set the member operators
     if ( fsParams->d_FickOperator.get() != nullptr ) {

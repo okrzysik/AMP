@@ -2,8 +2,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -267,9 +265,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     globalComm.barrier();
     double inpReadBeginTime = MPI_Wtime();
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     globalComm.barrier();
     double inpReadEndTime = MPI_Wtime();
@@ -351,13 +349,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     contactOperator->initialize();
     contactOperator->setContactIsFrictionless(
-        contact_db->getBoolWithDefault( "ContactIsFrictionless", false ) );
+        contact_db->getWithDefault( "ContactIsFrictionless", false ) );
 
     AMP::shared_ptr<AMP::Operator::DirichletVectorCorrection> masterLoadOperator;
     AMP::shared_ptr<AMP::Operator::LinearBVPOperator> masterBVPOperator;
 
-    bool useML      = input_db->getBoolWithDefault( "useML", false );
-    bool matrixFree = input_db->getBoolWithDefault( "matrixFree", false );
+    bool useML      = input_db->getWithDefault( "useML", false );
+    bool matrixFree = input_db->getWithDefault( "matrixFree", false );
     // Build the master and slave operators
     AMP::Mesh::MeshID masterMeshID                = contactOperator->getMasterMeshID();
     AMP::Mesh::Mesh::shared_ptr masterMeshAdapter = meshAdapter->Subset( masterMeshID );
@@ -506,7 +504,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         trilinosMatrixShellOperator->setOperator( dummyColumnOperator );
         AMP::shared_ptr<AMP::Database> trilinosMLSolver_db =
             columnPreconditioner_db->getDatabase( "MLSolver" );
-        trilinosMLSolver_db->putBool( "USE_EPETRA", false );
+        trilinosMLSolver_db->putScalar( "USE_EPETRA", false );
         AMP::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> mlSolverParams(
             new AMP::Solver::TrilinosMLSolverParameters( trilinosMLSolver_db ) );
         mlSolverParams->d_pOperator = trilinosMatrixShellOperator;
@@ -664,8 +662,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     selectNodes( slaveMeshAdapter, slaveNodesGlobalIDs );
     printNodesValues( slaveMeshAdapter, slaveNodesGlobalIDs, contactPressureVec );
 
-    size_t const maxActiveSetIterations =
-        input_db->getIntegerWithDefault( "maxActiveSetIterations", 5 );
+    size_t const maxActiveSetIterations = input_db->getWithDefault( "maxActiveSetIterations", 5 );
     for ( size_t activeSetIteration = 0; activeSetIteration < maxActiveSetIterations;
           ++activeSetIteration ) {
         if ( !rank ) {
@@ -676,8 +673,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         columnRhsVec->zero();
 
         // compute f
-        double loadParameterX = input_db->getDouble( "loadParameterX" );
-        double loadParameterZ = input_db->getDouble( "loadParameterZ" );
+        double loadParameterX = input_db->getScalar<double>( "loadParameterX" );
+        double loadParameterZ = input_db->getScalar<double>( "loadParameterZ" );
         if ( masterLoadOperator.get() != NULL ) {
             //    masterLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
             applyMasterLoadOperator(

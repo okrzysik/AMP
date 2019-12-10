@@ -125,14 +125,14 @@ void TimeIntegrator::getFromInput( const AMP::shared_ptr<AMP::Database> db )
     AMP_ASSERT( db.get() != nullptr );
 
     if ( db->keyExists( "initial_time" ) ) {
-        d_initial_time = db->getDouble( "initial_time" );
+        d_initial_time = db->getScalar<double>( "initial_time" );
     } else {
         AMP_ERROR( d_object_name << " -- Key data `initial_time'"
                                  << " missing in input." );
     }
 
     if ( db->keyExists( "final_time" ) ) {
-        d_final_time = db->getDouble( "final_time" );
+        d_final_time = db->getScalar<double>( "final_time" );
         if ( d_final_time < d_initial_time ) {
             AMP_ERROR( d_object_name << " -- Error in input data "
                                      << "final_time < initial_time." );
@@ -143,7 +143,7 @@ void TimeIntegrator::getFromInput( const AMP::shared_ptr<AMP::Database> db )
     }
 
     if ( db->keyExists( "max_integrator_steps" ) ) {
-        d_max_integrator_steps = db->getInteger( "max_integrator_steps" );
+        d_max_integrator_steps = db->getScalar<int>( "max_integrator_steps" );
         if ( d_max_integrator_steps < 0 ) {
             AMP_ERROR( d_object_name << " -- Error in input data "
                                      << "max_integrator_steps < 0." );
@@ -154,7 +154,7 @@ void TimeIntegrator::getFromInput( const AMP::shared_ptr<AMP::Database> db )
     }
 
     if ( db->keyExists( "max_dt" ) ) {
-        d_max_dt = db->getDouble( "max_dt" );
+        d_max_dt = db->getScalar<double>( "max_dt" );
 
         if ( d_max_dt < 0.0 ) {
             AMP_ERROR( d_object_name << " -- Error in input data "
@@ -166,7 +166,7 @@ void TimeIntegrator::getFromInput( const AMP::shared_ptr<AMP::Database> db )
     }
 
     if ( db->keyExists( "min_dt" ) ) {
-        d_min_dt = db->getDouble( "min_dt" );
+        d_min_dt = db->getScalar<double>( "min_dt" );
 
         if ( d_min_dt < 0.0 ) {
             AMP_ERROR( d_object_name << " -- Error in input data "
@@ -178,7 +178,7 @@ void TimeIntegrator::getFromInput( const AMP::shared_ptr<AMP::Database> db )
     }
 
     if ( db->keyExists( "initial_dt" ) ) {
-        d_initial_dt = db->getDoubleWithDefault( "initial_dt", 0.0 );
+        d_initial_dt = db->getWithDefault<double>( "initial_dt", 0.0 );
     }
 
     d_current_dt = d_initial_dt;
@@ -196,13 +196,13 @@ void TimeIntegrator::putToDatabase( AMP::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( !db.use_count() );
 
-    db->putDouble( "d_initial_time", d_initial_time );
-    db->putDouble( "d_final_time", d_final_time );
-    db->putDouble( "d_current_time", d_current_time );
-    db->putDouble( "d_current_dt", d_current_dt );
-    db->putDouble( "d_old_dt", d_old_dt );
-    db->putInteger( "d_integrator_step", d_integrator_step );
-    db->putInteger( "d_max_integrator_steps", d_max_integrator_steps );
+    db->putScalar( "d_initial_time", d_initial_time );
+    db->putScalar( "d_final_time", d_final_time );
+    db->putScalar( "d_current_time", d_current_time );
+    db->putScalar( "d_current_dt", d_current_dt );
+    db->putScalar( "d_old_dt", d_old_dt );
+    db->putScalar( "d_integrator_step", d_integrator_step );
+    db->putScalar( "d_max_integrator_steps", d_max_integrator_steps );
 }
 /*
 *************************************************************************

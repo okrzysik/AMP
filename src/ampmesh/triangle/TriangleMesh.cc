@@ -368,23 +368,23 @@ TriangleMesh<NG, NP>::generate( MeshParameters::shared_ptr params )
 {
     auto db = params->getDatabase();
     // Create the mesh
-    auto filename = db->getStringWithDefault( "FileName", "" );
+    auto filename = db->getWithDefault<std::string>( "FileName", "" );
     AMP::shared_ptr<TriangleMesh<NG, NP>> mesh;
     if ( filename.substr( std::max<int>( filename.length(), 4 ) - 4 ) == ".stl" ) {
-        auto scale = db->getDoubleWithDefault( "scale", 1.0 );
+        auto scale = db->getWithDefault<double>( "scale", 1.0 );
         mesh       = generateSTL<NG, NP>( filename, params->getComm(), scale );
-        mesh->setName( db->getStringWithDefault( "MeshName", "NULL" ) );
+        mesh->setName( db->getWithDefault<std::string>( "MeshName", "NULL" ) );
     } else {
         AMP_ERROR( "Not finished" );
     }
     // Displace the mesh
     std::vector<double> displacement( NP, 0.0 );
     if ( db->keyExists( "x_offset" ) && NP >= 1 )
-        displacement[0] = db->getDouble( "x_offset" );
+        displacement[0] = db->getScalar<double>( "x_offset" );
     if ( db->keyExists( "y_offset" ) && NP >= 2 )
-        displacement[1] = db->getDouble( "y_offset" );
+        displacement[1] = db->getScalar<double>( "y_offset" );
     if ( db->keyExists( "z_offset" ) && NP >= 3 )
-        displacement[2] = db->getDouble( "z_offset" );
+        displacement[2] = db->getScalar<double>( "z_offset" );
     bool test = false;
     for ( auto &elem : displacement ) {
         if ( elem != 0.0 )
@@ -605,7 +605,7 @@ size_t TriangleMesh<NG, NP>::estimateMeshSize( const MeshParameters::shared_ptr 
 {
     size_t N      = 0;
     auto db       = params->getDatabase();
-    auto filename = db->getStringWithDefault( "FileName", "" );
+    auto filename = db->getWithDefault<std::string>( "FileName", "" );
     if ( filename.substr( std::max<int>( filename.length(), 4 ) - 4 ) == ".stl" ) {
         // We are reading an stl file
         char header[80];

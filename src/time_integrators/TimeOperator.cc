@@ -1,5 +1,5 @@
 #include "TimeOperator.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "TimeOperatorParameters.h"
 
 
@@ -30,16 +30,16 @@ TimeOperator::TimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> i
 
 TimeOperator::~TimeOperator() = default;
 
-void TimeOperator::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
+void TimeOperator::getFromInput( AMP::shared_ptr<AMP::Database> db )
 {
-    d_bLinearMassOperator = db->getBoolWithDefault( "bLinearMassOperator", false );
-    d_bLinearRhsOperator  = db->getBoolWithDefault( "bLinearRhsOperator", false );
+    d_bLinearMassOperator = db->getWithDefault( "bLinearMassOperator", false );
+    d_bLinearRhsOperator  = db->getWithDefault( "bLinearRhsOperator", false );
 
     AMP_INSIST( db->keyExists( "CurrentDt" ), "key CurrentDt missing in input" );
 
-    d_dCurrentDt = db->getDouble( "CurrentDt" );
+    d_dCurrentDt = db->getScalar<double>( "CurrentDt" );
 
-    d_bAlgebraicComponent = db->getBoolWithDefault( "bAlgebraicComponent", false );
+    d_bAlgebraicComponent = db->getWithDefault( "bAlgebraicComponent", false );
 }
 
 void TimeOperator::reset( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &in_params )
@@ -103,14 +103,13 @@ TimeOperator::getParameters( const std::string &type,
                              AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
-    AMP::shared_ptr<AMP::InputDatabase> timeOperator_db(
-        new AMP::InputDatabase( "TimeOperatorDatabase" ) );
-    timeOperator_db->putDouble( "CurrentDt", d_dCurrentDt );
-    timeOperator_db->putString( "name", "TimeOperator" );
-    timeOperator_db->putBool( "bLinearMassOperator", d_bLinearMassOperator );
-    timeOperator_db->putBool( "bLinearRhsOperator", d_bLinearRhsOperator );
-    timeOperator_db->putBool( "bAlgebraicComponent", d_bAlgebraicComponent );
-    timeOperator_db->putDouble( "ScalingFactor", 1.0 / d_dCurrentDt );
+    AMP::shared_ptr<AMP::Database> timeOperator_db( new AMP::Database( "TimeOperatorDatabase" ) );
+    timeOperator_db->putScalar( "CurrentDt", d_dCurrentDt );
+    timeOperator_db->putScalar( "name", "TimeOperator" );
+    timeOperator_db->putScalar( "bLinearMassOperator", d_bLinearMassOperator );
+    timeOperator_db->putScalar( "bLinearRhsOperator", d_bLinearRhsOperator );
+    timeOperator_db->putScalar( "bAlgebraicComponent", d_bAlgebraicComponent );
+    timeOperator_db->putScalar( "ScalingFactor", 1.0 / d_dCurrentDt );
 
     AMP::shared_ptr<TimeOperatorParameters> timeOperatorParameters(
         new AMP::TimeIntegrator::TimeOperatorParameters( timeOperator_db ) );

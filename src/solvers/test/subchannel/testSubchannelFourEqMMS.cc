@@ -16,8 +16,6 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -53,7 +51,7 @@ static double
 getSolutionPressure( AMP::Database::shared_ptr db, double H, double Pout, double p, double z )
 {
     if ( db->keyExists( "Inlet_Pressure" ) )
-        return Pout + ( 1. - z / H ) * ( db->getDouble( "Inlet_Pressure" ) - Pout );
+        return Pout + ( 1. - z / H ) * ( db->getScalar<double>( "Inlet_Pressure" ) - Pout );
     else
         return Pout + ( H - z ) * 9.80665 * p;
 }
@@ -67,8 +65,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
+    auto input_db = AMP::Database::parseInputFile( input_file );
 
     //=============================================================================
     // mesh and dof manager
@@ -117,14 +114,14 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::make_shared<AMP::Operator::SubchannelOperatorParameters>( linearOperator_db );
     nonlinearOpParams->d_Mesh                   = subchannelMesh;
     nonlinearOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
-    nonlinearOpParams->clad_x = input_db->getDatabase( "CladProperties" )->getDoubleArray( "x" );
-    nonlinearOpParams->clad_y = input_db->getDatabase( "CladProperties" )->getDoubleArray( "y" );
-    nonlinearOpParams->clad_d = input_db->getDatabase( "CladProperties" )->getDoubleArray( "d" );
+    nonlinearOpParams->clad_x = input_db->getDatabase( "CladProperties" )->getVector<double>( "x" );
+    nonlinearOpParams->clad_y = input_db->getDatabase( "CladProperties" )->getVector<double>( "y" );
+    nonlinearOpParams->clad_d = input_db->getDatabase( "CladProperties" )->getVector<double>( "d" );
     linearOpParams->d_Mesh    = subchannelMesh;
     linearOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
-    linearOpParams->clad_x = input_db->getDatabase( "CladProperties" )->getDoubleArray( "x" );
-    linearOpParams->clad_y = input_db->getDatabase( "CladProperties" )->getDoubleArray( "y" );
-    linearOpParams->clad_d = input_db->getDatabase( "CladProperties" )->getDoubleArray( "d" );
+    linearOpParams->clad_x = input_db->getDatabase( "CladProperties" )->getVector<double>( "x" );
+    linearOpParams->clad_y = input_db->getDatabase( "CladProperties" )->getVector<double>( "y" );
+    linearOpParams->clad_d = input_db->getDatabase( "CladProperties" )->getVector<double>( "d" );
 
     // create nonlinear operator
     auto nonlinearOperator =
@@ -148,11 +145,11 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto box = subchannelMesh->getBoundingBox();
     AMP_ASSERT( box[4] == 0.0 );
     double H             = box[5] - box[4];
-    double m_in          = nonlinearOperator_db->getDouble( "Inlet_Mass_Flow_Rate" );
-    double w_in          = nonlinearOperator_db->getDouble( "Inlet_Lateral_Flow_Rate" );
-    double Q             = nonlinearOperator_db->getDouble( "Max_Rod_Power" );
-    double Pout          = nonlinearOperator_db->getDouble( "Exit_Pressure" );
-    double Tin           = nonlinearOperator_db->getDouble( "Inlet_Temperature" );
+    double m_in          = nonlinearOperator_db->getScalar<double>( "Inlet_Mass_Flow_Rate" );
+    double w_in          = nonlinearOperator_db->getScalar<double>( "Inlet_Lateral_Flow_Rate" );
+    double Q             = nonlinearOperator_db->getScalar<double>( "Max_Rod_Power" );
+    double Pout          = nonlinearOperator_db->getScalar<double>( "Exit_Pressure" );
+    double Tin           = nonlinearOperator_db->getScalar<double>( "Inlet_Temperature" );
     size_t N_subchannels = AMP::Operator::Subchannel::getNumberOfSubchannels( subchannelMesh );
     m_in                 = m_in / N_subchannels;
 
@@ -420,7 +417,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     double relErrorNorm = relErrorVec->L2Norm();
 
     // check that norm of relative error is less than tolerance
-    double tol = input_db->getDoubleWithDefault( "TOLERANCE", 1e-6 );
+    double tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );
     if ( relErrorNorm <= tol && fabs( Tin - TinSol ) < tol ) {
         ut->passes( exeName + ": manufactured solution test" );
     } else {

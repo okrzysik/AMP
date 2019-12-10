@@ -18,8 +18,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -64,14 +62,13 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Construct a smart pointer to a new database.
     //  #include "AMP/utils/shared_ptr.h"
-    //  #include "AMP/utils/InputDatabase.h"
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    //  #include "AMP/utils/Database.h"
 
 
     // Fill the database from the input file.
-    //  #include "AMP/utils/InputManager.h"
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    //  #include "AMP/utils/Database.h"
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
 
     // Print from all cores into the output files
@@ -136,12 +133,11 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
         ( AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator>( boundaryOp ) )
             ->getBoundaryOperator( 0 );
 
-    AMP::shared_ptr<AMP::InputDatabase> robinboundaryDatabase =
-        AMP::dynamic_pointer_cast<AMP::InputDatabase>(
-            input_db->getDatabase( "RobinMatrixCorrection" ) );
+    AMP::shared_ptr<AMP::Database> robinboundaryDatabase = AMP::dynamic_pointer_cast<AMP::Database>(
+        input_db->getDatabase( "RobinMatrixCorrection" ) );
 
-    robinboundaryDatabase->putBool( "constant_flux", false );
-    robinboundaryDatabase->putBool( "skip_matrix_correction", true );
+    robinboundaryDatabase->putScalar( "constant_flux", false );
+    robinboundaryDatabase->putScalar( "skip_matrix_correction", true );
     AMP::shared_ptr<AMP::Operator::RobinMatrixCorrectionParameters> correctionParameters(
         new AMP::Operator::RobinMatrixCorrectionParameters( robinboundaryDatabase ) );
     //------------------------------------------

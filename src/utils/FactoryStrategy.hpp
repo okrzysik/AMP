@@ -1,7 +1,7 @@
 #ifndef AMP_FactoryStrategy_HPP_
 #define AMP_FactoryStrategy_HPP_
 
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/utils/shared_ptr.h"
 #include <map>

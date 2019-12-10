@@ -60,25 +60,25 @@ void GMRESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const pa
 }
 
 // Function to get values from input
-void GMRESSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
+void GMRESSolver::getFromInput( AMP::shared_ptr<AMP::Database> db )
 {
     // the max iterations could be larger than the max Krylov dimension
     // in the case of restarted GMRES so we allow specification separately
-    d_iMaxKrylovDimension = db->getDoubleWithDefault( "max_dimension", 100 );
-    d_iMaxIterations      = db->getDoubleWithDefault( "max_iterations", d_iMaxKrylovDimension );
+    d_iMaxKrylovDimension = db->getWithDefault<double>( "max_dimension", 100 );
+    d_iMaxIterations      = db->getWithDefault<double>( "max_iterations", d_iMaxKrylovDimension );
 
-    d_dRelativeTolerance = db->getDoubleWithDefault( "relative_tolerance", 1.0e-9 );
+    d_dRelativeTolerance = db->getWithDefault<double>( "relative_tolerance", 1.0e-9 );
 
-    d_sOrthogonalizationMethod = db->getStringWithDefault( "ortho_method", "MGS" );
-
-    d_bUsesPreconditioner = db->getBoolWithDefault( "use_preconditioner", false );
+    d_sOrthogonalizationMethod = db->getWithDefault<std::string>( "ortho_method", "MGS" );
 
     // default is right preconditioning, options are right, left, both
     if ( d_bUsesPreconditioner ) {
-        d_preconditioner_side = db->getStringWithDefault( "preconditioner_side", "right" );
+        d_preconditioner_side = db->getWithDefault<std::string>( "preconditioner_side", "right" );
     }
 
-    d_bRestart = db->getBoolWithDefault( "gmres_restart", false );
+    d_bRestart            = db->getWithDefault<bool>( "gmres_restart", false );
+    d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
+    d_bRestart            = db->getWithDefault<bool>( "gmres_restart", false );
 }
 
 /****************************************************************
@@ -304,7 +304,7 @@ void GMRESSolver::applyGivensRotation( const int i, const int k )
     d_dHessenberg( i, k )     = c * x - s * y;
     d_dHessenberg( i + 1, k ) = s * x + c * y;
 #else
-    d_dHessenberg( i, k )     = c * x + s * y;
+    d_dHessenberg( i, k ) = c * x + s * y;
     d_dHessenberg( i + 1, k ) = -s * x + c * y;
 #endif
 }

@@ -14,8 +14,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -27,7 +25,7 @@
 
 
 AMP::shared_ptr<AMP::Solver::SolverStrategy>
-buildSolver( const AMP::shared_ptr<AMP::InputDatabase> &input_db,
+buildSolver( const AMP::shared_ptr<AMP::Database> &input_db,
              const std::string &solver_name,
              const AMP::AMP_MPI &comm,
              AMP::shared_ptr<AMP::Operator::LinearOperator> &op )
@@ -47,12 +45,12 @@ buildSolver( const AMP::shared_ptr<AMP::InputDatabase> &input_db,
         if ( ( name == "GMRESSolver" ) || ( name == "CGSolver" ) || ( name == "BiCGSTABSolver" ) ) {
 
             // check if we need to construct a preconditioner
-            auto use_preconditioner = db->getBoolWithDefault( "use_preconditioner", false );
+            auto use_preconditioner = db->getWithDefault<bool>( "use_preconditioner", false );
             AMP::shared_ptr<AMP::Solver::SolverStrategy> pcSolver;
 
             if ( use_preconditioner ) {
 
-                auto pc_name = db->getStringWithDefault( "pc_name", "Preconditioner" );
+                auto pc_name = db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
 
                 auto pcSolver = buildSolver( input_db, pc_name, comm, op );
 
@@ -90,9 +88,8 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // read the input file into a database
-    const auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // extract the Mesh database and create the mesh parameters
     const auto meshDB = input_db->getDatabase( "Mesh" );
@@ -143,8 +140,8 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     auto ampMat = AMP::LinearAlgebra::createMatrix( ampVector, ampVector, "auto", getColumnIDS );
 
     // construct a LinearOperator and set its matrix
-    const auto linearOpDB = AMP::make_shared<AMP::InputDatabase>( "linearOperatorDB" );
-    linearOpDB->putInteger( "print_info_level", 0 );
+    const auto linearOpDB = AMP::make_shared<AMP::Database>( "linearOperatorDB" );
+    linearOpDB->putScalar<int>( "print_info_level", 0 );
     auto linearOpParameters = AMP::make_shared<AMP::Operator::OperatorParameters>( linearOpDB );
     auto linearOp           = AMP::make_shared<AMP::Operator::LinearOperator>( linearOpParameters );
     linearOp->setMatrix( ampMat );

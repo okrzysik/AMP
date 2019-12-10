@@ -60,34 +60,34 @@ void FlowFrapconJacobian::reset( const AMP::shared_ptr<OperatorParameters> &para
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
 
-    bool skipParams = ( params->d_db )->getBoolWithDefault( "skip_params", false );
+    bool skipParams = ( params->d_db )->getWithDefault( "skip_params", false );
 
     if ( !skipParams ) {
         AMP_INSIST( ( myparams->d_db )->keyExists( "numpoints" ), "Key ''numpoints'' is missing!" );
-        d_numpoints = ( myparams->d_db )->getInteger( "numpoints" );
+        d_numpoints = ( myparams->d_db )->getScalar<int>( "numpoints" );
 
         AMP_INSIST( ( myparams->d_db )->keyExists( "Channel_Diameter" ),
                     "Missing key: Channel_Dia" );
-        d_De = ( myparams->d_db )->getDouble( "Channel_Diameter" );
+        d_De = ( myparams->d_db )->getScalar<double>( "Channel_Diameter" );
 
         AMP_INSIST( ( myparams->d_db )->keyExists( "Heat_Capacity" ),
                     "Missing key: Heat_Capacity" );
-        Cp = ( myparams->d_db )->getDouble( "Heat_Capacity" );
+        Cp = ( myparams->d_db )->getScalar<double>( "Heat_Capacity" );
 
         AMP_INSIST( ( myparams->d_db )->keyExists( "Mass_Flux" ), "Missing key: Mass_Flux" );
-        d_G = ( myparams->d_db )->getDouble( "Mass_Flux" );
+        d_G = ( myparams->d_db )->getScalar<double>( "Mass_Flux" );
 
         AMP_INSIST( ( myparams->d_db )->keyExists( "Temp_Inlet" ), "Missing key: Temp_In" );
-        d_Tin = ( myparams->d_db )->getDouble( "Temp_Inlet" );
+        d_Tin = ( myparams->d_db )->getScalar<double>( "Temp_Inlet" );
 
         AMP_INSIST( ( myparams->d_db )->keyExists( "Conductivity" ), "Missing key: Kconductivity" );
-        d_K = ( myparams->d_db )->getDouble( "Conductivity" );
+        d_K = ( myparams->d_db )->getScalar<double>( "Conductivity" );
 
         AMP_INSIST( ( myparams->d_db )->keyExists( "Reynolds" ), "Missing key: Reynolds" );
-        d_Re = ( myparams->d_db )->getDouble( "Reynolds" );
+        d_Re = ( myparams->d_db )->getScalar<double>( "Reynolds" );
 
         AMP_INSIST( ( myparams->d_db )->keyExists( "Prandtl" ), "Missing key: Prandtl" );
-        d_Pr = ( myparams->d_db )->getDouble( "Prandtl" );
+        d_Pr = ( myparams->d_db )->getScalar<double>( "Prandtl" );
     }
 
     if ( ( myparams->d_frozenSolution.get() ) != nullptr ) {

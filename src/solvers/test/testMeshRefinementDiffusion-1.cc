@@ -1,5 +1,5 @@
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/InputManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
 #include <string>
 
@@ -20,7 +20,6 @@
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
 #include "AMP/utils/PIO.h"
 
 #include "AMP/operators/BVPOperatorParameters.h"
@@ -214,7 +213,7 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 }
 
 void createThermalOperators(
-    AMP::shared_ptr<AMP::InputDatabase> global_input_db,
+    AMP::shared_ptr<AMP::Database> global_input_db,
     AMP::Mesh::Mesh::shared_ptr manager,
     AMP::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearColumnOperator,
     AMP::shared_ptr<AMP::Operator::ColumnOperator> &linearColumnOperator )
@@ -255,7 +254,7 @@ void createThermalOperators(
     AMP::pout << "Leaving createThermalOperators" << std::endl;
 }
 
-void createThermalSolvers( AMP::shared_ptr<AMP::InputDatabase> &global_input_db,
+void createThermalSolvers( AMP::shared_ptr<AMP::Database> &global_input_db,
                            AMP::LinearAlgebra::Vector::shared_ptr &globalSolVec,
                            AMP::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearOperator,
                            AMP::shared_ptr<AMP::Operator::Operator> &linearOperator,
@@ -310,7 +309,7 @@ void createThermalSolvers( AMP::shared_ptr<AMP::InputDatabase> &global_input_db,
     linearSolver->setPreconditioner( columnPreconditioner );
 }
 
-void createThermalMaps( AMP::shared_ptr<AMP::InputDatabase> input_db,
+void createThermalMaps( AMP::shared_ptr<AMP::Database> input_db,
                         AMP::Mesh::Mesh::shared_ptr manager,
                         AMP::LinearAlgebra::Vector::shared_ptr &thermalMapVec,
                         AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> &mapsColumn )
@@ -323,7 +322,7 @@ void createThermalMaps( AMP::shared_ptr<AMP::InputDatabase> input_db,
 }
 
 void registerMapswithThermalOperator(
-    AMP::shared_ptr<AMP::InputDatabase>,
+    AMP::shared_ptr<AMP::Database>,
     AMP::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearThermalColumnOperator,
     AMP::LinearAlgebra::Vector::shared_ptr &thermalMapVec )
 {
@@ -344,9 +343,7 @@ void registerMapswithThermalOperator(
 //       Main Program     //
 ///////////////////////////////////////////////
 
-void myTest( AMP::UnitTest *ut,
-             AMP::shared_ptr<AMP::InputDatabase> input_db,
-             AMP::AMP_MPI globalComm )
+void myTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Database> input_db, AMP::AMP_MPI globalComm )
 {
 
     AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
@@ -454,7 +451,7 @@ void myTest( AMP::UnitTest *ut,
     AMP::Mesh::Mesh::shared_ptr bottomAdapter = manager->Subset( "Bottom" );
     // AMP::Mesh::Mesh::shared_ptr  topAdapter = manager->Subset( "Top" );
 
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
+    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
     AMP::shared_ptr<AMP::Operator::OperatorParameters> columnParams(
         new AMP::Operator::OperatorParameters( tmp_db ) );
     AMP::shared_ptr<AMP::Operator::ColumnOperator> volumeIntegralColumnOperator(
@@ -498,7 +495,7 @@ void myTest( AMP::UnitTest *ut,
             ->modifyRHSvector( integratedRHSVec );
     }
     /*
-     AMP::shared_ptr<AMP::InputDatabase> emptyDb;
+     AMP::shared_ptr<AMP::Database> emptyDb;
      AMP::shared_ptr<AMP::Operator::CoupledOperatorParameters> thermalCoupledOpParams(new
      AMP::Operator::CoupledOperatorParameters(emptyDb));
      thermalCoupledOpParams->d_MapOperator = mapsColumn;
@@ -579,10 +576,10 @@ void multiMeshLoop( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
 
     std::string str1 = "butterfly_pellet_1x.e";
@@ -593,8 +590,8 @@ void multiMeshLoop( AMP::UnitTest *ut, const std::string &exeName )
     AMP::shared_ptr<AMP::Database> bottomMesh_db = mesh_db->getDatabase( "Mesh_1" );
     //  AMP::shared_ptr<AMP::Database> topMesh_db = mesh_db->getDatabase( "Mesh_2" );
 
-    bottomMesh_db->putString( "FileName", str1 );
-    //  topMesh_db->putString("FileName",str1);
+    bottomMesh_db->putScalar( "FileName", str1 );
+    //  topMesh_db->putScalar("FileName",str1);
 
     myTest( ut, input_db, globalComm );
 }

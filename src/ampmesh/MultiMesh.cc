@@ -6,7 +6,6 @@
 #include "AMP/ampmesh/SubsetMesh.h"
 #include "AMP/ampmesh/loadBalance/loadBalanceSimulator.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/MemoryDatabase.h"
 #include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_VECTORS
@@ -35,15 +34,12 @@ static bool check_prefix( std::string prefix, std::string str )
 
 
 // Misc function declerations
-static void copyKey( AMP::Database::shared_ptr,
-                     std::vector<AMP::Database::shared_ptr>,
+static void copyKey( AMP::shared_ptr<const AMP::Database>,
+                     std::vector<AMP::Database::shared_ptr> &,
                      const std::string &,
                      bool,
                      const std::string &,
                      const std::vector<std::string> & );
-static void replaceSubString( std::string &, const std::string &, const std::string & );
-// static void replaceText(AMP::shared_ptr<AMP::Database>&,const std::string&,const std::string&);
-
 
 /********************************************************
  * Constructors                                          *
@@ -66,7 +62,7 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
     }
     // Determine the load balancing we want to use and create the communicator for the parameters
     // for each mesh
-    int method  = params_in->getDatabase()->getIntegerWithDefault( "LoadBalanceMethod", 1 );
+    int method  = params_in->getDatabase()->getWithDefault( "LoadBalanceMethod", 1 );
     auto groups = loadBalancer( d_comm.getSize(), params->params, params->N_elements, method );
     auto comms  = createComms( groups );
     // Check that every mesh exist on some comm
@@ -128,11 +124,11 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
     // Displace the meshes
     std::vector<double> displacement( PhysicalDim, 0.0 );
     if ( d_db->keyExists( "x_offset" ) )
-        displacement[0] = d_db->getDouble( "x_offset" );
+        displacement[0] = d_db->getScalar<double>( "x_offset" );
     if ( d_db->keyExists( "y_offset" ) )
-        displacement[1] = d_db->getDouble( "y_offset" );
+        displacement[1] = d_db->getScalar<double>( "y_offset" );
     if ( d_db->keyExists( "z_offset" ) )
-        displacement[2] = d_db->getDouble( "z_offset" );
+        displacement[2] = d_db->getScalar<double>( "z_offset" );
     bool test = false;
     for ( auto &elem : displacement ) {
         if ( elem != 0.0 )
@@ -144,8 +140,8 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
     for ( int i = 1; d_db->keyExists( "MeshView_" + std::to_string( i ) ); i++ ) {
         auto db   = d_db->getDatabase( "MeshView_" + std::to_string( i ) );
         auto name = db->getString( "MeshName" );
-        auto op   = db->getStringWithDefault( "Operation", "" );
-        auto list = db->getStringArray( "MeshList" );
+        auto op   = db->getWithDefault<std::string>( "Operation", "" );
+        auto list = db->getVector<std::string>( "MeshList" );
         std::vector<Mesh::shared_ptr> meshes;
         for ( const auto &tmp : list ) {
             auto mesh = this->Subset( tmp );
@@ -279,7 +275,7 @@ MultiMesh::simulateBuildMesh( const MeshParameters::shared_ptr params,
     }
     // Determine the load balancing we want to use and create the virtual communicators for each
     // mesh
-    int method = params->getDatabase()->getIntegerWithDefault( "LoadBalanceMethod", 1 );
+    int method                    = params->getDatabase()->getWithDefault( "LoadBalanceMethod", 1 );
     std::vector<rank_list> groups = loadBalancer(
         comm_ranks.size(), multimeshParams->params, multimeshParams->N_elements, method );
     AMP_ASSERT( groups.size() == multimeshParams->params.size() );
@@ -338,7 +334,7 @@ size_t MultiMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     }
     // Adjust the number of elements by a weight if desired
     if ( params->getDatabase()->keyExists( "Weight" ) ) {
-        double weight = params->getDatabase()->getDouble( "Weight" );
+        double weight = params->getDatabase()->getScalar<double>( "Weight" );
         totalMeshSize = (size_t) ceil( weight * ( (double) totalMeshSize ) );
     }
     return totalMeshSize;
@@ -364,7 +360,7 @@ size_t MultiMesh::maxProcs( const MeshParameters::shared_ptr &params )
     }
     // Get the approximate number of elements for each mesh
     size_t totalMaxSize = 0;
-    int method          = params->getDatabase()->getIntegerWithDefault( "LoadBalanceMethod", 1 );
+    int method          = params->getDatabase()->getWithDefault( "LoadBalanceMethod", 1 );
     for ( auto &elem : multimeshParams->params ) {
         size_t localMaxSize = AMP::Mesh::Mesh::maxProcs( elem );
         AMP_ASSERT( localMaxSize > 0 );
@@ -387,11 +383,11 @@ MultiMesh::createDatabases( AMP::shared_ptr<AMP::Database> database )
 {
     // We might have already created and stored the databases for each mesh
     if ( database->keyExists( "submeshDatabases" ) ) {
-        auto databaseNames = database->getStringArray( "submeshDatabases" );
+        auto databaseNames = database->getVector<std::string>( "submeshDatabases" );
         AMP_ASSERT( !databaseNames.empty() );
-        std::vector<AMP::shared_ptr<AMP::Database>> meshDatabases( databaseNames.size() );
+        std::vector<AMP::Database::shared_ptr> meshDatabases( databaseNames.size() );
         for ( size_t i = 0; i < databaseNames.size(); i++ )
-            meshDatabases[i] = database->getDatabase( databaseNames[i] );
+            meshDatabases[i] = database->getDatabase( databaseNames[i] )->cloneDatabase();
         return meshDatabases;
     }
     // Find all of the meshes in the database
@@ -414,33 +410,32 @@ MultiMesh::createDatabases( AMP::shared_ptr<AMP::Database> database )
         }
     }
     // Create the basic databases for each mesh
-    std::vector<AMP::shared_ptr<AMP::Database>> meshDatabases;
+    std::vector<AMP::Database::shared_ptr> meshDatabases;
     for ( auto &meshe : meshes ) {
         // We are dealing with a single mesh object, use the existing database
-        auto database2 = database->getDatabase( meshe );
-        meshDatabases.push_back( database2 );
+        auto database2 = database->getDatabase( meshe )->cloneDatabase();
+        meshDatabases.push_back( std::move( database2 ) );
     }
     for ( auto &meshArray : meshArrays ) {
         // We are dealing with an array of meshes, create a database for each
         auto database1 = database->getDatabase( meshArray );
-        int N          = database1->getInteger( "N" );
+        int N          = database1->getScalar<int>( "N" );
         // Get the iterator and indicies
         std::string iterator;
         std::vector<std::string> index( N );
         if ( database1->keyExists( "iterator" ) ) {
             iterator = database1->getString( "iterator" );
             AMP_ASSERT( database1->keyExists( "indicies" ) );
-            auto dataType = database1->getArrayType( "indicies" );
-            if ( dataType == AMP::Database::AMP_INT ) {
-                std::vector<int> array = database1->getIntegerArray( "indicies" );
+            if ( database1->isType<int>( "indicies" ) ) {
+                auto array = database1->getVector<int>( "indicies" );
                 AMP_ASSERT( (int) array.size() == N );
                 for ( int j = 0; j < N; j++ ) {
                     std::stringstream ss;
                     ss << array[j];
                     index[j] = ss.str();
                 }
-            } else if ( dataType == AMP::Database::AMP_STRING ) {
-                index = database1->getStringArray( "indicies" );
+            } else if ( database1->isType<std::string>( "indicies" ) ) {
+                index = database1->getVector<std::string>( "indicies" );
             } else {
                 AMP_ERROR( "Unknown type for indicies" );
             }
@@ -448,7 +443,7 @@ MultiMesh::createDatabases( AMP::shared_ptr<AMP::Database> database )
         // Create the new databases
         std::vector<AMP::Database::shared_ptr> databaseArray( N );
         for ( int j = 0; j < N; j++ )
-            databaseArray[j] = AMP::make_shared<AMP::MemoryDatabase>( meshArray );
+            databaseArray[j] = AMP::make_shared<AMP::Database>( meshArray );
         // Populate the databases with the proper keys
         keys = database1->getAllKeys();
         for ( auto &key : keys ) {
@@ -877,182 +872,61 @@ void MultiMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr
  * If the key is an array of size N, it will only copy   *
  * the ith value.                                        *
  ********************************************************/
-static void copyKey( AMP::Database::shared_ptr database1,
-                     std::vector<AMP::Database::shared_ptr> database2,
+template<class TYPE>
+static inline void putEntry( AMP::shared_ptr<const AMP::Database> database1,
+                             std::vector<AMP::Database::shared_ptr> &database2,
+                             const std::string &key,
+                             bool select )
+{
+    auto N    = database2.size();
+    auto data = database1->getVector<TYPE>( key );
+    for ( size_t i = 0; i < database2.size(); i++ ) {
+        if ( N == data.size() && select )
+            database2[i]->putScalar( key, data[i] );
+        else
+            database2[i]->putVector( key, data );
+    }
+}
+static void copyKey( AMP::shared_ptr<const AMP::Database> database1,
+                     std::vector<AMP::Database::shared_ptr> &database2,
                      const std::string &key,
                      bool select,
                      const std::string &iterator,
                      const std::vector<std::string> &index )
 {
-    int size                     = database1->getArraySize( key );
-    AMP::Database::DataType type = database1->getArrayType( key );
-    auto N                       = (int) database2.size();
-    switch ( type ) {
-    case AMP::Database::AMP_INVALID: {
-        // We don't know what this is
-        AMP_ERROR( "Invalid database object" );
-    } break;
-    case AMP::Database::AMP_DATABASE: {
+    if ( database1->isDatabase( key ) ) {
         // Copy the database
         auto subDatabase1 = database1->getDatabase( key );
         for ( size_t i = 0; i < database2.size(); i++ ) {
             std::vector<AMP::Database::shared_ptr> subDatabase2( 1,
                                                                  database2[i]->putDatabase( key ) );
             std::vector<std::string> index2( 1, index[i] );
-            std::vector<std::string> subKeys = subDatabase1->getAllKeys();
+            auto subKeys = subDatabase1->getAllKeys();
             for ( auto &subKey : subKeys )
                 copyKey( subDatabase1, subDatabase2, subKey, false, iterator, index2 );
         }
-    } break;
-    case AMP::Database::AMP_BOOL: {
+    } else if ( database1->isType<bool>( key ) ) {
         // Copy a bool
-        auto data = database1->getBoolArray( key );
-        AMP_INSIST( (int) data.size() == size, "Array size does not match key size" );
-        for ( size_t i = 0; i < database2.size(); i++ ) {
-            if ( N == size && select )
-                database2[i]->putBool( key, data[i] != 0 );
-            else
-                database2[i]->putBoolArray( key, data );
-        }
-    } break;
-    case AMP::Database::AMP_CHAR: {
-        // Copy a char
-        auto data = database1->getCharArray( key );
-        AMP_INSIST( (int) data.size() == size, "Array size does not match key size" );
-        for ( size_t i = 0; i < database2.size(); i++ ) {
-            if ( N == size && select ) {
-                database2[i]->putChar( key, data[i] );
-            } else {
-                // We need to try a search and replace
-                database2[i]->putCharArray( key, data );
-            }
-        }
-    } break;
-    case AMP::Database::AMP_INT: {
-        // Copy an int
-        auto data = database1->getIntegerArray( key );
-        AMP_INSIST( (int) data.size() == size, "Array size does not match key size" );
-        for ( size_t i = 0; i < database2.size(); i++ ) {
-            if ( N == size && select )
-                database2[i]->putInteger( key, data[i] );
-            else
-                database2[i]->putIntegerArray( key, data );
-        }
-    } break;
-    case AMP::Database::AMP_COMPLEX: {
-        // Copy a complex number
-        auto data = database1->getComplexArray( key );
-        AMP_INSIST( (int) data.size() == size, "Array size does not match key size" );
-        for ( size_t i = 0; i < database2.size(); i++ ) {
-            if ( N == size && select )
-                database2[i]->putComplex( key, data[i] );
-            else
-                database2[i]->putComplexArray( key, data );
-        }
-    } break;
-    case AMP::Database::AMP_DOUBLE: {
-        // Copy a double number
-        auto data = database1->getDoubleArray( key );
-        AMP_INSIST( (int) data.size() == size, "Array size does not match key size" );
-        for ( size_t i = 0; i < database2.size(); i++ ) {
-            if ( N == size && select )
-                database2[i]->putDouble( key, data[i] );
-            else
-                database2[i]->putDoubleArray( key, data );
-        }
-    } break;
-    case AMP::Database::AMP_FLOAT: {
+        putEntry<bool>( database1, database2, key, select );
+    } else if ( database1->isType<int>( key ) ) {
+        // Copy a int
+        putEntry<int>( database1, database2, key, select );
+    } else if ( database1->isType<float>( key ) ) {
         // Copy a float
-        auto data = database1->getFloatArray( key );
-        AMP_INSIST( (int) data.size() == size, "Array size does not match key size" );
-        for ( size_t i = 0; i < database2.size(); i++ ) {
-            if ( N == size && select )
-                database2[i]->putFloat( key, data[i] );
-            else
-                database2[i]->putFloatArray( key, data );
-        }
-    } break;
-    case AMP::Database::AMP_STRING: {
-        // Copy a string
-        auto data = database1->getStringArray( key );
-        AMP_INSIST( (int) data.size() == size, "Array size does not match key size" );
-        for ( size_t i = 0; i < database2.size(); i++ ) {
-            std::vector<std::string> data2;
-            if ( N == size && select ) {
-                data2.resize( 1 );
-                data2[0] = data[i];
-            } else {
-                data2 = data;
-            }
-            if ( !iterator.empty() ) {
-                for ( auto &elem : data2 ) {
-                    replaceSubString( elem, iterator, index[i] );
-                }
-            }
-            database2[i]->putStringArray( key, data2 );
-        }
-    } break;
-    case AMP::Database::AMP_BOX: {
-        // Copy a box
-        AMP_ERROR( "Not programmed for boxes yet" );
-    } break;
-    default:
+        putEntry<float>( database1, database2, key, select );
+    } else if ( database1->isType<double>( key ) ) {
+        // Copy a double
+        putEntry<double>( database1, database2, key, select );
+    } else if ( database1->isType<std::complex<double>>( key ) ) {
+        // Copy a std::complex<double>
+        putEntry<std::complex<double>>( database1, database2, key, select );
+    } else if ( database1->isType<std::string>( key ) ) {
+        // Copy a std::string
+        putEntry<std::string>( database1, database2, key, select );
+    } else {
         AMP_ERROR( "Unknown key type" );
     }
 }
-
-
-/********************************************************
- * Function to recursively replace all string values     *
- * that match a substring.                               *
- ********************************************************/
-static void
-replaceSubString( std::string &string, const std::string &search, const std::string &replace )
-{
-    while ( true ) {
-        size_t pos = string.find( search );
-        if ( pos == std::string::npos )
-            break;
-        string.replace( pos, search.size(), replace );
-    }
-}
-/*static void replaceText( AMP::shared_ptr<AMP::Database>& database, const std::string& search,
-const std::string&
-replace )
-{
-    auto key = database->getAllKeys();
-    for (size_t i=0; i<key.size(); i++) {
-        autoe type = database->getArrayType(key[i]);
-        switch (type) {
-            case AMP::Database::AMP_DATABASE: {
-                // Search the database
-                auto database2 = database->getDatabase(key[i]);
-                replaceText( database2, search, replace );
-                } break;
-            case AMP::Database::AMP_STRING: {
-                // Search the string
-                auto data = database->getStringArray(key[i]);
-                for (size_t j=0; j<data.size(); j++) {
-                    replaceSubString(data[j],search,replace);
-                }
-                database->putStringArray(key[i],data);
-                } break;
-            // Cases that we don't need to do anything for
-            case AMP::Database::AMP_CHAR:
-            case AMP::Database::AMP_INVALID:
-            case AMP::Database::AMP_BOOL:
-            case AMP::Database::AMP_INT:
-            case AMP::Database::AMP_COMPLEX:
-            case AMP::Database::AMP_DOUBLE:
-            case AMP::Database::AMP_FLOAT:
-            case AMP::Database::AMP_BOX:
-                break;
-            // Unknown case
-            default:
-                AMP_ERROR("Unknown key type");
-        }
-    }
-}*/
 
 
 /********************************************************
@@ -1147,7 +1021,7 @@ bool MultiMesh::addProcSimulation( const loadBalanceSimulator &mesh,
                                    char &decomp )
 {
     auto multimeshParams = AMP::dynamic_pointer_cast<MultiMeshParameters>( mesh.getParams() );
-    int method = multimeshParams->getDatabase()->getIntegerWithDefault( "LoadBalanceMethod", 1 );
+    int method           = multimeshParams->getDatabase()->getWithDefault( "LoadBalanceMethod", 1 );
     AMP_ASSERT( multimeshParams.get() );
     AMP_ASSERT( submeshes.size() == multimeshParams->params.size() );
     bool added = false;

@@ -2,7 +2,7 @@
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
 #include "AMP/ampmesh/MultiIterator.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/MemoryDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_VECTORS

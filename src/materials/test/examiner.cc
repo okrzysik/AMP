@@ -27,8 +27,6 @@ using std::vector;
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Factory.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 
 // Allow external materials to include additional headers in the test
 // Note: this includes 1 additional include header that is passed from the command line:
@@ -89,11 +87,10 @@ int main( int argc, char *argv[] )
     if ( argc > 1 ) {
         infile = string( argv[1] );
     }
-    AMP::shared_ptr<AMP::InputDatabase> inDb( new AMP::InputDatabase( "inDb" ) );
-    AMP::InputManager::getManager()->parseInputFile( infile, inDb );
+    auto inDb = AMP::Database::parseInputFile( infile );
 
     string format;
-    format = inDb->getStringWithDefault( "Format", "TSV" );
+    format = inDb->getWithDefault<std::string>( "Format", "TSV" );
     AMP_INSIST( format == "TSV" || format == "CSV" || format == "Mathematica",
                 "invalid format specified" );
 
@@ -126,7 +123,7 @@ int main( int argc, char *argv[] )
     for ( size_t iarg = 0; iarg < nargs; iarg++ ) {
         string keyNumber = string( "Count_" ) + names[iarg];
         if ( inDb->keyExists( keyNumber ) ) {
-            narg[iarg] = inDb->getInteger( keyNumber );
+            narg[iarg] = inDb->getScalar<int>( keyNumber );
             AMP_INSIST( narg[iarg] >= 1, string( "must have" + keyNumber + " >= 1" ) );
 
             bool haveLow  = inDb->keyExists( string( "Low_" ) + names[iarg] );
@@ -137,8 +134,8 @@ int main( int argc, char *argv[] )
                             string( "must specify Low and High " ) + names[iarg] +
                                 string( " together" ) );
             if ( haveBoth ) {
-                lowarg[iarg] = inDb->getDouble( string( "Low_" ) + names[iarg] );
-                hiarg[iarg]  = inDb->getDouble( string( "High_" ) + names[iarg] );
+                lowarg[iarg] = inDb->getScalar<double>( string( "Low_" ) + names[iarg] );
+                hiarg[iarg]  = inDb->getScalar<double>( string( "High_" ) + names[iarg] );
             } else {
                 lowarg[iarg] = ranges[iarg][0];
                 hiarg[iarg]  = ranges[iarg][1];
@@ -154,7 +151,7 @@ int main( int argc, char *argv[] )
         } else {
             AMP_INSIST( inDb->keyExists( "Grid_" + names[iarg] ),
                         string( "must specify a Grid for " ) + names[iarg] );
-            args[iarg] = inDb->getDoubleArray( "Grid_" + names[iarg] );
+            args[iarg] = inDb->getVector<double>( "Grid_" + names[iarg] );
             narg[iarg] = args[iarg].size();
         }
     }

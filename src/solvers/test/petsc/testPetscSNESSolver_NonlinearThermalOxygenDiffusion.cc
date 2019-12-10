@@ -17,8 +17,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -36,10 +34,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     auto meshmgrParams = AMP::make_shared<AMP::Mesh::MeshManagerParameters>( input_db );
     auto manager       = AMP::make_shared<AMP::Mesh::MeshManager>( meshmgrParams );

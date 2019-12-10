@@ -3,8 +3,6 @@
 #include "AMP/operators/libmesh/PowerShape.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -20,15 +18,15 @@
 static void test_with_shape( AMP::UnitTest *ut )
 {
     //  Read Input File
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
+    auto input_db = AMP::make_shared<AMP::Database>();
     auto mesh_db  = input_db->putDatabase( "Mesh" );
-    mesh_db->putString( "FileName", "cylinder270.e" );
-    mesh_db->putString( "MeshType", "libMesh" );
-    mesh_db->putString( "MeshName", "fuel" );
-    mesh_db->putInteger( "dim", 3 );
-    mesh_db->putDouble( "x_offset", 0. );
-    mesh_db->putDouble( "y_offset", 0. );
-    mesh_db->putDouble( "z_offset", 0. );
+    mesh_db->putScalar( "FileName", "cylinder270.e" );
+    mesh_db->putScalar( "MeshType", "libMesh" );
+    mesh_db->putScalar( "MeshName", "fuel" );
+    mesh_db->putScalar( "dim", 3 );
+    mesh_db->putScalar( "x_offset", 0. );
+    mesh_db->putScalar( "y_offset", 0. );
+    mesh_db->putScalar( "z_offset", 0. );
 
     //   Create the Mesh
     auto mgrParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
@@ -37,9 +35,9 @@ static void test_with_shape( AMP::UnitTest *ut )
 
     //  Construct PowerShape for a radial only term.
     auto shape_db = input_db->putDatabase( "shape_db" );
-    shape_db->putString( "coordinateSystem", "cylindrical" );
-    shape_db->putString( "type", "zernikeRadial" );
-    shape_db->putInteger( "print_info_level", 1 );
+    shape_db->putScalar( "coordinateSystem", "cylindrical" );
+    shape_db->putScalar( "type", "zernikeRadial" );
+    shape_db->putScalar( "print_info_level", 1 );
 
     // Create a DOF manager for a gauss point vector
     int DOFsPerNode = 8;
@@ -57,11 +55,11 @@ static void test_with_shape( AMP::UnitTest *ut )
 #endif
 
     for ( int nMoments = 0; nMoments < 3; nMoments++ ) {
-        shape_db->putInteger( "numMoments", nMoments );
+        shape_db->putScalar( "numMoments", nMoments );
         if ( nMoments > 0 ) {
             std::vector<double> moments( nMoments, 0. );
             moments[nMoments - 1] = -1.;
-            shape_db->putDoubleArray( "Moments", moments );
+            shape_db->putVector( "Moments", moments );
         }
         auto shape_params    = AMP::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
         shape_params->d_Mesh = meshAdapter;
@@ -109,17 +107,17 @@ static void test_with_shape( AMP::UnitTest *ut )
     ut->passes( "PowerShape produces a non-negative power shape." );
 
     //  Construct PowerShape for a full Zernike basis. -
-    shape_db->putString( "type", "zernike" );
+    shape_db->putScalar( "type", "zernike" );
     int i = 0;
     for ( int nMoments = 0; nMoments < 9; nMoments++ ) {
         //    for ( int nMoments = 0; nMoments < 5; nMoments++ ) {
         for ( int n = -nMoments; n <= nMoments; i++ ) {
-            shape_db->putInteger( "numMoments", nMoments );
+            shape_db->putScalar( "numMoments", nMoments );
             int nMNmoments = ( nMoments + 2 ) * ( nMoments + 1 ) / 2 - 1;
             if ( nMoments > 0 ) {
                 std::vector<double> moments( nMNmoments, 0. );
                 moments[i - 1] = -1.;
-                shape_db->putDoubleArray( "Moments", moments );
+                shape_db->putVector( "Moments", moments );
             }
             auto shape_params = AMP::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
             shape_params->d_Mesh = meshAdapter;

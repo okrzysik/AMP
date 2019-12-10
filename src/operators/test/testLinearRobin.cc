@@ -11,8 +11,6 @@
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -29,16 +27,16 @@ static void bcTests( AMP::UnitTest *ut,
                      std::string msgPrefix,
                      AMP::shared_ptr<AMP::Operator::Operator> &feOperator,
                      AMP::shared_ptr<AMP::Operator::Operator> &bcOperator,
-                     AMP::shared_ptr<AMP::InputDatabase> bcDatabase,
+                     AMP::shared_ptr<AMP::Database> bcDatabase,
                      AMP::LinearAlgebra::Vector::shared_ptr bcCorrectionVec )
 //             AMP::shared_ptr<AMP::Operator::OperatorParameters> &bcParameters)
 {
 
     try {
-        auto tmp_db = AMP::make_shared<AMP::InputDatabase>( "Dummy" );
-        tmp_db->putBool( "skip_params", false );
-        tmp_db->putInteger( "print_info_level", 3 );
-        tmp_db->putDouble( "alpha", 0.0 );
+        auto tmp_db = AMP::make_shared<AMP::Database>( "Dummy" );
+        tmp_db->putScalar( "skip_params", false );
+        tmp_db->putScalar( "print_info_level", 3 );
+        tmp_db->putScalar( "alpha", 0.0 );
 
         auto dummyParameters =
             AMP::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( tmp_db );
@@ -90,20 +88,20 @@ static void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "testing with input file " << input_file << std::endl;
     std::cout.flush();
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     // Get the mesh name
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     std::string mesh_file = input_db->getString( "Mesh" );
 
     // Create the mesh parameter object
-    AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
-    database->putInteger( "dim", 3 );
-    database->putString( "MeshName", "mesh" );
-    database->putString( "MeshType", "libMesh" );
-    database->putString( "FileName", mesh_file );
+    AMP::shared_ptr<AMP::Database> database( new AMP::Database( "Mesh" ) );
+    database->putScalar( "dim", 3 );
+    database->putScalar( "MeshName", "mesh" );
+    database->putScalar( "MeshType", "libMesh" );
+    database->putScalar( "FileName", mesh_file );
     AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
@@ -119,7 +117,7 @@ static void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "DiffusionBVPOperator", input_db, elementModel ) );
 
-    AMP::shared_ptr<AMP::InputDatabase> bcDatabase = AMP::dynamic_pointer_cast<AMP::InputDatabase>(
+    AMP::shared_ptr<AMP::Database> bcDatabase = AMP::dynamic_pointer_cast<AMP::Database>(
         input_db->getDatabase( "RobinMatrixCorrection" ) );
 
     AMP::Operator::Operator::shared_ptr boundaryOp, volumeOp;

@@ -21,7 +21,7 @@ namespace Operator {
 class ColumnOperatorParameters : public OperatorParameters
 {
 public:
-    explicit ColumnOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+    explicit ColumnOperatorParameters( AMP::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     {
     }

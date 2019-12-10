@@ -29,7 +29,7 @@ namespace Mesh {
 AMP::shared_ptr<BoxMesh> BoxMesh::generate( MeshParameters::shared_ptr params )
 {
     auto db          = params->getDatabase();
-    bool static_mesh = db->getBoolWithDefault( "static", false );
+    bool static_mesh = db->getWithDefault( "static", false );
     AMP::shared_ptr<BoxMesh> mesh( new StructuredGeometryMesh( params ) );
     if ( !static_mesh )
         mesh.reset( new MovableBoxMesh( *mesh ) );
@@ -52,7 +52,7 @@ std::vector<size_t> BoxMesh::estimateLogicalMeshSize( const MeshParameters::shar
 {
     auto db   = params->getDatabase();
     auto geom = AMP::Geometry::Geometry::buildGeometry( db );
-    auto size = geom->getLogicalGridSize( db->getIntegerArray( "Size" ) );
+    auto size = geom->getLogicalGridSize( db->getVector<int>( "Size" ) );
     std::vector<size_t> N( size.size() );
     for ( size_t i = 0; i < N.size(); i++ )
         N[i] = size[i];
@@ -115,7 +115,7 @@ void BoxMesh::initialize()
     // Get the minimum mesh size
     std::vector<int> minSize( static_cast<int>( GeomDim ), 1 );
     if ( d_db->keyExists( "LoadBalanceMinSize" ) ) {
-        minSize = d_db->getIntegerArray( "LoadBalanceMinSize" );
+        minSize = d_db->getVector<int>( "LoadBalanceMinSize" );
         AMP_ASSERT( (int) minSize.size() == (int) GeomDim );
         for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
             if ( minSize[d] == -1 )
@@ -264,11 +264,11 @@ void BoxMesh::finalize()
     // Displace the mesh
     std::vector<double> displacement( PhysicalDim, 0.0 );
     if ( d_db->keyExists( "x_offset" ) && PhysicalDim >= 1 )
-        displacement[0] = d_db->getDouble( "x_offset" );
+        displacement[0] = d_db->getScalar<double>( "x_offset" );
     if ( d_db->keyExists( "y_offset" ) && PhysicalDim >= 2 )
-        displacement[1] = d_db->getDouble( "y_offset" );
+        displacement[1] = d_db->getScalar<double>( "y_offset" );
     if ( d_db->keyExists( "z_offset" ) && PhysicalDim >= 3 )
-        displacement[2] = d_db->getDouble( "z_offset" );
+        displacement[2] = d_db->getScalar<double>( "z_offset" );
     bool test = false;
     for ( auto &elem : displacement ) {
         if ( elem != 0.0 )
@@ -300,7 +300,7 @@ size_t BoxMesh::maxProcs( const MeshParameters::shared_ptr &params )
     AMP_INSIST( db.get(), "Database must exist" );
     size_t maxProcs = 1;
     if ( db->keyExists( "LoadBalanceMinSize" ) ) {
-        auto minSize  = db->getIntegerArray( "LoadBalanceMinSize" );
+        auto minSize  = db->getVector<int>( "LoadBalanceMinSize" );
         auto meshSize = estimateLogicalMeshSize( params );
         for ( size_t i = 0; i < meshSize.size(); i++ ) {
             if ( minSize[i] == 0 )

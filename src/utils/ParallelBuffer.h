@@ -78,25 +78,25 @@ public:
      * Write a text string to the output stream.  Note that the string is
      * not actually written until an end-of-line is detected.
      */
-    inline void outputString( const std::string &text )
+    inline void outputScalar( const std::string &text )
     {
-        outputString( text.c_str(), text.length() );
+        outputScalar( text.c_str(), text.length() );
     }
 
     /**
      * Write a text string of the specified length to the output file.  Note
      * that the string is not actually written until an end-of-line is detected.
      */
-    inline void outputString( const std::string &text, size_t length )
+    inline void outputScalar( const std::string &text, size_t length )
     {
-        outputString( text.c_str(), length );
+        outputScalar( text.c_str(), length );
     }
 
     /**
      * Write a text string of the specified length to the output file.  Note
      * that the string is not actually written until an end-of-line is detected.
      */
-    void outputString( const char *text, size_t length );
+    void outputScalar( const char *text, size_t length );
 
     /**
      * Synchronize the parallel buffer (called from streambuf).

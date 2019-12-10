@@ -1,5 +1,5 @@
 #include "AMP/operators/subchannel/FlowFrapconOperator.h"
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 #include <string>
@@ -31,28 +31,28 @@ void FlowFrapconOperator::reset( const AMP::shared_ptr<OperatorParameters> &para
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
 
     AMP_INSIST( ( myparams->d_db )->keyExists( "numpoints" ), "Key ''numpoints'' is missing!" );
-    d_numpoints = ( myparams->d_db )->getInteger( "numpoints" );
+    d_numpoints = ( myparams->d_db )->getScalar<int>( "numpoints" );
 
     AMP_INSIST( ( myparams->d_db )->keyExists( "Channel_Diameter" ), "Missing key: Channel_Dia" );
-    d_De = ( myparams->d_db )->getDouble( "Channel_Diameter" );
+    d_De = ( myparams->d_db )->getScalar<double>( "Channel_Diameter" );
 
     AMP_INSIST( ( myparams->d_db )->keyExists( "Heat_Capacity" ), "Missing key: Heat_Capacity" );
-    Cp = ( myparams->d_db )->getDouble( "Heat_Capacity" );
+    Cp = ( myparams->d_db )->getScalar<double>( "Heat_Capacity" );
 
     AMP_INSIST( ( myparams->d_db )->keyExists( "Mass_Flux" ), "Missing key: Mass_Flux" );
-    d_G = ( myparams->d_db )->getDouble( "Mass_Flux" );
+    d_G = ( myparams->d_db )->getScalar<double>( "Mass_Flux" );
 
     AMP_INSIST( ( myparams->d_db )->keyExists( "Temp_Inlet" ), "Missing key: Temp_In" );
-    d_Tin = ( myparams->d_db )->getDoubleWithDefault( "Temp_Inlet", 300. );
+    d_Tin = ( myparams->d_db )->getWithDefault<double>( "Temp_Inlet", 300. );
 
     AMP_INSIST( ( myparams->d_db )->keyExists( "Conductivity" ), "Missing key: Kconductivity" );
-    d_K = ( myparams->d_db )->getDouble( "Conductivity" );
+    d_K = ( myparams->d_db )->getScalar<double>( "Conductivity" );
 
     AMP_INSIST( ( myparams->d_db )->keyExists( "Reynolds" ), "Missing key: Reynolds" );
-    d_Re = ( myparams->d_db )->getDouble( "Reynolds" );
+    d_Re = ( myparams->d_db )->getScalar<double>( "Reynolds" );
 
     AMP_INSIST( ( myparams->d_db )->keyExists( "Prandtl" ), "Missing key: Prandtl" );
-    d_Pr = ( myparams->d_db )->getDouble( "Prandtl" );
+    d_Pr = ( myparams->d_db )->getScalar<double>( "Prandtl" );
 }
 
 
@@ -122,17 +122,17 @@ void FlowFrapconOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 AMP::shared_ptr<OperatorParameters>
 FlowFrapconOperator::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u_in )
 {
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
+    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
 
-    tmp_db->putString( "name", "FlowFrapconOperator" );
-    tmp_db->putInteger( "numpoints", d_numpoints );
-    tmp_db->putDouble( "Channel_Diameter", d_De );
-    tmp_db->putDouble( "Mass_Flux", d_G );
-    tmp_db->putDouble( "Heat_Capacity", Cp );
-    tmp_db->putDouble( "Temp_Inlet", d_Tin );
-    tmp_db->putDouble( "Conductivity", d_K );
-    tmp_db->putDouble( "Reynolds", d_Re );
-    tmp_db->putDouble( "Prandtl", d_Pr );
+    tmp_db->putScalar( "name", "FlowFrapconOperator" );
+    tmp_db->putScalar( "numpoints", d_numpoints );
+    tmp_db->putScalar( "Channel_Diameter", d_De );
+    tmp_db->putScalar( "Mass_Flux", d_G );
+    tmp_db->putScalar( "Heat_Capacity", Cp );
+    tmp_db->putScalar( "Temp_Inlet", d_Tin );
+    tmp_db->putScalar( "Conductivity", d_K );
+    tmp_db->putScalar( "Reynolds", d_Re );
+    tmp_db->putScalar( "Prandtl", d_Pr );
 
     AMP::shared_ptr<FlowFrapconJacobianParameters> outParams(
         new FlowFrapconJacobianParameters( tmp_db ) );

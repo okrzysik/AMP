@@ -2,7 +2,7 @@
 #ifndef included_AMP_ReadTestMesh
 #define included_AMP_ReadTestMesh
 
-#include "AMP/utils/InputDatabase.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/utils/shared_ptr.h"
 
@@ -14,7 +14,7 @@ ENABLE_WARNINGS
 
 namespace AMP {
 
-void readTestMesh( AMP::shared_ptr<AMP::InputDatabase> mesh_file_db, AMP::shared_ptr<::Mesh> mesh );
+void readTestMesh( AMP::shared_ptr<AMP::Database> mesh_file_db, AMP::shared_ptr<::Mesh> mesh );
 
 void readTestMesh( std::string mesh_file, AMP::shared_ptr<::Mesh> mesh );
 

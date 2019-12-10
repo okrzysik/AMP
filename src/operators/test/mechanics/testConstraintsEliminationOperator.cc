@@ -17,8 +17,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -38,9 +36,9 @@ static void myTest( AMP::UnitTest *ut )
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
-    input_db->printClassData( AMP::plog );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
@@ -93,10 +91,9 @@ static void myTest( AMP::UnitTest *ut )
 
         AMP::shared_ptr<AMP::Operator::CustomConstraintsEliminationOperator> dirOp;
         if ( dummy ) {
-            AMP::shared_ptr<AMP::InputDatabase> dummyOperator_db(
-                new AMP::InputDatabase( "DummyOperator" ) );
-            dummyOperator_db->putString( "InputVariable", "displacement" );
-            dummyOperator_db->putString( "OutputVariable", "displacement" );
+            AMP::shared_ptr<AMP::Database> dummyOperator_db( new AMP::Database( "DummyOperator" ) );
+            dummyOperator_db->putScalar( "InputVariable", "displacement" );
+            dummyOperator_db->putScalar( "OutputVariable", "displacement" );
             AMP::shared_ptr<AMP::Operator::OperatorParameters> dummyOperatorParams(
                 new AMP::Operator::OperatorParameters( dummyOperator_db ) );
             dirOp = AMP::make_shared<AMP::Operator::CustomConstraintsEliminationOperator>(
@@ -131,11 +128,10 @@ static void myTest( AMP::UnitTest *ut )
 
             //    AMP::shared_ptr<AMP::Database> dummySolver_db =
             //    preconditioner_db->getDatabase("ContactPreconditioner");
-            AMP::shared_ptr<AMP::InputDatabase> dummySolver_db(
-                new AMP::InputDatabase( "DummySolver" ) );
-            dummySolver_db->putInteger( "print_info_level", 1 );
-            dummySolver_db->putInteger( "max_iterations", 1 );
-            dummySolver_db->putDouble( "max_error", 1.0e-16 );
+            AMP::shared_ptr<AMP::Database> dummySolver_db( new AMP::Database( "DummySolver" ) );
+            dummySolver_db->putScalar( "print_info_level", 1 );
+            dummySolver_db->putScalar( "max_iterations", 1 );
+            dummySolver_db->putScalar( "max_error", 1.0e-16 );
             AMP::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> dummySolverParams(
                 new AMP::Solver::ConstraintsEliminationSolverParameters( dummySolver_db ) );
             dummySolverParams->d_pOperator = dirOp;
@@ -151,9 +147,9 @@ static void myTest( AMP::UnitTest *ut )
         AMP::LinearAlgebra::Variable::shared_ptr var = bvpOp->getOutputVariable();
         loadOp->setVariable( var );
 
-        AMP::shared_ptr<AMP::Database> shell_db( new AMP::MemoryDatabase( "MatrixShellOperator" ) );
-        shell_db->putString( "name", "MatShellOperator" );
-        shell_db->putInteger( "print_info_level", 1 );
+        AMP::shared_ptr<AMP::Database> shell_db( new AMP::Database( "MatrixShellOperator" ) );
+        shell_db->putScalar( "name", "MatShellOperator" );
+        shell_db->putScalar( "print_info_level", 1 );
         AMP::shared_ptr<AMP::Operator::OperatorParameters> shellParams(
             new AMP::Operator::OperatorParameters( shell_db ) );
         AMP::shared_ptr<AMP::Operator::PetscMatrixShellOperator> shellOp(

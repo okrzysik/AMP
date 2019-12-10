@@ -16,8 +16,8 @@ namespace Geometry {
 SquareFrustum::SquareFrustum( AMP::shared_ptr<AMP::Database> db ) : Geometry()
 {
     auto dir      = db->getString( "Dir" );
-    double height = db->getDouble( "Height" );
-    auto range    = db->getDoubleArray( "Range" );
+    double height = db->getScalar<double>( "Height" );
+    auto range    = db->getVector<double>( "Range" );
     AMP_INSIST( range.size() == 6u, "Range must be an array of length 6" );
     int dir2 = 0;
     if ( dir == "-x" )

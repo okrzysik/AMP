@@ -22,7 +22,7 @@ SourcePhysicsModel::SourcePhysicsModel(
     const AMP::shared_ptr<SourcePhysicsModelParameters> &params )
     : ElementPhysicsModel( params )
 {
-    d_useMaterialsLibrary = ( params->d_db )->getBoolWithDefault( "USE_MATERIALS_LIBRARY", false );
+    d_useMaterialsLibrary = ( params->d_db )->getWithDefault( "USE_MATERIALS_LIBRARY", false );
 
     if ( d_useMaterialsLibrary == true ) {
         AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Key ''Material'' is missing!" );
@@ -30,16 +30,16 @@ SourcePhysicsModel::SourcePhysicsModel(
         d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
     } else {
         // Read constant value for the associated property.
-        d_constantProperty = params->d_db->getDoubleWithDefault( "CONSTANT_VALUE", 1.0 );
+        d_constantProperty = params->d_db->getWithDefault<double>( "CONSTANT_VALUE", 1.0 );
     }
 
     d_elementPhysicsParams.reset(
         new AMP::Operator::ElementPhysicsModelParameters( params->d_db ) );
     d_physicsName = d_elementPhysicsParams->d_db->getString( "USE_ELEMENT_PHYSICS" );
 
-    d_DefaultTemperature   = params->d_db->getDoubleWithDefault( "Default_Temperature", 300. );
-    d_DefaultConcentration = params->d_db->getDoubleWithDefault( "Default_Concentration", 0.1 );
-    d_DefaultBurnup        = params->d_db->getDoubleWithDefault( "Default_Burnup", 0. );
+    d_DefaultTemperature   = params->d_db->getWithDefault<double>( "Default_Temperature", 300. );
+    d_DefaultConcentration = params->d_db->getWithDefault<double>( "Default_Concentration", 0.1 );
+    d_DefaultBurnup        = params->d_db->getWithDefault<double>( "Default_Burnup", 0. );
 
     d_defaults.resize( 3 );
 

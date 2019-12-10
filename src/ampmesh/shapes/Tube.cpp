@@ -20,7 +20,7 @@ Tube::Tube( AMP::shared_ptr<AMP::Database> db )
     d_offset[0]   = 0;
     d_offset[1]   = 0;
     d_offset[2]   = 0;
-    auto range    = db->getDoubleArray( "Range" );
+    auto range    = db->getVector<double>( "Range" );
     AMP_INSIST( range.size() == 4u, "Range must be an array of length 4" );
     d_r_min = range[0];
     d_r_max = range[1];

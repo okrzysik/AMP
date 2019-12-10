@@ -11,7 +11,7 @@ PelletContactConductanceModel::PelletContactConductanceModel(
     const AMP::shared_ptr<RobinPhysicsModelParameters> &params )
     : RobinPhysicsModel( params )
 {
-    d_nTransportModels = ( params->d_db )->getInteger( "Number_TransportModels" );
+    d_nTransportModels = ( params->d_db )->getScalar<int>( "Number_TransportModels" );
     d_transportModels.resize( d_nTransportModels );
     AMP::shared_ptr<ElementPhysicsModel> elementPhysicsModel;
 

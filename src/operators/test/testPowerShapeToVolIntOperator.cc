@@ -8,8 +8,6 @@
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/InputDatabase.h"
-#include "AMP/utils/InputManager.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -29,8 +27,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
     std::string log_file   = "output_" + exeName;
 
     AMP::PIO::logAllNodes( log_file );
-    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
-    AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
+    auto input_db = AMP::Database::parseInputFile( input_file );
 
     //   Create the Mesh.
     auto mesh_db   = input_db->getDatabase( "Mesh" );
@@ -73,7 +70,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto volumeDatabase = input_db->getDatabase( "VolumeIntegralOperator" );
     auto inputVarDB     = volumeDatabase->getDatabase( "ActiveInputVariables" );
-    inputVarDB->putString( "ActiveVariable_0", interfaceVarName );
+    inputVarDB->putScalar( "ActiveVariable_0", interfaceVarName );
     auto volumeOp = AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "VolumeIntegralOperator", input_db, transportModel ) );

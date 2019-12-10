@@ -31,7 +31,7 @@ void helperCreateStackOperatorForPelletMechanics(
     AMP::shared_ptr<AMP::Mesh::Mesh> pelletMeshes = manager->Subset( "PelletMeshes" );
     std::vector<AMP::Mesh::MeshID> pelletMeshIDs  = pelletMeshes->getBaseMeshIDs();
     unsigned int totalNumPellets                  = pelletMeshIDs.size();
-    pelletStackOp_db->putInteger( "TOTAL_NUMBER_OF_PELLETS", totalNumPellets );
+    pelletStackOp_db->putScalar( "TOTAL_NUMBER_OF_PELLETS", totalNumPellets );
     AMP::shared_ptr<AMP::Operator::PelletStackOperatorParameters> pelletStackOpParams(
         new AMP::Operator::PelletStackOperatorParameters( pelletStackOp_db ) );
     pelletStackOpParams->d_pelletStackComm = pelletMeshes->getComm();
@@ -310,7 +310,7 @@ void helperResetNonlinearOperatorForPelletMechanics(
 {
     AMP::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( coupledOp->getOperator( 3 ) );
-    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::InputDatabase( "Dummy" ) );
+    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
     AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperatorParameters> tmpParams(
         new AMP::Operator::MechanicsNonlinearFEOperatorParameters( tmp_db ) );
 
