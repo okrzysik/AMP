@@ -9,10 +9,10 @@
 #include "AMP/utils/ParameterBase.h"
 #include "AMP/utils/RNG.h"
 #include "AMP/utils/enable_shared_from_this.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/operations/VectorOperations.h"
+#include <memory>
 
 
 namespace AMP {
@@ -24,7 +24,7 @@ class VectorParameters : public ParameterBase
 {
 public:
     //! Convenience typedef
-    typedef AMP::shared_ptr<VectorParameters> shared_ptr;
+    typedef std::shared_ptr<VectorParameters> shared_ptr;
 
     //! The CommunicationList for a vector
     CommunicationList::shared_ptr d_CommList;
@@ -72,12 +72,12 @@ public: // typedefs
     /** \typedef shared_ptr
      * \brief Shorthand for shared pointer to Vector
      */
-    typedef AMP::shared_ptr<Vector> shared_ptr;
+    typedef std::shared_ptr<Vector> shared_ptr;
 
     /** \typedef shared_ptr
      * \brief Shorthand for shared pointer to Vector
      */
-    typedef AMP::shared_ptr<const Vector> const_shared_ptr;
+    typedef std::shared_ptr<const Vector> const_shared_ptr;
 
     // Deprecated
     typedef VectorDataIterator<double> iterator;
@@ -153,7 +153,7 @@ public: // Virtual functions
     /** \brief Return a parameters description of this vector
      * \return Parameters
      */
-    virtual AMP::shared_ptr<ParameterBase> getParameters();
+    virtual std::shared_ptr<ParameterBase> getParameters();
 
     /** \brief  Selects a portion of this vector and creates a view.
       * \param[in]  criterion  The method for deciding inclusion in the view
@@ -246,7 +246,7 @@ public: // Constructor/destructors
 
 public: // Non-virtual functions
     /// @copydoc VectorOperations::copy(const VectorOperations&)
-    inline void copyVector( AMP::shared_ptr<const Vector> x ) { copy( *x ); }
+    inline void copyVector( std::shared_ptr<const Vector> x ) { copy( *x ); }
 
     /** \brief Change the variable associated with this vector
      * \param[in] name  The new variable
@@ -357,7 +357,7 @@ private:
     // output stream for vector data
     std::ostream *d_output_stream;
 
-    AMP::shared_ptr<std::vector<AMP::weak_ptr<Vector>>> d_Views;
+    std::shared_ptr<std::vector<std::weak_ptr<Vector>>> d_Views;
 };
 
 

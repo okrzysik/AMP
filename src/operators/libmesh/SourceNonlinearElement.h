@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 // AMP files
 #include "AMP/operators/ElementOperation.h"
@@ -42,7 +42,7 @@ public:
       5) INTEGRATEVOLUME (TRUE by default)- Bool to choose to Integrate (Contradiction to the class
       ???).
      */
-    explicit SourceNonlinearElement( const AMP::shared_ptr<ElementOperationParameters> &params );
+    explicit SourceNonlinearElement( const std::shared_ptr<ElementOperationParameters> &params );
 
     //! Destructor.
     virtual ~SourceNonlinearElement() {}
@@ -57,7 +57,7 @@ public:
      */
     void
     initializeForCurrentElement( const ::Elem *elem,
-                                 const AMP::shared_ptr<SourcePhysicsModel> &sourceTransportModel );
+                                 const std::shared_ptr<SourcePhysicsModel> &sourceTransportModel );
 
     void setElementInputVector( const std::vector<std::vector<double>> &elementInputVector )
     {
@@ -94,7 +94,7 @@ public:
       */
     void apply() override;
 
-    AMP::shared_ptr<::FEBase> getFEBase() { return d_fe; }
+    std::shared_ptr<::FEBase> getFEBase() { return d_fe; }
 
     unsigned int getNumberOfGaussPoints() { return ( d_qrule->n_points() ); }
 
@@ -108,11 +108,11 @@ protected:
 
     std::vector<std::vector<double>> d_elementOtherVectors;
 
-    AMP::shared_ptr<::FEType> d_feType;
+    std::shared_ptr<::FEType> d_feType;
 
-    AMP::shared_ptr<::FEBase> d_fe;
+    std::shared_ptr<::FEBase> d_fe;
 
-    AMP::shared_ptr<::QBase> d_qrule;
+    std::shared_ptr<::QBase> d_qrule;
 
     const std::vector<Real> *d_JxW;
 
@@ -126,7 +126,7 @@ protected:
 
     bool d_integrateVolume;
 
-    AMP::shared_ptr<SourcePhysicsModel> d_sourcePhysicsModel;
+    std::shared_ptr<SourcePhysicsModel> d_sourcePhysicsModel;
 
 private:
 };

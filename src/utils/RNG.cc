@@ -38,6 +38,6 @@ RNG::shared_ptr RNG::cloneRNG( size_t new_rank )
     AMP_ASSERT( new_rank != d_Params->d_Rank );
     RNGParameters::shared_ptr newParams(
         new RNGParameters( d_Params->d_WhichSeed, new_rank, d_Params->d_Seed ) );
-    return AMP::make_shared<RNG>( newParams );
+    return std::make_shared<RNG>( newParams );
 }
 } // namespace AMP

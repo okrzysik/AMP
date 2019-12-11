@@ -3,10 +3,10 @@
 
 
 #include "AMP/utils/Database.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
 #include "NonlinearKrylovAcceleratorParameters.h"
 #include "SolverStrategy.h"
+#include <memory>
 
 namespace AMP {
 namespace Solver {
@@ -48,7 +48,7 @@ public:
 
      */
     explicit NonlinearKrylovAccelerator(
-        AMP::shared_ptr<NonlinearKrylovAcceleratorParameters> params );
+        std::shared_ptr<NonlinearKrylovAcceleratorParameters> params );
 
     NonlinearKrylovAccelerator( const NonlinearKrylovAccelerator & ) = delete;
     NonlinearKrylovAccelerator &operator=( const NonlinearKrylovAccelerator & ) = delete;
@@ -64,19 +64,19 @@ public:
      NonlinearKrylovAcceleratorParameters)
      Should contain a pointer to a solution guess vector.
      */
-    void initialize( AMP::shared_ptr<SolverStrategyParameters> parameters ) override;
+    void initialize( std::shared_ptr<SolverStrategyParameters> parameters ) override;
 
     /**
      * Provide the initial guess for the solver.
      * @param [in] initialGuess: shared pointer to the initial guess vector.
      */
-    void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override;
+    void setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override;
 
     /**
      * This routine corrects the acceleration subspace using the vector f
      @param [in] f shared pointer to vector used to correct acceleration subspace
      */
-    void correction( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &f );
+    void correction( std::shared_ptr<AMP::LinearAlgebra::Vector> &f );
 
     /**
      * Resets the internal Krylov supsace, destroying all the internal vectors for a fresh start
@@ -132,8 +132,8 @@ public:
      @param [in] f : shared pointer to right hand side vector
      @param [out] u : shared pointer to approximate computed solution
      */
-    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+    void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /*!
      * Obtain number of nonlinear iterations.
@@ -143,13 +143,13 @@ public:
     /**
      *
      */
-    void putToDatabase( AMP::shared_ptr<AMP::Database> &db );
+    void putToDatabase( std::shared_ptr<AMP::Database> &db );
 
     /**
      * Sets the preconditioner that the solver will use.
      @param [in] preconditioner shared pointer to SolverStrategy object to use as preconditioner
      */
-    void setPreconditioner( AMP::shared_ptr<AMP::Solver::SolverStrategy> preconditioner )
+    void setPreconditioner( std::shared_ptr<AMP::Solver::SolverStrategy> preconditioner )
     {
         d_pPreconditioner = preconditioner;
     }
@@ -157,30 +157,30 @@ public:
     /**
      * Return a shared pointer to the preconditioner being used.
      */
-    AMP::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner( void )
+    std::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner( void )
     {
         return d_pPreconditioner;
     }
 
 protected:
 private:
-    void getFromInput( AMP::shared_ptr<AMP::Database> db );
+    void getFromInput( std::shared_ptr<AMP::Database> db );
 
     bool d_bIsSubspace;                 /* boolean: a nonempty subspace */
     bool d_bContainsPendingVecs;        /* contains pending vectors -- boolean */
     int d_iMaximumNumberOfVectors;      /* maximum number of subspace vectors */
     double d_dVectorAngleDropTolerance; /* vector drop tolerance */
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pvSolution;   /* correction vectors */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pvResidual;   /* correction vectors */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pvCorrection; /* correction vectors */
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pvSolution;   /* correction vectors */
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pvResidual;   /* correction vectors */
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pvCorrection; /* correction vectors */
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> *d_pCorrectionVectors; /* correction vectors */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+    std::shared_ptr<AMP::LinearAlgebra::Vector> *d_pCorrectionVectors; /* correction vectors */
+    std::shared_ptr<AMP::LinearAlgebra::Vector>
         *d_pFunctionDifferenceVectors;             /* function difference vectors */
     double **d_ppdFunctionDifferenceInnerProducts; /* matrix of w vector inner products */
 
-    AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 
     /* Linked-list organization of the vector storage. */
     int d_iFirstVectorIndex; /* index of first subspace vector */

@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "AMP/utils/Units.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/utils/string_view.h"
+#include <memory>
 
 
 namespace AMP {
@@ -63,14 +63,14 @@ public:
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef AMP::shared_ptr<AMP::Database> shared_ptr;
+    typedef std::shared_ptr<AMP::Database> shared_ptr;
 
     /**
      *\typedef const_shared_ptr
      *\brief  Name for the const shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef AMP::shared_ptr<const AMP::Database> const_shared_ptr;
+    typedef std::shared_ptr<const AMP::Database> const_shared_ptr;
 
     //! Empty constructor
     Database() = default;
@@ -279,7 +279,7 @@ public:
      *
      * @param key Key name in database.
      */
-    AMP::shared_ptr<Database> getDatabase( const AMP::string_view &key );
+    std::shared_ptr<Database> getDatabase( const AMP::string_view &key );
 
     /**
      * Get a raw pointer to the database for a key in the database.
@@ -287,7 +287,7 @@ public:
      *
      * @param key Key name in database.
      */
-    AMP::shared_ptr<const Database> getDatabase( const AMP::string_view &key ) const;
+    std::shared_ptr<const Database> getDatabase( const AMP::string_view &key ) const;
 
 
     /**
@@ -310,7 +310,7 @@ public:
      * @param key       Key name in database.
      * @param db        Database to store
      */
-    inline AMP::shared_ptr<Database> putDatabase( const AMP::string_view &key )
+    inline std::shared_ptr<Database> putDatabase( const AMP::string_view &key )
     {
         putData( key, std::make_unique<Database>( std::string( key.data(), key.size() ) ) );
         return getDatabase( key );

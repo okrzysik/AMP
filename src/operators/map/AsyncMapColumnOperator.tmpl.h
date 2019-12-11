@@ -14,7 +14,7 @@ struct MapConstructionParam {
     AMP_MPI comm;
     MapConstructionType construction;
     MapDominance dominance;
-    AMP::shared_ptr<AMP::Database> database;
+    std::shared_ptr<AMP::Database> database;
     std::string meshName;
     AMP::Mesh::Mesh::shared_ptr mesh;
     std::string mapType;
@@ -25,13 +25,13 @@ extern size_t globalMapTagOffset; // We need a global unique tag offset for ever
 
 
 template<typename MAP_TYPE>
-AMP::shared_ptr<AsyncMapColumnOperator>
+std::shared_ptr<AsyncMapColumnOperator>
 AsyncMapColumnOperator::build( AMP::Mesh::Mesh::shared_ptr manager,
-                               AMP::shared_ptr<Database> database )
+                               std::shared_ptr<Database> database )
 {
 
-    auto newParams    = AMP::make_shared<AsyncMapColumnOperatorParameters>( database );
-    auto newMapColumn = AMP::make_shared<AsyncMapColumnOperator>( newParams );
+    auto newParams    = std::make_shared<AsyncMapColumnOperatorParameters>( database );
+    auto newMapColumn = std::make_shared<AsyncMapColumnOperator>( newParams );
 
     // Check that the map type matches the maps we are building
     AMP_ASSERT( database->keyExists( "MapType" ) );
@@ -68,7 +68,7 @@ AsyncMapColumnOperator::build( AMP::Mesh::Mesh::shared_ptr manager,
             continue;
 
         // Create the map parameters
-        AMP::shared_ptr<AsyncMapOperatorParameters> mapParams(
+        std::shared_ptr<AsyncMapOperatorParameters> mapParams(
             new typename MAP_TYPE::Parameters( map_databases[i] ) );
         mapParams->d_MapComm             = mapComm;
         mapParams->d_Mesh1               = mesh1;
@@ -79,7 +79,7 @@ AsyncMapColumnOperator::build( AMP::Mesh::Mesh::shared_ptr manager,
         mapParams->callMakeConsistentSet = false;
 
         // Create the map
-        AMP::shared_ptr<AsyncMapOperator> mapOp( new MAP_TYPE( mapParams ) );
+        std::shared_ptr<AsyncMapOperator> mapOp( new MAP_TYPE( mapParams ) );
         newMapColumn->append( mapOp );
     }
 

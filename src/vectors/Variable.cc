@@ -16,7 +16,7 @@ Variable::~Variable() = default;
 
 Variable::shared_ptr Variable::cloneVariable( const std::string &name ) const
 {
-    return AMP::make_shared<Variable>( name );
+    return std::make_shared<Variable>( name );
 }
 
 

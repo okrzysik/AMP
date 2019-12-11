@@ -30,10 +30,10 @@ class MoabMapOperatorParameters : public AMP::Operator::OperatorParameters
 {
 public:
     typedef AMP::Operator::OperatorParameters Base;
-    typedef AMP::shared_ptr<AMP::Database> SP_Database;
+    typedef std::shared_ptr<AMP::Database> SP_Database;
 
     typedef AMP::Operator::MoabBasedOperator MoabOp;
-    typedef AMP::shared_ptr<MoabOp> SP_MoabOp;
+    typedef std::shared_ptr<MoabOp> SP_MoabOp;
 
     // Constructor
     explicit MoabMapOperatorParameters( const SP_Database &db ) : Base( db )

@@ -10,7 +10,7 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 static void ElementOperationFactoryTest( AMP::UnitTest *ut )
@@ -40,11 +40,11 @@ static void ElementOperationFactoryTest( AMP::UnitTest *ut )
                     "Key ''ElementOperation'' is missing!" );
         auto elemOp_db = innerInput_db->getDatabase( "ElementOperation" );
         auto name      = elemOp_db->getString( "name" );
-        AMP::shared_ptr<AMP::Operator::ElementOperation> elementOperation =
+        std::shared_ptr<AMP::Operator::ElementOperation> elementOperation =
             AMP::Operator::ElementOperationFactory::createElementOperation( elemOp_db );
 
         if ( name == "MechanicsLinearElement" ) {
-            auto mechOperation = AMP::dynamic_pointer_cast<AMP::Operator::MechanicsLinearElement>(
+            auto mechOperation = std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearElement>(
                 elementOperation );
             if ( mechOperation.get() != nullptr ) {
                 ut->passes( exeName + " : " + inputFile + " : MechanicsLinearElement" );
@@ -53,7 +53,7 @@ static void ElementOperationFactoryTest( AMP::UnitTest *ut )
             }
         } else if ( name == "DiffusionLinearElement" ) {
             auto diffusionOperation =
-                AMP::dynamic_pointer_cast<AMP::Operator::DiffusionLinearElement>(
+                std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearElement>(
                     elementOperation );
             if ( diffusionOperation.get() != nullptr ) {
                 ut->passes( exeName + " : " + inputFile + " : DiffusionLinearElement" );
@@ -62,7 +62,7 @@ static void ElementOperationFactoryTest( AMP::UnitTest *ut )
             }
         } else if ( name == "MechanicsNonlinearElement" ) {
             auto mechOperation =
-                AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearElement>(
+                std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearElement>(
                     elementOperation );
             if ( mechOperation.get() != nullptr ) {
                 ut->passes( exeName + " : " + inputFile + " : MechanicsNonlinearElement" );
@@ -71,7 +71,7 @@ static void ElementOperationFactoryTest( AMP::UnitTest *ut )
             }
         } else if ( name == "DiffusionNonlinearElement" ) {
             auto diffusionOperation =
-                AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearElement>(
+                std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearElement>(
                     elementOperation );
             if ( diffusionOperation.get() != nullptr ) {
                 ut->passes( exeName + " : " + inputFile + " : DiffusionNonlinearElement" );
@@ -80,7 +80,7 @@ static void ElementOperationFactoryTest( AMP::UnitTest *ut )
             }
         } else if ( name == "MassLinearElement" ) {
             auto massOperation =
-                AMP::dynamic_pointer_cast<AMP::Operator::MassLinearElement>( elementOperation );
+                std::dynamic_pointer_cast<AMP::Operator::MassLinearElement>( elementOperation );
             if ( massOperation.get() != nullptr ) {
                 ut->passes( exeName + " : " + inputFile + " : MassLinearElement" );
             } else {

@@ -38,7 +38,7 @@ static AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr sub
         }
         ++iterator;
     }
-    auto elements = AMP::make_shared<std::vector<AMP::Mesh::MeshElement>>();
+    auto elements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>();
     elements->reserve( xyFace.size() );
     for ( auto &elem : xyFace )
         elements->push_back( elem.second );
@@ -55,7 +55,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     auto mesh_db = input_db->getDatabase( "Mesh" );
-    auto params  = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto params  = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
@@ -82,7 +82,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     // std::string varName = map_db->getString("VariableName");
     int DOFsPerNode     = 1;
     std::string varName = "Temperature";
-    auto temperature    = AMP::make_shared<AMP::LinearAlgebra::Variable>( varName );
+    auto temperature    = std::make_shared<AMP::LinearAlgebra::Variable>( varName );
     AMP::Discretization::DOFManager::shared_ptr pin_DOFs;
     AMP::Discretization::DOFManager::shared_ptr subchannel_DOFs;
     AMP::LinearAlgebra::Vector::shared_ptr T_clad;

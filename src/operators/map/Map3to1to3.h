@@ -34,7 +34,7 @@ public:
     /** \brief   Standard constructor
      * \param[in] params  Input parameters
      */
-    explicit Map3to1to3( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit Map3to1to3( const std::shared_ptr<OperatorParameters> &params );
 
     //!  Destructor
     virtual ~Map3to1to3();

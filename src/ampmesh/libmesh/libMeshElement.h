@@ -5,7 +5,7 @@
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/ampmesh/libmesh/libMesh.h"
 #include "AMP/ampmesh/libmesh/libMeshIterator.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 #include <vector>
 
 
@@ -110,7 +110,7 @@ protected:
                     const libMesh *mesh );
     libMeshElement( int dim,
                     GeomType type,
-                    AMP::shared_ptr<::Elem> element,
+                    std::shared_ptr<::Elem> element,
                     unsigned int rank,
                     MeshID meshID,
                     const libMesh *mesh );
@@ -122,7 +122,7 @@ protected:
     int d_dim;                    // The dimension of the mesh
     unsigned int d_rank;          // The rank of the current processor
     void *ptr_element;            // The underlying libmesh element properties (raw pointer)
-    AMP::shared_ptr<::Elem> ptr2; // Optional smart pointer to the element (to hold a copy)
+    std::shared_ptr<::Elem> ptr2; // Optional smart pointer to the element (to hold a copy)
     const libMesh *d_mesh;        // The pointer to the current mesh
     MeshID d_meshID;              // The ID of the current mesh
     bool d_delete_elem;           // Do we need to delete the libMesh element

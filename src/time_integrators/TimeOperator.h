@@ -4,8 +4,8 @@
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 
 namespace AMP {
@@ -72,7 +72,7 @@ public:
         optional field: no
 
     */
-    explicit TimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> params );
+    explicit TimeOperator( std::shared_ptr<AMP::Operator::OperatorParameters> params );
 
     /**
      * virtual destructor
@@ -84,20 +84,20 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    virtual void reset( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &params ) override;
+    virtual void reset( const std::shared_ptr<AMP::Operator::OperatorParameters> &params ) override;
 
     /**
      * This function registers a rhs operator with the TimeOperator class
      @param [in] op : shared pointer to Operator, cannot be another TimeOperator
      */
-    void registerRhsOperator( AMP::shared_ptr<AMP::Operator::Operator> op ) { d_pRhsOperator = op; }
+    void registerRhsOperator( std::shared_ptr<AMP::Operator::Operator> op ) { d_pRhsOperator = op; }
 
     /**
      * This function registers a mass operator with the TimeOperator class. Not necessary
      * for FD or FVM discretizations
      @param [in] op : shared pointer to Operator, cannot be another TimeOperator
      */
-    void registerMassOperator( AMP::shared_ptr<AMP::Operator::Operator> op )
+    void registerMassOperator( std::shared_ptr<AMP::Operator::Operator> op )
     {
         d_pMassOperator = op;
     }
@@ -105,7 +105,7 @@ public:
     /**
      * register a variable as being an algebraic component. Deprecated.
      */
-    void registerAlgebraicVariable( AMP::shared_ptr<AMP::LinearAlgebra::Variable> var )
+    void registerAlgebraicVariable( std::shared_ptr<AMP::LinearAlgebra::Variable> var )
     {
         d_pAlgebraicVariable = var;
     }
@@ -113,18 +113,18 @@ public:
     /**
      * return a shared pointer to the rhs operator
      */
-    AMP::shared_ptr<AMP::Operator::Operator> getRhsOperator( void ) { return d_pRhsOperator; }
+    std::shared_ptr<AMP::Operator::Operator> getRhsOperator( void ) { return d_pRhsOperator; }
 
     /**
      * return a shared pointer to the mass operator
      */
-    AMP::shared_ptr<AMP::Operator::Operator> getMassOperator( void ) { return d_pMassOperator; }
+    std::shared_ptr<AMP::Operator::Operator> getMassOperator( void ) { return d_pMassOperator; }
 
     /**
      * register a vector consisting of the solution at the previous time step.
      @param [in] previousSolution : shared pointer to Vector
      */
-    void setPreviousSolution( AMP::shared_ptr<AMP::LinearAlgebra::Vector> previousSolution )
+    void setPreviousSolution( std::shared_ptr<AMP::LinearAlgebra::Vector> previousSolution )
     {
         d_pPreviousTimeSolution = previousSolution;
     }
@@ -158,15 +158,15 @@ public:
      @param [in] u : shared pointer to a Vector at which the Jacobian is to be evaluated.
      @param [in] params : optional parameters object
      */
-    AMP::shared_ptr<AMP::Operator::OperatorParameters>
+    std::shared_ptr<AMP::Operator::OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                   AMP::shared_ptr<AMP::Operator::OperatorParameters> params = nullptr ) override;
+                   std::shared_ptr<AMP::Operator::OperatorParameters> params = nullptr ) override;
 
 protected:
     TimeOperator();
 
-    void getFromInput( AMP::shared_ptr<AMP::Database> db );
+    void getFromInput( std::shared_ptr<AMP::Database> db );
 
     bool d_bLinearMassOperator;
 
@@ -182,32 +182,32 @@ protected:
     /**
      * pointer to rhs operator
      */
-    AMP::shared_ptr<AMP::Operator::Operator> d_pRhsOperator;
+    std::shared_ptr<AMP::Operator::Operator> d_pRhsOperator;
 
     /**
      * pointer to mass operator
      */
-    AMP::shared_ptr<AMP::Operator::Operator> d_pMassOperator;
+    std::shared_ptr<AMP::Operator::Operator> d_pMassOperator;
 
     /**
      * algebraic variable
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_pAlgebraicVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_pAlgebraicVariable;
 
     /**
      * solution at previous time step
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pPreviousTimeSolution;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pPreviousTimeSolution;
 
     /**
      * scratch vector for internal use
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
 
     /**
      * vector containing source terms if any
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
 
 private:
 };

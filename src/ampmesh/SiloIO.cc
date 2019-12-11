@@ -179,7 +179,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
         AMP_INSIST( d_dim == mesh->getDim(),
                     "All meshes must have the same number of physical dimensions" );
     AMP_INSIST( level >= 0 && level <= 3, "Invalid value for level" );
-    auto multimesh = AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( multimesh.get() == nullptr ) {
         // We are dealing with a single mesh
         siloBaseMeshData data;
@@ -242,7 +242,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
 std::vector<AMP::Mesh::MeshID> SiloIO::getMeshIDs( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     std::vector<AMP::Mesh::MeshID> ids;
-    auto multimesh = AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( multimesh.get() == nullptr ) {
         // We are dealing with a single mesh
         ids = std::vector<AMP::Mesh::MeshID>( 1, mesh->meshID() );

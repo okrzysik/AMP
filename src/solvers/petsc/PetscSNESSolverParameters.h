@@ -5,7 +5,7 @@
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -21,13 +21,13 @@ class PetscSNESSolverParameters : public SolverStrategyParameters
 {
 public:
     PetscSNESSolverParameters() {}
-    explicit PetscSNESSolverParameters( AMP::shared_ptr<AMP::Database> db );
+    explicit PetscSNESSolverParameters( std::shared_ptr<AMP::Database> db );
     virtual ~PetscSNESSolverParameters() {}
 
     AMP_MPI d_comm;
 
-    AMP::shared_ptr<PetscKrylovSolver> d_pKrylovSolver;
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pInitialGuess;
+    std::shared_ptr<PetscKrylovSolver> d_pKrylovSolver;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pInitialGuess;
 
 protected:
 private:

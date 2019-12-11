@@ -5,7 +5,7 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include "AMP/operators/Operator.h"
 #include "AMP/vectors/Variable.h"
@@ -23,11 +23,11 @@ class WeldOperator : public Operator
 {
 
 public:
-    WeldOperator( const AMP::shared_ptr<OperatorParameters> &params ) : Operator( params ) {}
+    WeldOperator( const std::shared_ptr<OperatorParameters> &params ) : Operator( params ) {}
 
     virtual ~WeldOperator() {}
 
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params ) { (void) params; }
+    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) { (void) params; }
 
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
                         AMP::LinearAlgebra::Vector::const_shared_ptr u,

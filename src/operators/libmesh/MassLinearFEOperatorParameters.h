@@ -11,14 +11,14 @@ namespace Operator {
 class MassLinearFEOperatorParameters : public LinearFEOperatorParameters
 {
 public:
-    explicit MassLinearFEOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit MassLinearFEOperatorParameters( std::shared_ptr<AMP::Database> db )
         : LinearFEOperatorParameters( db )
     {
     }
 
     virtual ~MassLinearFEOperatorParameters() {}
 
-    AMP::shared_ptr<MassDensityModel> d_densityModel;
+    std::shared_ptr<MassDensityModel> d_densityModel;
 
 protected:
 private:

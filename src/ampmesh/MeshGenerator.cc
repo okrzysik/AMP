@@ -29,7 +29,7 @@ std::map<std::string, AMP::Mesh::Mesh::generatorType> AMP::Mesh::Mesh::d_generat
 /********************************************************
  * Create a mesh from the input database                 *
  ********************************************************/
-AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_ptr &params )
+std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_ptr &params )
 {
     auto database = params->d_db;
     AMP_ASSERT( database != nullptr );
@@ -37,10 +37,10 @@ AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
     AMP_INSIST( database->keyExists( "MeshName" ), "MeshName must exist in input database" );
     std::string MeshType = database->getString( "MeshType" );
     std::string MeshName = database->getString( "MeshName" );
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( MeshType == std::string( "Multimesh" ) ) {
         // The mesh is a multimesh
-        mesh = AMP::make_shared<AMP::Mesh::MultiMesh>( params );
+        mesh = std::make_shared<AMP::Mesh::MultiMesh>( params );
     } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
         auto filename = database->getWithDefault<std::string>( "FileName", "" );
@@ -53,14 +53,14 @@ AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
     } else if ( MeshType == std::string( "libMesh" ) ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH
-        mesh = AMP::make_shared<AMP::Mesh::libMesh>( params );
+        mesh = std::make_shared<AMP::Mesh::libMesh>( params );
 #else
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif
     } else if ( MeshType == std::string( "STKMesh" ) ) {
 // The mesh is a stk mesh
 #ifdef USE_TRILINOS_STKClassic
-        // mesh = AMP::make_shared<AMP::Mesh::STKMesh>( params );
+        // mesh = std::make_shared<AMP::Mesh::STKMesh>( params );
         AMP_ERROR( "AMP stk mesh interface is broken" );
 #else
         AMP_ERROR( "AMP was compiled without support for STKMesh" );
@@ -68,7 +68,7 @@ AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
     } else if ( MeshType == std::string( "moab" ) || MeshType == std::string( "MOAB" ) ) {
 // The mesh is a MOAB mesh
 #ifdef USE_EXT_MOAB
-        mesh = AMP::make_shared<AMP::Mesh::moabMesh>( params );
+        mesh = std::make_shared<AMP::Mesh::moabMesh>( params );
 #else
         AMP_ERROR( "AMP was compiled without support for MOAB" );
 #endif

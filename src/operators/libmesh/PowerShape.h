@@ -8,8 +8,8 @@
 #include "AMP/operators/libmesh/PowerShapeParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
+#include <memory>
 
 
 // Libmesh headers
@@ -38,11 +38,11 @@ class PowerShape : public Operator
 {
 
 public:
-    typedef AMP::shared_ptr<PowerShapeParameters> SP_Parameters;
-    typedef AMP::shared_ptr<OperatorParameters> SP_OperatorParameters;
+    typedef std::shared_ptr<PowerShapeParameters> SP_Parameters;
+    typedef std::shared_ptr<OperatorParameters> SP_OperatorParameters;
     typedef std::vector<double> Vec_Dbl;
-    typedef AMP::shared_ptr<Vec_Dbl> SP_Vec_Dbl;
-    typedef AMP::shared_ptr<AMP::Database> SP_Database;
+    typedef std::shared_ptr<Vec_Dbl> SP_Vec_Dbl;
+    typedef std::shared_ptr<AMP::Database> SP_Database;
 
 private:
     // Defines fission data types.
@@ -168,9 +168,9 @@ protected:
 
     // SP_HexGaussPointVariable d_Variable;
 
-    AMP::shared_ptr<::FEType> d_feType;
-    AMP::shared_ptr<::FEBase> d_fe;
-    AMP::shared_ptr<::QBase> d_qrule;
+    std::shared_ptr<::FEType> d_feType;
+    std::shared_ptr<::FEBase> d_fe;
+    std::shared_ptr<::QBase> d_qrule;
 
     void createCurrentLibMeshElement();
 

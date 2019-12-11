@@ -138,7 +138,7 @@ bool DOFManager::operator!=( const DOFManager &rhs ) const { return !( this->ope
 /****************************************************************
  * Subset the DOF manager                                        *
  ****************************************************************/
-AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP_MPI &comm )
+std::shared_ptr<DOFManager> DOFManager::subset( const AMP_MPI &comm )
 {
     if ( comm.compare( d_comm ) != 0 )
         return shared_from_this();
@@ -147,11 +147,11 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP_MPI &comm )
         local_dofs[i] += i;
     return subsetDOFManager::create( shared_from_this(), local_dofs, getIterator(), comm );
 }
-AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh,
+std::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh,
                                                 bool useMeshComm )
 {
     if ( mesh.get() == nullptr )
-        return AMP::shared_ptr<DOFManager>();
+        return std::shared_ptr<DOFManager>();
     // Get a list of the elements in the mesh
     auto iterator = getIterator();
     std::vector<AMP::Mesh::MeshElement> element_list;
@@ -161,7 +161,7 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::Mesh::shared_pt
             element_list.push_back( elem );
     }
     // Create the element iterator
-    auto elements       = AMP::make_shared<std::vector<AMP::Mesh::MeshElement>>( element_list );
+    auto elements       = std::make_shared<std::vector<AMP::Mesh::MeshElement>>( element_list );
     auto subsetIterator = AMP::Mesh::MultiVectorIterator( elements, 0 );
     // Get the DOFs
     std::vector<AMP::Mesh::MeshElementID> id_list( elements->size() );
@@ -188,10 +188,10 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::Mesh::shared_pt
         comm = d_comm;
     }
     if ( comm.isNull() )
-        return AMP::shared_ptr<DOFManager>();
+        return std::shared_ptr<DOFManager>();
     return subsetDOFManager::create( shared_from_this(), dofs, subsetIterator, comm );
 }
-AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::MeshIterator &iterator,
+std::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::MeshIterator &iterator,
                                                 const AMP_MPI &comm )
 {
     // Get the intesection of the current iterator with the given iterator
@@ -220,7 +220,7 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::MeshIterator &i
     }
     // Create the subset DOF Manager
     if ( comm.isNull() )
-        return AMP::shared_ptr<DOFManager>();
+        return std::shared_ptr<DOFManager>();
     return subsetDOFManager::create( shared_from_this(), dofs, intersection, comm );
 }
 } // namespace Discretization

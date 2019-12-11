@@ -17,13 +17,13 @@
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "PowerShapeParameters.h"
 #include "VolumeIntegralOperator.h"
 #include "libmesh/cell_hex8.h"
 #include "libmesh/string_to_enum.h"
+#include <memory>
 
 #include <cmath>
 #include <vector>
@@ -37,7 +37,7 @@ namespace Operator {
  * values from the parameters.                                          *
  *************************************************************************
  */
-PowerShape::PowerShape( AMP::shared_ptr<PowerShapeParameters> parameters ) : Operator( parameters )
+PowerShape::PowerShape( std::shared_ptr<PowerShapeParameters> parameters ) : Operator( parameters )
 {
     AMP_ASSERT( parameters );
     d_Mesh = parameters->d_Mesh;
@@ -58,7 +58,7 @@ PowerShape::~PowerShape() = default;
  *  default values.                                                      *
  *************************************************************************
  */
-void PowerShape::reset( const AMP::shared_ptr<OperatorParameters> &parameters )
+void PowerShape::reset( const std::shared_ptr<OperatorParameters> &parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
     d_db = parameters->d_db;
@@ -110,7 +110,7 @@ void PowerShape::reset( const AMP::shared_ptr<OperatorParameters> &parameters )
  * with those found in input.                                               *
  ****************************************************************************
  */
-void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
+void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( db );
 
@@ -612,8 +612,8 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             // power density the
             // value the user specified.
             d_db->putDatabase( "VolumeIntegral" );
-            AMP::shared_ptr<AMP::Database> volume_db = d_db->getDatabase( "VolumeIntegral" );
-            AMP::shared_ptr<AMP::Database> act_db;
+            std::shared_ptr<AMP::Database> volume_db = d_db->getDatabase( "VolumeIntegral" );
+            std::shared_ptr<AMP::Database> act_db;
 
             volume_db->putScalar( "name", "VolumeIntegralOperator" );
 
@@ -626,14 +626,14 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             volume_db->putDatabase( "ActiveInputVariables" );
             volume_db->putDatabase( "SourceElement" );
 
-            AMP::shared_ptr<AMP::Database> source_db = volume_db->getDatabase( "SourceElement" );
+            std::shared_ptr<AMP::Database> source_db = volume_db->getDatabase( "SourceElement" );
             source_db->putScalar( "name", "SourceNonlinearElement" );
 
             act_db = volume_db->getDatabase( "ActiveInputVariables" );
             act_db->putScalar( "ActiveVariable_0", ( u->getVariable() )->getName() );
-            AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> emptyModel;
-            AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeIntegralOperator =
-                AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+            std::shared_ptr<AMP::Operator::ElementPhysicsModel> emptyModel;
+            std::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeIntegralOperator =
+                std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
                     AMP::Operator::OperatorBuilder::createOperator(
                         d_Mesh, "VolumeIntegral", d_db, emptyModel ) );
 
@@ -790,7 +790,7 @@ void PowerShape::printClassData( std::ostream &os ) const
  * \brief Write out class version number and data members to database.   *
  *************************************************************************
  */
-void PowerShape::putToDatabase( AMP::shared_ptr<AMP::Database> db )
+void PowerShape::putToDatabase( std::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( !db.use_count() );
     db->putScalar( "numXmoments", d_numXmoments );

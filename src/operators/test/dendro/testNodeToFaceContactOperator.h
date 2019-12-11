@@ -540,7 +540,7 @@ computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
                      AMP::LinearAlgebra::Vector::shared_ptr sigmaXZ,
                      AMP::LinearAlgebra::Vector::shared_ptr sigmaXY,
                      AMP::LinearAlgebra::Vector::shared_ptr sigmaEff,
-                     AMP::shared_ptr<AMP::Operator::MechanicsMaterialModel> mechanicsMaterialModel,
+                     std::shared_ptr<AMP::Operator::MechanicsMaterialModel> mechanicsMaterialModel,
                      double referenceTemperature        = 273.0,
                      double thermalExpansionCoefficient = 2.0e-6,
                      AMP::LinearAlgebra::Vector::shared_ptr temperatureField =
@@ -568,10 +568,10 @@ computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
         temperatureField->select( vectorSelector, ( temperatureField->getVariable() )->getName() );
 
     double youngsModulus =
-        AMP::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>( mechanicsMaterialModel )
+        std::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>( mechanicsMaterialModel )
             ->getYoungsModulus();
     double poissonsRatio =
-        AMP::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>( mechanicsMaterialModel )
+        std::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>( mechanicsMaterialModel )
             ->getPoissonsRatio();
 
     computeStressTensor( mesh,
@@ -654,7 +654,7 @@ static void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAda
 static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
                    AMP::LinearAlgebra::Vector::shared_ptr sol,
                    AMP::Operator::Operator::shared_ptr op,
-                   AMP::shared_ptr<AMP::Solver::SolverStrategy> pre,
+                   std::shared_ptr<AMP::Solver::SolverStrategy> pre,
                    size_t maxIters,
                    double relTol,
                    double absTol,

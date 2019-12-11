@@ -18,9 +18,9 @@ extern template class VectorOperationsOpenMP<float>;  // Suppresses implicit ins
  * Constructors                                                  *
  ****************************************************************/
 template<typename TYPE>
-AMP::shared_ptr<VectorOperations> VectorOperationsOpenMP<TYPE>::cloneOperations() const
+std::shared_ptr<VectorOperations> VectorOperationsOpenMP<TYPE>::cloneOperations() const
 {
-    auto ptr = AMP::make_shared<VectorOperationsOpenMP<TYPE>>();
+    auto ptr = std::make_shared<VectorOperationsOpenMP<TYPE>>();
     return ptr;
 }
 

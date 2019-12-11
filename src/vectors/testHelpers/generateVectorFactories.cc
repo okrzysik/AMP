@@ -94,10 +94,10 @@ int to_bool( const std::string &s )
 
 // Generate a SimpleVectorFactory
 template<typename TYPE, typename VecOps>
-AMP::shared_ptr<VectorFactory>
+std::shared_ptr<VectorFactory>
 generateSimpleVectorFactory( int N, bool global, const std::string &data )
 {
-    AMP::shared_ptr<VectorFactory> factory;
+    std::shared_ptr<VectorFactory> factory;
     if ( data == "cpu" ) {
         factory.reset(
             new SimpleVectorFactory<TYPE, VecOps, AMP::LinearAlgebra::VectorDataCPU<TYPE>>(
@@ -116,10 +116,10 @@ generateSimpleVectorFactory( int N, bool global, const std::string &data )
     return factory;
 }
 template<typename TYPE>
-AMP::shared_ptr<VectorFactory>
+std::shared_ptr<VectorFactory>
 generateSimpleVectorFactory( int N, bool global, const std::string &ops, const std::string &data )
 {
-    AMP::shared_ptr<VectorFactory> factory;
+    std::shared_ptr<VectorFactory> factory;
     if ( ops == "default" ) {
         factory =
             generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsDefault<TYPE>>(
@@ -144,10 +144,10 @@ generateSimpleVectorFactory( int N, bool global, const std::string &ops, const s
     }
     return factory;
 }
-AMP::shared_ptr<VectorFactory> generateSimpleVectorFactory(
+std::shared_ptr<VectorFactory> generateSimpleVectorFactory(
     int N, bool global, const std::string &type, const std::string &ops, const std::string &data )
 {
-    AMP::shared_ptr<VectorFactory> factory;
+    std::shared_ptr<VectorFactory> factory;
     if ( type == "double" ) {
         factory = generateSimpleVectorFactory<double>( N, global, ops, data );
     } else if ( type == "float" ) {
@@ -159,12 +159,12 @@ AMP::shared_ptr<VectorFactory> generateSimpleVectorFactory(
 }
 
 
-AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
+std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
 {
     auto pos                      = name.find_first_of( '<' );
     const std::string factoryName = name.substr( 0, pos );
     auto args                     = splitArgs( name );
-    AMP::shared_ptr<VectorFactory> factory;
+    std::shared_ptr<VectorFactory> factory;
     if ( factoryName == "SimpleVectorFactory" ) {
         AMP_ASSERT( args.size() >= 2 );
         // Set default arguments

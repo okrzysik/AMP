@@ -6,8 +6,8 @@
 #include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/MechanicsModelParameters.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 
 namespace AMP {
@@ -17,7 +17,7 @@ class MechanicsModel : public ElementPhysicsModel
 {
 public:
     /** Constructor */
-    explicit MechanicsModel( const AMP::shared_ptr<MechanicsModelParameters> &params )
+    explicit MechanicsModel( const std::shared_ptr<MechanicsModelParameters> &params )
         : ElementPhysicsModel( params )
     {
         bool useMaterialsLibrary =
@@ -36,26 +36,26 @@ public:
     /** This function is used by the Mechanics operator to pass relevant
      * values to this material model. These values will be used to compute
      * the stress and/or tangent. */
-    virtual void reset( AMP::shared_ptr<MechanicsModelParameters> params )
+    virtual void reset( std::shared_ptr<MechanicsModelParameters> params )
     {
         d_deformationGradient = params->d_deformationGradient;
     }
 
     /** This function should return the consistent/continuum tangent values in the vector
      * provided.   */
-    virtual void getTangent( AMP::shared_ptr<AMP::LinearAlgebra::Vector> tangent ) {}
+    virtual void getTangent( std::shared_ptr<AMP::LinearAlgebra::Vector> tangent ) {}
 
     /** This function should return the stress values in the vector
      * provided.   */
-    virtual void getStress( AMP::shared_ptr<AMP::LinearAlgebra::Vector> stress ) {}
+    virtual void getStress( std::shared_ptr<AMP::LinearAlgebra::Vector> stress ) {}
 
 protected:
     /** The material object that can be used to get material properties */
-    AMP::shared_ptr<AMP::Materials::Material> d_material;
+    std::shared_ptr<AMP::Materials::Material> d_material;
 
     /** Pointer to the deformation gradient that is required to compute the
      * stress and/or tangent. */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_deformationGradient;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_deformationGradient;
 };
 } // namespace Operator
 } // namespace AMP

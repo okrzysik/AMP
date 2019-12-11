@@ -28,7 +28,7 @@ class NeumannVectorCorrection : public BoundaryOperator
 public:
     //! Constructor. This function reads all the parameters required for surface elements.
     explicit NeumannVectorCorrection(
-        const AMP::shared_ptr<NeumannVectorCorrectionParameters> &params );
+        const std::shared_ptr<NeumannVectorCorrectionParameters> &params );
 
     /**
       Set the variable for the vector that will used with this operator.
@@ -52,7 +52,7 @@ public:
     /**
       This function reads parameters related to boundary Ids
       */
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /**
       Adds a vector to the RHS vector.
@@ -63,13 +63,13 @@ public:
      * get a pointer to the cached parameters that were used to create this
      * operator
      */
-    AMP::shared_ptr<OperatorParameters> getOperatorParameters() { return d_params; }
+    std::shared_ptr<OperatorParameters> getOperatorParameters() { return d_params; }
 
     void setVariableFlux( const AMP::LinearAlgebra::Vector::shared_ptr &flux );
 
     void setFrozenVector( AMP::LinearAlgebra::Vector::shared_ptr f );
 
-    AMP::shared_ptr<RobinPhysicsModel> getRobinPhysicsModel() { return d_robinPhysicsModel; }
+    std::shared_ptr<RobinPhysicsModel> getRobinPhysicsModel() { return d_robinPhysicsModel; }
 
     std::vector<short int> getBoundaryIds() const { return d_boundaryIds; }
 
@@ -84,7 +84,7 @@ protected:
       This function returns a parameter object that can be used to reset the corresponding
       NeumannVectorCorrection operator.
       */
-    AMP::shared_ptr<OperatorParameters>
+    std::shared_ptr<OperatorParameters>
     getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
 
     Discretization::createLibmeshElements d_libmeshElements;
@@ -113,11 +113,11 @@ protected:
 
     std::vector<short int> d_numDofIds;
 
-    AMP::shared_ptr<NeumannVectorCorrectionParameters> d_params;
+    std::shared_ptr<NeumannVectorCorrectionParameters> d_params;
 
-    AMP::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
+    std::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
-    AMP::shared_ptr<const libMesh::FEType> d_type;
+    std::shared_ptr<const libMesh::FEType> d_type;
     libMeshEnums::Order d_qruleOrder;
     libMeshEnums::QuadratureType d_qruleType;
 

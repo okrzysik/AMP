@@ -6,8 +6,8 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include "libmesh/auto_ptr.h"
 #include "libmesh/boundary_info.h"
@@ -39,7 +39,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    AMP::shared_ptr<::Mesh> mesh( new ::Mesh( 3 ) );
+    std::shared_ptr<::Mesh> mesh( new ::Mesh( 3 ) );
     MeshTools::Generation::build_cube(
         ( *( mesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, HEX8, false );
 
@@ -55,7 +55,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto ampMesh = AMP::Mesh::Mesh::shared_ptr( new AMP::Mesh::libMesh( mesh, "TestMesh" ) );
 
-    auto myVar   = AMP::make_shared<AMP::LinearAlgebra::Variable>( "myVar" );
+    auto myVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "myVar" );
     auto dof_map = AMP::Discretization::simpleDOFManager::create(
         ampMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto T = AMP::LinearAlgebra::createVector( dof_map, myVar, true );
@@ -77,8 +77,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-    AMP::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
-    AMP::shared_ptr<::FEBase> fe( (::FEBase::build( 3, ( *feType ) ) ).release() );
+    std::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
+    std::shared_ptr<::FEBase> fe( (::FEBase::build( 3, ( *feType ) ) ).release() );
 
     //  const std::vector<std::vector<Real> > &phi = fe->get_phi();
     const std::vector<std::vector<Real>> &dphidxi   = fe->get_dphidxi();
@@ -95,7 +95,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
     libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
-    AMP::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 3, qruleOrder ) ).release() );
+    std::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 3, qruleOrder ) ).release() );
 
     fe->attach_quadrature_rule( qrule.get() );
 

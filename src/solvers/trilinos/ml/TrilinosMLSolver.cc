@@ -24,7 +24,7 @@ TrilinosMLSolver::TrilinosMLSolver()
     d_bUseEpetra     = false;
     d_bRobustMode    = false;
 }
-TrilinosMLSolver::TrilinosMLSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
+TrilinosMLSolver::TrilinosMLSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
     d_ml          = nullptr;
@@ -46,7 +46,7 @@ TrilinosMLSolver::~TrilinosMLSolver()
     d_matrix.reset(); // Need to keep a copy of the matrix alive until after the solver is destroyed
 }
 
-void TrilinosMLSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters )
+void TrilinosMLSolver::initialize( std::shared_ptr<SolverStrategyParameters> const parameters )
 {
     getFromInput( parameters->d_db );
     if ( d_pOperator.get() != nullptr ) {
@@ -54,7 +54,7 @@ void TrilinosMLSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> con
     }
 }
 
-void TrilinosMLSolver::getFromInput( AMP::shared_ptr<AMP::Database> db )
+void TrilinosMLSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     d_bRobustMode = db->getWithDefault( "ROBUST_MODE", false );
     d_bUseEpetra  = db->getWithDefault( "USE_EPETRA", true );
@@ -106,7 +106,7 @@ void TrilinosMLSolver::convertMLoptionsToTeuchosParameterList()
 }
 
 
-void TrilinosMLSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
+void TrilinosMLSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
 {
     d_pOperator = op;
     AMP_INSIST( d_pOperator.get() != nullptr,
@@ -136,19 +136,19 @@ void TrilinosMLSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Op
                         true,
                     "Null space construction only available for mechanics (PDE_equations=3)" );
 
-        AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
-            AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+        std::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
+            std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
         AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
 
-        d_matrix = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(
+        d_matrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(
             linearOperator->getMatrix() );
         AMP_INSIST( d_matrix.get() != nullptr, "d_matrix cannot be NULL" );
 
         d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(
             d_matrix->getEpetra_CrsMatrix(), d_MLParameterList, false ) );
     } else {
-        AMP::shared_ptr<AMP::Operator::TrilinosMatrixShellOperator> matShellOperator =
-            AMP::dynamic_pointer_cast<AMP::Operator::TrilinosMatrixShellOperator>( d_pOperator );
+        std::shared_ptr<AMP::Operator::TrilinosMatrixShellOperator> matShellOperator =
+            std::dynamic_pointer_cast<AMP::Operator::TrilinosMatrixShellOperator>( d_pOperator );
         AMP_ASSERT( matShellOperator.get() != nullptr );
 
         size_t matSize = matShellOperator->getMatrixSize();
@@ -173,18 +173,18 @@ void TrilinosMLSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Op
 
 
 void TrilinosMLSolver::resetOperator(
-    const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     PROFILE_START( "resetOperator" );
     AMP_INSIST( ( d_pOperator.get() != nullptr ),
                 "ERROR: TrilinosMLSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
-    reset( AMP::shared_ptr<SolverStrategyParameters>() );
+    reset( std::shared_ptr<SolverStrategyParameters>() );
     PROFILE_STOP( "resetOperator" );
 }
 
 
-void TrilinosMLSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
+void TrilinosMLSolver::reset( std::shared_ptr<SolverStrategyParameters> )
 {
     PROFILE_START( "reset" );
     if ( d_mlAggregate ) {
@@ -202,8 +202,8 @@ void TrilinosMLSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
 }
 
 
-void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                              AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void TrilinosMLSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                              std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
     // in this case we make the assumption we can access a EpetraMat for now
@@ -226,7 +226,7 @@ void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> 
         d_bCreationPhase = false;
     }
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> r;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> r;
 
     bool computeResidual = false;
     if ( d_bRobustMode || ( d_iDebugPrintInfoLevel > 1 ) ) {
@@ -256,9 +256,9 @@ void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> 
         // These functions throw exceptions if this cannot be performed.
         AMP_ASSERT( f != nullptr );
 
-        auto f_epetra = AMP::dynamic_pointer_cast<const AMP::LinearAlgebra::EpetraVector>(
+        auto f_epetra = std::dynamic_pointer_cast<const AMP::LinearAlgebra::EpetraVector>(
             AMP::LinearAlgebra::EpetraVector::constView( f ) );
-        auto u_epetra = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>(
+        auto u_epetra = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>(
             AMP::LinearAlgebra::EpetraVector::view( u ) );
         const Epetra_Vector &fVec = f_epetra->getEpetra_Vector();
         Epetra_Vector &uVec       = u_epetra->getEpetra_Vector();
@@ -283,7 +283,7 @@ void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> 
     // as Epetra is not going to change the state of a managed vector
     // an example where this will and has caused problems is when the
     // vector is a petsc managed vector being passed back to PETSc
-    auto firer = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( u );
+    auto firer = std::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( u );
     if ( firer )
         firer->fireDataChange();
 
@@ -315,8 +315,8 @@ void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> 
 }
 
 
-void TrilinosMLSolver::reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                      AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void TrilinosMLSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                                      std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "reSolveWithLU" );
 
@@ -324,12 +324,12 @@ void TrilinosMLSolver::reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebra::
         AMP_ERROR( "Robust mode can only be used with Epetra matrices." );
     }
 
-    AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+    std::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
     AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
 
     d_matrix =
-        AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( linearOperator->getMatrix() );
+        std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( linearOperator->getMatrix() );
     AMP_INSIST( d_matrix.get() != nullptr, "d_matrix cannot be NULL" );
 
     Teuchos::ParameterList tmpMLParameterList;
@@ -425,7 +425,7 @@ void TrilinosMLSolver::buildML()
 }
 
 
-void TrilinosMLSolver::computeCoordinates( const AMP::shared_ptr<AMP::Operator::Operator> op )
+void TrilinosMLSolver::computeCoordinates( const std::shared_ptr<AMP::Operator::Operator> op )
 {
     // Get mesh adapter for this operator
     auto myMesh = op->getMesh();
@@ -452,7 +452,7 @@ void TrilinosMLSolver::computeCoordinates( const AMP::shared_ptr<AMP::Operator::
 }
 
 
-void TrilinosMLSolver::computeNullSpace( const AMP::shared_ptr<AMP::Operator::Operator> op )
+void TrilinosMLSolver::computeNullSpace( const std::shared_ptr<AMP::Operator::Operator> op )
 {
     // Get mesh adapter for this operator
     auto myMesh = op->getMesh();

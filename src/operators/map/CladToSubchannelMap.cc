@@ -19,10 +19,10 @@ static double interp_linear( const std::vector<double> &, const std::vector<doub
  *  Default constructor                                                  *
  ************************************************************************/
 CladToSubchannelMap::CladToSubchannelMap(
-    const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
+    const std::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : AsyncMapOperator( p )
 {
-    auto params = AMP::dynamic_pointer_cast<CladToSubchannelMapParameters>( p );
+    auto params = std::dynamic_pointer_cast<CladToSubchannelMapParameters>( p );
     AMP_ASSERT( params );
 
     int DofsPerObj = params->d_db->getScalar<int>( "DOFsPerObject" );
@@ -183,7 +183,7 @@ CladToSubchannelMap::getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr mesh )
             xyFace.insert( std::pair<double, AMP::Mesh::MeshElement>( center[2], *iterator ) );
         ++iterator;
     }
-    auto elements = AMP::make_shared<std::vector<AMP::Mesh::MeshElement>>();
+    auto elements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>();
     elements->reserve( xyFace.size() );
     for ( auto &elem : xyFace )
         elements->push_back( elem.second );

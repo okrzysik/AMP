@@ -25,7 +25,7 @@ class ColumnBoundaryOperator : public BoundaryOperator
 {
 
 public:
-    explicit ColumnBoundaryOperator( const AMP::shared_ptr<OperatorParameters> &params )
+    explicit ColumnBoundaryOperator( const std::shared_ptr<OperatorParameters> &params )
         : BoundaryOperator( params )
     {
     }
@@ -35,20 +35,20 @@ public:
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
-    AMP::shared_ptr<OperatorParameters>
+    std::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                   AMP::shared_ptr<OperatorParameters> params = nullptr ) override;
+                   std::shared_ptr<OperatorParameters> params = nullptr ) override;
 
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /**
      * \param op
      *            shared pointer to an operator to append to the existing column of operators
      */
-    virtual void append( AMP::shared_ptr<BoundaryOperator> op );
+    virtual void append( std::shared_ptr<BoundaryOperator> op );
 
-    AMP::shared_ptr<BoundaryOperator> getBoundaryOperator( int i ) { return d_Operators[i]; }
+    std::shared_ptr<BoundaryOperator> getBoundaryOperator( int i ) { return d_Operators[i]; }
 
     size_t numberOfBoundaryOperators() { return d_Operators.size(); }
 
@@ -59,7 +59,7 @@ public:
     void modifyInitialSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr ) override;
 
 protected:
-    std::vector<AMP::shared_ptr<BoundaryOperator>> d_Operators;
+    std::vector<std::shared_ptr<BoundaryOperator>> d_Operators;
 
 private:
 };

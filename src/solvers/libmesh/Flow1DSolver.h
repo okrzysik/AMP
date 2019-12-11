@@ -13,22 +13,22 @@ typedef SolverStrategyParameters Flow1DSolverParameters;
 class Flow1DSolver : public SolverStrategy
 {
 public:
-    explicit Flow1DSolver( AMP::shared_ptr<Flow1DSolverParameters> parameters );
+    explicit Flow1DSolver( std::shared_ptr<Flow1DSolverParameters> parameters );
 
     virtual ~Flow1DSolver();
 
-    virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+    virtual void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                        std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     virtual void
-    setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override;
+    setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override;
 
-    virtual void initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters ) override;
+    virtual void initialize( std::shared_ptr<SolverStrategyParameters> const parameters ) override;
 
-    virtual void reset( AMP::shared_ptr<SolverStrategyParameters> ) override;
+    virtual void reset( std::shared_ptr<SolverStrategyParameters> ) override;
 
     virtual void
-    resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
+    resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable( int varId = -1 );
 
@@ -53,8 +53,8 @@ protected:
 
     double d_Pr;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
 private:
     AMP::LinearAlgebra::Vector::shared_ptr d_Rhs;

@@ -10,7 +10,7 @@ namespace Operator {
 class SecondOperator : public OnePointOperator
 {
 public:
-    explicit SecondOperator( const AMP::shared_ptr<OperatorParameters> &params )
+    explicit SecondOperator( const std::shared_ptr<OperatorParameters> &params )
         : OnePointOperator( params )
     {
         d_constant = 3.0;
@@ -33,7 +33,7 @@ public:
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
     {
-        AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
+        std::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
             new AMP::LinearAlgebra::MultiVariable( "MultiVariable" ) );
         retVariable->add( d_primaryVar );
         retVariable->add( d_secondaryVar );

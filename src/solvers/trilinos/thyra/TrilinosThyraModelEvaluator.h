@@ -5,7 +5,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/solvers/trilinos/thyra/TrilinosLinearOP.h"
 #include "AMP/solvers/trilinos/thyra/TrilinosThyraModelEvaluatorParameters.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 // Trilinos includes
@@ -27,7 +27,7 @@ class TrilinosThyraModelEvaluator : public ::Thyra::StateFuncModelEvaluatorBase<
 public:
     //! Default constructor
     explicit TrilinosThyraModelEvaluator(
-        AMP::shared_ptr<TrilinosThyraModelEvaluatorParameters> params );
+        std::shared_ptr<TrilinosThyraModelEvaluatorParameters> params );
 
     //! Destructor
     virtual ~TrilinosThyraModelEvaluator();
@@ -50,7 +50,7 @@ public:
 
 protected:
     // Return TrilinosLinearOP from Thyra::LinearOpBase<double>
-    static AMP::shared_ptr<AMP::Solver::TrilinosLinearOP>
+    static std::shared_ptr<AMP::Solver::TrilinosLinearOP>
     view( Teuchos::RCP<Thyra::LinearOpBase<double>> op );
 
     // Functions derived from Thyra::StateFuncModelEvaluatorBase<double>

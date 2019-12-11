@@ -53,14 +53,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );
-    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
     auto mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Create a nodal scalar vector
-    auto var            = AMP::make_shared<AMP::LinearAlgebra::Variable>( "myVar" );
+    auto var            = std::make_shared<AMP::LinearAlgebra::Variable>( "myVar" );
     auto nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto vec = AMP::LinearAlgebra::createVector( nodalScalarDOF, var, true );
@@ -93,13 +93,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         // Create the libmesh element
         // Note: This must be done inside the loop because libmesh's reinit function doesn't seem to
         // work properly
-        AMP::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
-        AMP::shared_ptr<::FEBase> fe( (::FEBase::build( 2, ( *feType ) ) ).release() );
+        std::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
+        std::shared_ptr<::FEBase> fe( (::FEBase::build( 2, ( *feType ) ) ).release() );
         const std::vector<std::vector<Real>> &phi = fe->get_phi();
         const std::vector<Real> &djxw             = fe->get_JxW();
         auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
         libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
-        AMP::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 2, qruleOrder ) ).release() );
+        std::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 2, qruleOrder ) ).release() );
         fe->attach_quadrature_rule( qrule.get() );
         ::Elem *currElemPtr = new ::Quad4;
         for ( size_t i = 0; i < nodes.size(); i++ ) {

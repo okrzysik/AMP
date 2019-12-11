@@ -15,10 +15,10 @@ namespace AMP {
 namespace Materials {
 
 template<>
-std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>>
-Property<double>::make_map( const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
+std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>>
+Property<double>::make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
 {
-    std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> result;
+    std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> result;
     if ( d_n_arguments > 0 ) {
         size_t xls = d_translator.size();
         AMP_INSIST( xls > 0, "attempt to make MultiVector map without setting translator" );
@@ -40,8 +40,8 @@ Property<double>::make_map( const AMP::shared_ptr<AMP::LinearAlgebra::MultiVecto
 
 template<>
 void Property<double>::evalv(
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-    const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
+    std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
+    const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
 {
     bool in = in_range( args );
     AMP_INSIST( in, "Property out of range" );
@@ -49,10 +49,10 @@ void Property<double>::evalv(
 }
 
 template<>
-void Property<double>::evalv( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-                              const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
+void Property<double>::evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
+                              const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
 {
-    std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> mapargs = make_map( args );
+    std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> mapargs = make_map( args );
     evalv( r, mapargs );
 }
 } // namespace Materials

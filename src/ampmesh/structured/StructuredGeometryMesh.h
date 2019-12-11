@@ -34,11 +34,11 @@ public: // Functions derived from BoxMesh
     virtual Mesh::Movable isMeshMovable() const override;
     virtual void displaceMesh( const std::vector<double> &x ) override;
 #ifdef USE_AMP_VECTORS
-    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> ) override;
+    virtual void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> ) override;
 #endif
     virtual AMP::Geometry::Point physicalToLogical( const AMP::Geometry::Point &x ) const override;
     virtual void coord( const MeshElementIndex &index, double *pos ) const override;
-    virtual AMP::shared_ptr<Mesh> clone() const override;
+    virtual std::shared_ptr<Mesh> clone() const override;
 };
 
 

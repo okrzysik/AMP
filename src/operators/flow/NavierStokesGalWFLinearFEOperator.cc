@@ -9,11 +9,11 @@ namespace AMP {
 namespace Operator {
 /*
     NavierStokesGalWFLinearFEOperator :: NavierStokesGalWFLinearFEOperator (
-        const AMP::shared_ptr<NavierStokesLinearFEOperatorParameters> & params)
+        const std::shared_ptr<NavierStokesLinearFEOperatorParameters> & params)
       : LinearFEOperator (params) {
         AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
 
-        d_flowGalWFLinElem = AMP::dynamic_pointer_cast<NavierStokesGalWFLinearElement>(d_elemOp);
+        d_flowGalWFLinElem = std::dynamic_pointer_cast<NavierStokesGalWFLinearElement>(d_elemOp);
 
         AMP_INSIST( ((d_flowGalWFLinElem.get()) != NULL), "d_elemOp is not of type
    NavierStokesGalWFLinearElement" );
@@ -30,7 +30,7 @@ namespace Operator {
         }//end for i
 
         AMP_INSIST( params->d_db->keyExists("ActiveInputVariables"), "key not found" );
-        AMP::shared_ptr<AMP::Database> activeInpVar_db =
+        std::shared_ptr<AMP::Database> activeInpVar_db =
    params->d_db->getDatabase("ActiveInputVariables");
 
         AMP_INSIST(activeInpVar_db->keyExists("VELOCITY"), "VELOCITY must be active");
@@ -71,12 +71,12 @@ namespace Operator {
         }
       }
 
-    void NavierStokesGalWFLinearFEOperator :: preAssembly(const AMP::shared_ptr<OperatorParameters>&
+    void NavierStokesGalWFLinearFEOperator :: preAssembly(const std::shared_ptr<OperatorParameters>&
    oparams)
     {
 
-      AMP::shared_ptr<NavierStokesLinearFEOperatorParameters> params =
-   AMP::dynamic_pointer_cast<NavierStokesLinearFEOperatorParameters>(oparams);
+      std::shared_ptr<NavierStokesLinearFEOperatorParameters> params =
+   std::dynamic_pointer_cast<NavierStokesLinearFEOperatorParameters>(oparams);
 
       if((d_inVec[NavierStokes::VELOCITY].get() == NULL) and
    (params->d_frozenVec[NavierStokes::VELOCITY].get() !=

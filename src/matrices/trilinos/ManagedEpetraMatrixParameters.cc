@@ -48,7 +48,7 @@ Epetra_Map &ManagedEpetraMatrixParameters::getEpetraRowMap()
     auto N_row_local  = static_cast<int>( d_DOFManagerLeft->numLocalDOF() );
     auto N_row_global = static_cast<int>( d_DOFManagerLeft->numGlobalDOF() );
     if ( d_eRowMap.get() == nullptr ) {
-        d_eRowMap = AMP::make_shared<Epetra_Map>( N_row_global, N_row_local, 0, comm );
+        d_eRowMap = std::make_shared<Epetra_Map>( N_row_global, N_row_local, 0, comm );
     }
     return *d_eRowMap;
 }
@@ -76,10 +76,10 @@ Epetra_Map *ManagedEpetraMatrixParameters::getEpetraColMap()
             for ( std::set<int>::iterator curCol = d_sColumns.begin(); curCol != d_sColumns.end() ;
         curCol++ )
               cols.push_back ( *curCol );
-            d_eColMap = AMP::shared_ptr<Epetra_Map>( new Epetra_Map( -1, cols.size(), getPtr(cols),
+            d_eColMap = std::shared_ptr<Epetra_Map>( new Epetra_Map( -1, cols.size(), getPtr(cols),
     0,
         comm ) );
-            //d_eColMap = AMP::shared_ptr<Epetra_Map>( new Epetra_Map ( N_col_global, N_col_local,
+            //d_eColMap = std::shared_ptr<Epetra_Map>( new Epetra_Map ( N_col_global, N_col_local,
         d_ColBase, comm ) );
         }
         return d_eColMap.get();*/
@@ -124,12 +124,12 @@ bool ManagedEpetraMatrixParameters::isSquare()
            d_DOFManagerLeft->numGlobalDOF() == d_DOFManagerRight->numGlobalDOF();
 }
 
-AMP::shared_ptr<Epetra_Map> ManagedEpetraMatrixParameters::getEpetraRowMapPtr()
+std::shared_ptr<Epetra_Map> ManagedEpetraMatrixParameters::getEpetraRowMapPtr()
 {
     return d_eRowMap;
 }
 
-AMP::shared_ptr<Epetra_Map> ManagedEpetraMatrixParameters::getEpetraColMapPtr()
+std::shared_ptr<Epetra_Map> ManagedEpetraMatrixParameters::getEpetraColMapPtr()
 {
     return d_eColMap;
 }

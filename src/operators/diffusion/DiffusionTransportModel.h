@@ -5,7 +5,7 @@
 #include "AMP/materials/Property.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/diffusion/DiffusionConstants.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <map>
 #include <string>
@@ -26,7 +26,7 @@ class DiffusionTransportModel : public ElementPhysicsModel
 {
 public:
     explicit DiffusionTransportModel(
-        const AMP::shared_ptr<DiffusionTransportModelParameters> &params );
+        const std::shared_ptr<DiffusionTransportModelParameters> &params );
 
     virtual ~DiffusionTransportModel() {}
 
@@ -102,24 +102,24 @@ public:
 
     double getDefault( size_t i ) { return d_defaults[i]; }
 
-    static AMP::shared_ptr<std::vector<double>>
+    static std::shared_ptr<std::vector<double>>
     bilogTransform( const std::vector<double> &u, const double a, const double b );
 
     static void bilogScale( std::vector<double> &u, const double a, const double b );
 
     virtual void getTransport( std::vector<double> &result,
-                               std::map<std::string, AMP::shared_ptr<std::vector<double>>> &args,
+                               std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
                                const std::vector<libMesh::Point> &Coordinates = d_DummyCoords );
 
     AMP::Materials::Material::shared_ptr getMaterial() { return d_material; }
-    AMP::shared_ptr<AMP::Materials::Property<double>> getProperty() { return d_property; }
+    std::shared_ptr<AMP::Materials::Property<double>> getProperty() { return d_property; }
 
     bool isaTensor() { return d_IsTensor; }
 
 protected:
     AMP::Materials::Material::shared_ptr d_material;
 
-    AMP::shared_ptr<AMP::Materials::Property<double>> d_property;
+    std::shared_ptr<AMP::Materials::Property<double>> d_property;
 
     /**
      * \brief Use a bilogarithmic scaling of material arguments

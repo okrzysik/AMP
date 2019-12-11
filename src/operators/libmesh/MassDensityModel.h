@@ -4,7 +4,7 @@
 #include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/utils/ManufacturedSolution.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 // Libmesh headers
 DISABLE_WARNINGS
@@ -36,7 +36,7 @@ public:
         UnknownManufacturedEquation
     };
 
-    explicit MassDensityModel( const AMP::shared_ptr<MassDensityModelParameters> &params );
+    explicit MassDensityModel( const std::shared_ptr<MassDensityModelParameters> &params );
 
     virtual ~MassDensityModel() {}
 
@@ -75,7 +75,7 @@ public:
 
     virtual void postLinearGaussPointOperation() {}
 
-    AMP::shared_ptr<ManufacturedSolution> getManufacturedSolution()
+    std::shared_ptr<ManufacturedSolution> getManufacturedSolution()
     {
         return d_ManufacturedSolution;
     }
@@ -106,7 +106,7 @@ private:
 
     size_t d_BilogIndex;
 
-    AMP::shared_ptr<ManufacturedSolution> d_ManufacturedSolution;
+    std::shared_ptr<ManufacturedSolution> d_ManufacturedSolution;
 
     ManufacturedEquation d_ManufacturedEquation;
 

@@ -23,7 +23,7 @@ SolverStrategy::SolverStrategy()
     d_dMaxError            = 0;
     d_iObjectId            = 0;
 }
-SolverStrategy::SolverStrategy( AMP::shared_ptr<SolverStrategyParameters> parameters )
+SolverStrategy::SolverStrategy( std::shared_ptr<SolverStrategyParameters> parameters )
 {
     AMP_INSIST( parameters.get() != nullptr, "NULL SolverStrategyParameters object" );
 
@@ -49,7 +49,7 @@ SolverStrategy::~SolverStrategy() = default;
 /****************************************************************
  * Initialize                                                    *
  ****************************************************************/
-void SolverStrategy::getFromInput( AMP::shared_ptr<AMP::Database> db )
+void SolverStrategy::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     AMP_INSIST( db.get() != nullptr, "InputDatabase object must be non-NULL" );
     d_iMaxIterations       = db->getWithDefault( "max_iterations", 1 );
@@ -57,7 +57,7 @@ void SolverStrategy::getFromInput( AMP::shared_ptr<AMP::Database> db )
     d_iDebugPrintInfoLevel = db->getWithDefault( "print_info_level", 0 );
     d_bUseZeroInitialGuess = db->getWithDefault( "zero_initial_guess", true );
 }
-void SolverStrategy::initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters )
+void SolverStrategy::initialize( std::shared_ptr<SolverStrategyParameters> const parameters )
 {
     AMP_INSIST( parameters.get() != nullptr, "SolverStrategyParameters object cannot be NULL" );
 }
@@ -67,13 +67,13 @@ void SolverStrategy::initialize( AMP::shared_ptr<SolverStrategyParameters> const
  * Reset                                                         *
  ****************************************************************/
 void SolverStrategy::resetOperator(
-    const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator.get() != nullptr ) {
         d_pOperator->reset( params );
     }
 }
-void SolverStrategy::reset( AMP::shared_ptr<SolverStrategyParameters> ) {}
+void SolverStrategy::reset( std::shared_ptr<SolverStrategyParameters> ) {}
 
 
 /****************************************************************
@@ -86,7 +86,7 @@ void SolverStrategy::setConvergenceTolerance( const int max_iterations, const do
     d_iMaxIterations = max_iterations;
     d_dMaxError      = max_error;
 }
-void SolverStrategy::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> ) {}
+void SolverStrategy::setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> ) {}
 
 
 /****************************************************************

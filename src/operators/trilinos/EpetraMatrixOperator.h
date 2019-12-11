@@ -14,7 +14,7 @@ private:
     AMP::LinearAlgebra::Variable::shared_ptr d_Input, d_Output;
 
 public:
-    explicit EpetraMatrixOperator( const AMP::shared_ptr<EpetraMatrixOperatorParameters> &params )
+    explicit EpetraMatrixOperator( const std::shared_ptr<EpetraMatrixOperatorParameters> &params )
         : LinearOperator( params )
     {
         AMP::LinearAlgebra::Matrix::shared_ptr t(

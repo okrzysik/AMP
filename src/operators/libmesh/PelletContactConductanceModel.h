@@ -7,7 +7,7 @@
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/boundary/libmesh/RobinPhysicsModel.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 namespace AMP {
 namespace Operator {
@@ -16,7 +16,7 @@ class PelletContactConductanceModel : public RobinPhysicsModel
 {
 public:
     explicit PelletContactConductanceModel(
-        const AMP::shared_ptr<RobinPhysicsModelParameters> &params );
+        const std::shared_ptr<RobinPhysicsModelParameters> &params );
 
     virtual ~PelletContactConductanceModel() {}
 
@@ -26,7 +26,7 @@ public:
 
 protected:
     unsigned int d_nTransportModels; /**< Number of Transport Models. */
-    std::vector<AMP::shared_ptr<DiffusionTransportModel>> d_transportModels;
+    std::vector<std::shared_ptr<DiffusionTransportModel>> d_transportModels;
 
 private:
 };

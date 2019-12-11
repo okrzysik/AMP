@@ -8,18 +8,18 @@ namespace AMP {
 namespace TimeIntegrator {
 
 ColumnTimeOperator::ColumnTimeOperator(
-    AMP::shared_ptr<AMP::Operator::OperatorParameters> in_params )
+    std::shared_ptr<AMP::Operator::OperatorParameters> in_params )
     : ColumnOperator( in_params )
 {
-    auto params    = AMP::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    auto params    = std::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
     auto column_db = params->d_db;
     d_Mesh         = params->d_Mesh;
-    d_pRhsOperator = AMP::dynamic_pointer_cast<ColumnOperator>( params->d_pRhsOperator );
+    d_pRhsOperator = std::dynamic_pointer_cast<ColumnOperator>( params->d_pRhsOperator );
     AMP_INSIST( d_pRhsOperator.get() != nullptr,
                 "Error: ColumnTimeOperator::ColumnTimeOperator() rhs "
                 "operator must be a non-NULL column operator" );
 
-    d_pMassOperator = AMP::dynamic_pointer_cast<ColumnOperator>( params->d_pMassOperator );
+    d_pMassOperator = std::dynamic_pointer_cast<ColumnOperator>( params->d_pMassOperator );
     AMP_INSIST( d_pRhsOperator.get() != nullptr,
                 "Error: ColumnTimeOperator::ColumnTimeOperator() "
                 "mass operator must be a non-NULL column operator" );
@@ -35,7 +35,7 @@ ColumnTimeOperator::ColumnTimeOperator(
         const int numberOfOperators = d_pRhsOperator->getNumberOfOperators();
 
         for ( int i = 0; i < numberOfOperators; i++ ) {
-            AMP::shared_ptr<AMP::Database> timeOperator_db(
+            std::shared_ptr<AMP::Database> timeOperator_db(
                 new AMP::Database( "TimeOperatorDatabase" ) );
             // we assume for now that either all operators in the column operator are linear or all
             // are nonlinear
@@ -50,7 +50,7 @@ ColumnTimeOperator::ColumnTimeOperator(
                                         column_db->getWithDefault( "bLinearRhsOperator", false ) );
             timeOperator_db->putScalar(
                 "ScalingFactor", column_db->getWithDefault<double>( "ScalingFactor", 1.0e6 ) );
-            AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(
+            std::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(
                 new AMP::TimeIntegrator::TimeOperatorParameters( timeOperator_db ) );
             timeOperatorParameters->d_pRhsOperator = d_pRhsOperator->getOperator( i );
 
@@ -61,7 +61,7 @@ ColumnTimeOperator::ColumnTimeOperator(
                 timeOperator_db->putScalar( "bAlgebraicComponent", true );
             }
 
-            AMP::shared_ptr<AMP::TimeIntegrator::LinearTimeOperator> op(
+            std::shared_ptr<AMP::TimeIntegrator::LinearTimeOperator> op(
                 new AMP::TimeIntegrator::LinearTimeOperator( timeOperatorParameters ) );
 
             d_Operators.push_back( op );
@@ -82,16 +82,16 @@ ColumnTimeOperator::ColumnTimeOperator(
 ColumnTimeOperator::~ColumnTimeOperator() = default;
 
 void ColumnTimeOperator::reset(
-    const AMP::shared_ptr<AMP::Operator::OperatorParameters> &in_params )
+    const std::shared_ptr<AMP::Operator::OperatorParameters> &in_params )
 {
-    AMP::shared_ptr<TimeOperatorParameters> params =
-        AMP::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
-    AMP::shared_ptr<AMP::Database> column_db = params->d_db;
-    AMP::shared_ptr<AMP::Operator::ColumnOperatorParameters> pRhsParameters =
-        AMP::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(
+    std::shared_ptr<TimeOperatorParameters> params =
+        std::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    std::shared_ptr<AMP::Database> column_db = params->d_db;
+    std::shared_ptr<AMP::Operator::ColumnOperatorParameters> pRhsParameters =
+        std::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(
             params->d_pRhsOperatorParameters );
-    AMP::shared_ptr<AMP::Operator::ColumnOperatorParameters> pMassParameters =
-        AMP::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(
+    std::shared_ptr<AMP::Operator::ColumnOperatorParameters> pMassParameters =
+        std::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(
             params->d_pMassOperatorParameters );
 
     AMP_INSIST( params.get() != nullptr, "Error: NULL TimeOperatorParameters object" );
@@ -101,7 +101,7 @@ void ColumnTimeOperator::reset(
     const int numberOfOperators = d_pRhsOperator->getNumberOfOperators();
 
     for ( int i = 0; i < numberOfOperators; i++ ) {
-        AMP::shared_ptr<AMP::Database> timeOperator_db(
+        std::shared_ptr<AMP::Database> timeOperator_db(
             new AMP::Database( "TimeOperatorDatabase" ) );
         // we assume for now that either all operators in the column operator are linear or all are
         // nonlinear
@@ -116,7 +116,7 @@ void ColumnTimeOperator::reset(
                                     column_db->getWithDefault( "bLinearRhsOperator", false ) );
         timeOperator_db->putScalar( "ScalingFactor",
                                     column_db->getWithDefault<double>( "ScalingFactor", 1.0e6 ) );
-        AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(
+        std::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(
             new AMP::TimeIntegrator::TimeOperatorParameters( timeOperator_db ) );
         if ( pRhsParameters.get() != nullptr ) {
             timeOperatorParameters->d_pRhsOperatorParameters =
@@ -137,7 +137,7 @@ void ColumnTimeOperator::reset(
     }
 }
 
-void ColumnTimeOperator::getFromInput( AMP::shared_ptr<AMP::Database> db )
+void ColumnTimeOperator::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     AMP_INSIST( db->keyExists( "CurrentDt" ), "key CurrentDt missing in input" );
 
@@ -150,7 +150,7 @@ void ColumnTimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr /* 
     AMP_ERROR( "Not Finished" );
 }
 
-void ColumnTimeOperator::append( AMP::shared_ptr<Operator> /* op */ )
+void ColumnTimeOperator::append( std::shared_ptr<Operator> /* op */ )
 {
     AMP::pout
         << "Error: ColumnTimeOperator::append(): this routine is disabled for ColumnTimeOperators"

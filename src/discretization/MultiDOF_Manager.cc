@@ -142,14 +142,14 @@ AMP::Mesh::MeshIterator multiDOFManager::getIterator() const
         return d_managers[0]->getIterator();
     }
     // Get the iterators for all sub DOFmanagers
-    std::vector<AMP::shared_ptr<AMP::Mesh::MeshIterator>> iterators( d_managers.size() );
+    std::vector<std::shared_ptr<AMP::Mesh::MeshIterator>> iterators( d_managers.size() );
     for ( size_t i = 0; i < d_managers.size(); i++ )
-        iterators[i] = AMP::make_shared<AMP::Mesh::MeshIterator>( d_managers[i]->getIterator() );
+        iterators[i] = std::make_shared<AMP::Mesh::MeshIterator>( d_managers[i]->getIterator() );
     // Get the list of unique elements
     size_t N_tot = 0;
     for ( auto &iterator : iterators )
         N_tot += iterator->size();
-    AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elements(
+    std::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elements(
         new std::vector<AMP::Mesh::MeshElement>( 0 ) );
     elements->reserve( N_tot );
     for ( auto &iterator : iterators ) {
@@ -233,7 +233,7 @@ std::vector<DOFManager::shared_ptr> multiDOFManager::getDOFManagers() const { re
 /****************************************************************
  * Subset the DOF manager                                        *
  ****************************************************************/
-AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP_MPI &comm_in )
+std::shared_ptr<DOFManager> multiDOFManager::subset( const AMP_MPI &comm_in )
 {
     // Check if we are dealing with a compatible comm
     if ( comm_in.compare( d_comm ) != 0 )
@@ -251,11 +251,11 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP_MPI &comm_in )
     bool valid_DOF = !sub_managers.empty();
     valid_DOF      = comm.anyReduce( valid_DOF );
     if ( !valid_DOF )
-        return AMP::shared_ptr<DOFManager>();
+        return std::shared_ptr<DOFManager>();
     // Create the new multiDOFManager
-    return AMP::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
+    return std::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
 }
-AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh,
+std::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh,
                                                      bool useMeshComm )
 {
     // Get the comm for the new DOFManager
@@ -267,7 +267,7 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::Mesh::shar
         comm = d_comm;
     }
     if ( comm.isNull() )
-        return AMP::shared_ptr<DOFManager>();
+        return std::shared_ptr<DOFManager>();
     // Subset all of the DOFManagers within this DOFManager
     bool changed = false;
     std::vector<DOFManager::shared_ptr> sub_managers;
@@ -288,11 +288,11 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::Mesh::shar
     bool valid_DOF = !sub_managers.empty();
     valid_DOF      = comm.anyReduce( valid_DOF );
     if ( !valid_DOF )
-        return AMP::shared_ptr<DOFManager>();
+        return std::shared_ptr<DOFManager>();
     // Create the new multiDOFManager
-    return AMP::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
+    return std::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
 }
-AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::MeshIterator &iterator,
+std::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::MeshIterator &iterator,
                                                      const AMP_MPI &comm_in )
 {
     // Get the comm for the new DOFManager
@@ -317,9 +317,9 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::MeshIterat
     bool valid_DOF = !sub_managers.empty();
     valid_DOF      = comm.anyReduce( valid_DOF );
     if ( !valid_DOF )
-        return AMP::shared_ptr<DOFManager>();
+        return std::shared_ptr<DOFManager>();
     // Create the new multiDOFManager
-    return AMP::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
+    return std::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
 }
 } // namespace Discretization
 } // namespace AMP

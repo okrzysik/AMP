@@ -18,7 +18,7 @@ namespace Solver {
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-AndersonStatusTest::AndersonStatusTest( AMP::shared_ptr<AMP::Database> db )
+AndersonStatusTest::AndersonStatusTest( std::shared_ptr<AMP::Database> db )
 {
     if ( db->keyExists( "AndersonConvergenceVariables" ) ) {
         d_variableNames = db->getVector<std::string>( "AndersonConvergenceVariables" );

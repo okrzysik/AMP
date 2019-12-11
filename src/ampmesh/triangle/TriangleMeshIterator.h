@@ -70,7 +70,7 @@ protected:
      * \param pos       Pointer to iterator with the current position
      */
     explicit TriangleMeshIterator( const AMP::Mesh::TriangleMesh<NG, NP> *mesh,
-                                   AMP::shared_ptr<const std::vector<ElementID>> list,
+                                   std::shared_ptr<const std::vector<ElementID>> list,
                                    size_t pos = 0 );
 
     //! Clone the iterator
@@ -81,7 +81,7 @@ protected:
 private:
     // Data members
     const AMP::Mesh::TriangleMesh<NG, NP> *d_mesh;
-    AMP::shared_ptr<const std::vector<ElementID>> d_list;
+    std::shared_ptr<const std::vector<ElementID>> d_list;
     TriangleMeshElement<NG, NP> d_cur_element;
 
 private:

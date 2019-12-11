@@ -15,7 +15,7 @@ class MechanicsModelParameters : public ElementPhysicsModelParameters
 {
 public:
     /** Constructor */
-    explicit MechanicsModelParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit MechanicsModelParameters( std::shared_ptr<AMP::Database> db )
         : ElementPhysicsModelParameters( db )
     {
     }
@@ -25,7 +25,7 @@ public:
 
     /** A vector of deformation gradient values, which are required to
      * compute the stress and/or tangent. */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_deformationGradient;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_deformationGradient;
 };
 } // namespace Operator
 } // namespace AMP

@@ -24,9 +24,9 @@ extern template class VectorOperationsCuda<float>;  // Suppresses implicit insta
  * Constructors                                                  *
  ****************************************************************/
 template<typename TYPE>
-AMP::shared_ptr<VectorOperations> VectorOperationsCuda<TYPE>::cloneOperations() const
+std::shared_ptr<VectorOperations> VectorOperationsCuda<TYPE>::cloneOperations() const
 {
-    auto ptr = AMP::make_shared<VectorOperationsCuda<TYPE>>();
+    auto ptr = std::make_shared<VectorOperationsCuda<TYPE>>();
     return ptr;
 }
 

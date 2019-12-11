@@ -3,7 +3,7 @@
 
 
 #include "AMP/ampmesh/MeshElement.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 #include <vector>
 
 

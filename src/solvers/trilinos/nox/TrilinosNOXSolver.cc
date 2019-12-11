@@ -36,12 +36,12 @@ namespace Solver {
  *  Constructors                                                 *
  ****************************************************************/
 TrilinosNOXSolver::TrilinosNOXSolver() : SolverStrategy() {}
-TrilinosNOXSolver::TrilinosNOXSolver( AMP::shared_ptr<TrilinosNOXSolverParameters> parameters )
+TrilinosNOXSolver::TrilinosNOXSolver( std::shared_ptr<TrilinosNOXSolverParameters> parameters )
     : SolverStrategy( parameters )
 {
     initialize( parameters );
 }
-void TrilinosNOXSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )
+void TrilinosNOXSolver::reset( std::shared_ptr<SolverStrategyParameters> parameters )
 {
     initialize( parameters );
 }
@@ -51,22 +51,22 @@ TrilinosNOXSolver::~TrilinosNOXSolver() = default;
 /****************************************************************
  *  Initialize                                                   *
  ****************************************************************/
-void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> parameters )
+void TrilinosNOXSolver::initialize( std::shared_ptr<SolverStrategyParameters> parameters )
 {
     // Copy the parameters
-    AMP::shared_ptr<TrilinosNOXSolverParameters> params =
-        AMP::dynamic_pointer_cast<TrilinosNOXSolverParameters>( parameters );
+    std::shared_ptr<TrilinosNOXSolverParameters> params =
+        std::dynamic_pointer_cast<TrilinosNOXSolverParameters>( parameters );
     AMP_ASSERT( params.get() != nullptr );
     AMP_ASSERT( params->d_db.get() != nullptr );
     d_comm = params->d_comm;
     if ( params->d_pInitialGuess.get() != nullptr )
         d_initialGuess = params->d_pInitialGuess;
     AMP_ASSERT( d_initialGuess != nullptr );
-    AMP::shared_ptr<AMP::Database> nonlinear_db = parameters->d_db;
-    AMP::shared_ptr<AMP::Database> linear_db    = nonlinear_db->getDatabase( "LinearSolver" );
+    std::shared_ptr<AMP::Database> nonlinear_db = parameters->d_db;
+    std::shared_ptr<AMP::Database> linear_db    = nonlinear_db->getDatabase( "LinearSolver" );
     AMP_ASSERT( linear_db != nullptr );
     // Create a model evaluator
-    auto modelParams           = AMP::make_shared<TrilinosThyraModelEvaluatorParameters>();
+    auto modelParams           = std::make_shared<TrilinosThyraModelEvaluatorParameters>();
     modelParams->d_nonlinearOp = d_pOperator;
     modelParams->d_linearOp    = params->d_pLinearOperator;
     modelParams->d_icVec       = d_initialGuess;
@@ -203,16 +203,16 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
 /****************************************************************
  *  Solve                                                        *
  ****************************************************************/
-void TrilinosNOXSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                               AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void TrilinosNOXSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                               std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     // PROFILE_START("solve");
     // Get thyra vectors
-    auto initial = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
+    auto initial = std::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
         AMP::LinearAlgebra::ThyraVector::view( d_initialGuess ) );
-    auto U = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
+    auto U = std::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
         AMP::LinearAlgebra::ThyraVector::view( u ) );
-    auto F = AMP::dynamic_pointer_cast<const AMP::LinearAlgebra::ThyraVector>(
+    auto F = std::dynamic_pointer_cast<const AMP::LinearAlgebra::ThyraVector>(
         AMP::LinearAlgebra::ThyraVector::constView( f ) );
     NULL_USE( F );
     // Set the rhs for the thyra model

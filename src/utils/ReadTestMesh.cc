@@ -13,7 +13,7 @@ ENABLE_WARNINGS
 
 namespace AMP {
 
-void readBinaryTestMesh( std::string mesh_file, AMP::shared_ptr<::Mesh> mesh )
+void readBinaryTestMesh( std::string mesh_file, std::shared_ptr<::Mesh> mesh )
 {
     FILE *fp = fopen( mesh_file.c_str(), "rb" );
 
@@ -100,7 +100,7 @@ void readBinaryTestMesh( std::string mesh_file, AMP::shared_ptr<::Mesh> mesh )
     fclose( fp );
 }
 
-void readTestMesh( std::string mesh_file, AMP::shared_ptr<::Mesh> mesh )
+void readTestMesh( std::string mesh_file, std::shared_ptr<::Mesh> mesh )
 {
     FILE *fp = fopen( mesh_file.c_str(), "r" );
     char str[256];
@@ -207,7 +207,7 @@ void readTestMesh( std::string mesh_file, AMP::shared_ptr<::Mesh> mesh )
     fclose( fp );
 }
 
-void readTestMesh( AMP::shared_ptr<AMP::Database> mesh_file_db, AMP::shared_ptr<::Mesh> mesh )
+void readTestMesh( std::shared_ptr<AMP::Database> mesh_file_db, std::shared_ptr<::Mesh> mesh )
 {
     auto mesh_db            = mesh_file_db->getDatabase( "Mesh" );
     int num_elem            = mesh_db->getScalar<int>( "NumberOfElements" );

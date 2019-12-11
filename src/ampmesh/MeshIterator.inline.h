@@ -2,8 +2,8 @@
 #define included_AMP_MeshIterators_inline
 
 #include "AMP/ampmesh/MeshIterator.h"
-#include "AMP/utils/shared_ptr.h"
 #include <iterator>
+#include <memory>
 
 namespace AMP {
 namespace Mesh {

@@ -19,7 +19,7 @@ namespace Operator {
 class CoupledOperator : public ColumnOperator
 {
 public:
-    explicit CoupledOperator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit CoupledOperator( const std::shared_ptr<OperatorParameters> &params );
 
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr f ) override;
@@ -36,27 +36,27 @@ public:
                            AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
 
-    AMP::shared_ptr<AMP::Operator::Operator> getMapOperator() { return d_Operators[2]; }
+    std::shared_ptr<AMP::Operator::Operator> getMapOperator() { return d_Operators[2]; }
 
-    void setMapOperator( AMP::shared_ptr<AMP::Operator::Operator> op ) { d_Operators[2] = op; }
+    void setMapOperator( std::shared_ptr<AMP::Operator::Operator> op ) { d_Operators[2] = op; }
 
-    AMP::shared_ptr<AMP::Operator::Operator> getBVPOperator() { return d_Operators[3]; }
+    std::shared_ptr<AMP::Operator::Operator> getBVPOperator() { return d_Operators[3]; }
 
-    void setBVPOperator( AMP::shared_ptr<AMP::Operator::Operator> op ) { d_Operators[3] = op; }
+    void setBVPOperator( std::shared_ptr<AMP::Operator::Operator> op ) { d_Operators[3] = op; }
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {
         return d_Operators[3]->getOutputVariable();
     }
 
-    virtual void append( AMP::shared_ptr<Operator> op ) override
+    virtual void append( std::shared_ptr<Operator> op ) override
     {
         AMP_ASSERT( d_Operators.size() < 4 );
         AMP_ASSERT( op.get() != nullptr );
         d_Operators.push_back( op );
     }
 
-    bool isValidInput( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u ) override
+    bool isValidInput( std::shared_ptr<AMP::LinearAlgebra::Vector> &u ) override
     {
         return d_Operators[3]->isValidInput( u );
     }
@@ -66,10 +66,10 @@ public:
         d_frozenGaussPointVector = u;
     }
 
-    AMP::shared_ptr<OperatorParameters>
+    std::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                   AMP::shared_ptr<OperatorParameters> params = nullptr ) override
+                   std::shared_ptr<OperatorParameters> params = nullptr ) override
     {
         return ( d_Operators[3]->getParameters( type, u, params ) );
     }

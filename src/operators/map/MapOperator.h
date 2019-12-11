@@ -4,7 +4,7 @@
 
 #include "AMP/utils/Database.h"
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/OperatorParameters.h"
@@ -35,10 +35,10 @@ public:
     /**
       Constructor calls the reset member which reads the information about the boundary.
       */
-    explicit MapOperator( const AMP::shared_ptr<OperatorParameters> &params ) : Operator( params )
+    explicit MapOperator( const std::shared_ptr<OperatorParameters> &params ) : Operator( params )
     {
-        AMP::shared_ptr<MapOperatorParameters> myparams =
-            AMP::dynamic_pointer_cast<MapOperatorParameters>( params );
+        std::shared_ptr<MapOperatorParameters> myparams =
+            std::dynamic_pointer_cast<MapOperatorParameters>( params );
         d_boundaryId = 0;
         reset( myparams );
     }
@@ -48,7 +48,7 @@ public:
       */
     virtual ~MapOperator() {}
 
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr createInputVariable( const std::string &, int )
     {

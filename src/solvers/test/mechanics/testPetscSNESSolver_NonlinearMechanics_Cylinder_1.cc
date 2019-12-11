@@ -23,10 +23,10 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include <iostream>
+#include <memory>
 #include <string>
 
 
@@ -42,7 +42,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );
-    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
@@ -56,30 +56,30 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 "Key ''NumberOfLoadingSteps'' is missing!" );
     int NumberOfLoadingSteps = input_db->getScalar<int>( "NumberOfLoadingSteps" );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    auto nonlinBvpOperator = AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+    auto nonlinBvpOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             mesh, "nonlinearMechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
-    auto linBvpOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    auto linBvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             mesh, "linearMechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
-    auto multivariable = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
+    auto multivariable = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
         nonlinBvpOperator->getVolumeOperator()->getInputVariable() );
     auto displacementVariable =
         multivariable->getVariable( AMP::Operator::Mechanics::DISPLACEMENT );
     auto residualVariable = nonlinBvpOperator->getOutputVariable();
 
     // For RHS (Point Forces)
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-    auto dirichletLoadVecOp = AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+    auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
             mesh, "Load_Boundary", input_db, dummyModel ) );
     dirichletLoadVecOp->setVariable( residualVariable );
 
     // Pressure RHS
-    auto pressureLoadVecOp = AMP::dynamic_pointer_cast<AMP::Operator::PressureBoundaryOperator>(
+    auto pressureLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::PressureBoundaryOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             mesh, "Pressure_Boundary", input_db, dummyModel ) );
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -120,22 +120,22 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // ---- first initialize the preconditioner
     auto pcSolver_db    = linearSolver_db->getDatabase( "Preconditioner" );
-    auto pcSolverParams = AMP::make_shared<AMP::Solver::TrilinosMLSolverParameters>( pcSolver_db );
+    auto pcSolverParams = std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( pcSolver_db );
     pcSolverParams->d_pOperator = linBvpOperator;
-    auto pcSolver               = AMP::make_shared<AMP::Solver::TrilinosMLSolver>( pcSolverParams );
+    auto pcSolver               = std::make_shared<AMP::Solver::TrilinosMLSolver>( pcSolverParams );
 
     // initialize the nonlinear solver
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams =
-        AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+    std::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams =
+        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = nonlinBvpOperator;
     nonlinearSolverParams->d_pInitialGuess = mechNlSolVec;
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver =
-        AMP::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
+    std::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver =
+        std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
     nonlinearSolver->setZeroInitialGuess( false );
 
-    AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
+    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
         nonlinearSolver->getKrylovSolver();
     linearSolver->setPreconditioner( pcSolver );
 
@@ -185,9 +185,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
         AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
 
-        auto tmp_db = AMP::make_shared<AMP::Database>( "Dummy" );
+        auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
         auto tmpParams =
-            AMP::make_shared<AMP::Operator::MechanicsNonlinearFEOperatorParameters>( tmp_db );
+            std::make_shared<AMP::Operator::MechanicsNonlinearFEOperatorParameters>( tmp_db );
         ( nonlinBvpOperator->getVolumeOperator() )->reset( tmpParams );
         nonlinearSolver->setZeroInitialGuess( false );
     }

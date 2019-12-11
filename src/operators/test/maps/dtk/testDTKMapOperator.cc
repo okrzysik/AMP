@@ -8,8 +8,8 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <cstdlib>
 #include <iostream>
@@ -36,8 +36,8 @@ static void myTest( AMP::UnitTest *ut )
     auto input_db          = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    AMP::shared_ptr<AMP::Database> sourceMeshDatabase = input_db->getDatabase( "SourceMesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> sourceMeshParams(
+    std::shared_ptr<AMP::Database> sourceMeshDatabase = input_db->getDatabase( "SourceMesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> sourceMeshParams(
         new AMP::Mesh::MeshParameters( sourceMeshDatabase ) );
     sourceMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr sourceMesh = AMP::Mesh::Mesh::buildMesh( sourceMeshParams );
@@ -87,8 +87,8 @@ static void myTest( AMP::UnitTest *ut )
 
     // load the target mesh
     AMP::pout << "Loading the target mesh" << std::endl;
-    AMP::shared_ptr<AMP::Database> targetMeshDatabase = input_db->getDatabase( "TargetMesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> targetMeshParams(
+    std::shared_ptr<AMP::Database> targetMeshDatabase = input_db->getDatabase( "TargetMesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> targetMeshParams(
         new AMP::Mesh::MeshParameters( targetMeshDatabase ) );
     targetMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr targetMesh = AMP::Mesh::Mesh::buildMesh( targetMeshParams );
@@ -107,15 +107,15 @@ static void myTest( AMP::UnitTest *ut )
         AMP::LinearAlgebra::createVector( targetDofManager, variable, split );
 
     // create dtk map operator.
-    AMP::shared_ptr<AMP::Database> null_db;
-    AMP::shared_ptr<AMP::Operator::DTKMapOperatorParameters> dtk_op_params(
+    std::shared_ptr<AMP::Database> null_db;
+    std::shared_ptr<AMP::Operator::DTKMapOperatorParameters> dtk_op_params(
         new AMP::Operator::DTKMapOperatorParameters( null_db ) );
     dtk_op_params->d_domain_mesh = sourceMesh;
     dtk_op_params->d_range_mesh  = targetMesh;
     dtk_op_params->d_domain_dofs = sourceDofManager;
     dtk_op_params->d_range_dofs  = targetDofManager;
     dtk_op_params->d_globalComm  = AMP::AMP_MPI( AMP_COMM_WORLD );
-    AMP::shared_ptr<AMP::Operator::Operator> dtk_operator(
+    std::shared_ptr<AMP::Operator::Operator> dtk_operator(
         new AMP::Operator::DTKMapOperator( dtk_op_params ) );
 
     // apply the map.

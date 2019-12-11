@@ -2,8 +2,8 @@
 #define included_AMP_MeshIterators
 
 #include "AMP/ampmesh/MeshElement.h"
-#include "AMP/utils/shared_ptr.h"
 #include <iterator>
+#include <memory>
 
 namespace AMP {
 namespace Mesh {
@@ -27,7 +27,7 @@ public:
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef AMP::shared_ptr<MeshIterator> shared_ptr;
+    typedef std::shared_ptr<MeshIterator> shared_ptr;
 
     //! Empty MeshIterator constructor
     MeshIterator();

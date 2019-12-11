@@ -53,7 +53,7 @@ PetscKrylovSolver::PetscKrylovSolver()
     d_bKSPCreatedInternally = false;
     d_KrylovSolver          = nullptr;
 }
-PetscKrylovSolver::PetscKrylovSolver( AMP::shared_ptr<PetscKrylovSolverParameters> parameters )
+PetscKrylovSolver::PetscKrylovSolver( std::shared_ptr<PetscKrylovSolverParameters> parameters )
     : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
@@ -87,9 +87,9 @@ PetscKrylovSolver::~PetscKrylovSolver()
 /****************************************************************
  *  Initialize                                                   *
  ****************************************************************/
-void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
+void PetscKrylovSolver::initialize( std::shared_ptr<SolverStrategyParameters> const params )
 {
-    auto parameters = AMP::dynamic_pointer_cast<PetscKrylovSolverParameters>( params );
+    auto parameters = std::dynamic_pointer_cast<PetscKrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
@@ -170,7 +170,7 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
     }
 }
 // Function to get values from input
-void PetscKrylovSolver::getFromInput( AMP::shared_ptr<AMP::Database> db )
+void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     // fill this in
     std::string petscOptions = db->getWithDefault<std::string>( "KSPOptions", "" );
@@ -222,8 +222,8 @@ void PetscKrylovSolver::getFromInput( AMP::shared_ptr<AMP::Database> db )
 /****************************************************************
  *  Solve                                                        *
  ****************************************************************/
-void PetscKrylovSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                               AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void PetscKrylovSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                               std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
@@ -262,8 +262,9 @@ void PetscKrylovSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
         std::cout << "PetscKrylovSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm()
                   << std::endl;
     }
-    Vec fVec = dynamic_pointer_cast<const AMP::LinearAlgebra::PetscVector>( fVecView )->getVec();
-    Vec uVec = dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( uVecView )->getVec();
+    Vec fVec =
+        std::dynamic_pointer_cast<const AMP::LinearAlgebra::PetscVector>( fVecView )->getVec();
+    Vec uVec = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( uVecView )->getVec();
 
     // Create the preconditioner and re-register the operator
     PC pc;
@@ -337,18 +338,18 @@ void PetscKrylovSolver::setKrylovSolver( KSP *ksp )
 /****************************************************************
  *  Function to set the register the operator                    *
  ****************************************************************/
-void PetscKrylovSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
+void PetscKrylovSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
 {
     // in this case we make the assumption we can access a PetscMat for now
     AMP_ASSERT( op.get() != nullptr );
 
     d_pOperator = op;
 
-    auto linearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
+    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
     AMP_ASSERT( linearOperator.get() != nullptr );
 
     auto pMatrix =
-        AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>( linearOperator->getMatrix() );
+        std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>( linearOperator->getMatrix() );
     AMP_ASSERT( pMatrix.get() != nullptr );
 
     Mat mat;
@@ -363,15 +364,15 @@ void PetscKrylovSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::O
 #endif
 }
 void PetscKrylovSolver::resetOperator(
-    const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator.get() != nullptr ) {
         d_pOperator->reset( params );
         auto linearOperator =
-            AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+            std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
         AMP_ASSERT( linearOperator.get() != nullptr );
 
-        auto pMatrix = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(
+        auto pMatrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(
             linearOperator->getMatrix() );
         AMP_ASSERT( pMatrix.get() != nullptr );
 
@@ -438,10 +439,10 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
 #endif
     AMP_ASSERT( ctx != nullptr );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> sp_r(
+    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_r(
         reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( r->data ),
         AMP::LinearAlgebra::ExternalVectorDeleter() );
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> sp_z(
+    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_z(
         reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( z->data ),
         AMP::LinearAlgebra::ExternalVectorDeleter() );
 
@@ -479,7 +480,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
 
     // not sure why, but the state of sp_z is not updated
     // and petsc uses the cached norm
-    auto firer = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( sp_z );
+    auto firer = std::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( sp_z );
     if ( firer )
         firer->fireDataChange();
 

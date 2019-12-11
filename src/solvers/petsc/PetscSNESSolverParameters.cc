@@ -3,7 +3,7 @@
 namespace AMP {
 namespace Solver {
 
-PetscSNESSolverParameters::PetscSNESSolverParameters( AMP::shared_ptr<AMP::Database> db )
+PetscSNESSolverParameters::PetscSNESSolverParameters( std::shared_ptr<AMP::Database> db )
     : SolverStrategyParameters( db )
 {
 }

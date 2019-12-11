@@ -11,7 +11,7 @@ namespace Operator {
  * Constructors                                                  *
  ****************************************************************/
 DirichletMatrixCorrection::DirichletMatrixCorrection(
-    const AMP::shared_ptr<DirichletMatrixCorrectionParameters> &params )
+    const std::shared_ptr<DirichletMatrixCorrectionParameters> &params )
     : BoundaryOperator( params ), d_variable( params->d_variable )
 {
     d_computedAddRHScorrection = false;
@@ -29,10 +29,10 @@ DirichletMatrixCorrection::DirichletMatrixCorrection(
 /****************************************************************
  * Reset                                                         *
  ****************************************************************/
-void DirichletMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void DirichletMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &params )
 {
-    AMP::shared_ptr<DirichletMatrixCorrectionParameters> myParams =
-        AMP::dynamic_pointer_cast<DirichletMatrixCorrectionParameters>( params );
+    std::shared_ptr<DirichletMatrixCorrectionParameters> myParams =
+        std::dynamic_pointer_cast<DirichletMatrixCorrectionParameters>( params );
 
     AMP_INSIST( ( ( myParams.get() ) != nullptr ), "NULL parameters" );
 
@@ -58,7 +58,7 @@ void DirichletMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters>
     } // end if
 }
 void DirichletMatrixCorrection::parseParams(
-    const AMP::shared_ptr<DirichletMatrixCorrectionParameters> &params )
+    const std::shared_ptr<DirichletMatrixCorrectionParameters> &params )
 {
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
     bool skipParams = ( params->d_db )->getWithDefault( "skip_params", false );
@@ -185,7 +185,7 @@ void DirichletMatrixCorrection::initRhsCorrectionSet()
     if ( !d_skipRHSsetCorrection ) {
         int numIds = d_dofIds.size();
         char key[100];
-        AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+        std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
         tmp_db->putScalar( "skip_params", false );
         tmp_db->putScalar( "isAttachedToVolumeOperator", false );
         tmp_db->putScalar( "number_of_ids", numIds );
@@ -208,7 +208,7 @@ void DirichletMatrixCorrection::initRhsCorrectionSet()
             } // end for i
         }     // end for j
 
-        AMP::shared_ptr<DirichletVectorCorrectionParameters> setDispOpParams(
+        std::shared_ptr<DirichletVectorCorrectionParameters> setDispOpParams(
             new DirichletVectorCorrectionParameters( tmp_db ) );
         setDispOpParams->d_variable = d_variable;
         setDispOpParams->d_Mesh     = d_Mesh;

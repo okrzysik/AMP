@@ -7,7 +7,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "AMP/operators/diffusion/FickSoretNonlinearFEOperatorParameters.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 namespace AMP {
 namespace Operator {
@@ -18,16 +18,16 @@ namespace Operator {
 class FickSoretNonlinearFEOperator : public Operator
 {
 public:
-    typedef AMP::shared_ptr<FickSoretNonlinearFEOperator> shared_ptr;
+    typedef std::shared_ptr<FickSoretNonlinearFEOperator> shared_ptr;
 
-    explicit FickSoretNonlinearFEOperator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit FickSoretNonlinearFEOperator( const std::shared_ptr<OperatorParameters> &params );
 
     virtual ~FickSoretNonlinearFEOperator() {}
 
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params ) override
+    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override
     {
-        AMP::shared_ptr<FickSoretNonlinearFEOperatorParameters> fsParams =
-            AMP::dynamic_pointer_cast<FickSoretNonlinearFEOperatorParameters>( params );
+        std::shared_ptr<FickSoretNonlinearFEOperatorParameters> fsParams =
+            std::dynamic_pointer_cast<FickSoretNonlinearFEOperatorParameters>( params );
 
         d_FickOperator->reset( fsParams->d_FickParameters );
         d_SoretOperator->reset( fsParams->d_SoretParameters );
@@ -36,10 +36,10 @@ public:
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    virtual AMP::shared_ptr<OperatorParameters>
+    virtual std::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                   AMP::shared_ptr<OperatorParameters> params = nullptr ) override
+                   std::shared_ptr<OperatorParameters> params = nullptr ) override
     {
         return d_FickOperator->getParameters( type, u, params );
     }

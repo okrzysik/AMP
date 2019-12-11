@@ -33,7 +33,7 @@ public:
         acceptable values (false, true),
         side effect: if false sets string pc_type to "none"
      */
-    explicit CGSolver( AMP::shared_ptr<KrylovSolverParameters> parameters );
+    explicit CGSolver( std::shared_ptr<KrylovSolverParameters> parameters );
 
     /**
      * Default destructor
@@ -45,20 +45,20 @@ public:
      * @param [in] f : shared pointer to right hand side vector
      * @param [out] u : shared pointer to approximate computed solution
      */
-    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+    void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Initialize the CGSolver. Should not be necessary for the user to call in general.
      * @param parameters
      */
-    void initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters ) override;
+    void initialize( std::shared_ptr<SolverStrategyParameters> const parameters ) override;
 
     /**
      * returns a shared pointer to a preconditioner object. The preconditioner is derived from
      * a SolverStrategy class
      */
-    inline AMP::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner( void )
+    inline std::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner( void )
     {
         return d_pPreconditioner;
     }
@@ -68,7 +68,7 @@ public:
      * a SolverStrategy class
      * @param pc shared pointer to preconditioner
      */
-    inline void setPreconditioner( AMP::shared_ptr<AMP::Solver::SolverStrategy> pc )
+    inline void setPreconditioner( std::shared_ptr<AMP::Solver::SolverStrategy> pc )
     {
         d_pPreconditioner = pc;
     }
@@ -77,17 +77,17 @@ public:
      * Register the operator that the solver will use during solves
      * @param [in] op shared pointer to operator $A()$ for equation \f$A(u) = f\f$
      */
-    void registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op ) override;
+    void registerOperator( const std::shared_ptr<AMP::Operator::Operator> op ) override;
 
     /**
      * Resets the registered operator internally with new parameters if necessary
      * @param parameters    OperatorParameters object that is NULL by default
      */
     void
-    resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
+    resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
 
 protected:
-    void getFromInput( AMP::shared_ptr<AMP::Database> db );
+    void getFromInput( std::shared_ptr<AMP::Database> db );
 
 private:
     AMP_MPI d_comm;
@@ -98,7 +98,7 @@ private:
 
     bool d_bUsesPreconditioner;
 
-    AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
 } // namespace Solver
 } // namespace AMP

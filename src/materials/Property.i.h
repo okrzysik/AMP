@@ -98,7 +98,7 @@ bool Property<Number>::in_range( const std::string &argname, const INPUT_VTYPE &
 }
 template<class Number>
 template<class INPUT_VTYPE>
-bool Property<Number>::in_range( const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &values )
+bool Property<Number>::in_range( const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &values )
 {
     bool result = true;
     for ( const auto &value : values ) {
@@ -127,7 +127,7 @@ bool Property<Number>::in_range( const std::map<std::string, AMP::shared_ptr<INP
 template<class Number>
 template<class INPUT_VTYPE, class RETURN_VTYPE>
 void Property<Number>::evalvActual(
-    RETURN_VTYPE &r, const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &args )
+    RETURN_VTYPE &r, const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &args )
 {
     std::vector<Number> eval_args( d_n_arguments ); // list of arguments for each input type
 
@@ -137,13 +137,13 @@ void Property<Number>::evalvActual(
     // Make a vector of iterators - one for each d_arguments
     std::vector<typename INPUT_VTYPE::iterator> parameter_iter;
     std::vector<size_t> parameter_indices;
-    std::vector<typename std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>>::const_iterator>
+    std::vector<typename std::map<std::string, std::shared_ptr<INPUT_VTYPE>>::const_iterator>
         parameter_map_iter;
 
     // Walk through d_arguments and set the iterator at the beginning of the map vector to which it
     // corresponds
     for ( size_t i = 0; i < d_arguments.size(); ++i ) {
-        typename std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>>::const_iterator mapIter;
+        typename std::map<std::string, std::shared_ptr<INPUT_VTYPE>>::const_iterator mapIter;
         mapIter = args.find( d_arguments[i] );
         if ( mapIter == args.end() ) {
             eval_args[i] = d_defaults[i];
@@ -197,7 +197,7 @@ Number Property<Number>::eval( std::vector<Number> & )
 template<class Number>
 void Property<Number>::evalv(
     std::vector<Number> &r,
-    const std::map<std::string, AMP::shared_ptr<std::vector<Number>>> &args )
+    const std::map<std::string, std::shared_ptr<std::vector<Number>>> &args )
 {
     if ( !in_range( args ) ) {
         for ( const auto &arg : args ) {

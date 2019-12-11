@@ -4,7 +4,7 @@
 
 #include "MechanicsMaterialModel.h"
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <vector>
 
@@ -91,7 +91,7 @@ public:
       creep strain inside the clad.
       */
     explicit GeneralCladThermalCreepPlasticModel(
-        const AMP::shared_ptr<MechanicsMaterialModelParameters> & );
+        const std::shared_ptr<MechanicsMaterialModelParameters> & );
 
     /**
       Destructor.

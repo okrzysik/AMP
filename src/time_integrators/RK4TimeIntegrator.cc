@@ -12,7 +12,7 @@ namespace TimeIntegrator {
 *                                                                      *
 ************************************************************************
 */
-RK4TimeIntegrator::RK4TimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+RK4TimeIntegrator::RK4TimeIntegrator( std::shared_ptr<TimeIntegratorParameters> parameters )
     : TimeIntegrator( parameters )
 {
     initialize( parameters );
@@ -34,7 +34,7 @@ RK4TimeIntegrator::~RK4TimeIntegrator() = default;
 *                                                                      *
 ************************************************************************
 */
-void RK4TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void RK4TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
@@ -48,7 +48,7 @@ void RK4TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> pa
     getFromInput( parameters->d_db );
 }
 
-void RK4TimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void RK4TimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
@@ -85,7 +85,7 @@ void RK4TimeIntegrator::setupVectors()
 
 int RK4TimeIntegrator::advanceSolution( const double dt, const bool )
 {
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> f;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> f;
 
     // k1 = f(tn,un)
     d_operator->apply( d_solution, d_k1_vec );
@@ -149,7 +149,7 @@ void RK4TimeIntegrator::updateSolution()
 *                                                                      *
 ************************************************************************
 */
-void RK4TimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
+void RK4TimeIntegrator::getFromInput( std::shared_ptr<AMP::Database> input_db )
 {
     if ( input_db->keyExists( "initial_timestep" ) ) {
         d_initial_dt = input_db->getScalar<double>( "initial_timestep" );

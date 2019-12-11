@@ -42,7 +42,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         comm = AMP_MPI( AMP_COMM_SELF );
 
     // Create the matrix parameters
-    auto params = AMP::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrixParameters>(
+    auto params = std::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrixParameters>(
         leftDOF, rightDOF, comm );
     params->d_CommListLeft  = leftVec->getCommunicationList();
     params->d_CommListRight = rightVec->getCommunicationList();
@@ -62,7 +62,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     params->addColumns( columns );
 
     // Create the matrix
-    AMP::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrix> newMatrix;
+    std::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrix> newMatrix;
     if ( type == "ManagedPetscMatrix" ) {
 #if defined( USE_EXT_PETSC )
         newMatrix.reset( new AMP::LinearAlgebra::ManagedPetscMatrix( params ) );
@@ -80,7 +80,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         auto col = getRow( row );
         newMatrix->createValuesByGlobalID( row, col );
     }
-    dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( newMatrix )
+    std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( newMatrix )
         ->setEpetraMaps( leftVec, rightVec );
     newMatrix->fillComplete();
     newMatrix->zero();
@@ -116,11 +116,11 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     else
         AMP_ERROR( "serial dense matrix does not support parallel matrices" );
     // Create the matrix parameters
-    auto params = AMP::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
     params->d_VariableLeft  = leftVec->getVariable();
     params->d_VariableRight = rightVec->getVariable();
     // Create the matrix
-    auto newMatrix = AMP::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( params );
+    auto newMatrix = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( params );
     // Initialize the matrix
     newMatrix->zero();
     newMatrix->makeConsistent();

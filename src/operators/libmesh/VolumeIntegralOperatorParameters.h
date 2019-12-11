@@ -13,7 +13,7 @@ namespace Operator {
 class VolumeIntegralOperatorParameters : public FEOperatorParameters
 {
 public:
-    explicit VolumeIntegralOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit VolumeIntegralOperatorParameters( std::shared_ptr<AMP::Database> db )
         : FEOperatorParameters( db )
     {
     }
@@ -21,7 +21,7 @@ public:
     virtual ~VolumeIntegralOperatorParameters() {}
 
     AMP::LinearAlgebra::Vector::shared_ptr d_auxVec;
-    AMP::shared_ptr<SourcePhysicsModel> d_sourcePhysicsModel;
+    std::shared_ptr<SourcePhysicsModel> d_sourcePhysicsModel;
     AMP::LinearAlgebra::Variable::shared_ptr d_variable;
     AMP::LinearAlgebra::Vector::shared_ptr d_pVector;
 

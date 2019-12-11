@@ -35,22 +35,22 @@ void myTest( AMP::UnitTest *ut, std::string mesh_file )
 
     // Create a libmesh mesh
     AMP::AMP_MPI comm( AMP_COMM_SELF );
-    auto libmeshInit  = AMP::make_shared<AMP::Mesh::initializeLibMesh>( comm );
+    auto libmeshInit  = std::make_shared<AMP::Mesh::initializeLibMesh>( comm );
     uint32_t mesh_dim = 3;
-    auto myMesh       = AMP::make_shared<::Mesh>( mesh_dim );
+    auto myMesh       = std::make_shared<::Mesh>( mesh_dim );
     AMP::readTestMesh( mesh_file, myMesh );
     MeshCommunication().broadcast( *( myMesh.get() ) );
     myMesh->prepare_for_use( false );
 
     // Create the AMP mesh
-    auto myMeshAdapter = AMP::make_shared<AMP::Mesh::libMesh>( myMesh, "myMesh" );
+    auto myMeshAdapter = std::make_shared<AMP::Mesh::libMesh>( myMesh, "myMesh" );
 
     // Create the DOF manager
     auto DOFs = AMP::Discretization::simpleDOFManager::create(
         myMeshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
     // Create the vectors
-    auto myVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( "myVar" );
+    auto myVar = std::make_shared<AMP::LinearAlgebra::Variable>( "myVar" );
     auto vec1  = AMP::LinearAlgebra::createVector( DOFs, myVar );
     vec1->setToScalar( 1.0 );
 

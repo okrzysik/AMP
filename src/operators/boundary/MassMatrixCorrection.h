@@ -24,7 +24,7 @@ class MassMatrixCorrection : public BoundaryOperator
 {
 public:
     //! Constructor
-    explicit MassMatrixCorrection( const AMP::shared_ptr<MassMatrixCorrectionParameters> &params )
+    explicit MassMatrixCorrection( const std::shared_ptr<MassMatrixCorrectionParameters> &params )
         : BoundaryOperator( params ),
           d_variable( params->d_variable ),
           d_bSetIdentityOnDiagonal( false )
@@ -46,14 +46,14 @@ public:
         // Do Nothing
     }
 
-    void resetBoundaryIds( const AMP::shared_ptr<MassMatrixCorrectionParameters> & );
+    void resetBoundaryIds( const std::shared_ptr<MassMatrixCorrectionParameters> & );
 
     /**
       This function modifies the entries of the matrix formed by the volume operator
       in order to impose Dirichlet boundary conditions. This function can also be used
       to change the Dirichlet boundary conditions, if required.
      */
-    void reset( const AMP::shared_ptr<OperatorParameters> & ) override;
+    void reset( const std::shared_ptr<OperatorParameters> & ) override;
 
 protected:
     // This must be a simple variable not a dual or multivariable

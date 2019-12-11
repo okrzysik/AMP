@@ -29,7 +29,7 @@ namespace Mesh {
  ********************************************************/
 moabMesh::moabMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_in )
 {
-    d_core = AMP::shared_ptr<moab::Core>( new moab::Core() );
+    d_core = std::shared_ptr<moab::Core>( new moab::Core() );
     AMP_ERROR( "Not finished" );
 }
 

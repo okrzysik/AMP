@@ -6,7 +6,7 @@ namespace AMP {
 namespace Operator {
 
 
-AsynchronousOperator::AsynchronousOperator( const AMP::shared_ptr<OperatorParameters> &params )
+AsynchronousOperator::AsynchronousOperator( const std::shared_ptr<OperatorParameters> &params )
     : Operator( params )
 {
     // Initialize the request list to an empty vector
@@ -17,7 +17,7 @@ AsynchronousOperator::AsynchronousOperator( const AMP::shared_ptr<OperatorParame
 AsynchronousOperator::~AsynchronousOperator() = default;
 
 
-/*bool AsynchronousOperator::continueAsynchronousConstruction ( const AMP::shared_ptr <
+/*bool AsynchronousOperator::continueAsynchronousConstruction ( const std::shared_ptr <
 OperatorParameters > & )
 {
     return true;

@@ -29,7 +29,7 @@ void myTest( AMP::UnitTest *ut, std::string input_file )
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );
-    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
@@ -42,8 +42,8 @@ void myTest( AMP::UnitTest *ut, std::string input_file )
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
     // Create the vectors
-    auto inVar  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "inputVar" );
-    auto outVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( "outputVar" );
+    auto inVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "inputVar" );
+    auto outVar = std::make_shared<AMP::LinearAlgebra::Variable>( "outputVar" );
     auto inVec  = AMP::LinearAlgebra::createVector( vectorDOFs, inVar );
     auto outVec = AMP::LinearAlgebra::createVector( scalarDOFs, outVar );
 
@@ -55,8 +55,8 @@ void myTest( AMP::UnitTest *ut, std::string input_file )
         ut->failure( "Unable to create a non-square matrices" );
     }
 
-    auto scalarVar   = AMP::make_shared<AMP::LinearAlgebra::Variable>( "scalarVar" );
-    auto vectorVar   = AMP::make_shared<AMP::LinearAlgebra::Variable>( "multiVar" );
+    auto scalarVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "scalarVar" );
+    auto vectorVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "multiVar" );
     auto multiVarVec = AMP::LinearAlgebra::MultiVector::create( "MultiVec", mesh->getComm() );
     multiVarVec->addVector( AMP::LinearAlgebra::createVector( vectorDOFs, vectorVar ) );
     multiVarVec->addVector( AMP::LinearAlgebra::createVector( scalarDOFs, scalarVar ) );

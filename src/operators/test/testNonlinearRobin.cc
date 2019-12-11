@@ -18,10 +18,10 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <iostream>
 #include <string>
@@ -40,8 +40,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
+    std::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
         new AMP::Mesh::MeshParameters( database ) );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
@@ -55,19 +55,19 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
-    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
+    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator =
+        std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
 
     //-------------------------------------------------------------------------------------------//
     // initialize the input variable
-    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
+    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator =
+        std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearThermalOperator->getVolumeOperator() );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> thermalVariable =
+    std::shared_ptr<AMP::LinearAlgebra::Variable> thermalVariable =
         thermalVolumeOperator->getOutputVariable();
 
     // create solution, rhs, and residual vectors
@@ -97,8 +97,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //-------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "testLinearThermalOperator", input_db, thermalTransportModel ) );
 
@@ -107,11 +107,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     ////////////////////////////////////
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
-    AMP::shared_ptr<AMP::Database> neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
-    AMP::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(
+    std::shared_ptr<AMP::Database> neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
+    std::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(
         new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ) );
     neutronicsParams->d_Mesh = meshAdapter;
-    AMP::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(
+    std::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(
         new AMP::Operator::NeutronicsRhs( neutronicsParams ) );
 
     // Create a DOF manager for a gauss point vector
@@ -135,9 +135,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
-    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
+    std::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
+        std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
 

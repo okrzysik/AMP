@@ -8,21 +8,21 @@ namespace Operator {
 
 
 PelletContactConductanceModel::PelletContactConductanceModel(
-    const AMP::shared_ptr<RobinPhysicsModelParameters> &params )
+    const std::shared_ptr<RobinPhysicsModelParameters> &params )
     : RobinPhysicsModel( params )
 {
     d_nTransportModels = ( params->d_db )->getScalar<int>( "Number_TransportModels" );
     d_transportModels.resize( d_nTransportModels );
-    AMP::shared_ptr<ElementPhysicsModel> elementPhysicsModel;
+    std::shared_ptr<ElementPhysicsModel> elementPhysicsModel;
 
     for ( unsigned int i = 0; i < d_nTransportModels; i++ ) {
         char key[100];
         sprintf( key, "DiffusionTransportModel_%d", (int) i );
-        AMP::shared_ptr<Database> transportModel_db = ( params->d_db )->getDatabase( key );
+        std::shared_ptr<Database> transportModel_db = ( params->d_db )->getDatabase( key );
         elementPhysicsModel =
             ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
         d_transportModels[i] =
-            AMP::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
+            std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
     }
 }
 

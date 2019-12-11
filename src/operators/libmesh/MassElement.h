@@ -8,7 +8,7 @@
 #include "AMP/operators/ElementOperation.h"
 #include "AMP/operators/libmesh/MassDensityModel.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 // Libmesh headers
@@ -26,19 +26,19 @@ namespace Operator {
 class MassElement : public ElementOperation
 {
 public:
-    explicit MassElement( const AMP::shared_ptr<ElementOperationParameters> &params );
+    explicit MassElement( const std::shared_ptr<ElementOperationParameters> &params );
 
     virtual ~MassElement() {}
 
     void initializeForCurrentElement( const ::Elem *elem,
-                                      const AMP::shared_ptr<MassDensityModel> &densityModel );
+                                      const std::shared_ptr<MassDensityModel> &densityModel );
 
 protected:
-    AMP::shared_ptr<::FEType> d_feType;
+    std::shared_ptr<::FEType> d_feType;
 
-    AMP::shared_ptr<::FEBase> d_fe;
+    std::shared_ptr<::FEBase> d_fe;
 
-    AMP::shared_ptr<::QBase> d_qrule;
+    std::shared_ptr<::QBase> d_qrule;
 
     const std::vector<Real> *d_JxW;
 
@@ -46,7 +46,7 @@ protected:
 
     const ::Elem *d_elem;
 
-    AMP::shared_ptr<MassDensityModel> d_densityModel;
+    std::shared_ptr<MassDensityModel> d_densityModel;
 
 private:
 };

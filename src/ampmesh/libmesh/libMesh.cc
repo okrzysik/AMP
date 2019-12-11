@@ -48,7 +48,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     AMP_INSIST( d_params.get(), "Params must not be null" );
     AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ), "Communicator must be set" );
     // Intialize libMesh
-    libmeshInit = AMP::make_shared<initializeLibMesh>( d_comm );
+    libmeshInit = std::make_shared<initializeLibMesh>( d_comm );
     // Load the mesh
     if ( d_db.get() ) {
         // Database exists
@@ -59,7 +59,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
         AMP_INSIST( PhysicalDim > 0 && PhysicalDim < 10, "Invalid dimension" );
         GeomDim = (GeomType) PhysicalDim;
         // Create the libMesh objects
-        d_libMesh = AMP::make_shared<::Mesh>( PhysicalDim );
+        d_libMesh = std::make_shared<::Mesh>( PhysicalDim );
         if ( d_db->keyExists( "FileName" ) ) {
             // Read an existing mesh
             d_libMesh->read( d_db->getString( "FileName" ) );
@@ -127,7 +127,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     AMP_ASSERT( !globalRanks.empty() );
     PROFILE_STOP( "constructor" );
 }
-libMesh::libMesh( AMP::shared_ptr<::Mesh> mesh, const std::string &name )
+libMesh::libMesh( std::shared_ptr<::Mesh> mesh, const std::string &name )
 {
     // Set the base properties
     d_libMesh = mesh;
@@ -167,9 +167,9 @@ libMesh::~libMesh()
 /********************************************************
  * Function to copy the mesh                             *
  ********************************************************/
-AMP::shared_ptr<Mesh> libMesh::clone() const
+std::shared_ptr<Mesh> libMesh::clone() const
 {
-    return AMP::shared_ptr<Mesh>( new libMesh( *this ) );
+    return std::shared_ptr<Mesh>( new libMesh( *this ) );
 }
 
 
@@ -320,8 +320,8 @@ void libMesh::initialize()
         }
         size_t N_global = d_comm.sumReduce( N_local );
         AMP_ASSERT( N_global >= n_global[static_cast<int>( GeomDim )] );
-        auto local_elements = AMP::make_shared<std::vector<MeshElement>>( N_local );
-        auto ghost_elements = AMP::make_shared<std::vector<MeshElement>>( N_ghost );
+        auto local_elements = std::make_shared<std::vector<MeshElement>>( N_local );
+        auto ghost_elements = std::make_shared<std::vector<MeshElement>>( N_ghost );
         N_local             = 0;
         N_ghost             = 0;
         for ( const auto &elem : element_list ) {
@@ -357,9 +357,9 @@ void libMesh::initialize()
     }*/
     // Construct the boundary elements for Node and Elem
     d_localSurfaceElements =
-        std::vector<AMP::shared_ptr<std::vector<MeshElement>>>( (int) GeomDim + 1 );
+        std::vector<std::shared_ptr<std::vector<MeshElement>>>( (int) GeomDim + 1 );
     d_ghostSurfaceElements =
-        std::vector<AMP::shared_ptr<std::vector<MeshElement>>>( (int) GeomDim + 1 );
+        std::vector<std::shared_ptr<std::vector<MeshElement>>>( (int) GeomDim + 1 );
     elem_pos = d_libMesh->elements_begin();
     elem_end = d_libMesh->elements_end();
     std::set<::Elem *> localBoundaryElements;
@@ -390,7 +390,7 @@ void libMesh::initialize()
     }
     auto GeomDim2 = static_cast<int>( GeomDim );
     d_localSurfaceElements[GeomDim2] =
-        AMP::make_shared<std::vector<MeshElement>>( localBoundaryElements.size() );
+        std::make_shared<std::vector<MeshElement>>( localBoundaryElements.size() );
     auto elem_iterator = localBoundaryElements.begin();
     for ( size_t i = 0; i < localBoundaryElements.size(); i++ ) {
         ( *d_localSurfaceElements[GeomDim2] )[i] =
@@ -399,7 +399,7 @@ void libMesh::initialize()
     }
     AMP::Utilities::quicksort( *d_localSurfaceElements[GeomDim2] );
     d_ghostSurfaceElements[GeomDim2] =
-        AMP::make_shared<std::vector<MeshElement>>( ghostBoundaryElements.size() );
+        std::make_shared<std::vector<MeshElement>>( ghostBoundaryElements.size() );
     elem_iterator = ghostBoundaryElements.begin();
     for ( size_t i = 0; i < ghostBoundaryElements.size(); i++ ) {
         ( *d_ghostSurfaceElements[GeomDim2] )[i] =
@@ -408,7 +408,7 @@ void libMesh::initialize()
     }
     AMP::Utilities::quicksort( *d_ghostSurfaceElements[GeomDim2] );
     d_localSurfaceElements[0] =
-        AMP::make_shared<std::vector<MeshElement>>( localBoundaryNodes.size() );
+        std::make_shared<std::vector<MeshElement>>( localBoundaryNodes.size() );
     auto node_iterator = localBoundaryNodes.begin();
     for ( size_t i = 0; i < localBoundaryNodes.size(); i++ ) {
         ( *d_localSurfaceElements[0] )[i] = libMeshElement(
@@ -417,7 +417,7 @@ void libMesh::initialize()
     }
     AMP::Utilities::quicksort( *d_localSurfaceElements[0] );
     d_ghostSurfaceElements[0] =
-        AMP::make_shared<std::vector<MeshElement>>( ghostBoundaryNodes.size() );
+        std::make_shared<std::vector<MeshElement>>( ghostBoundaryNodes.size() );
     node_iterator = ghostBoundaryNodes.begin();
     for ( size_t i = 0; i < ghostBoundaryNodes.size(); i++ ) {
         ( *d_ghostSurfaceElements[0] )[i] = libMeshElement(
@@ -450,9 +450,9 @@ void libMesh::initialize()
             ++it;
         }
         d_localSurfaceElements[type2] =
-            AMP::make_shared<std::vector<MeshElement>>( local.begin(), local.end() );
+            std::make_shared<std::vector<MeshElement>>( local.begin(), local.end() );
         d_ghostSurfaceElements[type2] =
-            AMP::make_shared<std::vector<MeshElement>>( ghost.begin(), ghost.end() );
+            std::make_shared<std::vector<MeshElement>>( ghost.begin(), ghost.end() );
         AMP::Utilities::quicksort( *d_localSurfaceElements[type2] );
         AMP::Utilities::quicksort( *d_ghostSurfaceElements[type2] );
         size_t local_size  = d_localSurfaceElements[type2]->size();
@@ -496,7 +496,7 @@ void libMesh::initialize()
                 ++curElem;
             }
             // Create the boundary list
-            auto list = AMP::make_shared<std::vector<MeshElement>>( N );
+            auto list = std::make_shared<std::vector<MeshElement>>( N );
             curElem   = iterator.begin();
             endElem   = iterator.end();
             N         = 0;
@@ -658,7 +658,7 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw ) const
         }
     } else {
         // All other types require a pre-constructed list
-        std::map<GeomType, AMP::shared_ptr<std::vector<MeshElement>>>::const_iterator it1, it2;
+        std::map<GeomType, std::shared_ptr<std::vector<MeshElement>>>::const_iterator it1, it2;
         if ( gcw == 0 ) {
             it1 = d_localElements.find( type );
             if ( it1 == d_localElements.end() )
@@ -727,7 +727,7 @@ libMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
 {
     AMP_INSIST( gcw == 0, "Iterator over ghost boundary elements is not supported yet" );
     auto mapid = std::pair<int, GeomType>( id, type );
-    auto list  = AMP::make_shared<std::vector<MeshElement>>();
+    auto list  = std::make_shared<std::vector<MeshElement>>();
     auto it    = d_boundarySets.find( mapid );
     if ( it != d_boundarySets.end() )
         list = it->second;
@@ -778,7 +778,7 @@ MeshElement libMesh::getElement( const MeshElementID &elem_id ) const
         return libMeshElement( PhysicalDim, elem_id.type(), (void *) node, rank, mesh_id, this );
     }
     // All other types are stored in sorted lists
-    AMP::shared_ptr<std::vector<MeshElement>> list;
+    std::shared_ptr<std::vector<MeshElement>> list;
     if ( (int) elem_id.owner_rank() == d_comm.getRank() )
         list = ( d_localElements.find( elem_id.type() ) )->second;
     else
@@ -847,7 +847,7 @@ void libMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
         getIterator( AMP::Mesh::GeomType::Vertex, 1 ),
         getIterator( AMP::Mesh::GeomType::Vertex, 0 ),
         PhysicalDim );
-    auto nodalVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "tmp_pos" );
+    auto nodalVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "tmp_pos" );
     auto displacement  = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
     std::vector<size_t> dofs1( PhysicalDim );
     std::vector<size_t> dofs2( PhysicalDim );

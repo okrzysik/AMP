@@ -1,7 +1,7 @@
 #ifndef included_AMP_ObjectSorter_h
 #define included_AMP_ObjectSorter_h
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -15,7 +15,7 @@ class ObjectSorterParameters : public ParameterBase
 public:
     /** Convenience typedef
      */
-    typedef AMP::shared_ptr<ObjectSorterParameters> shared_ptr;
+    typedef std::shared_ptr<ObjectSorterParameters> shared_ptr;
 
     /** Constructor
      */
@@ -46,7 +46,7 @@ protected:
 public:
     /** Convenience typedef
      */
-    typedef AMP::shared_ptr<ObjectSorter> shared_ptr;
+    typedef std::shared_ptr<ObjectSorter> shared_ptr;
 
     /** Convenience typedef
      */

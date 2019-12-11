@@ -4,7 +4,7 @@
 
 #include "ElementOperationParameters.h"
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 namespace AMP {
 namespace Operator {
@@ -20,7 +20,7 @@ public:
     /**
       Constructor.
       */
-    explicit ElementOperation( const AMP::shared_ptr<ElementOperationParameters> & ) {}
+    explicit ElementOperation( const std::shared_ptr<ElementOperationParameters> & ) {}
 
     /**
       Destructor.

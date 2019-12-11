@@ -3,7 +3,7 @@
 
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -28,7 +28,7 @@ public:
      * \param[in] iterator  The iterator over the subset of elements in the subsetDOFManager
      * \param[in] comm      The new comm for the subset DOF Manager
      */
-    static DOFManager::shared_ptr create( AMP::shared_ptr<const DOFManager> parentDOFManager,
+    static DOFManager::shared_ptr create( std::shared_ptr<const DOFManager> parentDOFManager,
                                           const std::vector<size_t> &dofs,
                                           const AMP::Mesh::MeshIterator &iterator,
                                           const AMP_MPI &comm );
@@ -103,7 +103,7 @@ public:
 
 
     //! Get the parent DOFManager
-    virtual AMP::shared_ptr<const DOFManager> getDOFManager() const;
+    virtual std::shared_ptr<const DOFManager> getDOFManager() const;
 
 
 protected:
@@ -112,7 +112,7 @@ protected:
 
 private:
     //! The parent DOF Manager
-    AMP::shared_ptr<const DOFManager> d_parentDOFManager;
+    std::shared_ptr<const DOFManager> d_parentDOFManager;
 
     //! The parent begin, end, and global DOFs
     size_t d_parentBegin, d_parentEnd, d_parentGlobal;

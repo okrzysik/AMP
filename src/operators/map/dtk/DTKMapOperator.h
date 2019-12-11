@@ -21,23 +21,23 @@ class DTKMapOperatorParameters : public OperatorParameters
 {
 public:
     // Constructor.
-    explicit DTKMapOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit DTKMapOperatorParameters( std::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     { /* ... */
     }
 
     AMP_MPI d_globalComm;
     // Domain mesh. A manager for the mesh that is the data source.
-    AMP::shared_ptr<AMP::Mesh::Mesh> d_domain_mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_domain_mesh;
 
     // Range mesh. A manager for the mesh that is the data target.
-    AMP::shared_ptr<AMP::Mesh::Mesh> d_range_mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_range_mesh;
 
     // Domain DOF manager. A DOF manager for the source data.
-    AMP::shared_ptr<AMP::Discretization::DOFManager> d_domain_dofs;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_domain_dofs;
 
     // Range DOF manager. A DOF Manager for the target data.
-    AMP::shared_ptr<AMP::Discretization::DOFManager> d_range_dofs;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_range_dofs;
 };
 
 
@@ -50,7 +50,7 @@ public:
     /**
      * Constructor.
      */
-    explicit DTKMapOperator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit DTKMapOperator( const std::shared_ptr<OperatorParameters> &params );
 
     //! Destructor
     ~DTKMapOperator() {}
@@ -64,13 +64,13 @@ private:
     Teuchos::RCP<const Teuchos::Comm<int>> d_TeuchosComm;
     bool d_mapOnThisProc;
     // DTK map operator.
-    AMP::shared_ptr<DataTransferKit::MapOperator> d_dtk_operator;
+    std::shared_ptr<DataTransferKit::MapOperator> d_dtk_operator;
 
     // DTK domain mesh.
-    AMP::shared_ptr<DTKAMPMeshManager> d_domain_mesh;
+    std::shared_ptr<DTKAMPMeshManager> d_domain_mesh;
 
     // DTK range mesh.
-    AMP::shared_ptr<DTKAMPMeshManager> d_range_mesh;
+    std::shared_ptr<DTKAMPMeshManager> d_range_mesh;
 };
 } // namespace Operator
 } // namespace AMP

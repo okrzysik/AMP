@@ -21,7 +21,7 @@ class SubchannelToPointMap : public AMP::Operator::Operator
 {
 public:
     //! Default constructor
-    explicit SubchannelToPointMap( const AMP::shared_ptr<SubchannelToPointMapParameters> &params );
+    explicit SubchannelToPointMap( const std::shared_ptr<SubchannelToPointMapParameters> &params );
 
     //! Deconstructor
     virtual ~SubchannelToPointMap() {}
@@ -64,7 +64,7 @@ private:
     std::vector<double> d_subchannel_z; // z-coordinates of the z-faces of the subchannel
     void createGrid();
 
-    AMP::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
+    std::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 };
 } // namespace Operator
 } // namespace AMP

@@ -20,7 +20,7 @@ namespace Operator {
 
 
 RobinVectorCorrection::RobinVectorCorrection(
-    const AMP::shared_ptr<NeumannVectorCorrectionParameters> &params )
+    const std::shared_ptr<NeumannVectorCorrectionParameters> &params )
     : NeumannVectorCorrection( params )
 {
     d_hef        = 0;
@@ -33,7 +33,7 @@ RobinVectorCorrection::RobinVectorCorrection(
 }
 
 
-void RobinVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void RobinVectorCorrection::reset( const std::shared_ptr<OperatorParameters> &params )
 {
     NeumannVectorCorrection::reset( params );
 
@@ -247,15 +247,15 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
 }
 
 
-AMP::shared_ptr<OperatorParameters>
+std::shared_ptr<OperatorParameters>
     RobinVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    auto tmp_db = AMP::make_shared<AMP::Database>( "Dummy" );
+    auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
     tmp_db->putScalar( "skip_params", true );
     tmp_db->putScalar( "skip_rhs_correction", true );
     tmp_db->putScalar( "skip_matrix_correction", false );
     tmp_db->putScalar( "IsFluxGaussPtVector", d_isFluxGaussPtVector );
-    auto outParams                 = AMP::make_shared<RobinMatrixCorrectionParameters>( tmp_db );
+    auto outParams                 = std::make_shared<RobinMatrixCorrectionParameters>( tmp_db );
     outParams->d_robinPhysicsModel = d_robinPhysicsModel;
     outParams->d_elementInputVec   = d_elementInputVec;
     outParams->d_variableFlux      = d_variableFlux;

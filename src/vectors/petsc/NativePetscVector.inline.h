@@ -34,9 +34,9 @@ inline size_t NativePetscVector::sizeOfDataBlock( size_t i ) const
 }
 
 
-inline AMP::shared_ptr<VectorData> NativePetscVector::getNewBuffer()
+inline std::shared_ptr<VectorData> NativePetscVector::getNewBuffer()
 {
-    return AMP::shared_ptr<VectorEngine>();
+    return std::shared_ptr<VectorEngine>();
 }
 
 
@@ -46,16 +46,16 @@ inline bool NativePetscVector::sameEngine( VectorEngine &e ) const
 }
 
 
-inline AMP::shared_ptr<VectorEngine>
-    NativePetscVector::cloneEngine( AMP::shared_ptr<VectorData> ) const
+inline std::shared_ptr<VectorEngine>
+    NativePetscVector::cloneEngine( std::shared_ptr<VectorData> ) const
 {
-    return AMP::dynamic_pointer_cast<VectorEngine>( Vector::cloneVector( "engine_clone" ) );
+    return std::dynamic_pointer_cast<VectorEngine>( Vector::cloneVector( "engine_clone" ) );
 }
 
 
-inline void NativePetscVector::swapEngines( AMP::shared_ptr<VectorEngine> p )
+inline void NativePetscVector::swapEngines( std::shared_ptr<VectorEngine> p )
 {
-    Vector::shared_ptr p2 = AMP::dynamic_pointer_cast<Vector>( p );
+    Vector::shared_ptr p2 = std::dynamic_pointer_cast<Vector>( p );
     Vector::swapVectors( p2 );
 }
 
@@ -69,7 +69,7 @@ inline void NativePetscVector::getValuesByLocalID( int numVals, size_t *ndx, dou
 inline Vector::shared_ptr NativePetscVector::getManagedVectorCopy( AMP_MPI comm )
 {
     Vector::shared_ptr pRet = ManagedPetscVector::createFromPetscVec( d_petscVec, comm );
-    ManagedPetscVector::copyFromPetscVec( *AMP::dynamic_pointer_cast<ManagedPetscVector>( pRet ),
+    ManagedPetscVector::copyFromPetscVec( *std::dynamic_pointer_cast<ManagedPetscVector>( pRet ),
                                           d_petscVec );
     return pRet;
 }
@@ -85,7 +85,7 @@ inline Vector::shared_ptr NativePetscVector::getManagedVectorDuplicate( AMP_MPI 
 }
 
 
-inline AMP::shared_ptr<ParameterBase> NativePetscVector::getParameters() { return d_pParameters; }
+inline std::shared_ptr<ParameterBase> NativePetscVector::getParameters() { return d_pParameters; }
 
 
 inline void NativePetscVector::aliasVector( Vector & ) { AMP_ERROR( "not implemented" ); }

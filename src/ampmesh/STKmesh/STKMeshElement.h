@@ -4,7 +4,7 @@
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/ampmesh/STKmesh/STKMesh.h"
 #include "AMP/ampmesh/STKmesh/STKMeshIterator.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 #include <vector>
 
 namespace AMP {
@@ -99,7 +99,7 @@ protected:
                     MeshID meshID,
                     const STKMesh *mesh );
     STKMeshElement( int dim,
-                    AMP::shared_ptr<stk::mesh::Entity> element,
+                    std::shared_ptr<stk::mesh::Entity> element,
                     unsigned int rank,
                     MeshID meshID,
                     const STKMesh *mesh );

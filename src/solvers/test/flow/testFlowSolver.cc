@@ -17,10 +17,10 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 #include <string>
 
@@ -40,7 +40,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );
-    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
@@ -56,10 +56,10 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "FlowFrapconOperator" ),
                 "Key ''FlowFrapconOperator'' is missing!" );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
     auto flowDatabase =
-        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "FlowFrapconOperator" ) );
-    auto flowOperator = AMP::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(
+        std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "FlowFrapconOperator" ) );
+    auto flowOperator = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "FlowFrapconOperator", input_db, flowtransportModel ) );
 
@@ -73,7 +73,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto resVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, outputVariable );
     auto tmpVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, inputVariable );
 
-    auto flowJacobian = AMP::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>(
+    auto flowJacobian = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "FlowFrapconJacobian", input_db, flowtransportModel ) );
 
@@ -164,9 +164,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto JacobianSolver_db = input_db->getDatabase( "Flow1DSolver" );
     auto flowSolverParams =
-        AMP::make_shared<AMP::Solver::SolverStrategyParameters>( JacobianSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( JacobianSolver_db );
     flowSolverParams->d_pOperator = flowJacobian;
-    auto flowJacobianSolver       = AMP::make_shared<AMP::Solver::Flow1DSolver>( flowSolverParams );
+    auto flowJacobianSolver       = std::make_shared<AMP::Solver::Flow1DSolver>( flowSolverParams );
 
     //----------------------------------------------------------------------------------------------------------------------
     // initialize the nonlinear solver
@@ -174,22 +174,22 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // auto linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver");
 
     auto nonlinearSolverParams =
-        AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = flowOperator;
     nonlinearSolverParams->d_pInitialGuess = mv_view_tmpVec;
 
-    auto nonlinearSolver = AMP::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
+    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     //  auto flowPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
     //  auto flowPreconditionerParams =
-    //  AMP::make_shared<AMP::Solver::SolverStrategyParameters>(flowPreconditioner_db);
+    //  std::make_shared<AMP::Solver::SolverStrategyParameters>(flowPreconditioner_db);
     //  flowPreconditionerParams->d_pOperator = flowJacobian;
     //  auto linearFlowPreconditioner=
-    //  AMP::make_shared<AMP::Solver::Flow1DSolver>(flowPreconditionerParams);
+    //  std::make_shared<AMP::Solver::Flow1DSolver>(flowPreconditionerParams);
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // register the preconditioner with the Jacobian free Krylov solver

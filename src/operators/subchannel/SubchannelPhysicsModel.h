@@ -4,7 +4,7 @@
 #include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <cstring>
 #include <map>
@@ -25,7 +25,7 @@ public:
     /**
       Constructor
       */
-    explicit SubchannelPhysicsModel( const AMP::shared_ptr<ElementPhysicsModelParameters> &params );
+    explicit SubchannelPhysicsModel( const std::shared_ptr<ElementPhysicsModelParameters> &params );
 
     /**
       Destructor
@@ -40,7 +40,7 @@ public:
       */
     void getProperty( std::string property,
                       std::vector<double> &result,
-                      std::map<std::string, AMP::shared_ptr<std::vector<double>>> &args );
+                      std::map<std::string, std::shared_ptr<std::vector<double>>> &args );
 
     /**
       Function to return a pointer to the material
@@ -52,7 +52,7 @@ protected:
     AMP::Materials::Material::shared_ptr d_material;
 
     // map of property identifier strings and property pointers
-    std::map<std::string, AMP::shared_ptr<AMP::Materials::Property<double>>> d_properties;
+    std::map<std::string, std::shared_ptr<AMP::Materials::Property<double>>> d_properties;
 };
 } // namespace Operator
 } // namespace AMP

@@ -16,7 +16,7 @@ namespace LinearAlgebra {
  ********************************************************/
 void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 {
-    auto other = dynamic_pointer_cast<NativePetscMatrix>( other_op );
+    auto other = std::dynamic_pointer_cast<NativePetscMatrix>( other_op );
     AMP_INSIST( other != nullptr, "Incompatible matrix types" );
 
     auto res = new NativePetscMatrix;
@@ -31,12 +31,12 @@ void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 Vector::shared_ptr NativePetscMatrix::extractDiagonal( Vector::shared_ptr v ) const
 {
     Vector::shared_ptr retVal;
-    if ( dynamic_pointer_cast<NativePetscVector>( v ) ) {
+    if ( std::dynamic_pointer_cast<NativePetscVector>( v ) ) {
         retVal = v;
     } else {
         retVal = getRightVector();
     }
-    MatGetDiagonal( getMat(), dynamic_pointer_cast<PetscVector>( retVal )->getVec() );
+    MatGetDiagonal( getMat(), std::dynamic_pointer_cast<PetscVector>( retVal )->getVec() );
     return retVal;
 }
 
@@ -52,7 +52,7 @@ Vector::shared_ptr NativePetscMatrix::getRightVector() const
 #else
     MatCreateVecs( d_Mat, &a, PETSC_NULL );
 #endif
-    AMP::shared_ptr<NativePetscVectorParameters> npvParam(
+    std::shared_ptr<NativePetscVectorParameters> npvParam(
         new NativePetscVectorParameters( a, true ) );
     return Vector::shared_ptr( new NativePetscVector( npvParam ) );
 }
@@ -64,7 +64,7 @@ Vector::shared_ptr NativePetscMatrix::getLeftVector() const
 #else
     MatCreateVecs( d_Mat, PETSC_NULL, &a );
 #endif
-    AMP::shared_ptr<NativePetscVectorParameters> npvParam(
+    std::shared_ptr<NativePetscVectorParameters> npvParam(
         new NativePetscVectorParameters( a, true ) );
     return Vector::shared_ptr( new NativePetscVector( npvParam ) );
 }

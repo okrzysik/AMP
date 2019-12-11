@@ -24,8 +24,8 @@ public:
     /**
      * Constructor.
      */
-    DTKAMPMeshManager( const AMP::shared_ptr<AMP::Mesh::Mesh> &mesh,
-                       const AMP::shared_ptr<AMP::Discretization::DOFManager> &dof_manager,
+    DTKAMPMeshManager( const std::shared_ptr<AMP::Mesh::Mesh> &mesh,
+                       const std::shared_ptr<AMP::Discretization::DOFManager> &dof_manager,
                        const std::function<bool( DataTransferKit::Entity )> &predicate );
 
     /*!

@@ -4,7 +4,7 @@
 
 #include "MechanicsMaterialModel.h"
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <vector>
 
@@ -14,7 +14,7 @@ namespace Operator {
 class ThermalVonMisesMatModel : public MechanicsMaterialModel
 {
 public:
-    explicit ThermalVonMisesMatModel( const AMP::shared_ptr<MechanicsMaterialModelParameters> & );
+    explicit ThermalVonMisesMatModel( const std::shared_ptr<MechanicsMaterialModelParameters> & );
 
     virtual ~ThermalVonMisesMatModel() {}
 

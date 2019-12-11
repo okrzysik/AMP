@@ -4,7 +4,7 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <fstream>
 #include <iostream>
@@ -15,7 +15,7 @@
 class TestParameters : public AMP::Operator::OperatorParameters
 {
 public:
-    explicit TestParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit TestParameters( std::shared_ptr<AMP::Database> db )
         : AMP::Operator::OperatorParameters( db )
     {
     }
@@ -32,7 +32,7 @@ static void runTest( AMP::UnitTest *ut )
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    AMP::shared_ptr<AMP::Database> test_db = input_db->getDatabase( "Test" );
+    std::shared_ptr<AMP::Database> test_db = input_db->getDatabase( "Test" );
 
     if ( ( test_db.get() ) == NULL ) {
         ut->failure( "Testing getDatabase" );
@@ -46,7 +46,7 @@ static void runTest( AMP::UnitTest *ut )
         ut->failure( "Testing keyExists" );
     }
 
-    auto discreteOpParams = AMP::make_shared<AMP::Operator::OperatorParameters>( test_db );
+    auto discreteOpParams = std::make_shared<AMP::Operator::OperatorParameters>( test_db );
 
     if ( ( discreteOpParams.get() ) == NULL ) {
         ut->failure( "Testing OperatorParameters' Constructor" );
@@ -66,7 +66,7 @@ static void runTest( AMP::UnitTest *ut )
         ut->failure( "Testing OperatorParameters::d_db keyExists" );
     }
 
-    auto testParams = AMP::make_shared<TestParameters>( test_db );
+    auto testParams = std::make_shared<TestParameters>( test_db );
 
     if ( ( testParams.get() ) == NULL ) {
         ut->failure( "Testing TestParameters' Constructor" );
@@ -86,7 +86,7 @@ static void runTest( AMP::UnitTest *ut )
         ut->failure( "Testing TestParameters::d_db keyExists" );
     }
 
-    AMP::shared_ptr<AMP::Operator::OperatorParameters> testParamCopy( testParams );
+    std::shared_ptr<AMP::Operator::OperatorParameters> testParamCopy( testParams );
 
     if ( ( testParamCopy.get() ) == NULL ) {
         ut->failure( "Testing Copy-1" );
@@ -107,7 +107,7 @@ static void runTest( AMP::UnitTest *ut )
     }
 
     auto secondTestParam =
-        AMP::dynamic_pointer_cast<TestParameters, AMP::Operator::OperatorParameters>(
+        std::dynamic_pointer_cast<TestParameters, AMP::Operator::OperatorParameters>(
             testParamCopy );
 
     if ( ( secondTestParam.get() ) == NULL ) {

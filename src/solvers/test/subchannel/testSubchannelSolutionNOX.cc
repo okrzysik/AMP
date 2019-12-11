@@ -18,11 +18,11 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <string>
 
@@ -61,7 +61,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // Get the Mesh database and create the mesh parameters
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db    = input_db->getDatabase( "Mesh" );
-    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( globalComm );
 
     // Create the meshes from the input database
@@ -70,13 +70,13 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // get subchannel physics model
     auto subchannelPhysics_db = input_db->getDatabase( "SubchannelPhysicsModel" );
     auto params =
-        AMP::make_shared<AMP::Operator::ElementPhysicsModelParameters>( subchannelPhysics_db );
-    auto subchannelPhysicsModel = AMP::make_shared<AMP::Operator::SubchannelPhysicsModel>( params );
+        std::make_shared<AMP::Operator::ElementPhysicsModelParameters>( subchannelPhysics_db );
+    auto subchannelPhysicsModel = std::make_shared<AMP::Operator::SubchannelPhysicsModel>( params );
 
     // Create the SubchannelOperatorParameters
     auto nonlinearOperator_db = input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" );
     auto subchannelOpParams =
-        AMP::make_shared<AMP::Operator::SubchannelOperatorParameters>( nonlinearOperator_db );
+        std::make_shared<AMP::Operator::SubchannelOperatorParameters>( nonlinearOperator_db );
     subchannelOpParams->d_Mesh                   = subchannelMesh;
     subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
     subchannelOpParams->clad_x =
@@ -87,14 +87,14 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         input_db->getDatabase( "CladProperties" )->getVector<double>( "d" );
 
     // create nonlinear operator
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
     auto nonlinearOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(
+        std::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 subchannelMesh, "SubchannelTwoEqNonlinearOperator", input_db, elementModel ) );
 
     // create linear operator
-    auto linearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>(
+    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             subchannelMesh, "SubchannelTwoEqLinearOperator", input_db, elementModel ) );
 
@@ -131,19 +131,19 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     double hin = 0.0;
     double rho = 1000;
     for ( int i = 0; i < 3; i++ ) {
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>> enthalpyArgMap;
+        std::map<std::string, std::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert(
-            std::make_pair( "temperature", AMP::make_shared<std::vector<double>>( 1, Tin ) ) );
+            std::make_pair( "temperature", std::make_shared<std::vector<double>>( 1, Tin ) ) );
         enthalpyArgMap.insert(
-            std::make_pair( "pressure", AMP::make_shared<std::vector<double>>( 1, Pin ) ) );
+            std::make_pair( "pressure", std::make_shared<std::vector<double>>( 1, Pin ) ) );
         std::vector<double> enthalpyResult( 1 );
         subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         hin = enthalpyResult[0];
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>> volumeArgMap_plus;
+        std::map<std::string, std::shared_ptr<std::vector<double>>> volumeArgMap_plus;
         volumeArgMap_plus.insert(
-            std::make_pair( "enthalpy", AMP::make_shared<std::vector<double>>( 1, hin ) ) );
+            std::make_pair( "enthalpy", std::make_shared<std::vector<double>>( 1, hin ) ) );
         volumeArgMap_plus.insert(
-            std::make_pair( "pressure", AMP::make_shared<std::vector<double>>( 1, Pin ) ) );
+            std::make_pair( "pressure", std::make_shared<std::vector<double>>( 1, Pin ) ) );
         std::vector<double> volumeResult_plus( 1 );
         subchannelPhysicsModel->getProperty(
             "SpecificVolume", volumeResult_plus, volumeArgMap_plus );
@@ -196,7 +196,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // put manufactured RHS into resVec
     nonlinearOperator->reset( subchannelOpParams );
     auto subchannelLinearParams =
-        AMP::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>(
+        std::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>(
             nonlinearOperator->getParameters( "Jacobian", solVec ) );
     subchannelLinearParams->d_initialize = false;
     linearOperator->reset( subchannelLinearParams );
@@ -204,7 +204,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // create nonlinear solver parameters
     auto nonlinearSolverParams =
-        AMP::make_shared<AMP::Solver::TrilinosNOXSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::TrilinosNOXSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm            = globalComm;
@@ -214,7 +214,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // create nonlinear solver
     auto nonlinearSolver =
-        AMP::make_shared<AMP::Solver::TrilinosNOXSolver>( nonlinearSolverParams );
+        std::make_shared<AMP::Solver::TrilinosNOXSolver>( nonlinearSolverParams );
 
     // create linear solver
     // nonlinearSolver->getKrylovSolver()->setPreconditioner(linearFlowPreconditioner);
@@ -231,7 +231,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     int tempDOFsPerFace[3] = { 0, 0, 1 };
     auto tempDOFManager =
         AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, tempDOFsPerFace, 0 );
-    auto tempVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
+    auto tempVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
     auto tempVec      = AMP::LinearAlgebra::createVector( tempDOFManager, tempVariable, true );
     face              = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     std::vector<size_t> tdofs;
@@ -241,20 +241,20 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         tempDOFManager->getDOFs( face->globalID(), tdofs );
         double h = h_scale * solVec->getValueByGlobalID( dofs[0] );
         double P = P_scale * solVec->getValueByGlobalID( dofs[1] );
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>> temperatureArgMap;
+        std::map<std::string, std::shared_ptr<std::vector<double>>> temperatureArgMap;
         temperatureArgMap.insert(
-            std::make_pair( "enthalpy", AMP::make_shared<std::vector<double>>( 1, h ) ) );
+            std::make_pair( "enthalpy", std::make_shared<std::vector<double>>( 1, h ) ) );
         temperatureArgMap.insert(
-            std::make_pair( "pressure", AMP::make_shared<std::vector<double>>( 1, P ) ) );
+            std::make_pair( "pressure", std::make_shared<std::vector<double>>( 1, P ) ) );
         std::vector<double> temperatureResult( 1 );
         subchannelPhysicsModel->getProperty( "Temperature", temperatureResult, temperatureArgMap );
         tempVec->setValueByGlobalID( tdofs[0], temperatureResult[0] );
         // Check that we recover the enthalapy from the temperature
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>> enthalpyArgMap;
+        std::map<std::string, std::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert( std::make_pair(
-            "temperature", AMP::make_shared<std::vector<double>>( 1, temperatureResult[0] ) ) );
+            "temperature", std::make_shared<std::vector<double>>( 1, temperatureResult[0] ) ) );
         enthalpyArgMap.insert(
-            std::make_pair( "pressure", AMP::make_shared<std::vector<double>>( 1, P ) ) );
+            std::make_pair( "pressure", std::make_shared<std::vector<double>>( 1, P ) ) );
         std::vector<double> enthalpyResult( 1 );
         subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         double h2 = enthalpyResult[0];

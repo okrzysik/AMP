@@ -68,10 +68,10 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
         if ( x0->getVariable()->getName() != "ThyraMultiVec" ||
              y0->getVariable()->getName() != "ThyraMultiVec" )
             AMP_ERROR( "Not finished" );
-        AMP::shared_ptr<const AMP::LinearAlgebra::MultiVector> x1 =
-            AMP::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>( x0 );
-        AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> y1 =
-            AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( y0 );
+        std::shared_ptr<const AMP::LinearAlgebra::MultiVector> x1 =
+            std::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>( x0 );
+        std::shared_ptr<AMP::LinearAlgebra::MultiVector> y1 =
+            std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( y0 );
         AMP_ASSERT( x1 != nullptr && y1 != nullptr );
         size_t N_vecs_x = x1->getNumberOfSubvectors();
         size_t N_vecs_y = y1->getNumberOfSubvectors();

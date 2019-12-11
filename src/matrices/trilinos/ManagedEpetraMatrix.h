@@ -24,7 +24,7 @@ class ManagedEpetraMatrix : public EpetraMatrix, public ManagedMatrix
 {
 protected:
     //!  Parameters used to construct the matrix
-    AMP::shared_ptr<ManagedEpetraMatrixParameters> d_pParameters;
+    std::shared_ptr<ManagedEpetraMatrixParameters> d_pParameters;
 
     //!  Empty constructor
     ManagedEpetraMatrix() = delete;
@@ -47,7 +47,7 @@ public:
     /** \brief Constructor
      * \param[in] p  The description of the matrix
      */
-    explicit ManagedEpetraMatrix( AMP::shared_ptr<ManagedEpetraMatrixParameters> p );
+    explicit ManagedEpetraMatrix( std::shared_ptr<ManagedEpetraMatrixParameters> p );
 
     /** \brief Constructor from Epetra_CrsMatrix
      * \param[in]  m  Matrix to wrap

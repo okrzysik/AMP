@@ -39,7 +39,7 @@ public:
     /** \brief   Standard constructor
      * \param[in] params  Input parameters
      */
-    explicit ScalarZAxisMap( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &params );
+    explicit ScalarZAxisMap( const std::shared_ptr<AMP::Operator::OperatorParameters> &params );
 
     //! Destructor
     virtual ~ScalarZAxisMap();

@@ -22,7 +22,7 @@ public:
      * \brief Construct a Tube geometry
      * \param db        Input database
      */
-    explicit Tube( AMP::shared_ptr<AMP::Database> db );
+    explicit Tube( std::shared_ptr<AMP::Database> db );
 
     /**
      * \brief Construct a Tube geometry
@@ -49,7 +49,7 @@ public:
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<bool> getPeriodicDim() const override final;
     virtual std::vector<int> getLogicalSurfaceIds() const override final;
-    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
+    virtual std::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data

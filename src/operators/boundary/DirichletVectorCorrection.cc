@@ -7,10 +7,10 @@
 namespace AMP {
 namespace Operator {
 
-void DirichletVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters> &tmpParams )
+void DirichletVectorCorrection::reset( const std::shared_ptr<OperatorParameters> &tmpParams )
 {
-    AMP::shared_ptr<DirichletVectorCorrectionParameters> params =
-        AMP::dynamic_pointer_cast<DirichletVectorCorrectionParameters>( tmpParams );
+    std::shared_ptr<DirichletVectorCorrectionParameters> params =
+        std::dynamic_pointer_cast<DirichletVectorCorrectionParameters>( tmpParams );
 
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
@@ -174,13 +174,13 @@ void DirichletVectorCorrection::applyResidual( AMP::LinearAlgebra::Vector::const
     r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
-AMP::shared_ptr<OperatorParameters>
+std::shared_ptr<OperatorParameters>
     DirichletVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
     tmp_db->putScalar( "skip_params", true );
 
-    AMP::shared_ptr<DirichletMatrixCorrectionParameters> outParams(
+    std::shared_ptr<DirichletMatrixCorrectionParameters> outParams(
         new DirichletMatrixCorrectionParameters( tmp_db ) );
 
     return outParams;

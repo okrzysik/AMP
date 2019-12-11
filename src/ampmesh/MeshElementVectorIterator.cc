@@ -17,7 +17,7 @@ MultiVectorIterator::MultiVectorIterator()
     d_size     = 0;
     d_element  = nullptr;
 }
-MultiVectorIterator::MultiVectorIterator( AMP::shared_ptr<std::vector<MeshElement>> elements,
+MultiVectorIterator::MultiVectorIterator( std::shared_ptr<std::vector<MeshElement>> elements,
                                           size_t pos )
     : d_elements( elements )
 {

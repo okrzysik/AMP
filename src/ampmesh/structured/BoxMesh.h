@@ -14,9 +14,9 @@ class Vector;
 } // namespace AMP
 #endif
 
-#include "AMP/utils/shared_ptr.h"
 #include <array>
 #include <map>
+#include <memory>
 #include <vector>
 
 
@@ -151,11 +151,11 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params  Parameters for constructing a mesh from an input database
      */
-    static AMP::shared_ptr<BoxMesh> generate( MeshParameters::shared_ptr params );
+    static std::shared_ptr<BoxMesh> generate( MeshParameters::shared_ptr params );
 
 
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
-    virtual AMP::shared_ptr<Mesh> clone() const override = 0;
+    virtual std::shared_ptr<Mesh> clone() const override = 0;
 
 
     /**

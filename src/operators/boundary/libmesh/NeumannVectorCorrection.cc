@@ -23,7 +23,7 @@ namespace Operator {
 
 // Constructor
 NeumannVectorCorrection::NeumannVectorCorrection(
-    const AMP::shared_ptr<NeumannVectorCorrectionParameters> &params )
+    const std::shared_ptr<NeumannVectorCorrectionParameters> &params )
     : BoundaryOperator( params )
 {
     d_params              = params;
@@ -53,10 +53,10 @@ NeumannVectorCorrection::NeumannVectorCorrection(
 }
 
 
-void NeumannVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void NeumannVectorCorrection::reset( const std::shared_ptr<OperatorParameters> &params )
 {
-    AMP::shared_ptr<NeumannVectorCorrectionParameters> myparams =
-        AMP::dynamic_pointer_cast<NeumannVectorCorrectionParameters>( params );
+    std::shared_ptr<NeumannVectorCorrectionParameters> myparams =
+        std::dynamic_pointer_cast<NeumannVectorCorrectionParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
@@ -237,10 +237,10 @@ void NeumannVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_pt
     // Do Nothing
 }
 
-AMP::shared_ptr<OperatorParameters>
+std::shared_ptr<OperatorParameters>
     NeumannVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
 
     tmp_db->putScalar( "FE_ORDER", "FIRST" );
     tmp_db->putScalar( "FE_FAMILY", "LAGRANGE" );
@@ -273,7 +273,7 @@ AMP::shared_ptr<OperatorParameters>
 
     tmp_db->putScalar( "skip_params", true );
 
-    AMP::shared_ptr<NeumannVectorCorrectionParameters> outParams(
+    std::shared_ptr<NeumannVectorCorrectionParameters> outParams(
         new NeumannVectorCorrectionParameters( tmp_db ) );
 
     return outParams;
@@ -289,7 +289,7 @@ void NeumannVectorCorrection::setFrozenVector( AMP::LinearAlgebra::Vector::share
         return;
     if ( d_Frozen == nullptr )
         d_Frozen = AMP::LinearAlgebra::MultiVector::create( "frozenMultiVec", d_Mesh->getComm() );
-    dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( d_Frozen )->addVector( f2 );
+    std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( d_Frozen )->addVector( f2 );
 }
 
 

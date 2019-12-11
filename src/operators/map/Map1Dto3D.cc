@@ -34,19 +34,19 @@ static T *getPtr( std::vector<T> &x )
 
 
 // Constructor
-Map1Dto3D::Map1Dto3D( const AMP::shared_ptr<OperatorParameters> &params ) : MapOperator( params )
+Map1Dto3D::Map1Dto3D( const std::shared_ptr<OperatorParameters> &params ) : MapOperator( params )
 {
-    AMP::shared_ptr<MapOperatorParameters> myparams =
-        AMP::dynamic_pointer_cast<MapOperatorParameters>( params );
+    std::shared_ptr<MapOperatorParameters> myparams =
+        std::dynamic_pointer_cast<MapOperatorParameters>( params );
     d_MapMesh = myparams->d_MapMesh;
     reset( myparams );
 }
 
 
-void Map1Dto3D::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void Map1Dto3D::reset( const std::shared_ptr<OperatorParameters> &params )
 {
-    AMP::shared_ptr<MapOperatorParameters> myparams =
-        AMP::dynamic_pointer_cast<MapOperatorParameters>( params );
+    std::shared_ptr<MapOperatorParameters> myparams =
+        std::dynamic_pointer_cast<MapOperatorParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameter" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
@@ -140,11 +140,11 @@ void Map1Dto3D::computeZGaussLocations()
         auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
         auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-        AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
-        AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
+        std::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
+        std::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
 
         auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-        AMP::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
+        std::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
 
         d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -259,11 +259,11 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
         auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-        AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
-        AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
+        std::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
+        std::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
 
         auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-        AMP::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
+        std::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
 
         d_fe->attach_quadrature_rule( d_qrule.get() );
 

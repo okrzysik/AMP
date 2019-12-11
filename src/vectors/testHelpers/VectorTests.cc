@@ -300,7 +300,7 @@ void VectorTests::Bug_491( AMP::UnitTest *utils )
     auto vector1( d_factory->getVector() );
     vector1->setRandomValues();
     auto managed_petsc = AMP::LinearAlgebra::PetscVector::view( vector1 );
-    auto petsc_vec  = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( managed_petsc );
+    auto petsc_vec  = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( managed_petsc );
     Vec managed_vec = petsc_vec->getVec();
 
 
@@ -599,7 +599,7 @@ void VectorTests::ReciprocalVector( AMP::UnitTest *utils )
 }
 
 
-static void LinearSumVectorRun( AMP::shared_ptr<const VectorFactory> factory,
+static void LinearSumVectorRun( std::shared_ptr<const VectorFactory> factory,
                                 AMP::UnitTest *utils,
                                 double alpha,
                                 double beta,
@@ -630,7 +630,7 @@ void VectorTests::LinearSumVector( AMP::UnitTest *utils )
 }
 
 
-static void AxpyVectorRun( AMP::shared_ptr<const VectorFactory> factory,
+static void AxpyVectorRun( std::shared_ptr<const VectorFactory> factory,
                            AMP::UnitTest *utils,
                            double alpha,
                            const char *msg )
@@ -656,7 +656,7 @@ void VectorTests::AxpyVector( AMP::UnitTest *utils )
 }
 
 
-static void AxpbyVectorRun( AMP::shared_ptr<const VectorFactory> factory,
+static void AxpbyVectorRun( std::shared_ptr<const VectorFactory> factory,
                             AMP::UnitTest *utils,
                             double alpha,
                             double beta,
@@ -908,13 +908,13 @@ void VectorTests::TestMultivectorDuplicate( AMP::UnitTest *utils )
 {
     auto vec0 = d_factory->getVector();
     // Create a multivector
-    auto var      = AMP::make_shared<AMP::LinearAlgebra::Variable>( "multivec" );
+    auto var      = std::make_shared<AMP::LinearAlgebra::Variable>( "multivec" );
     auto multiVec = AMP::LinearAlgebra::MultiVector::create( var, vec0->getComm() );
     // Add different views of vec0
     multiVec->addVector( vec0 );
     multiVec->addVector( vec0 );
     multiVec->addVector( multiVec->getVector( 0 ) );
-    auto var2 = AMP::make_shared<AMP::LinearAlgebra::Variable>( "vec2" );
+    auto var2 = std::make_shared<AMP::LinearAlgebra::Variable>( "vec2" );
     multiVec->addVector( AMP::LinearAlgebra::MultiVector::create( var2, vec0->getComm() ) );
     // Verify the size of the multivector
     auto dof1 = vec0->getDOFManager();

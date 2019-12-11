@@ -22,9 +22,9 @@ using namespace AMP;
 /************************************************************************
  * Get/Create the thread pool database and the local thread pool to use  *
  ************************************************************************/
-AMP::shared_ptr<ThreadPool> create_thread_pool( AMP::shared_ptr<AMP::Database> tpool_db )
+std::shared_ptr<ThreadPool> create_thread_pool( std::shared_ptr<AMP::Database> tpool_db )
 {
-    AMP::shared_ptr<ThreadPool> tpool;
+    std::shared_ptr<ThreadPool> tpool;
     // Check the ThreadPool database and create the ThreadPool
     if ( tpool_db != nullptr ) {
         AMP_ASSERT( tpool_db->keyExists( "N_threads" ) );
@@ -77,9 +77,9 @@ AMP::shared_ptr<ThreadPool> create_thread_pool( AMP::shared_ptr<AMP::Database> t
 /************************************************************************
  * Create the nested thread pools                                        *
  ************************************************************************/
-void create_nested_thread_pool( AMP::shared_ptr<AMP::Database> tpool_db,
-                                AMP::shared_ptr<ThreadPool> &tpool_E,
-                                AMP::shared_ptr<ThreadPool> &tpool_T )
+void create_nested_thread_pool( std::shared_ptr<AMP::Database> tpool_db,
+                                std::shared_ptr<ThreadPool> &tpool_E,
+                                std::shared_ptr<ThreadPool> &tpool_T )
 {
     int N_threads_E = tpool_db->getWithDefault( "N_threads_E", 0 );
     int N_threads_T = tpool_db->getWithDefault( "N_threads_T", 0 );
@@ -118,7 +118,7 @@ void create_nested_thread_pool( AMP::shared_ptr<AMP::Database> tpool_db,
 /******************************************************************
  * Return the thread affinities for a thread pool                  *
  ******************************************************************/
-std::vector<std::vector<bool>> get_thread_affinity( AMP::shared_ptr<ThreadPool> tpool )
+std::vector<std::vector<bool>> get_thread_affinity( std::shared_ptr<ThreadPool> tpool )
 {
     std::vector<std::vector<bool>> affinity;
     if ( tpool != nullptr ) {
@@ -158,7 +158,7 @@ int main( int argc, char *argv[] )
     { // Limit scope
 
         // Create the tpool database
-        auto tpool_db = AMP::make_shared<AMP::Database>( "ThreadPool" );
+        auto tpool_db = std::make_shared<AMP::Database>( "ThreadPool" );
         if ( argc == 1 ) {
             // Create a default database
             tpool_db.reset( new AMP::Database( "ThreadPool" ) );
@@ -178,7 +178,7 @@ int main( int argc, char *argv[] )
 
         // Create the threadpools
         auto tpool = create_thread_pool( tpool_db );
-        AMP::shared_ptr<ThreadPool> tpool_E, tpool_T;
+        std::shared_ptr<ThreadPool> tpool_E, tpool_T;
         create_nested_thread_pool( tpool_db, tpool_E, tpool_T );
 
         // Get the list of affinities for the current process and all threads

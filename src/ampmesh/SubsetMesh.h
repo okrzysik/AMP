@@ -3,7 +3,7 @@
 
 #include "AMP/ampmesh/Mesh.h"
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <map>
 
@@ -20,7 +20,7 @@ class SubsetMesh : public Mesh
 {
 public:
     //! Default constructor
-    SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
+    SubsetMesh( std::shared_ptr<const Mesh> mesh,
                 const AMP::Mesh::MeshIterator &iterator,
                 bool isGlobal );
 
@@ -37,7 +37,7 @@ public:
      *    matches the meshID of the mesh, and a null pointer otherwise.
      * \param meshID  MeshID of the desired mesh
      */
-    virtual AMP::shared_ptr<Mesh> Subset( MeshID meshID ) const override;
+    virtual std::shared_ptr<Mesh> Subset( MeshID meshID ) const override;
 
 
     /**
@@ -51,11 +51,11 @@ public:
      *    It is strongly recommended to use the meshID when possible.
      * \param name  Name of the desired mesh
      */
-    virtual AMP::shared_ptr<Mesh> Subset( std::string name ) const override;
+    virtual std::shared_ptr<Mesh> Subset( std::string name ) const override;
 
 
     //! Function to copy the mesh (allows use to properly copy the derived class)
-    virtual AMP::shared_ptr<Mesh> clone() const override;
+    virtual std::shared_ptr<Mesh> clone() const override;
 
 
     /* Return the number of local element of the given type
@@ -230,7 +230,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
+    virtual void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 #endif
 
     // Needed to prevent problems with virtual functions
@@ -238,14 +238,14 @@ public:
 
 protected:
     // Parent mesh for the subset
-    AMP::shared_ptr<const Mesh> d_parent_mesh;
+    std::shared_ptr<const Mesh> d_parent_mesh;
 
     // Pointers to store the elements in the subset meshes [type][gcw][elem]
     std::vector<size_t> N_global;
-    std::vector<std::vector<AMP::shared_ptr<std::vector<MeshElement>>>> d_elements;
+    std::vector<std::vector<std::shared_ptr<std::vector<MeshElement>>>> d_elements;
 
     // Pointers to store the elements on the surface [type][gcw][elem]
-    std::vector<std::vector<AMP::shared_ptr<std::vector<MeshElement>>>> d_surface;
+    std::vector<std::vector<std::shared_ptr<std::vector<MeshElement>>>> d_surface;
 
     // Data to store the id sets
     struct map_id_struct {
@@ -284,9 +284,9 @@ protected:
         inline bool operator<=( const map_id_struct &rhs ) const { return !operator>( rhs ); }
     };
     std::vector<int> d_boundaryIdSets;
-    std::map<map_id_struct, AMP::shared_ptr<std::vector<MeshElement>>> d_boundarySets;
+    std::map<map_id_struct, std::shared_ptr<std::vector<MeshElement>>> d_boundarySets;
     std::vector<int> d_blockIdSets;
-    std::map<map_id_struct, AMP::shared_ptr<std::vector<MeshElement>>> d_blockSets;
+    std::map<map_id_struct, std::shared_ptr<std::vector<MeshElement>>> d_blockSets;
 };
 
 } // namespace Mesh

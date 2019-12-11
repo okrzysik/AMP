@@ -14,7 +14,7 @@ public:
     /**
       Constructor.
       */
-    explicit LinearFEOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit LinearFEOperatorParameters( std::shared_ptr<AMP::Database> db )
         : FEOperatorParameters( db )
     {
     }
@@ -24,8 +24,8 @@ public:
       */
     virtual ~LinearFEOperatorParameters() {}
 
-    AMP::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
-    AMP::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
 
 protected:
 private:

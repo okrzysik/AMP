@@ -6,11 +6,11 @@
 namespace AMP {
 namespace TimeIntegrator {
 
-TimeOperator::TimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> in_params )
+TimeOperator::TimeOperator( std::shared_ptr<AMP::Operator::OperatorParameters> in_params )
     : Operator( in_params )
 
 {
-    auto params = AMP::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    auto params = std::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
 
     d_bLinearMassOperator = false;
     d_bLinearRhsOperator  = false;
@@ -30,7 +30,7 @@ TimeOperator::TimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> i
 
 TimeOperator::~TimeOperator() = default;
 
-void TimeOperator::getFromInput( AMP::shared_ptr<AMP::Database> db )
+void TimeOperator::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     d_bLinearMassOperator = db->getWithDefault( "bLinearMassOperator", false );
     d_bLinearRhsOperator  = db->getWithDefault( "bLinearRhsOperator", false );
@@ -42,10 +42,10 @@ void TimeOperator::getFromInput( AMP::shared_ptr<AMP::Database> db )
     d_bAlgebraicComponent = db->getWithDefault( "bAlgebraicComponent", false );
 }
 
-void TimeOperator::reset( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &in_params )
+void TimeOperator::reset( const std::shared_ptr<AMP::Operator::OperatorParameters> &in_params )
 {
-    AMP::shared_ptr<TimeOperatorParameters> params =
-        AMP::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    std::shared_ptr<TimeOperatorParameters> params =
+        std::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
 
     AMP_INSIST( params.get() != nullptr, "Error: NULL TimeOperatorParameters object" );
 
@@ -67,7 +67,7 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // this routine evaluates a*[ ( M(u))/dt+fRhs(u) ] +b*f
     // where the time operator is given by u_t = fRhs(u)
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> fTmp;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> fTmp;
 
     AMP_INSIST( d_pMassOperator.get() != nullptr,
                 "ERROR: "
@@ -98,12 +98,12 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
-AMP::shared_ptr<AMP::Operator::OperatorParameters>
+std::shared_ptr<AMP::Operator::OperatorParameters>
 TimeOperator::getParameters( const std::string &type,
                              AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                             AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+                             std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
-    AMP::shared_ptr<AMP::Database> timeOperator_db( new AMP::Database( "TimeOperatorDatabase" ) );
+    std::shared_ptr<AMP::Database> timeOperator_db( new AMP::Database( "TimeOperatorDatabase" ) );
     timeOperator_db->putScalar( "CurrentDt", d_dCurrentDt );
     timeOperator_db->putScalar( "name", "TimeOperator" );
     timeOperator_db->putScalar( "bLinearMassOperator", d_bLinearMassOperator );
@@ -111,7 +111,7 @@ TimeOperator::getParameters( const std::string &type,
     timeOperator_db->putScalar( "bAlgebraicComponent", d_bAlgebraicComponent );
     timeOperator_db->putScalar( "ScalingFactor", 1.0 / d_dCurrentDt );
 
-    AMP::shared_ptr<TimeOperatorParameters> timeOperatorParameters(
+    std::shared_ptr<TimeOperatorParameters> timeOperatorParameters(
         new AMP::TimeIntegrator::TimeOperatorParameters( timeOperator_db ) );
 
     timeOperatorParameters->d_Mesh = d_Mesh;

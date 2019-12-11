@@ -2,9 +2,9 @@
 #define included_AMP_VectorEngine
 
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include <memory>
 #include <vector>
 
 
@@ -20,7 +20,7 @@ namespace LinearAlgebra {
 class VectorEngineParameters
 {
 public:
-    typedef AMP::shared_ptr<VectorEngineParameters> shared_ptr;
+    typedef std::shared_ptr<VectorEngineParameters> shared_ptr;
 
     /** \brief Constructor
         \param[in] local_size     The number of elements on this core
@@ -82,7 +82,7 @@ public:
     /** \brief Allocate a new buffer
      * \return A shared pointer to a new buffer
      */
-    virtual AMP::shared_ptr<VectorData> getNewBuffer() = 0;
+    virtual std::shared_ptr<VectorData> getNewBuffer() = 0;
 
     /** \brief  True if engines are the same
      * \param[in]  e  Engine to compare against
@@ -94,12 +94,12 @@ public:
      * \param[in]  p  The buffer to use for the copy.
      * \return  The new engine
      */
-    virtual AMP::shared_ptr<VectorEngine> cloneEngine( AMP::shared_ptr<VectorData> p ) const = 0;
+    virtual std::shared_ptr<VectorEngine> cloneEngine( std::shared_ptr<VectorData> p ) const = 0;
 
     /** \brief Swap engines
      * \param[in,out] p  The engine to exchange with
      */
-    virtual void swapEngines( AMP::shared_ptr<VectorEngine> p ) = 0;
+    virtual void swapEngines( std::shared_ptr<VectorEngine> p ) = 0;
 
 
     /** \brief  Get the parameters used to create this engine

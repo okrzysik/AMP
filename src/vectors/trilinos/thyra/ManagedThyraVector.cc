@@ -14,7 +14,7 @@ namespace LinearAlgebra {
 ManagedThyraVector::ManagedThyraVector( VectorParameters::shared_ptr params )
     : ManagedVector( params )
 {
-    Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
+    Vector::shared_ptr vec = std::dynamic_pointer_cast<Vector>( d_Engine );
     d_thyraVec             = Teuchos::RCP<Thyra::VectorBase<double>>(
         new ThyraVectorWrapper( std::vector<Vector::shared_ptr>( 1, vec ) ) );
 }
@@ -25,7 +25,7 @@ ManagedThyraVector::ManagedThyraVector( Vector::shared_ptr alias ) : ManagedVect
 }
 ManagedVector *ManagedThyraVector::getNewRawPtr() const
 {
-    return new ManagedThyraVector( AMP::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
+    return new ManagedThyraVector( std::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
 }
 
 
@@ -51,7 +51,7 @@ std::string ManagedThyraVector::ManagedThyraVector::type() const
  ****************************************************************/
 Vector::shared_ptr ManagedThyraVector::cloneVector( const Variable::shared_ptr var ) const
 {
-    AMP::shared_ptr<ManagedThyraVectorParameters> p( new ManagedThyraVectorParameters() );
+    std::shared_ptr<ManagedThyraVectorParameters> p( new ManagedThyraVectorParameters() );
     p->d_Engine               = d_pParameters->d_Engine->cloneEngine( p->d_Buffer );
     p->d_CommList             = getCommunicationList();
     p->d_DOFManager           = getDOFManager();
@@ -67,7 +67,7 @@ Vector::shared_ptr ManagedThyraVector::cloneVector( const Variable::shared_ptr v
  ****************************************************************/
 void ManagedThyraVector::copyVector( Vector::const_shared_ptr vec )
 {
-    Vector::shared_ptr engineVec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
+    Vector::shared_ptr engineVec = std::dynamic_pointer_cast<Vector>( d_Engine );
     engineVec->copyVector( vec );
 }
 } // namespace LinearAlgebra

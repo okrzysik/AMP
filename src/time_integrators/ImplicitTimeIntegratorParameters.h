@@ -3,8 +3,8 @@
 
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/shared_ptr.h"
 #include "TimeIntegratorParameters.h"
+#include <memory>
 
 
 namespace AMP {
@@ -24,7 +24,7 @@ namespace TimeIntegrator {
 class ImplicitTimeIntegratorParameters : public TimeIntegratorParameters
 {
 public:
-    explicit ImplicitTimeIntegratorParameters( AMP::shared_ptr<AMP::Database> db );
+    explicit ImplicitTimeIntegratorParameters( std::shared_ptr<AMP::Database> db );
 
     virtual ~ImplicitTimeIntegratorParameters();
 
@@ -33,7 +33,7 @@ public:
      * The strategies provide nonlinear equation and solver
      * routines for treating the nonlinear problem on the hierarchy.
      */
-    AMP::shared_ptr<AMP::Solver::SolverStrategy> d_solver;
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_solver;
 
 protected:
 private:

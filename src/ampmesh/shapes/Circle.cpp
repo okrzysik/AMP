@@ -11,7 +11,7 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Circle::Circle( AMP::shared_ptr<AMP::Database> db )
+Circle::Circle( std::shared_ptr<AMP::Database> db )
 {
     d_physicalDim = 2;
     d_logicalDim  = 2;
@@ -131,9 +131,9 @@ void Circle::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-AMP::shared_ptr<AMP::Geometry::Geometry> Circle::clone() const
+std::shared_ptr<AMP::Geometry::Geometry> Circle::clone() const
 {
-    return AMP::make_shared<Circle>( *this );
+    return std::make_shared<Circle>( *this );
 }
 
 

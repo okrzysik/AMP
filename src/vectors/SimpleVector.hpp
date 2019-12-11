@@ -18,7 +18,7 @@ SimpleVector<TYPE, OPS, DATA>::SimpleVector() : Vector(), DATA()
 template<typename TYPE, typename OPS, typename DATA>
 Vector::shared_ptr SimpleVector<TYPE, OPS, DATA>::create( size_t localSize, const std::string &var )
 {
-    return create( localSize, AMP::make_shared<Variable>( var ) );
+    return create( localSize, std::make_shared<Variable>( var ) );
 }
 
 template<typename TYPE, typename OPS, typename DATA>
@@ -26,7 +26,7 @@ Vector::shared_ptr SimpleVector<TYPE, OPS, DATA>::create( size_t localSize,
                                                           Variable::shared_ptr var )
 {
     AMP_MPI comm( AMP_COMM_SELF );
-    auto DOFs = AMP::make_shared<AMP::Discretization::DOFManager>( localSize, comm );
+    auto DOFs = std::make_shared<AMP::Discretization::DOFManager>( localSize, comm );
     auto ptr  = new SimpleVector<TYPE, OPS, DATA>();
     ptr->setVariable( var );
     ptr->allocate( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
@@ -40,7 +40,7 @@ template<typename TYPE, typename OPS, typename DATA>
 Vector::shared_ptr
 SimpleVector<TYPE, OPS, DATA>::create( size_t localSize, Variable::shared_ptr var, AMP_MPI comm )
 {
-    auto DOFs = AMP::make_shared<AMP::Discretization::DOFManager>( localSize, comm );
+    auto DOFs = std::make_shared<AMP::Discretization::DOFManager>( localSize, comm );
     auto ptr  = new SimpleVector<TYPE, OPS, DATA>();
     ptr->setVariable( var );
     ptr->allocate( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
@@ -67,7 +67,7 @@ SimpleVector<TYPE, OPS, DATA>::create( Variable::shared_ptr var,
 template<typename TYPE, typename OPS, typename DATA>
 void SimpleVector<TYPE, OPS, DATA>::resize( size_t N )
 {
-    d_DOFManager = AMP::make_shared<AMP::Discretization::DOFManager>( N, d_comm );
+    d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>( N, d_comm );
     this->allocate(
         d_DOFManager->beginDOF(), d_DOFManager->numLocalDOF(), d_DOFManager->numGlobalDOF() );
 }

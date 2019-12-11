@@ -6,7 +6,7 @@
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
 #include "AMP/operators/libmesh/LinearFEOperator.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <vector>
 
@@ -19,11 +19,11 @@ class DiffusionLinearFEOperator : public LinearFEOperator
 {
 public:
     explicit DiffusionLinearFEOperator(
-        const AMP::shared_ptr<DiffusionLinearFEOperatorParameters> &params );
+        const std::shared_ptr<DiffusionLinearFEOperatorParameters> &params );
 
     virtual ~DiffusionLinearFEOperator() {}
 
-    void preAssembly( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    void preAssembly( const std::shared_ptr<OperatorParameters> &params ) override;
 
     void postAssembly() override;
 
@@ -31,7 +31,7 @@ public:
 
     void postElementOperation() override;
 
-    AMP::shared_ptr<DiffusionTransportModel> getTransportModel();
+    std::shared_ptr<DiffusionTransportModel> getTransportModel();
 
 protected:
     bool d_useConstantTemperature;
@@ -48,9 +48,9 @@ protected:
 
     std::vector<std::vector<double>> d_elementStiffnessMatrix;
 
-    AMP::shared_ptr<DiffusionLinearElement> d_diffLinElem;
+    std::shared_ptr<DiffusionLinearElement> d_diffLinElem;
 
-    AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
+    std::shared_ptr<DiffusionTransportModel> d_transportModel;
 };
 } // namespace Operator
 } // namespace AMP

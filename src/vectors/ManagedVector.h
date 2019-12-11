@@ -29,10 +29,10 @@ public:
     ManagedVectorParameters();
 
     //! The VectorEngine to use with the managed vector
-    AMP::shared_ptr<VectorEngine> d_Engine;
+    std::shared_ptr<VectorEngine> d_Engine;
 
     //! Buffer to use for the managed vector
-    AMP::shared_ptr<VectorData> d_Buffer;
+    std::shared_ptr<VectorData> d_Buffer;
 
     //! Indicates whether the engine should be used as is or cloned
     bool d_CloneEngine;
@@ -77,24 +77,24 @@ public:
     /** \brief  Return the engine associated with this ManagedVector
      * \return The engine
      */
-    AMP::shared_ptr<VectorEngine> getVectorEngine();
-    AMP::shared_ptr<const VectorEngine> getVectorEngine() const;
+    std::shared_ptr<VectorEngine> getVectorEngine();
+    std::shared_ptr<const VectorEngine> getVectorEngine() const;
 
     virtual bool isAnAliasOf( Vector &rhs );
     virtual bool isAnAliasOf( Vector::shared_ptr rhs );
 
-    virtual AMP::shared_ptr<ManagedVectorParameters> getManagedVectorParameters();
+    virtual std::shared_ptr<ManagedVectorParameters> getManagedVectorParameters();
 
 
 protected:
     //! The buffer used to store data
-    AMP::shared_ptr<VectorData> d_vBuffer;
+    std::shared_ptr<VectorData> d_vBuffer;
 
     //! The engine to act on the buffer
-    AMP::shared_ptr<VectorEngine> d_Engine;
+    std::shared_ptr<VectorEngine> d_Engine;
 
     //! The parameters used to create this vector
-    AMP::shared_ptr<ManagedVectorParameters> d_pParameters;
+    std::shared_ptr<ManagedVectorParameters> d_pParameters;
 
     //! Function that returns a pointer to a managed vector
     virtual ManagedVector *getNewRawPtr() const = 0;
@@ -165,8 +165,8 @@ public: // Derived from VectorOperations
 public: // Derived from Vector
     using Vector::cloneVector;
     std::string type() const override;
-    virtual AMP::shared_ptr<Vector> cloneVector( const Variable::shared_ptr name ) const override;
-    virtual AMP::shared_ptr<ParameterBase> getParameters() override;
+    virtual std::shared_ptr<Vector> cloneVector( const Variable::shared_ptr name ) const override;
+    virtual std::shared_ptr<ParameterBase> getParameters() override;
     virtual Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     virtual Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;

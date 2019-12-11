@@ -113,9 +113,9 @@ int main( int argc, char *argv[] )
 
     // Create a map that will hold the input variable name and a corresponding pointer to a vector
     // of input values
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
+    std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
     for ( size_t i = 0; i < nargs; i++ ) {
-        argMap.insert( std::make_pair( names[i], AMP::make_shared<std::vector<double>>( 1 ) ) );
+        argMap.insert( std::make_pair( names[i], std::make_shared<std::vector<double>>( 1 ) ) );
     }
 
     // Fill in the argument value grid

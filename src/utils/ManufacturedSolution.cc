@@ -1,7 +1,7 @@
 #include "AMP/utils/ManufacturedSolution.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <cmath>
 #include <limits>
@@ -14,7 +14,7 @@ namespace AMP {
 
 using std::valarray;
 
-ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
+ManufacturedSolution::ManufacturedSolution( std::shared_ptr<Database> db )
     : d_internalParameters( false ),
       d_c( 1 ),
       d_a( 1 ),

@@ -22,7 +22,7 @@ class PetscVectorFactory;
 class PetscVectorTests
 {
 public:
-    explicit PetscVectorTests( AMP::shared_ptr<const PetscVectorFactory> factory )
+    explicit PetscVectorTests( std::shared_ptr<const PetscVectorFactory> factory )
         : d_factory( factory )
     {
     }
@@ -84,7 +84,7 @@ public:
     void VerifyDotPetscVector( AMP::UnitTest *utils );
 
 private:
-    AMP::shared_ptr<const PetscVectorFactory> d_factory;
+    std::shared_ptr<const PetscVectorFactory> d_factory;
 };
 
 

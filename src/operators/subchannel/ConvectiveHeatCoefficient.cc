@@ -8,7 +8,7 @@ namespace Operator {
 
 
 ConvectiveHeatCoefficient::ConvectiveHeatCoefficient(
-    const AMP::shared_ptr<RobinPhysicsModelParameters> &params )
+    const std::shared_ptr<RobinPhysicsModelParameters> &params )
     : RobinPhysicsModel( params )
 {
     AMP_INSIST( ( params->d_db->keyExists( "Material" ) ),
@@ -29,7 +29,7 @@ ConvectiveHeatCoefficient::ConvectiveHeatCoefficient(
     }
     if ( params->d_db->keyExists( "Defaults" ) ) {
         // check for correct names
-        AMP::shared_ptr<Database> defaults_db = params->d_db->getDatabase( "Defaults" );
+        std::shared_ptr<Database> defaults_db = params->d_db->getDatabase( "Defaults" );
         std::vector<std::string> defaultkeys  = defaults_db->getAllKeys();
         AMP_INSIST( defaultkeys.size() == d_property->get_number_arguments(),
                     "Incorrect number of defaults supplied." );
@@ -59,16 +59,16 @@ void ConvectiveHeatCoefficient::getConductance(
     const std::vector<std::vector<double>> &inputVectors )
 {
     AMP_ASSERT( inputVectors.size() == 4 );
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
+    std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
     argMap.insert( std::make_pair(
         std::string( "temperature" ),
-        AMP::make_shared<std::vector<double>>( inputVectors[0].begin(), inputVectors[0].end() ) ) );
+        std::make_shared<std::vector<double>>( inputVectors[0].begin(), inputVectors[0].end() ) ) );
     argMap.insert( std::make_pair(
         std::string( "density" ),
-        AMP::make_shared<std::vector<double>>( inputVectors[2].begin(), inputVectors[2].end() ) ) );
+        std::make_shared<std::vector<double>>( inputVectors[2].begin(), inputVectors[2].end() ) ) );
     argMap.insert( std::make_pair(
         std::string( "diameter" ),
-        AMP::make_shared<std::vector<double>>( inputVectors[3].begin(), inputVectors[3].end() ) ) );
+        std::make_shared<std::vector<double>>( inputVectors[3].begin(), inputVectors[3].end() ) ) );
     // argMap.insert(std::make_pair("reynolds",new std::vector<double>(inputVectors[4].begin(),
     // inputVectors[4].end())));
     // argMap.insert(std::make_pair("prandtl",new std::vector<double>(inputVectors[5].begin(),

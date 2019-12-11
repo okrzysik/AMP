@@ -3,7 +3,7 @@
 
 #include "AMP/ampmesh/MeshIterator.h"
 #include "AMP/ampmesh/STKmesh/STKMesh.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 namespace AMP {
 namespace Mesh {
@@ -12,7 +12,7 @@ namespace Mesh {
 class STKMeshIterator : public MeshIterator
 {
 public:
-    typedef AMP::shared_ptr<std::vector<stk::mesh::Entity *>> MeshPtr;
+    typedef std::shared_ptr<std::vector<stk::mesh::Entity *>> MeshPtr;
 
     //! Empty MeshIterator constructor
     STKMeshIterator();

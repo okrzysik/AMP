@@ -17,14 +17,14 @@ namespace Operator {
 class DiffusionNonlinearFEOperator : public NonlinearFEOperator
 {
 public:
-    typedef AMP::shared_ptr<DiffusionNonlinearFEOperator> shared_ptr;
+    typedef std::shared_ptr<DiffusionNonlinearFEOperator> shared_ptr;
 
     explicit DiffusionNonlinearFEOperator(
-        const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params );
+        const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params );
 
     virtual ~DiffusionNonlinearFEOperator() {}
 
-    void reset( const AMP::shared_ptr<OperatorParameters> & ) override;
+    void reset( const std::shared_ptr<OperatorParameters> & ) override;
 
     void setInputVariableName( const std::string &name, int varId = -1 );
 
@@ -48,7 +48,7 @@ public:
 
     std::vector<unsigned int> getNonPrincipalVariableIds();
 
-    AMP::shared_ptr<DiffusionTransportModel> getTransportModel();
+    std::shared_ptr<DiffusionTransportModel> getTransportModel();
 
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> getFrozen();
 
@@ -68,7 +68,7 @@ public:
     bool isValidInput( AMP::LinearAlgebra::Vector::shared_ptr &u ) override;
 
 protected:
-    AMP::shared_ptr<OperatorParameters>
+    std::shared_ptr<OperatorParameters>
     getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
 
     void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
@@ -80,13 +80,13 @@ protected:
 
     void postElementOperation() override;
 
-    void init( const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params );
+    void init( const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params );
 
     std::vector<double> d_elementOutputVector;
 
-    AMP::shared_ptr<DiffusionNonlinearElement> d_diffNonlinElem;
+    std::shared_ptr<DiffusionNonlinearElement> d_diffNonlinElem;
 
-    AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
+    std::shared_ptr<DiffusionTransportModel> d_transportModel;
 
     std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> d_inVec;
 
@@ -94,7 +94,7 @@ protected:
 
     AMP::LinearAlgebra::Vector::shared_ptr d_outVec;
 
-    AMP::shared_ptr<std::vector<double>> d_TransportGauss;
+    std::shared_ptr<std::vector<double>> d_TransportGauss;
     AMP::LinearAlgebra::Vector::shared_ptr d_TransportNodal;
 
     std::vector<bool> d_isActive;
@@ -102,9 +102,9 @@ protected:
     std::vector<bool> d_isFrozen;
 
 private:
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables;
+    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
     unsigned int d_PrincipalVariable;
 
@@ -114,7 +114,7 @@ private:
 
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_Frozen;
 
-    void resetFrozen( const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> params );
+    void resetFrozen( const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> params );
 };
 } // namespace Operator
 } // namespace AMP

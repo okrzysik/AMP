@@ -164,7 +164,7 @@ void testSubsetMesh( AMP::Mesh::Mesh::shared_ptr mesh,
 
 // Function to test the index conversion given a multDOFManager
 void testMultiDOFMap( AMP::UnitTest *ut,
-                      AMP::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF )
+                      std::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF )
 {
     // First create a global DOF list
     size_t N_global = multiDOF->numGlobalDOF();
@@ -227,7 +227,7 @@ void testMultiDOFVector( AMP::UnitTest *ut, AMP::Discretization::DOFManager::sha
     AMP::LinearAlgebra::Vector::shared_ptr vec2 =
         AMP::LinearAlgebra::createVector( DOF, var2, true );
     // Create the multivector
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> multiVector =
+    std::shared_ptr<AMP::LinearAlgebra::MultiVector> multiVector =
         AMP::LinearAlgebra::MultiVector::create( var3, DOF->getComm() );
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vectors( 2 );
     vectors[0] = vec1;

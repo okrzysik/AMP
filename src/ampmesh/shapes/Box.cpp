@@ -15,7 +15,7 @@ namespace Geometry {
  * Constructors                                          *
  ********************************************************/
 template<std::size_t NDIM>
-Box<NDIM>::Box( AMP::shared_ptr<AMP::Database> db )
+Box<NDIM>::Box( std::shared_ptr<AMP::Database> db )
 {
     d_physicalDim = NDIM;
     d_logicalDim  = NDIM;
@@ -43,7 +43,7 @@ Box<NDIM>::Box( const std::vector<double> &range ) : Geometry()
         d_range[i] = range[i];
 }
 template<std::size_t NDIM>
-Grid<NDIM>::Grid( AMP::shared_ptr<AMP::Database> db ) : Geometry()
+Grid<NDIM>::Grid( std::shared_ptr<AMP::Database> db ) : Geometry()
 {
     d_physicalDim = NDIM;
     d_logicalDim  = NDIM;
@@ -477,14 +477,14 @@ void Grid<NDIM>::displaceMesh( const double *x )
  * Clone the object                                      *
  ********************************************************/
 template<std::size_t NDIM>
-AMP::shared_ptr<AMP::Geometry::Geometry> Box<NDIM>::clone() const
+std::shared_ptr<AMP::Geometry::Geometry> Box<NDIM>::clone() const
 {
-    return AMP::make_shared<Box<NDIM>>( *this );
+    return std::make_shared<Box<NDIM>>( *this );
 }
 template<std::size_t NDIM>
-AMP::shared_ptr<AMP::Geometry::Geometry> Grid<NDIM>::clone() const
+std::shared_ptr<AMP::Geometry::Geometry> Grid<NDIM>::clone() const
 {
-    return AMP::make_shared<Grid<NDIM>>( *this );
+    return std::make_shared<Grid<NDIM>>( *this );
 }
 
 

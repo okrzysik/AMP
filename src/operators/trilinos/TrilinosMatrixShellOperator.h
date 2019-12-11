@@ -13,13 +13,13 @@ namespace Operator {
 class TrilinosMatrixShellOperator : public LinearOperator
 {
 public:
-    explicit TrilinosMatrixShellOperator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit TrilinosMatrixShellOperator( const std::shared_ptr<OperatorParameters> &params );
 
     virtual ~TrilinosMatrixShellOperator() {}
 
-    void setOperator( AMP::shared_ptr<Operator> op );
+    void setOperator( std::shared_ptr<Operator> op );
 
-    void setNodalDofMap( AMP::shared_ptr<AMP::Discretization::DOFManager> dofMap );
+    void setNodalDofMap( std::shared_ptr<AMP::Discretization::DOFManager> dofMap );
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
@@ -33,7 +33,7 @@ public:
                            AMP::LinearAlgebra::Vector::const_shared_ptr u,
                            AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
-    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
@@ -58,9 +58,9 @@ public:
     size_t getMatrixSize();
 
 private:
-    AMP::shared_ptr<AMP::Discretization::DOFManager> d_nodalDofMap;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_nodalDofMap;
 
-    AMP::shared_ptr<Operator> d_operator;
+    std::shared_ptr<Operator> d_operator;
 
     void ( *d_getRow )( void *object,
                         int row,

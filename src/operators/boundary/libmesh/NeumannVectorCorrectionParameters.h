@@ -12,7 +12,7 @@ namespace Operator {
 class NeumannVectorCorrectionParameters : public OperatorParameters
 {
 public:
-    explicit NeumannVectorCorrectionParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit NeumannVectorCorrectionParameters( std::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     {
     }
@@ -23,7 +23,7 @@ public:
 
     AMP::LinearAlgebra::Vector::shared_ptr d_variableFlux;
 
-    AMP::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
+    std::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 };
 } // namespace Operator
 } // namespace AMP

@@ -2,7 +2,7 @@
 #ifndef included_AMP_OperatorParameters
 #define included_AMP_OperatorParameters
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/utils/Database.h"
@@ -21,13 +21,13 @@ namespace Operator {
 class OperatorParameters : public ParameterBase
 {
 public:
-    typedef AMP::shared_ptr<AMP::Operator::OperatorParameters> shared_ptr;
+    typedef std::shared_ptr<AMP::Operator::OperatorParameters> shared_ptr;
 
     /**
      * Construct and initialize a parameter list according to input
      * data.  Guess what the required and optional keywords are.
      */
-    explicit OperatorParameters( AMP::shared_ptr<AMP::Database> db ) : d_db( db ) {}
+    explicit OperatorParameters( std::shared_ptr<AMP::Database> db ) : d_db( db ) {}
 
     /**
      * Destructor.
@@ -39,7 +39,7 @@ public:
      *  Documentation for parameters required by each solver can be found in the
      *  documentation for the solver.
      */
-    AMP::shared_ptr<AMP::Database> d_db;
+    std::shared_ptr<AMP::Database> d_db;
 
     AMP::Mesh::Mesh::shared_ptr d_Mesh;
 

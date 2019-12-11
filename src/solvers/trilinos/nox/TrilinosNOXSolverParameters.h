@@ -5,7 +5,7 @@
 #include "AMP/solvers/trilinos/nox/PrePostOperator.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -21,7 +21,7 @@ class TrilinosNOXSolverParameters : public SolverStrategyParameters
 {
 public:
     TrilinosNOXSolverParameters() {}
-    explicit TrilinosNOXSolverParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit TrilinosNOXSolverParameters( std::shared_ptr<AMP::Database> db )
         : SolverStrategyParameters( db )
     {
     }

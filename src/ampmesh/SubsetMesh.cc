@@ -15,7 +15,7 @@ namespace Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
+SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
                         const AMP::Mesh::MeshIterator &iterator_in,
                         bool isGlobal )
     : d_parent_mesh( mesh )
@@ -59,10 +59,10 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
     // Create a list of all elements of the desired type
     d_max_gcw = d_parent_mesh->getMaxGhostWidth();
     d_elements =
-        std::vector<std::vector<AMP::shared_ptr<std::vector<MeshElement>>>>( (int) GeomDim + 1 );
+        std::vector<std::vector<std::shared_ptr<std::vector<MeshElement>>>>( (int) GeomDim + 1 );
     for ( int i = 0; i <= static_cast<int>( GeomDim ); i++ ) {
-        d_elements[i] = std::vector<AMP::shared_ptr<std::vector<MeshElement>>>(
-            d_max_gcw + 1, AMP::make_shared<std::vector<MeshElement>>() );
+        d_elements[i] = std::vector<std::shared_ptr<std::vector<MeshElement>>>(
+            d_max_gcw + 1, std::make_shared<std::vector<MeshElement>>() );
     }
     int gcw = 0;
     while ( true ) {
@@ -73,7 +73,7 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
             iterator2 =
                 Mesh::getIterator( SetOP::Complement, iterator1, mesh->getIterator( GeomDim, 0 ) );
         d_elements[(int) GeomDim][gcw] =
-            AMP::make_shared<std::vector<MeshElement>>( iterator2.size() );
+            std::make_shared<std::vector<MeshElement>>( iterator2.size() );
         for ( size_t i = 0; i < iterator2.size(); i++ ) {
             d_elements[(int) GeomDim][gcw]->operator[]( i ) = *iterator2;
             ++iterator2;
@@ -85,7 +85,7 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
     }
     // Create a list of all elements that compose the elements of GeomType
     for ( int t = 0; t < (int) GeomDim; t++ ) {
-        d_elements[t] = std::vector<AMP::shared_ptr<std::vector<MeshElement>>>( d_max_gcw + 1 );
+        d_elements[t] = std::vector<std::shared_ptr<std::vector<MeshElement>>>( d_max_gcw + 1 );
         for ( int gcw = 0; gcw <= d_max_gcw; gcw++ ) {
             std::set<MeshElement> list;
             for ( const auto &elem : this->getIterator( GeomDim, gcw ) ) {
@@ -113,7 +113,7 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
                 }
             }
             d_elements[t][gcw] =
-                AMP::make_shared<std::vector<MeshElement>>( list.begin(), list.end() );
+                std::make_shared<std::vector<MeshElement>>( list.begin(), list.end() );
         }
     }
     // For each entity type, we need to check that any ghost elements are owned by somebody
@@ -207,13 +207,13 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
                 auto iterator2 =
                     d_parent_mesh->getBoundaryIDIterator( (GeomType) t, boundary_id, gcw );
                 auto iterator = Mesh::getIterator( SetOP::Intersection, iterator1, iterator2 );
-                AMP::shared_ptr<std::vector<MeshElement>> elements;
+                std::shared_ptr<std::vector<MeshElement>> elements;
                 if ( iterator.size() == 0 ) {
-                    elements = AMP::make_shared<std::vector<MeshElement>>( 0 );
+                    elements = std::make_shared<std::vector<MeshElement>>( 0 );
                 } else if ( iterator.size() == iterator1.size() ) {
                     elements = d_elements[t][gcw];
                 } else {
-                    elements = AMP::make_shared<std::vector<MeshElement>>( iterator.size() );
+                    elements = std::make_shared<std::vector<MeshElement>>( iterator.size() );
                     for ( size_t j = 0; j < iterator.size(); j++ ) {
                         elements->operator[]( j ) = *iterator;
                         ++iterator;
@@ -247,20 +247,20 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
     }
     // Create the surface sets
     d_surface =
-        std::vector<std::vector<AMP::shared_ptr<std::vector<MeshElement>>>>( (int) GeomDim + 1 );
+        std::vector<std::vector<std::shared_ptr<std::vector<MeshElement>>>>( (int) GeomDim + 1 );
     for ( int t = 0; t <= (int) GeomDim; t++ ) {
-        d_surface[t] = std::vector<AMP::shared_ptr<std::vector<MeshElement>>>( d_max_gcw + 1 );
+        d_surface[t] = std::vector<std::shared_ptr<std::vector<MeshElement>>>( d_max_gcw + 1 );
         for ( int gcw = 0; gcw <= d_max_gcw; gcw++ ) {
             auto iterator1 = MultiVectorIterator( d_elements[t][gcw], 0 );
             auto iterator2 = d_parent_mesh->getSurfaceIterator( (GeomType) t, gcw );
             auto iterator  = Mesh::getIterator( SetOP::Intersection, iterator1, iterator2 );
-            AMP::shared_ptr<std::vector<MeshElement>> elements;
+            std::shared_ptr<std::vector<MeshElement>> elements;
             if ( iterator.size() == 0 ) {
-                elements = AMP::make_shared<std::vector<MeshElement>>( 0 );
+                elements = std::make_shared<std::vector<MeshElement>>( 0 );
             } else if ( iterator.size() == iterator1.size() ) {
                 elements = d_elements[t][gcw];
             } else {
-                elements = AMP::make_shared<std::vector<MeshElement>>( iterator.size() );
+                elements = std::make_shared<std::vector<MeshElement>>( iterator.size() );
                 for ( size_t j = 0; j < iterator.size(); j++ ) {
                     elements->operator[]( j ) = *iterator;
                     ++iterator;
@@ -305,10 +305,10 @@ SubsetMesh::~SubsetMesh() = default;
 /********************************************************
  * Copy the mesh                                         *
  ********************************************************/
-AMP::shared_ptr<Mesh> SubsetMesh::clone() const
+std::shared_ptr<Mesh> SubsetMesh::clone() const
 {
     AMP_ERROR( "clone is not currently supported with SubsetMesh" );
-    return AMP::shared_ptr<Mesh>();
+    return std::shared_ptr<Mesh>();
 }
 
 
@@ -339,24 +339,24 @@ std::vector<MeshID> SubsetMesh::getLocalBaseMeshIDs() const
 /********************************************************
  * Function to return the mesh with the given ID         *
  ********************************************************/
-AMP::shared_ptr<Mesh> SubsetMesh::Subset( MeshID meshID ) const
+std::shared_ptr<Mesh> SubsetMesh::Subset( MeshID meshID ) const
 {
     if ( d_meshID == meshID || d_parent_mesh->meshID() == meshID )
-        return AMP::const_pointer_cast<Mesh>( shared_from_this() );
+        return std::const_pointer_cast<Mesh>( shared_from_this() );
     else
-        return AMP::shared_ptr<Mesh>();
+        return std::shared_ptr<Mesh>();
 }
 
 
 /********************************************************
  * Function to return the mesh with the given name       *
  ********************************************************/
-AMP::shared_ptr<Mesh> SubsetMesh::Subset( std::string name ) const
+std::shared_ptr<Mesh> SubsetMesh::Subset( std::string name ) const
 {
     if ( d_name == name || d_parent_mesh->getName() == name )
-        return AMP::const_pointer_cast<Mesh>( shared_from_this() );
+        return std::const_pointer_cast<Mesh>( shared_from_this() );
     else
-        return AMP::shared_ptr<Mesh>();
+        return std::shared_ptr<Mesh>();
 }
 
 

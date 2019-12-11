@@ -5,8 +5,8 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-inline AMP::shared_ptr<VectorEngine> ManagedVector::getVectorEngine() { return d_Engine; }
-inline AMP::shared_ptr<const VectorEngine> ManagedVector::getVectorEngine() const
+inline std::shared_ptr<VectorEngine> ManagedVector::getVectorEngine() { return d_Engine; }
+inline std::shared_ptr<const VectorEngine> ManagedVector::getVectorEngine() const
 {
     return d_Engine;
 }
@@ -17,7 +17,7 @@ inline std::string ManagedVector::type() const
     if ( d_vBuffer )
         return " ( managed data )";
     std::string retVal = " ( managed view of ";
-    auto vec           = dynamic_pointer_cast<Vector>( d_Engine );
+    auto vec           = std::dynamic_pointer_cast<Vector>( d_Engine );
     retVal += vec->type();
     retVal += " )";
     return retVal;
@@ -28,10 +28,10 @@ inline Vector::shared_ptr ManagedVector::getRootVector()
 {
     if ( d_vBuffer )
         return shared_from_this();
-    auto vec = dynamic_pointer_cast<ManagedVector>( d_Engine );
+    auto vec = std::dynamic_pointer_cast<ManagedVector>( d_Engine );
     if ( vec != nullptr )
         return vec->getRootVector();
-    return dynamic_pointer_cast<Vector>( d_Engine )->shared_from_this();
+    return std::dynamic_pointer_cast<Vector>( d_Engine )->shared_from_this();
 }
 
 
@@ -48,7 +48,7 @@ inline Vector::shared_ptr ManagedVector::selectInto( const VectorSelector &s )
     if ( d_vBuffer ) {
         result = Vector::selectInto( s );
     } else {
-        result = dynamic_pointer_cast<Vector>( d_Engine )->selectInto( s );
+        result = std::dynamic_pointer_cast<Vector>( d_Engine )->selectInto( s );
     }
     return result;
 }
@@ -60,7 +60,7 @@ inline Vector::const_shared_ptr ManagedVector::selectInto( const VectorSelector 
     if ( d_vBuffer ) {
         result = Vector::selectInto( s );
     } else {
-        result = dynamic_pointer_cast<Vector>( d_Engine )->selectInto( s );
+        result = std::dynamic_pointer_cast<Vector>( d_Engine )->selectInto( s );
     }
     return result;
 }
@@ -102,13 +102,13 @@ inline size_t ManagedVector::sizeOfDataBlock( size_t i ) const
 inline bool ManagedVector::isAnAliasOf( Vector::shared_ptr rhs ) { return isAnAliasOf( *rhs ); }
 
 
-inline AMP::shared_ptr<ParameterBase> ManagedVector::getParameters()
+inline std::shared_ptr<ParameterBase> ManagedVector::getParameters()
 {
-    return AMP::dynamic_pointer_cast<ParameterBase>( d_pParameters );
+    return std::dynamic_pointer_cast<ParameterBase>( d_pParameters );
 }
 
 
-inline AMP::shared_ptr<ManagedVectorParameters> ManagedVector::getManagedVectorParameters()
+inline std::shared_ptr<ManagedVectorParameters> ManagedVector::getManagedVectorParameters()
 {
     return d_pParameters;
 }

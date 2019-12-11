@@ -13,7 +13,7 @@ namespace TimeIntegrator {
 *                                                                      *
 ************************************************************************
 */
-RK2TimeIntegrator::RK2TimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+RK2TimeIntegrator::RK2TimeIntegrator( std::shared_ptr<TimeIntegratorParameters> parameters )
     : TimeIntegrator( parameters )
 {
     initialize( parameters );
@@ -35,7 +35,7 @@ RK2TimeIntegrator::~RK2TimeIntegrator() = default;
 *                                                                      *
 ************************************************************************
 */
-void RK2TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void RK2TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
@@ -49,7 +49,7 @@ void RK2TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> pa
     getFromInput( parameters->d_db );
 }
 
-void RK2TimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void RK2TimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
@@ -130,7 +130,7 @@ void RK2TimeIntegrator::updateSolution()
 *                                                                      *
 ************************************************************************
 */
-void RK2TimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
+void RK2TimeIntegrator::getFromInput( std::shared_ptr<AMP::Database> input_db )
 {
     if ( input_db->keyExists( "initial_timestep" ) ) {
         d_initial_dt = input_db->getScalar<double>( "initial_timestep" );

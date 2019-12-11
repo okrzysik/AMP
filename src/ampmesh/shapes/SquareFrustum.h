@@ -22,7 +22,7 @@ public:
      * \brief Construct a SquareFrustum geometry
      * \param db        Input database
      */
-    explicit SquareFrustum( AMP::shared_ptr<AMP::Database> db );
+    explicit SquareFrustum( std::shared_ptr<AMP::Database> db );
 
     /**
      * \brief Construct a SquareFrustum geometry
@@ -47,7 +47,7 @@ public: // Functions inherited from Geometry
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<bool> getPeriodicDim() const override final;
     virtual std::vector<int> getLogicalSurfaceIds() const override final;
-    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
+    virtual std::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data

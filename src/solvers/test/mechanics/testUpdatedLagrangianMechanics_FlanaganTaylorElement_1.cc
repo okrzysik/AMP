@@ -42,7 +42,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     std::string mesh_file       = input_db->getString( "mesh_file" );
     const unsigned int mesh_dim = 3;
-    AMP::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
+    std::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
     AMP::readTestMesh( mesh_file, mesh );
     MeshCommunication().broadcast( *( mesh.get() ) );
     mesh->prepare_for_use( false );
@@ -63,36 +63,36 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Create a nonlinear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "NonlinearMechanicsOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Database> dirichletVectorCorrectionDatabase =
+    std::shared_ptr<AMP::Database> dirichletVectorCorrectionDatabase =
         input_db->getDatabase( "DirichletVectorCorrection1" );
-    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsBVPoperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsBVPoperator =
+        std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "NonlinearMechanicsOperator", input_db ) );
-    AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> nonlinearMechanicsVolumeOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+    std::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> nonlinearMechanicsVolumeOperator =
+        std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel =
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel =
         nonlinearMechanicsVolumeOperator->getMaterialModel();
 
     // Create a Linear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsBVPoperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsBVPoperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
 
     // Create the variables
-    AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsNonlinearVolumeOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+    std::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsNonlinearVolumeOperator =
+        std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
     AMP::LinearAlgebra::Variable::shared_ptr dispVar =
         mechanicsNonlinearVolumeOperator->getOutputVariable();
 
     // For RHS (Point Forces)
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-    AMP::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+    std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
+        std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "Load_Boundary", input_db, dummyModel ) );
     dirichletLoadVecOp->setVariable( dispVar );
@@ -127,32 +127,32 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     double epsilon =
         1.0e-13 * ( ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
 
-    AMP::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    AMP::shared_ptr<AMP::Database> linearSolver_db =
+    std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
+    std::shared_ptr<AMP::Database> linearSolver_db =
         nonlinearSolver_db->getDatabase( "LinearSolver" );
 
     // ---- first initialize the preconditioner
-    AMP::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase( "Preconditioner" );
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams(
+    std::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase( "Preconditioner" );
+    std::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams(
         new AMP::Solver::TrilinosMLSolverParameters( pcSolver_db ) );
     pcSolverParams->d_pOperator = linearMechanicsBVPoperator;
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
+    std::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
         new AMP::Solver::TrilinosMLSolver( pcSolverParams ) );
 
     // HACK to prevent a double delete on Petsc Vec
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver;
+    std::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver;
 
     // initialize the linear solver
-    AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
+    std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
         new AMP::Solver::PetscKrylovSolverParameters( linearSolver_db ) );
     linearSolverParams->d_pOperator       = linearMechanicsBVPoperator;
     linearSolverParams->d_comm            = globalComm;
     linearSolverParams->d_pPreconditioner = pcSolver;
-    AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
+    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
         new AMP::Solver::PetscKrylovSolver( linearSolverParams ) );
 
     // initialize the nonlinear solver
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
+    std::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
         new AMP::Solver::PetscSNESSolverParameters( nonlinearSolver_db ) );
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
@@ -255,8 +255,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
         AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
 
-        AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
-        AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperatorParameters> tmpParams(
+        std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+        std::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperatorParameters> tmpParams(
             new AMP::Operator::MechanicsNonlinearFEOperatorParameters( tmp_db ) );
         ( nonlinearMechanicsBVPoperator->getVolumeOperator() )->reset( tmpParams );
 
@@ -264,7 +264,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
               dirichletVectorCorrectionDatabase->putScalar("value_1_0", (((double)(step +
            2))*delta_displacement_axial));
               dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.0);
-              AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
+              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
               (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
               fprintf(fout1,"%d %le %le\n",step,(((double)(step +
@@ -274,7 +274,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
               dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.6);
               dirichletVectorCorrectionDatabase->putScalar("value_2_0", (((double)(step + 2 -
            No4))*delta_displacement_shear));
-              AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
+              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
               (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
               fprintf(fout1,"%d %le %le\n",step,0.3,(((double)(step + 2 -
@@ -284,7 +284,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
               dirichletVectorCorrectionDatabase->putScalar("value_1_0", (0.6 - (((double)(step + 2 -
            No2))*delta_displacement_axial)));
               dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.6);
-              AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
+              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
               (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
               fprintf(fout1,"%d %le %le\n",step,(0.3 - (((double)(step + 2 -
@@ -294,7 +294,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
               dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.0);
               dirichletVectorCorrectionDatabase->putScalar("value_2_0", (0.6 - (((double)(step + 2 -
            N3o4))*delta_displacement_shear)));
-              AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
+              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
               (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
               fprintf(fout1,"%d %le %le\n",step,0.0,(0.3 - (((double)(step + 2 -
@@ -305,7 +305,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         /*    if(step == 0) {
               dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.3);
               dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.3);
-              AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
+              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
               (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
               fprintf(fout1,"%d %le %le\n",step,(((double)(step + 2))*0.003),0.0);
@@ -313,7 +313,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
               if(step == 1) {
               dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.0);
               dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.3);
-              AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
+              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
               (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
               fprintf(fout1,"%d %le %le\n",step,0.3,(((double)(step + 2 - No4))*0.003));
@@ -321,7 +321,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
               if((step == 2) || (step == 3)) {
               dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.0);
               dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.0);
-              AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
+              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
               AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
               (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
               fprintf(fout1,"%d %le %le\n",step,(0.3 - (((double)(step + 2 - No2))*0.003)),0.3);
@@ -329,7 +329,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
               */
         scaleValue = ( (double) ( step + 2 ) ) * 0.16;
         dirichletVectorCorrectionDatabase->putScalar( "value_2_0", scaleValue );
-        AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(
+        std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(
             new AMP::Operator::DirichletVectorCorrectionParameters(
                 dirichletVectorCorrectionDatabase ) );
         ( nonlinearMechanicsBVPoperator->getBoundaryOperator() )->reset( bndParams );
@@ -338,7 +338,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         // std::cout<<solVec<<std::endl;
 
-        AMP::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat =
+        std::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat =
             linearMechanicsBVPoperator->getMatrix();
 
         for ( int i = 0; i < 24; i++ ) {
@@ -357,7 +357,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
           std::string number1 = num1;
           std::string fname = exeName + "_Stress_Strain_" + number1 + ".txt";
 
-          AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator())->printStressAndStrain(solVec,
+          std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator())->printStressAndStrain(solVec,
           fname);
           */
     }
@@ -376,7 +376,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 int testUpdatedLagrangianMechanics_FlanaganTaylorElement_1( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
-    AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
+    std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
         new AMP::Mesh::initializeLibMesh( AMP_COMM_WORLD ) );
 
     AMP::UnitTest ut;

@@ -101,40 +101,40 @@ std::vector<MeshID> Mesh::getLocalBaseMeshIDs() const { return std::vector<MeshI
 /********************************************************
  * Function to return the mesh with the given ID         *
  ********************************************************/
-AMP::shared_ptr<Mesh> Mesh::Subset( MeshID meshID ) const
+std::shared_ptr<Mesh> Mesh::Subset( MeshID meshID ) const
 {
     if ( d_meshID == meshID )
-        return AMP::const_pointer_cast<Mesh>( shared_from_this() );
+        return std::const_pointer_cast<Mesh>( shared_from_this() );
     else
-        return AMP::shared_ptr<Mesh>();
+        return std::shared_ptr<Mesh>();
 }
 
 
 /********************************************************
  * Function to return the mesh with the given name       *
  ********************************************************/
-AMP::shared_ptr<Mesh> Mesh::Subset( std::string name ) const
+std::shared_ptr<Mesh> Mesh::Subset( std::string name ) const
 {
     if ( d_name == name )
-        return AMP::const_pointer_cast<Mesh>( shared_from_this() );
+        return std::const_pointer_cast<Mesh>( shared_from_this() );
     else
-        return AMP::shared_ptr<Mesh>();
+        return std::shared_ptr<Mesh>();
 }
 
 
 /********************************************************
  * Function to subset a mesh using a mesh iterator       *
  ********************************************************/
-AMP::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator, bool isGlobal ) const
+std::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator, bool isGlobal ) const
 {
     if ( isGlobal ) {
         auto N = d_comm.sumReduce( iterator.size() );
         if ( N == 0 )
-            return AMP::shared_ptr<Mesh>();
+            return std::shared_ptr<Mesh>();
     } else if ( !isGlobal && iterator.size() == 0 ) {
-        return AMP::shared_ptr<Mesh>();
+        return std::shared_ptr<Mesh>();
     }
-    auto mesh = AMP::make_shared<SubsetMesh>( shared_from_this(), iterator, isGlobal );
+    auto mesh = std::make_shared<SubsetMesh>( shared_from_this(), iterator, isGlobal );
     return mesh;
 }
 
@@ -174,12 +174,12 @@ AMP::LinearAlgebra::Vector::shared_ptr Mesh::getPositionVector( std::string name
 {
 #ifdef USE_AMP_DISCRETIZATION
     auto DOFs = AMP::Discretization::simpleDOFManager::create(
-        AMP::const_pointer_cast<Mesh>( shared_from_this() ),
+        std::const_pointer_cast<Mesh>( shared_from_this() ),
         AMP::Mesh::GeomType::Vertex,
         gcw,
         PhysicalDim,
         true );
-    auto nodalVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( name );
+    auto nodalVariable = std::make_shared<AMP::LinearAlgebra::Variable>( name );
     auto position      = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, true );
     std::vector<size_t> dofs( PhysicalDim );
     for ( const auto &elem : DOFs->getIterator() ) {
@@ -206,10 +206,10 @@ bool Mesh::isMember( const MeshElementID &id ) const { return id.meshID() == d_m
 /********************************************************
  * Functions that aren't implimented for the base class  *
  ********************************************************/
-AMP::shared_ptr<Mesh> Mesh::Subset( Mesh & ) const
+std::shared_ptr<Mesh> Mesh::Subset( Mesh & ) const
 {
     AMP_ERROR( "Subset is not implimented for the base class" );
-    return AMP::shared_ptr<Mesh>();
+    return std::shared_ptr<Mesh>();
 }
 MeshIterator Mesh::getIterator( const GeomType, const int ) const
 {
@@ -278,7 +278,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         } else if ( union_ids.size() == B.size() ) {
             return MeshIterator( B.begin() );
         } else {
-            auto elements = AMP::make_shared<std::vector<MeshElement>>( union_ids.size() );
+            auto elements = std::make_shared<std::vector<MeshElement>>( union_ids.size() );
             for ( auto &elem : A ) {
                 MeshElementID idA = elem.globalID();
                 size_t index      = Utilities::findfirst( union_ids, idA );
@@ -332,7 +332,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         } else if ( intersection.size() == B.size() ) {
             return MeshIterator( B.begin() );
         } else {
-            auto elements = AMP::make_shared<std::vector<MeshElement>>( intersection.size() );
+            auto elements = std::make_shared<std::vector<MeshElement>>( intersection.size() );
             for ( auto &elem : B ) {
                 MeshElementID idB = elem.globalID();
                 size_t index      = Utilities::findfirst( intersection, idB );
@@ -359,7 +359,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         if ( compliment.size() == A.size() ) {
             return MeshIterator( A.begin() );
         } else {
-            auto elements = AMP::make_shared<std::vector<MeshElement>>( compliment.size() );
+            auto elements = std::make_shared<std::vector<MeshElement>>( compliment.size() );
             for ( auto &elem : A ) {
                 MeshElementID idA = elem.globalID();
                 size_t index      = Utilities::findfirst( compliment, idA );

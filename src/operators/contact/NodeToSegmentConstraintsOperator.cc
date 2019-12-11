@@ -15,7 +15,7 @@ bool compare_absolute_values( const double &first, const double &second )
 namespace AMP {
 namespace Operator {
 
-void NodeToSegmentConstraintsOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void NodeToSegmentConstraintsOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
 
     AMP_INSIST( ( params != NULL ), "NULL parameter" );

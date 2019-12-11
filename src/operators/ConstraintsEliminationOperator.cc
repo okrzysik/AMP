@@ -7,7 +7,7 @@
 namespace AMP {
 namespace Operator {
 
-void ConstraintsEliminationOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void ConstraintsEliminationOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
 
     AMP_INSIST( ( params != nullptr ), "NULL parameter" );

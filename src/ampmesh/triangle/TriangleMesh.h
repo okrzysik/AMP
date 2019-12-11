@@ -14,9 +14,9 @@ class Vector;
 } // namespace AMP
 #endif
 
-#include "AMP/utils/shared_ptr.h"
 #include <array>
 #include <map>
+#include <memory>
 #include <vector>
 
 
@@ -95,7 +95,7 @@ public:
      * \details Create triangle mesh data from the given parameters
      * \param params  Parameters for constructing a mesh from an input database
      */
-    static AMP::shared_ptr<TriangleMesh<NG, NP>> generate( MeshParameters::shared_ptr params );
+    static std::shared_ptr<TriangleMesh<NG, NP>> generate( MeshParameters::shared_ptr params );
 
     /**
      * \brief Generate a triangle mesh from local triangle coordinates
@@ -106,14 +106,14 @@ public:
      * \param tol        Relative tolerance (based on range of points) to use to determine if two
      * points are the same
      */
-    static AMP::shared_ptr<TriangleMesh<NG, NP>>
+    static std::shared_ptr<TriangleMesh<NG, NP>>
     generate( const std::vector<std::array<Point, NG + 1>> &triangles,
               const AMP_MPI &comm,
               double tol = 1e-12 );
 
 
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
-    virtual AMP::shared_ptr<Mesh> clone() const override final;
+    virtual std::shared_ptr<Mesh> clone() const override final;
 
 
     /**
@@ -299,7 +299,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
+    virtual void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 #endif
 
 

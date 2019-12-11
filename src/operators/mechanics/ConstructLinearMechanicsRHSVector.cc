@@ -20,11 +20,11 @@ ENABLE_WARNINGS
 
 void computeTemperatureRhsVector(
     AMP::Mesh::Mesh::shared_ptr mesh,
-    AMP::shared_ptr<AMP::Database> input_db,
+    std::shared_ptr<AMP::Database> input_db,
     AMP::LinearAlgebra::Variable::shared_ptr,
     AMP::LinearAlgebra::Variable::shared_ptr displacementVar,
-    const AMP::shared_ptr<AMP::LinearAlgebra::Vector> &currTemperatureVec,
-    const AMP::shared_ptr<AMP::LinearAlgebra::Vector> &prevTemperatureVec,
+    const std::shared_ptr<AMP::LinearAlgebra::Vector> &currTemperatureVec,
+    const std::shared_ptr<AMP::LinearAlgebra::Vector> &prevTemperatureVec,
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec )
 {
     currTemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
@@ -37,9 +37,9 @@ void computeTemperatureRhsVector(
     auto elementRhsDatabase    = input_db->getDatabase( "RhsElements" );
     auto materialModelDatabase = input_db->getDatabase( "RhsMaterialModel" );
 
-    AMP::shared_ptr<::FEType> feType;
-    AMP::shared_ptr<::FEBase> fe;
-    AMP::shared_ptr<::QBase> qrule;
+    std::shared_ptr<::FEType> feType;
+    std::shared_ptr<::FEBase> fe;
+    std::shared_ptr<::QBase> qrule;
 
     std::string feTypeOrderName =
         elementRhsDatabase->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
@@ -74,7 +74,7 @@ void computeTemperatureRhsVector(
     const auto &dphi = ( fe->get_dphi() );
     const auto &phi  = ( fe->get_phi() );
 
-    AMP::shared_ptr<AMP::Materials::Material> material;
+    std::shared_ptr<AMP::Materials::Material> material;
     double youngsModulus = 1.0e10, poissonsRatio = 0.33, thermalExpansionCoefficient = 2.0e-6;
     double default_BURNUP, default_OXYGEN_CONCENTRATION;
 
@@ -170,15 +170,15 @@ void computeTemperatureRhsVector(
             } // end k
 
             if ( useMaterialsLibrary == true ) {
-                std::map<std::string, AMP::shared_ptr<std::vector<double>>> inputMaterialParameters;
+                std::map<std::string, std::shared_ptr<std::vector<double>>> inputMaterialParameters;
 
                 std::string temperatureString = "temperature"; // in the future get from input file
                 std::string burnupString      = "burnup";      // in the future get from input file
                 std::string oxygenString = "concentration";    // in the future get from input file
 
-                AMP::shared_ptr<std::vector<double>> tempVec( new std::vector<double> );
-                AMP::shared_ptr<std::vector<double>> burnupVec( new std::vector<double> );
-                AMP::shared_ptr<std::vector<double>> oxygenVec( new std::vector<double> );
+                std::shared_ptr<std::vector<double>> tempVec( new std::vector<double> );
+                std::shared_ptr<std::vector<double>> burnupVec( new std::vector<double> );
+                std::shared_ptr<std::vector<double>> oxygenVec( new std::vector<double> );
 
                 inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec ) );
                 inputMaterialParameters.insert( std::make_pair( burnupString, burnupVec ) );

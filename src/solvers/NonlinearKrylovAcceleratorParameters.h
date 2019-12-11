@@ -35,16 +35,16 @@ public:
      * Construct and initialize a parameter list according to input
      * data.  See Application for a list of required and optional keywords.
      */
-    explicit NonlinearKrylovAcceleratorParameters( AMP::shared_ptr<AMP::Database> database );
+    explicit NonlinearKrylovAcceleratorParameters( std::shared_ptr<AMP::Database> database );
 
     /**
      * Destructor.
      */
     virtual ~NonlinearKrylovAcceleratorParameters();
 
-    AMP::shared_ptr<SolverStrategy> d_pPreconditioner;
+    std::shared_ptr<SolverStrategy> d_pPreconditioner;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pInitialGuess;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pInitialGuess;
 };
 } // namespace Solver
 } // namespace AMP

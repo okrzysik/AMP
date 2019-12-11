@@ -5,8 +5,8 @@
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 #include <string>
 
@@ -28,7 +28,7 @@ class TimeIntegrator
 {
 public:
     //! Convience typedef
-    typedef AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegrator> shared_ptr;
+    typedef std::shared_ptr<AMP::TimeIntegrator::TimeIntegrator> shared_ptr;
 
     /**
      * The constructor for TimeIntegrator initializes the
@@ -40,7 +40,7 @@ public:
      * member function.
      *
      */
-    explicit TimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters );
+    explicit TimeIntegrator( std::shared_ptr<TimeIntegratorParameters> parameters );
 
     /**
      * Empty destructor for TimeIntegrator
@@ -52,7 +52,7 @@ public:
      * @details  Initialize state of time integrator.  This includes
      * creating solution vector and initializing solver components.
      */
-    virtual void initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters );
+    virtual void initialize( std::shared_ptr<TimeIntegratorParameters> parameters );
 
     /**
      * @brief  Resets the internal state of the time integrator.
@@ -60,7 +60,7 @@ public:
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset.
      */
-    virtual void reset( AMP::shared_ptr<TimeIntegratorParameters> parameters ) = 0;
+    virtual void reset( std::shared_ptr<TimeIntegratorParameters> parameters ) = 0;
 
     /*!
      * @brief Integrate through the specified time increment.
@@ -116,7 +116,7 @@ public:
     /**
      * Retrieve the current solution.
      */
-    virtual AMP::shared_ptr<AMP::LinearAlgebra::Vector> getCurrentSolution( void )
+    virtual std::shared_ptr<AMP::LinearAlgebra::Vector> getCurrentSolution( void )
     {
         return d_solution;
     }
@@ -202,7 +202,7 @@ public:
      *  may then register any vector components it "owns" with the writer.
      * \param writer   The writer to register
      */
-    virtual void registerWriter( AMP::shared_ptr<AMP::Utilities::Writer> writer )
+    virtual void registerWriter( std::shared_ptr<AMP::Utilities::Writer> writer )
     {
         d_writer = writer;
     }
@@ -217,11 +217,11 @@ public:
      *
      * When assertion checking is active, the database pointer must be non-null.
      */
-    void putToDatabase( AMP::shared_ptr<AMP::Database> db );
+    void putToDatabase( std::shared_ptr<AMP::Database> db );
 
-    void registerOperator( AMP::shared_ptr<AMP::Operator::Operator> op ) { d_operator = op; }
+    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) { d_operator = op; }
 
-    AMP::shared_ptr<AMP::Operator::Operator> getOperator( void ) { return d_operator; }
+    std::shared_ptr<AMP::Operator::Operator> getOperator( void ) { return d_operator; }
 
 protected:
     /*
@@ -231,7 +231,7 @@ protected:
      *
      * When assertion checking is active, the database pointer must be non-null.
      */
-    void getFromInput( const AMP::shared_ptr<AMP::Database> db );
+    void getFromInput( const std::shared_ptr<AMP::Database> db );
 
     /*
      * Read object state from restart database and initialize class members.
@@ -247,12 +247,12 @@ protected:
     /*
      * Solution vector advanced during the time integration process.
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_solution;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_solution;
 
     /*
      * Solution vector at previous time
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pPreviousTimeSolution;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pPreviousTimeSolution;
 
     /**
      * The operator is the right hand side operator for an explicit integrator when the time
@@ -260,17 +260,17 @@ protected:
      * u_t = f(u)
      * but in the case of implicit time integrators the operator represents u_t-f(u)
      */
-    AMP::shared_ptr<AMP::Operator::Operator> d_operator;
+    std::shared_ptr<AMP::Operator::Operator> d_operator;
 
     /**
      * The operator is the left hand side mass operator (for FEM formulations)
      */
-    AMP::shared_ptr<AMP::Operator::Operator> d_pMassOperator;
+    std::shared_ptr<AMP::Operator::Operator> d_pMassOperator;
 
     /*
      * Source-sink vector, g,  when the time integration problem is of the form u_t = f(u)+g
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
 
     /*
      * Data members representing integrator times, time increments,
@@ -290,7 +290,7 @@ protected:
     int d_max_integrator_steps;
 
     // Writer for internal data
-    AMP::shared_ptr<AMP::Utilities::Writer> d_writer;
+    std::shared_ptr<AMP::Utilities::Writer> d_writer;
 
     // declare the default constructor to be private
     TimeIntegrator()

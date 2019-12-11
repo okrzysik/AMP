@@ -25,7 +25,7 @@ namespace LinearAlgebra {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-ManagedEpetraMatrix::ManagedEpetraMatrix( AMP::shared_ptr<ManagedEpetraMatrixParameters> params )
+ManagedEpetraMatrix::ManagedEpetraMatrix( std::shared_ptr<ManagedEpetraMatrixParameters> params )
     : EpetraMatrix( params->getEpetraRowMap(), params->getEpetraColMap(), params->entryList() ),
       ManagedMatrix( params ),
       d_pParameters( params )
@@ -61,40 +61,40 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
  ********************************************************/
 Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
 {
-    auto memp = AMP::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
+    auto memp = std::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
     AMP_INSIST( memp != nullptr, "null cached ManagedEpetraMatrixParameters" );
     int localSize  = memp->getLocalNumberOfColumns();
     int globalSize = memp->getGlobalNumberOfColumns();
     int localStart = memp->getRightDOFManager()->beginDOF();
-    auto p_eng     = AMP::make_shared<EpetraVectorEngineParameters>(
+    auto p_eng     = std::make_shared<EpetraVectorEngineParameters>(
         localSize, globalSize, memp->getEpetraComm() );
-    auto p_params = AMP::make_shared<ManagedVectorParameters>();
+    auto p_params = std::make_shared<ManagedVectorParameters>();
     p_params->d_Buffer =
-        AMP::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    p_params->d_Engine     = AMP::make_shared<EpetraVectorEngine>( p_eng, p_params->d_Buffer );
+        std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
+    p_params->d_Engine     = std::make_shared<EpetraVectorEngine>( p_eng, p_params->d_Buffer );
     p_params->d_CommList   = memp->d_CommListRight;
     p_params->d_DOFManager = memp->getRightDOFManager();
-    auto rtn               = AMP::make_shared<ManagedEpetraVector>( p_params );
+    auto rtn               = std::make_shared<ManagedEpetraVector>( p_params );
     rtn->setVariable( memp->d_VariableRight );
     // rtn->setVariable( Variable::shared_ptr( new Variable("right") ) );
     return rtn;
 }
 Vector::shared_ptr ManagedEpetraMatrix::getLeftVector() const
 {
-    auto memp = AMP::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
+    auto memp = std::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
     AMP_INSIST( memp != nullptr, "null cached ManagedEpetraMatrixParameters" );
     int localSize  = memp->getLocalNumberOfRows();
     int globalSize = memp->getGlobalNumberOfRows();
     int localStart = memp->getRightDOFManager()->beginDOF();
-    auto p_eng     = AMP::make_shared<EpetraVectorEngineParameters>(
+    auto p_eng     = std::make_shared<EpetraVectorEngineParameters>(
         localSize, globalSize, memp->getEpetraComm() );
-    auto p_params = AMP::make_shared<ManagedVectorParameters>();
+    auto p_params = std::make_shared<ManagedVectorParameters>();
     p_params->d_Buffer =
-        AMP::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    p_params->d_Engine     = AMP::make_shared<EpetraVectorEngine>( p_eng, p_params->d_Buffer );
+        std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
+    p_params->d_Engine     = std::make_shared<EpetraVectorEngine>( p_eng, p_params->d_Buffer );
     p_params->d_CommList   = memp->d_CommListLeft;
     p_params->d_DOFManager = memp->getLeftDOFManager();
-    auto rtn               = AMP::make_shared<ManagedEpetraVector>( p_params );
+    auto rtn               = std::make_shared<ManagedEpetraVector>( p_params );
     rtn->setVariable( memp->d_VariableLeft );
     // rtn->setVariable( Variable::shared_ptr( new Variable("left") ) );
     return rtn;
@@ -116,7 +116,7 @@ void ManagedEpetraMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 {
     if ( this->numGlobalColumns() != other_op->numGlobalRows() )
         AMP_ERROR( "Inner matrix dimensions must agree" );
-    if ( !dynamic_pointer_cast<ManagedEpetraMatrix>( other_op ) )
+    if ( !std::dynamic_pointer_cast<ManagedEpetraMatrix>( other_op ) )
         AMP_ERROR( "Incompatible matrix types" );
     AMP_ASSERT( other_op->numGlobalRows() == numGlobalColumns() );
 #ifdef USE_EXT_MPI
@@ -127,7 +127,7 @@ void ManagedEpetraMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 #endif
     Vector::shared_ptr leftVec  = this->getLeftVector();
     Vector::shared_ptr rightVec = other_op->getRightVector();
-    AMP::shared_ptr<ManagedEpetraMatrixParameters> memp( new ManagedEpetraMatrixParameters(
+    std::shared_ptr<ManagedEpetraMatrixParameters> memp( new ManagedEpetraMatrixParameters(
         leftVec->getDOFManager(), rightVec->getDOFManager(), AMP_MPI( epetraComm ) ) );
     memp->d_CommListLeft     = leftVec->getCommunicationList();
     memp->d_CommListRight    = rightVec->getCommunicationList();
@@ -136,7 +136,7 @@ void ManagedEpetraMatrix::multiply( shared_ptr other_op, shared_ptr &result )
     int ierr = EpetraExt::MatrixMatrix::Multiply(
         *d_epetraMatrix,
         false,
-        *( dynamic_pointer_cast<ManagedEpetraMatrix>( other_op )->d_epetraMatrix ),
+        *( std::dynamic_pointer_cast<ManagedEpetraMatrix>( other_op )->d_epetraMatrix ),
         false,
         *( res->d_epetraMatrix ),
         true );
@@ -153,8 +153,8 @@ void ManagedEpetraMatrix::mult( Vector::const_shared_ptr in, Vector::shared_ptr 
 {
     AMP_ASSERT( in->getGlobalSize() == numGlobalColumns() );
     AMP_ASSERT( out->getGlobalSize() == numGlobalRows() );
-    auto in_view  = AMP::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
-    auto out_view = AMP::dynamic_pointer_cast<EpetraVector>( EpetraVector::view( out ) );
+    auto in_view  = std::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
+    auto out_view = std::dynamic_pointer_cast<EpetraVector>( EpetraVector::view( out ) );
     const Epetra_Vector &in_vec = in_view->getEpetra_Vector();
     Epetra_Vector &out_vec      = out_view->getEpetra_Vector();
     int err                     = d_epetraMatrix->Multiply( false, in_vec, out_vec );
@@ -164,8 +164,8 @@ void ManagedEpetraMatrix::multTranspose( Vector::const_shared_ptr in, Vector::sh
 {
     AMP_ASSERT( in->getGlobalSize() == numGlobalColumns() );
     AMP_ASSERT( out->getGlobalSize() == numGlobalRows() );
-    auto in_view  = AMP::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
-    auto out_view = AMP::dynamic_pointer_cast<EpetraVector>( EpetraVector::view( out ) );
+    auto in_view  = std::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
+    auto out_view = std::dynamic_pointer_cast<EpetraVector>( EpetraVector::view( out ) );
     int err =
         d_epetraMatrix->Multiply( true, in_view->getEpetra_Vector(), out_view->getEpetra_Vector() );
     VerifyEpetraReturn( err, "mult" );
@@ -288,13 +288,13 @@ Vector::shared_ptr ManagedEpetraMatrix::extractDiagonal( Vector::shared_ptr v ) 
         retVal = getRightVector();
     }
     VerifyEpetraReturn( d_epetraMatrix->ExtractDiagonalCopy(
-                            dynamic_pointer_cast<EpetraVector>( retVal )->getEpetra_Vector() ),
+                            std::dynamic_pointer_cast<EpetraVector>( retVal )->getEpetra_Vector() ),
                         "extractDiagonal" );
     return retVal;
 }
 void ManagedEpetraMatrix::setDiagonal( Vector::const_shared_ptr in )
 {
-    auto vec = dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
+    auto vec = std::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
     VerifyEpetraReturn( d_epetraMatrix->ReplaceDiagonalValues( vec->getEpetra_Vector() ),
                         "setDiagonal" );
 }

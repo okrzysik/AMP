@@ -12,10 +12,10 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <string>
 
@@ -31,7 +31,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 
     //   Create the Mesh.
     auto mesh_db   = input_db->getDatabase( "Mesh" );
-    auto mgrParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
@@ -39,10 +39,10 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 
     //  Construct PowerShape
     AMP_INSIST( input_db->keyExists( "PowerShape" ), "Key ''PowerShape'' is missing!" );
-    AMP::shared_ptr<AMP::Database> shape_db = input_db->getDatabase( "PowerShape" );
-    auto shape_params    = AMP::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
+    std::shared_ptr<AMP::Database> shape_db = input_db->getDatabase( "PowerShape" );
+    auto shape_params    = std::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
     shape_params->d_Mesh = meshAdapter;
-    auto shape           = AMP::make_shared<AMP::Operator::PowerShape>( shape_params );
+    auto shape           = std::make_shared<AMP::Operator::PowerShape>( shape_params );
 
     // Create a DOF manager for a gauss point vector
     int DOFsPerElement    = 8;
@@ -57,7 +57,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 
     // Create a shared pointer to a Variable - Power - Output because it will be used in the
     // "residual" location of apply
-    auto shapeVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( interfaceVarName );
+    auto shapeVar = std::make_shared<AMP::LinearAlgebra::Variable>( interfaceVarName );
 
     // Create input and output vectors associated with the Variable.
     auto shapeInpVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, shapeVar, split );
@@ -67,15 +67,15 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 
     // CREATE THE VOLUME INTEGRAL OPERATOR
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto volumeDatabase = input_db->getDatabase( "VolumeIntegralOperator" );
     auto inputVarDB     = volumeDatabase->getDatabase( "ActiveInputVariables" );
     inputVarDB->putScalar( "ActiveVariable_0", interfaceVarName );
-    auto volumeOp = AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+    auto volumeOp = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "VolumeIntegralOperator", input_db, transportModel ) );
 
-    auto outputVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "heatsource" );
+    auto outputVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "heatsource" );
 
     auto resVec = AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable, split );
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;

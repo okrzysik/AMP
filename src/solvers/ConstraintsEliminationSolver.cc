@@ -5,16 +5,16 @@ namespace AMP {
 namespace Solver {
 
 ConstraintsEliminationSolver::ConstraintsEliminationSolver(
-    AMP::shared_ptr<ConstraintsEliminationSolverParameters> params )
+    std::shared_ptr<ConstraintsEliminationSolverParameters> params )
     : SolverStrategy( params )
 {
 }
 
-void ConstraintsEliminationSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>,
-                                          AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void ConstraintsEliminationSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>,
+                                          std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    AMP::shared_ptr<AMP::Operator::ConstraintsEliminationOperator> op =
-        AMP::dynamic_pointer_cast<AMP::Operator::ConstraintsEliminationOperator>( d_pOperator );
+    std::shared_ptr<AMP::Operator::ConstraintsEliminationOperator> op =
+        std::dynamic_pointer_cast<AMP::Operator::ConstraintsEliminationOperator>( d_pOperator );
     op->copyMasterToSlave( u );
 }
 

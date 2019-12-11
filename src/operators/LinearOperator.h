@@ -5,8 +5,8 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/OperatorParameters.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 namespace AMP {
 namespace Operator {
@@ -25,7 +25,7 @@ public:
      * Constructor. This resets the matrix shared pointer.
      * @param [in] params
      */
-    explicit LinearOperator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit LinearOperator( const std::shared_ptr<OperatorParameters> &params );
 
     //! Destructor
     virtual ~LinearOperator() {}
@@ -43,13 +43,13 @@ public:
     /**
      * @return The matrix representation of this linear operator.
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Matrix> getMatrix();
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> getMatrix();
 
     /**
      * Copies the shared pointer for the matrix representation of this linear operator.
      *  @param [in] in_mat The matrix representation of this linear operator.
      */
-    virtual void setMatrix( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> in_mat );
+    virtual void setMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> in_mat );
 
     virtual void setVariables( AMP::LinearAlgebra::Variable::shared_ptr in,
                                AMP::LinearAlgebra::Variable::shared_ptr out )
@@ -69,11 +69,11 @@ protected:
     LinearOperator();
 
     // input and output variables
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inputVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inputVariable;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outputVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outputVariable;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix; // The matrix shared pointer
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix; // The matrix shared pointer
 
 private:
 };

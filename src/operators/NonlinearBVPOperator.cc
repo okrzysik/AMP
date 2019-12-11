@@ -7,7 +7,7 @@
 namespace AMP {
 namespace Operator {
 
-NonlinearBVPOperator::NonlinearBVPOperator( const AMP::shared_ptr<BVPOperatorParameters> &params )
+NonlinearBVPOperator::NonlinearBVPOperator( const std::shared_ptr<BVPOperatorParameters> &params )
     : Operator( params ),
       d_volumeOperator( params->d_volumeOperator ),
       d_boundaryOperator( params->d_boundaryOperator )
@@ -57,11 +57,11 @@ void NonlinearBVPOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
     PROFILE_STOP( "apply" );
 }
 
-void NonlinearBVPOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void NonlinearBVPOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
     PROFILE_START( "reset" );
-    AMP::shared_ptr<BVPOperatorParameters> inParams =
-        AMP::dynamic_pointer_cast<BVPOperatorParameters>( params );
+    std::shared_ptr<BVPOperatorParameters> inParams =
+        std::dynamic_pointer_cast<BVPOperatorParameters>( params );
 
     AMP_INSIST( ( inParams.get() != nullptr ), "NonlinearBVPOperator :: reset Null parameter" );
 
@@ -70,14 +70,14 @@ void NonlinearBVPOperator::reset( const AMP::shared_ptr<OperatorParameters> &par
     PROFILE_STOP( "reset" );
 }
 
-AMP::shared_ptr<OperatorParameters>
+std::shared_ptr<OperatorParameters>
 NonlinearBVPOperator::getParameters( const std::string &type,
                                      AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                                     AMP::shared_ptr<OperatorParameters> params )
+                                     std::shared_ptr<OperatorParameters> params )
 {
     PROFILE_START( "getParameters" );
-    AMP::shared_ptr<AMP::Database> db;
-    AMP::shared_ptr<BVPOperatorParameters> outParams( new BVPOperatorParameters( db ) );
+    std::shared_ptr<AMP::Database> db;
+    std::shared_ptr<BVPOperatorParameters> outParams( new BVPOperatorParameters( db ) );
 
     outParams->d_volumeOperatorParams   = d_volumeOperator->getParameters( type, u, params );
     outParams->d_boundaryOperatorParams = d_boundaryOperator->getParameters( type, u, params );

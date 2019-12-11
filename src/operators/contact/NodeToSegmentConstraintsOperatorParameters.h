@@ -11,7 +11,7 @@ namespace Operator {
 class NodeToSegmentConstraintsOperatorParameters : public OperatorParameters
 {
 public:
-    NodeToSegmentConstraintsOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    NodeToSegmentConstraintsOperatorParameters( std::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     {
     }

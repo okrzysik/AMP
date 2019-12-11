@@ -67,7 +67,7 @@ void testMultiMeshOwnerRank( AMP::UnitTest &ut )
     auto meshDatabase = inputDatabase->getDatabase( "Mesh" );
 
     // Build the mesh
-    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( globalComm );
     auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 

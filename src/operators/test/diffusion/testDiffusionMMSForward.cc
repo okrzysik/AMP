@@ -17,8 +17,8 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include "../applyTests.h"
 
@@ -48,31 +48,31 @@ static void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
     //   Create the Mesh.
     //--------------------------------------------------
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
+    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
         new AMP::Mesh::MeshParameters( mesh_db ) );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
     //--------------------------------------------------
 
     // Create diffusion operator (nonlinear operator)
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    AMP::shared_ptr<AMP::Operator::Operator> nonlinearOperator =
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+    std::shared_ptr<AMP::Operator::Operator> nonlinearOperator =
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "NonlinearDiffusionOp", input_db, elementModel );
-    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> diffOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>( nonlinearOperator );
+    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> diffOp =
+        std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>( nonlinearOperator );
 
     // Get source mass operator
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
-    AMP::shared_ptr<AMP::Operator::Operator> sourceOperator =
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
+    std::shared_ptr<AMP::Operator::Operator> sourceOperator =
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "ManufacturedSourceOperator", input_db, sourcePhysicsModel );
-    AMP::shared_ptr<AMP::Operator::MassLinearFEOperator> sourceOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>( sourceOperator );
+    std::shared_ptr<AMP::Operator::MassLinearFEOperator> sourceOp =
+        std::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>( sourceOperator );
 
-    AMP::shared_ptr<AMP::Operator::MassDensityModel> densityModel = sourceOp->getDensityModel();
-    AMP::shared_ptr<AMP::ManufacturedSolution> mfgSolution =
+    std::shared_ptr<AMP::Operator::MassDensityModel> densityModel = sourceOp->getDensityModel();
+    std::shared_ptr<AMP::ManufacturedSolution> mfgSolution =
         densityModel->getManufacturedSolution();
 
     // Set up input and output vectors

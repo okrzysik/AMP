@@ -25,9 +25,9 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include "../../../operators/test/applyTests.h"
 
@@ -52,59 +52,59 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    std::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
     AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
 
     // Create nonlinear diffusion BVP operator and access volume nonlinear Diffusion operator
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;
-    AMP::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;
+    std::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "FickNonlinearBVPOperator", input_db, nonlinearPhysicsModel );
-    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
-    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nlinOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
+    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
+        std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
+    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nlinOp =
+        std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nlinBVPOp->getVolumeOperator() );
 
     // Acquire Dirichlet boundary operator and parameters
-    AMP::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+    std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletOp =
+        std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
             nlinBVPOp->getBoundaryOperator() );
-    // AMP::shared_ptr<AMP::Database> dirichlet_db =
+    // std::shared_ptr<AMP::Database> dirichlet_db =
     // input_db->getDatabase("FickDirichletVectorCorrection");
     // AMP_INSIST(dirichlet_db->getScalar<int>("valuesType")==2,
     // "DirichletVectorCorrection::valuesType must be 2");
     // dirichlet_db->putScalar("isAttachedToVolumeOperator",false); // OperatorBuilder forces this
     // to be true for some reason.
-    // AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> dirichletParams(
+    // std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> dirichletParams(
     //      new AMP::Operator::DirichletVectorCorrectionParameters(dirichlet_db));
-    // AMP::shared_ptr<AMP::Operator::OperatorParameters> dirichletOpParams =
-    // AMP::dynamic_pointer_cast<AMP::Operator::OperatorParameters>(
+    // std::shared_ptr<AMP::Operator::OperatorParameters> dirichletOpParams =
+    // std::dynamic_pointer_cast<AMP::Operator::OperatorParameters>(
     //      dirichletParams);
     // dirichletOp->reset(dirichletOpParams);
 
     // Create linear diffusion BVP operator with bc's
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> linearPhysicsModel;
-    AMP::shared_ptr<AMP::Operator::Operator> linBVPOperator =
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> linearPhysicsModel;
+    std::shared_ptr<AMP::Operator::Operator> linBVPOperator =
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "FickLinearBVPOperator", input_db, linearPhysicsModel );
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linBVPOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> linBVPOp =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
 
     // Get source mass operator
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
-    AMP::shared_ptr<AMP::Operator::Operator> sourceOperator =
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
+    std::shared_ptr<AMP::Operator::Operator> sourceOperator =
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "ManufacturedSourceOperator", input_db, sourcePhysicsModel );
-    AMP::shared_ptr<AMP::Operator::MassLinearFEOperator> sourceOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>( sourceOperator );
+    std::shared_ptr<AMP::Operator::MassLinearFEOperator> sourceOp =
+        std::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>( sourceOperator );
 
-    AMP::shared_ptr<AMP::Operator::MassDensityModel> densityModel = sourceOp->getDensityModel();
-    AMP::shared_ptr<AMP::ManufacturedSolution> mfgSolution =
+    std::shared_ptr<AMP::Operator::MassDensityModel> densityModel = sourceOp->getDensityModel();
+    std::shared_ptr<AMP::ManufacturedSolution> mfgSolution =
         densityModel->getManufacturedSolution();
 
     // Set up input and output vectors
@@ -207,28 +207,28 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     nlinBVPOp->modifyInitialSolutionVector( solVec );
 
     // Set up solver
-    AMP::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    AMP::shared_ptr<AMP::Database> linearSolver_db =
+    std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
+    std::shared_ptr<AMP::Database> linearSolver_db =
         nonlinearSolver_db->getDatabase( "LinearSolver" );
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
+    std::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
         new AMP::Solver::PetscSNESSolverParameters( nonlinearSolver_db ) );
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = nlinBVPOp;
     nonlinearSolverParams->d_pInitialGuess = solVec;
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(
+    std::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(
         new AMP::Solver::PetscSNESSolver( nonlinearSolverParams ) );
 
     // Set up preconditioner
-    AMP::shared_ptr<AMP::Database> preconditioner_db =
+    std::shared_ptr<AMP::Database> preconditioner_db =
         linearSolver_db->getDatabase( "Preconditioner" );
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> preconditionerParams(
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> preconditionerParams(
         new AMP::Solver::SolverStrategyParameters( preconditioner_db ) );
     preconditionerParams->d_pOperator = linBVPOp;
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> preconditioner(
+    std::shared_ptr<AMP::Solver::TrilinosMLSolver> preconditioner(
         new AMP::Solver::TrilinosMLSolver( preconditionerParams ) );
 
     // Register the preconditioner with the Jacobian free Krylov solver
-    AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
+    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
         nonlinearSolver->getKrylovSolver();
     linearSolver->setPreconditioner( preconditioner );
 

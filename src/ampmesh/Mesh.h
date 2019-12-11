@@ -6,7 +6,7 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/enable_shared_from_this.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 // Forward declerations
@@ -57,14 +57,14 @@ public:
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef AMP::shared_ptr<AMP::Mesh::Mesh> shared_ptr;
+    typedef std::shared_ptr<AMP::Mesh::Mesh> shared_ptr;
 
     /**
      *\typedef const_shared_ptr
      *\brief  Name for the const shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef AMP::shared_ptr<const AMP::Mesh::Mesh> const_shared_ptr;
+    typedef std::shared_ptr<const AMP::Mesh::Mesh> const_shared_ptr;
 
     /**
      *\typedef generator
@@ -109,7 +109,7 @@ public:
      *   the input database.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static AMP::shared_ptr<AMP::Mesh::Mesh> buildMesh( const MeshParameters::shared_ptr &params );
+    static std::shared_ptr<AMP::Mesh::Mesh> buildMesh( const MeshParameters::shared_ptr &params );
 
 
     /**
@@ -166,7 +166,7 @@ public:
 
 
     //! Virtual function to clone the mesh (allows us to properly copy the derived class)
-    virtual AMP::shared_ptr<Mesh> clone() const = 0;
+    virtual std::shared_ptr<Mesh> clone() const = 0;
 
 
     /**
@@ -177,7 +177,7 @@ public:
      *    matches the meshID of the mesh, and a null pointer otherwise.
      * \param meshID  MeshID of the desired mesh
      */
-    virtual AMP::shared_ptr<Mesh> Subset( MeshID meshID ) const;
+    virtual std::shared_ptr<Mesh> Subset( MeshID meshID ) const;
 
 
     /**
@@ -191,7 +191,7 @@ public:
      *    It is strongly recommended to use the meshID when possible.
      * \param name  Name of the desired mesh
      */
-    virtual AMP::shared_ptr<Mesh> Subset( std::string name ) const;
+    virtual std::shared_ptr<Mesh> Subset( std::string name ) const;
 
 
     /**
@@ -202,7 +202,7 @@ public:
      * \param isGlobal  Is the new subset mesh global over the entire mesh (true,default),
      *                  or do we only want to keep the local mesh (false)
      */
-    virtual AMP::shared_ptr<Mesh> Subset( const MeshIterator &iterator,
+    virtual std::shared_ptr<Mesh> Subset( const MeshIterator &iterator,
                                           bool isGlobal = true ) const;
 
 
@@ -211,7 +211,7 @@ public:
      * \details      This function will subset a mesh given another mesh
      * \param mesh   Mesh used to subset
      */
-    virtual AMP::shared_ptr<Mesh> Subset( Mesh &mesh ) const;
+    virtual std::shared_ptr<Mesh> Subset( Mesh &mesh ) const;
 
 
     /* Return the number of local element of the given type
@@ -444,7 +444,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) = 0;
+    virtual void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) = 0;
 
 
     /**
@@ -454,11 +454,11 @@ public:
      * \param name   Name of the vector
      * \param gcw    Desired ghost cell width
      */
-    virtual AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+    virtual std::shared_ptr<AMP::LinearAlgebra::Vector>
     getPositionVector( std::string name, const int gcw = 0 ) const;
 #endif
 
-    AMP::shared_ptr<AMP::Database> DB() const { return d_db; }
+    std::shared_ptr<AMP::Database> DB() const { return d_db; }
 
 protected:
     //!  Empty constructor for a mesh
@@ -468,7 +468,7 @@ protected:
     MeshParameters::shared_ptr d_params;
 
     //! The geometry parameters
-    AMP::shared_ptr<Geometry::Geometry> d_geometry;
+    std::shared_ptr<Geometry::Geometry> d_geometry;
 
     //! The geometric dimension (equivalent to the highest geometric object that could be
     //! represented)
@@ -484,7 +484,7 @@ protected:
     AMP_MPI d_comm;
 
     //! A pointer to an AMP database containing the mesh info
-    AMP::shared_ptr<AMP::Database> d_db;
+    std::shared_ptr<AMP::Database> d_db;
 
     //! A unique id for each mesh
     MeshID d_meshID;

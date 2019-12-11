@@ -27,14 +27,14 @@ public:
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a DOF manager object.
      */
-    typedef AMP::shared_ptr<AMP::Discretization::DOFManager> shared_ptr;
+    typedef std::shared_ptr<AMP::Discretization::DOFManager> shared_ptr;
 
     /**
      *\typedef const_shared_ptr
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a DOF manager object.
      */
-    typedef AMP::shared_ptr<const AMP::Discretization::DOFManager> const_shared_ptr;
+    typedef std::shared_ptr<const AMP::Discretization::DOFManager> const_shared_ptr;
 
 
     /** \brief Basic constructor for DOFManager

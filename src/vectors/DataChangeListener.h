@@ -1,9 +1,9 @@
 #ifndef included_AMP_DataChangeListener_h
 #define included_AMP_DataChangeListener_h
 
-#include "AMP/utils/shared_ptr.h"
 #include <algorithm>
 #include <deque>
+#include <memory>
 
 namespace AMP {
 namespace LinearAlgebra {

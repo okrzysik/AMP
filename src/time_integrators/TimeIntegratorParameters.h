@@ -5,8 +5,8 @@
 #include "AMP/operators/Operator.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/ParameterBase.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 #include <string>
 
@@ -34,9 +34,9 @@ class TimeIntegratorParameters : public ParameterBase
 {
 public:
     //! Convience typedef
-    typedef AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> shared_ptr;
+    typedef std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> shared_ptr;
 
-    explicit TimeIntegratorParameters( const AMP::shared_ptr<AMP::Database> db );
+    explicit TimeIntegratorParameters( const std::shared_ptr<AMP::Database> db );
 
     virtual ~TimeIntegratorParameters();
     /**
@@ -44,7 +44,7 @@ public:
      *  Documentation for parameters required by each integrator can be found in the
      *  documentation for the integrator.
      */
-    AMP::shared_ptr<AMP::Database> d_db;
+    std::shared_ptr<AMP::Database> d_db;
 
     /**
      * String used to identify specific class instantiation of the time integrator
@@ -54,12 +54,12 @@ public:
     /**
      * Initial conditions vector
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_ic_vector;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_ic_vector;
 
     /**
      * source term for time integration, can also include boundary conditions for IBVP problems
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
 
     /**
      * The operator is the right hand side operator for an explicit integrator when the time
@@ -67,17 +67,17 @@ public:
      * u_t = f(u)
      * but in the case of implicit time integrators the operator represents u_t-f(u)
      */
-    AMP::shared_ptr<AMP::Operator::Operator> d_operator;
+    std::shared_ptr<AMP::Operator::Operator> d_operator;
 
     /**
      * The operator is the left hand side mass operator (for FEM formulations)
      */
-    AMP::shared_ptr<AMP::Operator::Operator> d_pMassOperator;
+    std::shared_ptr<AMP::Operator::Operator> d_pMassOperator;
 
     /**
      * algebraic variable
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_pAlgebraicVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_pAlgebraicVariable;
 
 protected:
 private:

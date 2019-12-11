@@ -21,7 +21,7 @@ class FickSoretNonlinearFEOperator;
 class FickSoretNonlinearFEOperatorParameters : public OperatorParameters
 {
 public:
-    explicit FickSoretNonlinearFEOperatorParameters( AMP::shared_ptr<Database> &db )
+    explicit FickSoretNonlinearFEOperatorParameters( std::shared_ptr<Database> &db )
         : OperatorParameters( db )
     {
     }
@@ -30,9 +30,9 @@ public:
 
     DiffusionNonlinearFEOperator::shared_ptr d_SoretOperator;
 
-    AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> d_FickParameters;
+    std::shared_ptr<DiffusionNonlinearFEOperatorParameters> d_FickParameters;
 
-    AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> d_SoretParameters;
+    std::shared_ptr<DiffusionNonlinearFEOperatorParameters> d_SoretParameters;
 
     /**
      * the name of the FickSoretOperator

@@ -17,7 +17,7 @@ namespace TimeIntegrator {
 /************************************************************************
  * Constructor and destructor for TimeIntegrator.                        *
  ************************************************************************/
-OxideTimeIntegrator::OxideTimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+OxideTimeIntegrator::OxideTimeIntegrator( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_INSIST( parameters.get() != nullptr, "Null parameter" );
 
@@ -30,15 +30,15 @@ OxideTimeIntegrator::~OxideTimeIntegrator() = default;
 /************************************************************************
  * Initialize the time integrator and problem                            *
  ************************************************************************/
-void OxideTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     PROFILE_START( "initialize" );
     d_current_time = 0.0;
     d_current_dt   = 1.0;
 
     // Get the parameters
-    AMP::shared_ptr<OxideTimeIntegratorParameters> oxide_parameters =
-        AMP::dynamic_pointer_cast<OxideTimeIntegratorParameters>( parameters );
+    std::shared_ptr<OxideTimeIntegratorParameters> oxide_parameters =
+        std::dynamic_pointer_cast<OxideTimeIntegratorParameters>( parameters );
     d_mesh = oxide_parameters->d_mesh;
     AMP_INSIST( d_mesh.get() != nullptr, "Oxide Time Integrator needs a mesh" );
     AMP_INSIST( (int) d_mesh->getGeomType() < d_mesh->getDim(),
@@ -62,7 +62,7 @@ void OxideTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> 
         new AMP::LinearAlgebra::Variable( "oxide" ) );
     AMP::LinearAlgebra::Variable::shared_ptr alpha_var(
         new AMP::LinearAlgebra::Variable( "alpha" ) );
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> multivariable(
+    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> multivariable(
         new AMP::LinearAlgebra::MultiVariable( "solution" ) );
     multivariable->add( oxide_var );
     multivariable->add( alpha_var );
@@ -143,7 +143,7 @@ void OxideTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> 
 /************************************************************************
  * Reset the time integrator                                             *
  ************************************************************************/
-void OxideTimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> )
+void OxideTimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> )
 {
     AMP_ERROR( "reset is not programmed for OxideTimeIntegrator" );
 }

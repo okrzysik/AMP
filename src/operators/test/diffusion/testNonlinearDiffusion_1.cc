@@ -19,10 +19,10 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include "../applyTests.h"
 
@@ -48,43 +48,43 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    std::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
 
     // nonlinear operator
-    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> diffOp;
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    AMP::shared_ptr<AMP::Database> diffFEOp_db =
-        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "NonlinearDiffusionOp" ) );
-    AMP::shared_ptr<AMP::Operator::Operator> nonlinearOperator =
+    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> diffOp;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+    std::shared_ptr<AMP::Database> diffFEOp_db =
+        std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "NonlinearDiffusionOp" ) );
+    std::shared_ptr<AMP::Operator::Operator> nonlinearOperator =
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "NonlinearDiffusionOp", input_db, elementModel );
     diffOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>( nonlinearOperator );
+        std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>( nonlinearOperator );
 
     // linear operator
-    AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> linOp;
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> linElementModel;
-    AMP::shared_ptr<AMP::Operator::Operator> linearOperator =
+    std::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> linOp;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> linElementModel;
+    std::shared_ptr<AMP::Operator::Operator> linearOperator =
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "LinearDiffusionOp", input_db, linElementModel );
-    linOp = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>( linearOperator );
+    linOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>( linearOperator );
 
     ut->passes( exeName + ": create" );
     std::cout.flush();
 
     // set up defaults for materials arguments and create transport model
-    AMP::shared_ptr<AMP::Database> transportModel_db;
+    std::shared_ptr<AMP::Database> transportModel_db;
     if ( input_db->keyExists( "DiffusionTransportModel" ) )
         transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
-    AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel =
-        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( elementPhysicsModel );
+    std::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel =
+        std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( elementPhysicsModel );
 
     double defTemp = transportModel_db->getWithDefault<double>( "Default_Temperature", 400.0 );
     double defConc = transportModel_db->getWithDefault<double>( "Default_Concentration", .33 );
@@ -93,7 +93,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string property = transportModel_db->getString( "Property" );
 
     // create parameters for reset test
-    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperatorParameters> diffOpParams(
+    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperatorParameters> diffOpParams(
         new AMP::Operator::DiffusionNonlinearFEOperatorParameters( diffFEOp_db ) );
 
     // nullify vectors in parameters
@@ -102,7 +102,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     diffOpParams->d_FrozenBurnup.reset();
 
     // create vectors for parameters
-    AMP::shared_ptr<AMP::Database> active_db = diffFEOp_db->getDatabase( "ActiveInputVariables" );
+    std::shared_ptr<AMP::Database> active_db = diffFEOp_db->getDatabase( "ActiveInputVariables" );
     AMP::LinearAlgebra::Variable::shared_ptr tVar( new AMP::LinearAlgebra::Variable(
         active_db->getWithDefault<std::string>( "temperature", "not_specified" ) ) );
     AMP::LinearAlgebra::Variable::shared_ptr cVar( new AMP::LinearAlgebra::Variable(
@@ -190,7 +190,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Variable::shared_ptr inputVar = diffOp->getInputVariable();
     for ( size_t i = 0; i < numNonPrincIds; i++ ) {
         // nonPrincVars[i] = diffOp->getInputVariable(nonPrincIds[i]);
-        nonPrincVars[i] = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( inputVar )
+        nonPrincVars[i] = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( inputVar )
                               ->getVariable( i );
     }
 
@@ -222,10 +222,10 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         {
             diffSolVec->setRandomValues();
             adjust( diffSolVec, shift, scale );
-            AMP::shared_ptr<AMP::Operator::OperatorParameters> jacParams =
+            std::shared_ptr<AMP::Operator::OperatorParameters> jacParams =
                 diffOp->getParameters( "Jacobian", diffSolVec );
             linOp->reset(
-                AMP::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperatorParameters>(
+                std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperatorParameters>(
                     jacParams ) );
             ut->passes( exeName + ": getJacobianParameters" );
             std::cout.flush();
@@ -240,17 +240,17 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Variable::shared_ptr auxWorkVar =
         diffSolVar->cloneVariable( "NonlinearDiffusionOperator-auxWorkVar" );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> myMultiInpVar(
+    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> myMultiInpVar(
         new AMP::LinearAlgebra::MultiVariable( "MultiInputVariable" ) );
     myMultiInpVar->add( diffSolVar );
     myMultiInpVar->add( auxInpVar );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> myMultiOutVar(
+    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> myMultiOutVar(
         new AMP::LinearAlgebra::MultiVariable( "MultiOutputVariable" ) );
     myMultiOutVar->add( diffResVar );
     myMultiOutVar->add( auxOutVar );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> myMultiWorkVar(
+    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> myMultiWorkVar(
         new AMP::LinearAlgebra::MultiVariable( "MultiWorkVariable" ) );
     myMultiWorkVar->add( workVar );
     myMultiWorkVar->add( auxWorkVar );

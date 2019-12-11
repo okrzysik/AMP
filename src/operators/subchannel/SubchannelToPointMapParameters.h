@@ -19,7 +19,7 @@ class SubchannelToPointMapParameters : public AMP::Operator::OperatorParameters
 public:
     //! Default constructors
     SubchannelToPointMapParameters()
-        : OperatorParameters( AMP::shared_ptr<AMP::Database>() ), d_comm( AMP_COMM_WORLD ){};
+        : OperatorParameters( std::shared_ptr<AMP::Database>() ), d_comm( AMP_COMM_WORLD ){};
 
     //! Deconstructor
     virtual ~SubchannelToPointMapParameters() {}
@@ -33,7 +33,7 @@ public:
     std::vector<double> z; //!< z-coordinate of the points to fill
 
     // Subchannel physics model
-    AMP::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
+    std::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
     // Output variable (may be null on processors where x is empty)
     // Valid variables are: "Density", "Temperature"

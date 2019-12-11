@@ -3,7 +3,7 @@
 
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/enable_shared_from_this.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -36,8 +36,8 @@ class Variable : public AMP::enable_shared_from_this<Variable>
 {
 public:
     //!  Shared pointer name
-    typedef AMP::shared_ptr<Variable> shared_ptr;
-    typedef AMP::shared_ptr<const Variable> const_shared_ptr;
+    typedef std::shared_ptr<Variable> shared_ptr;
+    typedef std::shared_ptr<const Variable> const_shared_ptr;
 
 
     /** \brief  Construct a variable with a name

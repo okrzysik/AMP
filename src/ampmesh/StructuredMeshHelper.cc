@@ -85,8 +85,8 @@ AMP::Mesh::MeshIterator StructuredMeshHelper::getYZFaceIterator( AMP::Mesh::Mesh
 AMP::Mesh::MeshIterator
 StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw, int direction )
 {
-    auto multimesh = AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
-    auto boxmesh   = AMP::dynamic_pointer_cast<AMP::Mesh::BoxMesh>( mesh );
+    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    auto boxmesh   = std::dynamic_pointer_cast<AMP::Mesh::BoxMesh>( mesh );
     if ( multimesh != nullptr ) {
         // Optimization for multi-meshes
         auto meshlist = multimesh->getMeshes();
@@ -113,7 +113,7 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
                     last[d] = 0;
             }
         }
-        auto face_list = AMP::make_shared<std::vector<BoxMesh::MeshElementIndex>>();
+        auto face_list = std::make_shared<std::vector<BoxMesh::MeshElementIndex>>();
         face_list->reserve( 4 * Nx * Ny * Nz );
         if ( direction == 0 ) {
             face_list->reserve( ( Nx + 1 ) * Ny * Nz );
@@ -190,7 +190,7 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
         }
         // Sort the points in the direction first, then the coordinates
         Utilities::quicksort( index, face_list );
-        auto elements = AMP::make_shared<std::vector<AMP::Mesh::MeshElement>>();
+        auto elements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>();
         *elements     = face_list;
         return AMP::Mesh::MultiVectorIterator( elements );
     }

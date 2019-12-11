@@ -143,16 +143,16 @@ void Logger::logDebug( const std::string &message, const std::string &filename, 
 /*
  * Set appenders.
  */
-void Logger::setAbortAppender( AMP::shared_ptr<Appender> appender ) { d_abort_appender = appender; }
+void Logger::setAbortAppender( std::shared_ptr<Appender> appender ) { d_abort_appender = appender; }
 
 
-void Logger::setWarningAppender( AMP::shared_ptr<Appender> appender )
+void Logger::setWarningAppender( std::shared_ptr<Appender> appender )
 {
     d_warning_appender = appender;
 }
 
 
-void Logger::setDebugAppender( AMP::shared_ptr<Appender> appender ) { d_debug_appender = appender; }
+void Logger::setDebugAppender( std::shared_ptr<Appender> appender ) { d_debug_appender = appender; }
 
 
 /*

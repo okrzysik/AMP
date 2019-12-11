@@ -32,7 +32,7 @@ class MoabBasedOperator : public AMP::Operator::Operator
 {
 public:
     // Typedefs
-    typedef AMP::shared_ptr<MoabBasedOperatorParameters> SP_Params;
+    typedef std::shared_ptr<MoabBasedOperatorParameters> SP_Params;
 
     // Constructor
     explicit MoabBasedOperator( const SP_Params &params )

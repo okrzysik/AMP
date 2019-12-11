@@ -21,7 +21,7 @@ public:
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef AMP::shared_ptr<MeshParameters> shared_ptr;
+    typedef std::shared_ptr<MeshParameters> shared_ptr;
 
     //! Empty constructor
     MeshParameters();
@@ -31,7 +31,7 @@ public:
      * \details  Constructor to create the MeshParamaters from an AMP Database object.
      * \param db    Input database for constructing a mesh
      */
-    explicit MeshParameters( const AMP::shared_ptr<AMP::Database> db );
+    explicit MeshParameters( const std::shared_ptr<AMP::Database> db );
 
     /**
      * \brief       Set the comm for the mesh
@@ -48,14 +48,14 @@ public:
     const AMP::AMP_MPI &getComm() const { return comm; };
 
     //!  Get the database for the mesh
-    AMP::shared_ptr<AMP::Database> getDatabase();
+    std::shared_ptr<AMP::Database> getDatabase();
 
     //! Deconstructor
     virtual ~MeshParameters();
 
 protected:
     //! A pointer to an AMP database containing the mesh info
-    AMP::shared_ptr<AMP::Database> d_db;
+    std::shared_ptr<AMP::Database> d_db;
 
     //! The desired communicator
     AMP::AMP_MPI comm;

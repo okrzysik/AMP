@@ -55,11 +55,11 @@ namespace AMP {
 namespace Operator {
 
 
-AMP::shared_ptr<ElementPhysicsModel> ElementPhysicsModelFactory::createElementPhysicsModel(
-    AMP::shared_ptr<Database> elementPhysicsModelDb )
+std::shared_ptr<ElementPhysicsModel> ElementPhysicsModelFactory::createElementPhysicsModel(
+    std::shared_ptr<Database> elementPhysicsModelDb )
 {
-    AMP::shared_ptr<ElementPhysicsModel> retElementPhysicsModel;
-    AMP::shared_ptr<ElementPhysicsModelParameters> params;
+    std::shared_ptr<ElementPhysicsModel> retElementPhysicsModel;
+    std::shared_ptr<ElementPhysicsModelParameters> params;
 
     AMP_INSIST(
         elementPhysicsModelDb.get() != nullptr,

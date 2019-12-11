@@ -21,7 +21,7 @@ public:
       Constructor creates a simpleVariables for Input and Output. The reset is called to
       read the flow parameters.
       */
-    explicit FlowFrapconOperator( const AMP::shared_ptr<FlowFrapconOperatorParameters> &params );
+    explicit FlowFrapconOperator( const std::shared_ptr<FlowFrapconOperatorParameters> &params );
 
     /**
       Destructor
@@ -40,7 +40,7 @@ public:
       This function reads the entries of the database for the flow operator
       and can also be used to change the parameters if required.
       */
-    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /*
           static bool sort_nodes_in_z ( const ::Node *one , const ::Node *two ) {
@@ -137,16 +137,16 @@ public:
 
     /* Since the map has been taken out the Flow operator
        now expects a SimpleVariable for input & output */
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Simple Input Variable */
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Simple Input Variable */
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Simple Output Variable */
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Simple Output Variable */
 
 protected:
     /**
       This function returns a parameter object that can be used to reset the corresponding
       FlowFrapconOperator operator.
       */
-    AMP::shared_ptr<OperatorParameters>
+    std::shared_ptr<OperatorParameters>
     getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
 
 private:

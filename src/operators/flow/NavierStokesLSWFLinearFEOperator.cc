@@ -9,12 +9,12 @@ namespace AMP {
 namespace Operator {
 
 NavierStokesLSWFLinearFEOperator::NavierStokesLSWFLinearFEOperator(
-    const AMP::shared_ptr<NavierStokesLinearFEOperatorParameters> &params )
+    const std::shared_ptr<NavierStokesLinearFEOperatorParameters> &params )
     : LinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 
-    d_flowLSWFLinElem = AMP::dynamic_pointer_cast<NavierStokesLSWFLinearElement>( d_elemOp );
+    d_flowLSWFLinElem = std::dynamic_pointer_cast<NavierStokesLSWFLinearElement>( d_elemOp );
 
     AMP_INSIST( ( ( d_flowLSWFLinElem.get() ) != nullptr ),
                 "d_elemOp is not of type NavierStokesLSWFLinearElement" );
@@ -33,7 +33,7 @@ NavierStokesLSWFLinearFEOperator::NavierStokesLSWFLinearFEOperator(
             InternalVariableNames[NavierStokes::SHEARSTRESS]= "SHEARSTRESS";
 
             AMP_INSIST( params->d_db->keyExists("ActiveInputVariables"), "key not found" );
-            AMP::shared_ptr<AMP::Database> activeInpVar_db =
+            std::shared_ptr<AMP::Database> activeInpVar_db =
        params->d_db->getDatabase("ActiveInputVariables");
             for(unsigned int i = 0; i < InternalVariableNames.size(); i++) {
                 std::string varName = activeInpVar_db->getString(InternalVariableNames[i]);
@@ -65,11 +65,11 @@ NavierStokesLSWFLinearFEOperator::NavierStokesLSWFLinearFEOperator(
 }
 
 void NavierStokesLSWFLinearFEOperator::preAssembly(
-    const AMP::shared_ptr<OperatorParameters> &oparams )
+    const std::shared_ptr<OperatorParameters> &oparams )
 {
 
-    AMP::shared_ptr<NavierStokesLinearFEOperatorParameters> params =
-        AMP::dynamic_pointer_cast<NavierStokesLinearFEOperatorParameters>( oparams );
+    std::shared_ptr<NavierStokesLinearFEOperatorParameters> params =
+        std::dynamic_pointer_cast<NavierStokesLinearFEOperatorParameters>( oparams );
 
     if ( params->d_frozenVec.get() != nullptr ) {
         d_inVec = mySubsetVector( params->d_frozenVec, d_inputVariable );

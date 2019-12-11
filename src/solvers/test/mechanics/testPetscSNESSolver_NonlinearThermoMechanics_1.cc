@@ -20,8 +20,8 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <iostream>
 #include <string>
@@ -45,7 +45,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db    = input_db->getDatabase( "Mesh" );
-    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
@@ -53,9 +53,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // create a nonlinear BVP operator for nonlinear mechanics
     AMP_INSIST( input_db->keyExists( "testNonlinearMechanicsOperator" ), "key missing!" );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
     auto nonlinearMechanicsOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+        std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "testNonlinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
 
@@ -63,23 +63,23 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
-    auto nonlinearThermalOperator = AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
+    auto nonlinearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a column operator object for nonlinear thermomechanics
-    AMP::shared_ptr<AMP::Operator::OperatorParameters> params;
+    std::shared_ptr<AMP::Operator::OperatorParameters> params;
     auto nonlinearThermoMechanicsOperator =
-        AMP::make_shared<AMP::Operator::ColumnOperator>( params );
+        std::make_shared<AMP::Operator::ColumnOperator>( params );
     nonlinearThermoMechanicsOperator->append( nonlinearMechanicsOperator );
     nonlinearThermoMechanicsOperator->append( nonlinearThermalOperator );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the input multi-variable
     auto mechanicsVolumeOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+        std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsOperator->getVolumeOperator() );
 
     // initialize the output multi-variable
@@ -98,7 +98,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto displacementVec = AMP::LinearAlgebra::createVector( vectorDofMap, displacementVar, true );
     auto temperatureVec  = AMP::LinearAlgebra::createVector( scalarDofMap, temperatureVar, true );
     auto solVec          = AMP::LinearAlgebra::MultiVector::create( "multiVector", globalComm );
-    auto multiVec        = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( solVec );
+    auto multiVec        = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( solVec );
     multiVec->addVector( displacementVec );
     multiVec->addVector( temperatureVec );
 
@@ -122,36 +122,36 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "testLinearMechanicsOperator" ), "key missing!" );
-    auto linearMechanicsOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    auto linearMechanicsOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "testLinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
-    auto linearThermalOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    auto linearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "testLinearThermalOperator", input_db, thermalTransportModel ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a column operator object for linear thermomechanics
-    auto linearThermoMechanicsOperator = AMP::make_shared<AMP::Operator::ColumnOperator>( params );
+    auto linearThermoMechanicsOperator = std::make_shared<AMP::Operator::ColumnOperator>( params );
     linearThermoMechanicsOperator->append( linearMechanicsOperator );
     linearThermoMechanicsOperator->append( linearThermalOperator );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial-Guess for mechanics
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyMechanicsModel;
-    auto dirichletDispInVecOp = AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyMechanicsModel;
+    auto dirichletDispInVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "MechanicsInitialGuess", input_db, dummyMechanicsModel ) );
     dirichletDispInVecOp->setVariable( displacementVar );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial-Guess for thermal
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyThermalModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyThermalModel;
     auto dirichletThermalInVecOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+        std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "ThermalInitialGuess", input_db, dummyThermalModel ) );
     dirichletThermalInVecOp->setVariable( temperatureVar );
@@ -191,37 +191,37 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
-        AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = nonlinearThermoMechanicsOperator;
     nonlinearSolverParams->d_pInitialGuess = solVec;
-    auto nonlinearSolver = AMP::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
+    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the column preconditioner which is a diagonal block preconditioner
     auto columnPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
     auto columnPreconditionerParams =
-        AMP::make_shared<AMP::Solver::SolverStrategyParameters>( columnPreconditioner_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( columnPreconditioner_db );
     columnPreconditionerParams->d_pOperator = linearThermoMechanicsOperator;
     auto columnPreconditioner =
-        AMP::make_shared<AMP::Solver::ColumnSolver>( columnPreconditionerParams );
+        std::make_shared<AMP::Solver::ColumnSolver>( columnPreconditionerParams );
 
     auto mechanicsPreconditioner_db =
         columnPreconditioner_db->getDatabase( "mechanicsPreconditioner" );
     auto mechanicsPreconditionerParams =
-        AMP::make_shared<AMP::Solver::SolverStrategyParameters>( mechanicsPreconditioner_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( mechanicsPreconditioner_db );
     mechanicsPreconditionerParams->d_pOperator = linearMechanicsOperator;
     auto linearMechanicsPreconditioner =
-        AMP::make_shared<AMP::Solver::TrilinosMLSolver>( mechanicsPreconditionerParams );
+        std::make_shared<AMP::Solver::TrilinosMLSolver>( mechanicsPreconditionerParams );
 
     auto thermalPreconditioner_db = columnPreconditioner_db->getDatabase( "thermalPreconditioner" );
     auto thermalPreconditionerParams =
-        AMP::make_shared<AMP::Solver::SolverStrategyParameters>( thermalPreconditioner_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( thermalPreconditioner_db );
     thermalPreconditionerParams->d_pOperator = linearThermalOperator;
     auto linearThermalPreconditioner =
-        AMP::make_shared<AMP::Solver::TrilinosMLSolver>( thermalPreconditionerParams );
+        std::make_shared<AMP::Solver::TrilinosMLSolver>( thermalPreconditionerParams );
 
     columnPreconditioner->append( linearMechanicsPreconditioner );
     columnPreconditioner->append( linearThermalPreconditioner );

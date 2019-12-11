@@ -12,7 +12,7 @@ namespace Operator {
 class LinearCoupledFlowOperator : public Operator
 {
 public:
-    explicit LinearCoupledFlowOperator( const AMP::shared_ptr<OperatorParameters> &params )
+    explicit LinearCoupledFlowOperator( const std::shared_ptr<OperatorParameters> &params )
         : Operator( params )
     {
         (void) params;
@@ -26,16 +26,16 @@ public:
                         const double a = -1.0,
                         const double b = 1.0 );
 
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    virtual void reset( const std::shared_ptr<OperatorParameters> &params );
 
-    virtual void append( AMP::shared_ptr<Operator> op );
+    virtual void append( std::shared_ptr<Operator> op );
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable( int varId = -1 );
 
 protected:
-    std::vector<AMP::shared_ptr<Operator>> d_Operators;
+    std::vector<std::shared_ptr<Operator>> d_Operators;
 
 private:
 };

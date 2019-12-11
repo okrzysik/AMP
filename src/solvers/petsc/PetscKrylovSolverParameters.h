@@ -4,7 +4,7 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -20,12 +20,12 @@ class PetscKrylovSolverParameters : public SolverStrategyParameters
 {
 public:
     PetscKrylovSolverParameters() {}
-    explicit PetscKrylovSolverParameters( const AMP::shared_ptr<AMP::Database> db );
+    explicit PetscKrylovSolverParameters( const std::shared_ptr<AMP::Database> db );
     virtual ~PetscKrylovSolverParameters() {}
 
     AMP_MPI d_comm;
 
-    AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 
 protected:
 private:

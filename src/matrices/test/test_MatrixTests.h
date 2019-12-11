@@ -68,17 +68,17 @@ public:
     {
         PROFILE_START( "VerifyGetLeftRightVector" );
         global_cached_matrix = FACTORY::getMatrix();
-        auto factory1        = AMP::make_shared<AmpInterfaceRightVectorFactory>();
-        auto factory2        = AMP::make_shared<AmpInterfaceLeftVectorFactory>();
+        auto factory1        = std::make_shared<AmpInterfaceRightVectorFactory>();
+        auto factory2        = std::make_shared<AmpInterfaceLeftVectorFactory>();
         VectorTests tests1( factory1 );
         VectorTests tests2( factory2 );
         tests1.testManagedVector( utils );
         tests2.testManagedVector( utils );
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-        if ( dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscMatrix>(
+        if ( std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscMatrix>(
                  global_cached_matrix ) ) {
-            auto factory3 = AMP::make_shared<PETScInterfaceRightVectorFactory>();
-            auto factory4 = AMP::make_shared<PETScInterfaceLeftVectorFactory>();
+            auto factory3 = std::make_shared<PETScInterfaceRightVectorFactory>();
+            auto factory4 = std::make_shared<PETScInterfaceLeftVectorFactory>();
             VectorTests tests3( factory3 );
             VectorTests tests4( factory4 );
             tests3.testManagedVector( utils );

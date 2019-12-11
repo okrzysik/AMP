@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 // AMP headers
 #include "AMP/operators/ElementOperation.h"
@@ -44,7 +44,7 @@ public:
       4) QRULE_TYPE (QGAUSS by default) - Type of numerical integration scheme used.
       5) QRULE_ORDER (DEFAULT by default) - Order of the numerical integration scheme.
       */
-    explicit MechanicsElement( const AMP::shared_ptr<ElementOperationParameters> &params );
+    explicit MechanicsElement( const std::shared_ptr<ElementOperationParameters> &params );
 
     /**
       Destructor.
@@ -60,7 +60,7 @@ public:
       element.
       */
     void initializeForCurrentElement( const ::Elem *elem,
-                                      const AMP::shared_ptr<MechanicsMaterialModel> &materialModel )
+                                      const std::shared_ptr<MechanicsMaterialModel> &materialModel )
     {
         d_elem          = elem;
         d_materialModel = materialModel;
@@ -75,19 +75,19 @@ protected:
     bool d_useReducedIntegration; /**< A flag that is true if reduced integration
                                     scheme is used and false otherwise. */
 
-    AMP::shared_ptr<::FEType> d_feType; /**< Type of polynomial used for the
+    std::shared_ptr<::FEType> d_feType; /**< Type of polynomial used for the
                                             finite element shape functions. This includes
                                             both the polynomial order:
                                             First order/Second order etc. and polynomial family:
                                             Lagrange/Hierarchic/Hermite etc.  */
 
-    AMP::shared_ptr<::FEBase> d_fe; /**< Finite element shape functions. */
+    std::shared_ptr<::FEBase> d_fe; /**< Finite element shape functions. */
 
-    AMP::shared_ptr<::QBase> d_qrule; /**< Quadtrature rule used for numerical integration. */
+    std::shared_ptr<::QBase> d_qrule; /**< Quadtrature rule used for numerical integration. */
 
     const ::Elem *d_elem; /**< Pointer to the current element within the finite element assembly. */
 
-    AMP::shared_ptr<MechanicsMaterialModel>
+    std::shared_ptr<MechanicsMaterialModel>
         d_materialModel; /**< Shared pointer to
                              the mechanics material
                              model used in the current element. */

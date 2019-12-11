@@ -28,7 +28,7 @@ public:
      *                          1. type: integer, name: KU (required)
      *                             acceptable values (non-negative integer values)
      */
-    explicit BandedSolver( AMP::shared_ptr<SolverStrategyParameters> parameters );
+    explicit BandedSolver( std::shared_ptr<SolverStrategyParameters> parameters );
 
     /**
      * Default destructor. Currently does not do anything.
@@ -41,8 +41,8 @@ public:
      * @param[in]  f    shared pointer to right hand side vector
      * @param[out] u    shared pointer to approximate computed solution
      */
-    virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+    virtual void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                        std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Resets the operator registered with the solver with new parameters if necessary
@@ -50,14 +50,14 @@ public:
      *        OperatorParameters object that is NULL by default
      */
     virtual void
-    resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
+    resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
 
     /**
      * Resets the solver internally with new parameters if necessary
      * @param parameters
      *        BandedSolverParameters object that is NULL by default
      */
-    virtual void reset( AMP::shared_ptr<SolverStrategyParameters> parameters ) override;
+    virtual void reset( std::shared_ptr<SolverStrategyParameters> parameters ) override;
 
 
 protected:

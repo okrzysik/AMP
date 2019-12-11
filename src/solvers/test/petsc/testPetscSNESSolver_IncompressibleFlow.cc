@@ -25,8 +25,8 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <iostream>
 #include <string>
@@ -50,7 +50,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //--------------------------------------------------
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
-    auto mgrParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
     //--------------------------------------------------
@@ -67,14 +67,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear flow
     AMP_INSIST( input_db->keyExists( "NonlinearFlowOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> flowTransportModel;
-    auto nonlinearFlowOperator = AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> flowTransportModel;
+    auto nonlinearFlowOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "NonlinearFlowOperator", input_db, flowTransportModel ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the input variable
-    auto flowVolumeOperator = AMP::dynamic_pointer_cast<AMP::Operator::NavierStokesLSWFFEOperator>(
+    auto flowVolumeOperator = std::dynamic_pointer_cast<AMP::Operator::NavierStokesLSWFFEOperator>(
         nonlinearFlowOperator->getVolumeOperator() );
 
     auto flowVariable = flowVolumeOperator->getOutputVariable();
@@ -90,7 +90,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for flow
     AMP_INSIST( input_db->keyExists( "LinearFlowOperator" ), "key missing!" );
-    auto linearFlowOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    auto linearFlowOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "LinearFlowOperator", input_db, flowTransportModel ) );
 
@@ -123,28 +123,28 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Create the preconditioner
     auto flowPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
     auto flowPreconditionerParams =
-        AMP::make_shared<AMP::Solver::SolverStrategyParameters>( flowPreconditioner_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( flowPreconditioner_db );
     flowPreconditionerParams->d_pOperator = linearFlowOperator;
     auto linearFlowPreconditioner =
-        AMP::make_shared<AMP::Solver::TrilinosMLSolver>( flowPreconditionerParams );
+        std::make_shared<AMP::Solver::TrilinosMLSolver>( flowPreconditionerParams );
 
     // initialize the linear solver
     auto linearSolverParams =
-        AMP::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
+        std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
     linearSolverParams->d_pOperator       = linearFlowOperator;
     linearSolverParams->d_comm            = globalComm;
     linearSolverParams->d_pPreconditioner = linearFlowPreconditioner;
-    //    AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new
+    //    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new
     //    AMP::Solver::PetscKrylovSolver(linearSolverParams));
 
     // Crete the solvers
     auto nonlinearSolverParams =
-        AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
     nonlinearSolverParams->d_comm      = globalComm;
     nonlinearSolverParams->d_pOperator = nonlinearFlowOperator;
     //    nonlinearSolverParams->d_pKrylovSolver = linearSolver;
     nonlinearSolverParams->d_pInitialGuess = solVec;
-    auto nonlinearSolver = AMP::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
+    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
     auto linearSolver = nonlinearSolver->getKrylovSolver();
     linearSolver->setPreconditioner( linearFlowPreconditioner );

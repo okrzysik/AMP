@@ -12,7 +12,7 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include "libmesh/mesh_generation.h"
 
@@ -47,7 +47,7 @@ static void myTest( AMP::UnitTest *ut )
                     "Key ''DISTORT_ELEMENT'' is missing!" );
         bool distortElement = input_db->getScalar<bool>( "DISTORT_ELEMENT" );
 
-        AMP::shared_ptr<::Mesh> mesh( new ::Mesh( 3 ) );
+        std::shared_ptr<::Mesh> mesh( new ::Mesh( 3 ) );
         MeshTools::Generation::build_cube(
             ( *( mesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, HEX8, false );
 
@@ -72,19 +72,19 @@ static void myTest( AMP::UnitTest *ut )
 
         AMP_INSIST( input_db->keyExists( "Isotropic_Model" ),
                     "Key ''Isotropic_Model'' is missing!" );
-        AMP::shared_ptr<AMP::Database> matModel_db = input_db->getDatabase( "Isotropic_Model" );
-        AMP::shared_ptr<AMP::Operator::MechanicsMaterialModelParameters> matModelParams(
+        std::shared_ptr<AMP::Database> matModel_db = input_db->getDatabase( "Isotropic_Model" );
+        std::shared_ptr<AMP::Operator::MechanicsMaterialModelParameters> matModelParams(
             new AMP::Operator::MechanicsMaterialModelParameters( matModel_db ) );
-        AMP::shared_ptr<AMP::Operator::IsotropicElasticModel> isotropicModel(
+        std::shared_ptr<AMP::Operator::IsotropicElasticModel> isotropicModel(
             new AMP::Operator::IsotropicElasticModel( matModelParams ) );
 
         AMP_INSIST( input_db->keyExists( "Mechanics_Linear_Element" ),
                     "Key ''Mechanics_Linear_Element'' is missing!" );
-        AMP::shared_ptr<AMP::Database> elemOp_db =
+        std::shared_ptr<AMP::Database> elemOp_db =
             input_db->getDatabase( "Mechanics_Linear_Element" );
-        AMP::shared_ptr<AMP::Operator::ElementOperationParameters> elemOpParams(
+        std::shared_ptr<AMP::Operator::ElementOperationParameters> elemOpParams(
             new AMP::Operator::ElementOperationParameters( elemOp_db ) );
-        AMP::shared_ptr<AMP::Operator::MechanicsLinearElement> mechLinElem(
+        std::shared_ptr<AMP::Operator::MechanicsLinearElement> mechLinElem(
             new AMP::Operator::MechanicsLinearElement( elemOpParams ) );
 
         AMP::Discretization::DOFManager::shared_ptr dofMap =
@@ -93,19 +93,19 @@ static void myTest( AMP::UnitTest *ut )
 
         AMP_INSIST( input_db->keyExists( "Mechanics_Assembly" ),
                     "Key ''Mechanics_Assembly'' is missing!" );
-        AMP::shared_ptr<AMP::Database> mechAssembly_db =
+        std::shared_ptr<AMP::Database> mechAssembly_db =
             input_db->getDatabase( "Mechanics_Assembly" );
-        AMP::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechOpParams(
+        std::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechOpParams(
             new AMP::Operator::MechanicsLinearFEOperatorParameters( mechAssembly_db ) );
         mechOpParams->d_materialModel = isotropicModel;
         mechOpParams->d_elemOp        = mechLinElem;
         mechOpParams->d_Mesh          = meshAdapter;
         mechOpParams->d_inDofMap      = dofMap;
         mechOpParams->d_outDofMap     = dofMap;
-        AMP::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechOp(
+        std::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechOp(
             new AMP::Operator::MechanicsLinearFEOperator( mechOpParams ) );
 
-        AMP::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = mechOp->getMatrix();
+        std::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = mechOp->getMatrix();
 
         for ( int i = 0; i < 24; ++i ) {
             std::vector<size_t> matCols;
@@ -145,7 +145,7 @@ static void myTest( AMP::UnitTest *ut )
 int testLinearMechanics_eigenValues( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
-    AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
+    std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
         new AMP::Mesh::initializeLibMesh( AMP_COMM_WORLD ) );
 
     AMP::UnitTest ut;

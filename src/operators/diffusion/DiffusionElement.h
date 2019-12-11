@@ -6,7 +6,7 @@
 #include "AMP/operators/ElementOperation.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/operators/diffusion/DiffusionTransportTensorModel.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 // Libmesh headers
 DISABLE_WARNINGS
@@ -29,20 +29,20 @@ namespace Operator {
 class DiffusionElement : public ElementOperation
 {
 public:
-    explicit DiffusionElement( const AMP::shared_ptr<ElementOperationParameters> &params );
+    explicit DiffusionElement( const std::shared_ptr<ElementOperationParameters> &params );
 
     virtual ~DiffusionElement() {}
 
     void
     initializeForCurrentElement( const ::Elem *elem,
-                                 const AMP::shared_ptr<DiffusionTransportModel> &transportModel );
+                                 const std::shared_ptr<DiffusionTransportModel> &transportModel );
 
 protected:
-    AMP::shared_ptr<::FEType> d_feType;
+    std::shared_ptr<::FEType> d_feType;
 
-    AMP::shared_ptr<::FEBase> d_fe;
+    std::shared_ptr<::FEBase> d_fe;
 
-    AMP::shared_ptr<::QBase> d_qrule;
+    std::shared_ptr<::QBase> d_qrule;
 
     const std::vector<Real> *d_JxW;
 
@@ -52,8 +52,8 @@ protected:
 
     const ::Elem *d_elem;
 
-    AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
-    AMP::shared_ptr<DiffusionTransportTensorModel> d_transportTensorModel;
+    std::shared_ptr<DiffusionTransportModel> d_transportModel;
+    std::shared_ptr<DiffusionTransportTensorModel> d_transportTensorModel;
 
 private:
 };

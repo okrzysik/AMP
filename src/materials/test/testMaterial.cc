@@ -42,8 +42,8 @@ static inline VEC &find( std::map<std::string, VEC> &args, const std::string &va
     return args.find( var )->second;
 }
 static inline AMP::LinearAlgebra::Vector::shared_ptr
-find( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &multivec,
-      const AMP::shared_ptr<AMP::LinearAlgebra::Variable> &var )
+find( std::shared_ptr<AMP::LinearAlgebra::MultiVector> &multivec,
+      const std::shared_ptr<AMP::LinearAlgebra::Variable> &var )
 {
     return multivec->subsetVectorForVariable( var );
 }
@@ -174,9 +174,9 @@ MatTestResult testMaterial( std::string &name )
         for ( size_t i = 0; i < nargs; i++ ) {
             std::string istr  = std::to_string( i );
             justrightname[i]  = "justright" + istr;
-            auto toosmallVar  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "toosmall" + istr );
-            auto justrightVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( justrightname[i] );
-            auto toobigVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( "toobigVar" + istr );
+            auto toosmallVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "toosmall" + istr );
+            auto justrightVar = std::make_shared<AMP::LinearAlgebra::Variable>( justrightname[i] );
+            auto toobigVar = std::make_shared<AMP::LinearAlgebra::Variable>( "toobigVar" + istr );
             toosmallVec[i] =
                 AMP::LinearAlgebra::SimpleVector<double>::create( npoints, toosmallVar );
             justrightVec[i] =
@@ -191,16 +191,16 @@ MatTestResult testMaterial( std::string &name )
 
         // set up std::vector arguments to evalv
         std::vector<double> value( npoints ), nominal;
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>> args;
+        std::map<std::string, std::shared_ptr<std::vector<double>>> args;
         for ( size_t i = 0; i < nargs; i++ ) {
             args.insert( std::make_pair( argnames[i],
-                                         AMP::make_shared<std::vector<double>>( justright[i] ) ) );
+                                         std::make_shared<std::vector<double>>( justright[i] ) ) );
         }
 
         // set up AMP::Vector arguments to evalv
-        auto valueVar   = AMP::make_shared<AMP::LinearAlgebra::Variable>( "value" );
+        auto valueVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "value" );
         auto valueVec   = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, valueVar );
-        auto nominalVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( "nominal" );
+        auto nominalVar = std::make_shared<AMP::LinearAlgebra::Variable>( "nominal" );
         auto nominalVec = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nominalVar );
         std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> argsVec;
         for ( size_t i = 0; i < nargs; i++ ) {
@@ -222,7 +222,7 @@ MatTestResult testMaterial( std::string &name )
             xlator.insert( std::make_pair( argnames[i], name ) );
             count++;
         }
-        auto nominalMultiVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( "nominalMulti" );
+        auto nominalMultiVar = std::make_shared<AMP::LinearAlgebra::Variable>( "nominalMulti" );
         auto nominalMultiVec =
             AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nominalMultiVar );
 
@@ -446,7 +446,7 @@ MatTestResult testMaterial( std::string &name )
             }
 
             // set up reduced argument list
-            std::map<std::string, AMP::shared_ptr<std::vector<double>>> argsm( args );
+            std::map<std::string, std::shared_ptr<std::vector<double>>> argsm( args );
             if ( nargs > 0 ) {
                 auto argend = argsm.end();
                 --argend;
@@ -477,7 +477,7 @@ MatTestResult testMaterial( std::string &name )
             propResults.isVector = true;
 
             auto vectorProperty =
-                AMP::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>( property );
+                std::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>( property );
 
             // check that scalar nature is not signaled
             if ( vectorProperty->isScalar() ) {
@@ -585,11 +585,11 @@ MatTestResult testMaterial( std::string &name )
                 propResults.vector[0] = false;
                 propResults.unknown   = true;
             }
-            std::vector<AMP::shared_ptr<std::vector<double>>> stdEval( nvec );
-            std::vector<AMP::shared_ptr<std::vector<double>>> nominalEval( nvec );
+            std::vector<std::shared_ptr<std::vector<double>>> stdEval( nvec );
+            std::vector<std::shared_ptr<std::vector<double>>> nominalEval( nvec );
             for ( size_t i = 0; i < nvec; i++ ) {
-                stdEval[i]     = AMP::make_shared<std::vector<double>>( npoints );
-                nominalEval[i] = AMP::make_shared<std::vector<double>>( npoints );
+                stdEval[i]     = std::make_shared<std::vector<double>>( npoints );
+                nominalEval[i] = std::make_shared<std::vector<double>>( npoints );
             }
 
             // check that number of components is positive
@@ -640,9 +640,9 @@ MatTestResult testMaterial( std::string &name )
             std::vector<AMP::LinearAlgebra::Vector::shared_ptr> nominalMultiEval( nvec );
             for ( size_t i = 0; i < nvec; i++ ) {
                 auto istr     = std::to_string( i );
-                auto evalVar  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "amp" + istr );
-                auto nomVar   = AMP::make_shared<AMP::LinearAlgebra::Variable>( "nominal" + istr );
-                auto multiVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( "multivec" + istr );
+                auto evalVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "amp" + istr );
+                auto nomVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "nominal" + istr );
+                auto multiVar = std::make_shared<AMP::LinearAlgebra::Variable>( "multivec" + istr );
                 ampEval[i] = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, evalVar );
                 nominalAmpEval[i] =
                     AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nomVar );
@@ -740,7 +740,7 @@ MatTestResult testMaterial( std::string &name )
             }
 
             // set up reduced argument list
-            std::map<std::string, AMP::shared_ptr<std::vector<double>>> argsm( args );
+            std::map<std::string, std::shared_ptr<std::vector<double>>> argsm( args );
             if ( nargs > 0 ) {
                 auto argend = argsm.end();
                 --argend;
@@ -770,7 +770,7 @@ MatTestResult testMaterial( std::string &name )
             propResults.isTensor = true;
 
             auto tensorProperty =
-                AMP::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>( property );
+                std::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>( property );
 
             // check that scalar nature is not signaled
             if ( tensorProperty->isScalar() ) {
@@ -878,14 +878,14 @@ MatTestResult testMaterial( std::string &name )
                 propResults.tensor[0] = false;
                 propResults.unknown   = true;
             }
-            std::vector<std::vector<AMP::shared_ptr<std::vector<double>>>> stdEval(
-                nvecs[0], std::vector<AMP::shared_ptr<std::vector<double>>>( nvecs[1] ) );
-            std::vector<std::vector<AMP::shared_ptr<std::vector<double>>>> nominalEval(
-                nvecs[0], std::vector<AMP::shared_ptr<std::vector<double>>>( nvecs[1] ) );
+            std::vector<std::vector<std::shared_ptr<std::vector<double>>>> stdEval(
+                nvecs[0], std::vector<std::shared_ptr<std::vector<double>>>( nvecs[1] ) );
+            std::vector<std::vector<std::shared_ptr<std::vector<double>>>> nominalEval(
+                nvecs[0], std::vector<std::shared_ptr<std::vector<double>>>( nvecs[1] ) );
             for ( size_t i = 0; i < nvecs[0]; i++ )
                 for ( size_t j = 0; j < nvecs[1]; j++ ) {
-                    stdEval[i][j]     = AMP::make_shared<std::vector<double>>( npoints );
-                    nominalEval[i][j] = AMP::make_shared<std::vector<double>>( npoints );
+                    stdEval[i][j]     = std::make_shared<std::vector<double>>( npoints );
+                    nominalEval[i][j] = std::make_shared<std::vector<double>>( npoints );
                 }
 
             // check that number of components is positive
@@ -939,11 +939,11 @@ MatTestResult testMaterial( std::string &name )
                 nominalMultiEval[i].resize( nvecs[1] );
                 for ( size_t j = 0; j < nvecs[1]; j++ ) {
                     auto istr    = std::to_string( i );
-                    auto evalVar = AMP::make_shared<AMP::LinearAlgebra::Variable>( "amp" + istr );
+                    auto evalVar = std::make_shared<AMP::LinearAlgebra::Variable>( "amp" + istr );
                     auto nomVar =
-                        AMP::make_shared<AMP::LinearAlgebra::Variable>( "nominal" + istr );
+                        std::make_shared<AMP::LinearAlgebra::Variable>( "nominal" + istr );
                     auto multiVar =
-                        AMP::make_shared<AMP::LinearAlgebra::Variable>( "multivec" + istr );
+                        std::make_shared<AMP::LinearAlgebra::Variable>( "multivec" + istr );
                     ampEval[i][j] =
                         AMP::LinearAlgebra::SimpleVector<double>::create( npoints, evalVar );
                     nominalAmpEval[i][j] =
@@ -1047,7 +1047,7 @@ MatTestResult testMaterial( std::string &name )
             }
 
             // set up reduced argument list
-            std::map<std::string, AMP::shared_ptr<std::vector<double>>> argsm( args );
+            std::map<std::string, std::shared_ptr<std::vector<double>>> argsm( args );
             if ( nargs > 0 ) {
                 auto argend = argsm.end();
                 --argend;

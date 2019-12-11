@@ -4,7 +4,7 @@
 #include "AMP/operators/Operator.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/ParameterBase.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -28,7 +28,7 @@ public:
      * Construct and initialize a parameter list according to input
      * data.  Guess what the required and optional keywords are.
      */
-    explicit SolverStrategyParameters( AMP::shared_ptr<AMP::Database> db );
+    explicit SolverStrategyParameters( std::shared_ptr<AMP::Database> db );
 
     /**
      * Destructor.
@@ -40,9 +40,9 @@ public:
      *  Documentation for parameters required by each solver can be found in the
      *  documentation for the solver.
      */
-    AMP::shared_ptr<AMP::Database> d_db;
+    std::shared_ptr<AMP::Database> d_db;
 
-    AMP::shared_ptr<AMP::Operator::Operator> d_pOperator;
+    std::shared_ptr<AMP::Operator::Operator> d_pOperator;
 
 protected:
 private:

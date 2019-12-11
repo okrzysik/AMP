@@ -510,14 +510,14 @@ std::vector<double> MMSTrigonometric::getStressTensor( double x, double y, doubl
 
 
 // MMSBuilder
-AMP::shared_ptr<MMS> MMSBuilder::createMMS( AMP::shared_ptr<AMP::Database> mmsDatabase )
+std::shared_ptr<MMS> MMSBuilder::createMMS( std::shared_ptr<AMP::Database> mmsDatabase )
 {
-    AMP::shared_ptr<MMS> mms;
+    std::shared_ptr<MMS> mms;
     std::string name = mmsDatabase->getWithDefault<std::string>( "name", "One" );
     if ( name == "Trigonometric" ) {
-        mms = AMP::shared_ptr<MMS>( new MMSTrigonometric );
+        mms = std::shared_ptr<MMS>( new MMSTrigonometric );
     } else if ( name == "Linear" ) {
-        mms = AMP::shared_ptr<MMS>( new MMSLinear );
+        mms = std::shared_ptr<MMS>( new MMSLinear );
     } else {
         std::cerr << "Error: AMP::MechanicsManufacturedSolution::MMS" << name << " is not defined"
                   << std::endl;

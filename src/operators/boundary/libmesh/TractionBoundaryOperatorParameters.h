@@ -10,7 +10,7 @@ namespace Operator {
 class TractionBoundaryOperatorParameters : public OperatorParameters
 {
 public:
-    explicit TractionBoundaryOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit TractionBoundaryOperatorParameters( std::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     {
     }

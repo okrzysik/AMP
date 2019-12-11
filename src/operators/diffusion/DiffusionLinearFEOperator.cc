@@ -6,12 +6,12 @@ namespace AMP {
 namespace Operator {
 
 DiffusionLinearFEOperator::DiffusionLinearFEOperator(
-    const AMP::shared_ptr<DiffusionLinearFEOperatorParameters> &params )
+    const std::shared_ptr<DiffusionLinearFEOperatorParameters> &params )
     : LinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 
-    d_diffLinElem = AMP::dynamic_pointer_cast<DiffusionLinearElement>( d_elemOp );
+    d_diffLinElem = std::dynamic_pointer_cast<DiffusionLinearElement>( d_elemOp );
 
     AMP_INSIST( ( ( d_diffLinElem.get() ) != nullptr ),
                 "d_elemOp is not of type DiffusionLinearElement" );
@@ -30,10 +30,10 @@ DiffusionLinearFEOperator::DiffusionLinearFEOperator(
 }
 
 
-void DiffusionLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParameters> &oparams )
+void DiffusionLinearFEOperator::preAssembly( const std::shared_ptr<OperatorParameters> &oparams )
 {
-    AMP::shared_ptr<DiffusionLinearFEOperatorParameters> params =
-        AMP::dynamic_pointer_cast<DiffusionLinearFEOperatorParameters>( oparams );
+    std::shared_ptr<DiffusionLinearFEOperatorParameters> params =
+        std::dynamic_pointer_cast<DiffusionLinearFEOperatorParameters>( oparams );
 
     if ( d_iDebugPrintInfoLevel > 7 ) {
         AMP::pout << "DiffusionLinearFEOperator::preAssembly, entering" << std::endl;
@@ -213,7 +213,7 @@ void DiffusionLinearFEOperator::postElementOperation()
 }
 
 
-AMP::shared_ptr<DiffusionTransportModel> DiffusionLinearFEOperator::getTransportModel()
+std::shared_ptr<DiffusionTransportModel> DiffusionLinearFEOperator::getTransportModel()
 {
     return d_transportModel;
 }

@@ -7,8 +7,8 @@
 #include "AMP/vectors/Vector.h"
 
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "ColumnOperatorParameters.h"
+#include <memory>
 
 namespace AMP {
 namespace Operator {
@@ -16,9 +16,9 @@ namespace Operator {
 class RowOperator : public Operator
 {
 public:
-    typedef AMP::shared_ptr<RowOperator> shared_ptr;
+    typedef std::shared_ptr<RowOperator> shared_ptr;
 
-    explicit RowOperator( const AMP::shared_ptr<OperatorParameters> &params ) : Operator()
+    explicit RowOperator( const std::shared_ptr<OperatorParameters> &params ) : Operator()
     {
         (void) params;
         getAllJacobian = false;
@@ -27,10 +27,10 @@ public:
 
     virtual ~RowOperator() {}
 
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params ) override
+    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override
     {
-        AMP::shared_ptr<ColumnOperatorParameters> fParams =
-            AMP::dynamic_pointer_cast<ColumnOperatorParameters>( params );
+        std::shared_ptr<ColumnOperatorParameters> fParams =
+            std::dynamic_pointer_cast<ColumnOperatorParameters>( params );
 
         AMP_INSIST( ( fParams.get() != nullptr ), "RowOperator::reset parameter object is NULL" );
 
@@ -44,7 +44,7 @@ public:
 
     void resetScaling( int idx, double a ) { scalea[idx] = a; }
 
-    void append( AMP::shared_ptr<Operator> op, double a )
+    void append( std::shared_ptr<Operator> op, double a )
     {
         AMP_INSIST( ( op.get() != nullptr ),
                     "AMP::RowOperator::appendRow input argument is a NULL operator" );
@@ -65,22 +65,22 @@ public:
         return d_OutputVariable;
     }
 
-    AMP::shared_ptr<Operator> getOperator( const int i ) { return d_Operators[i]; }
+    std::shared_ptr<Operator> getOperator( const int i ) { return d_Operators[i]; }
 
     int getNumberOfOperators( void ) { return d_Operators.size(); }
 
 protected:
-    virtual AMP::shared_ptr<OperatorParameters>
+    virtual std::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                   AMP::shared_ptr<OperatorParameters> params = nullptr ) override
+                   std::shared_ptr<OperatorParameters> params = nullptr ) override
     {
-        AMP::shared_ptr<AMP::Database> db;
+        std::shared_ptr<AMP::Database> db;
 
-        AMP::shared_ptr<ColumnOperatorParameters> opParameters(
+        std::shared_ptr<ColumnOperatorParameters> opParameters(
             new ColumnOperatorParameters( db ) );
 
-        AMP::shared_ptr<OperatorParameters> rtParameters( new OperatorParameters( db ) );
+        std::shared_ptr<OperatorParameters> rtParameters( new OperatorParameters( db ) );
 
         if ( type == "Jacobian" ) {
             if ( getAllJacobian ) {
@@ -91,7 +91,7 @@ protected:
                         ( d_Operators[i]->getParameters( type, u, params ) );
                 }
 
-                rtParameters = AMP::dynamic_pointer_cast<OperatorParameters>( opParameters );
+                rtParameters = std::dynamic_pointer_cast<OperatorParameters>( opParameters );
             } else {
                 ( opParameters->d_OperatorParameters ).resize( d_paramsize );
 
@@ -100,7 +100,7 @@ protected:
                         ( d_Operators[i]->getParameters( type, u, params ) );
                 }
 
-                rtParameters = AMP::dynamic_pointer_cast<OperatorParameters>( opParameters );
+                rtParameters = std::dynamic_pointer_cast<OperatorParameters>( opParameters );
                 // rtParameters = (d_Operators[0]->getJacobianParameters(u));
             }
         } else {
@@ -111,7 +111,7 @@ protected:
     }
 
 
-    std::vector<AMP::shared_ptr<Operator>> d_Operators;
+    std::vector<std::shared_ptr<Operator>> d_Operators;
 
     std::vector<double> scalea;
     int d_paramsize;

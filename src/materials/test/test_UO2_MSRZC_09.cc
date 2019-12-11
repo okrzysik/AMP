@@ -28,7 +28,7 @@ int main( int argc, char **argv )
     bool good = true;
 
     // test constructors
-    AMP::shared_ptr<AMP::Materials::Material> mat =
+    std::shared_ptr<AMP::Materials::Material> mat =
         AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( "UO2_MSRZC_09" );
     auto prop = mat->property( "ThermalConductivity" );
 
@@ -47,8 +47,8 @@ int main( int argc, char **argv )
 
     // test material accessors, all arguments present
     size_t n = 10;
-    AMP::shared_ptr<std::vector<double>> tv( new std::vector<double>( n ) );
-    AMP::shared_ptr<std::vector<double>> uv( new std::vector<double>( n ) );
+    std::shared_ptr<std::vector<double>> tv( new std::vector<double>( n ) );
+    std::shared_ptr<std::vector<double>> uv( new std::vector<double>( n ) );
     vector<double> tcv( n );
     for ( size_t i = 0; i < n; i++ ) {
         ( *tv )[i] = 563.4;
@@ -57,7 +57,7 @@ int main( int argc, char **argv )
 
     // Block for temporary variables
     {
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
+        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
         argMap.insert( std::make_pair( "temperature", tv ) );
         argMap.insert( std::make_pair( "concentration", uv ) );
 
@@ -81,7 +81,7 @@ int main( int argc, char **argv )
 
     // Block for temporary variables
     {
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
+        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
         argMap.insert( std::make_pair( "temperature", tv ) );
         std::vector<double> tcv_def( tcv );
         prop->evalv( tcv_def, argMap );
@@ -92,7 +92,7 @@ int main( int argc, char **argv )
 
     // test material accessors, no arguments present
     {
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
+        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
         std::vector<double> tcv_def( tcv );
         prop->evalv( tcv_def, argMap );
         for ( size_t i = 0; i < n; i++ ) {

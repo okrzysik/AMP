@@ -155,7 +155,7 @@ private:
     Teuchos::Comm<RTOpPack::index_type> *d_comm;
 
     // Get shared_ptr to *this
-    AMP::shared_ptr<const ThyraVectorWrapper> shared_from_this() const;
+    std::shared_ptr<const ThyraVectorWrapper> shared_from_this() const;
 
     friend class ThyraVector;
 };

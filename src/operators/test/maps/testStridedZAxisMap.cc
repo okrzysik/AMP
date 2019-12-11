@@ -60,7 +60,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // read the meshe
     auto meshDatabase = inputDatabase->getDatabase( "Mesh" );
-    auto meshParams   = AMP::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
+    auto meshParams   = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( globalComm );
     auto mesh    = AMP::Mesh::Mesh::buildMesh( meshParams );
     auto fooMesh = mesh->Subset( "Foo" );
@@ -80,8 +80,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, barDofsPerNode );
 
     // and two vectors
-    auto variable1    = AMP::make_shared<AMP::LinearAlgebra::Variable>( "fooname" );
-    auto variable2    = AMP::make_shared<AMP::LinearAlgebra::Variable>( "barname" );
+    auto variable1    = std::make_shared<AMP::LinearAlgebra::Variable>( "fooname" );
+    auto variable2    = std::make_shared<AMP::LinearAlgebra::Variable>( "barname" );
     auto fooFooVector = AMP::LinearAlgebra::createVector( fooDofManager, variable1, split );
     auto barFooVector = fooFooVector->cloneVector();
     auto tmpFooVector = fooFooVector->cloneVector();
@@ -93,7 +93,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto myVector = AMP::LinearAlgebra::MultiVector::create( "MultiSolutionVec", globalComm );
     myVector->addVector( fooFooVector );
     myVector->addVector( barBarVector );
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> otherVector =
+    std::shared_ptr<AMP::LinearAlgebra::MultiVector> otherVector =
         AMP::LinearAlgebra::MultiVector::create( "MultiSolutionVec", globalComm );
     otherVector->addVector( tmpFooVector );
     otherVector->addVector( tmpBarVector );
@@ -114,13 +114,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // make map operator
     auto mapOperatorDatabase = inputDatabase->getDatabase( "MapOperator" );
     auto mapOperatorParameters =
-        AMP::make_shared<AMP::Operator::Map3to1to3Parameters>( mapOperatorDatabase );
+        std::make_shared<AMP::Operator::Map3to1to3Parameters>( mapOperatorDatabase );
     mapOperatorParameters->d_Mesh1       = fooMesh;
     mapOperatorParameters->d_Mesh2       = barMesh;
     mapOperatorParameters->d_BoundaryID1 = fooBoundaryID;
     mapOperatorParameters->d_BoundaryID2 = barBoundaryID;
     mapOperatorParameters->d_MapComm     = globalComm;
-    auto mapOperator = AMP::make_shared<AMP::Operator::StridedZAxisMap>( mapOperatorParameters );
+    auto mapOperator = std::make_shared<AMP::Operator::StridedZAxisMap>( mapOperatorParameters );
 
     // apply it
     AMP::LinearAlgebra::Vector::shared_ptr dummyVector;

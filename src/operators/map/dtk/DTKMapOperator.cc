@@ -12,12 +12,12 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor
-DTKMapOperator::DTKMapOperator( const AMP::shared_ptr<OperatorParameters> &params )
+DTKMapOperator::DTKMapOperator( const std::shared_ptr<OperatorParameters> &params )
     : d_mapOnThisProc( false ), d_dtk_operator( nullptr )
 {
     // Get the operator parameters.
-    AMP::shared_ptr<DTKMapOperatorParameters> dtk_op_params =
-        AMP::dynamic_pointer_cast<DTKMapOperatorParameters>( params );
+    std::shared_ptr<DTKMapOperatorParameters> dtk_op_params =
+        std::dynamic_pointer_cast<DTKMapOperatorParameters>( params );
     AMP_ASSERT( dtk_op_params );
 
     int inComm = -1;
@@ -38,11 +38,11 @@ DTKMapOperator::DTKMapOperator( const AMP::shared_ptr<OperatorParameters> &param
     };
 
     // Create DTK domain mesh objects.
-    d_domain_mesh = AMP::make_shared<DTKAMPMeshManager>(
+    d_domain_mesh = std::make_shared<DTKAMPMeshManager>(
         dtk_op_params->d_domain_mesh, dtk_op_params->d_domain_dofs, select_all );
 
     // Create DTK range mesh objects.
-    d_range_mesh = AMP::make_shared<DTKAMPMeshManager>(
+    d_range_mesh = std::make_shared<DTKAMPMeshManager>(
         dtk_op_params->d_range_mesh, dtk_op_params->d_range_dofs, select_all );
 }
 
@@ -74,7 +74,7 @@ void DTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             dtk_parameters.sublist( "Consistent Interpolation" );
             dtk_parameters.sublist( "Consistent Interpolation" )
                 .set( "Keep Missed Range Data", true );
-            d_dtk_operator = AMP::shared_ptr<DataTransferKit::MapOperator>(
+            d_dtk_operator = std::shared_ptr<DataTransferKit::MapOperator>(
                 new DataTransferKit::ConsistentInterpolationOperator(
                     u_vector->getMap(), r_vector->getMap(), dtk_parameters ) );
 

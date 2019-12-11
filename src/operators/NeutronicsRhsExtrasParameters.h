@@ -3,8 +3,8 @@
 
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 namespace AMP {
 namespace Operator {
@@ -17,14 +17,14 @@ namespace Operator {
 class NeutronicsRhsExtrasParameters : public OperatorParameters
 {
 public:
-    typedef AMP::shared_ptr<AMP::Database> SP_Database;
+    typedef std::shared_ptr<AMP::Database> SP_Database;
 
     explicit NeutronicsRhsExtrasParameters( const SP_Database &db ) : OperatorParameters( db )
     {
         d_numExtras = 0;
     }
 
-    //      AMP::shared_ptr<AMP::MeshUtils> d_MeshUtils;
+    //      std::shared_ptr<AMP::MeshUtils> d_MeshUtils;
     int d_numExtras;
     std::vector<std::string> d_extrasName;
 };

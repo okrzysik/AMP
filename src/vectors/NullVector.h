@@ -27,7 +27,7 @@ public: // Public constructors
      */
     static inline Vector::shared_ptr create( const std::string &name )
     {
-        return create( AMP::make_shared<Variable>( name ) );
+        return create( std::make_shared<Variable>( name ) );
     }
 
     /**
@@ -37,7 +37,7 @@ public: // Public constructors
      */
     static inline Vector::shared_ptr create( const Variable::shared_ptr name )
     {
-        return AMP::shared_ptr<NullVector>( new NullVector<TYPE>( name ) );
+        return std::shared_ptr<NullVector>( new NullVector<TYPE>( name ) );
     }
 
     virtual ~NullVector() = default;
@@ -45,9 +45,9 @@ public: // Public constructors
 
 public: // Functions inherited from Vector
     inline std::string type() const override { return "Null Vector"; }
-    inline AMP::shared_ptr<ParameterBase> getParameters() override
+    inline std::shared_ptr<ParameterBase> getParameters() override
     {
-        return AMP::shared_ptr<ParameterBase>();
+        return std::shared_ptr<ParameterBase>();
     }
     inline shared_ptr cloneVector( const Variable::shared_ptr name ) const override
     {

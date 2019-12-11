@@ -23,12 +23,12 @@ class NavierStokesGalWFFEOperator : public NonlinearFEOperator
 {
 public:
     explicit NavierStokesGalWFFEOperator(
-        const AMP::shared_ptr<NavierStokesGalWFFEOperatorParameters> &params );
+        const std::shared_ptr<NavierStokesGalWFFEOperatorParameters> &params );
 
     virtual ~NavierStokesGalWFFEOperator() {}
 
     void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                      AMP::shared_ptr<AMP::LinearAlgebra::Vector> r ) override;
+                      std::shared_ptr<AMP::LinearAlgebra::Vector> r ) override;
 
     void postAssembly() override;
 
@@ -36,9 +36,9 @@ public:
 
     void postElementOperation() override;
 
-    void reset( const AMP::shared_ptr<OperatorParameters> & ) override;
+    void reset( const std::shared_ptr<OperatorParameters> & ) override;
 
-    AMP::shared_ptr<OperatorParameters>
+    std::shared_ptr<OperatorParameters>
     getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u_in ) override;
 
     void init();
@@ -75,9 +75,9 @@ protected:
 
     std::vector<double> d_elementOutputVector;
 
-    AMP::shared_ptr<NavierStokesGalWFElement> d_flowGalWFElem;
+    std::shared_ptr<NavierStokesGalWFElement> d_flowGalWFElem;
 
-    AMP::shared_ptr<FlowTransportModel> d_transportModel; /**< Flow Transport model. */
+    std::shared_ptr<FlowTransportModel> d_transportModel; /**< Flow Transport model. */
 
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_inVec; /**< Input vector. */
 
@@ -93,15 +93,15 @@ protected:
 
     bool d_coupledFormulation;
 
-    AMP::shared_ptr<AMP::Discretization::DOFManager>
+    std::shared_ptr<AMP::Discretization::DOFManager>
         d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
 
 private:
     bool d_isInitialized; /**< A flag that is true if init() has been called and false otherwsie. */
 
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
+    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
 
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_outVariables; /**< Output variable. */
+    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_outVariables; /**< Output variable. */
 };
 } // namespace Operator
 } // namespace AMP

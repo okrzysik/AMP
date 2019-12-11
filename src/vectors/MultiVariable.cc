@@ -65,8 +65,8 @@ void MultiVariable::setVariable( size_t i, Variable::shared_ptr &p )
 }
 void MultiVariable::add( Variable::shared_ptr newVar )
 {
-    AMP::shared_ptr<MultiVariable> multivariable =
-        AMP::dynamic_pointer_cast<MultiVariable>( newVar );
+    std::shared_ptr<MultiVariable> multivariable =
+        std::dynamic_pointer_cast<MultiVariable>( newVar );
     if ( multivariable.get() != nullptr ) {
         auto curVar = multivariable->beginVariable();
         while ( curVar != multivariable->endVariable() ) {
@@ -119,7 +119,7 @@ bool MultiVariable::operator==( const Variable &rhs ) const
 
 Variable::shared_ptr MultiVariable::cloneVariable( const std::string &name ) const
 {
-    AMP::shared_ptr<MultiVariable> retVal( new MultiVariable( name ) );
+    std::shared_ptr<MultiVariable> retVal( new MultiVariable( name ) );
     retVal->d_vVariables.resize( d_vVariables.size() );
     std::copy( d_vVariables.begin(), d_vVariables.end(), retVal->d_vVariables.begin() );
     return retVal;

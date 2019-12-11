@@ -18,33 +18,34 @@ void PetscVector::dataChanged()
 Vector::const_shared_ptr PetscVector::constView( Vector::const_shared_ptr inVector )
 {
     Vector::shared_ptr retVal;
-    if ( dynamic_pointer_cast<const PetscVector>( inVector ) ) {
+    if ( std::dynamic_pointer_cast<const PetscVector>( inVector ) ) {
         return inVector;
     } else if ( inVector->hasView<PetscVector>() ) {
         return inVector->getView<PetscVector>();
-    } else if ( dynamic_pointer_cast<const ManagedVector>( inVector ) ) {
-        auto inVector2 = AMP::const_pointer_cast<Vector>( inVector );
-        retVal         = AMP::make_shared<ManagedPetscVector>( inVector2 );
+    } else if ( std::dynamic_pointer_cast<const ManagedVector>( inVector ) ) {
+        auto inVector2 = std::const_pointer_cast<Vector>( inVector );
+        retVal         = std::make_shared<ManagedPetscVector>( inVector2 );
         retVal->setVariable( inVector->getVariable() );
         inVector->registerView( retVal );
-    } else if ( dynamic_pointer_cast<const VectorEngine>( inVector ) ) {
-        auto inVector2           = AMP::const_pointer_cast<Vector>( inVector );
-        auto newParams           = AMP::make_shared<ManagedPetscVectorParameters>();
-        newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
+    } else if ( std::dynamic_pointer_cast<const VectorEngine>( inVector ) ) {
+        auto inVector2           = std::const_pointer_cast<Vector>( inVector );
+        auto newParams           = std::make_shared<ManagedPetscVectorParameters>();
+        newParams->d_Engine      = std::dynamic_pointer_cast<VectorEngine>( inVector2 );
         newParams->d_CloneEngine = false;
         AMP_INSIST( inVector->getCommunicationList(),
                     "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();
         AMP_INSIST( inVector->getDOFManager(), "All vectors must have a DOFManager list" );
         newParams->d_DOFManager = inVector->getDOFManager();
-        auto newVector          = AMP::make_shared<ManagedPetscVector>( newParams );
-        dynamic_pointer_cast<DataChangeFirer>( inVector2 )->registerListener( newVector.get() );
+        auto newVector          = std::make_shared<ManagedPetscVector>( newParams );
+        std::dynamic_pointer_cast<DataChangeFirer>( inVector2 )
+            ->registerListener( newVector.get() );
         newVector->setVariable( inVector->getVariable() );
         newVector->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
         inVector->registerView( retVal );
         retVal = newVector;
     } else {
-        auto inVector2 = AMP::const_pointer_cast<Vector>( inVector );
+        auto inVector2 = std::const_pointer_cast<Vector>( inVector );
         retVal         = view( MultiVector::view( inVector2, inVector->getComm() ) );
         inVector->registerView( retVal );
     }
@@ -55,24 +56,24 @@ Vector::const_shared_ptr PetscVector::constView( Vector::const_shared_ptr inVect
 Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
 {
     Vector::shared_ptr retVal;
-    if ( dynamic_pointer_cast<PetscVector>( inVector ) ) {
+    if ( std::dynamic_pointer_cast<PetscVector>( inVector ) ) {
         retVal = inVector;
     } else if ( inVector->hasView<PetscVector>() ) {
         retVal = inVector->getView<PetscVector>();
-    } else if ( dynamic_pointer_cast<ManagedVector>( inVector ) ) {
+    } else if ( std::dynamic_pointer_cast<ManagedVector>( inVector ) ) {
         retVal = Vector::shared_ptr( new ManagedPetscVector( inVector ) );
         inVector->registerView( retVal );
-    } else if ( dynamic_pointer_cast<VectorEngine>( inVector ) ) {
-        auto newParams           = AMP::make_shared<ManagedPetscVectorParameters>();
-        newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector );
+    } else if ( std::dynamic_pointer_cast<VectorEngine>( inVector ) ) {
+        auto newParams           = std::make_shared<ManagedPetscVectorParameters>();
+        newParams->d_Engine      = std::dynamic_pointer_cast<VectorEngine>( inVector );
         newParams->d_CloneEngine = false;
         AMP_INSIST( inVector->getCommunicationList(),
                     "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();
         AMP_INSIST( inVector->getDOFManager(), "All vectors must have a DOFManager list" );
         newParams->d_DOFManager = inVector->getDOFManager();
-        auto newVector          = AMP::make_shared<ManagedPetscVector>( newParams );
-        dynamic_pointer_cast<DataChangeFirer>( inVector )->registerListener( newVector.get() );
+        auto newVector          = std::make_shared<ManagedPetscVector>( newParams );
+        std::dynamic_pointer_cast<DataChangeFirer>( inVector )->registerListener( newVector.get() );
         newVector->setVariable( inVector->getVariable() );
         newVector->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
         inVector->registerView( newVector );

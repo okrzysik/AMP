@@ -14,7 +14,7 @@ namespace TimeIntegrator {
 class OxideTimeIntegratorParameters : public TimeIntegratorParameters
 {
 public:
-    explicit OxideTimeIntegratorParameters( const AMP::shared_ptr<AMP::Database> db );
+    explicit OxideTimeIntegratorParameters( const std::shared_ptr<AMP::Database> db );
 
     // Surface mesh for the oxide calculation
     AMP::Mesh::Mesh::shared_ptr d_mesh;

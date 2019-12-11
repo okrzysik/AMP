@@ -1,8 +1,8 @@
 #ifndef included_AMP_VectorData
 #define included_AMP_VectorData
 
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/CommunicationList.h"
+#include <memory>
 #include <vector>
 
 
@@ -536,7 +536,7 @@ public: // Non virtual functions
      *  of the current vector only (not vectors it contains).
      *  It should NOT be used by users.
      */
-    AMP::shared_ptr<UpdateState> getUpdateStatusPtr() const;
+    std::shared_ptr<UpdateState> getUpdateStatusPtr() const;
 
     /** \brief  Tie the current update state to another
      * \details  This sets the pointer to the update state
@@ -544,7 +544,7 @@ public: // Non virtual functions
      *  It should NOT be used by users.
      * \param  rhs Pointer to share update state with
      */
-    void setUpdateStatusPtr( AMP::shared_ptr<UpdateState> rhs );
+    void setUpdateStatusPtr( std::shared_ptr<UpdateState> rhs );
 
 
 protected: // Internal data
@@ -557,11 +557,11 @@ protected: // Internal data
      *  Because a vector can be composed of vectors,
      *  the update state needs to be shared between them.
      */
-    AMP::shared_ptr<UpdateState> d_UpdateState;
+    std::shared_ptr<UpdateState> d_UpdateState;
 
     // Ghost data
-    AMP::shared_ptr<std::vector<double>> d_Ghosts;
-    AMP::shared_ptr<std::vector<double>> d_AddBuffer;
+    std::shared_ptr<std::vector<double>> d_Ghosts;
+    std::shared_ptr<std::vector<double>> d_AddBuffer;
 
     // Friends
     friend class VectorOperations;

@@ -1,7 +1,7 @@
 #ifndef MMS_H
 #define MMS_H
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <valarray>
 
@@ -45,7 +45,7 @@ class Database;
 class ManufacturedSolution
 {
 public:
-    explicit ManufacturedSolution( AMP::shared_ptr<Database> db );
+    explicit ManufacturedSolution( std::shared_ptr<Database> db );
 
     /**
      * Evaluate the manufactured solution at a point.

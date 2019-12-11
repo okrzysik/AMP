@@ -38,13 +38,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( global_input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db    = global_input_db->getDatabase( "Mesh" );
-    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( globalComm );
     auto manager = AMP::Mesh::Mesh::buildMesh( meshParams );
 
-    AMP::shared_ptr<AMP::Operator::CoupledOperator> coupledOp;
-    AMP::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator;
-    AMP::shared_ptr<AMP::Operator::PelletStackOperator> pelletStackOp;
+    std::shared_ptr<AMP::Operator::CoupledOperator> coupledOp;
+    std::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator;
+    std::shared_ptr<AMP::Operator::PelletStackOperator> pelletStackOp;
     helperCreateAllOperatorsForPelletMechanics(
         manager, globalComm, global_input_db, coupledOp, linearColumnOperator, pelletStackOp );
 
@@ -76,16 +76,16 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto linearSolver_db      = nonlinearSolver_db->getDatabase( "LinearSolver" );
     auto pelletStackSolver_db = linearSolver_db->getDatabase( "PelletStackSolver" );
 
-    AMP::shared_ptr<AMP::Solver::SolverStrategy> pelletStackSolver;
+    std::shared_ptr<AMP::Solver::SolverStrategy> pelletStackSolver;
     helperBuildStackSolverForPelletMechanics(
         pelletStackSolver_db, pelletStackOp, linearColumnOperator, pelletStackSolver );
 
     auto nonlinearSolverParams =
-        AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = coupledOp;
     nonlinearSolverParams->d_pInitialGuess = solVec;
-    auto nonlinearSolver = AMP::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
+    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
     auto linearSolver = nonlinearSolver->getKrylovSolver();
     linearSolver->setPreconditioner( pelletStackSolver );

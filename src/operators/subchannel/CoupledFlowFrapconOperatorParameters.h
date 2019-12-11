@@ -3,7 +3,7 @@
 
 #include "AMP/operators/ColumnOperatorParameters.h"
 #include "AMP/operators/Operator.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <vector>
 
@@ -18,18 +18,18 @@ namespace Operator {
 class CoupledFlowFrapconOperatorParameters : public ColumnOperatorParameters
 {
 public:
-    explicit CoupledFlowFrapconOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit CoupledFlowFrapconOperatorParameters( std::shared_ptr<AMP::Database> db )
         : ColumnOperatorParameters( db )
     {
     }
 
     virtual ~CoupledFlowFrapconOperatorParameters() {}
 
-    AMP::shared_ptr<Operator> d_Map3to1;
+    std::shared_ptr<Operator> d_Map3to1;
 
-    AMP::shared_ptr<Operator> d_Map1to3;
+    std::shared_ptr<Operator> d_Map1to3;
 
-    AMP::shared_ptr<Operator> d_FlowOperator;
+    std::shared_ptr<Operator> d_FlowOperator;
 };
 } // namespace Operator
 } // namespace AMP

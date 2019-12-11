@@ -5,7 +5,7 @@
 namespace AMP {
 namespace Solver {
 
-MLoptions::MLoptions( AMP::shared_ptr<AMP::Database> db )
+MLoptions::MLoptions( std::shared_ptr<AMP::Database> db )
     : d_problemType( db->getWithDefault<std::string>( "problem_type", "SA" ) )
 {
     addDefaults( d_problemType, db );
@@ -49,12 +49,12 @@ MLoptions::MLoptions( AMP::shared_ptr<AMP::Database> db )
 }
 
 template<class TYPE>
-static inline void addEntry( AMP::shared_ptr<AMP::Database> db, AMP::string_view key, TYPE value )
+static inline void addEntry( std::shared_ptr<AMP::Database> db, AMP::string_view key, TYPE value )
 {
     if ( !db->keyExists( key ) )
         db->putScalar( key, value );
 }
-void MLoptions::addDefaults( const std::string &problemType, AMP::shared_ptr<AMP::Database> db )
+void MLoptions::addDefaults( const std::string &problemType, std::shared_ptr<AMP::Database> db )
 {
     if ( problemType == "SA" ) {
         addEntry( db, "max_levels", 10 );

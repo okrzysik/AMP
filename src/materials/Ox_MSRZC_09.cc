@@ -136,7 +136,7 @@ static const double thermDiffRanges[2][2]     = { { TminVal, TmaxVal }, { uminVa
 
 Ox_MSRZC_09::Ox_MSRZC_09()
 {
-    d_propertyMap = new std::map<std::string, AMP::shared_ptr<Property<double>>>();
+    d_propertyMap = new std::map<std::string, std::shared_ptr<Property<double>>>();
     INSERT_PROPERTY_IN_MAP( FickCoefficient, Ox_MSRZC_09_NS );
     INSERT_PROPERTY_IN_MAP( SoretCoefficient, Ox_MSRZC_09_NS );
     INSERT_PROPERTY_IN_MAP( ThermalDiffusionCoefficient, Ox_MSRZC_09_NS );

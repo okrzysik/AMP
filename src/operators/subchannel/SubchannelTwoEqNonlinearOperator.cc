@@ -17,7 +17,7 @@ namespace Operator {
 
 // Constructor
 SubchannelTwoEqNonlinearOperator::SubchannelTwoEqNonlinearOperator(
-    const AMP::shared_ptr<SubchannelOperatorParameters> &params )
+    const std::shared_ptr<SubchannelOperatorParameters> &params )
     : Operator( params ),
       d_Pout( 0 ),
       d_Tin( 0 ),
@@ -47,10 +47,10 @@ SubchannelTwoEqNonlinearOperator::SubchannelTwoEqNonlinearOperator(
 
 
 // reset
-void SubchannelTwoEqNonlinearOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void SubchannelTwoEqNonlinearOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
-    AMP::shared_ptr<SubchannelOperatorParameters> myparams =
-        AMP::dynamic_pointer_cast<SubchannelOperatorParameters>( params );
+    std::shared_ptr<SubchannelOperatorParameters> myparams =
+        std::dynamic_pointer_cast<SubchannelOperatorParameters>( params );
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
     d_params = myparams;
@@ -221,11 +221,11 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
         double P_in = P_scale * inputVec->getValueByGlobalID( dofs[1] );
 
         // evaluate enthalpy at inlet
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>> enthalpyArgMap;
+        std::map<std::string, std::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert( std::make_pair(
-            std::string( "temperature" ), AMP::make_shared<std::vector<double>>( 1, d_Tin ) ) );
+            std::string( "temperature" ), std::make_shared<std::vector<double>>( 1, d_Tin ) ) );
         enthalpyArgMap.insert( std::make_pair( std::string( "pressure" ),
-                                               AMP::make_shared<std::vector<double>>( 1, P_in ) ) );
+                                               std::make_shared<std::vector<double>>( 1, P_in ) ) );
         std::vector<double> enthalpyResult( 1 );
         d_subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         double h_eval = enthalpyResult[0];
@@ -331,26 +331,26 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                     ( 1.0 / 2.0 ) * ( p_minus + p_plus ); // pressure evaluated at cell center
 
                 // evaluate density at upper face
-                std::map<std::string, AMP::shared_ptr<std::vector<double>>> volumeArgMap_plus;
+                std::map<std::string, std::shared_ptr<std::vector<double>>> volumeArgMap_plus;
                 volumeArgMap_plus.insert(
                     std::make_pair( std::string( "enthalpy" ),
-                                    AMP::make_shared<std::vector<double>>( 1, h_plus ) ) );
+                                    std::make_shared<std::vector<double>>( 1, h_plus ) ) );
                 volumeArgMap_plus.insert(
                     std::make_pair( std::string( "pressure" ),
-                                    AMP::make_shared<std::vector<double>>( 1, p_plus ) ) );
+                                    std::make_shared<std::vector<double>>( 1, p_plus ) ) );
                 std::vector<double> volumeResult_plus( 1 );
                 d_subchannelPhysicsModel->getProperty(
                     "SpecificVolume", volumeResult_plus, volumeArgMap_plus );
                 double rho_plus = 1.0 / volumeResult_plus[0];
 
                 // evaluate density at lower face
-                std::map<std::string, AMP::shared_ptr<std::vector<double>>> volumeArgMap_minus;
+                std::map<std::string, std::shared_ptr<std::vector<double>>> volumeArgMap_minus;
                 volumeArgMap_minus.insert(
                     std::make_pair( std::string( "enthalpy" ),
-                                    AMP::make_shared<std::vector<double>>( 1, h_minus ) ) );
+                                    std::make_shared<std::vector<double>>( 1, h_minus ) ) );
                 volumeArgMap_minus.insert(
                     std::make_pair( std::string( "pressure" ),
-                                    AMP::make_shared<std::vector<double>>( 1, p_minus ) ) );
+                                    std::make_shared<std::vector<double>>( 1, p_minus ) ) );
                 std::vector<double> volumeResult_minus( 1 );
                 d_subchannelPhysicsModel->getProperty(
                     "SpecificVolume", volumeResult_minus, volumeArgMap_minus );
@@ -362,13 +362,13 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                     ( 1.0 / 2.0 ) * ( u_minus + u_plus ); // velocity evaluated at cell center
 
                 // evaluate density at cell center
-                std::map<std::string, AMP::shared_ptr<std::vector<double>>> volumeArgMap_avg;
+                std::map<std::string, std::shared_ptr<std::vector<double>>> volumeArgMap_avg;
                 volumeArgMap_avg.insert(
                     std::make_pair( std::string( "enthalpy" ),
-                                    AMP::make_shared<std::vector<double>>( 1, h_avg ) ) );
+                                    std::make_shared<std::vector<double>>( 1, h_avg ) ) );
                 volumeArgMap_avg.insert(
                     std::make_pair( std::string( "pressure" ),
-                                    AMP::make_shared<std::vector<double>>( 1, p_avg ) ) );
+                                    std::make_shared<std::vector<double>>( 1, p_avg ) ) );
                 std::vector<double> volumeResult_avg( 1 );
                 d_subchannelPhysicsModel->getProperty(
                     "SpecificVolume", volumeResult_avg, volumeArgMap_avg );
@@ -385,26 +385,26 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                     AMP_WARNING( ss.str() );
 
                     // evaluate temperature at cell center
-                    std::map<std::string, AMP::shared_ptr<std::vector<double>>> temperatureArgMap;
+                    std::map<std::string, std::shared_ptr<std::vector<double>>> temperatureArgMap;
                     temperatureArgMap.insert(
                         std::make_pair( std::string( "enthalpy" ),
-                                        AMP::make_shared<std::vector<double>>( 1, h_avg ) ) );
+                                        std::make_shared<std::vector<double>>( 1, h_avg ) ) );
                     temperatureArgMap.insert(
                         std::make_pair( std::string( "pressure" ),
-                                        AMP::make_shared<std::vector<double>>( 1, p_avg ) ) );
+                                        std::make_shared<std::vector<double>>( 1, p_avg ) ) );
                     std::vector<double> temperatureResult( 1 );
                     d_subchannelPhysicsModel->getProperty(
                         "Temperature", temperatureResult, temperatureArgMap );
                     double T_avg = temperatureResult[0];
 
                     // evaluate viscosity at cell center
-                    std::map<std::string, AMP::shared_ptr<std::vector<double>>> viscosityArgMap;
+                    std::map<std::string, std::shared_ptr<std::vector<double>>> viscosityArgMap;
                     viscosityArgMap.insert(
                         std::make_pair( std::string( "temperature" ),
-                                        AMP::make_shared<std::vector<double>>( 1, T_avg ) ) );
+                                        std::make_shared<std::vector<double>>( 1, T_avg ) ) );
                     viscosityArgMap.insert(
                         std::make_pair( std::string( "density" ),
-                                        AMP::make_shared<std::vector<double>>( 1, rho_avg ) ) );
+                                        std::make_shared<std::vector<double>>( 1, rho_avg ) ) );
                     std::vector<double> viscosityResult( 1 );
                     d_subchannelPhysicsModel->getProperty(
                         "DynamicViscosity", viscosityResult, viscosityArgMap );
@@ -489,14 +489,14 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
     PROFILE_STOP( "apply" );
 }
 
-AMP::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator::getJacobianParameters(
+std::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator::getJacobianParameters(
     AMP::LinearAlgebra::Vector::const_shared_ptr u_in )
 {
-    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
 
     tmp_db->putScalar( "name", "SubchannelTwoEqLinearOperator" );
 
-    AMP::shared_ptr<SubchannelOperatorParameters> outParams(
+    std::shared_ptr<SubchannelOperatorParameters> outParams(
         new SubchannelOperatorParameters( tmp_db ) );
     outParams->d_db             = d_params->d_db;
     auto u                      = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
@@ -513,7 +513,7 @@ AMP::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator::getJacobia
 
 // function used in reset to get double parameter or set default if missing
 double SubchannelTwoEqNonlinearOperator::getDoubleParameter(
-    AMP::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<SubchannelOperatorParameters> myparams,
     std::string paramString,
     double defaultValue )
 {
@@ -529,7 +529,7 @@ double SubchannelTwoEqNonlinearOperator::getDoubleParameter(
 
 // function used in reset to get integer parameter or set default if missing
 int SubchannelTwoEqNonlinearOperator::getIntegerParameter(
-    AMP::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<SubchannelOperatorParameters> myparams,
     std::string paramString,
     int defaultValue )
 {
@@ -545,7 +545,7 @@ int SubchannelTwoEqNonlinearOperator::getIntegerParameter(
 
 // function used in reset to get string parameter or set default if missing
 std::string SubchannelTwoEqNonlinearOperator::getStringParameter(
-    AMP::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<SubchannelOperatorParameters> myparams,
     std::string paramString,
     std::string defaultValue )
 {

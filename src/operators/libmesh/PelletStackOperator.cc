@@ -7,7 +7,7 @@ namespace AMP {
 namespace Operator {
 
 PelletStackOperator::PelletStackOperator(
-    const AMP::shared_ptr<PelletStackOperatorParameters> &params )
+    const std::shared_ptr<PelletStackOperatorParameters> &params )
     : Operator( params )
 {
     d_totalNumberOfPellets = ( params->d_db )->getScalar<int>( "TOTAL_NUMBER_OF_PELLETS" );
@@ -44,10 +44,10 @@ PelletStackOperator::PelletStackOperator(
     } // end for pellId
 }
 
-void PelletStackOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void PelletStackOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
-    AMP::shared_ptr<PelletStackOperatorParameters> myParams =
-        AMP::dynamic_pointer_cast<PelletStackOperatorParameters>( params );
+    std::shared_ptr<PelletStackOperatorParameters> myParams =
+        std::dynamic_pointer_cast<PelletStackOperatorParameters>( params );
     d_currentPellet = myParams->d_currentPellet;
 }
 
@@ -183,8 +183,8 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
     size_t numMaps  = d_n2nMaps->getNumberOfOperators();
     if ( currPellIdx != -1 ) {
         for ( size_t m = 0; m < numMaps; m++ ) {
-            AMP::shared_ptr<AMP::Operator::NodeToNodeMap> currMap =
-                AMP::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
+            std::shared_ptr<AMP::Operator::NodeToNodeMap> currMap =
+                std::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
                     d_n2nMaps->getOperator( m ) );
             if ( currMap->getMesh( 2 ) == d_meshes[currPellIdx] ) {
                 currMap->applyStart( u, nullVec );
@@ -194,8 +194,8 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
     }
     if ( prevPellIdx != -1 ) {
         for ( size_t m = 0; m < numMaps; m++ ) {
-            AMP::shared_ptr<AMP::Operator::NodeToNodeMap> currMap =
-                AMP::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
+            std::shared_ptr<AMP::Operator::NodeToNodeMap> currMap =
+                std::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
                     d_n2nMaps->getOperator( m ) );
             if ( currMap->getMesh( 1 ) == d_meshes[prevPellIdx] ) {
                 currMap->applyStart( u, nullVec );
@@ -205,8 +205,8 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
     }
     if ( currPellIdx != -1 ) {
         for ( size_t m = 0; m < numMaps; m++ ) {
-            AMP::shared_ptr<AMP::Operator::NodeToNodeMap> currMap =
-                AMP::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
+            std::shared_ptr<AMP::Operator::NodeToNodeMap> currMap =
+                std::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
                     d_n2nMaps->getOperator( m ) );
             if ( ( currMap->getMesh( 2 ) ) == d_meshes[currPellIdx] ) {
                 currMap->applyFinish( u, nullVec );
@@ -216,8 +216,8 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
     }
     if ( prevPellIdx != -1 ) {
         for ( size_t m = 0; m < numMaps; m++ ) {
-            AMP::shared_ptr<AMP::Operator::NodeToNodeMap> currMap =
-                AMP::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
+            std::shared_ptr<AMP::Operator::NodeToNodeMap> currMap =
+                std::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
                     d_n2nMaps->getOperator( m ) );
             if ( ( currMap->getMesh( 1 ) ) == d_meshes[prevPellIdx] ) {
                 currMap->applyFinish( u, nullVec );

@@ -28,7 +28,7 @@ class LinearFEOperator : public LinearOperator
 public:
     //! Constructor. This copies the share pointer to the element operation from the input parameter
     //! object.
-    explicit LinearFEOperator( const AMP::shared_ptr<LinearFEOperatorParameters> &params );
+    explicit LinearFEOperator( const std::shared_ptr<LinearFEOperatorParameters> &params );
 
     //! Destructor
     virtual ~LinearFEOperator() {}
@@ -41,7 +41,7 @@ public:
       Also, the derived classes can access the parameters passed to the reset
       function by implementing this function.
       */
-    virtual void preAssembly( const AMP::shared_ptr<OperatorParameters> & ) = 0;
+    virtual void preAssembly( const std::shared_ptr<OperatorParameters> & ) = 0;
 
     /**
       This function will be called just after looping over all the elements to
@@ -72,7 +72,7 @@ public:
       This function creates the stiffness matrix and uses virtual
       function calls for setting values into the matrix.
       */
-    void reset( const AMP::shared_ptr<OperatorParameters> & ) override;
+    void reset( const std::shared_ptr<OperatorParameters> & ) override;
 
 protected:
     void createCurrentLibMeshElement();
@@ -83,9 +83,9 @@ protected:
 
     ::Elem *d_currElemPtr;
 
-    AMP::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
-    AMP::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
-    AMP::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
+    std::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
+    std::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
 };
 } // namespace Operator
 } // namespace AMP

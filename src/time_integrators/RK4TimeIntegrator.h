@@ -21,7 +21,7 @@ public:
     /**
      * Constructor that accepts parameter list.
      */
-    explicit RK4TimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters );
+    explicit RK4TimeIntegrator( std::shared_ptr<TimeIntegratorParameters> parameters );
 
     /**
      * Destructor.
@@ -31,14 +31,14 @@ public:
     /**
      * Initialize from parameter list.
      */
-    void initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override;
+    void initialize( std::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
      * Resets the internal state of the time integrator as needed.
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset Typically used after a regrid.
      */
-    void reset( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override;
+    void reset( std::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
      * Specify initial time step.
@@ -71,18 +71,18 @@ private:
     /**
      * Read data from input database.
      */
-    void getFromInput( AMP::shared_ptr<AMP::Database> input_db );
+    void getFromInput( std::shared_ptr<AMP::Database> input_db );
 
     /**
      * setup the vectors used by RK4
      */
     void setupVectors( void );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_new_solution;
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_k1_vec;
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_k2_vec;
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_k3_vec;
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_k4_vec;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_new_solution;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_k1_vec;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_k2_vec;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_k3_vec;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_k4_vec;
 };
 } // namespace TimeIntegrator
 } // namespace AMP

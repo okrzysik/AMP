@@ -8,9 +8,9 @@ namespace LinearAlgebra {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-AMP::shared_ptr<VectorOperations> MultiVectorOperations::cloneOperations() const
+std::shared_ptr<VectorOperations> MultiVectorOperations::cloneOperations() const
 {
-    auto ptr = AMP::make_shared<MultiVectorOperations>();
+    auto ptr = std::make_shared<MultiVectorOperations>();
     return ptr;
 }
 

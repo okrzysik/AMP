@@ -94,7 +94,7 @@ public:
      12. name: operatorComponentToEnableBoundsCheck, type: integer, default value: none
      acceptable values ()
     */
-    explicit PetscSNESSolver( AMP::shared_ptr<PetscSNESSolverParameters> parameters );
+    explicit PetscSNESSolver( std::shared_ptr<PetscSNESSolverParameters> parameters );
 
     /**
      * Default destructor.
@@ -106,14 +106,14 @@ public:
     @param [in] f : shared pointer to right hand side vector
     @param [out] u : shared pointer to approximate computed solution
      */
-    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+    void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Initialize the solution vector by copying the initial guess vector
      * @param [in] initialGuess: shared pointer to the initial guess vector.
      */
-    void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override;
+    void setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override;
 
     /**
      * return the PETSc SNES solver object
@@ -129,17 +129,17 @@ public:
     /**
      * Returns a shared pointer to the PetscKrylovSolver used internally for the linear solves
      */
-    AMP::shared_ptr<PetscKrylovSolver> getKrylovSolver( void ) { return d_pKrylovSolver; }
+    std::shared_ptr<PetscKrylovSolver> getKrylovSolver( void ) { return d_pKrylovSolver; }
 
     /**
      * Return a shared pointer to the solution vector
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> getSolution( void ) { return d_pSolutionVector; }
+    std::shared_ptr<AMP::LinearAlgebra::Vector> getSolution( void ) { return d_pSolutionVector; }
 
     /**
      * Return a shared pointer to the scratch vector used internally.
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> getScratchVector( void )
+    std::shared_ptr<AMP::LinearAlgebra::Vector> getScratchVector( void )
     {
         return d_pScratchVector;
     }
@@ -159,11 +159,11 @@ public:
 
 protected:
 private:
-    void initialize( AMP::shared_ptr<SolverStrategyParameters> parameters ) override;
+    void initialize( std::shared_ptr<SolverStrategyParameters> parameters ) override;
 
-    void getFromInput( const AMP::shared_ptr<AMP::Database> db );
+    void getFromInput( const std::shared_ptr<AMP::Database> db );
 
-    void setSNESFunction( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> rhs );
+    void setSNESFunction( std::shared_ptr<const AMP::LinearAlgebra::Vector> rhs );
 
     static PetscErrorCode apply( SNES snes, Vec x, Vec f, void *ctx );
 
@@ -176,7 +176,7 @@ private:
 #error This version of PETSc is not supported.  Check!!!
 #endif
 
-    static bool isVectorValid( AMP::shared_ptr<AMP::Operator::Operator> &op,
+    static bool isVectorValid( std::shared_ptr<AMP::Operator::Operator> &op,
                                AMP::LinearAlgebra::Vector::shared_ptr &v,
                                AMP_MPI comm );
 
@@ -217,16 +217,16 @@ private:
 
     AMP_MPI d_comm;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionVector;
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pResidualVector;
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionVector;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pResidualVector;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
 
-    AMP::shared_ptr<PetscMonitor> d_PetscMonitor;
+    std::shared_ptr<PetscMonitor> d_PetscMonitor;
 
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     // The following SNES solver keeps a reference to certain vectors around.
     // By declaring the vectors here, we ensure correct behavior during destruction.
-    // This will ensure that the AMP::shared_ptr destructor calls VecDestroy on the last reference.
+    // This will ensure that the std::shared_ptr destructor calls VecDestroy on the last reference.
     std::list<AMP::LinearAlgebra::Vector::const_shared_ptr> d_refVectors;
 #endif
 
@@ -234,7 +234,7 @@ private:
 
     Mat d_Jacobian;
 
-    AMP::shared_ptr<PetscKrylovSolver> d_pKrylovSolver;
+    std::shared_ptr<PetscKrylovSolver> d_pKrylovSolver;
 };
 } // namespace Solver
 } // namespace AMP

@@ -4,7 +4,7 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {

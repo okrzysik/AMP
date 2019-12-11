@@ -22,7 +22,7 @@ namespace TimeIntegrator {
  ************************************************************************/
 
 TimeIntegrator::TimeIntegrator(
-    AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
+    std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
 {
     AMP_INSIST( parameters.get() != nullptr, "Null parameter" );
 
@@ -57,7 +57,7 @@ TimeIntegrator::~TimeIntegrator() = default;
 *************************************************************************
 */
 
-void TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     d_object_name = parameters->d_object_name;
 
@@ -120,7 +120,7 @@ double TimeIntegrator::getNextDt( const bool ) { return ( d_current_dt ); }
 *************************************************************************
 */
 
-void TimeIntegrator::getFromInput( const AMP::shared_ptr<AMP::Database> db )
+void TimeIntegrator::getFromInput( const std::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( db.get() != nullptr );
 
@@ -192,7 +192,7 @@ void TimeIntegrator::getFromInput( const AMP::shared_ptr<AMP::Database> db )
 *************************************************************************
 */
 
-void TimeIntegrator::putToDatabase( AMP::shared_ptr<AMP::Database> db )
+void TimeIntegrator::putToDatabase( std::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( !db.use_count() );
 

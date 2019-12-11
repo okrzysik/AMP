@@ -1,7 +1,7 @@
 #ifndef included_AMP_Operator
 #define included_AMP_Operator
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include "AMP/operators/OperatorParameters.h"
 
@@ -26,13 +26,13 @@ namespace Operator {
 class Operator
 {
 public:
-    typedef AMP::shared_ptr<AMP::Operator::Operator> shared_ptr;
+    typedef std::shared_ptr<AMP::Operator::Operator> shared_ptr;
 
     //! Default constructor
     Operator( void );
 
     //! Constructor
-    explicit Operator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit Operator( const std::shared_ptr<OperatorParameters> &params );
 
     //! Destructor
     virtual ~Operator() {}
@@ -42,7 +42,7 @@ public:
      * \param params
      *    parameter object containing parameters to change
      */
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    virtual void reset( const std::shared_ptr<OperatorParameters> &params );
 
     /**
       This base class can not give a meaningful definition of apply. See the derived classes for
@@ -78,15 +78,15 @@ public:
      * \param params: pointer to additional parameters that might be required
      *      to construct the return parameters
      */
-    virtual AMP::shared_ptr<OperatorParameters>
+    virtual std::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                   AMP::shared_ptr<OperatorParameters> params = nullptr )
+                   std::shared_ptr<OperatorParameters> params = nullptr )
     {
 
         NULL_USE( params );
 
-        AMP::shared_ptr<OperatorParameters> rPointer;
+        std::shared_ptr<OperatorParameters> rPointer;
 
         if ( type == "Jacobian" ) {
             rPointer = getJacobianParameters( u );
@@ -131,13 +131,13 @@ public:
     virtual AMP::LinearAlgebra::Vector::const_shared_ptr
     subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec );
 
-    virtual bool isValidInput( AMP::shared_ptr<AMP::LinearAlgebra::Vector> & ) { return true; }
+    virtual bool isValidInput( std::shared_ptr<AMP::LinearAlgebra::Vector> & ) { return true; }
 
     AMP::Mesh::Mesh::shared_ptr getMesh() { return d_Mesh; }
 
 
 protected:
-    void getFromInput( AMP::shared_ptr<AMP::Database> db );
+    void getFromInput( std::shared_ptr<AMP::Database> db );
 
     /**
      * This function returns a OperatorParameters object
@@ -146,12 +146,12 @@ protected:
      * a parameter object instead of an Operator itself is meant
      * to give users more flexibility.
      */
-    virtual AMP::shared_ptr<OperatorParameters>
+    virtual std::shared_ptr<OperatorParameters>
     getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u )
     {
         NULL_USE( u );
         // Implemented in derived class.
-        AMP::shared_ptr<OperatorParameters> emptyPointer;
+        std::shared_ptr<OperatorParameters> emptyPointer;
         return emptyPointer;
     }
 

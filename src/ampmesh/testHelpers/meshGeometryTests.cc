@@ -13,8 +13,8 @@ namespace Mesh {
 void meshTests::TestBasicGeometry( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
 {
     // If we are dealing with a MultiMesh, check each mesh independently
-    if ( AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) ) {
-        auto multimesh = AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
+    if ( std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) ) {
+        auto multimesh = std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
         for ( const auto &mesh2 : multimesh->getMeshes() )
             TestBasicGeometry( ut, mesh2 );
     }
@@ -31,8 +31,8 @@ void meshTests::TestBasicGeometry( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_sha
 void meshTests::TestInside( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
 {
     // If we are dealing with a MultiMesh, check each mesh independently
-    if ( AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) ) {
-        auto multimesh = AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
+    if ( std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) ) {
+        auto multimesh = std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
         for ( const auto &mesh2 : multimesh->getMeshes() )
             TestInside( ut, mesh2 );
         return; // Eventually this should go away to test the multigeometry
@@ -65,8 +65,8 @@ void meshTests::TestPhysicalLogical( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_s
 {
     bool pass = true;
     // If we are dealing with a MultiMesh, check each mesh independently
-    if ( AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) ) {
-        auto multimesh = AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
+    if ( std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) ) {
+        auto multimesh = std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
         for ( const auto &mesh2 : multimesh->getMeshes() )
             TestPhysicalLogical( ut, mesh2 );
         return;

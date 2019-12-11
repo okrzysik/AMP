@@ -14,10 +14,10 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <string>
 
@@ -36,20 +36,20 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
-    auto mgrParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     //   CREATE THE VOLUME INTEGRAL OPERATOR
     AMP_INSIST( input_db->keyExists( "NeutronicsRhs" ), "key missing!" );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> unusedModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> unusedModel;
     auto ntx_db = input_db->getDatabase( "NeutronicsRhs" );
 
     // Construct stand-alone.
     if ( input_db->getWithDefault( "ConstructStandAlone", true ) ) {
         // construct it.
-        auto ntxPrm = AMP::make_shared<AMP::Operator::NeutronicsRhsParameters>( ntx_db );
-        auto ntxRhs = AMP::make_shared<AMP::Operator::NeutronicsRhs>( ntxPrm );
+        auto ntxPrm = std::make_shared<AMP::Operator::NeutronicsRhsParameters>( ntx_db );
+        auto ntxRhs = std::make_shared<AMP::Operator::NeutronicsRhs>( ntxPrm );
         ut->passes( "NeutronicsRhs was constructed stand-alone for: " + input_file );
         // set the time.
         ntxRhs->setTimeStep( 0 );
@@ -75,7 +75,7 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Construct with OperatorBuilder
     {
-        auto ntxBld = AMP::dynamic_pointer_cast<AMP::Operator::NeutronicsRhs>(
+        auto ntxBld = std::dynamic_pointer_cast<AMP::Operator::NeutronicsRhs>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "NeutronicsRhs", input_db, unusedModel ) );
         AMP_INSIST( ntxBld.get() != nullptr, "NULL rhs out of OperatorBuilder" );

@@ -15,7 +15,7 @@ ENABLE_WARNINGS
 namespace AMP {
 namespace Operator {
 
-FlowElement::FlowElement( const AMP::shared_ptr<ElementOperationParameters> &params )
+FlowElement::FlowElement( const std::shared_ptr<ElementOperationParameters> &params )
     : ElementOperation( params ), d_elem( nullptr )
 {
     AMP_INSIST( ( params.get() != nullptr ), "''params'' is NULL" );

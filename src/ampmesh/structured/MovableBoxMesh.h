@@ -54,11 +54,11 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
+    virtual void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 #endif
 
     //! Virtual function to copy the mesh (allows us to properly copy the derived class)
-    virtual AMP::shared_ptr<Mesh> clone() const override;
+    virtual std::shared_ptr<Mesh> clone() const override;
 
     /**
      * \brief    Return a mesh element's coordinates given it's id.

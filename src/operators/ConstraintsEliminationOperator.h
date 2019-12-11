@@ -21,7 +21,7 @@ public:
       Constructor.
       @param [in] params
       */
-    explicit ConstraintsEliminationOperator( const AMP::shared_ptr<OperatorParameters> &params )
+    explicit ConstraintsEliminationOperator( const std::shared_ptr<OperatorParameters> &params )
         : Operator( params )
     {
         AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "key not found" );
@@ -43,7 +43,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /**
       Calls first addSlaveToMaster(...) and second setSlaveToZero(...) on the residual vector:
@@ -91,8 +91,8 @@ protected:
     std::vector<double> d_SlaveShift;
 
 private:
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable;  /**< Input variable */
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable;  /**< Input variable */
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
 };
 } // namespace Operator
 } // namespace AMP

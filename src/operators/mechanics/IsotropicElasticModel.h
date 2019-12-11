@@ -4,7 +4,7 @@
 
 #include "MechanicsMaterialModel.h"
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 namespace AMP {
 namespace Operator {
@@ -12,7 +12,7 @@ namespace Operator {
 class IsotropicElasticModel : public MechanicsMaterialModel
 {
 public:
-    explicit IsotropicElasticModel( const AMP::shared_ptr<MechanicsMaterialModelParameters> & );
+    explicit IsotropicElasticModel( const std::shared_ptr<MechanicsMaterialModelParameters> & );
 
     virtual ~IsotropicElasticModel() {}
 

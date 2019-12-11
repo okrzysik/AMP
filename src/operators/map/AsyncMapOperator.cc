@@ -8,11 +8,11 @@ namespace AMP {
 namespace Operator {
 
 
-AsyncMapOperator::AsyncMapOperator( const AMP::shared_ptr<OperatorParameters> &p )
+AsyncMapOperator::AsyncMapOperator( const std::shared_ptr<OperatorParameters> &p )
     : AsynchronousOperator( p )
 {
     // Fill some basic info
-    auto params = AMP::dynamic_pointer_cast<AsyncMapOperatorParameters>( p );
+    auto params = std::dynamic_pointer_cast<AsyncMapOperatorParameters>( p );
     d_MapComm   = params->d_MapComm;
     d_mesh1     = params->d_Mesh1;
     d_mesh2     = params->d_Mesh2;
@@ -27,7 +27,7 @@ AsyncMapOperator::AsyncMapOperator( const AMP::shared_ptr<OperatorParameters> &p
         meshes.push_back( d_mesh1 );
     if ( d_mesh2.get() != nullptr )
         meshes.push_back( d_mesh2 );
-    d_Mesh = AMP::make_shared<AMP::Mesh::MultiMesh>( "mesh", d_MapComm, meshes );
+    d_Mesh = std::make_shared<AMP::Mesh::MultiMesh>( "mesh", d_MapComm, meshes );
     // Get the input variable
     bool var  = params->d_db->keyExists( "VariableName" );
     bool var1 = params->d_db->keyExists( "VariableName1" );
@@ -37,14 +37,14 @@ AsyncMapOperator::AsyncMapOperator( const AMP::shared_ptr<OperatorParameters> &p
         AMP_INSIST( !var1 && !var2,
                     "VariableName is used, VariableName1 and VariableName2cannot be used" );
         std::string variableName = params->d_db->getString( "VariableName" );
-        d_inpVariable            = AMP::make_shared<AMP::LinearAlgebra::Variable>( variableName );
-        d_outVariable            = AMP::make_shared<AMP::LinearAlgebra::Variable>( variableName );
+        d_inpVariable            = std::make_shared<AMP::LinearAlgebra::Variable>( variableName );
+        d_outVariable            = std::make_shared<AMP::LinearAlgebra::Variable>( variableName );
     } else {
         AMP_INSIST( var1 && var2, "Both VariableName1 and VariableName2 must be used" );
         std::string variableName1 = params->d_db->getString( "VariableName1" );
         std::string variableName2 = params->d_db->getString( "VariableName2" );
-        d_inpVariable             = AMP::make_shared<AMP::LinearAlgebra::Variable>( variableName1 );
-        d_outVariable             = AMP::make_shared<AMP::LinearAlgebra::Variable>( variableName2 );
+        d_inpVariable             = std::make_shared<AMP::LinearAlgebra::Variable>( variableName1 );
+        d_outVariable             = std::make_shared<AMP::LinearAlgebra::Variable>( variableName2 );
     }
 }
 

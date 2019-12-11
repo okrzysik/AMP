@@ -15,7 +15,7 @@ namespace AMP {
 namespace Operator {
 
 SubchannelPhysicsModel::SubchannelPhysicsModel(
-    const AMP::shared_ptr<ElementPhysicsModelParameters> &params )
+    const std::shared_ptr<ElementPhysicsModelParameters> &params )
     : ElementPhysicsModel( params )
 {
     // get material key
@@ -59,7 +59,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
     }
 
     if ( params->d_db->keyExists( "Defaults" ) ) {
-        AMP::shared_ptr<Database> defaults_db =
+        std::shared_ptr<Database> defaults_db =
             params->d_db->getDatabase( "Defaults" ); // get defaults database
         std::vector<std::string> defaultkeys =
             defaults_db->getAllKeys(); // get defaults database keys
@@ -139,7 +139,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
 void SubchannelPhysicsModel::getProperty(
     std::string property,
     std::vector<double> &result,
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> &args )
+    std::map<std::string, std::shared_ptr<std::vector<double>>> &args )
 {
     // evaluate material property
     auto it = d_properties.find( property );

@@ -16,9 +16,9 @@ namespace Operator {
 class CoupledFlowFrapconOperator : public ColumnOperator
 {
 public:
-    explicit CoupledFlowFrapconOperator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit CoupledFlowFrapconOperator( const std::shared_ptr<OperatorParameters> &params );
 
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params ) override
+    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override
     {
         d_Operators[2]->reset( params );
     }
@@ -36,17 +36,17 @@ public:
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    virtual void append( AMP::shared_ptr<Operator> op ) override
+    virtual void append( std::shared_ptr<Operator> op ) override
     {
         AMP_ASSERT( d_Operators.size() < 3 );
         AMP_ASSERT( op.get() != NULL );
         d_Operators.push_back( op );
     }
 
-    AMP::shared_ptr<OperatorParameters>
+    std::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                   AMP::shared_ptr<OperatorParameters> params = NULL ) override
+                   std::shared_ptr<OperatorParameters> params = NULL ) override
     {
         return ( d_Operators[2]->getParameters( type, u, params ) );
     }
@@ -55,7 +55,7 @@ public:
 
 protected:
 private:
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
 
     int d_numpoints; /**< Number of points in z direction */
 

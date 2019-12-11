@@ -21,12 +21,12 @@ AMP::LinearAlgebra::Variable::shared_ptr MassLinearFEOperator::getOutputVariable
 
 
 MassLinearFEOperator::MassLinearFEOperator(
-    const AMP::shared_ptr<MassLinearFEOperatorParameters> &params )
+    const std::shared_ptr<MassLinearFEOperatorParameters> &params )
     : LinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 
-    d_massLinElem = AMP::dynamic_pointer_cast<MassLinearElement>( d_elemOp );
+    d_massLinElem = std::dynamic_pointer_cast<MassLinearElement>( d_elemOp );
 
     AMP_INSIST( ( ( d_massLinElem.get() ) != nullptr ),
                 "d_elemOp is not of type MassLinearElement" );
@@ -48,16 +48,16 @@ MassLinearFEOperator::MassLinearFEOperator(
     // d_inpVariable.reset(new AMP::Mesh::NodalScalarVariable("inpVar"));
     // d_outVariable.reset(new AMP::Mesh::NodalScalarVariable("outVar"));
     std::string inpVar = params->d_db->getString( "InputVariable" );
-    d_inpVariable      = AMP::make_shared<AMP::LinearAlgebra::Variable>( inpVar );
+    d_inpVariable      = std::make_shared<AMP::LinearAlgebra::Variable>( inpVar );
 
     std::string outVar = params->d_db->getString( "OutputVariable" );
-    d_outVariable      = AMP::make_shared<AMP::LinearAlgebra::Variable>( outVar );
+    d_outVariable      = std::make_shared<AMP::LinearAlgebra::Variable>( outVar );
 
     reset( params );
 }
 
 
-void MassLinearFEOperator::preAssembly( const AMP::shared_ptr<AMP::Operator::OperatorParameters> & )
+void MassLinearFEOperator::preAssembly( const std::shared_ptr<AMP::Operator::OperatorParameters> & )
 {
     d_matrix->zero();
 

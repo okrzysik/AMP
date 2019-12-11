@@ -5,7 +5,7 @@
 
 #include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionElement.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -14,7 +14,7 @@ namespace Operator {
 class DiffusionNonlinearElement : public DiffusionElement
 {
 public:
-    explicit DiffusionNonlinearElement( const AMP::shared_ptr<ElementOperationParameters> &params )
+    explicit DiffusionNonlinearElement( const std::shared_ptr<ElementOperationParameters> &params )
         : DiffusionElement( params ),
           d_elementOutputVector( nullptr ),
           d_transportOutputVector( nullptr ),

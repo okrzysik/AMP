@@ -25,7 +25,7 @@ public:
     virtual ~VectorOperationsDefault() {}
 
     //! Clone the operations
-    virtual AMP::shared_ptr<VectorOperations> cloneOperations() const override;
+    virtual std::shared_ptr<VectorOperations> cloneOperations() const override;
 
     /**
      * \brief  Set vector equal to x

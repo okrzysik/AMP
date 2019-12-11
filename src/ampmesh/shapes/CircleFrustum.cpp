@@ -14,7 +14,7 @@ namespace Geometry {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-CircleFrustum::CircleFrustum( AMP::shared_ptr<AMP::Database> db ) : d_offset{ 0, 0, 0 }
+CircleFrustum::CircleFrustum( std::shared_ptr<AMP::Database> db ) : d_offset{ 0, 0, 0 }
 {
     d_r[0]   = db->getScalar<double>( "BaseRadius" );
     d_r[1]   = db->getScalar<double>( "TopRadius" );
@@ -322,9 +322,9 @@ void CircleFrustum::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-AMP::shared_ptr<AMP::Geometry::Geometry> CircleFrustum::clone() const
+std::shared_ptr<AMP::Geometry::Geometry> CircleFrustum::clone() const
 {
-    return AMP::make_shared<CircleFrustum>( *this );
+    return std::make_shared<CircleFrustum>( *this );
 }
 
 } // namespace Geometry

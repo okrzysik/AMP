@@ -2,7 +2,7 @@
 #define included_AMP_Geometry
 
 #include "AMP/ampmesh/MeshPoint.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <vector>
 
@@ -33,14 +33,14 @@ public:
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a geometry object.
      */
-    typedef AMP::shared_ptr<AMP::Geometry::Geometry> shared_ptr;
+    typedef std::shared_ptr<AMP::Geometry::Geometry> shared_ptr;
 
     /**
      *\typedef const_shared_ptr
      *\brief  Name for the const shared pointer.
      *\details  Use this typedef for a reference counted pointer to a geometry object.
      */
-    typedef AMP::shared_ptr<const AMP::Geometry::Geometry> const_shared_ptr;
+    typedef std::shared_ptr<const AMP::Geometry::Geometry> const_shared_ptr;
 
 
     /**
@@ -180,7 +180,7 @@ public:
     virtual std::vector<int> getLogicalSurfaceIds() const = 0;
 
     //! Clone the object
-    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const = 0;
+    virtual std::shared_ptr<AMP::Geometry::Geometry> clone() const = 0;
 
 public:
     /**
@@ -189,8 +189,8 @@ public:
      *   the input database.
      * \param params Parameters for constructing a geometry from an input database
      */
-    static AMP::shared_ptr<AMP::Geometry::Geometry>
-    buildGeometry( AMP::shared_ptr<AMP::Database> db );
+    static std::shared_ptr<AMP::Geometry::Geometry>
+    buildGeometry( std::shared_ptr<AMP::Database> db );
 
 
 protected:

@@ -8,8 +8,8 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <DTK_BasicEntityPredicates.hpp>
 
@@ -37,7 +37,7 @@ static void myTest( AMP::UnitTest *ut )
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto meshDatabase = input_db->getDatabase( "Mesh" );
 
-    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 

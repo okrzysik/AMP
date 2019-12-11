@@ -16,8 +16,8 @@ namespace Materials {
 
 template<>
 void VectorProperty<double>::evalv(
-    std::vector<AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
-    const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
+    const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
 {
     bool in = this->in_range( args );
     AMP_INSIST( in, "Property out of range" );
@@ -25,8 +25,8 @@ void VectorProperty<double>::evalv(
 }
 
 template<>
-void VectorProperty<double>::evalv( std::vector<AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
-                                    const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
+void VectorProperty<double>::evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
+                                    const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
 {
     auto mapargs = make_map( args );
     evalv( r, mapargs );

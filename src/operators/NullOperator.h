@@ -1,7 +1,7 @@
 #ifndef included_AMP_NullOperator
 #define included_AMP_NullOperator
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/OperatorParameters.h"
@@ -21,13 +21,13 @@ namespace Operator {
 class NullOperator : public AMP::Operator::Operator
 {
 public:
-    typedef AMP::shared_ptr<AMP::Operator::Operator> shared_ptr;
+    typedef std::shared_ptr<AMP::Operator::Operator> shared_ptr;
 
     //! Default constructor
     NullOperator( void ) {}
 
     //! Constructor
-    explicit NullOperator( const AMP::shared_ptr<OperatorParameters> &params ) : Operator( params )
+    explicit NullOperator( const std::shared_ptr<OperatorParameters> &params ) : Operator( params )
     {
     }
 

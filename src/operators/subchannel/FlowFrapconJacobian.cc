@@ -9,7 +9,7 @@ namespace Operator {
 
 
 FlowFrapconJacobian::FlowFrapconJacobian(
-    const AMP::shared_ptr<FlowFrapconJacobianParameters> &params )
+    const std::shared_ptr<FlowFrapconJacobianParameters> &params )
     : Operator( params ), dCp( 0 )
 {
     std::string inpVar = params->d_db->getString( "InputVariable" );
@@ -52,10 +52,10 @@ AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::getOutputVariable(
 }
 
 
-void FlowFrapconJacobian::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void FlowFrapconJacobian::reset( const std::shared_ptr<OperatorParameters> &params )
 {
-    AMP::shared_ptr<FlowFrapconJacobianParameters> myparams =
-        AMP::dynamic_pointer_cast<FlowFrapconJacobianParameters>( params );
+    std::shared_ptr<FlowFrapconJacobianParameters> myparams =
+        std::dynamic_pointer_cast<FlowFrapconJacobianParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );

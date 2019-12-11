@@ -6,21 +6,21 @@ namespace AMP {
 namespace Operator {
 
 
-MapSurface::MapSurface( const AMP::shared_ptr<OperatorParameters> &params ) : MapOperator( params )
+MapSurface::MapSurface( const std::shared_ptr<OperatorParameters> &params ) : MapOperator( params )
 {
 
-    AMP::shared_ptr<MapOperatorParameters> myparams =
-        AMP::dynamic_pointer_cast<MapOperatorParameters>( params );
+    std::shared_ptr<MapOperatorParameters> myparams =
+        std::dynamic_pointer_cast<MapOperatorParameters>( params );
 
     // Construct for Map3Dto1D, Map1Dto3D
-    AMP::shared_ptr<AMP::Database> mapMaster_db = myparams->d_db->getDatabase( "Map3Dto1D" );
+    std::shared_ptr<AMP::Database> mapMaster_db = myparams->d_db->getDatabase( "Map3Dto1D" );
     mapMasterParams.reset( new AMP::Operator::MapOperatorParameters( mapMaster_db ) );
     mapMasterParams->d_Mesh    = myparams->d_Mesh;
     mapMasterParams->d_MapMesh = myparams->d_Mesh;
     mapMasterParams->d_MapComm = myparams->d_Mesh->getComm();
     mapMaster.reset( new Map3Dto1D( mapMasterParams ) );
 
-    AMP::shared_ptr<AMP::Database> mapTarget_db = myparams->d_db->getDatabase( "Map1Dto3D" );
+    std::shared_ptr<AMP::Database> mapTarget_db = myparams->d_db->getDatabase( "Map1Dto3D" );
     mapTargetParams.reset( new AMP::Operator::MapOperatorParameters( mapTarget_db ) );
     mapTargetParams->d_Mesh    = myparams->d_MapMesh;
     mapTargetParams->d_MapMesh = myparams->d_MapMesh;
@@ -51,7 +51,7 @@ void MapSurface::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     inpVec = subsetInputVector( u );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> nullVec;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> nullVec;
 
     mapMaster->apply( inpVec, nullVec );
     mapTarget->apply( gap1DVec, nullVec );

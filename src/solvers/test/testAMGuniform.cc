@@ -34,7 +34,7 @@ void myTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     const unsigned int mesh_dim = 3;
-    AMP::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
+    std::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
     std::string mesh_file = input_db->getString( "mesh_file" );
     if ( globalComm.getRank() == 0 ) {
         AMP::readTestMesh( mesh_file, mesh );
@@ -44,13 +44,13 @@ void myTest( AMP::UnitTest *ut )
     mesh->prepare_for_use( true );
     AMP::Mesh::Mesh::shared_ptr meshAdapter( new AMP::Mesh::libMesh( mesh, "uniform" ) );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "LinearBVPOperator", input_db, elementPhysicsModel ) );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Matrix> mat = bvpOperator->getMatrix();
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> mat = bvpOperator->getMatrix();
     size_t matSz                                    = mat->numGlobalRows();
     for ( size_t i = 0; i < matSz; ++i ) {
         std::vector<size_t> cols;
@@ -80,11 +80,11 @@ void myTest( AMP::UnitTest *ut )
     bvpOperator->apply( solVec, rhsVec );
     solVec->zero();
 
-    AMP::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams(
+    std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams(
         new AMP::Solver::SolverStrategyParameters( mlSolver_db ) );
     mlSolverParams->d_pOperator = bvpOperator;
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver(
+    std::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver(
         new AMP::Solver::TrilinosMLSolver( mlSolverParams ) );
 
     mlSolver->setZeroInitialGuess( true );
@@ -100,7 +100,7 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
+    std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
         new AMP::Mesh::initializeLibMesh( AMP::AMP_MPI( AMP_COMM_WORLD ) ) );
 
     myTest( &ut );

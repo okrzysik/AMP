@@ -15,10 +15,10 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include "applyTests.h"
 
@@ -42,27 +42,27 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     // Create the Mesh.
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
-    auto mgrParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     // Create nonlinear FickSoret BVP operator and access volume nonlinear FickSoret operator
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto nlinBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
         meshAdapter, "testFickSoretBVPOperator", input_db, elementPhysicsModel );
     auto nlinBVPOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
-    auto nlinOp = AMP::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>(
+        std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
+    auto nlinOp = std::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>(
         nlinBVPOp->getVolumeOperator() );
-    auto fickOp = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
+    auto fickOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
         nlinOp->getFickOperator() );
-    auto soretOp = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
+    auto soretOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
         nlinOp->getSoretOperator() );
 
     // use the linear BVP operator to create a Fick linear operator with bc's
     auto linBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
         meshAdapter, "testLinearFickBVPOperator", input_db, elementPhysicsModel );
-    auto linBVPOp = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
+    auto linBVPOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
 
     ut->passes( exeName + ": creation" );
     std::cout.flush();
@@ -103,12 +103,12 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Set up input and output vectors
     auto cVar =
-        AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( fickOp->getInputVariable() )
+        std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( fickOp->getInputVariable() )
             ->getVariable( AMP::Operator::Diffusion::CONCENTRATION );
     auto tVar =
-        AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( soretOp->getInputVariable() )
+        std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( soretOp->getInputVariable() )
             ->getVariable( AMP::Operator::Diffusion::TEMPERATURE );
-    auto fsInpVar = AMP::make_shared<AMP::LinearAlgebra::MultiVariable>( "fsInput" );
+    auto fsInpVar = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "fsInput" );
     fsInpVar->add( cVar );
     fsInpVar->add( tVar );
 
@@ -124,7 +124,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
         AMP::LinearAlgebra::MultiVector::create( "mulitvector", meshAdapter->getComm() );
     multivector->addVector( AMP::LinearAlgebra::createVector( nodalDofMap, cVar ) );
     multivector->addVector( AMP::LinearAlgebra::createVector( nodalDofMap, tVar ) );
-    auto solVec = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::Vector>( multivector );
+    auto solVec = std::dynamic_pointer_cast<AMP::LinearAlgebra::Vector>( multivector );
     auto rhsVec = solVec->cloneVector();
     auto resVec = solVec->cloneVector();
 
@@ -151,7 +151,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
         adjust( solVec, shift, scale, 2 );
         rhsVec->setRandomValues();
         resVec->setRandomValues();
-        AMP::shared_ptr<AMP::Operator::OperatorParameters> jacparams =
+        std::shared_ptr<AMP::Operator::OperatorParameters> jacparams =
             nlinBVPOp->getParameters( "Jacobian", solVec );
         linBVPOp->reset( jacparams );
     } // end for i

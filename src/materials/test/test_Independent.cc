@@ -50,34 +50,34 @@ int main( int argc, char **argv )
         tv[i] = 563.4 + i / 10.;
         uv[i] = .05 + i / 100., bv[i] = 0. + i * 100;
     } // set input arguments
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
-    argMap.insert( std::make_pair( "temperance", AMP::shared_ptr<std::vector<double>>( &tv ) ) );
-    argMap.insert( std::make_pair( "burningman", AMP::shared_ptr<std::vector<double>>( &bv ) ) );
-    argMap.insert( std::make_pair( "upstart", AMP::shared_ptr<std::vector<double>>( &uv ) ) );
+    std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
+    argMap.insert( std::make_pair( "temperance", std::shared_ptr<std::vector<double>>( &tv ) ) );
+    argMap.insert( std::make_pair( "burningman", std::shared_ptr<std::vector<double>>( &bv ) ) );
+    argMap.insert( std::make_pair( "upstart", std::shared_ptr<std::vector<double>>( &uv ) ) );
 
     mat->property( "PoissonRatio" )->evalv( prv, argMap );
     mat->property( "ThermalConductivity" )->evalv( tcv, argMap );
 
-    std::vector<AMP::shared_ptr<std::vector<double>>> vfcv( 3 );
+    std::vector<std::shared_ptr<std::vector<double>>> vfcv( 3 );
     for ( size_t i = 0; i < 3; i++ )
-        vfcv[i] = AMP::make_shared<std::vector<double>>( n );
+        vfcv[i] = std::make_shared<std::vector<double>>( n );
 
-    AMP::shared_ptr<AMP::Materials::VectorProperty<double>> vectorProperty =
-        AMP::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>(
+    std::shared_ptr<AMP::Materials::VectorProperty<double>> vectorProperty =
+        std::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>(
             mat->property( "VectorFickCoefficient" ) );
     vectorProperty->set_dimension( 3 );
     double vparams[] = { 1.1, 2.2, 3.3 };
     vectorProperty->set_parameters_and_number( vparams, 3 );
     vectorProperty->evalv( vfcv, argMap );
 
-    std::vector<std::vector<AMP::shared_ptr<std::vector<double>>>> tfcv(
-        3, std::vector<AMP::shared_ptr<std::vector<double>>>( 3 ) );
+    std::vector<std::vector<std::shared_ptr<std::vector<double>>>> tfcv(
+        3, std::vector<std::shared_ptr<std::vector<double>>>( 3 ) );
     for ( size_t i = 0; i < 3; i++ )
         for ( size_t j = 0; j < 3; j++ )
-            tfcv[i][j] = AMP::make_shared<std::vector<double>>( n );
+            tfcv[i][j] = std::make_shared<std::vector<double>>( n );
 
-    AMP::shared_ptr<AMP::Materials::TensorProperty<double>> tensorProperty =
-        AMP::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>(
+    std::shared_ptr<AMP::Materials::TensorProperty<double>> tensorProperty =
+        std::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>(
             mat->property( "TensorFickCoefficient" ) );
     tensorProperty->set_dimensions( std::vector<size_t>( 2, 3U ) );
     double tparams[9] = { 1.1, 2.2, 3.3, 11., 22., 33., 111., 222., 333. };

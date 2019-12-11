@@ -20,7 +20,7 @@ class DiffusionCylindricalTransportModel : public DiffusionTransportTensorModel
 {
 public:
     explicit DiffusionCylindricalTransportModel(
-        const AMP::shared_ptr<DiffusionTransportTensorModelParameters> params );
+        const std::shared_ptr<DiffusionTransportTensorModelParameters> params );
 
     /**
      * \brief transport model returning a vector of tensors for cylindrical symmetry
@@ -29,8 +29,8 @@ public:
      * \param Coordinates vector of points that define the spatial location
      */
     virtual void
-    getTensorTransport( std::vector<std::vector<AMP::shared_ptr<std::vector<double>>>> &result,
-                        std::map<std::string, AMP::shared_ptr<std::vector<double>>> &args,
+    getTensorTransport( std::vector<std::vector<std::shared_ptr<std::vector<double>>>> &result,
+                        std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
                         const std::vector<libMesh::Point> &Coordinates = d_DummyCoords ) override;
 
 private:

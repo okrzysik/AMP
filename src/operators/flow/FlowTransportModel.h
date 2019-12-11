@@ -5,7 +5,7 @@
 
 #include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModel.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -17,7 +17,7 @@ typedef ElementPhysicsModelParameters FlowTransportModelParameters;
 class FlowTransportModel : public ElementPhysicsModel
 {
 public:
-    explicit FlowTransportModel( const AMP::shared_ptr<FlowTransportModelParameters> &params )
+    explicit FlowTransportModel( const std::shared_ptr<FlowTransportModelParameters> &params )
         : ElementPhysicsModel( params )
     {
         d_useMaterialsLibrary = ( params->d_db )->getWithDefault( "USE_MATERIALS_LIBRARY", false );

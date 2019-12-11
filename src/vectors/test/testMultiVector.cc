@@ -8,10 +8,10 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <iostream>
 #include <string>
@@ -28,24 +28,24 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );
-    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
     auto mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Construct Variables
-    auto Variable1 = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Var1" );
-    auto Variable2 = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Var2" );
-    auto Variable3 = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Var3" );
-    auto Variable4 = AMP::make_shared<AMP::LinearAlgebra::Variable>( "Var4" );
-    auto dummyVar  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "dummy" );
+    auto Variable1 = std::make_shared<AMP::LinearAlgebra::Variable>( "Var1" );
+    auto Variable2 = std::make_shared<AMP::LinearAlgebra::Variable>( "Var2" );
+    auto Variable3 = std::make_shared<AMP::LinearAlgebra::Variable>( "Var3" );
+    auto Variable4 = std::make_shared<AMP::LinearAlgebra::Variable>( "Var4" );
+    auto dummyVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "dummy" );
 
-    auto subVariable = AMP::make_shared<AMP::LinearAlgebra::MultiVariable>( "subVar" );
+    auto subVariable = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "subVar" );
     subVariable->add( Variable1 );
     subVariable->add( Variable2 );
 
-    auto fullVariable = AMP::make_shared<AMP::LinearAlgebra::MultiVariable>( "fullVariable" );
+    auto fullVariable = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "fullVariable" );
     fullVariable->add( Variable1 );
     fullVariable->add( Variable2 );
     fullVariable->add( Variable3 );

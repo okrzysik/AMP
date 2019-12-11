@@ -4,7 +4,7 @@
 #include "AMP/ampmesh/MeshID.h"
 #include "AMP/ampmesh/MeshPoint.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 #include <vector>
 
 
@@ -27,7 +27,7 @@ public:
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef AMP::shared_ptr<MeshElement> shared_ptr;
+    typedef std::shared_ptr<MeshElement> shared_ptr;
 
     //! Empty constructor for a MeshElement
     inline MeshElement();

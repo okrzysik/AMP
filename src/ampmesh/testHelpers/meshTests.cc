@@ -269,7 +269,7 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
 
 
 // Check the different mesh element iterators
-void meshTests::MeshIteratorTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     char message[1000];
     // Loop through different ghost widths
@@ -314,12 +314,12 @@ void meshTests::MeshIteratorTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::
 
 // Test operator operations for iterator
 void meshTests::MeshIteratorOperationTest( AMP::UnitTest *ut,
-                                           AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+                                           std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // Create some iterators to work with
     auto A        = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     auto B        = mesh->getIterator( mesh->getGeomType(), 0 );
-    auto elements = AMP::make_shared<std::vector<AMP::Mesh::MeshElement>>( A.size() );
+    auto elements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>( A.size() );
     auto tmp      = A.begin();
     for ( size_t i = 0; i < A.size(); i++, ++tmp )
         ( *elements )[i] = *tmp;
@@ -354,7 +354,7 @@ void meshTests::MeshIteratorOperationTest( AMP::UnitTest *ut,
 
 
 // Test set operations for the iterators
-void meshTests::MeshIteratorSetOPTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorSetOPTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     auto A = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     auto B = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
@@ -389,7 +389,7 @@ void meshTests::MeshIteratorSetOPTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::M
 
 
 // Test the number of elements in the mesh
-void meshTests::MeshCountTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshCountTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     AMP::AMP_MPI comm = mesh->getComm();
     for ( int i = 0; i <= (int) mesh->getGeomType(); i++ ) {
@@ -424,7 +424,7 @@ void meshTests::MeshCountTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mes
 
 
 // Test some basic Mesh properties
-void meshTests::MeshBasicTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshBasicTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // test that we can get the mesh ID
     auto meshID = mesh->meshID();
@@ -618,7 +618,7 @@ void meshTests::VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::s
             auto iterator      = mesh->getSurfaceIterator( type, gcw );
             size_t global_size = mesh->getComm().sumReduce( iterator.size() );
             bool passes        = global_size > 0;
-            if ( AMP::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>( mesh ).get() == nullptr ) {
+            if ( std::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>( mesh ).get() == nullptr ) {
                 if ( mesh->numGlobalElements( type ) >= 100 )
                     passes = passes && ( global_size < mesh->numGlobalElements( type ) );
             }
@@ -1192,7 +1192,7 @@ void meshTests::MeshPerformance( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr 
     printf( "   getElements (2): %i ns\n", to_ns( t10 - t3, N_elem ) );
     printf( "   volume: %i ns\n", to_ns( t11 - t3, N_elem ) );
     // Repeat the tests for all base meshes if we are dealing with a multimesh
-    auto multimesh = AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( multimesh ) {
         auto ids = multimesh->getLocalBaseMeshIDs();
         for ( auto id : ids ) {

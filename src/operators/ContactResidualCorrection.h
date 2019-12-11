@@ -15,7 +15,7 @@ class ContactResidualCorrection : public Operator
 {
 public:
     explicit ContactResidualCorrection(
-        const AMP::shared_ptr<ContactResidualCorrectionParameters> &params )
+        const std::shared_ptr<ContactResidualCorrectionParameters> &params )
         : Operator( params )
     {
     }
@@ -25,7 +25,7 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    void reset( const AMP::shared_ptr<OperatorParameters> & ) override {}
+    void reset( const std::shared_ptr<OperatorParameters> & ) override {}
 
     void setMasterVariable( const AMP::LinearAlgebra::Variable::shared_ptr &var )
     {
@@ -49,7 +49,7 @@ public:
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {
-        AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
+        std::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
             new AMP::LinearAlgebra::MultiVariable( "ContactVariable" ) );
         retVariable->add( d_masterVariable );
         retVariable->add( d_slaveVariable );
@@ -58,7 +58,7 @@ public:
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
     {
-        AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
+        std::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
             new AMP::LinearAlgebra::MultiVariable( "ContactVariable" ) );
         retVariable->add( d_masterVariable );
         retVariable->add( d_slaveVariable );

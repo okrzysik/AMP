@@ -21,12 +21,12 @@ class SubchannelTwoEqLinearOperator : public LinearOperator
 public:
     //! Constructor
     explicit SubchannelTwoEqLinearOperator(
-        const AMP::shared_ptr<SubchannelOperatorParameters> &params );
+        const std::shared_ptr<SubchannelOperatorParameters> &params );
 
     //! Destructor
     virtual ~SubchannelTwoEqLinearOperator() {}
 
-    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     //! Sets frozen vector
     void setFrozenVector( AMP::LinearAlgebra::Vector::shared_ptr frozenVec )
@@ -35,13 +35,13 @@ public:
     }
 
     //! Get the current operator parameters
-    AMP::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
+    std::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
 
 protected:
-    AMP::shared_ptr<SubchannelOperatorParameters> d_params;
+    std::shared_ptr<SubchannelOperatorParameters> d_params;
 
     // subchannel physics model
-    AMP::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
+    std::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
     // frozen vector
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec;
@@ -50,13 +50,13 @@ private:
     bool d_initialized;
 
     // Function used in reset to get double parameter or use default if missing
-    double getDoubleParameter( AMP::shared_ptr<SubchannelOperatorParameters>, std::string, double );
+    double getDoubleParameter( std::shared_ptr<SubchannelOperatorParameters>, std::string, double );
 
     // Function used in reset to get integer parameter or use default if missing
-    int getIntegerParameter( AMP::shared_ptr<SubchannelOperatorParameters>, std::string, int );
+    int getIntegerParameter( std::shared_ptr<SubchannelOperatorParameters>, std::string, int );
 
     // Function used in reset to get double parameter or use default if missing
-    std::string getStringParameter( AMP::shared_ptr<SubchannelOperatorParameters>,
+    std::string getStringParameter( std::shared_ptr<SubchannelOperatorParameters>,
                                     std::string,
                                     std::string );
 

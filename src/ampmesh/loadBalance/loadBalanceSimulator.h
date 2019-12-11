@@ -26,7 +26,7 @@ public:
      *                      (0: Get the number of elements through a call to
      * Mesh::estimateMeshSize())
      */
-    loadBalanceSimulator( AMP::shared_ptr<MeshParameters> params,
+    loadBalanceSimulator( std::shared_ptr<MeshParameters> params,
                           const std::vector<int> &ranks,
                           size_t N_elements = 0 );
 
@@ -39,7 +39,7 @@ public:
      * \param decomp  Domain decomposition for the submeshes
      *                (0: General, 1: No set of submeshes share a rank, and all ranks are used)
      */
-    loadBalanceSimulator( AMP::shared_ptr<MeshParameters> params,
+    loadBalanceSimulator( std::shared_ptr<MeshParameters> params,
                           const std::vector<int> &ranks,
                           const std::vector<loadBalanceSimulator> &submeshes,
                           int decomp );
@@ -71,7 +71,7 @@ public:
     void changeRanks( const std::vector<int> &ranks );
 
     //! Function to get the mesh parameters
-    AMP::shared_ptr<MeshParameters> getParams() const { return d_params; }
+    std::shared_ptr<MeshParameters> getParams() const { return d_params; }
 
     /**
      * \brief    Print the mesh hierarchy
@@ -99,7 +99,7 @@ private:
     size_t d_N_elements;
     size_t d_max_ranks;
     std::vector<int> d_ranks;
-    AMP::shared_ptr<MeshParameters> d_params;
+    std::shared_ptr<MeshParameters> d_params;
     std::vector<loadBalanceSimulator> d_submeshes;
 
     // Special flag used to identify key decompositions

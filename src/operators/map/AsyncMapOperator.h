@@ -19,7 +19,7 @@ class AsyncMapOperator : public AsynchronousOperator
 {
 public:
     //! Constructor
-    explicit AsyncMapOperator( const AMP::shared_ptr<OperatorParameters> & );
+    explicit AsyncMapOperator( const std::shared_ptr<OperatorParameters> & );
 
     virtual ~AsyncMapOperator();
 

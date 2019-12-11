@@ -15,7 +15,7 @@
 template<class GENERATOR>
 void runTest( AMP::UnitTest &ut )
 {
-    auto generator = AMP::make_shared<GENERATOR>();
+    auto generator = std::make_shared<GENERATOR>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshPerformance( &ut, generator->getMesh() );
 }
@@ -49,7 +49,7 @@ void testInputMesh( AMP::UnitTest &ut, std::string filename )
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );
-    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database

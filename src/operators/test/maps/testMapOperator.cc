@@ -12,11 +12,11 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <string>
 
@@ -34,12 +34,12 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( mesh_db ) );
+    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( mesh_db ) );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh    = AMP::Mesh::Mesh::buildMesh( params );
+    std::shared_ptr<AMP::Mesh::Mesh> mesh    = AMP::Mesh::Mesh::buildMesh( params );
     AMP::Mesh::Mesh::shared_ptr meshAdapter1 = mesh->Subset( "pellet" );
     AMP::Mesh::Mesh::shared_ptr meshAdapter2 = mesh->Subset( "clad" );
 
@@ -62,42 +62,42 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
     mapSolution->setToScalar( 0.0 );
 
     // Create the map operators
-    AMP::shared_ptr<AMP::Database> map3dto1d_db1 =
-        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "MapPelletto1D" ) );
-    AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams1(
+    std::shared_ptr<AMP::Database> map3dto1d_db1 =
+        std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "MapPelletto1D" ) );
+    std::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams1(
         new AMP::Operator::MapOperatorParameters( map3dto1d_db1 ) );
     map3dto1dParams1->d_MapComm = globalComm;
     map3dto1dParams1->d_MapMesh = meshAdapter1;
-    AMP::shared_ptr<AMP::Operator::Map3Dto1D> map1ToLowDim(
+    std::shared_ptr<AMP::Operator::Map3Dto1D> map1ToLowDim(
         new AMP::Operator::Map3Dto1D( map3dto1dParams1 ) );
 
-    AMP::shared_ptr<AMP::Database> map1dto3d_db1 =
-        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "Map1DtoClad" ) );
-    AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams1(
+    std::shared_ptr<AMP::Database> map1dto3d_db1 =
+        std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "Map1DtoClad" ) );
+    std::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams1(
         new AMP::Operator::MapOperatorParameters( map1dto3d_db1 ) );
     map1dto3dParams1->d_MapComm = globalComm;
     map1dto3dParams1->d_MapMesh = meshAdapter2;
-    AMP::shared_ptr<AMP::Operator::Map1Dto3D> map1ToHighDim(
+    std::shared_ptr<AMP::Operator::Map1Dto3D> map1ToHighDim(
         new AMP::Operator::Map1Dto3D( map1dto3dParams1 ) );
 
     map1ToLowDim->setZLocations( map1ToHighDim->getZLocations() );
 
-    AMP::shared_ptr<AMP::Database> map3dto1d_db2 =
-        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "MapCladto1D" ) );
-    AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams2(
+    std::shared_ptr<AMP::Database> map3dto1d_db2 =
+        std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "MapCladto1D" ) );
+    std::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams2(
         new AMP::Operator::MapOperatorParameters( map3dto1d_db2 ) );
     map3dto1dParams2->d_MapComm = globalComm;
     map3dto1dParams2->d_MapMesh = meshAdapter2;
-    AMP::shared_ptr<AMP::Operator::Map3Dto1D> map2ToLowDim(
+    std::shared_ptr<AMP::Operator::Map3Dto1D> map2ToLowDim(
         new AMP::Operator::Map3Dto1D( map3dto1dParams2 ) );
 
-    AMP::shared_ptr<AMP::Database> map1dto3d_db2 =
-        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "Map1DtoPellet" ) );
-    AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams2(
+    std::shared_ptr<AMP::Database> map1dto3d_db2 =
+        std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "Map1DtoPellet" ) );
+    std::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams2(
         new AMP::Operator::MapOperatorParameters( map1dto3d_db2 ) );
     map1dto3dParams2->d_MapComm = globalComm;
     map1dto3dParams2->d_MapMesh = meshAdapter1;
-    AMP::shared_ptr<AMP::Operator::Map1Dto3D> map2ToHighDim(
+    std::shared_ptr<AMP::Operator::Map1Dto3D> map2ToHighDim(
         new AMP::Operator::Map1Dto3D( map1dto3dParams2 ) );
 
     map2ToLowDim->setZLocations( map2ToHighDim->getZLocations() );

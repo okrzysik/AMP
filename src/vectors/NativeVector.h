@@ -20,7 +20,7 @@ class NativeVector : public Vector
 {
 public:
     //! Convenience typedef
-    typedef AMP::shared_ptr<NativeVectorParameters> parameters_ptr;
+    typedef std::shared_ptr<NativeVectorParameters> parameters_ptr;
     //! brief Convenience typedef
     typedef NativeVectorParameters parameters;
 

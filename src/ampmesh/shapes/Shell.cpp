@@ -11,7 +11,7 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Shell::Shell( AMP::shared_ptr<AMP::Database> db )
+Shell::Shell( std::shared_ptr<AMP::Database> db )
 {
     d_physicalDim = 3;
     d_logicalDim  = 2;
@@ -150,9 +150,9 @@ void Shell::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-AMP::shared_ptr<AMP::Geometry::Geometry> Shell::clone() const
+std::shared_ptr<AMP::Geometry::Geometry> Shell::clone() const
 {
-    return AMP::make_shared<Shell>( *this );
+    return std::make_shared<Shell>( *this );
 }
 
 

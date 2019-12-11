@@ -37,7 +37,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     std::string mesh_file       = input_db->getString( "mesh_file" );
     const unsigned int mesh_dim = 3;
-    AMP::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
+    std::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
     AMP::readTestMesh( mesh_file, mesh );
     MeshCommunication().broadcast( *( mesh.get() ) );
     mesh->prepare_for_use( false );
@@ -57,34 +57,34 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Create a nonlinear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "NonlinearMechanicsOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsBVPoperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsBVPoperator =
+        std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "NonlinearMechanicsOperator", input_db ) );
-    AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> nonlinearMechanicsVolumeOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+    std::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> nonlinearMechanicsVolumeOperator =
+        std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel =
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel =
         nonlinearMechanicsVolumeOperator->getMaterialModel();
 
     // Create a Linear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsBVPoperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsBVPoperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
 
     // Create the variables
-    AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsNonlinearVolumeOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+    std::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsNonlinearVolumeOperator =
+        std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
     AMP::LinearAlgebra::Variable::shared_ptr dispVar =
         mechanicsNonlinearVolumeOperator->getOutputVariable();
 
     // For RHS (Point Forces)
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-    AMP::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+    std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
+        std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "Load_Boundary", input_db, dummyModel ) );
     dirichletLoadVecOp->setVariable( dispVar );
@@ -117,7 +117,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearMechanicsBVPoperator->reset(
         nonlinearMechanicsBVPoperator->getParameters( "Jacobian", solVec ) );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = linearMechanicsBVPoperator->getMatrix();
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = linearMechanicsBVPoperator->getMatrix();
 
     for ( int i = 0; i < 24; i++ ) {
         std::vector<size_t> matCols;
@@ -136,7 +136,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 int testUpdatedLagrangianMechanics_eigenValues_1( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
-    AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
+    std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
         new AMP::Mesh::initializeLibMesh( AMP_COMM_WORLD ) );
 
     AMP::UnitTest ut;

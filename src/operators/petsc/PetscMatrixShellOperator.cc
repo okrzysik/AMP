@@ -8,7 +8,7 @@ namespace AMP {
 namespace Operator {
 
 PetscMatrixShellOperator::PetscMatrixShellOperator(
-    const AMP::shared_ptr<OperatorParameters> &params )
+    const std::shared_ptr<OperatorParameters> &params )
     : LinearOperator( params )
 {
     d_iMatLocalRowSize    = -1234;
@@ -27,7 +27,7 @@ void PetscMatrixShellOperator::apply( AMP::LinearAlgebra::Vector::const_shared_p
     d_operator->apply( u, f );
 }
 
-void PetscMatrixShellOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void PetscMatrixShellOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
     d_operator->reset( params );
 }
@@ -42,7 +42,7 @@ AMP::LinearAlgebra::Variable::shared_ptr PetscMatrixShellOperator::getInputVaria
     return d_operator->getInputVariable();
 }
 
-void PetscMatrixShellOperator::setOperator( AMP::shared_ptr<Operator> op )
+void PetscMatrixShellOperator::setOperator( std::shared_ptr<Operator> op )
 {
     d_operator = op;
     MatCreateShell( d_comm.getCommunicator(),

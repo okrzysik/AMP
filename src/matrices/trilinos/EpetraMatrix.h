@@ -37,11 +37,11 @@ protected:
 
     /** \brief Range map for the Epetra_CrsMatrix
      */
-    AMP::shared_ptr<Epetra_Map> d_RangeMap;
+    std::shared_ptr<Epetra_Map> d_RangeMap;
 
     /** \brief Domain map for the Epetra_CrsMatrix
      */
-    AMP::shared_ptr<Epetra_Map> d_DomainMap;
+    std::shared_ptr<Epetra_Map> d_DomainMap;
 
     /** \brief Indicates if the destructor calls delete
      */
@@ -99,7 +99,7 @@ public:
      * \param[in] p  The matrix to view
      * \return  An AMP:Matrix capable of casting to EpetraMatrix
      */
-    static AMP::shared_ptr<EpetraMatrix> createView( shared_ptr p );
+    static std::shared_ptr<EpetraMatrix> createView( shared_ptr p );
 
     /** \brief  A call-through to Epetra_CrsMatrix fillComplete
      */

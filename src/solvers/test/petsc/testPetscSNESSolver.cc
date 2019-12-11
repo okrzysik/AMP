@@ -36,12 +36,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nullVec = AMP::LinearAlgebra::NullVector<double>::create( "null" );
 
     // Create the solution and function variables
-    auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( "x" );
+    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "x" );
     auto u   = AMP::LinearAlgebra::SimpleVector<double>::create( 10, var, solverComm );
     auto f   = u->cloneVector();
 
     // Create the operator
-    auto op = AMP::make_shared<AMP::Operator::IdentityOperator>();
+    auto op = std::make_shared<AMP::Operator::IdentityOperator>();
     op->setInputVariable( var );
     op->setOutputVariable( var );
 
@@ -51,14 +51,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // initialize the nonlinear solver parameters
     auto nonlinearSolverParams =
-        AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
     nonlinearSolverParams->d_comm          = solverComm;
     nonlinearSolverParams->d_pInitialGuess = nullVec;
     nonlinearSolverParams->d_pOperator     = op;
 
 
     // Create the nonlinear solver
-    auto nonlinearSolver = AMP::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
+    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
     ut->passes( "PetscSNESSolver created" );
 
     // Call solve with a simple vector

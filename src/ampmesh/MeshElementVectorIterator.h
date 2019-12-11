@@ -2,8 +2,8 @@
 #define included_AMP_MultiVectorIterator
 
 #include "AMP/ampmesh/MeshIterator.h"
-#include "AMP/utils/shared_ptr.h"
 #include <iterator>
+#include <memory>
 
 namespace AMP {
 namespace Mesh {
@@ -22,7 +22,7 @@ public:
     MultiVectorIterator();
 
     //! Default MultiVectorIterator constructor
-    MultiVectorIterator( AMP::shared_ptr<std::vector<MeshElement>> elements, size_t pos = 0 );
+    MultiVectorIterator( std::shared_ptr<std::vector<MeshElement>> elements, size_t pos = 0 );
 
     /** MultiVectorIterator constructor
      *  Note that this version of the constructor will create a copy of the elements
@@ -76,7 +76,7 @@ protected:
     virtual MeshIterator *clone() const override;
 
     // A pointer to a std::vector containing the desired mesh elements
-    AMP::shared_ptr<std::vector<MeshElement>> d_elements;
+    std::shared_ptr<std::vector<MeshElement>> d_elements;
 
 private:
     static constexpr uint32_t getTypeID()

@@ -8,8 +8,8 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <cstdlib>
 #include <iostream>
@@ -37,7 +37,7 @@ static void myTest( AMP::UnitTest *ut )
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto meshDatabase = input_db->getDatabase( "Mesh" );
 
-    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
@@ -54,7 +54,7 @@ static void myTest( AMP::UnitTest *ut )
 
     // map the volume ids to dtk ids
     auto vol_id_map =
-        AMP::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
+        std::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
     {
         int counter = 0;
         for ( vol_iterator = vol_iterator.begin(); vol_iterator != vol_iterator.end();
@@ -76,7 +76,7 @@ static void myTest( AMP::UnitTest *ut )
 
     // map the vertex ids to dtk ids
     auto vert_id_map =
-        AMP::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
+        std::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
     {
         int counter = 0;
         for ( vert_iterator = vert_iterator.begin(); vert_iterator != vert_iterator.end();
@@ -97,7 +97,7 @@ static void myTest( AMP::UnitTest *ut )
     }
 
     // make the rank map.
-    auto rank_map     = AMP::make_shared<std::unordered_map<int, int>>();
+    auto rank_map     = std::make_shared<std::unordered_map<int, int>>();
     auto global_ranks = mesh->getComm().globalRanks();
     int size          = mesh->getComm().getSize();
     for ( int n = 0; n < size; ++n ) {
@@ -106,7 +106,7 @@ static void myTest( AMP::UnitTest *ut )
 
     // Create and test a nodal shape function.
     auto dtk_shape_function =
-        AMP::make_shared<AMP::Operator::AMPMeshNodalShapeFunction>( dofManager );
+        std::make_shared<AMP::Operator::AMPMeshNodalShapeFunction>( dofManager );
 
     Teuchos::Array<double> ref_center( 3 );
     ref_center[0] = 0.0;

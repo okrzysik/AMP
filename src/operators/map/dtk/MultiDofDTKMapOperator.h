@@ -15,7 +15,7 @@ class MultiDofDTKMapOperatorParameters : public OperatorParameters
 {
 public:
     // Constructor.
-    explicit MultiDofDTKMapOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit MultiDofDTKMapOperatorParameters( std::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     { /* ... */
     }
@@ -40,7 +40,7 @@ public:
 class MultiDofDTKMapOperator : public Operator
 {
 public:
-    explicit MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit MultiDofDTKMapOperator( const std::shared_ptr<OperatorParameters> &params );
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr r );
@@ -48,9 +48,9 @@ public:
 private:
     AMP::LinearAlgebra::VS_Comm createCommSelect( AMP_MPI globalComm, bool createOnThisRank );
 
-    AMP::shared_ptr<MultiDofDTKMapOperatorParameters> d_multiDofDTKMapOpParams;
-    AMP::shared_ptr<AMP::Operator::DTKMapOperator> d_Map12;
-    AMP::shared_ptr<AMP::Operator::DTKMapOperator> d_Map21;
+    std::shared_ptr<MultiDofDTKMapOperatorParameters> d_multiDofDTKMapOpParams;
+    std::shared_ptr<AMP::Operator::DTKMapOperator> d_Map12;
+    std::shared_ptr<AMP::Operator::DTKMapOperator> d_Map21;
     AMP::LinearAlgebra::Vector::const_shared_ptr d_SourceVectorMap12;
     AMP::LinearAlgebra::Vector::shared_ptr d_TargetVectorMap12;
     AMP::LinearAlgebra::Vector::const_shared_ptr d_SourceVectorMap21;

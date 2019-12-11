@@ -22,7 +22,7 @@ public:
      * \brief Construct a Sphere geometry
      * \param db        Input database
      */
-    explicit Sphere( AMP::shared_ptr<AMP::Database> db );
+    explicit Sphere( std::shared_ptr<AMP::Database> db );
 
     /**
      * \brief Construct a Sphere geometry
@@ -45,7 +45,7 @@ public:
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<bool> getPeriodicDim() const override final;
     virtual std::vector<int> getLogicalSurfaceIds() const override final;
-    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
+    virtual std::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data

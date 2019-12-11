@@ -60,16 +60,16 @@ inline void NativePetscMatrix::copyFromMat( Mat m ) { MatCopy( m, d_Mat, SAME_NO
 inline void NativePetscMatrix::mult( Vector::const_shared_ptr in, Vector::shared_ptr out )
 {
     MatMult( d_Mat,
-             dynamic_pointer_cast<const NativePetscVector>( in )->getVec(),
-             dynamic_pointer_cast<NativePetscVector>( out )->getVec() );
+             std::dynamic_pointer_cast<const NativePetscVector>( in )->getVec(),
+             std::dynamic_pointer_cast<NativePetscVector>( out )->getVec() );
 }
 
 
 inline void NativePetscMatrix::multTranspose( Vector::const_shared_ptr in, Vector::shared_ptr out )
 {
     MatMultTranspose( d_Mat,
-                      dynamic_pointer_cast<const NativePetscVector>( in )->getVec(),
-                      dynamic_pointer_cast<NativePetscVector>( out )->getVec() );
+                      std::dynamic_pointer_cast<const NativePetscVector>( in )->getVec(),
+                      std::dynamic_pointer_cast<NativePetscVector>( out )->getVec() );
 }
 
 
@@ -123,7 +123,7 @@ inline void NativePetscMatrix::zero() { MatZeroEntries( d_Mat ); }
 
 inline void NativePetscMatrix::setDiagonal( Vector::const_shared_ptr in )
 {
-    auto pVec = dynamic_pointer_cast<const NativePetscVector>( in );
+    auto pVec = std::dynamic_pointer_cast<const NativePetscVector>( in );
     MatDiagonalSet( d_Mat, pVec->getVec(), INSERT_VALUES );
 }
 

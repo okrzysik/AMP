@@ -1,7 +1,7 @@
 #ifndef included_AMP_MapSurface
 #define included_AMP_MapSurface
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/OperatorParameters.h"
@@ -24,13 +24,13 @@ namespace Operator {
 class MapSurface : public MapOperator
 {
 public:
-    explicit MapSurface( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit MapSurface( const std::shared_ptr<OperatorParameters> &params );
     virtual ~MapSurface() {}
 
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+    std::shared_ptr<AMP::LinearAlgebra::Vector>
     getBoundaryVector( const AMP::LinearAlgebra::Vector::shared_ptr &u )
     {
         return ( u->subsetVectorForVariable( d_outVariable ) );
@@ -47,20 +47,20 @@ public:
     }
 
 protected:
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> gap1DVec;
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> gapVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> gap1DVec;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> gapVariable;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
     AMP::LinearAlgebra::Vector::const_shared_ptr inpVec;
     AMP::LinearAlgebra::Vector::shared_ptr outVec;
 
 private:
-    AMP::shared_ptr<Map3Dto1D> mapMaster;
-    AMP::shared_ptr<MapOperatorParameters> mapMasterParams;
-    AMP::shared_ptr<Map1Dto3D> mapTarget;
-    AMP::shared_ptr<MapOperatorParameters> mapTargetParams;
+    std::shared_ptr<Map3Dto1D> mapMaster;
+    std::shared_ptr<MapOperatorParameters> mapMasterParams;
+    std::shared_ptr<Map1Dto3D> mapTarget;
+    std::shared_ptr<MapOperatorParameters> mapTargetParams;
 };
 } // namespace Operator
 } // namespace AMP

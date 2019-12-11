@@ -6,7 +6,7 @@ namespace AMP {
 namespace TimeIntegrator {
 
 BackwardEulerTimeOperator::BackwardEulerTimeOperator(
-    AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<AMP::Operator::OperatorParameters> params )
     : TimeOperator( params )
 {
 }
@@ -18,7 +18,7 @@ void BackwardEulerTimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_
     // this routine evaluates a*[ ( M(u)-M(uOld) )/dt-fRhs(u) -source_term] +b*f
     // where the time operator is given by u_t = fRhs(u)
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> fTmp;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> fTmp;
 
     AMP_INSIST( d_pRhsOperator.get() != nullptr,
                 "ERROR: "

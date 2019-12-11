@@ -220,7 +220,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
     // Rank 0 needs to create the vector and recv all data
     AMP::LinearAlgebra::Vector::shared_ptr dst_vec;
     if ( rank == 0 ) {
-        auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( name );
+        auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
         dst_vec  = AMP::LinearAlgebra::SimpleVector<double>::create(
             global_size, var, AMP_MPI( AMP_COMM_SELF ) );
         AMP_ASSERT( dst_vec->numberOfDataBlocks() == 1 );

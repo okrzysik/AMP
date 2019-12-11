@@ -12,7 +12,7 @@ namespace Operator {
 class RobinMatrixCorrectionParameters : public LinearBoundaryOperatorParameters
 {
 public:
-    explicit RobinMatrixCorrectionParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit RobinMatrixCorrectionParameters( std::shared_ptr<AMP::Database> db )
         : LinearBoundaryOperatorParameters( db )
     {
     }
@@ -25,7 +25,7 @@ public:
 
     std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> d_elementInputVec;
 
-    AMP::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
+    std::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
     AMP::Discretization::DOFManager::shared_ptr d_DofMap;
 };

@@ -3,7 +3,7 @@
 
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/OperatorParameters.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 namespace AMP {
 namespace Operator {
@@ -11,16 +11,16 @@ namespace Operator {
 class RowOperatorParameters : public OperatorParameters
 {
 public:
-    explicit RowOperatorParameters( AMP::shared_ptr<AMP::Database> db ) : OperatorParameters( db )
+    explicit RowOperatorParameters( std::shared_ptr<AMP::Database> db ) : OperatorParameters( db )
     {
     }
 
     virtual ~RowOperatorParameters(){};
 
 
-    std::vector<AMP::shared_ptr<AMP::Operator>> d_Operator;
+    std::vector<std::shared_ptr<AMP::Operator>> d_Operator;
 
-    std::vector<AMP::shared_ptr<AMP::OperatorParameters>> d_OperatorParameters;
+    std::vector<std::shared_ptr<AMP::OperatorParameters>> d_OperatorParameters;
 
     std::vector<double> scalea;
 };

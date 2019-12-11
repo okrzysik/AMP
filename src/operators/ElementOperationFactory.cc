@@ -27,11 +27,11 @@ namespace AMP {
 namespace Operator {
 
 
-AMP::shared_ptr<ElementOperation>
-ElementOperationFactory::createElementOperation( AMP::shared_ptr<Database> elementOperationDb )
+std::shared_ptr<ElementOperation>
+ElementOperationFactory::createElementOperation( std::shared_ptr<Database> elementOperationDb )
 {
-    AMP::shared_ptr<ElementOperation> retElementOp;
-    AMP::shared_ptr<ElementOperationParameters> params;
+    std::shared_ptr<ElementOperation> retElementOp;
+    std::shared_ptr<ElementOperationParameters> params;
 
     AMP_INSIST( elementOperationDb.get() != nullptr,
                 "ElementOperationFactory::createElementOperation:: NULL Database object input" );

@@ -22,7 +22,7 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );
-    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     params->setComm( globalComm );
 
@@ -38,7 +38,7 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
     // Create the temperature profile
     auto DOF = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    auto temp_var = AMP::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
+    auto temp_var = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto temp_vec = AMP::LinearAlgebra::createVector( DOF, temp_var, true );
     auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
     double T0     = input_db->getWithDefault<double>( "T0", 650 );
@@ -53,15 +53,15 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
     AMP_ASSERT( fabs( temp_vec->min() - T0 ) / T0 < 1e-9 );
 
     // Create the oxide time integrator
-    auto parameters = AMP::make_shared<AMP::TimeIntegrator::OxideTimeIntegratorParameters>(
-        AMP::shared_ptr<AMP::Database>() );
+    auto parameters = std::make_shared<AMP::TimeIntegrator::OxideTimeIntegratorParameters>(
+        std::shared_ptr<AMP::Database>() );
     parameters->d_mesh  = surface;
     parameters->d_temp  = temp_vec;
     parameters->depth   = 1e-3;
-    auto timeIntegrator = AMP::make_shared<AMP::TimeIntegrator::OxideTimeIntegrator>( parameters );
+    auto timeIntegrator = std::make_shared<AMP::TimeIntegrator::OxideTimeIntegrator>( parameters );
     auto solution       = timeIntegrator->getCurrentSolution();
-    auto oxide_var      = AMP::make_shared<AMP::LinearAlgebra::Variable>( "oxide" );
-    auto alpha_var      = AMP::make_shared<AMP::LinearAlgebra::Variable>( "alpha" );
+    auto oxide_var      = std::make_shared<AMP::LinearAlgebra::Variable>( "oxide" );
+    auto alpha_var      = std::make_shared<AMP::LinearAlgebra::Variable>( "alpha" );
     auto oxide          = solution->subsetVectorForVariable( oxide_var );
     auto alpha          = solution->subsetVectorForVariable( alpha_var );
 

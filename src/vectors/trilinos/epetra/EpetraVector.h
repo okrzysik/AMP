@@ -57,7 +57,7 @@ public:
         Vector::shared_ptr  in_epetra_view = EpetraVector::view ( in );
         // Extract the Epetra_Vector
         Epetra_Vector &in_vec =
-      dynamic_pointer_cast<EpetraVector>(in_epetra_view)->getEpetra_Vector();
+      std::dynamic_pointer_cast<EpetraVector>(in_epetra_view)->getEpetra_Vector();
         // Perform an Epetra_Vector operation
         retrun in_vec.MaxValue ( &abs );
       }
@@ -80,7 +80,7 @@ public:
         Vector::shared_ptr  in_epetra_view = EpetraVector::view ( in );
         // Extract the Epetra_Vector
         Epetra_Vector &in_vec =
-      dynamic_pointer_cast<EpetraVector>(in_epetra_view)->getEpetra_Vector();
+      std::dynamic_pointer_cast<EpetraVector>(in_epetra_view)->getEpetra_Vector();
         // Perform an Epetra_Vector operation
         retrun in_vec.MaxValue ( &abs );
       }

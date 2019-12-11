@@ -7,7 +7,7 @@ namespace Solver {
 NonlinearKrylovAcceleratorParameters::NonlinearKrylovAcceleratorParameters() = default;
 
 NonlinearKrylovAcceleratorParameters::NonlinearKrylovAcceleratorParameters(
-    AMP::shared_ptr<AMP::Database> database )
+    std::shared_ptr<AMP::Database> database )
     : SolverStrategyParameters( database )
 {
 }

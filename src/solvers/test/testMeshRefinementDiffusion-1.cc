@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -109,7 +109,7 @@ void calculateManufacturedSolution(
 
 void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                        AMP::Discretization::DOFManager::shared_ptr gaussPointDOF,
-                       AMP::shared_ptr<AMP::LinearAlgebra::Vector> manufacturedRHS )
+                       std::shared_ptr<AMP::LinearAlgebra::Vector> manufacturedRHS )
 {
     // Compute the source on the gauss point
 
@@ -119,11 +119,11 @@ void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-    AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
-    AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 3, ( *d_feType ) ) ).release() );
+    std::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
+    std::shared_ptr<::FEBase> d_fe( (::FEBase::build( 3, ( *d_feType ) ) ).release() );
 
     auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-    AMP::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
+    std::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -159,11 +159,11 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-    AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
-    AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 3, ( *d_feType ) ) ).release() );
+    std::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
+    std::shared_ptr<::FEBase> d_fe( (::FEBase::build( 3, ( *d_feType ) ) ).release() );
 
     auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-    AMP::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
+    std::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -213,14 +213,14 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 }
 
 void createThermalOperators(
-    AMP::shared_ptr<AMP::Database> global_input_db,
+    std::shared_ptr<AMP::Database> global_input_db,
     AMP::Mesh::Mesh::shared_ptr manager,
-    AMP::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearColumnOperator,
-    AMP::shared_ptr<AMP::Operator::ColumnOperator> &linearColumnOperator )
+    std::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearColumnOperator,
+    std::shared_ptr<AMP::Operator::ColumnOperator> &linearColumnOperator )
 {
     AMP::pout << "Entering createThermalOperators" << std::endl;
 
-    AMP::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
+    std::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
     nonlinearColumnOperator.reset( new AMP::Operator::ColumnOperator( emptyParams ) );
     linearColumnOperator.reset( new AMP::Operator::ColumnOperator( emptyParams ) );
 
@@ -230,9 +230,9 @@ void createThermalOperators(
     //   CREATE THE NONLINEAR THERMAL OPERATOR 1 ----
     //-----------------------------------------------
     AMP_INSIST( global_input_db->keyExists( "BottomNonlinearThermalOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
-    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
+    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator =
+        std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator( bottomAdapter,
                                                             "BottomNonlinearThermalOperator",
                                                             global_input_db,
@@ -243,8 +243,8 @@ void createThermalOperators(
     //   CREATE THE LINEAR THERMAL OPERATOR 1 ----
     //-------------------------------------
     AMP_INSIST( global_input_db->keyExists( "BottomLinearThermalOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> thermalLinearOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> thermalLinearOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator( bottomAdapter,
                                                             "BottomLinearThermalOperator",
                                                             global_input_db,
@@ -254,18 +254,18 @@ void createThermalOperators(
     AMP::pout << "Leaving createThermalOperators" << std::endl;
 }
 
-void createThermalSolvers( AMP::shared_ptr<AMP::Database> &global_input_db,
+void createThermalSolvers( std::shared_ptr<AMP::Database> &global_input_db,
                            AMP::LinearAlgebra::Vector::shared_ptr &globalSolVec,
-                           AMP::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearOperator,
-                           AMP::shared_ptr<AMP::Operator::Operator> &linearOperator,
-                           AMP::shared_ptr<AMP::Solver::PetscSNESSolver> &nonlinearSolver,
-                           AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> &linearSolver )
+                           std::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearOperator,
+                           std::shared_ptr<AMP::Operator::Operator> &linearOperator,
+                           std::shared_ptr<AMP::Solver::PetscSNESSolver> &nonlinearSolver,
+                           std::shared_ptr<AMP::Solver::PetscKrylovSolver> &linearSolver )
 {
     //----------------------------------------------------------------//
     // initialize the nonlinear solver
-    AMP::shared_ptr<AMP::Database> nonlinearSolver_db =
+    std::shared_ptr<AMP::Database> nonlinearSolver_db =
         global_input_db->getDatabase( "NonlinearThermalSolver" );
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
+    std::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
         new AMP::Solver::PetscSNESSolverParameters( nonlinearSolver_db ) );
 
     // change the next line to get the correct communicator out
@@ -277,28 +277,28 @@ void createThermalSolvers( AMP::shared_ptr<AMP::Database> &global_input_db,
     //-------------------------------------------------------------------------//
     // initialize the column preconditioner which is a diagonal block preconditioner
 
-    AMP::shared_ptr<AMP::Database> linearSolver_db =
+    std::shared_ptr<AMP::Database> linearSolver_db =
         nonlinearSolver_db->getDatabase( "LinearSolver" );
-    AMP::shared_ptr<AMP::Database> columnPreconditioner_db =
+    std::shared_ptr<AMP::Database> columnPreconditioner_db =
         linearSolver_db->getDatabase( "Preconditioner" );
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(
         new AMP::Solver::SolverStrategyParameters( columnPreconditioner_db ) );
-    AMP::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( linearOperator );
+    std::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator =
+        std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( linearOperator );
     AMP_ASSERT( linearColumnOperator );
     columnPreconditionerParams->d_pOperator = linearColumnOperator;
-    AMP::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(
+    std::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(
         new AMP::Solver::ColumnSolver( columnPreconditionerParams ) );
 
     //-------------------------------------------------------------------------//
 
-    AMP::shared_ptr<AMP::Database> trilinosPreconditioner_db =
+    std::shared_ptr<AMP::Database> trilinosPreconditioner_db =
         columnPreconditioner_db->getDatabase( "TrilinosPreconditioner" );
     for ( unsigned int id = 0; id != linearColumnOperator->getNumberOfOperators(); id++ ) {
-        AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(
+        std::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(
             new AMP::Solver::SolverStrategyParameters( trilinosPreconditioner_db ) );
         trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator( id );
-        AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> trilinosPreconditioner(
+        std::shared_ptr<AMP::Solver::TrilinosMLSolver> trilinosPreconditioner(
             new AMP::Solver::TrilinosMLSolver( trilinosPreconditionerParams ) );
         columnPreconditioner->append( trilinosPreconditioner );
     }
@@ -309,12 +309,12 @@ void createThermalSolvers( AMP::shared_ptr<AMP::Database> &global_input_db,
     linearSolver->setPreconditioner( columnPreconditioner );
 }
 
-void createThermalMaps( AMP::shared_ptr<AMP::Database> input_db,
+void createThermalMaps( std::shared_ptr<AMP::Database> input_db,
                         AMP::Mesh::Mesh::shared_ptr manager,
                         AMP::LinearAlgebra::Vector::shared_ptr &thermalMapVec,
-                        AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> &mapsColumn )
+                        std::shared_ptr<AMP::Operator::AsyncMapColumnOperator> &mapsColumn )
 {
-    AMP::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
+    std::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
 
     mapsColumn = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap>(
         manager, map_db );
@@ -322,18 +322,18 @@ void createThermalMaps( AMP::shared_ptr<AMP::Database> input_db,
 }
 
 void registerMapswithThermalOperator(
-    AMP::shared_ptr<AMP::Database>,
-    AMP::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearThermalColumnOperator,
+    std::shared_ptr<AMP::Database>,
+    std::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearThermalColumnOperator,
     AMP::LinearAlgebra::Vector::shared_ptr &thermalMapVec )
 {
-    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> curBVPop =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> curBVPop =
+        std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             nonlinearThermalColumnOperator->getOperator( 0 ) );
-    AMP::shared_ptr<AMP::Operator::ColumnBoundaryOperator> curBCcol =
-        AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator>(
+    std::shared_ptr<AMP::Operator::ColumnBoundaryOperator> curBCcol =
+        std::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator>(
             curBVPop->getBoundaryOperator() );
-    AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> gapBC =
-        AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
+    std::shared_ptr<AMP::Operator::RobinVectorCorrection> gapBC =
+        std::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
             curBCcol->getBoundaryOperator( 0 ) );
     gapBC->setVariableFlux( thermalMapVec );
     gapBC->reset( gapBC->getOperatorParameters() );
@@ -343,20 +343,20 @@ void registerMapswithThermalOperator(
 //       Main Program     //
 ///////////////////////////////////////////////
 
-void myTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Database> input_db, AMP::AMP_MPI globalComm )
+void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AMP_MPI globalComm )
 {
 
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
     AMP::Mesh::MeshParameters::shared_ptr meshmgrParams( new AMP::Mesh::MeshParameters( mesh_db ) );
     meshmgrParams->setComm( globalComm );
-    AMP::shared_ptr<AMP::Mesh::Mesh> manager = AMP::Mesh::Mesh::buildMesh( meshmgrParams );
+    std::shared_ptr<AMP::Mesh::Mesh> manager = AMP::Mesh::Mesh::buildMesh( meshmgrParams );
 
     //------------------------------------------
     //  CREATE THE THERMAL OPERATOR  //
     //------------------------------------------
     // create the nonlinear and linear thermal operators
-    AMP::shared_ptr<AMP::Operator::ColumnOperator> nonlinearThermalColumnOperator;
-    AMP::shared_ptr<AMP::Operator::ColumnOperator> linearThermalColumnOperator;
+    std::shared_ptr<AMP::Operator::ColumnOperator> nonlinearThermalColumnOperator;
+    std::shared_ptr<AMP::Operator::ColumnOperator> linearThermalColumnOperator;
 
     createThermalOperators(
         input_db, manager, nonlinearThermalColumnOperator, linearThermalColumnOperator );
@@ -405,7 +405,7 @@ void myTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Database> input_db, AMP::AM
 
     calculateSources( manager, gaussPointDOF, manufacturedRHS );
 
-    AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> mapsColumn;
+    std::shared_ptr<AMP::Operator::AsyncMapColumnOperator> mapsColumn;
     //  createThermalMaps( input_db,  manager, thermMapVec , mapsColumn);
 
     thermMapVec->copyVector( manufacturedNormalGradient );
@@ -451,15 +451,15 @@ void myTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Database> input_db, AMP::AM
     AMP::Mesh::Mesh::shared_ptr bottomAdapter = manager->Subset( "Bottom" );
     // AMP::Mesh::Mesh::shared_ptr  topAdapter = manager->Subset( "Top" );
 
-    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
-    AMP::shared_ptr<AMP::Operator::OperatorParameters> columnParams(
+    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    std::shared_ptr<AMP::Operator::OperatorParameters> columnParams(
         new AMP::Operator::OperatorParameters( tmp_db ) );
-    AMP::shared_ptr<AMP::Operator::ColumnOperator> volumeIntegralColumnOperator(
+    std::shared_ptr<AMP::Operator::ColumnOperator> volumeIntegralColumnOperator(
         new AMP::Operator::ColumnOperator( columnParams ) );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceModel1;
-    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator1 =
-        AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceModel1;
+    std::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator1 =
+        std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 bottomAdapter, "BottomVolumeIntegralOperator", input_db, sourceModel1 ) );
     volumeIntegralColumnOperator->append( sourceOperator1 );
@@ -480,27 +480,27 @@ void myTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Database> input_db, AMP::AM
 
     // modify the RHS to take into account boundary conditions
     //  for(int id = 0; id !=
-    //  AMP::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(nonlinearThermalColumnOperator)->getNumberOfOperators();
+    //  std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(nonlinearThermalColumnOperator)->getNumberOfOperators();
     //  id++)
     for ( int i = 0; i < 1; i++ ) {
         AMP::Operator::NonlinearBVPOperator::shared_ptr nonlinearThermalOperator;
-        nonlinearThermalOperator = ( AMP::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(
+        nonlinearThermalOperator = ( std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(
                                          nonlinearThermalColumnOperator ) )
                                        ->getOperator( i );
-        ( AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+        ( std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
               nonlinearThermalOperator ) )
             ->modifyInitialSolutionVector( TemperatureVec );
-        ( AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+        ( std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
               nonlinearThermalOperator ) )
             ->modifyRHSvector( integratedRHSVec );
     }
     /*
-     AMP::shared_ptr<AMP::Database> emptyDb;
-     AMP::shared_ptr<AMP::Operator::CoupledOperatorParameters> thermalCoupledOpParams(new
+     std::shared_ptr<AMP::Database> emptyDb;
+     std::shared_ptr<AMP::Operator::CoupledOperatorParameters> thermalCoupledOpParams(new
      AMP::Operator::CoupledOperatorParameters(emptyDb));
      thermalCoupledOpParams->d_MapOperator = mapsColumn;
      thermalCoupledOpParams->d_BVPOperator = nonlinearThermalColumnOperator;
-     AMP::shared_ptr<AMP::Operator::Operator> nonlinearThermalCoupledOperator(new
+     std::shared_ptr<AMP::Operator::Operator> nonlinearThermalCoupledOperator(new
      AMP::Operator::CoupledOperator(thermalCoupledOpParams));
 
      nonlinearThermalCoupledOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0,
@@ -512,10 +512,10 @@ void myTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Database> input_db, AMP::AM
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearThermalSolver;
-    AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearThermalSolver;
-    AMP::shared_ptr<AMP::Operator::Operator> linearThermalOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::Operator>( linearThermalColumnOperator );
+    std::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearThermalSolver;
+    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearThermalSolver;
+    std::shared_ptr<AMP::Operator::Operator> linearThermalOperator =
+        std::dynamic_pointer_cast<AMP::Operator::Operator>( linearThermalColumnOperator );
     // createThermalSolvers(input_db, TemperatureVec ,  nonlinearThermalCoupledOperator,
     // linearThermalOperator,
     // nonlinearThermalSolver, linearThermalSolver);
@@ -586,9 +586,9 @@ void multiMeshLoop( AMP::UnitTest *ut, const std::string &exeName )
     //  std::string str2="cube64.with.boundary.labels.e";
     //  std::string str3="cube256.with.boundary.labels.e";
 
-    AMP::shared_ptr<AMP::Database> mesh_db       = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Database> bottomMesh_db = mesh_db->getDatabase( "Mesh_1" );
-    //  AMP::shared_ptr<AMP::Database> topMesh_db = mesh_db->getDatabase( "Mesh_2" );
+    std::shared_ptr<AMP::Database> mesh_db       = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Database> bottomMesh_db = mesh_db->getDatabase( "Mesh_1" );
+    //  std::shared_ptr<AMP::Database> topMesh_db = mesh_db->getDatabase( "Mesh_2" );
 
     bottomMesh_db->putScalar( "FileName", str1 );
     //  topMesh_db->putScalar("FileName",str1);

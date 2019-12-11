@@ -3,7 +3,7 @@
 namespace AMP {
 namespace Solver {
 
-PetscKrylovSolverParameters::PetscKrylovSolverParameters( const AMP::shared_ptr<AMP::Database> db )
+PetscKrylovSolverParameters::PetscKrylovSolverParameters( const std::shared_ptr<AMP::Database> db )
     : SolverStrategyParameters( db )
 {
 }

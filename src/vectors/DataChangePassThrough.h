@@ -1,9 +1,9 @@
 #ifndef included_AMP_DataChangePassThrough_h
 #define included_AMP_DataChangePassThrough_h
 
-#include "AMP/utils/shared_ptr.h"
 #include <algorithm>
 #include <deque>
+#include <memory>
 
 #include "DataChangeFirer.h"
 

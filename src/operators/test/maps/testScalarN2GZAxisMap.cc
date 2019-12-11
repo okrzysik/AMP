@@ -60,11 +60,11 @@ static void setGpBoundary( int id,
     auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-    AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
-    AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
+    std::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
+    std::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
 
     auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-    AMP::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
+    std::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -100,7 +100,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     auto mesh_db = input_db->getDatabase( "Mesh" );
-    auto params  = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto params  = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
@@ -112,8 +112,8 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     // Create a simple DOFManager and the vectors
     int DOFsPerObject   = map_db->getScalar<int>( "DOFsPerObject" );
     std::string varName = map_db->getString( "VariableName" );
-    auto Variable       = AMP::make_shared<AMP::LinearAlgebra::Variable>( varName );
-    auto DOFparams      = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
+    auto Variable       = std::make_shared<AMP::LinearAlgebra::Variable>( varName );
+    auto DOFparams      = std::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
     auto DOFs =
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
     auto GpDofMap = AMP::Discretization::simpleDOFManager::create(

@@ -16,7 +16,7 @@
 #include "getkeys.h"
 
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -52,7 +52,7 @@ class Factory : public Singleton<Factory<BaseClass, Key, n>>
 
 template<class BaseClass, typename Key>
 struct RegistrationBase<BaseClass, Key, 0> {
-    virtual AMP::shared_ptr<BaseClass> create() const = 0;
+    virtual std::shared_ptr<BaseClass> create() const = 0;
     virtual ~RegistrationBase() {}
 };
 
@@ -62,14 +62,14 @@ class Factory<BaseClass, Key, 0> : public Singleton<Factory<BaseClass, Key, 0>>
 {
 public:
     friend class Singleton<Factory<BaseClass, Key, 0>>;
-    bool Register( const Key &key, AMP::shared_ptr<RegistrationBase<BaseClass, Key, 0>> reg )
+    bool Register( const Key &key, std::shared_ptr<RegistrationBase<BaseClass, Key, 0>> reg )
     {
         return regMapPtr->insert( typename RegistrationMap::value_type( key, reg ) ).second;
     }
 
     bool Register( const Factory<BaseClass, Key, 0> &other )
     {
-        AMP::shared_ptr<RegistrationMap> tmp( new RegistrationMap( *regMapPtr ) );
+        std::shared_ptr<RegistrationMap> tmp( new RegistrationMap( *regMapPtr ) );
         RegistrationMapIterator iter( other.regMapPtr->begin() );
         while ( iter != other.regMapPtr->end() ) {
             if ( !tmp->insert( typename RegistrationMap::value_type( *iter++ ) ).second )
@@ -79,7 +79,7 @@ public:
         return true;
     }
 
-    AMP::shared_ptr<BaseClass> create( const Key &id ) const
+    std::shared_ptr<BaseClass> create( const Key &id ) const
     {
         RegistrationMapIterator iter( regMapPtr->find( id ) );
         if ( iter == regMapPtr->end() )
@@ -90,10 +90,10 @@ public:
     std::vector<Key> getKeys() const { return AMP::voodoo::getKeys( *regMapPtr ); }
 
 private:
-    typedef typename std::map<Key, AMP::shared_ptr<RegistrationBase<BaseClass, Key, 0>>>
+    typedef typename std::map<Key, std::shared_ptr<RegistrationBase<BaseClass, Key, 0>>>
         RegistrationMap;
     typedef typename RegistrationMap::const_iterator RegistrationMapIterator;
-    AMP::shared_ptr<RegistrationMap> regMapPtr;
+    std::shared_ptr<RegistrationMap> regMapPtr;
     Factory() : regMapPtr( new RegistrationMap ) {}
 };
 
@@ -105,7 +105,7 @@ struct Registration<BaseClass, Derived, Key, 0> : public RegistrationBase<BaseCl
         try {
             Factory<BaseClass, Key, 0>::instance().Register(
                 key,
-                AMP::shared_ptr<RegistrationBase<BaseClass, Key, 0>>(
+                std::shared_ptr<RegistrationBase<BaseClass, Key, 0>>(
                     new Registration<BaseClass, Derived, Key, 0> ) );
         } catch ( ... ) {
         }
@@ -113,9 +113,9 @@ struct Registration<BaseClass, Derived, Key, 0> : public RegistrationBase<BaseCl
     virtual ~Registration() {}
 
 private:
-    virtual AMP::shared_ptr<BaseClass> create() const override
+    virtual std::shared_ptr<BaseClass> create() const override
     {
-        return AMP::shared_ptr<BaseClass>( new Derived() );
+        return std::shared_ptr<BaseClass>( new Derived() );
     }
     Registration() {}
     Registration( const Registration<BaseClass, Derived, Key, 0> & );

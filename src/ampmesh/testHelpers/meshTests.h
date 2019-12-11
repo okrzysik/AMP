@@ -30,7 +30,7 @@ public:
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static void MeshTestLoop( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     /**
      * \brief Run all mesh geometry based tests
@@ -38,7 +38,7 @@ public:
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshGeometryTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static void MeshGeometryTestLoop( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -49,7 +49,7 @@ public:
      * \param[in] fast          Speed up testing by eliminating some of the tests
      */
     static void MeshVectorTestLoop( AMP::UnitTest *ut,
-                                    AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                    std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                     bool fast = false );
 
 
@@ -61,7 +61,7 @@ public:
      * \param[in] fast          Speed up testing by eliminating some of the tests
      */
     static void MeshMatrixTestLoop( AMP::UnitTest *ut,
-                                    AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                    std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                     bool fast = false );
 
 public: // Basic tests
@@ -80,7 +80,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshIteratorTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static void MeshIteratorTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -90,7 +90,7 @@ public: // Mesh based tests
      * \param[in] mesh          Mesh to test
      */
     static void MeshIteratorOperationTest( AMP::UnitTest *ut,
-                                           AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+                                           std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     /**
      * \brief Checks the mesh set operations
@@ -99,7 +99,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshIteratorSetOPTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static void MeshIteratorSetOPTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     /**
      * \brief Checks the number of elements in a mesh
@@ -108,7 +108,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshCountTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static void MeshCountTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -117,7 +117,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshBasicTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static void MeshBasicTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -260,7 +260,7 @@ public: // Vector based tests
         //! Get the Variable
         virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
         {
-            return AMP::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
+            return std::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
         }
         //! Get the Vector
         virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override

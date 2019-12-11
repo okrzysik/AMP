@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 /* AMP files */
 #include "FlowElement.h"
@@ -18,7 +18,7 @@ class NavierStokesGalWFElement : public FlowElement
 {
 public:
     //!  Constructor.
-    explicit NavierStokesGalWFElement( const AMP::shared_ptr<ElementOperationParameters> &params )
+    explicit NavierStokesGalWFElement( const std::shared_ptr<ElementOperationParameters> &params )
         : FlowElement( params ), d_elementOutputVector( nullptr )
     {
         d_JxW        = &( d_fe->get_JxW() );

@@ -26,7 +26,7 @@ void meshTests::simpleNodalVectorTests( AMP::UnitTest *utils,
 {
 
     // Create a nodal variable
-    auto variable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
+    auto variable = std::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
 
     // Create the vectors
     auto vectora = AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
@@ -74,7 +74,7 @@ void meshTests::VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shar
     for ( int gcw = 0; gcw <= 1; gcw++ ) {
 
         // Create the DOF_Manager
-        auto DOFparams = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
+        auto DOFparams = std::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
         auto DOFs      = AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, gcw, DOF_PER_NODE, SPLIT );
 
@@ -83,7 +83,7 @@ void meshTests::VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shar
 
         // Run the vector tests
         globalMeshForMeshVectorFactory = mesh;
-        auto factory                   = AMP::make_shared<MeshVectorFactory>(
+        auto factory                   = std::make_shared<MeshVectorFactory>(
             mesh, AMP::Mesh::GeomType::Vertex, gcw, DOF_PER_NODE, SPLIT );
         AMP::LinearAlgebra::VectorTests vectorTests( factory );
         vectorTests.testManagedVector( utils );

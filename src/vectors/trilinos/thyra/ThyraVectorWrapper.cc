@@ -98,9 +98,9 @@ template<class T>
 static void nullDeleter( T * )
 {
 }
-AMP::shared_ptr<const ThyraVectorWrapper> ThyraVectorWrapper::shared_from_this() const
+std::shared_ptr<const ThyraVectorWrapper> ThyraVectorWrapper::shared_from_this() const
 {
-    return AMP::shared_ptr<const ThyraVectorWrapper>( this, nullDeleter<const ThyraVectorWrapper> );
+    return std::shared_ptr<const ThyraVectorWrapper>( this, nullDeleter<const ThyraVectorWrapper> );
 }
 
 

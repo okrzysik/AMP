@@ -341,10 +341,10 @@ create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri )
  * Generator                                                     *
  ****************************************************************/
 template<size_t NG, size_t NP>
-static AMP::shared_ptr<TriangleMesh<NG, NP>>
+static std::shared_ptr<TriangleMesh<NG, NP>>
 generateSTL( const std::string &filename, const AMP_MPI &comm, double scale );
 template<>
-AMP::shared_ptr<TriangleMesh<2, 3>>
+std::shared_ptr<TriangleMesh<2, 3>>
 generateSTL( const std::string &filename, const AMP_MPI &comm, double scale )
 {
     // Read the STL file
@@ -356,20 +356,20 @@ generateSTL( const std::string &filename, const AMP_MPI &comm, double scale )
     return mesh;
 }
 template<size_t NG, size_t NP>
-static AMP::shared_ptr<TriangleMesh<NG, NP>>
+static std::shared_ptr<TriangleMesh<NG, NP>>
 generateSTL( const std::string &, const AMP_MPI &, double )
 {
     AMP_ERROR( "STL meshes are only supported for NG=2, NP=3" );
-    return AMP::shared_ptr<TriangleMesh<NG, NP>>();
+    return std::shared_ptr<TriangleMesh<NG, NP>>();
 }
 template<size_t NG, size_t NP>
-AMP::shared_ptr<TriangleMesh<NG, NP>>
+std::shared_ptr<TriangleMesh<NG, NP>>
 TriangleMesh<NG, NP>::generate( MeshParameters::shared_ptr params )
 {
     auto db = params->getDatabase();
     // Create the mesh
     auto filename = db->getWithDefault<std::string>( "FileName", "" );
-    AMP::shared_ptr<TriangleMesh<NG, NP>> mesh;
+    std::shared_ptr<TriangleMesh<NG, NP>> mesh;
     if ( filename.substr( std::max<int>( filename.length(), 4 ) - 4 ) == ".stl" ) {
         auto scale = db->getWithDefault<double>( "scale", 1.0 );
         mesh       = generateSTL<NG, NP>( filename, params->getComm(), scale );
@@ -395,7 +395,7 @@ TriangleMesh<NG, NP>::generate( MeshParameters::shared_ptr params )
     return mesh;
 }
 template<size_t NG, size_t NP>
-AMP::shared_ptr<TriangleMesh<NG, NP>> TriangleMesh<NG, NP>::generate(
+std::shared_ptr<TriangleMesh<NG, NP>> TriangleMesh<NG, NP>::generate(
     const std::vector<std::array<std::array<double, NP>, NG + 1>> &tri_list,
     const AMP_MPI &comm,
     double tol )
@@ -412,7 +412,7 @@ AMP::shared_ptr<TriangleMesh<NG, NP>> TriangleMesh<NG, NP>::generate(
     std::vector<std::array<int64_t, NG + 1>> neighbors( triangles.size(),
                                                         make_array<int64_t, NG + 1>( -1 ) );
     // Create the mesh
-    AMP::shared_ptr<TriangleMesh<NG, NP>> mesh(
+    std::shared_ptr<TriangleMesh<NG, NP>> mesh(
         new TriangleMesh<NG, NP>( verticies, triangles, neighbors, comm ) );
     return mesh;
 }
@@ -489,9 +489,9 @@ TriangleMesh<NG, NP>::TriangleMesh( const std::vector<std::array<double, NP>> &v
 /****************************************************************
  * Initialize mesh data                                          *
  ****************************************************************/
-static AMP::shared_ptr<std::vector<ElementID>> createLocalList( size_t N, GeomType type, int rank )
+static std::shared_ptr<std::vector<ElementID>> createLocalList( size_t N, GeomType type, int rank )
 {
-    auto list = AMP::make_shared<std::vector<ElementID>>( N );
+    auto list = std::make_shared<std::vector<ElementID>>( N );
     for ( size_t i = 0; i < N; i++ )
         ( *list )[i] = ElementID( true, type, i, rank );
     return list;
@@ -655,9 +655,9 @@ TriangleMesh<NG, NP>::TriangleMesh( const TriangleMesh &rhs ) : Mesh( rhs.d_para
     }
 }
 template<size_t NG, size_t NP>
-AMP::shared_ptr<Mesh> TriangleMesh<NG, NP>::clone() const
+std::shared_ptr<Mesh> TriangleMesh<NG, NP>::clone() const
 {
-    return AMP::shared_ptr<TriangleMesh<NG, NP>>( new TriangleMesh<NG, NP>( *this ) );
+    return std::shared_ptr<TriangleMesh<NG, NP>>( new TriangleMesh<NG, NP>( *this ) );
 }
 
 
@@ -855,7 +855,7 @@ void TriangleMesh<NG, NP>::displaceMesh( const std::vector<double> &x )
 }
 #ifdef USE_AMP_VECTORS
 template<size_t NG, size_t NP>
-void TriangleMesh<NG, NP>::displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x )
+void TriangleMesh<NG, NP>::displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x )
 {
 #ifdef USE_AMP_DISCRETIZATION
     // Update the local coordinates

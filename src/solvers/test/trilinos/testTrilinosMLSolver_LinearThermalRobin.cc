@@ -5,8 +5,8 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
+#include <memory>
 #include <string>
 
 #include "AMP/operators/ElementOperationFactory.h"
@@ -50,9 +50,9 @@ static void linearThermalTest( AMP::UnitTest *ut )
     // Create the Mesh.
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
-    auto mgrParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode          = 1;
@@ -71,16 +71,16 @@ static void linearThermalTest( AMP::UnitTest *ut )
                 "Key ''NeutronicsOperator'' is missing!" );
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
     auto neutronicsParams =
-        AMP::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
-    auto neutronicsOperator = AMP::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
+        std::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
+    auto neutronicsOperator = std::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
     auto SpecificPowerVar   = neutronicsOperator->getOutputVariable();
     auto SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
     // Integrate Nuclear Source over Desnity * GeomType::Volume
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
-    auto sourceOperator = AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
+    auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
 
@@ -93,8 +93,8 @@ static void linearThermalTest( AMP::UnitTest *ut )
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
 
     // CREATE THE THERMAL BVP OPERATOR
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
-    auto diffusionOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
+    auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
     auto TemperatureInKelvinVec =
@@ -116,7 +116,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     AMP::Operator::Operator::shared_ptr boundaryOp;
     boundaryOp = diffusionOperator->getBoundaryOperator();
 
-    ( AMP::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( boundaryOp ) )
+    ( std::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( boundaryOp ) )
         ->addRHScorrection( boundaryOpCorrectionVec );
 
     RightHandSideVec->subtract( PowerInWattsVec, boundaryOpCorrectionVec );
@@ -136,10 +136,10 @@ static void linearThermalTest( AMP::UnitTest *ut )
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
     // Read the input file onto a database.
-    AMP::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
+    std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
     // Fill in the parameters fo the class with the info on the database.
-    auto mlSolverParams = AMP::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
+    auto mlSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
 
     // Define the operature to be used by the Solver.
     mlSolverParams->d_pOperator = diffusionOperator;
@@ -155,7 +155,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
     // Create the ML Solver
-    auto mlSolver = AMP::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
+    auto mlSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
 
     // Use a random initial guess?
     mlSolver->setZeroInitialGuess( false );

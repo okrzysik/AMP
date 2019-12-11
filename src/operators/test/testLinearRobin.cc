@@ -15,31 +15,31 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <string>
 
 
 static void bcTests( AMP::UnitTest *ut,
                      std::string msgPrefix,
-                     AMP::shared_ptr<AMP::Operator::Operator> &feOperator,
-                     AMP::shared_ptr<AMP::Operator::Operator> &bcOperator,
-                     AMP::shared_ptr<AMP::Database> bcDatabase,
+                     std::shared_ptr<AMP::Operator::Operator> &feOperator,
+                     std::shared_ptr<AMP::Operator::Operator> &bcOperator,
+                     std::shared_ptr<AMP::Database> bcDatabase,
                      AMP::LinearAlgebra::Vector::shared_ptr bcCorrectionVec )
-//             AMP::shared_ptr<AMP::Operator::OperatorParameters> &bcParameters)
+//             std::shared_ptr<AMP::Operator::OperatorParameters> &bcParameters)
 {
 
     try {
-        auto tmp_db = AMP::make_shared<AMP::Database>( "Dummy" );
+        auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
         tmp_db->putScalar( "skip_params", false );
         tmp_db->putScalar( "print_info_level", 3 );
         tmp_db->putScalar( "alpha", 0.0 );
 
         auto dummyParameters =
-            AMP::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( tmp_db );
+            std::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( tmp_db );
 
         bcOperator->reset( dummyParameters );
 
@@ -53,15 +53,15 @@ static void bcTests( AMP::UnitTest *ut,
 
     try {
         auto bcParameters =
-            AMP::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( bcDatabase );
+            std::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( bcDatabase );
         bcParameters->d_inputMatrix =
-            ( AMP::dynamic_pointer_cast<AMP::Operator::LinearFEOperator>( feOperator ) )
+            ( std::dynamic_pointer_cast<AMP::Operator::LinearFEOperator>( feOperator ) )
                 ->getMatrix();
         bcParameters->d_variable = feOperator->getOutputVariable();
         bcOperator->reset( bcParameters );
 
         bcCorrectionVec->setToScalar( 0.0 );
-        ( AMP::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( bcOperator ) )
+        ( std::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( bcOperator ) )
             ->addRHScorrection( bcCorrectionVec );
         AMP_INSIST( ( ( bcCorrectionVec.get() ) != nullptr ), "NULL rhs correction vector" );
 
@@ -97,12 +97,12 @@ static void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string mesh_file = input_db->getString( "Mesh" );
 
     // Create the mesh parameter object
-    AMP::shared_ptr<AMP::Database> database( new AMP::Database( "Mesh" ) );
+    std::shared_ptr<AMP::Database> database( new AMP::Database( "Mesh" ) );
     database->putScalar( "dim", 3 );
     database->putScalar( "MeshName", "mesh" );
     database->putScalar( "MeshType", "libMesh" );
     database->putScalar( "FileName", mesh_file );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the mesh
@@ -111,13 +111,13 @@ static void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     /////////////////////////////////////////////////
     //   CREATE THE LINEAR DIFFUSION BVP OPERATOR  //
     /////////////////////////////////////////////////
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "DiffusionBVPOperator", input_db, elementModel ) );
 
-    AMP::shared_ptr<AMP::Database> bcDatabase = AMP::dynamic_pointer_cast<AMP::Database>(
+    std::shared_ptr<AMP::Database> bcDatabase = std::dynamic_pointer_cast<AMP::Database>(
         input_db->getDatabase( "RobinMatrixCorrection" ) );
 
     AMP::Operator::Operator::shared_ptr boundaryOp, volumeOp;

@@ -37,7 +37,7 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Parse input file
-    AMP::shared_ptr<AMP::Database> inputDatabase( new AMP::Database( "input_db" ) );
+    std::shared_ptr<AMP::Database> inputDatabase( new AMP::Database( "input_db" ) );
     AMP::Database::parseInputFile( inputFile, inputDatabase );
 
     // Read the mesh
@@ -113,23 +113,23 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
 
         //---------------------------------------------------
 
-        AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> multiSolVec =
+        std::shared_ptr<AMP::LinearAlgebra::MultiVector> multiSolVec =
             AMP::LinearAlgebra::MultiVector::create( "MultiSolVec", globalComm );
         multiSolVec->addVector( BatterySolVec );
         multiSolVec->addVector( potentialSolVec );
 
-        AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> multiResVec =
+        std::shared_ptr<AMP::LinearAlgebra::MultiVector> multiResVec =
             AMP::LinearAlgebra::MultiVector::create( "MultiResVec", globalComm );
         multiResVec->addVector( BatteryResVec );
         multiResVec->addVector( potentialResVec );
 
-        AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> multiRhsVec =
+        std::shared_ptr<AMP::LinearAlgebra::MultiVector> multiRhsVec =
             AMP::LinearAlgebra::MultiVector::create( "MultiRhsVec", globalComm );
         multiRhsVec->addVector( BatteryRhsVec );
         multiRhsVec->addVector( potentialRhsVec );
 
         // Make new vectors
-        AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> multiMapVec =
+        std::shared_ptr<AMP::LinearAlgebra::MultiVector> multiMapVec =
             AMP::LinearAlgebra::MultiVector::create( "MultiMapVec", globalComm );
         multiMapVec->addVector( BatteryMapVec );
         multiMapVec->addVector( potentialMapVec );
@@ -204,10 +204,10 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     AMP::pout << "----------------------------\n";
     AMP::pout << "     CREATE MAP OPERATOR    \n";
     AMP::pout << "----------------------------\n";
-    AMP::shared_ptr<AMP::Database> nullDatabase;
+    std::shared_ptr<AMP::Database> nullDatabase;
     // INTERFACE WITH ANODE
     AMP::pout << "interface CC cellSandwich\n";
-    AMP::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters>
+    std::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters>
         anodeCCCellSandwichMapOperatorParams(
             new AMP::Operator::MultiDofDTKMapOperatorParameters( nullDatabase ) );
     anodeCCCellSandwichMapOperatorParams->d_globalComm    = globalComm;
@@ -223,12 +223,12 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     anodeCCCellSandwichMapOperatorParams->d_StrideLength2 = 1;
     anodeCCCellSandwichMapOperatorParams->d_SourceVector  = potentialSolVec;
     anodeCCCellSandwichMapOperatorParams->d_TargetVector  = potentialMapVec;
-    AMP::shared_ptr<AMP::Operator::Operator> anodeCCCellSandwichMapOperator(
+    std::shared_ptr<AMP::Operator::Operator> anodeCCCellSandwichMapOperator(
         new AMP::Operator::MultiDofDTKMapOperator( anodeCCCellSandwichMapOperatorParams ) );
 
     // INTERFACE WITH CATHODE
     AMP::pout << "interface cellSandwich cathodeCC\n";
-    AMP::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters>
+    std::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters>
         cellSandwichCathodeCCMapOperatorParams(
             new AMP::Operator::MultiDofDTKMapOperatorParameters( nullDatabase ) );
     cellSandwichCathodeCCMapOperatorParams->d_globalComm    = globalComm;
@@ -244,7 +244,7 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     cellSandwichCathodeCCMapOperatorParams->d_StrideLength2 = 1;
     cellSandwichCathodeCCMapOperatorParams->d_SourceVector  = potentialSolVec;
     cellSandwichCathodeCCMapOperatorParams->d_TargetVector  = potentialMapVec;
-    AMP::shared_ptr<AMP::Operator::Operator> cellSandwichCathodeCCMapOperator(
+    std::shared_ptr<AMP::Operator::Operator> cellSandwichCathodeCCMapOperator(
         new AMP::Operator::MultiDofDTKMapOperator( cellSandwichCathodeCCMapOperatorParams ) );
 
     // apply the map.
