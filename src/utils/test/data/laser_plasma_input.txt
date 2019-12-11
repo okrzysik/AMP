@@ -1,0 +1,96 @@
+/* Plasma simulation for laser created plasma
+ *
+ *     This program models the plasma created from a laser beam heating 
+ * a solid target.  This is a 1.5-D implimentation, using Lagrangian 
+ * coordinates.  The beam is assumed to be infinite in extent, and the 
+ * plasma is modeled as a function of z away from the target.
+ * See documentation for further details.
+ */
+
+// Basic variables
+end_time  = 330 ps          // Length of run 
+gain_time = 250 ps          // Time to track line-resolved densities and calculate gain
+tsave = 1 ps                // Save every x ps ( 0 saves every iteration )
+ndetail = 25                // Save detailed info every x saves
+t_rad = 0.5 ps              // Update radiation losses every x ps
+rad_type = 4                // Radiation tye ( 1: optially thin, 2: no radiation, 3: zone trapping only, 4: full transport)
+laser_type = 1              // Laser type ( 0: No laser, 1: Ni-like, 2: Ne-like, 3: Pd-like )
+c1  = 0.5                   // Safety factor for time step control, should be < 1
+N   = 250                   // Number of zones in simulation
+J0  = 25                    // Number of zones to track both atomic models (0 = SS atomic model)
+dz0 = 0.3 nm                // Initial width of each zone
+dzp = 1.02                  // Size of next zone compared to previous
+Ny  = 10                    // Number of points to use in y direction (for absorption, 0: line-centered)
+B   = 0                     // Magnetic Field in tesla
+profile_level = 1           // Level of profiling to use
+enable_trace = false        // Enable trace data
+enable_memory = false       // Enable memory trace data
+
+
+/* Using material: Multple layers look like {'Ag','Au'} which would be a
+ * silver layer and a gold layer. Mixed elements look like {'compound'}. The
+ * propertieas of the compound are loaded near the start of
+ * run_laser_plasma2. The compound properties are stored in
+ * compound_properties.m Make sure those name are 3 or more characters long
+ * so that is easier for me to tell whether to load compound or element data.
+ * The two differnt cases can be combined such as {'compound','Ag'}
+ * The first layer listed is the one closest to the incoming laser
+ */
+material = "Ag_C"
+dzT = inf cm                // Target thickness (cm) (inf - slab target)
+// Choose which element is the laser species. This should be a string with
+// of the abbreviation for the element such as element = 'Ag'
+laser_element = "Ag"
+
+// Initial mass density for each layer ( -1: use solid density)  g/cm3
+// If a layer contains a compound, a density should preferably be given in
+// the file for that compound, so just use -1 here.
+p0 = -1
+rate_path = "${RATES_DIRECTORY}"
+rate_factor = 0.3
+W = 30 um                   // Beam diameter for 1.5 D code
+geometry = 1                // Beam geometry (0 for 1D, 1 for 1.5D planar, 2 for 1.5D cylindrical)
+num_threads = 8             // Number of threads to use
+x0 =                        // Points along the length to run ( [] - run average, assume the line centered at 0 )
+
+
+// Atomic model properties
+atomic_params {
+    z0 = 2 um               // Distance beyond which we force the model to use the transient model
+    Ni_SS = 5e21            // Ion density above which we force the model to use the SS model
+    Zm_SS = 100             // Mean degree of ionization above which we force the model to use the transient model
+    Z_min = 0.005           // Minimum degree of ionization (helps with stability)
+    Z_min_SS = 0.1          // Minimum degree of ionization for SS model (helps with stability)
+    T0 = 0.0259 eV          // Minimum temperature below which we reduce atomic losses
+    SS_tol = 0.05           // Tolerance above which we switch atomic models
+}
+
+
+// Beam Conditions (pulse 1)
+beam_1 {
+    prof = "gaussian"       // Temporal profile
+    z_shape = "hard_hat"    // Shape along the line
+    y_shape = "gaussian"    // Shape perpendicular to the line
+    FWHM   = 120 ps         // Full Width Half Max
+    E      = 0.4 J          // Energy in the beam
+    delay  = 0 ps           // Delay the beam respect to zero
+    diam   = 30 um          // Beam diameter
+    length = 0.4 cm         // Beam length
+    lambda = 0.8 um         // Wavelength of laser
+    angle  = 0 degrees      // Angle of beam with repect to normal
+}
+
+// Beam Conditions (pulse 2)
+beam_2 {
+    prof = "gaussian"       // Temporal profile
+    z_shape = "hard_hat"    // Shape along the line
+    y_shape = "gaussian"    // Shape perpendicular to the line
+    FWHM   = 6 ps           // Full Width Half Max
+    E      = 0.8 J          // Energy in the beam
+    delay  = 300 ps         // Delay the beam respect to zero
+    diam   = 30 um          // Beam diameter
+    length = 0.4 cm         // Beam length
+    lambda = 0.8 um         // Wavelength of laser
+    angle  = 67 degrees     // Angle of beam with repect to normal
+}
+

@@ -214,7 +214,7 @@ bool Database::isDatabase( const AMP::string_view &key ) const
 {
     auto hash = hashString( key );
     int index = find( hash );
-    DATABASE_INSIST( index != -1, "Variable %s is not a database", key.data() );
+    DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
     auto ptr2 = dynamic_cast<const Database *>( d_data[index].get() );
     return ptr2 != nullptr;
 }
@@ -222,7 +222,7 @@ AMP::shared_ptr<Database> Database::getDatabase( const AMP::string_view &key )
 {
     auto hash = hashString( key );
     int index = find( hash );
-    DATABASE_INSIST( index != -1, "Variable %s is not a database", key.data() );
+    DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
     auto ptr2 = AMP::dynamic_pointer_cast<Database>( d_data[index] );
     DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
     return ptr2;
@@ -231,7 +231,7 @@ AMP::shared_ptr<const Database> Database::getDatabase( const AMP::string_view &k
 {
     auto hash = hashString( key );
     int index = find( hash );
-    DATABASE_INSIST( index != -1, "Variable %s is not a database", key.data() );
+    DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
     auto ptr2 = AMP::dynamic_pointer_cast<const Database>( d_data[index] );
     DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
     return ptr2;
@@ -530,8 +530,10 @@ static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buff
             pos += pos0;
         }
         AMP::string_view tmp( &buffer[pos0], pos - pos0 - length( type ) );
-        if ( tmp.back() == ',' )
-            tmp = AMP::string_view( tmp.data(), tmp.size() - 1 );
+        if ( !tmp.empty() ) {
+            if ( tmp.back() == ',' )
+                tmp = AMP::string_view( tmp.data(), tmp.size() - 1 );
+        }
         tmp = deblank( tmp );
         values.push_back( deblank( tmp ) );
         if ( type == token_type::comma ) {
