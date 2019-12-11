@@ -740,7 +740,13 @@ public: // Math operations
      * Linear interpolation
      * @param[in] x             Position as a decimal index
      */
-    TYPE interp( const std::vector<double> &x ) const;
+    inline TYPE interp( const std::vector<double> &x ) const { return interp( x.data() ); }
+
+    /*!
+     * Linear interpolation
+     * @param[in] x             Position as a decimal index
+     */
+    TYPE interp( const double *x ) const;
 
     /**
      * \fn equals (Array & const rhs, TYPE tol )
