@@ -1182,7 +1182,7 @@ Array_interp_3D( double x, double y, double z, int Nx, int Ny, int Nz, const TYP
     }
 }
 template<class TYPE, class FUN, class Allocator>
-TYPE Array<TYPE, FUN, Allocator>::interp( const std::vector<double> &x ) const
+TYPE Array<TYPE, FUN, Allocator>::interp( const double *x ) const
 {
     int ndim = 0, dim[5];
     double x2[5];
