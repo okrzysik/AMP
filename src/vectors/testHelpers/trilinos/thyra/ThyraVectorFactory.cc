@@ -40,7 +40,7 @@ namespace LinearAlgebra {
  ****************************************************************/
 AMP::LinearAlgebra::Variable::shared_ptr NativeThyraFactory::getVariable() const
 {
-    return AMP::make_shared<AMP::LinearAlgebra::Variable>( "thyra" );
+    return std::make_shared<AMP::LinearAlgebra::Variable>( "thyra" );
 }
 AMP::LinearAlgebra::Vector::shared_ptr NativeThyraFactory::getVector() const
 {
@@ -60,13 +60,13 @@ AMP::LinearAlgebra::Vector::shared_ptr NativeThyraFactory::getVector() const
         Thyra::create_VectorSpace( epetra_map );
     Teuchos::RCP<Thyra::VectorBase<double>> thyra_v = Thyra::create_Vector( epetra_v, space );
     // Create the NativeThyraVector
-    AMP::shared_ptr<AMP::LinearAlgebra::NativeThyraVectorParameters> params(
+    std::shared_ptr<AMP::LinearAlgebra::NativeThyraVectorParameters> params(
         new AMP::LinearAlgebra::NativeThyraVectorParameters() );
     params->d_InVec = thyra_v;
     params->d_local = local_size;
     params->d_comm  = global_comm;
     params->d_var   = getVariable();
-    AMP::shared_ptr<AMP::LinearAlgebra::NativeThyraVector> vec(
+    std::shared_ptr<AMP::LinearAlgebra::NativeThyraVector> vec(
         new AMP::LinearAlgebra::NativeThyraVector( params ) );
     return vec;
 }
@@ -82,7 +82,7 @@ AMP::Discretization::DOFManager::shared_ptr NativeThyraFactory::getDOFMap() cons
  ****************************************************************/
 AMP::LinearAlgebra::Variable::shared_ptr ManagedThyraFactory::getVariable() const
 {
-    return AMP::make_shared<AMP::LinearAlgebra::Variable>( "managed_thyra" );
+    return std::make_shared<AMP::LinearAlgebra::Variable>( "managed_thyra" );
 }
 AMP::LinearAlgebra::Vector::shared_ptr ManagedThyraFactory::getVector() const
 {
@@ -105,24 +105,24 @@ AMP::Discretization::DOFManager::shared_ptr ManagedThyraFactory::getDOFMap() con
  ****************************************************************/
 AMP::LinearAlgebra::Variable::shared_ptr ManagedNativeThyraFactory::getVariable() const
 {
-    return AMP::make_shared<AMP::LinearAlgebra::Variable>( "managed_native_thyra" );
+    return std::make_shared<AMP::LinearAlgebra::Variable>( "managed_native_thyra" );
 }
 AMP::LinearAlgebra::Vector::shared_ptr ManagedNativeThyraFactory::getVector() const
 {
     // Create an arbitrary vector
     AMP::LinearAlgebra::Vector::shared_ptr vec1 = d_factory->getVector();
     // Create the managed vector
-    AMP::shared_ptr<AMP::LinearAlgebra::ManagedThyraVector> vec2 =
-        AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedThyraVector>(
+    std::shared_ptr<AMP::LinearAlgebra::ManagedThyraVector> vec2 =
+        std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedThyraVector>(
             AMP::LinearAlgebra::ThyraVector::view( vec1 ) );
     // Create a native ThyraVector from the managed vector
-    AMP::shared_ptr<AMP::LinearAlgebra::NativeThyraVectorParameters> params(
+    std::shared_ptr<AMP::LinearAlgebra::NativeThyraVectorParameters> params(
         new AMP::LinearAlgebra::NativeThyraVectorParameters() );
     params->d_InVec = vec2->getVec();
     params->d_local = vec2->getLocalSize();
     params->d_comm  = vec2->getComm();
     params->d_var   = getVariable();
-    AMP::shared_ptr<AMP::LinearAlgebra::NativeThyraVector> vec3(
+    std::shared_ptr<AMP::LinearAlgebra::NativeThyraVector> vec3(
         new AMP::LinearAlgebra::NativeThyraVector( params ) );
     return vec3;
 }
@@ -138,8 +138,8 @@ AMP::Discretization::DOFManager::shared_ptr ManagedNativeThyraFactory::getDOFMap
  ****************************************************************/
 void testBelosThyraVector( AMP::UnitTest &ut, const VectorFactory &factory )
 {
-    AMP::shared_ptr<AMP::LinearAlgebra::ThyraVector> vector =
-        AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>( factory.getVector() );
+    std::shared_ptr<AMP::LinearAlgebra::ThyraVector> vector =
+        std::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>( factory.getVector() );
     using TMVB = Thyra::MultiVectorBase<double>;
     Teuchos::RCP<Belos::OutputManager<double>> outputmgr =
         Teuchos::rcp( new Belos::OutputManager<double>() );

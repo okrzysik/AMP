@@ -27,8 +27,8 @@ namespace Materials {
 template<class Number>
 template<class INPUT_VTYPE, class RETURN_VTYPE>
 void VectorProperty<Number>::evalvActual(
-    std::vector<AMP::shared_ptr<RETURN_VTYPE>> &r,
-    const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &args )
+    std::vector<std::shared_ptr<RETURN_VTYPE>> &r,
+    const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &args )
 {
     size_t rdim0 = r.size(); // number of results vectors to return
 
@@ -47,13 +47,13 @@ void VectorProperty<Number>::evalvActual(
         Property<Number>::d_n_arguments ); // list of arguments for each input type
     std::vector<typename INPUT_VTYPE::iterator> parameter_iter;
     std::vector<size_t> parameter_indices;
-    std::vector<typename std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>>::const_iterator>
+    std::vector<typename std::map<std::string, std::shared_ptr<INPUT_VTYPE>>::const_iterator>
         parameter_map_iter;
 
     // Walk through d_arguments and set the iterator at the beginning of the map vector to which it
     // corresponds
     for ( size_t i = 0; i < Property<Number>::d_arguments.size(); ++i ) {
-        typename std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>>::const_iterator mapIter;
+        typename std::map<std::string, std::shared_ptr<INPUT_VTYPE>>::const_iterator mapIter;
         mapIter = args.find( Property<Number>::d_arguments[i] );
         if ( mapIter == args.end() ) {
             eval_args[i] = Property<Number>::d_defaults[i];
@@ -122,8 +122,8 @@ void VectorProperty<Number>::evalvActual(
 
 template<class Number>
 void VectorProperty<Number>::evalv(
-    std::vector<AMP::shared_ptr<std::vector<Number>>> &r,
-    const std::map<std::string, AMP::shared_ptr<std::vector<Number>>> &args )
+    std::vector<std::shared_ptr<std::vector<Number>>> &r,
+    const std::map<std::string, std::shared_ptr<std::vector<Number>>> &args )
 {
     bool in = this->in_range( args );
     AMP_INSIST( in, "Property out of range" );

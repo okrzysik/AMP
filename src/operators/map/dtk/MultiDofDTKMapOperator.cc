@@ -5,14 +5,14 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor
-MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorParameters> &params )
+MultiDofDTKMapOperator::MultiDofDTKMapOperator( const std::shared_ptr<OperatorParameters> &params )
 {
     // Get the operator parameters.
-    AMP::shared_ptr<MultiDofDTKMapOperatorParameters> multiDofDTKMapOpParams =
-        AMP::dynamic_pointer_cast<MultiDofDTKMapOperatorParameters>( params );
+    std::shared_ptr<MultiDofDTKMapOperatorParameters> multiDofDTKMapOpParams =
+        std::dynamic_pointer_cast<MultiDofDTKMapOperatorParameters>( params );
     AMP_ASSERT( multiDofDTKMapOpParams );
     d_multiDofDTKMapOpParams =
-        AMP::dynamic_pointer_cast<MultiDofDTKMapOperatorParameters>( params );
+        std::dynamic_pointer_cast<MultiDofDTKMapOperatorParameters>( params );
 
     AMP::Mesh::Mesh::shared_ptr mesh1 = multiDofDTKMapOpParams->d_Mesh1;
     AMP::Mesh::Mesh::shared_ptr mesh2 = multiDofDTKMapOpParams->d_Mesh2;
@@ -30,9 +30,9 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
 
     AMP::Mesh::Mesh::shared_ptr boundaryMesh1_vol, boundaryMesh1_ver;
     AMP::Mesh::Mesh::shared_ptr boundaryMesh2_vol, boundaryMesh2_ver;
-    AMP::shared_ptr<AMP::Discretization::DOFManager> sourceDofManager12, sourceDofManager21;
-    AMP::shared_ptr<AMP::Discretization::DOFManager> targetDofManager12, targetDofManager21;
-    AMP::shared_ptr<AMP::Database> nullDatabase;
+    std::shared_ptr<AMP::Discretization::DOFManager> sourceDofManager12, sourceDofManager21;
+    std::shared_ptr<AMP::Discretization::DOFManager> targetDofManager12, targetDofManager21;
+    std::shared_ptr<AMP::Database> nullDatabase;
 
     if ( mesh1 ) {
         boundaryMesh1_vol = mesh1->Subset(
@@ -87,14 +87,14 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
         targetDofManager12 = d_TargetVectorMap12->getDOFManager();
     }
 
-    AMP::shared_ptr<AMP::Operator::DTKMapOperatorParameters> map12Params(
+    std::shared_ptr<AMP::Operator::DTKMapOperatorParameters> map12Params(
         new AMP::Operator::DTKMapOperatorParameters( nullDatabase ) );
     map12Params->d_domain_mesh = boundaryMesh1_vol;
     map12Params->d_range_mesh  = boundaryMesh2_ver;
     map12Params->d_domain_dofs = sourceDofManager12;
     map12Params->d_range_dofs  = targetDofManager12;
     map12Params->d_globalComm  = multiDofDTKMapOpParams->d_globalComm;
-    d_Map12                    = AMP::shared_ptr<AMP::Operator::DTKMapOperator>(
+    d_Map12                    = std::shared_ptr<AMP::Operator::DTKMapOperator>(
         new AMP::Operator::DTKMapOperator( map12Params ) );
 
     commSubsetSourceVec = sourceVector->constSelect( bndMesh2VolCommSelect, variable2 );
@@ -118,14 +118,14 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
         targetDofManager21 = d_TargetVectorMap21->getDOFManager();
     }
 
-    AMP::shared_ptr<AMP::Operator::DTKMapOperatorParameters> map21Params(
+    std::shared_ptr<AMP::Operator::DTKMapOperatorParameters> map21Params(
         new AMP::Operator::DTKMapOperatorParameters( nullDatabase ) );
     map21Params->d_domain_mesh = boundaryMesh2_vol;
     map21Params->d_range_mesh  = boundaryMesh1_ver;
     map21Params->d_domain_dofs = sourceDofManager21;
     map21Params->d_range_dofs  = targetDofManager21;
     map21Params->d_globalComm  = multiDofDTKMapOpParams->d_globalComm;
-    d_Map21                    = AMP::shared_ptr<AMP::Operator::DTKMapOperator>(
+    d_Map21                    = std::shared_ptr<AMP::Operator::DTKMapOperator>(
         new AMP::Operator::DTKMapOperator( map21Params ) );
 }
 
@@ -154,7 +154,7 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
 
     AMP::Mesh::Mesh::shared_ptr boundaryMesh1;
     AMP::Mesh::Mesh::shared_ptr boundaryMesh2;
-    AMP::shared_ptr<AMP::Database> nullDatabase;
+    std::shared_ptr<AMP::Database> nullDatabase;
     if ( mesh1 ) {
         boundaryMesh1 = mesh1->Subset(
             mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Volume, boundaryID1 ) );

@@ -4,9 +4,9 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
 #include "NeutronicsRhsParameters.h"
+#include <memory>
 
 #include <cmath>
 #include <vector>
@@ -132,7 +132,7 @@ void NeutronicsRhs::reset( const SP_OperatorParameters &parameters )
     AMP_ASSERT( parameters.get() != nullptr );
     d_db = parameters->d_db;
     SP_Parameters params =
-        AMP::dynamic_pointer_cast<NeutronicsRhsParameters, OperatorParameters>( parameters );
+        std::dynamic_pointer_cast<NeutronicsRhsParameters, OperatorParameters>( parameters );
     AMP_ASSERT( params.get() != nullptr );
     AMP_ASSERT( ( ( params->d_db ).get() ) != nullptr );
     getFromInput( params->d_db );
@@ -240,7 +240,7 @@ NeutronicsRhs::SourceType NeutronicsRhs::str2id( const std::string &str )
 void NeutronicsRhs::setOutputVariableName( const std::string &name, int varId )
 {
     (void) varId;
-    d_outputVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( name );
+    d_outputVariable = std::make_shared<AMP::LinearAlgebra::Variable>( name );
 }
 
 AMP::LinearAlgebra::Variable::shared_ptr NeutronicsRhs::getOutputVariable()

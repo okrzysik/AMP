@@ -20,7 +20,7 @@ namespace AMP {
 namespace Operator {
 
 TractionBoundaryOperator::TractionBoundaryOperator(
-    const AMP::shared_ptr<TractionBoundaryOperatorParameters> &params )
+    const std::shared_ptr<TractionBoundaryOperatorParameters> &params )
     : BoundaryOperator( params ), d_residualMode( false )
 {
     AMP_INSIST( params->d_db->keyExists( "Variable" ), "key not found" );
@@ -66,9 +66,9 @@ void TractionBoundaryOperator::computeCorrection()
     auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
     auto qruleType   = Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
-    AMP::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
+    std::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
     libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
-    AMP::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 2, qruleOrder ) ).release() );
+    std::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 2, qruleOrder ) ).release() );
 
     AMP::Discretization::DOFManager::shared_ptr dofMap = d_correction->getDOFManager();
 
@@ -82,7 +82,7 @@ void TractionBoundaryOperator::computeCorrection()
                                               j );
         } // end j
 
-        AMP::shared_ptr<::FEBase> fe( (::FEBase::build( 3, ( *feType ) ) ).release() );
+        std::shared_ptr<::FEBase> fe( (::FEBase::build( 3, ( *feType ) ) ).release() );
         fe->attach_quadrature_rule( qrule.get() );
         fe->reinit( elem, d_sideNumbers[b] );
 

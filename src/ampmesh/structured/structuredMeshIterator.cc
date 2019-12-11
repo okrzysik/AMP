@@ -75,7 +75,7 @@ structuredMeshIterator::structuredMeshIterator( const BoxMesh::MeshElementIndex 
     d_cur_element = structuredMeshElement( getIndex( d_pos ), d_mesh );
 }
 structuredMeshIterator::structuredMeshIterator(
-    AMP::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> elements,
+    std::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> elements,
     const AMP::Mesh::BoxMesh *mesh,
     size_t pos )
     : d_isPeriodic( mesh->d_isPeriodic ),
@@ -292,12 +292,12 @@ bool structuredMeshIterator::operator!=( const MeshIterator &rhs ) const
 /********************************************************
  * Get all elements in the iterator                      *
  ********************************************************/
-AMP::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>>
+std::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>>
 structuredMeshIterator::getElements() const
 {
     if ( d_elements != nullptr )
         return d_elements;
-    auto elements = AMP::make_shared<std::vector<BoxMesh::MeshElementIndex>>();
+    auto elements = std::make_shared<std::vector<BoxMesh::MeshElementIndex>>();
     elements->reserve( d_size );
     for ( size_t pos = 0; pos < d_size; pos++ )
         elements->emplace_back( getIndex( pos ) );

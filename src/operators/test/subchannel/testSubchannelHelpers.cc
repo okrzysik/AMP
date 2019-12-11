@@ -28,8 +28,8 @@ static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
+    std::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
         new AMP::Mesh::MeshParameters( database ) );
     meshParams->setComm( globalComm );
 
@@ -116,11 +116,11 @@ static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
         ut->failure( "Flat shape gives correct flux" );
 
     // Test getHeatFluxClad
-    AMP::shared_ptr<AMP::Database> subchannel_db =
+    std::shared_ptr<AMP::Database> subchannel_db =
         input_db->getDatabase( "SubchannelPhysicsModel" );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params(
         new AMP::Operator::ElementPhysicsModelParameters( subchannel_db ) );
-    AMP::shared_ptr<AMP::Operator::SubchannelPhysicsModel> subchannelPhysicsModel(
+    std::shared_ptr<AMP::Operator::SubchannelPhysicsModel> subchannelPhysicsModel(
         new AMP::Operator::SubchannelPhysicsModel( params ) );
     double reynolds = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "reynolds" );
     double prandtl  = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "prandtl" );
@@ -141,11 +141,11 @@ static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
         double clad_temp = 632;
         double flow_temp = 570;
         double pressure  = 1.6e7;
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>> enthalpyArgMap;
+        std::map<std::string, std::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert( std::make_pair(
-            "temperature", AMP::make_shared<std::vector<double>>( 1, flow_temp ) ) );
+            "temperature", std::make_shared<std::vector<double>>( 1, flow_temp ) ) );
         enthalpyArgMap.insert(
-            std::make_pair( "pressure", AMP::make_shared<std::vector<double>>( 1, pressure ) ) );
+            std::make_pair( "pressure", std::make_shared<std::vector<double>>( 1, pressure ) ) );
         std::vector<double> enthalpyResult( 1 );
         subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         AMP::LinearAlgebra::Vector::shared_ptr subchannelEnthalpy =

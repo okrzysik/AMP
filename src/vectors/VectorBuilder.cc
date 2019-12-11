@@ -34,11 +34,11 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
         return Vector::shared_ptr();
     AMP_ASSERT( variable.get() != nullptr );
     // Check if we are dealing with a multiDOFManager
-    AMP::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF;
+    std::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF;
     if ( split )
-        multiDOF = AMP::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>( DOFs );
+        multiDOF = std::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>( DOFs );
     // Check if we are dealing with a multiVariable
-    auto multiVariable = AMP::dynamic_pointer_cast<MultiVariable>( variable );
+    auto multiVariable = std::dynamic_pointer_cast<MultiVariable>( variable );
     if ( multiVariable.get() != nullptr ) {
         // We are dealing with a MultiVariable, first check that there are no duplicate or null
         // variables
@@ -99,47 +99,47 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
             comm_list = CommunicationList::createEmpty( DOFs->numLocalDOF(), DOFs->getComm() );
         } else {
             // Construct the communication list
-            auto params           = AMP::make_shared<CommunicationListParameters>();
+            auto params           = std::make_shared<CommunicationListParameters>();
             params->d_comm        = comm;
             params->d_localsize   = DOFs->numLocalDOF();
             params->d_remote_DOFs = remote_DOFs;
-            comm_list             = AMP::make_shared<CommunicationList>( params );
+            comm_list             = std::make_shared<CommunicationList>( params );
         }
         comm.barrier();
         // Create the vector parameters
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-        auto mvparams  = AMP::make_shared<ManagedPetscVectorParameters>();
-        auto eveparams = AMP::make_shared<EpetraVectorEngineParameters>(
+        auto mvparams  = std::make_shared<ManagedPetscVectorParameters>();
+        auto eveparams = std::make_shared<EpetraVectorEngineParameters>(
             DOFs->numLocalDOF(), DOFs->numGlobalDOF(), DOFs->getComm() );
         comm.barrier();
-        auto t_buffer = AMP::make_shared<VectorDataCPU<double>>(
+        auto t_buffer = std::make_shared<VectorDataCPU<double>>(
             DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
-        auto epetra_engine     = AMP::make_shared<EpetraVectorEngine>( eveparams, t_buffer );
+        auto epetra_engine     = std::make_shared<EpetraVectorEngine>( eveparams, t_buffer );
         mvparams->d_Engine     = epetra_engine;
         mvparams->d_Buffer     = t_buffer;
         mvparams->d_CommList   = comm_list;
         mvparams->d_DOFManager = DOFs;
         // Create the vector
         comm.barrier();
-        auto vector = AMP::make_shared<ManagedPetscVector>( mvparams );
+        auto vector = std::make_shared<ManagedPetscVector>( mvparams );
         vector->setVariable( variable );
         comm.barrier();
         return vector;
 #elif defined( USE_EXT_TRILINOS )
-        auto mvparams  = AMP::make_shared<ManagedVectorParameters>();
-        auto eveparams = AMP::make_shared<EpetraVectorEngineParameters>(
+        auto mvparams  = std::make_shared<ManagedVectorParameters>();
+        auto eveparams = std::make_shared<EpetraVectorEngineParameters>(
             DOFs->numLocalDOF(), DOFs->numGlobalDOF(), DOFs->getComm() );
         comm.barrier();
-        auto t_buffer = AMP::make_shared<VectorDataCPU<double>>(
+        auto t_buffer = std::make_shared<VectorDataCPU<double>>(
             DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
-        auto epetra_engine     = AMP::make_shared<EpetraVectorEngine>( eveparams, t_buffer );
+        auto epetra_engine     = std::make_shared<EpetraVectorEngine>( eveparams, t_buffer );
         mvparams->d_Engine     = epetra_engine;
         mvparams->d_Buffer     = t_buffer;
         mvparams->d_CommList   = comm_list;
         mvparams->d_DOFManager = DOFs;
         // Create the vector
         comm.barrier();
-        auto vector = AMP::make_shared<ManagedEpetraVector>( mvparams );
+        auto vector = std::make_shared<ManagedEpetraVector>( mvparams );
         vector->setVariable( variable );
         comm.barrier();
         return vector;

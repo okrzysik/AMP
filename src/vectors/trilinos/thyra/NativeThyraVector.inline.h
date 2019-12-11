@@ -10,9 +10,9 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-inline AMP::shared_ptr<VectorData> NativeThyraVector::getNewBuffer()
+inline std::shared_ptr<VectorData> NativeThyraVector::getNewBuffer()
 {
-    return AMP::shared_ptr<VectorData>();
+    return std::shared_ptr<VectorData>();
 }
 
 
@@ -22,16 +22,16 @@ inline bool NativeThyraVector::sameEngine( VectorEngine &e ) const
 }
 
 
-inline AMP::shared_ptr<VectorEngine>
-    NativeThyraVector::cloneEngine( AMP::shared_ptr<VectorData> ) const
+inline std::shared_ptr<VectorEngine>
+    NativeThyraVector::cloneEngine( std::shared_ptr<VectorData> ) const
 {
-    return AMP::dynamic_pointer_cast<VectorEngine>( Vector::cloneVector( "engine_clone" ) );
+    return std::dynamic_pointer_cast<VectorEngine>( Vector::cloneVector( "engine_clone" ) );
 }
 
 
-inline void NativeThyraVector::swapEngines( AMP::shared_ptr<VectorEngine> p )
+inline void NativeThyraVector::swapEngines( std::shared_ptr<VectorEngine> p )
 {
-    Vector::shared_ptr p2 = AMP::dynamic_pointer_cast<Vector>( p );
+    Vector::shared_ptr p2 = std::dynamic_pointer_cast<Vector>( p );
     Vector::swapVectors( p2 );
 }
 
@@ -73,7 +73,7 @@ NativeThyraVector::getThyraVec( const VectorOperations &v )
 {
     auto vec = dynamic_cast<const Vector *>( &v );
     AMP_ASSERT( vec != nullptr );
-    auto vec2 = AMP::dynamic_pointer_cast<const ThyraVector>(
+    auto vec2 = std::dynamic_pointer_cast<const ThyraVector>(
         ThyraVector::constView( vec->shared_from_this() ) );
     AMP_ASSERT( vec2 != nullptr );
     return vec2->getVec();
@@ -83,7 +83,7 @@ NativeThyraVector::getThyraVec( const VectorOperations &v )
 inline Teuchos::RCP<const Thyra::VectorBase<double>>
 NativeThyraVector::getThyraVec( const Vector::const_shared_ptr &vec )
 {
-    auto vec2 = AMP::dynamic_pointer_cast<const ThyraVector>( ThyraVector::constView( vec ) );
+    auto vec2 = std::dynamic_pointer_cast<const ThyraVector>( ThyraVector::constView( vec ) );
     AMP_ASSERT( vec2 != nullptr );
     return vec2->getVec();
 }

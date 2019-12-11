@@ -19,12 +19,12 @@ template<typename T, typename FUN, typename Allocator>
 Vector::shared_ptr ArrayVector<T, FUN, Allocator>::create( const std::vector<size_t> &localSize,
                                                            Variable::shared_ptr var )
 {
-    AMP::shared_ptr<ArrayVector<T, FUN, Allocator>> retVal( new ArrayVector<T, FUN, Allocator>() );
+    std::shared_ptr<ArrayVector<T, FUN, Allocator>> retVal( new ArrayVector<T, FUN, Allocator>() );
     retVal->setVariable( var );
     retVal->resize( localSize );
     const auto N = retVal->getArray().length();
     AMP_MPI comm( AMP_COMM_SELF );
-    auto DOFs            = AMP::make_shared<AMP::Discretization::DOFManager>( N, comm );
+    auto DOFs            = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
     retVal->d_DOFManager = DOFs;
     retVal->setCommunicationList(
         AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
@@ -38,11 +38,11 @@ Vector::shared_ptr ArrayVector<T, FUN, Allocator>::create( const std::vector<siz
                                                            Variable::shared_ptr var,
                                                            AMP_MPI comm )
 {
-    AMP::shared_ptr<ArrayVector<T, FUN, Allocator>> retVal( new ArrayVector<T, FUN, Allocator>() );
+    std::shared_ptr<ArrayVector<T, FUN, Allocator>> retVal( new ArrayVector<T, FUN, Allocator>() );
     retVal->setVariable( var );
     retVal->resize( localSize );
     const auto N         = retVal->getArray().length();
-    auto DOFs            = AMP::make_shared<AMP::Discretization::DOFManager>( N, comm );
+    auto DOFs            = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
     retVal->d_DOFManager = DOFs;
     retVal->setCommunicationList(
         AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
@@ -57,7 +57,7 @@ ArrayVector<T, FUN, Allocator>::create( Variable::shared_ptr var,
                                         AMP::Discretization::DOFManager::shared_ptr DOFs,
                                         AMP::LinearAlgebra::CommunicationList::shared_ptr commlist )
 {
-    AMP::shared_ptr<ArrayVector<T, FUN, Allocator>> retVal( new ArrayVector<T, FUN, Allocator>() );
+    std::shared_ptr<ArrayVector<T, FUN, Allocator>> retVal( new ArrayVector<T, FUN, Allocator>() );
     retVal->setVariable( var );
     retVal->d_DOFManager = DOFs;
     retVal->setCommunicationList( commlist );

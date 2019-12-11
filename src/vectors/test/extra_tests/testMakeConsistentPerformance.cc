@@ -16,16 +16,16 @@ static void runTest( AMP::UnitTest *ut )
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::shared_ptr<AMP::Database> mesh_db( new AMP::Database( "Mesh" ) );
+    std::shared_ptr<AMP::Database> mesh_db( new AMP::Database( "Mesh" ) );
     mesh_db->putScalar( "dim", 3 );
     mesh_db->putScalar( "MeshName", "mesh1" );
     mesh_db->putScalar( "MeshType", "libMesh" );
     mesh_db->putScalar( "FileName", "pellet_1x.e" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( mesh_db ) );
+    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( mesh_db ) );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
+    std::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Create a simple DOFManager
     int DOFsPerNode     = 1;

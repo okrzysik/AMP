@@ -8,7 +8,7 @@ namespace Discretization {
  *  Constructors                                                         *
  ************************************************************************/
 DOFManagerParameters::DOFManagerParameters() = default;
-DOFManagerParameters::DOFManagerParameters( AMP::shared_ptr<AMP::Mesh::Mesh> mesh_in )
+DOFManagerParameters::DOFManagerParameters( std::shared_ptr<AMP::Mesh::Mesh> mesh_in )
     : mesh( mesh_in )
 {
 }

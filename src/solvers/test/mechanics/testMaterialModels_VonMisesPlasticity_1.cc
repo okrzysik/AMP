@@ -16,7 +16,7 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <iostream>
 #include <string>
@@ -33,17 +33,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    AMP::shared_ptr<AMP::Operator::VonMisesElastoPlasticModel> vmepModel;
-    // AMP::shared_ptr<AMP::IsotropicElasticModel> vmepModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+    std::shared_ptr<AMP::Operator::VonMisesElastoPlasticModel> vmepModel;
+    // std::shared_ptr<AMP::IsotropicElasticModel> vmepModel;
 
-    AMP::shared_ptr<AMP::Database> matModelDatabase =
+    std::shared_ptr<AMP::Database> matModelDatabase =
         input_db->getDatabase( "MechanicsMaterialModel" );
     elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( matModelDatabase );
     vmepModel =
-        AMP::dynamic_pointer_cast<AMP::Operator::VonMisesElastoPlasticModel>( elementPhysicsModel );
-    // vmepModel = AMP::dynamic_pointer_cast<AMP::IsotropicElasticModel>(elementPhysicsModel);
+        std::dynamic_pointer_cast<AMP::Operator::VonMisesElastoPlasticModel>( elementPhysicsModel );
+    // vmepModel = std::dynamic_pointer_cast<AMP::IsotropicElasticModel>(elementPhysicsModel);
 
     vmepModel->preNonlinearInit( true, true );
     vmepModel->nonlinearInitGaussPointOperation( 500.0 );

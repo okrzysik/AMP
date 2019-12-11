@@ -4,8 +4,8 @@
 #include "AMP/operators/Operator.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 #include <cmath>
 #include <vector>
@@ -138,7 +138,7 @@ void NeutronicsRhsExtras::reset( const SP_OperatorParameters &parameters )
     AMP_ASSERT( parameters.get() != nullptr );
     d_db = parameters->d_db;
     SP_Parameters params =
-        AMP::dynamic_pointer_cast<NeutronicsRhsExtrasParameters, OperatorParameters>( parameters );
+        std::dynamic_pointer_cast<NeutronicsRhsExtrasParameters, OperatorParameters>( parameters );
     AMP_ASSERT( params.get() != nullptr );
     AMP_ASSERT( ( ( params->d_db ).get() ) != nullptr );
     getFromInput( params->d_db );

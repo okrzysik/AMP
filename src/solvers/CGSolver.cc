@@ -12,7 +12,7 @@ namespace Solver {
  ****************************************************************/
 CGSolver::CGSolver() {}
 
-CGSolver::CGSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
+CGSolver::CGSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
@@ -30,9 +30,9 @@ CGSolver::~CGSolver() {}
 /****************************************************************
  *  Initialize                                                   *
  ****************************************************************/
-void CGSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
+void CGSolver::initialize( std::shared_ptr<SolverStrategyParameters> const params )
 {
-    auto parameters = AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
+    auto parameters = std::dynamic_pointer_cast<KrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
@@ -47,7 +47,7 @@ void CGSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const param
 }
 
 // Function to get values from input
-void CGSolver::getFromInput( AMP::shared_ptr<AMP::Database> db )
+void CGSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 {
 
     d_dRelativeTolerance   = db->getWithDefault<double>( "relative_tolerance", 1.0e-9 );
@@ -62,8 +62,8 @@ void CGSolver::getFromInput( AMP::shared_ptr<AMP::Database> db )
  *  Solve                                                        *
  * TODO: store convergence history, iterations, convergence reason
  ****************************************************************/
-void CGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                      AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                      std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 
@@ -98,7 +98,7 @@ void CGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // z will store r when a preconditioner is not present
     // and will store the result of a preconditioner solve
     // when a preconditioner is present
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> z;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> z;
 
     // residual vector
     AMP::LinearAlgebra::Vector::shared_ptr r = f->cloneVector();
@@ -132,10 +132,10 @@ void CGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     rho[1] = z->dot( r );
     rho[0] = rho[1];
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> p = z->cloneVector();
+    std::shared_ptr<AMP::LinearAlgebra::Vector> p = z->cloneVector();
     p->copyVector( z );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> w;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> w;
 
     for ( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
 
@@ -190,17 +190,17 @@ void CGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 /****************************************************************
  *  Function to set the register the operator                    *
  ****************************************************************/
-void CGSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
+void CGSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op.get() != nullptr );
 
     d_pOperator = op;
 
-    AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
+    std::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
     AMP_ASSERT( linearOperator.get() != nullptr );
 }
-void CGSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+void CGSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator.get() != nullptr ) {
         d_pOperator->reset( params );

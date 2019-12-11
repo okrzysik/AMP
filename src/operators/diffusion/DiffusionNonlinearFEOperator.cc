@@ -69,7 +69,7 @@ std::vector<unsigned int> DiffusionNonlinearFEOperator::getNonPrincipalVariableI
 }
 
 
-AMP::shared_ptr<DiffusionTransportModel> DiffusionNonlinearFEOperator::getTransportModel()
+std::shared_ptr<DiffusionTransportModel> DiffusionNonlinearFEOperator::getTransportModel()
 {
     return d_transportModel;
 }
@@ -95,12 +95,12 @@ void DiffusionNonlinearFEOperator::setVector( unsigned int id,
 
 
 DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
-    const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params )
+    const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params )
     : NonlinearFEOperator( params ), d_Frozen( Diffusion::NUMBER_VARIABLES )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
 
-    d_diffNonlinElem = AMP::dynamic_pointer_cast<DiffusionNonlinearElement>( d_elemOp );
+    d_diffNonlinElem = std::dynamic_pointer_cast<DiffusionNonlinearElement>( d_elemOp );
 
     AMP_INSIST( ( ( d_diffNonlinElem.get() ) != nullptr ),
                 "d_elemOp is not of type DiffusionNonlinearElement" );
@@ -111,7 +111,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
     d_isFrozen.resize( Diffusion::NUMBER_VARIABLES );
     d_inVec.resize( Diffusion::NUMBER_VARIABLES );
 
-    AMP::shared_ptr<AMP::Database> activeVariables_db =
+    std::shared_ptr<AMP::Database> activeVariables_db =
         params->d_db->getDatabase( "ActiveInputVariables" );
 
     for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
@@ -302,7 +302,7 @@ void DiffusionNonlinearFEOperator::postElementOperation()
 
 
 void DiffusionNonlinearFEOperator::init(
-    const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params )
+    const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params )
 {
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::init, entering" << std::endl;
@@ -324,10 +324,10 @@ void DiffusionNonlinearFEOperator::init(
 }
 
 
-void DiffusionNonlinearFEOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void DiffusionNonlinearFEOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
-    AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> dnlparams_sp =
-        AMP::dynamic_pointer_cast<DiffusionNonlinearFEOperatorParameters, OperatorParameters>(
+    std::shared_ptr<DiffusionNonlinearFEOperatorParameters> dnlparams_sp =
+        std::dynamic_pointer_cast<DiffusionNonlinearFEOperatorParameters, OperatorParameters>(
             params );
 
     if ( d_PrincipalVariable == Diffusion::TEMPERATURE )
@@ -352,12 +352,12 @@ void DiffusionNonlinearFEOperator::reset( const AMP::shared_ptr<OperatorParamete
 }
 
 
-AMP::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianParameters(
+std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianParameters(
     AMP::LinearAlgebra::Vector::const_shared_ptr u )
 {
     //    AMP::LinearAlgebra::Vector::shared_ptr u  =
     //    std::const_pointer_cast<AMP::LinearAlgebra::Vector>(u_in);
-    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
     auto u_meshVec = u->constSelect( meshSelector, "u_mesh" );
 
@@ -370,15 +370,15 @@ AMP::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
     tmp_db->putScalar( "FixedBurnup", d_isActive[Diffusion::BURNUP] ? false : true );
 
     // create the linear operator params
-    AMP::shared_ptr<DiffusionLinearFEOperatorParameters> outParams(
+    std::shared_ptr<DiffusionLinearFEOperatorParameters> outParams(
         new DiffusionLinearFEOperatorParameters( tmp_db ) );
 
     // create the linear element object
-    AMP::shared_ptr<AMP::Database> elem_db( new AMP::Database( "Dummy" ) );
+    std::shared_ptr<AMP::Database> elem_db( new AMP::Database( "Dummy" ) );
     tmp_db->putScalar( "TransportAtGaussPoints", d_diffNonlinElem->getTransportAtGauss() );
-    AMP::shared_ptr<ElementOperationParameters> eparams(
+    std::shared_ptr<ElementOperationParameters> eparams(
         new ElementOperationParameters( elem_db ) );
-    AMP::shared_ptr<DiffusionLinearElement> linearElement( new DiffusionLinearElement( eparams ) );
+    std::shared_ptr<DiffusionLinearElement> linearElement( new DiffusionLinearElement( eparams ) );
 
     // add miscellaneous to output parameters
     outParams->d_transportModel = d_transportModel;
@@ -429,7 +429,7 @@ AMP::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
 
 
 void DiffusionNonlinearFEOperator::resetFrozen(
-    const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> params )
+    const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> params )
 {
     using namespace Diffusion;
     for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {

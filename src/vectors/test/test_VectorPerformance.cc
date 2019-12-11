@@ -142,7 +142,7 @@ int main( int argc, char **argv )
         int rank = globalComm.getRank();
 
         size_t N = 4e6;
-        auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( "vec" );
+        auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "vec" );
 
         auto vec   = AMP::LinearAlgebra::SimpleVector<double>::create( N, var, globalComm );
         auto time0 = testPerformance( vec );

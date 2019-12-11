@@ -16,10 +16,10 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include "patchfunctions.h"
 
@@ -54,37 +54,37 @@ static void linearTest( AMP::UnitTest *ut,
     input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    std::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
 
-    AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffOp;
-    AMP::shared_ptr<AMP::Database> diffFEOp_db =
-        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "LinearDiffusionOp" ) );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    AMP::shared_ptr<AMP::Operator::Operator> linearOperator =
+    std::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffOp;
+    std::shared_ptr<AMP::Database> diffFEOp_db =
+        std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "LinearDiffusionOp" ) );
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+    std::shared_ptr<AMP::Operator::Operator> linearOperator =
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "LinearDiffusionOp", input_db, elementModel );
-    diffOp = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>( linearOperator );
+    diffOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>( linearOperator );
 
     // create parameters
-    AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperatorParameters> diffOpParams(
+    std::shared_ptr<AMP::Operator::DiffusionLinearFEOperatorParameters> diffOpParams(
         new AMP::Operator::DiffusionLinearFEOperatorParameters( diffFEOp_db ) );
 
     // set up defaults for materials arguments and create transport model
-    AMP::shared_ptr<AMP::Database> transportModel_db;
+    std::shared_ptr<AMP::Database> transportModel_db;
     if ( input_db->keyExists( "DiffusionTransportModel" ) )
         transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
     double defTemp = transportModel_db->getWithDefault<double>( "Default_Temperature", 400.0 );
     double defConc = transportModel_db->getWithDefault<double>( "Default_Concentration", .33 );
     double defBurn = transportModel_db->getWithDefault<double>( "Default_Burnup", .5 );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
-    AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel =
-        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( elementPhysicsModel );
+    std::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel =
+        std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( elementPhysicsModel );
 
     // create vectors for parameters
     AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF =

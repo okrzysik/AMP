@@ -2,7 +2,7 @@
 #ifndef included_AMP_ElementPhysicsModelParameters
 #define included_AMP_ElementPhysicsModelParameters
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include "AMP/utils/Database.h"
 
@@ -23,14 +23,14 @@ public:
     /**
       Constructor.
       */
-    explicit ElementPhysicsModelParameters( AMP::shared_ptr<AMP::Database> db ) : d_db( db ) {}
+    explicit ElementPhysicsModelParameters( std::shared_ptr<AMP::Database> db ) : d_db( db ) {}
 
     /**
       Destructor.
       */
     virtual ~ElementPhysicsModelParameters() {}
 
-    AMP::shared_ptr<AMP::Database> d_db; /**< Database object which needs to be
+    std::shared_ptr<AMP::Database> d_db; /**< Database object which needs to be
                                              initialized specific to the material model.  */
 
 protected:

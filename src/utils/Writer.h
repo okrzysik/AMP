@@ -9,7 +9,7 @@
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #ifdef USE_AMP_MESH
 #include "AMP/ampmesh/Mesh.h"
@@ -36,7 +36,7 @@ class Writer
 {
 public:
     //!  Convenience typedef
-    typedef AMP::shared_ptr<AMP::Utilities::Writer> shared_ptr;
+    typedef std::shared_ptr<AMP::Utilities::Writer> shared_ptr;
 
     /**
      * \brief   Function to build a writer
@@ -47,14 +47,14 @@ public:
      *                        otherwise an empty writer will be created.
      *               "Ascii" - A simple ascii writer
      */
-    static AMP::shared_ptr<AMP::Utilities::Writer> buildWriter( const std::string &type );
+    static std::shared_ptr<AMP::Utilities::Writer> buildWriter( const std::string &type );
 
     /**
      * \brief   Function to build a writer
      * \details This function will build a default writer for use.
      * \param db   Input database for the writer
      */
-    static AMP::shared_ptr<AMP::Utilities::Writer> buildWriter( AMP::shared_ptr<AMP::Database> db );
+    static std::shared_ptr<AMP::Utilities::Writer> buildWriter( std::shared_ptr<AMP::Database> db );
 
     //!  Default constructor
     Writer();

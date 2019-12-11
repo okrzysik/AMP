@@ -1,4 +1,4 @@
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 #include <string>
 
 #include "AMP/utils/AMPManager.h"
@@ -57,8 +57,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     auto input_db = AMP::Database::parseInputFile( input_file );
 
     // Get the Mesh database and create the mesh parameters
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    std::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
@@ -81,29 +81,29 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
     {
         // create a linear BVP operator
-        AMP::shared_ptr<AMP::Operator::LinearBVPOperator> IDARhsOperator;
-        AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearPCOperator;
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-        IDARhsOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        std::shared_ptr<AMP::Operator::LinearBVPOperator> IDARhsOperator;
+        std::shared_ptr<AMP::Operator::LinearBVPOperator> linearPCOperator;
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+        IDARhsOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "LinearOperator", input_db, elementModel ) );
 
         // create a mass linear BVP operator
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
-        AMP::shared_ptr<AMP::Operator::LinearBVPOperator> massOperator;
-        massOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
+        std::shared_ptr<AMP::Operator::LinearBVPOperator> massOperator;
+        massOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "MassLinearOperator", input_db, massElementModel ) );
 
         //  create neutronics source
         AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                     "Key ''NeutronicsOperator'' is missing!" );
-        AMP::shared_ptr<AMP::Database> neutronicsOp_db =
+        std::shared_ptr<AMP::Database> neutronicsOp_db =
             input_db->getDatabase( "NeutronicsOperator" );
-        AMP::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(
+        std::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(
             new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ) );
         neutronicsParams->d_Mesh = meshAdapter;
-        AMP::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(
+        std::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(
             new AMP::Operator::NeutronicsRhs( neutronicsParams ) );
 
         AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar =
@@ -119,9 +119,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         //  Integrate Nuclear Rhs over Density * GeomType::Volume //
         AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceTransportModel;
-        AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
-            AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceTransportModel;
+        std::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
+            std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
                 AMP::Operator::OperatorBuilder::createOperator(
                     meshAdapter, "VolumeIntegralOperator", input_db, sourceTransportModel ) );
 
@@ -184,9 +184,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         // get the ida database
         AMP_INSIST( input_db->keyExists( "IDATimeIntegrator" ),
                     "Key ''IDATimeIntegrator'' is missing!" );
-        AMP::shared_ptr<AMP::Database> ida_db      = input_db->getDatabase( "IDATimeIntegrator" );
-        AMP::shared_ptr<AMP::Database> pcSolver_db = ida_db->getDatabase( "Preconditioner" );
-        AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> pcSolverParams(
+        std::shared_ptr<AMP::Database> ida_db      = input_db->getDatabase( "IDATimeIntegrator" );
+        std::shared_ptr<AMP::Database> pcSolver_db = ida_db->getDatabase( "Preconditioner" );
+        std::shared_ptr<AMP::Solver::SolverStrategyParameters> pcSolverParams(
             new AMP::Solver::SolverStrategyParameters( pcSolver_db ) );
 
         if ( pcSolverParams.get() == nullptr ) {
@@ -195,7 +195,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             ut->passes( "Testing SolverStrategyParameters's constructor: PASS" );
         }
 
-        AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
+        std::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
             new AMP::Solver::TrilinosMLSolver( pcSolverParams ) );
 
         if ( pcSolver.get() == nullptr ) {
@@ -206,7 +206,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
         // ---------------------------------------------------------------------------------------
         // create the IDA time integrator
-        AMP::shared_ptr<AMP::TimeIntegrator::IDATimeIntegratorParameters> time_Params(
+        std::shared_ptr<AMP::TimeIntegrator::IDATimeIntegratorParameters> time_Params(
             new AMP::TimeIntegrator::IDATimeIntegratorParameters( ida_db ) );
 
         if ( ( time_Params.get() ) == nullptr ) {
@@ -227,7 +227,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
         std::cout << "Before IDATimeIntegrator" << std::endl;
 #ifdef USE_EXT_SUNDIALS
-        AMP::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(
+        std::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(
             new AMP::TimeIntegrator::IDATimeIntegrator( time_Params ) );
 
         if ( pIDATimeIntegrator.get() == nullptr ) {

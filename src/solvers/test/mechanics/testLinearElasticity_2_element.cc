@@ -48,20 +48,20 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
         auto mesh_file_db = AMP::Database::parseInputFile( mesh_file );
 
         const unsigned int mesh_dim = 3;
-        AMP::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
+        std::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
 
         AMP::readTestMesh( mesh_file_db, mesh );
         mesh->prepare_for_use( false );
 
-        auto meshAdapter = AMP::make_shared<AMP::Mesh::libMesh>( mesh, "TestMesh" );
+        auto meshAdapter = std::make_shared<AMP::Mesh::libMesh>( mesh, "TestMesh" );
 
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-        auto bvpOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+        auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-        auto dirichletVecOp = AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+        auto dirichletVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "Load_Boundary", input_db, dummyModel ) );
 
@@ -99,15 +99,15 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
 
         AMP::pout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
-        AMP::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
+        std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
         auto mlSolverParams =
-            AMP::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
+            std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
 
         mlSolverParams->d_pOperator = bvpOperator;
 
         // create the ML solver interface
-        auto mlSolver = AMP::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
+        auto mlSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
 
         mlSolver->setZeroInitialGuess( false );
 
@@ -139,7 +139,7 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
 int testLinearElasticity_2_element( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
-    auto libmeshInit = AMP::make_shared<AMP::Mesh::initializeLibMesh>( AMP_COMM_WORLD );
+    auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( AMP_COMM_WORLD );
 
     AMP::UnitTest ut;
 

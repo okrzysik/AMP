@@ -21,7 +21,7 @@ namespace LinearAlgebra {
 class SundialsVectorTests
 {
 public:
-    explicit SundialsVectorTests( AMP::shared_ptr<const VectorFactory> factory )
+    explicit SundialsVectorTests( std::shared_ptr<const VectorFactory> factory )
         : d_factory( factory )
     {
     }
@@ -60,7 +60,7 @@ public:
 
 
 private:
-    AMP::shared_ptr<const VectorFactory> d_factory;
+    std::shared_ptr<const VectorFactory> d_factory;
 
     static inline AMP::LinearAlgebra::ManagedSundialsVector *getVector( N_Vector &a )
     {

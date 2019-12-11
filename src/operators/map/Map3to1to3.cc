@@ -20,12 +20,12 @@ static T *getPtr( std::vector<T> &x )
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Map3to1to3::Map3to1to3( const AMP::shared_ptr<OperatorParameters> &params_in )
+Map3to1to3::Map3to1to3( const std::shared_ptr<OperatorParameters> &params_in )
     : AsyncMapOperator( params_in )
 {
     // Get the input parameters
-    AMP::shared_ptr<Map3to1to3Parameters> params =
-        AMP::dynamic_pointer_cast<Map3to1to3Parameters>( params_in );
+    std::shared_ptr<Map3to1to3Parameters> params =
+        std::dynamic_pointer_cast<Map3to1to3Parameters>( params_in );
     AMP_ASSERT( params );
     d_commTag = params->d_commTag;
 

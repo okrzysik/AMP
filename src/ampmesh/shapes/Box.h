@@ -23,7 +23,7 @@ public:
      * \brief Construct a Box geometry
      * \param db        Input database
      */
-    explicit Box( AMP::shared_ptr<AMP::Database> db );
+    explicit Box( std::shared_ptr<AMP::Database> db );
 
     /**
      * \brief Construct a box
@@ -53,7 +53,7 @@ public: // Functions inherited from Geometry
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<bool> getPeriodicDim() const override final;
     virtual std::vector<int> getLogicalSurfaceIds() const override final;
-    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
+    virtual std::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data
@@ -78,7 +78,7 @@ public:
      * \brief Construct a Grid geometry
      * \param db        Input database
      */
-    explicit Grid( AMP::shared_ptr<AMP::Database> db );
+    explicit Grid( std::shared_ptr<AMP::Database> db );
 
     /**
      * \brief Construct a grid geometry
@@ -108,7 +108,7 @@ public: // Functions inherited from Geometry
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<bool> getPeriodicDim() const override final;
     virtual std::vector<int> getLogicalSurfaceIds() const override final;
-    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
+    virtual std::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data

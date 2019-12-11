@@ -19,7 +19,7 @@ namespace Operator {
 
 // Constructor
 SubchannelFourEqLinearOperator::SubchannelFourEqLinearOperator(
-    const AMP::shared_ptr<SubchannelOperatorParameters> &params )
+    const std::shared_ptr<SubchannelOperatorParameters> &params )
     : LinearOperator( params ),
       d_forceNoConduction( false ),
       d_forceNoTurbulence( false ),
@@ -55,10 +55,10 @@ SubchannelFourEqLinearOperator::SubchannelFourEqLinearOperator(
 }
 
 // reset
-void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void SubchannelFourEqLinearOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
-    AMP::shared_ptr<SubchannelOperatorParameters> myparams =
-        AMP::dynamic_pointer_cast<SubchannelOperatorParameters>( params );
+    std::shared_ptr<SubchannelOperatorParameters> myparams =
+        std::dynamic_pointer_cast<SubchannelOperatorParameters>( params );
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
     d_params = myparams;
@@ -186,7 +186,7 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
     // check to ensure frozen vector isn't null
     d_frozenVec = myparams->d_frozenSolution;
     AMP_INSIST( d_frozenVec.get() != nullptr, "Null Frozen Vector inside Jacobian" );
-    AMP::shared_ptr<AMP::Discretization::DOFManager> dof_manager =
+    std::shared_ptr<AMP::Discretization::DOFManager> dof_manager =
         myparams->d_frozenSolution->getDOFManager();
 
     // Create the matrix
@@ -261,7 +261,7 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
             continue;
 
         // extract subchannel cells from d_elem[isub]
-        AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement>> subchannelElements(
+        std::shared_ptr<std::vector<AMP::Mesh::MeshElement>> subchannelElements(
             new std::vector<AMP::Mesh::MeshElement>() );
         subchannelElements->reserve( d_numSubchannels );
         for ( const auto &ielem : d_elem[isub] ) {
@@ -1035,7 +1035,7 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
 
 // function used in reset to get double parameter or set default if missing
 double SubchannelFourEqLinearOperator::getDoubleParameter(
-    AMP::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<SubchannelOperatorParameters> myparams,
     std::string paramString,
     double defaultValue )
 {
@@ -1051,7 +1051,7 @@ double SubchannelFourEqLinearOperator::getDoubleParameter(
 
 // function used in reset to get integer parameter or set default if missing
 int SubchannelFourEqLinearOperator::getIntegerParameter(
-    AMP::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<SubchannelOperatorParameters> myparams,
     std::string paramString,
     int defaultValue )
 {
@@ -1067,7 +1067,7 @@ int SubchannelFourEqLinearOperator::getIntegerParameter(
 
 // function used in reset to get string parameter or set default if missing
 std::string SubchannelFourEqLinearOperator::getStringParameter(
-    AMP::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<SubchannelOperatorParameters> myparams,
     std::string paramString,
     std::string defaultValue )
 {
@@ -1083,7 +1083,7 @@ std::string SubchannelFourEqLinearOperator::getStringParameter(
 
 // function used in reset to get bool parameter or set default if missing
 bool SubchannelFourEqLinearOperator::getBoolParameter(
-    AMP::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<SubchannelOperatorParameters> myparams,
     std::string paramString,
     bool defaultValue )
 {
@@ -1300,16 +1300,16 @@ int SubchannelFourEqLinearOperator::getSubchannelIndex( double x, double y )
     return 0;
 }
 
-AMP::shared_ptr<OperatorParameters> SubchannelFourEqLinearOperator::getJacobianParameters(
+std::shared_ptr<OperatorParameters> SubchannelFourEqLinearOperator::getJacobianParameters(
     AMP::LinearAlgebra::Vector::const_shared_ptr u )
 {
     NULL_USE( u );
 
-    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
 
     tmp_db->putScalar( "name", "SubchannelFourEqLinearOperator" );
 
-    AMP::shared_ptr<SubchannelOperatorParameters> outParams(
+    std::shared_ptr<SubchannelOperatorParameters> outParams(
         new SubchannelOperatorParameters( tmp_db ) );
     return outParams;
 }
@@ -1383,11 +1383,11 @@ double SubchannelFourEqLinearOperator::Volume( double h, double p )
     // evaluates specific volume
     // h: enthalpy
     // p: pressure
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
+    std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
     argMap.insert( std::make_pair( std::string( "enthalpy" ),
-                                   AMP::make_shared<std::vector<double>>( 1, h ) ) );
+                                   std::make_shared<std::vector<double>>( 1, h ) ) );
     argMap.insert( std::make_pair( std::string( "pressure" ),
-                                   AMP::make_shared<std::vector<double>>( 1, p ) ) );
+                                   std::make_shared<std::vector<double>>( 1, p ) ) );
     std::vector<double> result( 1 );
     d_subchannelPhysicsModel->getProperty( "SpecificVolume", result, argMap );
     return result[0];
@@ -1398,11 +1398,11 @@ double SubchannelFourEqLinearOperator::Temperature( double h, double p )
     // evaluates temperature
     // h: enthalpy
     // p: pressure
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
+    std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
     argMap.insert( std::make_pair( std::string( "enthalpy" ),
-                                   AMP::make_shared<std::vector<double>>( 1, h ) ) );
+                                   std::make_shared<std::vector<double>>( 1, h ) ) );
     argMap.insert( std::make_pair( std::string( "pressure" ),
-                                   AMP::make_shared<std::vector<double>>( 1, p ) ) );
+                                   std::make_shared<std::vector<double>>( 1, p ) ) );
     std::vector<double> result( 1 );
     d_subchannelPhysicsModel->getProperty( "Temperature", result, argMap );
     return result[0];
@@ -1413,11 +1413,11 @@ double SubchannelFourEqLinearOperator::DynamicViscosity( double T, double rho )
     // evaluates dynamic viscosity
     // T: temperature
     // rho: density
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
+    std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
     argMap.insert( std::make_pair( std::string( "temperature" ),
-                                   AMP::make_shared<std::vector<double>>( 1, T ) ) );
+                                   std::make_shared<std::vector<double>>( 1, T ) ) );
     argMap.insert( std::make_pair( std::string( "density" ),
-                                   AMP::make_shared<std::vector<double>>( 1, rho ) ) );
+                                   std::make_shared<std::vector<double>>( 1, rho ) ) );
     std::vector<double> result( 1 );
     d_subchannelPhysicsModel->getProperty( "DynamicViscosity", result, argMap );
     return result[0];

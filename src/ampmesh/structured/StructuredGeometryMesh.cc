@@ -74,7 +74,7 @@ void StructuredGeometryMesh::displaceMesh( const std::vector<double> &x )
     }
     d_geometry->displaceMesh( x.data() );
 }
-void StructuredGeometryMesh::displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> )
+void StructuredGeometryMesh::displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> )
 {
     AMP_ERROR( "displaceMesh (vector) violates StructuredGeometryMesh properties" );
 }
@@ -93,9 +93,9 @@ void StructuredGeometryMesh::coord( const MeshElementIndex &index, double *pos )
     for ( int d = 0; d < PhysicalDim; d++ )
         pos[d] = tmp[d];
 }
-AMP::shared_ptr<Mesh> StructuredGeometryMesh::clone() const
+std::shared_ptr<Mesh> StructuredGeometryMesh::clone() const
 {
-    return AMP::make_shared<StructuredGeometryMesh>( *this );
+    return std::make_shared<StructuredGeometryMesh>( *this );
 }
 
 

@@ -14,27 +14,27 @@ class PelletStackMechanicsSolver : public SolverStrategy
 {
 public:
     explicit PelletStackMechanicsSolver(
-        AMP::shared_ptr<PelletStackMechanicsSolverParameters> params );
+        std::shared_ptr<PelletStackMechanicsSolverParameters> params );
 
     virtual ~PelletStackMechanicsSolver() {}
 
     virtual void
-    resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
+    resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
 
-    virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+    virtual void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                        std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
 protected:
-    void solveSerial( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                      AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
+    void solveSerial( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                      std::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
-    void solveScan( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                    AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
+    void solveScan( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                    std::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
-    AMP::shared_ptr<AMP::Operator::PelletStackOperator> d_pelletStackOp;
-    AMP::shared_ptr<AMP::Solver::ColumnSolver> d_columnSolver;
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_fbuffer1;
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_fbuffer2;
+    std::shared_ptr<AMP::Operator::PelletStackOperator> d_pelletStackOp;
+    std::shared_ptr<AMP::Solver::ColumnSolver> d_columnSolver;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_fbuffer1;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_fbuffer2;
 };
 } // namespace Solver
 } // namespace AMP

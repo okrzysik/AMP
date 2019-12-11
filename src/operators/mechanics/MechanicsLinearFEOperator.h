@@ -48,7 +48,7 @@ public:
       4) OutputVariable (No default value) - Name of the output variable
       */
     explicit MechanicsLinearFEOperator(
-        const AMP::shared_ptr<MechanicsLinearFEOperatorParameters> &params );
+        const std::shared_ptr<MechanicsLinearFEOperatorParameters> &params );
 
     /**
       Destructor
@@ -58,7 +58,7 @@ public:
     /**
       This is called at the start of the FE assembly. The matrix is set to 0.
       */
-    void preAssembly( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    void preAssembly( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /**
       This is called at the end of the FE assembly. The entries of the matrix corresponding
@@ -98,12 +98,12 @@ protected:
 
     std::vector<std::vector<double>> d_elementStiffnessMatrix; /**< Element stiffness matrix. */
 
-    AMP::shared_ptr<MechanicsLinearElement> d_mechLinElem; /**< Element operation. */
+    std::shared_ptr<MechanicsLinearElement> d_mechLinElem; /**< Element operation. */
 
-    AMP::shared_ptr<MechanicsLinearUpdatedLagrangianElement>
+    std::shared_ptr<MechanicsLinearUpdatedLagrangianElement>
         d_mechLinULElem; /**< Linear Updated Lagrangian Element operation. */
 
-    AMP::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
+    std::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
 
     AMP::LinearAlgebra::Vector::shared_ptr d_refXYZ; /**< Reference x, y and z coordinates. */
 

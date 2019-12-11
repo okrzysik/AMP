@@ -15,7 +15,7 @@
 #include "AMP/utils/ManufacturedSolution.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 void testit( AMP::UnitTest *ut,
@@ -26,8 +26,8 @@ void testit( AMP::UnitTest *ut,
              double y,
              double z )
 {
-    AMP::shared_ptr<AMP::Database> db( AMP::dynamic_pointer_cast<AMP::Database>(
-        AMP::make_shared<AMP::Database>( "ManufacturedSolution" ) ) );
+    std::shared_ptr<AMP::Database> db( std::dynamic_pointer_cast<AMP::Database>(
+        std::make_shared<AMP::Database>( "ManufacturedSolution" ) ) );
 
     db->putScalar( "Geometry", geom );
     db->putScalar( "Order", order );

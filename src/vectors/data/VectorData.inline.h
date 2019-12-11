@@ -92,11 +92,11 @@ inline size_t VectorData::getGhostSize() const { return d_Ghosts->size(); }
  ****************************************************************/
 inline VectorData::UpdateState VectorData::getUpdateStatus() const { return *d_UpdateState; }
 inline void VectorData::setUpdateStatus( UpdateState state ) { *d_UpdateState = state; }
-inline void VectorData::setUpdateStatusPtr( AMP::shared_ptr<UpdateState> rhs )
+inline void VectorData::setUpdateStatusPtr( std::shared_ptr<UpdateState> rhs )
 {
     d_UpdateState = rhs;
 }
-inline AMP::shared_ptr<VectorData::UpdateState> VectorData::getUpdateStatusPtr() const
+inline std::shared_ptr<VectorData::UpdateState> VectorData::getUpdateStatusPtr() const
 {
     return d_UpdateState;
 }

@@ -21,7 +21,7 @@ structuredFaceDOFManager::structuredFaceDOFManager() : d_gcw( 0 )
     for ( int i = 0; i < 3; i++ )
         d_DOFsPerFace[i] = 0;
 }
-DOFManager::shared_ptr structuredFaceDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
+DOFManager::shared_ptr structuredFaceDOFManager::create( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                                          int DOFsPerFace[3],
                                                          int gcw )
 {
@@ -29,7 +29,7 @@ DOFManager::shared_ptr structuredFaceDOFManager::create( AMP::shared_ptr<AMP::Me
         return DOFManager::shared_ptr();
     if ( mesh->getGeomType() != AMP::Mesh::GeomType::Volume || mesh->getDim() != 3 )
         AMP_ERROR( "The mesh must be a volume/3d mesh for structuredFaceDOFManager" );
-    AMP::shared_ptr<structuredFaceDOFManager> manager( new structuredFaceDOFManager() );
+    std::shared_ptr<structuredFaceDOFManager> manager( new structuredFaceDOFManager() );
     manager->d_comm = mesh->getComm();
     manager->d_mesh = mesh;
     manager->d_gcw  = gcw;

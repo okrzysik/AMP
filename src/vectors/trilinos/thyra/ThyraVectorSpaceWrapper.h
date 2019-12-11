@@ -25,7 +25,7 @@ class ThyraVectorSpaceWrapper : public Thyra::VectorSpaceBase<double>
 {
 public:
     //! Default constuctor
-    explicit ThyraVectorSpaceWrapper( AMP::shared_ptr<const ThyraVectorWrapper> thyra_vec,
+    explicit ThyraVectorSpaceWrapper( std::shared_ptr<const ThyraVectorWrapper> thyra_vec,
                                       bool is_range = true );
 
     // Deleted constuctors
@@ -64,7 +64,7 @@ protected:
 
     // Local data
     bool d_is_range;
-    AMP::shared_ptr<const ThyraVectorWrapper> d_thyra_vec;
+    std::shared_ptr<const ThyraVectorWrapper> d_thyra_vec;
 };
 
 

@@ -18,11 +18,11 @@ namespace Geometry {
 /********************************************************
  * Create the geometry object                            *
  ********************************************************/
-AMP::shared_ptr<AMP::Geometry::Geometry>
-Geometry::buildGeometry( AMP::shared_ptr<AMP::Database> db )
+std::shared_ptr<AMP::Geometry::Geometry>
+Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
 {
     auto generator = db->getString( "Generator" );
-    AMP::shared_ptr<AMP::Geometry::Geometry> geom;
+    std::shared_ptr<AMP::Geometry::Geometry> geom;
     if ( generator.compare( "cube" ) == 0 ) {
         int dim = db->getScalar<int>( "dim" );
         if ( db->keyExists( "Range" ) ) {

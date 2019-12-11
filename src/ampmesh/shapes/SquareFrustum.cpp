@@ -13,7 +13,7 @@ namespace Geometry {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-SquareFrustum::SquareFrustum( AMP::shared_ptr<AMP::Database> db ) : Geometry()
+SquareFrustum::SquareFrustum( std::shared_ptr<AMP::Database> db ) : Geometry()
 {
     auto dir      = db->getString( "Dir" );
     double height = db->getScalar<double>( "Height" );
@@ -298,9 +298,9 @@ void SquareFrustum::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-AMP::shared_ptr<AMP::Geometry::Geometry> SquareFrustum::clone() const
+std::shared_ptr<AMP::Geometry::Geometry> SquareFrustum::clone() const
 {
-    return AMP::make_shared<SquareFrustum>( *this );
+    return std::make_shared<SquareFrustum>( *this );
 }
 
 

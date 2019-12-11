@@ -13,7 +13,7 @@ namespace AMP {
 namespace Operator {
 
 DiffusionCylindricalTransportModel::DiffusionCylindricalTransportModel(
-    const AMP::shared_ptr<DiffusionCylindricalTransportModelParameters> params )
+    const std::shared_ptr<DiffusionCylindricalTransportModelParameters> params )
     : DiffusionTransportTensorModel( params )
 {
     AMP_INSIST( params->d_db->keyExists( "RadiusArgument" ),
@@ -22,11 +22,11 @@ DiffusionCylindricalTransportModel::DiffusionCylindricalTransportModel(
 }
 
 void DiffusionCylindricalTransportModel::getTensorTransport(
-    std::vector<std::vector<AMP::shared_ptr<std::vector<double>>>> &result,
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> &args,
+    std::vector<std::vector<std::shared_ptr<std::vector<double>>>> &result,
+    std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
     const std::vector<libMesh::Point> &coordinates )
 {
-    AMP::shared_ptr<std::vector<double>> scaledp;
+    std::shared_ptr<std::vector<double>> scaledp;
     double lower, upper;
 
     if ( d_UseBilogScaling ) {
@@ -51,7 +51,7 @@ void DiffusionCylindricalTransportModel::getTensorTransport(
         AMP_INSIST( args[d_RadiusArgument]->size() == coordinates.size(), "radial size mismatch" );
     } else {
         args.insert( std::make_pair(
-            d_RadiusArgument, AMP::make_shared<std::vector<double>>( coordinates.size() ) ) );
+            d_RadiusArgument, std::make_shared<std::vector<double>>( coordinates.size() ) ) );
     }
     std::vector<double> &radius( *args[d_RadiusArgument] );
     for ( size_t k = 0; k < radius.size(); k++ ) {

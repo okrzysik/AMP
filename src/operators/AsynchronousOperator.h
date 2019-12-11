@@ -80,7 +80,7 @@ protected:
 
 
 public:
-    explicit AsynchronousOperator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit AsynchronousOperator( const std::shared_ptr<OperatorParameters> &params );
 
     virtual ~AsynchronousOperator();
 

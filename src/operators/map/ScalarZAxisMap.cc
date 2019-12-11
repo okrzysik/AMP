@@ -11,10 +11,10 @@ namespace Operator {
 /************************************************************************
  *  Default constructor                                                  *
  ************************************************************************/
-ScalarZAxisMap::ScalarZAxisMap( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
+ScalarZAxisMap::ScalarZAxisMap( const std::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : Map3to1to3( p )
 {
-    auto params = AMP::dynamic_pointer_cast<Map3to1to3Parameters>( p );
+    auto params = std::dynamic_pointer_cast<Map3to1to3Parameters>( p );
     AMP_ASSERT( params );
 
     int DofsPerObj = params->d_db->getScalar<int>( "DOFsPerObject" );

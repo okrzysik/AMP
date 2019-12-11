@@ -3,9 +3,9 @@
 
 #include "AMP/operators/Operator.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
 #include "SolverStrategyParameters.h"
+#include <memory>
 
 
 namespace AMP {
@@ -20,7 +20,7 @@ namespace Solver {
 class SolverStrategy
 {
 public:
-    typedef AMP::shared_ptr<AMP::Solver::SolverStrategy> shared_ptr;
+    typedef std::shared_ptr<AMP::Solver::SolverStrategy> shared_ptr;
 
     /**
      * Default constructor
@@ -42,7 +42,7 @@ public:
      *                          4. type: bool, name: zero_initial_guess, default value: false,
      *                             acceptable values (TRUE, FALSE)
      */
-    explicit SolverStrategy( AMP::shared_ptr<SolverStrategyParameters> parameters );
+    explicit SolverStrategy( std::shared_ptr<SolverStrategyParameters> parameters );
 
     /**
      * Default destructor. Currently does not do anything.
@@ -55,15 +55,15 @@ public:
      * @param[in]  f    shared pointer to right hand side vector
      * @param[out] u    shared pointer to approximate computed solution
      */
-    virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) = 0;
+    virtual void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                        std::shared_ptr<AMP::LinearAlgebra::Vector> u ) = 0;
 
     /**
      * Initialize the solution vector and potentially create internal vectors needed for solution
      * @param[in] parameters    The parameters object contains a database object.
      *                          Currently there are no required fields for the database object.
      */
-    virtual void initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters );
+    virtual void initialize( std::shared_ptr<SolverStrategyParameters> const parameters );
 
     /**
      * Provide the initial guess for the solver. This is a pure virtual function that the derived
@@ -71,7 +71,7 @@ public:
      * need to provide an implementation of.
      * @param[in] initialGuess: shared pointer to the initial guess vector.
      */
-    virtual void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
+    virtual void setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
 
     /**
      * Specify stopping criteria.
@@ -113,7 +113,7 @@ public:
      * Register the operator that the solver will use during solves
      * @param [in] op shared pointer to operator \f$A()\f$ for equation \f$A(u) = f\f$
      */
-    virtual void registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
+    virtual void registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
     {
         d_pOperator = op;
     }
@@ -142,7 +142,7 @@ public:
      *  may then register any vector components it "owns" with the writer.
      * \param writer   The writer to register
      */
-    virtual void registerWriter( AMP::shared_ptr<AMP::Utilities::Writer> writer )
+    virtual void registerWriter( std::shared_ptr<AMP::Utilities::Writer> writer )
     {
         d_writer = writer;
     }
@@ -167,22 +167,22 @@ public:
      *        OperatorParameters object that is NULL by default
      */
     virtual void
-    resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters );
+    resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> parameters );
 
     /**
      * Resets the solver internally with new parameters if necessary
      * @param parameters
      *        SolverStrategyParameters object that is NULL by default
      */
-    virtual void reset( AMP::shared_ptr<SolverStrategyParameters> parameters );
+    virtual void reset( std::shared_ptr<SolverStrategyParameters> parameters );
 
     /**
      * Return a shared pointer to the operator registered with the solver.
      */
-    virtual AMP::shared_ptr<AMP::Operator::Operator> getOperator( void ) { return d_pOperator; }
+    virtual std::shared_ptr<AMP::Operator::Operator> getOperator( void ) { return d_pOperator; }
 
 protected:
-    void getFromInput( AMP::shared_ptr<AMP::Database> db );
+    void getFromInput( std::shared_ptr<AMP::Database> db );
 
     int d_iNumberIterations; // iterations in solver
 
@@ -202,9 +202,9 @@ protected:
 
     static int d_iInstanceId; // used to differentiate between different instances of the class
 
-    AMP::shared_ptr<AMP::Operator::Operator> d_pOperator;
+    std::shared_ptr<AMP::Operator::Operator> d_pOperator;
 
-    AMP::shared_ptr<AMP::Utilities::Writer> d_writer;
+    std::shared_ptr<AMP::Utilities::Writer> d_writer;
 
 
 private:

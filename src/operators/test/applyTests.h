@@ -2,8 +2,8 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 #include <string>
 
@@ -13,7 +13,7 @@ inline void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,
                     const double *scale,
                     const size_t nshift )
 {
-    auto mvec = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vec );
+    auto mvec = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vec );
     if ( !mvec ) {
         vec->scale( scale[0] );
         vec->addScalar( vec, shift[0] );
@@ -39,7 +39,7 @@ inline void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,
 
 inline void applyTests( AMP::UnitTest *ut,
                         const std::string &msgPrefix,
-                        AMP::shared_ptr<AMP::Operator::Operator> testOperator,
+                        std::shared_ptr<AMP::Operator::Operator> testOperator,
                         AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
                         AMP::LinearAlgebra::Vector::shared_ptr solVec,
                         AMP::LinearAlgebra::Vector::shared_ptr resVec,
@@ -241,7 +241,7 @@ inline void applyTests( AMP::UnitTest *ut,
 
 inline void applyTests( AMP::UnitTest *ut,
                         const std::string &msgPrefix,
-                        AMP::shared_ptr<AMP::Operator::Operator> testOperator,
+                        std::shared_ptr<AMP::Operator::Operator> testOperator,
                         AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
                         AMP::LinearAlgebra::Vector::shared_ptr solVec,
                         AMP::LinearAlgebra::Vector::shared_ptr resVec,

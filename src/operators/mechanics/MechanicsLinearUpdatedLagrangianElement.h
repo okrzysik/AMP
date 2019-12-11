@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 /* AMP files */
 #include "MechanicsConstants.h"
@@ -26,7 +26,7 @@ class MechanicsLinearUpdatedLagrangianElement : public MechanicsElement
 public:
     //! Constructor.
     explicit MechanicsLinearUpdatedLagrangianElement(
-        const AMP::shared_ptr<ElementOperationParameters> &params )
+        const std::shared_ptr<ElementOperationParameters> &params )
         : MechanicsElement( params ), d_elementStiffnessMatrix( nullptr )
     {
         d_JxW                      = &( d_fe->get_JxW() );

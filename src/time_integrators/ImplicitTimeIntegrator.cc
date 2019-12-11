@@ -24,7 +24,7 @@ namespace TimeIntegrator {
 */
 
 ImplicitTimeIntegrator::ImplicitTimeIntegrator(
-    AMP::shared_ptr<TimeIntegratorParameters> parameters )
+    std::shared_ptr<TimeIntegratorParameters> parameters )
     : TimeIntegrator( parameters )
 {
     initialize( parameters );
@@ -46,10 +46,10 @@ ImplicitTimeIntegrator::~ImplicitTimeIntegrator() = default;
 *************************************************************************
 */
 
-void ImplicitTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void ImplicitTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP::shared_ptr<ImplicitTimeIntegratorParameters> params =
-        AMP::dynamic_pointer_cast<ImplicitTimeIntegratorParameters>( parameters );
+    std::shared_ptr<ImplicitTimeIntegratorParameters> params =
+        std::dynamic_pointer_cast<ImplicitTimeIntegratorParameters>( parameters );
 
     if ( params.get() != nullptr ) {
         d_solver = params->d_solver;
@@ -99,7 +99,7 @@ int ImplicitTimeIntegrator::advanceSolution( const double dt, const bool first_s
 
         setInitialGuess( first_step, d_current_time, d_current_dt, d_old_dt );
 
-        AMP::shared_ptr<AMP::LinearAlgebra::Vector> rhs;
+        std::shared_ptr<AMP::LinearAlgebra::Vector> rhs;
         rhs.reset();
 
         d_solver->setInitialGuess( d_solution );
@@ -119,7 +119,7 @@ int ImplicitTimeIntegrator::advanceSolution( const double dt, const bool first_s
 *************************************************************************
 */
 
-void ImplicitTimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> db )
+void ImplicitTimeIntegrator::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( db.get() != nullptr );
 }
@@ -132,7 +132,7 @@ void ImplicitTimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> db )
 *************************************************************************
 */
 
-void ImplicitTimeIntegrator::putToDatabase( AMP::shared_ptr<AMP::Database> db )
+void ImplicitTimeIntegrator::putToDatabase( std::shared_ptr<AMP::Database> db )
 {
     TimeIntegrator::putToDatabase( db );
 }
@@ -162,6 +162,6 @@ void ImplicitTimeIntegrator::printClassData( std::ostream &os ) const
     TimeIntegrator::printClassData( os );
 }
 
-void ImplicitTimeIntegrator::initializeTimeOperator( AMP::shared_ptr<TimeIntegratorParameters> ) {}
+void ImplicitTimeIntegrator::initializeTimeOperator( std::shared_ptr<TimeIntegratorParameters> ) {}
 } // namespace TimeIntegrator
 } // namespace AMP

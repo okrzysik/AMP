@@ -63,7 +63,7 @@ TriangleMeshIterator<NG, NP>::TriangleMeshIterator()
 template<size_t NG, size_t NP>
 TriangleMeshIterator<NG, NP>::TriangleMeshIterator(
     const AMP::Mesh::TriangleMesh<NG, NP> *mesh,
-    AMP::shared_ptr<const std::vector<ElementID>> list,
+    std::shared_ptr<const std::vector<ElementID>> list,
     size_t pos )
 {
     d_typeID   = getTypeID();

@@ -115,8 +115,6 @@ IF ( NOT ONLY_BUILD_DOCS )
         INCLUDE( "${TPL_DIRECTORY}/cmake/FindTimer.cmake" )
         CONFIGURE_TIMER( FALSE "${AMP_INSTALL_DIR}/include" FALSE )
     ENDIF()
-    INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SharedPtr.cmake" )
-    CONFIGURE_SHARED_PTR( "${${PROJ}_INSTALL_DIR}/include/AMP/utils" AMP )
     # Configure AMP (all external libraries must be configured first)
     CONFIGURE_AMP()
 ENDIF()
@@ -197,7 +195,6 @@ SET( CPPCLEAN_SUPPRESSIONS
     "tmpl.h' does not need to be #included"
     ".I' does not need to be #included"
     "'ProfilerApp.h' does not need to be #included"
-    "'utils/shared_ptr.h' does not need to be #included"
     "'Utilities.h' does not need to be #included"
     "'UtilityMacros.h' does not need to be #included"
     "'utils/Counter.h' does not need to be #included"
@@ -251,7 +248,6 @@ IF ( NOT ONLY_BUILD_DOCS )
     INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/save_variables.cmake )
     CONFIGURE_FILE( cmake/FindAMP.template.cmake "${${PROJ}_INSTALL_DIR}/FindAMP.cmake" @ONLY )
     COPY_DATA_FILE( "${TPL_MACRO_CMAKE}" "${${PROJ}_INSTALL_DIR}/cmake/macros.cmake" )
-    COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SharedPtr.cmake" "${${PROJ}_INSTALL_DIR}/cmake/SharedPtr.cmake" )
     SAVE_CMAKE_FLAGS( "${${PROJ}_INSTALL_DIR}/amp.cmake" )
 ENDIF()
 

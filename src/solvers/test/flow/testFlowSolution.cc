@@ -16,10 +16,10 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 #include <string>
 
 
@@ -36,7 +36,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // Get the Mesh database and create the mesh parameters
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto database   = input_db->getDatabase( "Mesh" );
-    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( database );
     meshParams->setComm( globalComm );
 
     // Create the meshes from the input database
@@ -53,10 +53,10 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "FlowFrapconOperator" ),
                 "Key ''FlowFrapconOperator'' is missing!" );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
     auto flowDatabase =
-        AMP::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "FlowFrapconOperator" ) );
-    auto flowOperator = AMP::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(
+        std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "FlowFrapconOperator" ) );
+    auto flowOperator = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "FlowFrapconOperator", input_db, flowtransportModel ) );
 
@@ -70,7 +70,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto resVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, outputVariable );
     auto tmpVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, inputVariable );
 
-    auto flowJacobian = AMP::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>(
+    auto flowJacobian = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "FlowFrapconJacobian", input_db, flowtransportModel ) );
 
@@ -146,7 +146,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     */
     auto jacobianSolver_db  = input_db->getDatabase( "JacobianSolver" );
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    // AMP::shared_ptr<AMP::Database> linearSolver_db =
+    // std::shared_ptr<AMP::Database> linearSolver_db =
     // nonlinearSolver_db->getDatabase("LinearSolver");
 
     auto mv_view_solVec = AMP::LinearAlgebra::MultiVector::view( solVec, globalComm );
@@ -160,34 +160,34 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     //----------------------------------------------------------------------------------------------------------------------------------------------//
 
     auto jacobianSolverParams =
-        AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( jacobianSolver_db );
+        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( jacobianSolver_db );
 
     // change the next line to get the correct communicator out
     jacobianSolverParams->d_comm          = globalComm;
     jacobianSolverParams->d_pOperator     = flowJacobian;
     jacobianSolverParams->d_pInitialGuess = mv_view_tmpVec;
 
-    auto JacobianSolver = AMP::make_shared<AMP::Solver::PetscSNESSolver>( jacobianSolverParams );
+    auto JacobianSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( jacobianSolverParams );
 
     //----------------------------------------------------------------------------------------------------------------------
     // initialize the nonlinear solver
-    AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams =
-        AMP::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+    std::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams =
+        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = flowOperator;
     nonlinearSolverParams->d_pInitialGuess = mv_view_tmpVec;
 
-    auto nonlinearSolver = AMP::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
+    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
-    //  AMP::shared_ptr<AMP::Database> flowPreconditioner_db =
+    //  std::shared_ptr<AMP::Database> flowPreconditioner_db =
     //  linearSolver_db->getDatabase("Preconditioner");
-    //  AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> flowPreconditionerParams(new
+    //  std::shared_ptr<AMP::Solver::SolverStrategyParameters> flowPreconditionerParams(new
     //  AMP::Solver::SolverStrategyParameters(flowPreconditioner_db));
     //  flowPreconditionerParams->d_pOperator = flowJacobian;
-    //  AMP::shared_ptr<AMP::Solver::Flow1DSolver> linearFlowPreconditioner(new
+    //  std::shared_ptr<AMP::Solver::Flow1DSolver> linearFlowPreconditioner(new
     //  AMP::Solver::Flow1DSolver(flowPreconditionerParams));
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//

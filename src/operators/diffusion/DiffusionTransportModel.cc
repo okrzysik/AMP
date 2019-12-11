@@ -21,7 +21,7 @@ const std::vector<libMesh::Point> DiffusionTransportModel::d_DummyCoords =
     std::vector<libMesh::Point>( 0 );
 
 DiffusionTransportModel::DiffusionTransportModel(
-    const AMP::shared_ptr<DiffusionTransportModelParameters> &params )
+    const std::shared_ptr<DiffusionTransportModelParameters> &params )
     : ElementPhysicsModel( params ),
       d_defaults( Diffusion::NUMBER_VARIABLES ),
       d_MaterialParameters( 0 ),
@@ -47,7 +47,7 @@ DiffusionTransportModel::DiffusionTransportModel(
     }
     if ( params->d_db->keyExists( "Defaults" ) ) {
         // check for correct names
-        AMP::shared_ptr<Database> defaults_db = params->d_db->getDatabase( "Defaults" );
+        std::shared_ptr<Database> defaults_db = params->d_db->getDatabase( "Defaults" );
         std::vector<std::string> defaultkeys  = defaults_db->getAllKeys();
         AMP_INSIST( defaultkeys.size() == d_property->get_number_arguments(),
                     "Incorrect number of defaults supplied." );
@@ -86,8 +86,8 @@ DiffusionTransportModel::DiffusionTransportModel(
 
     // for tensor properties, set or change dimension
     if ( d_property->isTensor() ) {
-        AMP::shared_ptr<AMP::Materials::TensorProperty<double>> tensprop =
-            AMP::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>( d_property );
+        std::shared_ptr<AMP::Materials::TensorProperty<double>> tensprop =
+            std::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>( d_property );
         if ( tensprop->variable_dimensions() ) {
             if ( params->d_db->keyExists( "Dimensions" ) ) {
                 std::vector<int> dims = params->d_db->getVector<int>( "Dimensions" );
@@ -116,10 +116,10 @@ DiffusionTransportModel::DiffusionTransportModel(
     }
 }
 
-AMP::shared_ptr<std::vector<double>> DiffusionTransportModel::bilogTransform(
+std::shared_ptr<std::vector<double>> DiffusionTransportModel::bilogTransform(
     const std::vector<double> &U, const double a, const double b )
 {
-    AMP::shared_ptr<std::vector<double>> up( new std::vector<double>( U.size() ) );
+    std::shared_ptr<std::vector<double>> up( new std::vector<double>( U.size() ) );
     std::vector<double> &u = *up;
 
     for ( size_t i = 0; i < U.size(); i++ ) {
@@ -142,11 +142,11 @@ void DiffusionTransportModel::bilogScale( std::vector<double> &v, const double a
 
 void DiffusionTransportModel::getTransport(
     std::vector<double> &result,
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> &args,
+    std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
     const std::vector<libMesh::Point> & )
 {
     PROFILE_START( "getTransport", 7 );
-    AMP::shared_ptr<std::vector<double>> scaledp;
+    std::shared_ptr<std::vector<double>> scaledp;
     double lower, upper;
 
     if ( d_UseBilogScaling ) {

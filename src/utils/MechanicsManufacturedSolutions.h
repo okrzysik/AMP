@@ -1,6 +1,6 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <string>
 #include <vector>
@@ -19,7 +19,7 @@ namespace MechanicsManufacturedSolution {
 class MMS
 {
 public:
-    typedef AMP::shared_ptr<MMS> shared_ptr;
+    typedef std::shared_ptr<MMS> shared_ptr;
 
     /**
      * Default constructor
@@ -292,7 +292,7 @@ class MMSBuilder
 public:
     MMSBuilder() {}
 
-    static AMP::shared_ptr<MMS> createMMS( AMP::shared_ptr<AMP::Database> mmsDatabase );
+    static std::shared_ptr<MMS> createMMS( std::shared_ptr<AMP::Database> mmsDatabase );
 }; // end class MMSBuilder
 
 

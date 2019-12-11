@@ -8,13 +8,13 @@ namespace Operator {
 
 IdentityOperator::IdentityOperator() : LinearOperator() {}
 
-IdentityOperator::IdentityOperator( const AMP::shared_ptr<OperatorParameters> &params )
+IdentityOperator::IdentityOperator( const std::shared_ptr<OperatorParameters> &params )
     : LinearOperator( params )
 {
     reset( params );
 }
 
-void IdentityOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void IdentityOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
     if ( params->d_db.get() != nullptr ) {
         if ( params->d_db->keyExists( "InputVariable" ) ) {
@@ -28,7 +28,7 @@ void IdentityOperator::reset( const AMP::shared_ptr<OperatorParameters> &params 
     }
 }
 
-void IdentityOperator::setMatrix( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> )
+void IdentityOperator::setMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> )
 {
     AMP_ERROR( "setMatrix is invalid for the Identity operator" );
 }

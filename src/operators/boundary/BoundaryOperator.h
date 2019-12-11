@@ -12,7 +12,7 @@ class BoundaryOperator : public Operator
 {
 
 public:
-    explicit BoundaryOperator( const AMP::shared_ptr<OperatorParameters> &params )
+    explicit BoundaryOperator( const std::shared_ptr<OperatorParameters> &params )
         : Operator( params )
     {
     }

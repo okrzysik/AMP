@@ -11,7 +11,7 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Sphere::Sphere( AMP::shared_ptr<AMP::Database> db )
+Sphere::Sphere( std::shared_ptr<AMP::Database> db )
 {
     d_physicalDim = 3;
     d_logicalDim  = 2;
@@ -133,9 +133,9 @@ void Sphere::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-AMP::shared_ptr<AMP::Geometry::Geometry> Sphere::clone() const
+std::shared_ptr<AMP::Geometry::Geometry> Sphere::clone() const
 {
-    return AMP::make_shared<Sphere>( *this );
+    return std::make_shared<Sphere>( *this );
 }
 
 

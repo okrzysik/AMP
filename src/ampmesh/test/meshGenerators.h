@@ -38,13 +38,13 @@ public:
     virtual void build_mesh() override
     {
         // Create a generic MeshParameters object
-        auto database = AMP::make_shared<AMP::Database>( "Mesh" );
+        auto database = std::make_shared<AMP::Database>( "Mesh" );
         database->putScalar<int>( "dim", 3 );
         database->putScalar<std::string>( "MeshName", "AMP::cube" );
         database->putScalar<std::string>( "Generator", "cube" );
         database->putVector<int>( "Size", { SIZE_X, SIZE_Y, SIZE_Z } );
         database->putVector<double>( "Range", { 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 } );
-        auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+        auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create an AMP mesh
         mesh = AMP::Mesh::BoxMesh::generate( params );
@@ -76,13 +76,13 @@ public:
     virtual void build_mesh() override
     {
         // Create a generic MeshParameters object
-        auto database = AMP::make_shared<AMP::Database>( "Mesh" );
+        auto database = std::make_shared<AMP::Database>( "Mesh" );
         database->putScalar<int>( "dim", 3 );
         database->putScalar<std::string>( "MeshName", "AMP::cylinder" );
         database->putScalar<std::string>( "Generator", "cylinder" );
         database->putVector<int>( "Size", { 10, 10 } );
         database->putVector<double>( "Range", { 1.0, 0.0, 1.0 } );
-        auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+        auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create an AMP mesh
         mesh = AMP::Mesh::BoxMesh::generate( params );
@@ -98,13 +98,13 @@ public:
     virtual void build_mesh() override
     {
         // Create a generic MeshParameters object
-        auto database = AMP::make_shared<AMP::Database>( "Mesh" );
+        auto database = std::make_shared<AMP::Database>( "Mesh" );
         database->putScalar<int>( "dim", 3 );
         database->putScalar<std::string>( "MeshName", "AMP::tube" );
         database->putScalar<std::string>( "Generator", "tube" );
         database->putVector<int>( "Size", { 3, 12, 10 } );
         database->putVector<double>( "Range", { 0.7, 1.0, 0.0, 1.0 } );
-        auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+        auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create an AMP mesh
         mesh = AMP::Mesh::BoxMesh::generate( params );
@@ -120,7 +120,7 @@ public:
     virtual void build_mesh() override
     {
         // Create the multimesh database
-        auto meshDatabase = AMP::make_shared<AMP::Database>( "Mesh" );
+        auto meshDatabase = std::make_shared<AMP::Database>( "Mesh" );
         meshDatabase->putScalar<std::string>( "MeshName", "SinglePin" );
         meshDatabase->putScalar<std::string>( "MeshType", "Multimesh" );
         meshDatabase->putScalar<std::string>( "MeshDatabasePrefix", "Mesh_" );
@@ -132,7 +132,7 @@ public:
         auto cladMeshDatabase = meshDatabase->putDatabase( "Mesh_2" );
         createCladMeshDatabase( cladMeshDatabase );
         // Create the parameter object
-        auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
+        auto params = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create the mesh
         mesh = AMP::Mesh::Mesh::buildMesh( params );
@@ -140,7 +140,7 @@ public:
     static std::string name() { return "AMPMultiMeshGenerator"; }
 
 private:
-    void createPelletMeshDatabase( AMP::shared_ptr<Database> db )
+    void createPelletMeshDatabase( std::shared_ptr<Database> db )
     {
         int N_pellet = 3;
         // Create the multimesh database
@@ -169,7 +169,7 @@ private:
             offsetArray[i] = ( (double) i ) * 0.0105;
         meshArrayDatabase->putVector( "z_offset", offsetArray );
     }
-    void createCladMeshDatabase( AMP::shared_ptr<Database> db )
+    void createCladMeshDatabase( std::shared_ptr<Database> db )
     {
         // Create the multimesh database
         db->putScalar<std::string>( "MeshName", "clad" );

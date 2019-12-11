@@ -16,7 +16,7 @@ public:
     size_t d_NumPartners;
 
 
-    explicit NodeToNodeMapParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit NodeToNodeMapParameters( std::shared_ptr<AMP::Database> db )
         : AsyncMapOperatorParameters( db ), d_NumPartners( 0 )
     {
     }

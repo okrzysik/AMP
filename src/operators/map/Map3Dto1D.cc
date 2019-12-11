@@ -24,18 +24,18 @@ namespace AMP {
 namespace Operator {
 
 
-Map3Dto1D::Map3Dto1D( const AMP::shared_ptr<OperatorParameters> &params ) : MapOperator( params )
+Map3Dto1D::Map3Dto1D( const std::shared_ptr<OperatorParameters> &params ) : MapOperator( params )
 {
-    AMP::shared_ptr<MapOperatorParameters> myparams =
-        AMP::dynamic_pointer_cast<MapOperatorParameters>( params );
+    std::shared_ptr<MapOperatorParameters> myparams =
+        std::dynamic_pointer_cast<MapOperatorParameters>( params );
     reset( myparams );
 }
 
 
-void Map3Dto1D::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void Map3Dto1D::reset( const std::shared_ptr<OperatorParameters> &params )
 {
-    AMP::shared_ptr<MapOperatorParameters> myparams =
-        AMP::dynamic_pointer_cast<MapOperatorParameters>( params );
+    std::shared_ptr<MapOperatorParameters> myparams =
+        std::dynamic_pointer_cast<MapOperatorParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameter" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
@@ -109,11 +109,11 @@ void Map3Dto1D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
             auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-            AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
-            AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
+            std::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
+            std::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
 
             auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-            AMP::shared_ptr<::QBase> d_qrule(
+            std::shared_ptr<::QBase> d_qrule(
                 (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
 
             d_fe->attach_quadrature_rule( d_qrule.get() );

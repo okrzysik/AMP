@@ -18,7 +18,7 @@ Operator::Operator()
 }
 
 
-Operator::Operator( const AMP::shared_ptr<OperatorParameters> &params )
+Operator::Operator( const std::shared_ptr<OperatorParameters> &params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 
@@ -34,7 +34,7 @@ Operator::Operator( const AMP::shared_ptr<OperatorParameters> &params )
 }
 
 
-void Operator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void Operator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 
@@ -68,7 +68,7 @@ void Operator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
-void Operator::getFromInput( AMP::shared_ptr<AMP::Database> db )
+void Operator::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     AMP_INSIST( ( ( db.get() ) != nullptr ), "NULL database" );
 

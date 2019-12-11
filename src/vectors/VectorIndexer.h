@@ -1,7 +1,7 @@
 #ifndef included_AMP_VectorIndexer
 #define included_AMP_VectorIndexer
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -23,7 +23,7 @@ class Vector;
 class VectorIndexer
 {
 public:
-    typedef AMP::shared_ptr<VectorIndexer> shared_ptr;
+    typedef std::shared_ptr<VectorIndexer> shared_ptr;
 
     /** \brief Destructor */
     virtual ~VectorIndexer();
@@ -60,7 +60,7 @@ public:
      * \param[in]  v A vector
      * \return The number of local objects in the vector also in the subset.
      */
-    virtual size_t getNumLocalElements( AMP::shared_ptr<Vector> v ) const = 0;
+    virtual size_t getNumLocalElements( std::shared_ptr<Vector> v ) const = 0;
 };
 } // namespace LinearAlgebra
 } // namespace AMP

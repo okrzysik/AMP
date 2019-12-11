@@ -20,7 +20,7 @@ class VectorEntryMapParameters
 public:
     /** \brief Convenince typedef
      */
-    typedef AMP::shared_ptr<VectorEntryMapParameters> shared_ptr;
+    typedef std::shared_ptr<VectorEntryMapParameters> shared_ptr;
 
     /** \brief A sorting of the entities of the vector
      */
@@ -97,7 +97,7 @@ public:
 
     /** \brief  Convenience typedef
      */
-    typedef AMP::shared_ptr<VectorEntryMap> shared_ptr;
+    typedef std::shared_ptr<VectorEntryMap> shared_ptr;
 
     /** \brief Constructor
      * \param[in] ptr  The parameters used to create this VectorEntryMap

@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 /* AMP files */
 #include "MechanicsConstants.h"
@@ -27,7 +27,7 @@ public:
     enum MaterialUpdateType { RESET, JACOBIAN };
 
     //! Constructor.
-    explicit MechanicsNonlinearElement( const AMP::shared_ptr<ElementOperationParameters> &params )
+    explicit MechanicsNonlinearElement( const std::shared_ptr<ElementOperationParameters> &params )
         : MechanicsElement( params ), d_elementOutputVector( nullptr )
     {
         d_JxW = &( d_fe->get_JxW() );

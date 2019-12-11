@@ -21,7 +21,7 @@ public:
     /**
       Constructor.
       */
-    explicit MechanicsLinearFEOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit MechanicsLinearFEOperatorParameters( std::shared_ptr<AMP::Database> db )
         : LinearFEOperatorParameters( db )
     {
     }
@@ -31,7 +31,7 @@ public:
       */
     virtual ~MechanicsLinearFEOperatorParameters() {}
 
-    AMP::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
+    std::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
 
     AMP::LinearAlgebra::Vector::shared_ptr
         d_dispVec; /**< Displacement vector, which is passed from

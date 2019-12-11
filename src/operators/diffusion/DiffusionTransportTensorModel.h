@@ -14,7 +14,7 @@ class DiffusionTransportTensorModel : public DiffusionTransportModel
 {
 public:
     explicit DiffusionTransportTensorModel(
-        const AMP::shared_ptr<DiffusionTransportTensorModelParameters> params );
+        const std::shared_ptr<DiffusionTransportTensorModelParameters> params );
 
     /**
      * \brief transport model returning a vector of tensors
@@ -23,12 +23,12 @@ public:
      * \param Coordinates coordinates on the mesh that may be needed by the model.
      */
     virtual void
-    getTensorTransport( std::vector<std::vector<AMP::shared_ptr<std::vector<double>>>> &result,
-                        std::map<std::string, AMP::shared_ptr<std::vector<double>>> &args,
+    getTensorTransport( std::vector<std::vector<std::shared_ptr<std::vector<double>>>> &result,
+                        std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
                         const std::vector<libMesh::Point> &Coordinates = d_DummyCoords );
 
 private:
-    AMP::shared_ptr<AMP::Materials::TensorProperty<double>>
+    std::shared_ptr<AMP::Materials::TensorProperty<double>>
         d_tensorProperty; /// tensor property pointer
 };
 } // namespace Operator

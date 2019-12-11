@@ -14,7 +14,7 @@ namespace AMP {
 namespace Operator {
 
 DiffusionTransportTensorModel::DiffusionTransportTensorModel(
-    const AMP::shared_ptr<DiffusionTransportTensorModelParameters> params )
+    const std::shared_ptr<DiffusionTransportTensorModelParameters> params )
     : DiffusionTransportModel( params )
 {
     d_IsTensor = true;
@@ -23,16 +23,16 @@ DiffusionTransportTensorModel::DiffusionTransportTensorModel(
     if ( not( modelName == "DiffusionCylindricalTransportModel" ) ) {
         AMP_INSIST( d_property->isTensor(), "material property must be of tensor type" );
         d_tensorProperty =
-            AMP::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>( d_property );
+            std::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>( d_property );
     }
 }
 
 void DiffusionTransportTensorModel::getTensorTransport(
-    std::vector<std::vector<AMP::shared_ptr<std::vector<double>>>> &result,
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> &args,
+    std::vector<std::vector<std::shared_ptr<std::vector<double>>>> &result,
+    std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
     const std::vector<libMesh::Point> & )
 {
-    AMP::shared_ptr<std::vector<double>> scaledp;
+    std::shared_ptr<std::vector<double>> scaledp;
     double lower, upper;
 
     if ( d_UseBilogScaling ) {

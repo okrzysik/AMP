@@ -14,7 +14,7 @@
 
 #include <string>
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 namespace AMP {
 
@@ -66,7 +66,7 @@ namespace AMP {
  *
  *
  * This Appender could be use to log warning message using:
- * AMP::shared_ptr<Logger::Appender> appender = new ConsoleAppender()
+ * std::shared_ptr<Logger::Appender> appender = new ConsoleAppender()
  * Logger.getInstance() -> setWarningAppender(appender);
  *
  * Normally this would be done at the start of an application.
@@ -76,7 +76,7 @@ class Logger
 {
 
 public:
-    typedef AMP::shared_ptr<Logger> shared_ptr;
+    typedef std::shared_ptr<Logger> shared_ptr;
 
     /*!
      * Interface for class that does the logging for the Logger.
@@ -87,7 +87,7 @@ public:
     {
 
     public:
-        typedef AMP::shared_ptr<Appender> shared_ptr;
+        typedef std::shared_ptr<Appender> shared_ptr;
 
         /*!
          * Log a message with file and location information.
@@ -132,7 +132,7 @@ public:
      *
      * Default is to log to perr.
      */
-    void setAbortAppender( AMP::shared_ptr<Appender> appender );
+    void setAbortAppender( std::shared_ptr<Appender> appender );
 
     /*!
      * Set the Appender for logging warning messages to an
@@ -140,7 +140,7 @@ public:
      *
      * Default is to log to plog.
      */
-    void setWarningAppender( AMP::shared_ptr<Appender> appender );
+    void setWarningAppender( std::shared_ptr<Appender> appender );
 
     /*!
      * Set the Appender for logging debug messages to an
@@ -148,7 +148,7 @@ public:
      *
      * Default is to log to plog.
      */
-    void setDebugAppender( AMP::shared_ptr<Appender> appender );
+    void setDebugAppender( std::shared_ptr<Appender> appender );
 
 
     /*!
@@ -187,9 +187,9 @@ private:
     /*
      * Appenders for each type of logging.
      */
-    AMP::shared_ptr<Appender> d_abort_appender;
-    AMP::shared_ptr<Appender> d_warning_appender;
-    AMP::shared_ptr<Appender> d_debug_appender;
+    std::shared_ptr<Appender> d_abort_appender;
+    std::shared_ptr<Appender> d_warning_appender;
+    std::shared_ptr<Appender> d_debug_appender;
 
     /*
      * Logging state (on or off)

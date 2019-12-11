@@ -16,9 +16,9 @@ static inline ManagedVector *getManaged( Vector *x )
     AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
     return y;
 }
-static inline AMP::shared_ptr<ManagedVector> getManaged( AMP::shared_ptr<Vector> x )
+static inline std::shared_ptr<ManagedVector> getManaged( std::shared_ptr<Vector> x )
 {
-    auto y = dynamic_pointer_cast<ManagedVector>( x );
+    auto y = std::dynamic_pointer_cast<ManagedVector>( x );
     AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
     return y;
 }
@@ -29,7 +29,7 @@ static inline AMP::shared_ptr<ManagedVector> getManaged( AMP::shared_ptr<Vector>
  ********************************************************/
 ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     : Vector( params_in ),
-      d_pParameters( AMP::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
+      d_pParameters( std::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
 {
     if ( d_pParameters->d_Buffer.get() != nullptr )
         d_vBuffer = d_pParameters->d_Buffer;
@@ -46,9 +46,9 @@ ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( )
 {
     // Get the managed vector
-    auto managed = dynamic_pointer_cast<ManagedVector>( alias );
-    auto params = AMP::dynamic_pointer_cast<VectorParameters>( alias->getParameters() );
-    AMP::shared_ptr<ManagedVectorParameters> managedParams;
+    auto managed = std::dynamic_pointer_cast<ManagedVector>( alias );
+    auto params = std::dynamic_pointer_cast<VectorParameters>( alias->getParameters() );
+    std::shared_ptr<ManagedVectorParameters> managedParams;
     VectorEngine::BufferPtr buffer;
     VectorEngine::shared_ptr engine;
     if ( managed ) {
@@ -58,7 +58,7 @@ ManagedVector::ManagedVector( shared_ptr alias )
         engine        = managed->d_Engine;
     } else {
         // We are creating a managed vector from a basic vector
-        auto managedParams = AMP::make_shared<ManagedVectorParameters>();
+        auto managedParams = std::make_shared<ManagedVectorParameters>();
         managedParams->d_CommList = params->d_CommList;
         managedParams->d_DOFManager = params->d_DOFManager;
         managedParams->d_Engine = alias;
@@ -81,7 +81,7 @@ ManagedVector::ManagedVector( shared_ptr alias )
 }
 #else
 ManagedVector::ManagedVector( shared_ptr alias )
-    : Vector( AMP::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
+    : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
 {
     auto vec      = getManaged( alias );
     d_vBuffer     = vec->d_vBuffer;
@@ -100,7 +100,7 @@ Vector::shared_ptr ManagedVector::subsetVectorForVariable( Variable::const_share
 {
     Vector::shared_ptr retVal;
     if ( !d_vBuffer )
-        retVal = dynamic_pointer_cast<Vector>( d_Engine )->subsetVectorForVariable( name );
+        retVal = std::dynamic_pointer_cast<Vector>( d_Engine )->subsetVectorForVariable( name );
     if ( !retVal )
         retVal = Vector::subsetVectorForVariable( name );
     return retVal;
@@ -110,7 +110,8 @@ ManagedVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) c
 {
     Vector::const_shared_ptr retVal;
     if ( !d_vBuffer )
-        retVal = dynamic_pointer_cast<Vector>( d_Engine )->constSubsetVectorForVariable( name );
+        retVal =
+            std::dynamic_pointer_cast<Vector>( d_Engine )->constSubsetVectorForVariable( name );
     if ( !retVal )
         retVal = Vector::constSubsetVectorForVariable( name );
     return retVal;
@@ -133,14 +134,14 @@ bool ManagedVector::isAnAliasOf( Vector &rhs )
 void ManagedVector::copy( const VectorOperations &other )
 {
     auto rhs_managed = dynamic_cast<const ManagedVector *>( &other );
-    AMP::shared_ptr<Vector> vec1;
-    AMP::shared_ptr<const Vector> vec2;
+    std::shared_ptr<Vector> vec1;
+    std::shared_ptr<const Vector> vec2;
     if ( rhs_managed != nullptr ) {
         // We are dealing with two managed vectors, check if they both have data engines
         if ( d_Engine.get() != nullptr )
-            vec1 = AMP::dynamic_pointer_cast<Vector>( d_Engine );
+            vec1 = std::dynamic_pointer_cast<Vector>( d_Engine );
         if ( rhs_managed->d_Engine.get() != nullptr )
-            vec2 = AMP::dynamic_pointer_cast<const Vector>( rhs_managed->d_Engine );
+            vec2 = std::dynamic_pointer_cast<const Vector>( rhs_managed->d_Engine );
     }
     // Perform the copy
     if ( vec1 != nullptr && vec2 != nullptr ) {
@@ -158,9 +159,9 @@ void ManagedVector::copy( const VectorOperations &other )
 Vector::UpdateState ManagedVector::getUpdateStatus() const
 {
     Vector::UpdateState state = *d_UpdateState;
-    AMP::shared_ptr<const Vector> vec;
+    std::shared_ptr<const Vector> vec;
     if ( d_Engine.get() != nullptr ) {
-        vec = AMP::dynamic_pointer_cast<const Vector>( d_Engine );
+        vec = std::dynamic_pointer_cast<const Vector>( d_Engine );
     }
     if ( vec.get() != nullptr ) {
         Vector::UpdateState sub_state = vec->getUpdateStatus();
@@ -189,9 +190,9 @@ Vector::UpdateState ManagedVector::getUpdateStatus() const
 void ManagedVector::setUpdateStatus( UpdateState state )
 {
     *d_UpdateState = state;
-    AMP::shared_ptr<Vector> vec;
+    std::shared_ptr<Vector> vec;
     if ( d_Engine.get() != nullptr )
-        vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
+        vec = std::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() != nullptr )
         vec->setUpdateStatus( state );
 }
@@ -215,7 +216,7 @@ void ManagedVector::aliasVector( Vector &other )
 
 void ManagedVector::getValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
-    Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
+    Vector::shared_ptr vec = std::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() == nullptr ) {
         Vector::getValuesByGlobalID( numVals, ndx, vals );
     } else {
@@ -234,7 +235,7 @@ void ManagedVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *
 
 void ManagedVector::getGhostValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
-    Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
+    Vector::shared_ptr vec = std::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() == nullptr ) {
         Vector::getGhostValuesByGlobalID( numVals, ndx, vals );
     } else {
@@ -262,7 +263,7 @@ void ManagedVector::setLocalValuesByGlobalID( int numVals, size_t *ndx, const do
 
 void ManagedVector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
-    Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
+    Vector::shared_ptr vec = std::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() == nullptr ) {
         Vector::setGhostValuesByGlobalID( numVals, ndx, vals );
     } else {
@@ -272,11 +273,11 @@ void ManagedVector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const do
 
 void ManagedVector::setValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
-    Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
+    Vector::shared_ptr vec = std::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() != nullptr ) {
         AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
         *d_UpdateState         = UpdateState::SETTING;
-        Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
+        Vector::shared_ptr vec = std::dynamic_pointer_cast<Vector>( d_Engine );
         vec->setValuesByGlobalID( numVals, ndx, vals );
         fireDataChange();
     } else {
@@ -504,11 +505,11 @@ double ManagedVector::dot( const VectorOperations &x ) const
 }
 
 
-AMP::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
+std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
 {
-    AMP::shared_ptr<Vector> retVal( getNewRawPtr() );
+    std::shared_ptr<Vector> retVal( getNewRawPtr() );
     if ( !d_vBuffer ) {
-        getManaged( retVal )->d_Engine = d_Engine->cloneEngine( AMP::shared_ptr<VectorData>() );
+        getManaged( retVal )->d_Engine = d_Engine->cloneEngine( std::shared_ptr<VectorData>() );
     }
     retVal->setVariable( name );
     return retVal;

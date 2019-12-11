@@ -16,7 +16,7 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/enable_shared_from_this.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include "StackTrace/StackTrace.h"
 
@@ -180,9 +180,9 @@ void test_interp( UnitTest *ut )
 class dummy : public AMP::enable_shared_from_this<dummy>
 {
 public:
-    shared_ptr<dummy> getPtr() { return shared_from_this(); }
+    std::shared_ptr<dummy> getPtr() { return shared_from_this(); }
 };
-static inline bool test_shared_from_this_pointer( const shared_ptr<dummy> &p1 )
+static inline bool test_shared_from_this_pointer( const std::shared_ptr<dummy> &p1 )
 {
     bool pass = p1.use_count() == 1;
     int count1, count2;
@@ -190,7 +190,7 @@ static inline bool test_shared_from_this_pointer( const shared_ptr<dummy> &p1 )
     count1  = p1.use_count();
     count2  = p2.use_count();
     pass    = pass && count1 == 2 && count2 == 2;
-    shared_ptr<dummy> p3( p1 );
+    std::shared_ptr<dummy> p3( p1 );
     count1 = p2.use_count();
     count2 = p3.use_count();
     pass   = pass && count1 == 3 && count2 == 3;
@@ -202,7 +202,7 @@ static inline bool test_shared_from_this_pointer( const shared_ptr<dummy> &p1 )
     count1  = p3.use_count();
     count2  = p4.use_count();
     pass    = pass && count1 == 3 && count2 == 3;
-    shared_ptr<dummy> p5( p3.get(), []( void * ) {} );
+    std::shared_ptr<dummy> p5( p3.get(), []( void * ) {} );
     count1 = p3.use_count();
     count2 = p5.use_count();
     pass   = pass && count1 == 3 && count2 == 1;
@@ -216,7 +216,7 @@ void test_shared_from_this( UnitTest *ut )
 {
     bool pass = true;
     try {
-        shared_ptr<dummy> ptr( new dummy );
+        std::shared_ptr<dummy> ptr( new dummy );
         pass = test_shared_from_this_pointer( ptr );
     } catch ( ... ) {
         pass = false;

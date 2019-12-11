@@ -107,12 +107,12 @@ void MultiGeometry::displaceMesh( const double *x )
     for ( const auto &geom : d_geom )
         geom->displaceMesh( x );
 }
-AMP::shared_ptr<AMP::Geometry::Geometry> MultiGeometry::clone() const
+std::shared_ptr<AMP::Geometry::Geometry> MultiGeometry::clone() const
 {
     std::vector<Geometry::shared_ptr> geom2;
     for ( const auto &geom : d_geom )
         geom2.push_back( geom->clone() );
-    return AMP::make_shared<MultiGeometry>( geom2 );
+    return std::make_shared<MultiGeometry>( geom2 );
 }
 
 

@@ -95,7 +95,7 @@ public:
         Vector::shared_ptr in_petsc_view = PetscVector::view( in );
 
         // Extract the Vec
-        Vec  in_vec = dynamic_pointer_cast<PetscVector>(in_petsc_view)->getVec();
+        Vec  in_vec = std::dynamic_pointer_cast<PetscVector>(in_petsc_view)->getVec();
 
         // Perform a PETSc operation
         VecMax ( in_vec , &abs );
@@ -119,7 +119,7 @@ public:
         Vector::shared_ptr in_petsc_view = PetscVector::view( in );
 
         // Extract the Vec
-        Vec  in_vec = dynamic_pointer_cast<PetscVector>(in_petsc_view)->getVec();
+        Vec  in_vec = std::dynamic_pointer_cast<PetscVector>(in_petsc_view)->getVec();
 
         // Perform a PETSc operation
         VecMax ( in_vec , &abs );

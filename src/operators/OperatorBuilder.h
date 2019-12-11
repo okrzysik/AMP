@@ -26,8 +26,8 @@ public:
      * \details  This function will create a new operator given the parameters
      * \param in_params  Parameters for constructing the operator
      */
-    static AMP::shared_ptr<Operator>
-    createOperator( AMP::shared_ptr<OperatorParameters> in_params );
+    static std::shared_ptr<Operator>
+    createOperator( std::shared_ptr<OperatorParameters> in_params );
 
     /**
      * \brief Create operator from database
@@ -40,14 +40,14 @@ public:
      * \param elementPhysicsModel   Element physics model to use
      * \param localModelFactory     Local model factor to use
      */
-    static AMP::shared_ptr<Operator>
+    static std::shared_ptr<Operator>
     createOperator( AMP::Mesh::Mesh::shared_ptr mesh,
                     std::string operatorName,
-                    AMP::shared_ptr<AMP::Database> input_db,
-                    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
-                        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel>(),
-                    AMP::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory =
-                        AMP::shared_ptr<AMP::Operator::ElementPhysicsModelFactory>() );
+                    std::shared_ptr<AMP::Database> input_db,
+                    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
+                        std::shared_ptr<AMP::Operator::ElementPhysicsModel>(),
+                    std::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory =
+                        std::shared_ptr<AMP::Operator::ElementPhysicsModelFactory>() );
 
     /**
      * \brief Create operator from database
@@ -57,10 +57,10 @@ public:
      * \param comm                  Comm to use for the operator
      * \param input_db              Input database
      */
-    static AMP::shared_ptr<Operator> createOperator( AMP::Mesh::Mesh::shared_ptr mesh1,
+    static std::shared_ptr<Operator> createOperator( AMP::Mesh::Mesh::shared_ptr mesh1,
                                                      AMP::Mesh::Mesh::shared_ptr mesh2,
                                                      const AMP::AMP_MPI &comm,
-                                                     AMP::shared_ptr<AMP::Database> input_db );
+                                                     std::shared_ptr<AMP::Database> input_db );
 
     /**
      * \brief Create operator from database
@@ -74,15 +74,15 @@ public:
      * \param elementPhysicsModel   Element physics model to use
      * \param localModelFactory     Local model factor to use
      */
-    static AMP::shared_ptr<BoundaryOperator> createColumnBoundaryOperator(
+    static std::shared_ptr<BoundaryOperator> createColumnBoundaryOperator(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
         std::string boundaryOperatorName,
-        AMP::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Database> input_db,
         AMP::Operator::Operator::shared_ptr volumeOperator,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
-            AMP::shared_ptr<AMP::Operator::ElementPhysicsModel>(),
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory =
-            AMP::shared_ptr<AMP::Operator::ElementPhysicsModelFactory>() );
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
+            std::shared_ptr<AMP::Operator::ElementPhysicsModel>(),
+        std::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory =
+            std::shared_ptr<AMP::Operator::ElementPhysicsModelFactory>() );
 
     /**
      * \brief Create operator from database
@@ -96,164 +96,164 @@ public:
      * \param elementPhysicsModel   Element physics model to use
      * \param localModelFactory     Local model factor to use
      */
-    static AMP::shared_ptr<BoundaryOperator> createBoundaryOperator(
+    static std::shared_ptr<BoundaryOperator> createBoundaryOperator(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
         std::string boundaryOperatorName,
-        AMP::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Database> input_db,
         AMP::Operator::Operator::shared_ptr volumeOperator,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
-            AMP::shared_ptr<AMP::Operator::ElementPhysicsModel>(),
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory =
-            AMP::shared_ptr<AMP::Operator::ElementPhysicsModelFactory>() );
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
+            std::shared_ptr<AMP::Operator::ElementPhysicsModel>(),
+        std::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory =
+            std::shared_ptr<AMP::Operator::ElementPhysicsModelFactory>() );
 
 protected:
     OperatorBuilder() {}
     ~OperatorBuilder() {}
 
 
-    static AMP::shared_ptr<Operator>
+    static std::shared_ptr<Operator>
     createIdentityOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                            AMP::shared_ptr<AMP::Database> input_db );
+                            std::shared_ptr<AMP::Database> input_db );
 
-    static AMP::shared_ptr<Operator>
+    static std::shared_ptr<Operator>
     createFlowFrapconOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                               AMP::shared_ptr<AMP::Database> input_db );
+                               std::shared_ptr<AMP::Database> input_db );
 
-    static AMP::shared_ptr<Operator>
+    static std::shared_ptr<Operator>
     createFlowFrapconJacobian( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                               AMP::shared_ptr<AMP::Database> input_db );
+                               std::shared_ptr<AMP::Database> input_db );
 
-    static AMP::shared_ptr<Operator> createSubchannelTwoEqLinearOperator(
+    static std::shared_ptr<Operator> createSubchannelTwoEqLinearOperator(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
-    static AMP::shared_ptr<Operator> createSubchannelTwoEqNonlinearOperator(
+    static std::shared_ptr<Operator> createSubchannelTwoEqNonlinearOperator(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
-    static AMP::shared_ptr<Operator> createSubchannelFourEqNonlinearOperator(
+    static std::shared_ptr<Operator> createSubchannelFourEqNonlinearOperator(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
-    static AMP::shared_ptr<Operator>
+    static std::shared_ptr<Operator>
     createNeutronicsRhsOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                                 AMP::shared_ptr<AMP::Database> input_db );
+                                 std::shared_ptr<AMP::Database> input_db );
 
-    static AMP::shared_ptr<Operator> createVolumeIntegralOperator(
+    static std::shared_ptr<Operator> createVolumeIntegralOperator(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
-    static AMP::shared_ptr<Operator> createMassLinearFEOperator(
+    static std::shared_ptr<Operator> createMassLinearFEOperator(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
-    static AMP::shared_ptr<Operator> createLinearDiffusionOperator(
+    static std::shared_ptr<Operator> createLinearDiffusionOperator(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
-    static AMP::shared_ptr<Operator> createNonlinearDiffusionOperator(
+    static std::shared_ptr<Operator> createNonlinearDiffusionOperator(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
-    static AMP::shared_ptr<Operator> createNonlinearFickSoretOperator(
-        AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        std::string operatorName,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory );
-
-    static AMP::shared_ptr<Operator> createGapConductanceOperator(
-        AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
-
-    static AMP::shared_ptr<Operator> createLinearMechanicsOperator(
-        AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
-
-    static AMP::shared_ptr<Operator> createNonlinearMechanicsOperator(
-        AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
-
-    static AMP::shared_ptr<Operator> createLinearNavierStokesLSWFOperator(
-        AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
-
-    static AMP::shared_ptr<Operator> createNonlinearNavierStokesLSWFOperator(
-        AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
-
-    static AMP::shared_ptr<Operator> createLinearBVPOperator(
+    static std::shared_ptr<Operator> createNonlinearFickSoretOperator(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
         std::string operatorName,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory );
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory );
 
-    static AMP::shared_ptr<Operator> createNonlinearBVPOperator(
+    static std::shared_ptr<Operator> createGapConductanceOperator(
+        AMP::Mesh::Mesh::shared_ptr meshAdapter,
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+
+    static std::shared_ptr<Operator> createLinearMechanicsOperator(
+        AMP::Mesh::Mesh::shared_ptr meshAdapter,
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+
+    static std::shared_ptr<Operator> createNonlinearMechanicsOperator(
+        AMP::Mesh::Mesh::shared_ptr meshAdapter,
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+
+    static std::shared_ptr<Operator> createLinearNavierStokesLSWFOperator(
+        AMP::Mesh::Mesh::shared_ptr meshAdapter,
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+
+    static std::shared_ptr<Operator> createNonlinearNavierStokesLSWFOperator(
+        AMP::Mesh::Mesh::shared_ptr meshAdapter,
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+
+    static std::shared_ptr<Operator> createLinearBVPOperator(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
         std::string operatorName,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory );
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory );
 
-
-    static AMP::shared_ptr<BoundaryOperator> createDirichletMatrixCorrection(
+    static std::shared_ptr<Operator> createNonlinearBVPOperator(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
-        AMP::Operator::Operator::shared_ptr volumeOperator,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+        std::string operatorName,
+        std::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory );
 
-    static AMP::shared_ptr<BoundaryOperator> createMassMatrixCorrection(
+
+    static std::shared_ptr<BoundaryOperator> createDirichletMatrixCorrection(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Database> input_db,
         AMP::Operator::Operator::shared_ptr volumeOperator,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
-    static AMP::shared_ptr<BoundaryOperator> createRobinMatrixCorrection(
+    static std::shared_ptr<BoundaryOperator> createMassMatrixCorrection(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Database> input_db,
         AMP::Operator::Operator::shared_ptr volumeOperator,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
-    static AMP::shared_ptr<BoundaryOperator> createRobinVectorCorrection(
+    static std::shared_ptr<BoundaryOperator> createRobinMatrixCorrection(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Database> input_db,
         AMP::Operator::Operator::shared_ptr volumeOperator,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
-    static AMP::shared_ptr<BoundaryOperator> createNeumannVectorCorrection(
+    static std::shared_ptr<BoundaryOperator> createRobinVectorCorrection(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Database> input_db,
         AMP::Operator::Operator::shared_ptr volumeOperator,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
-    static AMP::shared_ptr<BoundaryOperator> createDirichletVectorCorrection(
+    static std::shared_ptr<BoundaryOperator> createNeumannVectorCorrection(
         AMP::Mesh::Mesh::shared_ptr meshAdapter,
-        AMP::shared_ptr<AMP::Database> input_db,
+        std::shared_ptr<AMP::Database> input_db,
         AMP::Operator::Operator::shared_ptr volumeOperator,
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
-    static AMP::shared_ptr<BoundaryOperator>
+    static std::shared_ptr<BoundaryOperator> createDirichletVectorCorrection(
+        AMP::Mesh::Mesh::shared_ptr meshAdapter,
+        std::shared_ptr<AMP::Database> input_db,
+        AMP::Operator::Operator::shared_ptr volumeOperator,
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+
+    static std::shared_ptr<BoundaryOperator>
     createDirichletVectorCorrection( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                                     AMP::shared_ptr<AMP::Database> input_db,
-                                     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> );
+                                     std::shared_ptr<AMP::Database> input_db,
+                                     std::shared_ptr<AMP::Operator::ElementPhysicsModel> );
 
-    static AMP::shared_ptr<BoundaryOperator>
+    static std::shared_ptr<BoundaryOperator>
     createPressureBoundaryOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                                    AMP::shared_ptr<AMP::Database> input_db,
-                                    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> );
+                                    std::shared_ptr<AMP::Database> input_db,
+                                    std::shared_ptr<AMP::Operator::ElementPhysicsModel> );
 };
 } // namespace Operator
 } // namespace AMP

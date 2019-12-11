@@ -2,7 +2,7 @@
 #define included_AMP_test_VectorTests
 
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
@@ -45,7 +45,7 @@ protected:
 class VectorTests
 {
 public:
-    explicit VectorTests( AMP::shared_ptr<const VectorFactory> factory ) : d_factory( factory ) {}
+    explicit VectorTests( std::shared_ptr<const VectorFactory> factory ) : d_factory( factory ) {}
 
 public:
     void testBasicVector( AMP::UnitTest *ut );
@@ -183,7 +183,7 @@ public: // Vector selector tests
 
 
 private:
-    AMP::shared_ptr<const VectorFactory> d_factory;
+    std::shared_ptr<const VectorFactory> d_factory;
 };
 
 

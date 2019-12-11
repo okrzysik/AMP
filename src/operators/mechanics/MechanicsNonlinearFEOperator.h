@@ -60,7 +60,7 @@ public:
       5) OutputVariable (No default value) - Name of the output variable
       */
     explicit MechanicsNonlinearFEOperator(
-        const AMP::shared_ptr<MechanicsNonlinearFEOperatorParameters> &params );
+        const std::shared_ptr<MechanicsNonlinearFEOperatorParameters> &params );
 
     /**
       Destructor.
@@ -70,7 +70,7 @@ public:
     /**
       This is used to update the operator between successive solves with the operator.
       */
-    void reset( const AMP::shared_ptr<OperatorParameters> & ) override;
+    void reset( const std::shared_ptr<OperatorParameters> & ) override;
 
     /**
       This function is used to set the reference temperature when using temperature dependent
@@ -111,14 +111,14 @@ public:
     void printStressAndStrain( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                const std::string &fname );
 
-    AMP::shared_ptr<MechanicsMaterialModel> getMaterialModel() { return d_materialModel; }
+    std::shared_ptr<MechanicsMaterialModel> getMaterialModel() { return d_materialModel; }
 
 protected:
     /**
       This is used to compute the information required to reset the corresponding Linear (Jacobian)
       operator
       */
-    AMP::shared_ptr<OperatorParameters>
+    std::shared_ptr<OperatorParameters>
         getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr ) override;
 
     /**
@@ -137,7 +137,7 @@ protected:
       @param [out] r output vector
       */
     void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                      AMP::shared_ptr<AMP::LinearAlgebra::Vector> r ) override;
+                      std::shared_ptr<AMP::LinearAlgebra::Vector> r ) override;
 
     /**
       This function is called at the end of the FE assembly.
@@ -181,12 +181,12 @@ protected:
 
     std::vector<double> d_elementOutputVector; /**< Element output vector. */
 
-    AMP::shared_ptr<MechanicsNonlinearElement> d_mechNonlinElem; /**< Element operation. */
+    std::shared_ptr<MechanicsNonlinearElement> d_mechNonlinElem; /**< Element operation. */
 
-    AMP::shared_ptr<MechanicsNonlinearUpdatedLagrangianElement>
+    std::shared_ptr<MechanicsNonlinearUpdatedLagrangianElement>
         d_mechNULElem; /**< Nonlinear Updated Lagrangian Element operation. */
 
-    AMP::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
+    std::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
 
     std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> d_inVec; /**< Input vector. */
 
@@ -220,11 +220,11 @@ protected:
 
     bool d_isInitialized; /**< A flag that is true if init() has been called and false otherwsie. */
 
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
+    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output variable */
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output variable */
 
-    AMP::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
+    std::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
 
     std::vector<AMP::Mesh::MeshElement> d_currNodes;
 

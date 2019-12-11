@@ -2,7 +2,7 @@
 #define included_AMP_ManufacturedSourceModel1
 
 #include "AMP/operators/ElementPhysicsModel.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 // LibMesh include
@@ -25,7 +25,7 @@ class ManufacturedSourceModel1 : public ElementPhysicsModel
 {
 public:
     explicit ManufacturedSourceModel1(
-        const AMP::shared_ptr<ManufacturedSourceModel1Parameters> &params )
+        const std::shared_ptr<ManufacturedSourceModel1Parameters> &params )
         : ElementPhysicsModel( params )
     {
         d_Dzero = 1.0;

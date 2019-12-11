@@ -11,10 +11,10 @@ typedef SolverStrategyParameters MPCSolverParameters;
 class MPCSolver : public SolverStrategy
 {
 public:
-    explicit MPCSolver( AMP::shared_ptr<MPCSolverParameters> params ) : SolverStrategy( params ) {}
+    explicit MPCSolver( std::shared_ptr<MPCSolverParameters> params ) : SolverStrategy( params ) {}
 
-    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
+    void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                std::shared_ptr<AMP::LinearAlgebra::Vector> u );
 };
 } // namespace Solver
 } // namespace AMP

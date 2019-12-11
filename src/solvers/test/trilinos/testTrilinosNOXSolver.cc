@@ -39,17 +39,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr icVec = u->cloneVector();
 
     // Create the operator
-    AMP::shared_ptr<AMP::Operator::IdentityOperator> op( new AMP::Operator::IdentityOperator() );
+    std::shared_ptr<AMP::Operator::IdentityOperator> op( new AMP::Operator::IdentityOperator() );
     op->setInputVariable( var );
     op->setOutputVariable( var );
 
     // Get the databases for the nonlinear and linear solvers
-    AMP::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    // AMP::shared_ptr<AMP::Database> linearSolver_db =
+    std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
+    // std::shared_ptr<AMP::Database> linearSolver_db =
     // nonlinearSolver_db->getDatabase("LinearSolver");
 
     // initialize the nonlinear solver parameters
-    AMP::shared_ptr<AMP::Solver::TrilinosNOXSolverParameters> nonlinearSolverParams(
+    std::shared_ptr<AMP::Solver::TrilinosNOXSolverParameters> nonlinearSolverParams(
         new AMP::Solver::TrilinosNOXSolverParameters( nonlinearSolver_db ) );
     nonlinearSolverParams->d_comm            = solverComm;
     nonlinearSolverParams->d_pInitialGuess   = icVec;
@@ -57,7 +57,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolverParams->d_pLinearOperator = op;
 
     // Create the nonlinear solver
-    AMP::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(
+    std::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(
         new AMP::Solver::TrilinosNOXSolver( nonlinearSolverParams ) );
     ut->passes( "TrilinosNOXSolver created" );
 
@@ -78,9 +78,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Call solve with a multivector (there can be bugs when solve is called with a single vector
     // and then a
     // multivector)
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> mu =
+    std::shared_ptr<AMP::LinearAlgebra::MultiVector> mu =
         AMP::LinearAlgebra::MultiVector::create( "multivector", solverComm );
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> mf =
+    std::shared_ptr<AMP::LinearAlgebra::MultiVector> mf =
         AMP::LinearAlgebra::MultiVector::create( "multivector", solverComm );
     mu->addVector( u );
     mf->addVector( f );

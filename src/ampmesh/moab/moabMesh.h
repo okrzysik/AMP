@@ -144,7 +144,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
+    virtual void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 #endif
 
 
@@ -157,7 +157,7 @@ private:
     void initialize();
 
     //  Internal variables
-    AMP::shared_ptr<moab::Core> d_core;
+    std::shared_ptr<moab::Core> d_core;
 };
 
 } // namespace Mesh

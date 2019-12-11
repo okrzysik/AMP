@@ -89,12 +89,12 @@ public:
     /** \brief  Get the Epetra_Map for the rows as a shared pointer
      * \return  The Epetra_Map
      */
-    AMP::shared_ptr<Epetra_Map> getEpetraRowMapPtr();
+    std::shared_ptr<Epetra_Map> getEpetraRowMapPtr();
 
     /** \brief  Get the Epetra_Map for the columns as a shared pointer
      * \return  The Epetra_Map
      */
-    AMP::shared_ptr<Epetra_Map> getEpetraColMapPtr();
+    std::shared_ptr<Epetra_Map> getEpetraColMapPtr();
 
     /** \brief  Get the AMP_MPI comm associated with this description
      * \return  The AMP_MPI object
@@ -114,8 +114,8 @@ public:
     void addColumns( const std::set<size_t> &col );
 
 private:
-    AMP::shared_ptr<Epetra_Map> d_eRowMap;
-    AMP::shared_ptr<Epetra_Map> d_eColMap;
+    std::shared_ptr<Epetra_Map> d_eRowMap;
+    std::shared_ptr<Epetra_Map> d_eColMap;
 
 protected:
     //! Constructor -- unimplemented

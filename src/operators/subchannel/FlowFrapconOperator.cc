@@ -10,7 +10,7 @@ namespace Operator {
 
 
 FlowFrapconOperator::FlowFrapconOperator(
-    const AMP::shared_ptr<FlowFrapconOperatorParameters> &params )
+    const std::shared_ptr<FlowFrapconOperatorParameters> &params )
     : Operator( params ), d_boundaryId( 0 )
 {
     std::string inpVar = params->d_db->getString( "InputVariable" );
@@ -22,10 +22,10 @@ FlowFrapconOperator::FlowFrapconOperator(
     reset( params );
 }
 
-void FlowFrapconOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void FlowFrapconOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
-    AMP::shared_ptr<FlowFrapconOperatorParameters> myparams =
-        AMP::dynamic_pointer_cast<FlowFrapconOperatorParameters>( params );
+    std::shared_ptr<FlowFrapconOperatorParameters> myparams =
+        std::dynamic_pointer_cast<FlowFrapconOperatorParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
@@ -119,10 +119,10 @@ void FlowFrapconOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 }
 
 
-AMP::shared_ptr<OperatorParameters>
+std::shared_ptr<OperatorParameters>
 FlowFrapconOperator::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u_in )
 {
-    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
 
     tmp_db->putScalar( "name", "FlowFrapconOperator" );
     tmp_db->putScalar( "numpoints", d_numpoints );
@@ -134,7 +134,7 @@ FlowFrapconOperator::getJacobianParameters( AMP::LinearAlgebra::Vector::const_sh
     tmp_db->putScalar( "Reynolds", d_Re );
     tmp_db->putScalar( "Prandtl", d_Pr );
 
-    AMP::shared_ptr<FlowFrapconJacobianParameters> outParams(
+    std::shared_ptr<FlowFrapconJacobianParameters> outParams(
         new FlowFrapconJacobianParameters( tmp_db ) );
     auto u                      = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
     outParams->d_frozenSolution = subsetInputVector( u );

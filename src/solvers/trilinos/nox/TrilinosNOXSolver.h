@@ -70,7 +70,7 @@ public:
      12. name: operatorComponentToEnableBoundsCheck, type: integer, default value: none
      acceptable values ()
     */
-    explicit TrilinosNOXSolver( AMP::shared_ptr<TrilinosNOXSolverParameters> parameters );
+    explicit TrilinosNOXSolver( std::shared_ptr<TrilinosNOXSolverParameters> parameters );
 
     /**
      * Default destructor.
@@ -82,15 +82,15 @@ public:
      * @param parameters
      *        SolverStrategyParameters object that is NULL by default
      */
-    virtual void reset( AMP::shared_ptr<SolverStrategyParameters> parameters ) override;
+    virtual void reset( std::shared_ptr<SolverStrategyParameters> parameters ) override;
 
     /**
      * Solve the system \f$Au = 0\f$.
      * @param [in] f : shared pointer to right hand side vector
      * @param [out] u : shared pointer to approximate computed solution
      */
-    virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+    virtual void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                        std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Provide the initial guess for the solver. This is a pure virtual function that the derived
@@ -99,14 +99,14 @@ public:
      * @param [in] initialGuess: shared pointer to the initial guess vector.
      */
     virtual void
-    setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override
+    setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override
     {
         d_initialGuess = initialGuess;
     }
 
 
 protected:
-    void initialize( AMP::shared_ptr<SolverStrategyParameters> parameters ) override;
+    void initialize( std::shared_ptr<SolverStrategyParameters> parameters ) override;
 
     AMP_MPI d_comm;
 

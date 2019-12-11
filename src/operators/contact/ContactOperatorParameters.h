@@ -11,7 +11,7 @@ namespace Operator {
 class ContactOperatorParameters : public OperatorParameters
 {
 public:
-    ContactOperatorParameters( AMP::shared_ptr<AMP::Database> db ) : OperatorParameters( db )
+    ContactOperatorParameters( std::shared_ptr<AMP::Database> db ) : OperatorParameters( db )
     {
         AMP_INSIST( d_db->keyExists( "MasterBoundaryID" ), "key not found" );
         d_MasterBoundaryID = d_db->getScalar<int>( "MasterBoundaryID" );
@@ -41,7 +41,7 @@ public:
     int d_MasterBoundaryID;
     int d_SlaveBoundaryID;
 
-    AMP::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_MasterMechanicsMaterialModel;
+    std::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_MasterMechanicsMaterialModel;
 
 protected:
 private:

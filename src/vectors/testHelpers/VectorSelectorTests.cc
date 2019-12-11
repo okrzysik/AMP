@@ -40,7 +40,7 @@ inline void testSelector( AMP::UnitTest *ut,
 void AMP::LinearAlgebra::VectorTests::testAllSelectors( AMP::UnitTest *ut )
 {
     auto vec = d_factory->getVector();
-    vec->setVariable( AMP::make_shared<AMP::LinearAlgebra::Variable>( "test_selector" ) );
+    vec->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "test_selector" ) );
     AMP::AMP_MPI vec_comm = vec->getComm();
     AMP::AMP_MPI world_comm( AMP_COMM_WORLD );
     AMP::AMP_MPI self_comm( AMP_COMM_SELF );
@@ -101,10 +101,10 @@ void AMP::LinearAlgebra::VectorTests::test_VS_ByVariableName( AMP::UnitTest *ut 
             pass = false;
         }
     } else {
-        if ( AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vec2 ) ) {
+        if ( std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vec2 ) ) {
             ut->expected_failure(
                 "Subsetting a multivector of multivectors by name is not functional yet" );
-        } else if ( AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedVector>( vec2 ) ) {
+        } else if ( std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedVector>( vec2 ) ) {
             ut->expected_failure(
                 "Subsetting a multivector of multivectors by name is not functional yet" );
         } else {

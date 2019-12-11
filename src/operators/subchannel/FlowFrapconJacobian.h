@@ -29,7 +29,7 @@ public:
       Constructor creates a simpleVariables for Input and Output. The reset is called to
       read the flow parameters.
       */
-    explicit FlowFrapconJacobian( const AMP::shared_ptr<FlowFrapconJacobianParameters> &params );
+    explicit FlowFrapconJacobian( const std::shared_ptr<FlowFrapconJacobianParameters> &params );
 
     /**
       Destructor
@@ -48,7 +48,7 @@ public:
       This function reads the entries of the database for the flow operator
       and can also be used to change the parameters if required.
       */
-    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /*
           static bool sort_nodes_in_z ( const ::Node *one , const ::Node *two ) {
@@ -122,7 +122,7 @@ public:
     }
 
     /*
-       AMP::shared_ptr< std::vector<double>  > getFlowSolution() {
+       std::shared_ptr< std::vector<double>  > getFlowSolution() {
        return flowSolutionVector;
        }
        */
@@ -155,16 +155,16 @@ public:
 
     double d_Pr; /**< Prandtl Number */
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Input Variable */
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Input Variable */
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output Variable */
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output Variable */
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
 
-    //      AMP::shared_ptr<AMP::Operator::Map3Dto1D> d_Map3to1;
+    //      std::shared_ptr<AMP::Operator::Map3Dto1D> d_Map3to1;
     AMP::LinearAlgebra::Vector::shared_ptr flowInput;
 
-    //      AMP::shared_ptr<AMP::Operator::Map1Dto3D> d_Map1to3;
+    //      std::shared_ptr<AMP::Operator::Map1Dto3D> d_Map1to3;
     AMP::LinearAlgebra::Vector::shared_ptr flowOutput;
 
 protected:

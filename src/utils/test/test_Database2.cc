@@ -4,7 +4,7 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <cmath>
 #include <fstream>
@@ -56,7 +56,7 @@ void readInputDatabase( AMP::UnitTest &ut )
  ************************************************************************/
 void testCreateDatabase( AMP::UnitTest &ut )
 {
-    auto db = AMP::make_shared<AMP::Database>( "database" );
+    auto db = std::make_shared<AMP::Database>( "database" );
 
     std::complex<double> zero( 0, 0 );
     std::complex<double> onetwo( 1, 2 );

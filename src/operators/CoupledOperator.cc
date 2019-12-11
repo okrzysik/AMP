@@ -11,11 +11,11 @@ namespace AMP {
 namespace Operator {
 
 
-CoupledOperator::CoupledOperator( const AMP::shared_ptr<OperatorParameters> &params )
+CoupledOperator::CoupledOperator( const std::shared_ptr<OperatorParameters> &params )
     : ColumnOperator( params )
 {
-    AMP::shared_ptr<CoupledOperatorParameters> myparams =
-        AMP::dynamic_pointer_cast<CoupledOperatorParameters>( params );
+    std::shared_ptr<CoupledOperatorParameters> myparams =
+        std::dynamic_pointer_cast<CoupledOperatorParameters>( params );
     d_Operators.push_back( myparams->d_NodeToGaussPointOperator );
     d_Operators.push_back( myparams->d_CopyOperator );
     d_Operators.push_back( myparams->d_MapOperator );

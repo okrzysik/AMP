@@ -6,7 +6,7 @@ namespace AMP {
 namespace Operator {
 
 void MassMatrixCorrection::resetBoundaryIds(
-    const AMP::shared_ptr<MassMatrixCorrectionParameters> &params )
+    const std::shared_ptr<MassMatrixCorrectionParameters> &params )
 {
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
     bool skipParams          = ( params->d_db )->getWithDefault( "skip_params", true );
@@ -40,12 +40,12 @@ void MassMatrixCorrection::resetBoundaryIds(
     }
 }
 
-void MassMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void MassMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &params )
 {
 
 
-    AMP::shared_ptr<MassMatrixCorrectionParameters> myParams =
-        AMP::dynamic_pointer_cast<MassMatrixCorrectionParameters>( params );
+    std::shared_ptr<MassMatrixCorrectionParameters> myParams =
+        std::dynamic_pointer_cast<MassMatrixCorrectionParameters>( params );
 
     AMP_INSIST( ( ( myParams.get() ) != nullptr ), "NULL parameters" );
 

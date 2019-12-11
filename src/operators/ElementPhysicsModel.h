@@ -2,8 +2,8 @@
 #ifndef included_AMP_ElementPhysicsModel
 #define included_AMP_ElementPhysicsModel
 
-#include "AMP/utils/shared_ptr.h"
 #include "ElementPhysicsModelParameters.h"
+#include <memory>
 
 namespace AMP {
 namespace Operator {
@@ -18,7 +18,7 @@ public:
     /**
       Constructor.
       */
-    explicit ElementPhysicsModel( const AMP::shared_ptr<ElementPhysicsModelParameters> &params )
+    explicit ElementPhysicsModel( const std::shared_ptr<ElementPhysicsModelParameters> &params )
     {
         d_iDebugPrintInfoLevel = ( params->d_db )->getWithDefault( "print_info_level", 0 );
     }

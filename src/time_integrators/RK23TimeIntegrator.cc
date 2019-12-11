@@ -12,7 +12,7 @@ namespace TimeIntegrator {
 *                                                                      *
 ************************************************************************
 */
-RK23TimeIntegrator::RK23TimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+RK23TimeIntegrator::RK23TimeIntegrator( std::shared_ptr<TimeIntegratorParameters> parameters )
     : TimeIntegrator( parameters )
 {
     d_safety_factor = 0.0;
@@ -37,7 +37,7 @@ RK23TimeIntegrator::~RK23TimeIntegrator() = default;
 *                                                                      *
 ************************************************************************
 */
-void RK23TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void RK23TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
@@ -51,7 +51,7 @@ void RK23TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> p
     getFromInput( parameters->d_db );
 }
 
-void RK23TimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void RK23TimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
@@ -174,7 +174,7 @@ void RK23TimeIntegrator::updateSolution()
 *                                                                      *
 ************************************************************************
 */
-void RK23TimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
+void RK23TimeIntegrator::getFromInput( std::shared_ptr<AMP::Database> input_db )
 {
     if ( input_db->keyExists( "initial_timestep" ) ) {
         d_initial_dt = input_db->getScalar<double>( "initial_timestep" );

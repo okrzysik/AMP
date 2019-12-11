@@ -11,7 +11,7 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Cylinder::Cylinder( AMP::shared_ptr<AMP::Database> db )
+Cylinder::Cylinder( std::shared_ptr<AMP::Database> db )
 {
     d_physicalDim = 3;
     d_logicalDim  = 3;
@@ -172,9 +172,9 @@ void Cylinder::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-AMP::shared_ptr<AMP::Geometry::Geometry> Cylinder::clone() const
+std::shared_ptr<AMP::Geometry::Geometry> Cylinder::clone() const
 {
-    return AMP::make_shared<Cylinder>( *this );
+    return std::make_shared<Cylinder>( *this );
 }
 
 

@@ -17,7 +17,7 @@ namespace AMP {
 namespace Operator {
 
 SourceNonlinearElement::SourceNonlinearElement(
-    const AMP::shared_ptr<ElementOperationParameters> &params )
+    const std::shared_ptr<ElementOperationParameters> &params )
     : ElementOperation( params ), d_elementOutputVector( nullptr ), d_elem( nullptr )
 {
 
@@ -69,7 +69,7 @@ SourceNonlinearElement::SourceNonlinearElement(
 
 
 void SourceNonlinearElement::initializeForCurrentElement(
-    const ::Elem *elem, const AMP::shared_ptr<SourcePhysicsModel> &sourcePhysicsModel )
+    const ::Elem *elem, const std::shared_ptr<SourcePhysicsModel> &sourcePhysicsModel )
 {
     d_elem = elem;
 

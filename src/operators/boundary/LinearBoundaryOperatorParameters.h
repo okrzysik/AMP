@@ -11,7 +11,7 @@ namespace Operator {
 class LinearBoundaryOperatorParameters : public OperatorParameters
 {
 public:
-    explicit LinearBoundaryOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit LinearBoundaryOperatorParameters( std::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     {
     }

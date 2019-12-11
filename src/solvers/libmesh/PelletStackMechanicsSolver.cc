@@ -5,29 +5,29 @@ namespace Solver {
 
 
 PelletStackMechanicsSolver::PelletStackMechanicsSolver(
-    AMP::shared_ptr<PelletStackMechanicsSolverParameters> params )
+    std::shared_ptr<PelletStackMechanicsSolverParameters> params )
     : SolverStrategy( params ),
       d_pelletStackOp(
-          AMP::dynamic_pointer_cast<AMP::Operator::PelletStackOperator>( d_pOperator ) ),
+          std::dynamic_pointer_cast<AMP::Operator::PelletStackOperator>( d_pOperator ) ),
       d_columnSolver( params->d_columnSolver )
 {
 }
 
 
 void PelletStackMechanicsSolver::resetOperator(
-    const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     d_columnSolver->resetOperator( params );
 }
 
 
-void PelletStackMechanicsSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void PelletStackMechanicsSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                                        std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     AMP_ASSERT(
         ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
         ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
-    AMP::shared_ptr<const AMP::LinearAlgebra::Vector> fInternal = f;
+    std::shared_ptr<const AMP::LinearAlgebra::Vector> fInternal = f;
     if ( d_pelletStackOp->useScaling() ) {
         if ( d_fbuffer1 == nullptr ) {
             d_fbuffer1 = f->cloneVector();
@@ -43,8 +43,8 @@ void PelletStackMechanicsSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra
     }
 }
 
-void PelletStackMechanicsSolver::solveSerial( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                              AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void PelletStackMechanicsSolver::solveSerial( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                                              std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     if ( d_fbuffer2 == nullptr ) {
         d_fbuffer2 = f->cloneVector();
@@ -55,9 +55,9 @@ void PelletStackMechanicsSolver::solveSerial( AMP::shared_ptr<const AMP::LinearA
     int locPellIdx = d_pelletStackOp->getLocalIndexForPellet( 0 );
 
     if ( locPellIdx != -1 ) {
-        AMP::shared_ptr<AMP::Solver::SolverStrategy> currSolver =
+        std::shared_ptr<AMP::Solver::SolverStrategy> currSolver =
             d_columnSolver->getSolver( locPellIdx );
-        AMP::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
+        std::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
         AMP::LinearAlgebra::Vector::shared_ptr subUvec  = currOp->subsetInputVector( u );
         AMP_ASSERT( subUvec != nullptr );
         AMP::LinearAlgebra::Vector::const_shared_ptr subFvec = currOp->subsetOutputVector( f );
@@ -66,17 +66,17 @@ void PelletStackMechanicsSolver::solveSerial( AMP::shared_ptr<const AMP::LinearA
     }
 
     for ( unsigned int pellId = 1; pellId < totalNumberOfPellets; pellId++ ) {
-        AMP::shared_ptr<AMP::Database> emptyDb;
-        AMP::shared_ptr<AMP::Operator::PelletStackOperatorParameters> pelletStackOpParams(
+        std::shared_ptr<AMP::Database> emptyDb;
+        std::shared_ptr<AMP::Operator::PelletStackOperatorParameters> pelletStackOpParams(
             new AMP::Operator::PelletStackOperatorParameters( emptyDb ) );
         pelletStackOpParams->d_currentPellet = pellId;
         d_pelletStackOp->reset( pelletStackOpParams );
         d_pelletStackOp->residual( f, u, d_fbuffer2 );
         locPellIdx = d_pelletStackOp->getLocalIndexForPellet( pellId );
         if ( locPellIdx != -1 ) {
-            AMP::shared_ptr<AMP::Solver::SolverStrategy> currSolver =
+            std::shared_ptr<AMP::Solver::SolverStrategy> currSolver =
                 d_columnSolver->getSolver( locPellIdx );
-            AMP::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
+            std::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
             AMP::LinearAlgebra::Vector::shared_ptr subUvec  = currOp->subsetInputVector( u );
             AMP_ASSERT( subUvec != nullptr );
             AMP::LinearAlgebra::Vector::shared_ptr subFvec =
@@ -87,8 +87,8 @@ void PelletStackMechanicsSolver::solveSerial( AMP::shared_ptr<const AMP::LinearA
     } // end for pellId
 }
 
-void PelletStackMechanicsSolver::solveScan( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                            AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void PelletStackMechanicsSolver::solveScan( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                                            std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     d_columnSolver->solve( f, u );
     if ( d_pelletStackOp->onlyZcorrection() ) {

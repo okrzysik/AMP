@@ -24,17 +24,17 @@ public:
     virtual void build_mesh() override
     {
         // Create the parameter object
-        auto database = AMP::make_shared<AMP::Database>( "Mesh" );
+        auto database = std::make_shared<AMP::Database>( "Mesh" );
         database->putScalar<int>( "dim", 3 );
         database->putScalar<std::string>( "MeshName", "cube_mesh" );
         database->putScalar<std::string>( "Generator", "cube" );
         database->putVector<int>( "size", std::vector<int>( 3, SIZE ) );
         database->putVector<double>( "xmin", std::vector<double>( 3, -1.0 ) );
         database->putVector<double>( "xmax", std::vector<double>( 3, 1.0 ) );
-        auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+        auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create a libMesh mesh
-        mesh = AMP::make_shared<AMP::Mesh::libMesh>( params );
+        mesh = std::make_shared<AMP::Mesh::libMesh>( params );
     }
 
     static std::string name() { return "LibMeshCubeGenerator"; }
@@ -49,7 +49,7 @@ public:
     virtual void build_mesh() override
     {
         // Create the parameter object
-        auto database = AMP::make_shared<AMP::Database>( "Mesh" );
+        auto database = std::make_shared<AMP::Database>( "Mesh" );
         database->putScalar( "dim", 3 );
         database->putScalar<std::string>( "MeshName", "exodus reader mesh" );
         if ( FILE == 1 ) {
@@ -61,10 +61,10 @@ public:
         } else {
             AMP_ERROR( "Bad file for generator" );
         }
-        auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+        auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create a libMesh mesh
-        mesh = AMP::make_shared<AMP::Mesh::libMesh>( params );
+        mesh = std::make_shared<AMP::Mesh::libMesh>( params );
     }
 
     static std::string name() { return "ExodusReaderGenerator"; }
@@ -79,7 +79,7 @@ public:
     {
         int N_meshes = 4;
         // Create the multimesh database
-        auto meshDatabase = AMP::make_shared<AMP::Database>( "Mesh" );
+        auto meshDatabase = std::make_shared<AMP::Database>( "Mesh" );
         meshDatabase->putScalar<std::string>( "MeshName", "PelletMeshes" );
         meshDatabase->putScalar<std::string>( "MeshType", "Multimesh" );
         meshDatabase->putScalar<std::string>( "MeshDatabasePrefix", "Mesh_" );
@@ -116,7 +116,7 @@ public:
             offsetArray[i] = ( (double) i ) * 0.0105;
         meshArrayDatabase->putVector<double>( "z_offset", offsetArray );
         // Create the parameter object
-        auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
+        auto params = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create the mesh
         mesh = AMP::Mesh::Mesh::buildMesh( params );
@@ -184,13 +184,13 @@ public:
 
         // Initialize libmesh
         AMP::AMP_MPI comm( AMP_COMM_SELF );
-        libmeshInit = AMP::make_shared<AMP::Mesh::initializeLibMesh>( comm );
+        libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( comm );
 
         const unsigned int mesh_dim  = 3;
         const unsigned int num_elem  = 3;
         const unsigned int num_nodes = 16;
 
-        AMP::shared_ptr<::Mesh> local_mesh( new ::Mesh( mesh_dim ) );
+        std::shared_ptr<::Mesh> local_mesh( new ::Mesh( mesh_dim ) );
         local_mesh->reserve_elem( num_elem );
         local_mesh->reserve_nodes( num_nodes );
 
@@ -225,7 +225,7 @@ public:
         }
 
         local_mesh->prepare_for_use( true );
-        mesh = AMP::make_shared<AMP::Mesh::libMesh>( local_mesh, "3 Element" );
+        mesh = std::make_shared<AMP::Mesh::libMesh>( local_mesh, "3 Element" );
     }
 
     virtual ~libMeshThreeElementGenerator()
@@ -235,7 +235,7 @@ public:
     }
 
 protected:
-    AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
+    std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
 };
 
 

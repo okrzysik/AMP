@@ -24,13 +24,13 @@ void ColumnOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     }
 }
 
-AMP::shared_ptr<OperatorParameters>
+std::shared_ptr<OperatorParameters>
 ColumnOperator::getParameters( const std::string &type,
                                AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                               AMP::shared_ptr<OperatorParameters> params )
+                               std::shared_ptr<OperatorParameters> params )
 {
-    AMP::shared_ptr<AMP::Database> db;
-    AMP::shared_ptr<ColumnOperatorParameters> opParameters( new ColumnOperatorParameters( db ) );
+    std::shared_ptr<AMP::Database> db;
+    std::shared_ptr<ColumnOperatorParameters> opParameters( new ColumnOperatorParameters( db ) );
 
     ( opParameters->d_OperatorParameters ).resize( d_Operators.size() );
 
@@ -41,10 +41,10 @@ ColumnOperator::getParameters( const std::string &type,
     return opParameters;
 }
 
-void ColumnOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void ColumnOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
-    AMP::shared_ptr<ColumnOperatorParameters> columnParameters =
-        AMP::dynamic_pointer_cast<ColumnOperatorParameters>( params );
+    std::shared_ptr<ColumnOperatorParameters> columnParameters =
+        std::dynamic_pointer_cast<ColumnOperatorParameters>( params );
 
     AMP_INSIST( ( columnParameters.get() != nullptr ),
                 "ColumnOperator::reset parameter object is NULL" );
@@ -57,7 +57,7 @@ void ColumnOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
     }
 }
 
-void ColumnOperator::append( AMP::shared_ptr<Operator> op )
+void ColumnOperator::append( std::shared_ptr<Operator> op )
 {
     AMP_INSIST( ( op.get() != nullptr ),
                 "AMP::ColumnOperator::appendRow input argument is a NULL operator" );
@@ -67,7 +67,7 @@ void ColumnOperator::append( AMP::shared_ptr<Operator> op )
 
 AMP::LinearAlgebra::Variable::shared_ptr ColumnOperator::getInputVariable()
 {
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
+    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
         new AMP::LinearAlgebra::MultiVariable( "ColumnVariable" ) );
 
     for ( auto &elem : d_Operators ) {
@@ -83,7 +83,7 @@ AMP::LinearAlgebra::Variable::shared_ptr ColumnOperator::getInputVariable()
 
 AMP::LinearAlgebra::Variable::shared_ptr ColumnOperator::getOutputVariable()
 {
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
+    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
         new AMP::LinearAlgebra::MultiVariable( "ColumnVariable" ) );
 
     for ( auto &elem : d_Operators ) {
@@ -97,7 +97,7 @@ AMP::LinearAlgebra::Variable::shared_ptr ColumnOperator::getOutputVariable()
     return retVariable;
 }
 
-bool ColumnOperator::isValidInput( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u )
+bool ColumnOperator::isValidInput( std::shared_ptr<AMP::LinearAlgebra::Vector> &u )
 {
     bool bRetVal = true;
 

@@ -3,7 +3,7 @@
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/ParameterBase.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <vector>
 
@@ -23,7 +23,7 @@ class CommunicationListParameters : public ParameterBase
 {
 public:
     //! Short hand name for the shared pointer for a communication list
-    typedef AMP::shared_ptr<CommunicationListParameters> shared_ptr;
+    typedef std::shared_ptr<CommunicationListParameters> shared_ptr;
 
     //! The communicator over which the communication list is computed
     AMP_MPI d_comm;
@@ -59,7 +59,7 @@ class CommunicationList
 {
 public:
     //! Short hand for shared point to CommunicationList
-    typedef AMP::shared_ptr<CommunicationList> shared_ptr;
+    typedef std::shared_ptr<CommunicationList> shared_ptr;
 
     /**
      * \brief Construct a communication list
@@ -85,7 +85,7 @@ public:
      * \brief Subset a communication list based on a VectorIndexer
      * \param[in] sub  A VectorIndexer pointer that describes a subset
      */
-    CommunicationList::shared_ptr subset( AMP::shared_ptr<VectorIndexer> sub );
+    CommunicationList::shared_ptr subset( std::shared_ptr<VectorIndexer> sub );
 
     /**
      * \brief Retrieve list of global indices stored here and shared elsewhere

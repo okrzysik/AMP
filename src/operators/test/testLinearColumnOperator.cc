@@ -11,11 +11,11 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include "applyTests.h"
 
@@ -39,7 +39,7 @@ static void myTest( AMP::UnitTest *ut )
     // Get the Mesh database and create the mesh parameters
     AMP_INSIST( outerInput_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto database = outerInput_db->getDatabase( "Mesh" );
-    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
@@ -71,8 +71,8 @@ static void myTest( AMP::UnitTest *ut )
         std::vector<int> dofsPerNodeArr = innerInput_db->getVector<int>( "dofsPerNode" );
 
         // create a column operator object
-        AMP::shared_ptr<AMP::Operator::OperatorParameters> params;
-        auto columnOperator = AMP::make_shared<AMP::Operator::ColumnOperator>( params );
+        std::shared_ptr<AMP::Operator::OperatorParameters> params;
+        auto columnOperator = std::make_shared<AMP::Operator::ColumnOperator>( params );
 
         std::vector<AMP::LinearAlgebra::Variable::shared_ptr> inputVariables;
         std::vector<AMP::Discretization::DOFManager::shared_ptr> dofMapVec;
@@ -89,12 +89,12 @@ static void myTest( AMP::UnitTest *ut )
             AMP_INSIST( innerInput_db->keyExists( testOpName ),
                         "key missing!  " + innerInput_file );
 
-            AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+            std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
             auto testOp_db    = innerInput_db->getDatabase( testOpName );
             auto testOperator = AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, testOpName, innerInput_db, elementPhysicsModel );
 
-            auto myLinOp = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( testOperator );
+            auto myLinOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( testOperator );
             AMP_INSIST( myLinOp != nullptr, "Is not a linear operator!" );
 
             columnOperator->append( testOperator );
@@ -105,7 +105,7 @@ static void myTest( AMP::UnitTest *ut )
 
             // this only works as long at least one of the operators is diffusion and
             // its transport model has defaults defined
-            AMP::shared_ptr<AMP::Database> model_db;
+            std::shared_ptr<AMP::Database> model_db;
             if ( testOp_db->keyExists( "VolumeOperator" ) ) {
                 auto volOp_db =
                     innerInput_db->getDatabase( testOp_db->getString( "VolumeOperator" ) );
@@ -127,8 +127,8 @@ static void myTest( AMP::UnitTest *ut )
         {
             // Create the vectors
             auto tmp_var =
-                AMP::make_shared<AMP::LinearAlgebra::MultiVariable>( "columnInputVariable" );
-            AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> solVec =
+                std::make_shared<AMP::LinearAlgebra::MultiVariable>( "columnInputVariable" );
+            std::shared_ptr<AMP::LinearAlgebra::MultiVector> solVec =
                 AMP::LinearAlgebra::MultiVector::create( tmp_var, meshAdapter->getComm() );
             for ( size_t i = 0; i < inputVariables.size(); i++ ) {
                 if ( inputVariables[i].get() != nullptr )
@@ -157,8 +157,8 @@ static void myTest( AMP::UnitTest *ut )
 #if 0
     // test getJacobianParameters
     msgPrefix=exeName + " : " + innerInput_file;
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> nullGuess;
-    AMP::shared_ptr<AMP::Operator::OperatorParameters> jacobianParameters = testOperator->getParameters("Jacobian", nullGuess);
+    std::shared_ptr<AMP::LinearAlgebra::Vector> nullGuess;
+    std::shared_ptr<AMP::Operator::OperatorParameters> jacobianParameters = testOperator->getParameters("Jacobian", nullGuess);
     if(jacobianParameters.get()!=NULL)
     {
       ut.passes(msgPrefix + "getJacobianParameters (should return NULL for now)");

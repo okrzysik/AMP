@@ -6,7 +6,7 @@
 
 #include "AMP/operators/ElementOperation.h"
 #include "AMP/operators/flow/FlowTransportModel.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 // Libmesh headers
 DISABLE_WARNINGS
@@ -28,32 +28,32 @@ namespace Operator {
 class FlowElement : public ElementOperation
 {
 public:
-    explicit FlowElement( const AMP::shared_ptr<ElementOperationParameters> &params );
+    explicit FlowElement( const std::shared_ptr<ElementOperationParameters> &params );
 
     virtual ~FlowElement() {}
 
     void initializeForCurrentElement( const ::Elem *elem,
-                                      const AMP::shared_ptr<FlowTransportModel> &transportModel )
+                                      const std::shared_ptr<FlowTransportModel> &transportModel )
     {
         d_elem           = elem;
         d_transportModel = transportModel;
     }
 
 protected:
-    AMP::shared_ptr<::FEType>
+    std::shared_ptr<::FEType>
         d_feType; /**< Type of polynomial used for the
                                     finite element shape functions. This includes
                                     both the polynomial order:
                                     First order/Second order etc. and polynomial family:
                                     Lagrange/Hierarchic/Hermite etc.  */
 
-    AMP::shared_ptr<::FEBase> d_fe; /**< Finite element shape functions. */
+    std::shared_ptr<::FEBase> d_fe; /**< Finite element shape functions. */
 
-    AMP::shared_ptr<::QBase> d_qrule; /**< Quadtrature rule used for numerical integration. */
+    std::shared_ptr<::QBase> d_qrule; /**< Quadtrature rule used for numerical integration. */
 
     const ::Elem *d_elem; /**< Pointer to the current element within the finite element assembly. */
 
-    AMP::shared_ptr<FlowTransportModel> d_transportModel;
+    std::shared_ptr<FlowTransportModel> d_transportModel;
 
 private:
 };

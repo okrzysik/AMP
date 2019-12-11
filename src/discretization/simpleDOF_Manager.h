@@ -4,7 +4,7 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -35,7 +35,7 @@ public:
      * \param split         Do we want to split the DOFManager by the meshes returning a
      * multiDOFManager
      */
-    static DOFManager::shared_ptr create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
+    static DOFManager::shared_ptr create( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                           AMP::Mesh::GeomType type,
                                           int gcw,
                                           int DOFsPerElement,
@@ -50,7 +50,7 @@ public:
      * \param it2           The iterator over the elements (excluding ghost cells)
      * \param DOFsPerElement The desired number of DOFs pere element
      */
-    static DOFManager::shared_ptr create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
+    static DOFManager::shared_ptr create( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                           const AMP::Mesh::MeshIterator &it1,
                                           const AMP::Mesh::MeshIterator &it2,
                                           int DOFsPerElement );
@@ -147,7 +147,7 @@ private:
     inline void appendDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
 
     // Data members
-    AMP::shared_ptr<AMP::Mesh::Mesh> d_mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
     bool d_isBaseMesh;
     AMP::Mesh::MeshID d_meshID;
     std::vector<AMP::Mesh::MeshID> d_baseMeshIDs; // Must be global list

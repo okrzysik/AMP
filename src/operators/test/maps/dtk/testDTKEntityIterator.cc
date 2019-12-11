@@ -6,7 +6,7 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <cstdlib>
 #include <iostream>
@@ -32,9 +32,9 @@ static void myTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> meshDatabase = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Database> meshDatabase = input_db->getDatabase( "Mesh" );
 
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
+    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
         new AMP::Mesh::MeshParameters( meshDatabase ) );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
@@ -44,8 +44,8 @@ static void myTest( AMP::UnitTest *ut )
 
     // map the volume ids to dtk ids
     int counter = 0;
-    AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> vol_id_map =
-        AMP::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
+    std::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> vol_id_map =
+        std::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
     for ( vol_iterator = vol_iterator.begin(); vol_iterator != vol_iterator.end();
           ++vol_iterator, ++counter ) {
         vol_id_map->emplace( vol_iterator->globalID(), counter );
@@ -63,8 +63,8 @@ static void myTest( AMP::UnitTest *ut )
     }
 
     // make the rank map.
-    AMP::shared_ptr<std::unordered_map<int, int>> rank_map =
-        AMP::make_shared<std::unordered_map<int, int>>();
+    std::shared_ptr<std::unordered_map<int, int>> rank_map =
+        std::make_shared<std::unordered_map<int, int>>();
     auto global_ranks = mesh->getComm().globalRanks();
     int size          = mesh->getComm().getSize();
     for ( int n = 0; n < size; ++n ) {

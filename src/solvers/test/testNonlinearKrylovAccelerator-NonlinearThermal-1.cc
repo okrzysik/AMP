@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include "AMP/materials/Material.h"
 #include "AMP/utils/AMPManager.h"
@@ -60,21 +60,21 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
-    AMP::shared_ptr<AMP::Database> nonlinearThermalDatabase =
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
+    std::shared_ptr<AMP::Database> nonlinearThermalDatabase =
         input_db->getDatabase( "testNonlinearThermalOperator" );
-    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator =
+        std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the input variable
-    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
+    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator =
+        std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearThermalOperator->getVolumeOperator() );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> inputVariable(
+    std::shared_ptr<AMP::LinearAlgebra::Variable> inputVariable(
         thermalVolumeOperator->getInputVariable( AMP::Operator::Diffusion::TEMPERATURE ) );
 
     // initialize the output variable
@@ -97,19 +97,19 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Database> linearThermalDatabase =
+    std::shared_ptr<AMP::Database> linearThermalDatabase =
         input_db->getDatabase( "testLinearThermalOperator" );
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "testLinearThermalOperator", input_db, thermalTransportModel ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial-Guess for thermal
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyThermalModel;
-    AMP::shared_ptr<AMP::Database> thermal_db = input_db->getDatabase( "ThermalInitialGuess" );
-    AMP::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletThermalInVecOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyThermalModel;
+    std::shared_ptr<AMP::Database> thermal_db = input_db->getDatabase( "ThermalInitialGuess" );
+    std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletThermalInVecOp =
+        std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "ThermalInitialGuess", input_db, dummyThermalModel ) );
     dirichletThermalInVecOp->setVariable(
@@ -130,7 +130,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Enforce consistent rhs
-    AMP::shared_ptr<AMP::Operator::BoundaryOperator> thermalBoundaryOperator =
+    std::shared_ptr<AMP::Operator::BoundaryOperator> thermalBoundaryOperator =
         nonlinearThermalOperator->getBoundaryOperator();
 
     rhsVec->setToScalar( 0.5 );
@@ -144,29 +144,29 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //----------------------------------------------------------------------------------------------------------------------------------------------/
 
-    AMP::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    AMP::shared_ptr<AMP::Database> linearSolver_db =
+    std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
+    std::shared_ptr<AMP::Database> linearSolver_db =
         nonlinearSolver_db->getDatabase( "LinearSolver" );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
-    AMP::shared_ptr<AMP::Database> thermalPreconditioner_db =
+    std::shared_ptr<AMP::Database> thermalPreconditioner_db =
         linearSolver_db->getDatabase( "Preconditioner" );
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams(
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams(
         new AMP::Solver::SolverStrategyParameters( thermalPreconditioner_db ) );
     thermalPreconditionerParams->d_pOperator = linearThermalOperator;
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> linearThermalPreconditioner(
+    std::shared_ptr<AMP::Solver::TrilinosMLSolver> linearThermalPreconditioner(
         new AMP::Solver::TrilinosMLSolver( thermalPreconditionerParams ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the nonlinear solver
-    AMP::shared_ptr<AMP::Solver::NonlinearKrylovAcceleratorParameters> nonlinearSolverParams(
+    std::shared_ptr<AMP::Solver::NonlinearKrylovAcceleratorParameters> nonlinearSolverParams(
         new AMP::Solver::NonlinearKrylovAcceleratorParameters( nonlinearSolver_db ) );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_pOperator       = nonlinearThermalOperator;
     nonlinearSolverParams->d_pInitialGuess   = solVec;
     nonlinearSolverParams->d_pPreconditioner = linearThermalPreconditioner;
-    AMP::shared_ptr<AMP::Solver::NonlinearKrylovAccelerator> nonlinearSolver(
+    std::shared_ptr<AMP::Solver::NonlinearKrylovAccelerator> nonlinearSolver(
         new AMP::Solver::NonlinearKrylovAccelerator( nonlinearSolverParams ) );
 
 

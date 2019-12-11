@@ -10,7 +10,7 @@ namespace Operator {
 class PelletStackOperatorParameters : public OperatorParameters
 {
 public:
-    explicit PelletStackOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit PelletStackOperatorParameters( std::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     {
         d_currentPellet = static_cast<unsigned int>( -1 );
@@ -20,7 +20,7 @@ public:
 
     unsigned int d_currentPellet;
     AMP_MPI d_pelletStackComm;
-    AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> d_n2nMaps;
+    std::shared_ptr<AMP::Operator::AsyncMapColumnOperator> d_n2nMaps;
 };
 } // namespace Operator
 } // namespace AMP

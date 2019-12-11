@@ -4,8 +4,8 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
+#include <memory>
 #include <string>
 
 #include "AMP/ampmesh/Mesh.h"
@@ -38,7 +38,7 @@ static void adjust( const AMP::LinearAlgebra::Vector::shared_ptr vec,
 
 static void applyTest( AMP::UnitTest *ut,
                        const std::string &msgPrefix,
-                       AMP::shared_ptr<AMP::Operator::Operator> &testOperator,
+                       std::shared_ptr<AMP::Operator::Operator> &testOperator,
                        AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
                        AMP::LinearAlgebra::Vector::shared_ptr solVec,
                        AMP::LinearAlgebra::Vector::shared_ptr resVec,
@@ -210,11 +210,11 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
 
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
+    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
         new AMP::Mesh::MeshParameters( mesh_db ) );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     //--------------------------------------------------
     //   CREATE THE VOLUME INTEGRAL OPERATOR -----------
@@ -222,12 +222,12 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
-    AMP::shared_ptr<AMP::Database> sourceDatabase =
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
+    std::shared_ptr<AMP::Database> sourceDatabase =
         input_db->getDatabase( "VolumeIntegralOperator" );
     AMP::pout << "before sourceOp" << std::endl;
-    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+    std::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
+        std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "VolumeIntegralOperator", input_db, transportModel ) );
     AMP::pout << "after sourceOp" << std::endl;
@@ -261,7 +261,7 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string msgPrefix = exeName + ": VolumeIntegralOperator reset";
     // test reset
     try {
-        AMP::shared_ptr<AMP::Operator::VolumeIntegralOperatorParameters> volumeIntegralParameters(
+        std::shared_ptr<AMP::Operator::VolumeIntegralOperatorParameters> volumeIntegralParameters(
             new AMP::Operator::VolumeIntegralOperatorParameters( sourceDatabase ) );
         sourceOperator->reset( volumeIntegralParameters );
         ut->passes( msgPrefix + " : pass " );
@@ -271,8 +271,8 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // test apply
     msgPrefix = exeName + ": VolumeIntegralOperator apply";
-    AMP::shared_ptr<AMP::Operator::Operator> testOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::Operator>( sourceOperator );
+    std::shared_ptr<AMP::Operator::Operator> testOperator =
+        std::dynamic_pointer_cast<AMP::Operator::Operator>( sourceOperator );
     applyTest( ut, msgPrefix, testOperator, rhsVec, solVec, resVec, workVec );
 
     ut->passes( msgPrefix );

@@ -3,7 +3,7 @@
 #define included_AMP_MLoptions
 
 #include "AMP/utils/Database.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 #include <string>
 
 namespace AMP {
@@ -12,11 +12,11 @@ namespace Solver {
 class MLoptions
 {
 public:
-    explicit MLoptions( AMP::shared_ptr<AMP::Database> db );
+    explicit MLoptions( std::shared_ptr<AMP::Database> db );
 
     ~MLoptions() {}
 
-    static void addDefaults( const std::string &problemType, AMP::shared_ptr<AMP::Database> db );
+    static void addDefaults( const std::string &problemType, std::shared_ptr<AMP::Database> db );
 
     std::string d_problemType;
     int d_maxLevels;

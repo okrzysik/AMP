@@ -24,7 +24,7 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
         mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
 
     // Create a nodal variable
-    auto variable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
+    auto variable = std::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
 
     // Create the matrix and vectors
     auto vector1 = AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
@@ -33,7 +33,7 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
 
     // Currently there is a bug with multivectors
     bool isMultiVector =
-        dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vector1 ) != nullptr;
+        std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vector1 ) != nullptr;
     if ( isMultiVector ) {
         utils->expected_failure( "VerifyGetMatrixTrivialTest with split=true" );
         PROFILE_STOP2( "VerifyGetMatrixTrivialTest", 1 );
@@ -77,7 +77,7 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
         mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
 
     // Create a nodal variable
-    auto variable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
+    auto variable = std::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
 
     // Create the matrix and vectors
     auto vector1 = AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );

@@ -3,8 +3,8 @@
 
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/utils/ParameterBase.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 
 namespace AMP {
@@ -24,8 +24,8 @@ class Matrix
 {
 public:
     //! Convenience typedef
-    typedef AMP::shared_ptr<Matrix> shared_ptr;
-    typedef AMP::shared_ptr<const Matrix> const_shared_ptr;
+    typedef std::shared_ptr<Matrix> shared_ptr;
+    typedef std::shared_ptr<const Matrix> const_shared_ptr;
 
     /** \brief Constructor
      * \param[in] params  Description of the matrix

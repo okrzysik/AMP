@@ -122,7 +122,7 @@ public:
 
     */
 
-    explicit IDATimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters );
+    explicit IDATimeIntegrator( std::shared_ptr<TimeIntegratorParameters> parameters );
 
     /**
      * Destructor.
@@ -132,14 +132,14 @@ public:
     /**
      * Initialize from parameter list.
      */
-    virtual void initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override;
+    virtual void initialize( std::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
      * Resets the internal state of the time integrator as needed.
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset Typically used after a regrid.
      */
-    virtual void reset( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override;
+    virtual void reset( std::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
      * Specify initial time step.
@@ -181,17 +181,17 @@ public:
     /**
      * return a pointer to the IDA time operator, deprecated
      */
-    AMP::shared_ptr<IDATimeOperator> getIDATimeOperator() const; // BP, can go
+    std::shared_ptr<IDATimeOperator> getIDATimeOperator() const; // BP, can go
 
     /**
      * return a pointer to the linear time operator used by the preconditioner
      */
-    AMP::shared_ptr<LinearTimeOperator> getLinearTimeOperator() const;
+    std::shared_ptr<LinearTimeOperator> getLinearTimeOperator() const;
 
     /**
      * return a shared pointer to the residual vector
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> getResidualVector() const;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> getResidualVector() const;
 
     /**
      * added by Gary, need discussion whether to deprecate
@@ -201,17 +201,17 @@ public:
     /**
      * return a shared pointer to the solution at the current time step
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> getSolution() const;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> getSolution() const;
 
     /**
      * return a shared pointer to the source term at the current time step
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> getSourceTerm() const;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> getSourceTerm() const;
 
     /**
      * return a shared pointer to the preconditioner being used
      */
-    inline AMP::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner( void )
+    inline std::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner( void )
     {
         return d_pPreconditioner;
     }
@@ -224,7 +224,7 @@ public:
     /**
      * not sure why this variable exists and is public, BP
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_residual;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_residual;
 
 private:
     /**
@@ -237,7 +237,7 @@ private:
     /**
      * Read data from input database.
      */
-    void getFromInput( AMP::shared_ptr<AMP::Database> input_db ); // note that this was "protected"
+    void getFromInput( std::shared_ptr<AMP::Database> input_db ); // note that this was "protected"
                                                                   // (and not virtual) in
                                                                   // TimeIntegrator.h
     // and BackwardEulerTimeIntegrator has own its implementation of getFromInput - overridden...?
@@ -288,11 +288,11 @@ private:
     bool d_bLinearRhsOperator;
     bool d_bManufacturedProblem;
 
-    AMP::shared_ptr<IDATimeOperator> d_pIDATimeOperator; // BP, can go, but need to be careful
-    AMP::shared_ptr<LinearTimeOperator> d_pLinearTimeOperator;
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_solution_prime;
+    std::shared_ptr<IDATimeOperator> d_pIDATimeOperator; // BP, can go, but need to be careful
+    std::shared_ptr<LinearTimeOperator> d_pLinearTimeOperator;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_solution_prime;
 
-    AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
 } // namespace TimeIntegrator
 } // namespace AMP

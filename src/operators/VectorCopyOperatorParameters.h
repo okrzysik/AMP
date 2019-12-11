@@ -13,7 +13,7 @@ namespace Operator {
 class VectorCopyOperatorParameters : public OperatorParameters
 {
 public:
-    explicit VectorCopyOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit VectorCopyOperatorParameters( std::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     {
     }

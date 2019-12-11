@@ -3,7 +3,7 @@
 
 #include "AMP/operators/ColumnOperatorParameters.h"
 #include "AMP/operators/Operator.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <vector>
 
@@ -18,20 +18,20 @@ namespace Operator {
 class CoupledOperatorParameters : public ColumnOperatorParameters
 {
 public:
-    explicit CoupledOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit CoupledOperatorParameters( std::shared_ptr<AMP::Database> db )
         : ColumnOperatorParameters( db )
     {
     }
 
     virtual ~CoupledOperatorParameters() {}
 
-    AMP::shared_ptr<Operator> d_NodeToGaussPointOperator;
+    std::shared_ptr<Operator> d_NodeToGaussPointOperator;
 
-    AMP::shared_ptr<Operator> d_CopyOperator;
+    std::shared_ptr<Operator> d_CopyOperator;
 
-    AMP::shared_ptr<Operator> d_MapOperator;
+    std::shared_ptr<Operator> d_MapOperator;
 
-    AMP::shared_ptr<Operator> d_BVPOperator;
+    std::shared_ptr<Operator> d_BVPOperator;
 };
 } // namespace Operator
 } // namespace AMP

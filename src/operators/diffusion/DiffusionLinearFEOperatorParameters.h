@@ -10,14 +10,14 @@ namespace Operator {
 class DiffusionLinearFEOperatorParameters : public LinearFEOperatorParameters
 {
 public:
-    explicit DiffusionLinearFEOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit DiffusionLinearFEOperatorParameters( std::shared_ptr<AMP::Database> db )
         : LinearFEOperatorParameters( db )
     {
     }
 
     virtual ~DiffusionLinearFEOperatorParameters() {}
 
-    AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
+    std::shared_ptr<DiffusionTransportModel> d_transportModel;
 
     AMP::LinearAlgebra::Vector::shared_ptr d_temperature;
 

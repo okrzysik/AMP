@@ -24,7 +24,7 @@ namespace AMP {
 namespace Operator {
 
 PressureBoundaryOperator::PressureBoundaryOperator(
-    const AMP::shared_ptr<OperatorParameters> &params )
+    const std::shared_ptr<OperatorParameters> &params )
     : BoundaryOperator( params )
 {
     AMP_ASSERT( ( params->d_db )->keyExists( "BoundaryID" ) );
@@ -176,9 +176,9 @@ PressureBoundaryOperator::PressureBoundaryOperator(
     auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
     auto qruleType   = Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
-    AMP::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
+    std::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
     libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
-    AMP::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 2, qruleOrder ) ).release() );
+    std::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 2, qruleOrder ) ).release() );
 
     AMP_ASSERT( ( params->d_db )->keyExists( "Value" ) );
     const double val = ( params->d_db )->getScalar<double>( "Value" );
@@ -194,7 +194,7 @@ PressureBoundaryOperator::PressureBoundaryOperator(
                                               j );
         } // end j
 
-        AMP::shared_ptr<::FEBase> fe( (::FEBase::build( 3, ( *feType ) ) ).release() );
+        std::shared_ptr<::FEBase> fe( (::FEBase::build( 3, ( *feType ) ) ).release() );
         fe->attach_quadrature_rule( qrule.get() );
         fe->reinit( elem, recvSideList[i] );
 
@@ -218,14 +218,14 @@ PressureBoundaryOperator::PressureBoundaryOperator(
         elem = nullptr;
     } // end i
 
-    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
     AMP_ASSERT( ( params->d_db )->keyExists( "Variable" ) );
     std::string varName = params->d_db->getString( "Variable" );
     tmp_db->putScalar( "Variable", varName );
     AMP_ASSERT( ( params->d_db )->keyExists( "ResidualMode" ) );
     tmp_db->putScalar( "ResidualMode", ( ( params->d_db )->getScalar<bool>( "ResidualMode" ) ) );
 
-    AMP::shared_ptr<TractionBoundaryOperatorParameters> tracOpParams(
+    std::shared_ptr<TractionBoundaryOperatorParameters> tracOpParams(
         new TractionBoundaryOperatorParameters( tmp_db ) );
     tracOpParams->d_Mesh           = d_Mesh;
     tracOpParams->d_traction       = pressure;

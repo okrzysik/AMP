@@ -18,7 +18,7 @@ namespace Solver {
  * Constructors / Destructor                                     *
  ****************************************************************/
 BoomerAMGSolver::BoomerAMGSolver() { d_bCreationPhase = true; }
-BoomerAMGSolver::BoomerAMGSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
+BoomerAMGSolver::BoomerAMGSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
 
@@ -36,7 +36,7 @@ BoomerAMGSolver::~BoomerAMGSolver()
     HYPRE_IJVectorDestroy( d_hypre_sol );
 }
 
-void BoomerAMGSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters )
+void BoomerAMGSolver::initialize( std::shared_ptr<SolverStrategyParameters> const parameters )
 {
     getFromInput( parameters->d_db );
 
@@ -47,7 +47,7 @@ void BoomerAMGSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> cons
     setParameters();
 }
 
-void BoomerAMGSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
+void BoomerAMGSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
 {
     // 6.2.10 in hypre 11.2 manual
     d_num_functions = db->getWithDefault<int>( "num_functions", 1 );
@@ -342,7 +342,7 @@ void BoomerAMGSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
     HYPRE_BoomerAMGSetPrintLevel( d_solver, d_iDebugPrintInfoLevel );
 }
 
-void BoomerAMGSolver::createHYPREMatrix( const AMP::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
+void BoomerAMGSolver::createHYPREMatrix( const std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
 {
     int ierr;
     char hypre_mesg[100];
@@ -390,7 +390,7 @@ void BoomerAMGSolver::createHYPREVectors( void )
 {
     char hypre_mesg[100];
 
-    auto linearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
     AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
 
     const auto &matrix = linearOperator->getMatrix();
@@ -414,7 +414,7 @@ void BoomerAMGSolver::createHYPREVectors( void )
     HYPRE_DescribeError( ierr, hypre_mesg );
 }
 
-void BoomerAMGSolver::copyToHypre( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> amp_v,
+void BoomerAMGSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vector> amp_v,
                                    HYPRE_IJVector hypre_v )
 {
     char hypre_mesg[100];
@@ -446,7 +446,7 @@ void BoomerAMGSolver::copyToHypre( AMP::shared_ptr<const AMP::LinearAlgebra::Vec
 
 
 void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
-                                     AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_v )
+                                     std::shared_ptr<AMP::LinearAlgebra::Vector> amp_v )
 {
     char hypre_mesg[100];
 
@@ -472,14 +472,14 @@ void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
     amp_v->setLocalValuesByGlobalID( nDOFS, &indices[0], &values[0] );
 }
 
-void BoomerAMGSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
+void BoomerAMGSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
 {
 
     d_pOperator = op;
     AMP_INSIST( d_pOperator.get() != nullptr,
                 "ERROR: BoomerAMGSolver::registerOperator() operator cannot be NULL" );
 
-    auto linearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
     AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
 
     auto matrix = linearOperator->getMatrix();
@@ -500,18 +500,18 @@ void BoomerAMGSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Ope
 void BoomerAMGSolver::setParameters( void ) {}
 
 void BoomerAMGSolver::resetOperator(
-    const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     PROFILE_START( "resetOperator" );
     AMP_INSIST( ( d_pOperator.get() != nullptr ),
                 "ERROR: BoomerAMGSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
-    reset( AMP::shared_ptr<SolverStrategyParameters>() );
+    reset( std::shared_ptr<SolverStrategyParameters>() );
     PROFILE_STOP( "resetOperator" );
 }
 
 
-void BoomerAMGSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
+void BoomerAMGSolver::reset( std::shared_ptr<SolverStrategyParameters> )
 {
     PROFILE_START( "reset" );
     registerOperator( d_pOperator );
@@ -519,8 +519,8 @@ void BoomerAMGSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
 }
 
 
-void BoomerAMGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                             AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                             std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
     // in this case we make the assumption we can access a EpetraMat for now
@@ -538,7 +538,7 @@ void BoomerAMGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
     copyToHypre( u, d_hypre_sol );
     copyToHypre( f, d_hypre_rhs );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> r;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> r;
 
     bool computeResidual = false;
 
@@ -582,7 +582,7 @@ void BoomerAMGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
     // as Hypre is not going to change the state of a managed vector
     // an example where this will and has caused problems is when the
     // vector is a petsc managed vector being passed back to PETSc
-    auto firer = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( u );
+    auto firer = std::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( u );
     if ( firer )
         firer->fireDataChange();
 

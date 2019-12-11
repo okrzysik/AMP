@@ -4,7 +4,7 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -34,7 +34,7 @@ public:
      * \param gcw           The desired ghost width (based on the volumes)
      */
     static DOFManager::shared_ptr
-    create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh, int DOFsPerFace[3], int gcw );
+    create( std::shared_ptr<AMP::Mesh::Mesh> mesh, int DOFsPerFace[3], int gcw );
 
 
     //! Deconstructor
@@ -109,7 +109,7 @@ private:
     inline void appendDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
 
     // Data members
-    AMP::shared_ptr<AMP::Mesh::Mesh> d_mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
     int d_DOFsPerFace[3];
     int d_gcw;
 

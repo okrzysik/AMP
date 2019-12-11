@@ -12,7 +12,7 @@ namespace Operator {
 
 
 CoupledChannelToCladMapOperator::CoupledChannelToCladMapOperator(
-    const AMP::shared_ptr<CoupledChannelToCladMapOperatorParameters> &params )
+    const std::shared_ptr<CoupledChannelToCladMapOperatorParameters> &params )
     : Operator( params )
 {
     AMP_ASSERT( params->d_thermalMapOperator.get() != nullptr );
@@ -63,14 +63,14 @@ void CoupledChannelToCladMapOperator::apply( AMP::LinearAlgebra::Vector::const_s
         for ( size_t i = 0; i < face.size(); i++ ) {
             faceDOFManager->getDOFs( face->globalID(), dofs );
             scalarFaceDOFManager->getDOFs( face->globalID(), scalarDofs );
-            std::map<std::string, AMP::shared_ptr<std::vector<double>>> temperatureArgMap;
+            std::map<std::string, std::shared_ptr<std::vector<double>>> temperatureArgMap;
             temperatureArgMap.insert(
                 std::make_pair( std::string( "enthalpy" ),
-                                AMP::make_shared<std::vector<double>>(
+                                std::make_shared<std::vector<double>>(
                                     1, h_scale * uInternal->getValueByGlobalID( dofs[0] ) ) ) );
             temperatureArgMap.insert(
                 std::make_pair( std::string( "pressure" ),
-                                AMP::make_shared<std::vector<double>>(
+                                std::make_shared<std::vector<double>>(
                                     1, P_scale * uInternal->getValueByGlobalID( dofs[1] ) ) ) );
             std::vector<double> temperatureResult( 1 );
             std::vector<double> specificVolume( 1 );

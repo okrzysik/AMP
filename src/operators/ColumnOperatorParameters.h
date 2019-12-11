@@ -2,7 +2,7 @@
 #define included_AMP_ColumnOperatorParameters
 
 #include "AMP/operators/OperatorParameters.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <vector>
 
@@ -17,14 +17,14 @@ namespace Operator {
 class ColumnOperatorParameters : public OperatorParameters
 {
 public:
-    explicit ColumnOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit ColumnOperatorParameters( std::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     {
     }
 
     virtual ~ColumnOperatorParameters() {}
 
-    std::vector<AMP::shared_ptr<OperatorParameters>> d_OperatorParameters;
+    std::vector<std::shared_ptr<OperatorParameters>> d_OperatorParameters;
 };
 } // namespace Operator
 } // namespace AMP

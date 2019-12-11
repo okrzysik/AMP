@@ -16,7 +16,7 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <iostream>
 #include <string>
@@ -35,7 +35,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto matModelDatabase = input_db->getDatabase( "MechanicsMaterialModel" );
     auto elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( matModelDatabase );
-    auto vmikModel = AMP::dynamic_pointer_cast<AMP::Operator::VonMises_IsotropicKinematicHardening>(
+    auto vmikModel = std::dynamic_pointer_cast<AMP::Operator::VonMises_IsotropicKinematicHardening>(
         elementPhysicsModel );
 
     vmikModel->preNonlinearInit( true, true );

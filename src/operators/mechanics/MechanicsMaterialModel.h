@@ -6,7 +6,7 @@
 #include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/mechanics/UpdatedLagrangianUtils.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 namespace AMP {
 namespace Operator {
@@ -31,7 +31,7 @@ public:
      whether or not the AMP::materials interface is used in this model.
      */
     explicit MechanicsMaterialModel(
-        const AMP::shared_ptr<MechanicsMaterialModelParameters> &params )
+        const std::shared_ptr<MechanicsMaterialModelParameters> &params )
         : ElementPhysicsModel( params )
     {
         d_useMaterialsLibrary = ( params->d_db )->getWithDefault( "USE_MATERIALS_LIBRARY", false );
@@ -224,7 +224,7 @@ public:
         d_currentTime  = currTime;
     }
 
-    AMP::shared_ptr<AMP::Materials::Material> getMaterial() { return d_material; }
+    std::shared_ptr<AMP::Materials::Material> getMaterial() { return d_material; }
 
 protected:
     double d_currentTime; /**< The time at present. */
@@ -244,7 +244,7 @@ protected:
 
     bool d_checkCladOrPellet;
 
-    AMP::shared_ptr<AMP::Materials::Material>
+    std::shared_ptr<AMP::Materials::Material>
         d_material; /**< Shared pointer to the materials object. */
 
 private:

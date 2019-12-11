@@ -12,8 +12,8 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <algorithm>
 #include <cmath>
@@ -39,15 +39,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #endif
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
+    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
         new AMP::Mesh::MeshParameters( mesh_db ) );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
@@ -80,7 +80,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     currTempVec->setToScalar( 500.0 );
     prevTempVec->setToScalar( 300.0 );
 
-    AMP::shared_ptr<AMP::Database> temperatureRhsDatabase =
+    std::shared_ptr<AMP::Database> temperatureRhsDatabase =
         input_db->getDatabase( "TemperatureRHS" );
 
     computeTemperatureRhsVector( meshAdapter,
@@ -92,20 +92,20 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                  mechRhsVec );
     bvpOperator->modifyRHSvector( mechRhsVec );
 
-    AMP::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "LinearSolver" );
-    AMP::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase( "Preconditioner" );
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams(
+    std::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "LinearSolver" );
+    std::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase( "Preconditioner" );
+    std::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams(
         new AMP::Solver::TrilinosMLSolverParameters( pcSolver_db ) );
     pcSolverParams->d_pOperator = bvpOperator;
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
+    std::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
         new AMP::Solver::TrilinosMLSolver( pcSolverParams ) );
 
-    AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
+    std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
         new AMP::Solver::PetscKrylovSolverParameters( linearSolver_db ) );
     linearSolverParams->d_pOperator       = bvpOperator;
     linearSolverParams->d_comm            = AMP_COMM_WORLD;
     linearSolverParams->d_pPreconditioner = pcSolver;
-    AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
+    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
         new AMP::Solver::PetscKrylovSolver( linearSolverParams ) );
 
     linearSolver->solve( mechRhsVec, mechSolVec );

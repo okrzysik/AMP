@@ -6,8 +6,8 @@
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
+#include <memory>
 
 #include <vector>
 
@@ -25,11 +25,11 @@ class NeutronicsRhsExtras : public Operator
 {
 
 public:
-    typedef AMP::shared_ptr<NeutronicsRhsExtrasParameters> SP_Parameters;
-    typedef AMP::shared_ptr<OperatorParameters> SP_OperatorParameters;
+    typedef std::shared_ptr<NeutronicsRhsExtrasParameters> SP_Parameters;
+    typedef std::shared_ptr<OperatorParameters> SP_OperatorParameters;
     typedef std::vector<double> Vec_Dbl;
-    typedef AMP::shared_ptr<Vec_Dbl> SP_Vec_Dbl;
-    typedef AMP::shared_ptr<AMP::Database> SP_Database;
+    typedef std::shared_ptr<Vec_Dbl> SP_Vec_Dbl;
+    typedef std::shared_ptr<AMP::Database> SP_Database;
     typedef std::vector<double> Vec_Dbl1;
     typedef std::vector<Vec_Dbl1> Vec_Dbl2;
     typedef std::vector<Vec_Dbl2> Vec_Dbl3;

@@ -19,11 +19,11 @@ namespace AMP {
 namespace Operator {
 
 
-AMP::shared_ptr<OperatorParameters>
-ParameterFactory::createParameter( AMP::shared_ptr<AMP::Database> input_db,
+std::shared_ptr<OperatorParameters>
+ParameterFactory::createParameter( std::shared_ptr<AMP::Database> input_db,
                                    AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    AMP::shared_ptr<OperatorParameters> retParameters;
+    std::shared_ptr<OperatorParameters> retParameters;
     std::string name;
 
     AMP_INSIST( input_db.get() != nullptr,

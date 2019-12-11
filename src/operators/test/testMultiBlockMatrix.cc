@@ -5,8 +5,8 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
+#include <memory>
 #include <string>
 
 #include "AMP/ampmesh/Mesh.h"
@@ -42,11 +42,11 @@ static void LinearTimeOperatorTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
+    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
         new AMP::Mesh::MeshParameters( mesh_db ) );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     //--------------------------------------------------
     // Create a DOF manager for a nodal vector
@@ -61,18 +61,18 @@ static void LinearTimeOperatorTest( AMP::UnitTest *ut )
 
     //----------------------------------------------------------------------------------------
     // create a linear BVP operator
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
 
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> linearOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "LinearOperator", input_db, elementModel ) );
 
     // ---------------------------------------------------------------------------------------
     // create a mass linear BVP operator
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> massOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> massOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "MassLinearOperator", input_db, massElementModel ) );
 

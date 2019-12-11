@@ -4,10 +4,10 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
 #include "TimeIntegrator.h"
 #include "TimeOperatorParameters.h"
+#include <memory>
 
 #include <ostream>
 #include <string>
@@ -64,7 +64,7 @@ public:
      * member function.
      *
      */
-    explicit ImplicitTimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters );
+    explicit ImplicitTimeIntegrator( std::shared_ptr<TimeIntegratorParameters> parameters );
 
     /**
      * Empty destructor for ImplicitTimeIntegrator
@@ -75,14 +75,14 @@ public:
      * Initialize state of time integrator.  This includes creating
      * solution vector and initializing solver components.
      */
-    void initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override;
+    void initialize( std::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
      * Resets the internal state of the time integrator as needed.
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset Typically used after a regrid.
      */
-    virtual void reset( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override = 0;
+    virtual void reset( std::shared_ptr<TimeIntegratorParameters> parameters ) override = 0;
 
     /*!
      * @brief Integrate through the
@@ -151,21 +151,21 @@ public:
      *
      * When assertion checking is active, the database pointer must be non-null.
      */
-    void putToDatabase( AMP::shared_ptr<AMP::Database> db );
+    void putToDatabase( std::shared_ptr<AMP::Database> db );
 
-    AMP::shared_ptr<AMP::Solver::SolverStrategy> getSolver( void ) { return d_solver; }
+    std::shared_ptr<AMP::Solver::SolverStrategy> getSolver( void ) { return d_solver; }
 
 protected:
-    virtual void initializeTimeOperator( AMP::shared_ptr<TimeIntegratorParameters> parameters );
+    virtual void initializeTimeOperator( std::shared_ptr<TimeIntegratorParameters> parameters );
 
     /*
      * Pointer to solver objects and patch
      * hierarchy.  The strategies provide nonlinear equation and solver
      * routines for treating the nonlinear problem on the hierarchy.
      */
-    AMP::shared_ptr<AMP::Solver::SolverStrategy> d_solver;
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_solver;
 
-    AMP::shared_ptr<TimeOperatorParameters> d_pTimeOperatorParameters;
+    std::shared_ptr<TimeOperatorParameters> d_pTimeOperatorParameters;
 
 private:
     /*
@@ -175,7 +175,7 @@ private:
      *
      * When assertion checking is active, the database pointer must be non-null.
      */
-    void getFromInput( AMP::shared_ptr<AMP::Database> db );
+    void getFromInput( std::shared_ptr<AMP::Database> db );
 
     /*
      * Read object state from restart database and initialize class members.

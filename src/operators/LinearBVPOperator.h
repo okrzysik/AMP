@@ -36,7 +36,7 @@ public:
    FALSE, when set to
       to TRUE the same local model is used for both the volume and boundary operators
       */
-    explicit LinearBVPOperator( const AMP::shared_ptr<BVPOperatorParameters> &parameters );
+    explicit LinearBVPOperator( const std::shared_ptr<BVPOperatorParameters> &parameters );
 
     /**
      * virtual destructor which does nothing
@@ -46,7 +46,7 @@ public:
     /**
      * This function is useful for re-initializing/updating an operator
      */
-    void reset( const AMP::shared_ptr<OperatorParameters> & ) override;
+    void reset( const std::shared_ptr<OperatorParameters> & ) override;
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
     {
@@ -58,9 +58,9 @@ public:
         return d_volumeOperator->getOutputVariable();
     }
 
-    AMP::shared_ptr<LinearOperator> getVolumeOperator() { return d_volumeOperator; }
+    std::shared_ptr<LinearOperator> getVolumeOperator() { return d_volumeOperator; }
 
-    AMP::shared_ptr<BoundaryOperator> getBoundaryOperator() { return d_boundaryOperator; }
+    std::shared_ptr<BoundaryOperator> getBoundaryOperator() { return d_boundaryOperator; }
 
     void modifyRHSvector( AMP::LinearAlgebra::Vector::shared_ptr rhs );
 
@@ -68,13 +68,13 @@ protected:
     /**
      * shared pointer to a nonlinear volume or interior spatial operator
      */
-    AMP::shared_ptr<LinearOperator> d_volumeOperator;
+    std::shared_ptr<LinearOperator> d_volumeOperator;
 
     /**
      *  shared pointer to a boundary or surface operator that is responsible
      for apply operations on the boundary of the domain
      */
-    AMP::shared_ptr<BoundaryOperator> d_boundaryOperator;
+    std::shared_ptr<BoundaryOperator> d_boundaryOperator;
 
 private:
 };

@@ -21,7 +21,7 @@ namespace AMP {
 namespace Operator {
 
 RobinMatrixCorrection::RobinMatrixCorrection(
-    const AMP::shared_ptr<RobinMatrixCorrectionParameters> &params )
+    const std::shared_ptr<RobinMatrixCorrectionParameters> &params )
     : BoundaryOperator( params )
 {
     d_hef   = 0;
@@ -51,10 +51,10 @@ RobinMatrixCorrection::RobinMatrixCorrection(
     reset( params );
 }
 
-void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void RobinMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &params )
 {
 
-    auto myparams = AMP::dynamic_pointer_cast<RobinMatrixCorrectionParameters>( params );
+    auto myparams = std::dynamic_pointer_cast<RobinMatrixCorrectionParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
@@ -165,8 +165,8 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
                 AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
                 for ( ; bnd1 != end_bnd1; ++bnd1 ) {
 
-                    AMP::shared_ptr<::FEType> d_feType( new ::FEType( d_feTypeOrder, d_feFamily ) );
-                    AMP::shared_ptr<::FEBase> d_fe(
+                    std::shared_ptr<::FEType> d_feType( new ::FEType( d_feTypeOrder, d_feFamily ) );
+                    std::shared_ptr<::FEBase> d_fe(
                         (::FEBase::build( 2, ( *d_feType ) ) ).release() );
 
                     if ( d_qruleOrderName == "DEFAULT" ) {
@@ -175,7 +175,7 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
                         d_qruleOrder =
                             Utility::string_to_enum<libMeshEnums::Order>( d_qruleOrderName );
                     }
-                    AMP::shared_ptr<::QBase> d_qrule(
+                    std::shared_ptr<::QBase> d_qrule(
                         (::QBase::build( d_qruleType, 2, d_qruleOrder ) ).release() );
 
                     // Get the nodes for the element and their global ids

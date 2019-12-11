@@ -16,7 +16,7 @@ namespace AMP {
 namespace Operator {
 
 
-DiffusionElement::DiffusionElement( const AMP::shared_ptr<ElementOperationParameters> &params )
+DiffusionElement::DiffusionElement( const std::shared_ptr<ElementOperationParameters> &params )
     : ElementOperation( params ),
       d_JxW( nullptr ),
       d_phi( nullptr ),
@@ -70,7 +70,7 @@ DiffusionElement::DiffusionElement( const AMP::shared_ptr<ElementOperationParame
 
 
 void DiffusionElement::initializeForCurrentElement(
-    const ::Elem *elem, const AMP::shared_ptr<DiffusionTransportModel> &transportModel )
+    const ::Elem *elem, const std::shared_ptr<DiffusionTransportModel> &transportModel )
 {
     d_elem           = elem;
     d_transportModel = transportModel;

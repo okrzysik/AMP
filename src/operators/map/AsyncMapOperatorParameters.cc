@@ -4,7 +4,7 @@ namespace AMP {
 namespace Operator {
 
 
-AsyncMapOperatorParameters::AsyncMapOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+AsyncMapOperatorParameters::AsyncMapOperatorParameters( std::shared_ptr<AMP::Database> db )
     : AsynchronousOperatorParameters( db )
 {
     d_BoundaryID1         = -1;

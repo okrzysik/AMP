@@ -11,7 +11,7 @@ namespace AMP {
 namespace Solver {
 
 
-BandedSolver::BandedSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
+BandedSolver::BandedSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters ), N( 0 ), M( 0 ), KL( 0 ), KU( 0 ), AB( nullptr ), IPIV( nullptr )
 {
     reset( parameters );
@@ -25,7 +25,7 @@ BandedSolver::~BandedSolver()
 }
 
 
-void BandedSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )
+void BandedSolver::reset( std::shared_ptr<SolverStrategyParameters> parameters )
 {
     PROFILE_START( "reset" );
 
@@ -42,8 +42,8 @@ void BandedSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )
     }
 
     // Get the linear operator
-    AMP::shared_ptr<AMP::Operator::LinearOperator> linear_op =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+    std::shared_ptr<AMP::Operator::LinearOperator> linear_op =
+        std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
     AMP_INSIST( linear_op.get() != nullptr, "ERROR: BandedSolver requires a linear operator" );
 
     // Get the matrix
@@ -103,19 +103,19 @@ void BandedSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )
 }
 
 
-void BandedSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+void BandedSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     PROFILE_START( "resetOperator" );
     AMP_INSIST( ( d_pOperator.get() != nullptr ),
                 "ERROR: BandedSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
-    reset( AMP::shared_ptr<SolverStrategyParameters>() );
+    reset( std::shared_ptr<SolverStrategyParameters>() );
     PROFILE_STOP( "resetOperator" );
 }
 
 
-void BandedSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                          AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void BandedSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                          std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 

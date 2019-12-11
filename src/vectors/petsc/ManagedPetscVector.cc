@@ -711,7 +711,7 @@ namespace LinearAlgebra {
 void ManagedPetscVector::initPetsc()
 {
     AMP_MPI comm =
-        AMP::dynamic_pointer_cast<ManagedVectorParameters>( getParameters() )->d_Engine->getComm();
+        std::dynamic_pointer_cast<ManagedVectorParameters>( getParameters() )->d_Engine->getComm();
     VecCreate( comm.getCommunicator(), &d_petscVec );
 
     d_petscVec->data        = this;
@@ -764,7 +764,7 @@ ManagedPetscVector::ManagedPetscVector( Vector::shared_ptr alias )
     : ManagedVector( alias ), PetscVector()
 {
     initPetsc();
-    auto firer = dynamic_pointer_cast<DataChangeFirer>( alias );
+    auto firer = std::dynamic_pointer_cast<DataChangeFirer>( alias );
     if ( firer )
         firer->registerListener( this );
 }
@@ -801,7 +801,7 @@ ManagedPetscVector *ManagedPetscVector::petscDuplicate()
 
 void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
 {
-    auto params = AMP::dynamic_pointer_cast<ManagedVectorParameters>(
+    auto params = std::dynamic_pointer_cast<ManagedVectorParameters>(
         dynamic_cast<ManagedVector *>( &dest )->getParameters() );
     if ( !params )
         throw( "Incompatible vector types" );
@@ -823,7 +823,7 @@ void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
 }
 
 
-AMP::shared_ptr<AMP::LinearAlgebra::Vector> ManagedPetscVector::createFromPetscVec( Vec source,
+std::shared_ptr<AMP::LinearAlgebra::Vector> ManagedPetscVector::createFromPetscVec( Vec source,
                                                                                     AMP_MPI &comm )
 {
 #ifdef USE_EXT_TRILINOS
@@ -831,19 +831,19 @@ AMP::shared_ptr<AMP::LinearAlgebra::Vector> ManagedPetscVector::createFromPetscV
     VecGetLocalSize( source, &local_size );
     VecGetSize( source, &global_size );
     VecGetOwnershipRange( source, &local_start, &local_end );
-    auto buffer = AMP::make_shared<VectorDataCPU<double>>( local_start, local_size, global_size );
-    auto t      = AMP::make_shared<ManagedPetscVectorParameters>();
+    auto buffer = std::make_shared<VectorDataCPU<double>>( local_start, local_size, global_size );
+    auto t      = std::make_shared<ManagedPetscVectorParameters>();
     auto ve_params =
-        AMP::make_shared<EpetraVectorEngineParameters>( local_size, global_size, comm );
-    t->d_Engine = AMP::make_shared<EpetraVectorEngine>( ve_params, buffer );
+        std::make_shared<EpetraVectorEngineParameters>( local_size, global_size, comm );
+    t->d_Engine = std::make_shared<EpetraVectorEngine>( ve_params, buffer );
     auto pRetVal =
-        AMP::make_shared<ManagedPetscVector>( AMP::dynamic_pointer_cast<VectorParameters>( t ) );
+        std::make_shared<ManagedPetscVector>( std::dynamic_pointer_cast<VectorParameters>( t ) );
     return pRetVal;
 #else
     AMP_ERROR( "General case not programmed yet" );
     NULL_USE( source );
     NULL_USE( comm );
-    return AMP::shared_ptr<AMP::LinearAlgebra::Vector>();
+    return std::shared_ptr<AMP::LinearAlgebra::Vector>();
 #endif
 }
 
@@ -857,25 +857,25 @@ void ManagedPetscVector::swapVectors( Vector &other )
 
 ManagedVector *ManagedPetscVector::getNewRawPtr() const
 {
-    return new ManagedPetscVector( AMP::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
+    return new ManagedPetscVector( std::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
 }
 
 bool ManagedPetscVector::constructedWithPetscDuplicate() { return d_bMadeWithPetscDuplicate; }
 
 ManagedPetscVector *ManagedPetscVector::rawClone() const
 {
-    AMP::shared_ptr<ManagedVectorParameters> p( new ManagedPetscVectorParameters );
+    std::shared_ptr<ManagedVectorParameters> p( new ManagedPetscVectorParameters );
     if ( !d_vBuffer ) {
-        p->d_Engine = d_Engine->cloneEngine( AMP::shared_ptr<VectorData>() );
+        p->d_Engine = d_Engine->cloneEngine( std::shared_ptr<VectorData>() );
     } else {
-        p->d_Buffer = AMP::make_shared<VectorDataCPU<double>>(
+        p->d_Buffer = std::make_shared<VectorDataCPU<double>>(
             d_vBuffer->getLocalStartID(), d_vBuffer->getLocalSize(), d_vBuffer->getGlobalSize() );
         p->d_Engine = d_Engine->cloneEngine( p->d_Buffer );
     }
     p->d_CommList   = getCommunicationList();
     p->d_DOFManager = getDOFManager();
     ManagedPetscVector *retVal =
-        new ManagedPetscVector( AMP::dynamic_pointer_cast<VectorParameters>( p ) );
+        new ManagedPetscVector( std::dynamic_pointer_cast<VectorParameters>( p ) );
     return retVal;
 }
 

@@ -3,8 +3,8 @@
 
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 namespace AMP {
 namespace Operator {
@@ -17,7 +17,7 @@ namespace Operator {
 class PowerShapeParameters : public OperatorParameters
 {
 public:
-    explicit PowerShapeParameters( AMP::shared_ptr<AMP::Database> db ) : OperatorParameters( db ) {}
+    explicit PowerShapeParameters( std::shared_ptr<AMP::Database> db ) : OperatorParameters( db ) {}
 };
 } // namespace Operator
 } // namespace AMP

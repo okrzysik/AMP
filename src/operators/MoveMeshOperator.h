@@ -10,7 +10,7 @@ namespace Operator {
 class MoveMeshOperator : public Operator
 {
 public:
-    explicit MoveMeshOperator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit MoveMeshOperator( const std::shared_ptr<OperatorParameters> &params );
 
     virtual ~MoveMeshOperator() {}
 

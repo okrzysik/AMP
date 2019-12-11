@@ -117,7 +117,7 @@ public:
 
       26. name: null_space_add_default_vectors, type: bool, (optional), default value: true
       */
-    explicit TrilinosMLSolver( AMP::shared_ptr<TrilinosMLSolverParameters> parameters );
+    explicit TrilinosMLSolver( std::shared_ptr<TrilinosMLSolverParameters> parameters );
 
     /**
      * Default destructor
@@ -126,10 +126,10 @@ public:
 
 
     //! static create routine that is used by SolverFactory
-    static AMP::shared_ptr<SolverStrategy>
-    createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    static std::shared_ptr<SolverStrategy>
+    createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-        return AMP::make_shared<TrilinosMLSolver>( solverStrategyParameters );
+        return std::make_shared<TrilinosMLSolver>( solverStrategyParameters );
     }
 
     /**
@@ -137,13 +137,13 @@ public:
      @param [in] f : shared pointer to right hand side vector
      @param [out] u : shared pointer to approximate computed solution
      */
-    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+    void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Return a shared pointer to the ML_Epetra::MultiLevelPreconditioner object
      */
-    inline const AMP::shared_ptr<ML_Epetra::MultiLevelPreconditioner> getMLSolver( void )
+    inline const std::shared_ptr<ML_Epetra::MultiLevelPreconditioner> getMLSolver( void )
     {
         return d_mlSolver;
     }
@@ -157,20 +157,20 @@ public:
      the solver.
      The LinearOperator currently is assumed to contain a pointer to an EpetraMatrix object.
      */
-    void initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters ) override;
+    void initialize( std::shared_ptr<SolverStrategyParameters> const parameters ) override;
 
     /**
      * Register the operator that the solver will use during solves
      @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$
      */
-    void registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op ) override;
+    void registerOperator( const std::shared_ptr<AMP::Operator::Operator> op ) override;
 
     /**
      * Resets the associated operator internally with new parameters if necessary
      * @param [in] params
      *        OperatorParameters object that is NULL by default
      */
-    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
+    void resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
 
     /**
      * Resets the solver internally with new parameters if necessary
@@ -180,20 +180,20 @@ public:
      * and recreates it based on the parameters object. See constructor for
      * fields required for parameter object.
      */
-    void reset( AMP::shared_ptr<SolverStrategyParameters> params ) override;
+    void reset( std::shared_ptr<SolverStrategyParameters> params ) override;
 
 protected:
-    void reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
+    void reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                        std::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
-    void getFromInput( AMP::shared_ptr<AMP::Database> db );
+    void getFromInput( std::shared_ptr<AMP::Database> db );
 
     void convertMLoptionsToTeuchosParameterList();
 
     void buildML();
 
-    void computeCoordinates( const AMP::shared_ptr<AMP::Operator::Operator> op );
-    void computeNullSpace( const AMP::shared_ptr<AMP::Operator::Operator> op );
+    void computeCoordinates( const std::shared_ptr<AMP::Operator::Operator> op );
+    void computeNullSpace( const std::shared_ptr<AMP::Operator::Operator> op );
 
 private:
     bool d_bUseEpetra;
@@ -205,10 +205,10 @@ private:
     bool d_bCreationPhase; /**< set to true if the PC is not ready and false otherwise. */
     bool d_bRobustMode;
 
-    AMP::shared_ptr<MLoptions> d_mlOptions;
+    std::shared_ptr<MLoptions> d_mlOptions;
 
-    AMP::shared_ptr<ML_Epetra::MultiLevelPreconditioner> d_mlSolver;
-    AMP::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
+    std::shared_ptr<ML_Epetra::MultiLevelPreconditioner> d_mlSolver;
+    std::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
     Teuchos::ParameterList d_MLParameterList;
 
     std::vector<double> d_x_values;

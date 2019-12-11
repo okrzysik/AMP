@@ -20,10 +20,10 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <fstream>
 #include <limits>
@@ -53,11 +53,11 @@ void linearFickTest( AMP::UnitTest *ut )
     //   Create the Mesh.
     //--------------------------------------------------
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
+    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
         new AMP::Mesh::MeshParameters( mesh_db ) );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
     //--------------------------------------------------
 
     //--------------------------------------------------
@@ -75,9 +75,9 @@ void linearFickTest( AMP::UnitTest *ut )
     //   CREATE THE DIFFUSION OPERATOR  //
     ////////////////////////////////////
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
 
@@ -90,7 +90,7 @@ void linearFickTest( AMP::UnitTest *ut )
 
     RightHandSideVec->setToScalar( 0. );
 
-    AMP::shared_ptr<AMP::Operator::BoundaryOperator> boundaryOp;
+    std::shared_ptr<AMP::Operator::BoundaryOperator> boundaryOp;
     boundaryOp = diffusionOperator->getBoundaryOperator();
 
     boundaryOp->addRHScorrection( RightHandSideVec );
@@ -100,10 +100,10 @@ void linearFickTest( AMP::UnitTest *ut )
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
     // Read the input file onto a database.
-    AMP::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
+    std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
     // Fill in the parameters for the class with the info on the database.
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams(
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams(
         new AMP::Solver::SolverStrategyParameters( mlSolver_db ) );
 
     // Define the operator to be used by the Solver.

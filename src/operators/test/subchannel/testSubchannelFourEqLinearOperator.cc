@@ -12,8 +12,8 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <algorithm>
 #include <iomanip>
@@ -290,7 +290,7 @@ static size_t AMP_to_MATLAB( const AMP::Mesh::MeshElement &face, size_t variable
 
 // function to create map of global IDs to elements and variables
 static void createGlobalIDMaps( AMP::Discretization::DOFManager::shared_ptr dof_manager,
-                                AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                 std::map<size_t, AMP::Mesh::MeshElement> &elements_by_globalID,
                                 std::map<size_t, size_t> &variables_by_globalID )
 {
@@ -327,7 +327,7 @@ static void createGlobalIDMaps( AMP::Discretization::DOFManager::shared_ptr dof_
 }
 
 // function to check that Jacobian matches known values
-static bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
+static bool JacobianIsCorrect( std::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
                                double J_reference[num_dofs_MATLAB][num_dofs_MATLAB],
                                AMP::Discretization::DOFManager::shared_ptr dof_manager,
                                AMP::Mesh::Mesh::shared_ptr mesh,
@@ -454,7 +454,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     // create mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db    = input_db->getDatabase( "Mesh" );
-    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
@@ -488,8 +488,8 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // get input and output variables
-    auto inputVariable  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
-    auto outputVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
+    auto inputVariable  = std::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
+    auto outputVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
 
     // create solution, rhs, and residual vectors
     auto FrozenVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable, false );
@@ -499,14 +499,14 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     // create subchannel physics model
     auto subchannelPhysics_db = input_db->getDatabase( "SubchannelPhysicsModel" );
     auto params =
-        AMP::make_shared<AMP::Operator::ElementPhysicsModelParameters>( subchannelPhysics_db );
-    auto subchannelPhysicsModel = AMP::make_shared<AMP::Operator::SubchannelPhysicsModel>( params );
+        std::make_shared<AMP::Operator::ElementPhysicsModelParameters>( subchannelPhysics_db );
+    auto subchannelPhysicsModel = std::make_shared<AMP::Operator::SubchannelPhysicsModel>( params );
 
     // get linear operator database
     auto subchannelOperator_db = input_db->getDatabase( "SubchannelFourEqLinearOperator" );
     // set operator parameters
     auto subchannelOpParams =
-        AMP::make_shared<AMP::Operator::SubchannelOperatorParameters>( subchannelOperator_db );
+        std::make_shared<AMP::Operator::SubchannelOperatorParameters>( subchannelOperator_db );
     subchannelOpParams->d_Mesh                   = subchannelMesh;
     subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
     subchannelOpParams->d_frozenSolution         = FrozenVec;
@@ -518,7 +518,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
         input_db->getDatabase( "CladProperties" )->getVector<double>( "d" );
     // create linear operator
     auto subchannelOperator =
-        AMP::make_shared<AMP::Operator::SubchannelFourEqLinearOperator>( subchannelOpParams );
+        std::make_shared<AMP::Operator::SubchannelFourEqLinearOperator>( subchannelOpParams );
 
     // report successful creation
     ut->passes( exeName + ": linear operator creation" );
@@ -667,7 +667,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     subchannelOperator->apply( SolVec, ResVec );
 
     // get the AMP Jacobian matrix to be tested against the MATLAB Jacobian matrix
-    AMP::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian = subchannelOperator->getMatrix();
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian = subchannelOperator->getMatrix();
 
     // get the MATLAB Jacobian matrix
     // clang-format off

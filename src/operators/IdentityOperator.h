@@ -22,7 +22,7 @@ public:
      * Constructor. This resets the matrix shared pointer.
      * @param [in] params
      */
-    explicit IdentityOperator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit IdentityOperator( const std::shared_ptr<OperatorParameters> &params );
 
     //! Destructor
     virtual ~IdentityOperator() {}
@@ -42,13 +42,13 @@ public:
      * \param params
      *    parameter object containing parameters to change
      */
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /**
      * Copies the shared pointer for the matrix representation of this linear operator.
      *  @param [in] in_mat The matrix representation of this linear operator.
      */
-    virtual void setMatrix( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> in_mat ) override;
+    virtual void setMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> in_mat ) override;
 
     //! Set the input variable
     virtual void setInputVariable( AMP::LinearAlgebra::Variable::shared_ptr var )

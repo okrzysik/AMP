@@ -4,7 +4,7 @@
 #include "AMP/ampmesh/MeshIterator.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
 #include "AMP/ampmesh/structured/structuredMeshElement.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <array>
 
@@ -26,7 +26,7 @@ public:
                             size_t pos = 0 );
 
     //! Element list constructor
-    structuredMeshIterator( AMP::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> elements,
+    structuredMeshIterator( std::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> elements,
                             const AMP::Mesh::BoxMesh *mesh,
                             size_t pos = 0 );
 
@@ -86,7 +86,7 @@ protected:
     inline BoxMesh::MeshElementIndex getIndex( int pos ) const;
 
     // Get the elements in the iterator
-    AMP::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> getElements() const;
+    std::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> getElements() const;
 
     friend class AMP::Mesh::BoxMesh;
 
@@ -96,7 +96,7 @@ private:
     std::array<int, 3> d_globalSize;
     BoxMesh::MeshElementIndex d_first;
     BoxMesh::MeshElementIndex d_last;
-    AMP::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> d_elements;
+    std::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> d_elements;
     const AMP::Mesh::BoxMesh *d_mesh;
     mutable structuredMeshElement d_cur_element;
 

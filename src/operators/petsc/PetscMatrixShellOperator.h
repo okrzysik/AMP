@@ -37,7 +37,7 @@ namespace Operator {
 class PetscMatrixShellOperator : public LinearOperator
 {
 public:
-    explicit PetscMatrixShellOperator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit PetscMatrixShellOperator( const std::shared_ptr<OperatorParameters> &params );
 
     virtual ~PetscMatrixShellOperator() {}
 
@@ -49,19 +49,19 @@ public:
 
     void setComm( const AMP_MPI &comm );
 
-    void setOperator( AMP::shared_ptr<Operator> op );
+    void setOperator( std::shared_ptr<Operator> op );
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
 private:
-    AMP::shared_ptr<Operator> d_operator;
+    std::shared_ptr<Operator> d_operator;
     int d_iMatLocalRowSize;
     int d_iMatLocalColumnSize;
     Mat d_mat;

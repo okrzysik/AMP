@@ -12,7 +12,7 @@ namespace TimeIntegrator {
 *                                                                      *
 ************************************************************************
 */
-ExplicitEuler::ExplicitEuler( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+ExplicitEuler::ExplicitEuler( std::shared_ptr<TimeIntegratorParameters> parameters )
     : TimeIntegrator( parameters )
 {
     initialize( parameters );
@@ -34,7 +34,7 @@ ExplicitEuler::~ExplicitEuler() = default;
 *                                                                      *
 ************************************************************************
 */
-void ExplicitEuler::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void ExplicitEuler::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
 
@@ -48,7 +48,7 @@ void ExplicitEuler::initialize( AMP::shared_ptr<TimeIntegratorParameters> parame
     getFromInput( parameters->d_db );
 }
 
-void ExplicitEuler::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void ExplicitEuler::reset( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
 
@@ -76,7 +76,7 @@ void ExplicitEuler::setupVectors()
 
 int ExplicitEuler::advanceSolution( const double dt, const bool first_step )
 {
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> f;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> f;
 
     if ( first_step ) {
         d_current_dt = d_initial_dt;
@@ -131,7 +131,7 @@ void ExplicitEuler::updateSolution()
 *                                                                      *
 ************************************************************************
 */
-void ExplicitEuler::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
+void ExplicitEuler::getFromInput( std::shared_ptr<AMP::Database> input_db )
 {
     if ( input_db->keyExists( "initial_timestep" ) ) {
         d_initial_dt = input_db->getScalar<double>( "initial_timestep" );

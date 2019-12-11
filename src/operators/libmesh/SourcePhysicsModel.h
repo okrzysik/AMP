@@ -1,8 +1,8 @@
 #ifndef included_AMP_SourcePhysicsModel
 #define included_AMP_SourcePhysicsModel
 
-#include "AMP/utils/shared_ptr.h"
 #include <cstring>
+#include <memory>
 
 #include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModel.h"
@@ -37,7 +37,7 @@ public:
      * and also USE_ELEMENT_PHYSICS from the database. These specify if material library or the
      * element physics model are used for calculating the source terms.
      */
-    explicit SourcePhysicsModel( const AMP::shared_ptr<SourcePhysicsModelParameters> &params );
+    explicit SourcePhysicsModel( const std::shared_ptr<SourcePhysicsModelParameters> &params );
 
     /**
      * Destructor.
@@ -57,7 +57,7 @@ protected:
 
     AMP::Materials::Material::shared_ptr d_material;
 
-    AMP::shared_ptr<AMP::Materials::Property<double>> d_property;
+    std::shared_ptr<AMP::Materials::Property<double>> d_property;
 
 private:
     double d_DefaultTemperature;
@@ -66,11 +66,11 @@ private:
 
     std::vector<double> d_defaults;
 
-    AMP::shared_ptr<ElementPhysicsModel> d_elementPhysicsModel;
-    AMP::shared_ptr<ElementPhysicsModelParameters> d_elementPhysicsParams;
+    std::shared_ptr<ElementPhysicsModel> d_elementPhysicsModel;
+    std::shared_ptr<ElementPhysicsModelParameters> d_elementPhysicsParams;
 
     // Cached variables that may or may not be used to improve perfomance
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> d_inputMaterialParameters;
+    std::map<std::string, std::shared_ptr<std::vector<double>>> d_inputMaterialParameters;
 };
 } // namespace Operator
 } // namespace AMP

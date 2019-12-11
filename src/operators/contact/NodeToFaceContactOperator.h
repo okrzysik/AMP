@@ -5,10 +5,10 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/operators/contact/ContactOperator.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include <fstream>
+#include <memory>
 
 namespace AMP {
 namespace Operator {
@@ -27,7 +27,7 @@ public:
       Constructor. This resets the matrix shared pointer.
       @param [in] params
       */
-    NodeToGeomType::FaceContactOperator( const AMP::shared_ptr<ContactOperatorParameters> &params )
+    NodeToGeomType::FaceContactOperator( const std::shared_ptr<ContactOperatorParameters> &params )
         : ContactOperator( params ), d_ContactIsFrictionless( false )
     {
         size_t rank          = d_GlobalComm.getRank();
@@ -45,7 +45,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    void reset( const std::shared_ptr<OperatorParameters> &params );
 
     void addSlaveToMaster( AMP::LinearAlgebra::Vector::shared_ptr u );
 
@@ -156,8 +156,8 @@ private:
     std::vector<double> d_SlaveVerticesSurfaceTractionBeforeUpdate;
     std::vector<double> d_SlaveVerticesNormalVectorBeforeUpdate;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable;  /**< Input variable */
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable;  /**< Input variable */
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
 
     bool d_ContactIsFrictionless;
 

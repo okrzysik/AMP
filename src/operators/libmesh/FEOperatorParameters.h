@@ -20,14 +20,14 @@ public:
     /**
       Constructor.
       */
-    explicit FEOperatorParameters( AMP::shared_ptr<AMP::Database> db ) : OperatorParameters( db ) {}
+    explicit FEOperatorParameters( std::shared_ptr<AMP::Database> db ) : OperatorParameters( db ) {}
 
     /**
       Destructor.
       */
     virtual ~FEOperatorParameters() {}
 
-    AMP::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to an element operation */
+    std::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to an element operation */
 
 protected:
 private:

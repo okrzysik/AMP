@@ -39,7 +39,7 @@ createLibmeshElements::~createLibmeshElements()
     reinit( AMP::Mesh::MeshIterator(),
             libMeshEnums::INVALID_Q_RULE,
             libMeshEnums::INVALID_ORDER,
-            AMP::shared_ptr<const libMesh::FEType>() );
+            std::shared_ptr<const libMesh::FEType>() );
 }
 
 
@@ -49,7 +49,7 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in )
     reinit( iterator_in,
             libMeshEnums::INVALID_Q_RULE,
             libMeshEnums::INVALID_ORDER,
-            AMP::shared_ptr<const libMesh::FEType>() );
+            std::shared_ptr<const libMesh::FEType>() );
 }
 
 
@@ -57,7 +57,7 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in )
 void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
                                     libMeshEnums::QuadratureType qtype,
                                     libMeshEnums::Order qorder,
-                                    AMP::shared_ptr<const libMesh::FEType> type,
+                                    std::shared_ptr<const libMesh::FEType> type,
                                     bool cache_fe )
 {
     PROFILE_START( "reinit" );

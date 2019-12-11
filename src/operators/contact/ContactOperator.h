@@ -22,7 +22,7 @@ public:
       Constructor. This resets the matrix shared pointer.
       @param [in] params
       */
-    ContactOperator( const AMP::shared_ptr<ContactOperatorParameters> &params )
+    ContactOperator( const std::shared_ptr<ContactOperatorParameters> &params )
         : ConstraintsEliminationOperator( params )
     {
         d_Mesh = ( params->d_Mesh );
@@ -81,7 +81,7 @@ protected:
     std::vector<AMP::Mesh::MeshElementID> d_InactiveSet;
     std::vector<AMP::Mesh::MeshElementID> d_ActiveSet;
 
-    AMP::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_MasterMechanicsMaterialModel;
+    std::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_MasterMechanicsMaterialModel;
 
 private:
 };

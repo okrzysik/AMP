@@ -12,14 +12,14 @@ namespace Solver {
 class OnePointSolver : public SolverStrategy
 {
 public:
-    explicit OnePointSolver( AMP::shared_ptr<SolverStrategyParameters> params )
+    explicit OnePointSolver( std::shared_ptr<SolverStrategyParameters> params )
         : SolverStrategy( params ),
-          d_onePointOp( AMP::dynamic_pointer_cast<AMP::Operator::OnePointOperator>( d_pOperator ) )
+          d_onePointOp( std::dynamic_pointer_cast<AMP::Operator::OnePointOperator>( d_pOperator ) )
     {
     }
 
-    virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override
+    virtual void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                        std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override
     {
         // Assumption: primaryInputVar = outputVar
         // General solution: To avoid making the above assumption, we can replace
@@ -39,7 +39,7 @@ public:
     }
 
 protected:
-    AMP::shared_ptr<AMP::Operator::OnePointOperator> d_onePointOp;
+    std::shared_ptr<AMP::Operator::OnePointOperator> d_onePointOp;
 };
 } // namespace Solver
 } // namespace AMP

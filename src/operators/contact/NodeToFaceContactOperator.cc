@@ -228,10 +228,10 @@ size_t NodeToGeomType::FaceContactOperator::updateActiveSet(
             } // end if
 
             // compute surface traction at slave vertex
-            double youngsModulus = AMP::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(
+            double youngsModulus = std::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(
                                        d_MasterMechanicsMaterialModel )
                                        ->getYoungsModulus();
-            double poissonsRatio = AMP::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(
+            double poissonsRatio = std::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(
                                        d_MasterMechanicsMaterialModel )
                                        ->getPoissonsRatio();
             double constitutiveMatrix[36];
@@ -753,7 +753,7 @@ size_t NodeToGeomType::FaceContactOperator::updateActiveSet(
                                    nActiveSlaveVerticesDeactivated );
 }
 
-void NodeToGeomType::FaceContactOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void NodeToGeomType::FaceContactOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
     AMP_INSIST( ( params != NULL ), "NULL parameter" );
     AMP_INSIST( ( ( params->d_db ) != NULL ), "NULL database" );

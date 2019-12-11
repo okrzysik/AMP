@@ -3,7 +3,7 @@
 
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/operators/boundary/BoundaryOperator.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -19,19 +19,19 @@ namespace Operator {
 class BVPOperatorParameters : public OperatorParameters
 {
 public:
-    explicit BVPOperatorParameters( AMP::shared_ptr<AMP::Database> db ) : OperatorParameters( db )
+    explicit BVPOperatorParameters( std::shared_ptr<AMP::Database> db ) : OperatorParameters( db )
     {
     }
 
     virtual ~BVPOperatorParameters() {}
 
-    AMP::shared_ptr<OperatorParameters> d_volumeOperatorParams;
+    std::shared_ptr<OperatorParameters> d_volumeOperatorParams;
 
-    AMP::shared_ptr<OperatorParameters> d_boundaryOperatorParams;
+    std::shared_ptr<OperatorParameters> d_boundaryOperatorParams;
 
-    AMP::shared_ptr<Operator> d_volumeOperator;
+    std::shared_ptr<Operator> d_volumeOperator;
 
-    AMP::shared_ptr<BoundaryOperator> d_boundaryOperator;
+    std::shared_ptr<BoundaryOperator> d_boundaryOperator;
 };
 
 

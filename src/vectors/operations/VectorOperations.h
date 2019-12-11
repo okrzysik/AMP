@@ -4,7 +4,7 @@
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/RNG.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 #include <vector>
 
 
@@ -39,7 +39,7 @@ public:
     virtual ~VectorOperations() {}
 
     //! Clone the operations
-    virtual AMP::shared_ptr<VectorOperations> cloneOperations() const = 0;
+    virtual std::shared_ptr<VectorOperations> cloneOperations() const = 0;
 
     /**
      * \brief  Set vector equal to x
@@ -319,54 +319,54 @@ public: // Non-virtual functions
 
 public: // shared_ptr wrappers
     /// @copydoc VectorOperations::equals(const VectorOperations&,double)
-    inline bool equals( AMP::shared_ptr<const VectorOperations> rhs, double tol = 0.000001 );
+    inline bool equals( std::shared_ptr<const VectorOperations> rhs, double tol = 0.000001 );
     /// @copydoc VectorOperations::scale(double,const VectorOperations&)
-    inline void scale( double alpha, AMP::shared_ptr<const VectorOperations> x );
+    inline void scale( double alpha, std::shared_ptr<const VectorOperations> x );
     /// @copydoc VectorOperations::copy(const VectorOperations&)
-    inline void copy( AMP::shared_ptr<const VectorOperations> x );
+    inline void copy( std::shared_ptr<const VectorOperations> x );
     /// @copydoc VectorOperations::add(const VectorOperations&,const VectorOperations&)
-    inline void add( AMP::shared_ptr<const VectorOperations> x,
-                     AMP::shared_ptr<const VectorOperations> y );
+    inline void add( std::shared_ptr<const VectorOperations> x,
+                     std::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::addScalar(const VectorOperations&,double)
-    inline void addScalar( AMP::shared_ptr<const VectorOperations> x, double alpha );
+    inline void addScalar( std::shared_ptr<const VectorOperations> x, double alpha );
     /// @copydoc VectorOperations::subtract(const VectorOperations&,const VectorOperations&)
-    inline void subtract( AMP::shared_ptr<const VectorOperations> x,
-                          AMP::shared_ptr<const VectorOperations> y );
+    inline void subtract( std::shared_ptr<const VectorOperations> x,
+                          std::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::multiply(const VectorOperations&,const VectorOperations&)
-    inline void multiply( AMP::shared_ptr<const VectorOperations> x,
-                          AMP::shared_ptr<const VectorOperations> y );
+    inline void multiply( std::shared_ptr<const VectorOperations> x,
+                          std::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::divide(const VectorOperations&,const VectorOperations&)
-    inline void divide( AMP::shared_ptr<const VectorOperations> x,
-                        AMP::shared_ptr<const VectorOperations> y );
+    inline void divide( std::shared_ptr<const VectorOperations> x,
+                        std::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::reciprocal(const VectorOperations&)
-    inline void reciprocal( AMP::shared_ptr<const VectorOperations> x );
+    inline void reciprocal( std::shared_ptr<const VectorOperations> x );
     /// @copydoc VectorOperations::linearSum(double,const VectorOperations&,double,const
     /// VectorOperations&)
     inline void linearSum( double alpha,
-                           AMP::shared_ptr<const VectorOperations> x,
+                           std::shared_ptr<const VectorOperations> x,
                            double beta,
-                           AMP::shared_ptr<const VectorOperations> y );
+                           std::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::axpy(double,const VectorOperations&,const VectorOperations&)
     inline void axpy( double alpha,
-                      AMP::shared_ptr<const VectorOperations> x,
-                      AMP::shared_ptr<const VectorOperations> y );
+                      std::shared_ptr<const VectorOperations> x,
+                      std::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::axpby(double,double,const VectorOperations&)
-    inline void axpby( double alpha, double beta, AMP::shared_ptr<const VectorOperations> x );
+    inline void axpby( double alpha, double beta, std::shared_ptr<const VectorOperations> x );
     /// @copydoc VectorOperations::ans(const VectorOperations&)
-    inline void abs( AMP::shared_ptr<const VectorOperations> x );
+    inline void abs( std::shared_ptr<const VectorOperations> x );
     /// @copydoc VectorOperations::dot(const VectorOperations&)
-    inline double dot( AMP::shared_ptr<const VectorOperations> x ) const;
+    inline double dot( std::shared_ptr<const VectorOperations> x ) const;
     /// @copydoc VectorOperations::minQuotient(const VectorOperations&,const VectorOperations&)
-    static inline double minQuotient( AMP::shared_ptr<const VectorOperations> x,
-                                      AMP::shared_ptr<const VectorOperations> y );
+    static inline double minQuotient( std::shared_ptr<const VectorOperations> x,
+                                      std::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::wrmsNorm(const VectorOperations&,const VectorOperations&)
-    static inline double wrmsNorm( AMP::shared_ptr<const VectorOperations> x,
-                                   AMP::shared_ptr<const VectorOperations> y );
+    static inline double wrmsNorm( std::shared_ptr<const VectorOperations> x,
+                                   std::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::wrmsNormMask(const VectorOperations&,const
     /// VectorOperations&,const VectorOperations&)
-    static inline double wrmsNormMask( AMP::shared_ptr<const VectorOperations> x,
-                                       AMP::shared_ptr<const VectorOperations> y,
-                                       AMP::shared_ptr<const VectorOperations> mask );
+    static inline double wrmsNormMask( std::shared_ptr<const VectorOperations> x,
+                                       std::shared_ptr<const VectorOperations> y,
+                                       std::shared_ptr<const VectorOperations> mask );
 
 public:
     //! Return the pointer to the VectorData

@@ -4,7 +4,7 @@
 namespace AMP {
 namespace TimeIntegrator {
 
-IDATimeOperator::IDATimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> in_params )
+IDATimeOperator::IDATimeOperator( std::shared_ptr<AMP::Operator::OperatorParameters> in_params )
     : TimeOperator( in_params ), d_current_time( 0 )
 {
     d_cloningHappened = false;
@@ -22,10 +22,10 @@ IDATimeOperator::~IDATimeOperator() = default;
 
 /*
 void
-IDATimeOperator::reset(const AMP::shared_ptr<OperatorParameters>& in_params)
+IDATimeOperator::reset(const std::shared_ptr<OperatorParameters>& in_params)
 {
-    AMP::shared_ptr<IDATimeOperatorParameters> params =
-AMP::dynamic_pointer_cast<IDATimeOperatorParameters>(in_params);
+    std::shared_ptr<IDATimeOperatorParameters> params =
+std::dynamic_pointer_cast<IDATimeOperatorParameters>(in_params);
 
     getFromInput(params->d_db);
 
@@ -49,7 +49,7 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     }
 
     if ( d_pAlgebraicVariable.get() != nullptr ) {
-        AMP::shared_ptr<AMP::LinearAlgebra::Vector> algebraicComponent =
+        std::shared_ptr<AMP::LinearAlgebra::Vector> algebraicComponent =
             d_pScratchVector->subsetVectorForVariable( d_pAlgebraicVariable );
         algebraicComponent->zero();
     }

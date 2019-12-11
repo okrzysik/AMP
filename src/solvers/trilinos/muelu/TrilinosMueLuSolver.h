@@ -76,7 +76,7 @@ public:
      following fields in addition to the fields expected by the base class SolverStrategy class:
 
     */
-    explicit TrilinosMueLuSolver( AMP::shared_ptr<TrilinosMueLuSolverParameters> parameters );
+    explicit TrilinosMueLuSolver( std::shared_ptr<TrilinosMueLuSolverParameters> parameters );
 
     /**
      * Default destructor
@@ -84,10 +84,10 @@ public:
     virtual ~TrilinosMueLuSolver();
 
     //! static create routine that is used by SolverFactory
-    static AMP::shared_ptr<SolverStrategy>
-    createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    static std::shared_ptr<SolverStrategy>
+    createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-        return AMP::make_shared<TrilinosMueLuSolver>( solverStrategyParameters );
+        return std::make_shared<TrilinosMueLuSolver>( solverStrategyParameters );
     }
 
     /**
@@ -95,21 +95,21 @@ public:
      @param [in] f : shared pointer to right hand side vector
      @param [out] u : shared pointer to approximate computed solution
      */
-    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+    void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Solve the system \f$Au = f\f$.
      @param [in] f : shared pointer to right hand side vector
      @param [out] u : shared pointer to approximate computed solution
      */
-    void solveWithHierarchy( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                             AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
+    void solveWithHierarchy( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                             std::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
     /**
      * Return a shared pointer to the ML_Epetra::MultiLevelPreconditioner object
      */
-    inline const AMP::shared_ptr<MueLu::EpetraOperator> getMLSolver( void )
+    inline const std::shared_ptr<MueLu::EpetraOperator> getMLSolver( void )
     {
         return d_mueluSolver;
     }
@@ -123,20 +123,20 @@ public:
      the solver.
      The LinearOperator currently is assumed to contain a pointer to an EpetraMatrix object.
      */
-    void initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters ) override;
+    void initialize( std::shared_ptr<SolverStrategyParameters> const parameters ) override;
 
     /**
      * Register the operator that the solver will use during solves
      @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$
     */
-    void registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op ) override;
+    void registerOperator( const std::shared_ptr<AMP::Operator::Operator> op ) override;
 
     /**
      * Resets the associated operator internally with new parameters if necessary
      * @param [in] params
      *        OperatorParameters object that is NULL by default
      */
-    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
+    void resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
 
     /**
      * Resets the solver internally with new parameters if necessary
@@ -146,13 +146,13 @@ public:
      * and recreates it based on the parameters object. See constructor for
      * fields required for parameter object.
      */
-    void reset( AMP::shared_ptr<SolverStrategyParameters> params ) override;
+    void reset( std::shared_ptr<SolverStrategyParameters> params ) override;
 
 protected:
-    void reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
+    void reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                        std::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
-    void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
+    void getFromInput( const std::shared_ptr<AMP::Database> &db );
 
     //! build the hierarchy using the defaults constructed by MueLu
     void buildHierarchyFromDefaults( void );
@@ -162,7 +162,7 @@ protected:
 
     //! utility function to extract Xpetra Matrix from AMP LinearOperator
     Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>>
-    getXpetraMatrix( AMP::shared_ptr<AMP::Operator::LinearOperator> &op );
+    getXpetraMatrix( std::shared_ptr<AMP::Operator::LinearOperator> &op );
 
     Teuchos::RCP<MueLu::TentativePFactory<SC, LO, GO, NO>> getTentativePFactory( void );
     Teuchos::RCP<MueLu::SaPFactory<SC, LO, GO, NO>> getSaPFactory( void );
@@ -187,9 +187,9 @@ private:
 
     std::string d_smoother_type; //! key for creating different smoothers
 
-    AMP::shared_ptr<MueLu::EpetraOperator> d_mueluSolver;
+    std::shared_ptr<MueLu::EpetraOperator> d_mueluSolver;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
+    std::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
     Teuchos::ParameterList d_MueLuParameterList;
 
     Teuchos::RCP<MueLu::HierarchyManager<SC, LO, GO, NO>>

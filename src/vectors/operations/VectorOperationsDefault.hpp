@@ -18,9 +18,9 @@ extern template class VectorOperationsDefault<float>;  // Suppresses implicit in
  * Constructors                                                  *
  ****************************************************************/
 template<typename TYPE>
-AMP::shared_ptr<VectorOperations> VectorOperationsDefault<TYPE>::cloneOperations() const
+std::shared_ptr<VectorOperations> VectorOperationsDefault<TYPE>::cloneOperations() const
 {
-    auto ptr = AMP::make_shared<VectorOperationsDefault<TYPE>>();
+    auto ptr = std::make_shared<VectorOperationsDefault<TYPE>>();
     return ptr;
 }
 

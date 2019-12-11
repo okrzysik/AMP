@@ -15,7 +15,7 @@ namespace Solver {
  ****************************************************************/
 BiCGSTABSolver::BiCGSTABSolver() : d_restarts( 0 ) {}
 
-BiCGSTABSolver::BiCGSTABSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
+BiCGSTABSolver::BiCGSTABSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters ), d_restarts( 0 )
 {
     AMP_ASSERT( parameters.get() != nullptr );
@@ -33,9 +33,9 @@ BiCGSTABSolver::~BiCGSTABSolver() = default;
 /****************************************************************
  *  Initialize                                                   *
  ****************************************************************/
-void BiCGSTABSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
+void BiCGSTABSolver::initialize( std::shared_ptr<SolverStrategyParameters> const params )
 {
-    auto parameters = AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
+    auto parameters = std::dynamic_pointer_cast<KrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
@@ -50,7 +50,7 @@ void BiCGSTABSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const
 }
 
 // Function to get values from input
-void BiCGSTABSolver::getFromInput( AMP::shared_ptr<AMP::Database> db )
+void BiCGSTABSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 {
 
     d_dRelativeTolerance  = db->getWithDefault<double>( "relative_tolerance", 1.0e-9 );
@@ -62,8 +62,8 @@ void BiCGSTABSolver::getFromInput( AMP::shared_ptr<AMP::Database> db )
  *  Solve                                                        *
  * TODO: store convergence history, iterations, convergence reason
  ****************************************************************/
-void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                            AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                            std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 
@@ -133,7 +133,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     NULL_USE( beta );
 
     // r_tilde is a non-zero initial direction chosen to be r
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> r_tilde;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> r_tilde;
     // traditional choice is the initial residual
     r_tilde = res->cloneVector();
     r_tilde->copyVector( res );
@@ -172,7 +172,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             p->axpy( beta, p, res );
         }
 
-        AMP::shared_ptr<AMP::LinearAlgebra::Vector> p_hat = u->cloneVector();
+        std::shared_ptr<AMP::LinearAlgebra::Vector> p_hat = u->cloneVector();
 
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
@@ -187,7 +187,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         AMP_ASSERT( alpha != 0.0 );
         alpha = rho[1] / alpha;
 
-        AMP::shared_ptr<AMP::LinearAlgebra::Vector> s = res->cloneVector();
+        std::shared_ptr<AMP::LinearAlgebra::Vector> s = res->cloneVector();
         s->axpy( -alpha, v, res );
 
         const double s_norm = s->L2Norm();
@@ -199,7 +199,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             break;
         }
 
-        AMP::shared_ptr<AMP::LinearAlgebra::Vector> s_hat = u->cloneVector();
+        std::shared_ptr<AMP::LinearAlgebra::Vector> s_hat = u->cloneVector();
 
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
@@ -208,7 +208,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             s_hat->copyVector( s );
         }
 
-        AMP::shared_ptr<AMP::LinearAlgebra::Vector> t = res->cloneVector();
+        std::shared_ptr<AMP::LinearAlgebra::Vector> t = res->cloneVector();
         d_pOperator->apply( s_hat, t );
 
         const double t_sqnorm = t->dot( t );
@@ -257,18 +257,18 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 /****************************************************************
  *  Function to set the register the operator                    *
  ****************************************************************/
-void BiCGSTABSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
+void BiCGSTABSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op.get() != nullptr );
 
     d_pOperator = op;
 
-    AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
+    std::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
     AMP_ASSERT( linearOperator.get() != nullptr );
 }
 void BiCGSTABSolver::resetOperator(
-    const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator.get() != nullptr ) {
         d_pOperator->reset( params );

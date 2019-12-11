@@ -16,7 +16,7 @@ namespace LinearAlgebra {
 class StridedVectorFactory : public VectorFactory
 {
 public:
-    explicit StridedVectorFactory( AMP::shared_ptr<const VectorFactory> factory )
+    explicit StridedVectorFactory( std::shared_ptr<const VectorFactory> factory )
         : d_factory( factory )
     {
     }
@@ -45,7 +45,7 @@ public:
     }
 
 private:
-    AMP::shared_ptr<const VectorFactory> d_factory;
+    std::shared_ptr<const VectorFactory> d_factory;
 };
 } // namespace LinearAlgebra
 } // namespace AMP

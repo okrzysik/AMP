@@ -16,7 +16,7 @@ namespace LinearAlgebra {
 
 static inline Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vector )
 {
-    auto petsc = dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( vector );
+    auto petsc = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( vector );
     AMP_ASSERT( petsc != nullptr );
     return petsc->getVec();
 }
@@ -120,10 +120,10 @@ void PetscVectorTests::Bug_612( AMP::UnitTest *utils )
 void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
 {
     auto vectora = d_factory->getManagedVector();
-    if ( dynamic_pointer_cast<NativePetscVector>( vectora ) )
+    if ( std::dynamic_pointer_cast<NativePetscVector>( vectora ) )
         return;
 
-    vectora->setVariable( AMP::make_shared<AMP::LinearAlgebra::Variable>( "dummy_variable" ) );
+    vectora->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "dummy_variable" ) );
     Vec petsc_vec = getVec( vectora );
     Vec another_vec;
     checkPetscError( utils, VecDuplicate( petsc_vec, &another_vec ) );
@@ -141,7 +141,7 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
     checkPetscError( utils, PETSC::vecDestroy( &another_vec ) );
     utils->passes( "managed duplicated destroyed" );
 
-    if ( dynamic_pointer_cast<MultiVector>( vectora ) ) {
+    if ( std::dynamic_pointer_cast<MultiVector>( vectora ) ) {
         auto b      = AMP::LinearAlgebra::PetscVector::view( vectora );
         bool passed = true;
         for ( size_t i = 0; i != b->numberOfDataBlocks(); i++ ) {

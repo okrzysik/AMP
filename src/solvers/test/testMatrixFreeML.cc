@@ -33,7 +33,7 @@
 void myGetRow2( void *object, int row, std::vector<size_t> &cols, std::vector<double> &values )
 {
     auto *op = reinterpret_cast<AMP::Operator::ColumnOperator *>( object );
-    auto mat = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op->getOperator( 0 ) )
+    auto mat = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op->getOperator( 0 ) )
                    ->getMatrix();
     mat->getRowByGlobalID( row, cols, values );
 }
@@ -41,10 +41,10 @@ void myGetRow2( void *object, int row, std::vector<size_t> &cols, std::vector<do
 void myGetRow3( void *object, int row, std::vector<size_t> &cols, std::vector<double> &values )
 {
     auto *op      = reinterpret_cast<AMP::Operator::ColumnOperator *>( object );
-    auto firstMat = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op->getOperator( 0 ) )
+    auto firstMat = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op->getOperator( 0 ) )
                         ->getMatrix();
     auto secondMat =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op->getOperator( 1 ) )
+        std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op->getOperator( 1 ) )
             ->getMatrix();
     size_t firstMatNumGlobalRows    = firstMat->numGlobalRows();
     size_t firstMatNumGlobalColumns = firstMat->numGlobalColumns();
@@ -133,10 +133,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
     auto mesh_file_db = AMP::Database::parseInputFile( mesh_file );
 
-    auto libmeshInit = AMP::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
+    auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
 
     const int mesh_dim = 3;
-    auto fusedMesh     = AMP::make_shared<::Mesh>( mesh_dim );
+    auto fusedMesh     = std::make_shared<::Mesh>( mesh_dim );
 
     AMP::readTestMesh( mesh_file, fusedMesh );
 
@@ -144,17 +144,17 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
     fusedMesh->prepare_for_use( false );
 
-    auto fusedMeshAdapter = AMP::make_shared<AMP::Mesh::libMesh>( fusedMesh, "mesh" );
+    auto fusedMeshAdapter = std::make_shared<AMP::Mesh::libMesh>( fusedMesh, "mesh" );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> fusedElementPhysicsModel;
-    auto fusedOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> fusedElementPhysicsModel;
+    auto fusedOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             fusedMeshAdapter, "BVPOperator", input_db, fusedElementPhysicsModel ) );
 
     auto fusedVar = fusedOperator->getOutputVariable();
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-    auto loadOperator = AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+    auto loadOperator = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
             fusedMeshAdapter, "LoadOperator", input_db, dummyModel ) );
     loadOperator->setVariable( fusedVar );
@@ -184,8 +184,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         fusedSolVec->zero();
 
         auto mlSolverParams =
-            AMP::make_shared<AMP::Solver::TrilinosMLSolverParameters>( mlSolver_db );
-        auto mlSolver = AMP::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
+            std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( mlSolver_db );
+        auto mlSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
 
         auto mat = fusedOperator->getMatrix();
 
@@ -224,14 +224,14 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         paramsList.set( "cycle applications", mlSolver_db->getScalar<int>( "max_iterations" ) );
         paramsList.set( "max levels", mlSolver_db->getScalar<int>( "max_levels" ) );
 
-        auto mlSolver = AMP::make_shared<ML_Epetra::MultiLevelPreconditioner>( ml_op, paramsList );
+        auto mlSolver = std::make_shared<ML_Epetra::MultiLevelPreconditioner>( ml_op, paramsList );
 
         const ML_Aggregate *agg_obj = mlSolver->GetML_Aggregate();
         ML_Aggregate_Print( const_cast<ML_Aggregate *>( agg_obj ) );
 
-        auto f_epetra = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>(
+        auto f_epetra = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>(
             AMP::LinearAlgebra::EpetraVector::view( fusedRhsVec ) );
-        auto u_epetra = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>(
+        auto u_epetra = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>(
             AMP::LinearAlgebra::EpetraVector::view( fusedSolVec ) );
 
         Epetra_Vector &fVec = f_epetra->getEpetra_Vector();
@@ -243,7 +243,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         mlSolver->ApplyInverse( fVec, uVec );
 
-        auto firer = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( fusedSolVec );
+        auto firer = std::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( fusedSolVec );
         if ( firer )
             firer->fireDataChange();
 
@@ -315,7 +315,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         delete[] rhsArr;
         rhsArr = nullptr;
 
-        auto firer = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( fusedSolVec );
+        auto firer = std::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( fusedSolVec );
         if ( firer )
             firer->fireDataChange();
 
@@ -334,17 +334,17 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
     // matrix-free-3 using TrilinosMatrixShellOperator and customized getRow()
     if ( type == 3 ) {
-        AMP::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
-        auto columnOperator = AMP::make_shared<AMP::Operator::ColumnOperator>( emptyParams );
+        std::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
+        auto columnOperator = std::make_shared<AMP::Operator::ColumnOperator>( emptyParams );
         columnOperator->append( fusedOperator );
 
-        auto matrixShellDatabase = AMP::make_shared<AMP::Database>( "MatrixShellOperator" );
+        auto matrixShellDatabase = std::make_shared<AMP::Database>( "MatrixShellOperator" );
         matrixShellDatabase->putScalar( "name", "MatShellOperator" );
         matrixShellDatabase->putScalar( "print_info_level", 1 );
         auto matrixShellParams =
-            AMP::make_shared<AMP::Operator::OperatorParameters>( matrixShellDatabase );
+            std::make_shared<AMP::Operator::OperatorParameters>( matrixShellDatabase );
         auto trilinosMatrixShellOperator =
-            AMP::make_shared<AMP::Operator::TrilinosMatrixShellOperator>( matrixShellParams );
+            std::make_shared<AMP::Operator::TrilinosMatrixShellOperator>( matrixShellParams );
         trilinosMatrixShellOperator->setNodalDofMap( NodalVectorDOF );
         trilinosMatrixShellOperator->setGetRow( &myGetRow2 );
         // trilinosMatrixShellOperator->setOperator(fusedOperator);
@@ -352,9 +352,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         mlSolver_db->putScalar( "USE_EPETRA", false );
         auto mlSolverParams =
-            AMP::make_shared<AMP::Solver::TrilinosMLSolverParameters>( mlSolver_db );
+            std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( mlSolver_db );
         mlSolverParams->d_pOperator = trilinosMatrixShellOperator;
-        auto mlSolver = AMP::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
+        auto mlSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
 
         std::cout << "MatFree-3: L2 norm of residual before solve " << std::setprecision( 15 )
                   << fusedResVec->L2Norm() << std::endl;
@@ -396,11 +396,11 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
 
     auto mesh_file_db = AMP::Database::parseInputFile( mesh_file );
 
-    auto libmeshInit = AMP::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
+    auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
 
     const int mesh_dim   = 3;
-    auto firstFusedMesh  = AMP::make_shared<::Mesh>( mesh_dim );
-    auto secondFusedMesh = AMP::make_shared<::Mesh>( mesh_dim );
+    auto firstFusedMesh  = std::make_shared<::Mesh>( mesh_dim );
+    auto secondFusedMesh = std::make_shared<::Mesh>( mesh_dim );
 
     AMP::readTestMesh( mesh_file, firstFusedMesh );
     AMP::readTestMesh( mesh_file, secondFusedMesh );
@@ -411,8 +411,8 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
     firstFusedMesh->prepare_for_use( false );
     secondFusedMesh->prepare_for_use( false );
 
-    auto firstMesh  = AMP::make_shared<AMP::Mesh::libMesh>( firstFusedMesh, "Mesh_1" );
-    auto secondMesh = AMP::make_shared<AMP::Mesh::libMesh>( secondFusedMesh, "Mesh_2" );
+    auto firstMesh  = std::make_shared<AMP::Mesh::libMesh>( firstFusedMesh, "Mesh_1" );
+    auto secondMesh = std::make_shared<AMP::Mesh::libMesh>( secondFusedMesh, "Mesh_2" );
 
     std::vector<AMP::Mesh::Mesh::shared_ptr> vectorOfMeshes;
     vectorOfMeshes.push_back( firstMesh );
@@ -421,32 +421,32 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
     } // end if
 
     auto fusedMeshes =
-        AMP::make_shared<AMP::Mesh::MultiMesh>( "MultiMesh", globalComm, vectorOfMeshes );
+        std::make_shared<AMP::Mesh::MultiMesh>( "MultiMesh", globalComm, vectorOfMeshes );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> fusedElementPhysicsModel;
-    auto firstFusedOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> fusedElementPhysicsModel;
+    auto firstFusedOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             fusedMeshes->getMeshes()[0], "BVPOperator", input_db, fusedElementPhysicsModel ) );
     auto firstFusedVar = firstFusedOperator->getOutputVariable();
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-    auto firstLoadOperator = AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+    auto firstLoadOperator = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
             fusedMeshes->getMeshes()[0], "LoadOperator", input_db, dummyModel ) );
     firstLoadOperator->setVariable( firstFusedVar );
 
-    AMP::shared_ptr<AMP::Operator::OperatorParameters> nullOpParams;
-    auto fusedColumnOperator = AMP::make_shared<AMP::Operator::ColumnOperator>( nullOpParams );
+    std::shared_ptr<AMP::Operator::OperatorParameters> nullOpParams;
+    auto fusedColumnOperator = std::make_shared<AMP::Operator::ColumnOperator>( nullOpParams );
     fusedColumnOperator->append( firstFusedOperator );
 
-    auto loadColumnOperator = AMP::make_shared<AMP::Operator::ColumnOperator>( nullOpParams );
+    auto loadColumnOperator = std::make_shared<AMP::Operator::ColumnOperator>( nullOpParams );
     loadColumnOperator->append( firstLoadOperator );
     if ( useTwoMeshes ) {
-        auto secondFusedOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        auto secondFusedOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 fusedMeshes->getMeshes()[1], "BVPOperator", input_db, fusedElementPhysicsModel ) );
         auto secondFusedVar = secondFusedOperator->getOutputVariable();
         auto secondLoadOperator =
-            AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+            std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
                 AMP::Operator::OperatorBuilder::createOperator(
                     fusedMeshes->getMeshes()[1], "LoadOperator", input_db, dummyModel ) );
         secondLoadOperator->setVariable( secondFusedVar );
@@ -469,13 +469,13 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
 
     std::cout << std::endl;
 
-    auto matrixShellDatabase = AMP::make_shared<AMP::Database>( "MatrixShellOperator" );
+    auto matrixShellDatabase = std::make_shared<AMP::Database>( "MatrixShellOperator" );
     matrixShellDatabase->putScalar( "name", "MatShellOperator" );
     matrixShellDatabase->putScalar( "print_info_level", 1 );
     auto matrixShellParams =
-        AMP::make_shared<AMP::Operator::OperatorParameters>( matrixShellDatabase );
+        std::make_shared<AMP::Operator::OperatorParameters>( matrixShellDatabase );
     auto trilinosMatrixShellOperator =
-        AMP::make_shared<AMP::Operator::TrilinosMatrixShellOperator>( matrixShellParams );
+        std::make_shared<AMP::Operator::TrilinosMatrixShellOperator>( matrixShellParams );
     trilinosMatrixShellOperator->setNodalDofMap( dofManager );
     if ( !useTwoMeshes ) {
         trilinosMatrixShellOperator->setGetRow( &myGetRow2 );
@@ -487,9 +487,9 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
 
     auto mlSolver_db = input_db->getDatabase( "MLoptions" );
     mlSolver_db->putScalar( "USE_EPETRA", false );
-    auto mlSolverParams = AMP::make_shared<AMP::Solver::TrilinosMLSolverParameters>( mlSolver_db );
+    auto mlSolverParams = std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( mlSolver_db );
     mlSolverParams->d_pOperator = trilinosMatrixShellOperator;
-    auto mlSolver               = AMP::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
+    auto mlSolver               = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
 
     std::cout << "MatFree-4: L2 norm of residual before solve " << std::setprecision( 15 )
               << fusedColumnResVec->L2Norm() << std::endl;

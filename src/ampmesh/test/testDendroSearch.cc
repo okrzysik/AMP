@@ -212,14 +212,14 @@ void run( const std::string &meshFileName,
     // Load the mesh
     globalComm.barrier();
     double meshBeginTime = MPI_Wtime();
-    AMP::shared_ptr<AMP::Database> mesh_db( new AMP::Database( "input_db" ) );
+    std::shared_ptr<AMP::Database> mesh_db( new AMP::Database( "input_db" ) );
     mesh_db->putScalar( "MeshName", "PelletMeshes" );
     mesh_db->putScalar( "MeshType", "Multimesh" );
     mesh_db->putScalar( "MeshDatabasePrefix", "Mesh_" );
     mesh_db->putScalar( "MeshArrayDatabasePrefix", "MeshArray_" );
     if ( false ) {
         mesh_db->putDatabase( "MeshArray_1" );
-        AMP::shared_ptr<AMP::Database> meshArray_db = mesh_db->getDatabase( "MeshArray_1" );
+        std::shared_ptr<AMP::Database> meshArray_db = mesh_db->getDatabase( "MeshArray_1" );
         meshArray_db->putScalar( "N", numberOfMeshes );
         meshArray_db->putScalar( "iterator", "%i" );
         std::vector<int> meshIndices;
@@ -243,7 +243,7 @@ void run( const std::string &meshFileName,
         numRandomPts *= static_cast<size_t>( npes );
 
         mesh_db->putDatabase( "Mesh_1" );
-        AMP::shared_ptr<AMP::Database> meshArray_db = mesh_db->getDatabase( "Mesh_1" );
+        std::shared_ptr<AMP::Database> meshArray_db = mesh_db->getDatabase( "Mesh_1" );
         meshArray_db->putScalar( "MeshName", "Cylinder_1" );
         meshArray_db->putScalar( "MeshType", "AMP" );
         meshArray_db->putScalar( "dim", 3 );
@@ -297,7 +297,7 @@ void run( const std::string &meshFileName,
     }
 
 
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
+    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
         new AMP::Mesh::MeshParameters( mesh_db ) );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );

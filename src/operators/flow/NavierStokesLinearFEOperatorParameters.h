@@ -13,7 +13,7 @@ namespace Operator {
 class NavierStokesLinearFEOperatorParameters : public LinearFEOperatorParameters
 {
 public:
-    explicit NavierStokesLinearFEOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit NavierStokesLinearFEOperatorParameters( std::shared_ptr<AMP::Database> db )
         : LinearFEOperatorParameters( db )
     {
     }
@@ -24,7 +24,7 @@ public:
     //      d_frozenVec[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec;
 
-    AMP::shared_ptr<FlowTransportModel> d_transportModel;
+    std::shared_ptr<FlowTransportModel> d_transportModel;
 
 protected:
 private:

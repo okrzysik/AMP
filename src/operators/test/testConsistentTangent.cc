@@ -46,7 +46,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     input_db->print( AMP::plog );
 
     const unsigned int mesh_dim = 3;
-    AMP::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
+    std::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
 
     std::string mesh_file = input_db->getString( "mesh_file" );
 
@@ -58,14 +58,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
 
     mesh->prepare_for_use( false );
 
-    auto meshAdapter = AMP::make_shared<AMP::Mesh::libMesh>( mesh, "TestMesh" );
+    auto meshAdapter = std::make_shared<AMP::Mesh::libMesh>( mesh, "TestMesh" );
 
-    auto nonlinOperator = AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+    auto nonlinOperator = std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "NonlinearMechanicsOperator", input_db ) );
     auto elementPhysicsModel = nonlinOperator->getMaterialModel();
 
-    auto linOperator = AMP::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
+    auto linOperator = std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "LinearMechanicsOperator", input_db, elementPhysicsModel ) );
 
@@ -182,7 +182,7 @@ int testConsistentTangent( int argc, char *argv[] )
 {
 
     AMP::AMPManager::startup( argc, argv );
-    auto libmeshInit = AMP::make_shared<AMP::Mesh::initializeLibMesh>( AMP_COMM_WORLD );
+    auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( AMP_COMM_WORLD );
 
     AMP::UnitTest ut;
 

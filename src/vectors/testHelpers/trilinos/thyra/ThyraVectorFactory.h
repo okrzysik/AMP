@@ -34,7 +34,7 @@ public:
 class ManagedThyraFactory : public VectorFactory
 {
 public:
-    explicit ManagedThyraFactory( AMP::shared_ptr<VectorFactory> factory ) : d_factory( factory ) {}
+    explicit ManagedThyraFactory( std::shared_ptr<VectorFactory> factory ) : d_factory( factory ) {}
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override;
 
@@ -46,14 +46,14 @@ public:
 
 private:
     ManagedThyraFactory();
-    AMP::shared_ptr<VectorFactory> d_factory;
+    std::shared_ptr<VectorFactory> d_factory;
 };
 
 
 class ManagedNativeThyraFactory : public VectorFactory
 {
 public:
-    explicit ManagedNativeThyraFactory( AMP::shared_ptr<VectorFactory> factory )
+    explicit ManagedNativeThyraFactory( std::shared_ptr<VectorFactory> factory )
         : d_factory( factory )
     {
     }
@@ -68,7 +68,7 @@ public:
 
 private:
     ManagedNativeThyraFactory();
-    AMP::shared_ptr<VectorFactory> d_factory;
+    std::shared_ptr<VectorFactory> d_factory;
 };
 
 #ifdef USE_TRILINOS_BELOS

@@ -16,7 +16,7 @@ namespace Solver {
  ****************************************************************/
 QMRCGSTABSolver::QMRCGSTABSolver() : d_restarts( 0 ) {}
 
-QMRCGSTABSolver::QMRCGSTABSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
+QMRCGSTABSolver::QMRCGSTABSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters ), d_restarts( 0 )
 {
     AMP_ASSERT( parameters.get() != nullptr );
@@ -34,9 +34,9 @@ QMRCGSTABSolver::~QMRCGSTABSolver() {}
 /****************************************************************
  *  Initialize                                                   *
  ****************************************************************/
-void QMRCGSTABSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
+void QMRCGSTABSolver::initialize( std::shared_ptr<SolverStrategyParameters> const params )
 {
-    auto parameters = AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
+    auto parameters = std::dynamic_pointer_cast<KrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
@@ -51,7 +51,7 @@ void QMRCGSTABSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> cons
 }
 
 // Function to get values from input
-void QMRCGSTABSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
+void QMRCGSTABSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
 {
 
     d_dRelativeTolerance = db->getWithDefault<double>( "relative_tolerance", 1.0e-9 );
@@ -69,8 +69,8 @@ void QMRCGSTABSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
  *  Solve                                                        *
  * TODO: store convergence history, iterations, convergence reason
  ****************************************************************/
-void QMRCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                             AMP::shared_ptr<AMP::LinearAlgebra::Vector> x )
+void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                             std::shared_ptr<AMP::LinearAlgebra::Vector> x )
 {
     PROFILE_START( "solve" );
 
@@ -302,18 +302,18 @@ void QMRCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
 /****************************************************************
  *  Function to set the register the operator                    *
  ****************************************************************/
-void QMRCGSTABSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
+void QMRCGSTABSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op.get() != nullptr );
 
     d_pOperator = op;
 
-    AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
+    std::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
     AMP_ASSERT( linearOperator.get() != nullptr );
 }
 void QMRCGSTABSolver::resetOperator(
-    const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator.get() != nullptr ) {
         d_pOperator->reset( params );

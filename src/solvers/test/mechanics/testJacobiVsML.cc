@@ -33,8 +33,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Read the mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
+    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
         new AMP::Mesh::MeshParameters( mesh_db ) );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
@@ -42,18 +42,18 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "Mesh has " << ( meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex ) )
               << " nodes." << std::endl;
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
     AMP::LinearAlgebra::Variable::shared_ptr displacementVariable =
         bvpOperator->getOutputVariable();
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-    AMP::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletVecOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+    std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletVecOp =
+        std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "Load_Boundary", input_db, dummyModel ) );
     // This has an in-place apply. So, it has an empty input variable and
@@ -79,7 +79,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         if ( type == 0 ) {
             std::cout << "Solving using CG algorithm (Own Implementation)..." << std::endl;
 
-            AMP::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "CGsolver" );
+            std::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "CGsolver" );
 
             int maxIters = linearSolver_db->getScalar<int>( "max_iterations" );
 
@@ -133,14 +133,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         } else if ( type == 1 ) {
             std::cout << "Solving using CG algorithm (Petsc Implementation)..." << std::endl;
 
-            AMP::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "CGsolver" );
+            std::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "CGsolver" );
 
             // initialize the linear solver
-            AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
+            std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
                 new AMP::Solver::PetscKrylovSolverParameters( linearSolver_db ) );
             linearSolverParams->d_pOperator = bvpOperator;
             linearSolverParams->d_comm      = globalComm;
-            AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
+            std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
                 new AMP::Solver::PetscKrylovSolver( linearSolverParams ) );
 
             linearSolver->solve( mechRhsVec, mechSolVec );
@@ -149,15 +149,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         } else if ( type == 2 ) {
             std::cout << "Solving using Jacobi preconditioned CG algorithm..." << std::endl;
 
-            AMP::shared_ptr<AMP::Database> linearSolver_db =
+            std::shared_ptr<AMP::Database> linearSolver_db =
                 input_db->getDatabase( "JacobiCGsolver" );
 
             // initialize the linear solver
-            AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
+            std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
                 new AMP::Solver::PetscKrylovSolverParameters( linearSolver_db ) );
             linearSolverParams->d_pOperator = bvpOperator;
             linearSolverParams->d_comm      = globalComm;
-            AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
+            std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
                 new AMP::Solver::PetscKrylovSolver( linearSolverParams ) );
 
             linearSolver->solve( mechRhsVec, mechSolVec );
@@ -166,23 +166,23 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         } else {
             std::cout << "Solving using ML preconditioned CG algorithm..." << std::endl;
 
-            AMP::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "MLCGsolver" );
+            std::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "MLCGsolver" );
 
             // ---- first initialize the preconditioner
-            AMP::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase( "MLsolver" );
-            AMP::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams(
+            std::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase( "MLsolver" );
+            std::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams(
                 new AMP::Solver::TrilinosMLSolverParameters( pcSolver_db ) );
             pcSolverParams->d_pOperator = bvpOperator;
-            AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
+            std::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
                 new AMP::Solver::TrilinosMLSolver( pcSolverParams ) );
 
             // initialize the linear solver
-            AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
+            std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
                 new AMP::Solver::PetscKrylovSolverParameters( linearSolver_db ) );
             linearSolverParams->d_pOperator       = bvpOperator;
             linearSolverParams->d_comm            = globalComm;
             linearSolverParams->d_pPreconditioner = pcSolver;
-            AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
+            std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
                 new AMP::Solver::PetscKrylovSolver( linearSolverParams ) );
 
             linearSolver->solve( mechRhsVec, mechSolVec );

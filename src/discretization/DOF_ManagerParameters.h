@@ -2,7 +2,7 @@
 #define included_AMP_DOF_ManagerParameters
 
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 namespace AMP {
 namespace Discretization {
@@ -19,24 +19,24 @@ namespace Discretization {
 class DOFManagerParameters
 {
 public:
-    typedef AMP::shared_ptr<AMP::Discretization::DOFManagerParameters> shared_ptr;
+    typedef std::shared_ptr<AMP::Discretization::DOFManagerParameters> shared_ptr;
 
     //! Empty constructor for a DOF manager object
     DOFManagerParameters();
 
     //! Default constructor for a DOF manager object
-    explicit DOFManagerParameters( AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+    explicit DOFManagerParameters( std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     //! Return the mesh
-    AMP::shared_ptr<AMP::Mesh::Mesh> getMesh() { return mesh; }
+    std::shared_ptr<AMP::Mesh::Mesh> getMesh() { return mesh; }
 
 
 protected:
     //! Pointer to the underlying Mesh (may be NULL)
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> mesh;
 
     //! Pointer to the underlying VectorSpace (may be NULL)
-    // AMP::shared_ptr<AMP::Discretization::VectorSpace>  vectorSpace;
+    // std::shared_ptr<AMP::Discretization::VectorSpace>  vectorSpace;
 };
 
 

@@ -218,21 +218,21 @@ bool Database::isDatabase( const AMP::string_view &key ) const
     auto ptr2 = dynamic_cast<const Database *>( d_data[index].get() );
     return ptr2 != nullptr;
 }
-AMP::shared_ptr<Database> Database::getDatabase( const AMP::string_view &key )
+std::shared_ptr<Database> Database::getDatabase( const AMP::string_view &key )
 {
     auto hash = hashString( key );
     int index = find( hash );
     DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
-    auto ptr2 = AMP::dynamic_pointer_cast<Database>( d_data[index] );
+    auto ptr2 = std::dynamic_pointer_cast<Database>( d_data[index] );
     DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
     return ptr2;
 }
-AMP::shared_ptr<const Database> Database::getDatabase( const AMP::string_view &key ) const
+std::shared_ptr<const Database> Database::getDatabase( const AMP::string_view &key ) const
 {
     auto hash = hashString( key );
     int index = find( hash );
     DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
-    auto ptr2 = AMP::dynamic_pointer_cast<const Database>( d_data[index] );
+    auto ptr2 = std::dynamic_pointer_cast<const Database>( d_data[index] );
     DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
     return ptr2;
 }

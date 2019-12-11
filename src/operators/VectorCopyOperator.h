@@ -3,8 +3,8 @@
 
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/VectorCopyOperatorParameters.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 namespace AMP {
 namespace Operator {
@@ -12,7 +12,7 @@ namespace Operator {
 class VectorCopyOperator : public Operator
 {
 public:
-    explicit VectorCopyOperator( const AMP::shared_ptr<VectorCopyOperatorParameters> &params );
+    explicit VectorCopyOperator( const std::shared_ptr<VectorCopyOperatorParameters> &params );
 
     virtual ~VectorCopyOperator() {}
 
@@ -25,8 +25,8 @@ public:
 
 private:
     // vector to copy into
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_copyVector;
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_copyVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_copyVector;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_copyVariable;
 };
 
 } // namespace Operator

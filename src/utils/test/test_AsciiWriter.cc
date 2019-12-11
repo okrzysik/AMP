@@ -43,13 +43,13 @@ AMP::LinearAlgebra::Vector::shared_ptr createVector( AMP::LinearAlgebra::Variabl
     range[3] = 1.0;
     range[5] = 1.0;
     // Create a generic MeshParameters object
-    AMP::shared_ptr<AMP::Database> database( new AMP::Database( "Mesh" ) );
+    std::shared_ptr<AMP::Database> database( new AMP::Database( "Mesh" ) );
     database->putScalar<int>( "dim", 3 );
     database->putScalar<std::string>( "MeshName", "mesh1" );
     database->putScalar<std::string>( "Generator", "cube" );
     database->putVector<int>( "Size", size );
     database->putVector<double>( "Range", range );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( comm );
     // Create an AMP mesh
     auto mesh = AMP::Mesh::BoxMesh::generate( params );

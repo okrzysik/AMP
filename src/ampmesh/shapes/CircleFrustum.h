@@ -23,7 +23,7 @@ public:
      * \brief Construct a CircleFrustum geometry
      * \param db        Input database
      */
-    explicit CircleFrustum( AMP::shared_ptr<AMP::Database> db );
+    explicit CircleFrustum( std::shared_ptr<AMP::Database> db );
 
     /**
      * \brief Construct a CircleFrustum geometry
@@ -54,7 +54,7 @@ public: // Functions inherited from Geometry
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<bool> getPeriodicDim() const override final;
     virtual std::vector<int> getLogicalSurfaceIds() const override final;
-    virtual AMP::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
+    virtual std::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:              // Internal data
     uint8_t d_dir;      // The direction of the center axis

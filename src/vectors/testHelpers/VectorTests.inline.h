@@ -13,7 +13,7 @@ template<typename VIEWER>
 void VectorTests::DeepCloneOfView( AMP::UnitTest *utils )
 {
     auto vector1 = d_factory->getVector();
-    if ( !AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vector1 ) )
+    if ( !std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vector1 ) )
         return;
     vector1      = VIEWER::view( vector1 );
     auto vector2 = vector1->cloneVector();

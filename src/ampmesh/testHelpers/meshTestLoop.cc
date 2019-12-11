@@ -7,7 +7,7 @@ namespace AMP {
 namespace Mesh {
 
 
-void meshTests::MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshTestLoop( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     PROFILE_START( "MeshTestLoop" );
     // Run some basic sanity checks
@@ -42,7 +42,7 @@ void meshTests::MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh
 }
 
 
-void meshTests::MeshGeometryTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshGeometryTestLoop( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // Return if we do not have a geometry to work with
     if ( !mesh->getGeometry() )
@@ -57,7 +57,7 @@ void meshTests::MeshGeometryTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Me
 
 
 void meshTests::MeshVectorTestLoop( AMP::UnitTest *ut,
-                                    AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                    std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                     bool fast )
 {
 // Run the vector tests
@@ -75,7 +75,7 @@ void meshTests::MeshVectorTestLoop( AMP::UnitTest *ut,
 
 
 void meshTests::MeshMatrixTestLoop( AMP::UnitTest *ut,
-                                    AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                    std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                     bool fast )
 {
 // Run the matrix tests

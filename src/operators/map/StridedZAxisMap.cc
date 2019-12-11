@@ -11,11 +11,11 @@ namespace Operator {
 /************************************************************************
  *  Default constructor                                                  *
  ************************************************************************/
-StridedZAxisMap::StridedZAxisMap( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
+StridedZAxisMap::StridedZAxisMap( const std::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : ScalarZAxisMap( p )
 {
-    AMP::shared_ptr<Map3to1to3Parameters> params =
-        AMP::dynamic_pointer_cast<Map3to1to3Parameters>( p );
+    std::shared_ptr<Map3to1to3Parameters> params =
+        std::dynamic_pointer_cast<Map3to1to3Parameters>( p );
     AMP_ASSERT( params );
 
     d_inpDofs   = params->d_db->getWithDefault( "InputDOFsPerObject", 1 );

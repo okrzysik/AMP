@@ -2,8 +2,8 @@
 #define included_AMP_Property
 
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/MultiVector.h"
+#include <memory>
 
 #include <algorithm>
 #include <limits>
@@ -185,7 +185,7 @@ public:
 
     //! determine if a set of sets of values are all within range or not
     template<class INPUT_VTYPE>
-    bool in_range( const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &values );
+    bool in_range( const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &values );
 
     //! set the translation table between property arguments and AMP::Multivector entries
     void set_translator( const std::map<std::string, std::string> &xlator )
@@ -204,8 +204,8 @@ public:
     std::map<std::string, std::string> get_translator() { return d_translator; }
 
     //! converts AMP::MultiVector to a map of pointers to AMP::Vectors based on argument names
-    std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>>
-    make_map( const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
+    std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>>
+    make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
     //! indicator for scalar evaluator
     virtual bool isScalar() { return true; }
@@ -258,7 +258,7 @@ private:
     /* Loops through input vectors, calling the child eval function, returning scalar */
     template<class INPUT_VTYPE, class RETURN_VTYPE>
     void evalvActual( RETURN_VTYPE &r,
-                      const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &args );
+                      const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &args );
 
 public:
     /**
@@ -279,7 +279,7 @@ public:
      *  \a args  indexed by names other than those in  get_arguments()  are ignored.
      */
     void virtual evalv( std::vector<Number> &r,
-                        const std::map<std::string, AMP::shared_ptr<std::vector<Number>>> &args );
+                        const std::map<std::string, std::shared_ptr<std::vector<Number>>> &args );
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r AMP vector of return values
@@ -295,8 +295,8 @@ public:
      *  returned in (*r[k][j])[i].
      */
     void virtual evalv(
-        AMP::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-        const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
+        std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
+        const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r AMP vector of return values
@@ -310,22 +310,22 @@ public:
      * and passed to another
      * version of evalv.
      */
-    void virtual evalv( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-                        const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
+    void virtual evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
+                        const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 };
 
 template<>
-std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>>
-Property<double>::make_map( const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
+std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>>
+Property<double>::make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
 template<>
 void Property<double>::evalv(
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-    const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
+    const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
 
 template<>
-void Property<double>::evalv( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-                              const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
+void Property<double>::evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
+                              const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
 } // namespace Materials
 } // namespace AMP

@@ -190,9 +190,9 @@ void testMultiDOFManager( AMP::UnitTest *ut )
     AMP::Discretization::DOFManager::shared_ptr DOFs =
         AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    if ( AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh ).get() != nullptr ) {
-        AMP::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF =
-            AMP::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>( DOFs );
+    if ( std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh ).get() != nullptr ) {
+        std::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF =
+            std::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>( DOFs );
         if ( multiDOF.get() != nullptr ) {
             ut->passes( "Created multiDOFManager from simpleDOFManager: " + GENERATOR::name() );
             testMultiDOFMap( ut, multiDOF );

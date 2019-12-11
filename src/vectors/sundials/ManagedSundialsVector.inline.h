@@ -6,7 +6,7 @@ namespace LinearAlgebra {
 inline ManagedVector *ManagedSundialsVector::getNewRawPtr() const
 {
     return new ManagedSundialsVector(
-        AMP::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
+        std::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
 }
 
 

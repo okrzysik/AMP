@@ -9,8 +9,8 @@
 #include "AMP/time_integrators/TimeOperatorParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 
 namespace AMP {
@@ -35,14 +35,14 @@ public:
      * Main constructor.
      @param [in] params: shared pointer to TimeOperatorParameters object.
      */
-    explicit IDATimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> params );
+    explicit IDATimeOperator( std::shared_ptr<AMP::Operator::OperatorParameters> params );
 
     /**
      * virtual destructor
      */
     virtual ~IDATimeOperator();
 
-    // virtual void reset(const AMP::shared_ptr<AMP::Operator::OperatorParameters>& params);
+    // virtual void reset(const std::shared_ptr<AMP::Operator::OperatorParameters>& params);
 
     /**
       The function that computes the residual.
@@ -56,7 +56,7 @@ public:
      * registers the time derivative vector provided by IDA with this operator
      @param [in] vec   shared pointer to time derivative computed by IDA
      */
-    void registerIDATimeDerivative( AMP::shared_ptr<AMP::LinearAlgebra::Vector> vec )
+    void registerIDATimeDerivative( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
     {
         d_pIDATimeDerivative = vec;
     }
@@ -65,7 +65,7 @@ public:
      * registers a source term if any
      @param [in] vec   shared pointer to vector for source term
      */
-    void registerSourceTerm( AMP::shared_ptr<AMP::LinearAlgebra::Vector> vec )
+    void registerSourceTerm( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
     {
         d_pSourceTerm = vec;
     }
@@ -79,7 +79,7 @@ public:
 protected:
     IDATimeOperator();
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pIDATimeDerivative;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pIDATimeDerivative;
 
     bool d_cloningHappened;
 

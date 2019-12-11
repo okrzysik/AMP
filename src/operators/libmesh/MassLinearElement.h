@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 // AMP files
 #include "AMP/operators/libmesh/MassElement.h"
@@ -15,7 +15,7 @@ namespace Operator {
 class MassLinearElement : public MassElement
 {
 public:
-    explicit MassLinearElement( const AMP::shared_ptr<ElementOperationParameters> &params )
+    explicit MassLinearElement( const std::shared_ptr<ElementOperationParameters> &params )
         : MassElement( params ),
           d_elementMassMatrix( NULL ),
           d_equation( MassDensityModel::MassEquation::UnknownMassEquation )

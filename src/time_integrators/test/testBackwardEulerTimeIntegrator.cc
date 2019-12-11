@@ -1,4 +1,4 @@
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 #include <string>
 
 #include "AMP/utils/AMPManager.h"
@@ -55,8 +55,8 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
     auto input_db = AMP::Database::parseInputFile( input_file );
 
     // Get the Mesh database and create the mesh parameters
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    std::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
@@ -79,27 +79,27 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
             meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
 
     // create a linear BVP operator
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator;
-    diffusionOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator;
+    diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "LinearOperator", input_db, elementModel ) );
 
     // create a mass linear BVP operator
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> massOperator;
-    massOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> massOperator;
+    massOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "MassLinearOperator", input_db, massElementModel ) );
 
     //  create neutronics source
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
-    AMP::shared_ptr<AMP::Database> neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
-    AMP::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(
+    std::shared_ptr<AMP::Database> neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
+    std::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(
         new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ) );
     neutronicsParams->d_Mesh = meshAdapter;
-    AMP::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(
+    std::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(
         new AMP::Operator::NeutronicsRhs( neutronicsParams ) );
 
     AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar =
@@ -115,9 +115,9 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
     //  Integrate Nuclear Rhs over Density * GeomType::Volume //
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceTransportModel;
-    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceTransportModel;
+    std::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
+        std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "VolumeIntegralOperator", input_db, sourceTransportModel ) );
 
@@ -160,15 +160,15 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
 
     diffusionOperator->modifyRHSvector( rhsVec );
 
-    AMP::shared_ptr<AMP::Database> pcSolver_db = input_db->getDatabase( "Solver" );
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> pcSolverParams(
+    std::shared_ptr<AMP::Database> pcSolver_db = input_db->getDatabase( "Solver" );
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> pcSolverParams(
         new AMP::Solver::SolverStrategyParameters( pcSolver_db ) );
     pcSolverParams->d_pOperator = diffusionOperator;
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
+    std::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
         new AMP::Solver::TrilinosMLSolver( pcSolverParams ) );
 
-    AMP::shared_ptr<AMP::Database> timeIntegrator_db = input_db->getDatabase( "BDFTimeIntegrator" );
-    AMP::shared_ptr<AMP::TimeIntegrator::ImplicitTimeIntegratorParameters> time_Params(
+    std::shared_ptr<AMP::Database> timeIntegrator_db = input_db->getDatabase( "BDFTimeIntegrator" );
+    std::shared_ptr<AMP::TimeIntegrator::ImplicitTimeIntegratorParameters> time_Params(
         new AMP::TimeIntegrator::ImplicitTimeIntegratorParameters( timeIntegrator_db ) );
     time_Params->d_pMassOperator = massOperator;
     time_Params->d_operator      = diffusionOperator;
@@ -179,7 +179,7 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
     time_Params->d_pSourceTerm = rhsVec;
     time_Params->d_object_name = "ImplicitTimeIntegratorParameters";
 
-    AMP::shared_ptr<AMP::TimeIntegrator::BackwardEulerTimeIntegrator> BDFTimeIntegrator(
+    std::shared_ptr<AMP::TimeIntegrator::BackwardEulerTimeIntegrator> BDFTimeIntegrator(
         new AMP::TimeIntegrator::BackwardEulerTimeIntegrator( time_Params ) );
 
     if ( BDFTimeIntegrator.get() == nullptr ) {

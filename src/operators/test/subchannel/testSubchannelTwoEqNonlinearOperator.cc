@@ -12,8 +12,8 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <iostream>
 #include <string>
@@ -33,7 +33,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     // create mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db    = input_db->getDatabase( "Mesh" );
-    auto meshParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
     auto xyFaceMesh     = subchannelMesh->Subset(
@@ -45,8 +45,8 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
         AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DofsPerFace, 1 );
 
     // get input and output variables
-    auto inputVariable  = AMP::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
-    auto outputVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
+    auto inputVariable  = std::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
+    auto outputVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
 
     // create solution, rhs, and residual vectors
     auto SolVec = AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable, true );
@@ -55,14 +55,14 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     // create subchannel physics model
     auto subchannelPhysics_db = input_db->getDatabase( "SubchannelPhysicsModel" );
     auto params =
-        AMP::make_shared<AMP::Operator::ElementPhysicsModelParameters>( subchannelPhysics_db );
-    auto subchannelPhysicsModel = AMP::make_shared<AMP::Operator::SubchannelPhysicsModel>( params );
+        std::make_shared<AMP::Operator::ElementPhysicsModelParameters>( subchannelPhysics_db );
+    auto subchannelPhysicsModel = std::make_shared<AMP::Operator::SubchannelPhysicsModel>( params );
 
     // get nonlinear operator database
     auto subchannelOperator_db = input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" );
     // set operator parameters
     auto subchannelOpParams =
-        AMP::make_shared<AMP::Operator::SubchannelOperatorParameters>( subchannelOperator_db );
+        std::make_shared<AMP::Operator::SubchannelOperatorParameters>( subchannelOperator_db );
     subchannelOpParams->d_Mesh                   = subchannelMesh;
     subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
     subchannelOpParams->clad_x =
@@ -72,7 +72,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     subchannelOpParams->clad_d =
         input_db->getDatabase( "CladProperties" )->getVector<double>( "d" );
     auto subchannelOperator =
-        AMP::make_shared<AMP::Operator::SubchannelTwoEqNonlinearOperator>( subchannelOpParams );
+        std::make_shared<AMP::Operator::SubchannelTwoEqNonlinearOperator>( subchannelOpParams );
 
     // report successful creation
     ut->passes( exeName + ": creation" );

@@ -48,8 +48,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( matModelDatabase );
     auto mechanicsMaterialModel =
-        AMP::dynamic_pointer_cast<AMP::Operator::MechanicsMaterialModel>( elementPhysicsModel );
-    auto pevpModel = AMP::dynamic_pointer_cast<AMP::Operator::PericElastoViscoPlasticModel>(
+        std::dynamic_pointer_cast<AMP::Operator::MechanicsMaterialModel>( elementPhysicsModel );
+    auto pevpModel = std::dynamic_pointer_cast<AMP::Operator::PericElastoViscoPlasticModel>(
         mechanicsMaterialModel );
 
     pevpModel->preNonlinearInit( true, true );

@@ -14,11 +14,11 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 
 void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName )
@@ -36,7 +36,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
 
     // extract the Mesh database and create the mesh parameters
     auto meshDB = input_db->getDatabase( "Mesh" );
-    auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( meshDB );
+    auto params = std::make_shared<AMP::Mesh::MeshParameters>( meshDB );
     params->setComm( globalComm );
 
     // create the mesh
@@ -45,7 +45,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
     // create a linear diffusion operator
     auto linearOperator = AMP::Operator::OperatorBuilder::createOperator(
         meshAdapter, "LinearDiffusionOp", input_db );
-    auto diffOp = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( linearOperator );
+    auto diffOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( linearOperator );
 
     // extract the internal matrix
     const auto &userMat = diffOp->getMatrix();
@@ -63,8 +63,8 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
     const auto ampComm   = userVector->getComm();
 
     // construct a dof manager
-    const auto dofManager = AMP::make_shared<AMP::Discretization::DOFManager>( localSize, ampComm );
-    const auto copyVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "copyVariable" );
+    const auto dofManager = std::make_shared<AMP::Discretization::DOFManager>( localSize, ampComm );
+    const auto copyVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "copyVariable" );
 
     // create a vector based on the dofs and variable
     auto ampVector = AMP::LinearAlgebra::createVector( dofManager, copyVariable );
@@ -83,10 +83,10 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
     auto ampMat = AMP::LinearAlgebra::createMatrix( ampVector, ampVector, "auto", getColumnIDS );
 
     // construct a LinearOperator and set its matrix
-    const auto linearOpDB = AMP::make_shared<AMP::Database>( "linearOperatorDB" );
+    const auto linearOpDB = std::make_shared<AMP::Database>( "linearOperatorDB" );
     linearOpDB->putScalar<int>( "print_info_level", 0 );
-    auto linearOpParameters = AMP::make_shared<AMP::Operator::OperatorParameters>( linearOpDB );
-    auto linearOp           = AMP::make_shared<AMP::Operator::LinearOperator>( linearOpParameters );
+    auto linearOpParameters = std::make_shared<AMP::Operator::OperatorParameters>( linearOpDB );
+    auto linearOp           = std::make_shared<AMP::Operator::LinearOperator>( linearOpParameters );
     linearOp->setMatrix( ampMat );
     linearOp->setVariables( copyVariable, copyVariable );
 

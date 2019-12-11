@@ -21,7 +21,7 @@ public:
     int d_commTag;
     bool callMakeConsistentSet;
 
-    explicit AsyncMapOperatorParameters( AMP::shared_ptr<AMP::Database> db );
+    explicit AsyncMapOperatorParameters( std::shared_ptr<AMP::Database> db );
 
     virtual ~AsyncMapOperatorParameters();
 };

@@ -26,11 +26,11 @@ RNG::shared_ptr Vector::d_DefaultRNG;
 Vector::Vector() : VectorData(), VectorOperations()
 {
     d_VectorData = dynamic_cast<VectorData *>( this );
-    d_Ghosts     = AMP::make_shared<std::vector<double>>();
-    d_AddBuffer  = AMP::make_shared<std::vector<double>>();
+    d_Ghosts     = std::make_shared<std::vector<double>>();
+    d_AddBuffer  = std::make_shared<std::vector<double>>();
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UpdateState::UNCHANGED;
-    d_Views        = AMP::make_shared<std::vector<AMP::weak_ptr<Vector>>>();
+    d_Views        = std::make_shared<std::vector<std::weak_ptr<Vector>>>();
     // Set default output stream
     d_output_stream = &AMP::plog;
 }
@@ -46,7 +46,7 @@ Vector::Vector( VectorParameters::shared_ptr parameters )
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UpdateState::UNCHANGED;
     d_DOFManager   = parameters->d_DOFManager;
-    d_Views        = AMP::make_shared<std::vector<AMP::weak_ptr<Vector>>>();
+    d_Views        = std::make_shared<std::vector<std::weak_ptr<Vector>>>();
 }
 
 
@@ -98,7 +98,7 @@ Vector::shared_ptr Vector::select( const VectorSelector &s, const std::string &v
     }
     Vector::shared_ptr retVal = this->selectInto( s );
     if ( retVal != nullptr ) {
-        if ( AMP::dynamic_pointer_cast<MultiVector>( retVal ) == nullptr )
+        if ( std::dynamic_pointer_cast<MultiVector>( retVal ) == nullptr )
             retVal = MultiVector::view( retVal, retVal->getComm() );
         Variable::shared_ptr var( new Variable( variable_name ) );
         retVal->setVariable( var );
@@ -115,10 +115,10 @@ Vector::const_shared_ptr Vector::constSelect( const VectorSelector &s,
     }
     Vector::const_shared_ptr retVal = this->selectInto( s );
     if ( retVal != nullptr ) {
-        if ( AMP::dynamic_pointer_cast<const MultiVector>( retVal ) == nullptr )
+        if ( std::dynamic_pointer_cast<const MultiVector>( retVal ) == nullptr )
             retVal = MultiVector::constView( retVal, retVal->getComm() );
         Variable::shared_ptr var( new Variable( variable_name ) );
-        AMP::const_pointer_cast<Vector>( retVal )->setVariable( var );
+        std::const_pointer_cast<Vector>( retVal )->setVariable( var );
     }
     return retVal;
 }
@@ -154,7 +154,7 @@ Vector::shared_ptr Vector::cloneVector( const std::string &name ) const
     if ( getVariable() ) {
         retVal = cloneVector( getVariable()->cloneVariable( name ) );
     } else {
-        retVal = cloneVector( AMP::make_shared<Variable>( name ) );
+        retVal = cloneVector( std::make_shared<Variable>( name ) );
     }
     return retVal;
 }
@@ -170,9 +170,9 @@ void Vector::setCommunicationList( CommunicationList::shared_ptr comm )
     if ( comm ) {
         addCommunicationListToParameters( comm );
         d_Ghosts =
-            AMP::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
+            std::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
         d_AddBuffer =
-            AMP::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
+            std::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
     }
 }
 

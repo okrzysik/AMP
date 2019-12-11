@@ -59,7 +59,7 @@ libMeshElement::libMeshElement( int dim,
 }
 libMeshElement::libMeshElement( int dim,
                                 GeomType type,
-                                AMP::shared_ptr<::Elem> libmesh_element,
+                                std::shared_ptr<::Elem> libmesh_element,
                                 unsigned int rank,
                                 MeshID meshID,
                                 const libMesh *mesh )
@@ -191,7 +191,7 @@ void libMeshElement::getElements( const GeomType type, std::vector<MeshElement> 
                 tmp = elem->build_side( i, false );
             else
                 AMP_ERROR( "Internal error" );
-            AMP::shared_ptr<::Elem> element( tmp.release() );
+            std::shared_ptr<::Elem> element( tmp.release() );
             // We need to generate a vaild id and owning processor
             unsigned int n_node_min = ( (unsigned int) type ) + 1;
             AMP_ASSERT( element->n_nodes() >= n_node_min );
@@ -224,7 +224,7 @@ void libMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &neighbo
         neighbors.resize( neighbor_nodes.size(), MeshElement::shared_ptr() );
         for ( size_t i = 0; i < neighbor_nodes.size(); i++ ) {
             // There are no NULL neighbors
-            AMP::shared_ptr<libMeshElement> neighbor( new libMeshElement(
+            std::shared_ptr<libMeshElement> neighbor( new libMeshElement(
                 d_dim, GeomType::Vertex, (void *) neighbor_nodes[i], d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
@@ -236,9 +236,9 @@ void libMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &neighbo
         neighbors.resize( elem->n_neighbors() );
         for ( size_t i = 0; i < neighbors.size(); i++ ) {
             auto *neighbor_elem = (void *) elem->neighbor( i );
-            AMP::shared_ptr<libMeshElement> neighbor;
+            std::shared_ptr<libMeshElement> neighbor;
             if ( neighbor_elem != nullptr )
-                neighbor = AMP::shared_ptr<libMeshElement>( new libMeshElement(
+                neighbor = std::shared_ptr<libMeshElement>( new libMeshElement(
                     d_dim, d_globalID.type(), neighbor_elem, d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
@@ -324,7 +324,7 @@ bool libMeshElement::isOnBoundary( int id ) const
 {
     GeomType type                     = d_globalID.type();
     bool on_boundary                  = false;
-    AMP::shared_ptr<::Mesh> d_libMesh = d_mesh->getlibMesh();
+    std::shared_ptr<::Mesh> d_libMesh = d_mesh->getlibMesh();
     if ( type == GeomType::Vertex ) {
         // Entity is a libmesh node
         auto *node                  = (::Node *) ptr_element;

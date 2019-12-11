@@ -33,7 +33,7 @@ public:
     libMeshWrapperType( ): libMesh::Parallel::StandardType<TYPE>() {}
     ~libMeshWrapperType() { free(); }
 }
-AMP::shared_ptr<libMeshWrapperType<Hilbert::HilbertIndices> > type_hilbert;*/
+std::shared_ptr<libMeshWrapperType<Hilbert::HilbertIndices> > type_hilbert;*/
 
 
 /************************************************************

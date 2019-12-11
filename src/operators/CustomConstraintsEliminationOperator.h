@@ -12,7 +12,7 @@ class CustomConstraintsEliminationOperator : public ConstraintsEliminationOperat
 
 public:
     explicit CustomConstraintsEliminationOperator(
-        const AMP::shared_ptr<OperatorParameters> &params );
+        const std::shared_ptr<OperatorParameters> &params );
 
     virtual void addSlaveToMaster( AMP::LinearAlgebra::Vector::shared_ptr u ) override;
 

@@ -52,7 +52,7 @@ public:
      * \param[in] comm  Communicator to build the MultiVector on
      * \param[in] vecs  Optional list of vectors in the MultiVector
      */
-    static AMP::shared_ptr<MultiVector>
+    static std::shared_ptr<MultiVector>
     create( Variable::shared_ptr name,
             const AMP_MPI &comm,
             const std::vector<Vector::shared_ptr> &vecs = std::vector<Vector::shared_ptr>() );
@@ -62,7 +62,7 @@ public:
      * \param[in] comm  Communicator to build the MultiVector on
      * \param[in] vecs  Optional list of vectors in the MultiVector
      */
-    static AMP::shared_ptr<MultiVector>
+    static std::shared_ptr<MultiVector>
     create( const std::string &name,
             const AMP_MPI &comm,
             const std::vector<Vector::shared_ptr> &vecs = std::vector<Vector::shared_ptr>() );
@@ -72,7 +72,7 @@ public:
      * \param[in] comm  Communicator to build the MultiVector on
      * \param[in] vecs  Optional list of vectors in the MultiVector
      */
-    static AMP::shared_ptr<const MultiVector>
+    static std::shared_ptr<const MultiVector>
     const_create( Variable::shared_ptr name,
                   const AMP_MPI &comm,
                   const std::vector<Vector::const_shared_ptr> &vecs =
@@ -83,7 +83,7 @@ public:
      * \param[in] comm  Communicator to build the MultiVector on
      * \param[in] vecs  Optional list of vectors in the MultiVector
      */
-    static AMP::shared_ptr<const MultiVector>
+    static std::shared_ptr<const MultiVector>
     const_create( const std::string &name,
                   const AMP_MPI &comm,
                   const std::vector<Vector::const_shared_ptr> &vecs =
@@ -96,7 +96,7 @@ public:
      * and vec is added to it.  If vec is not a parallel vector(such as a SimpleVector), comm
      * must be specified.
      */
-    static AMP::shared_ptr<MultiVector> view( Vector::shared_ptr vec,
+    static std::shared_ptr<MultiVector> view( Vector::shared_ptr vec,
                                               const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
 
     /** \brief Create a multivector view of a vector
@@ -106,7 +106,7 @@ public:
      * and vec is added to it.  If vec is not a parallel vector(such as a SimpleVector), comm
      * must be specified.
      */
-    static AMP::shared_ptr<const MultiVector>
+    static std::shared_ptr<const MultiVector>
     constView( Vector::const_shared_ptr vec, const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
 
     /** \brief Encapsulate a vector in a MultiVector
@@ -116,7 +116,7 @@ public:
      * and vec is added to it.  If vec is not a parallel vector(such as a SimpleVector), comm
      * must be specified.
      */
-    static AMP::shared_ptr<MultiVector>
+    static std::shared_ptr<MultiVector>
     encapsulate( Vector::shared_ptr vec, const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
 
     /** \brief Replace a vector in a MultiVector
@@ -182,10 +182,10 @@ public:
     virtual void assemble() override;
 
     // Vector engine functions
-    virtual AMP::shared_ptr<VectorData> getNewBuffer() override;
+    virtual std::shared_ptr<VectorData> getNewBuffer() override;
     virtual bool sameEngine( VectorEngine &rhs ) const override;
-    virtual AMP::shared_ptr<VectorEngine> cloneEngine( AMP::shared_ptr<VectorData> ) const override;
-    virtual void swapEngines( AMP::shared_ptr<VectorEngine> p ) override;
+    virtual std::shared_ptr<VectorEngine> cloneEngine( std::shared_ptr<VectorData> ) const override;
+    virtual void swapEngines( std::shared_ptr<VectorEngine> p ) override;
 
 
 protected:

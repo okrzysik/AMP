@@ -13,22 +13,22 @@ namespace Operator {
 class NavierStokesLSWFFEOperatorParameters : public FEOperatorParameters
 {
 public:
-    explicit NavierStokesLSWFFEOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit NavierStokesLSWFFEOperatorParameters( std::shared_ptr<AMP::Database> db )
         : FEOperatorParameters( db )
     {
     }
 
     virtual ~NavierStokesLSWFFEOperatorParameters() {}
 
-    //      AMP::shared_ptr<AMP::Discretization::DOFManager>
+    //      std::shared_ptr<AMP::Discretization::DOFManager>
     //      d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
     //      AMP::LinearAlgebra::Vector::shared_ptr
     //      d_frozenVec[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
 
-    AMP::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec;
 
-    AMP::shared_ptr<FlowTransportModel> d_transportModel;
+    std::shared_ptr<FlowTransportModel> d_transportModel;
 
 protected:
 private:

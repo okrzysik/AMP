@@ -9,7 +9,7 @@ namespace TimeIntegrator {
 class BackwardEulerTimeOperator : public TimeOperator
 {
 public:
-    explicit BackwardEulerTimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> params );
+    explicit BackwardEulerTimeOperator( std::shared_ptr<AMP::Operator::OperatorParameters> params );
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;

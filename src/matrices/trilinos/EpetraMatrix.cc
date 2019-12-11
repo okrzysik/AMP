@@ -33,9 +33,9 @@ EpetraMatrix::EpetraMatrix( Epetra_Map &map, Epetra_Map *, int *entities )
 }
 
 
-AMP::shared_ptr<EpetraMatrix> EpetraMatrix::createView( shared_ptr in_matrix )
+std::shared_ptr<EpetraMatrix> EpetraMatrix::createView( shared_ptr in_matrix )
 {
-    auto mat = AMP::dynamic_pointer_cast<EpetraMatrix>( in_matrix );
+    auto mat = std::dynamic_pointer_cast<EpetraMatrix>( in_matrix );
     if ( !mat )
         AMP_ERROR( "Managed memory matrix is not well defined" );
     return mat;
@@ -54,13 +54,13 @@ void EpetraMatrix::setEpetraMaps( Vector::shared_ptr range, Vector::shared_ptr d
                     "Epetra does not support vectors with global size greater than 2^31" );
         auto N_global = static_cast<int>( range->getGlobalSize() );
         auto N_local  = static_cast<int>( range->getLocalSize() );
-        d_RangeMap    = AMP::make_shared<Epetra_Map>( N_global, N_local, 0, comm );
+        d_RangeMap    = std::make_shared<Epetra_Map>( N_global, N_local, 0, comm );
         if ( domain ) {
             AMP_INSIST( domain->getGlobalSize() < 0x80000000,
                         "Epetra does not support vectors with global size greater than 2^31" );
             N_global    = static_cast<int>( domain->getGlobalSize() );
             N_local     = static_cast<int>( domain->getLocalSize() );
-            d_DomainMap = AMP::make_shared<Epetra_Map>( N_global, N_local, 0, comm );
+            d_DomainMap = std::make_shared<Epetra_Map>( N_global, N_local, 0, comm );
         }
     }
 }

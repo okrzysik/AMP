@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 /* AMP files */
 #include "MechanicsElement.h"
@@ -22,7 +22,7 @@ class MechanicsLinearElement : public MechanicsElement
 {
 public:
     //! Constructor.
-    explicit MechanicsLinearElement( const AMP::shared_ptr<ElementOperationParameters> &params )
+    explicit MechanicsLinearElement( const std::shared_ptr<ElementOperationParameters> &params )
         : MechanicsElement( params ), d_elementStiffnessMatrix( nullptr )
     {
         d_JxW  = &( d_fe->get_JxW() );

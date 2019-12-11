@@ -10,11 +10,11 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include "applyTests.h"
 
@@ -38,7 +38,7 @@ static void myTest( AMP::UnitTest *ut )
     // Get the Mesh database and create the mesh parameters
     AMP_INSIST( outerInput_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto database = outerInput_db->getDatabase( "Mesh" );
-    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
@@ -59,7 +59,7 @@ static void myTest( AMP::UnitTest *ut )
 
         AMP_INSIST( innerInput_db->keyExists( "testOperator" ), "key missing!" );
 
-        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
         auto testOperator = AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "testOperator", innerInput_db, elementPhysicsModel );
 
@@ -71,7 +71,7 @@ static void myTest( AMP::UnitTest *ut )
             ut->failure( msgPrefix + " : create" );
         }
 
-        auto myLinOp = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( testOperator );
+        auto myLinOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( testOperator );
 
         AMP_INSIST( myLinOp != nullptr, "Is not a linear operator!" );
 
@@ -93,18 +93,18 @@ static void myTest( AMP::UnitTest *ut )
 
         // now run apply tests with multi-vectors
         auto postfix   = AMP::Utilities::intToString( i );
-        auto auxInpVar = AMP::make_shared<AMP::LinearAlgebra::Variable>(
+        auto auxInpVar = std::make_shared<AMP::LinearAlgebra::Variable>(
             "testLinearOperator-1-auxInpVar" + postfix );
-        auto auxOutVar = AMP::make_shared<AMP::LinearAlgebra::Variable>(
+        auto auxOutVar = std::make_shared<AMP::LinearAlgebra::Variable>(
             "testLinearOperator-1-auxOutVar" + postfix );
 
         auto myMultiInpVar =
-            AMP::make_shared<AMP::LinearAlgebra::MultiVariable>( "MultiInputVariable" );
+            std::make_shared<AMP::LinearAlgebra::MultiVariable>( "MultiInputVariable" );
         myMultiInpVar->add( myInpVar );
         myMultiInpVar->add( auxInpVar );
 
         auto myMultiOutVar =
-            AMP::make_shared<AMP::LinearAlgebra::MultiVariable>( "MultiOutputVariable" );
+            std::make_shared<AMP::LinearAlgebra::MultiVariable>( "MultiOutputVariable" );
         myMultiOutVar->add( myOutVar );
         myMultiOutVar->add( auxOutVar );
 
@@ -119,7 +119,7 @@ static void myTest( AMP::UnitTest *ut )
 
         // test getJacobianParameters
         msgPrefix = exeName + " : " + innerInput_file;
-        AMP::shared_ptr<AMP::LinearAlgebra::Vector> nullGuess;
+        std::shared_ptr<AMP::LinearAlgebra::Vector> nullGuess;
         auto jacobianParameters = testOperator->getParameters( "Jacobian", nullGuess );
 
         if ( jacobianParameters.get() == nullptr ) {

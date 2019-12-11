@@ -4,7 +4,7 @@
 
 #include "MechanicsMaterialModel.h"
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <vector>
 
@@ -15,7 +15,7 @@ class ThermalStrainMaterialModel : public MechanicsMaterialModel
 {
 public:
     explicit ThermalStrainMaterialModel(
-        const AMP::shared_ptr<MechanicsMaterialModelParameters> & );
+        const std::shared_ptr<MechanicsMaterialModelParameters> & );
 
     virtual ~ThermalStrainMaterialModel() {}
 

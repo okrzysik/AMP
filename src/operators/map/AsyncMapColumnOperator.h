@@ -27,7 +27,7 @@ class AsyncMapColumnOperator : public AsynchronousColumnOperator
 {
 public:
     //! Constructor
-    explicit AsyncMapColumnOperator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit AsyncMapColumnOperator( const std::shared_ptr<OperatorParameters> &params );
 
     /** \brief  Call setVector on all vectors in the column
      * \param[in] p  The auxiliary or "frozen" vector to store results in
@@ -37,7 +37,7 @@ public:
     //!  Returns the frozen vector
     virtual AMP::LinearAlgebra::Vector::shared_ptr getFrozenVector() { return d_OutputVector; }
 
-    virtual void append( AMP::shared_ptr<Operator> op ) override;
+    virtual void append( std::shared_ptr<Operator> op ) override;
 
     // Overload the apply operator to include makeConsistent
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
@@ -54,8 +54,8 @@ public:
      *
      */
     template<typename MAP_TYPE>
-    static AMP::shared_ptr<AsyncMapColumnOperator> build( AMP::Mesh::Mesh::shared_ptr manager,
-                                                          AMP::shared_ptr<AMP::Database> database );
+    static std::shared_ptr<AsyncMapColumnOperator> build( AMP::Mesh::Mesh::shared_ptr manager,
+                                                          std::shared_ptr<AMP::Database> database );
 
     // Function to determine if a makeConsistentSet is required
     virtual bool requiresMakeConsistentSet();
@@ -65,8 +65,8 @@ private:
     AMP::LinearAlgebra::Vector::shared_ptr d_OutputVector;
 
     // Function to create the databases for the individual maps
-    static std::vector<AMP::shared_ptr<AMP::Database>>
-    createDatabases( AMP::shared_ptr<AMP::Database> database );
+    static std::vector<std::shared_ptr<AMP::Database>>
+    createDatabases( std::shared_ptr<AMP::Database> database );
 };
 } // namespace Operator
 } // namespace AMP

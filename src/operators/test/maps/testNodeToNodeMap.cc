@@ -46,7 +46,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     auto mesh_db = input_db->getDatabase( "Mesh" );
-    auto params  = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto params  = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
@@ -58,8 +58,8 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     // Create a simple DOFManager and the vectors
     int DOFsPerNode     = map_db->getScalar<int>( "DOFsPerObject" );
     std::string varName = map_db->getString( "VariableName" );
-    auto nodalVariable  = AMP::make_shared<AMP::LinearAlgebra::Variable>( varName );
-    auto DOFparams      = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
+    auto nodalVariable  = std::make_shared<AMP::LinearAlgebra::Variable>( varName );
+    auto DOFparams      = std::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
     auto DOFs           = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, DOFsPerNode );
 

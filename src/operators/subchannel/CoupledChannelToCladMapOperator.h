@@ -15,7 +15,7 @@ class CoupledChannelToCladMapOperator : public Operator
 {
 public:
     explicit CoupledChannelToCladMapOperator(
-        const AMP::shared_ptr<CoupledChannelToCladMapOperatorParameters> &params );
+        const std::shared_ptr<CoupledChannelToCladMapOperatorParameters> &params );
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
     {
@@ -39,10 +39,10 @@ private:
     AMP::LinearAlgebra::Vector::shared_ptr d_subchannelTemperature;
     AMP::LinearAlgebra::Vector::shared_ptr d_subchannelDensity;
 
-    AMP::shared_ptr<AMP::Operator::Operator> d_thermalMapOperator;
-    AMP::shared_ptr<AMP::Operator::Operator> d_densityMapOperator;
+    std::shared_ptr<AMP::Operator::Operator> d_thermalMapOperator;
+    std::shared_ptr<AMP::Operator::Operator> d_densityMapOperator;
 
-    AMP::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
+    std::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 };
 } // namespace Operator
 } // namespace AMP

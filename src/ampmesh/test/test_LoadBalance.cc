@@ -30,7 +30,7 @@ int main( int argc, char **argv )
     // Simulate loading the mesh
     auto input_db = AMP::Database::parseInputFile( input_file );
     auto database = input_db->getDatabase( "Mesh" );
-    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     std::vector<int> comm_ranks( N_procs );
     for ( int i = 0; i < N_procs; i++ )
         comm_ranks[i] = i;

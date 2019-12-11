@@ -393,7 +393,7 @@ std::vector<std::vector<double>> TensorFickCoefficientProp::evalTensor( std::vec
 
 FixedClad::FixedClad()
 {
-    d_propertyMap = new std::map<std::string, AMP::shared_ptr<Property<double>>>();
+    d_propertyMap = new std::map<std::string, std::shared_ptr<Property<double>>>();
     INSERT_PROPERTY_IN_MAP( ThermalConductivity, FixedClad_NS );
     INSERT_PROPERTY_IN_MAP( FickCoefficient, FixedClad_NS );
     INSERT_PROPERTY_IN_MAP( SoretCoefficient, FixedClad_NS );

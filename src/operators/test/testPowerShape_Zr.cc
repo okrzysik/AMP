@@ -7,10 +7,10 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <string>
 
@@ -18,7 +18,7 @@
 static void test_with_shape( AMP::UnitTest *ut )
 {
     //  Read Input File
-    auto input_db = AMP::make_shared<AMP::Database>();
+    auto input_db = std::make_shared<AMP::Database>();
     auto mesh_db  = input_db->putDatabase( "Mesh" );
     mesh_db->putScalar( "FileName", "cylinder270.e" );
     mesh_db->putScalar( "MeshType", "libMesh" );
@@ -29,7 +29,7 @@ static void test_with_shape( AMP::UnitTest *ut )
     mesh_db->putScalar( "z_offset", 0. );
 
     //   Create the Mesh
-    auto mgrParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
@@ -47,7 +47,7 @@ static void test_with_shape( AMP::UnitTest *ut )
         meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerNode, split );
 
 #ifdef USE_EXT_SILO
-    auto shapeVar   = AMP::make_shared<AMP::LinearAlgebra::Variable>( "PowerShape" );
+    auto shapeVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "PowerShape" );
     auto shapeVec   = AMP::LinearAlgebra::createVector( dof_map, shapeVar, split );
     auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
@@ -61,14 +61,14 @@ static void test_with_shape( AMP::UnitTest *ut )
             moments[nMoments - 1] = -1.;
             shape_db->putVector( "Moments", moments );
         }
-        auto shape_params    = AMP::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
+        auto shape_params    = std::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
         shape_params->d_Mesh = meshAdapter;
-        auto shape           = AMP::make_shared<AMP::Operator::PowerShape>( shape_params );
+        auto shape           = std::make_shared<AMP::Operator::PowerShape>( shape_params );
 
         // Create a shared pointer to a Variable - Power - Output because it will be used in the
         // "residual" location of apply.
         auto SpecificPowerShapeVar =
-            AMP::make_shared<AMP::LinearAlgebra::Variable>( "SpecificPowerInWattsPerKg" );
+            std::make_shared<AMP::LinearAlgebra::Variable>( "SpecificPowerInWattsPerKg" );
 
         // Create a vector associated with the Variable.
         auto SpecificPowerShapeVec =
@@ -119,11 +119,11 @@ static void test_with_shape( AMP::UnitTest *ut )
                 moments[i - 1] = -1.;
                 shape_db->putVector( "Moments", moments );
             }
-            auto shape_params = AMP::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
+            auto shape_params = std::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
             shape_params->d_Mesh = meshAdapter;
-            auto shape           = AMP::make_shared<AMP::Operator::PowerShape>( shape_params );
+            auto shape           = std::make_shared<AMP::Operator::PowerShape>( shape_params );
             auto SpecificPowerShapeVar =
-                AMP::make_shared<AMP::LinearAlgebra::Variable>( "SpecificPowerShape" );
+                std::make_shared<AMP::LinearAlgebra::Variable>( "SpecificPowerShape" );
 
             // Create a vector associated with the Variable.
             auto SpecificPowerShapeVec =

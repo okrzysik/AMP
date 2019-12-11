@@ -15,7 +15,7 @@ namespace Solver {
  ****************************************************************/
 GMRESSolver::GMRESSolver() : d_restarts( 0 ) { NULL_USE( d_restarts ); }
 
-GMRESSolver::GMRESSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
+GMRESSolver::GMRESSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters ), d_restarts( 0 )
 {
     AMP_ASSERT( parameters.get() != nullptr );
@@ -33,9 +33,9 @@ GMRESSolver::~GMRESSolver() {}
 /****************************************************************
  *  Initialize                                                   *
  ****************************************************************/
-void GMRESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
+void GMRESSolver::initialize( std::shared_ptr<SolverStrategyParameters> const params )
 {
-    auto parameters = AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
+    auto parameters = std::dynamic_pointer_cast<KrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
@@ -60,7 +60,7 @@ void GMRESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const pa
 }
 
 // Function to get values from input
-void GMRESSolver::getFromInput( AMP::shared_ptr<AMP::Database> db )
+void GMRESSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     // the max iterations could be larger than the max Krylov dimension
     // in the case of restarted GMRES so we allow specification separately
@@ -85,8 +85,8 @@ void GMRESSolver::getFromInput( AMP::shared_ptr<AMP::Database> db )
  *  Solve                                                        *
  * TODO: store convergence history, iterations, convergence reason
  ****************************************************************/
-void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                         AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                         std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 
@@ -264,7 +264,7 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     PROFILE_STOP( "solve" );
 }
 
-void GMRESSolver::orthogonalize( AMP::shared_ptr<AMP::LinearAlgebra::Vector> v )
+void GMRESSolver::orthogonalize( std::shared_ptr<AMP::LinearAlgebra::Vector> v )
 {
     const int k = d_vBasis.size();
 
@@ -368,17 +368,17 @@ void GMRESSolver::backwardSolve( void )
 /****************************************************************
  *  Function to set the register the operator                    *
  ****************************************************************/
-void GMRESSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
+void GMRESSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op.get() != nullptr );
 
     d_pOperator = op;
 
-    auto linearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
+    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
     AMP_ASSERT( linearOperator.get() != nullptr );
 }
 
-void GMRESSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+void GMRESSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator.get() != nullptr ) {
         d_pOperator->reset( params );

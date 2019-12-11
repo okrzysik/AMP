@@ -3,8 +3,8 @@
 
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
-#include "AMP/utils/shared_ptr.h"
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -25,13 +25,13 @@ private:
      */
     FactoryStrategy();
 
-    using FunctionPtr = AMP::shared_ptr<TYPE> ( * )( AMP::shared_ptr<PARAMETERS> parameters );
+    using FunctionPtr = std::shared_ptr<TYPE> ( * )( std::shared_ptr<PARAMETERS> parameters );
     using FunctionMap = std::map<std::string, FunctionPtr>;
 
     FunctionMap d_factories; //! maps from names to factories
 
     //! given name and parameter object create object
-    AMP::shared_ptr<TYPE> create( std::string name, AMP::shared_ptr<PARAMETERS> parameters );
+    std::shared_ptr<TYPE> create( std::string name, std::shared_ptr<PARAMETERS> parameters );
 
     //! register a function that creates an object
     void registerFunction( std::string name, FactoryStrategy::FunctionPtr ptr );
@@ -49,7 +49,7 @@ public:
      * Factory method for generating objects with characteristics
      * specified by parameters.
      */
-    static AMP::shared_ptr<TYPE> create( AMP::shared_ptr<PARAMETERS> parameters );
+    static std::shared_ptr<TYPE> create( std::shared_ptr<PARAMETERS> parameters );
 
     // public interface for registering a function that creates an object
     static void registerFactory( std::string name, FactoryStrategy::FunctionPtr ptr );
@@ -73,11 +73,11 @@ FactoryStrategy<TYPE, PARAMETERS> &FactoryStrategy<TYPE, PARAMETERS>::getFactory
 }
 
 template<typename TYPE, typename PARAMETERS>
-AMP::shared_ptr<TYPE>
+std::shared_ptr<TYPE>
 FactoryStrategy<TYPE, PARAMETERS>::create( std::string name,
-                                           AMP::shared_ptr<PARAMETERS> parameters )
+                                           std::shared_ptr<PARAMETERS> parameters )
 {
-    AMP::shared_ptr<TYPE> obj;
+    std::shared_ptr<TYPE> obj;
     auto it = d_factories.find( name );
     if ( it != d_factories.end() ) {
         obj = it->second( parameters );
@@ -91,14 +91,14 @@ FactoryStrategy<TYPE, PARAMETERS>::create( std::string name,
 }
 
 template<typename TYPE, typename PARAMETERS>
-AMP::shared_ptr<TYPE>
-FactoryStrategy<TYPE, PARAMETERS>::create( AMP::shared_ptr<PARAMETERS> parameters )
+std::shared_ptr<TYPE>
+FactoryStrategy<TYPE, PARAMETERS>::create( std::shared_ptr<PARAMETERS> parameters )
 {
     AMP_ASSERT( parameters != nullptr );
 
     std::string objectName = "";
 
-    AMP::shared_ptr<AMP::Database> inputDatabase = parameters->d_db;
+    std::shared_ptr<AMP::Database> inputDatabase = parameters->d_db;
 
     if ( inputDatabase->keyExists( "name" ) ) {
         objectName = inputDatabase->getString( "name" );

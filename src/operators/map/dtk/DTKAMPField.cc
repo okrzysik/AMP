@@ -6,13 +6,13 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor.
-DTKAMPField::DTKAMPField( const AMP::shared_ptr<AMP::LinearAlgebra::Vector> &amp_vector )
+DTKAMPField::DTKAMPField( const std::shared_ptr<AMP::LinearAlgebra::Vector> &amp_vector )
     : d_amp_vector( amp_vector ), d_support_ids( 0 )
 {
     // Get the dof IDs if amp_vector is not NULL
     if ( d_amp_vector.get() != NULL ) {
         // Get the dof manager
-        AMP::shared_ptr<AMP::Discretization::DOFManager> dof_manager;
+        std::shared_ptr<AMP::Discretization::DOFManager> dof_manager;
         dof_manager = d_amp_vector->getDOFManager();
 
         // Get the number of degrees of freedom

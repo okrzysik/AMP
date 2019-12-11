@@ -34,7 +34,7 @@ static bool check_prefix( std::string prefix, std::string str )
 
 
 // Misc function declerations
-static void copyKey( AMP::shared_ptr<const AMP::Database>,
+static void copyKey( std::shared_ptr<const AMP::Database>,
                      std::vector<AMP::Database::shared_ptr> &,
                      const std::string &,
                      bool,
@@ -48,15 +48,15 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
 {
     // Create an array of MeshParameters for each submesh
     AMP_ASSERT( d_db != nullptr );
-    auto params = AMP::dynamic_pointer_cast<MultiMeshParameters>( params_in );
+    auto params = std::dynamic_pointer_cast<MultiMeshParameters>( params_in );
     if ( params.get() == nullptr ) {
         // Create a database for each mesh within the multimesh
         auto meshDatabases = MultiMesh::createDatabases( d_db );
-        params             = AMP::make_shared<MultiMeshParameters>( d_db );
+        params             = std::make_shared<MultiMeshParameters>( d_db );
         params->params     = std::vector<MeshParameters::shared_ptr>( meshDatabases.size() );
         params->N_elements = std::vector<size_t>( meshDatabases.size() );
         for ( size_t i = 0; i < meshDatabases.size(); i++ ) {
-            params->params[i]     = AMP::make_shared<AMP::Mesh::MeshParameters>( meshDatabases[i] );
+            params->params[i]     = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabases[i] );
             params->N_elements[i] = Mesh::estimateMeshSize( params->params[i] );
         }
     }
@@ -151,7 +151,7 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
         auto comm = d_comm.split( meshes.empty() ? 0 : 1 );
         if ( meshes.empty() )
             continue;
-        auto mesh = AMP::make_shared<MultiMesh>( name, comm, meshes );
+        auto mesh = std::make_shared<MultiMesh>( name, comm, meshes );
         if ( op == "" ) {
             d_meshes.push_back( mesh );
         } else if ( op == "SurfaceIterator" ) {
@@ -257,17 +257,17 @@ MultiMesh::simulateBuildMesh( const MeshParameters::shared_ptr params,
                               const std::vector<int> &comm_ranks )
 {
     // Create the multimesh parameters
-    auto multimeshParams = AMP::dynamic_pointer_cast<MultiMeshParameters>( params );
+    auto multimeshParams = std::dynamic_pointer_cast<MultiMeshParameters>( params );
     if ( multimeshParams.get() == nullptr ) {
         auto database   = params->getDatabase();
-        multimeshParams = AMP::make_shared<MultiMeshParameters>( database );
+        multimeshParams = std::make_shared<MultiMeshParameters>( database );
         // Create a database for each mesh within the multimesh
         auto meshDatabases      = MultiMesh::createDatabases( database );
         multimeshParams->params = std::vector<MeshParameters::shared_ptr>( meshDatabases.size() );
         multimeshParams->N_elements = std::vector<size_t>( meshDatabases.size() );
         std::vector<int> rank1( 1, 0 );
         for ( size_t i = 0; i < meshDatabases.size(); i++ ) {
-            auto meshParam = AMP::make_shared<AMP::Mesh::MeshParameters>( meshDatabases[i] );
+            auto meshParam = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabases[i] );
             loadBalanceSimulator mesh( meshParam, rank1 );
             multimeshParams->params[i]     = mesh.getParams();
             multimeshParams->N_elements[i] = mesh.getSize();
@@ -305,7 +305,7 @@ MultiMesh::~MultiMesh() = default;
 /********************************************************
  * Function to copy the mesh                             *
  ********************************************************/
-AMP::shared_ptr<Mesh> MultiMesh::clone() const { return AMP::make_shared<MultiMesh>( *this ); }
+std::shared_ptr<Mesh> MultiMesh::clone() const { return std::make_shared<MultiMesh>( *this ); }
 
 
 /********************************************************
@@ -314,16 +314,16 @@ AMP::shared_ptr<Mesh> MultiMesh::clone() const { return AMP::make_shared<MultiMe
 size_t MultiMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     // Create the multimesh parameters
-    auto multimeshParams = AMP::dynamic_pointer_cast<MultiMeshParameters>( params );
+    auto multimeshParams = std::dynamic_pointer_cast<MultiMeshParameters>( params );
     if ( multimeshParams.get() == nullptr ) {
         auto database   = params->getDatabase();
-        multimeshParams = AMP::make_shared<MultiMeshParameters>( database );
+        multimeshParams = std::make_shared<MultiMeshParameters>( database );
         // Create a database for each mesh within the multimesh
         auto meshDatabases      = MultiMesh::createDatabases( database );
         multimeshParams->params = std::vector<MeshParameters::shared_ptr>( meshDatabases.size() );
         for ( size_t i = 0; i < meshDatabases.size(); i++ )
             multimeshParams->params[i] =
-                AMP::make_shared<AMP::Mesh::MeshParameters>( meshDatabases[i] );
+                std::make_shared<AMP::Mesh::MeshParameters>( meshDatabases[i] );
     }
     // Get the approximate number of elements for each mesh
     size_t totalMeshSize = 0;
@@ -347,16 +347,16 @@ size_t MultiMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 size_t MultiMesh::maxProcs( const MeshParameters::shared_ptr &params )
 {
     // Create the multimesh parameters
-    auto multimeshParams = AMP::dynamic_pointer_cast<MultiMeshParameters>( params );
+    auto multimeshParams = std::dynamic_pointer_cast<MultiMeshParameters>( params );
     if ( multimeshParams.get() == nullptr ) {
         auto database   = params->getDatabase();
-        multimeshParams = AMP::make_shared<MultiMeshParameters>( database );
+        multimeshParams = std::make_shared<MultiMeshParameters>( database );
         // Create a database for each mesh within the multimesh
         auto meshDatabases      = MultiMesh::createDatabases( database );
         multimeshParams->params = std::vector<MeshParameters::shared_ptr>( meshDatabases.size() );
         for ( size_t i = 0; i < meshDatabases.size(); i++ )
             multimeshParams->params[i] =
-                AMP::make_shared<AMP::Mesh::MeshParameters>( meshDatabases[i] );
+                std::make_shared<AMP::Mesh::MeshParameters>( meshDatabases[i] );
     }
     // Get the approximate number of elements for each mesh
     size_t totalMaxSize = 0;
@@ -378,8 +378,8 @@ size_t MultiMesh::maxProcs( const MeshParameters::shared_ptr &params )
  * Function to create the databases for the meshes       *
  * within the multimesh.                                 *
  ********************************************************/
-std::vector<AMP::shared_ptr<AMP::Database>>
-MultiMesh::createDatabases( AMP::shared_ptr<AMP::Database> database )
+std::vector<std::shared_ptr<AMP::Database>>
+MultiMesh::createDatabases( std::shared_ptr<AMP::Database> database )
 {
     // We might have already created and stored the databases for each mesh
     if ( database->keyExists( "submeshDatabases" ) ) {
@@ -443,7 +443,7 @@ MultiMesh::createDatabases( AMP::shared_ptr<AMP::Database> database )
         // Create the new databases
         std::vector<AMP::Database::shared_ptr> databaseArray( N );
         for ( int j = 0; j < N; j++ )
-            databaseArray[j] = AMP::make_shared<AMP::Database>( meshArray );
+            databaseArray[j] = std::make_shared<AMP::Database>( meshArray );
         // Populate the databases with the proper keys
         keys = database1->getAllKeys();
         for ( auto &key : keys ) {
@@ -703,26 +703,26 @@ std::vector<MeshElement> MultiMesh::getElementParents( const MeshElement &elem,
 /********************************************************
  * Function to return the mesh with the given ID         *
  ********************************************************/
-AMP::shared_ptr<Mesh> MultiMesh::Subset( MeshID meshID ) const
+std::shared_ptr<Mesh> MultiMesh::Subset( MeshID meshID ) const
 {
     if ( d_meshID == meshID )
-        return AMP::const_pointer_cast<Mesh>( shared_from_this() );
+        return std::const_pointer_cast<Mesh>( shared_from_this() );
     for ( auto &elem : d_meshes ) {
-        AMP::shared_ptr<Mesh> mesh = elem->Subset( meshID );
+        std::shared_ptr<Mesh> mesh = elem->Subset( meshID );
         if ( mesh.get() != nullptr )
             return mesh;
     }
-    return AMP::shared_ptr<Mesh>();
+    return std::shared_ptr<Mesh>();
 }
 
 
 /********************************************************
  * Function to subset a mesh using a mesh iterator       *
  ********************************************************/
-AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool isGlobal ) const
+std::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool isGlobal ) const
 {
     if ( !isGlobal && iterator_in.size() == 0 )
-        return AMP::shared_ptr<Mesh>();
+        return std::shared_ptr<Mesh>();
     // Check the iterator
     auto type = AMP::Mesh::GeomType::null;
     if ( iterator_in.size() > 0 ) {
@@ -756,11 +756,11 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
         d_comm.setGather( subsetID );
     if ( subsetID.size() <= 1 ) {
         if ( subset.empty() ) {
-            return AMP::shared_ptr<Mesh>();
+            return std::shared_ptr<Mesh>();
         } else {
             if ( isGlobal )
                 new_comm = subset[0]->getComm();
-            return AMP::make_shared<MultiMesh>( d_name + "_subset", new_comm, subset );
+            return std::make_shared<MultiMesh>( d_name + "_subset", new_comm, subset );
         }
     }
     // Create a new multi-mesh to contain the subset
@@ -769,18 +769,18 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
         new_comm  = d_comm.split( color );
     }
     if ( new_comm.isNull() )
-        return AMP::shared_ptr<Mesh>();
-    return AMP::make_shared<MultiMesh>( d_name + "_subset", new_comm, subset );
+        return std::shared_ptr<Mesh>();
+    return std::make_shared<MultiMesh>( d_name + "_subset", new_comm, subset );
 }
 
 
 /********************************************************
  * Function to return the mesh with the given name       *
  ********************************************************/
-AMP::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
+std::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
 {
     if ( d_name == name )
-        return AMP::const_pointer_cast<Mesh>( shared_from_this() );
+        return std::const_pointer_cast<Mesh>( shared_from_this() );
     // Subset for the name in each submesh
     std::vector<Mesh::shared_ptr> subset;
     std::set<MeshID> subsetID;
@@ -795,7 +795,7 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
     d_comm.setGather( subsetID );
     if ( subsetID.size() <= 1 ) {
         if ( subset.size() == 0 ) {
-            return AMP::shared_ptr<Mesh>();
+            return std::shared_ptr<Mesh>();
         } else {
             return subset[0];
         }
@@ -804,8 +804,8 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
     int color             = subset.empty() ? -1 : 0;
     AMP::AMP_MPI new_comm = d_comm.split( color );
     if ( new_comm.isNull() )
-        return AMP::shared_ptr<Mesh>();
-    return AMP::make_shared<MultiMesh>( name, new_comm, subset );
+        return std::shared_ptr<Mesh>();
+    return std::make_shared<MultiMesh>( name, new_comm, subset );
 }
 
 
@@ -873,7 +873,7 @@ void MultiMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr
  * the ith value.                                        *
  ********************************************************/
 template<class TYPE>
-static inline void putEntry( AMP::shared_ptr<const AMP::Database> database1,
+static inline void putEntry( std::shared_ptr<const AMP::Database> database1,
                              std::vector<AMP::Database::shared_ptr> &database2,
                              const std::string &key,
                              bool select )
@@ -887,7 +887,7 @@ static inline void putEntry( AMP::shared_ptr<const AMP::Database> database1,
             database2[i]->putVector( key, data );
     }
 }
-static void copyKey( AMP::shared_ptr<const AMP::Database> database1,
+static void copyKey( std::shared_ptr<const AMP::Database> database1,
                      std::vector<AMP::Database::shared_ptr> &database2,
                      const std::string &key,
                      bool select,
@@ -1020,7 +1020,7 @@ bool MultiMesh::addProcSimulation( const loadBalanceSimulator &mesh,
                                    int rank,
                                    char &decomp )
 {
-    auto multimeshParams = AMP::dynamic_pointer_cast<MultiMeshParameters>( mesh.getParams() );
+    auto multimeshParams = std::dynamic_pointer_cast<MultiMeshParameters>( mesh.getParams() );
     int method           = multimeshParams->getDatabase()->getWithDefault( "LoadBalanceMethod", 1 );
     AMP_ASSERT( multimeshParams.get() );
     AMP_ASSERT( submeshes.size() == multimeshParams->params.size() );

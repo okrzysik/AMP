@@ -37,11 +37,11 @@ interp_linear( const std::vector<double> &x, const std::vector<double> &f, doubl
  *  Default constructor                                                  *
  ************************************************************************/
 SubchannelToCladGPMap::SubchannelToCladGPMap(
-    const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
+    const std::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : SubchannelToCladMap( p )
 {
-    AMP::shared_ptr<SubchannelToCladMapParameters> params =
-        AMP::dynamic_pointer_cast<SubchannelToCladGPMapParameters>( p );
+    std::shared_ptr<SubchannelToCladMapParameters> params =
+        std::dynamic_pointer_cast<SubchannelToCladGPMapParameters>( p );
     AMP_ASSERT( params );
     int DofsPerObj = params->d_db->getScalar<int>( "DOFsPerObject" );
     AMP_INSIST( DofsPerObj == 4,
@@ -114,10 +114,10 @@ SubchannelToCladGPMap::getGaussPoints( AMP::Mesh::Mesh::shared_ptr,
         // Create the libmesh element
         auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
         auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
-        AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
-        AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
+        std::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
+        std::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
         auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-        AMP::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
+        std::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
         d_fe->attach_quadrature_rule( d_qrule.get() );
         d_fe->reinit( libmeshElements.getElement( ids[i] ) );
         // Get the current position and DOF

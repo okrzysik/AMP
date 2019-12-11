@@ -344,7 +344,7 @@ inline double DTThermalConductivityProp::eval( std::vector<double> &args )
 
 UO2_MSRZC_09::UO2_MSRZC_09()
 {
-    d_propertyMap = new std::map<std::string, AMP::shared_ptr<Property<double>>>();
+    d_propertyMap = new std::map<std::string, std::shared_ptr<Property<double>>>();
     INSERT_PROPERTY_IN_MAP( ThermalConductivity, UO2_MSRZC_09_NS );
     INSERT_PROPERTY_IN_MAP( Density, UO2_MSRZC_09_NS );
     INSERT_PROPERTY_IN_MAP( HeatCapacityPressure, UO2_MSRZC_09_NS );

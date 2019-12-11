@@ -8,7 +8,7 @@ namespace Solver {
 
 SolverStrategyParameters::SolverStrategyParameters() { d_name = "SolverStrategyParameters"; }
 
-SolverStrategyParameters::SolverStrategyParameters( AMP::shared_ptr<AMP::Database> db )
+SolverStrategyParameters::SolverStrategyParameters( std::shared_ptr<AMP::Database> db )
     : d_db( std::move( db ) )
 {
     d_name = "SolverStrategyParameters";

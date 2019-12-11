@@ -32,10 +32,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    std::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( globalComm );
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
+    std::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "myVar" ) );
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
@@ -53,12 +53,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     scalarVec->zero();
     vectorVec->zero();
 
-    AMP::shared_ptr<AMP::Database> bnd_db = input_db->getDatabase( "NeumannVectorCorrection1" );
-    AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> vectorCorrectionParameters(
+    std::shared_ptr<AMP::Database> bnd_db = input_db->getDatabase( "NeumannVectorCorrection1" );
+    std::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> vectorCorrectionParameters(
         new AMP::Operator::NeumannVectorCorrectionParameters( bnd_db ) );
     vectorCorrectionParameters->d_variable = var;
     vectorCorrectionParameters->d_Mesh     = mesh;
-    AMP::shared_ptr<AMP::Operator::NeumannVectorCorrection> neumannBndOp(
+    std::shared_ptr<AMP::Operator::NeumannVectorCorrection> neumannBndOp(
         new AMP::Operator::NeumannVectorCorrection( vectorCorrectionParameters ) );
 
     neumannBndOp->addRHScorrection( scalarVec );

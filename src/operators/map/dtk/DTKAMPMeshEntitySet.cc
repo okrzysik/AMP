@@ -18,7 +18,7 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor.
-AMPMeshEntitySet::AMPMeshEntitySet( const AMP::shared_ptr<AMP::Mesh::Mesh> &mesh )
+AMPMeshEntitySet::AMPMeshEntitySet( const std::shared_ptr<AMP::Mesh::Mesh> &mesh )
     : d_amp_mesh( mesh ), d_id_maps( 4 )
 {
     // Build the rank map.
@@ -30,7 +30,7 @@ AMPMeshEntitySet::AMPMeshEntitySet( const AMP::shared_ptr<AMP::Mesh::Mesh> &mesh
 
     // Map the global ids to DTK ids.
     for ( auto &m : d_id_maps )
-        m = AMP::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
+        m = std::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
     mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ), d_id_maps[0] );
     if ( (int) d_amp_mesh->getGeomType() > 0 )
         mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::GeomType::Edge, 0 ), d_id_maps[1] );
@@ -115,7 +115,7 @@ void AMPMeshEntitySet::getAdjacentEntities(
 // Map the global ids of an iterator to DTK ids.
 void AMPMeshEntitySet::mapGlobalIds(
     AMP::Mesh::MeshIterator it,
-    AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> &id_map )
+    std::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> &id_map )
 {
     int counter = 0;
     for ( it = it.begin(); it != it.end(); ++it ) {

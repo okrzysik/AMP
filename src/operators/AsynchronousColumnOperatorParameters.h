@@ -9,7 +9,7 @@ namespace Operator {
 class AsynchronousColumnOperatorParameters : public OperatorParameters
 {
 public:
-    explicit AsynchronousColumnOperatorParameters( AMP::shared_ptr<AMP::Database> db )
+    explicit AsynchronousColumnOperatorParameters( std::shared_ptr<AMP::Database> db )
         : OperatorParameters( db )
     {
     }

@@ -1,7 +1,7 @@
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorIndexer.h"
 #include "AMP/vectors/data/VectorData.h"
+#include <memory>
 
 #include <iostream>
 #include <vector>

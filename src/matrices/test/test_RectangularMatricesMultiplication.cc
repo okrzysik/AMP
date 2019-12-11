@@ -26,7 +26,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     // build mesh database
-    auto database = AMP::make_shared<AMP::Database>( "Mesh" );
+    auto database = std::make_shared<AMP::Database>( "Mesh" );
     database->putScalar( "MeshName", "cube" );
     database->putScalar( "MeshType", "AMP" );
     database->putScalar( "dim", 3 );
@@ -40,7 +40,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     range[1] = range[3] = range[5] = 1.0;
     database->putVector( "Range", range );
     // create mesh
-    auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( globalComm );
     auto mesh = AMP::Mesh::Mesh::buildMesh( params );
     // create two different dof managers
@@ -52,7 +52,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     size_t m = secondDofManager->numGlobalDOF();
     AMP_ASSERT( n != m );
     // create the two corresponding vectors
-    auto var       = AMP::make_shared<AMP::LinearAlgebra::Variable>( "var" );
+    auto var       = std::make_shared<AMP::LinearAlgebra::Variable>( "var" );
     auto firstVec  = AMP::LinearAlgebra::createVector( firstDofManager, var, true );  // n
     auto secondVec = AMP::LinearAlgebra::createVector( secondDofManager, var, true ); // m
     firstVec->zero();

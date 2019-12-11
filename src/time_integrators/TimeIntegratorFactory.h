@@ -49,8 +49,8 @@ public:
      * Factory method for generating multilevel solvers with characteristics
      * specified by parameters.
      */
-    AMP::shared_ptr<TimeIntegrator>
-    createTimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> timeIntegratorParameters );
+    std::shared_ptr<TimeIntegrator>
+    createTimeIntegrator( std::shared_ptr<TimeIntegratorParameters> timeIntegratorParameters );
 
 protected:
 private:

@@ -130,7 +130,7 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
                                      double reynolds,
                                      double prandtl,
                                      double fraction,
-                                     AMP::shared_ptr<SubchannelPhysicsModel> subchannelPhysicsModel,
+                                     std::shared_ptr<SubchannelPhysicsModel> subchannelPhysicsModel,
                                      AMP::LinearAlgebra::Vector::const_shared_ptr flow,
                                      AMP::LinearAlgebra::Vector::const_shared_ptr clad_temp );
 

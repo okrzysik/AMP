@@ -4,7 +4,7 @@ namespace AMP {
 namespace Operator {
 
 CustomConstraintsEliminationOperator::CustomConstraintsEliminationOperator(
-    const AMP::shared_ptr<OperatorParameters> &params )
+    const std::shared_ptr<OperatorParameters> &params )
     : ConstraintsEliminationOperator( params )
 {
 }

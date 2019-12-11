@@ -17,7 +17,7 @@ class MultiMeshParameters : public MeshParameters
 public:
     // Constructors
     MultiMeshParameters() : MeshParameters() {}
-    explicit MultiMeshParameters( const AMP::shared_ptr<AMP::Database> db ) : MeshParameters( db )
+    explicit MultiMeshParameters( const std::shared_ptr<AMP::Database> db ) : MeshParameters( db )
     {
     }
 

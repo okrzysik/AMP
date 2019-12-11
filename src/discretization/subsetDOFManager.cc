@@ -12,7 +12,7 @@ namespace Discretization {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManager> parentDOFManager,
+DOFManager::shared_ptr subsetDOFManager::create( std::shared_ptr<const DOFManager> parentDOFManager,
                                                  const std::vector<size_t> &dofs,
                                                  const AMP::Mesh::MeshIterator &iterator,
                                                  const AMP_MPI &comm_in )
@@ -23,7 +23,7 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
     PROFILE_START( "subsetDOFManager", 2 );
     AMP_MPI comm = AMP_MPI::intersect( parentDOFManager->getComm(), comm_in );
     // Set the basic info
-    AMP::shared_ptr<subsetDOFManager> subsetDOF( new subsetDOFManager() );
+    std::shared_ptr<subsetDOFManager> subsetDOF( new subsetDOFManager() );
     subsetDOF->d_comm             = comm;
     subsetDOF->d_iterator         = iterator;
     subsetDOF->d_parentDOFManager = parentDOFManager;
@@ -54,7 +54,7 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
     // Return if the subset DOF == parent DOF
     if ( subsetDOF->d_global == parentDOFManager->numGlobalDOF() ) {
         PROFILE_STOP2( "subsetDOFManager", 2 );
-        return AMP::const_pointer_cast<DOFManager>( parentDOFManager );
+        return std::const_pointer_cast<DOFManager>( parentDOFManager );
     }
     // Determine which remote DOFs we will need to keep
     size_t *send_data = nullptr;
@@ -228,7 +228,7 @@ std::vector<size_t> subsetDOFManager::getLocalParentDOFs() const { return d_loca
 /****************************************************************
  * Function to return the DOFManagers                            *
  ****************************************************************/
-AMP::shared_ptr<const DOFManager> subsetDOFManager::getDOFManager() const
+std::shared_ptr<const DOFManager> subsetDOFManager::getDOFManager() const
 {
     return d_parentDOFManager;
 }

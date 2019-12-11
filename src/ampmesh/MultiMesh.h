@@ -55,7 +55,7 @@ public:
     virtual ~MultiMesh();
 
     //! Function to clone the mesh (allows use to properly copy the derived class)
-    virtual AMP::shared_ptr<Mesh> clone() const override;
+    virtual std::shared_ptr<Mesh> clone() const override;
 
     /**
      * \brief   Estimate the number of elements in the mesh
@@ -104,7 +104,7 @@ public:
      *    matches the meshID of the mesh, and a null pointer otherwise.
      * \param meshID  MeshID of the desired mesh
      */
-    virtual AMP::shared_ptr<Mesh> Subset( MeshID meshID ) const override;
+    virtual std::shared_ptr<Mesh> Subset( MeshID meshID ) const override;
 
 
     /**
@@ -115,7 +115,7 @@ public:
      * \param isGlobal  Is the new subset mesh global over the entire mesh (true,default),
      *                  or do we only want to keep the local mesh (false)
      */
-    virtual AMP::shared_ptr<Mesh> Subset( const MeshIterator &iterator,
+    virtual std::shared_ptr<Mesh> Subset( const MeshIterator &iterator,
                                           bool isGlobal = true ) const override;
 
 
@@ -130,7 +130,7 @@ public:
      *    It is strongly recommended to use the meshID when possible.
      * \param name  Name of the desired mesh
      */
-    virtual AMP::shared_ptr<Mesh> Subset( std::string name ) const override;
+    virtual std::shared_ptr<Mesh> Subset( std::string name ) const override;
 
 
     /**
@@ -296,7 +296,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
+    virtual void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 #endif
 
 
@@ -323,8 +323,8 @@ public: // Default constructors
 
 private:
     //! Function to create the databases for the meshes within the multimesh
-    static std::vector<AMP::shared_ptr<AMP::Database>>
-    createDatabases( AMP::shared_ptr<AMP::Database> database );
+    static std::vector<std::shared_ptr<AMP::Database>>
+    createDatabases( std::shared_ptr<AMP::Database> database );
 
     //! A convienence typedef to hold a list of ranks
     typedef std::vector<int> rank_list;

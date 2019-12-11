@@ -7,9 +7,9 @@
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/operators/map/MapOperator.h"
 #include "AMP/operators/map/MapOperatorParameters.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 #include <string>
 
@@ -25,7 +25,7 @@ class Map3Dto1D : public MapOperator
 {
 public:
     //!  Constructor
-    explicit Map3Dto1D( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit Map3Dto1D( const std::shared_ptr<OperatorParameters> &params );
 
     //!  Destructor
     virtual ~Map3Dto1D() {}
@@ -34,7 +34,7 @@ public:
       This function reads the entries of the database for the operator
       and can also be used to change the parameters if required.
      */
-    void reset( const AMP::shared_ptr<OperatorParameters> & ) override;
+    void reset( const std::shared_ptr<OperatorParameters> & ) override;
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
@@ -76,9 +76,9 @@ public:
 protected:
     AMP::LinearAlgebra::Vector::shared_ptr outputVec;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
     std::vector<double> d_zLocations; /**< std vector to store 1D z locations. */
 

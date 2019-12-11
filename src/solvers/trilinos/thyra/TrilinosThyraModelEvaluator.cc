@@ -21,7 +21,7 @@ namespace Solver {
  *  Constructors                                                 *
  ****************************************************************/
 TrilinosThyraModelEvaluator::TrilinosThyraModelEvaluator(
-    AMP::shared_ptr<TrilinosThyraModelEvaluatorParameters> params )
+    std::shared_ptr<TrilinosThyraModelEvaluatorParameters> params )
 {
     AMP_ASSERT( params->d_nonlinearOp != nullptr );
     d_nonlinearOp     = params->d_nonlinearOp;
@@ -77,7 +77,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
     const Teuchos::RCP<Thyra::PreconditionerBase<double>> W_prec_out = outArgs.get_W_prec();
     if ( nonnull( W_prec_out ) ) {
         // Reset the preconditioner
-        auto x2        = AMP::const_pointer_cast<AMP::LinearAlgebra::Vector>( x );
+        auto x2        = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( x );
         auto op_params = d_nonlinearOp->getParameters( "Jacobian", x2 );
         NULL_USE( op_params );
     }
@@ -119,7 +119,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
 Teuchos::RCP<const ::Thyra::VectorSpaceBase<double>>
 TrilinosThyraModelEvaluator::get_x_space() const
 {
-    auto vec = AMP::make_shared<LinearAlgebra::ThyraVectorWrapper>(
+    auto vec = std::make_shared<LinearAlgebra::ThyraVectorWrapper>(
         std::vector<LinearAlgebra::Vector::shared_ptr>( 1, d_icVec ) );
     Teuchos::RCP<LinearAlgebra::ThyraVectorSpaceWrapper> vector_space(
         new LinearAlgebra::ThyraVectorSpaceWrapper( vec ) );
@@ -128,7 +128,7 @@ TrilinosThyraModelEvaluator::get_x_space() const
 Teuchos::RCP<const ::Thyra::VectorSpaceBase<double>>
 TrilinosThyraModelEvaluator::get_f_space() const
 {
-    auto vec = AMP::make_shared<LinearAlgebra::ThyraVectorWrapper>(
+    auto vec = std::make_shared<LinearAlgebra::ThyraVectorWrapper>(
         std::vector<LinearAlgebra::Vector::shared_ptr>( 1, d_icVec ) );
     Teuchos::RCP<LinearAlgebra::ThyraVectorSpaceWrapper> vector_space(
         new LinearAlgebra::ThyraVectorSpaceWrapper( vec ) );
@@ -193,14 +193,14 @@ template<class T>
 static void nullDeleter( T * )
 {
 }
-AMP::shared_ptr<AMP::Solver::TrilinosLinearOP>
+std::shared_ptr<AMP::Solver::TrilinosLinearOP>
 TrilinosThyraModelEvaluator::view( Teuchos::RCP<Thyra::LinearOpBase<double>> op )
 {
     if ( op.is_null() )
-        return AMP::shared_ptr<AMP::Solver::TrilinosLinearOP>();
+        return std::shared_ptr<AMP::Solver::TrilinosLinearOP>();
     auto *tmp = dynamic_cast<AMP::Solver::TrilinosLinearOP *>( op.get() );
     AMP_ASSERT( tmp != nullptr );
-    return AMP::shared_ptr<AMP::Solver::TrilinosLinearOP>(
+    return std::shared_ptr<AMP::Solver::TrilinosLinearOP>(
         tmp, nullDeleter<AMP::Solver::TrilinosLinearOP> );
 }
 } // namespace Solver

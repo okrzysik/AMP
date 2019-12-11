@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "AMP/utils/ReadTestMesh.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 // Libmesh files
 DISABLE_WARNINGS
@@ -33,7 +33,7 @@ ENABLE_WARNINGS
 static void calculateGrad( AMP::UnitTest *ut )
 {
     const unsigned int mesh_dim = 3;
-    AMP::shared_ptr<Mesh> mesh( new Mesh( mesh_dim ) );
+    std::shared_ptr<Mesh> mesh( new Mesh( mesh_dim ) );
 
     AMP::readTestMesh( "distortedElementMesh", mesh );
 

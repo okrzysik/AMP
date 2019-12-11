@@ -33,7 +33,7 @@ public:
        This also constructs new NeumannVectorCorrection parameters and calls it reset.
     */
     explicit RobinMatrixCorrection(
-        const AMP::shared_ptr<RobinMatrixCorrectionParameters> &params );
+        const std::shared_ptr<RobinMatrixCorrectionParameters> &params );
 
     /**
        Set the variable for the vector that will used with this operator.
@@ -57,7 +57,7 @@ public:
        is passed to the NeumannVectorCorrection. This function also does a matrix
        correction on the boundary.
     */
-    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /**
        Adds a Neumann Correction Vector to the RHS vector.
@@ -91,11 +91,11 @@ protected:
 
     const std::vector<std::vector<Real>> *d_phi;
 
-    AMP::shared_ptr<::FEType> d_feType;
+    std::shared_ptr<::FEType> d_feType;
 
-    AMP::shared_ptr<::FEBase> d_fe;
+    std::shared_ptr<::FEBase> d_fe;
 
-    AMP::shared_ptr<::QBase> d_qrule;
+    std::shared_ptr<::QBase> d_qrule;
 
     std::string d_qruleOrderName;
 
@@ -106,13 +106,13 @@ protected:
 
     AMP::LinearAlgebra::Vector::shared_ptr d_Frozen;
 
-    AMP::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
+    std::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
     AMP::Discretization::DOFManager::shared_ptr d_dofManager;
 
 private:
-    AMP::shared_ptr<NeumannVectorCorrection> d_NeumannCorrection;
-    AMP::shared_ptr<NeumannVectorCorrectionParameters> d_NeumannParams;
+    std::shared_ptr<NeumannVectorCorrection> d_NeumannCorrection;
+    std::shared_ptr<NeumannVectorCorrectionParameters> d_NeumannParams;
 };
 } // namespace Operator
 } // namespace AMP

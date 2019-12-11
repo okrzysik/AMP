@@ -17,8 +17,8 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include "../applyTests.h"
 
@@ -45,35 +45,35 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     //   Create the Mesh.
     //--------------------------------------------------
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
+    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
         new AMP::Mesh::MeshParameters( mesh_db ) );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
     //--------------------------------------------------
 
     // Create nonlinear Diffusion BVP operator and access volume nonlinear Diffusion operator
-    AMP::shared_ptr<AMP::Database> nbvp_db = AMP::dynamic_pointer_cast<AMP::Database>(
+    std::shared_ptr<AMP::Database> nbvp_db = std::dynamic_pointer_cast<AMP::Database>(
         input_db->getDatabase( "ThermalNonlinearBVPOperator" ) );
-    AMP::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
+    std::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "ThermalNonlinearBVPOperator", input_db );
-    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
-    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nlinOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
+    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
+        std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
+    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nlinOp =
+        std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nlinBVPOp->getVolumeOperator() );
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
         nlinOp->getTransportModel();
 
     // use the linear BVP operator to create a thermal linear operator with bc's
-    AMP::shared_ptr<AMP::Operator::Operator> linBVPOperator =
+    std::shared_ptr<AMP::Operator::Operator> linBVPOperator =
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "ThermalLinearBVPOperator", input_db, elementPhysicsModel );
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linBVPOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
-    // AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> linOp =
-    //        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(linBVPOp->getVolumeOperator());
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> linBVPOp =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
+    // std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> linOp =
+    //        std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(linBVPOp->getVolumeOperator());
 
     ut->passes( exeName + ": creation" );
     std::cout.flush();
@@ -103,17 +103,17 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     bvpRhsVec->setToScalar( 0.0 );
 
-    AMP::shared_ptr<AMP::Database> volOp_db =
+    std::shared_ptr<AMP::Database> volOp_db =
         input_db->getDatabase( nbvp_db->getString( "VolumeOperator" ) );
-    AMP::shared_ptr<AMP::Database> model_db =
+    std::shared_ptr<AMP::Database> model_db =
         input_db->getDatabase( volOp_db->getString( "LocalModel" ) );
     std::string property = model_db->getString( "Property" );
 
     // set shift, scale for applyTests
     double shift = 0., scale = 1.;
     std::vector<double> range( 2 );
-    AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel =
-        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( elementPhysicsModel );
+    std::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel =
+        std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( elementPhysicsModel );
     AMP::Materials::Material::shared_ptr mat = transportModel->getMaterial();
     if ( nlinOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
         if ( ( mat->property( property ) )->is_argument( "temperature" ) ) {
@@ -149,7 +149,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
         adjust( bvpSolVec, shift, scale );
         bvpRhsVec->setRandomValues();
         bvpResVec->setRandomValues();
-        AMP::shared_ptr<AMP::Operator::OperatorParameters> jacparams =
+        std::shared_ptr<AMP::Operator::OperatorParameters> jacparams =
             nlinBVPOp->getParameters( "Jacobian", bvpSolVec );
         linBVPOp->reset( jacparams );
     } // end for i

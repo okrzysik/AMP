@@ -33,11 +33,11 @@ void DiffusionNonlinearElement::apply()
 
     // create transport coefficient storage
     std::vector<double> transportCoeff( d_qrule->n_points() );
-    std::vector<std::vector<AMP::shared_ptr<std::vector<double>>>> transportCoeffTensor(
-        3, std::vector<AMP::shared_ptr<std::vector<double>>>( 3 ) );
+    std::vector<std::vector<std::shared_ptr<std::vector<double>>>> transportCoeffTensor(
+        3, std::vector<std::shared_ptr<std::vector<double>>>( 3 ) );
     if ( d_transportModel->isaTensor() ) {
         d_transportTensorModel =
-            AMP::dynamic_pointer_cast<DiffusionTransportTensorModel>( d_transportModel );
+            std::dynamic_pointer_cast<DiffusionTransportTensorModel>( d_transportModel );
         for ( int i = 0; i < 3; i++ )
             for ( int j = 0; j < 3; j++ ) {
                 std::vector<double> *vec = new std::vector<double>( d_qrule->n_points() );
@@ -46,7 +46,7 @@ void DiffusionNonlinearElement::apply()
     }
 
     // compute transport coefficients
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> transport_args;
+    std::map<std::string, std::shared_ptr<std::vector<double>>> transport_args;
 
     // at gauss points
     if ( d_transportAtGauss ) {
@@ -54,7 +54,7 @@ void DiffusionNonlinearElement::apply()
         const std::vector<Point> &q_point = d_fe->get_xyz();
         for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
             if ( d_elementInputVectors[var].size() > 0 ) {
-                AMP::shared_ptr<std::vector<double>> values(
+                std::shared_ptr<std::vector<double>> values(
                     new std::vector<double>( d_qrule->n_points(), 0.0 ) );
                 for ( size_t qp = 0; qp < d_qrule->n_points(); qp++ ) {
                     ( *values )[qp] = 0.0;
@@ -82,15 +82,15 @@ void DiffusionNonlinearElement::apply()
         }
 
         // set up storage for transport coefficients
-        std::vector<std::vector<AMP::shared_ptr<std::vector<double>>>> nodalTransportCoeffTensor(
-            3, std::vector<AMP::shared_ptr<std::vector<double>>>( 3 ) );
+        std::vector<std::vector<std::shared_ptr<std::vector<double>>>> nodalTransportCoeffTensor(
+            3, std::vector<std::shared_ptr<std::vector<double>>>( 3 ) );
 
         // construct material evalv arguments
         for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
             if ( d_elementInputVectors[var].size() > 0 ) {
                 transport_args.insert( std::make_pair(
                     Diffusion::names[var],
-                    AMP::make_shared<std::vector<double>>( d_elementInputVectors[var] ) ) );
+                    std::make_shared<std::vector<double>>( d_elementInputVectors[var] ) ) );
             }
         }
 

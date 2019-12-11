@@ -4,8 +4,8 @@
 #include "NOX_Abstract_PrePostOperator.H"
 #include "NOX_Solver_Generic.H"
 
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
+#include <memory>
 
 
 namespace AMP {
@@ -24,7 +24,7 @@ public:
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef AMP::shared_ptr<AMP::Solver::PrePostOperator> shared_ptr;
+    typedef std::shared_ptr<AMP::Solver::PrePostOperator> shared_ptr;
 
     // Destructor
     virtual ~PrePostOperator() {}

@@ -39,7 +39,7 @@ public:
      following fields in addition to the fields expected by the base class SolverStrategy class:
 
     */
-    explicit BoomerAMGSolver( AMP::shared_ptr<BoomerAMGSolverParameters> parameters );
+    explicit BoomerAMGSolver( std::shared_ptr<BoomerAMGSolverParameters> parameters );
 
     /**
      * Default destructor
@@ -47,10 +47,10 @@ public:
     virtual ~BoomerAMGSolver();
 
     //! static create routine that is used by SolverFactory
-    static AMP::shared_ptr<SolverStrategy>
-    createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    static std::shared_ptr<SolverStrategy>
+    createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-        return AMP::make_shared<BoomerAMGSolver>( solverStrategyParameters );
+        return std::make_shared<BoomerAMGSolver>( solverStrategyParameters );
     }
 
     /**
@@ -58,8 +58,8 @@ public:
      @param [in] f : shared pointer to right hand side vector
      @param [out] u : shared pointer to approximate computed solution
      */
-    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+    void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Initialize the solution vector and potentially create internal vectors needed for solution
@@ -70,20 +70,20 @@ public:
      the solver.
      The LinearOperator currently is assumed to contain a pointer to an EpetraMatrix object.
      */
-    void initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters ) override;
+    void initialize( std::shared_ptr<SolverStrategyParameters> const parameters ) override;
 
     /**
      * Register the operator that the solver will use during solves
      @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$
      */
-    void registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op ) override;
+    void registerOperator( const std::shared_ptr<AMP::Operator::Operator> op ) override;
 
     /**
      * Resets the associated operator internally with new parameters if necessary
      * @param [in] params
      *        OperatorParameters object that is NULL by default
      */
-    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
+    void resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
 
     /**
      * Resets the solver internally with new parameters if necessary
@@ -93,15 +93,15 @@ public:
      * and recreates it based on the parameters object. See constructor for
      * fields required for parameter object.
      */
-    void reset( AMP::shared_ptr<SolverStrategyParameters> params ) override;
+    void reset( std::shared_ptr<SolverStrategyParameters> params ) override;
 
-    void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
+    void getFromInput( const std::shared_ptr<AMP::Database> &db );
 
 private:
     /**
      * create the internal HYPRE_IJMatrix based on the AMP matrix
      */
-    void createHYPREMatrix( const AMP::shared_ptr<AMP::LinearAlgebra::Matrix> matrix );
+    void createHYPREMatrix( const std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix );
 
     /**
      * create and initialize the internal hypre vectors for rhs and solution
@@ -111,13 +111,13 @@ private:
     /**
      *  copy values from amp vector to hypre vector
      */
-    void copyToHypre( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> amp_v,
+    void copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vector> amp_v,
                       HYPRE_IJVector hypre_v );
 
     /**
      *  copy values from hypre vector to amp vector
      */
-    void copyFromHypre( HYPRE_IJVector hypre_v, AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_v );
+    void copyFromHypre( HYPRE_IJVector hypre_v, std::shared_ptr<AMP::LinearAlgebra::Vector> amp_v );
 
 
     void setParameters( void ); //! set BoomerAMG parameters based on internally set variables

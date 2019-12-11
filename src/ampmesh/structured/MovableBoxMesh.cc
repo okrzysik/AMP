@@ -76,7 +76,7 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
             getIterator( AMP::Mesh::GeomType::Vertex, d_max_gcw ),
             getIterator( AMP::Mesh::GeomType::Vertex, 0 ),
             PhysicalDim );
-    auto nodalVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "tmp_pos" );
+    auto nodalVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "tmp_pos" );
     auto displacement  = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
     std::vector<size_t> dofs1( PhysicalDim );
     std::vector<size_t> dofs2( PhysicalDim );
@@ -131,9 +131,9 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
 /****************************************************************
  * Copy the mesh                                                 *
  ****************************************************************/
-AMP::shared_ptr<Mesh> MovableBoxMesh::clone() const
+std::shared_ptr<Mesh> MovableBoxMesh::clone() const
 {
-    return AMP::make_shared<MovableBoxMesh>( *this );
+    return std::make_shared<MovableBoxMesh>( *this );
 }
 
 

@@ -32,13 +32,13 @@ loadBalanceSimulator::loadBalanceSimulator()
     d_max_ranks  = 0;
     cache_valid  = false;
 }
-loadBalanceSimulator::loadBalanceSimulator( AMP::shared_ptr<MeshParameters> params,
+loadBalanceSimulator::loadBalanceSimulator( std::shared_ptr<MeshParameters> params,
                                             const std::vector<int> &ranks,
                                             size_t N_elements )
 {
     // Get required values from the parameters
     AMP_ASSERT( !ranks.empty() );
-    AMP::shared_ptr<AMP::Database> database = params->getDatabase();
+    std::shared_ptr<AMP::Database> database = params->getDatabase();
     AMP_ASSERT( database != nullptr );
     AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
     AMP_INSIST( database->keyExists( "MeshName" ), "MeshName must exist in input database" );
@@ -79,12 +79,12 @@ loadBalanceSimulator::loadBalanceSimulator( AMP::shared_ptr<MeshParameters> para
     if ( d_ranks.size() > d_max_ranks )
         d_ranks.resize( d_max_ranks );
 }
-loadBalanceSimulator::loadBalanceSimulator( AMP::shared_ptr<MeshParameters> params,
+loadBalanceSimulator::loadBalanceSimulator( std::shared_ptr<MeshParameters> params,
                                             const std::vector<int> &ranks,
                                             const std::vector<loadBalanceSimulator> &submeshes,
                                             int decomp )
 {
-    AMP::shared_ptr<AMP::Database> database = params->getDatabase();
+    std::shared_ptr<AMP::Database> database = params->getDatabase();
     AMP_ASSERT( database != nullptr );
     AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
     AMP_INSIST( database->keyExists( "MeshName" ), "MeshName must exist in input database" );

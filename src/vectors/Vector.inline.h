@@ -12,9 +12,9 @@ namespace LinearAlgebra {
 /****************************************************************
  * Get basic info                                                *
  ****************************************************************/
-inline AMP::shared_ptr<ParameterBase> Vector::getParameters()
+inline std::shared_ptr<ParameterBase> Vector::getParameters()
 {
-    return AMP::shared_ptr<ParameterBase>();
+    return std::shared_ptr<ParameterBase>();
 }
 inline AMP::Discretization::DOFManager::shared_ptr Vector::getDOFManager() const
 {
@@ -28,13 +28,13 @@ inline AMP_MPI Vector::getComm() const { return d_CommList->getComm(); }
  ****************************************************************/
 inline Vector::shared_ptr Vector::subsetVectorForVariable( const std::string &name )
 {
-    auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( name );
+    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
     return subsetVectorForVariable( var );
 }
 inline Vector::const_shared_ptr
 Vector::constSubsetVectorForVariable( const std::string &name ) const
 {
-    auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( name );
+    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
     return constSubsetVectorForVariable( var );
 }
 
@@ -48,7 +48,7 @@ Vector::shared_ptr Vector::getView() const
     for ( size_t i = 0; i != d_Views->size(); i++ ) {
         auto vec = ( *d_Views )[i].lock();
         if ( vec ) {
-            auto vec2 = AMP::dynamic_pointer_cast<VIEW_TYPE>( vec );
+            auto vec2 = std::dynamic_pointer_cast<VIEW_TYPE>( vec );
             if ( vec2 ) {
                 return Vector::shared_ptr( ( *d_Views )[i] );
             }
@@ -62,7 +62,7 @@ bool Vector::hasView() const
     for ( size_t i = 0; i != d_Views->size(); i++ ) {
         auto vec = ( *d_Views )[i].lock();
         if ( vec ) {
-            auto vec2 = AMP::dynamic_pointer_cast<VIEW_TYPE>( vec );
+            auto vec2 = std::dynamic_pointer_cast<VIEW_TYPE>( vec );
             if ( vec2 ) {
                 return true;
             }

@@ -11,7 +11,7 @@ namespace Operator {
 
 
 VonMisesElastoPlasticModel::VonMisesElastoPlasticModel(
-    const AMP::shared_ptr<MechanicsMaterialModelParameters> &params )
+    const std::shared_ptr<MechanicsMaterialModelParameters> &params )
     : MechanicsMaterialModel( params ), d_constitutiveMatrix{ { 0 } }
 {
     AMP_INSIST( params.get() != nullptr, "NULL parameter" );
@@ -583,15 +583,15 @@ void VonMisesElastoPlasticModel::radialReturn( const double *stra_np1,
                                                double R_np1[3][3] )
 {
     if ( d_useMaterialsLibrary == true ) {
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>> inputMaterialParameters;
+        std::map<std::string, std::shared_ptr<std::vector<double>>> inputMaterialParameters;
 
         std::string temperatureString = "temperature";   // in the future get from input file
         std::string burnupString      = "burnup";        // in the future get from input file
         std::string oxygenString      = "concentration"; // in the future get from input file
 
-        AMP::shared_ptr<std::vector<double>> tempVec( new std::vector<double> );
-        AMP::shared_ptr<std::vector<double>> burnupVec( new std::vector<double> );
-        AMP::shared_ptr<std::vector<double>> oxygenVec( new std::vector<double> );
+        std::shared_ptr<std::vector<double>> tempVec( new std::vector<double> );
+        std::shared_ptr<std::vector<double>> burnupVec( new std::vector<double> );
+        std::shared_ptr<std::vector<double>> oxygenVec( new std::vector<double> );
 
         inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec ) );
         inputMaterialParameters.insert( std::make_pair( burnupString, burnupVec ) );

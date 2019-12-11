@@ -17,22 +17,22 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 
-AMP::shared_ptr<AMP::Solver::SolverStrategy>
-buildSolver( const AMP::shared_ptr<AMP::Database> &input_db,
+std::shared_ptr<AMP::Solver::SolverStrategy>
+buildSolver( const std::shared_ptr<AMP::Database> &input_db,
              const std::string &solver_name,
              const AMP::AMP_MPI &comm,
-             AMP::shared_ptr<AMP::Operator::LinearOperator> &op )
+             std::shared_ptr<AMP::Operator::LinearOperator> &op )
 {
 
-    AMP::shared_ptr<AMP::Solver::SolverStrategy> solver;
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters;
+    std::shared_ptr<AMP::Solver::SolverStrategy> solver;
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters;
 
     AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
 
@@ -46,7 +46,7 @@ buildSolver( const AMP::shared_ptr<AMP::Database> &input_db,
 
             // check if we need to construct a preconditioner
             auto use_preconditioner = db->getWithDefault<bool>( "use_preconditioner", false );
-            AMP::shared_ptr<AMP::Solver::SolverStrategy> pcSolver;
+            std::shared_ptr<AMP::Solver::SolverStrategy> pcSolver;
 
             if ( use_preconditioner ) {
 
@@ -57,13 +57,13 @@ buildSolver( const AMP::shared_ptr<AMP::Database> &input_db,
                 AMP_INSIST( pcSolver.get() != nullptr, "null preconditioner" );
             }
 
-            auto params               = AMP::make_shared<AMP::Solver::KrylovSolverParameters>( db );
+            auto params               = std::make_shared<AMP::Solver::KrylovSolverParameters>( db );
             params->d_comm            = comm;
             params->d_pPreconditioner = pcSolver;
             parameters                = params;
 
         } else {
-            parameters = AMP::make_shared<AMP::Solver::SolverStrategyParameters>( db );
+            parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
         }
 
         AMP_INSIST( parameters != nullptr, "null parameter object" );
@@ -93,7 +93,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
 
     // extract the Mesh database and create the mesh parameters
     const auto meshDB = input_db->getDatabase( "Mesh" );
-    auto params       = AMP::make_shared<AMP::Mesh::MeshParameters>( meshDB );
+    auto params       = std::make_shared<AMP::Mesh::MeshParameters>( meshDB );
     params->setComm( globalComm );
 
     // create the mesh
@@ -102,7 +102,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     // create a linear diffusion operator
     auto linearOperator = AMP::Operator::OperatorBuilder::createOperator(
         meshAdapter, "DiffusionBVPOperator", input_db );
-    auto diffOp = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( linearOperator );
+    auto diffOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( linearOperator );
 
     // extract the internal matrix
     const auto &userMat = diffOp->getMatrix();
@@ -120,8 +120,8 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     const auto ampComm   = userVector->getComm();
 
     // construct a dof manager
-    const auto dofManager = AMP::make_shared<AMP::Discretization::DOFManager>( localSize, ampComm );
-    const auto copyVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "copyVariable" );
+    const auto dofManager = std::make_shared<AMP::Discretization::DOFManager>( localSize, ampComm );
+    const auto copyVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "copyVariable" );
 
     // create a vector based on the dofs and variable
     auto ampVector = AMP::LinearAlgebra::createVector( dofManager, copyVariable );
@@ -140,10 +140,10 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     auto ampMat = AMP::LinearAlgebra::createMatrix( ampVector, ampVector, "auto", getColumnIDS );
 
     // construct a LinearOperator and set its matrix
-    const auto linearOpDB = AMP::make_shared<AMP::Database>( "linearOperatorDB" );
+    const auto linearOpDB = std::make_shared<AMP::Database>( "linearOperatorDB" );
     linearOpDB->putScalar<int>( "print_info_level", 0 );
-    auto linearOpParameters = AMP::make_shared<AMP::Operator::OperatorParameters>( linearOpDB );
-    auto linearOp           = AMP::make_shared<AMP::Operator::LinearOperator>( linearOpParameters );
+    auto linearOpParameters = std::make_shared<AMP::Operator::OperatorParameters>( linearOpDB );
+    auto linearOp           = std::make_shared<AMP::Operator::LinearOperator>( linearOpParameters );
     linearOp->setMatrix( ampMat );
     linearOp->setVariables( copyVariable, copyVariable );
 

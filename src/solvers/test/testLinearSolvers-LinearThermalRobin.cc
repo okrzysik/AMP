@@ -23,23 +23,23 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <string>
 
 
-AMP::shared_ptr<AMP::Solver::SolverStrategy>
-buildSolver( const AMP::shared_ptr<AMP::Database> &input_db,
+std::shared_ptr<AMP::Solver::SolverStrategy>
+buildSolver( const std::shared_ptr<AMP::Database> &input_db,
              const std::string &solver_name,
              const AMP::AMP_MPI &comm,
-             AMP::shared_ptr<AMP::Operator::Operator> &op )
+             std::shared_ptr<AMP::Operator::Operator> &op )
 {
 
-    AMP::shared_ptr<AMP::Solver::SolverStrategy> solver;
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters;
+    std::shared_ptr<AMP::Solver::SolverStrategy> solver;
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters;
 
     AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
 
@@ -54,7 +54,7 @@ buildSolver( const AMP::shared_ptr<AMP::Database> &input_db,
 
             // check if we need to construct a preconditioner
             auto use_preconditioner = db->getWithDefault<bool>( "use_preconditioner", false );
-            AMP::shared_ptr<AMP::Solver::SolverStrategy> pcSolver;
+            std::shared_ptr<AMP::Solver::SolverStrategy> pcSolver;
 
             if ( use_preconditioner ) {
 
@@ -65,13 +65,13 @@ buildSolver( const AMP::shared_ptr<AMP::Database> &input_db,
                 AMP_INSIST( pcSolver.get() != nullptr, "null preconditioner" );
             }
 
-            auto params               = AMP::make_shared<AMP::Solver::KrylovSolverParameters>( db );
+            auto params               = std::make_shared<AMP::Solver::KrylovSolverParameters>( db );
             params->d_comm            = comm;
             params->d_pPreconditioner = pcSolver;
             parameters                = params;
 
         } else {
-            parameters = AMP::make_shared<AMP::Solver::SolverStrategyParameters>( db );
+            parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
         }
 
         AMP_INSIST( parameters != nullptr, "null parameter object" );
@@ -104,11 +104,11 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     //   Create the Mesh.
     //--------------------------------------------------
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
+    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
         new AMP::Mesh::MeshParameters( mesh_db ) );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
     //--------------------------------------------------
 
     //--------------------------------------------------
@@ -134,10 +134,10 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
 
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
-    AMP::shared_ptr<AMP::Database> neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
-    AMP::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(
+    std::shared_ptr<AMP::Database> neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
+    std::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(
         new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ) );
-    AMP::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(
+    std::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(
         new AMP::Operator::NeutronicsRhs( neutronicsParams ) );
 
     AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar =
@@ -153,9 +153,9 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
-    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
+    std::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
+        std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
 
@@ -171,12 +171,12 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     ////////////////////////////////////////
     //   CREATE THE THERMAL BVP OPERATOR  //
     ////////////////////////////////////////
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto linearOperator = AMP::Operator::OperatorBuilder::createOperator(
         meshAdapter, "DiffusionBVPOperator", input_db, transportModel );
 
     auto diffusionOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linearOperator );
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linearOperator );
 
     AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvinVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable() );
@@ -198,7 +198,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     AMP::Operator::Operator::shared_ptr boundaryOp;
     boundaryOp = diffusionOperator->getBoundaryOperator();
 
-    ( AMP::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( boundaryOp ) )
+    ( std::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( boundaryOp ) )
         ->addRHScorrection( boundaryOpCorrectionVec );
 
     RightHandSideVec->subtract( PowerInWattsVec, boundaryOpCorrectionVec );

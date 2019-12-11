@@ -26,11 +26,11 @@ namespace Mesh {
 /****************************************************************
  * Generator                                                     *
  ****************************************************************/
-AMP::shared_ptr<BoxMesh> BoxMesh::generate( MeshParameters::shared_ptr params )
+std::shared_ptr<BoxMesh> BoxMesh::generate( MeshParameters::shared_ptr params )
 {
     auto db          = params->getDatabase();
     bool static_mesh = db->getWithDefault( "static", false );
-    AMP::shared_ptr<BoxMesh> mesh( new StructuredGeometryMesh( params ) );
+    std::shared_ptr<BoxMesh> mesh( new StructuredGeometryMesh( params ) );
     if ( !static_mesh )
         mesh.reset( new MovableBoxMesh( *mesh ) );
     return mesh;
@@ -296,7 +296,7 @@ size_t BoxMesh::maxProcs( const MeshParameters::shared_ptr &params )
 {
     // Check for valid inputs
     AMP_INSIST( params.get(), "Params must not be null" );
-    AMP::shared_ptr<AMP::Database> db = params->getDatabase();
+    std::shared_ptr<AMP::Database> db = params->getDatabase();
     AMP_INSIST( db.get(), "Database must exist" );
     size_t maxProcs = 1;
     if ( db->keyExists( "LoadBalanceMinSize" ) ) {
@@ -661,7 +661,7 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
         }
     }
     // Create the iterator
-    AMP::shared_ptr<std::vector<MeshElementIndex>> elements(
+    std::shared_ptr<std::vector<MeshElementIndex>> elements(
         new std::vector<MeshElementIndex>( set.begin(), set.end() ) );
     return structuredMeshIterator( elements, this, 0 );
 }
@@ -710,7 +710,7 @@ BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
         }
     }
     // Create the iterator
-    AMP::shared_ptr<std::vector<MeshElementIndex>> elements(
+    std::shared_ptr<std::vector<MeshElementIndex>> elements(
         new std::vector<MeshElementIndex>( set.begin(), set.end() ) );
     return structuredMeshIterator( elements, this, 0 );
 }

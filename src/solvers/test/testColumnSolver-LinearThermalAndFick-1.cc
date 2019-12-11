@@ -17,9 +17,9 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <iostream>
 #include <string>
@@ -40,11 +40,11 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //   Create the Mesh.
     //--------------------------------------------------
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
+    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
         new AMP::Mesh::MeshParameters( mesh_db ) );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
     //--------------------------------------------------
 
     //--------------------------------------------------
@@ -58,43 +58,43 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
             meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     //--------------------------------------------------
 
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> FickMaterialModel;
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> FickMaterialModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for Fick
     AMP_INSIST( input_db->keyExists( "testLinearFickOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearFickOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> linearFickOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "testLinearFickOperator", input_db, FickMaterialModel ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    std::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator =
+        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "testLinearThermalOperator", input_db, thermalTransportModel ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a column operator object for linear Thermal-Fick
-    AMP::shared_ptr<AMP::Operator::OperatorParameters> params;
-    AMP::shared_ptr<AMP::Operator::ColumnOperator> linearThermalFickOperator(
+    std::shared_ptr<AMP::Operator::OperatorParameters> params;
+    std::shared_ptr<AMP::Operator::ColumnOperator> linearThermalFickOperator(
         new AMP::Operator::ColumnOperator( params ) );
     linearThermalFickOperator->append( linearThermalOperator );
     linearThermalFickOperator->append( linearFickOperator );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the input multi-variable
-    AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> thermalVolumeOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(
+    std::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> thermalVolumeOperator =
+        std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(
             linearThermalOperator->getVolumeOperator() );
-    AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> FickVolumeOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(
+    std::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> FickVolumeOperator =
+        std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(
             linearFickOperator->getVolumeOperator() );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVariable(
+    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVariable(
         new AMP::LinearAlgebra::MultiVariable( "inputVariable" ) );
     inputVariable->add( thermalVolumeOperator->getInputVariable() );
     inputVariable->add( FickVolumeOperator->getInputVariable() );
@@ -116,18 +116,18 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial-Guess for thermal
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyThermalModel;
-    AMP::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletThermalInVecOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyThermalModel;
+    std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletThermalInVecOp =
+        std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "ThermalInitialGuess", input_db, dummyThermalModel ) );
     dirichletThermalInVecOp->setVariable( thermalVolumeOperator->getInputVariable() );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial-Guess for Fick
-    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyFickModel;
-    AMP::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletFickInVecOp =
-        AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyFickModel;
+    std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletFickInVecOp =
+        std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "FickInitialGuess", input_db, dummyFickModel ) );
     dirichletFickInVecOp->setVariable( FickVolumeOperator->getInputVariable() );
@@ -146,25 +146,25 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // ---- initialize the solvers
-    AMP::shared_ptr<AMP::Database> columnSolver_db = input_db->getDatabase( "ColumnSolver" );
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> columnSolverParams(
+    std::shared_ptr<AMP::Database> columnSolver_db = input_db->getDatabase( "ColumnSolver" );
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> columnSolverParams(
         new AMP::Solver::SolverStrategyParameters( columnSolver_db ) );
-    AMP::shared_ptr<AMP::Solver::ColumnSolver> columnSolver(
+    std::shared_ptr<AMP::Solver::ColumnSolver> columnSolver(
         new AMP::Solver::ColumnSolver( columnSolverParams ) );
 
-    AMP::shared_ptr<AMP::Database> thermalSolver_db =
+    std::shared_ptr<AMP::Database> thermalSolver_db =
         columnSolver_db->getDatabase( "ThermalSolver" );
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalSolverParams(
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalSolverParams(
         new AMP::Solver::SolverStrategyParameters( thermalSolver_db ) );
     thermalSolverParams->d_pOperator = linearThermalOperator;
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> linearThermalSolver(
+    std::shared_ptr<AMP::Solver::TrilinosMLSolver> linearThermalSolver(
         new AMP::Solver::TrilinosMLSolver( thermalSolverParams ) );
 
-    AMP::shared_ptr<AMP::Database> FickSolver_db = columnSolver_db->getDatabase( "FickSolver" );
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> FickSolverParams(
+    std::shared_ptr<AMP::Database> FickSolver_db = columnSolver_db->getDatabase( "FickSolver" );
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> FickSolverParams(
         new AMP::Solver::SolverStrategyParameters( FickSolver_db ) );
     FickSolverParams->d_pOperator = linearFickOperator;
-    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> linearFickSolver(
+    std::shared_ptr<AMP::Solver::TrilinosMLSolver> linearFickSolver(
         new AMP::Solver::TrilinosMLSolver( FickSolverParams ) );
 
     columnSolver->append( linearThermalSolver );

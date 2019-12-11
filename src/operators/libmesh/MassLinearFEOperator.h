@@ -7,7 +7,7 @@
 #include "AMP/operators/libmesh/MassLinearElement.h"
 #include "AMP/operators/libmesh/MassLinearFEOperatorParameters.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include <vector>
 
@@ -17,11 +17,11 @@ namespace Operator {
 class MassLinearFEOperator : public LinearFEOperator
 {
 public:
-    explicit MassLinearFEOperator( const AMP::shared_ptr<MassLinearFEOperatorParameters> &params );
+    explicit MassLinearFEOperator( const std::shared_ptr<MassLinearFEOperatorParameters> &params );
 
     virtual ~MassLinearFEOperator() {}
 
-    void preAssembly( const AMP::shared_ptr<AMP::Operator::OperatorParameters> & ) override;
+    void preAssembly( const std::shared_ptr<AMP::Operator::OperatorParameters> & ) override;
 
     void postAssembly() override;
 
@@ -33,7 +33,7 @@ public:
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
-    AMP::shared_ptr<MassDensityModel> getDensityModel() { return d_densityModel; };
+    std::shared_ptr<MassDensityModel> getDensityModel() { return d_densityModel; };
 
 protected:
     bool d_useConstantTemperature;
@@ -56,13 +56,13 @@ protected:
 
     std::vector<std::vector<double>> d_elementMassMatrix;
 
-    AMP::shared_ptr<MassLinearElement> d_massLinElem;
+    std::shared_ptr<MassLinearElement> d_massLinElem;
 
-    AMP::shared_ptr<MassDensityModel> d_densityModel;
+    std::shared_ptr<MassDensityModel> d_densityModel;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
 private:
 };

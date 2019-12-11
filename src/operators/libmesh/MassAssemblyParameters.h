@@ -9,7 +9,7 @@ namespace Operator {
 class MassAssemblyParameters : public AssemblyParameters
 {
 public:
-    explicit MassAssemblyParameters( AMP::shared_ptr<AMP::Database> db ) : AssemblyParameters( db )
+    explicit MassAssemblyParameters( std::shared_ptr<AMP::Database> db ) : AssemblyParameters( db )
     {
     }
 

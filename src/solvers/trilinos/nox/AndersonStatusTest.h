@@ -35,7 +35,7 @@ public:
      acceptable values (>0.0)
 
     */
-    explicit AndersonStatusTest( AMP::shared_ptr<AMP::Database> db );
+    explicit AndersonStatusTest( std::shared_ptr<AMP::Database> db );
 
     /**
      * Default destructor.

@@ -16,10 +16,10 @@ static double interp_linear( const std::vector<double> &, const std::vector<doub
  *  Default constructor                                                  *
  ************************************************************************/
 SubchannelToCladMap::SubchannelToCladMap(
-    const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
+    const std::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : AsyncMapOperator( p )
 {
-    auto params = AMP::dynamic_pointer_cast<SubchannelToCladMapParameters>( p );
+    auto params = std::dynamic_pointer_cast<SubchannelToCladMapParameters>( p );
     AMP_ASSERT( params );
 
     // Clone the communicator to protect the communication (we need a large number of unique tags)
@@ -168,7 +168,7 @@ SubchannelToCladMap::getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr mesh )
             xyFace.insert( std::pair<double, AMP::Mesh::MeshElement>( center[2], *it ) );
         }
     }
-    auto elements = AMP::make_shared<std::vector<AMP::Mesh::MeshElement>>();
+    auto elements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>();
     elements->reserve( xyFace.size() );
     for ( auto &elem : xyFace )
         elements->push_back( elem.second );

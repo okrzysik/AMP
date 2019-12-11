@@ -6,7 +6,7 @@
 namespace AMP {
 namespace Solver {
 
-Flow1DSolver::Flow1DSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
+Flow1DSolver::Flow1DSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
 
@@ -17,15 +17,15 @@ Flow1DSolver::Flow1DSolver( AMP::shared_ptr<SolverStrategyParameters> parameters
 
 Flow1DSolver::~Flow1DSolver() = default;
 
-void Flow1DSolver::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> ) {}
+void Flow1DSolver::setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> ) {}
 
-void Flow1DSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters )
+void Flow1DSolver::initialize( std::shared_ptr<SolverStrategyParameters> const parameters )
 {
     getFromInput( parameters->d_db );
 
     if ( d_pOperator.get() != nullptr ) {
-        AMP::shared_ptr<AMP::Operator::FlowFrapconJacobian> Operator =
-            AMP::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>( d_pOperator );
+        std::shared_ptr<AMP::Operator::FlowFrapconJacobian> Operator =
+            std::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>( d_pOperator );
 
         AMP_ASSERT( Operator.get() != nullptr );
 
@@ -43,21 +43,21 @@ void Flow1DSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const p
     }
 }
 
-void Flow1DSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
+void Flow1DSolver::reset( std::shared_ptr<SolverStrategyParameters> )
 {
 
     if ( d_pOperator.get() != nullptr ) {}
 }
 
-void Flow1DSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+void Flow1DSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator.get() != nullptr ) {
         d_pOperator->reset( params );
     }
 }
 
-void Flow1DSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                          AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void Flow1DSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                          std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
 
     AMP::LinearAlgebra::Vector::shared_ptr flowInputVec =

@@ -13,7 +13,7 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Tube::Tube( AMP::shared_ptr<AMP::Database> db )
+Tube::Tube( std::shared_ptr<AMP::Database> db )
 {
     d_physicalDim = 3;
     d_logicalDim  = 3;
@@ -215,9 +215,9 @@ void Tube::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-AMP::shared_ptr<AMP::Geometry::Geometry> Tube::clone() const
+std::shared_ptr<AMP::Geometry::Geometry> Tube::clone() const
 {
-    return AMP::make_shared<Tube>( *this );
+    return std::make_shared<Tube>( *this );
 }
 
 

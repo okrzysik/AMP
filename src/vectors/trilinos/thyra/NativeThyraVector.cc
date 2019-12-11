@@ -19,17 +19,17 @@ namespace LinearAlgebra {
 NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
     : NativeVector(), ThyraVector(), VectorEngine()
 {
-    auto params = AMP::dynamic_pointer_cast<NativeThyraVectorParameters>( in_params );
+    auto params = std::dynamic_pointer_cast<NativeThyraVectorParameters>( in_params );
     AMP_ASSERT( params != nullptr );
     AMP_ASSERT( !params->d_comm.isNull() );
     AMP_ASSERT( params->d_InVec.get() != nullptr );
     Thyra::Ordinal dim = params->d_InVec->space()->dim();
     AMP_ASSERT( params->d_comm.sumReduce( params->d_local ) == static_cast<size_t>( dim ) );
-    auto communicationListParams         = AMP::make_shared<CommunicationListParameters>();
+    auto communicationListParams         = std::make_shared<CommunicationListParameters>();
     communicationListParams->d_comm      = params->d_comm;
     communicationListParams->d_localsize = params->d_local;
-    d_CommList   = AMP::make_shared<CommunicationList>( communicationListParams );
-    d_DOFManager = AMP::make_shared<Discretization::DOFManager>( params->d_local, params->d_comm );
+    d_CommList   = std::make_shared<CommunicationList>( communicationListParams );
+    d_DOFManager = std::make_shared<Discretization::DOFManager>( params->d_local, params->d_comm );
     d_local      = params->d_local;
     d_thyraVec   = params->d_InVec;
     d_pVariable  = params->d_var;
@@ -47,12 +47,12 @@ NativeThyraVector::~NativeThyraVector() = default;
  ************************************************************************/
 Vector::shared_ptr NativeThyraVector::cloneVector( const Variable::shared_ptr var ) const
 {
-    AMP::shared_ptr<NativeThyraVectorParameters> params( new NativeThyraVectorParameters() );
+    std::shared_ptr<NativeThyraVectorParameters> params( new NativeThyraVectorParameters() );
     params->d_InVec = d_thyraVec->clone_v();
     params->d_local = d_local;
     params->d_comm  = getComm();
     params->d_var   = var;
-    return AMP::make_shared<NativeThyraVector>( params );
+    return std::make_shared<NativeThyraVector>( params );
 }
 
 

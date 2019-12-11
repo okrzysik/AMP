@@ -33,19 +33,19 @@ namespace AMP {
 namespace Solver {
 
 
-static inline AMP::shared_ptr<AMP::LinearAlgebra::EpetraVector>
+static inline std::shared_ptr<AMP::LinearAlgebra::EpetraVector>
 epetraView( AMP::LinearAlgebra::Vector::shared_ptr x )
 {
     auto y = AMP::LinearAlgebra::EpetraVector::view( x );
-    auto z = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>( y );
+    auto z = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>( y );
     AMP_ASSERT( x != nullptr );
     return z;
 }
-static inline AMP::shared_ptr<const AMP::LinearAlgebra::EpetraVector>
+static inline std::shared_ptr<const AMP::LinearAlgebra::EpetraVector>
 epetraView( AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
     auto y = AMP::LinearAlgebra::EpetraVector::constView( x );
-    auto z = AMP::dynamic_pointer_cast<const AMP::LinearAlgebra::EpetraVector>( y );
+    auto z = std::dynamic_pointer_cast<const AMP::LinearAlgebra::EpetraVector>( y );
     AMP_ASSERT( x != nullptr );
     return z;
 }
@@ -55,7 +55,7 @@ epetraView( AMP::LinearAlgebra::Vector::const_shared_ptr x )
  * Constructors / Destructor                                     *
  ****************************************************************/
 TrilinosMueLuSolver::TrilinosMueLuSolver() { d_bCreationPhase = true; }
-TrilinosMueLuSolver::TrilinosMueLuSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
+TrilinosMueLuSolver::TrilinosMueLuSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
@@ -67,7 +67,7 @@ TrilinosMueLuSolver::~TrilinosMueLuSolver()
     d_matrix.reset(); // Need to keep a copy of the matrix alive until after the solver is destroyed
 }
 
-void TrilinosMueLuSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters )
+void TrilinosMueLuSolver::initialize( std::shared_ptr<SolverStrategyParameters> const parameters )
 {
     getFromInput( parameters->d_db );
 
@@ -136,11 +136,11 @@ TrilinosMueLuSolver::getSmootherFactory( const int level )
 }
 
 Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>>
-TrilinosMueLuSolver::getXpetraMatrix( AMP::shared_ptr<AMP::Operator::LinearOperator> &op )
+TrilinosMueLuSolver::getXpetraMatrix( std::shared_ptr<AMP::Operator::LinearOperator> &op )
 {
     // wrap in a Xpetra matrix
     auto ampMatrix    = op->getMatrix();
-    auto epetraMatrix = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(
+    auto epetraMatrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(
         AMP::LinearAlgebra::EpetraMatrix::createView( ampMatrix ) );
     auto epA = Teuchos::rcpFromRef( epetraMatrix->getEpetra_CrsMatrix() );
     Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> exA =
@@ -186,7 +186,7 @@ void TrilinosMueLuSolver::buildHierarchyFromDefaults( void )
     d_factoryManager.SetFactory( "CoarseSolver", coarseSolverFact );
 
     // extract the Xpetra matrix from AMP
-    auto linearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
     auto fineLevelA     = getXpetraMatrix( linearOperator );
 
     d_mueluHierarchy = Teuchos::rcp( new MueLu::Hierarchy<SC, LO, GO, NO>() );
@@ -215,7 +215,7 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
     d_mueluHierarchy->SetDefaultVerbLevel( MueLu::Medium );
     auto finestMGLevel = d_mueluHierarchy->GetLevel();
     // extract the Xpetra matrix from AMP
-    auto linearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
     auto fineLevelA     = getXpetraMatrix( linearOperator );
     finestMGLevel->Set( "A", fineLevelA );
 
@@ -267,7 +267,7 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
     }
 }
 
-void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
+void TrilinosMueLuSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
 {
     d_bRobustMode = db->getWithDefault<bool>( "ROBUST_MODE", false );
     d_bUseEpetra  = db->getWithDefault<bool>( "USE_EPETRA", true );
@@ -439,7 +439,7 @@ void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db
                               db->getWithDefault<bool>( "transpose_use_implicit", false ) );
 }
 
-void TrilinosMueLuSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
+void TrilinosMueLuSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
 {
     d_pOperator = op;
     AMP_INSIST( d_pOperator.get() != nullptr,
@@ -461,10 +461,10 @@ void TrilinosMueLuSolver::registerOperator( const AMP::shared_ptr<AMP::Operator:
         } else {
 
             auto linearOperator =
-                AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+                std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
             AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
 
-            d_matrix = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(
+            d_matrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(
                 linearOperator->getMatrix() );
             AMP_INSIST( d_matrix.get() != nullptr, "d_matrix cannot be NULL" );
 
@@ -486,18 +486,18 @@ void TrilinosMueLuSolver::registerOperator( const AMP::shared_ptr<AMP::Operator:
 
 
 void TrilinosMueLuSolver::resetOperator(
-    const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
+    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     PROFILE_START( "resetOperator" );
     AMP_INSIST( ( d_pOperator.get() != nullptr ),
                 "ERROR: TrilinosMueLuSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
-    reset( AMP::shared_ptr<SolverStrategyParameters>() );
+    reset( std::shared_ptr<SolverStrategyParameters>() );
     PROFILE_STOP( "resetOperator" );
 }
 
 
-void TrilinosMueLuSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
+void TrilinosMueLuSolver::reset( std::shared_ptr<SolverStrategyParameters> )
 {
     PROFILE_START( "reset" );
     d_mueluSolver.reset();
@@ -506,8 +506,8 @@ void TrilinosMueLuSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
     PROFILE_STOP( "reset" );
 }
 
-void TrilinosMueLuSolver::solveWithHierarchy( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                              AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void TrilinosMueLuSolver::solveWithHierarchy( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                                              std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solveWithHierarchy" );
 
@@ -535,8 +535,8 @@ void TrilinosMueLuSolver::solveWithHierarchy( AMP::shared_ptr<const AMP::LinearA
     PROFILE_STOP( "solveWithHierarchy" );
 }
 
-void TrilinosMueLuSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                 AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                                 std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 
@@ -552,7 +552,7 @@ void TrilinosMueLuSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vecto
     }
 
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> r;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> r;
 
     bool computeResidual = false;
     if ( d_bRobustMode || ( d_iDebugPrintInfoLevel > 1 ) ) {
@@ -618,7 +618,7 @@ void TrilinosMueLuSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vecto
     // as Epetra is not going to change the state of a managed vector
     // an example where this will and has caused problems is when the
     // vector is a petsc managed vector being passed back to PETSc
-    auto firer = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( u );
+    auto firer = std::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( u );
     if ( firer )
         firer->fireDataChange();
 
@@ -650,8 +650,8 @@ void TrilinosMueLuSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vecto
 }
 
 
-void TrilinosMueLuSolver::reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                         AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void TrilinosMueLuSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                                         std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "reSolveWithLU" );
 
@@ -659,11 +659,11 @@ void TrilinosMueLuSolver::reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebr
         AMP_ERROR( "Robust mode can only be used with Epetra matrices." );
     }
 
-    auto linearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
     AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
 
     d_matrix =
-        AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( linearOperator->getMatrix() );
+        std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( linearOperator->getMatrix() );
     AMP_INSIST( d_matrix.get() != nullptr, "d_matrix cannot be NULL" );
 
     auto tmpMueLuParameterList = d_MueLuParameterList;

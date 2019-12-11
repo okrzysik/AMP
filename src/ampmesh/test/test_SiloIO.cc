@@ -40,7 +40,7 @@ AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr m
 {
     auto DOF =
         AMP::Discretization::simpleDOFManager::create( mesh, mesh->getGeomType(), 0, 1, false );
-    auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( "volume" );
+    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "volume" );
     auto vec = AMP::LinearAlgebra::createVector( DOF, var, true );
     vec->zero();
     std::vector<size_t> dofs;
@@ -68,7 +68,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );
-    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
@@ -86,7 +86,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
 
 #ifdef USE_AMP_VECTORS
     // Create a simple DOFManager
-    auto DOFparams  = AMP::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
+    auto DOFparams  = std::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
     auto DOF_scalar = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 1, true );
     auto DOF_vector = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 3, true );
     auto DOF_gauss  = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 8, true );
@@ -94,10 +94,10 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
         AMP::Discretization::simpleDOFManager::create( submesh, surfaceType, 0, 1, true );
 
     // Create the vectors
-    auto rank_var     = AMP::make_shared<AMP::LinearAlgebra::Variable>( "rank" );
-    auto position_var = AMP::make_shared<AMP::LinearAlgebra::Variable>( "position" );
-    auto gp_var       = AMP::make_shared<AMP::LinearAlgebra::Variable>( "gp_var" );
-    auto id_var       = AMP::make_shared<AMP::LinearAlgebra::Variable>( "ids" );
+    auto rank_var     = std::make_shared<AMP::LinearAlgebra::Variable>( "rank" );
+    auto position_var = std::make_shared<AMP::LinearAlgebra::Variable>( "position" );
+    auto gp_var       = std::make_shared<AMP::LinearAlgebra::Variable>( "gp_var" );
+    auto id_var       = std::make_shared<AMP::LinearAlgebra::Variable>( "ids" );
     auto rank_vec     = AMP::LinearAlgebra::createVector( DOF_scalar, rank_var, true );
     auto position     = AMP::LinearAlgebra::createVector( DOF_vector, position_var, true );
     auto gauss_pt     = AMP::LinearAlgebra::createVector( DOF_gauss, gp_var, true );

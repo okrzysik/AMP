@@ -39,7 +39,7 @@ public:
      */
     EpetraVectorEngineParameters( size_t local_size,
                                   size_t global_size,
-                                  AMP::shared_ptr<Epetra_Map> emap,
+                                  std::shared_ptr<Epetra_Map> emap,
                                   const AMP_MPI &ecomm );
 
     //! Destructor
@@ -51,7 +51,7 @@ public:
     Epetra_Map &getEpetraMap();
 
 private:
-    AMP::shared_ptr<Epetra_Map> d_emap; // Epetra map
+    std::shared_ptr<Epetra_Map> d_emap; // Epetra map
 };
 
 
@@ -72,8 +72,8 @@ public:
      * \param[in]  alias  The parameters to construct this engine
      * \param[in]  p  The buffer to use to construct the engine
      */
-    EpetraVectorEngine( AMP::shared_ptr<VectorEngineParameters> alias,
-                        AMP::shared_ptr<VectorData> p = nullptr );
+    EpetraVectorEngine( std::shared_ptr<VectorEngineParameters> alias,
+                        std::shared_ptr<VectorData> p = nullptr );
 
     /** \brief Destructor
      */
@@ -93,10 +93,10 @@ public:
 public: // Functions derived from VectorEngine
     AMP_MPI getComm() const override;
     virtual bool sameEngine( VectorEngine &e ) const override;
-    virtual AMP::shared_ptr<VectorEngine>
-    cloneEngine( AMP::shared_ptr<VectorData> p ) const override;
-    virtual void swapEngines( AMP::shared_ptr<VectorEngine> ) override;
-    virtual AMP::shared_ptr<VectorData> getNewBuffer() override;
+    virtual std::shared_ptr<VectorEngine>
+    cloneEngine( std::shared_ptr<VectorData> p ) const override;
+    virtual void swapEngines( std::shared_ptr<VectorEngine> ) override;
+    virtual std::shared_ptr<VectorData> getNewBuffer() override;
 };
 
 

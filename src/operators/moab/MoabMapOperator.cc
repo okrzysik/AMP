@@ -294,13 +294,13 @@ void MoabMapOperator::buildGeomType::VolumeIntOp( SP_VolIntOp &volIntOp,
     act_db->putScalar( "ActiveVariable_0", interfaceVarName );
 
     // Global DB
-    SP_InpDatabase global_db = AMP::dynamic_pointer_cast<InpDatabase>( d_params->d_db );
+    SP_InpDatabase global_db = std::dynamic_pointer_cast<InpDatabase>( d_params->d_db );
 
     // We just need a dummy Element Physics Model
     SP_ElemPhysModel emptyModel;
 
     // Create the operator
-    volIntOp = AMP::dynamic_pointer_cast<VolIntOp>(
+    volIntOp = std::dynamic_pointer_cast<VolIntOp>(
         OperatorBuilder::createOperator( mesh, name, global_db, emptyModel ) );
 
     AMP_ASSERT( volIntOp );
@@ -333,7 +333,7 @@ void MoabMapOperator::buildMoabCoupler()
     int couplerID = 0;
     AMP::plog << "Calling Coupler constructor" << std::endl;
     d_coupler = =
-        AMP::make_shared<moab::Coupler>( d_moabInterface, moabParComm, srcElems, couplerID );
+        std::make_shared<moab::Coupler>( d_moabInterface, moabParComm, srcElems, couplerID );
 }
 
 

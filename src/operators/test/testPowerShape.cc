@@ -7,10 +7,10 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include <memory>
 
 #include <string>
 
@@ -28,16 +28,16 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 
     //   Create the Mesh
     auto mesh_db   = input_db->getDatabase( "Mesh" );
-    auto mgrParams = AMP::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     //  Construct PowerShape.
     AMP_INSIST( input_db->keyExists( "MyPowerShape" ), "Key ''MyPowerShape'' is missing!" );
     auto shape_db        = input_db->getDatabase( "MyPowerShape" );
-    auto shape_params    = AMP::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
+    auto shape_params    = std::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
     shape_params->d_Mesh = meshAdapter;
-    auto shape           = AMP::make_shared<AMP::Operator::PowerShape>( shape_params );
+    auto shape           = std::make_shared<AMP::Operator::PowerShape>( shape_params );
 
     // Create a DOF manager for a gauss point vector
     int DOFsPerNode = 8;
@@ -49,7 +49,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
     // Create a shared pointer to a Variable - Power - Output because it will be used in the
     // "residual" location of apply
     auto SpecificPowerShapeVar =
-        AMP::make_shared<AMP::LinearAlgebra::Variable>( "SpecificPowerInWattsPerKg" );
+        std::make_shared<AMP::LinearAlgebra::Variable>( "SpecificPowerInWattsPerKg" );
 
     // Create a vector associated with the Variable
     auto SpecificPowerShapeVec =

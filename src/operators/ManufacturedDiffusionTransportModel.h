@@ -10,7 +10,7 @@
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 
 namespace AMP {
@@ -20,7 +20,7 @@ class ManufacturedDiffusionTransportModel : public DiffusionTransportModel
 {
 public:
     explicit ManufacturedDiffusionTransportModel(
-        const AMP::shared_ptr<DiffusionTransportModelParameters> &params )
+        const std::shared_ptr<DiffusionTransportModelParameters> &params )
         : DiffusionTransportModel( params )
     {
     }
@@ -29,7 +29,7 @@ public:
 
 
     virtual void getTransport( std::vector<double> &result,
-                               std::map<std::string, AMP::shared_ptr<std::vector<double>>> &args,
+                               std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
                                const std::vector<libMesh::Point> &Coordinates )
     {
         AMP_ASSERT( ( Coordinates.size() == result.size() ) );

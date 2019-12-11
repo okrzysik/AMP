@@ -2,7 +2,7 @@
 #ifndef included_AMP_ElementOperationParameters
 #define included_AMP_ElementOperationParameters
 
-#include "AMP/utils/shared_ptr.h"
+#include <memory>
 
 #include "AMP/utils/Database.h"
 
@@ -22,14 +22,14 @@ public:
     /**
       Constructor.
       */
-    explicit ElementOperationParameters( AMP::shared_ptr<AMP::Database> db ) : d_db( db ) {}
+    explicit ElementOperationParameters( std::shared_ptr<AMP::Database> db ) : d_db( db ) {}
 
     /**
       Destructor.
       */
     virtual ~ElementOperationParameters() {}
 
-    AMP::shared_ptr<AMP::Database> d_db; /**< Database object which needs to be
+    std::shared_ptr<AMP::Database> d_db; /**< Database object which needs to be
                                              initialized specific to the element operation. */
 
 protected:

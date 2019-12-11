@@ -14,7 +14,7 @@ class BlockOperator : public Operator
 public:
     BlockOperator();
 
-    explicit BlockOperator( const AMP::shared_ptr<OperatorParameters> &params );
+    explicit BlockOperator( const std::shared_ptr<OperatorParameters> &params );
 
     virtual ~BlockOperator() {}
 
@@ -26,9 +26,9 @@ public:
 
     bool supportsMatrixFunctions();
 
-    void setBlock( int row, int col, AMP::shared_ptr<Operator> op );
+    void setBlock( int row, int col, std::shared_ptr<Operator> op );
 
-    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
@@ -60,7 +60,7 @@ protected:
     int d_iNumRowBlocks;
     int d_iNumColumnBlocks;
 
-    std::vector<std::vector<AMP::shared_ptr<Operator>>> d_blocks;
+    std::vector<std::vector<std::shared_ptr<Operator>>> d_blocks;
 
     std::vector<int> d_firstRowId;
     std::vector<int> d_firstColumnId;

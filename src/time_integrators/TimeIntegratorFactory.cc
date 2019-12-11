@@ -14,16 +14,16 @@ TimeIntegratorFactory::TimeIntegratorFactory() = default;
 
 TimeIntegratorFactory::~TimeIntegratorFactory() = default;
 
-AMP::shared_ptr<TimeIntegrator> TimeIntegratorFactory::createTimeIntegrator(
-    AMP::shared_ptr<TimeIntegratorParameters> timeIntegratorParameters )
+std::shared_ptr<TimeIntegrator> TimeIntegratorFactory::createTimeIntegrator(
+    std::shared_ptr<TimeIntegratorParameters> timeIntegratorParameters )
 {
     AMP_ASSERT( timeIntegratorParameters.get() != nullptr );
 
-    AMP::shared_ptr<TimeIntegrator> timeIntegrator;
+    std::shared_ptr<TimeIntegrator> timeIntegrator;
 
     std::string timeIntegratorName = "";
 
-    AMP::shared_ptr<AMP::Database> db( timeIntegratorParameters->d_db );
+    std::shared_ptr<AMP::Database> db( timeIntegratorParameters->d_db );
 
     if ( db->keyExists( "timeIntegrator_name" ) ) {
         timeIntegratorName = db->getString( "timeIntegrator_name" );

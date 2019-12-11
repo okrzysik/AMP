@@ -13,7 +13,7 @@ namespace TimeIntegrator {
  *  Constructor.                                                        *
  ***********************************************************************/
 BackwardEulerTimeIntegrator::BackwardEulerTimeIntegrator(
-    AMP::shared_ptr<TimeIntegratorParameters> parameters )
+    std::shared_ptr<TimeIntegratorParameters> parameters )
     : ImplicitTimeIntegrator( parameters )
 {
     d_initial_dt = 0.0;
@@ -30,7 +30,7 @@ BackwardEulerTimeIntegrator::~BackwardEulerTimeIntegrator() = default;
 /***********************************************************************
  * Initialize.                                                          *
  ***********************************************************************/
-void BackwardEulerTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void BackwardEulerTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
 
@@ -48,7 +48,7 @@ void BackwardEulerTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorPara
 
     d_solver->registerOperator( d_operator );
 }
-void BackwardEulerTimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void BackwardEulerTimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
 
@@ -85,7 +85,7 @@ void BackwardEulerTimeIntegrator::updateSolution()
  * Read input from database.                                            *
  *                                                                      *
  ***********************************************************************/
-void BackwardEulerTimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
+void BackwardEulerTimeIntegrator::getFromInput( std::shared_ptr<AMP::Database> input_db )
 {
     if ( input_db->keyExists( "initial_timestep" ) ) {
         d_initial_dt = input_db->getScalar<double>( "initial_timestep" );
@@ -110,7 +110,7 @@ bool BackwardEulerTimeIntegrator::checkNewSolution() const
     return ( true );
 }
 void BackwardEulerTimeIntegrator::initializeTimeOperator(
-    AMP::shared_ptr<TimeIntegratorParameters> parameters )
+    std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     d_pTimeOperatorParameters.reset( new TimeOperatorParameters( parameters->d_db ) );
 

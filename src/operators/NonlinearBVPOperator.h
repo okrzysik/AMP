@@ -36,7 +36,7 @@ public:
      FALSE, when set to
      to TRUE the same local model is used for both the volume and boundary operators
      */
-    explicit NonlinearBVPOperator( const AMP::shared_ptr<BVPOperatorParameters> &parameters );
+    explicit NonlinearBVPOperator( const std::shared_ptr<BVPOperatorParameters> &parameters );
 
     /**
      * virtual destructor which does nothing
@@ -57,11 +57,11 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
-    AMP::shared_ptr<Operator> getVolumeOperator() { return d_volumeOperator; }
+    std::shared_ptr<Operator> getVolumeOperator() { return d_volumeOperator; }
 
-    AMP::shared_ptr<BoundaryOperator> getBoundaryOperator() { return d_boundaryOperator; }
+    std::shared_ptr<BoundaryOperator> getBoundaryOperator() { return d_boundaryOperator; }
 
     void modifyRHSvector( AMP::LinearAlgebra::Vector::shared_ptr rhs );
 
@@ -82,23 +82,23 @@ public:
         return d_volumeOperator->isValidInput( sol );
     }
 
-    AMP::shared_ptr<OperatorParameters>
+    std::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr x,
-                   AMP::shared_ptr<OperatorParameters> params = nullptr ) override;
+                   std::shared_ptr<OperatorParameters> params = nullptr ) override;
 
 protected:
     /**
      * shared pointer to a nonlinear volume or interior spatial operator
      */
-    AMP::shared_ptr<Operator> d_volumeOperator;
+    std::shared_ptr<Operator> d_volumeOperator;
 
     /**
      *  shared pointer to a boundary or surface operator that is responsible for apply operations on
      * the boundary of the
      * domain
      */
-    AMP::shared_ptr<BoundaryOperator> d_boundaryOperator;
+    std::shared_ptr<BoundaryOperator> d_boundaryOperator;
 
 private:
 };

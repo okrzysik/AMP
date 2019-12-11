@@ -68,11 +68,11 @@ Vector::shared_ptr ManagedSundialsVector::cloneVector( const Variable::shared_pt
 }
 ManagedSundialsVector *ManagedSundialsVector::rawClone() const
 {
-    auto p = AMP::make_shared<ManagedSundialsVectorParameters>();
+    auto p = std::make_shared<ManagedSundialsVectorParameters>();
     if ( !d_vBuffer ) {
-        p->d_Engine = d_Engine->cloneEngine( AMP::shared_ptr<VectorData>() );
+        p->d_Engine = d_Engine->cloneEngine( std::shared_ptr<VectorData>() );
     } else {
-        p->d_Buffer = AMP::make_shared<VectorDataCPU<double>>(
+        p->d_Buffer = std::make_shared<VectorDataCPU<double>>(
             d_vBuffer->getLocalStartID(), d_vBuffer->getLocalSize(), d_vBuffer->getGlobalSize() );
         p->d_Engine = d_Engine->cloneEngine( p->d_Buffer );
     }

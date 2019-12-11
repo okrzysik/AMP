@@ -16,8 +16,8 @@ namespace Materials {
 
 template<>
 void TensorProperty<double>::evalv(
-    std::vector<std::vector<AMP::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
-    const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
+    std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
+    const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
 {
     bool in = this->in_range( args );
     AMP_INSIST( in, "Property out of range" );
@@ -26,8 +26,8 @@ void TensorProperty<double>::evalv(
 
 template<>
 void TensorProperty<double>::evalv(
-    std::vector<std::vector<AMP::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
-    const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
+    std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
+    const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
 {
     auto mapargs = make_map( args );
     evalv( r, mapargs );

@@ -11,7 +11,7 @@ namespace AMP {
 namespace Operator {
 
 MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
-    const AMP::shared_ptr<MechanicsNonlinearFEOperatorParameters> &params )
+    const std::shared_ptr<MechanicsNonlinearFEOperatorParameters> &params )
     : NonlinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
@@ -26,9 +26,9 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
 
     if ( d_useUpdatedLagrangian ) {
         d_mechNULElem =
-            AMP::dynamic_pointer_cast<MechanicsNonlinearUpdatedLagrangianElement>( d_elemOp );
+            std::dynamic_pointer_cast<MechanicsNonlinearUpdatedLagrangianElement>( d_elemOp );
     } else {
-        d_mechNonlinElem = AMP::dynamic_pointer_cast<MechanicsNonlinearElement>( d_elemOp );
+        d_mechNonlinElem = std::dynamic_pointer_cast<MechanicsNonlinearElement>( d_elemOp );
     }
 
     if ( d_useUpdatedLagrangian ) {
@@ -54,7 +54,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
     } // end for i
 
     AMP_INSIST( params->d_db->keyExists( "ActiveInputVariables" ), "key not found" );
-    AMP::shared_ptr<AMP::Database> activeInpVar_db =
+    std::shared_ptr<AMP::Database> activeInpVar_db =
         params->d_db->getDatabase( "ActiveInputVariables" );
 
     d_inpVariables.reset( new AMP::LinearAlgebra::MultiVariable( "myInpVar" ) );
@@ -123,7 +123,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
 }
 
 void MechanicsNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                                                AMP::shared_ptr<AMP::LinearAlgebra::Vector> r )
+                                                std::shared_ptr<AMP::LinearAlgebra::Vector> r )
 {
     AMP_INSIST( ( u != nullptr ), "NULL Input Vector" );
 
@@ -344,14 +344,14 @@ void MechanicsNonlinearFEOperator::init()
 }
 
 
-void MechanicsNonlinearFEOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void MechanicsNonlinearFEOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 {
     if ( !d_isInitialized ) {
         init();
     }
 
-    AMP::shared_ptr<MechanicsNonlinearFEOperatorParameters> myParams =
-        AMP::dynamic_pointer_cast<MechanicsNonlinearFEOperatorParameters>( params );
+    std::shared_ptr<MechanicsNonlinearFEOperatorParameters> myParams =
+        std::dynamic_pointer_cast<MechanicsNonlinearFEOperatorParameters>( params );
 
     AMP_INSIST( ( ( myParams.get() ) != nullptr ), "Null parameter!" );
 
@@ -432,7 +432,7 @@ void MechanicsNonlinearFEOperator::reset( const AMP::shared_ptr<OperatorParamete
     } // end for i
 }
 
-AMP::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianParameters(
+std::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianParameters(
     AMP::LinearAlgebra::Vector::const_shared_ptr u_in )
 {
     if ( !d_isInitialized ) {
@@ -443,13 +443,13 @@ AMP::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
         std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
 
     // set up a database for the linear operator params
-    AMP::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
     tmp_db->putScalar( "reset_reuses_matrix", true );
     tmp_db->putScalar( "isAttachedToNonlinearOperator", true );
     tmp_db->putScalar( "isNonlinearOperatorInitialized", true );
 
     // create the linear operator params
-    AMP::shared_ptr<MechanicsLinearFEOperatorParameters> outParams(
+    std::shared_ptr<MechanicsLinearFEOperatorParameters> outParams(
         new MechanicsLinearFEOperatorParameters( tmp_db ) );
 
     // If updated-lagrangian is being used, then displacement and other variable has to be passed to
