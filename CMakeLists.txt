@@ -77,6 +77,11 @@ IF ( NOT ONLY_BUILD_DOCS )
 ENDIF()
 
 
+# Check the C++ version
+IF ( "${CMAKE_CXX_STANDARD}" LESS "17" )
+    MESSAGE( FATAL_ERROR "AMP requires C++17 or later, C++${CMAKE_CXX_STANDARD} defined" )
+ENDIF()
+
 # Include the TPL inclde paths and libraries
 INCLUDE_DIRECTORIES( ${TPL_INCLUDE_DIRS} )
 SET( TPL_LIBS ${TPL_LIBRARIES} )
