@@ -1,10 +1,8 @@
 #ifndef included_AMP_ElementOperationFactory
 #define included_AMP_ElementOperationFactory
 
-/* Boost files */
-#include "AMP/utils/shared_ptr.h"
-
 #include "AMP/operators/ElementOperation.h"
+#include "AMP/utils/shared_ptr.h"
 
 
 namespace AMP {

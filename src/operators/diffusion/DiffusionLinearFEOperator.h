@@ -1,15 +1,11 @@
-
 #ifndef included_AMP_DiffusionLinearFEOperator
 #define included_AMP_DiffusionLinearFEOperator
 
-/* AMP files */
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
 #include "AMP/operators/libmesh/LinearFEOperator.h"
 #include "AMP/utils/Utilities.h"
-
-/* Boost files */
 #include "AMP/utils/shared_ptr.h"
 
 #include <vector>

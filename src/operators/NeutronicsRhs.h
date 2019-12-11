@@ -1,18 +1,13 @@
-
 #ifndef included_AMP_NeutronicsRhs
 #define included_AMP_NeutronicsRhs
 
-/* AMP files */
+#include "AMP/operators/NeutronicsRhsParameters.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/OperatorParameters.h"
-#include "AMP/utils/Utilities.h"
-#include "AMP/vectors/Variable.h"
-#include "NeutronicsRhsParameters.h"
-
 #include "AMP/utils/Database.h"
-
-/*Boost files */
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Variable.h"
 
 #include <vector>
 

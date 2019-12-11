@@ -1,11 +1,7 @@
-
 #ifndef included_AMP_ColumnOperatorParameters
 #define included_AMP_ColumnOperatorParameters
 
-/*AMP files */
 #include "AMP/operators/OperatorParameters.h"
-
-/*Boost files */
 #include "AMP/utils/shared_ptr.h"
 
 #include <vector>

@@ -1,15 +1,10 @@
-
 #ifndef included_AMP_NeutronicsRhsParameters
 #define included_AMP_NeutronicsRhsParameters
 
-/* AMP files */
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/utils/Database.h"
-#include "AMP/vectors/Vector.h"
-//#include "AMP/ampmesh/MeshUtils.h"
-
-/* Boost files */
 #include "AMP/utils/shared_ptr.h"
+#include "AMP/vectors/Vector.h"
 
 namespace AMP {
 namespace Operator {
