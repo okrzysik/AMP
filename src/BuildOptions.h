@@ -45,7 +45,6 @@
   PACKAGE_DIRECTORY="
   specifying the directory where the given package is installs.  The current list of external
   packages is: <BR>
-  BOOST: Boost is currently required to build AMP. <BR>
   MPI: MPI provides parallel capabilities for AMP.  If used, there are a number of additional
   optional flags
      that are used to configure MPI: <BR>

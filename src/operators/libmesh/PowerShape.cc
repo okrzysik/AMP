@@ -10,24 +10,20 @@
 // $Id: PowerShape.cc,v 1.3 2010/06/15 12:00:00 h51 Exp $
 //---------------------------------------------------------------------------//
 
-/*AMP Files */
 #include "PowerShape.h"
+#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/OperatorParameters.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/shared_ptr.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "PowerShapeParameters.h"
-#include "libmesh/cell_hex8.h"
-
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/utils/Database.h"
 #include "VolumeIntegralOperator.h"
+#include "libmesh/cell_hex8.h"
 #include "libmesh/string_to_enum.h"
-
-/*Boost Files */
-#include "AMP/utils/shared_ptr.h"
 
 #include <cmath>
 #include <vector>

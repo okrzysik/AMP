@@ -1,12 +1,9 @@
-
 #ifndef included_AMP_CoupledChannelToCladMapOperatorParameters
 #define included_AMP_CoupledChannelToCladMapOperatorParameters
 
-/*AMP files */
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
-/*Boost files */
 #include "AMP/utils/shared_ptr.h"
 
 #include <vector>
