@@ -245,10 +245,8 @@ ENDIF()
 
 # Save the configuration info for applications 
 IF ( NOT ONLY_BUILD_DOCS )
-    INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/save_variables.cmake )
     CONFIGURE_FILE( cmake/FindAMP.template.cmake "${${PROJ}_INSTALL_DIR}/FindAMP.cmake" @ONLY )
     COPY_DATA_FILE( "${TPL_MACRO_CMAKE}" "${${PROJ}_INSTALL_DIR}/cmake/macros.cmake" )
-    SAVE_CMAKE_FLAGS( "${${PROJ}_INSTALL_DIR}/amp.cmake" )
 ENDIF()
 
 

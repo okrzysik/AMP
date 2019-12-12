@@ -1,0 +1,8 @@
+rm -rf CMake*
+
+cmake \
+    -D TPL_DIRECTORY=/packages/TPLs/install/debug   \
+    -D AMP_DATA=/projects/AMP/AMP-Data.tar.gz       \
+    -D AMP_INSTALL_DIR=${PWD}                       \
+    -D USE_CUDA=0                                   \
+    /projects/AMP/AMP
