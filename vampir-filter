@@ -55,13 +55,6 @@ __static_initialization_and_destruction* -- 0
 global constructors keyed to* -- 0
 std::__norm::list*;std::__debug::list*;std::__norm::_List_base* -- 0
 
-# Filter boost routines
-boost::detail::* -- 0
-boost::shared_ptr* -- 0
-boost::enable_shared_from_this*;void boost::detail::sp_enable_shared_from_this* -- 0
-void boost::check_delete*;void boost::checked_delete* -- 0
-boost::weak_ptr<*>::expired* -- 0
-
 
 # Filter Libmesh routines
 libMesh::processor_id* -- 0
