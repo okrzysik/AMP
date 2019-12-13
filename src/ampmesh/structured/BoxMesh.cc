@@ -147,8 +147,8 @@ void BoxMesh::initialize()
             }
             if ( d == -1 )
                 break;
-            d_numBlocks[d] *= factors[factors.size() - 1];
-            factors.resize( factors.size() - 1 );
+            d_numBlocks[d] *= factors.back();
+            factors.pop_back();
         }
     }
     d_blockSize = { ( d_globalSize[0] + d_numBlocks[0] - 1 ) / d_numBlocks[0],
