@@ -1,8 +1,15 @@
-
-#include "ElementPhysicsModelFactory.h"
+#include "AMP/operators/ElementPhysicsModelFactory.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #ifdef USE_EXT_LIBMESH
-// mechanics material models
+#include "AMP/operators/ManufacturedDiffusionTransportModel.h"
+#include "AMP/operators/diffusion/DiffusionCylindricalTransportModel.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/operators/diffusion/DiffusionTransportTensorModel.h"
+#include "AMP/operators/flow/FlowTransportModel.h"
+#include "AMP/operators/libmesh/MassDensityModel.h"
+#include "AMP/operators/libmesh/PelletContactConductanceModel.h"
+#include "AMP/operators/libmesh/SourcePhysicsModel.h"
 #include "AMP/operators/mechanics/ElasticDamageThermalStrainModel.h"
 #include "AMP/operators/mechanics/GeneralCladThermalCreepPlasticModel.h"
 #include "AMP/operators/mechanics/IsotropicElasticModel.h"
@@ -11,35 +18,7 @@
 #include "AMP/operators/mechanics/ThermalVonMisesMatModel.h"
 #include "AMP/operators/mechanics/VonMisesElastoPlasticModel.h"
 #include "AMP/operators/mechanics/VonMises_IsotropicKinematicHardening.h"
-
-// flow transport model
-#include "AMP/operators/flow/FlowTransportModel.h"
-
-// diffusion transport model
-#include "AMP/operators/diffusion/DiffusionTransportModel.h"
-
-// diffusion transport tensor model
-#include "AMP/operators/diffusion/DiffusionTransportTensorModel.h"
-
-// diffusion transport cylindrical model
-#include "AMP/operators/diffusion/DiffusionCylindricalTransportModel.h"
-
-// Pellet Contact Conductance model
-#include "AMP/operators/libmesh/PelletContactConductanceModel.h"
-
-// Convective Heat Coefficient model
 #include "AMP/operators/subchannel/ConvectiveHeatCoefficient.h"
-
-// source physics model
-#include "AMP/operators/libmesh/SourcePhysicsModel.h"
-
-// mass density model
-#include "AMP/operators/libmesh/MassDensityModel.h"
-
-// manufactured diffusion transport model
-#include "AMP/operators/ManufacturedDiffusionTransportModel.h"
-
-// subchannel physics model
 #include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
 #endif
 
