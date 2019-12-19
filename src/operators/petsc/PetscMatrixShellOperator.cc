@@ -3,6 +3,7 @@
 #include "AMP/vectors/ExternalVectorDeleter.h"
 #include "AMP/vectors/petsc/NativePetscVector.h"
 
+#include "petsc/private/vecimpl.h"
 
 namespace AMP {
 namespace Operator {

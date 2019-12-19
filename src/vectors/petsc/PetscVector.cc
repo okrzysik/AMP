@@ -4,6 +4,7 @@
 
 #include "ManagedPetscVector.h"
 
+#include "petsc/private/petscimpl.h"
 
 namespace AMP {
 namespace LinearAlgebra {

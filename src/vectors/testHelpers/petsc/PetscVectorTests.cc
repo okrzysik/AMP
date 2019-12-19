@@ -6,6 +6,8 @@
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 
+#include "petsc/private/vecimpl.h"
+
 #include "string"
 #include <algorithm>
 

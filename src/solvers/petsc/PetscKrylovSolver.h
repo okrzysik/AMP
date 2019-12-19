@@ -81,7 +81,7 @@ public:
      acceptable values ("RIGHT", "LEFT", "SYMMETRIC" )
          active only when uses_preconditioner set to true
      */
-    explicit PetscKrylovSolver( std::shared_ptr<PetscKrylovSolverParameters> parameters );
+    explicit PetscKrylovSolver( std::shared_ptr<SolverStrategyParameters> parameters );
 
     /**
      * Default destructor. Currently destroys the PETSc KSP object if it was created internally.

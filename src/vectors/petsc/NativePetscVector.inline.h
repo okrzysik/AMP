@@ -304,40 +304,6 @@ inline double NativePetscVector::dot( const VectorOperations &x ) const
     return ans;
 }
 
-
-inline double NativePetscVector::localL1Norm( void ) const
-{
-    resetArray();
-    double ans;
-    PetscErrorCode ierr;
-    ierr = ( *d_petscVec->ops->norm_local )( d_petscVec, NORM_1, &ans );
-    CHKERRQ( ierr );
-    return ans;
-}
-
-
-inline double NativePetscVector::localL2Norm( void ) const
-{
-    resetArray();
-    double ans;
-    PetscErrorCode ierr;
-    ierr = ( *d_petscVec->ops->norm_local )( d_petscVec, NORM_2, &ans );
-    CHKERRQ( ierr );
-    return ans;
-}
-
-
-inline double NativePetscVector::localMaxNorm( void ) const
-{
-    resetArray();
-    double ans;
-    PetscErrorCode ierr;
-    ierr = ( *d_petscVec->ops->norm_local )( d_petscVec, NORM_INFINITY, &ans );
-    CHKERRQ( ierr );
-    return ans;
-}
-
-
 inline void NativePetscVector::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
     for ( int i = 0; i != num; i++ )

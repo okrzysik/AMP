@@ -4,7 +4,7 @@
 
 #include "petsc.h"
 #include "petscvec.h"
-
+#include "petsc/private/vecimpl.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -65,6 +65,40 @@ void NativePetscVector::copyOutRawData( double *out ) const
 
 void NativePetscVector::swapData( VectorData & ) { AMP_ERROR( "Not finished" ); }
 
+
+double NativePetscVector::localL1Norm( void ) const
+{
+    resetArray();
+    double ans;
+    PetscErrorCode ierr;
+    ierr = ( *d_petscVec->ops->norm_local )( d_petscVec, NORM_1, &ans );
+    CHKERRQ( ierr );
+    return ans;
+}
+
+
+double NativePetscVector::localL2Norm( void ) const
+{
+    resetArray();
+    double ans;
+    PetscErrorCode ierr;
+
+    ierr = ( *d_petscVec->ops->norm_local )( d_petscVec, NORM_2, &ans );
+    CHKERRQ( ierr );
+    return ans;
+}
+
+
+double NativePetscVector::localMaxNorm( void ) const
+{
+    resetArray();
+    double ans;
+    PetscErrorCode ierr;
+
+    ierr = ( *d_petscVec->ops->norm_local )( d_petscVec, NORM_INFINITY, &ans );
+    CHKERRQ( ierr );
+    return ans;
+}
 
 } // namespace LinearAlgebra
 } // namespace AMP
