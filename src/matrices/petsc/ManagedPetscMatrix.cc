@@ -1,6 +1,6 @@
+#include "petsc/private/vecimpl.h"
 #include "petscmat.h"
 #include "petscvec.h"
-#include "petsc/private/vecimpl.h"
 
 #include "AMP/vectors/ExternalVectorDeleter.h"
 #include "AMP/vectors/Vector.h"
@@ -148,9 +148,9 @@ void ManagedPetscMatrix::initPetscMat()
 
 #if PETSC_VERSION_GE( 3, 12, 2 )
     // BP: have not checked for versions above 3.7.5
-    MatShellSetManageScalingShifts(d_Mat);
+    MatShellSetManageScalingShifts( d_Mat );
 #endif
-    
+
     MatShellSetOperation( d_Mat, MATOP_MULT, (void ( * )()) _AMP_Mult );
 
 #if PETSC_VERSION_GE( 3, 12, 2 )
@@ -160,7 +160,7 @@ void ManagedPetscMatrix::initPetscMat()
 #else
 #error Not programmed for this version of petsc
 #endif
-   
+
     MatShellSetOperation( d_Mat, MATOP_GET_DIAGONAL, (void ( * )()) _AMP_GetDiagonal );
     MatShellSetOperation( d_Mat, MATOP_MULT_ADD, (void ( * )()) _AMP_Mult_add );
     MatShellSetOperation( d_Mat, MATOP_AXPY, (void ( * )()) _AMP_AXPY );

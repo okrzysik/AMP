@@ -9,8 +9,8 @@
 #endif
 
 
-#include "petscsys.h"
 #include "petsc/private/vecimpl.h"
+#include "petscsys.h"
 
 
 // Macro to cast the petsc vector y to an AMP ManagedPetscVector x

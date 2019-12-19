@@ -233,8 +233,16 @@ void TrilinosNOXSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     // d_thyraModel ) );
     Teuchos::RCP<::Thyra::ModelEvaluator<double>> thyraModel(
         new NOX::MatrixFreeModelEvaluatorDecorator<double>( d_thyraModel ) );
-    Teuchos::RCP<NOX::Thyra::Group> nox_group( new NOX::Thyra::Group(
-        initial->getVec(), thyraModel, jfnkOp, d_lowsFactory, d_precOp, Teuchos::null ) );
+    NOX::Thyra::Vector initialGuess( initial->getVec() );
+    Teuchos::RCP<NOX::Thyra::Group> nox_group( new NOX::Thyra::Group( initialGuess,
+                                                                      thyraModel,
+                                                                      jfnkOp,
+                                                                      d_lowsFactory,
+                                                                      d_precOp,
+                                                                      Teuchos::null,
+                                                                      Teuchos::null,
+                                                                      Teuchos::null,
+                                                                      Teuchos::null ) );
     nox_group->setX( U->getVec() );
     nox_group->computeF();
     // VERY IMPORTANT!!!  jfnk object needs base evaluation objects.

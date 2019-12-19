@@ -9,9 +9,9 @@
 
 #include "ProfilerApp.h"
 
+#include "petsc/private/vecimpl.h"
 #include "petscmat.h"
 #include "petscsnes.h"
-#include "petsc/private/vecimpl.h"
 
 
 namespace AMP {
