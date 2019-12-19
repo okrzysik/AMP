@@ -25,6 +25,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
+    size_t N_error0 = ut->NumFailLocal();
+
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     auto solverComm = globalComm.dup(); // Create a unique solver comm to test proper cleanup
@@ -84,7 +86,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     mu->setRandomValues();
     mf->zero();
     nonlinearSolver->solve( mf, mu );
-    ut->passes( "PetscSNESSolver solve called with multivector" );
+
+    if ( N_error0 == ut->NumFailLocal() )
+        ut->passes( exeName );
+    else
+        ut->failure( exeName );
 }
 
 

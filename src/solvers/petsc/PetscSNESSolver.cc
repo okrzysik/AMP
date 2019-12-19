@@ -11,6 +11,7 @@
 
 #include "petscmat.h"
 #include "petscsnes.h"
+#include "petsc/private/vecimpl.h"
 
 
 namespace AMP {
@@ -153,7 +154,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<SolverStrategyParameters> para
 #if PETSC_VERSION_LE( 3, 2, 0 )
         checkErr(
             SNESLineSearchSetPreCheck( d_SNESSolver, PetscSNESSolver::lineSearchPreCheck, this ) );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
+#elif PETSC_VERSION_GE( 3, 7, 5 )
         SNESLineSearch snesLineSearch;
         SNESGetLineSearch( d_SNESSolver, &snesLineSearch );
         checkErr( SNESLineSearchSetPreCheck(
@@ -182,7 +183,7 @@ void PetscSNESSolver::getFromInput( const std::shared_ptr<AMP::Database> db )
     }
 #if PETSC_VERSION_LE( 3, 2, 0 )
     PetscOptionsInsertString( petscOptions.c_str() );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
+#elif PETSC_VERSION_GE( 3, 7, 5 )
     // if the solver type is specified as 'ls' replace by 'newtonls'
     // this hack is brittle and will easily fail if the string is
     // not matched exactly in the input. Temporary fix for now
@@ -423,7 +424,7 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
  ****************************************************************/
 #if PETSC_VERSION_LE( 3, 2, 0 )
 PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat *A, Mat *, MatStructure *, void *ctx )
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
+#elif PETSC_VERSION_GE( 3, 7, 5 )
 PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat, void *ctx )
 #else
 #error This version of PETSc is not supported.  Check!!!
@@ -438,7 +439,7 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat, void *ctx 
 #if PETSC_VERSION_LE( 3, 2, 0 )
         ierr = MatAssemblyBegin( *A, MAT_FINAL_ASSEMBLY );
         ierr = MatAssemblyEnd( *A, MAT_FINAL_ASSEMBLY );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
+#elif PETSC_VERSION_GE( 3, 7, 5 )
         ierr = MatAssemblyBegin( A, MAT_FINAL_ASSEMBLY );
         ierr = MatAssemblyEnd( A, MAT_FINAL_ASSEMBLY );
 #else
@@ -485,7 +486,7 @@ PetscSNESSolver::lineSearchPreCheck( SNES, Vec x, Vec y, void *checkctx, PetscTr
 #elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
 PetscErrorCode
 PetscSNESSolver::lineSearchPreCheck( SNES, Vec x, Vec y, void *checkctx, PetscBool *changed_y )
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
+#elif PETSC_VERSION_GE( 3, 7, 5 )
 PetscErrorCode PetscSNESSolver::lineSearchPreCheck(
     SNESLineSearch, Vec x, Vec y, PetscBool *changed_y, void *checkctx )
 #else

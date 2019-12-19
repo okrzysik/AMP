@@ -7,6 +7,7 @@
 #include "ProfilerApp.h"
 
 #include "petsc.h"
+#include "petsc/private/vecimpl.h"
 #include "petscksp.h"
 #include "petscpc.h"
 
@@ -186,7 +187,7 @@ void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
     }
 #if PETSC_VERSION_LT( 3, 3, 0 )
     PetscOptionsInsertString( petscOptions.c_str() );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
+#elif PETSC_VERSION_GE( 3, 7, 5 )
     PetscOptionsInsertString( PETSC_NULL, petscOptions.c_str() );
 #else
     PetscOptions options;
@@ -363,7 +364,7 @@ void PetscKrylovSolver::registerOperator( const std::shared_ptr<AMP::Operator::O
 
 #if PETSC_VERSION_LE( 3, 2, 0 )
     KSPSetOperators( d_KrylovSolver, mat, mat, DIFFERENT_NONZERO_PATTERN );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
+#elif PETSC_VERSION_GE( 3, 7, 5 )
     KSPSetOperators( d_KrylovSolver, mat, mat );
 #else
 #error This version of PETSc is not supported.  Check!!!
@@ -388,7 +389,7 @@ void PetscKrylovSolver::resetOperator(
 
 #if PETSC_VERSION_LE( 3, 2, 0 )
         KSPSetOperators( d_KrylovSolver, mat, mat, DIFFERENT_NONZERO_PATTERN );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
+#elif PETSC_VERSION_GE( 3, 7, 5 )
         KSPSetOperators( d_KrylovSolver, mat, mat );
 #else
 #error This version of PETSc is not supported.  Check!!!

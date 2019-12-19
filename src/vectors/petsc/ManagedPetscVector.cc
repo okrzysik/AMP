@@ -10,6 +10,7 @@
 
 
 #include "petscsys.h"
+#include "petsc/private/vecimpl.h"
 
 
 // Macro to cast the petsc vector y to an AMP ManagedPetscVector x
@@ -119,7 +120,7 @@ _AMP_setvalues( Vec px, PetscInt ni, const PetscInt ix[], const PetscScalar y[],
     return 0;
 }
 
-#if PETSC_VERSION_( 3, 7, 5 )
+#if PETSC_VERSION_GE( 3, 7, 5 )
 PetscErrorCode _AMP_shift( Vec px, PetscScalar s )
 {
     PETSC_RECAST( x, px );

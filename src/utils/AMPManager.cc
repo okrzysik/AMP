@@ -173,7 +173,7 @@ PetscErrorCode petsc_err_handler( MPI_Comm,
                                   PetscErrorType,
                                   const char *buf,
                                   void * )
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
+#elif  PETSC_VERSION_GE( 3, 7,5 )
 PetscErrorCode petsc_err_handler( MPI_Comm,
                                   int line,
                                   const char *dir,
