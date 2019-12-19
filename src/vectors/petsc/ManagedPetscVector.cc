@@ -9,6 +9,7 @@
 #endif
 
 
+#include "petsc/private/vecimpl.h"
 #include "petscsys.h"
 #include "petsc/private/vecimpl.h"
 

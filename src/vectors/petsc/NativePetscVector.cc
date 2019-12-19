@@ -3,8 +3,8 @@
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
 
 #include "petsc.h"
-#include "petscvec.h"
 #include "petsc/private/vecimpl.h"
+#include "petscvec.h"
 
 namespace AMP {
 namespace LinearAlgebra {
