@@ -297,23 +297,23 @@ void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
     {
         // std::string feTypeOrderName = d_db->getWithDefault<std::string>("FE_ORDER", "SECOND");
         std::string feTypeOrderName = d_db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
-        auto feTypeOrder          = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+        auto feTypeOrder          = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
         std::string feFamilyName  = d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
-        auto feFamily             = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+        auto feFamily             = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
         std::string qruleTypeName = d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
-        auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+        auto qruleType = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
         const unsigned int dimension = 3;
-        d_feType.reset( new ::FEType( feTypeOrder, feFamily ) );
-        d_fe.reset( (::FEBase::build( dimension, ( *d_feType ) ) ).release() );
+        d_feType.reset( new libMesh::FEType( feTypeOrder, feFamily ) );
+        d_fe.reset( (libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
         std::string qruleOrderName = d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
         libMeshEnums::Order qruleOrder;
         if ( qruleOrderName == "DEFAULT" ) {
             qruleOrder = d_feType->default_quadrature_order();
         } else {
-            qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
+            qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
         }
 
-        d_qrule.reset( (::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
+        d_qrule.reset( (libMesh::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
         d_fe->attach_quadrature_rule( d_qrule.get() );
     }
 }
@@ -871,17 +871,17 @@ double PowerShape::getVolumeIntegralSum( double rmax, double cx, double cy )
 
 void PowerShape::createCurrentLibMeshElement()
 {
-    d_currElemPtr = new ::Hex8;
+    d_currElemPtr = new libMesh::Hex8;
     for ( unsigned int j = 0; j < d_currNodes.size(); j++ ) {
         auto pt                      = d_currNodes[j].coord();
-        d_currElemPtr->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
+        d_currElemPtr->set_node( j ) = new libMesh::Node( pt[0], pt[1], pt[2], j );
     } // end for j
 }
 
 void PowerShape::destroyCurrentLibMeshElement()
 {
     for ( unsigned int j = 0; j < d_currElemPtr->n_nodes(); j++ ) {
-        delete ( d_currElemPtr->get_node( j ) );
+        delete ( d_currElemPtr->node_ptr( j ) );
         d_currElemPtr->set_node( j ) = nullptr;
     } // end for j
     delete d_currElemPtr;

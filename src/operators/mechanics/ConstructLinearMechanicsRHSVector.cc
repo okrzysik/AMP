@@ -37,26 +37,26 @@ void computeTemperatureRhsVector(
     auto elementRhsDatabase    = input_db->getDatabase( "RhsElements" );
     auto materialModelDatabase = input_db->getDatabase( "RhsMaterialModel" );
 
-    std::shared_ptr<::FEType> feType;
-    std::shared_ptr<::FEBase> fe;
-    std::shared_ptr<::QBase> qrule;
+    std::shared_ptr<libMesh::FEType> feType;
+    std::shared_ptr<libMesh::FEBase> fe;
+    std::shared_ptr<libMesh::QBase> qrule;
 
     std::string feTypeOrderName =
         elementRhsDatabase->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
-    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+    auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
     std::string feFamilyName =
         elementRhsDatabase->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
-    auto feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    auto feFamily = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
     std::string qruleTypeName =
         elementRhsDatabase->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
-    auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    auto qruleType = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     const unsigned int dimension = 3;
 
-    feType.reset( new ::FEType( feTypeOrder, feFamily ) );
-    fe.reset( (::FEBase::build( dimension, ( *feType ) ) ).release() );
+    feType.reset( new libMesh::FEType( feTypeOrder, feFamily ) );
+    fe.reset( (libMesh::FEBase::build( dimension, ( *feType ) ) ).release() );
 
     std::string qruleOrderName =
         elementRhsDatabase->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
@@ -64,10 +64,10 @@ void computeTemperatureRhsVector(
     if ( qruleOrderName == "DEFAULT" ) {
         qruleOrder = feType->default_quadrature_order();
     } else {
-        qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
+        qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 
-    qrule.reset( (::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
+    qrule.reset( (libMesh::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
     fe->attach_quadrature_rule( qrule.get() );
 
     const auto &JxW  = ( fe->get_JxW() );
@@ -133,10 +133,10 @@ void computeTemperatureRhsVector(
                 prevTemperatureVec->getValueByGlobalID( type1DofIndices[r][0] );
         } // end r
 
-        ::Elem *elem = new ::Hex8;
+        libMesh::Elem *elem = new libMesh::Hex8;
         for ( size_t j = 0; j < currNodes.size(); ++j ) {
             auto pt             = currNodes[j].coord();
-            elem->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
+            elem->set_node( j ) = new libMesh::Node( pt[0], pt[1], pt[2], j );
         } // end j
 
         fe->reinit( elem );
@@ -262,7 +262,7 @@ void computeTemperatureRhsVector(
         }     // end r
 
         for ( size_t j = 0; j < elem->n_nodes(); ++j ) {
-            delete ( elem->get_node( j ) );
+            delete ( elem->node_ptr( j ) );
             elem->set_node( j ) = nullptr;
         } // end j
         delete elem;

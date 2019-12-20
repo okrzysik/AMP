@@ -21,11 +21,11 @@ void DiffusionNonlinearElement::initTransportModel()
 
 void DiffusionNonlinearElement::apply()
 {
-    const std::vector<Real> &JxW = ( *d_JxW );
+    const std::vector<libMesh::Real> &JxW = ( *d_JxW );
 
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
 
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
     d_fe->reinit( d_elem );
 
@@ -51,7 +51,7 @@ void DiffusionNonlinearElement::apply()
     // at gauss points
     if ( d_transportAtGauss ) {
         // construct material evalv arguments
-        const std::vector<Point> &q_point = d_fe->get_xyz();
+        const auto &q_point = d_fe->get_xyz();
         for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
             if ( d_elementInputVectors[var].size() > 0 ) {
                 std::shared_ptr<std::vector<double>> values(
@@ -76,7 +76,7 @@ void DiffusionNonlinearElement::apply()
         // at nodes
     } else {
         // get element nodes
-        std::vector<Point> elem_nodes( num_nodes );
+        std::vector<libMesh::Point> elem_nodes( num_nodes );
         for ( size_t i = 0; i < num_nodes; i++ ) {
             elem_nodes[i] = d_elem->point( i );
         }
@@ -134,7 +134,7 @@ void DiffusionNonlinearElement::apply()
     }
 
     for ( size_t qp = 0; qp < d_qrule->n_points(); qp++ ) {
-        RealGradient grad_phi = 0.0;
+      libMesh::RealGradient grad_phi = 0.0;
 
         for ( size_t n = 0; n < num_nodes; n++ ) {
             grad_phi += dphi[n][qp] * d_elementInputVectors[d_PrincipalVariable][n];

@@ -168,9 +168,9 @@ protected:
 
     // SP_HexGaussPointVariable d_Variable;
 
-    std::shared_ptr<::FEType> d_feType;
-    std::shared_ptr<::FEBase> d_fe;
-    std::shared_ptr<::QBase> d_qrule;
+    std::shared_ptr<libMesh::FEType> d_feType;
+    std::shared_ptr<libMesh::FEBase> d_fe;
+    std::shared_ptr<libMesh::QBase> d_qrule;
 
     void createCurrentLibMeshElement();
 
@@ -178,7 +178,7 @@ protected:
 
     std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
-    ::Elem *d_currElemPtr;
+    libMesh::Elem *d_currElemPtr;
 
 private:
 };

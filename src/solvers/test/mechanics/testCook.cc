@@ -1,6 +1,6 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/libmesh/initializeLibMesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
@@ -62,16 +62,16 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
         new AMP::Mesh::initializeLibMesh( globalComm ) );
 
     const unsigned int mesh_dim = 3;
-    std::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
+    std::shared_ptr<libMesh::Mesh> mesh( new libMesh::Mesh(libMesh::Parallel::Communicator(), mesh_dim ) );
 
     std::string mesh_file = input_db->getString( "mesh_file" );
     if ( globalComm.getRank() == 0 ) {
         AMP::readTestMesh( mesh_file, mesh );
     } // end if root processor
 
-    MeshCommunication().broadcast( *( mesh.get() ) );
+    libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
     mesh->prepare_for_use( false );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter( new AMP::Mesh::libMesh( mesh, "cook" ) );
+    AMP::Mesh::Mesh::shared_ptr meshAdapter( new AMP::Mesh::libmeshMesh( mesh, "cook" ) );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     std::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =

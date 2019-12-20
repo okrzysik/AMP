@@ -10,9 +10,9 @@ void MechanicsNonlinearElement::computeStressAndStrain(
     std::vector<double> &stressVec,
     std::vector<double> &strainVec )
 {
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
 
     d_fe->reinit( d_elem );
 
@@ -155,11 +155,11 @@ void MechanicsNonlinearElement::computeStressAndStrain(
 void MechanicsNonlinearElement::printStressAndStrain(
     FILE *fp, const std::vector<std::vector<double>> &elementInputVectors )
 {
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
 
-    const std::vector<Point> &xyz = ( *d_xyz );
+    const auto &xyz = ( *d_xyz );
 
     d_fe->reinit( d_elem );
 
@@ -313,7 +313,7 @@ void MechanicsNonlinearElement::printStressAndStrain(
 
 void MechanicsNonlinearElement::initMaterialModel( const std::vector<double> &initTempVector )
 {
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
 
     d_fe->reinit( d_elem );
 
@@ -341,17 +341,17 @@ void MechanicsNonlinearElement::initMaterialModel( const std::vector<double> &in
 
 void MechanicsNonlinearElement::apply_Normal()
 {
-    const std::vector<Real> &JxW = ( *d_JxW );
+    const std::vector<libMesh::Real> &JxW = ( *d_JxW );
 
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
 
     std::vector<std::vector<double>> &elementInputVectors = d_elementInputVectors;
 
     std::vector<double> &elementOutputVector = ( *d_elementOutputVector );
 
-    std::vector<Point> xyz;
+    std::vector<libMesh::Point> xyz;
 
     d_fe->reinit( d_elem );
 
@@ -628,11 +628,11 @@ void MechanicsNonlinearElement::apply_Normal()
 
 void MechanicsNonlinearElement::apply_Reduced()
 {
-    const std::vector<Real> &JxW = ( *d_JxW );
+    const std::vector<libMesh::Real> &JxW = ( *d_JxW );
 
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
 
     std::vector<std::vector<double>> &elementInputVectors = d_elementInputVectors;
 

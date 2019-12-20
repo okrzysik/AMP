@@ -1,5 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/BVPOperatorParameters.h"

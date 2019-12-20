@@ -1,5 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
@@ -47,12 +47,12 @@ static void myTest( AMP::UnitTest *ut )
                     "Key ''DISTORT_ELEMENT'' is missing!" );
         bool distortElement = input_db->getScalar<bool>( "DISTORT_ELEMENT" );
 
-        std::shared_ptr<::Mesh> mesh( new ::Mesh( 3 ) );
-        MeshTools::Generation::build_cube(
-            ( *( mesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, HEX8, false );
+        std::shared_ptr<libMesh::Mesh> mesh( new libMesh::Mesh(libMesh::Parallel::Communicator(), 3 ) );
+	libMesh::MeshTools::Generation::build_cube(
+					  ( *( mesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, libMesh::HEX8, false );
 
         if ( distortElement ) {
-            ::Elem *elemPtr = mesh->elem( 0 );
+            libMesh::Elem *elemPtr = mesh->elem( 0 );
 
             ( elemPtr->point( 0 ) )( 0 ) -= 0.1;
             ( elemPtr->point( 0 ) )( 1 ) -= 0.2;
@@ -68,7 +68,7 @@ static void myTest( AMP::UnitTest *ut )
         }
 
         AMP::Mesh::Mesh::shared_ptr meshAdapter =
-            AMP::Mesh::Mesh::shared_ptr( new AMP::Mesh::libMesh( mesh, "TestMesh" ) );
+            AMP::Mesh::Mesh::shared_ptr( new AMP::Mesh::libmeshMesh( mesh, "TestMesh" ) );
 
         AMP_INSIST( input_db->keyExists( "Isotropic_Model" ),
                     "Key ''Isotropic_Model'' is missing!" );

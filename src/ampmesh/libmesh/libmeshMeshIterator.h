@@ -1,28 +1,28 @@
-#ifndef included_AMP_libMeshIterators
-#define included_AMP_libMeshIterators
+#ifndef included_AMP_libmeshMeshIterators
+#define included_AMP_libmeshMeshIterators
 
 #include "AMP/ampmesh/MeshIterator.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 
 
 namespace AMP {
 namespace Mesh {
 
 
-class libMeshIterator : public MeshIterator
+class libmeshMeshIterator : public MeshIterator
 {
 public:
     //! Empty MeshIterator constructor
-    libMeshIterator();
+    libmeshMeshIterator();
 
     //! Deconstructor
-    virtual ~libMeshIterator();
+    virtual ~libmeshMeshIterator();
 
     //! Copy constructor
-    libMeshIterator( const libMeshIterator & );
+    libmeshMeshIterator( const libmeshMeshIterator & );
 
     //! Assignment operator
-    libMeshIterator &operator=( const libMeshIterator & );
+    libmeshMeshIterator &operator=( const libmeshMeshIterator & );
 
     // Increment
     virtual MeshIterator &operator++() override;
@@ -68,8 +68,8 @@ protected:
      * \param size      Number of elements in the iterator (-1: unknown)
      * \param pos2      Index of the current position in the iterator (-1: unknown)
      */
-    libMeshIterator( int type,
-                     const AMP::Mesh::libMesh *mesh,
+    libmeshMeshIterator( int type,
+                     const AMP::Mesh::libmeshMesh *mesh,
                      int gcw,
                      void *begin,
                      void *end,
@@ -80,7 +80,7 @@ protected:
     //! Clone the iterator
     virtual MeshIterator *clone() const override;
 
-    friend class AMP::Mesh::libMesh;
+    friend class AMP::Mesh::libmeshMesh;
 
 private:
     // Data members
@@ -92,13 +92,13 @@ private:
     void *d_end2;
     void *d_pos2;
     MeshID d_meshID;
-    const AMP::Mesh::libMesh *d_mesh;
+    const AMP::Mesh::libmeshMesh *d_mesh;
     MeshElement d_cur_element;
 
     void setCurrentElement();
 
 private:
-    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "libMeshIterator" ); }
+    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "libmeshMeshIterator" ); }
 };
 } // namespace Mesh
 } // namespace AMP

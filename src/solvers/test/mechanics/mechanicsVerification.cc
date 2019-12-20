@@ -8,7 +8,7 @@
 
 // AMP
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
@@ -194,16 +194,16 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
         libmeshInit =
             std::make_shared<AMP::Mesh::initializeLibMesh>( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         auto mesh_file    = inputDatabase->getString( "mesh_file" );
-        auto myMesh       = std::make_shared<Mesh>( 3 );
+        auto myMesh       = std::make_shared<libMesh::Mesh>(libMesh::Parallel::Communicator(), 3 );
         bool binaryMeshes = inputDatabase->getScalar<bool>( "BinaryMeshes" );
         if ( binaryMeshes ) {
             AMP::readBinaryTestMesh( mesh_file, myMesh );
         } else {
             AMP::readTestMesh( mesh_file, myMesh );
         }
-        MeshCommunication().broadcast( *( myMesh.get() ) );
+        libMesh::MeshCommunication().broadcast( *( myMesh.get() ) );
         myMesh->prepare_for_use( false );
-        meshAdapter = std::make_shared<AMP::Mesh::libMesh>( myMesh, "myMesh" );
+        meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( myMesh, "myMesh" );
     } else {
         // Create the Mesh.
         AMP_INSIST( inputDatabase->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );

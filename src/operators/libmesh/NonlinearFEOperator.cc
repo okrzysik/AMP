@@ -67,10 +67,10 @@ void NonlinearFEOperator::createLibMeshElementList()
     for ( size_t i = 0; i < el.size(); ++el, ++i ) {
         std::vector<AMP::Mesh::MeshElement> currNodes =
             el->getElements( AMP::Mesh::GeomType::Vertex );
-        d_currElemPtrs[i] = new ::Hex8;
+        d_currElemPtrs[i] = new libMesh::Hex8;
         for ( size_t j = 0; j < currNodes.size(); ++j ) {
             auto pt                          = currNodes[j].coord();
-            d_currElemPtrs[i]->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
+            d_currElemPtrs[i]->set_node( j ) = new libMesh::Node( pt[0], pt[1], pt[2], j );
         } // end for j
     }     // end for i
 }
@@ -80,7 +80,7 @@ void NonlinearFEOperator::destroyLibMeshElementList()
 {
     for ( auto &elem : d_currElemPtrs ) {
         for ( size_t j = 0; j < elem->n_nodes(); ++j ) {
-            delete ( elem->get_node( j ) );
+            delete ( elem->node_ptr( j ) );
             elem->set_node( j ) = nullptr;
         } // end for j
         delete ( elem );

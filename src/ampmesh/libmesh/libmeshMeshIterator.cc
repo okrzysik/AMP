@@ -1,5 +1,5 @@
-#include "AMP/ampmesh/libmesh/libMeshIterator.h"
-#include "AMP/ampmesh/libmesh/libMeshElement.h"
+#include "AMP/ampmesh/libmesh/libmeshMeshIterator.h"
+#include "AMP/ampmesh/libmesh/libmeshMeshElement.h"
 #include "AMP/utils/Utilities.h"
 
 // libMesh includes
@@ -16,7 +16,7 @@ static MeshElement nullElement;
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-libMeshIterator::libMeshIterator()
+libmeshMeshIterator::libmeshMeshIterator()
 {
     d_typeID   = getTypeID();
     d_iterator = nullptr;
@@ -31,8 +31,8 @@ libMeshIterator::libMeshIterator()
     d_dim      = 0;
     d_mesh     = nullptr;
 }
-libMeshIterator::libMeshIterator( int type,
-                                  const AMP::Mesh::libMesh *mesh,
+libmeshMeshIterator::libmeshMeshIterator( int type,
+                                  const AMP::Mesh::libmeshMesh *mesh,
                                   int gcw,
                                   void *begin,
                                   void *end,
@@ -53,15 +53,15 @@ libMeshIterator::libMeshIterator( int type,
     d_element  = &d_cur_element;
     if ( d_type == 0 ) {
         // Node iterator
-        d_begin2 = (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) begin ) );
-        d_end2   = (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) end ) );
-        d_pos2   = (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) pos ) );
+        d_begin2 = (void *) new libMesh::Mesh::node_iterator( *( (libMesh::Mesh::node_iterator *) begin ) );
+        d_end2   = (void *) new libMesh::Mesh::node_iterator( *( (libMesh::Mesh::node_iterator *) end ) );
+        d_pos2   = (void *) new libMesh::Mesh::node_iterator( *( (libMesh::Mesh::node_iterator *) pos ) );
         // Count the number of nodes in the iterator
         if ( size == -1 ) {
-            ::Mesh::node_iterator cur_node =
-                ::Mesh::node_iterator( *( (::Mesh::node_iterator *) begin ) );
-            ::Mesh::node_iterator end_node =
-                ::Mesh::node_iterator( *( (::Mesh::node_iterator *) end ) );
+            libMesh::Mesh::node_iterator cur_node =
+                libMesh::Mesh::node_iterator( *( (libMesh::Mesh::node_iterator *) begin ) );
+            libMesh::Mesh::node_iterator end_node =
+                libMesh::Mesh::node_iterator( *( (libMesh::Mesh::node_iterator *) end ) );
             d_size = 0;
             while ( cur_node != end_node ) {
                 d_size++;
@@ -70,15 +70,15 @@ libMeshIterator::libMeshIterator( int type,
         }
     } else if ( d_type == 1 ) {
         // Element iterator
-        d_begin2 = (void *) new ::Mesh::element_iterator( *( (::Mesh::element_iterator *) begin ) );
-        d_end2   = (void *) new ::Mesh::element_iterator( *( (::Mesh::element_iterator *) end ) );
-        d_pos2   = (void *) new ::Mesh::element_iterator( *( (::Mesh::element_iterator *) pos ) );
+        d_begin2 = (void *) new libMesh::Mesh::element_iterator( *( (libMesh::Mesh::element_iterator *) begin ) );
+        d_end2   = (void *) new libMesh::Mesh::element_iterator( *( (libMesh::Mesh::element_iterator *) end ) );
+        d_pos2   = (void *) new libMesh::Mesh::element_iterator( *( (libMesh::Mesh::element_iterator *) pos ) );
         // Count the number of elements in the iterator
         if ( size == -1 ) {
-            ::Mesh::element_iterator cur_element =
-                ::Mesh::element_iterator( *( (::Mesh::element_iterator *) begin ) );
-            ::Mesh::element_iterator end_element =
-                ::Mesh::element_iterator( *( (::Mesh::element_iterator *) end ) );
+            libMesh::Mesh::element_iterator cur_element =
+                libMesh::Mesh::element_iterator( *( (libMesh::Mesh::element_iterator *) begin ) );
+            libMesh::Mesh::element_iterator end_element =
+                libMesh::Mesh::element_iterator( *( (libMesh::Mesh::element_iterator *) end ) );
             d_size = 0;
             while ( cur_element != end_element ) {
                 d_size++;
@@ -86,7 +86,7 @@ libMeshIterator::libMeshIterator( int type,
             }
         }
     } else {
-        AMP_ERROR( "libMesh does not support iterators over this (unknown) type" );
+        AMP_ERROR( "libmeshMesh does not support iterators over this (unknown) type" );
     }
     // Count the position
     if ( pos2 == -1 ) {
@@ -99,7 +99,7 @@ libMeshIterator::libMeshIterator( int type,
     }
     setCurrentElement();
 }
-libMeshIterator::libMeshIterator( const libMeshIterator &rhs )
+libmeshMeshIterator::libmeshMeshIterator( const libmeshMeshIterator &rhs )
     : MeshIterator(), // Note: we never want to call the base copy constructor
       d_meshID( rhs.d_meshID )
 {
@@ -116,23 +116,23 @@ libMeshIterator::libMeshIterator( const libMeshIterator &rhs )
     if ( d_type == 0 ) {
         // Node iterator
         d_begin2 =
-            (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) rhs.d_begin2 ) );
-        d_end2 = (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) rhs.d_end2 ) );
-        d_pos2 = (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) rhs.d_pos2 ) );
+            (void *) new libMesh::Mesh::node_iterator( *( (libMesh::Mesh::node_iterator *) rhs.d_begin2 ) );
+        d_end2 = (void *) new libMesh::Mesh::node_iterator( *( (libMesh::Mesh::node_iterator *) rhs.d_end2 ) );
+        d_pos2 = (void *) new libMesh::Mesh::node_iterator( *( (libMesh::Mesh::node_iterator *) rhs.d_pos2 ) );
     } else if ( d_type == 1 ) {
         // Element iterator
         d_begin2 =
-            (void *) new ::Mesh::element_iterator( *( (::Mesh::element_iterator *) rhs.d_begin2 ) );
+            (void *) new libMesh::Mesh::element_iterator( *( (libMesh::Mesh::element_iterator *) rhs.d_begin2 ) );
         d_end2 =
-            (void *) new ::Mesh::element_iterator( *( (::Mesh::element_iterator *) rhs.d_end2 ) );
+            (void *) new libMesh::Mesh::element_iterator( *( (libMesh::Mesh::element_iterator *) rhs.d_end2 ) );
         d_pos2 =
-            (void *) new ::Mesh::element_iterator( *( (::Mesh::element_iterator *) rhs.d_pos2 ) );
+            (void *) new libMesh::Mesh::element_iterator( *( (libMesh::Mesh::element_iterator *) rhs.d_pos2 ) );
     } else {
-        AMP_ERROR( "libMesh does not support iterators over this (unknown) type" );
+        AMP_ERROR( "libmeshMesh does not support iterators over this (unknown) type" );
     }
     setCurrentElement();
 }
-libMeshIterator &libMeshIterator::operator=( const libMeshIterator &rhs )
+libmeshMeshIterator &libmeshMeshIterator::operator=( const libmeshMeshIterator &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
@@ -150,21 +150,21 @@ libMeshIterator &libMeshIterator::operator=( const libMeshIterator &rhs )
     if ( this->d_type == 0 ) {
         // Node iterator
         this->d_begin2 =
-            (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) rhs.d_begin2 ) );
+            (void *) new libMesh::Mesh::node_iterator( *( (libMesh::Mesh::node_iterator *) rhs.d_begin2 ) );
         this->d_end2 =
-            (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) rhs.d_end2 ) );
+            (void *) new libMesh::Mesh::node_iterator( *( (libMesh::Mesh::node_iterator *) rhs.d_end2 ) );
         this->d_pos2 =
-            (void *) new ::Mesh::node_iterator( *( (::Mesh::node_iterator *) rhs.d_pos2 ) );
+            (void *) new libMesh::Mesh::node_iterator( *( (libMesh::Mesh::node_iterator *) rhs.d_pos2 ) );
     } else if ( this->d_type == 1 ) {
         // Element iterator
         this->d_begin2 =
-            (void *) new ::Mesh::element_iterator( *( (::Mesh::element_iterator *) rhs.d_begin2 ) );
+            (void *) new libMesh::Mesh::element_iterator( *( (libMesh::Mesh::element_iterator *) rhs.d_begin2 ) );
         this->d_end2 =
-            (void *) new ::Mesh::element_iterator( *( (::Mesh::element_iterator *) rhs.d_end2 ) );
+            (void *) new libMesh::Mesh::element_iterator( *( (libMesh::Mesh::element_iterator *) rhs.d_end2 ) );
         this->d_pos2 =
-            (void *) new ::Mesh::element_iterator( *( (::Mesh::element_iterator *) rhs.d_pos2 ) );
+            (void *) new libMesh::Mesh::element_iterator( *( (libMesh::Mesh::element_iterator *) rhs.d_pos2 ) );
     } else {
-        AMP_ERROR( "libMesh does not support iterators over this (unknown) type" );
+        AMP_ERROR( "libmeshMesh does not support iterators over this (unknown) type" );
     }
     setCurrentElement();
     return *this;
@@ -174,25 +174,25 @@ libMeshIterator &libMeshIterator::operator=( const libMeshIterator &rhs )
 /********************************************************
  * Function to clone the iterator                        *
  ********************************************************/
-MeshIterator *libMeshIterator::clone() const { return new libMeshIterator( *this ); }
+MeshIterator *libmeshMeshIterator::clone() const { return new libmeshMeshIterator( *this ); }
 
 
 /********************************************************
  * De-constructor                                        *
  ********************************************************/
-libMeshIterator::~libMeshIterator()
+libmeshMeshIterator::~libmeshMeshIterator()
 {
     if ( d_pos2 != nullptr ) {
         if ( d_type == 0 ) {
             // Node iterator
-            delete (::Mesh::node_iterator *) d_pos2;
-            delete (::Mesh::node_iterator *) d_begin2;
-            delete (::Mesh::node_iterator *) d_end2;
+            delete (libMesh::Mesh::node_iterator *) d_pos2;
+            delete (libMesh::Mesh::node_iterator *) d_begin2;
+            delete (libMesh::Mesh::node_iterator *) d_end2;
         } else if ( d_type == 1 ) {
             // Element iterator
-            delete (::Mesh::element_iterator *) d_pos2;
-            delete (::Mesh::element_iterator *) d_begin2;
-            delete (::Mesh::element_iterator *) d_end2;
+            delete (libMesh::Mesh::element_iterator *) d_pos2;
+            delete (libMesh::Mesh::element_iterator *) d_begin2;
+            delete (libMesh::Mesh::element_iterator *) d_end2;
         }
     }
     d_iterator = nullptr;
@@ -202,54 +202,54 @@ libMeshIterator::~libMeshIterator()
 /********************************************************
  * Return an iterator to the beginning or end            *
  ********************************************************/
-MeshIterator libMeshIterator::begin() const
+MeshIterator libmeshMeshIterator::begin() const
 {
-    return libMeshIterator( d_type, d_mesh, d_gcw, d_begin2, d_end2, d_begin2, d_size, 0 );
+    return libmeshMeshIterator( d_type, d_mesh, d_gcw, d_begin2, d_end2, d_begin2, d_size, 0 );
 }
-MeshIterator libMeshIterator::end() const
+MeshIterator libmeshMeshIterator::end() const
 {
-    return libMeshIterator( d_type, d_mesh, d_gcw, d_begin2, d_end2, d_end2, d_size, d_size );
+    return libmeshMeshIterator( d_type, d_mesh, d_gcw, d_begin2, d_end2, d_end2, d_size, d_size );
 }
 
 
 /********************************************************
  * Increment/Decrement the iterator                      *
  ********************************************************/
-MeshIterator &libMeshIterator::operator++()
+MeshIterator &libmeshMeshIterator::operator++()
 {
     // Prefix increment (increment and return this)
     d_pos++;
     if ( d_type == 0 ) {
         // Node iterator
-        auto *it = (::Mesh::node_iterator *) d_pos2;
+        auto *it = (libMesh::Mesh::node_iterator *) d_pos2;
         it->operator++();
     } else if ( d_type == 1 ) {
         // Element iterator
-        auto *it = (::Mesh::element_iterator *) d_pos2;
+        auto *it = (libMesh::Mesh::element_iterator *) d_pos2;
         it->operator++();
     } else {
-        AMP_ERROR( "libMesh does not support iterators over this (unknown) type" );
+        AMP_ERROR( "libmeshMesh does not support iterators over this (unknown) type" );
     }
     setCurrentElement();
     return *this;
 }
-MeshIterator libMeshIterator::operator++( int )
+MeshIterator libmeshMeshIterator::operator++( int )
 {
     // Postfix increment (increment and return temporary object)
-    libMeshIterator tmp( *this ); // Create a temporary variable
+    libmeshMeshIterator tmp( *this ); // Create a temporary variable
     this->operator++();           // apply operator
     return tmp;                   // return temporary result
 }
-MeshIterator &libMeshIterator::operator--()
+MeshIterator &libmeshMeshIterator::operator--()
 {
     // Prefix decrement (increment and return this)
-    AMP_ERROR( "Decrementing libMesh iterators is not supported" );
+    AMP_ERROR( "Decrementing libmeshMesh iterators is not supported" );
     return *this;
 }
-MeshIterator libMeshIterator::operator--( int )
+MeshIterator libmeshMeshIterator::operator--( int )
 {
     // Postfix decrement (increment and return temporary object)
-    libMeshIterator tmp( *this ); // Create a temporary variable
+    libmeshMeshIterator tmp( *this ); // Create a temporary variable
     --( *this );                  // apply operator
     return tmp;                   // return temporary result
 }
@@ -258,13 +258,13 @@ MeshIterator libMeshIterator::operator--( int )
 /********************************************************
  * Random access incrementors                            *
  ********************************************************/
-MeshIterator libMeshIterator::operator+( int n ) const
+MeshIterator libmeshMeshIterator::operator+( int n ) const
 {
-    libMeshIterator tmp( *this ); // Create a temporary iterator
+    libmeshMeshIterator tmp( *this ); // Create a temporary iterator
     tmp.operator+=( n );          // Increment temporary iterator
     return tmp;
 }
-MeshIterator &libMeshIterator::operator+=( int n )
+MeshIterator &libmeshMeshIterator::operator+=( int n )
 {
     // Check the input
     if ( n >= 0 ) {
@@ -277,24 +277,24 @@ MeshIterator &libMeshIterator::operator+=( int n )
     // Prform the increment and return
     if ( d_type == 0 ) {
         // Node iterator
-        auto *it = (::Mesh::node_iterator *) d_pos2;
+        auto *it = (libMesh::Mesh::node_iterator *) d_pos2;
         if ( n >= 0 ) {
             for ( int i = 0; i < n; i++ )
                 it->operator++();
         } else {
-            AMP_ERROR( "Decrementing libMesh iterators is not supported" );
+            AMP_ERROR( "Decrementing libmeshMesh iterators is not supported" );
         }
     } else if ( d_type == 1 ) {
         // Element iterator
-        auto *it = (::Mesh::element_iterator *) d_pos2;
+        auto *it = (libMesh::Mesh::element_iterator *) d_pos2;
         if ( n >= 0 ) {
             for ( int i = 0; i < n; i++ )
                 it->operator++();
         } else {
-            AMP_ERROR( "Decrementing libMesh iterators is not supported" );
+            AMP_ERROR( "Decrementing libmeshMesh iterators is not supported" );
         }
     } else {
-        AMP_ERROR( "libMesh does not support iterators over this (unknown) type" );
+        AMP_ERROR( "libmeshMesh does not support iterators over this (unknown) type" );
     }
     d_pos += n;
     setCurrentElement();
@@ -305,19 +305,19 @@ MeshIterator &libMeshIterator::operator+=( int n )
 /********************************************************
  * Compare two iterators                                 *
  ********************************************************/
-bool libMeshIterator::operator==( const MeshIterator &rhs ) const
+bool libmeshMeshIterator::operator==( const MeshIterator &rhs ) const
 {
-    const libMeshIterator *rhs2 = nullptr;
-    // Convert rhs to a libMeshIterator* so we can access the base class members
-    auto *tmp = reinterpret_cast<const libMeshIterator *>( &rhs );
+    const libmeshMeshIterator *rhs2 = nullptr;
+    // Convert rhs to a libmeshMeshIterator* so we can access the base class members
+    auto *tmp = reinterpret_cast<const libmeshMeshIterator *>( &rhs );
     if ( tmp->d_typeID == getTypeID() ) {
-        rhs2 = tmp; // We can safely cast rhs to a libMeshIterator
+        rhs2 = tmp; // We can safely cast rhs to a libmeshMeshIterator
     } else if ( tmp->d_iterator != nullptr ) {
-        tmp = reinterpret_cast<const libMeshIterator *>( tmp->d_iterator );
+        tmp = reinterpret_cast<const libmeshMeshIterator *>( tmp->d_iterator );
         if ( tmp->d_typeID == getTypeID() )
-            rhs2 = tmp; // We can safely cast rhs.iterator to a libMeshIterator
+            rhs2 = tmp; // We can safely cast rhs.iterator to a libmeshMeshIterator
     }
-    // Perform direct comparisions if we are dealing with two libMeshIterators
+    // Perform direct comparisions if we are dealing with two libmeshMeshIterators
     if ( rhs2 != nullptr ) {
         if ( d_type != rhs2->d_type ) {
             // We are dealing with different types of elements
@@ -325,17 +325,17 @@ bool libMeshIterator::operator==( const MeshIterator &rhs ) const
         }
         if ( d_type == 0 ) {
             // Node iterator
-            return ( *( (::Mesh::node_iterator *) d_pos2 ) ) ==
-                   ( *( (::Mesh::node_iterator *) rhs2->d_pos2 ) );
+            return ( *( (libMesh::Mesh::node_iterator *) d_pos2 ) ) ==
+                   ( *( (libMesh::Mesh::node_iterator *) rhs2->d_pos2 ) );
         } else if ( d_type == 1 ) {
             // Element iterator
-            return ( *( (::Mesh::element_iterator *) d_pos2 ) ) ==
-                   ( *( (::Mesh::element_iterator *) rhs2->d_pos2 ) );
+            return ( *( (libMesh::Mesh::element_iterator *) d_pos2 ) ) ==
+                   ( *( (libMesh::Mesh::element_iterator *) rhs2->d_pos2 ) );
         } else {
-            AMP_ERROR( "libMesh does not support iterators over this (unknown) type" );
+            AMP_ERROR( "libmeshMesh does not support iterators over this (unknown) type" );
         }
     }
-    /* We are comparing a libMeshIterator to an arbitrary iterator
+    /* We are comparing a libmeshMeshIterator to an arbitrary iterator
      * The iterators are the same if they point to the same position and iterate
      * over the same elements in the same order
      */
@@ -355,30 +355,30 @@ bool libMeshIterator::operator==( const MeshIterator &rhs ) const
     }
     return elements_match;
 }
-bool libMeshIterator::operator!=( const MeshIterator &rhs ) const { return !( ( *this ) == rhs ); }
+bool libmeshMeshIterator::operator!=( const MeshIterator &rhs ) const { return !( ( *this ) == rhs ); }
 
 
 /********************************************************
  * Dereference the iterator to get the element           *
  ********************************************************/
-void libMeshIterator::setCurrentElement()
+void libmeshMeshIterator::setCurrentElement()
 {
     if ( d_pos >= d_size ) {
-        d_cur_element = libMeshElement();
+        d_cur_element = libmeshMeshElement();
     } else if ( d_type == 0 ) {
         // Node iterator
-        auto *it     = (::Mesh::node_iterator *) d_pos2;
-        ::Node *node = it->operator*();
+        auto *it     = (libMesh::Mesh::node_iterator *) d_pos2;
+        libMesh::Node *node = it->operator*();
         d_cur_element =
-            libMeshElement( d_dim, GeomType::Vertex, (void *) node, d_rank, d_meshID, d_mesh );
+            libmeshMeshElement( d_dim, GeomType::Vertex, (void *) node, d_rank, d_meshID, d_mesh );
     } else if ( d_type == 1 ) {
         // Element iterator
-        auto *it     = (::Mesh::element_iterator *) d_pos2;
-        ::Elem *elem = it->operator*();
+        auto *it     = (libMesh::Mesh::element_iterator *) d_pos2;
+        libMesh::Elem *elem = it->operator*();
         d_cur_element =
-            libMeshElement( d_dim, (GeomType) d_dim, (void *) elem, d_rank, d_meshID, d_mesh );
+            libmeshMeshElement( d_dim, (GeomType) d_dim, (void *) elem, d_rank, d_meshID, d_mesh );
     } else {
-        AMP_ERROR( "libMesh does not support iterators over this (unknown) type" );
+        AMP_ERROR( "libmeshMesh does not support iterators over this (unknown) type" );
     }
 }
 

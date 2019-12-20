@@ -207,7 +207,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                 std::vector<double> addValues( dofs.size(), 0.0 );
                 uInternal->getValuesByGlobalID( dofs.size(), &dofs[0], &values[0] );
                 for ( unsigned int qp = 0; qp < numGaussPts; qp++ ) {
-                    Real phi_val = 0.0;
+		  libMesh::Real phi_val = 0.0;
                     for ( unsigned int l = 0; l < numNodesInCurrElem; l++ )
                         phi_val += phi[l][qp] * values[l];
                     for ( unsigned int j = 0; j < numNodesInCurrElem; j++ )
@@ -221,7 +221,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                             gpDofs.size(), &gpDofs[0], &gpValues[0] );
                     }
                     for ( unsigned int qp = 0; qp < numGaussPts; qp++ ) {
-                        Real phi_val = 0.0;
+		        libMesh::Real phi_val = 0.0;
                         if ( !d_isFluxGaussPtVector ) {
                             for ( unsigned int l = 0; l < numNodesInCurrElem; l++ )
                                 phi_val += phi[l][qp] * values[l];

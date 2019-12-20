@@ -13,7 +13,7 @@ ENABLE_WARNINGS
 
 namespace AMP {
 
-void readBinaryTestMesh( std::string mesh_file, std::shared_ptr<::Mesh> mesh )
+void readBinaryTestMesh( std::string mesh_file, std::shared_ptr<libMesh::Mesh> mesh )
 {
     FILE *fp = fopen( mesh_file.c_str(), "rb" );
 
@@ -31,7 +31,7 @@ void readBinaryTestMesh( std::string mesh_file, std::shared_ptr<::Mesh> mesh )
 
     for ( int i = 0; i < num_nodes; i++ ) {
         mesh->add_point(
-            ::Point( points[( 3 * i ) + 0], points[( 3 * i ) + 1], points[( 3 * i ) + 2] ), i );
+            libMesh::Point( points[( 3 * i ) + 0], points[( 3 * i ) + 1], points[( 3 * i ) + 2] ), i );
     }
 
     points.clear();
@@ -48,9 +48,9 @@ void readBinaryTestMesh( std::string mesh_file, std::shared_ptr<::Mesh> mesh )
     AMP_INSIST( ( n == size_t( 8 * num_elem ) ), "Error while reading the file" );
 
     for ( int i = 0; i < num_elem; i++ ) {
-        ::Elem *newElem = new ::Hex8;
+        libMesh::Elem *newElem = new libMesh::Hex8;
         newElem->set_id( i );
-        ::Elem *elem = mesh->add_elem( newElem );
+        libMesh::Elem *elem = mesh->add_elem( newElem );
         for ( int j = 0; j < 8; j++ ) {
             elem->set_node( j ) = mesh->node_ptr( elemNodeMap[( 8 * i ) + j] );
         }
@@ -100,7 +100,7 @@ void readBinaryTestMesh( std::string mesh_file, std::shared_ptr<::Mesh> mesh )
     fclose( fp );
 }
 
-void readTestMesh( std::string mesh_file, std::shared_ptr<::Mesh> mesh )
+void readTestMesh( std::string mesh_file, std::shared_ptr<libMesh::Mesh> mesh )
 {
     FILE *fp = fopen( mesh_file.c_str(), "r" );
     char str[256];
@@ -120,7 +120,7 @@ void readTestMesh( std::string mesh_file, std::shared_ptr<::Mesh> mesh )
         double point[3];
         // PointK = x, y, z
         n = fscanf( fp, "%s = %lf, %lf, %lf", str, &( point[0] ), &( point[1] ), &( point[2] ) );
-        mesh->add_point(::Point( point[0], point[1], point[2] ), i );
+        mesh->add_point(libMesh::Point( point[0], point[1], point[2] ), i );
     } // end for i
 
     int num_elem;
@@ -145,9 +145,9 @@ void readTestMesh( std::string mesh_file, std::shared_ptr<::Mesh> mesh )
     } // end for i
 
     for ( int i = 0; i < num_elem; i++ ) {
-        ::Elem *newElem = new ::Hex8;
+        libMesh::Elem *newElem = new libMesh::Hex8;
         newElem->set_id( i );
-        ::Elem *elem = mesh->add_elem( newElem );
+        libMesh::Elem *elem = mesh->add_elem( newElem );
         for ( int j = 0; j < 8; j++ ) {
             elem->set_node( j ) = mesh->node_ptr( elemNodeMap[i][j] );
         } // end for j
@@ -207,7 +207,7 @@ void readTestMesh( std::string mesh_file, std::shared_ptr<::Mesh> mesh )
     fclose( fp );
 }
 
-void readTestMesh( std::shared_ptr<AMP::Database> mesh_file_db, std::shared_ptr<::Mesh> mesh )
+void readTestMesh( std::shared_ptr<AMP::Database> mesh_file_db, std::shared_ptr<libMesh::Mesh> mesh )
 {
     auto mesh_db            = mesh_file_db->getDatabase( "Mesh" );
     int num_elem            = mesh_db->getScalar<int>( "NumberOfElements" );
@@ -222,7 +222,7 @@ void readTestMesh( std::shared_ptr<AMP::Database> mesh_file_db, std::shared_ptr<
         char key[100];
         sprintf( key, "Point%d", i );
         auto point = mesh_db->getVector<double>( key );
-        mesh->add_point(::Point( point[0], point[1], point[2] ), i );
+        mesh->add_point(libMesh::Point( point[0], point[1], point[2] ), i );
     } // end for i
 
     std::vector<std::vector<int>> elemNodeMap;
@@ -234,7 +234,7 @@ void readTestMesh( std::shared_ptr<AMP::Database> mesh_file_db, std::shared_ptr<
     } // end for i
 
     for ( int i = 0; i < num_elem; i++ ) {
-        ::Elem *elem = mesh->add_elem( new ::Hex8 );
+        libMesh::Elem *elem = mesh->add_elem( new libMesh::Hex8 );
         for ( int j = 0; j < 8; j++ ) {
             elem->set_node( j ) = mesh->node_ptr( elemNodeMap[i][j] );
         } // end for j
