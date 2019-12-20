@@ -60,7 +60,7 @@ public:
     typedef std::shared_ptr<InpDatabase> SP_InpDatabase;
     typedef std::shared_ptr<ElemPhysModel> SP_ElemPhysModel;
     typedef std::shared_ptr<VolIntOp> SP_VolIntOp;
-    typedef std::shared_ptr<::FEBase> SP_FEBase;
+    typedef std::shared_ptr<libMesh::FEBase> SP_FEBase;
     typedef std::shared_ptr<MoabBasedOperator> SP_MoabOp;
     typedef std::shared_ptr<MoabMapOperatorParameters> SP_MoabMapParams;
     typedef std::shared_ptr<moab::Coupler> SP_Coupler;

@@ -90,7 +90,7 @@ protected:
 
     void destroyLibMeshElementList();
 
-    std::vector<::Elem *> d_currElemPtrs;
+    std::vector<libMesh::Elem *> d_currElemPtrs;
 
     size_t d_currElemIdx;
 

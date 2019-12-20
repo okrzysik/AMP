@@ -11,7 +11,7 @@
 #include <string>
 
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -46,7 +46,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     input_db->print( AMP::plog );
 
     const unsigned int mesh_dim = 3;
-    std::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
+    std::shared_ptr<libMesh::Mesh> mesh( new libMesh::Mesh(libMesh::Parallel::Communicator(), mesh_dim ) );
 
     std::string mesh_file = input_db->getString( "mesh_file" );
 
@@ -54,11 +54,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
         AMP::readTestMesh( mesh_file, mesh );
     } // end if root processor
 
-    MeshCommunication().broadcast( *( mesh.get() ) );
+    libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
 
     mesh->prepare_for_use( false );
 
-    auto meshAdapter = std::make_shared<AMP::Mesh::libMesh>( mesh, "TestMesh" );
+    auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "TestMesh" );
 
     auto nonlinOperator = std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(

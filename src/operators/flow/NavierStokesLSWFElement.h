@@ -59,13 +59,13 @@ public:
 protected:
     double d_density, d_fmu, d_Re;
 
-    const std::vector<Real> *d_JxW;
+    const std::vector<libMesh::Real> *d_JxW;
 
-    const std::vector<std::vector<RealGradient>> *d_dphi;
+    const std::vector<std::vector<libMesh::RealGradient>> *d_dphi;
 
-    const std::vector<std::vector<Real>> *d_phi;
+    const std::vector<std::vector<libMesh::Real>> *d_phi;
 
-    const std::vector<Point> *d_xyz;
+    const std::vector<libMesh::Point> *d_xyz;
 
     std::vector<double> d_elementInputVectors;
 

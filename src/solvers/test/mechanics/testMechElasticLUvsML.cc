@@ -1,5 +1,5 @@
 #include "AMP/ampmesh/libmesh/initializeLibMesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -63,16 +63,16 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         std::string meshFile = input_db->getString( meshFileKey );
 
         const unsigned int mesh_dim = 3;
-        std::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
+        std::shared_ptr<libMesh::Mesh> mesh( new libMesh::Mesh(libMesh::Parallel::Communicator(), mesh_dim ) );
 
         if ( globalComm.getRank() == 0 ) {
             AMP::readBinaryTestMesh( meshFile, mesh );
         }
 
-        MeshCommunication().broadcast( *( mesh.get() ) );
+        libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
         mesh->prepare_for_use( false );
 
-        AMP::Mesh::Mesh::shared_ptr meshAdapter( new AMP::Mesh::libMesh( mesh, "mesh" ) );
+        AMP::Mesh::Mesh::shared_ptr meshAdapter( new AMP::Mesh::libmeshMesh( mesh, "mesh" ) );
 
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
         std::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =

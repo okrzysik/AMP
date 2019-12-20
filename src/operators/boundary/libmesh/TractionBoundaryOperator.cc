@@ -63,31 +63,31 @@ void TractionBoundaryOperator::apply( AMP::LinearAlgebra::Vector::const_shared_p
 
 void TractionBoundaryOperator::computeCorrection()
 {
-    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-    auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
-    auto qruleType   = Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
-    std::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
+    auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+    auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+    auto qruleType   = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
+    std::shared_ptr<libMesh::FEType> feType( new libMesh::FEType( feTypeOrder, feFamily ) );
     libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
-    std::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 2, qruleOrder ) ).release() );
+    std::shared_ptr<libMesh::QBase> qrule( (libMesh::QBase::build( qruleType, 2, qruleOrder ) ).release() );
 
     AMP::Discretization::DOFManager::shared_ptr dofMap = d_correction->getDOFManager();
 
     d_correction->zero();
     for ( size_t b = 0; b < d_sideNumbers.size(); ++b ) {
-        ::Elem *elem = new ::Hex8;
+        libMesh::Elem *elem = new libMesh::Hex8;
         for ( int j = 0; j < 8; ++j ) {
-            elem->set_node( j ) = new ::Node( d_volumeElements[( 24 * b ) + ( 3 * j ) + 0],
+            elem->set_node( j ) = new libMesh::Node( d_volumeElements[( 24 * b ) + ( 3 * j ) + 0],
                                               d_volumeElements[( 24 * b ) + ( 3 * j ) + 1],
                                               d_volumeElements[( 24 * b ) + ( 3 * j ) + 2],
                                               j );
         } // end j
 
-        std::shared_ptr<::FEBase> fe( (::FEBase::build( 3, ( *feType ) ) ).release() );
+        std::shared_ptr<libMesh::FEBase> fe( (libMesh::FEBase::build( 3, ( *feType ) ) ).release() );
         fe->attach_quadrature_rule( qrule.get() );
         fe->reinit( elem, d_sideNumbers[b] );
 
-        const std::vector<std::vector<Real>> &phi = fe->get_phi();
-        const std::vector<Real> &djxw             = fe->get_JxW();
+        const std::vector<std::vector<libMesh::Real>> &phi = fe->get_phi();
+        const std::vector<libMesh::Real> &djxw             = fe->get_JxW();
 
         AMP_ASSERT( phi.size() == 8 );
         AMP_ASSERT( djxw.size() == 4 );
@@ -110,7 +110,7 @@ void TractionBoundaryOperator::computeCorrection()
         }     // end i
 
         for ( size_t j = 0; j < elem->n_nodes(); ++j ) {
-            delete ( elem->get_node( j ) );
+            delete ( elem->node_ptr( j ) );
             elem->set_node( j ) = nullptr;
         } // end for j
         delete elem;

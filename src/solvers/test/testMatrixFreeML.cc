@@ -1,6 +1,6 @@
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/libmesh/initializeLibMesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
@@ -136,15 +136,15 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
     auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
 
     const int mesh_dim = 3;
-    auto fusedMesh     = std::make_shared<::Mesh>( mesh_dim );
+    auto fusedMesh     = std::make_shared<libMesh::Mesh>(libMesh::Parallel::Communicator(), mesh_dim );
 
     AMP::readTestMesh( mesh_file, fusedMesh );
 
-    MeshCommunication().broadcast( *( fusedMesh.get() ) );
+    libMesh::MeshCommunication().broadcast( *( fusedMesh.get() ) );
 
     fusedMesh->prepare_for_use( false );
 
-    auto fusedMeshAdapter = std::make_shared<AMP::Mesh::libMesh>( fusedMesh, "mesh" );
+    auto fusedMeshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( fusedMesh, "mesh" );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> fusedElementPhysicsModel;
     auto fusedOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -399,20 +399,20 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
     auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
 
     const int mesh_dim   = 3;
-    auto firstFusedMesh  = std::make_shared<::Mesh>( mesh_dim );
-    auto secondFusedMesh = std::make_shared<::Mesh>( mesh_dim );
+    auto firstFusedMesh  = std::make_shared<libMesh::Mesh>(libMesh::Parallel::Communicator(), mesh_dim );
+    auto secondFusedMesh = std::make_shared<libMesh::Mesh>(libMesh::Parallel::Communicator(), mesh_dim );
 
     AMP::readTestMesh( mesh_file, firstFusedMesh );
     AMP::readTestMesh( mesh_file, secondFusedMesh );
 
-    MeshCommunication().broadcast( *( firstFusedMesh.get() ) );
-    MeshCommunication().broadcast( *( secondFusedMesh.get() ) );
+    libMesh::MeshCommunication().broadcast( *( firstFusedMesh.get() ) );
+    libMesh::MeshCommunication().broadcast( *( secondFusedMesh.get() ) );
 
     firstFusedMesh->prepare_for_use( false );
     secondFusedMesh->prepare_for_use( false );
 
-    auto firstMesh  = std::make_shared<AMP::Mesh::libMesh>( firstFusedMesh, "Mesh_1" );
-    auto secondMesh = std::make_shared<AMP::Mesh::libMesh>( secondFusedMesh, "Mesh_2" );
+    auto firstMesh  = std::make_shared<AMP::Mesh::libmeshMesh>( firstFusedMesh, "Mesh_1" );
+    auto secondMesh = std::make_shared<AMP::Mesh::libmeshMesh>( secondFusedMesh, "Mesh_2" );
 
     std::vector<AMP::Mesh::Mesh::shared_ptr> vectorOfMeshes;
     vectorOfMeshes.push_back( firstMesh );

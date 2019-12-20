@@ -32,7 +32,7 @@ public:
 
     virtual ~FlowElement() {}
 
-    void initializeForCurrentElement( const ::Elem *elem,
+    void initializeForCurrentElement( const libMesh::Elem *elem,
                                       const std::shared_ptr<FlowTransportModel> &transportModel )
     {
         d_elem           = elem;
@@ -40,18 +40,18 @@ public:
     }
 
 protected:
-    std::shared_ptr<::FEType>
+    std::shared_ptr<libMesh::FEType>
         d_feType; /**< Type of polynomial used for the
                                     finite element shape functions. This includes
                                     both the polynomial order:
                                     First order/Second order etc. and polynomial family:
                                     Lagrange/Hierarchic/Hermite etc.  */
 
-    std::shared_ptr<::FEBase> d_fe; /**< Finite element shape functions. */
+    std::shared_ptr<libMesh::FEBase> d_fe; /**< Finite element shape functions. */
 
-    std::shared_ptr<::QBase> d_qrule; /**< Quadtrature rule used for numerical integration. */
+    std::shared_ptr<libMesh::QBase> d_qrule; /**< Quadtrature rule used for numerical integration. */
 
-    const ::Elem *d_elem; /**< Pointer to the current element within the finite element assembly. */
+    const libMesh::Elem *d_elem; /**< Pointer to the current element within the finite element assembly. */
 
     std::shared_ptr<FlowTransportModel> d_transportModel;
 

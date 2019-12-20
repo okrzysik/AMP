@@ -9,7 +9,7 @@ void MechanicsLinearElement::computeStressAndStrain( const std::vector<double> &
                                                      std::vector<double> &stressVec,
                                                      std::vector<double> &strainVec )
 {
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
     d_fe->reinit( d_elem );
 
@@ -82,9 +82,9 @@ void MechanicsLinearElement::computeStressAndStrain( const std::vector<double> &
 
 void MechanicsLinearElement::printStressAndStrain( FILE *fp, const std::vector<double> &dispVec )
 {
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
-    const std::vector<Point> &xyz = ( *d_xyz );
+    const auto &xyz = ( *d_xyz );
 
     d_fe->reinit( d_elem );
 
@@ -170,9 +170,9 @@ void MechanicsLinearElement::printStressAndStrain( FILE *fp, const std::vector<d
 
 void MechanicsLinearElement::apply_Reduced()
 {
-    const std::vector<Real> &JxW = ( *d_JxW );
+    const std::vector<libMesh::Real> &JxW = ( *d_JxW );
 
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
     std::vector<std::vector<double>> &elementStiffnessMatrix = ( *d_elementStiffnessMatrix );
 
@@ -393,9 +393,9 @@ void MechanicsLinearElement::apply_Reduced()
 
 void MechanicsLinearElement::apply_Normal()
 {
-    const std::vector<Real> &JxW = ( *d_JxW );
+    const std::vector<libMesh::Real> &JxW = ( *d_JxW );
 
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
     std::vector<std::vector<double>> &elementStiffnessMatrix = ( *d_elementStiffnessMatrix );
 

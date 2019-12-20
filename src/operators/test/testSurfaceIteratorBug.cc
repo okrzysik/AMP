@@ -66,8 +66,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto vec = AMP::LinearAlgebra::createVector( nodalScalarDOF, var, true );
     vec->zero();
 
-    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-    auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+    auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+    auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
     auto bnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, surfaceId, 0 );
     std::cout << "Number of surface elements: " << bnd.size() << std::endl;
@@ -93,18 +93,18 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         // Create the libmesh element
         // Note: This must be done inside the loop because libmesh's reinit function doesn't seem to
         // work properly
-        std::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
-        std::shared_ptr<::FEBase> fe( (::FEBase::build( 2, ( *feType ) ) ).release() );
-        const std::vector<std::vector<Real>> &phi = fe->get_phi();
-        const std::vector<Real> &djxw             = fe->get_JxW();
-        auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
+        std::shared_ptr<libMesh::FEType> feType( new libMesh::FEType( feTypeOrder, feFamily ) );
+        std::shared_ptr<libMesh::FEBase> fe( (libMesh::FEBase::build( 2, ( *feType ) ) ).release() );
+        const std::vector<std::vector<libMesh::Real>> &phi = fe->get_phi();
+        const std::vector<libMesh::Real> &djxw             = fe->get_JxW();
+        auto qruleType = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
         libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
-        std::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 2, qruleOrder ) ).release() );
+        std::shared_ptr<libMesh::QBase> qrule( (libMesh::QBase::build( qruleType, 2, qruleOrder ) ).release() );
         fe->attach_quadrature_rule( qrule.get() );
-        ::Elem *currElemPtr = new ::Quad4;
+        libMesh::Elem *currElemPtr = new libMesh::Quad4;
         for ( size_t i = 0; i < nodes.size(); i++ ) {
             auto pt                    = nodes[i].coord();
-            currElemPtr->set_node( i ) = new ::Node( pt[0], pt[1], pt[2], i );
+            currElemPtr->set_node( i ) = new libMesh::Node( pt[0], pt[1], pt[2], i );
         }
         fe->reinit( currElemPtr );
 
@@ -138,7 +138,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         // Destroy the libmesh element
         for ( size_t i = 0; i < nodes.size(); i++ ) {
-            delete ( currElemPtr->get_node( i ) );
+            delete ( currElemPtr->node_ptr( i ) );
             currElemPtr->set_node( i ) = nullptr;
         } // end for j
         delete currElemPtr;

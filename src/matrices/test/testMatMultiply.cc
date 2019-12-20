@@ -1,6 +1,6 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/libmesh/initializeLibMesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/MatrixBuilder.h"
@@ -19,7 +19,7 @@
 #include "libmesh/cell_hex8.h"
 #include "libmesh/mesh.h"
 #include "libmesh/mesh_communication.h"
-#include "libmesh/mesh_data.h"
+//#include "libmesh/mesh_data.h"
 #include "libmesh/mesh_generation.h"
 
 #include <iostream>
@@ -37,13 +37,13 @@ void myTest( AMP::UnitTest *ut, std::string mesh_file )
     AMP::AMP_MPI comm( AMP_COMM_SELF );
     auto libmeshInit  = std::make_shared<AMP::Mesh::initializeLibMesh>( comm );
     uint32_t mesh_dim = 3;
-    auto myMesh       = std::make_shared<::Mesh>( mesh_dim );
+    auto myMesh = std::make_shared<libMesh::Mesh>(libMesh::Parallel::Communicator(), mesh_dim );
     AMP::readTestMesh( mesh_file, myMesh );
-    MeshCommunication().broadcast( *( myMesh.get() ) );
+    libMesh::MeshCommunication().broadcast( *( myMesh.get() ) );
     myMesh->prepare_for_use( false );
 
     // Create the AMP mesh
-    auto myMeshAdapter = std::make_shared<AMP::Mesh::libMesh>( myMesh, "myMesh" );
+    auto myMeshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( myMesh, "myMesh" );
 
     // Create the DOF manager
     auto DOFs = AMP::Discretization::simpleDOFManager::create(

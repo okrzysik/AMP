@@ -1,5 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/BVPOperatorParameters.h"
@@ -56,11 +56,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     std::string mesh_file       = input_db->getString( "mesh_file" );
     const unsigned int mesh_dim = 3;
-    auto mesh                   = std::make_shared<::Mesh>( mesh_dim );
+    auto mesh = std::make_shared<libMesh::Mesh>(libMesh::Parallel::Communicator(), mesh_dim );
     AMP::readTestMesh( mesh_file, mesh );
-    MeshCommunication().broadcast( *( mesh.get() ) );
+    libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
     mesh->prepare_for_use( false );
-    auto meshAdapter = std::make_shared<AMP::Mesh::libMesh>( mesh, "cook" );
+    auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "cook" );
     //--------------------------------------------------
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),

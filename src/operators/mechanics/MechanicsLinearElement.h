@@ -89,14 +89,14 @@ protected:
      */
     void apply_Reduced();
 
-    const std::vector<Real> *d_JxW; /**< Product of the determinant of Jacobian and the quadrature
+    const std::vector<libMesh::Real> *d_JxW; /**< Product of the determinant of Jacobian and the quadrature
                                     weight at the Gauss points in the current element. */
 
-    const std::vector<std::vector<RealGradient>>
+    const std::vector<std::vector<libMesh::RealGradient>>
         *d_dphi; /**< Spatial Derivatives of the shape functions at
                   the Gauss points in the current element. */
 
-    const std::vector<Point> *d_xyz; /**< Locations of the Gauss points in the current element. */
+    const std::vector<libMesh::Point> *d_xyz; /**< Locations of the Gauss points in the current element. */
 
     std::vector<std::vector<double>> *d_elementStiffnessMatrix; /**< Element stiffness matrix. */
 

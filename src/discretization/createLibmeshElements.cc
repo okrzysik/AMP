@@ -74,7 +74,7 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
     d_rule_element.resize( 0 );
     for ( auto &elem : d_elements ) {
         for ( size_t j = 0; j < elem->n_nodes(); j++ ) {
-            delete elem->get_node( j );
+            delete elem->node_ptr( j );
             elem->set_node( j ) = nullptr;
         }
         delete elem;

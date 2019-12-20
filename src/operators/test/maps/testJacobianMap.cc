@@ -33,38 +33,38 @@ ENABLE_WARNINGS
 static void calculateGrad( AMP::UnitTest *ut )
 {
     const unsigned int mesh_dim = 3;
-    std::shared_ptr<Mesh> mesh( new Mesh( mesh_dim ) );
+    std::shared_ptr<libMesh::Mesh> mesh( new libMesh::Mesh(libMesh::Parallel::Communicator(), mesh_dim ) );
 
     AMP::readTestMesh( "distortedElementMesh", mesh );
 
-    MeshCommunication().broadcast( *( mesh.get() ) );
+    libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
 
     mesh->prepare_for_use( false );
 
-    EquationSystems equation_systems( *( mesh.get() ) );
+    libMesh::EquationSystems equation_systems( *( mesh.get() ) );
 
-    auto &system = equation_systems.add_system<LinearImplicitSystem>( "Poisson" );
+    auto &system = equation_systems.add_system<libMesh::LinearImplicitSystem>( "Poisson" );
 
-    system.add_variable( "V", FIRST );
+    system.add_variable( "V", libMesh::FIRST );
     equation_systems.init();
 
     const unsigned int V_var = system.variable_number( "V" );
 
-    FEType fe_type = system.variable_type( V_var );
+    libMesh::FEType fe_type = system.variable_type( V_var );
 
-    QGauss qrule( 3, fe_type.default_quadrature_order() );
+    libMesh::QGauss qrule( 3, fe_type.default_quadrature_order() );
 
-    AutoPtr<FEBase> fe_3d( FEBase::build( 3, fe_type ) );
+    auto fe_3d( libMesh::FEBase::build( 3, fe_type ) );
     fe_3d->attach_quadrature_rule( &qrule );
     // const std::vector<Point>& q_point3d = fe_3d->get_xyz();
 
-    const std::vector<std::vector<Real>> &dphi3d = fe_3d->get_dphidx();
+    const std::vector<std::vector<libMesh::Real>> &dphi3d = fe_3d->get_dphidx();
 
-    MeshBase::const_element_iterator el           = mesh->local_elements_begin();
-    const MeshBase::const_element_iterator end_el = mesh->local_elements_end();
+    libMesh::MeshBase::const_element_iterator el           = mesh->local_elements_begin();
+    const libMesh::MeshBase::const_element_iterator end_el = mesh->local_elements_end();
     std::cout << "Entering Element Iyerator" << std::endl;
     for ( ; el != end_el; ++el ) {
-        const Elem *elem = *el;
+        const libMesh::Elem *elem = *el;
 
         fe_3d->reinit( elem );
         // std::vector<Point> coordinates = fe_3d->get_xyz();

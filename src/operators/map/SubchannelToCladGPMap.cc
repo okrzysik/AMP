@@ -112,16 +112,16 @@ SubchannelToCladGPMap::getGaussPoints( AMP::Mesh::Mesh::shared_ptr,
     for ( size_t i = 0; i < ids.size(); i++ ) {
         AMP_ASSERT( ids[i].type() == AMP::Mesh::GeomType::Face );
         // Create the libmesh element
-        auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-        auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
-        std::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
-        std::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
-        auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-        std::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
+        auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+        auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+        std::shared_ptr<libMesh::FEType> d_feType( new libMesh::FEType( feTypeOrder, feFamily ) );
+        std::shared_ptr<libMesh::FEBase> d_fe( (libMesh::FEBase::build( 2, ( *d_feType ) ) ).release() );
+        auto qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
+        std::shared_ptr<libMesh::QBase> d_qrule( (libMesh::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
         d_fe->attach_quadrature_rule( d_qrule.get() );
         d_fe->reinit( libmeshElements.getElement( ids[i] ) );
         // Get the current position and DOF
-        std::vector<Point> coordinates = d_fe->get_xyz();
+        const auto &coordinates = d_fe->get_xyz();
         AMP_ASSERT( coordinates.size() == 4 );
         for ( unsigned int qp = 0; qp < 4; qp++ )
             z_pos[i].z[qp] = coordinates[qp]( 2 );
