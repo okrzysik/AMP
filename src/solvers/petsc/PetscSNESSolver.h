@@ -20,6 +20,8 @@
 #undef OMPI_SKIP_MPICXX
 #endif
 
+#undef PETSC_VERSION_DATE_GIT
+#undef PETSC_VERSION_GIT
 #include "petsc.h"
 #include "petscmat.h"
 #include "petscsnes.h"
