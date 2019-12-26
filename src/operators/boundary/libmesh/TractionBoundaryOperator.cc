@@ -68,7 +68,8 @@ void TractionBoundaryOperator::computeCorrection()
     auto qruleType   = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
     std::shared_ptr<libMesh::FEType> feType( new libMesh::FEType( feTypeOrder, feFamily ) );
     libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
-    std::shared_ptr<libMesh::QBase> qrule( (libMesh::QBase::build( qruleType, 2, qruleOrder ) ).release() );
+    std::shared_ptr<libMesh::QBase> qrule(
+        ( libMesh::QBase::build( qruleType, 2, qruleOrder ) ).release() );
 
     AMP::Discretization::DOFManager::shared_ptr dofMap = d_correction->getDOFManager();
 
@@ -77,12 +78,13 @@ void TractionBoundaryOperator::computeCorrection()
         libMesh::Elem *elem = new libMesh::Hex8;
         for ( int j = 0; j < 8; ++j ) {
             elem->set_node( j ) = new libMesh::Node( d_volumeElements[( 24 * b ) + ( 3 * j ) + 0],
-                                              d_volumeElements[( 24 * b ) + ( 3 * j ) + 1],
-                                              d_volumeElements[( 24 * b ) + ( 3 * j ) + 2],
-                                              j );
+                                                     d_volumeElements[( 24 * b ) + ( 3 * j ) + 1],
+                                                     d_volumeElements[( 24 * b ) + ( 3 * j ) + 2],
+                                                     j );
         } // end j
 
-        std::shared_ptr<libMesh::FEBase> fe( (libMesh::FEBase::build( 3, ( *feType ) ) ).release() );
+        std::shared_ptr<libMesh::FEBase> fe(
+            ( libMesh::FEBase::build( 3, ( *feType ) ) ).release() );
         fe->attach_quadrature_rule( qrule.get() );
         fe->reinit( elem, d_sideNumbers[b] );
 

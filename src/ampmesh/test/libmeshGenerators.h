@@ -185,12 +185,13 @@ public:
         // Initialize libmesh
         AMP::AMP_MPI comm( AMP_COMM_SELF );
         libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( comm );
+        libMeshComm = std::make_shared<libMesh::Parallel::Communicator>( comm.getCommunicator() );
 
         const unsigned int mesh_dim  = 3;
         const unsigned int num_elem  = 3;
         const unsigned int num_nodes = 16;
 
-        std::shared_ptr<libMesh::Mesh> local_mesh( new libMesh::Mesh( libMesh::Parallel::Communicator(), mesh_dim ) );
+        auto local_mesh = std::make_shared<libMesh::Mesh>( *libMeshComm, mesh_dim );
         local_mesh->reserve_elem( num_elem );
         local_mesh->reserve_nodes( num_nodes );
 
@@ -235,7 +236,9 @@ public:
     }
 
 protected:
+    std::shared_ptr<libMesh::Parallel::Communicator> libMeshComm;
     std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
+
 };
 
 

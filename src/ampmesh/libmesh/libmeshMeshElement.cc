@@ -24,11 +24,11 @@ libmeshMeshElement::libmeshMeshElement()
     d_globalID = MeshElementID();
 }
 libmeshMeshElement::libmeshMeshElement( int dim,
-                                GeomType type,
-                                void *libmesh_element,
-                                unsigned int rank,
-                                MeshID meshID,
-                                const libmeshMesh *mesh )
+                                        GeomType type,
+                                        void *libmesh_element,
+                                        unsigned int rank,
+                                        MeshID meshID,
+                                        const libmeshMesh *mesh )
 {
     AMP_ASSERT( libmesh_element != nullptr );
     typeID          = getTypeID();
@@ -58,11 +58,11 @@ libmeshMeshElement::libmeshMeshElement( int dim,
     d_globalID = MeshElementID( is_local, type, local_id, owner_rank, meshID );
 }
 libmeshMeshElement::libmeshMeshElement( int dim,
-                                GeomType type,
-                                std::shared_ptr<libMesh::Elem> libmesh_element,
-                                unsigned int rank,
-                                MeshID meshID,
-                                const libmeshMesh *mesh )
+                                        GeomType type,
+                                        std::shared_ptr<libMesh::Elem> libmesh_element,
+                                        unsigned int rank,
+                                        MeshID meshID,
+                                        const libmeshMesh *mesh )
     : d_delete_elem( false )
 {
     AMP_ASSERT( libmesh_element.get() != nullptr );
@@ -146,7 +146,8 @@ unsigned int libmeshMeshElement::globalOwnerRank() const
 /****************************************************************
  * Function to get the elements composing the current element    *
  ****************************************************************/
-void libmeshMeshElement::getElements( const GeomType type, std::vector<MeshElement> &children ) const
+void libmeshMeshElement::getElements( const GeomType type,
+                                      std::vector<MeshElement> &children ) const
 {
     AMP_INSIST( type <= d_globalID.type(), "sub-elements must be of a smaller or equivalent type" );
     children.clear();
@@ -184,7 +185,7 @@ void libmeshMeshElement::getElements( const GeomType type, std::vector<MeshEleme
             AMP_ERROR( "Internal error" );
         for ( unsigned int i = 0; i < children.size(); i++ ) {
             // We need to build a valid element
-  	    std::unique_ptr<libMesh::Elem> tmp;
+            std::unique_ptr<libMesh::Elem> tmp;
             if ( type == GeomType::Edge )
                 tmp = elem->build_edge_ptr( i );
             else if ( type == GeomType::Face )
@@ -272,7 +273,7 @@ Point libmeshMeshElement::centroid() const
 {
     if ( d_globalID.type() == GeomType::Vertex )
         return coord();
-    auto *elem     = (libMesh::Elem *) ptr_element;
+    auto *elem            = (libMesh::Elem *) ptr_element;
     libMesh::Point center = elem->centroid();
     AMP::Mesh::Point x( (size_t) d_dim );
     for ( int i = 0; i < d_dim; i++ )
@@ -322,8 +323,8 @@ bool libmeshMeshElement::isOnSurface() const
 }
 bool libmeshMeshElement::isOnBoundary( int id ) const
 {
-    GeomType type                     = d_globalID.type();
-    bool on_boundary                  = false;
+    GeomType type                            = d_globalID.type();
+    bool on_boundary                         = false;
     std::shared_ptr<libMesh::Mesh> d_libMesh = d_mesh->getlibMesh();
     if ( type == GeomType::Vertex ) {
         // Entity is a libmesh node

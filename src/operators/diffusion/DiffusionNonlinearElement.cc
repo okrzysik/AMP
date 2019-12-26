@@ -134,7 +134,7 @@ void DiffusionNonlinearElement::apply()
     }
 
     for ( size_t qp = 0; qp < d_qrule->n_points(); qp++ ) {
-      libMesh::RealGradient grad_phi = 0.0;
+        libMesh::RealGradient grad_phi = 0.0;
 
         for ( size_t n = 0; n < num_nodes; n++ ) {
             grad_phi += dphi[n][qp] * d_elementInputVectors[d_PrincipalVariable][n];

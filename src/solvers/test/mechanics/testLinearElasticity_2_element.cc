@@ -48,7 +48,8 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
         auto mesh_file_db = AMP::Database::parseInputFile( mesh_file );
 
         const unsigned int mesh_dim = 3;
-        std::shared_ptr<libMesh::Mesh> mesh( new libMesh::Mesh(libMesh::Parallel::Communicator(), mesh_dim ) );
+        libMesh::Parallel::Communicator comm( AMP_COMM_WORLD );
+        auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
 
         AMP::readTestMesh( mesh_file_db, mesh );
         mesh->prepare_for_use( false );

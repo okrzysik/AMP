@@ -1,28 +1,31 @@
-#ifndef included_AMP_libmeshMeshIterators
-#define included_AMP_libmeshMeshIterators
+#ifndef included_AMP_libmeshElemIterator
+#define included_AMP_libmeshElemIterator
 
 #include "AMP/ampmesh/MeshIterator.h"
 #include "AMP/ampmesh/libmesh/libmeshMesh.h"
+
+// libMesh includes
+#include "libmesh/elem.h"
 
 
 namespace AMP {
 namespace Mesh {
 
 
-class libmeshMeshIterator : public MeshIterator
+class libmeshElemIterator : public MeshIterator
 {
 public:
     //! Empty MeshIterator constructor
-    libmeshMeshIterator();
+    libmeshElemIterator() = delete;
 
     //! Deconstructor
-    virtual ~libmeshMeshIterator();
+    virtual ~libmeshElemIterator() = default;
 
     //! Copy constructor
-    libmeshMeshIterator( const libmeshMeshIterator & );
+    libmeshElemIterator( const libmeshElemIterator & );
 
     //! Assignment operator
-    libmeshMeshIterator &operator=( const libmeshMeshIterator & );
+    libmeshElemIterator &operator=( const libmeshElemIterator & );
 
     // Increment
     virtual MeshIterator &operator++() override;
@@ -68,14 +71,13 @@ protected:
      * \param size      Number of elements in the iterator (-1: unknown)
      * \param pos2      Index of the current position in the iterator (-1: unknown)
      */
-    libmeshMeshIterator( int type,
-                     const AMP::Mesh::libmeshMesh *mesh,
-                     int gcw,
-                     void *begin,
-                     void *end,
-                     void *pos,
-                     int size = -1,
-                     int pos2 = -1 );
+    libmeshElemIterator( const AMP::Mesh::libmeshMesh *mesh,
+                         int gcw,
+                         const libMesh::Mesh::element_iterator &begin,
+                         const libMesh::Mesh::element_iterator &end,
+                         const libMesh::Mesh::element_iterator &pos,
+                         int size = -1,
+                         int pos2 = -1 );
 
     //! Clone the iterator
     virtual MeshIterator *clone() const override;
@@ -86,11 +88,10 @@ private:
     // Data members
     int d_gcw;
     int d_dim;
-    int d_type;
     int d_rank;
-    void *d_begin2;
-    void *d_end2;
-    void *d_pos2;
+    libMesh::Mesh::element_iterator d_begin2;
+    libMesh::Mesh::element_iterator d_end2;
+    libMesh::Mesh::element_iterator d_pos2;
     MeshID d_meshID;
     const AMP::Mesh::libmeshMesh *d_mesh;
     MeshElement d_cur_element;
@@ -98,7 +99,10 @@ private:
     void setCurrentElement();
 
 private:
-    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "libmeshMeshIterator" ); }
+    static constexpr uint32_t getTypeID()
+    {
+        return AMP::Utilities::hash_char( "libmeshElemIterator" );
+    }
 };
 } // namespace Mesh
 } // namespace AMP

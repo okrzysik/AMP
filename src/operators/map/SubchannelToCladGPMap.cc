@@ -115,9 +115,11 @@ SubchannelToCladGPMap::getGaussPoints( AMP::Mesh::Mesh::shared_ptr,
         auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
         auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
         std::shared_ptr<libMesh::FEType> d_feType( new libMesh::FEType( feTypeOrder, feFamily ) );
-        std::shared_ptr<libMesh::FEBase> d_fe( (libMesh::FEBase::build( 2, ( *d_feType ) ) ).release() );
+        std::shared_ptr<libMesh::FEBase> d_fe(
+            ( libMesh::FEBase::build( 2, ( *d_feType ) ) ).release() );
         auto qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-        std::shared_ptr<libMesh::QBase> d_qrule( (libMesh::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
+        std::shared_ptr<libMesh::QBase> d_qrule(
+            ( libMesh::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
         d_fe->attach_quadrature_rule( d_qrule.get() );
         d_fe->reinit( libmeshElements.getElement( ids[i] ) );
         // Get the current position and DOF

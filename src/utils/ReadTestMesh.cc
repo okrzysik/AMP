@@ -31,7 +31,8 @@ void readBinaryTestMesh( std::string mesh_file, std::shared_ptr<libMesh::Mesh> m
 
     for ( int i = 0; i < num_nodes; i++ ) {
         mesh->add_point(
-            libMesh::Point( points[( 3 * i ) + 0], points[( 3 * i ) + 1], points[( 3 * i ) + 2] ), i );
+            libMesh::Point( points[( 3 * i ) + 0], points[( 3 * i ) + 1], points[( 3 * i ) + 2] ),
+            i );
     }
 
     points.clear();
@@ -120,7 +121,7 @@ void readTestMesh( std::string mesh_file, std::shared_ptr<libMesh::Mesh> mesh )
         double point[3];
         // PointK = x, y, z
         n = fscanf( fp, "%s = %lf, %lf, %lf", str, &( point[0] ), &( point[1] ), &( point[2] ) );
-        mesh->add_point(libMesh::Point( point[0], point[1], point[2] ), i );
+        mesh->add_point( libMesh::Point( point[0], point[1], point[2] ), i );
     } // end for i
 
     int num_elem;
@@ -207,7 +208,8 @@ void readTestMesh( std::string mesh_file, std::shared_ptr<libMesh::Mesh> mesh )
     fclose( fp );
 }
 
-void readTestMesh( std::shared_ptr<AMP::Database> mesh_file_db, std::shared_ptr<libMesh::Mesh> mesh )
+void readTestMesh( std::shared_ptr<AMP::Database> mesh_file_db,
+                   std::shared_ptr<libMesh::Mesh> mesh )
 {
     auto mesh_db            = mesh_file_db->getDatabase( "Mesh" );
     int num_elem            = mesh_db->getScalar<int>( "NumberOfElements" );
@@ -222,7 +224,7 @@ void readTestMesh( std::shared_ptr<AMP::Database> mesh_file_db, std::shared_ptr<
         char key[100];
         sprintf( key, "Point%d", i );
         auto point = mesh_db->getVector<double>( key );
-        mesh->add_point(libMesh::Point( point[0], point[1], point[2] ), i );
+        mesh->add_point( libMesh::Point( point[0], point[1], point[2] ), i );
     } // end for i
 
     std::vector<std::vector<int>> elemNodeMap;

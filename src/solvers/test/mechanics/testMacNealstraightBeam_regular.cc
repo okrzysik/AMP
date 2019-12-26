@@ -47,7 +47,8 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     input_db->print( AMP::plog );
 
     const unsigned int mesh_dim = 3;
-    std::shared_ptr<libMesh::Mesh> mesh( new libMesh::Mesh(libMesh::Parallel::Communicator(), mesh_dim ) );
+    libMesh::Parallel::Communicator comm( AMP_COMM_WORLD );
+    auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
 
     std::string mesh_file = input_db->getString( "mesh_file" );
     if ( globalComm.getRank() == 0 ) {

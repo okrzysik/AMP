@@ -32,7 +32,8 @@ SourceNonlinearElement::SourceNonlinearElement(
     auto feFamily     = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
     auto qruleTypeName = params->d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
-    auto qruleType     = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    auto qruleType =
+        libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     d_integrateVolume = params->d_db->getWithDefault( "INTEGRATEVOLUME", true );
 
@@ -40,7 +41,7 @@ SourceNonlinearElement::SourceNonlinearElement(
 
     d_feType.reset( new libMesh::FEType( feTypeOrder, feFamily ) );
 
-    d_fe.reset( (libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
+    d_fe.reset( ( libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
 
     std::string qruleOrderName =
         ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
@@ -53,7 +54,7 @@ SourceNonlinearElement::SourceNonlinearElement(
         qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 
-    d_qrule.reset( (libMesh::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
+    d_qrule.reset( ( libMesh::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -85,8 +86,8 @@ void SourceNonlinearElement::apply()
     PROFILE_START( "apply", 5 );
 
     d_fe->reinit( d_elem );
-    const unsigned int n_nodes                = d_elem->n_nodes();
-    const unsigned int n_points               = d_qrule->n_points();
+    const unsigned int n_nodes                         = d_elem->n_nodes();
+    const unsigned int n_points                        = d_qrule->n_points();
     const std::vector<libMesh::Real> &JxW              = ( *d_JxW );
     const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
     // const std::vector<std::vector<libMesh::RealGradient> > & dphi = (*d_dphi);

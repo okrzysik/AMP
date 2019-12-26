@@ -193,8 +193,9 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     if ( useRegularGridMesh ) {
         libmeshInit =
             std::make_shared<AMP::Mesh::initializeLibMesh>( AMP::AMP_MPI( AMP_COMM_WORLD ) );
+        libMesh::Parallel::Communicator comm( AMP_COMM_WORLD );
         auto mesh_file    = inputDatabase->getString( "mesh_file" );
-        auto myMesh       = std::make_shared<libMesh::Mesh>(libMesh::Parallel::Communicator(), 3 );
+        auto myMesh       = std::make_shared<libMesh::Mesh>( comm, 3 );
         bool binaryMeshes = inputDatabase->getScalar<bool>( "BinaryMeshes" );
         if ( binaryMeshes ) {
             AMP::readBinaryTestMesh( mesh_file, myMesh );

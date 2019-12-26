@@ -51,12 +51,13 @@ void computeTemperatureRhsVector(
 
     std::string qruleTypeName =
         elementRhsDatabase->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
-    auto qruleType = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    auto qruleType =
+        libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     const unsigned int dimension = 3;
 
     feType.reset( new libMesh::FEType( feTypeOrder, feFamily ) );
-    fe.reset( (libMesh::FEBase::build( dimension, ( *feType ) ) ).release() );
+    fe.reset( ( libMesh::FEBase::build( dimension, ( *feType ) ) ).release() );
 
     std::string qruleOrderName =
         elementRhsDatabase->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
@@ -67,7 +68,7 @@ void computeTemperatureRhsVector(
         qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 
-    qrule.reset( (libMesh::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
+    qrule.reset( ( libMesh::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
     fe->attach_quadrature_rule( qrule.get() );
 
     const auto &JxW  = ( fe->get_JxW() );

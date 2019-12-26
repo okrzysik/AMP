@@ -192,7 +192,7 @@ void NeumannVectorCorrection::addRHScorrection(
                                 temp[0].push_back(
                                     d_variableFlux->getValueByGlobalID( fluxDofs[qp] ) );
                             } else {
-			        libMesh::Real Tqp = 0.0;
+                                libMesh::Real Tqp = 0.0;
                                 for ( size_t n = 0; n < dofIndices.size(); n++ ) {
                                     Tqp +=
                                         phi[n][qp] * d_variableFlux->getValueByGlobalID( dofs[n] );

@@ -235,6 +235,7 @@ private:
     void initialize();
 
     // libMesh objects
+    std::shared_ptr<libMesh::Parallel::Communicator> d_libMeshComm;
     std::shared_ptr<libMesh::Mesh> d_libMesh;
 
     // Some basic internal data

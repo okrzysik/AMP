@@ -49,7 +49,7 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
     auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
     auto qtype       = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
     auto feType( new libMesh::FEType( feTypeOrder, feFamily ) );
-    auto qrule   = libMesh::QBase::build( qtype, d_dim, qruleOrder );
+    auto qrule  = libMesh::QBase::build( qtype, d_dim, qruleOrder );
     auto febase = libMesh::FEBase::build( d_dim, *feType );
     febase->attach_quadrature_rule( qrule.get() );
     // Cache data for all elements (improves performance)

@@ -186,7 +186,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
 
     for ( unsigned int ijk = 0; ijk < num_nodes; ijk++ ) {
         const auto &p1 = d_elem->point( ijk );
-        xyz[ijk] = p1;
+        xyz[ijk]       = p1;
     }
 
     double currX[8], currY[8], currZ[8], dNdx[8], dNdy[8], dNdz[8], detJ[1];
@@ -837,7 +837,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
 void MechanicsLinearUpdatedLagrangianElement::initializeReferenceXYZ(
     std::vector<double> &elementRefXYZ )
 {
-  std::vector<libMesh::Point> xyz;
+    std::vector<libMesh::Point> xyz;
 
     d_fe->reinit( d_elem );
 

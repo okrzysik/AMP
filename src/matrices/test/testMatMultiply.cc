@@ -37,7 +37,8 @@ void myTest( AMP::UnitTest *ut, std::string mesh_file )
     AMP::AMP_MPI comm( AMP_COMM_SELF );
     auto libmeshInit  = std::make_shared<AMP::Mesh::initializeLibMesh>( comm );
     uint32_t mesh_dim = 3;
-    auto myMesh = std::make_shared<libMesh::Mesh>(libMesh::Parallel::Communicator(), mesh_dim );
+    libMesh::Parallel::Communicator libMeshComm( comm.getCommunicator() );
+    auto myMesh = std::make_shared<libMesh::Mesh>( libMeshComm, mesh_dim );
     AMP::readTestMesh( mesh_file, myMesh );
     libMesh::MeshCommunication().broadcast( *( myMesh.get() ) );
     myMesh->prepare_for_use( false );

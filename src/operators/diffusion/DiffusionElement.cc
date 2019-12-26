@@ -38,13 +38,14 @@ DiffusionElement::DiffusionElement( const std::shared_ptr<ElementOperationParame
 
     std::string qruleTypeName =
         ( params->d_db )->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
-    auto qruleType = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    auto qruleType =
+        libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     const unsigned int dimension = 3;
 
     d_feType.reset( new libMesh::FEType( feTypeOrder, feFamily ) );
 
-    d_fe.reset( (libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
+    d_fe.reset( ( libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
 
     std::string qruleOrderName =
         ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
@@ -57,7 +58,7 @@ DiffusionElement::DiffusionElement( const std::shared_ptr<ElementOperationParame
         qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 
-    d_qrule.reset( (libMesh::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
+    d_qrule.reset( ( libMesh::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 

@@ -2,7 +2,7 @@
 #include "cell_hex8.h"
 #include "fe_interface.h"
 
-bool myContainsPoint(libMesh::Elem *e, const ::Point &p, double tol )
+bool myContainsPoint( libMesh::Elem *e, const ::Point &p, double tol )
 {
     libMesh::FEType fe_type( e->default_order() );
 
@@ -154,8 +154,8 @@ static void computeSlave2MasterElem( const unsigned int slaveId,
         unsigned int rgId = ( zi * rgDim * rgDim ) + ( yi * rgDim ) + xi;
         std::vector<size_t> selectedElems;
         for ( size_t k = 0; k < rg2ElemMap[rgId].size(); k++ ) {
-            size_t elemId = rg2ElemMap[rgId][k];
-            libMesh::Elem *el    = &( ( masterMeshAdapter->getElement( elemId ) ).getElem() );
+            size_t elemId     = rg2ElemMap[rgId][k];
+            libMesh::Elem *el = &( ( masterMeshAdapter->getElement( elemId ) ).getElem() );
             if ( myContainsPoint( el, currPt, precision ) ) {
                 // std::cout<<"Slave node "<<(bnd->globalID())<<" is in Master element
                 // "<<(elemId)<<std::endl;

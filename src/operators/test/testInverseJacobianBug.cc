@@ -39,9 +39,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    std::shared_ptr<libMesh::Mesh> mesh( new libMesh::Mesh(libMesh::Parallel::Communicator(), 3 ) );
+    libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
+    auto mesh = std::make_shared<libMesh::Mesh>( comm, 3 );
     libMesh::MeshTools::Generation::build_cube(
-				      ( *( mesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, libMesh::HEX8, false );
+        ( *( mesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, libMesh::HEX8, false );
 
     libMesh::Elem *elemPtr = mesh->elem( 0 );
 
@@ -53,7 +54,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     ( elemPtr->point( 7 ) )( 0 ) -= 0.4;
 
-    auto ampMesh = AMP::Mesh::Mesh::shared_ptr( new AMP::Mesh::libmeshMesh( mesh, "TestMesh" ) );
+    auto ampMesh = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "TestMesh" );
 
     auto myVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "myVar" );
     auto dof_map = AMP::Discretization::simpleDOFManager::create(
@@ -77,25 +78,26 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-    std::shared_ptr<libMesh::FEType> feType( new libMesh::FEType( feTypeOrder, feFamily ) );
-    std::shared_ptr<libMesh::FEBase> fe( (libMesh::FEBase::build( 3, ( *feType ) ) ).release() );
+    auto feType = std::make_shared<libMesh::FEType>( feTypeOrder, feFamily );
+    auto fe     = ( libMesh::FEBase::build( 3, ( *feType ) ) ).release();
 
     //  const std::vector<std::vector<libMesh::Real> > &phi = fe->get_phi();
-    const std::vector<std::vector<libMesh::Real>> &dphidxi   = fe->get_dphidxi();
-    const std::vector<std::vector<libMesh::Real>> &dphideta  = fe->get_dphideta();
-    const std::vector<std::vector<libMesh::Real>> &dphidzeta = fe->get_dphidzeta();
-    const std::vector<std::vector<libMesh::Real>> &dphidx    = fe->get_dphidx();
-    const std::vector<std::vector<libMesh::Real>> &dphidy    = fe->get_dphidy();
-    const std::vector<std::vector<libMesh::Real>> &dphidz    = fe->get_dphidz();
+    const auto &dphidxi   = fe->get_dphidxi();
+    const auto &dphideta  = fe->get_dphideta();
+    const auto &dphidzeta = fe->get_dphidzeta();
+    const auto &dphidx    = fe->get_dphidx();
+    const auto &dphidy    = fe->get_dphidy();
+    const auto &dphidz    = fe->get_dphidz();
     //  const std::vector<libMesh::Real> &djxw = fe->get_JxW();
 
-    const std::vector<libMesh::RealGradient> &dxyzdxi   = fe->get_dxyzdxi();
-    const std::vector<libMesh::RealGradient> &dxyzdeta  = fe->get_dxyzdeta();
-    const std::vector<libMesh::RealGradient> &dxyzdzeta = fe->get_dxyzdzeta();
+    const auto &dxyzdxi   = fe->get_dxyzdxi();
+    const auto &dxyzdeta  = fe->get_dxyzdeta();
+    const auto &dxyzdzeta = fe->get_dxyzdzeta();
 
-    auto qruleType = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
-    libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
-    std::shared_ptr<libMesh::QBase> qrule( (libMesh::QBase::build( qruleType, 3, qruleOrder ) ).release() );
+    auto qruleType  = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
+    auto qruleOrder = feType->default_quadrature_order();
+    std::shared_ptr<libMesh::QBase> qrule(
+        ( libMesh::QBase::build( qruleType, 3, qruleOrder ) ).release() );
 
     fe->attach_quadrature_rule( qrule.get() );
 

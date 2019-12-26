@@ -47,9 +47,10 @@ static void myTest( AMP::UnitTest *ut )
                     "Key ''DISTORT_ELEMENT'' is missing!" );
         bool distortElement = input_db->getScalar<bool>( "DISTORT_ELEMENT" );
 
-        std::shared_ptr<libMesh::Mesh> mesh( new libMesh::Mesh(libMesh::Parallel::Communicator(), 3 ) );
-	libMesh::MeshTools::Generation::build_cube(
-					  ( *( mesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, libMesh::HEX8, false );
+        libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
+        auto mesh = std::make_shared<libMesh::Mesh>( comm, 3 );
+        libMesh::MeshTools::Generation::build_cube(
+            ( *( mesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, libMesh::HEX8, false );
 
         if ( distortElement ) {
             libMesh::Elem *elemPtr = mesh->elem( 0 );
@@ -67,25 +68,22 @@ static void myTest( AMP::UnitTest *ut )
             ( elemPtr->point( 6 ) )( 2 ) += 0.1;
         }
 
-        AMP::Mesh::Mesh::shared_ptr meshAdapter =
-            AMP::Mesh::Mesh::shared_ptr( new AMP::Mesh::libmeshMesh( mesh, "TestMesh" ) );
+        auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "TestMesh" );
 
         AMP_INSIST( input_db->keyExists( "Isotropic_Model" ),
                     "Key ''Isotropic_Model'' is missing!" );
-        std::shared_ptr<AMP::Database> matModel_db = input_db->getDatabase( "Isotropic_Model" );
-        std::shared_ptr<AMP::Operator::MechanicsMaterialModelParameters> matModelParams(
-            new AMP::Operator::MechanicsMaterialModelParameters( matModel_db ) );
-        std::shared_ptr<AMP::Operator::IsotropicElasticModel> isotropicModel(
-            new AMP::Operator::IsotropicElasticModel( matModelParams ) );
+        auto matModel_db = input_db->getDatabase( "Isotropic_Model" );
+        auto matModelParams =
+            std::make_shared<AMP::Operator::MechanicsMaterialModelParameters>( matModel_db );
+        auto isotropicModel =
+            std::make_shared<AMP::Operator::IsotropicElasticModel>( matModelParams );
 
         AMP_INSIST( input_db->keyExists( "Mechanics_Linear_Element" ),
                     "Key ''Mechanics_Linear_Element'' is missing!" );
-        std::shared_ptr<AMP::Database> elemOp_db =
-            input_db->getDatabase( "Mechanics_Linear_Element" );
-        std::shared_ptr<AMP::Operator::ElementOperationParameters> elemOpParams(
-            new AMP::Operator::ElementOperationParameters( elemOp_db ) );
-        std::shared_ptr<AMP::Operator::MechanicsLinearElement> mechLinElem(
-            new AMP::Operator::MechanicsLinearElement( elemOpParams ) );
+        auto elemOp_db = input_db->getDatabase( "Mechanics_Linear_Element" );
+        auto elemOpParams =
+            std::make_shared<AMP::Operator::ElementOperationParameters>( elemOp_db );
+        auto mechLinElem = std::make_shared<AMP::Operator::MechanicsLinearElement>( elemOpParams );
 
         AMP::Discretization::DOFManager::shared_ptr dofMap =
             AMP::Discretization::simpleDOFManager::create(
@@ -93,19 +91,17 @@ static void myTest( AMP::UnitTest *ut )
 
         AMP_INSIST( input_db->keyExists( "Mechanics_Assembly" ),
                     "Key ''Mechanics_Assembly'' is missing!" );
-        std::shared_ptr<AMP::Database> mechAssembly_db =
-            input_db->getDatabase( "Mechanics_Assembly" );
-        std::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechOpParams(
-            new AMP::Operator::MechanicsLinearFEOperatorParameters( mechAssembly_db ) );
+        auto mechAssembly_db = input_db->getDatabase( "Mechanics_Assembly" );
+        auto mechOpParams =
+            std::make_shared<AMP::Operator::MechanicsLinearFEOperatorParameters>( mechAssembly_db );
         mechOpParams->d_materialModel = isotropicModel;
         mechOpParams->d_elemOp        = mechLinElem;
         mechOpParams->d_Mesh          = meshAdapter;
         mechOpParams->d_inDofMap      = dofMap;
         mechOpParams->d_outDofMap     = dofMap;
-        std::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechOp(
-            new AMP::Operator::MechanicsLinearFEOperator( mechOpParams ) );
+        auto mechOp = std::make_shared<AMP::Operator::MechanicsLinearFEOperator>( mechOpParams );
 
-        std::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = mechOp->getMatrix();
+        auto mechMat = mechOp->getMatrix();
 
         for ( int i = 0; i < 24; ++i ) {
             std::vector<size_t> matCols;
@@ -118,8 +114,8 @@ static void myTest( AMP::UnitTest *ut )
             fprintf( fp, "\n" );
         } // end for i
 
-        AMP::Mesh::MeshIterator nd     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-        AMP::Mesh::MeshIterator end_nd = nd.end();
+        auto nd     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        auto end_nd = nd.end();
 
         for ( int i = 0; nd != end_nd; ++nd, ++i ) {
             auto pt = nd->coord();
@@ -145,8 +141,7 @@ static void myTest( AMP::UnitTest *ut )
 int testLinearMechanics_eigenValues( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
-    std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
-        new AMP::Mesh::initializeLibMesh( AMP_COMM_WORLD ) );
+    auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( AMP_COMM_WORLD );
 
     AMP::UnitTest ut;
     myTest( &ut );

@@ -93,8 +93,8 @@ public:
 
     /**
       Computes the deformation gradient at (n+1)-th time step.
-    void computeDeformationGradientLin(const std::vector<std::vector<libMesh::RealGradient> > & dphi,
-        const std::vector<Point> & xyz, unsigned int num_nodes, unsigned int qp, double F[3][3]);
+    void computeDeformationGradientLin(const std::vector<std::vector<libMesh::RealGradient> > &
+    dphi, const std::vector<Point> & xyz, unsigned int num_nodes, unsigned int qp, double F[3][3]);
     */
 
     /**
@@ -122,14 +122,15 @@ protected:
      */
     void apply_Reduced();
 
-    const std::vector<libMesh::Real> *d_JxW; /**< Product of the determinant of Jacobian and the quadrature
-                                    weight at the Gauss points in the current element. */
+    const std::vector<libMesh::Real> *d_JxW; /**< Product of the determinant of Jacobian and the
+                                    quadrature weight at the Gauss points in the current element. */
 
     const std::vector<std::vector<libMesh::RealGradient>>
         *d_dphi; /**< Spatial Derivatives of the shape functions at
                   the Gauss points in the current element. */
 
-    const std::vector<libMesh::Point> *d_xyz; /**< Locations of the Gauss points in the current element. */
+    const std::vector<libMesh::Point>
+        *d_xyz; /**< Locations of the Gauss points in the current element. */
 
     std::vector<std::vector<double>> *d_elementStiffnessMatrix; /**< Element stiffness matrix. */
 

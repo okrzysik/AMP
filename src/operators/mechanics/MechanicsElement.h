@@ -83,9 +83,11 @@ protected:
 
     std::shared_ptr<libMesh::FEBase> d_fe; /**< Finite element shape functions. */
 
-    std::shared_ptr<libMesh::QBase> d_qrule; /**< Quadtrature rule used for numerical integration. */
+    std::shared_ptr<libMesh::QBase>
+        d_qrule; /**< Quadtrature rule used for numerical integration. */
 
-    const libMesh::Elem *d_elem; /**< Pointer to the current element within the finite element assembly. */
+    const libMesh::Elem
+        *d_elem; /**< Pointer to the current element within the finite element assembly. */
 
     std::shared_ptr<MechanicsMaterialModel>
         d_materialModel; /**< Shared pointer to

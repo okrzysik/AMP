@@ -120,10 +120,12 @@ void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
     std::shared_ptr<libMesh::FEType> d_feType( new libMesh::FEType( feTypeOrder, feFamily ) );
-    std::shared_ptr<libMesh::FEBase> d_fe( (libMesh::FEBase::build( 3, ( *d_feType ) ) ).release() );
+    std::shared_ptr<libMesh::FEBase> d_fe(
+        ( libMesh::FEBase::build( 3, ( *d_feType ) ) ).release() );
 
     auto qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-    std::shared_ptr<libMesh::QBase> d_qrule( (libMesh::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
+    std::shared_ptr<libMesh::QBase> d_qrule(
+        ( libMesh::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -160,10 +162,12 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
     std::shared_ptr<libMesh::FEType> d_feType( new libMesh::FEType( feTypeOrder, feFamily ) );
-    std::shared_ptr<libMesh::FEBase> d_fe( (libMesh::FEBase::build( 3, ( *d_feType ) ) ).release() );
+    std::shared_ptr<libMesh::FEBase> d_fe(
+        ( libMesh::FEBase::build( 3, ( *d_feType ) ) ).release() );
 
     auto qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-    std::shared_ptr<libMesh::QBase> d_qrule( (libMesh::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
+    std::shared_ptr<libMesh::QBase> d_qrule(
+        ( libMesh::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 

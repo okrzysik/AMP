@@ -94,12 +94,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         // Note: This must be done inside the loop because libmesh's reinit function doesn't seem to
         // work properly
         std::shared_ptr<libMesh::FEType> feType( new libMesh::FEType( feTypeOrder, feFamily ) );
-        std::shared_ptr<libMesh::FEBase> fe( (libMesh::FEBase::build( 2, ( *feType ) ) ).release() );
+        std::shared_ptr<libMesh::FEBase> fe(
+            ( libMesh::FEBase::build( 2, ( *feType ) ) ).release() );
         const std::vector<std::vector<libMesh::Real>> &phi = fe->get_phi();
         const std::vector<libMesh::Real> &djxw             = fe->get_JxW();
         auto qruleType = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
         libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
-        std::shared_ptr<libMesh::QBase> qrule( (libMesh::QBase::build( qruleType, 2, qruleOrder ) ).release() );
+        std::shared_ptr<libMesh::QBase> qrule(
+            ( libMesh::QBase::build( qruleType, 2, qruleOrder ) ).release() );
         fe->attach_quadrature_rule( qrule.get() );
         libMesh::Elem *currElemPtr = new libMesh::Quad4;
         for ( size_t i = 0; i < nodes.size(); i++ ) {

@@ -165,18 +165,19 @@ void RobinMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &pa
                 AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
                 for ( ; bnd1 != end_bnd1; ++bnd1 ) {
 
-                    std::shared_ptr<libMesh::FEType> d_feType( new libMesh::FEType( d_feTypeOrder, d_feFamily ) );
+                    std::shared_ptr<libMesh::FEType> d_feType(
+                        new libMesh::FEType( d_feTypeOrder, d_feFamily ) );
                     std::shared_ptr<libMesh::FEBase> d_fe(
-                        (libMesh::FEBase::build( 2, ( *d_feType ) ) ).release() );
+                        ( libMesh::FEBase::build( 2, ( *d_feType ) ) ).release() );
 
                     if ( d_qruleOrderName == "DEFAULT" ) {
                         d_qruleOrder = d_feType->default_quadrature_order();
                     } else {
-                        d_qruleOrder =
-                            libMesh::Utility::string_to_enum<libMeshEnums::Order>( d_qruleOrderName );
+                        d_qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>(
+                            d_qruleOrderName );
                     }
                     std::shared_ptr<libMesh::QBase> d_qrule(
-                        (libMesh::QBase::build( d_qruleType, 2, d_qruleOrder ) ).release() );
+                        ( libMesh::QBase::build( d_qruleType, 2, d_qruleOrder ) ).release() );
 
                     // Get the nodes for the element and their global ids
                     std::vector<AMP::Mesh::MeshElement> currNodes =
@@ -211,7 +212,7 @@ void RobinMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &pa
 
                     const std::vector<libMesh::Real> &JxW              = ( *d_JxW );
                     const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
-                    unsigned int numGaussPts                  = d_qrule->n_points();
+                    unsigned int numGaussPts                           = d_qrule->n_points();
 
                     std::vector<std::vector<double>> inputArgs(
                         elementInputVec.size(), std::vector<double>( currNodes.size() ) );

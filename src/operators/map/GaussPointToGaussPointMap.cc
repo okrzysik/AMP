@@ -96,10 +96,11 @@ void GaussPointToGaussPointMap::createIdxMap(
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
     std::string feFamilyName = db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
-    auto feFamily            = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    auto feFamily = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
     std::string qruleTypeName = db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
-    auto qruleType = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    auto qruleType =
+        libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     std::string qruleOrderName = db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
@@ -115,7 +116,8 @@ void GaussPointToGaussPointMap::createIdxMap(
         qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 
-    std::shared_ptr<libMesh::QBase> qrule( (libMesh::QBase::build( qruleType, faceDim, qruleOrder ) ).release() );
+    std::shared_ptr<libMesh::QBase> qrule(
+        ( libMesh::QBase::build( qruleType, faceDim, qruleOrder ) ).release() );
     qrule->init( libMesh::QUAD4, 0 );
 
     unsigned int numGaussPtsPerElem = qrule->n_points();
@@ -159,7 +161,8 @@ void GaussPointToGaussPointMap::createIdxMap(
             elem->set_node( j ) = new libMesh::Node( pt[0], pt[1], pt[2], j );
         } // end for j
 
-        std::shared_ptr<libMesh::FEBase> fe( (libMesh::FEBase::build( faceDim, ( *feType ) ) ).release() );
+        std::shared_ptr<libMesh::FEBase> fe(
+            ( libMesh::FEBase::build( faceDim, ( *feType ) ) ).release() );
         fe->attach_quadrature_rule( qrule.get() );
         fe->reinit( elem );
 
@@ -202,7 +205,8 @@ void GaussPointToGaussPointMap::createIdxMap(
             elem->set_node( j ) = new libMesh::Node( pt[0], pt[1], pt[2], j );
         } // end for j
 
-        std::shared_ptr<libMesh::FEBase> fe( (libMesh::FEBase::build( faceDim, ( *feType ) ) ).release() );
+        std::shared_ptr<libMesh::FEBase> fe(
+            ( libMesh::FEBase::build( faceDim, ( *feType ) ) ).release() );
         fe->attach_quadrature_rule( qrule.get() );
         fe->reinit( elem );
 

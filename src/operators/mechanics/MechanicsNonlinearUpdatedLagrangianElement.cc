@@ -1362,7 +1362,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::computeDeformationGradient(
 void MechanicsNonlinearUpdatedLagrangianElement::initializeReferenceXYZ(
     std::vector<double> &elementRefXYZ )
 {
-  std::vector<libMesh::Point> xyz;
+    std::vector<libMesh::Point> xyz;
 
     d_fe->reinit( d_elem );
 
