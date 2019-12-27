@@ -207,6 +207,7 @@ void GaussPointToGaussPointMap::createIdxMap(
 
         std::shared_ptr<libMesh::FEBase> fe(
             ( libMesh::FEBase::build( faceDim, ( *feType ) ) ).release() );
+        fe->get_xyz();
         fe->attach_quadrature_rule( qrule.get() );
         fe->reinit( elem );
 

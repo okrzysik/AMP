@@ -57,7 +57,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     std::string mesh_file       = input_db->getString( "mesh_file" );
     const unsigned int mesh_dim = 3;
-    libMesh::Parallel::Communicator comm( AMP_COMM_WORLD );
+    libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
     auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
     AMP::readTestMesh( mesh_file, mesh );
     libMesh::MeshCommunication().broadcast( *( mesh.get() ) );

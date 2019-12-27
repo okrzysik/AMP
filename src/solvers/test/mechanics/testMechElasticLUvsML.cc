@@ -47,7 +47,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto input_db           = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    int numMeshes = input_db->getScalar<int>( "NumberOfMeshFiles" );
+    int numMeshes    = input_db->getScalar<int>( "NumberOfMeshFiles" );
     auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
 
     auto ml_db   = input_db->getDatabase( "ML_Solver" );
@@ -64,7 +64,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         auto meshFile = input_db->getString( meshFileKey );
 
         const unsigned int mesh_dim = 3;
-        libMesh::Parallel::Communicator comm( AMP_COMM_WORLD );
+        libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
         auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
 
         if ( globalComm.getRank() == 0 ) {
@@ -77,31 +77,25 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "mesh" );
 
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-        auto bvpOperator =
-            std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-                AMP::Operator::OperatorBuilder::createOperator(
-                    meshAdapter, "BVPOperator", input_db, elementPhysicsModel ) );
+        auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+            AMP::Operator::OperatorBuilder::createOperator(
+                meshAdapter, "BVPOperator", input_db, elementPhysicsModel ) );
 
         auto dispVar = bvpOperator->getOutputVariable();
 
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-        auto loadOperator =
-            std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-                AMP::Operator::OperatorBuilder::createOperator(
-                    meshAdapter, "LoadOperator", input_db, dummyModel ) );
+        auto loadOperator = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+            AMP::Operator::OperatorBuilder::createOperator(
+                meshAdapter, "LoadOperator", input_db, dummyModel ) );
         loadOperator->setVariable( dispVar );
 
-        auto NodalVectorDOF =
-            AMP::Discretization::simpleDOFManager::create(
-                meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
+        auto NodalVectorDOF = AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-        auto solVec =
-            AMP::LinearAlgebra::createVector( NodalVectorDOF, dispVar );
-        auto rhsVec =
-            AMP::LinearAlgebra::createVector( NodalVectorDOF, dispVar );
-        auto resVec =
-            AMP::LinearAlgebra::createVector( NodalVectorDOF, dispVar );
+        auto solVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, dispVar );
+        auto rhsVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, dispVar );
+        auto resVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, dispVar );
 
         rhsVec->zero();
         loadOperator->apply( nullVec, rhsVec );
@@ -117,9 +111,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         globalComm.barrier();
         double luStartTime = AMP::AMP_MPI::time();
 
-        auto luParams = std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( lu_db );
+        auto luParams         = std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( lu_db );
         luParams->d_pOperator = bvpOperator;
-        auto luPC = std::make_shared<AMP::Solver::TrilinosMLSolver>( luParams );
+        auto luPC             = std::make_shared<AMP::Solver::TrilinosMLSolver>( luParams );
 
         auto richParams = std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( rich_db );
         richParams->d_pOperator       = bvpOperator;
@@ -156,15 +150,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         globalComm.barrier();
         double mlStartTime = AMP::AMP_MPI::time();
 
-        auto mlParams = std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( ml_db );
+        auto mlParams         = std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( ml_db );
         mlParams->d_pOperator = bvpOperator;
-        auto mlPC = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlParams );
+        auto mlPC             = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlParams );
 
-        auto cgParams = std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( cg_db );
-        cgParams->d_pOperator       = bvpOperator;
-        cgParams->d_comm            = globalComm;
+        auto cgParams         = std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( cg_db );
+        cgParams->d_pOperator = bvpOperator;
+        cgParams->d_comm      = globalComm;
         cgParams->d_pPreconditioner = mlPC;
-        auto cgSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( cgParams );
+        auto cgSolver               = std::make_shared<AMP::Solver::PetscKrylovSolver>( cgParams );
         cgSolver->setZeroInitialGuess( true );
 
         cgSolver->solve( rhsVec, solVec );

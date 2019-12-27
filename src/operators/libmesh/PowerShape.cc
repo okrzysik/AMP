@@ -306,6 +306,7 @@ void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
         const unsigned int dimension = 3;
         d_feType.reset( new libMesh::FEType( feTypeOrder, feFamily ) );
         d_fe.reset( ( libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
+        d_fe->get_xyz();
         std::string qruleOrderName = d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
         libMeshEnums::Order qruleOrder;
         if ( qruleOrderName == "DEFAULT" ) {
@@ -356,7 +357,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         return;
     }
 
-    std::vector<double> min_max_pos = d_Mesh->getBoundingBox();
+    auto min_max_pos = d_Mesh->getBoundingBox();
 
     xmin    = min_max_pos[0];
     xmax    = min_max_pos[1];
@@ -372,17 +373,16 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     int DOFsPerElement = 8;
     int ghostWidth     = 0;
     bool split         = true;
-    AMP::Discretization::DOFManager::shared_ptr dof_map =
-        AMP::Discretization::simpleDOFManager::create(
-            d_Mesh, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
+    auto dof_map       = AMP::Discretization::simpleDOFManager::create(
+        d_Mesh, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
 
     // Create a shared pointer to a Variable - Power - Output because it will be used in the
     // "residual" location of
     // apply.
     r->setToScalar( 1. );
 
-    AMP::Mesh::MeshIterator elem = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
-    AMP::Mesh::MeshIterator end_elems = elem.end();
+    auto elem      = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
+    auto end_elems = elem.end();
 
     if ( d_coordinateSystem == "cartesian" ) {
 

@@ -136,7 +136,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
     auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
 
     const int mesh_dim = 3;
-    libMesh::Parallel::Communicator comm( AMP_COMM_WORLD );
+    libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
     auto fusedMesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
 
     AMP::readTestMesh( mesh_file, fusedMesh );
@@ -400,7 +400,7 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
     auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
 
     const int mesh_dim = 3;
-    libMesh::Parallel::Communicator comm( AMP_COMM_WORLD );
+    libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
     auto firstFusedMesh  = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
     auto secondFusedMesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
 

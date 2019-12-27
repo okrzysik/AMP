@@ -261,9 +261,10 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
         auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-        std::shared_ptr<libMesh::FEType> d_feType( new libMesh::FEType( feTypeOrder, feFamily ) );
+        auto d_feType = std::make_shared<libMesh::FEType>( feTypeOrder, feFamily );
         std::shared_ptr<libMesh::FEBase> d_fe(
             ( libMesh::FEBase::build( 2, ( *d_feType ) ) ).release() );
+        d_fe->get_xyz();
 
         auto qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
         std::shared_ptr<libMesh::QBase> d_qrule(

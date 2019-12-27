@@ -238,7 +238,6 @@ public:
 protected:
     std::shared_ptr<libMesh::Parallel::Communicator> libMeshComm;
     std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
-
 };
 
 

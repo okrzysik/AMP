@@ -33,7 +33,8 @@ ENABLE_WARNINGS
 static void calculateGrad( AMP::UnitTest *ut )
 {
     const unsigned int mesh_dim = 3;
-    libMesh::Parallel::Communicator comm( AMP_COMM_WORLD );
+    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+    libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
     auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
 
     AMP::readTestMesh( "distortedElementMesh", mesh );
