@@ -133,8 +133,8 @@ libmeshMesh::libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh, const std::string
     // Set the base properties
     d_libMesh = mesh;
 #ifdef USE_EXT_MPI
-    this->d_comm = AMP_MPI( (MPI_Comm) libMesh::Parallel::Communicator().get() );
-    AMP_ASSERT( d_comm != AMP_MPI( AMP_COMM_NULL ) );
+    this->d_comm = AMP_MPI( mesh->comm().get() );
+    AMP_ASSERT( !d_comm.isNull() );
 #else
     this->d_comm = AMP_MPI( AMP_COMM_SELF );
 #endif
@@ -181,10 +181,10 @@ void libmeshMesh::initialize()
 {
     PROFILE_START( "initialize" );
     // Verify libmesh's rank and size agrees with the rank and size of the comm of the mesh
-    AMP_INSIST( (int) d_libMesh->processor_id() == d_comm.getRank(),
-                "rank of the mesh does not agree with libmesh" );
     AMP_INSIST( (int) d_libMesh->n_processors() == d_comm.getSize(),
                 "size of the mesh does not agree with libmesh" );
+    AMP_INSIST( (int) d_libMesh->processor_id() == d_comm.getRank(),
+                "rank of the mesh does not agree with libmesh" );
     // Count the elements
     n_local  = std::vector<size_t>( PhysicalDim + 1, 0 );
     n_global = std::vector<size_t>( PhysicalDim + 1, 0 );
