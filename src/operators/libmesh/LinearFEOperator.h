@@ -81,7 +81,7 @@ protected:
 
     std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
-    ::Elem *d_currElemPtr;
+    libMesh::Elem *d_currElemPtr;
 
     std::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
     std::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;

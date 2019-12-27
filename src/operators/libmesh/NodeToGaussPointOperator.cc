@@ -44,13 +44,13 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
         d_iterator = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     }
     // Initialize some libmesh variables
-    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-    auto qruleOrder  = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-    auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
-    auto qtype       = libMesh::Utility::string_to_enum<QuadratureType>( "QGAUSS" );
-    libMesh::AutoPtr<libMesh::FEType> feType( new libMesh::FEType( feTypeOrder, feFamily ) );
-    libMesh::AutoPtr<libMesh::QBase> qrule   = libMesh::QBase::build( qtype, d_dim, qruleOrder );
-    libMesh::AutoPtr<libMesh::FEBase> febase = libMesh::FEBase::build( d_dim, *feType );
+    auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+    auto qruleOrder  = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
+    auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+    auto qtype       = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
+    auto feType( new libMesh::FEType( feTypeOrder, feFamily ) );
+    auto qrule  = libMesh::QBase::build( qtype, d_dim, qruleOrder );
+    auto febase = libMesh::FEBase::build( d_dim, *feType );
     febase->attach_quadrature_rule( qrule.get() );
     // Cache data for all elements (improves performance)
     d_nodes.resize( d_iterator.size() );
@@ -69,7 +69,7 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
         libMesh::Elem *elem =
             AMP::Discretization::createLibmeshElements::createElement( *iterator );
         febase->reinit( elem );
-        const std::vector<std::vector<Real>> &phi = febase->get_phi();
+        const std::vector<std::vector<libMesh::Real>> &phi = febase->get_phi();
         AMP_ASSERT( d_nodes[i].size() == N_nodes );
         d_N_quad[i] = phi[0].size();
         d_phi[i].resize( d_N_quad[i] * N_nodes, 0 );

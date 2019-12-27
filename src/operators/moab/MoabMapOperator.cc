@@ -193,11 +193,11 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
     for ( ; elem != elem.end(); ++elem ) {
         std::vector<AMP::Mesh::MeshElement> currNodes;
         currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
-        ::Elem *currElemPtr;
-        currElemPtr = new ::Hex8;
+        libMesh::Elem *currElemPtr;
+        currElemPtr = new libMesh::Hex8;
         for ( size_t j = 0; j < currNodes.size(); j++ ) {
             std::vector<double> pt     = currNodes[j].coord();
-            currElemPtr->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
+            currElemPtr->set_node( j ) = new libMesh::Node( pt[0], pt[1], pt[2], j );
         } // end for j
 
         // Initialize FEBase for this object

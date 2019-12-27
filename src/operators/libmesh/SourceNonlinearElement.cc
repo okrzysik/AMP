@@ -26,21 +26,23 @@ SourceNonlinearElement::SourceNonlinearElement(
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
     auto feTypeOrderName = params->d_db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
-    auto feTypeOrder     = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+    auto feTypeOrder     = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
     auto feFamilyName = params->d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
-    auto feFamily     = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    auto feFamily     = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
     auto qruleTypeName = params->d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
-    auto qruleType     = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    auto qruleType =
+        libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     d_integrateVolume = params->d_db->getWithDefault( "INTEGRATEVOLUME", true );
 
     const unsigned int dimension = 3;
 
-    d_feType.reset( new ::FEType( feTypeOrder, feFamily ) );
+    d_feType.reset( new libMesh::FEType( feTypeOrder, feFamily ) );
 
-    d_fe.reset( (::FEBase::build( dimension, ( *d_feType ) ) ).release() );
+    d_fe.reset( ( libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
+    d_fe->get_xyz();
 
     std::string qruleOrderName =
         ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
@@ -50,10 +52,10 @@ SourceNonlinearElement::SourceNonlinearElement(
     if ( qruleOrderName == "DEFAULT" ) {
         qruleOrder = d_feType->default_quadrature_order();
     } else {
-        qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
+        qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 
-    d_qrule.reset( (::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
+    d_qrule.reset( ( libMesh::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -69,7 +71,7 @@ SourceNonlinearElement::SourceNonlinearElement(
 
 
 void SourceNonlinearElement::initializeForCurrentElement(
-    const ::Elem *elem, const std::shared_ptr<SourcePhysicsModel> &sourcePhysicsModel )
+    const libMesh::Elem *elem, const std::shared_ptr<SourcePhysicsModel> &sourcePhysicsModel )
 {
     d_elem = elem;
 
@@ -85,17 +87,17 @@ void SourceNonlinearElement::apply()
     PROFILE_START( "apply", 5 );
 
     d_fe->reinit( d_elem );
-    const unsigned int n_nodes                = d_elem->n_nodes();
-    const unsigned int n_points               = d_qrule->n_points();
-    const std::vector<Real> &JxW              = ( *d_JxW );
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
-    // const std::vector<std::vector<RealGradient> > & dphi = (*d_dphi);
+    const unsigned int n_nodes                         = d_elem->n_nodes();
+    const unsigned int n_points                        = d_qrule->n_points();
+    const std::vector<libMesh::Real> &JxW              = ( *d_JxW );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
+    // const std::vector<std::vector<libMesh::RealGradient> > & dphi = (*d_dphi);
     // std::vector<std::vector<double> > & elementInputVector = d_elementInputVector;
     std::vector<double> &elementOutputVector = ( *d_elementOutputVector );
     std::vector<double> source_physics( static_cast<int>( n_points ) );
     std::vector<std::vector<double>> source_vectors( d_elementInputVector.size() );
     std::vector<std::vector<double>> auxillary_vectors( d_elementAuxVector.size() );
-    const std::vector<Point> &coordinates = d_fe->get_xyz();
+    const auto &coordinates = d_fe->get_xyz();
 
     if ( d_isInputType == "IntegrationPointScalar" ) {
 

@@ -7,9 +7,9 @@ namespace Operator {
 
 void MassLinearElement::apply()
 {
-    const std::vector<Real> &JxW = ( *d_JxW );
+    const std::vector<libMesh::Real> &JxW = ( *d_JxW );
 
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
 
     std::vector<std::vector<double>> &elementMassMatrix = ( *d_elementMassMatrix );
 
@@ -59,7 +59,7 @@ void MassLinearElement::apply()
         }
     } else {
         std::vector<double> nodalDensity( num_local_dofs );
-        std::vector<Point> elem_nodes;
+        std::vector<libMesh::Point> elem_nodes;
         switch ( d_equation ) {
         case MassDensityModel::MassEquation::Mechanics:
             d_densityModel->getDensityMechanics(

@@ -1,9 +1,10 @@
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
 #include "AMP/ampmesh/MultiIterator.h"
 #include "AMP/ampmesh/libmesh/initializeLibMesh.h"
-#include "AMP/ampmesh/libmesh/libMeshElement.h"
-#include "AMP/ampmesh/libmesh/libMeshIterator.h"
+#include "AMP/ampmesh/libmesh/libmeshElemIterator.h"
+#include "AMP/ampmesh/libmesh/libmeshMeshElement.h"
+#include "AMP/ampmesh/libmesh/libmeshNodeIterator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
@@ -27,7 +28,6 @@ DISABLE_WARNINGS
 #include "libmesh/elem.h"
 #include "libmesh/exodusII_io_helper.h"
 #include "libmesh/mesh.h"
-#include "libmesh/mesh_data.h"
 #include "libmesh/mesh_generation.h"
 #include "libmesh/parallel.h"
 ENABLE_WARNINGS
@@ -40,7 +40,7 @@ namespace Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_in )
+libmeshMesh::libmeshMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_in )
 {
     PROFILE_START( "constructor" );
     this->d_max_gcw = 1;
@@ -48,7 +48,8 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     AMP_INSIST( d_params.get(), "Params must not be null" );
     AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ), "Communicator must be set" );
     // Intialize libMesh
-    libmeshInit = std::make_shared<initializeLibMesh>( d_comm );
+    d_libMeshComm = std::make_shared<libMesh::Parallel::Communicator>( d_comm.getCommunicator() );
+    libmeshInit   = std::make_shared<initializeLibMesh>( d_comm );
     // Load the mesh
     if ( d_db.get() ) {
         // Database exists
@@ -59,7 +60,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
         AMP_INSIST( PhysicalDim > 0 && PhysicalDim < 10, "Invalid dimension" );
         GeomDim = (GeomType) PhysicalDim;
         // Create the libMesh objects
-        d_libMesh = std::make_shared<::Mesh>( PhysicalDim );
+        d_libMesh = std::make_shared<libMesh::Mesh>( *d_libMeshComm, PhysicalDim );
         if ( d_db->keyExists( "FileName" ) ) {
             // Read an existing mesh
             d_libMesh->read( d_db->getString( "FileName" ) );
@@ -85,17 +86,17 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
                 auto xmax = d_db->getVector<double>( "xmax" );
                 AMP_INSIST( xmax.size() == (size_t) PhysicalDim,
                             "Variable 'xmax' must by an integer array of size dim" );
-                MeshTools::Generation::build_cube( *d_libMesh,
-                                                   size[0],
-                                                   size[1],
-                                                   size[2],
-                                                   xmin[0],
-                                                   xmax[0],
-                                                   xmin[1],
-                                                   xmax[1],
-                                                   xmin[2],
-                                                   xmax[2],
-                                                   HEX8 );
+                libMesh::MeshTools::Generation::build_cube( *d_libMesh,
+                                                            size[0],
+                                                            size[1],
+                                                            size[2],
+                                                            xmin[0],
+                                                            xmax[0],
+                                                            xmin[1],
+                                                            xmax[1],
+                                                            xmin[2],
+                                                            xmax[2],
+                                                            libMesh::HEX8 );
             } else {
                 AMP_ERROR( std::string( "Unknown libmesh generator: " ) + generator );
             }
@@ -127,13 +128,13 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     AMP_ASSERT( !globalRanks.empty() );
     PROFILE_STOP( "constructor" );
 }
-libMesh::libMesh( std::shared_ptr<::Mesh> mesh, const std::string &name )
+libmeshMesh::libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh, const std::string &name )
 {
     // Set the base properties
     d_libMesh = mesh;
 #ifdef USE_EXT_MPI
-    this->d_comm = AMP_MPI( ( MPI_Comm )::Parallel::Communicator_World.get() );
-    AMP_ASSERT( d_comm != AMP_MPI( AMP_COMM_NULL ) );
+    this->d_comm = AMP_MPI( mesh->comm().get() );
+    AMP_ASSERT( !d_comm.isNull() );
 #else
     this->d_comm = AMP_MPI( AMP_COMM_SELF );
 #endif
@@ -150,7 +151,7 @@ libMesh::libMesh( std::shared_ptr<::Mesh> mesh, const std::string &name )
 /********************************************************
  * De-constructor                                        *
  ********************************************************/
-libMesh::~libMesh()
+libmeshMesh::~libmeshMesh()
 {
     // First we need to destroy the elements, surface sets, and boundary sets
     d_localElements.clear();
@@ -167,23 +168,23 @@ libMesh::~libMesh()
 /********************************************************
  * Function to copy the mesh                             *
  ********************************************************/
-std::shared_ptr<Mesh> libMesh::clone() const
+std::shared_ptr<Mesh> libmeshMesh::clone() const
 {
-    return std::shared_ptr<Mesh>( new libMesh( *this ) );
+    return std::shared_ptr<Mesh>( new libmeshMesh( *this ) );
 }
 
 
 /********************************************************
- * Function to initialize the libMesh object             *
+ * Function to initialize the libmeshMesh object             *
  ********************************************************/
-void libMesh::initialize()
+void libmeshMesh::initialize()
 {
     PROFILE_START( "initialize" );
     // Verify libmesh's rank and size agrees with the rank and size of the comm of the mesh
-    AMP_INSIST( (int) d_libMesh->processor_id() == d_comm.getRank(),
-                "rank of the mesh does not agree with libmesh" );
     AMP_INSIST( (int) d_libMesh->n_processors() == d_comm.getSize(),
                 "size of the mesh does not agree with libmesh" );
+    AMP_INSIST( (int) d_libMesh->processor_id() == d_comm.getRank(),
+                "rank of the mesh does not agree with libmesh" );
     // Count the elements
     n_local  = std::vector<size_t>( PhysicalDim + 1, 0 );
     n_global = std::vector<size_t>( PhysicalDim + 1, 0 );
@@ -232,7 +233,7 @@ void libMesh::initialize()
     auto node_pos = d_libMesh->local_nodes_begin();
     auto node_end = d_libMesh->local_nodes_end();
     while ( node_pos != node_end ) {
-        ::Node *node = *node_pos;
+        libMesh::Node *node = *node_pos;
         for ( int i = 0; i < PhysicalDim; i++ ) {
             double x = ( *node )( i );
             if ( x < d_box_local[2 * i + 0] ) {
@@ -253,7 +254,7 @@ void libMesh::initialize()
     d_libMesh->find_neighbors();
     // Construct the node neighbor information
     neighborNodeIDs = std::vector<unsigned int>( n_local[0], (unsigned int) -1 );
-    neighborNodes   = std::vector<std::vector<::Node *>>( n_local[0] );
+    neighborNodes   = std::vector<std::vector<libMesh::Node *>>( n_local[0] );
     node_pos        = d_libMesh->local_nodes_begin();
     node_end        = d_libMesh->local_nodes_end();
     size_t i        = 0;
@@ -271,7 +272,7 @@ void libMesh::initialize()
     while ( elem_pos != elem_end ) {
         auto elem = elem_pos.operator*();
         for ( i = 0; i < elem->n_nodes(); i++ ) {
-            auto node = elem->get_node( i );
+            auto node = elem->node_ptr( i );
             int p_id  = node->processor_id();
             if ( p_id == rank ) {
                 int j = AMP::Utilities::findfirst( neighborNodeIDs, node->id() );
@@ -279,7 +280,7 @@ void libMesh::initialize()
                 for ( unsigned int k = 0; k < elem->n_nodes(); k++ ) {
                     if ( k == i )
                         continue;
-                    ::Node *node2 = elem->get_node( k );
+                    libMesh::Node *node2 = elem->node_ptr( k );
                     tmpNeighborNodes[j].insert( node2->id() );
                 }
             }
@@ -287,7 +288,7 @@ void libMesh::initialize()
         ++elem_pos;
     }
     for ( i = 0; i < neighborNodeIDs.size(); i++ ) {
-        neighborNodes[i] = std::vector<::Node *>( tmpNeighborNodes[i].size() );
+        neighborNodes[i] = std::vector<libMesh::Node *>( tmpNeighborNodes[i].size() );
         int j            = 0;
         for ( auto it = tmpNeighborNodes[i].begin(); it != tmpNeighborNodes[i].end(); ++it ) {
             neighborNodes[i][j] = d_libMesh->node_ptr( *it );
@@ -334,10 +335,8 @@ void libMesh::initialize()
                 N_ghost++;
             }
         }
-        AMP::Utilities::quicksort(
-            *local_elements ); // Make sure the elments are sorted for searching
-        AMP::Utilities::quicksort(
-            *ghost_elements ); // Make sure the elments are sorted for searching
+        AMP::Utilities::quicksort( *local_elements ); // Sort elements for searching
+        AMP::Utilities::quicksort( *ghost_elements ); // Sort elements for searching
         auto local_pair = std::make_pair( type, local_elements );
         auto ghost_pair = std::make_pair( type, ghost_elements );
         d_localElements.insert( local_pair );
@@ -362,10 +361,10 @@ void libMesh::initialize()
         std::vector<std::shared_ptr<std::vector<MeshElement>>>( (int) GeomDim + 1 );
     elem_pos = d_libMesh->elements_begin();
     elem_end = d_libMesh->elements_end();
-    std::set<::Elem *> localBoundaryElements;
-    std::set<::Elem *> ghostBoundaryElements;
-    std::set<::Node *> localBoundaryNodes;
-    std::set<::Node *> ghostBoundaryNodes;
+    std::set<libMesh::Elem *> localBoundaryElements;
+    std::set<libMesh::Elem *> ghostBoundaryElements;
+    std::set<libMesh::Node *> localBoundaryNodes;
+    std::set<libMesh::Node *> ghostBoundaryNodes;
     while ( elem_pos != elem_end ) {
         auto element = *elem_pos;
         if ( element->on_boundary() ) {
@@ -374,10 +373,10 @@ void libMesh::initialize()
             else
                 ghostBoundaryElements.insert( element );
             for ( unsigned int i = 0; i < element->n_sides(); i++ ) {
-                if ( element->neighbor( i ) == nullptr ) {
-                    auto side = element->build_side( i );
+                if ( element->neighbor_ptr( i ) == nullptr ) {
+                    auto side = element->build_side_ptr( i );
                     for ( unsigned int j = 0; j < side->n_nodes(); j++ ) {
-                        auto node = side->get_node( j );
+                        auto node = side->node_ptr( j );
                         if ( (int) node->processor_id() == rank )
                             localBoundaryNodes.insert( node );
                         else
@@ -393,8 +392,8 @@ void libMesh::initialize()
         std::make_shared<std::vector<MeshElement>>( localBoundaryElements.size() );
     auto elem_iterator = localBoundaryElements.begin();
     for ( size_t i = 0; i < localBoundaryElements.size(); i++ ) {
-        ( *d_localSurfaceElements[GeomDim2] )[i] =
-            libMeshElement( PhysicalDim, GeomDim, (void *) *elem_iterator, rank, d_meshID, this );
+        ( *d_localSurfaceElements[GeomDim2] )[i] = libmeshMeshElement(
+            PhysicalDim, GeomDim, (void *) *elem_iterator, rank, d_meshID, this );
         ++elem_iterator;
     }
     AMP::Utilities::quicksort( *d_localSurfaceElements[GeomDim2] );
@@ -402,8 +401,8 @@ void libMesh::initialize()
         std::make_shared<std::vector<MeshElement>>( ghostBoundaryElements.size() );
     elem_iterator = ghostBoundaryElements.begin();
     for ( size_t i = 0; i < ghostBoundaryElements.size(); i++ ) {
-        ( *d_ghostSurfaceElements[GeomDim2] )[i] =
-            libMeshElement( PhysicalDim, GeomDim, (void *) *elem_iterator, rank, d_meshID, this );
+        ( *d_ghostSurfaceElements[GeomDim2] )[i] = libmeshMeshElement(
+            PhysicalDim, GeomDim, (void *) *elem_iterator, rank, d_meshID, this );
         ++elem_iterator;
     }
     AMP::Utilities::quicksort( *d_ghostSurfaceElements[GeomDim2] );
@@ -411,7 +410,7 @@ void libMesh::initialize()
         std::make_shared<std::vector<MeshElement>>( localBoundaryNodes.size() );
     auto node_iterator = localBoundaryNodes.begin();
     for ( size_t i = 0; i < localBoundaryNodes.size(); i++ ) {
-        ( *d_localSurfaceElements[0] )[i] = libMeshElement(
+        ( *d_localSurfaceElements[0] )[i] = libmeshMeshElement(
             PhysicalDim, GeomType::Vertex, (void *) *node_iterator, rank, d_meshID, this );
         ++node_iterator;
     }
@@ -420,7 +419,7 @@ void libMesh::initialize()
         std::make_shared<std::vector<MeshElement>>( ghostBoundaryNodes.size() );
     node_iterator = ghostBoundaryNodes.begin();
     for ( size_t i = 0; i < ghostBoundaryNodes.size(); i++ ) {
-        ( *d_ghostSurfaceElements[0] )[i] = libMeshElement(
+        ( *d_ghostSurfaceElements[0] )[i] = libmeshMeshElement(
             PhysicalDim, GeomType::Vertex, (void *) *node_iterator, rank, d_meshID, this );
         ++node_iterator;
     }
@@ -518,8 +517,8 @@ void libMesh::initialize()
     elem_pos = d_libMesh->elements_begin();
     elem_end = d_libMesh->elements_end();
     while ( elem_pos != elem_end ) {
-        ::Elem *element = *elem_pos;
-        int id          = element->subdomain_id();
+        libMesh::Elem *element = *elem_pos;
+        int id                 = element->subdomain_id();
         block_ids.insert( id );
         ++elem_pos;
     }
@@ -531,13 +530,18 @@ void libMesh::initialize()
         block_ids.insert( elem );
     d_block_ids = std::vector<int>( block_ids.begin(), block_ids.end() );
     PROFILE_STOP( "initialize" );
+    // Test getting some common iterators
+    auto it1 = getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto it2 = getIterator( this->GeomDim, 0 );
+    AMP_ASSERT( it1.size() == n_local[0] );
+    AMP_ASSERT( it2.size() == n_local[static_cast<int>( this->GeomDim )] );
 }
 
 
 /********************************************************
  * Function to estimate the mesh size                    *
  ********************************************************/
-size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
+size_t libmeshMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     auto database = params->getDatabase();
     AMP_ASSERT( database.get() != nullptr );
@@ -549,8 +553,8 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         // Read an existing mesh
         auto fname = database->getString( "FileName" );
         if ( fname.rfind( ".exd" ) < fname.size() || fname.rfind( ".e" ) < fname.size() ) {
-            ::Parallel::Communicator comm;
-            ::ExodusII_IO_Helper exio_helper( comm, false, true );
+            libMesh::Parallel::Communicator comm;
+            libMesh::ExodusII_IO_Helper exio_helper( comm, false, true );
             exio_helper.open( fname.c_str(), true ); // Open the exodus file, if possible
             exio_helper.read_header();               // Read the header
             exio_helper.close();                     // Close the file
@@ -588,7 +592,7 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 /****************************************************************
  * Estimate the maximum number of processors                     *
  ****************************************************************/
-size_t libMesh::maxProcs( const MeshParameters::shared_ptr &params )
+size_t libmeshMesh::maxProcs( const MeshParameters::shared_ptr &params )
 {
     return estimateMeshSize( params );
 }
@@ -597,21 +601,21 @@ size_t libMesh::maxProcs( const MeshParameters::shared_ptr &params )
 /********************************************************
  * Return the number of elements                         *
  ********************************************************/
-size_t libMesh::numLocalElements( const GeomType type ) const
+size_t libmeshMesh::numLocalElements( const GeomType type ) const
 {
     auto n = n_local[static_cast<int>( type )];
     if ( n == static_cast<size_t>( -1 ) )
         AMP_ERROR( "numLocalElements is not implimented for this type" );
     return n;
 }
-size_t libMesh::numGlobalElements( const GeomType type ) const
+size_t libmeshMesh::numGlobalElements( const GeomType type ) const
 {
     auto n = n_global[static_cast<int>( type )];
     if ( n == static_cast<size_t>( -1 ) )
         AMP_ERROR( "numLocalElements is not implimented for this type" );
     return n;
 }
-size_t libMesh::numGhostElements( const GeomType type, int gcw ) const
+size_t libmeshMesh::numGhostElements( const GeomType type, int gcw ) const
 {
     if ( gcw == 0 )
         return 0;
@@ -627,19 +631,19 @@ size_t libMesh::numGhostElements( const GeomType type, int gcw ) const
 /********************************************************
  * Return an iterator over the given geometric type      *
  ********************************************************/
-MeshIterator libMesh::getIterator( const GeomType type, const int gcw ) const
+MeshIterator libmeshMesh::getIterator( const GeomType type, const int gcw ) const
 {
-    libMeshIterator iterator;
+    MeshIterator it;
     if ( static_cast<int>( type ) == PhysicalDim ) {
         // This is a libMesh element
         if ( gcw == 0 ) {
             auto begin = d_libMesh->local_elements_begin();
             auto end   = d_libMesh->local_elements_end();
-            iterator   = libMeshIterator( 1, this, gcw, &begin, &end, &begin );
+            it         = libmeshElemIterator( this, gcw, begin, end, begin );
         } else if ( gcw == 1 ) {
             auto begin = d_libMesh->elements_begin();
             auto end   = d_libMesh->elements_end();
-            iterator   = libMeshIterator( 1, this, gcw, &begin, &end, &begin );
+            it         = libmeshElemIterator( this, gcw, begin, end, begin );
         } else {
             AMP_ERROR( "Unsupported ghost cell width" );
         }
@@ -648,11 +652,11 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw ) const
         if ( gcw == 0 ) {
             auto begin = d_libMesh->local_nodes_begin();
             auto end   = d_libMesh->local_nodes_end();
-            iterator   = libMeshIterator( 0, this, gcw, &begin, &end, &begin );
+            it         = libmeshNodeIterator( this, gcw, begin, end, begin );
         } else if ( gcw == 1 ) {
             auto begin = d_libMesh->nodes_begin();
             auto end   = d_libMesh->nodes_end();
-            iterator   = libMeshIterator( 0, this, gcw, &begin, &end, &begin );
+            it         = libmeshNodeIterator( this, gcw, begin, end, begin );
         } else {
             AMP_ERROR( "Unsupported ghost cell width" );
         }
@@ -662,23 +666,22 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw ) const
         if ( gcw == 0 ) {
             it1 = d_localElements.find( type );
             if ( it1 == d_localElements.end() )
-                AMP_ERROR( "Internal error in libMesh::getIterator" );
-            return MultiVectorIterator( it1->second, 0 );
+                AMP_ERROR( "Internal error in libmeshMesh::getIterator" );
+            it = MultiVectorIterator( it1->second, 0 );
         } else if ( gcw == 1 ) {
             it1 = d_localElements.find( type );
             it2 = d_ghostElements.find( type );
             if ( it1 == d_localElements.end() || it2 == d_ghostElements.end() )
-                AMP_ERROR( "Internal error in libMesh::getIterator" );
+                AMP_ERROR( "Internal error in libmeshMesh::getIterator" );
             std::vector<MeshIterator> iterators( 2 );
             iterators[0] = MultiVectorIterator( it1->second, 0 );
             iterators[1] = MultiVectorIterator( it2->second, 0 );
-            return MultiIterator( iterators, 0 );
+            it           = MultiIterator( iterators, 0 );
         } else {
             AMP_ERROR( "Unsupported ghost cell width" );
         }
     }
-    MeshIterator test = iterator;
-    return test;
+    return it;
 }
 
 
@@ -686,7 +689,7 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw ) const
  * Return an iterator over the given boundary ids        *
  * Note: we have not programmed this for ghosts yet      *
  ********************************************************/
-MeshIterator libMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
+MeshIterator libmeshMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
     AMP_ASSERT( type <= GeomDim );
     auto local = d_localSurfaceElements[(int) type];
@@ -711,7 +714,7 @@ MeshIterator libMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
  * Return an iterator over the given boundary ids        *
  * Note: we have not programmed this for ghosts yet      *
  ********************************************************/
-std::vector<int> libMesh::getBoundaryIDs() const
+std::vector<int> libmeshMesh::getBoundaryIDs() const
 {
     auto libmesh_bids = d_libMesh->boundary_info->get_boundary_ids();
     std::vector<int> bids( libmesh_bids.size(), 0 );
@@ -723,7 +726,7 @@ std::vector<int> libMesh::getBoundaryIDs() const
     return bids;
 }
 MeshIterator
-libMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw ) const
+libmeshMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw ) const
 {
     AMP_INSIST( gcw == 0, "Iterator over ghost boundary elements is not supported yet" );
     auto mapid = std::pair<int, GeomType>( id, type );
@@ -738,8 +741,8 @@ libMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
 /********************************************************
  * Return an iterator over the given block ids           *
  ********************************************************/
-std::vector<int> libMesh::getBlockIDs() const { return d_block_ids; }
-MeshIterator libMesh::getBlockIDIterator( const GeomType, const int, const int ) const
+std::vector<int> libmeshMesh::getBlockIDs() const { return d_block_ids; }
+MeshIterator libmeshMesh::getBlockIDIterator( const GeomType, const int, const int ) const
 {
     AMP_ERROR( "getBoundaryIDIterator is not implimented yet" );
     return MeshIterator();
@@ -749,7 +752,7 @@ MeshIterator libMesh::getBlockIDIterator( const GeomType, const int, const int )
 /********************************************************
  * Return pointers to the neighbor nodes give a node id  *
  ********************************************************/
-std::vector<::Node *> libMesh::getNeighborNodes( const MeshElementID &id ) const
+std::vector<libMesh::Node *> libmeshMesh::getNeighborNodes( const MeshElementID &id ) const
 {
     AMP_INSIST( id.type() == GeomType::Vertex, "This function is for nodes" );
     AMP_INSIST( id.meshID() == d_meshID, "Unknown mesh" );
@@ -763,7 +766,7 @@ std::vector<::Node *> libMesh::getNeighborNodes( const MeshElementID &id ) const
 /********************************************************
  * Function to return the element given an ID            *
  ********************************************************/
-MeshElement libMesh::getElement( const MeshElementID &elem_id ) const
+MeshElement libmeshMesh::getElement( const MeshElementID &elem_id ) const
 {
     MeshID mesh_id = elem_id.meshID();
     AMP_INSIST( mesh_id == d_meshID, "mesh id must match the mesh id of the element" );
@@ -771,11 +774,13 @@ MeshElement libMesh::getElement( const MeshElementID &elem_id ) const
     if ( (int) elem_id.type() == PhysicalDim ) {
         // This is a libMesh element
         auto element = d_libMesh->elem( elem_id.local_id() );
-        return libMeshElement( PhysicalDim, elem_id.type(), (void *) element, rank, mesh_id, this );
+        return libmeshMeshElement(
+            PhysicalDim, elem_id.type(), (void *) element, rank, mesh_id, this );
     } else if ( elem_id.type() == GeomType::Vertex ) {
         // This is a libMesh node
         auto node = d_libMesh->node_ptr( elem_id.local_id() );
-        return libMeshElement( PhysicalDim, elem_id.type(), (void *) node, rank, mesh_id, this );
+        return libmeshMeshElement(
+            PhysicalDim, elem_id.type(), (void *) node, rank, mesh_id, this );
     }
     // All other types are stored in sorted lists
     std::shared_ptr<std::vector<MeshElement>> list;
@@ -810,8 +815,8 @@ MeshElement libMesh::getElement( const MeshElementID &elem_id ) const
 /********************************************************
  * Displace a mesh                                       *
  ********************************************************/
-Mesh::Movable libMesh::isMeshMovable() const { return Mesh::Movable::Displace; }
-void libMesh::displaceMesh( const std::vector<double> &x_in )
+Mesh::Movable libmeshMesh::isMeshMovable() const { return Mesh::Movable::Displace; }
+void libmeshMesh::displaceMesh( const std::vector<double> &x_in )
 {
     // Check x
     AMP_INSIST( (short int) x_in.size() == PhysicalDim,
@@ -838,7 +843,7 @@ void libMesh::displaceMesh( const std::vector<double> &x_in )
     }
 }
 #ifdef USE_AMP_VECTORS
-void libMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
+void libmeshMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
 #ifdef USE_AMP_DISCRETIZATION
     // Create the position vector with the necessary ghost nodes
@@ -893,7 +898,7 @@ void libMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
     node_cur = d_libMesh->local_nodes_begin();
     node_end = d_libMesh->local_nodes_end();
     while ( node_cur != node_end ) {
-        ::Node *node = *node_cur;
+        libMesh::Node *node = *node_cur;
         for ( int i = 0; i < PhysicalDim; i++ ) {
             double x = ( *node )( i );
             if ( x < d_box_local[2 * i + 0] ) {

@@ -157,7 +157,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
         std::vector<size_t> gid;
         DOF->getDOFs( iterator->globalID(), gid );
         std::vector<double> srcVal( 1 ), dumT( 1 ), dumU( 1 ), dumB( 1 );
-        std::vector<Point> point( 1, Point( x, y, z ) );
+        std::vector<libMesh::Point> point( 1, libMesh::Point( x, y, z ) );
         densityModel->getDensityManufactured( srcVal, dumT, dumU, dumB, point );
         inpVec->setValueByGlobalID( gid[0], srcVal[0] );
     }

@@ -37,14 +37,14 @@ NeumannVectorCorrection::NeumannVectorCorrection(
     auto qruleOrderName = ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     // Create the libmesh qruleOrder, qruleType, and FEType
-    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
-    auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+    auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
     d_type.reset( new libMesh::FEType( feTypeOrder, feFamily ) );
-    d_qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    d_qruleType = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
     if ( qruleOrderName == "DEFAULT" ) {
         d_qruleOrder = d_type->default_quadrature_order();
     } else {
-        d_qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
+        d_qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 
     d_variable = params->d_variable;
@@ -174,8 +174,8 @@ void NeumannVectorCorrection::addRHScorrection(
                     AMP_ASSERT( rule != nullptr );
                     const unsigned int numGaussPts = rule->n_points();
 
-                    const std::vector<std::vector<Real>> phi = fe->get_phi();
-                    const std::vector<Real> djxw             = fe->get_JxW();
+                    const std::vector<std::vector<libMesh::Real>> phi = fe->get_phi();
+                    const std::vector<libMesh::Real> djxw             = fe->get_JxW();
 
                     std::vector<std::vector<double>> temp( 1 );
                     std::vector<double> gamma( numGaussPts, gammaValue );
@@ -192,7 +192,7 @@ void NeumannVectorCorrection::addRHScorrection(
                                 temp[0].push_back(
                                     d_variableFlux->getValueByGlobalID( fluxDofs[qp] ) );
                             } else {
-                                Real Tqp = 0.0;
+                                libMesh::Real Tqp = 0.0;
                                 for ( size_t n = 0; n < dofIndices.size(); n++ ) {
                                     Tqp +=
                                         phi[n][qp] * d_variableFlux->getValueByGlobalID( dofs[n] );

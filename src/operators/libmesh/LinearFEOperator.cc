@@ -67,10 +67,10 @@ void LinearFEOperator::reset( const std::shared_ptr<OperatorParameters> &params 
 
 void LinearFEOperator::createCurrentLibMeshElement()
 {
-    d_currElemPtr = new ::Hex8;
+    d_currElemPtr = new libMesh::Hex8;
     for ( size_t j = 0; j < d_currNodes.size(); ++j ) {
         auto pt                      = d_currNodes[j].coord();
-        d_currElemPtr->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
+        d_currElemPtr->set_node( j ) = new libMesh::Node( pt[0], pt[1], pt[2], j );
     } // end for j
 }
 
@@ -78,7 +78,7 @@ void LinearFEOperator::createCurrentLibMeshElement()
 void LinearFEOperator::destroyCurrentLibMeshElement()
 {
     for ( size_t j = 0; j < d_currElemPtr->n_nodes(); ++j ) {
-        delete ( d_currElemPtr->get_node( j ) );
+        delete ( d_currElemPtr->node_ptr( j ) );
         d_currElemPtr->set_node( j ) = nullptr;
     } // end for j
     delete d_currElemPtr;

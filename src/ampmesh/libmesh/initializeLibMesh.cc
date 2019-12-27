@@ -1,11 +1,11 @@
 #include "AMP/ampmesh/libmesh/initializeLibMesh.h"
-#include "AMP/ampmesh/libmesh/libMeshIterator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 
 #include <cstring>
 
 // LibMesh include
+#include "libmesh/libmesh.h"
 #include "libmesh/mesh.h"
 
 // Petsc include (needed to fix PETSC_COMM_WORLD problem with libmesh)
@@ -89,12 +89,12 @@ initializeLibMesh::initializeLibMesh( const AMP_MPI &comm )
 #ifdef USE_EXT_PETSC
         MPI_Comm petsc_comm = PETSC_COMM_WORLD;
 #endif
-        lminit = new LibMeshInit( argc_libmesh, argv_libmesh, d_comm.getCommunicator() );
+        lminit = new libMesh::LibMeshInit( argc_libmesh, argv_libmesh, d_comm.getCommunicator() );
 #ifdef USE_EXT_PETSC
         PETSC_COMM_WORLD = petsc_comm;
 #endif
 #else
-        lminit = new LibMeshInit( argc_libmesh, argv_libmesh );
+        lminit = new libMesh::LibMeshInit( argc_libmesh, argv_libmesh );
 #endif
         for ( int i = 0; i < argc_libmesh; i++ )
             delete[] argv_libmesh[i];
@@ -123,7 +123,7 @@ initializeLibMesh::~initializeLibMesh()
         // Free libmesh MPI types
         // type_hilbert.reset();
         // Delete libmesh
-        delete (LibMeshInit *) lminit;
+        delete (libMesh::LibMeshInit *) lminit;
         lminit   = nullptr;
         d_comm   = AMP_MPI( AMP_COMM_NULL );
         N_copies = 0;

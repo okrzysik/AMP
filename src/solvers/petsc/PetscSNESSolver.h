@@ -20,6 +20,8 @@
 #undef OMPI_SKIP_MPICXX
 #endif
 
+#undef PETSC_VERSION_DATE_GIT
+#undef PETSC_VERSION_GIT
 #include "petsc.h"
 #include "petscmat.h"
 #include "petscsnes.h"
@@ -223,12 +225,10 @@ private:
 
     std::shared_ptr<PetscMonitor> d_PetscMonitor;
 
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     // The following SNES solver keeps a reference to certain vectors around.
     // By declaring the vectors here, we ensure correct behavior during destruction.
     // This will ensure that the std::shared_ptr destructor calls VecDestroy on the last reference.
     std::list<AMP::LinearAlgebra::Vector::const_shared_ptr> d_refVectors;
-#endif
 
     SNES d_SNESSolver;
 

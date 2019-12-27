@@ -43,7 +43,7 @@ public:
     void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /*
-          static bool sort_nodes_in_z ( const ::Node *one , const ::Node *two ) {
+          static bool sort_nodes_in_z ( const libMesh::Node *one , const libMesh::Node *two ) {
             return (*one)(2) < (*two)(2);
           }
     */

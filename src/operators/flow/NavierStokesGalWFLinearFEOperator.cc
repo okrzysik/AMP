@@ -225,10 +225,10 @@ namespace Operator {
      }
 
     void NavierStokesGalWFLinearFEOperator :: createHex27LibMeshElement() {
-      d_currElemPtr = new ::Hex27;
+      d_currElemPtr = new libMesh::Hex27;
       for(size_t j = 0; j < d_currNodes.size(); j++) {
         std::vector<double> pt = d_currNodes[j].coord();
-        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
+        d_currElemPtr->set_node(j) = new libMesh::Node(pt[0], pt[1], pt[2], j);
       }//end for j
     }
 

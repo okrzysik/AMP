@@ -10,7 +10,7 @@ void MechanicsLinearUpdatedLagrangianElement::computeStressAndStrain(
     std::vector<double> &stressVec,
     std::vector<double> &strainVec )
 {
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
     d_fe->reinit( d_elem );
 
@@ -81,9 +81,9 @@ void MechanicsLinearUpdatedLagrangianElement::computeStressAndStrain(
 void MechanicsLinearUpdatedLagrangianElement::printStressAndStrain(
     FILE *fp, const std::vector<double> &dispVec )
 {
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
-    const std::vector<Point> &xyz = ( *d_xyz );
+    const auto &xyz = ( *d_xyz );
 
     d_fe->reinit( d_elem );
 
@@ -173,7 +173,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
 
     std::vector<std::vector<double>> &elementInputVectors = d_elementInputVectors;
 
-    std::vector<Point> xyz, xyz_np1;
+    std::vector<libMesh::Point> xyz, xyz_np1;
 
     d_fe->reinit( d_elem );
 
@@ -185,8 +185,8 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
     xyz_np1.resize( num_nodes );
 
     for ( unsigned int ijk = 0; ijk < num_nodes; ijk++ ) {
-        Point p1 = d_elem->point( ijk );
-        xyz[ijk] = p1;
+        const auto &p1 = d_elem->point( ijk );
+        xyz[ijk]       = p1;
     }
 
     double currX[8], currY[8], currZ[8], dNdx[8], dNdy[8], dNdz[8], detJ[1];
@@ -478,7 +478,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
 
     std::vector<std::vector<double>> &elementInputVectors = d_elementInputVectors;
 
-    std::vector<Point> xyz, xyz_np1;
+    std::vector<libMesh::Point> xyz, xyz_np1;
     double Bl_np1[6][24], Bnl_np1[9][24];
     double currX[8], currY[8], currZ[8];
     double rsq3              = ( 1.0 / sqrt( 3.0 ) );
@@ -811,7 +811,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
 
 /*
   void MechanicsLinearUpdatedLagrangianElement :: computeDeformationGradientLin(const
-  std::vector<std::vector<RealGradient> > & dphi,
+  std::vector<std::vector<libMesh::RealGradient> > & dphi,
       const std::vector<Point> & xyz, unsigned int num_nodes, unsigned int qp, double F[3][3])
   {
     for(unsigned int i = 0; i < 3; i++) {
@@ -837,7 +837,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
 void MechanicsLinearUpdatedLagrangianElement::initializeReferenceXYZ(
     std::vector<double> &elementRefXYZ )
 {
-    std::vector<Point> xyz;
+    std::vector<libMesh::Point> xyz;
 
     d_fe->reinit( d_elem );
 

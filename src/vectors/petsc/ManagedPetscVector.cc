@@ -14,12 +14,6 @@
 #include "petsc/private/vecimpl.h"
 
 
-// Macro to cast the petsc vector y to an AMP ManagedPetscVector x
-#define PETSC_RECAST( x, y )                    \
-    AMP::LinearAlgebra::ManagedPetscVector *x = \
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( y->data )
-
-
 // Overridden Petsc functions!
 PetscErrorCode
 _AMP_setvaluesblocked( Vec, PetscInt, const PetscInt[], const PetscScalar[], InsertMode )
@@ -36,12 +30,12 @@ PetscErrorCode _AMP_placearray( Vec, const PetscScalar * )
 {
     AMP_ERROR( "33 Not implemented" );
     return 0;
-} /* place data array */
+}
 PetscErrorCode _AMP_replacearray( Vec, const PetscScalar * )
 {
     AMP_ERROR( "34 Not implemented" );
     return 0;
-} /* replace data array */
+}
 PetscErrorCode _AMP_viewnative( Vec, PetscViewer )
 {
     AMP_ERROR( "42 Not implemented" );
@@ -102,7 +96,7 @@ PetscErrorCode _AMP_load( Vec, PetscViewer )
 PetscErrorCode
 _AMP_setvalues( Vec px, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode iora )
 {
-    PETSC_RECAST( x, px );
+    auto x       = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( px->data );
     auto indices = new size_t[ni];
     auto vals    = new double[ni];
     for ( PetscInt i = 0; i < ni; i++ ) {
@@ -124,8 +118,7 @@ _AMP_setvalues( Vec px, PetscInt ni, const PetscInt ix[], const PetscScalar y[],
 #if PETSC_VERSION_GE( 3, 7, 5 )
 PetscErrorCode _AMP_shift( Vec px, PetscScalar s )
 {
-    PETSC_RECAST( x, px );
-
+    auto x   = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( px->data );
     auto cur = x->VectorData::begin();
     auto end = x->VectorData::end();
     while ( cur != end ) {
@@ -148,10 +141,9 @@ PetscErrorCode _AMP_shift( Vec )
 PetscErrorCode
 _AMP_axpbypcz( Vec c, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec a, Vec b )
 {
-    PETSC_RECAST( x, a );
-    PETSC_RECAST( y, b );
-    PETSC_RECAST( z, c );
-
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
+    auto z = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( c->data );
     if ( z->isAnAliasOf( *x ) ) {
         z->linearSum( alpha + gamma, *x, beta, *y );
     } else if ( z->isAnAliasOf( *y ) ) {
@@ -160,7 +152,6 @@ _AMP_axpbypcz( Vec c, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Ve
         z->linearSum( alpha, *x, gamma, *z );
         z->linearSum( beta, *y, 1., *z );
     }
-
     PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( c ) );
     return 0;
 }
@@ -170,8 +161,8 @@ PetscErrorCode _AMP_max( Vec a, PetscInt *p, PetscReal *ans )
     if ( ( p != nullptr ) && ( p != PETSC_NULL ) ) {
         AMP_ERROR( "Cannot find position for max" );
     }
-    PETSC_RECAST( x, a );
-    *ans = x->max();
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    *ans   = x->max();
     return 0;
 }
 
@@ -180,24 +171,24 @@ PetscErrorCode _AMP_min( Vec a, PetscInt *p, PetscReal *ans )
     if ( ( p != nullptr ) && ( p != PETSC_NULL ) ) {
         AMP_ERROR( "Cannot find position for max" );
     }
-    PETSC_RECAST( x, a );
-    *ans = x->min();
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    *ans   = x->min();
     return 0;
 }
 
 PetscErrorCode _AMP_aypx( Vec b, PetscScalar alpha, Vec a )
 {
-    PETSC_RECAST( x, a );
-    PETSC_RECAST( y, b );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
     y->linearSum( alpha, *y, 1., *x );
     return 0;
 } /* y = x + alpha * y */
 
 PetscErrorCode _AMP_dot_local( Vec a, Vec b, PetscScalar *ans )
 {
-    PETSC_RECAST( x, a );
-    PETSC_RECAST( y, b );
-    *ans = x->localDot( *y );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
+    *ans   = x->localDot( *y );
     return 0;
 }
 
@@ -222,8 +213,7 @@ PetscErrorCode _AMP_mtdot_local( Vec a, PetscInt num, const Vec array[], PetscSc
 
 PetscErrorCode _AMP_exp( Vec a )
 {
-    PETSC_RECAST( x, a );
-
+    auto x   = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
     auto cur = x->VectorData::begin();
     auto end = x->VectorData::end();
     while ( cur != end ) {
@@ -235,8 +225,7 @@ PetscErrorCode _AMP_exp( Vec a )
 
 PetscErrorCode _AMP_log( Vec a )
 {
-    PETSC_RECAST( x, a );
-
+    auto x   = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
     auto cur = x->VectorData::begin();
     auto end = x->VectorData::end();
     while ( cur != end ) {
@@ -248,9 +237,9 @@ PetscErrorCode _AMP_log( Vec a )
 
 PetscErrorCode _AMP_pointwisemin( Vec a, Vec b, Vec c )
 {
-    PETSC_RECAST( x, a );
-    PETSC_RECAST( y, b );
-    PETSC_RECAST( z, c );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
+    auto z = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( c->data );
 
     AMP_INSIST( x->getLocalSize() == y->getLocalSize(), "Incompatible vectors" );
     AMP_INSIST( x->getLocalSize() == z->getLocalSize(), "Incompatible vectors" );
@@ -270,9 +259,9 @@ PetscErrorCode _AMP_pointwisemin( Vec a, Vec b, Vec c )
 
 PetscErrorCode _AMP_pointwisemax( Vec a, Vec b, Vec c )
 {
-    PETSC_RECAST( x, a );
-    PETSC_RECAST( y, b );
-    PETSC_RECAST( z, c );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
+    auto z = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( c->data );
 
     AMP_INSIST( x->getLocalSize() == y->getLocalSize(), "Incompatible vectors" );
     AMP_INSIST( x->getLocalSize() == z->getLocalSize(), "Incompatible vectors" );
@@ -292,9 +281,9 @@ PetscErrorCode _AMP_pointwisemax( Vec a, Vec b, Vec c )
 
 PetscErrorCode _AMP_pointwisemaxabs( Vec a, Vec b, Vec c )
 {
-    PETSC_RECAST( x, a );
-    PETSC_RECAST( y, b );
-    PETSC_RECAST( z, c );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
+    auto z = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( c->data );
 
     AMP_INSIST( x->getLocalSize() == y->getLocalSize(), "Incompatible vectors" );
     AMP_INSIST( x->getLocalSize() == z->getLocalSize(), "Incompatible vectors" );
@@ -314,25 +303,25 @@ PetscErrorCode _AMP_pointwisemaxabs( Vec a, Vec b, Vec c )
 
 PetscErrorCode _AMP_pointwisemult( Vec a, Vec b, Vec c )
 {
-    PETSC_RECAST( x, a );
-    PETSC_RECAST( y, b );
-    PETSC_RECAST( z, c );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
+    auto z = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( c->data );
     x->multiply( *y, *z );
     return 0;
 }
 
 PetscErrorCode _AMP_pointwisedivide( Vec a, Vec b, Vec c )
 {
-    PETSC_RECAST( x, a );
-    PETSC_RECAST( y, b );
-    PETSC_RECAST( z, c );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
+    auto z = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( c->data );
     x->divide( *y, *z );
     return 0;
 }
 
 PetscErrorCode _AMP_sqrt( Vec a )
 {
-    PETSC_RECAST( x, a );
+    auto x   = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
     auto cur = x->VectorData::begin();
     auto end = x->VectorData::end();
     while ( cur != end ) {
@@ -344,7 +333,7 @@ PetscErrorCode _AMP_sqrt( Vec a )
 
 PetscErrorCode _AMP_setrandom( Vec a, PetscRandom )
 {
-    PETSC_RECAST( x, a );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
     x->setRandomValues();
     return 0;
 } /* set y[j] = random numbers */
@@ -356,23 +345,23 @@ PetscErrorCode _AMP_conjugate( Vec )
 
 PetscErrorCode _AMP_axpby( Vec b, PetscScalar alpha, PetscScalar beta, Vec a )
 {
-    PETSC_RECAST( x, a );
-    PETSC_RECAST( y, b );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
     y->axpby( alpha, beta, *x );
     return 0;
 }
 
 PetscErrorCode _AMP_swap( Vec a, Vec b )
 {
-    PETSC_RECAST( x, a );
-    PETSC_RECAST( y, b );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
     x->swapVectors( *y );
     return 0;
 }
 
 PetscErrorCode _AMP_getsize( Vec a, PetscInt *ans )
 {
-    PETSC_RECAST( x, a );
+    auto x      = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
     size_t size = x->getGlobalSize();
     if ( sizeof( PetscInt ) < 8 ) {
         AMP_ASSERT( size < 0x80000000 );
@@ -383,9 +372,8 @@ PetscErrorCode _AMP_getsize( Vec a, PetscInt *ans )
 
 PetscErrorCode _AMP_maxpointwisedivide( Vec a, Vec b, PetscReal *res )
 {
-    PETSC_RECAST( x, a );
-    PETSC_RECAST( y, b );
-
+    auto x           = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto y           = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
     auto cur_x       = x->VectorData::constBegin();
     auto cur_y       = y->VectorData::constBegin();
     auto end_x       = x->VectorData::constEnd();
@@ -407,15 +395,15 @@ PetscErrorCode _AMP_maxpointwisedivide( Vec a, Vec b, PetscReal *res )
 
 PetscErrorCode _AMP_scale( Vec a, PetscScalar alpha )
 {
-    PETSC_RECAST( x, a );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
     x->scale( alpha );
     return 0;
 }
 
 PetscErrorCode _AMP_copy( Vec in, Vec out )
 {
-    PETSC_RECAST( x, in );
-    PETSC_RECAST( y, out );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
+    auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( out->data );
     y->copyVector( x->shared_from_this() );
     return 0;
 }
@@ -429,9 +417,9 @@ PetscErrorCode _AMP_maxpy( Vec v, PetscInt num, const PetscScalar *alpha, Vec *v
 
 PetscErrorCode _AMP_dot( Vec a, Vec b, PetscScalar *ans )
 {
-    PETSC_RECAST( x, a );
-    PETSC_RECAST( y, b );
-    *ans = x->dot( *y );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
+    *ans   = x->dot( *y );
     return 0;
 }
 
@@ -444,9 +432,9 @@ PetscErrorCode _AMP_mdot( Vec v, PetscInt num, const Vec vec[], PetscScalar *ans
 
 PetscErrorCode _AMP_tdot( Vec a, Vec b, PetscScalar *ans )
 {
-    PETSC_RECAST( x, a );
-    PETSC_RECAST( y, b );
-    *ans = x->dot( *y );
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
+    *ans   = x->dot( *y );
     return 0;
 }
 
@@ -491,20 +479,16 @@ PetscErrorCode _AMP_waxpy( Vec w, PetscScalar alpha, Vec x, Vec y )
 
 PetscErrorCode _AMP_norm_local( Vec in, NormType type, PetscReal *ans )
 {
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
     if ( type == NORM_1 )
-        *ans =
-            reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->localL1Norm();
+        *ans = x->localL1Norm();
     else if ( type == NORM_2 )
-        *ans =
-            reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->localL2Norm();
+        *ans = x->localL2Norm();
     else if ( type == NORM_INFINITY )
-        *ans =
-            reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->localMaxNorm();
+        *ans = x->localMaxNorm();
     else if ( type == NORM_1_AND_2 ) {
-        *ans =
-            reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->localL1Norm();
-        *( ans + 1 ) =
-            reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->localL2Norm();
+        *ans         = x->localL1Norm();
+        *( ans + 1 ) = x->localL2Norm();
     } else
         AMP_ERROR( "Unknown norm type" );
     if ( type != NORM_1_AND_2 ) {
@@ -517,16 +501,16 @@ PetscErrorCode _AMP_norm_local( Vec in, NormType type, PetscReal *ans )
 
 PetscErrorCode _AMP_norm( Vec in, NormType type, PetscReal *ans )
 {
+    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
     if ( type == NORM_1 )
-        *ans = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->L1Norm();
+        *ans = x->L1Norm();
     else if ( type == NORM_2 )
-        *ans = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->L2Norm();
+        *ans = x->L2Norm();
     else if ( type == NORM_INFINITY )
-        *ans = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->maxNorm();
+        *ans = x->maxNorm();
     else if ( type == NORM_1_AND_2 ) {
-        *ans = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->L1Norm();
-        *( ans + 1 ) =
-            reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->L2Norm();
+        *ans         = x->L1Norm();
+        *( ans + 1 ) = x->L2Norm();
     } else
         AMP_ERROR( "Unknown norm type" );
     if ( type != NORM_1_AND_2 ) {

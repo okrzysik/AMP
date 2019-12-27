@@ -40,7 +40,7 @@ static void computeSlave2MasterNodes( const double precision,
                                       std::vector<std::vector<size_t>> &slave2MasterNodes,
                                       std::vector<std::vector<double>> &slave2MasterFactors );
 
-bool myContainsPoint(::Elem *e, const ::Point &p, double tol );
+bool myContainsPoint( libMesh::Elem *e, const ::Point &p, double tol );
 
 #include "ContactSearchUtils.hpp"
 

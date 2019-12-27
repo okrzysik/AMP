@@ -1,5 +1,4 @@
 #include "AMP/operators/libmesh/SourcePhysicsModel.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
 #include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"

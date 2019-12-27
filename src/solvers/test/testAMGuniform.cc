@@ -1,7 +1,7 @@
 
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/libmesh/initializeLibMesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -34,15 +34,16 @@ void myTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     const unsigned int mesh_dim = 3;
-    std::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
+    libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
+    auto mesh             = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
     std::string mesh_file = input_db->getString( "mesh_file" );
     if ( globalComm.getRank() == 0 ) {
         AMP::readTestMesh( mesh_file, mesh );
     } // end if root processor
-    MeshCommunication().broadcast( *( mesh.get() ) );
+    libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
     // mesh->prepare_for_use(false);
     mesh->prepare_for_use( true );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter( new AMP::Mesh::libMesh( mesh, "uniform" ) );
+    AMP::Mesh::Mesh::shared_ptr meshAdapter( new AMP::Mesh::libmeshMesh( mesh, "uniform" ) );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     std::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =

@@ -140,8 +140,8 @@ public:
     /**
       Computes the deformation gradient at n-th, (n+1)-th and (n+1/2)-th time step.
      */
-    void computeDeformationGradient( const std::vector<std::vector<RealGradient>> &dphi,
-                                     const std::vector<Point> &xyz,
+    void computeDeformationGradient( const std::vector<std::vector<libMesh::RealGradient>> &dphi,
+                                     const std::vector<libMesh::Point> &xyz,
                                      unsigned int num_nodes,
                                      unsigned int qp,
                                      double F[3][3] );
@@ -199,18 +199,19 @@ protected:
      */
     void apply_Reduced();
 
-    const std::vector<Real> *d_JxW; /**< Product of the determinant of Jacobian and the quadrature
-                                    weight at the Gauss points in the current element. */
+    const std::vector<libMesh::Real> *d_JxW; /**< Product of the determinant of Jacobian and the
+                                    quadrature weight at the Gauss points in the current element. */
 
-    const std::vector<std::vector<RealGradient>>
+    const std::vector<std::vector<libMesh::RealGradient>>
         *d_dphi; /**< Spatial Derivatives of the shape functions at
                   the Gauss points in the current element. */
 
-    const std::vector<std::vector<Real>>
+    const std::vector<std::vector<libMesh::Real>>
         *d_phi; /**< Shape functions at
                          the Gauss points in the current element. */
 
-    const std::vector<Point> *d_xyz; /**< Locations of the Gauss points in the current element. */
+    const std::vector<libMesh::Point>
+        *d_xyz; /**< Locations of the Gauss points in the current element. */
 
     std::vector<std::vector<double>> d_elementInputVectors; /**< Element input vectors
                                                                    (Displacement, temperature,
@@ -322,11 +323,11 @@ void MechanicsNonlinearUpdatedLagrangianElement::updateMaterialModel(
     const std::vector<std::vector<double>> &elementInputVectors,
     const std::vector<std::vector<double>> &elementInputVectors_pre )
 {
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
 
-    std::vector<Point> xyz, xyz_n, xyz_np1, xyz_np1o2;
+    std::vector<libMesh::Point> xyz, xyz_n, xyz_np1, xyz_np1o2;
 
     d_fe->reinit( d_elem );
 
@@ -339,10 +340,9 @@ void MechanicsNonlinearUpdatedLagrangianElement::updateMaterialModel(
     xyz_np1.resize( num_nodes );
     xyz_np1o2.resize( num_nodes );
 
-    Point p1;
     for ( unsigned int ijk = 0; ijk < num_nodes; ijk++ ) {
-        p1       = d_elem->point( ijk );
-        xyz[ijk] = p1;
+        const auto &p1 = d_elem->point( ijk );
+        xyz[ijk]       = p1;
     }
 
     double currX[8], currY[8], currZ[8], dNdx[8], dNdy[8], dNdz[8], detJ[1], delta_u[8], delta_v[8],

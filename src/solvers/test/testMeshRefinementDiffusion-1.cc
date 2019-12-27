@@ -116,14 +116,16 @@ void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     AMP::Mesh::MeshIterator el     = meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
-    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-    auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+    auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+    auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-    std::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
-    std::shared_ptr<::FEBase> d_fe( (::FEBase::build( 3, ( *d_feType ) ) ).release() );
+    std::shared_ptr<libMesh::FEType> d_feType( new libMesh::FEType( feTypeOrder, feFamily ) );
+    std::shared_ptr<libMesh::FEBase> d_fe(
+        ( libMesh::FEBase::build( 3, ( *d_feType ) ) ).release() );
 
-    auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-    std::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
+    auto qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
+    std::shared_ptr<libMesh::QBase> d_qrule(
+        ( libMesh::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -156,14 +158,16 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
     AMP::Discretization::DOFManager::shared_ptr dof_map = TemperatureVec->getDOFManager();
 
-    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-    auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+    auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+    auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-    std::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
-    std::shared_ptr<::FEBase> d_fe( (::FEBase::build( 3, ( *d_feType ) ) ).release() );
+    std::shared_ptr<libMesh::FEType> d_feType( new libMesh::FEType( feTypeOrder, feFamily ) );
+    std::shared_ptr<libMesh::FEBase> d_fe(
+        ( libMesh::FEBase::build( 3, ( *d_feType ) ) ).release() );
 
-    auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-    std::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
+    auto qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
+    std::shared_ptr<libMesh::QBase> d_qrule(
+        ( libMesh::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -179,17 +183,17 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
         } // end of j
         dof_map->getDOFs( globalIDs, bndGlobalIds );
 
-        ::Elem *d_currElemPtr( new ::Hex8 );
+        libMesh::Elem *d_currElemPtr( new libMesh::Hex8 );
         for ( size_t j = 0; j < d_currNodes.size(); j++ ) {
             auto pt                      = d_currNodes[j].coord();
-            d_currElemPtr->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
+            d_currElemPtr->set_node( j ) = new libMesh::Node( pt[0], pt[1], pt[2], j );
         } // end for j
 
         d_fe->reinit( d_currElemPtr );
 
-        const std::vector<Real> &JxW              = d_fe->get_JxW();
-        std::vector<Point> coordinates            = d_fe->get_xyz();
-        const std::vector<std::vector<Real>> &phi = d_fe->get_phi();
+        const std::vector<libMesh::Real> &JxW              = d_fe->get_JxW();
+        std::vector<libMesh::Point> coordinates            = d_fe->get_xyz();
+        const std::vector<std::vector<libMesh::Real>> &phi = d_fe->get_phi();
 
         std::vector<double> computedAtGauss( d_qrule->n_points(), 0.0 );
         for ( unsigned int qp = 0; qp < d_qrule->n_points(); qp++ ) {

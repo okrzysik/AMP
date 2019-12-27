@@ -10,11 +10,11 @@ void MechanicsNonlinearUpdatedLagrangianElement::computeStressAndStrain(
     std::vector<double> &stressVec,
     std::vector<double> &strainVec )
 {
-    // const std::vector<Real> & JxW = (*d_JxW);
+    // const std::vector<libMesh::Real> & JxW = (*d_JxW);
 
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
 
     // const std::vector<Point> & xyz = (*d_xyz);
 
@@ -126,13 +126,13 @@ void MechanicsNonlinearUpdatedLagrangianElement::computeStressAndStrain(
 void MechanicsNonlinearUpdatedLagrangianElement::printStressAndStrain(
     FILE *fp, const std::vector<std::vector<double>> &elementInputVectors )
 {
-    // const std::vector<Real> & JxW = (*d_JxW);
+    // const std::vector<libMesh::Real> & JxW = (*d_JxW);
 
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
 
-    const std::vector<Point> &xyz = ( *d_xyz );
+    const auto &xyz = ( *d_xyz );
 
     d_fe->reinit( d_elem );
 
@@ -254,7 +254,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::printStressAndStrain(
 void MechanicsNonlinearUpdatedLagrangianElement::initMaterialModel(
     const std::vector<double> &initTempVector )
 {
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
 
     d_fe->reinit( d_elem );
 
@@ -315,7 +315,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::initMaterialModel(
 
 void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
 {
-    // const std::vector<Real> & JxW = (*d_JxW);
+    // const std::vector<libMesh::Real> & JxW = (*d_JxW);
 
     std::vector<std::vector<double>> &elementInputVectors = d_elementInputVectors;
 
@@ -323,7 +323,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
 
     std::vector<double> &elementOutputVector = ( *d_elementOutputVector );
 
-    std::vector<Point> xyz, xyz_n, xyz_np1, xyz_np1o2;
+    std::vector<libMesh::Point> xyz, xyz_n, xyz_np1, xyz_np1o2;
 
     d_fe->reinit( d_elem );
 
@@ -878,7 +878,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Reduced()
 
     std::vector<double> &elementOutputVector = ( *d_elementOutputVector );
 
-    std::vector<Point> xyz, xyz_n, xyz_np1, xyz_np1o2;
+    std::vector<libMesh::Point> xyz, xyz_n, xyz_np1, xyz_np1o2;
 
     d_fe->reinit( d_elem );
 
@@ -1334,8 +1334,8 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Reduced()
 }
 
 void MechanicsNonlinearUpdatedLagrangianElement::computeDeformationGradient(
-    const std::vector<std::vector<RealGradient>> &dphi,
-    const std::vector<Point> &xyz,
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi,
+    const std::vector<libMesh::Point> &xyz,
     unsigned int num_nodes,
     unsigned int qp,
     double F[3][3] )
@@ -1362,7 +1362,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::computeDeformationGradient(
 void MechanicsNonlinearUpdatedLagrangianElement::initializeReferenceXYZ(
     std::vector<double> &elementRefXYZ )
 {
-    std::vector<Point> xyz;
+    std::vector<libMesh::Point> xyz;
 
     d_fe->reinit( d_elem );
 

@@ -7,7 +7,8 @@
 // LibMesh include
 DISABLE_WARNINGS
 #include "libmesh/mesh.h"
-#include "libmesh/mesh_data.h"
+#include "libmesh/node.h"
+//#include "libmesh/mesh_data.h"
 ENABLE_WARNINGS
 
 
@@ -15,11 +16,11 @@ namespace AMP {
 namespace Mesh {
 
 
-class libMeshElement;
+class libmeshMeshElement;
 
 
 /**
- * \class libMesh
+ * \class libmeshMesh
  * \brief A concrete mesh class for libMesh
  *
  * \details  This class provides routines for reading, accessing and writing libMesh meshes.
@@ -40,7 +41,7 @@ class libMeshElement;
  * communicators.  If multiple meshes are used, they must either share communicators or have unique
  * communicators.
  */
-class libMesh : public Mesh
+class libmeshMesh : public Mesh
 {
 public:
     /**
@@ -50,10 +51,10 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params Parameters for constructing a mesh from an input database
      */
-    explicit libMesh( const MeshParameters::shared_ptr &params );
+    explicit libmeshMesh( const MeshParameters::shared_ptr &params );
 
     /**
-     * \brief Contructor to create a libMesh object from a libMesh mesh.
+     * \brief Contructor to create a libmeshMesh object from a libMesh mesh.
      * \details This constructor allows the user to construct a mesh directly in libmesh
      * and use it to create the new mesh object.  This function is intended for advanced
      * users only.  Note: the user is responsible for ensuring that libMesh is properly
@@ -61,10 +62,10 @@ public:
      * \param mesh The mesh in libmesh we want to use to construct the new mesh object
      * \param name The name of the new mesh object
      */
-    explicit libMesh( std::shared_ptr<::Mesh> mesh, const std::string &name );
+    explicit libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh, const std::string &name );
 
     //! Deconstructor
-    virtual ~libMesh();
+    virtual ~libmeshMesh();
 
     //! Function to copy the mesh (allows use to proply copy the derived class)
     virtual std::shared_ptr<Mesh> clone() const override;
@@ -199,7 +200,7 @@ public:
 
 
     //! Return the underlying libMesh object
-    inline std::shared_ptr<::Mesh> getlibMesh() const { return d_libMesh; }
+    inline std::shared_ptr<libMesh::Mesh> getlibMesh() const { return d_libMesh; }
 
 
 #ifdef USE_AMP_VECTORS
@@ -221,20 +222,21 @@ protected:
      *  as those nodes that share an element with the given node.
      *  Note: the nodes returns are returned in unsorted order.
      */
-    std::vector<::Node *> getNeighborNodes( const MeshElementID & ) const;
+    std::vector<libMesh::Node *> getNeighborNodes( const MeshElementID & ) const;
 
     // Friend functions to access protected functions
-    friend class libMeshElement;
+    friend class libmeshMeshElement;
 
 private:
     //!  Empty constructor for a mesh
-    libMesh(){};
+    libmeshMesh(){};
 
     //!  Function to properly initialize the internal data once a libmesh mesh is loaded
     void initialize();
 
     // libMesh objects
-    std::shared_ptr<::Mesh> d_libMesh;
+    std::shared_ptr<libMesh::Parallel::Communicator> d_libMeshComm;
+    std::shared_ptr<libMesh::Mesh> d_libMesh;
 
     // Some basic internal data
     std::vector<size_t> n_local, n_global, n_ghost;
@@ -242,7 +244,7 @@ private:
 
     // Data used to store the node neighbor lists
     std::vector<unsigned int> neighborNodeIDs;
-    std::vector<std::vector<::Node *>> neighborNodes;
+    std::vector<std::vector<libMesh::Node *>> neighborNodes;
 
     // Data used to elements that libmesh doesn't create
     std::map<GeomType, std::shared_ptr<std::vector<MeshElement>>> d_localElements;

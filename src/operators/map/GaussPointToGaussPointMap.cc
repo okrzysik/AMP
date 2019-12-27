@@ -93,30 +93,32 @@ void GaussPointToGaussPointMap::createIdxMap(
 {
     std::shared_ptr<AMP::Database> db = params->d_db;
     std::string feTypeOrderName       = db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
-    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+    auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
     std::string feFamilyName = db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
-    auto feFamily            = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    auto feFamily = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
     std::string qruleTypeName = db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
-    auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    auto qruleType =
+        libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     std::string qruleOrderName = db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     int faceDim = db->getWithDefault( "DIMENSION", 2 );
 
-    std::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
+    std::shared_ptr<libMesh::FEType> feType( new libMesh::FEType( feTypeOrder, feFamily ) );
 
     libMeshEnums::Order qruleOrder;
 
     if ( qruleOrderName == "DEFAULT" ) {
         qruleOrder = feType->default_quadrature_order();
     } else {
-        qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
+        qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 
-    std::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, faceDim, qruleOrder ) ).release() );
-    qrule->init( QUAD4, 0 );
+    std::shared_ptr<libMesh::QBase> qrule(
+        ( libMesh::QBase::build( qruleType, faceDim, qruleOrder ) ).release() );
+    qrule->init( libMesh::QUAD4, 0 );
 
     unsigned int numGaussPtsPerElem = qrule->n_points();
 
@@ -153,17 +155,18 @@ void GaussPointToGaussPointMap::createIdxMap(
 
         auto currNodes = el.getElements( AMP::Mesh::GeomType::Vertex );
 
-        ::Elem *elem = new ::Quad4;
+        libMesh::Elem *elem = new libMesh::Quad4;
         for ( size_t j = 0; j < currNodes.size(); ++j ) {
             auto pt             = currNodes[j].coord();
-            elem->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
+            elem->set_node( j ) = new libMesh::Node( pt[0], pt[1], pt[2], j );
         } // end for j
 
-        std::shared_ptr<::FEBase> fe( (::FEBase::build( faceDim, ( *feType ) ) ).release() );
+        std::shared_ptr<libMesh::FEBase> fe(
+            ( libMesh::FEBase::build( faceDim, ( *feType ) ) ).release() );
         fe->attach_quadrature_rule( qrule.get() );
         fe->reinit( elem );
 
-        const std::vector<::Point> &xyz = fe->get_xyz();
+        const auto &xyz = fe->get_xyz();
 
         dofMap->getDOFs( _i, localDofs );
 
@@ -174,7 +177,7 @@ void GaussPointToGaussPointMap::createIdxMap(
         }     // end for j
 
         for ( unsigned int j = 0; j < elem->n_nodes(); ++j ) {
-            delete ( elem->get_node( j ) );
+            delete ( elem->node_ptr( j ) );
             elem->set_node( j ) = nullptr;
         } // end for j
         delete elem;
@@ -196,17 +199,19 @@ void GaussPointToGaussPointMap::createIdxMap(
 
         auto currNodes = el.getElements( AMP::Mesh::GeomType::Vertex );
 
-        ::Elem *elem = new ::Quad4;
+        libMesh::Elem *elem = new libMesh::Quad4;
         for ( size_t j = 0; j < currNodes.size(); ++j ) {
             auto pt             = currNodes[j].coord();
-            elem->set_node( j ) = new ::Node( pt[0], pt[1], pt[2], j );
+            elem->set_node( j ) = new libMesh::Node( pt[0], pt[1], pt[2], j );
         } // end for j
 
-        std::shared_ptr<::FEBase> fe( (::FEBase::build( faceDim, ( *feType ) ) ).release() );
+        std::shared_ptr<libMesh::FEBase> fe(
+            ( libMesh::FEBase::build( faceDim, ( *feType ) ) ).release() );
+        fe->get_xyz();
         fe->attach_quadrature_rule( qrule.get() );
         fe->reinit( elem );
 
-        const std::vector<::Point> &xyz = fe->get_xyz();
+        const auto &xyz = fe->get_xyz();
 
         dofMap->getDOFs( _i, localDofs );
 
@@ -236,7 +241,7 @@ void GaussPointToGaussPointMap::createIdxMap(
         d_idxMap.push_back( locMap );
 
         for ( unsigned int j = 0; j < elem->n_nodes(); ++j ) {
-            delete ( elem->get_node( j ) );
+            delete ( elem->node_ptr( j ) );
             elem->set_node( j ) = nullptr;
         } // end for j
         delete elem;
