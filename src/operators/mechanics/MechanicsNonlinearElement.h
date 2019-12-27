@@ -153,18 +153,19 @@ protected:
      */
     void apply_Reduced();
 
-    const std::vector<Real> *d_JxW; /**< Product of the determinant of Jacobian and the quadrature
-                                    weight at the Gauss points in the current element. */
+    const std::vector<libMesh::Real> *d_JxW; /**< Product of the determinant of Jacobian and the
+                                    quadrature weight at the Gauss points in the current element. */
 
-    const std::vector<std::vector<RealGradient>>
+    const std::vector<std::vector<libMesh::RealGradient>>
         *d_dphi; /**< Spatial Derivatives of the shape functions at
                   the Gauss points in the current element. */
 
-    const std::vector<std::vector<Real>>
+    const std::vector<std::vector<libMesh::Real>>
         *d_phi; /**< Shape functions at
                          the Gauss points in the current element. */
 
-    const std::vector<Point> *d_xyz; /**< Locations of the Gauss points in the current element. */
+    const std::vector<libMesh::Point>
+        *d_xyz; /**< Locations of the Gauss points in the current element. */
 
     std::vector<std::vector<double>> d_elementInputVectors; /**< Element input vectors
                                                                    (Displacement, temperature,
@@ -250,9 +251,9 @@ template<MechanicsNonlinearElement::MaterialUpdateType type>
 void MechanicsNonlinearElement::updateMaterialModel(
     const std::vector<std::vector<double>> &elementInputVectors )
 {
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
 
     d_fe->reinit( d_elem );
 

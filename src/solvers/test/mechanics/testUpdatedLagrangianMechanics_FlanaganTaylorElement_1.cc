@@ -1,5 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -42,13 +42,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     std::string mesh_file       = input_db->getString( "mesh_file" );
     const unsigned int mesh_dim = 3;
-    std::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
+    libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
+    auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
     AMP::readTestMesh( mesh_file, mesh );
-    MeshCommunication().broadcast( *( mesh.get() ) );
+    libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
     mesh->prepare_for_use( false );
 
     AMP::Mesh::Mesh::shared_ptr meshAdapter =
-        AMP::Mesh::Mesh::shared_ptr( new AMP::Mesh::libMesh( mesh, "TestMesh" ) );
+        AMP::Mesh::Mesh::shared_ptr( new AMP::Mesh::libmeshMesh( mesh, "TestMesh" ) );
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );

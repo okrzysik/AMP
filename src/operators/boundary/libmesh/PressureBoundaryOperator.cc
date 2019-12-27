@@ -173,12 +173,13 @@ PressureBoundaryOperator::PressureBoundaryOperator(
     sendDisps.clear();
     recvDisps.clear();
 
-    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-    auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
-    auto qruleType   = Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
-    std::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
+    auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+    auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+    auto qruleType   = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
+    std::shared_ptr<libMesh::FEType> feType( new libMesh::FEType( feTypeOrder, feFamily ) );
     libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
-    std::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 2, qruleOrder ) ).release() );
+    std::shared_ptr<libMesh::QBase> qrule(
+        ( libMesh::QBase::build( qruleType, 2, qruleOrder ) ).release() );
 
     AMP_ASSERT( ( params->d_db )->keyExists( "Value" ) );
     const double val = ( params->d_db )->getScalar<double>( "Value" );
@@ -186,21 +187,22 @@ PressureBoundaryOperator::PressureBoundaryOperator(
     std::vector<double> pressure( 12 * ( recvSideList.size() ) );
 
     for ( size_t i = 0; i < recvSideList.size(); ++i ) {
-        ::Elem *elem = new ::Hex8;
+        libMesh::Elem *elem = new libMesh::Hex8;
         for ( int j = 0; j < 8; ++j ) {
-            elem->set_node( j ) = new ::Node( recvVolElemList[( 24 * i ) + ( 3 * j ) + 0],
-                                              recvVolElemList[( 24 * i ) + ( 3 * j ) + 1],
-                                              recvVolElemList[( 24 * i ) + ( 3 * j ) + 2],
-                                              j );
+            elem->set_node( j ) = new libMesh::Node( recvVolElemList[( 24 * i ) + ( 3 * j ) + 0],
+                                                     recvVolElemList[( 24 * i ) + ( 3 * j ) + 1],
+                                                     recvVolElemList[( 24 * i ) + ( 3 * j ) + 2],
+                                                     j );
         } // end j
 
-        std::shared_ptr<::FEBase> fe( (::FEBase::build( 3, ( *feType ) ) ).release() );
+        std::shared_ptr<libMesh::FEBase> fe(
+            ( libMesh::FEBase::build( 3, ( *feType ) ) ).release() );
         fe->attach_quadrature_rule( qrule.get() );
         fe->reinit( elem, recvSideList[i] );
 
         AMP_ASSERT( qrule->n_points() == 4 );
 
-        const std::vector<Point> &normals = fe->get_normals();
+        const auto &normals = fe->get_normals();
         AMP_ASSERT( normals.size() == 4 );
 
         for ( size_t qp = 0; qp < qrule->n_points(); ++qp ) {
@@ -211,7 +213,7 @@ PressureBoundaryOperator::PressureBoundaryOperator(
         }     // end qp
 
         for ( size_t j = 0; j < elem->n_nodes(); ++j ) {
-            delete ( elem->get_node( j ) );
+            delete ( elem->node_ptr( j ) );
             elem->set_node( j ) = nullptr;
         } // end for j
         delete elem;

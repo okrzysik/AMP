@@ -56,7 +56,7 @@ public:
       current element.
      */
     void
-    initializeForCurrentElement( const ::Elem *elem,
+    initializeForCurrentElement( const libMesh::Elem *elem,
                                  const std::shared_ptr<SourcePhysicsModel> &sourceTransportModel );
 
     void setElementInputVector( const std::vector<std::vector<double>> &elementInputVector )
@@ -94,7 +94,7 @@ public:
       */
     void apply() override;
 
-    std::shared_ptr<::FEBase> getFEBase() { return d_fe; }
+    std::shared_ptr<libMesh::FEBase> getFEBase() { return d_fe; }
 
     unsigned int getNumberOfGaussPoints() { return ( d_qrule->n_points() ); }
 
@@ -108,21 +108,21 @@ protected:
 
     std::vector<std::vector<double>> d_elementOtherVectors;
 
-    std::shared_ptr<::FEType> d_feType;
+    std::shared_ptr<libMesh::FEType> d_feType;
 
-    std::shared_ptr<::FEBase> d_fe;
+    std::shared_ptr<libMesh::FEBase> d_fe;
 
-    std::shared_ptr<::QBase> d_qrule;
+    std::shared_ptr<libMesh::QBase> d_qrule;
 
-    const std::vector<Real> *d_JxW;
+    const std::vector<libMesh::Real> *d_JxW;
 
-    const std::vector<std::vector<Real>> *d_phi;
+    const std::vector<std::vector<libMesh::Real>> *d_phi;
 
-    const std::vector<std::vector<RealGradient>> *d_dphi;
+    const std::vector<std::vector<libMesh::RealGradient>> *d_dphi;
 
     std::string d_isInputType;
 
-    const ::Elem *d_elem;
+    const libMesh::Elem *d_elem;
 
     bool d_integrateVolume;
 

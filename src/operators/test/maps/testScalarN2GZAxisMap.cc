@@ -57,14 +57,17 @@ static void setGpBoundary( int id,
     if ( mesh.get() == nullptr )
         return;
 
-    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-    auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+    auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+    auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-    std::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
-    std::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
+    auto d_feType = std::make_shared<libMesh::FEType>( feTypeOrder, feFamily );
+    std::shared_ptr<libMesh::FEBase> d_fe(
+        ( libMesh::FEBase::build( 2, ( *d_feType ) ) ).release() );
+    d_fe->get_xyz();
 
-    auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-    std::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
+    auto qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
+    std::shared_ptr<libMesh::QBase> d_qrule(
+        ( libMesh::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 

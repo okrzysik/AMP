@@ -15,7 +15,7 @@
 #include "externVars.h"
 
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/utils/Writer.h"
 
 #include "AMP/operators/ColumnOperator.h"

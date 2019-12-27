@@ -2,9 +2,9 @@
 #include "cell_hex8.h"
 #include "fe_interface.h"
 
-bool myContainsPoint(::Elem *e, const ::Point &p, double tol )
+bool myContainsPoint( libMesh::Elem *e, const ::Point &p, double tol )
 {
-    ::FEType fe_type( e->default_order() );
+    libMesh::FEType fe_type( e->default_order() );
 
     const ::Point mapped_point = ::FEInterface::inverse_map( e->dim(), fe_type, e, p, tol, false );
 
@@ -47,8 +47,8 @@ static void computeSlave2MasterNodes( const double precision,
                 } // end for k
                 AMP::Mesh::LibMeshNode nd = slaveMeshAdapter->getNode( slaveNodes[i] );
                 ::Point pt( nd.x(), nd.y(), nd.z() );
-                ::Elem *elPtr = &( el.getElem() );
-                ::FEType fe_type( elPtr->default_order() );
+                libMesh::Elem *elPtr = &( el.getElem() );
+                libMesh::FEType fe_type( elPtr->default_order() );
                 ::Point ref_point =
                     ::FEInterface::inverse_map( elPtr->dim(), fe_type, elPtr, pt, precision, true );
                 AMP_ASSERT(
@@ -93,7 +93,7 @@ static void computeSlave2MasterNodes( const double precision,
                 int yCoords[] = { -1, -1, 1, 1, -1, -1, 1, 1 };
                 int zCoords[] = { -1, -1, -1, -1, 1, 1, 1, 1 };
                 for ( size_t k = 0; k < side.numNodes(); k++ ) {
-                    unsigned int locNodeId = ::Hex8::side_nodes_map[bndSideId][k];
+                    unsigned int locNodeId = libMesh::Hex8::side_nodes_map[bndSideId][k];
                     double xFac = ( 2.0 - fabs( ref_point( 0 ) - xCoords[locNodeId] ) ) / 2.0;
                     double yFac = ( 2.0 - fabs( ref_point( 1 ) - yCoords[locNodeId] ) ) / 2.0;
                     double zFac = ( 2.0 - fabs( ref_point( 2 ) - zCoords[locNodeId] ) ) / 2.0;
@@ -154,8 +154,8 @@ static void computeSlave2MasterElem( const unsigned int slaveId,
         unsigned int rgId = ( zi * rgDim * rgDim ) + ( yi * rgDim ) + xi;
         std::vector<size_t> selectedElems;
         for ( size_t k = 0; k < rg2ElemMap[rgId].size(); k++ ) {
-            size_t elemId = rg2ElemMap[rgId][k];
-            ::Elem *el    = &( ( masterMeshAdapter->getElement( elemId ) ).getElem() );
+            size_t elemId     = rg2ElemMap[rgId][k];
+            libMesh::Elem *el = &( ( masterMeshAdapter->getElement( elemId ) ).getElem() );
             if ( myContainsPoint( el, currPt, precision ) ) {
                 // std::cout<<"Slave node "<<(bnd->globalID())<<" is in Master element
                 // "<<(elemId)<<std::endl;

@@ -26,23 +26,25 @@ MassElement::MassElement( const std::shared_ptr<ElementOperationParameters> &par
     std::string feTypeOrderName =
         ( params->d_db )->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
 
-    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+    auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
     std::string feFamilyName =
         ( params->d_db )->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
 
-    auto feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    auto feFamily = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
     std::string qruleTypeName =
         ( params->d_db )->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
 
-    auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    auto qruleType =
+        libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     const unsigned int dimension = 3;
 
-    d_feType.reset( new ::FEType( feTypeOrder, feFamily ) );
+    d_feType.reset( new libMesh::FEType( feTypeOrder, feFamily ) );
 
-    d_fe.reset( (::FEBase::build( dimension, ( *d_feType ) ) ).release() );
+    d_fe.reset( ( libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
+    d_fe->get_xyz();
 
     std::string qruleOrderName =
         ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
@@ -52,10 +54,10 @@ MassElement::MassElement( const std::shared_ptr<ElementOperationParameters> &par
     if ( qruleOrderName == "DEFAULT" ) {
         qruleOrder = d_feType->default_quadrature_order();
     } else {
-        qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
+        qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 
-    d_qrule.reset( (::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
+    d_qrule.reset( ( libMesh::QBase::build( qruleType, dimension, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -67,7 +69,7 @@ MassElement::MassElement( const std::shared_ptr<ElementOperationParameters> &par
 
 
 void MassElement::initializeForCurrentElement(
-    const ::Elem *elem, const std::shared_ptr<MassDensityModel> &densityModel )
+    const libMesh::Elem *elem, const std::shared_ptr<MassDensityModel> &densityModel )
 {
     d_elem = elem;
 

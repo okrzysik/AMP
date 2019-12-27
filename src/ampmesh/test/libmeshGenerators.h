@@ -3,7 +3,7 @@
 #define included_AMP_Unit_test_Libmesh_Generators_h
 
 #include "AMP/ampmesh/libmesh/initializeLibMesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "meshGenerators.h"
 
 // LibMesh include
@@ -34,7 +34,7 @@ public:
         auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create a libMesh mesh
-        mesh = std::make_shared<AMP::Mesh::libMesh>( params );
+        mesh = std::make_shared<AMP::Mesh::libmeshMesh>( params );
     }
 
     static std::string name() { return "LibMeshCubeGenerator"; }
@@ -64,7 +64,7 @@ public:
         auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create a libMesh mesh
-        mesh = std::make_shared<AMP::Mesh::libMesh>( params );
+        mesh = std::make_shared<AMP::Mesh::libmeshMesh>( params );
     }
 
     static std::string name() { return "ExodusReaderGenerator"; }
@@ -185,12 +185,13 @@ public:
         // Initialize libmesh
         AMP::AMP_MPI comm( AMP_COMM_SELF );
         libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( comm );
+        libMeshComm = std::make_shared<libMesh::Parallel::Communicator>( comm.getCommunicator() );
 
         const unsigned int mesh_dim  = 3;
         const unsigned int num_elem  = 3;
         const unsigned int num_nodes = 16;
 
-        std::shared_ptr<::Mesh> local_mesh( new ::Mesh( mesh_dim ) );
+        auto local_mesh = std::make_shared<libMesh::Mesh>( *libMeshComm, mesh_dim );
         local_mesh->reserve_elem( num_elem );
         local_mesh->reserve_nodes( num_nodes );
 
@@ -213,7 +214,7 @@ public:
 
         auto elemNodeMap = getElemNodeMap();
         for ( size_t i = 0; i < elemNodeMap.size(); i++ ) {
-            ::Elem *elem = local_mesh->add_elem( new ::libMesh::Hex8 );
+            libMesh::Elem *elem = local_mesh->add_elem( new ::libMesh::Hex8 );
             for ( int j = 0; j < 8; j++ ) {
                 elem->set_node( j ) = local_mesh->node_ptr( elemNodeMap[i][j] );
             }
@@ -225,7 +226,7 @@ public:
         }
 
         local_mesh->prepare_for_use( true );
-        mesh = std::make_shared<AMP::Mesh::libMesh>( local_mesh, "3 Element" );
+        mesh = std::make_shared<AMP::Mesh::libmeshMesh>( local_mesh, "3 Element" );
     }
 
     virtual ~libMeshThreeElementGenerator()
@@ -235,6 +236,7 @@ public:
     }
 
 protected:
+    std::shared_ptr<libMesh::Parallel::Communicator> libMeshComm;
     std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
 };
 

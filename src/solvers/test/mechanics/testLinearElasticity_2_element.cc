@@ -1,5 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -48,12 +48,13 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
         auto mesh_file_db = AMP::Database::parseInputFile( mesh_file );
 
         const unsigned int mesh_dim = 3;
-        std::shared_ptr<::Mesh> mesh( new ::Mesh( mesh_dim ) );
+        libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
+        auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
 
         AMP::readTestMesh( mesh_file_db, mesh );
         mesh->prepare_for_use( false );
 
-        auto meshAdapter = std::make_shared<AMP::Mesh::libMesh>( mesh, "TestMesh" );
+        auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "TestMesh" );
 
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
         auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(

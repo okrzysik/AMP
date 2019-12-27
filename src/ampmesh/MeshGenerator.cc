@@ -9,7 +9,7 @@
 //#include "AMP/ampmesh/STKmesh/STKMesh.h"
 #endif
 #ifdef USE_EXT_LIBMESH
-#include "AMP/ampmesh/libmesh/libMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #endif
 #ifdef USE_EXT_MOAB
 #include "AMP/ampmesh/moab/moabMesh.h"
@@ -53,7 +53,7 @@ std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
     } else if ( MeshType == std::string( "libMesh" ) ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH
-        mesh = std::make_shared<AMP::Mesh::libMesh>( params );
+        mesh = std::make_shared<AMP::Mesh::libmeshMesh>( params );
 #else
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif
@@ -123,7 +123,7 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     } else if ( MeshType == std::string( "libMesh" ) ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH
-        meshSize = AMP::Mesh::libMesh::estimateMeshSize( params );
+        meshSize = AMP::Mesh::libmeshMesh::estimateMeshSize( params );
 #else
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif
@@ -166,7 +166,7 @@ size_t Mesh::maxProcs( const MeshParameters::shared_ptr &params )
     } else if ( MeshType == std::string( "libMesh" ) ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH
-        maxSize = AMP::Mesh::libMesh::maxProcs( params );
+        maxSize = AMP::Mesh::libmeshMesh::maxProcs( params );
 #else
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif

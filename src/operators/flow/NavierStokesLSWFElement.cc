@@ -9,11 +9,11 @@ void NavierStokesLSWFElement::initTransportModel() { d_fe->reinit( d_elem ); }
 
 void NavierStokesLSWFElement::apply()
 {
-    const std::vector<Real> &JxW = ( *d_JxW );
+    const std::vector<libMesh::Real> &JxW = ( *d_JxW );
 
-    const std::vector<std::vector<RealGradient>> &dphi = ( *d_dphi );
+    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
 
-    const std::vector<std::vector<Real>> &phi = ( *d_phi );
+    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
 
     std::vector<double> &elementInputVectors = d_elementInputVectors;
 

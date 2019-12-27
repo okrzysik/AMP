@@ -1,10 +1,11 @@
-#ifndef included_AMP_libMeshElement
-#define included_AMP_libMeshElement
+#ifndef included_AMP_libmeshMeshElement
+#define included_AMP_libmeshMeshElement
 
 
 #include "AMP/ampmesh/MeshElement.h"
-#include "AMP/ampmesh/libmesh/libMesh.h"
-#include "AMP/ampmesh/libmesh/libMeshIterator.h"
+#include "AMP/ampmesh/libmesh/libmeshElemIterator.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
+#include "AMP/ampmesh/libmesh/libmeshNodeIterator.h"
 #include <memory>
 #include <vector>
 
@@ -14,32 +15,32 @@ namespace Mesh {
 
 
 /**
- * \class libMeshElement
+ * \class libmeshMeshElement
  * \brief A derived class used to define a mesh element
  * \details  This class provides routines for accessing and using a mesh element.
  * A mesh element can be thought of as the smallest unit of a mesh.  It is of a type
  * of GeomType.  This class is derived to store a libMesh element.
  */
-class libMeshElement : public MeshElement
+class libmeshMeshElement : public MeshElement
 {
 public:
     //! Empty constructor for a MeshElement
-    libMeshElement();
+    libmeshMeshElement();
 
     //! Copy constructor
-    libMeshElement( const libMeshElement & );
+    libmeshMeshElement( const libmeshMeshElement & );
 
     //! Assignment operator
-    libMeshElement &operator=( const libMeshElement & );
+    libmeshMeshElement &operator=( const libmeshMeshElement & );
 
     //! De-constructor for a MeshElement
-    virtual ~libMeshElement();
+    virtual ~libmeshMeshElement();
 
     //! Return the unique global ID of the element
     virtual MeshElementID globalID() const override { return d_globalID; }
 
     //! Return the element class
-    virtual inline std::string elementClass() const override { return "libMeshElement"; }
+    virtual inline std::string elementClass() const override { return "libmeshMeshElement"; }
 
     //! Return the elements composing the current element
     virtual void getElements( const GeomType type,
@@ -102,36 +103,40 @@ protected:
      * \param rank      Rank of the current processor (must agree with libmesh->processor_id())
      * \param meshID    ID of the current mesh
      */
-    libMeshElement( int dim,
-                    GeomType type,
-                    void *element,
-                    unsigned int rank,
-                    MeshID meshID,
-                    const libMesh *mesh );
-    libMeshElement( int dim,
-                    GeomType type,
-                    std::shared_ptr<::Elem> element,
-                    unsigned int rank,
-                    MeshID meshID,
-                    const libMesh *mesh );
+    libmeshMeshElement( int dim,
+                        GeomType type,
+                        void *element,
+                        unsigned int rank,
+                        MeshID meshID,
+                        const libmeshMesh *mesh );
+    libmeshMeshElement( int dim,
+                        GeomType type,
+                        std::shared_ptr<libMesh::Elem> element,
+                        unsigned int rank,
+                        MeshID meshID,
+                        const libmeshMesh *mesh );
 
     //! Clone the iterator
     virtual MeshElement *clone() const override;
 
     // Internal data
-    int d_dim;                    // The dimension of the mesh
-    unsigned int d_rank;          // The rank of the current processor
-    void *ptr_element;            // The underlying libmesh element properties (raw pointer)
-    std::shared_ptr<::Elem> ptr2; // Optional smart pointer to the element (to hold a copy)
-    const libMesh *d_mesh;        // The pointer to the current mesh
-    MeshID d_meshID;              // The ID of the current mesh
-    bool d_delete_elem;           // Do we need to delete the libMesh element
+    int d_dim;                           // The dimension of the mesh
+    unsigned int d_rank;                 // The rank of the current processor
+    void *ptr_element;                   // The underlying libmesh element properties (raw pointer)
+    std::shared_ptr<libMesh::Elem> ptr2; // Optional smart pointer to the element (to hold a copy)
+    const libmeshMesh *d_mesh;           // The pointer to the current mesh
+    MeshID d_meshID;                     // The ID of the current mesh
+    bool d_delete_elem;                  // Do we need to delete the libMesh element
 
-    friend class AMP::Mesh::libMesh;
-    friend class AMP::Mesh::libMeshIterator;
+    friend class AMP::Mesh::libmeshMesh;
+    friend class AMP::Mesh::libmeshNodeIterator;
+    friend class AMP::Mesh::libmeshElemIterator;
 
 private:
-    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "libMeshElement" ); }
+    static constexpr uint32_t getTypeID()
+    {
+        return AMP::Utilities::hash_char( "libmeshMeshElement" );
+    }
     MeshElementID d_globalID;
 };
 

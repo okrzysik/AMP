@@ -36,9 +36,9 @@ RobinMatrixCorrection::RobinMatrixCorrection(
     auto qruleTypeName   = ( params->d_db )->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
     d_qruleOrderName = ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
-    d_feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
-    d_feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
-    d_qruleType   = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    d_feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+    d_feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    d_qruleType   = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     d_variable = params->d_variable;
 
@@ -165,18 +165,19 @@ void RobinMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &pa
                 AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
                 for ( ; bnd1 != end_bnd1; ++bnd1 ) {
 
-                    std::shared_ptr<::FEType> d_feType( new ::FEType( d_feTypeOrder, d_feFamily ) );
-                    std::shared_ptr<::FEBase> d_fe(
-                        (::FEBase::build( 2, ( *d_feType ) ) ).release() );
+                    std::shared_ptr<libMesh::FEType> d_feType(
+                        new libMesh::FEType( d_feTypeOrder, d_feFamily ) );
+                    std::shared_ptr<libMesh::FEBase> d_fe(
+                        ( libMesh::FEBase::build( 2, ( *d_feType ) ) ).release() );
 
                     if ( d_qruleOrderName == "DEFAULT" ) {
                         d_qruleOrder = d_feType->default_quadrature_order();
                     } else {
-                        d_qruleOrder =
-                            Utility::string_to_enum<libMeshEnums::Order>( d_qruleOrderName );
+                        d_qruleOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>(
+                            d_qruleOrderName );
                     }
-                    std::shared_ptr<::QBase> d_qrule(
-                        (::QBase::build( d_qruleType, 2, d_qruleOrder ) ).release() );
+                    std::shared_ptr<libMesh::QBase> d_qrule(
+                        ( libMesh::QBase::build( d_qruleType, 2, d_qruleOrder ) ).release() );
 
                     // Get the nodes for the element and their global ids
                     std::vector<AMP::Mesh::MeshElement> currNodes =
@@ -209,9 +210,9 @@ void RobinMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &pa
 
                     d_fe->reinit( currElemPtr );
 
-                    const std::vector<Real> &JxW              = ( *d_JxW );
-                    const std::vector<std::vector<Real>> &phi = ( *d_phi );
-                    unsigned int numGaussPts                  = d_qrule->n_points();
+                    const std::vector<libMesh::Real> &JxW              = ( *d_JxW );
+                    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
+                    unsigned int numGaussPts                           = d_qrule->n_points();
 
                     std::vector<std::vector<double>> inputArgs(
                         elementInputVec.size(), std::vector<double>( currNodes.size() ) );
