@@ -14,8 +14,9 @@
 #undef OMPI_SKIP_MPICXX
 #endif
 
+#undef PETSC_VERSION_GIT
+#undef PETSC_VERSION_DATE_GIT
 #include "petscmat.h"
-
 
 #ifdef _FIX_FOR_PETSC_MPICH_CXX
 #ifndef MPICH_SKIP_MPICXX
