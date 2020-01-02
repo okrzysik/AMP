@@ -64,8 +64,8 @@ MPI_Comm uniqueGlobalComm = 11;
 
 
 #if defined( USE_SAMRAI ) && defined( USE_PETSC ) && !defined( USE_MPI )
-void *MPI_REQUEST_NULL   = (void *) 3;
-size_t MPI_ERR_IN_STATUS = 4;
+int MPI_REQUEST_NULL  = 3;
+int MPI_ERR_IN_STATUS = 4;
 #endif
 
 
