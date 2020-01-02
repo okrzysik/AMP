@@ -24,8 +24,8 @@
     #undef NULL_USE
     #define HAVE_MPI
     #ifndef included_tbox_SAMRAI_MPI
-        extern void* MPI_REQUEST_NULL;
-        extern size_t MPI_ERR_IN_STATUS;
+        extern int MPI_REQUEST_NULL;
+        extern int MPI_ERR_IN_STATUS;
     #endif
     #ifdef INCLUDED_SAMRAI_CONFIG_H
         #include "SAMRAI/tbox/SAMRAI_MPI.h"
