@@ -58,11 +58,11 @@ void BoomerAMGSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
     HYPRE_BoomerAMGSetMinIter( d_solver, d_min_iterations );
 
     // 6.2.15 in hypre 11.2 manual
-    d_max_coarse_size = db->getWithDefault<int>( "max_coarse_size", 800 );
+    d_max_coarse_size = db->getWithDefault<int>( "max_coarse_size", 32 );
     HYPRE_BoomerAMGSetMaxCoarseSize( d_solver, d_max_coarse_size );
 
     // 6.2.16 in hypre 11.2 manual
-    d_min_coarse_size = db->getWithDefault<int>( "min_coarse_size", 100 );
+    d_min_coarse_size = db->getWithDefault<int>( "min_coarse_size", 10 );
     HYPRE_BoomerAMGSetMinCoarseSize( d_solver, d_min_coarse_size );
 
     // 6.2.17 in hypre 11.2 manual
@@ -236,6 +236,9 @@ void BoomerAMGSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
         d_relax_type = db->getScalar<int>( "relax_type" );
         HYPRE_BoomerAMGSetRelaxType( d_solver, d_relax_type );
     }
+
+    // specify Gaussian elimination on the coarsest level
+    HYPRE_BoomerAMGSetCycleRelaxType( d_solver,  9, 3);
 
     // 6.2.60 in hypre 11.2 manual
     if ( db->keyExists( "relax_order" ) ) {

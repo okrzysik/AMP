@@ -218,6 +218,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
     auto comm         = AMP::AMP_MPI( AMP_COMM_WORLD );
+
     auto linearSolver = buildSolver( input_db, "LinearSolver", comm, linearOperator );
 
     // Set initial guess
@@ -244,7 +245,16 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
-        ut->failure( "TrilinosMueLuSolver does not solve a linear thermal problem with a nuclear "
+
+      auto solver_db = input_db->getDatabase( "LinearSolver" );   
+      auto solver_combo_name = solver_db->getString( "name" );
+      auto use_preconditioner = solver_db->getWithDefault<bool>( "use_preconditioner", false );
+      if( use_preconditioner ) {
+	std::string pc_name = solver_db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
+	solver_combo_name = solver_combo_name+"+"+pc_name;
+      }
+      
+      ut->failure( solver_combo_name + " does not solve a linear thermal problem with a nuclear "
                      "source term." );
     }
 
