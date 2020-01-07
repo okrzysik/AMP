@@ -196,14 +196,14 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
         AMP_ASSERT( dofs.size() == N_layer.size() );
         depth->getValuesByGlobalID( dofs.size(), &dofs[0], depth2 );
         x0[0] = 0.0;
-        for ( size_t i = 0; i < N_layer.size(); i++ )
-            x0[i + 1] = x0[i] + depth2[i];
+        for ( size_t j = 0; j < N_layer.size(); j++ )
+            x0[j + 1] = x0[j] + depth2[j];
         // Perform the time integration
         double dt2 = dt * 3600 * 24; // Convert from days to seconds
         AMP_ASSERT( dt2 >= 0.0 );
         OxideModel::integrateOxide( dt2, N_layer.size(), &N_layer[0], x0, Cb, C0, D, C1, x1, v1 );
-        for ( size_t i = 0; i < N_layer.size(); i++ )
-            depth2[i] = x1[i + 1] - x1[i];
+        for ( size_t j = 0; j < N_layer.size(); j++ )
+            depth2[j] = x1[j + 1] - x1[j];
         // Save the results
         DOF_C->getDOFs( id, dofs );
         AMP_ASSERT( (int) dofs.size() == N_total );

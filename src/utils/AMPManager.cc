@@ -601,7 +601,11 @@ std::string AMPManager::info()
     out << "Trilinos: " << TRILINOS_VERSION_STRING << std::endl;
 #endif
 #ifdef USE_EXT_SUNDIALS
+#ifdef SUNDIALS_PACKAGE_VERSION
     out << "Sundials: " << SUNDIALS_PACKAGE_VERSION << std::endl;
+#elif defined( SUNDIALS_VERSION )
+    out << "Sundials: " << SUNDIALS_VERSION << std::endl;
+#endif
 #endif
 #ifdef HYPRE_RELEASE_VERSION
     out << "Hypre: " << HYPRE_RELEASE_VERSION << std::endl;

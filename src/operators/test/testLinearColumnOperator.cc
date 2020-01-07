@@ -71,8 +71,8 @@ static void myTest( AMP::UnitTest *ut )
         std::vector<int> dofsPerNodeArr = innerInput_db->getVector<int>( "dofsPerNode" );
 
         // create a column operator object
-        std::shared_ptr<AMP::Operator::OperatorParameters> params;
-        auto columnOperator = std::make_shared<AMP::Operator::ColumnOperator>( params );
+        std::shared_ptr<AMP::Operator::OperatorParameters> colParams;
+        auto columnOperator = std::make_shared<AMP::Operator::ColumnOperator>( colParams );
 
         std::vector<AMP::LinearAlgebra::Variable::shared_ptr> inputVariables;
         std::vector<AMP::Discretization::DOFManager::shared_ptr> dofMapVec;
@@ -130,22 +130,22 @@ static void myTest( AMP::UnitTest *ut )
                 std::make_shared<AMP::LinearAlgebra::MultiVariable>( "columnInputVariable" );
             std::shared_ptr<AMP::LinearAlgebra::MultiVector> solVec =
                 AMP::LinearAlgebra::MultiVector::create( tmp_var, meshAdapter->getComm() );
-            for ( size_t i = 0; i < inputVariables.size(); i++ ) {
-                if ( inputVariables[i].get() != nullptr )
+            for ( size_t iv = 0; iv < inputVariables.size(); iv++ ) {
+                if ( inputVariables[iv].get() != nullptr )
                     solVec->addVector(
-                        AMP::LinearAlgebra::createVector( dofMapVec[i], inputVariables[i] ) );
+                        AMP::LinearAlgebra::createVector( dofMapVec[iv], inputVariables[iv] ) );
             }
             auto rhsVec = solVec->cloneVector();
             auto resVec = solVec->cloneVector();
 
-            for ( int i = 0; i < nVars; i++ ) {
-                auto opVar = inputVariables[i];
+            for ( int iv = 0; iv < nVars; iv++ ) {
+                auto opVar = inputVariables[iv];
                 if ( opVar->getName() == "temperature" ) {
-                    auto tVec = solVec->subsetVectorForVariable( inputVariables[i] );
+                    auto tVec = solVec->subsetVectorForVariable( inputVariables[iv] );
                     tVec->setToScalar( defTemp );
                 }
                 if ( opVar->getName() == "concentration" ) {
-                    auto cVec = solVec->subsetVectorForVariable( inputVariables[i] );
+                    auto cVec = solVec->subsetVectorForVariable( inputVariables[iv] );
                     cVec->setToScalar( defConc );
                 }
             }

@@ -546,10 +546,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createVolumeIntegralOperato
         ElementOperationFactory::createElementOperation( input_db->getDatabase( "SourceElement" ) );
 
     // now create the nonlinear source operator
-    std::shared_ptr<AMP::Database> sourceNLinFEOp_db;
-    if ( input_db->getString( "name" ) == "VolumeIntegralOperator" ) {
-        sourceNLinFEOp_db = input_db;
-    } else {
+    if ( input_db->getString( "name" ) != "VolumeIntegralOperator" ) {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 

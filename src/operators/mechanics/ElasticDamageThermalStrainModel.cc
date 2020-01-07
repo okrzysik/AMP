@@ -395,7 +395,6 @@ void ElasticDamageThermalStrainModel::computeEvalv( const std::vector<std::vecto
         std::vector<double> TEC( 1 );
         std::vector<double> TEC_1( 1 );
         std::vector<double> TEC_2( 1 );
-        std::vector<double> DN( 1 );
 
         d_material->property( "YoungsModulus" )->evalv( YM, inputMaterialParameters );
         d_material->property( "PoissonRatio" )->evalv( PR, inputMaterialParameters );

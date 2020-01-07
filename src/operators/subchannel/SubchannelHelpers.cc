@@ -17,7 +17,6 @@ namespace Subchannel {
 // Get the number of subchannels from the mesh
 size_t getNumberOfSubchannels( AMP::Mesh::Mesh::shared_ptr subchannel )
 {
-    AMP_MPI comm = subchannel->getComm();
     std::vector<double> x, y, z;
     AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( subchannel, x, y, z );
     AMP_ASSERT( x.size() >= 2 && y.size() >= 2 );
@@ -32,7 +31,6 @@ AMP::Mesh::Mesh::shared_ptr
 subsetForSubchannel( AMP::Mesh::Mesh::shared_ptr subchannel, size_t i, size_t j )
 {
     // Get the coordinates of the subchannel mesh
-    AMP_MPI comm = subchannel->getComm();
     std::vector<double> x, y, z;
     AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( subchannel, x, y, z );
     AMP_ASSERT( x.size() >= 2 && y.size() >= 2 );

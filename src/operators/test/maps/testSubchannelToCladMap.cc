@@ -223,7 +223,6 @@ int testSubchannelToCladMap( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
     runTest( "inputSubchannelToCladMap-1", &ut );
 
     ut.report();

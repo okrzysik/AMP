@@ -53,7 +53,7 @@ public:
      * \param[in]  m  Matrix to wrap
      * \param[in]  dele  If true, this class deletes the matrix
      */
-    ManagedEpetraMatrix( Epetra_CrsMatrix *m, bool dele = false );
+    explicit ManagedEpetraMatrix( Epetra_CrsMatrix *m, bool dele = false );
 
     /** \brief Destructor
      */
