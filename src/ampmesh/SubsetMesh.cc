@@ -86,7 +86,7 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
     // Create a list of all elements that compose the elements of GeomType
     for ( int t = 0; t < (int) GeomDim; t++ ) {
         d_elements[t] = std::vector<std::shared_ptr<std::vector<MeshElement>>>( d_max_gcw + 1 );
-        for ( int gcw = 0; gcw <= d_max_gcw; gcw++ ) {
+        for ( gcw = 0; gcw <= d_max_gcw; gcw++ ) {
             std::set<MeshElement> list;
             for ( const auto &elem : this->getIterator( GeomDim, gcw ) ) {
                 auto elements = elem.getElements( (GeomType) t );
@@ -120,7 +120,7 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
     for ( int t = 0; t < (int) GeomDim; t++ ) {
         // First get a global list of all ghost elements
         std::vector<MeshElementID> ghost_local;
-        for ( int gcw = 0; gcw <= d_max_gcw; gcw++ ) {
+        for ( gcw = 0; gcw <= d_max_gcw; gcw++ ) {
             ghost_local.reserve( ghost_local.size() + d_elements[t][gcw]->size() );
             for ( size_t i = 0; i < d_elements[t][gcw]->size(); i++ ) {
                 MeshElementID id = ( *d_elements[t][gcw] )[i].globalID();
@@ -199,7 +199,7 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
     std::set<int> new_boundary_ids;
     for ( int t = 0; t <= (int) GeomDim; t++ ) {
         for ( auto &boundary_id : boundary_ids ) {
-            for ( int gcw = 0; gcw <= d_max_gcw; gcw++ ) {
+            for ( gcw = 0; gcw <= d_max_gcw; gcw++ ) {
                 if ( gcw > 0 )
                     continue; // Iterators over id sets with ghost values is not supported in
                               // libmesh yet
@@ -250,7 +250,7 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
         std::vector<std::vector<std::shared_ptr<std::vector<MeshElement>>>>( (int) GeomDim + 1 );
     for ( int t = 0; t <= (int) GeomDim; t++ ) {
         d_surface[t] = std::vector<std::shared_ptr<std::vector<MeshElement>>>( d_max_gcw + 1 );
-        for ( int gcw = 0; gcw <= d_max_gcw; gcw++ ) {
+        for ( gcw = 0; gcw <= d_max_gcw; gcw++ ) {
             auto iterator1 = MultiVectorIterator( d_elements[t][gcw], 0 );
             auto iterator2 = d_parent_mesh->getSurfaceIterator( (GeomType) t, gcw );
             auto iterator  = Mesh::getIterator( SetOP::Intersection, iterator1, iterator2 );

@@ -120,11 +120,11 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
                     FileHandle = DBOpen( fname.c_str(), DB_HDF5, DB_APPEND );
                 }
                 // Write the base meshes
-                for ( auto &tmp : d_baseMeshes ) {
-                    auto &data = tmp.second;
+                for ( auto &baseMesh : d_baseMeshes ) {
+                    auto &data = baseMesh.second;
                     data.file  = fname.c_str();
-                    AMP_ASSERT( data.id == tmp.first );
-                    writeMesh( FileHandle, tmp.second, cycle, time );
+                    AMP_ASSERT( data.id == baseMesh.first );
+                    writeMesh( FileHandle, baseMesh.second, cycle, time );
                 }
                 // Close the file
                 DBClose( FileHandle );
@@ -142,11 +142,11 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
         auto fname_rank    = tmp2.str();
         DBfile *FileHandle = DBCreate( fname_rank.c_str(), DB_CLOBBER, DB_LOCAL, nullptr, DB_HDF5 );
         // Write the base meshes
-        for ( auto &tmp : d_baseMeshes ) {
-            auto &data = tmp.second;
+        for ( auto &baseMesh : d_baseMeshes ) {
+            auto &data = baseMesh.second;
             data.file  = fname_rank.c_str();
-            AMP_ASSERT( data.id == tmp.first );
-            writeMesh( FileHandle, tmp.second, cycle, time );
+            AMP_ASSERT( data.id == baseMesh.first );
+            writeMesh( FileHandle, baseMesh.second, cycle, time );
         }
         // Close the file
         DBClose( FileHandle );
@@ -532,10 +532,10 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
         } else {
             // Write each component
             for ( int j = 0; j < data.varSize[i]; ++j ) {
-                std::stringstream stream;
+                std::stringstream sstream;
                 stream << varNameRank << "_" << j;
                 DBPutUcdvar( FileHandle,
-                             stream.str().c_str(),
+                             sstream.str().c_str(),
                              meshName.c_str(),
                              1,
                              (char **) varnames,
@@ -636,10 +636,10 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
                 int recv_size = d_comm.probe( i, 24987 );
                 AMP_ASSERT( recv_size <= (int) max_size );
                 d_comm.recv( recv_buf, recv_size, i, false, 24987 );
-                char *ptr = recv_buf;
+                char *cptr = recv_buf;
                 for ( int j = 0; j < recv_num[i]; ++j ) {
-                    auto tmp = siloMultiMeshData::unpack( ptr );
-                    ptr      = &ptr[tmp.size()];
+                    auto tmp = siloMultiMeshData::unpack( cptr );
+                    cptr      = &cptr[tmp.size()];
                     meshdata.push_back( tmp );
                 }
             }

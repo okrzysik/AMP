@@ -175,7 +175,7 @@ std::vector<MeshElement> STKMeshElement::getElements( const GeomType type ) cons
         unsigned c = 0;
         for ( stk::mesh::PairIterRelation::iterator i = r.first; i != r.second; ++i, ++c ) {
             // We need to build a valid element
-            stk::mesh::Entity *elem = i->entity();
+            elem = i->entity();
             // Create the STKMeshElement
             children[c] = STKMeshElement( d_dim, elem, d_rank, d_meshID, d_mesh );
         }

@@ -296,7 +296,7 @@ void libmeshMesh::initialize()
         }
     }
     // Construct the list of elements of type side or edge
-    for ( int i = 0; i <= (int) GeomDim; i++ ) {
+    for ( i = 0; i <= (int) GeomDim; i++ ) {
         auto type = (GeomType) i;
         if ( type == GeomType::Vertex || type == GeomDim )
             continue;
@@ -372,9 +372,9 @@ void libmeshMesh::initialize()
                 localBoundaryElements.insert( element );
             else
                 ghostBoundaryElements.insert( element );
-            for ( unsigned int i = 0; i < element->n_sides(); i++ ) {
-                if ( element->neighbor_ptr( i ) == nullptr ) {
-                    auto side = element->build_side_ptr( i );
+            for ( unsigned int si = 0; si < element->n_sides(); si++ ) {
+                if ( element->neighbor_ptr( si ) == nullptr ) {
+                    auto side = element->build_side_ptr( si );
                     for ( unsigned int j = 0; j < side->n_nodes(); j++ ) {
                         auto node = side->node_ptr( j );
                         if ( (int) node->processor_id() == rank )
@@ -391,7 +391,7 @@ void libmeshMesh::initialize()
     d_localSurfaceElements[GeomDim2] =
         std::make_shared<std::vector<MeshElement>>( localBoundaryElements.size() );
     auto elem_iterator = localBoundaryElements.begin();
-    for ( size_t i = 0; i < localBoundaryElements.size(); i++ ) {
+    for ( i = 0; i < localBoundaryElements.size(); i++ ) {
         ( *d_localSurfaceElements[GeomDim2] )[i] = libmeshMeshElement(
             PhysicalDim, GeomDim, (void *) *elem_iterator, rank, d_meshID, this );
         ++elem_iterator;
@@ -400,7 +400,7 @@ void libmeshMesh::initialize()
     d_ghostSurfaceElements[GeomDim2] =
         std::make_shared<std::vector<MeshElement>>( ghostBoundaryElements.size() );
     elem_iterator = ghostBoundaryElements.begin();
-    for ( size_t i = 0; i < ghostBoundaryElements.size(); i++ ) {
+    for ( i = 0; i < ghostBoundaryElements.size(); i++ ) {
         ( *d_ghostSurfaceElements[GeomDim2] )[i] = libmeshMeshElement(
             PhysicalDim, GeomDim, (void *) *elem_iterator, rank, d_meshID, this );
         ++elem_iterator;
@@ -409,7 +409,7 @@ void libmeshMesh::initialize()
     d_localSurfaceElements[0] =
         std::make_shared<std::vector<MeshElement>>( localBoundaryNodes.size() );
     auto node_iterator = localBoundaryNodes.begin();
-    for ( size_t i = 0; i < localBoundaryNodes.size(); i++ ) {
+    for ( i = 0; i < localBoundaryNodes.size(); i++ ) {
         ( *d_localSurfaceElements[0] )[i] = libmeshMeshElement(
             PhysicalDim, GeomType::Vertex, (void *) *node_iterator, rank, d_meshID, this );
         ++node_iterator;
@@ -418,7 +418,7 @@ void libmeshMesh::initialize()
     d_ghostSurfaceElements[0] =
         std::make_shared<std::vector<MeshElement>>( ghostBoundaryNodes.size() );
     node_iterator = ghostBoundaryNodes.begin();
-    for ( size_t i = 0; i < ghostBoundaryNodes.size(); i++ ) {
+    for ( i = 0; i < ghostBoundaryNodes.size(); i++ ) {
         ( *d_ghostSurfaceElements[0] )[i] = libmeshMeshElement(
             PhysicalDim, GeomType::Vertex, (void *) *node_iterator, rank, d_meshID, this );
         ++node_iterator;
@@ -432,7 +432,7 @@ void libmeshMesh::initialize()
         auto type = (GeomType) type2;
         std::set<MeshElement> local, ghost;
         MeshIterator it = getIterator( type, 0 );
-        for ( size_t i = 0; i < it.size(); i++ ) {
+        for ( i = 0; i < it.size(); i++ ) {
             auto nodes = it->getElements( GeomType::Vertex );
             AMP_ASSERT( !nodes.empty() );
             bool on_boundary = true;

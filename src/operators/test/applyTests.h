@@ -89,7 +89,7 @@ inline void applyTests( AMP::UnitTest *ut,
             testOperator->residual( rhsVec, uVec, resVec );
         } // end for j
         ut->failure( msg );
-    } catch ( std::exception ) {
+    } catch ( const std::exception& ) {
         ut->passes( msg );
     }
 
@@ -105,7 +105,7 @@ inline void applyTests( AMP::UnitTest *ut,
             testOperator->residual( rhsVec, solVec, rVec );
         } // end for j
         ut->failure( msg );
-    } catch ( std::exception ) {
+    } catch ( const std::exception& ) {
         ut->passes( msg );
     }
 
@@ -120,7 +120,7 @@ inline void applyTests( AMP::UnitTest *ut,
             testOperator->residual( fVec, uVec, resVec );
         } // end for j
         ut->failure( msg );
-    } catch ( std::exception ) {
+    } catch ( const std::exception& ) {
         ut->passes( msg );
     }
 
@@ -135,7 +135,7 @@ inline void applyTests( AMP::UnitTest *ut,
             testOperator->residual( rhsVec, uVec, rVec );
         } // end for j
         ut->failure( msg );
-    } catch ( std::exception ) {
+    } catch ( const std::exception& ) {
         ut->passes( msg );
     }
 
@@ -151,7 +151,7 @@ inline void applyTests( AMP::UnitTest *ut,
             testOperator->residual( fVec, solVec, rVec );
         } // end for j
         ut->failure( msg );
-    } catch ( std::exception ) {
+    } catch ( const std::exception& ) {
         ut->passes( msg );
     }
 
@@ -166,7 +166,7 @@ inline void applyTests( AMP::UnitTest *ut,
             testOperator->residual( fVec, uVec, rVec );
         } // end for j
         ut->failure( msg );
-    } catch ( std::exception ) {
+    } catch ( const std::exception& ) {
         ut->passes( msg );
     }
 

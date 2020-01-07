@@ -1078,8 +1078,8 @@ bool MultiMesh::addProcSimulation( const loadBalanceSimulator &mesh,
         }
     } else if ( method == 2 ) {
         // Place all meshes on all processors
-        for ( auto &mesh : submeshes ) {
-            bool test = mesh.addProc( rank );
+        for ( auto &submesh : submeshes ) {
+            bool test = submesh.addProc( rank );
             added     = added || test;
         }
     } else {

@@ -650,12 +650,12 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
     // Create a list if elements removing any duplicate elements
     std::set<MeshElementIndex> set;
     for ( auto block : intersection ) {
-        auto type = block.first.type();
+        auto itype = block.first.type();
         auto side = block.first.side();
         for ( int k = block.second.index( 2 ); k >= block.first.index( 2 ); k-- ) {
             for ( int j = block.second.index( 1 ); j >= block.first.index( 1 ); j-- ) {
                 for ( int i = block.second.index( 0 ); i >= block.first.index( 0 ); i-- ) {
-                    set.emplace( MeshElementIndex( type, side, i, j, k ) );
+                    set.emplace( MeshElementIndex( itype, side, i, j, k ) );
                 }
             }
         }
@@ -699,12 +699,12 @@ BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
     // Create a list if elements removing any duplicate elements
     std::set<MeshElementIndex> set;
     for ( auto block : intersection ) {
-        auto type = block.first.type();
+        auto itype = block.first.type();
         auto side = block.first.side();
         for ( int k = block.second.index( 2 ); k >= block.first.index( 2 ); k-- ) {
             for ( int j = block.second.index( 1 ); j >= block.first.index( 1 ); j-- ) {
                 for ( int i = block.second.index( 0 ); i >= block.first.index( 0 ); i-- ) {
-                    set.emplace( MeshElementIndex( type, side, i, j, k ) );
+                    set.emplace( MeshElementIndex( itype, side, i, j, k ) );
                 }
             }
         }
