@@ -106,8 +106,8 @@ TrilinosMueLuSolver::getSmootherFactory( const int level )
 {
     std::string ifpackType;
     Teuchos::RCP<MueLu::SmootherPrototype<SC, LO, GO, NO>> smootherPrototype;
-
-    const auto &mueLuLevel = d_mueluHierarchy->GetLevel( level );
+   
+    //const auto &mueLuLevel = d_mueluHierarchy->GetLevel( level );
     //    const auto A           = mueLuLevel->Get<Teuchos::RCP<Xpetra::Operator<SC, LO, GO, NO>>>( "A" );
 
     auto &smootherParams = getSmootherParameters( level );
