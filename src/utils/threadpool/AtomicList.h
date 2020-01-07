@@ -17,12 +17,16 @@ namespace AMP {
  * \details This class implements a basic sorted list that is thread-safe and lock-free.
  *    Entries are stored smallest to largest according to the compare operator
  */
-template<class TYPE, int MAX_SIZE, class COMPARE = std::less<TYPE>>
+template<class TYPE, class COMPARE = std::less<TYPE>>
 class AtomicList final
 {
 public:
     //! Default constructor
-    AtomicList( const TYPE &default_value = TYPE(), const COMPARE &comp = COMPARE() );
+    AtomicList( size_t capacity = 1024, const TYPE &default_value = TYPE(),
+        const COMPARE &comp = COMPARE() );
+
+    //! Destructor
+    ~AtomicList();
 
     /*!
      * \brief   Remove an item from the list
@@ -67,16 +71,22 @@ public:
      */
     inline void clear()
     {
-        while ( !empty() ) {
+        while ( !empty() )
             remove_first();
-        }
     }
 
     /*!
      * \brief   Return the capacity of the list
      * \details Return the maximum number of items the list can hold
      */
-    inline constexpr size_t capacity() const { return MAX_SIZE; }
+    inline constexpr size_t capacity() const { return d_capacity; }
+
+    /*!
+     * \brief   Return the availible space
+     * \details Return the current availible space (capacity - size)
+     */
+    inline constexpr size_t availible() const { return d_capacity - size(); }
+
 
     /*!
      * \brief   Check the list
@@ -99,10 +109,11 @@ public:
 private:
     // Data members
     COMPARE d_compare;
+    const size_t d_capacity;
     volatile TYPE d_default;
-    volatile TYPE d_objects[MAX_SIZE];
+    volatile TYPE *d_objects;
     volatile AtomicOperations::int32_atomic d_N;
-    volatile AtomicOperations::int32_atomic d_next[MAX_SIZE + 1];
+    volatile AtomicOperations::int32_atomic *d_next;
     volatile AtomicOperations::int32_atomic d_unused;
     volatile AtomicOperations::int64_atomic d_N_insert;
     volatile AtomicOperations::int64_atomic d_N_remove;
@@ -144,54 +155,14 @@ private:
     }
 
 
-private:
-    AtomicList( const AtomicList & );
-    AtomicList &operator=( const AtomicList & );
-};
-
-
-/** \class MemoryPool
- *
- * \brief Pool allocator
- * \details This class implements a basic fast pool allocator that is thread-safe.
- */
-template<class TYPE, class INT_TYPE = int>
-class MemoryPool final
-{
 public:
-    //! Default constructor
-    explicit MemoryPool( size_t size );
-
-    //! destructor
-    ~MemoryPool();
-
-    /*!
-     * \brief   Allocate an object
-     * \details Allocates a new object from the pool
-     * @return          Return the new pointer, or nullptr if there is no more room in the pool
-     */
-    inline TYPE *allocate();
-
-    /*!
-     * \brief   Insert an item
-     * \details Insert an item into the list
-     * @param ptr       The pointer to free
-     */
-    inline void free( TYPE *ptr );
-
-private:
-    // Data members
-    volatile TYPE *d_objects;
-    volatile AtomicOperations::int32_atomic d_next;
-
-private:
-    MemoryPool( const MemoryPool & );
-    MemoryPool &operator=( const MemoryPool & );
+    AtomicList( const AtomicList & ) = delete;
+    AtomicList &operator=( const AtomicList & ) = delete;
 };
 
 
 } // namespace AMP
 
-#include "AMP/utils/threadpool/atomic_list.hpp"
+#include "AMP/utils/threadpool/AtomicList.hpp"
 
 #endif

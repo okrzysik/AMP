@@ -72,8 +72,8 @@ public:
      * \param[in]  alias  The parameters to construct this engine
      * \param[in]  p  The buffer to use to construct the engine
      */
-    EpetraVectorEngine( std::shared_ptr<VectorEngineParameters> alias,
-                        std::shared_ptr<VectorData> p = nullptr );
+    explicit EpetraVectorEngine( std::shared_ptr<VectorEngineParameters> alias,
+                                 std::shared_ptr<VectorData> p = nullptr );
 
     /** \brief Destructor
      */

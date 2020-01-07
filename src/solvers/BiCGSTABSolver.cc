@@ -183,7 +183,7 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         d_pOperator->apply( p_hat, v );
 
-        double alpha = r_tilde->dot( v );
+        alpha = r_tilde->dot( v );
         AMP_ASSERT( alpha != 0.0 );
         alpha = rho[1] / alpha;
 

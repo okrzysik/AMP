@@ -277,7 +277,6 @@ void ManagedVector::setValuesByGlobalID( int numVals, size_t *ndx, const double 
     if ( vec.get() != nullptr ) {
         AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
         *d_UpdateState         = UpdateState::SETTING;
-        Vector::shared_ptr vec = std::dynamic_pointer_cast<Vector>( d_Engine );
         vec->setValuesByGlobalID( numVals, ndx, vals );
         fireDataChange();
     } else {

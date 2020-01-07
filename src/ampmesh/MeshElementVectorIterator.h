@@ -22,12 +22,12 @@ public:
     MultiVectorIterator();
 
     //! Default MultiVectorIterator constructor
-    MultiVectorIterator( std::shared_ptr<std::vector<MeshElement>> elements, size_t pos = 0 );
+    explicit MultiVectorIterator( std::shared_ptr<std::vector<MeshElement>> elements, size_t pos = 0 );
 
     /** MultiVectorIterator constructor
      *  Note that this version of the constructor will create a copy of the elements
      */
-    MultiVectorIterator( const std::vector<MeshElement> &elements, size_t pos = 0 );
+    explicit MultiVectorIterator( const std::vector<MeshElement> &elements, size_t pos = 0 );
 
     //! Deconstructor
     virtual ~MultiVectorIterator();

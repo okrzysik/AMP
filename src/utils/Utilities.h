@@ -73,6 +73,7 @@ namespace Utilities {
 
 // Include functions from StackTrace
 using StackTrace::Utilities::abort;
+using StackTrace::Utilities::exec;
 using StackTrace::Utilities::getMemoryUsage;
 using StackTrace::Utilities::getSystemMemory;
 using StackTrace::Utilities::tick;

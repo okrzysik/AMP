@@ -369,7 +369,6 @@ void VonMises_IsotropicKinematicHardening::getConstitutiveMatrix( double *&const
     double sig_np1[6];
     double ephbp_np1 = 1.0, sigy_np1 = 1.0;
     double G = 1.0, K = 1.0, Ep = 1.0, sq23 = 1.0;
-    double one3 = 1.0 / 3.0, two3 = 2.0 / 3.0;
 
     double sig_dev[6], n_dir[6];
     // double q_np1 = 1.0, sig_np1_kk = 1.0, lam = 1.0;
@@ -389,8 +388,8 @@ void VonMises_IsotropicKinematicHardening::getConstitutiveMatrix( double *&const
     // = 1.0;
     // double a_n[6], xi_trial_eff = 1.0, xi_trial[6], alpha_n_kk = 1.0;
 
-    one3 = 1.0 / 3.0;
-    two3 = 2.0 / 3.0;
+    const double one3 = 1.0 / 3.0;
+    const double two3 = 2.0 / 3.0;
     sq23 = sqrt( two3 );
 
     // std::cout << "sig_0 = " << sig_0 << " sig_inf = " << sig_inf << std::endl;
@@ -591,8 +590,6 @@ void VonMises_IsotropicKinematicHardening::radialReturn(
     double *eph_bar_plas_np1,
     const std::vector<std::vector<double>> &strain )
 {
-    std::vector<std::vector<double>> inputMaterialParameters( 3 );
-
     if ( d_useMaterialsLibrary == true ) {
         computeEvalv( strain );
     }
@@ -619,7 +616,7 @@ void VonMises_IsotropicKinematicHardening::radialReturn(
     // double ephbp_n = 1.0, ephbp_np1 = 1.0, sigy_n = 1.0, sigy_np1 = 1.0, lam = 1.0;
     double ephbp_n = 1.0, ephbp_np1 = 1.0, sigy_np1 = 1.0, lam = 1.0;
     double G = 1.0, K = 1.0, Ep = 1.0, sq23 = 1.0, term1 = 1.0, term2 = 1.0;
-    double tol = 1.0E-8, one3 = 1.0 / 3.0, two3 = 2.0 / 3.0;
+    double tol = 1.0E-8;
     double deph_dev[6], sig_dev[6], sig_trial_dev[6], n_dir[6];
     // double deph_kk = 1.0, sig_kk = 1.0, sig_trial_kk = 1.0, q_trial = 1.0, twoG = 1.0, phi = 1.0;
     double deph_kk = 1.0, sig_kk = 1.0, sig_trial_kk = 1.0, twoG = 1.0, phi = 1.0;
@@ -646,8 +643,8 @@ void VonMises_IsotropicKinematicHardening::radialReturn(
       std::cout << "dstra[" << i << "] = " << dstra[i] << std::endl;
     }*/
 
-    one3    = 1.0 / 3.0;
-    two3    = 2.0 / 3.0;
+    constexpr double one3    = 1.0 / 3.0;
+    constexpr double two3    = 2.0 / 3.0;
     sq23    = sqrt( two3 );
     ephbp_n = eph_bar_plas_n; // Effective plastic strain at the previous time step.
     // sigy_n = ystre_n;           //Yield stress at the previous time step.

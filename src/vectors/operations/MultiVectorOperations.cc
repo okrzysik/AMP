@@ -154,11 +154,11 @@ double MultiVectorOperations::localWrmsNormMask( const VectorOperations &x,
  ****************************************************************/
 void MultiVectorOperations::copy( const VectorOperations &x )
 {
-    auto x2 = dynamic_cast<const MultiVectorOperations *>( &x );
-    if ( x2 ) {
+    auto xc = dynamic_cast<const MultiVectorOperations *>( &x );
+    if ( xc ) {
         // Both this and x are multivectors
         for ( size_t i = 0; i != d_operations.size(); i++ )
-            d_operations[i]->copy( *( x2->d_operations[i] ) );
+            d_operations[i]->copy( *( xc->d_operations[i] ) );
     } else {
         // x is not a multivector, try to call a default implimentation
         auto y2 = d_VectorData;

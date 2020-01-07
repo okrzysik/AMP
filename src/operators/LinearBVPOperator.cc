@@ -47,10 +47,10 @@ void LinearBVPOperator::reset( const std::shared_ptr<OperatorParameters> &params
 
         for ( auto cparams : columnBoundaryParams->d_OperatorParameters ) {
 
-            std::shared_ptr<LinearBoundaryOperatorParameters> linearBoundaryParams =
+            std::shared_ptr<LinearBoundaryOperatorParameters> linearColBoundaryParams =
                 std::dynamic_pointer_cast<LinearBoundaryOperatorParameters>( cparams );
-            if ( linearBoundaryParams != nullptr ) {
-                linearBoundaryParams->d_inputMatrix = d_volumeOperator->getMatrix();
+            if ( linearColBoundaryParams != nullptr ) {
+                linearColBoundaryParams->d_inputMatrix = d_volumeOperator->getMatrix();
             }
         }
         d_boundaryOperator->reset( columnBoundaryParams );

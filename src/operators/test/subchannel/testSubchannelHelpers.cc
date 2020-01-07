@@ -158,7 +158,7 @@ static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
         cladTemp->setToScalar( clad_temp );
     }
     pass = true;
-    for ( size_t i = 0; i < N_subchannels; i++ ) {
+    for ( size_t sc = 0; sc < N_subchannels; sc++ ) {
         AMP_INSIST( N_subchannels == 1, "This is currently only programmed for one subchannel" );
         AMP::Mesh::MeshIterator it =
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 );
@@ -173,10 +173,10 @@ static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
         std::vector<double> flux3 =
             AMP::Operator::Subchannel::getHeatFluxClad( z_face,
                                                         face_ids,
-                                                        subchannel_diam[i],
+                                                        subchannel_diam[sc],
                                                         reynolds,
                                                         prandtl,
-                                                        channel_fraction[i],
+                                                        channel_fraction[sc],
                                                         subchannelPhysicsModel,
                                                         flowVec,
                                                         cladTemp );

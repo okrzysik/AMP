@@ -62,8 +62,8 @@ public:
      * \param[in] vars  Optional list of variables in the MultiVariable
      *
      */
-    MultiVariable(
-        const std::string &name,
+    explicit MultiVariable(
+	const std::string &name,
         const std::vector<Variable::shared_ptr> &vars = std::vector<Variable::shared_ptr>() );
 
     /** \brief Destructor
