@@ -33,6 +33,8 @@ COPY_TEST_FILE( input_testLinearRobinBoundaryOperator-1 )
 COPY_TEST_FILE( input_testLinearRobinBoundaryOperator-2 )
 COPY_TEST_FILE( input_testNonlinearKrylovAccelerator-NonlinearThermal-cylinder_kIsOne )
 COPY_TEST_FILE( input_testNonlinearKrylovAccelerator-NonlinearThermal-cylinder_MATPRO )
+COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO petsc/data )
+COPY_TEST_FILE( input_testPetscSNESSolver-JFNK-ML-NonlinearMechanics-1-normal mechanics/data )
 COPY_TEST_FILE( input_testColumnSolver-LinearThermalAndFick-1 )
 COPY_TEST_FILE( inputNonlinearKrylovAccelerator1 )
 COPY_TEST_FILE( inputNonlinearKrylovAccelerator2 )
@@ -94,6 +96,7 @@ COPY_MESH_FILE( cube4096.e )
 COPY_MESH_FILE( cube64.with.boundary.labels.e )
 COPY_MESH_FILE( cube.with.12.boundaries.e )
 COPY_MESH_FILE( cube.with.12.boundaries.2.e )
+COPY_MESH_FILE( brick.e )
 
 
 # Add the tests
