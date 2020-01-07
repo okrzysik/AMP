@@ -207,7 +207,7 @@ void linearThermalTest( AMP::UnitTest *ut )
 
     // Serial execution
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    for ( int i = 0; i < globalComm.getSize(); i++ ) {
+    for ( int i = 0; i < globalComm.getSize(); ++i ) {
         if ( globalComm.getRank() == i ) {
             std::string filename          = "data_" + exeName;
             int rank                      = globalComm.getRank();
@@ -225,12 +225,12 @@ void linearThermalTest( AMP::UnitTest *ut )
 
             iterator        = iterator.begin();
             size_t numNodes = 0, iNode = 0;
-            for ( ; iterator != iterator.end(); iterator++ )
+            for ( ; iterator != iterator.end(); ++iterator )
                 numNodes++;
 
             iterator   = iterator.end();
             double mse = 0.0;
-            for ( ; iterator != iterator.end(); iterator++ ) {
+            for ( ; iterator != iterator.end(); ++iterator ) {
                 std::vector<size_t> gid;
                 nodalDofMap->getDOFs( iterator->globalID(), gid );
                 cal = TemperatureInKelvinVec->getValueByGlobalID( gid[0] );

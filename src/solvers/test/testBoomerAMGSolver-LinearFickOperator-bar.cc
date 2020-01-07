@@ -162,7 +162,7 @@ void linearFickTest( AMP::UnitTest *ut )
     double c     = -power / 2.;
     double b     = -10. * power;
     double a     = 300. + 150. * power;
-    bool passes  = 1;
+    bool passes  = true;
 
     if ( false ) {
         double cal, zee, sol, err;
@@ -185,11 +185,11 @@ void linearFickTest( AMP::UnitTest *ut )
 
                 iterator        = iterator.begin();
                 size_t numNodes = 0, iNode = 0;
-                for ( ; iterator != iterator.end(); iterator++ )
+                for ( ; iterator != iterator.end(); ++iterator )
                     numNodes++;
 
                 iterator = iterator.begin();
-                for ( ; iterator != iterator.end(); iterator++ ) {
+                for ( ; iterator != iterator.end(); ++iterator ) {
                     std::vector<size_t> gid;
                     nodalDofMap->getDOFs( iterator->globalID(), gid );
                     cal = SolutionVec->getValueByGlobalID( gid[0] );
@@ -218,9 +218,9 @@ void linearFickTest( AMP::UnitTest *ut )
                 file.close();
             }
         }
+	if ( passes )
+	  ut->passes( "The linear fick solve is verified." );
     }
-    if ( passes )
-        ut->passes( "The linear fick solve is verified." );
 
 // Plot the results
 #ifdef USE_EXT_SILO
