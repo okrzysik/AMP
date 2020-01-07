@@ -1,8 +1,9 @@
 // Copyright © 2004 Mark Berrill. All Rights Reserved. This work is distributed with permission,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 // PARTICULAR PURPOSE.
-#ifndef included_AMP_ThreadPoolAtomicHelpers
-#define included_AMP_ThreadPoolAtomicHelpers
+#ifndef included_AMPThreadPoolAtomicHelpers
+#define included_AMPThreadPoolAtomicHelpers
+
 #include <stdexcept>
 #include <stdint.h>
 #include <stdio.h>
@@ -19,12 +20,12 @@
 // Using MAC
 #define USE_MAC
 #include <libkern/OSAtomic.h>
-#elif defined( __linux ) || defined( __unix ) || defined( __posix )
+#elif defined( __linux ) || defined( __linux__ ) || defined( __unix ) || defined( __posix )
 // Using Linux
 #define USE_LINUX
 #include <unistd.h>
 #if !defined( __GNUC__ )
-#define USE_PTHREAD_ATOMIC_LOCK
+#define USE_PTHREAD_AMP_LOCK
 #include "pthread.h"
 #endif
 #else
@@ -57,19 +58,19 @@ namespace AtomicOperations {
 #if defined( USE_WINDOWS )
 typedef long int32_atomic;
 typedef __int64 int64_atomic;
-#define NO_INST_ATTR_ATOMIC
+#define NO_INST_ATTR_AMP
 #elif defined( USE_MAC )
 typedef int32_t int32_atomic;
 typedef int64_t int64_atomic;
-#define NO_INST_ATTR_ATOMIC
+#define NO_INST_ATTR_AMP
 #elif defined( __GNUC__ )
 typedef int int32_atomic;
 typedef long int int64_atomic;
-#define NO_INST_ATTR_ATOMIC __attribute__( ( no_instrument_function ) )
-#elif defined( USE_PTHREAD_ATOMIC_LOCK )
+#define NO_INST_ATTR_AMP __attribute__( ( no_instrument_function ) )
+#elif defined( USE_PTHREAD_AMP_LOCK )
 typedef int int32_atomic;
 typedef long int int64_atomic;
-#define NO_INST_ATTR_ATOMIC
+#define NO_INST_ATTR_AMP
 #else
 #error Unknown OS
 #endif
@@ -123,28 +124,28 @@ inline void atomic_set( int64_atomic volatile *x, int64_atomic y );
  * \details Increment x and return the new value
  * \param[in] x     The pointer to the value to increment
  */
-inline int32_atomic atomic_increment( int32_atomic volatile *x ) NO_INST_ATTR_ATOMIC;
+inline int32_atomic atomic_increment( int32_atomic volatile *x ) NO_INST_ATTR_AMP;
 
 /**
  * \brief Increment returning the new value
  * \details Increment x and return the new value
  * \param[in] x     The pointer to the value to increment
  */
-inline int64_atomic atomic_increment( int64_atomic volatile *x ) NO_INST_ATTR_ATOMIC;
+inline int64_atomic atomic_increment( int64_atomic volatile *x ) NO_INST_ATTR_AMP;
 
 /**
  * \brief Decrement returning the new value
  * \details Decrement x and return the new value
  * \param[in] x     The pointer to the value to decrement
  */
-inline int32_atomic atomic_decrement( int32_atomic volatile *x ) NO_INST_ATTR_ATOMIC;
+inline int32_atomic atomic_decrement( int32_atomic volatile *x ) NO_INST_ATTR_AMP;
 
 /**
  * \brief Decrement returning the new value
  * \details Decrement x and return the new value
  * \param[in] x     The pointer to the value to decrement
  */
-inline int64_atomic atomic_decrement( int64_atomic volatile *x ) NO_INST_ATTR_ATOMIC;
+inline int64_atomic atomic_decrement( int64_atomic volatile *x ) NO_INST_ATTR_AMP;
 
 /**
  * \brief Add returning the new value
@@ -152,7 +153,7 @@ inline int64_atomic atomic_decrement( int64_atomic volatile *x ) NO_INST_ATTR_AT
  * \param[in] x     The pointer to the value to add to
  * \param[in] y     The value to add
  */
-inline int32_atomic atomic_add( int32_atomic volatile *x, int32_atomic y ) NO_INST_ATTR_ATOMIC;
+inline int32_atomic atomic_add( int32_atomic volatile *x, int32_atomic y ) NO_INST_ATTR_AMP;
 
 /**
  * \brief Add returning the new value
@@ -160,7 +161,7 @@ inline int32_atomic atomic_add( int32_atomic volatile *x, int32_atomic y ) NO_IN
  * \param[in] x     The pointer to the value to add to
  * \param[in] y     The value to add
  */
-inline int64_atomic atomic_add( int64_atomic volatile *x, int64_atomic y ) NO_INST_ATTR_ATOMIC;
+inline int64_atomic atomic_add( int64_atomic volatile *x, int64_atomic y ) NO_INST_ATTR_AMP;
 
 /**
  * \brief Compare the given value and swap
@@ -410,7 +411,7 @@ inline bool atomic_compare_and_swap( void *volatile *v, void *x, void *y )
 {
     return __sync_bool_compare_and_swap( v, x, y );
 }
-#elif defined( USE_PTHREAD_ATOMIC_LOCK )
+#elif defined( USE_PTHREAD_AMP_LOCK )
 extern pthread_mutex_t atomic_pthread_lock;
 inline int32_atomic atomic_increment( int32_atomic volatile *x )
 {

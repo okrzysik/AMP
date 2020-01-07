@@ -1,9 +1,7 @@
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/threadpool/atomic_helpers.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/threadpool/atomic_helpers.h"
-
 #include <atomic>
 #include <chrono>
 #include <cstdio>
@@ -36,8 +34,8 @@ static void modify_counter( int N, AtomicOperations::counter_t &counter )
  ******************************************************************/
 int main( int argc, char *argv[] )
 {
-    AMP::AMP_MPI::start_MPI( argc, argv );
-    AMP::UnitTest ut;
+    AMP::AMPManager::startup( argc, argv );
+    UnitTest ut;
 
     int N_threads = 64;      // Number of threads
     int N_count   = 1000000; // Number of work items
@@ -80,7 +78,7 @@ int main( int argc, char *argv[] )
         sprintf( tmp, "Count of %i did not match expected count of %i", val, N_count );
         ut.failure( tmp );
     }
-    AMP::printp( "Time to increment (serial) = %0.1f ns\n", 1e9 * time_inc_serial );
+    printp( "Time to increment (serial) = %0.1f ns\n", 1e9 * time_inc_serial );
 
     // Decrement the counter in serial
     start = std::chrono::high_resolution_clock::now();
@@ -132,7 +130,7 @@ int main( int argc, char *argv[] )
 
     // Check the time to increment/decrement
     if ( time_inc_serial > 100e-9 || time_dec_serial > 100e-9 || time_inc_parallel > 100e-9 ||
-         time_dec_serial > 100e-9 ) {
+         time_dec_parallel > 100e-9 ) {
 #if USE_GCOV
         ut.expected_failure( "Time to increment/decrement count is too expensive" );
 #else
@@ -146,6 +144,6 @@ int main( int argc, char *argv[] )
     ut.report();
     auto N_errors = static_cast<int>( ut.NumFailGlobal() );
     ut.reset();
-    AMP::AMP_MPI::stop_MPI();
+    AMP::AMPManager::shutdown();
     return N_errors;
 }
