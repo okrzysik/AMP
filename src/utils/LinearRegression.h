@@ -30,7 +30,7 @@ namespace AMP {
 
 class LinearRegression
 {
-    friend std::ostream &operator<<( std::ostream &os, LinearRegression &linReg )
+    friend std::ostream &operator<<( std::ostream &os, const LinearRegression &linReg )
     {
         if ( linReg.haveData() )
             os << "f(x) = " << linReg.getA() << " + ( " << linReg.getB() << " * x )";

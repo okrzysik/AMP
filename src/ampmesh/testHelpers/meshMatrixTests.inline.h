@@ -115,13 +115,13 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
                     }
                     // For each local DOF, set all matrix elements involving the current DOF
                     for ( size_t j = 0; j < localDOFs.size(); j++ ) {
-                        for ( size_t i = 0; i < localDOFs.size(); i++ ) {
-                            matrix->setValueByGlobalID( localDOFs[i], localDOFs[j], proc );
-                            matrix->setValueByGlobalID( localDOFs[j], localDOFs[i], proc );
+                        for ( size_t k = 0; k < localDOFs.size(); k++ ) {
+                            matrix->setValueByGlobalID( localDOFs[k], localDOFs[j], proc );
+                            matrix->setValueByGlobalID( localDOFs[j], localDOFs[k], proc );
                         }
-                        for ( size_t i = 0; i < neighborDOFs.size(); i++ ) {
-                            matrix->setValueByGlobalID( localDOFs[j], neighborDOFs[i], proc );
-                            matrix->setValueByGlobalID( neighborDOFs[i], localDOFs[j], proc );
+                        for ( size_t k = 0; k < neighborDOFs.size(); k++ ) {
+                            matrix->setValueByGlobalID( localDOFs[j], neighborDOFs[k], proc );
+                            matrix->setValueByGlobalID( neighborDOFs[k], localDOFs[j], proc );
                         }
                         std::vector<size_t> cols;
                         std::vector<double> values;

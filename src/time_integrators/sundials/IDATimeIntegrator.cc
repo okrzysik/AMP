@@ -10,7 +10,6 @@
 #ifdef USE_EXT_SUNDIALS
 // Note:  sundials 2.4.0 has a memory leak that can cause some tests to fail
 extern "C" {
-#include "ida/ida_impl.h"
 #include "ida/ida_spils.h"
 }
 
@@ -91,10 +90,10 @@ void IDATimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> pa
             std::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> linearTimeOperatorParams =
                 std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperatorParameters>(
                     idaTimeOp->getParameters( "Jacobian", d_solution ) );
-            std::shared_ptr<AMP::Database> timeOperator_db = linearTimeOperatorParams->d_db;
-            timeOperator_db->putScalar( "CurrentDt", d_current_dt );
-            timeOperator_db->putScalar( "CurrentTime", d_current_time );
-            timeOperator_db->putScalar( "name", "TimeOperator" );
+            std::shared_ptr<AMP::Database> linearTimeOperator_db = linearTimeOperatorParams->d_db;
+            linearTimeOperator_db->putScalar( "CurrentDt", d_current_dt );
+            linearTimeOperator_db->putScalar( "CurrentTime", d_current_time );
+            linearTimeOperator_db->putScalar( "name", "TimeOperator" );
 
             d_pLinearTimeOperator.reset( new LinearTimeOperator( linearTimeOperatorParams ) );
         } else {
@@ -426,8 +425,11 @@ int IDATimeIntegrator::IDAPrecSetup( realtype tt,
     double last_stepsize, current_stepsize;
 
     int ierr = IDAGetLastOrder( user_data->getIDAMem(), &last_order );
+    AMP_ASSERT( ierr == IDA_SUCCESS );
     ierr     = IDAGetCurrentOrder( user_data->getIDAMem(), &current_order );
+    AMP_ASSERT( ierr == IDA_SUCCESS );
     ierr     = IDAGetLastStep( user_data->getIDAMem(), &last_stepsize );
+    AMP_ASSERT( ierr == IDA_SUCCESS );
     ierr     = IDAGetCurrentStep( user_data->getIDAMem(), &current_stepsize );
     AMP_ASSERT( ierr == IDA_SUCCESS );
 

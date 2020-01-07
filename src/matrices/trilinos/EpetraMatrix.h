@@ -66,7 +66,7 @@ protected:
      * \param[in] inMatrix  Matrix to wrap
      * \param[in] dele  If true, then this class will delete the Epetra_CrsMatrix
      */
-    EpetraMatrix( Epetra_CrsMatrix *inMatrix, bool dele = false );
+    explicit EpetraMatrix( Epetra_CrsMatrix *inMatrix, bool dele = false );
 
 
 public:

@@ -129,7 +129,6 @@ static void linearThermalTest( AMP::UnitTest *ut )
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
     RightHandSideVec->setToScalar( 0.0 );
-    double rhsNorm = RightHandSideVec->L2Norm();
 
     ///////////////////////////////////////////////
     //   Add the boundary conditions corrections //
@@ -139,7 +138,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
 
     diffusionOperator->modifyRHSvector( RightHandSideVec );
 
-    rhsNorm = RightHandSideVec->L2Norm();
+    auto rhsNorm = RightHandSideVec->L2Norm();
     std::cout << "RHS Norm 1: " << rhsNorm << std::endl;
     rhsNorm = PowerInWattsVec->L2Norm();
     std::cout << "RHS Norm 2: " << rhsNorm << std::endl;

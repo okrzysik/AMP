@@ -399,7 +399,7 @@ int main( int argc, char *argv[] )
             }
             delete[] tmp2;
             tmp2            = nullptr;
-            size_t n_bytes3 = Utilities::getMemoryUsage();
+            n_bytes3 = Utilities::getMemoryUsage();
             if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1 + 0x81000000 &&
                  abs_diff( n_bytes1, n_bytes3 ) < 50e3 ) {
                 ut.passes( "getMemoryUsage correctly handles 2^31 - 2^32 bytes" );
@@ -452,7 +452,7 @@ int main( int argc, char *argv[] )
         }
         if ( !call_stack.empty() ) {
             ut.passes( "non empty call stack" );
-            bool pass = false;
+            pass = false;
             if ( call_stack.size() > 1 ) {
                 if ( call_stack[1].print().find( "get_call_stack" ) != std::string::npos )
                     pass = true;

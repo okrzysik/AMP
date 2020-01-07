@@ -22,7 +22,7 @@ public:
     MultiIterator();
 
     //! Default MultiIterator constructor
-    MultiIterator( const std::vector<MeshIterator> &iterators, size_t global_pos = 0 );
+    explicit MultiIterator( const std::vector<MeshIterator> &iterators, size_t global_pos = 0 );
 
     //! Deconstructor
     virtual ~MultiIterator();

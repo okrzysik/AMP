@@ -245,8 +245,6 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP_ASSERT( outputVec != nullptr );
     // outputVec->zero();
 
-    std::vector<int> numFaceGauss( outputVec->getLocalSize(), 0 );
-
     // Loop through the points on the surface
     AMP_ASSERT( d_zLocations.size() >= 2 );
     AMP_ASSERT( d_zLocations.size() == inputVec->getLocalSize() );
@@ -257,7 +255,7 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     const double z1 = d_zLocations[0] - TOL;
     const double z2 = d_zLocations[d_zLocations.size() - 1] + TOL;
 
-    for ( size_t i = 0; i < bnd.size(); i++ ) {
+    for ( size_t it = 0; it < bnd.size(); it++ ) {
         auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
         auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
@@ -337,8 +335,6 @@ void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP_ASSERT( inputVec != nullptr );
     AMP_ASSERT( outputVec != nullptr );
     // outputVec->zero();
-
-    std::vector<int> numFaceNodes( outputVec->getLocalSize(), 0 );
 
     // const unsigned int numPoints = inputVec->getLocalSize();
 

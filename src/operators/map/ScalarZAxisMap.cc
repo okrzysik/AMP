@@ -105,8 +105,8 @@ void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr v
         f[i] = elem.second;
         i++;
     }
-    for ( size_t i = 1; i < z.size(); i++ )
-        AMP_ASSERT( z[i] > ( z[i - 1] + TOL ) );
+    for ( size_t j = 1; j < z.size(); j++ )
+        AMP_ASSERT( z[j] > ( z[j - 1] + TOL ) );
     double z0 = z[0];
     double z1 = z[z.size() - 1];
     double v0 = f[0];

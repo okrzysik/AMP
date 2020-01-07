@@ -121,7 +121,6 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 
     RightHandSideVec->zero();
     variableFluxVec->zero();
-    double rhsNorm = RightHandSideVec->L2Norm();
 
     //------------------------------------------
 
@@ -223,7 +222,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 
     diffusionOperator->modifyRHSvector( SourceVec );
 
-    rhsNorm = SourceVec->L2Norm();
+    auto rhsNorm = SourceVec->L2Norm();
     std::cout << "RHS Norm after BC Correction " << rhsNorm << std::endl;
 
     //------------------------------------------
