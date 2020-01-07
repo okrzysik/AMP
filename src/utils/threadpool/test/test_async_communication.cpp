@@ -10,7 +10,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/threadpool/thread_pool.h"
+#include "AMP/utils/threadpool/ThreadPool.h"
 
 
 using namespace AMP;

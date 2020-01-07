@@ -5,6 +5,9 @@
 #include <thread>
 
 
+namespace AMP {
+
+
 // Get the id for the current thread
 static inline int getThreadId()
 {
@@ -103,3 +106,6 @@ bool Mutex::ownLock() const
         return true;
     return false;
 }
+
+
+} // namespace AMP

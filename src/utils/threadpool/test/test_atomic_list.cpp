@@ -1,7 +1,7 @@
 #include "AMP/utils/AMPManager.h"
+#include "AMP/utils/threadpool/AtomicList.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/threadpool/atomic_list.h"
 
 #include <algorithm>
 #include <atomic>
@@ -14,7 +14,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-
 
 using namespace AMP;
 
@@ -137,39 +136,38 @@ static bool check_list( const std::vector<int> &x, LIST &list )
 template<class LIST>
 static int timeInsert( const std::vector<int> &x, LIST &list )
 {
-    int N_it = 20;
+    const int N_it = 20;
     std::chrono::duration<double> time;
-    std::chrono::time_point<std::chrono::high_resolution_clock> start, stop;
     time = time.zero();
     for ( int it = 0; it < N_it; it++ ) {
         list.clear();
-        start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
         for ( int i : x )
             list.insert( i );
-        stop = std::chrono::high_resolution_clock::now();
+        auto stop = std::chrono::high_resolution_clock::now();
         time += ( stop - start );
     }
     return 1e9 * time.count() / ( N_it * x.size() );
 }
 
 // Test the cost to remove (first)
-inline void remove_first( AtomicList<int, 1024> &list ) { list.remove_first(); }
+inline void remove_first( AtomicList<int> &list ) { list.remove_first(); }
 inline void remove_first( AtomicList2<int> &list ) { list.remove_first(); }
 inline void remove_first( std::multiset<int> &list ) { list.erase( list.begin() ); }
 template<class LIST>
 static int timeRemoveFirst( const std::vector<int> &x, LIST &list )
 {
-    const int N_it                     = 10;
-    std::chrono::duration<double> time = time.zero();
-    std::chrono::time_point<std::chrono::high_resolution_clock> start, stop;
+    const int N_it = 10;
+    std::chrono::duration<double> time;
+    time = time.zero();
     for ( int it = 0; it < N_it; it++ ) {
         list.clear();
         for ( int i : x )
             list.insert( i );
-        start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
         for ( size_t i = 0; i < x.size(); i++ )
             remove_first( list );
-        stop = std::chrono::high_resolution_clock::now();
+        auto stop = std::chrono::high_resolution_clock::now();
         time += ( stop - start );
         if ( !list.empty() )
             throw std::logic_error( "List not empty" );
@@ -179,7 +177,7 @@ static int timeRemoveFirst( const std::vector<int> &x, LIST &list )
 
 
 // Test the cost to remove (in order)
-inline void remove_true( AtomicList<int, 1024> &list )
+inline void remove_true( AtomicList<int> &list )
 {
     list.remove( []( int ) { return true; } );
 }
@@ -191,18 +189,18 @@ inline void remove_true( std::multiset<int> &list ) { list.erase( list.begin() )
 template<class LIST>
 static int timeRemoveOrdered( const std::vector<int> &x, LIST &list )
 {
-    const int N_it                     = 10;
-    std::chrono::duration<double> time = time.zero();
-    std::chrono::time_point<std::chrono::high_resolution_clock> start, stop;
+    const int N_it = 10;
+    std::chrono::duration<double> time;
+    time = time.zero();
     time = time.zero();
     for ( int it = 0; it < N_it; it++ ) {
         list.clear();
         for ( int i : x )
             list.insert( i );
-        start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
         for ( size_t i = 0; i < x.size(); i++ )
             remove_true( list );
-        stop = std::chrono::high_resolution_clock::now();
+        auto stop = std::chrono::high_resolution_clock::now();
         time += ( stop - start );
         if ( !list.empty() )
             throw std::logic_error( "List not empty" );
@@ -212,7 +210,7 @@ static int timeRemoveOrdered( const std::vector<int> &x, LIST &list )
 
 
 // Test the cost to remove (out of order)
-inline void remove_v( AtomicList<int, 1024> &list, int value )
+inline void remove_v( AtomicList<int> &list, int value )
 {
     list.remove( [value]( int v ) { return v == value; } );
 }
@@ -224,17 +222,17 @@ inline void remove_v( std::multiset<int> &list, int value ) { list.erase( list.f
 template<class LIST>
 static int timeRemoveUnordered( const std::vector<int> &x, LIST &list )
 {
-    const int N_it                     = 10;
-    std::chrono::duration<double> time = time.zero();
-    std::chrono::time_point<std::chrono::high_resolution_clock> start, stop;
+    const int N_it = 10;
+    std::chrono::duration<double> time;
+    time = time.zero();
     for ( int it = 0; it < N_it; it++ ) {
         list.clear();
         for ( int i : x )
             list.insert( i );
-        start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
         for ( int tmp : x )
             remove_v( list, tmp );
-        stop = std::chrono::high_resolution_clock::now();
+        auto stop = std::chrono::high_resolution_clock::now();
         time += ( stop - start );
     }
     return 1e9 * time.count() / ( N_it * x.size() );
@@ -245,10 +243,10 @@ static int timeRemoveUnordered( const std::vector<int> &x, LIST &list )
 template<class LIST>
 static int runSerial( const std::vector<int> &x, LIST &list )
 {
-    const int N_it                     = 3;
-    const int count                    = 50000;
-    std::chrono::duration<double> time = time.zero();
-    std::chrono::time_point<std::chrono::high_resolution_clock> start, stop;
+    const int N_it  = 3;
+    const int count = 50000;
+    std::chrono::duration<double> time;
+    time = time.zero();
     std::vector<int> rnd( count );
     for ( int i = 0; i < count; i++ )
         rnd[i] = rand();
@@ -256,9 +254,9 @@ static int runSerial( const std::vector<int> &x, LIST &list )
         list.clear();
         for ( int i : x )
             list.insert( i );
-        start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
         modify_list( list, rnd );
-        stop = std::chrono::high_resolution_clock::now();
+        auto stop = std::chrono::high_resolution_clock::now();
         time += ( stop - start );
     }
     return 1e9 * time.count() / ( count * N_it );
@@ -269,8 +267,8 @@ static int runParallel( const std::vector<int> &x, LIST &list, int N_threads )
     const int N_it  = 1;
     const int count = 20000;
     std::vector<std::thread> threads( N_threads );
-    std::chrono::duration<double> time = time.zero();
-    std::chrono::time_point<std::chrono::high_resolution_clock> start, stop;
+    std::chrono::duration<double> time;
+    time = time.zero();
     std::vector<std::vector<int>> rnd( N_threads );
     for ( int j = 0; j < N_threads; j++ ) {
         rnd[j].resize( count );
@@ -281,12 +279,12 @@ static int runParallel( const std::vector<int> &x, LIST &list, int N_threads )
         list.clear();
         for ( int i : x )
             list.insert( i );
-        start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
         for ( int i = 0; i < N_threads; i++ )
             threads[i] = std::thread( modify_list<LIST>, std::ref( list ), rnd[i] );
         for ( int i = 0; i < N_threads; i++ )
             threads[i].join();
-        stop = std::chrono::high_resolution_clock::now();
+        auto stop = std::chrono::high_resolution_clock::now();
         time += ( stop - start );
     }
     return 1e9 * time.count() / ( N_threads * count * N_it );
@@ -298,13 +296,13 @@ static int runParallel( const std::vector<int> &x, LIST &list, int N_threads )
  ******************************************************************/
 int main( int argc, char *argv[] )
 {
-    AMP::AMP_MPI::start_MPI( argc, argv );
-    AMP::UnitTest ut;
+    AMP::AMPManager::startup( argc, argv );
+    UnitTest ut;
 
     const int N_threads = 8;
 
     // Create the list
-    AtomicList<int, 1024> list( -1 );
+    AtomicList<int> list( 1024, -1 );
     AtomicList2<int> list2;
     std::multiset<int> multiset;
     if ( list.size() == 0 && list.empty() && list.check() )
@@ -410,6 +408,6 @@ int main( int argc, char *argv[] )
     ut.report();
     auto N_errors = static_cast<int>( ut.NumFailGlobal() );
     ut.reset();
-    AMP::AMP_MPI::stop_MPI();
+    AMP::AMPManager::shutdown();
     return N_errors;
 }

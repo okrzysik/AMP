@@ -2,6 +2,7 @@
 #define included_AMP_AtomicList_hpp
 
 
+#include <iostream>
 #include <stdexcept>
 #include <thread>
 
@@ -12,29 +13,39 @@ namespace AMP {
 /******************************************************************
  * Constructor                                                     *
  ******************************************************************/
-template<class TYPE, int MAX_SIZE, class COMPARE>
-AtomicList<TYPE, MAX_SIZE, COMPARE>::AtomicList( const TYPE &default_value, const COMPARE &comp )
+template<class TYPE, class COMPARE>
+AtomicList<TYPE, COMPARE>::AtomicList(
+    size_t capacity, const TYPE &default_value, const COMPARE &comp )
     : d_compare( comp ),
+      d_capacity( capacity ),
       d_default( default_value ),
+      d_objects( new TYPE[capacity] ),
       d_N( 0 ),
+      d_next( new AtomicOperations::int32_atomic[capacity + 1] ),
       d_unused( 1 ),
       d_N_insert( 0 ),
       d_N_remove( 0 )
 {
     d_next[0] = -1;
-    for ( int i = 0; i < MAX_SIZE; i++ ) {
+    for ( size_t i = 0; i < d_capacity; i++ ) {
         d_next[i + 1] = -5 - i;
         d_objects[i]  = d_default;
     }
+}
+template<class TYPE, class COMPARE>
+AtomicList<TYPE, COMPARE>::~AtomicList()
+{
+    delete[] d_objects;
+    delete[] d_next;
 }
 
 
 /******************************************************************
  * Remove an item                                                  *
  ******************************************************************/
-template<class TYPE, int MAX_SIZE, class COMPARE>
+template<class TYPE, class COMPARE>
 template<class Compare, class... Args>
-inline TYPE AtomicList<TYPE, MAX_SIZE, COMPARE>::remove( Compare compare, const Args &... args )
+inline TYPE AtomicList<TYPE, COMPARE>::remove( Compare compare, const Args &... args )
 {
     // Acquiring temporary ownership
     int pos   = 0;
@@ -73,8 +84,8 @@ inline TYPE AtomicList<TYPE, MAX_SIZE, COMPARE>::remove( Compare compare, const 
     }
     return rtn;
 }
-template<class TYPE, int MAX_SIZE, class COMPARE>
-inline TYPE AtomicList<TYPE, MAX_SIZE, COMPARE>::remove_first()
+template<class TYPE, class COMPARE>
+inline TYPE AtomicList<TYPE, COMPARE>::remove_first()
 {
     TYPE rtn( d_default );
     auto next = lock( 0 );
@@ -96,11 +107,11 @@ inline TYPE AtomicList<TYPE, MAX_SIZE, COMPARE>::remove_first()
 /******************************************************************
  * Insert an item                                                  *
  ******************************************************************/
-template<class TYPE, int MAX_SIZE, class COMPARE>
-inline void AtomicList<TYPE, MAX_SIZE, COMPARE>::insert( const TYPE &x )
+template<class TYPE, class COMPARE>
+inline void AtomicList<TYPE, COMPARE>::insert( const TYPE &x )
 {
-    int N_used = AtomicOperations::atomic_increment( &d_N );
-    if ( N_used > MAX_SIZE ) {
+    size_t N_used = AtomicOperations::atomic_increment( &d_N );
+    if ( N_used > d_capacity ) {
         AtomicOperations::atomic_decrement( &d_N );
         throw std::logic_error( "No room in list" );
     }
@@ -143,8 +154,8 @@ inline void AtomicList<TYPE, MAX_SIZE, COMPARE>::insert( const TYPE &x )
  * Check the internal structures of the list                       *
  * This is mostly thread-safe, but blocks all threads              *
  ******************************************************************/
-template<class TYPE, int MAX_SIZE, class COMPARE>
-inline bool AtomicList<TYPE, MAX_SIZE, COMPARE>::check()
+template<class TYPE, class COMPARE>
+inline bool AtomicList<TYPE, COMPARE>::check()
 {
     // Get the lock and check for any other threads modifying the list
     auto start = lock( 0 );
@@ -155,11 +166,11 @@ inline bool AtomicList<TYPE, MAX_SIZE, COMPARE>::check()
     int N2       = 0;
     int N_unused = 0;
     int N_tail   = 0;
-    for ( int i = 0; i < MAX_SIZE; i++ ) {
+    for ( size_t i = 0; i < d_capacity; i++ ) {
         if ( d_objects[i] != d_default )
             N1++;
     }
-    for ( int i = 0; i < MAX_SIZE + 1; i++ ) {
+    for ( size_t i = 0; i <= d_capacity; i++ ) {
         int next = i == 0 ? start : d_next[i];
         if ( next > 0 ) {
             N2++;
@@ -171,7 +182,7 @@ inline bool AtomicList<TYPE, MAX_SIZE, COMPARE>::check()
             pass = false;
         }
     }
-    pass    = pass && N_tail == 1 && N1 == d_N && N2 == d_N && N_unused + d_N == MAX_SIZE;
+    pass    = pass && N_tail == 1 && N1 == d_N && N2 == d_N && N_unused + d_N == (int) d_capacity;
     int it  = 0;
     int pos = 0;
     while ( true ) {
@@ -185,57 +196,6 @@ inline bool AtomicList<TYPE, MAX_SIZE, COMPARE>::check()
     // Unlock the list and return the results
     unlock( 0, start );
     return pass;
-}
-
-
-/******************************************************************
- * MemoryPool                                                      *
- ******************************************************************/
-template<class TYPE, class INT_TYPE>
-MemoryPool<TYPE, INT_TYPE>::MemoryPool( size_t size )
-{
-    static_assert( sizeof( TYPE ) >= sizeof( int ),
-                   "sizeof(TYPE) must be >= sizeof(int) to ensure proper operation" );
-    static_assert( sizeof( TYPE ) >= sizeof( INT_TYPE ),
-                   "sizeof(TYPE) must be >= sizeof(INT_TYPE) to ensure proper operation" );
-    d_objects = reinterpret_cast<TYPE *>( malloc( sizeof( TYPE ) * size ) );
-    d_next    = 1;
-    for ( size_t i = 0; i < size; i++ )
-        reinterpret_cast<volatile INT_TYPE &>( d_objects[i] ) = i + 1;
-    reinterpret_cast<volatile INT_TYPE &>( d_objects[size - 1] ) = -1;
-}
-template<class TYPE, class INT_TYPE>
-MemoryPool<TYPE, INT_TYPE>::~MemoryPool()
-{
-    free( const_cast<TYPE *>( d_objects ) );
-    d_objects = nullptr;
-}
-template<class TYPE, class INT_TYPE>
-inline TYPE *MemoryPool<TYPE, INT_TYPE>::allocate()
-{
-    AtomicOperations::int32_atomic i = 0;
-    while ( i == 0 )
-        AtomicOperations::atomic_swap( &d_next, &i );
-    TYPE *ptr = nullptr;
-    if ( i != -1 ) {
-        INT_TYPE j = reinterpret_cast<volatile INT_TYPE &>( d_objects[i - 1] );
-        ptr        = const_cast<TYPE *>( &d_objects[i - 1] );
-        new ( ptr ) TYPE();
-        i = j + 1;
-    }
-    AtomicOperations::atomic_fetch_and_or( &d_next, i );
-    return ptr;
-}
-template<class TYPE, class INT_TYPE>
-inline void MemoryPool<TYPE, INT_TYPE>::free( TYPE *ptr )
-{
-    ptr->~TYPE();
-    AtomicOperations::int32_atomic i = 0;
-    while ( i == 0 )
-        AtomicOperations::atomic_swap( &d_next, &i );
-    reinterpret_cast<INT_TYPE &>( *ptr ) = i - 1;
-    i                                    = ptr - d_objects + 1;
-    AtomicOperations::atomic_fetch_and_or( &d_next, i );
 }
 
 

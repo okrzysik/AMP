@@ -1,9 +1,7 @@
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/PIO.h"
+#include "AMP/utils/threadpool/ThreadPool.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/threadpool/thread_pool.h"
 
 #include "ProfilerApp.h"
 
@@ -21,16 +19,44 @@
 using namespace AMP;
 
 
+#ifdef USE_MPI
+#include "mpi.h"
+#endif
+
 #define to_ns( x ) std::chrono::duration_cast<std::chrono::nanoseconds>( x ).count()
 #define to_ms( x ) std::chrono::duration_cast<std::chrono::milliseconds>( x ).count()
+
+
+// Wrapper functions for mpi
+static inline void barrier()
+{
+#ifdef USE_MPI
+    MPI_Barrier( MPI_COMM_WORLD );
+#endif
+}
+static inline int getRank()
+{
+    int rank = 0;
+#ifdef USE_MPI
+    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+#endif
+    return rank;
+}
+static inline int getSize()
+{
+    int size = 0;
+#ifdef USE_MPI
+    MPI_Comm_size( MPI_COMM_WORLD, &size );
+#endif
+    return size;
+}
 
 
 // Function to waste CPU cycles
 void waste_cpu( int N )
 {
-    if ( N > 10000 ) {
+    if ( N > 10000 )
         PROFILE_START( "waste_cpu", 2 );
-    }
     double x = 1.0;
     N        = std::max( 10, N );
     {
@@ -38,12 +64,10 @@ void waste_cpu( int N )
         for ( int i = 0; i < N; i++ )
             x = sqrt( x * exp( pi / x ) );
     } // style to limit gcov hits
-    if ( fabs( x - 2.926064057273157 ) > 1e-12 ) {
+    if ( fabs( x - 2.926064057273157 ) > 1e-12 )
         abort();
-    }
-    if ( N > 10000 ) {
+    if ( N > 10000 )
         PROFILE_STOP( "waste_cpu", 2 );
-    }
 }
 
 
@@ -92,14 +116,17 @@ std::mutex print_processor_mutex;
 
 void print_processor( ThreadPool *tpool )
 {
-    int rank   = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
-    int thread = tpool->getThreadNumber();
-    int proc   = ThreadPool::getCurrentProcessor();
+    int rank = 0;
+#ifdef USE_MPI
+    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+#endif
+    int thread    = tpool->getThreadNumber();
+    int processor = ThreadPool::getCurrentProcessor();
     char tmp[100];
-    sprintf( tmp, "%i:  Thread,proc = %i,%i\n", rank, thread, proc );
+    sprintf( tmp, "%i:  Thread,proc = %i,%i\n", rank, thread, processor );
     sleep_ms( 10 * rank );
     print_processor_mutex.lock();
-    std::cout << tmp;
+    pout << tmp;
     print_processor_mutex.unlock();
     sleep_ms( 100 );
 }
@@ -140,24 +167,19 @@ static int test_function_arguements( ThreadPool *tpool )
 {
     int N_errors = 0;
     // Test some basic types of instantiations
-    ThreadPool::thread_id_t id0 = TPOOL_ADD_WORK( tpool, myfun0, ( nullptr ) );
-    ThreadPool::thread_id_t id1 = TPOOL_ADD_WORK( tpool, myfun1, ( (int) 1 ) );
-    ThreadPool::thread_id_t id2 = TPOOL_ADD_WORK( tpool, myfun2, ( (int) 1, (float) 2 ) );
-    ThreadPool::thread_id_t id3 =
-        TPOOL_ADD_WORK( tpool, myfun3, ( (int) 1, (float) 2, (double) 3 ) );
-    ThreadPool::thread_id_t id4 =
+    ThreadPoolID id0 = TPOOL_ADD_WORK( tpool, myfun0, ( nullptr ) );
+    ThreadPoolID id1 = TPOOL_ADD_WORK( tpool, myfun1, ( (int) 1 ) );
+    ThreadPoolID id2 = TPOOL_ADD_WORK( tpool, myfun2, ( (int) 1, (float) 2 ) );
+    ThreadPoolID id3 = TPOOL_ADD_WORK( tpool, myfun3, ( (int) 1, (float) 2, (double) 3 ) );
+    ThreadPoolID id4 =
         TPOOL_ADD_WORK( tpool, myfun4, ( (int) 1, (float) 2, (double) 3, (char) 4 ) );
-    ThreadPool::thread_id_t id5 = TPOOL_ADD_WORK(
+    ThreadPoolID id5 = TPOOL_ADD_WORK(
         tpool, myfun5, ( (int) 1, (float) 2, (double) 3, (char) 4, std::string( "test" ) ) );
-    ThreadPool::thread_id_t id52 = TPOOL_ADD_WORK(
+    ThreadPoolID id52 = TPOOL_ADD_WORK(
         tpool, myfun5, ( (int) 1, (float) 2, (double) 3, (char) 4, std::string( "test" ) ), -1 );
-    ThreadPool::thread_id_t id6 = TPOOL_ADD_WORK(
-        tpool,
-        myfun6,
+    ThreadPoolID id6 = TPOOL_ADD_WORK( tpool, myfun6,
         ( (int) 1, (float) 2, (double) 3, (char) 4, std::string( "test" ), (int) 1 ) );
-    ThreadPool::thread_id_t id7 = TPOOL_ADD_WORK(
-        tpool,
-        myfun7,
+    ThreadPoolID id7 = TPOOL_ADD_WORK( tpool, myfun7,
         ( (int) 1, (float) 2, (double) 3, (char) 4, std::string( "test" ), (int) 1, (int) 1 ) );
     tpool->wait_pool_finished();
     if ( !tpool->isFinished( id0 ) ) {
@@ -247,17 +269,20 @@ inline double launchAndTime( ThreadPool &tpool, int N, Ret ( *routine )( Args...
 {
     tpool.wait_pool_finished();
     auto start = std::chrono::high_resolution_clock::now();
+    std::vector<ThreadPoolID> ids( N );
     for ( int i = 0; i < N; i++ )
-        ThreadPool_add_work( &tpool, 0, routine, args... );
-    tpool.wait_pool_finished();
+        ids[i] = ThreadPool_add_work( &tpool, 0, routine, args... );
+    NULL_USE( ids );
+    tpool.wait_all( ids );
+    // tpool.wait_pool_finished();
     auto stop = std::chrono::high_resolution_clock::now();
     return std::chrono::duration<double>( stop - start ).count();
 }
 
 
 // Move constructor function
-volatile ThreadPool::thread_id_t f1( volatile ThreadPool::thread_id_t a ) { return a; }
-ThreadPool::thread_id_t f2( ThreadPool::thread_id_t a ) { return a; }
+volatile ThreadPoolID f1( volatile ThreadPoolID a ) { return a; }
+ThreadPoolID f2( ThreadPoolID a ) { return a; }
 
 
 /******************************************************************
@@ -288,19 +313,190 @@ int test_atomics()
 
 
 /******************************************************************
+ * Test the move operator for thread_id                            *
+ ******************************************************************/
+void test_move_thread_id( UnitTest &, ThreadPool &tpool )
+{
+    auto id = TPOOL_ADD_WORK( &tpool, waste_cpu, ( 5 ) );
+    tpool.wait( id );
+    std::vector<ThreadPoolID> ids2;
+    ids2.push_back( TPOOL_ADD_WORK( &tpool, waste_cpu, ( 5 ) ) );
+    tpool.wait( ids2[0] );
+    auto id1          = f1( id );         // move-construct from rvalue temporary
+    auto id2          = std::move( id1 ); // move-construct from xvalue
+    volatile auto id3 = f2( id );         // move-construct from rvalue temporary
+    volatile auto id4 = std::move( id3 ); // move-construct from xvalue
+    id2.reset();
+    id4.reset();
+}
+
+
+/******************************************************************
+ * Check that the threads work in parallel                         *
+ ******************************************************************/
+void test_sleep_parallel( UnitTest &ut, ThreadPool &tpool )
+{
+    int N_threads    = tpool.getNumThreads();
+    int N_procs      = ThreadPool::getNumberOfProcessors();
+    int N_procs_used = std::min<int>( N_procs, N_threads );
+    tpool.wait_pool_finished();
+    auto start = std::chrono::high_resolution_clock::now();
+    sleep_inc( 1 );
+    auto stop             = std::chrono::high_resolution_clock::now();
+    double sleep_serial   = std::chrono::duration<double>( stop - start ).count();
+    double sleep_parallel = launchAndTime( tpool, N_threads, sleep_inc, 1 );
+    double sleep_speedup  = N_procs_used * sleep_serial / sleep_parallel;
+    printp( "Speedup on %i sleeping threads: %0.3f\n", N_procs_used, sleep_speedup );
+    printp( "   ts = %0.3f, tp = %0.3f\n", sleep_serial, sleep_parallel );
+    if ( fabs( sleep_serial - 1.0 ) < 0.05 && fabs( sleep_parallel - 1.0 ) < 0.25 &&
+         sleep_speedup > 3 )
+        ut.passes( "Passed thread sleep" );
+    else
+        ut.failure( "Failed thread sleep" );
+}
+void test_work_parallel( UnitTest &ut, ThreadPool &tpool )
+{
+    int rank         = getRank();
+    int size         = getSize();
+    int N_threads    = tpool.getNumThreads();
+    int N_procs      = ThreadPool::getNumberOfProcessors();
+    int N_procs_used = std::min<int>( N_procs, N_threads );
+    if ( N_procs_used > 1 ) {
+#ifdef USE_MPI
+        // Use a non-blocking serialization of the MPI processes
+        // if we do not have a sufficient number of processors
+        bool serialize_mpi = N_procs < N_threads * size;
+        int buf;
+        MPI_Request request;
+        MPI_Status status;
+        if ( serialize_mpi && rank > 0 ) {
+            MPI_Irecv( &buf, 1, MPI_INT, rank - 1, 0, MPI_COMM_WORLD, &request );
+            int flag = false;
+            while ( !flag ) {
+                MPI_Test( &request, &flag, &status );
+                sleep_s( 1 );
+            }
+        }
+#endif
+        int N = 20000000; // Enough work to keep the processor busy for ~ 1 s
+        // Run in serial
+        auto start = std::chrono::high_resolution_clock::now();
+        waste_cpu( N );
+        auto stop          = std::chrono::high_resolution_clock::now();
+        double time_serial = std::chrono::duration<double>( stop - start ).count();
+        // Run in parallel
+        double time_parallel  = launchAndTime( tpool, N_procs_used, waste_cpu, N );
+        double time_parallel2 = launchAndTime( tpool, N_procs_used, waste_cpu, N / 1000 );
+        double speedup        = N_procs_used * time_serial / time_parallel;
+        printp( "Speedup on %i procs: %0.3f\n", N_procs_used, speedup );
+        printp( "   ts = %0.3f, tp = %0.3f, tp2 = %0.3f\n", time_serial, time_parallel,
+            time_parallel2 );
+        if ( speedup > 1.4 ) {
+            ut.passes( "Passed speedup test" );
+        } else {
+#ifdef USE_GCOV
+            ut.expected_failure( "Times do not indicate tests are running in parallel (gcov)" );
+#else
+            ut.failure( "Times do not indicate tests are running in parallel" );
+#endif
+        }
+#ifdef USE_MPI
+        if ( serialize_mpi ) {
+            if ( rank < size - 1 )
+                MPI_Send( &N, 1, MPI_INT, rank + 1, 0, MPI_COMM_WORLD );
+            if ( rank == size - 1 ) {
+                for ( int i = 0; i < size - 1; i++ )
+                    MPI_Send( &N, 1, MPI_INT, i, 1, MPI_COMM_WORLD );
+            } else {
+                MPI_Irecv( &buf, 1, MPI_INT, size - 1, 1, MPI_COMM_WORLD, &request );
+                int flag = false;
+                while ( !flag ) {
+                    MPI_Test( &request, &flag, &status );
+                    sleep_s( 1 );
+                }
+            }
+        }
+#endif
+    } else {
+        ut.expected_failure( "Testing thread performance with less than 1 processor" );
+    }
+}
+
+
+/******************************************************************
+ * Test adding a work item with a dependency                       *
+ ******************************************************************/
+void test_work_dependency( UnitTest &ut, ThreadPool &tpool )
+{
+    std::vector<ThreadPoolID> ids;
+    ids.reserve( 5 );
+    global_sleep_count = 0; // Reset the count before this test
+    ThreadPoolID id0;
+    auto id1    = TPOOL_ADD_WORK( &tpool, sleep_inc, ( 1 ) );
+    auto id2    = TPOOL_ADD_WORK( &tpool, sleep_inc, ( 2 ) );
+    auto *wait1 = new WorkItemFull<bool, int>( check_inc, 1 );
+    auto *wait2 = new WorkItemFull<bool, int>( check_inc, 2 );
+    wait1->add_dependency( id0 );
+    wait1->add_dependency( id1 );
+    wait2->add_dependency( id1 );
+    wait2->add_dependency( id2 );
+    ids.clear();
+    ids.push_back( tpool.add_work( wait1 ) );
+    ids.push_back( tpool.add_work( wait2 ) );
+    tpool.wait_all( ids );
+    if ( !tpool.getFunctionRet<bool>( ids[0] ) || !tpool.getFunctionRet<bool>( ids[1] ) )
+        ut.failure( "Failed to wait on required dependency" );
+    else
+        ut.passes( "Dependencies" );
+    tpool.wait_pool_finished();
+    // Test waiting on more dependencies than in the thread pool (changing priorities)
+    ids.clear();
+    for ( size_t i = 0; i < 20; i++ )
+        ids.push_back( TPOOL_ADD_WORK( &tpool, sleep_inc2, ( 0.1 ) ) );
+    auto *wait3 = new WorkItemFull<void, double>( sleep_inc2, 0 );
+    wait3->add_dependencies( ids );
+    auto id = tpool.add_work( wait3, 50 );
+    tpool.wait( id );
+    auto pass = true;
+    for ( auto &tmp : ids )
+        pass = pass && tmp.finished();
+    ids.clear();
+    if ( pass )
+        ut.passes( "Dependencies2" );
+    else
+        ut.failure( "Dependencies2" );
+    // Check that we can handle more complex dependencies
+    id1 = TPOOL_ADD_WORK( &tpool, sleep_inc2, ( 0.5 ) );
+    for ( int i = 0; i < 10; i++ ) {
+        wait1 = new WorkItemFull<bool, int>( check_inc, 1 );
+        wait1->add_dependency( id1 );
+        tpool.add_work( wait1 );
+    }
+    tpool.wait_pool_finished();
+    ids.clear();
+    for ( int i = 0; i < 5; i++ )
+        ids.push_back( TPOOL_ADD_WORK( &tpool, sleep_inc2, ( 0.5 ) ) );
+    sleep_inc2( 0.002 );
+    ThreadPool::WorkItem *work = new WorkItemFull<void, int>( waste_cpu, 100 );
+    work->add_dependencies( ids );
+    id = tpool.add_work( work, 10 );
+    tpool.wait( id );
+}
+
+
+/******************************************************************
  * Test FIFO behavior                                              *
  ******************************************************************/
-void test_FIFO( AMP::UnitTest &ut, ThreadPool &tpool )
+void test_FIFO( UnitTest &ut, ThreadPool &tpool )
 {
-    AMP::AMP_MPI comm( AMP_COMM_WORLD );
-    int rank    = comm.getRank();
-    int size    = comm.getSize();
+    int rank    = getRank();
+    int size    = getSize();
     const int N = 4000;
     for ( int r = 0; r < size; r++ ) {
-        comm.barrier();
+        barrier();
         if ( r != rank )
             continue;
-        std::vector<ThreadPool::thread_id_t> ids;
+        std::vector<ThreadPoolID> ids;
         ids.reserve( N );
         for ( size_t i = 0; i < N; i++ )
             ids.emplace_back( TPOOL_ADD_WORK( &tpool, sleep_inc2, ( 0.001 ) ) );
@@ -331,47 +527,11 @@ void test_FIFO( AMP::UnitTest &ut, ThreadPool &tpool )
 
 
 /******************************************************************
- * The main program                                                *
+ * Test process affinities                                         *
  ******************************************************************/
-void run_tests( AMP::UnitTest &ut )
+void testProcessAffinity( UnitTest &ut )
 {
-
-    constexpr int N_threads = 4;    // Number of threads
-    constexpr int N_work    = 2000; // Number of work items
-    constexpr int N_it      = 10;   // Number of cycles to run
-    constexpr int N_problem = 5;    // Problem size
-
-    // Disable OS specific warnings for all non-root ranks
-    AMP::AMP_MPI comm( AMP_COMM_WORLD );
-    int rank = comm.getRank();
-    int size = comm.getSize();
-    if ( rank > 0 )
-        ThreadPool::set_OS_warnings( 1 );
-    NULL_USE( size );
-
-
-    // Test the atomics
-    if ( test_atomics() == 0 )
-        ut.passes( "Atomics passed" );
-    else
-        ut.failure( "Atomics failed" );
-
-
-    // Initialize the data
-    std::vector<int> data1( N_work, 0 );
-    std::vector<int> priority( N_work, 0 );
-    for ( int i = 0; i < N_work; i++ ) {
-        data1[i]    = N_problem;
-        priority[i] = i % 128;
-    }
-
-
-    // Print the size of the thread pool class
-    printp( "Size of ThreadPool = %i\n", (int) sizeof( ThreadPool ) );
-
-
     // Get the number of processors availible
-    comm.barrier();
     int N_procs = ThreadPool::getNumberOfProcessors();
     if ( N_procs > 0 )
         ut.passes( "getNumberOfProcessors" );
@@ -379,9 +539,7 @@ void run_tests( AMP::UnitTest &ut )
         ut.failure( "getNumberOfProcessors" );
     printp( "%i processors availible\n", N_procs );
 
-
     // Get the processor affinities for the process
-    comm.barrier();
     auto cpus = ThreadPool::getProcessAffinity();
     printp( "%i cpus for current process: ", (int) cpus.size() );
     for ( int cpu : cpus )
@@ -397,9 +555,7 @@ void run_tests( AMP::UnitTest &ut )
 #endif
     }
 
-
     // Test setting the process affinities
-    comm.barrier();
     bool pass = false;
     if ( !cpus.empty() && N_procs > 0 ) {
         if ( cpus.size() == 1 ) {
@@ -444,29 +600,20 @@ void run_tests( AMP::UnitTest &ut )
         ut.failure( "setProcessAffinity" );
 #endif
     }
-    int N_procs_used = std::min<int>( N_procs, N_threads );
-    printp( "%i processors used\n", N_procs_used );
+}
 
 
-    // Create the thread pool
-    comm.barrier();
-    printp( "Creating thread pool\n" );
-    ThreadPool tpool0;
-    ThreadPool tpool;
-    {
-        auto id = TPOOL_ADD_WORK( &tpool, waste_cpu, ( data1[0] ) );
-        if ( id == ThreadPool::thread_id_t() || !tpool.isValid( id ) )
-            ut.failure( "Errors with id" );
-    }
-    tpool.setNumThreads( N_threads );
-    if ( tpool.getNumThreads() == N_threads )
-        ut.passes( "Created thread pool" );
-    else
-        ut.failure( "Failed to create tpool with desired number of threads" );
-
+/******************************************************************
+ * Test thread affinities                                          *
+ ******************************************************************/
+void testThreadAffinity( ThreadPool &tpool, UnitTest &ut )
+{
+    int N_threads = tpool.getNumThreads();
+    auto cpus     = ThreadPool::getProcessAffinity();
+    int rank      = getRank();
 
     // Test setting the thread affinities
-    comm.barrier();
+    barrier();
     if ( cpus.size() > 1 ) {
         printp( "Testing thread affinities\n" );
         sleep_ms( 50 );
@@ -476,13 +623,11 @@ void run_tests( AMP::UnitTest &ut )
             ut.passes( "getThreadAffinity() matches procs" );
         } else {
             char msg[100];
-            sprintf( msg,
-                     "getThreadAffinity() does not match procs (%i,%i)",
-                     static_cast<int>( procs.size() ),
-                     static_cast<int>( cpus.size() ) );
+            sprintf( msg, "getThreadAffinity() does not match procs (%i,%i)",
+                static_cast<int>( procs.size() ), static_cast<int>( cpus.size() ) );
             ut.failure( msg );
         }
-        pass = true;
+        auto pass = true;
         for ( int i = 0; i < N_threads; i++ ) {
             auto procs_thread = tpool.getThreadAffinity( i );
             if ( procs_thread != procs ) {
@@ -522,55 +667,213 @@ void run_tests( AMP::UnitTest &ut )
         else
             ut.failure( "setThreadAffinity failed to change affinity" );
     }
+}
 
 
-    // Reset the thread affinities
-    comm.barrier();
-    tpool.setNumThreads( tpool.getNumThreads(), "none" );
-    // tpool.setNumThreads(tpool.getNumThreads(),"independent");
-    for ( int i = 0; i < N_threads; i++ ) {
-        auto procs_thread = tpool.getThreadAffinity( i );
-        printp( "Thread affinity: " );
-        for ( int p : procs_thread )
-            printp( "%i ", p );
-        printp( "\n" );
+/******************************************************************
+ * Test ThreadPool performance                                     *
+ ******************************************************************/
+void testThreadPoolPerformance( ThreadPool &tpool )
+{
+    constexpr int N_work    = 2000; // Number of work items
+    constexpr int N_it      = 10;   // Number of cycles to run
+    constexpr int N_problem = 5;    // Problem size
+
+    const int N_threads = tpool.getNumThreads();
+    printp( "\nTesting ThreadPool performance with %i threads:\n", N_threads );
+
+    // Initialize the data
+    std::vector<int> data1( N_work, 0 );
+    std::vector<int> priority( N_work, 0 );
+    std::vector<ThreadPoolID> ids( N_work );
+    std::vector<ThreadPool::WorkItem *> work( N_work );
+    for ( int i = 0; i < N_work; i++ ) {
+        data1[i]    = N_problem;
+        priority[i] = i % 128;
     }
 
+    // Test basic cost
+    auto start = std::chrono::high_resolution_clock::now();
+    for ( int n = 0; n < N_it; n++ ) {
+        for ( int i = 0; i < N_work; i++ )
+            waste_cpu( data1[i] );
+    }
+    auto stop     = std::chrono::high_resolution_clock::now();
+    int64_t time0 = to_ns( stop - start ) / ( N_it * N_work );
+    printp( "   Time for serial item = %i ns\n", time0 );
+
+    // Test the timing creating and running a work item
+    printp( "   Testing timmings (creating/running work item):\n" );
+    PROFILE_START( "Create/Run work item" );
+    tpool.wait_pool_finished();
+    int64_t time_create = 0;
+    int64_t time_run    = 0;
+    int64_t time_delete = 0;
+    for ( int n = 0; n < N_it; n++ ) {
+        auto t1 = std::chrono::high_resolution_clock::now();
+        for ( int i = 0; i < N_work; i++ )
+            work[i] = ThreadPool::createWork<void, int>( waste_cpu, data1[i] );
+        auto t2 = std::chrono::high_resolution_clock::now();
+        for ( int i = 0; i < N_work; i++ )
+            work[i]->run();
+        auto t3 = std::chrono::high_resolution_clock::now();
+        for ( int i = 0; i < N_work; i++ )
+            delete work[i];
+        auto t4 = std::chrono::high_resolution_clock::now();
+        time_create += to_ns( t2 - t1 );
+        time_run += to_ns( t3 - t2 );
+        time_delete += to_ns( t4 - t3 );
+    }
+    time_create /= ( N_it * N_work );
+    time_run /= ( N_it * N_work );
+    time_delete /= ( N_it * N_work );
+    PROFILE_STOP( "Create/Run work item" );
+    printp( "      create = %i ns\n", time_create );
+    printp( "      run    = %i ns\n", time_run );
+    printp( "      delete = %i ns\n", time_delete );
+
+    // Test the timing adding a single item
+    printp( "   Testing timmings (adding a single item):\n" );
+    auto timer_name = Utilities::stringf( "Add single item to tpool (%i threads)", N_threads );
+    NULL_USE( timer_name );
+    PROFILE_START( timer_name );
+    int64_t time_add_single  = 0;
+    int64_t time_wait_single = 0;
+    for ( int n = 0; n < N_it; n++ ) {
+        auto t1 = std::chrono::high_resolution_clock::now();
+        for ( int i = 0; i < N_work; i++ )
+            ids[i] = TPOOL_ADD_WORK( &tpool, waste_cpu, ( data1[i] ), priority[i] );
+        auto t2 = std::chrono::high_resolution_clock::now();
+        tpool.wait_all( ids );
+        auto t3 = std::chrono::high_resolution_clock::now();
+        time_add_single += to_ns( t2 - t1 );
+        time_wait_single += to_ns( t3 - t2 );
+    }
+    time_add_single /= ( N_it * N_work );
+    time_wait_single /= ( N_it * N_work );
+    PROFILE_STOP( timer_name );
+    printp( "      create and add = %i ns\n", time_add_single );
+    printp( "      wait = %i ns\n", time_wait_single );
+
+    // Test the timing pre-creating the work items and adding multiple at a time
+    printp( "   Testing timmings (adding a block of items):\n" );
+    timer_name = Utilities::stringf( "Add block of items to tpool (%i threads)", N_threads );
+    NULL_USE( timer_name );
+    PROFILE_START( timer_name );
+    int64_t time_create_multiple = 0;
+    int64_t time_add_multiple    = 0;
+    int64_t time_wait_multiple   = 0;
+    for ( int n = 0; n < N_it; n++ ) {
+        auto t1 = std::chrono::high_resolution_clock::now();
+        for ( int i = 0; i < N_work; i++ )
+            work[i] = ThreadPool::createWork<void, int>( waste_cpu, data1[i] );
+        auto t2   = std::chrono::high_resolution_clock::now();
+        auto ids2 = tpool.add_work( work, priority );
+        auto t3   = std::chrono::high_resolution_clock::now();
+        tpool.wait_all( ids2 );
+        auto t4 = std::chrono::high_resolution_clock::now();
+        time_create_multiple += to_ns( t2 - t1 );
+        time_add_multiple += to_ns( t3 - t2 );
+        time_wait_multiple += to_ns( t4 - t3 );
+    }
+    time_create_multiple /= ( N_it * N_work );
+    time_add_multiple /= ( N_it * N_work );
+    time_wait_multiple /= ( N_it * N_work );
+    PROFILE_STOP( timer_name );
+    printp( "      create = %i ns\n", time_create_multiple );
+    printp( "      add = %i ns\n", time_add_multiple );
+    printp( "      wait = %i ns\n", time_wait_multiple );
+
+    // Estimate the overheads
+    int Nt           = std::max( N_threads, 1 );
+    int create       = time_create;
+    int run          = std::max<int>( time_run - time0, 0 );
+    int add_single   = time_add_single - time_create;
+    int add_multiple = time_add_multiple;
+    int total_single = time_add_single + time_wait_single - ( time0 / Nt );
+    int total_multiple =
+        time_create_multiple + time_add_multiple + time_wait_multiple - ( time0 / Nt );
+    if ( tpool.getNumThreads() == 0 ) {
+        add_single -= time0;
+        add_multiple -= time0;
+    }
+    printp( "   Overhead:\n" );
+    printp( "      WorkItem create = %i ns\n", create );
+    printp( "      WorkItem run    = %i ns\n", run );
+    printp( "      Add: serial     = %i ns\n", add_single );
+    printp( "      Add: multiple   = %i ns\n", add_multiple );
+    printp( "      Total: serial   = %i ns\n", total_single );
+    printp( "      Total: multiple = %i ns\n", total_multiple );
+}
+
+
+/******************************************************************
+ * The main program                                                *
+ ******************************************************************/
+void run_tests( UnitTest &ut )
+{
+    constexpr int N_threads = 4; // Number of threads
+
+    // Disable OS specific warnings for all non-root ranks
+    int rank = getRank();
+    int size = getSize();
+    if ( rank > 0 )
+        ThreadPool::set_OS_warnings( 1 );
+    NULL_USE( size );
+
+
+    // Test the atomics
+    if ( test_atomics() == 0 )
+        ut.passes( "Atomics passed" );
+    else
+        ut.failure( "Atomics failed" );
+
+
+    // Print the size of the thread pool class
+    printp( "Size of ThreadPool = %i\n", (int) sizeof( ThreadPool ) );
+
+
+    // Test process affinities
+    barrier();
+    testProcessAffinity( ut );
+    int N_procs      = ThreadPool::getNumberOfProcessors();
+    int N_procs_used = std::min<int>( N_procs, N_threads );
+    printp( "%i processors used\n", N_procs_used );
+
+
+    // Create the thread pool
+    barrier();
+    printp( "Creating thread pool\n" );
+    ThreadPool tpool;
+    {
+        auto id = TPOOL_ADD_WORK( &tpool, waste_cpu, ( 5 ) );
+        if ( id == ThreadPoolID() || !tpool.isValid( id ) )
+            ut.failure( "Errors with id" );
+    }
+    tpool.setNumThreads( N_threads );
+    if ( tpool.getNumThreads() == N_threads )
+        ut.passes( "Created thread pool" );
+    else
+        ut.failure( "Failed to create tpool with desired number of threads" );
+
+
+    // Test setting the thread affinities
+    testThreadAffinity( tpool, ut );
+
+
     // Print the current processors by thread id
-    comm.barrier();
+    barrier();
     ThreadPool::set_OS_warnings( 1 );
     print_processor( &tpool );
     launchAndTime( tpool, N_threads, print_processor, &tpool );
 
-    // Run some basic tests
-    comm.barrier();
-    {
-        auto start = std::chrono::high_resolution_clock::now();
-        for ( int n = 0; n < N_it; n++ ) {
-            for ( int i = 0; i < N_work; i++ )
-                waste_cpu( data1[i] );
-        }
-        auto stop   = std::chrono::high_resolution_clock::now();
-        double time = std::chrono::duration<double>( stop - start ).count();
-        printp( "Time for serial cycle = %0.0f us\n", 1e6 * time / N_it );
-        printp( "Time for serial item = %0.0f ns\n", 1e9 * time / ( N_it * N_work ) );
-        auto id = TPOOL_ADD_WORK( &tpool, waste_cpu, ( data1[0] ) );
-        tpool.wait( id );
-        std::vector<ThreadPool::thread_id_t> ids2;
-        ids2.push_back( TPOOL_ADD_WORK( &tpool, waste_cpu, ( data1[0] ) ) );
-        tpool.wait( ids2[0] );
 
-        // Test the move operator for thread_id
-        auto id1          = f1( id );         // move-construct from rvalue temporary
-        auto id2          = std::move( id1 ); // move-construct from xvalue
-        volatile auto id3 = f2( id );         // move-construct from rvalue temporary
-        volatile auto id4 = std::move( id3 ); // move-construct from xvalue
-        id2.reset();
-        id4.reset();
-    }
+    // Test the move operator for thread_id
+    test_move_thread_id( ut, tpool );
+
 
     // Test calling functions with different number of arguments
-    comm.barrier();
+    barrier();
     printp( "Testing arguments:\n" );
     int N_errors_args = test_function_arguements( &tpool );
     if ( N_errors_args == 0 )
@@ -580,252 +883,26 @@ void run_tests( AMP::UnitTest &ut )
 
 
     // Check that threads sleep in parallel (does not depend on the number of processors)
-    comm.barrier();
-    {
-        tpool.wait_pool_finished();
-        auto start = std::chrono::high_resolution_clock::now();
-        sleep_inc( 1 );
-        auto stop             = std::chrono::high_resolution_clock::now();
-        double sleep_serial   = std::chrono::duration<double>( stop - start ).count();
-        double sleep_parallel = launchAndTime( tpool, N_threads, sleep_inc, 1 );
-        double sleep_speedup  = N_procs_used * sleep_serial / sleep_parallel;
-        printf( "%i:  Speedup on %i sleeping threads: %0.3f\n", rank, N_procs_used, sleep_speedup );
-        printf( "%i:    ts = %0.3f, tp = %0.3f\n", rank, sleep_serial, sleep_parallel );
-        if ( fabs( sleep_serial - 1.0 ) < 0.05 && fabs( sleep_parallel - 1.0 ) < 0.25 &&
-             sleep_speedup > 3 )
-            ut.passes( "Passed thread sleep" );
-        else
-            ut.failure( "Failed thread sleep" );
-    }
+    barrier();
+    test_sleep_parallel( ut, tpool );
+
 
     // Check that the threads are actually working in parallel
-    comm.barrier();
-    if ( N_procs_used > 1 ) {
-        // Use a non-blocking serialization of the MPI processes
-        // if we do not have a sufficient number of processors
-        bool serialize_mpi = N_procs < N_threads * size;
-        if ( serialize_mpi )
-            comm.serializeStart();
-        int N = 20000000; // Enough work to keep the processor busy for ~ 1 s
-        // Run in serial
-        auto start = std::chrono::high_resolution_clock::now();
-        waste_cpu( N );
-        auto stop          = std::chrono::high_resolution_clock::now();
-        double time_serial = std::chrono::duration<double>( stop - start ).count();
-        // Run in parallel
-        double time_parallel  = launchAndTime( tpool, N_procs_used, waste_cpu, N );
-        double time_parallel2 = launchAndTime( tpool, N_procs_used, waste_cpu, N / 1000 );
-        double speedup        = N_procs_used * time_serial / time_parallel;
-        printf( "%i:  Speedup on %i procs: %0.3f\n", rank, N_procs_used, speedup );
-        printf( "%i:    ts = %0.3f, tp = %0.3f, tp2 = %0.3f\n",
-                rank,
-                time_serial,
-                time_parallel,
-                time_parallel2 );
-        if ( speedup > 1.4 ) {
-            ut.passes( "Passed speedup test" );
-        } else {
-#ifdef USE_GCOV
-            ut.expected_failure( "Times do not indicate tests are running in parallel (gcov)" );
-#else
-            ut.failure( "Times do not indicate tests are running in parallel" );
-#endif
-        }
-        if ( serialize_mpi )
-            comm.serializeStop();
-    } else {
-        ut.expected_failure( "Testing thread performance with less than 1 processor" );
-    }
-
+    barrier();
+    test_work_parallel( ut, tpool );
 
     // Test first-in-first-out scheduler (also ensures priorities)
     test_FIFO( ut, tpool );
 
-
     // Test adding a work item with a dependency
-    comm.barrier();
-    {
-        // Test that we sucessfully wait on the work items
-        std::vector<ThreadPool::thread_id_t> ids;
-        ids.reserve( 5 );
-        global_sleep_count = 0; // Reset the count before this test
-        ThreadPool::thread_id_t id0;
-        auto id1    = TPOOL_ADD_WORK( &tpool, sleep_inc, ( 1 ) );
-        auto id2    = TPOOL_ADD_WORK( &tpool, sleep_inc, ( 2 ) );
-        auto *wait1 = new WorkItemFull<bool, int>( check_inc, 1 );
-        auto *wait2 = new WorkItemFull<bool, int>( check_inc, 2 );
-        wait1->add_dependency( id0 );
-        wait1->add_dependency( id1 );
-        wait2->add_dependency( id1 );
-        wait2->add_dependency( id2 );
-        ids.clear();
-        ids.push_back( tpool.add_work( wait1 ) );
-        ids.push_back( tpool.add_work( wait2 ) );
-        tpool.wait_all( ids.size(), &ids[0] );
-        if ( !tpool.getFunctionRet<bool>( ids[0] ) || !tpool.getFunctionRet<bool>( ids[1] ) )
-            ut.failure( "Failed to wait on required dependency" );
-        else
-            ut.passes( "Dependencies" );
-        tpool.wait_pool_finished();
-        // Test waiting on more dependencies than in the thread pool (changing priorities)
-        ids.clear();
-        for ( size_t i = 0; i < 20; i++ )
-            ids.push_back( TPOOL_ADD_WORK( &tpool, sleep_inc2, ( 0.1 ) ) );
-        auto *wait3 = new WorkItemFull<void, double>( sleep_inc2, 0 );
-        wait3->add_dependencies( ids );
-        auto id = tpool.add_work( wait3, 50 );
-        tpool.wait( id );
-        pass = true;
-        for ( auto &id : ids )
-            pass = pass && id.finished();
-        ids.clear();
-        if ( pass )
-            ut.passes( "Dependencies2" );
-        else
-            ut.failure( "Dependencies2" );
-        // Check that we can handle more complex dependencies
-        id1 = TPOOL_ADD_WORK( &tpool, sleep_inc2, ( 0.5 ) );
-        for ( int i = 0; i < 10; i++ ) {
-            wait1 = new WorkItemFull<bool, int>( check_inc, 1 );
-            wait1->add_dependency( id1 );
-            tpool.add_work( wait1 );
-        }
-        tpool.wait_pool_finished();
-        ids.clear();
-        for ( int i = 0; i < 5; i++ )
-            ids.push_back( TPOOL_ADD_WORK( &tpool, sleep_inc2, ( 0.5 ) ) );
-        sleep_inc2( 0.002 );
-        ThreadPool::WorkItem *work = new WorkItemFull<void, int>( waste_cpu, 100 );
-        work->add_dependencies( ids );
-        id = tpool.add_work( work, 10 );
-        tpool.wait( id );
-    }
+    barrier();
+    test_work_dependency( ut, tpool );
 
-    // Test the timing creating and running a work item
-    comm.barrier();
-    {
-        printp( "Testing timmings (creating/running work item):\n" );
-        PROFILE_START( "Create/Run work item" );
-        int64_t time_create = 0;
-        int64_t time_run    = 0;
-        int64_t time_delete = 0;
-        std::vector<ThreadPool::WorkItem *> work( N_work );
-        auto start = std::chrono::high_resolution_clock::now();
-        for ( int n = 0; n < N_it; n++ ) {
-            auto t1 = std::chrono::high_resolution_clock::now();
-            for ( int i = 0; i < N_work; i++ )
-                work[i] = ThreadPool::createWork<void, int>( waste_cpu, data1[i] );
-            auto t2 = std::chrono::high_resolution_clock::now();
-            for ( int i = 0; i < N_work; i++ )
-                work[i]->run();
-            auto t3 = std::chrono::high_resolution_clock::now();
-            for ( int i = 0; i < N_work; i++ )
-                delete work[i];
-            auto t4 = std::chrono::high_resolution_clock::now();
-            time_create += to_ns( t2 - t1 );
-            time_run += to_ns( t3 - t2 );
-            time_delete += to_ns( t4 - t3 );
-            if ( ( n + 1 ) % 100 == 0 )
-                printp( "Cycle %i of %i finished\n", n + 1, N_it );
-        }
-        auto stop = std::chrono::high_resolution_clock::now();
-        auto time = std::chrono::duration<double>( stop - start ).count();
-        PROFILE_STOP( "Create/Run work item" );
-        printp( "   time = %0.0f ms\n", 1e3 * time );
-        printp( "   time / cycle = %0.0f us\n", 1e6 * time / N_it );
-        printp( "   average time / item = %0.0f ns\n", 1e9 * time / ( N_it * N_work ) );
-        printp( "      create = %i ns\n", time_create / ( N_it * N_work ) );
-        printp( "      run    = %i ns\n", time_run / ( N_it * N_work ) );
-        printp( "      delete = %i us\n", time_delete / ( N_it * N_work ) );
-    }
-
-    // Test the timing adding a single item
-    comm.barrier();
-    for ( int it = 0; it < 2; it++ ) {
-        ThreadPool *tpool_ptr = nullptr;
-        std::string timer_name;
-        if ( it == 0 ) {
-            printp( "Testing timmings (adding a single item to empty tpool):\n" );
-            timer_name = "Add single item to empty pool";
-            tpool_ptr  = &tpool0;
-        } else if ( it == 1 ) {
-            printp( "Testing timmings (adding a single item):\n" );
-            timer_name = "Add single item to tpool";
-            tpool_ptr  = &tpool;
-        }
-        NULL_USE( timer_name );
-        PROFILE_START( timer_name );
-        std::vector<ThreadPool::thread_id_t> ids( N_work );
-        int64_t time_add  = 0;
-        int64_t time_wait = 0;
-        auto start        = std::chrono::high_resolution_clock::now();
-        for ( int n = 0; n < N_it; n++ ) {
-            auto t1 = std::chrono::high_resolution_clock::now();
-            for ( int i = 0; i < N_work; i++ )
-                ids[i] = TPOOL_ADD_WORK( tpool_ptr, waste_cpu, ( data1[i] ), priority[i] );
-            auto t2 = std::chrono::high_resolution_clock::now();
-            tpool_ptr->wait_all( N_work, &ids[0] );
-            auto t3 = std::chrono::high_resolution_clock::now();
-            time_add += to_ns( t2 - t1 );
-            time_wait += to_ns( t3 - t2 );
-            if ( ( n + 1 ) % 100 == 0 )
-                printp( "Cycle %i of %i finished\n", n + 1, N_it );
-        }
-        auto stop = std::chrono::high_resolution_clock::now();
-        auto time = std::chrono::duration<double>( stop - start ).count();
-        PROFILE_STOP( timer_name );
-        printp( "   time = %0.0f ms\n", 1e3 * time );
-        printp( "   time / cycle = %0.0f us\n", 1e6 * time / N_it );
-        printp( "   average time / item = %0.0f ns\n", 1e9 * time / ( N_it * N_work ) );
-        printp( "      create and add = %i ns\n", time_add / ( N_it * N_work ) );
-        printp( "      wait = %i us\n", time_wait / ( N_it * N_work ) );
-    }
-
-    // Test the timing pre-creating the work items and adding multiple at a time
-    comm.barrier();
-    for ( int it = 0; it < 2; it++ ) {
-        ThreadPool *tpool_ptr = nullptr;
-        std::string timer_name;
-        if ( it == 0 ) {
-            printp( "Testing timmings (adding a block of items to empty tpool):\n" );
-            timer_name = "Add multiple items to empty pool";
-            tpool_ptr  = &tpool0;
-        } else if ( it == 1 ) {
-            printp( "Testing timmings (adding a block of items):\n" );
-            timer_name = "Add multiple items to tpool";
-            tpool_ptr  = &tpool;
-        }
-        NULL_USE( timer_name );
-        PROFILE_START( timer_name );
-        int64_t time_create_work = 0;
-        int64_t time_add_work    = 0;
-        int64_t time_wait_work   = 0;
-        std::vector<ThreadPool::WorkItem *> work( N_work );
-        auto start = std::chrono::high_resolution_clock::now();
-        for ( int n = 0; n < N_it; n++ ) {
-            auto t1 = std::chrono::high_resolution_clock::now();
-            for ( int i = 0; i < N_work; i++ )
-                work[i] = ThreadPool::createWork<void, int>( waste_cpu, data1[i] );
-            auto t2  = std::chrono::high_resolution_clock::now();
-            auto ids = tpool_ptr->add_work( work, priority );
-            auto t3  = std::chrono::high_resolution_clock::now();
-            tpool_ptr->wait_all( ids );
-            auto t4 = std::chrono::high_resolution_clock::now();
-            time_create_work += to_ns( t2 - t1 );
-            time_add_work += to_ns( t3 - t2 );
-            time_wait_work += to_ns( t4 - t3 );
-            if ( ( n + 1 ) % 100 == 0 )
-                printp( "Cycle %i of %i finished\n", n + 1, N_it );
-        }
-        auto stop = std::chrono::high_resolution_clock::now();
-        auto time = std::chrono::duration<double>( stop - start ).count();
-        PROFILE_STOP( timer_name );
-        printp( "   time = %0.0f ms\n", 1e3 * time );
-        printp( "   time / cycle = %0.0f us\n", 1e6 * time / N_it );
-        printp( "   average time / item = %0.0f ns\n", 1e9 * time / ( N_it * N_work ) );
-        printp( "      create = %i ns\n", time_create_work / ( N_it * N_work ) );
-        printp( "      add = %i ns\n", time_add_work / ( N_it * N_work ) );
-        printp( "      wait = %i ns\n", time_wait_work / ( N_it * N_work ) );
+    // Run some performance tests
+    if ( rank == 0 ) {
+        ThreadPool tpool0;
+        testThreadPoolPerformance( tpool0 );
+        testThreadPoolPerformance( tpool );
     }
 
     // Run a dependency test that tests a simple case that should keep the thread pool busy
@@ -857,8 +934,8 @@ void run_tests( AMP::UnitTest &ut )
     PROFILE_DISABLE();
 
     // Test creating/destroying a thread pool using new
-    comm.barrier();
-    pass = true;
+    barrier();
+    auto pass = true;
     try {
         auto tpool2 = new ThreadPool( ThreadPool::MAX_THREADS - 1 );
         if ( tpool2->getNumThreads() != ThreadPool::MAX_THREADS - 1 )
@@ -881,14 +958,15 @@ void run_tests( AMP::UnitTest &ut )
 int main( int argc, char *argv[] )
 {
     // Initialize MPI and profiler
+    AMP::AMPManager::startup( argc, argv );
+    UnitTest ut;
     PROFILE_ENABLE( 3 );
     PROFILE_ENABLE_TRACE();
     PROFILE_DISABLE_MEMORY();
-    AMP::AMPManager::startup( argc, argv );
-    AMP::UnitTest ut;
     // Run the tests
     run_tests( ut );
     // Shutdown
+    barrier();
     ut.report();
     int N_errors = ut.NumFailGlobal();
     ut.reset();

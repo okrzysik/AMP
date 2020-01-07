@@ -6,6 +6,9 @@
 #include <mutex>
 
 
+namespace AMP {
+
+
 /** \class Mutex
  * \brief Functions for locking/unlocking a mutex
  * \details This class provides basic routines for creating,
@@ -51,5 +54,7 @@ private:
     std::shared_ptr<data_struct> d_data;
 };
 
+
+} // namespace AMP
 
 #endif
