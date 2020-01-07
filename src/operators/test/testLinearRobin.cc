@@ -44,7 +44,7 @@ static void bcTests( AMP::UnitTest *ut,
         bcOperator->reset( dummyParameters );
 
         ut->failure( "Test" );
-    } catch ( std::exception ) {
+    } catch ( const std::exception & ) {
 
         ut->passes( msgPrefix + ": catches when prefactor alpha is set to zero " );
     }
