@@ -63,7 +63,7 @@ void testArgsRange( const PROP &property,
         property->evalv( value, args );
         set( *vec, 5, justRight );
         success = false;
-    } catch ( std::exception & ) {
+    } catch ( const std::exception & ) {
         set( *vec, 5, justRight );
         success = true;
     } catch ( ... ) {
@@ -85,7 +85,7 @@ MatTestResult testMaterial( std::string &name )
     try {
         mat = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
         results.creationGood = true;
-    } catch ( std::exception ) {
+    } catch ( const std::exception& ) {
         results.creationGood = false;
     } catch ( ... ) {
         results.unknown = true;
@@ -94,7 +94,7 @@ MatTestResult testMaterial( std::string &name )
     // check for undefined property
     try {
         mat->property( "RiDiCuLoUs#!$^&*Name" );
-    } catch ( std::exception & ) {
+    } catch ( const std::exception & ) {
         results.undefined = true;
     } catch ( ... ) {
         results.undefined = false;
@@ -129,7 +129,7 @@ MatTestResult testMaterial( std::string &name )
             } else {
                 propResults.params = true;
             }
-        } catch ( std::exception & ) {
+        } catch ( const std::exception & ) {
             propResults.params = false;
         } catch ( ... ) {
             propResults.params  = false;
@@ -258,7 +258,7 @@ MatTestResult testMaterial( std::string &name )
                 propResults.nargeval[0] = true;
             else
                 propResults.nargeval[0] = false;
-        } catch ( std::exception & ) {
+        } catch ( const std::exception & ) {
             propResults.nargeval[0] = false;
         } catch ( ... ) {
             propResults.nargeval[0] = false;
@@ -275,7 +275,7 @@ MatTestResult testMaterial( std::string &name )
                 property->evalv( value, args );
                 nominal                = value;
                 propResults.success[0] = true;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception & ) {
                 propResults.success[0] = false;
             } catch ( ... ) {
                 propResults.success[0] = false;
@@ -310,7 +310,7 @@ MatTestResult testMaterial( std::string &name )
                 property->evalv( valueVec, argsVec );
                 nominalVec->copyVector( valueVec );
                 propResults.success[4] = true;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception & ) {
                 propResults.success[4] = false;
             } catch ( ... ) {
                 propResults.success[4] = false;
@@ -351,7 +351,7 @@ MatTestResult testMaterial( std::string &name )
                 try {
                     auto testMap           = property->make_map( argsMultiVec );
                     propResults.success[7] = false;
-                } catch ( std::exception & ) {
+                } catch ( const std::exception & ) {
                     xlateGood = true;
                 } catch ( ... ) {
                     propResults.success[7] = false;
@@ -388,7 +388,7 @@ MatTestResult testMaterial( std::string &name )
                     propResults.success[8] = true;
                 else
                     propResults.success[8] = false;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception & ) {
                 propResults.success[8] = false;
             } catch ( ... ) {
                 propResults.success[8] = false;
@@ -400,7 +400,7 @@ MatTestResult testMaterial( std::string &name )
                 property->evalv( valueVec, argsMultiVec );
                 nominalMultiVec->copyVector( valueVec );
                 propResults.success[9] = true;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception & ) {
                 propResults.success[9] = false;
             } catch ( ... ) {
                 propResults.success[9] = false;
@@ -458,7 +458,7 @@ MatTestResult testMaterial( std::string &name )
                 try {
                     property->evalv( value, argsm );
                     propResults.nargeval[1] = true;
-                } catch ( std::exception & ) {
+                } catch ( const std::exception & ) {
                     propResults.nargeval[1] = false;
                 } catch ( ... ) {
                     propResults.nargeval[1] = false;
@@ -490,7 +490,7 @@ MatTestResult testMaterial( std::string &name )
             try {
                 vectorProperty->evalv( value, args );
                 propResults.vector[3] = false;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception & ) {
                 propResults.vector[3] = true;
             } catch ( ... ) {
                 propResults.vector[3] = false;
@@ -501,7 +501,7 @@ MatTestResult testMaterial( std::string &name )
             try {
                 vectorProperty->evalv( valueVec, argsVec );
                 propResults.vector[4] = false;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception & ) {
                 propResults.vector[4] = true;
             } catch ( ... ) {
                 propResults.vector[4] = false;
@@ -519,7 +519,7 @@ MatTestResult testMaterial( std::string &name )
                 try {
                     auto testMap           = vectorProperty->make_map( argsMultiVec );
                     propResults.success[7] = false;
-                } catch ( std::exception & ) {
+                } catch ( const std::exception & ) {
                     xlateGood = true;
                 } catch ( ... ) {
                     propResults.success[7] = false;
@@ -556,7 +556,7 @@ MatTestResult testMaterial( std::string &name )
                     propResults.success[8] = true;
                 else
                     propResults.success[8] = false;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception & ) {
                 propResults.success[8] = false;
             } catch ( ... ) {
                 propResults.success[8] = false;
@@ -567,7 +567,7 @@ MatTestResult testMaterial( std::string &name )
             try {
                 vectorProperty->evalv( valueVec, argsMultiVec );
                 propResults.vector[5] = false;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception & ) {
                 propResults.vector[5] = true;
             } catch ( ... ) {
                 propResults.vector[5] = false;
@@ -579,7 +579,7 @@ MatTestResult testMaterial( std::string &name )
             try {
                 nvec                  = vectorProperty->get_dimension();
                 propResults.vector[0] = true;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception & ) {
                 propResults.vector[0] = false;
             } catch ( ... ) {
                 propResults.vector[0] = false;
@@ -604,7 +604,7 @@ MatTestResult testMaterial( std::string &name )
                 vectorProperty->evalv( stdEval, args );
                 nominalEval            = stdEval;
                 propResults.success[0] = true;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception& ) {
                 propResults.success[0] = false;
             } catch ( ... ) {
                 propResults.success[0] = false;
@@ -656,7 +656,7 @@ MatTestResult testMaterial( std::string &name )
                 for ( size_t i = 0; i < nvec; i++ )
                     nominalAmpEval[i]->copyVector( ampEval[i] );
                 propResults.success[4] = true;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception& ) {
                 propResults.success[4] = false;
             } catch ( ... ) {
                 propResults.success[4] = false;
@@ -692,7 +692,7 @@ MatTestResult testMaterial( std::string &name )
                 for ( size_t i = 0; i < nvec; i++ )
                     nominalMultiEval[i]->copyVector( ampEval[i] );
                 propResults.success[9] = true;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception& ) {
                 propResults.success[9] = false;
             } catch ( ... ) {
                 propResults.success[9] = false;
@@ -752,7 +752,7 @@ MatTestResult testMaterial( std::string &name )
                 try {
                     vectorProperty->evalv( stdEval, argsm );
                     propResults.nargeval[1] = true;
-                } catch ( std::exception & ) {
+                } catch ( const std::exception& ) {
                     propResults.nargeval[1] = false;
                 } catch ( ... ) {
                     propResults.nargeval[1] = false;
@@ -783,7 +783,7 @@ MatTestResult testMaterial( std::string &name )
             try {
                 tensorProperty->evalv( value, args );
                 propResults.tensor[3] = false;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception& ) {
                 propResults.tensor[3] = true;
             } catch ( ... ) {
                 propResults.tensor[3] = false;
@@ -794,7 +794,7 @@ MatTestResult testMaterial( std::string &name )
             try {
                 tensorProperty->evalv( valueVec, argsVec );
                 propResults.tensor[4] = false;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception& ) {
                 propResults.tensor[4] = true;
             } catch ( ... ) {
                 propResults.tensor[4] = false;
@@ -812,7 +812,7 @@ MatTestResult testMaterial( std::string &name )
                 try {
                     auto testMap           = tensorProperty->make_map( argsMultiVec );
                     propResults.success[7] = false;
-                } catch ( std::exception & ) {
+                } catch ( const std::exception& ) {
                     xlateGood = true;
                 } catch ( ... ) {
                     propResults.success[7] = false;
@@ -849,7 +849,7 @@ MatTestResult testMaterial( std::string &name )
                     propResults.success[8] = true;
                 else
                     propResults.success[8] = false;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception& ) {
                 propResults.success[8] = false;
             } catch ( ... ) {
                 propResults.success[8] = false;
@@ -860,7 +860,7 @@ MatTestResult testMaterial( std::string &name )
             try {
                 tensorProperty->evalv( valueVec, argsMultiVec );
                 propResults.tensor[5] = false;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception& ) {
                 propResults.tensor[5] = true;
             } catch ( ... ) {
                 propResults.tensor[5] = false;
@@ -872,7 +872,7 @@ MatTestResult testMaterial( std::string &name )
             try {
                 nvecs                 = tensorProperty->get_dimensions();
                 propResults.tensor[0] = true;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception& ) {
                 propResults.tensor[0] = false;
             } catch ( ... ) {
                 propResults.tensor[0] = false;
@@ -900,7 +900,7 @@ MatTestResult testMaterial( std::string &name )
                 tensorProperty->evalv( stdEval, args );
                 nominalEval            = stdEval;
                 propResults.success[0] = true;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception& ) {
                 propResults.success[0] = false;
             } catch ( ... ) {
                 propResults.success[0] = false;
@@ -960,7 +960,7 @@ MatTestResult testMaterial( std::string &name )
                     for ( size_t j = 0; j < nvecs[1]; j++ )
                         nominalAmpEval[i][j]->copyVector( ampEval[i][j] );
                 propResults.success[4] = true;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception& ) {
                 propResults.success[4] = false;
             } catch ( ... ) {
                 propResults.success[4] = false;
@@ -997,7 +997,7 @@ MatTestResult testMaterial( std::string &name )
                     for ( size_t j = 0; j < nvecs[1]; j++ )
                         nominalMultiEval[i][j]->copyVector( ampEval[i][j] );
                 propResults.success[9] = true;
-            } catch ( std::exception & ) {
+            } catch ( const std::exception& ) {
                 propResults.success[9] = false;
             } catch ( ... ) {
                 propResults.success[9] = false;
@@ -1059,7 +1059,7 @@ MatTestResult testMaterial( std::string &name )
                 try {
                     tensorProperty->evalv( stdEval, argsm );
                     propResults.nargeval[1] = true;
-                } catch ( std::exception & ) {
+                } catch ( const std::exception& ) {
                     propResults.nargeval[1] = false;
                 } catch ( ... ) {
                     propResults.nargeval[1] = false;
@@ -1121,7 +1121,7 @@ int main( int argc, char **argv )
                 ut.passes( "detected undefined material" );
             else
                 ut.failure( "did not detect undefined material" );
-        } catch ( std::exception &err ) {
+        } catch ( const std::exception &err ) {
             ut.failure( "Caught unknown exception type" );
         }
     }
