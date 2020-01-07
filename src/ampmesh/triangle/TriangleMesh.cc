@@ -206,9 +206,9 @@ createTriangles( const std::vector<std::array<std::array<double, NP>, NG + 1>> &
         for ( size_t j = 0; j < NG + 1; j++ ) {
             auto &point   = tri_list[i][j];
             int64_t index = -1;
-            for ( size_t j = 0; j < verticies.size() && index == -1; j++ ) {
-                if ( approx_equal( point, verticies[j], tol2 ) )
-                    index = j;
+            for ( size_t k = 0; k < verticies.size() && index == -1; k++ ) {
+                if ( approx_equal( point, verticies[k], tol2 ) )
+                    index = k;
             }
             if ( index == -1 ) {
                 index = verticies.size();
