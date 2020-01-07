@@ -293,8 +293,8 @@ double distanceToCylinder( double r, double h, const Point &pos, const Point &an
         // double y1 = ( -D * dx + abs( dy ) *t ) / ( dr*dr);
         // double y2 = ( -D * dx - abs( dy ) *t ) / ( dr*dr);
         // Compute the distance to the point
-        double d1 = ( x1 - pos.x() ) / ang.x();
-        double d2 = ( x2 - pos.x() ) / ang.x();
+        d1 = ( x1 - pos.x() ) / ang.x();
+        d2 = ( x2 - pos.x() ) / ang.x();
         if ( d1 < 0 )
             d1 = std::numeric_limits<double>::infinity();
         if ( d2 < 0 )

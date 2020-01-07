@@ -408,11 +408,11 @@ void STKMesh::initialize()
         std::set<MeshElement> local, ghost;
         MeshIterator it = getIterator( type, 0 );
         for ( size_t i = 0; i < it.size(); i++ ) {
-            std::vector<MeshElement> nodes = it->getElements( GeomType::Vertex );
-            AMP_ASSERT( !nodes.empty() );
+            std::vector<MeshElement> vertices = it->getElements( GeomType::Vertex );
+            AMP_ASSERT( !vertices.empty() );
             bool on_boundary = true;
-            for ( size_t j = 0; j < nodes.size(); j++ ) {
-                if ( !nodes[j].isOnSurface() )
+            for ( size_t j = 0; j < vertices.size(); j++ ) {
+                if ( !vertices[j].isOnSurface() )
                     on_boundary = false;
             }
             if ( on_boundary ) {

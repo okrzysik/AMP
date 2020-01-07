@@ -131,7 +131,7 @@ std::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator, bool isGlobal 
         auto N = d_comm.sumReduce( iterator.size() );
         if ( N == 0 )
             return std::shared_ptr<Mesh>();
-    } else if ( !isGlobal && iterator.size() == 0 ) {
+    } else if ( iterator.size() == 0 ) {
         return std::shared_ptr<Mesh>();
     }
     auto mesh = std::make_shared<SubsetMesh>( shared_from_this(), iterator, isGlobal );

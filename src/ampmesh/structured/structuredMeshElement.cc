@@ -565,12 +565,12 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
     // Fix any elements that are beyond a periodic boundary
     for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
         if ( d_mesh->d_isPeriodic[d] ) {
-            int size = d_mesh->d_globalSize[d];
+            int global_size = d_mesh->d_globalSize[d];
             for ( auto &elem : index_list ) {
                 if ( elem.d_index[d] < 0 )
-                    elem.d_index[d] += size;
-                else if ( elem.d_index[d] >= size )
-                    elem.d_index[d] -= size;
+                    elem.d_index[d] += global_size;
+                else if ( elem.d_index[d] >= global_size )
+                    elem.d_index[d] -= global_size;
             }
         }
     }
