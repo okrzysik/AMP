@@ -636,18 +636,18 @@ TriangleMesh<NG, NP>::TriangleMesh( MeshParameters::shared_ptr params_in ) : Mes
     AMP_ERROR( "Not finished" );
 }
 template<size_t NG, size_t NP>
-TriangleMesh<NG, NP>::TriangleMesh( const TriangleMesh &rhs ) : Mesh( rhs.d_params )
+TriangleMesh<NG, NP>::TriangleMesh( const TriangleMesh &rhs ) : Mesh( rhs.d_params ),
+								d_N_global{ rhs.d_N_global },
+								d_vert{ rhs.d_vert },
+								d_edge{ rhs.d_edge },
+								d_tri{ rhs.d_tri },
+								d_tet{ rhs.d_tet },
+								d_neighbors{ rhs.d_neighbors },
+								d_remote_vert{ rhs.d_remote_vert },
+								d_remote_edge{ rhs.d_remote_edge },
+								d_remote_tri{ rhs.d_remote_tri },
+								d_remote_tet{ rhs.d_remote_tet }								
 {
-    d_N_global    = rhs.d_N_global;
-    d_vert        = rhs.d_vert;
-    d_edge        = rhs.d_edge;
-    d_tri         = rhs.d_tri;
-    d_tet         = rhs.d_tet;
-    d_neighbors   = rhs.d_neighbors;
-    d_remote_vert = rhs.d_remote_vert;
-    d_remote_edge = rhs.d_remote_edge;
-    d_remote_tri  = rhs.d_remote_tri;
-    d_remote_tet  = rhs.d_remote_tet;
     for ( size_t i = 0; i < NG; i++ ) {
         for ( size_t j = 0; j < NG; j++ ) {
             d_parents[i][j] = rhs.d_parents[i][j];
