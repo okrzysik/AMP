@@ -22,8 +22,9 @@ class AtomicList final
 {
 public:
     //! Default constructor
-    AtomicList( size_t capacity = 1024, const TYPE &default_value = TYPE(),
-        const COMPARE &comp = COMPARE() );
+    AtomicList( size_t capacity           = 1024,
+                const TYPE &default_value = TYPE(),
+                const COMPARE &comp       = COMPARE() );
 
     //! Destructor
     ~AtomicList();

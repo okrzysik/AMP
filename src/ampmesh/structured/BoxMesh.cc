@@ -651,7 +651,7 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
     std::set<MeshElementIndex> set;
     for ( auto block : intersection ) {
         auto itype = block.first.type();
-        auto side = block.first.side();
+        auto side  = block.first.side();
         for ( int k = block.second.index( 2 ); k >= block.first.index( 2 ); k-- ) {
             for ( int j = block.second.index( 1 ); j >= block.first.index( 1 ); j-- ) {
                 for ( int i = block.second.index( 0 ); i >= block.first.index( 0 ); i-- ) {
@@ -700,7 +700,7 @@ BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
     std::set<MeshElementIndex> set;
     for ( auto block : intersection ) {
         auto itype = block.first.type();
-        auto side = block.first.side();
+        auto side  = block.first.side();
         for ( int k = block.second.index( 2 ); k >= block.first.index( 2 ); k-- ) {
             for ( int j = block.second.index( 1 ); j >= block.first.index( 1 ); j-- ) {
                 for ( int i = block.second.index( 0 ); i >= block.first.index( 0 ); i-- ) {

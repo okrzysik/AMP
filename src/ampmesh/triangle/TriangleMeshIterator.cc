@@ -82,14 +82,14 @@ TriangleMeshIterator<NG, NP>::TriangleMeshIterator(
 }
 template<size_t NG, size_t NP>
 TriangleMeshIterator<NG, NP>::TriangleMeshIterator( const TriangleMeshIterator &rhs )
-  : MeshIterator(), d_mesh{ rhs.d_mesh }, d_list{ rhs.d_list }, d_cur_element{ rhs.d_cur_element }
+    : MeshIterator(), d_mesh{ rhs.d_mesh }, d_list{ rhs.d_list }, d_cur_element{ rhs.d_cur_element }
 
 {
-    d_typeID      = rhs.d_typeID;
-    d_iterator    = nullptr;
-    d_size        = rhs.d_size;
-    d_pos         = rhs.d_pos;
-    d_element     = &d_cur_element;
+    d_typeID   = rhs.d_typeID;
+    d_iterator = nullptr;
+    d_size     = rhs.d_size;
+    d_pos      = rhs.d_pos;
+    d_element  = &d_cur_element;
 }
 template<size_t NG, size_t NP>
 TriangleMeshIterator<NG, NP> &TriangleMeshIterator<NG, NP>::

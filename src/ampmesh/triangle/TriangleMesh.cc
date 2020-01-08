@@ -22,6 +22,11 @@ namespace AMP {
 namespace Mesh {
 
 
+typedef std::array<ElementID, 2> Edge;
+typedef std::array<ElementID, 3> Triangle;
+typedef std::array<ElementID, 4> Tetrahedron;
+
+
 // Helper function to create constexpr std::array with a single value
 template<class T, std::size_t N, std::size_t... I>
 static constexpr std::array<std::remove_cv_t<T>, N> to_array_impl( const T *a,
@@ -491,6 +496,7 @@ TriangleMesh<NG, NP>::TriangleMesh( const std::vector<std::array<double, NP>> &v
  ****************************************************************/
 static std::shared_ptr<std::vector<ElementID>> createLocalList( size_t N, GeomType type, int rank )
 {
+    // Create a local list of element ids
     auto list = std::make_shared<std::vector<ElementID>>( N );
     for ( size_t i = 0; i < N; i++ )
         ( *list )[i] = ElementID( true, type, i, rank );
@@ -527,6 +533,7 @@ computeNodeParents( size_t N_points,
 template<size_t NG, size_t NP>
 void TriangleMesh<NG, NP>::initializeBoundingBox()
 {
+    // Initialize the bounding box
     d_box.resize( 2 * NP );
     d_box_local.resize( 2 * NP );
     for ( size_t d = 0; d < NP; d++ ) {
@@ -544,12 +551,76 @@ void TriangleMesh<NG, NP>::initializeBoundingBox()
         d_box[2 * d + 1] = d_comm.maxReduce( d_box_local[2 * d + 1] );
     }
 }
+template<std::size_t N>
+static void getEdge( const std::vector<std::array<ElementID, N>> &tri,
+                     std::vector<Edge> &local,
+                     std::vector<Edge> &remote )
+{
+    // Get a list of the local and remote edges
+    local.clear();
+    remote.clear();
+    local.reserve( N * ( N - 1 ) * tri.size() / 2 );
+    auto checkAndAdd = [&local, &remote]( Edge edge ) {
+        if ( edge[1] < edge[0] )
+            std::swap( edge[0], edge[1] );
+        if ( edge[0].is_local() )
+            local.push_back( edge );
+        else
+            remote.push_back( edge );
+    };
+    for ( auto obj : tri ) {
+        for ( size_t i = 0; i < N - 1; i++ )
+            for ( size_t j = i + 1; i < N; i++ )
+                checkAndAdd( { obj[i], obj[j] } );
+    }
+    std::sort( local.begin(), local.begin() );
+    std::sort( remote.begin(), remote.begin() );
+}
+static void getFace( const std::vector<Tetrahedron> &tri,
+                     std::vector<Triangle> &local,
+                     std::vector<Triangle> &remote )
+{
+    // Get a list of the local and remote faces
+    local.clear();
+    remote.clear();
+    local.reserve( 4 * tri.size() );
+    /*auto checkAndAdd = [&local,&remote]( Face face ) {
+        if ( face[1] < face[0] )
+            std::swap( face[0], face[1] );
+        if ( face[2] < face[0] )
+            std::swap( face[0], face[2] );
+        if ( face[2] < face[1] )
+            std::swap( face[1], face[2] );
+        if ( face[0].is_local() )
+            local.push_back( face );
+        else
+            remote.push_back( face );
+    };*/
+    for ( auto obj : tri ) {
+        NULL_USE( obj );
+        AMP_ERROR( "Not finished" );
+    }
+    std::sort( local.begin(), local.begin() );
+    std::sort( remote.begin(), remote.begin() );
+}
 template<size_t NG, size_t NP>
 void TriangleMesh<NG, NP>::initialize()
 {
     int rank = d_comm.getRank();
     int size = d_comm.getSize();
     // Create the edges
+    std::vector<Edge> remote_edges;
+    std::vector<Triangle> remote_faces;
+    if ( NG == 2 ) {
+        getEdge( d_tri, d_edge, remote_edges );
+    } else if ( NG == 3 ) {
+        getEdge( d_tet, d_edge, remote_edges );
+        getFace( d_tet, d_tri, remote_faces );
+    }
+    if ( !remote_edges.empty() )
+        AMP_ERROR( "Not finished, need to fill d_remote_edge" );
+    if ( !remote_faces.empty() )
+        AMP_ERROR( "Not finished, need to fill d_remote_edge" );
     // Get the global size
     d_N_global[0] = d_comm.sumReduce( d_vert.size() );
     d_N_global[1] = d_comm.sumReduce( d_edge.size() );
@@ -636,17 +707,18 @@ TriangleMesh<NG, NP>::TriangleMesh( MeshParameters::shared_ptr params_in ) : Mes
     AMP_ERROR( "Not finished" );
 }
 template<size_t NG, size_t NP>
-TriangleMesh<NG, NP>::TriangleMesh( const TriangleMesh &rhs ) : Mesh( rhs.d_params ),
-								d_N_global{ rhs.d_N_global },
-								d_vert{ rhs.d_vert },
-								d_edge{ rhs.d_edge },
-								d_tri{ rhs.d_tri },
-								d_tet{ rhs.d_tet },
-								d_neighbors{ rhs.d_neighbors },
-								d_remote_vert{ rhs.d_remote_vert },
-								d_remote_edge{ rhs.d_remote_edge },
-								d_remote_tri{ rhs.d_remote_tri },
-								d_remote_tet{ rhs.d_remote_tet }								
+TriangleMesh<NG, NP>::TriangleMesh( const TriangleMesh &rhs )
+    : Mesh( rhs.d_params ),
+      d_N_global{ rhs.d_N_global },
+      d_vert{ rhs.d_vert },
+      d_edge{ rhs.d_edge },
+      d_tri{ rhs.d_tri },
+      d_tet{ rhs.d_tet },
+      d_neighbors{ rhs.d_neighbors },
+      d_remote_vert{ rhs.d_remote_vert },
+      d_remote_edge{ rhs.d_remote_edge },
+      d_remote_tri{ rhs.d_remote_tri },
+      d_remote_tet{ rhs.d_remote_tet }
 {
     for ( size_t i = 0; i < NG; i++ ) {
         for ( size_t j = 0; j < NG; j++ ) {

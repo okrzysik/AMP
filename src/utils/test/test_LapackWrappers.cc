@@ -40,7 +40,7 @@ int main( int, char *[] )
         N_errors += err;
     }
     printf( "\nRunning single precision basic tests\n" );
-    if (int err = Lapack<float>::run_all_test(); err == 0 ) {
+    if ( int err = Lapack<float>::run_all_test(); err == 0 ) {
         printf( "  passed sp tests\n" );
     } else {
         printf( "  failed %d sp tests \n", err );

@@ -1,7 +1,7 @@
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/threadpool/atomic_helpers.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/threadpool/atomic_helpers.h"
 #include <atomic>
 #include <chrono>
 #include <cstdio>

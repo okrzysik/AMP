@@ -70,12 +70,11 @@ TriangleMeshElement<NG, NP>::TriangleMeshElement( const TriangleMeshElement &rhs
     element = rhs.element;
 }
 template<size_t NG, size_t NP>
-TriangleMeshElement<NG, NP>::TriangleMeshElement( TriangleMeshElement &&rhs ) : MeshElement(),
-										d_mesh( rhs.d_mesh ),
-										d_globalID{ rhs.d_globalID }
+TriangleMeshElement<NG, NP>::TriangleMeshElement( TriangleMeshElement &&rhs )
+    : MeshElement(), d_mesh( rhs.d_mesh ), d_globalID{ rhs.d_globalID }
 {
-    typeID     = rhs.typeID;
-    element    = nullptr;
+    typeID  = rhs.typeID;
+    element = nullptr;
 }
 template<size_t NG, size_t NP>
 TriangleMeshElement<NG, NP> &TriangleMeshElement<NG, NP>::

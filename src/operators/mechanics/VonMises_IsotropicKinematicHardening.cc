@@ -390,7 +390,7 @@ void VonMises_IsotropicKinematicHardening::getConstitutiveMatrix( double *&const
 
     const double one3 = 1.0 / 3.0;
     const double two3 = 2.0 / 3.0;
-    sq23 = sqrt( two3 );
+    sq23              = sqrt( two3 );
 
     // std::cout << "sig_0 = " << sig_0 << " sig_inf = " << sig_inf << std::endl;
 
@@ -643,10 +643,10 @@ void VonMises_IsotropicKinematicHardening::radialReturn(
       std::cout << "dstra[" << i << "] = " << dstra[i] << std::endl;
     }*/
 
-    constexpr double one3    = 1.0 / 3.0;
-    constexpr double two3    = 2.0 / 3.0;
-    sq23    = sqrt( two3 );
-    ephbp_n = eph_bar_plas_n; // Effective plastic strain at the previous time step.
+    constexpr double one3 = 1.0 / 3.0;
+    constexpr double two3 = 2.0 / 3.0;
+    sq23                  = sqrt( two3 );
+    ephbp_n               = eph_bar_plas_n; // Effective plastic strain at the previous time step.
     // sigy_n = ystre_n;           //Yield stress at the previous time step.
 
     if ( d_TW_Test == true ) {

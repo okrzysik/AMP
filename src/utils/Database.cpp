@@ -807,8 +807,8 @@ static std::unique_ptr<KeyData> loadYAMLDatabase( FILE *fid, size_t indent = 0 )
                 line3 += '\n';
                 std::unique_ptr<KeyData> read_entry;
                 std::tie( std::ignore, read_entry ) = read_value( line3.data(), key );
-                auto y                         = read_entry->convertToDouble();
-                size_t i                       = x.size( 0 );
+                auto y                              = read_entry->convertToDouble();
+                size_t i                            = x.size( 0 );
                 x.resize( i + 1, y.size() );
                 for ( size_t j = 0; j < y.size(); j++ )
                     x( i, j ) = y[j];

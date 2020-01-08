@@ -159,8 +159,7 @@ void PelletStackOperator::applyXYZcorrection( AMP::LinearAlgebra::Vector::const_
     computeZscan( u, finalMaxZdispsList );
     for ( size_t i = 0; i < d_pelletIds.size(); ++i ) {
         if ( d_pelletIds[i] > 1 ) {
-            bnd =
-                d_meshes[i]->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_slaveId, 0 );
+            bnd = d_meshes[i]->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_slaveId, 0 );
             end_bnd = bnd.end();
             for ( ; bnd != end_bnd; ++bnd ) {
                 std::vector<size_t> bndGlobalIds;

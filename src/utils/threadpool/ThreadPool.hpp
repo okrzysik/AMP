@@ -140,24 +140,26 @@ template<class Ret, class... Args>
 inline ThreadPool::WorkItem *ThreadPool::createWork(
     std::function<Ret( Args... )> routine, Args... args )
 {
-    return new WorkItemFull<Ret, Args...>( routine, std::forward_as_tuple( args... ) );
+    return new WorkItemFull<Ret, Args...>( std::move( routine ), std::forward_as_tuple( args... ) );
 }
 template<class Ret, class... Args>
 inline ThreadPool::WorkItem *ThreadPool::createWork( Ret ( *routine )( Args... ), Args... args )
 {
-    return new WorkItemFull<Ret, Args...>( routine, std::forward_as_tuple( args... ) );
+    std::function<Ret( Args... )> fun = routine;
+    return new WorkItemFull<Ret, Args...>( std::move( fun ), std::forward_as_tuple( args... ) );
 }
 template<class Ret, class... Args>
 inline ThreadPool::WorkItem *ThreadPool::createWork(
     std::function<Ret( Args... )> routine, std::tuple<Args...> &&args )
 {
-    return new WorkItemFull<Ret, Args...>( routine, std::move( args ) );
+    return new WorkItemFull<Ret, Args...>( std::move( routine ), std::move( args ) );
 }
 template<class Ret, class... Args>
 inline ThreadPool::WorkItem *ThreadPool::createWork(
     Ret ( *routine )( Args... ), std::tuple<Args...> &&args )
 {
-    return new WorkItemFull<Ret, Args...>( routine, std::move( args ) );
+    std::function<Ret( Args... )> fun = routine;
+    return new WorkItemFull<Ret, Args...>( std::move( fun ), std::move( args ) );
 }
 // clang-format on
 
@@ -217,8 +219,8 @@ inline void ThreadPool::wait_all( const ThreadPool *tpool, const std::vector<Thr
     if ( tpool )
         return tpool->wait_all( ids );
 }
-inline std::vector<int> ThreadPool::wait_some(
-    int N_wait, const std::vector<ThreadPoolID> &ids, int max_wait ) const
+inline std::vector<int>
+ThreadPool::wait_some( int N_wait, const std::vector<ThreadPoolID> &ids, int max_wait ) const
 {
     auto finished = wait_some( ids.size(), ids.data(), N_wait, max_wait );
     return finished.getIndicies();
@@ -234,8 +236,9 @@ inline ThreadPoolID ThreadPool::add_work( WorkItem *work, int priority )
     add_work( 1, &work, &priority, &id );
     return id;
 }
-inline std::vector<ThreadPoolID> ThreadPool::add_work(
-    const std::vector<ThreadPool::WorkItem *> &work, const std::vector<int> &priority )
+inline std::vector<ThreadPoolID>
+ThreadPool::add_work( const std::vector<ThreadPool::WorkItem *> &work,
+                      const std::vector<int> &priority )
 {
     size_t N = work.size();
     if ( N == 0 )
@@ -255,8 +258,8 @@ inline std::vector<ThreadPoolID> ThreadPool::add_work(
         delete[] priority2;
     return ids;
 }
-inline ThreadPoolID ThreadPool::add_work(
-    ThreadPool *tpool, ThreadPool::WorkItem *work, int priority )
+inline ThreadPoolID
+ThreadPool::add_work( ThreadPool *tpool, ThreadPool::WorkItem *work, int priority )
 {
     ThreadPoolID id;
     if ( tpool ) {
@@ -269,8 +272,10 @@ inline ThreadPoolID ThreadPool::add_work(
     }
     return id;
 }
-inline std::vector<ThreadPoolID> ThreadPool::add_work( ThreadPool *tpool,
-    const std::vector<ThreadPool::WorkItem *> &work, const std::vector<int> &priority )
+inline std::vector<ThreadPoolID>
+ThreadPool::add_work( ThreadPool *tpool,
+                      const std::vector<ThreadPool::WorkItem *> &work,
+                      const std::vector<int> &priority )
 {
     if ( tpool ) {
         return tpool->add_work( work, priority );

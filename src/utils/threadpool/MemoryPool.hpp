@@ -19,9 +19,9 @@ template<class TYPE, class INT_TYPE>
 MemoryPool<TYPE, INT_TYPE>::MemoryPool( size_t size )
 {
     static_assert( sizeof( TYPE ) >= sizeof( int ),
-        "sizeof(TYPE) must be >= sizeof(int) to ensure proper operation" );
+                   "sizeof(TYPE) must be >= sizeof(int) to ensure proper operation" );
     static_assert( sizeof( TYPE ) >= sizeof( INT_TYPE ),
-        "sizeof(TYPE) must be >= sizeof(INT_TYPE) to ensure proper operation" );
+                   "sizeof(TYPE) must be >= sizeof(INT_TYPE) to ensure proper operation" );
     d_objects = reinterpret_cast<TYPE *>( malloc( sizeof( TYPE ) * size ) );
     d_next    = 1;
     for ( size_t i = 0; i < size; i++ )
