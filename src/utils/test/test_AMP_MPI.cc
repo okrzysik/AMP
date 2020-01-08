@@ -1411,18 +1411,18 @@ int main( int argc, char *argv[] )
             else
                 ut.failure( "intersection of globalComm and selfComm" );
         }
-	
+
         // Test case where we have disjoint sets (this can only happen of one of the comms is null)
-	{
-	  MPI_CLASS intersection = MPI_CLASS::intersect( globalComm, nullComm );
-	  if ( intersection.isNull() )
-              ut.passes( "intersection of non-overlapping comms" );
-	  else
-              ut.failure( "intersection of non-overlapping comms" );
-	}
-	
-	// Test case where the comms partially overlap
-	if ( globalComm.getSize() > 2 ) {
+        {
+            MPI_CLASS intersection = MPI_CLASS::intersect( globalComm, nullComm );
+            if ( intersection.isNull() )
+                ut.passes( "intersection of non-overlapping comms" );
+            else
+                ut.failure( "intersection of non-overlapping comms" );
+        }
+
+        // Test case where the comms partially overlap
+        if ( globalComm.getSize() > 2 ) {
             int n = globalComm.getSize() - 1;
             // Intersect 2 comms (all other ranks will be null)
             MPI_CLASS split1       = globalComm.split( globalComm.getRank() == 0 ? -1 : 0 );

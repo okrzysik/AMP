@@ -183,8 +183,8 @@ void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
         } else if ( d_type == "gaussian" ) {
 
             min_max_pos = d_Mesh->getBoundingBox();
-            centerx                  = 0.5 * ( min_max_pos[0] + min_max_pos[1] );
-            centery                  = 0.5 * ( min_max_pos[2] + min_max_pos[3] );
+            centerx     = 0.5 * ( min_max_pos[0] + min_max_pos[1] );
+            centery     = 0.5 * ( min_max_pos[2] + min_max_pos[3] );
 
             // Read mu and sigma for gaussian distribution.
             d_muX    = db->getWithDefault<double>( "muX", centerx );

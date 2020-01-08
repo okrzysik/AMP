@@ -426,11 +426,11 @@ int IDATimeIntegrator::IDAPrecSetup( realtype tt,
 
     int ierr = IDAGetLastOrder( user_data->getIDAMem(), &last_order );
     AMP_ASSERT( ierr == IDA_SUCCESS );
-    ierr     = IDAGetCurrentOrder( user_data->getIDAMem(), &current_order );
+    ierr = IDAGetCurrentOrder( user_data->getIDAMem(), &current_order );
     AMP_ASSERT( ierr == IDA_SUCCESS );
-    ierr     = IDAGetLastStep( user_data->getIDAMem(), &last_stepsize );
+    ierr = IDAGetLastStep( user_data->getIDAMem(), &last_stepsize );
     AMP_ASSERT( ierr == IDA_SUCCESS );
-    ierr     = IDAGetCurrentStep( user_data->getIDAMem(), &current_stepsize );
+    ierr = IDAGetCurrentStep( user_data->getIDAMem(), &current_stepsize );
     AMP_ASSERT( ierr == IDA_SUCCESS );
 
     AMP::pout << "cj = " << cj << std::endl;

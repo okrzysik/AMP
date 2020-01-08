@@ -14,8 +14,9 @@ namespace AMP {
  * Constructor                                                     *
  ******************************************************************/
 template<class TYPE, class COMPARE>
-AtomicList<TYPE, COMPARE>::AtomicList(
-    size_t capacity, const TYPE &default_value, const COMPARE &comp )
+AtomicList<TYPE, COMPARE>::AtomicList( size_t capacity,
+                                       const TYPE &default_value,
+                                       const COMPARE &comp )
     : d_compare( comp ),
       d_capacity( capacity ),
       d_default( default_value ),

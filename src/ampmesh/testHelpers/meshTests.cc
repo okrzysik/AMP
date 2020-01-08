@@ -611,6 +611,7 @@ void meshTests::VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils,
 // This tests loops over the boundary
 void meshTests::VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
+    bool is_surfaceMesh = static_cast<int>( mesh->getGeomType() ) < mesh->getDim();
     for ( int gcw = 0; gcw <= 0; gcw++ ) {
         for ( int type2 = 0; type2 <= (int) mesh->getGeomType(); type2++ ) {
             auto type = (AMP::Mesh::GeomType) type2;
@@ -624,6 +625,9 @@ void meshTests::VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::s
             }
             if ( passes )
                 utils->passes( "Non-trivial surface iterator created" );
+            else if ( is_surfaceMesh )
+                utils->expected_failure( "Non-trivial surface iterator created: " +
+                                         mesh->getName() );
             else
                 utils->failure( "Non-trivial surface iterator created: " + mesh->getName() );
         }

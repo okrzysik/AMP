@@ -1,6 +1,6 @@
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/threadpool/ThreadPool.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/threadpool/ThreadPool.h"
 
 #include <algorithm>
 #include <fstream>
@@ -45,7 +45,7 @@ private:
 
 
 // Run the commands across all threas/ranks
-void run( int N_threads, const std::string& filename )
+void run( int N_threads, const std::string &filename )
 {
     // Create the thread pool
     AMP::ThreadPool tpool( N_threads, "none", std::vector<int>(), 100000 );
@@ -64,7 +64,7 @@ void run( int N_threads, const std::string& filename )
     }
 
     // Add the commands to the thread pool
-    std::vector<AMP::ThreadPool::WorkItem*> work( commands.size(), nullptr );
+    std::vector<AMP::ThreadPool::WorkItem *> work( commands.size(), nullptr );
     for ( size_t i = 0; i < commands.size(); i++ )
         work[i] = new SystemWorkItem( commands[i] );
     auto ids = tpool.add_work( work );
@@ -86,8 +86,8 @@ void run( int N_threads, const std::string& filename )
             ids.pop_back();
         }
         // For each work item, check how long it has been running
-        for ( const auto& id : ids ) {
-            auto item = reinterpret_cast<const SystemWorkItem*>( id.getWork() );
+        for ( const auto &id : ids ) {
+            auto item = reinterpret_cast<const SystemWorkItem *>( id.getWork() );
             item->checkRunTime();
         }
         std::cout.flush();
@@ -96,7 +96,7 @@ void run( int N_threads, const std::string& filename )
 
 
 // Main program
-int main( int argc, char* argv[] )
+int main( int argc, char *argv[] )
 {
     // Check the inputs
     if ( argc != 3 ) {

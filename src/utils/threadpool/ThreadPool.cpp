@@ -494,9 +494,10 @@ void ThreadPool::check_startup()
         for ( size_t i = 0; i < 1024; i++ ) {
             if ( ( count_bits( ThreadPoolID::maxThreadID - i ) % 2 == 1 ) !=
                  is_odd8( ThreadPoolID::maxThreadID - i ) ) {
-                printp( "%i %i %s\n", count_bits( ThreadPoolID::maxThreadID - i ),
-                    is_odd8( ThreadPoolID::maxThreadID - i ) ? 1 : 0,
-                    std::bitset<64>( ThreadPoolID::maxThreadID - i ).to_string().c_str() );
+                printp( "%i %i %s\n",
+                        count_bits( ThreadPoolID::maxThreadID - i ),
+                        is_odd8( ThreadPoolID::maxThreadID - i ) ? 1 : 0,
+                        std::bitset<64>( ThreadPoolID::maxThreadID - i ).to_string().c_str() );
                 pass = false;
             }
         }
@@ -516,8 +517,10 @@ void ThreadPool::check_startup()
 /******************************************************************
  * Constructors/destructor                                         *
  ******************************************************************/
-ThreadPool::ThreadPool(
-    const int N, const std::string &affinity, const std::vector<int> &procs, int queueSize )
+ThreadPool::ThreadPool( const int N,
+                        const std::string &affinity,
+                        const std::vector<int> &procs,
+                        int queueSize )
     : d_queue( queueSize )
 {
     // Run some basic tests on startup
@@ -584,8 +587,9 @@ bool ThreadPool::is_valid( const ThreadPool *tpool )
 /******************************************************************
  * This function creates the threads in the thread pool            *
  ******************************************************************/
-void ThreadPool::setNumThreads(
-    int num_worker_threads, const std::string &affinity, const std::vector<int> &procs )
+void ThreadPool::setNumThreads( int num_worker_threads,
+                                const std::string &affinity,
+                                const std::vector<int> &procs )
 {
     // Check if we are a member thread
     if ( isMemberThread() )
@@ -819,8 +823,10 @@ void ThreadPool::tpool_thread( int thread_id )
  * This is the function that adds work to the thread pool          *
  * Note: this version uses a last in - first out work scheduling.  *
  ******************************************************************/
-void ThreadPool::add_work(
-    size_t N, ThreadPool::WorkItem *work[], const int *priority, ThreadPoolID *ids )
+void ThreadPool::add_work( size_t N,
+                           ThreadPool::WorkItem *work[],
+                           const int *priority,
+                           ThreadPoolID *ids )
 {
     // If all items do not fit in the queue, add in blocks
     if ( N > d_queue.capacity() / 2 ) {
@@ -896,8 +902,8 @@ void ThreadPool::add_work(
 /******************************************************************
  * This function waits for a some of the work items to finish      *
  ******************************************************************/
-ThreadPool::bit_array ThreadPool::wait_some(
-    size_t N_work, const ThreadPoolID *ids, size_t N_wait, int max_wait ) const
+ThreadPool::bit_array
+ThreadPool::wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, int max_wait ) const
 {
     bit_array finished( N_work );
     // Check the inputs
@@ -992,9 +998,13 @@ void ThreadPool::wait_pool_finished() const
 /******************************************************************
  * Member functions of wait_ids_struct                             *
  ******************************************************************/
-ThreadPool::wait_ids_struct::wait_ids_struct( size_t N, const ThreadPoolID *ids,
-    bit_array &finished, size_t N_wait, int N_wait_list, wait_ptr *list,
-    condition_variable &wait_event )
+ThreadPool::wait_ids_struct::wait_ids_struct( size_t N,
+                                              const ThreadPoolID *ids,
+                                              bit_array &finished,
+                                              size_t N_wait,
+                                              int N_wait_list,
+                                              wait_ptr *list,
+                                              condition_variable &wait_event )
     : d_wait( N_wait ),
       d_N( N ),
       d_lock( 0 ),

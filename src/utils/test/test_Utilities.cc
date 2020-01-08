@@ -398,7 +398,7 @@ int main( int argc, char *argv[] )
                     ut.failure( "Internal error" );
             }
             delete[] tmp2;
-            tmp2            = nullptr;
+            tmp2     = nullptr;
             n_bytes3 = Utilities::getMemoryUsage();
             if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1 + 0x81000000 &&
                  abs_diff( n_bytes1, n_bytes3 ) < 50e3 ) {

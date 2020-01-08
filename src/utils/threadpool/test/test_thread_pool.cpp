@@ -1,7 +1,7 @@
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/threadpool/ThreadPool.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/threadpool/ThreadPool.h"
 
 #include "ProfilerApp.h"
 
@@ -177,9 +177,13 @@ static int test_function_arguements( ThreadPool *tpool )
         tpool, myfun5, ( (int) 1, (float) 2, (double) 3, (char) 4, std::string( "test" ) ) );
     ThreadPoolID id52 = TPOOL_ADD_WORK(
         tpool, myfun5, ( (int) 1, (float) 2, (double) 3, (char) 4, std::string( "test" ) ), -1 );
-    ThreadPoolID id6 = TPOOL_ADD_WORK( tpool, myfun6,
+    ThreadPoolID id6 = TPOOL_ADD_WORK(
+        tpool,
+        myfun6,
         ( (int) 1, (float) 2, (double) 3, (char) 4, std::string( "test" ), (int) 1 ) );
-    ThreadPoolID id7 = TPOOL_ADD_WORK( tpool, myfun7,
+    ThreadPoolID id7 = TPOOL_ADD_WORK(
+        tpool,
+        myfun7,
         ( (int) 1, (float) 2, (double) 3, (char) 4, std::string( "test" ), (int) 1, (int) 1 ) );
     tpool->wait_pool_finished();
     if ( !tpool->isFinished( id0 ) ) {
@@ -389,8 +393,10 @@ void test_work_parallel( UnitTest &ut, ThreadPool &tpool )
         double time_parallel2 = launchAndTime( tpool, N_procs_used, waste_cpu, N / 1000 );
         double speedup        = N_procs_used * time_serial / time_parallel;
         printp( "Speedup on %i procs: %0.3f\n", N_procs_used, speedup );
-        printp( "   ts = %0.3f, tp = %0.3f, tp2 = %0.3f\n", time_serial, time_parallel,
-            time_parallel2 );
+        printp( "   ts = %0.3f, tp = %0.3f, tp2 = %0.3f\n",
+                time_serial,
+                time_parallel,
+                time_parallel2 );
         if ( speedup > 1.4 ) {
             ut.passes( "Passed speedup test" );
         } else {
@@ -623,8 +629,10 @@ void testThreadAffinity( ThreadPool &tpool, UnitTest &ut )
             ut.passes( "getThreadAffinity() matches procs" );
         } else {
             char msg[100];
-            sprintf( msg, "getThreadAffinity() does not match procs (%i,%i)",
-                static_cast<int>( procs.size() ), static_cast<int>( cpus.size() ) );
+            sprintf( msg,
+                     "getThreadAffinity() does not match procs (%i,%i)",
+                     static_cast<int>( procs.size() ),
+                     static_cast<int>( cpus.size() ) );
             ut.failure( msg );
         }
         auto pass = true;

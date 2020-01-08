@@ -639,7 +639,7 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
                 char *cptr = recv_buf;
                 for ( int j = 0; j < recv_num[i]; ++j ) {
                     auto tmp = siloMultiMeshData::unpack( cptr );
-                    cptr      = &cptr[tmp.size()];
+                    cptr     = &cptr[tmp.size()];
                     meshdata.push_back( tmp );
                 }
             }

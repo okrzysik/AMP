@@ -108,8 +108,8 @@ public:
         checkBlocked();
         ThreadPoolID id;
         if ( d_Nh > 0 ) {
-            std::pop_heap(
-                const_cast<ThreadPoolID *>( d_ids ), const_cast<ThreadPoolID *>( d_ids + d_Nh ) );
+            std::pop_heap( const_cast<ThreadPoolID *>( d_ids ),
+                           const_cast<ThreadPoolID *>( d_ids + d_Nh ) );
             std::swap( id, const_cast<ThreadPoolID &>( d_ids[--d_Nh] ) );
         }
         unlock();
