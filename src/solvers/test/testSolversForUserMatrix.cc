@@ -158,34 +158,39 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     // concludes demonstrating how to initialize an AMP linear operator from a user matrix
     // ************************************************************************************************
 
+    auto f = ampVector->cloneVector();
     auto u = ampVector->cloneVector();
-    auto v = ampVector->cloneVector();
-    auto r = ampVector->cloneVector();
+    auto ri = ampVector->cloneVector();
+    auto rf = ampVector->cloneVector();
 
+    f->zero();
     u->setRandomValues();
-    v->setRandomValues();
 
     // ************************************************************************************************
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
-
     auto linearSolver = buildSolver( input_db, "LinearSolver", globalComm, linearOp );
 
-    // Use a random initial guess?
-    linearSolver->setZeroInitialGuess( true );
+    // Use a random initial guess
+    linearSolver->setZeroInitialGuess( false );
+
+    // Compute the initial residual
+    linearOp->residual( f, u, ri );
 
     // Solve the problem.
-    linearSolver->solve( u, v );
+    linearSolver->solve( f, u );
 
-    // Compute the residual
-    linearOp->residual( u, v, r );
+    // Compute the final residual
+    linearOp->residual( f, u, rf );
 
-    // Check the L2 norm of the final residual.
-    const double finalResidualNorm = r->L2Norm();
-    AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
+    // Check the L2 norm of the residuals.
+    const double finalResidualNorm   = rf->L2Norm();
+    const double initialResidualNorm = ri->L2Norm();
+    AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
+    AMP::pout << "Final Residual Norm  : " << finalResidualNorm << std::endl;
 
-    if ( finalResidualNorm > 10.0 ) {
+    if ( finalResidualNorm/initialResidualNorm > 1.0e-8 ) {
         ut->failure( "solver could NOT solve a linear thermal problem" );
     }
 }

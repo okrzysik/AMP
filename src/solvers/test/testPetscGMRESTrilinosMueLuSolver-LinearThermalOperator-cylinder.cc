@@ -30,7 +30,7 @@
 void linearThermalTest( AMP::UnitTest *ut )
 {
     // Input and output file names
-    std::string exeName( "testTrilinosMueLuSolver-LinearThermalOperator-cylinder" );
+    std::string exeName( "testPetscGMRESTrilinosMueLuSolver-LinearThermalOperator-cylinder" );
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
