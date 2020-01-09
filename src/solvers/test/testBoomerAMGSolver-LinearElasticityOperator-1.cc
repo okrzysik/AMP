@@ -108,8 +108,9 @@ void linearElasticTest( AMP::UnitTest *ut )
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-    if ( finalResidualNorm > ( 1e-10 * initResidualNorm ) ) {
-        ut->failure( "BoomerAMGSolver successfully solves a linear elasticity problem" );
+    // BP: convergence assumes convergence rate of ~0.6 and 40 iterations
+    if ( finalResidualNorm > ( 1.0e-8 * initResidualNorm ) ) {
+        ut->failure( "BoomerAMGSolver fails to solve a linear elasticity problem" );
     } else {
         ut->passes( "BoomerAMGSolver successfully solves a linear elasticity problem" );
     }
