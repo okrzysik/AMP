@@ -225,8 +225,8 @@ public:
      * @param routine           Function to call from the thread pool
      * @param args              Function arguments to pass
      */
-    template<class Ret, class... Args>
-    static inline WorkItem* createWork( std::function<Ret(Args...)> routine, std::tuple<Args...> &&args );
+    template<class Ret, class... Args1, class... Args2>
+    static inline WorkItem* createWork( std::function<Ret(Args1...)> routine, std::tuple<Args2...> &&args );
 
 
     /*!
@@ -235,8 +235,8 @@ public:
      * @param routine           Function to call from the thread pool
      * @param args              Function arguments to pass
      */
-    template<class Ret, class... Args>
-    static inline WorkItem* createWork( Ret( *routine )( Args... ), std::tuple<Args...> &&args );
+    template<class Ret, class... Args1, class... Args2>
+    static inline WorkItem* createWork( Ret( *routine )( Args1... ), std::tuple<Args2...> &&args );
 
 
     /*!
@@ -245,8 +245,8 @@ public:
      * @param routine           Function to call from the thread pool
      * @param args              Function arguments to pass
      */
-    template<class Ret, class... Args>
-    static inline WorkItem* createWork( std::function<Ret(Args...)> routine, Args... args );
+    template<class Ret, class... Args1, class... Args2>
+    static inline WorkItem* createWork( std::function<Ret(Args1...)> routine, Args2... args );
 
 
     /*!
@@ -255,8 +255,8 @@ public:
      * @param routine           Function to call from the thread pool
      * @param args              Function arguments to pass
      */
-    template <class Ret, class... Args>
-    static inline WorkItem* createWork( Ret( *routine )( Args... ), Args... args );
+    template <class Ret, class... Args1, class... Args2>
+    static inline WorkItem* createWork( Ret( *routine )( Args1... ), Args2... args );
 
 
     /*!

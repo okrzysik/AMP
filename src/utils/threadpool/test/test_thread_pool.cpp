@@ -440,8 +440,8 @@ void test_work_dependency( UnitTest &ut, ThreadPool &tpool )
     ThreadPoolID id0;
     auto id1    = TPOOL_ADD_WORK( &tpool, sleep_inc, ( 1 ) );
     auto id2    = TPOOL_ADD_WORK( &tpool, sleep_inc, ( 2 ) );
-    auto *wait1 = new WorkItemFull<bool, int>( check_inc, 1 );
-    auto *wait2 = new WorkItemFull<bool, int>( check_inc, 2 );
+    auto *wait1 = ThreadPool::createWork( check_inc, 1 );
+    auto *wait2 = ThreadPool::createWork( check_inc, 2 );
     wait1->add_dependency( id0 );
     wait1->add_dependency( id1 );
     wait2->add_dependency( id1 );
@@ -459,7 +459,7 @@ void test_work_dependency( UnitTest &ut, ThreadPool &tpool )
     ids.clear();
     for ( size_t i = 0; i < 20; i++ )
         ids.push_back( TPOOL_ADD_WORK( &tpool, sleep_inc2, ( 0.1 ) ) );
-    auto *wait3 = new WorkItemFull<void, double>( sleep_inc2, 0 );
+    auto *wait3 = ThreadPool::createWork( sleep_inc2, 0 );
     wait3->add_dependencies( ids );
     auto id = tpool.add_work( wait3, 50 );
     tpool.wait( id );
@@ -474,7 +474,7 @@ void test_work_dependency( UnitTest &ut, ThreadPool &tpool )
     // Check that we can handle more complex dependencies
     id1 = TPOOL_ADD_WORK( &tpool, sleep_inc2, ( 0.5 ) );
     for ( int i = 0; i < 10; i++ ) {
-        wait1 = new WorkItemFull<bool, int>( check_inc, 1 );
+        wait1 = ThreadPool::createWork( check_inc, 1 );
         wait1->add_dependency( id1 );
         tpool.add_work( wait1 );
     }
@@ -483,7 +483,7 @@ void test_work_dependency( UnitTest &ut, ThreadPool &tpool )
     for ( int i = 0; i < 5; i++ )
         ids.push_back( TPOOL_ADD_WORK( &tpool, sleep_inc2, ( 0.5 ) ) );
     sleep_inc2( 0.002 );
-    ThreadPool::WorkItem *work = new WorkItemFull<void, int>( waste_cpu, 100 );
+    ThreadPool::WorkItem *work = ThreadPool::createWork( waste_cpu, 100 );
     work->add_dependencies( ids );
     id = tpool.add_work( work, 10 );
     tpool.wait( id );
@@ -922,9 +922,9 @@ void run_tests( UnitTest &ut )
         sprintf( msg[0], "Item %i-%i", i, 0 );
         sprintf( msg[1], "Item %i-%i", i, 1 );
         sprintf( msg[2], "Item %i-%i", i, 2 );
-        auto work  = new WorkItemFull<void, double, std::string>( sleep_msg, 0.5, msg[0] );
-        auto work1 = new WorkItemFull<void, double, std::string>( sleep_msg, 0.1, msg[1] );
-        auto work2 = new WorkItemFull<void, double, std::string>( sleep_msg, 0.1, msg[2] );
+        auto work  = ThreadPool::createWork( sleep_msg, 0.5, msg[0] );
+        auto work1 = ThreadPool::createWork( sleep_msg, 0.1, msg[1] );
+        auto work2 = ThreadPool::createWork( sleep_msg, 0.1, msg[2] );
         auto id    = tpool.add_work( work );
         work1->add_dependency( id );
         work2->add_dependency( id );
