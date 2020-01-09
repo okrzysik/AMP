@@ -17,7 +17,7 @@ namespace Solver {
 /****************************************************************
  * Constructors / Destructor                                     *
  ****************************************************************/
-BoomerAMGSolver::BoomerAMGSolver() { d_bCreationPhase = true; }
+BoomerAMGSolver::BoomerAMGSolver() : SolverStrategy() { d_bCreationPhase = true; }
 BoomerAMGSolver::BoomerAMGSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
@@ -49,6 +49,8 @@ void BoomerAMGSolver::initialize( std::shared_ptr<SolverStrategyParameters> cons
 
 void BoomerAMGSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
 {
+    d_bComputeResidual = db->getWithDefault<bool>( "compute_residual", false );
+
     // 6.2.10 in hypre 11.2 manual
     d_num_functions = db->getWithDefault<int>( "num_functions", 1 );
     HYPRE_BoomerAMGSetNumFunctions( d_solver, d_num_functions );
@@ -543,9 +545,7 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> r;
 
-    bool computeResidual = false;
-
-    if ( computeResidual ) {
+    if ( d_bComputeResidual ) {
         r = f->cloneVector();
         d_pOperator->residual( f, u, r );
         const auto initialResNorm = r->L2Norm();
@@ -595,7 +595,7 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
                   << solution_norm << std::endl;
     }
 
-    if ( computeResidual ) {
+    if ( d_bComputeResidual ) {
         d_pOperator->residual( f, u, r );
         const auto finalResNorm = r->L2Norm();
 
