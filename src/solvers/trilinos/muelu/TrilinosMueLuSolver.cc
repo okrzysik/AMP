@@ -275,15 +275,10 @@ void TrilinosMueLuSolver::getFromInput( const std::shared_ptr<AMP::Database> &db
     d_bRobustMode = db->getWithDefault<bool>( "ROBUST_MODE", false );
     d_bUseEpetra  = db->getWithDefault<bool>( "USE_EPETRA", true );
 
-#if 1
     d_build_hierarchy = db->getWithDefault<bool>( "build_hierarchy", true );
     d_build_hierarchy_from_defaults =
         db->getWithDefault<bool>( "build_hierarchy_from_defaults", false );
-#else
-    d_build_hierarchy = db->getWithDefault<bool>( "build_hierarchy", false );
-    d_build_hierarchy_from_defaults =
-        db->getWithDefault<bool>( "build_hierarchy_from_defaults", true );
-#endif
+
     // general parameters
     d_MueLuParameterList.set( "verbosity",
                               db->getWithDefault<std::string>( "verbosity", "medium" ) );
@@ -380,7 +375,7 @@ void TrilinosMueLuSolver::getFromInput( const std::shared_ptr<AMP::Database> &db
     d_MueLuParameterList.set( "smoother: params", relaxationParams );
 
     d_MueLuParameterList.set( "coarse: max size",
-                              db->getWithDefault<int>( "coarse_max_size", 2000 ) );
+                              db->getWithDefault<int>( "coarse_max_size", 48 ) );
     d_MueLuParameterList.set( "coarse: type",
                               db->getWithDefault<std::string>( "coarse_type", "SuperLU" ) );
     d_MueLuParameterList.set( "coarse: overlap", db->getWithDefault<int>( "coarse_overlap", 0 ) );
@@ -399,7 +394,7 @@ void TrilinosMueLuSolver::getFromInput( const std::shared_ptr<AMP::Database> &db
     d_MueLuParameterList.set( "aggregation: min agg size",
                               db->getWithDefault<int>( "aggregation_min_agg_size", 2 ) );
     d_MueLuParameterList.set( "aggregation: max agg size",
-                              db->getWithDefault<int>( "aggregation_max_agg_size", -1 ) );
+                              db->getWithDefault<int>( "aggregation_max_agg_size", 9 ) );
     d_MueLuParameterList.set( "aggregation: brick x size",
                               db->getWithDefault<int>( "aggregation_brick_x_size", 2 ) );
     d_MueLuParameterList.set( "aggregation: brick y size",
@@ -416,7 +411,7 @@ void TrilinosMueLuSolver::getFromInput( const std::shared_ptr<AMP::Database> &db
     d_MueLuParameterList.set( "repartition: start level",
                               db->getWithDefault<int>( "repartition_start_level", 2 ) );
     d_MueLuParameterList.set( "repartition: min rows per proc",
-                              db->getWithDefault<int>( "repartition_min_rows_per_proc", 800 ) );
+                              db->getWithDefault<int>( "repartition_min_rows_per_proc", 50 ) );
     d_MueLuParameterList.set( "repartition: max imbalance",
                               db->getWithDefault<double>( "repartition_max_imbalance", 1.2 ) );
     d_MueLuParameterList.set( "repartition: remap parts",

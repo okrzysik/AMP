@@ -103,8 +103,9 @@ VolumeIntegralOperator{
 
 LinearSolver{
   print_info_level = 10
-    max_iterations = 1
-    max_error = 1e-15
+  max_iterations = 1
+  max_error = 1e-15
+  build_hierarchy_from_defaults = TRUE
 }
 
 SourcePhysicsModel {

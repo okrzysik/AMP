@@ -75,12 +75,7 @@ LinearSolver{
   print_info_level = 3
   max_iterations = 10
   max_error = 1e-10
-
-  Preconditioner{
-    print_info_level = 1
-    max_iterations = 1
-    max_error = 1.0e-10
-  }
+  build_hierarchy_from_defaults = TRUE
 }
 
 VolumeIntegralOperator{

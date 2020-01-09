@@ -95,10 +95,11 @@ DiffusionTransportModel1 {
    }
 
 LinearSolver{
+  name = "TrilinosMueLuSolver"
   print_info_level = 3
   max_iterations = 10
   max_error = 1e-10
-  build_hierarchy = FALSE
+  problem_symmetric =TRUE
   smoother_pre_or_post = "both"
   smoother_params{
     relaxation_type = "Gauss-Seidel"
