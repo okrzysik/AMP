@@ -51,6 +51,7 @@ ADD_AMP_TEST( test_MathExpr )
 COPY_TEST_FILE( input_InputManager )
 COPY_TEST_FILE( laser_plasma_input.txt )
 COPY_TEST_FILE( input_Database )
+COPY_TEST_FILE( input_SAMRAI )
 
 ADD_AMP_PROVISIONAL_TEST( test_crash )
 

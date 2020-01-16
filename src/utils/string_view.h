@@ -191,7 +191,7 @@ inline string_view to_string_view( std::string const &s )
 }
 inline std::ostream &operator<<( std::ostream &out, const string_view &s )
 {
-    out << s.data();
+    out.write( s.data(), s.size() );
     return out;
 }
 
