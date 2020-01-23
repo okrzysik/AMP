@@ -3895,6 +3895,7 @@ double MPI_CLASS::tick()
  ************************************************************************/
 void MPI_CLASS::serializeStart()
 {
+#ifdef USE_MPI
     using namespace std::chrono_literals;
     if ( comm_rank == 0 ) {
         // Start rank 0 immediately
@@ -3909,9 +3910,11 @@ void MPI_CLASS::serializeStart()
             std::this_thread::sleep_for( 50ms );
         }
     }
+#endif
 }
 void MPI_CLASS::serializeStop()
 {
+#ifdef USE_MPI
     using namespace std::chrono_literals;
     if ( comm_rank < comm_size - 1 ) {
         // Send flag to next rank
@@ -3930,6 +3933,7 @@ void MPI_CLASS::serializeStop()
         for ( int i = 0; i < comm_size - 1; i++ )
             MPI_Send( &comm_rank, 1, MPI_INT, i, 5627, MPI_COMM_WORLD );
     }
+#endif
 }
 
 

@@ -84,6 +84,7 @@ template<size_t NG, size_t NP>
 class TriangleMesh : public AMP::Mesh::Mesh
 {
 public: // Convenience typedefs
+    static_assert( NG <= 3, "Not programmed for higher dimensions yet" );
     typedef std::array<double, NP> Point;
     typedef std::array<ElementID, 2> Edge;
     typedef std::array<ElementID, 3> Triangle;
@@ -307,9 +308,9 @@ protected:
     // Constructors
     TriangleMesh();
     explicit TriangleMesh( MeshParameters::shared_ptr );
-    explicit TriangleMesh( const std::vector<std::array<double, NP>> &verticies,
-                           const std::vector<std::array<int64_t, NG + 1>> &triangles,
-                           const std::vector<std::array<int64_t, NG + 1>> &tri_nab,
+    explicit TriangleMesh( std::vector<std::array<double, NP>> verticies,
+                           std::vector<std::array<int64_t, NG + 1>> triangles,
+                           std::vector<std::array<int64_t, NG + 1>> tri_nab,
                            const AMP_MPI &comm );
     void initialize();
     void initializeBoundingBox();

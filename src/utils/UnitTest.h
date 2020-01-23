@@ -3,6 +3,7 @@
 
 #include "AMP/utils/AMP_MPI.h"
 
+#include <mutex>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -43,7 +44,7 @@ void tstOne(AMP::UnitTest *ut)
  * \endcode
 
  */
-class UnitTest
+class UnitTest final
 {
 public:
     //! Constructor
@@ -58,35 +59,23 @@ public:
     // Assignment operator
     UnitTest &operator=( const UnitTest & ) = delete;
 
-    //! Indicate a passed test
-    inline void passes( const std::string &in )
-    {
-        pass_messages.push_back( in );
-        printUpdate( "passes", in );
-    }
+    //! Indicate a passed test (thread-safe)
+    void passes( std::string in );
 
-    //! Indicate a failed test
-    inline void failure( const std::string &in )
-    {
-        fail_messages.push_back( in );
-        printUpdate( "failure", in );
-    }
+    //! Indicate a failed test (thread-safe)
+    void failure( std::string in );
 
-    //! Indicate an expected failed test
-    inline void expected_failure( const std::string &in )
-    {
-        expected_fail_messages.push_back( in );
-        printUpdate( "expected_failure", in );
-    }
+    //! Indicate an expected failed test (thread-safe)
+    void expected_failure( std::string in );
 
     //! Return the number of passed tests locally
-    size_t NumPassLocal() const { return pass_messages.size(); }
+    inline size_t NumPassLocal() const { return d_pass.size(); }
 
     //! Return the number of failed tests locally
-    size_t NumFailLocal() const { return fail_messages.size(); }
+    inline size_t NumFailLocal() const { return d_fail.size(); }
 
     //! Return the number of expected failed tests locally
-    size_t NumExpectedFailLocal() const { return expected_fail_messages.size(); }
+    inline size_t NumExpectedFailLocal() const { return d_expected.size(); }
 
     //! Return the number of passed tests locally
     size_t NumPassGlobal() const;
@@ -97,12 +86,6 @@ public:
     //! Return the number of expected failed tests locally
     size_t NumExpectedFailGlobal() const;
 
-    //! Return the rank of the current processor
-    int rank() const;
-
-    //! Return the number of processors
-    int size() const;
-
     /*!
      * Print a report of the passed and failed tests.
      * Note: This is a blocking call that all processors must execute together.
@@ -110,11 +93,9 @@ public:
      * to print correctly).
      * @param level     Optional integer specifying the level of reporting (default: 1)
      *                  0: Report the number of tests passed, failed, and expected failures.
-     *                  1: Report the number of passed tests (if <=20) or the number passed
-     * otherwise,
-     *                     report all failures,
-     *                     report the number of expected failed tests (if <=50) or the number passed
-     * otherwise.
+     *                  1: Report the passed tests (if <=20) or number passed,
+     *                     Report all failures,
+     *                     Report the expected failed tests (if <=50) or the number passed.
      *                  2: Report all passed, failed, and expected failed tests.
      */
     void report( const int level = 1 ) const;
@@ -126,11 +107,12 @@ public:
     void verbose( bool verbose = true ) { d_verbose = verbose; }
 
 private:
-    std::vector<std::string> pass_messages;
-    std::vector<std::string> fail_messages;
-    std::vector<std::string> expected_fail_messages;
+    std::vector<std::string> d_pass;
+    std::vector<std::string> d_fail;
+    std::vector<std::string> d_expected;
     bool d_verbose;
-    AMP_MPI d_comm;
+    mutable std::mutex d_mutex;
+    AMP::AMP_MPI d_comm;
 
 private:
     // Function to pack the messages into a single data stream and send to the given processor
@@ -143,13 +125,9 @@ private:
     // Note: This function does not return until the message stream has been received
     std::vector<std::string> unpack_message_stream( const int rank, const int tag ) const;
 
-    // Print a status update if we are running in verbose mode
-    inline void printUpdate( const char *operation, const std::string &msg ) const
-    {
-        if ( d_verbose ) {
-            printf( "UnitTest: %i %s: %s\n", d_comm.getRank(), operation, msg.c_str() );
-        }
-    }
+    // Gather the messages
+    inline std::vector<std::vector<std::string>>
+    gatherMessages( const std::vector<std::string> &local_messages, int tag ) const;
 };
 } // namespace AMP
 

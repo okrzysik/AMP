@@ -741,11 +741,11 @@ void VectorTests::CopyRawDataBlockVector( AMP::UnitTest *utils )
 
 void VectorTests::VerifyVectorGhostCreate( AMP::UnitTest *utils )
 {
-    auto vector        = d_factory->getVector();
-    int num_ghosts     = vector->getGhostSize();
-    AMP_MPI globalComm = AMP_MPI( AMP_COMM_WORLD );
-    num_ghosts         = globalComm.sumReduce( num_ghosts );
-    if ( utils->size() == 1 )
+    AMP_MPI globalComm( AMP_COMM_WORLD );
+    auto vector    = d_factory->getVector();
+    int num_ghosts = vector->getGhostSize();
+    num_ghosts     = globalComm.sumReduce( num_ghosts );
+    if ( globalComm.getSize() == 1 )
         utils->expected_failure( "No ghost cells for single processor " + d_factory->name() );
     else if ( num_ghosts > 0 )
         utils->passes( "verify ghosts created " + d_factory->name() );
@@ -756,6 +756,7 @@ void VectorTests::VerifyVectorGhostCreate( AMP::UnitTest *utils )
 
 void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
 {
+    AMP_MPI globalComm( AMP_COMM_WORLD );
     auto dofmap = d_factory->getDOFMap();
     auto vector = d_factory->getVector();
     if ( !vector )
@@ -782,7 +783,7 @@ void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
         utils->failure( "addValueByGlobalID leaves vector in UpdateState::ADDING state " +
                         d_factory->name() );
 
-    auto offset = (double) ( 1 << utils->rank() );
+    auto offset = (double) ( 1 << globalComm.getRank() );
     for ( size_t i = 0; i != vector->getGhostSize(); i++ ) {
         size_t ndx = vector->getCommunicationList()->getGhostIDList()[i];
         vector->addValueByGlobalID( ndx, offset );
@@ -811,7 +812,7 @@ void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
     auto end_replicated = vector->getCommunicationList()->getReplicatedIDList().end();
     while ( cur_replicated != end_replicated ) {
         bool found = false;
-        for ( int i = 0; i != utils->size(); i++ ) {
+        for ( int i = 0; i != globalComm.getSize(); i++ ) {
             auto location = ghosted_entities[i].find( *cur_replicated );
             if ( location != ghosted_entities[i].end() ) {
                 found = true;
@@ -826,7 +827,7 @@ void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
         ++cur_replicated;
     }
     size_t last_size = 0;
-    for ( int i = 0; i != utils->size(); i++ )
+    for ( int i = 0; i != globalComm.getSize(); i++ )
         last_size += ghosted_entities[i].size();
     if ( last_size == 0 )
         utils->passes( "all ghosted values accounted for " + d_factory->name() );

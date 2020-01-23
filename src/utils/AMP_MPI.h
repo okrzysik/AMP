@@ -50,11 +50,18 @@
     // Check if another package defines mpi.h
     #if __has_include("mpi.h")
         #include "mpi.h"
+    #else
+        #define SET_MPI_TYPES
     #endif
 #else
+    #define SET_MPI_TYPES
+#endif
+#ifdef SET_MPI_TYPES
     typedef int MPI_Comm;
     typedef int MPI_Request;
+    typedef int MPI_Status;
     typedef void *MPI_Errhandler;
+    enum MPI_TYPES { MPI_INT, MPI_FLOAT, MPI_DOUBLE };
     #define MPI_COMM_WORLD ( (MPI_Comm) 0xF4000010 )
     #define MPI_COMM_SELF ( (MPI_Comm) 0xF4000001 )
     #define MPI_COMM_NULL ( (MPI_Comm) 0xF4000000 )
