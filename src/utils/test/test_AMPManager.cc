@@ -70,6 +70,9 @@ int main( int argc, char *argv[] )
         std::cout << "Time to throw/catch AMP_ERROR: " << ns / 1000000 << " ms\n\n";
     }
 
+    // Restart
+    AMP::AMPManager::restart();
+
     // Shutdown
     int rank = AMP::AMP_MPI( MPI_COMM_WORLD ).getRank();
     AMP::AMPManager::shutdown();

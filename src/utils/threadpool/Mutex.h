@@ -9,6 +9,9 @@
 namespace AMP {
 
 
+class AMP_MPI; // Forward decleration of AMP_MPI
+
+
 /** \class Mutex
  * \brief Functions for locking/unlocking a mutex
  * \details This class provides basic routines for creating,
@@ -28,31 +31,36 @@ public:
      *                      If set to false an attept to repeatedly lock will throw an error.*/
     explicit Mutex( bool recursive );
     //! Destructor
-    ~Mutex();
+    ~Mutex() = default;
     //! Copy constructor
-    Mutex( const Mutex & );
+    Mutex( const Mutex & ) = delete;
     //! Assignment operator
-    Mutex &operator=( const Mutex & );
+    Mutex &operator=( const Mutex & ) = delete;
     //! Lock the mutex
-    void lock() const;
+    void lock();
     //! Unlock the mutex
-    void unlock() const;
+    void unlock();
     //! Try to lock the mutex and return true if successful
-    bool tryLock() const;
+    bool tryLock();
     //! Return true if we already own the lock
     bool ownLock() const;
-    //! Invalidate and clear the mutex (advanced interface, use with caution)
-    void invalidate() { d_data.reset(); }
 
 private:
-    struct data_struct {
-        bool recursive;     // Is the lock recursive (this attribute cannot be changed)
-        volatile int count; // lock_count
-        volatile int id;    // thread_id
-        std::mutex mutex;   // internal mutex
-    };
-    std::shared_ptr<data_struct> d_data;
+    bool d_recursive;     // Is the lock recursive (this attribute cannot be changed)
+    volatile int d_count; // lock_count
+    volatile int d_id;    // thread_id
+    std::mutex d_mutex;   // internal mutex
 };
+
+
+/*!
+ * \brief Function to sycronize locking a mutex across a MPI communicator
+ * \details This routine will sycronize locking the given mutex across the given MPI communicator.
+ * This routine will return only when all threads across the given MPI communicator
+ *   have acquired the mutex.  It is assumed that multiple threads with different
+ *   communicators will attempt to lock the same mutex using this function
+ */
+void lock_MPI_Mutex( AMP::Mutex &mutex, const AMP::AMP_MPI &comm );
 
 
 } // namespace AMP

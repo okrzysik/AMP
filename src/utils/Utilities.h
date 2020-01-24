@@ -306,11 +306,17 @@ constexpr unsigned int hash_char( const char * );
 //! Get the prime factors for a number
 std::vector<int> factor( uint64_t );
 
-//! Sleep for the specified number of ms
-inline void sleepMs( unsigned int N )
-{
-    std::this_thread::sleep_for( std::chrono::milliseconds( N ) );
-}
+/*!
+ * Sleep for X ms
+ * @param N         Time to sleep (ms)
+ */
+inline void sleep_ms( int N ) { std::this_thread::sleep_for( std::chrono::milliseconds( N ) ); }
+
+/*!
+ * Sleep for X s
+ * @param N         Time to sleep (s)
+ */
+inline void sleep_s( int N ) { std::this_thread::sleep_for( std::chrono::seconds( N ) ); }
 
 //! Print AMP Banner
 void printBanner();

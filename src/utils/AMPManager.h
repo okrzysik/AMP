@@ -90,6 +90,11 @@ public:
     static void shutdown();
 
     /*!
+     * Restart as much of AMP as possible restoring it to a like new state
+     */
+    static void restart();
+
+    /*!
      * Function to check if AMP has been initialized
      */
     static bool isInitialized() { return initialized != 0; }

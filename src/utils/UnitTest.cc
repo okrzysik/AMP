@@ -86,7 +86,7 @@ void UnitTest::report( const int level0 ) const
     int rank = d_comm.getRank();
     // Give all processors a chance to print any remaining messages
     d_comm.barrier();
-    Utilities::sleepMs( 10 );
+    Utilities::sleep_ms( 10 );
     // Broadcast the print level from rank 0
     int level = d_comm.bcast( level0, 0 );
     if ( level < 0 || level > 2 )
@@ -187,7 +187,7 @@ void UnitTest::report( const int level0 ) const
     }
     // Add a barrier to synchronize all processors (rank 0 is much slower)
     d_comm.barrier();
-    AMP::Utilities::sleepMs( 10 ); // Need a brief pause to allow any printing to finish
+    AMP::Utilities::sleep_ms( 10 ); // Need a brief pause to allow any printing to finish
     d_mutex.unlock();
 }
 
