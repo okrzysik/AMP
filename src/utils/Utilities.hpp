@@ -259,6 +259,11 @@ void AMP::Utilities::unique( std::vector<T> &x )
 template<class T>
 void AMP::Utilities::unique( std::vector<T> &X, std::vector<size_t> &I, std::vector<size_t> &J )
 {
+    if ( X.empty() ) {
+        I.clear();
+        J.clear();
+        return;
+    }
     const size_t neg_one = static_cast<size_t>( -1 );
     J.resize( 0 );
     J.resize( X.size(), neg_one );

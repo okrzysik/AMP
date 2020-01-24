@@ -313,11 +313,19 @@ bool Database::isType<double>( const AMP::string_view &key ) const
     auto data = getData( key );
     DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
     auto type = data->type();
-    if ( type == typeid( bool ).name() )
+    if ( type == typeid( double ).name() )
         return true;
     bool is_floating = data->is_floating_point();
     bool is_integral = data->is_integral();
     return is_floating || is_integral;
+}
+template<>
+bool Database::isType<DatabaseBox>( const AMP::string_view &key ) const
+{
+    auto data = getData( key );
+    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
+    auto type = data->type();
+    return type == typeid( DatabaseBox ).name();
 }
 template<class TYPE>
 bool Database::isType( const AMP::string_view &key ) const
@@ -494,7 +502,7 @@ static size_t skip_comment( const char *buffer )
     pos += std::get<0>( tmp );
     return pos;
 }
-enum class class_type { STRING, BOOL, INT, FLOAT, COMPLEX, UNKNOWN };
+enum class class_type { STRING, BOOL, INT, FLOAT, COMPLEX, BOX, UNKNOWN };
 static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buffer,
                                                                 const AMP::string_view &key )
 {
@@ -520,6 +528,15 @@ static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buff
             data_type = class_type::STRING;
             pos++;
             while ( buffer[pos] != '"' )
+                pos++;
+            pos++;
+            size_t i;
+            std::tie( i, type ) = find_next_token( &buffer[pos] );
+            pos += i;
+        } else if ( buffer[pos0] == '[' && buffer[pos0 + 1] == '(' ) {
+            // We are reading a SAMRAI box
+            data_type = class_type::BOX;
+            while ( buffer[pos] != ')' || buffer[pos + 1] != ']' )
                 pos++;
             pos++;
             size_t i;
@@ -645,6 +662,15 @@ static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buff
         } else {
             data =
                 std::make_unique<KeyDataVector<std::complex<double>>>( std::move( data2 ), unit );
+        }
+    } else if ( data_type == class_type::BOX ) {
+        std::vector<DatabaseBox> data2( values.size() );
+        for ( size_t i = 0; i < values.size(); i++ )
+            data2[i] = DatabaseBox( values[i] );
+        if ( values.size() == 1 ) {
+            data = std::make_unique<KeyDataScalar<DatabaseBox>>( data2[0] );
+        } else {
+            data = std::make_unique<KeyDataVector<DatabaseBox>>( std::move( data2 ) );
         }
     } else {
         // Treat unknown data as a string

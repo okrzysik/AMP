@@ -41,7 +41,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
@@ -52,9 +51,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
     auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
 
-    if ( ut->rank() == 0 ) {
+    if ( globalComm.getRank() == 0 )
         AMP::readTestMesh( mesh_file, mesh );
-    } // end if root processor
 
     libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
 
@@ -108,17 +106,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     AMP::pout << "lin-Norm-1 = " << linNorm << std::endl;
     AMP::pout << "diff-Norm-1 = " << diffNorm << std::endl;
 
-    if ( nonLinNorm > epsilon ) {
+    if ( nonLinNorm > epsilon )
         ut->failure( msgName );
-    }
-
-    if ( linNorm > epsilon ) {
+    if ( linNorm > epsilon )
         ut->failure( msgName );
-    }
-
-    if ( diffNorm > epsilon ) {
+    if ( diffNorm > epsilon )
         ut->failure( msgName );
-    }
 
     solVec->setRandomValues();
     solVec->scale( 100.0 );
@@ -127,23 +120,19 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     AMP::pout << "sol-Norm-2 = " << solNorm << std::endl;
 
     nonlinOperator->apply( solVec, resVecNonlin );
-    if ( callLinReset ) {
+    if ( callLinReset )
         linOperator->reset( nonlinOperator->getParameters( "Jacobian", solVec ) );
-    }
     linOperator->apply( solVec, resVecLin );
     resDiffVec->subtract( resVecNonlin, resVecLin );
 
     nonLinNorm = resVecNonlin->L2Norm();
     linNorm    = resVecLin->L2Norm();
     diffNorm   = resDiffVec->L1Norm();
-
     AMP::pout << "nonLin-Norm-2 = " << nonLinNorm << std::endl;
     AMP::pout << "lin-Norm-2 = " << linNorm << std::endl;
     AMP::pout << "diff-Norm-1 = " << diffNorm << std::endl;
-
-    if ( diffNorm > epsilon ) {
+    if ( diffNorm > epsilon )
         ut->failure( msgName );
-    }
 
     tmpNonlinVec->copyVector( resVecNonlin );
     tmpNonlinVec->scale( 10.0 );
@@ -157,9 +146,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     AMP::pout << "sol-Norm-2 = " << solNorm << std::endl;
 
     nonlinOperator->apply( solVec, resVecNonlin );
-    if ( callLinReset ) {
+    if ( callLinReset )
         linOperator->reset( nonlinOperator->getParameters( "Jacobian", solVec ) );
-    }
     linOperator->apply( solVec, resVecLin );
 
     nonLinNorm = resVecNonlin->L2Norm();
@@ -169,17 +157,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
 
     resDiffVec->subtract( resVecNonlin, tmpNonlinVec );
     diffNorm = resDiffVec->L1Norm();
-
-    if ( diffNorm > ( 10.0 * epsilon ) ) {
+    if ( diffNorm > ( 10.0 * epsilon ) )
         ut->failure( msgName );
-    }
 
     resDiffVec->subtract( resVecLin, tmpLinVec );
     diffNorm = resDiffVec->L1Norm();
-
-    if ( diffNorm > ( 10.0 * epsilon ) ) {
+    if ( diffNorm > ( 10.0 * epsilon ) )
         ut->failure( msgName );
-    }
 
     ut->passes( msgName );
 }

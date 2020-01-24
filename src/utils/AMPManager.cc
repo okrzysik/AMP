@@ -112,7 +112,7 @@ void AMPManager::terminate_AMP( std::string message )
         for ( const auto &i : data )
             msg << " " << i << std::endl;
         // Add a rank dependent wait to hopefully print the stack trace cleanly
-        Utilities::sleepMs( ( 100 * comm.getRank() ) / comm.getSize() );
+        Utilities::sleep_ms( ( 100 * comm.getRank() ) / comm.getSize() );
         perr << msg.str();
         printed_stack = true;
         force_exit    = 1;
@@ -323,7 +323,22 @@ void AMPManager::shutdown()
         MemoryApp::print( std::cout );
 #endif
     // Wait 50 milli-seconds for all processors to finish
-    Utilities::sleepMs( 50 );
+    Utilities::sleep_ms( 50 );
+}
+
+
+/****************************************************************************
+ * Restart  the AMP package                                                  *
+ ****************************************************************************/
+void AMPManager::restart()
+{
+    if ( initialized != 1 )
+        AMP_ERROR( "AMP is not initialized or has been shutdown" );
+        // Restart SAMRAI
+#ifdef USE_EXT_SAMRAI
+    SAMRAI::tbox::SAMRAIManager::shutdown();
+    SAMRAI::tbox::SAMRAIManager::startup();
+#endif
 }
 
 

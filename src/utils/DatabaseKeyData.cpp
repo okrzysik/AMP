@@ -1,6 +1,9 @@
 #include "AMP/utils/Database.h"
+#include "AMP/utils/Utilities.h"
+
 
 #include <complex>
+#include <cstdlib>
 #include <cstring>
 #include <iomanip>
 #include <limits>
@@ -9,8 +12,6 @@
 
 
 // clang-format off
-
-
 namespace AMP {
 
 
@@ -54,6 +55,7 @@ scaleDataValid( std::complex<double> )
 scaleDataInvalid( bool )
 scaleDataInvalid( char )
 scaleDataInvalid( std::string )
+scaleDataInvalid( AMP::DatabaseBox )
 template<>
 void scaleData( std::vector<std::complex<float>>& data, double factor )
 {
@@ -147,6 +149,7 @@ convertDataInvalid( std::complex<float> )
 convertDataInvalid( bool )
 convertDataInvalid( std::_Bit_reference )
 convertDataInvalid( std::string )
+convertDataInvalid( AMP::DatabaseBox )
 
 
 /********************************************************************
@@ -252,7 +255,116 @@ compareKeyData( bool )
 compareKeyData( char )
 compareKeyData( std::string )
 compareKeyData( std::_Bit_reference )
+compareKeyData( AMP::DatabaseBox )
 
+} // namespace AMP
+  // clang-format on
+
+
+namespace AMP {
+
+
+/********************************************************************
+ * DatabaseBox                                                       *
+ ********************************************************************/
+AMP::DatabaseBox::DatabaseBox() : d_dim( 0 )
+{
+    d_lower.fill( 0 );
+    d_upper.fill( 0 );
+}
+AMP::DatabaseBox::DatabaseBox( int dim, const int *lower, const int *upper ) : d_dim( dim )
+{
+    AMP_ASSERT( dim <= 5 );
+    d_lower.fill( 0 );
+    d_upper.fill( 0 );
+    for ( int d = 0; d < dim; d++ ) {
+        d_lower[d] = lower[d];
+        d_upper[d] = upper[d];
+    }
+}
+AMP::DatabaseBox::DatabaseBox( const AMP::string_view &str ) : d_dim( 0 )
+{
+    d_lower.fill( 0 );
+    d_upper.fill( 0 );
+    size_t j     = 0;
+    size_t k     = 0;
+    char tmp[10] = { 0 };
+    for ( size_t i = 0; i < str.length(); i++ ) {
+        if ( str[i] == ' ' || str[i] == '(' || str[i] == '[' || str[i] == ']' ) {
+            continue;
+        } else if ( str[i] == ',' || str[i] == ')' ) {
+            if ( str[i] == ')' && d_dim == 0 ) {
+                d_dim = k + 1;
+                while ( str[i] != ',' && i + 1 < str.length() ) {
+                    ++i;
+                }
+            }
+            tmp[j] = 0;
+            j      = 0;
+            int v  = atoi( tmp );
+            if ( k < d_dim || d_dim == 0 )
+                d_lower[k++] = v;
+            else
+                d_upper[( k++ ) - d_dim] = v;
+        } else {
+            tmp[j++] = str[i];
+        }
+    }
+}
+uint8_t &AMP::DatabaseBox::dim() { return d_dim; }
+uint8_t AMP::DatabaseBox::dim() const { return d_dim; }
+bool AMP::DatabaseBox::empty() const
+{
+    if ( d_dim == 0 )
+        return true;
+    for ( int d = 0; d < d_dim; d++ ) {
+        if ( d_upper[d] < d_lower[d] )
+            return true;
+    }
+    return false;
+}
+int &AMP::DatabaseBox::lower( uint8_t d )
+{
+    AMP_ASSERT( d_dim <= 5 && d < d_dim );
+    return d_lower[d];
+}
+int AMP::DatabaseBox::lower( uint8_t d ) const
+{
+    AMP_ASSERT( d_dim <= 5 && d < d_dim );
+    return d_lower[d];
+}
+int &AMP::DatabaseBox::upper( uint8_t d )
+{
+    AMP_ASSERT( d_dim <= 5 && d < d_dim );
+    return d_upper[d];
+}
+int AMP::DatabaseBox::upper( uint8_t d ) const
+{
+    AMP_ASSERT( d_dim <= 5 && d < d_dim );
+    return d_upper[d];
+}
+bool AMP::DatabaseBox::operator==( const AMP::DatabaseBox &box ) const
+{
+    bool equal = d_dim == box.d_dim;
+    for ( int d = 0; d < d_dim; d++ ) {
+        equal = equal && d_lower[d] == box.d_lower[d];
+        equal = equal && d_upper[d] == box.d_upper[d];
+    }
+    return equal;
+}
+std::ostream &operator<<( std::ostream &out, const AMP::DatabaseBox &box )
+{
+    if ( box.empty() )
+        out << "[(),()]";
+    out << "[(" << box.lower( 0 );
+    for ( int d = 1; d < box.dim(); d++ )
+        out << "," << box.lower( d );
+    out << "),(" << box.upper( 0 );
+    for ( int d = 1; d < box.dim(); d++ )
+        out << "," << box.upper( d );
+    out << ")";
+    return out;
 }
 
-// clang-format on
+
+} // namespace AMP

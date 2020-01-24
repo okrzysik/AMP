@@ -65,8 +65,8 @@ private:
         double pos[3];
         int proc;
         Point();
-        Point( const Point &rhs );
-        Point &operator=( const Point &rhs );
+        Point( const Point &rhs ) = default;
+        Point &operator=( const Point &rhs ) = default;
         bool operator==( const Point &rhs ) const;
         bool operator!=( const Point &rhs ) const;
         bool operator<=( const Point &rhs ) const;

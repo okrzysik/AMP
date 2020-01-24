@@ -63,6 +63,7 @@ ADD_AMP_TEST( test_LoadBalance 64000 inputMultiPellet348 )
 
 # Add tests
 ADD_AMP_TEST( test_GeometryHelpers )
+ADD_AMP_TEST( test_Mesh input_stl ) # Currently only works on 1 rank, move to zoo when fixed
 ADD_AMP_TEST_PARALLEL( test_Mesh 4 input_AMP_mesh_zoo_2D )
 ADD_AMP_TEST_PARALLEL( test_Mesh 4 input_AMP_mesh_zoo_3D )
 IF( USE_EXT_PETSC AND USE_EXT_TRILINOS )

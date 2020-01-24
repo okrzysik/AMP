@@ -11,6 +11,16 @@
 #include <memory>
 
 
+// Forward declare SAMRAI's database
+namespace SAMRAI {
+namespace tbox {
+class Database;
+class DatabaseBox;
+} // namespace tbox
+} // namespace SAMRAI
+
+
+// AMP namespace
 namespace AMP {
 
 
@@ -345,7 +355,21 @@ public:
     std::string print( const AMP::string_view &indent = "" ) const;
 
 
-protected:
+#ifdef USE_SAMRAI
+public: // SAMRAI interfaces
+    //! Construct a database from a SAMRAI database
+    Database( SAMRAI::tbox::Database & );
+
+    //! Construct a database from a SAMRAI database
+    inline Database( std::shared_ptr<SAMRAI::tbox::Database> ptr ) : Database( *ptr ) {}
+
+    //! Create a SAMRAI database from this
+    std::shared_ptr<SAMRAI::tbox::Database> cloneToSAMRAI() const;
+
+#endif
+
+
+protected: // Internal data and functions
     std::string d_name;
     std::vector<uint32_t> d_hash;
     std::vector<std::string> d_keys;
@@ -379,6 +403,60 @@ protected:
     virtual bool is_floating_point() const override;
     virtual bool is_integral() const override;
 };
+
+
+//! Class to store a box
+class DatabaseBox final
+{
+public:
+    //! Empty constructor
+    DatabaseBox();
+
+    //! Default constructor
+    DatabaseBox( int dim, const int *lower, const int *upper );
+
+    //! Construct from a string of the format "[(0,0,0), (7,7,7)]"
+    DatabaseBox( const AMP::string_view &str );
+
+#ifdef USE_SAMRAI
+    //! Construct a DatabaseBox from a SAMRAI DatabaseBox
+    DatabaseBox( const SAMRAI::tbox::DatabaseBox & );
+
+    //! Create a SAMRAI DatabaseBox from this
+    SAMRAI::tbox::DatabaseBox cloneToSAMRAI() const;
+#endif
+
+    //! Return a non-const reference to the number of dimensions
+    uint8_t &dim();
+
+    //! Return the number of dimensions
+    uint8_t dim() const;
+
+    //! Return whether the box is empty.
+    //! A box is empty if it has dimension zero or if any part of the
+    //! upper index is less than its corresponding part of the lower index.
+    bool empty() const;
+
+    //! Return non-const reference to the specified component of the lower index
+    int &lower( uint8_t i );
+
+    //! Return the specified component of the lower index
+    int lower( uint8_t i ) const;
+
+    //! Return non-const reference to the specified component of the upper index
+    int &upper( uint8_t i );
+
+    //! Return the specified component of the upper index
+    int upper( uint8_t i ) const;
+
+    bool operator==( const DatabaseBox &box ) const;
+
+private:
+    uint8_t d_dim;
+    std::array<int, 5> d_lower, d_upper;
+};
+
+std::ostream &operator<<( std::ostream &out, const DatabaseBox & );
 
 
 } // namespace AMP

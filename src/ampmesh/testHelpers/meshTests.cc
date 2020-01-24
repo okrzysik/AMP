@@ -720,7 +720,7 @@ void meshTests::getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_
     auto nodeIterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     std::vector<AMP::Mesh::MeshElementID> neighbors( 100 );
     for ( size_t i = 0; i < nodeIterator.size(); i++ ) {
-        std::vector<AMP::Mesh::MeshElement::shared_ptr> elements = nodeIterator->getNeighbors();
+        auto elements = nodeIterator->getNeighbors();
         // Store the neighbor list
         neighbors.resize( 0 );
         for ( auto &element : elements ) {
@@ -761,7 +761,7 @@ void meshTests::getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_
     if ( mesh->numGhostElements( AMP::Mesh::GeomType::Vertex, 1 ) > 0 ) {
         bool ghost_neighbors = false;
         for ( auto it = neighbor_list.begin(); it != neighbor_list.end(); ++it ) {
-            std::vector<AMP::Mesh::MeshElementID> neighbors = it->second;
+            auto neighbors = it->second;
             for ( auto &neighbor : neighbors ) {
                 if ( !neighbor.is_local() )
                     ghost_neighbors = true;
@@ -863,23 +863,25 @@ void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
         utils->passes( "displacement successfully applied" );
     else
         utils->failure( "displacement failed: " + mesh->getName() );
-    // Get the new volumes
-    bool volume_passed = true;
-    cur_elem           = mesh->getIterator( mesh->getGeomType(), 0 );
-    double vol_ratio   = 1.0;
-    for ( int i = 0; i < mesh->getDim(); i++ )
-        vol_ratio *= 1.001;
-    for ( size_t i = 0; i < numElements; i++ ) {
-        double ratio = cur_elem->volume() / orig_vol[i];
-        // The new volume should be (1+10^-3)^dim the original volume
-        if ( !AMP::Utilities::approx_equal( ratio, vol_ratio, 1e-9 ) )
-            volume_passed = false;
-        ++cur_elem;
+    // Get the new volumes (only valid for meshes with matching geometric and physical dimensions
+    if ( static_cast<int>( mesh->getGeomType() ) == mesh->getDim() ) {
+        bool volume_passed = true;
+        cur_elem           = mesh->getIterator( mesh->getGeomType(), 0 );
+        double vol_ratio   = 1.0;
+        for ( int i = 0; i < mesh->getDim(); i++ )
+            vol_ratio *= 1.001;
+        for ( size_t i = 0; i < numElements; i++ ) {
+            double ratio = cur_elem->volume() / orig_vol[i];
+            // The new volume should be (1+10^-3)^dim the original volume
+            if ( !AMP::Utilities::approx_equal( ratio, vol_ratio, 1e-9 ) )
+                volume_passed = false;
+            ++cur_elem;
+        }
+        if ( volume_passed )
+            utils->passes( "displacement changed volumes" );
+        else
+            utils->failure( "displacement changed volumes: " + mesh->getName() );
     }
-    if ( volume_passed )
-        utils->passes( "displacement changed volumes" );
-    else
-        utils->failure( "displacement changed volumes: " + mesh->getName() );
     for ( auto &tmp : *dispVec )
         tmp = -tmp;
     mesh->displaceMesh( dispVec );

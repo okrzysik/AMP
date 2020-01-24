@@ -6,8 +6,8 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#include <array>
 #include <cmath>
-#include <tuple>
 
 namespace AMP {
 namespace Operator {
@@ -37,9 +37,8 @@ subsetForSubchannel( AMP::Mesh::Mesh::shared_ptr subchannel, size_t i, size_t j 
     size_t Nx = x.size() - 1;
     size_t Ny = y.size() - 1;
     // Get the elements in the subchannel of interest
-    AMP::Mesh::MeshIterator el = subchannel->getIterator( AMP::Mesh::GeomType::Volume, 0 );
-    std::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elements(
-        new std::vector<AMP::Mesh::MeshElement>() );
+    auto el       = subchannel->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto elements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>();
     elements->reserve( el.size() / ( Nx * Ny ) );
     for ( size_t k = 0; k < el.size(); ++k, ++el ) {
         auto coord = el->centroid();
@@ -166,29 +165,28 @@ void getCladProperties( AMP::AMP_MPI comm,
                         std::vector<double> &diam )
 {
     // Get the center of each local clad
-    std::set<std::tuple<double, double, double>> center;
+    std::set<std::array<double, 3>> center;
     if ( clad != nullptr ) {
         AMP_ASSERT( clad->getComm() <= comm );
-        std::vector<AMP::Mesh::MeshID> ids = clad->getLocalBaseMeshIDs();
+        auto ids = clad->getLocalBaseMeshIDs();
         for ( auto &id : ids ) {
-            AMP::Mesh::Mesh::shared_ptr mesh = clad->Subset( id );
-            std::vector<double> box          = mesh->getBoundingBox();
-            double t1                        = 0.5 * ( box[0] + box[1] );
-            double t2                        = 0.5 * ( box[2] + box[3] );
-            double t3                        = std::max( std::max( t1 - box[0], box[1] - t1 ),
-                                  std::max( t2 - box[2], box[3] - t2 ) );
-            center.insert( std::make_tuple( t1, t2, t3 ) );
+            auto mesh = clad->Subset( id );
+            auto box  = mesh->getBoundingBox();
+            std::array<double, 3> tmp;
+            tmp[0] = 0.5 * ( box[0] + box[1] );
+            tmp[1] = 0.5 * ( box[2] + box[3] );
+            tmp[2] = std::max( std::max( tmp[0] - box[0], box[1] - tmp[0] ),
+                               std::max( tmp[1] - box[2], box[3] - tmp[1] ) );
+            center.insert( tmp );
         }
     }
     // Get the global set and check that there are no duplicates
     comm.setGather( center );
-    std::vector<std::tuple<double, double, double>> center2( center.begin(), center.end() );
+    std::vector<std::array<double, 3>> center2( center.begin(), center.end() );
     for ( size_t i = 0; i < center2.size(); i++ ) {
         for ( size_t j = i + 1; j < center2.size(); j++ ) {
-            if ( AMP::Utilities::approx_equal( std::get<0>( center2[i] ),
-                                               std::get<0>( center2[j] ) ) &&
-                 AMP::Utilities::approx_equal( std::get<1>( center2[i] ),
-                                               std::get<1>( center2[j] ) ) ) {
+            if ( AMP::Utilities::approx_equal( center2[i][0], center2[j][0] ) &&
+                 AMP::Utilities::approx_equal( center2[i][1], center2[j][1] ) ) {
                 AMP_ERROR( "Duplicate clads detected" );
             }
         }
@@ -282,18 +280,16 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
     AMP_ASSERT( face_ids.size() == z.size() );
     AMP_ASSERT( flow != nullptr );
     AMP_ASSERT( clad_temp != nullptr );
-    AMP::Discretization::DOFManager::shared_ptr flow_manager = flow->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr clad_manager = clad_temp->getDOFManager();
-    const double h_scale =
-        1.0 / Subchannel::scaleEnthalpy; // Scale to change the input vector back to correct units
-    const double P_scale =
-        1.0 / Subchannel::scalePressure; // Scale to change the input vector back to correct units
+    auto flow_manager    = flow->getDOFManager();
+    auto clad_manager    = clad_temp->getDOFManager();
+    const double h_scale = 1.0 / Subchannel::scaleEnthalpy; // Scale to change to correct units
+    const double P_scale = 1.0 / Subchannel::scalePressure; // Scale to change to correct units
 
     // Get the enthalapy, pressure, flow temperature, and clad temperature at the faces
-    std::shared_ptr<std::vector<double>> h( new std::vector<double>( z.size(), 0.0 ) );
-    std::shared_ptr<std::vector<double>> P( new std::vector<double>( z.size(), 0.0 ) );
-    std::shared_ptr<std::vector<double>> Tf( new std::vector<double>( z.size(), 0.0 ) );
-    std::shared_ptr<std::vector<double>> Tc( new std::vector<double>( z.size(), 0.0 ) );
+    auto h  = std::make_shared<std::vector<double>>( z.size(), 0.0 );
+    auto P  = std::make_shared<std::vector<double>>( z.size(), 0.0 );
+    auto Tf = std::make_shared<std::vector<double>>( z.size(), 0.0 );
+    auto Tc = std::make_shared<std::vector<double>>( z.size(), 0.0 );
     std::vector<size_t> flow_dofs( 2 ), clad_dofs( 1 );
     for ( size_t i = 0; i < z.size(); i++ ) {
         flow_manager->getDOFs( face_ids[i], flow_dofs );
@@ -309,10 +305,10 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
     temperatureArgMap.insert( std::make_pair( std::string( "pressure" ), P ) );
     subchannelPhysicsModel->getProperty( "Temperature", *Tf, temperatureArgMap );
     // Get the properties at cell centers
-    size_t N = dz.size();
-    std::shared_ptr<std::vector<double>> flowTemp( new std::vector<double>( N ) );
-    std::shared_ptr<std::vector<double>> cladTemp( new std::vector<double>( N ) );
-    std::shared_ptr<std::vector<double>> flowDens( new std::vector<double>( N ) );
+    size_t N      = dz.size();
+    auto flowTemp = std::make_shared<std::vector<double>>( N );
+    auto cladTemp = std::make_shared<std::vector<double>>( N );
+    auto flowDens = std::make_shared<std::vector<double>>( N );
     std::vector<double> specificVolume( z.size(), 0.0 );
     subchannelPhysicsModel->getProperty( "SpecificVolume", specificVolume, temperatureArgMap );
     for ( size_t i = 0; i < N; i++ ) {
@@ -391,14 +387,12 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     if ( clad_surface.get() == nullptr )
         return AMP::LinearAlgebra::Vector::shared_ptr();
     // Create and initialize the vector
-    AMP::Discretization::DOFManager::shared_ptr DOF = AMP::Discretization::simpleDOFManager::create(
+    auto DOF = AMP::Discretization::simpleDOFManager::create(
         clad_surface, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    AMP::LinearAlgebra::Variable::shared_ptr variable(
-        new AMP::LinearAlgebra::Variable( "ChannelDiameter" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr diameter =
-        AMP::LinearAlgebra::createVector( DOF, variable );
+    auto variable = std::make_shared<AMP::LinearAlgebra::Variable>( "ChannelDiameter" );
+    auto diameter = AMP::LinearAlgebra::createVector( DOF, variable );
     diameter->zero();
-    AMP::Mesh::MeshIterator it = clad_surface->getIterator( AMP::Mesh::GeomType::Vertex );
+    auto it = clad_surface->getIterator( AMP::Mesh::GeomType::Vertex );
     std::vector<size_t> dofs( 1 );
     size_t Nx = x.size() - 1;
     size_t Ny = y.size() - 1;
