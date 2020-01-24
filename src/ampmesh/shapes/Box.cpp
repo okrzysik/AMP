@@ -84,35 +84,25 @@ Grid<NDIM>::Grid( const std::vector<std::vector<double>> &coord ) : Geometry()
 /********************************************************
  * Get the object name                                   *
  ********************************************************/
-template<>
-std::string Box<1>::getName() const
+template<std::size_t NDIM>
+std::string Box<NDIM>::getName() const
 {
-    return "Box<1>";
+    if constexpr ( NDIM == 1 )
+        return "Box<1>";
+    else if constexpr ( NDIM == 2 )
+        return "Box<2>";
+    else if constexpr ( NDIM == 3 )
+        return "Box<3>";
 }
-template<>
-std::string Box<2>::getName() const
+template<std::size_t NDIM>
+std::string Grid<NDIM>::getName() const
 {
-    return "Box<2>";
-}
-template<>
-std::string Box<3>::getName() const
-{
-    return "Box<3>";
-}
-template<>
-std::string Grid<1>::getName() const
-{
-    return "Grid<1>";
-}
-template<>
-std::string Grid<2>::getName() const
-{
-    return "Grid<2>";
-}
-template<>
-std::string Grid<3>::getName() const
-{
-    return "Grid<3>";
+    if constexpr ( NDIM == 1 )
+        return "Grid<1>";
+    else if constexpr ( NDIM == 2 )
+        return "Grid<2>";
+    else if constexpr ( NDIM == 3 )
+        return "Grid<3>";
 }
 
 

@@ -745,7 +745,7 @@ public: // Member functions
      * @param send       Processor number of sender.
      * @param get_length Optional boolean argument specifying if we first
      *                   need to check the message size to get the size of the array.
-     *                   Default value is true.
+     *                   Default value is false.
      * @param tag        Optional integer argument specifying a tag which must be matched
      *                   by the tag of the incoming message. Default tag is 0.
      */

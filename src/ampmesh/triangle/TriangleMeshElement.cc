@@ -8,38 +8,38 @@ namespace AMP {
 namespace Mesh {
 
 
+/****************************************************************
+ * Get the number of n-Simplex elements of each type             *
+ ****************************************************************/
+// clang-format off
+static constexpr uint8_t n_Simplex_elements[4][4] = {
+    {  1, 0, 0, 0 },
+    {  2, 1, 0, 0 },
+    {  3, 3, 1, 0 },
+    {  4, 6, 4, 1 },
+};
+// clang-format on
+
+
 /********************************************************
  * Create a unique id for each class                     *
  ********************************************************/
-template<>
-constexpr uint32_t TriangleMeshElement<1, 1>::getTypeID()
+template<size_t NG, size_t NP>
+constexpr uint32_t TriangleMeshElement<NG, NP>::getTypeID()
 {
-    return AMP::Utilities::hash_char( "TriangleMeshElement<1,1>" );
-}
-template<>
-constexpr uint32_t TriangleMeshElement<1, 2>::getTypeID()
-{
-    return AMP::Utilities::hash_char( "TriangleMeshElement<1,2>" );
-}
-template<>
-constexpr uint32_t TriangleMeshElement<1, 3>::getTypeID()
-{
-    return AMP::Utilities::hash_char( "TriangleMeshElement<1,3>" );
-}
-template<>
-constexpr uint32_t TriangleMeshElement<2, 2>::getTypeID()
-{
-    return AMP::Utilities::hash_char( "TriangleMeshElement<2,2>" );
-}
-template<>
-constexpr uint32_t TriangleMeshElement<2, 3>::getTypeID()
-{
-    return AMP::Utilities::hash_char( "TriangleMeshElement<2,3>" );
-}
-template<>
-constexpr uint32_t TriangleMeshElement<3, 3>::getTypeID()
-{
-    return AMP::Utilities::hash_char( "TriangleMeshElement<3,3>" );
+    static_assert( NG > 0 && NP <= 3 && NP >= NG );
+    if constexpr ( NG == 1 && NP == 1 )
+        return AMP::Utilities::hash_char( "TriangleMeshElement<1,1>" );
+    else if constexpr ( NG == 1 && NP == 2 )
+        return AMP::Utilities::hash_char( "TriangleMeshElement<1,2>" );
+    else if constexpr ( NG == 1 && NP == 3 )
+        return AMP::Utilities::hash_char( "TriangleMeshElement<1,3>" );
+    else if constexpr ( NG == 2 && NP == 2 )
+        return AMP::Utilities::hash_char( "TriangleMeshElement<2,2>" );
+    else if constexpr ( NG == 2 && NP == 3 )
+        return AMP::Utilities::hash_char( "TriangleMeshElement<2,3>" );
+    else if constexpr ( NG == 3 && NP == 3 )
+        return AMP::Utilities::hash_char( "TriangleMeshElement<3,3>" );
 }
 
 
@@ -124,15 +124,16 @@ unsigned int TriangleMeshElement<NG, NP>::globalOwnerRank() const
 /****************************************************************
  * Function to get the elements composing the current element    *
  ****************************************************************/
+static constexpr int get_N_elements( const GeomType &src, const GeomType &dst )
+{
+    return n_Simplex_elements[static_cast<int>( src )][static_cast<int>( dst )];
+}
 template<size_t NG, size_t NP>
 void TriangleMeshElement<NG, NP>::getElementsID( const GeomType type,
                                                  std::vector<MeshElementID> &ID ) const
 {
-    // Number of elements composing a given type [current][desired]
-    constexpr uint8_t N_elements[4][4] = {
-        { 1, 0, 0, 0 }, { 2, 1, 0, 0 }, { 3, 3, 1, 0 }, { 4, 6, 4, 1 }
-    };
-    int N = N_elements[static_cast<int>( d_globalID.type() )][static_cast<int>( type )];
+    // Number of elements composing a given type
+    int N = get_N_elements( d_globalID.type(), type );
     // Get the element ids
     ElementID tmp[6];
     d_mesh->getElementsIDs( d_globalID.elemID(), type, tmp );
@@ -144,11 +145,8 @@ template<size_t NG, size_t NP>
 void TriangleMeshElement<NG, NP>::getElements( const GeomType type,
                                                std::vector<MeshElement> &children ) const
 {
-    // Number of elements composing a given type [current][desired]
-    constexpr uint8_t N_elements[4][4] = {
-        { 1, 0, 0, 0 }, { 2, 1, 0, 0 }, { 3, 3, 1, 0 }, { 4, 6, 4, 1 }
-    };
-    int N = N_elements[static_cast<int>( d_globalID.type() )][static_cast<int>( type )];
+    // Number of elements composing a given type
+    int N = get_N_elements( d_globalID.type(), type );
     // Get the element ids
     ElementID tmp[6];
     d_mesh->getElementsIDs( d_globalID.elemID(), type, tmp );
@@ -180,39 +178,33 @@ void TriangleMeshElement<NG, NP>::getNeighbors(
 /****************************************************************
  * Functions to get basic element properties                     *
  ****************************************************************/
-static inline double dot( const std::array<double, 1> &x, const std::array<double, 1> &y )
+template<size_t N>
+static inline double dot( const std::array<double, N> &x, const std::array<double, N> &y )
 {
-    return x[0] * y[0];
+    if constexpr ( N == 1 )
+        return x[0] * y[0];
+    else if constexpr ( N == 2 )
+        return x[0] * y[0] + x[1] * y[1];
+    else if constexpr ( N == 3 )
+        return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
 }
-static inline double dot( const std::array<double, 2> &x, const std::array<double, 2> &y )
+template<size_t N>
+static inline std::array<double, N> operator-( const std::array<double, N> &x,
+                                               const std::array<double, N> &y )
 {
-    return x[0] * y[0] + x[1] * y[1];
-}
-static inline double dot( const std::array<double, 3> &x, const std::array<double, 3> &y )
-{
-    return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
-}
-static inline std::array<double, 1> operator-( const std::array<double, 1> &x,
-                                               const std::array<double, 1> &y )
-{
-    return { x[0] - y[0] };
-}
-static inline std::array<double, 2> operator-( const std::array<double, 2> &x,
-                                               const std::array<double, 2> &y )
-{
-    return { x[0] - y[0], x[1] - y[1] };
-}
-static inline std::array<double, 3> operator-( const std::array<double, 3> &x,
-                                               const std::array<double, 3> &y )
-{
-    return { x[0] - y[0], x[1] - y[1], x[2] - y[2] };
+    if constexpr ( N == 1 )
+        return { x[0] - y[0] };
+    else if constexpr ( N == 2 )
+        return { x[0] - y[0], x[1] - y[1] };
+    else if constexpr ( N == 3 )
+        return { x[0] - y[0], x[1] - y[1], x[2] - y[2] };
 }
 template<size_t NG, size_t NP>
 double TriangleMeshElement<NG, NP>::volume() const
 {
-    if ( NG == 0 ) { // Replace if statements with if constexpr when supported
+    if constexpr ( NG == 0 ) { // Replace if statements with if constexpr when supported
         return 0;
-    } else if ( NG == 1 ) {
+    } else if constexpr ( NG == 1 ) {
         ElementID ids[2];
         d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
         auto p1     = d_mesh->getPos( ids[0] );
@@ -221,7 +213,7 @@ double TriangleMeshElement<NG, NP>::volume() const
         for ( size_t d = 0; d < NP; d++ )
             dist += ( p1[d] - p2[d] ) * ( p1[d] - p2[d] );
         return dist;
-    } else if ( NG == 2 ) {
+    } else if constexpr ( NG == 2 ) {
         ElementID ids[3];
         d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
         auto p0  = d_mesh->getPos( ids[0] );

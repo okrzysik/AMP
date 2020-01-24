@@ -37,30 +37,24 @@ static constexpr std::array<std::remove_cv_t<T>, N> to_array_impl( const T *a,
 template<class TYPE, std::size_t N>
 static constexpr std::array<TYPE, N> make_array( const TYPE &x )
 {
-    TYPE tmp[10] = { x, x, x, x, x, x, x, x, x, x };
+    TYPE tmp[N] = { x };
     return to_array_impl<TYPE, N>( tmp, std::make_index_sequence<N>{} );
 }
 
 
 // Helper functions to see if two points are ~ the same
-static inline bool approx_equal( const std::array<double, 1> &x,
-                                 const std::array<double, 1> &y,
-                                 const std::array<double, 1> &tol )
+template<size_t N>
+static inline bool approx_equal( const std::array<double, N> &x,
+                                 const std::array<double, N> &y,
+                                 const std::array<double, N> &tol )
 {
-    return fabs( x[0] - y[0] ) <= tol[0];
-}
-static inline bool approx_equal( const std::array<double, 2> &x,
-                                 const std::array<double, 2> &y,
-                                 const std::array<double, 2> &tol )
-{
-    return fabs( x[0] - y[0] ) <= tol[0] && fabs( x[1] - y[1] ) <= tol[1];
-}
-static inline bool approx_equal( const std::array<double, 3> &x,
-                                 const std::array<double, 3> &y,
-                                 const std::array<double, 3> &tol )
-{
-    return fabs( x[0] - y[0] ) <= tol[0] && fabs( x[1] - y[1] ) <= tol[1] &&
-           fabs( x[2] - y[2] ) <= tol[2];
+    if constexpr ( N == 1 )
+        return fabs( x[0] - y[0] ) <= tol[0];
+    else if constexpr ( N == 2 )
+        return fabs( x[0] - y[0] ) <= tol[0] && fabs( x[1] - y[1] ) <= tol[1];
+    else if constexpr ( N == 3 )
+        return fabs( x[0] - y[0] ) <= tol[0] && fabs( x[1] - y[1] ) <= tol[1] &&
+               fabs( x[2] - y[2] ) <= tol[2];
 }
 
 
@@ -164,18 +158,17 @@ static std::vector<std::array<std::array<double, 3>, 3>> readSTL( const std::str
  * Get the number of n-Simplex elements of each type             *
  ****************************************************************/
 // clang-format off
-static constexpr uint16_t n_Simplex_elements[11][11] = {
-        {  1,  0,   0,   0,   0,   0,   0,   0,  0,  0, 0 },
-        {  2,  1,   0,   0,   0,   0,   0,   0,  0,  0, 0 },
-        {  3,  3,   1,   0,   0,   0,   0,   0,  0,  0, 0 },
-        {  4,  6,   4,   1,   0,   0,   0,   0,  0,  0, 0 },
-        {  5, 10,  10,   5,   1,   0,   0,   0,  0,  0, 0 },
-        {  6, 15,  20,  15,   6,   1,   0,   0,  0,  0, 0 },
-        {  7, 21,  35,  35,  21,   7,   1,   0,  0,  0, 0 },
-        {  8, 28,  56,  70,  56,  28,   8,   1,  0,  0, 0 },
-        {  9, 36,  84, 126, 126,  84,  36,   9,  1,  0, 0 },
-        { 10, 45, 120, 210, 252, 210, 120,  45, 10,  1, 0 },
-        { 11, 55, 165, 330, 462, 462, 330, 165, 55, 11, 1 }
+static constexpr uint8_t n_Simplex_elements[10][10] = {
+        {  1,  0,   0,   0,   0,   0,   0,   0,  0,  0 },
+        {  2,  1,   0,   0,   0,   0,   0,   0,  0,  0 },
+        {  3,  3,   1,   0,   0,   0,   0,   0,  0,  0 },
+        {  4,  6,   4,   1,   0,   0,   0,   0,  0,  0 },
+        {  5, 10,  10,   5,   1,   0,   0,   0,  0,  0 },
+        {  6, 15,  20,  15,   6,   1,   0,   0,  0,  0 },
+        {  7, 21,  35,  35,  21,   7,   1,   0,  0,  0 },
+        {  8, 28,  56,  70,  56,  28,   8,   1,  0,  0 },
+        {  9, 36,  84, 126, 126,  84,  36,   9,  1,  0 },
+        { 10, 45, 120, 210, 252, 210, 120,  45, 10,  1 },
 };
 // clang-format on
 
@@ -289,7 +282,7 @@ create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri )
     if ( tri.size() == 1 )
         return tri_nab;
     // 1D is a special easy case
-    if ( NG == 1 ) {
+    if constexpr ( NG == 1 ) {
         for ( size_t i = 0; i < tri.size(); i++ ) {
             tri_nab[i][0] = i + 1;
             tri_nab[i][1] = i - 1;
@@ -399,6 +392,63 @@ create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri )
  *    local verticies will be stored in sorted order             *
  *    indexing is the global                                     *
  ****************************************************************/
+template<size_t NP>
+static std::vector<size_t> splitDomain( const std::vector<std::array<double, NP>> &center )
+{
+    AMP_WARNING( "Not finished" );
+    return std::vector<size_t>( center.size(), 0 );
+}
+static std::vector<size_t> mapOwner( const std::vector<size_t> &rank, const AMP_MPI &comm )
+{
+    // Get the mapping for each triangle to the correct processor
+    std::vector<size_t> count( comm.getSize(), 0 );
+    for ( const auto &r : rank )
+        count[r]++;
+    std::vector<size_t> offset( comm.getSize(), 0 );
+    for ( int i = 1; i < comm.getSize(); i++ )
+        offset[i] = offset[i - 1] + count[i - 1];
+    std::fill( count.begin(), count.end(), 0 );
+    std::vector<size_t> map( rank.size(), 0 );
+    for ( size_t i = 0; i < rank.size(); i++ )
+        map[i] = offset[rank[i]] + count[rank[i]]++;
+    return map;
+}
+template<class TYPE>
+static std::vector<TYPE>
+sendData( const std::vector<TYPE> &data, const std::vector<size_t> &rank, const AMP_MPI &comm )
+{
+    std::vector<TYPE> out;
+    if ( comm.getRank() == 0 ) {
+        // Pack the data to send to each rank
+        std::vector<std::vector<TYPE>> data2( comm.getSize() );
+        for ( size_t i = 0; i < data.size(); i++ )
+            data2[rank[i]].push_back( data[i] );
+        std::vector<size_t> count( comm.getSize(), 0 );
+        for ( int i = 0; i < comm.getSize(); i++ )
+            count[i] = data2[i].size();
+        comm.bcast( count.data(), count.size(), 0 );
+        // Send the data
+        std::vector<MPI_Request> request;
+        for ( int i = 1; i < comm.getSize(); i++ ) {
+            if ( count[i] > 0 ) {
+                auto req = comm.Isend<TYPE>( data2[i].data(), data2[i].size(), i, 125 );
+                request.push_back( req );
+            }
+        }
+        comm.waitAll( request.size(), request.data() );
+        out = std::move( data2[0] );
+    } else {
+        // Recieve the data
+        std::vector<size_t> count( comm.getSize(), 0 );
+        comm.bcast( count.data(), count.size(), 0 );
+        if ( count[comm.getRank()] > 0 ) {
+            out.resize( count[comm.getRank()] );
+            int length = out.size();
+            comm.recv<TYPE>( out.data(), length, 0, false, 125 );
+        }
+    }
+    return out;
+}
 template<size_t NG, size_t NP>
 static void loadBalance( std::vector<std::array<double, NP>> &verticies,
                          std::vector<std::array<int64_t, NG + 1>> &tri,
@@ -411,19 +461,48 @@ static void loadBalance( std::vector<std::array<double, NP>> &verticies,
     // Check that only rank 0 has data (may relax this in the future)
     if ( comm.getRank() != 0 )
         AMP_ASSERT( verticies.empty() && tri.empty() && tri_nab.empty() );
+    // Get the number of subdomains in each direction
+    auto factors    = AMP::Utilities::factor( comm.getSize() );
+    int N_domain[3] = { 1, 1, 1 };
+    for ( auto it = factors.rbegin(); it != factors.rend(); ++it ) {
+        if ( N_domain[0] <= N_domain[1] && N_domain[1] <= N_domain[2] )
+            N_domain[0] *= *it;
+        else if ( N_domain[1] <= N_domain[2] )
+            N_domain[1] *= *it;
+        else
+            N_domain[2] *= *it;
+    }
     // Get the triangle centers (used for load balance)
-    /*std::vector<std::array<double, NP>> center( tri.size(), make_array<double, NP>( 0 ) );
+    std::vector<std::array<double, NP>> center( tri.size(), make_array<double, NP>( 0 ) );
     for ( size_t i = 0; i < tri.size(); i++ ) {
         for ( size_t j = 0; j < NG + 1; j++ ) {
             const auto &point = verticies[tri[i][j]];
             for ( size_t d = 0; d < NP; d++ )
                 center[i][d] += point[d] / NP;
         }
-    }*/
-    NULL_USE( tri );
-    NULL_USE( tri_nab );
-    NULL_USE( verticies );
-    AMP_ERROR( "Not finished" );
+    }
+    // Recursively split the domain
+    auto rank_tri  = splitDomain( center );
+    auto rank_node = splitDomain( center );
+    // Get the mapping for each triangle to the correct processor
+    auto map_tri  = mapOwner( rank_tri, comm );
+    auto map_node = mapOwner( rank_tri, comm );
+    // Remap the triangles
+    for ( auto &t : tri ) {
+        for ( auto &v : t )
+            if ( v != -1 )
+                v = map_node[v];
+    }
+    // Remap the triangle neighbors
+    for ( auto &t : tri_nab ) {
+        for ( auto &v : t )
+            if ( v != -1 )
+                v = map_tri[v];
+    }
+    // Move the data
+    verticies = sendData( verticies, rank_node, comm );
+    tri       = sendData( tri, rank_node, comm );
+    tri_nab   = sendData( tri_nab, rank_node, comm );
 }
 template<size_t NDIM, class TYPE>
 static void sortData( std::vector<TYPE> &data,
@@ -443,7 +522,8 @@ static void sortData( std::vector<TYPE> &data,
     auto map = comm.allGather( J );
     for ( auto &x : index ) {
         for ( auto &y : x )
-            y = map[y];
+            if ( y != -1 )
+                y = map[y];
     }
 }
 
@@ -513,27 +593,32 @@ std::shared_ptr<TriangleMesh<NG, NP>> TriangleMesh<NG, NP>::generate(
 {
     // Get the global list of tri_list
     auto global_list = comm.allGather( tri_list );
-    // Create triangles from the points
     std::vector<std::array<double, NP>> verticies;
     std::vector<std::array<int64_t, NG + 1>> triangles;
-    createTriangles<NG, NP>( global_list, verticies, triangles, tol );
-    // Get the triangle neighbors
-    // auto neighbors = create_tri_neighbors<NG>( triangles );
-    AMP::Utilities::nullUse( (void *) create_tri_neighbors<NG> );
-    std::vector<std::array<int64_t, NG + 1>> neighbors( triangles.size(),
-                                                        make_array<int64_t, NG + 1>( -1 ) );
+    std::vector<std::array<int64_t, NG + 1>> neighbors;
+    if ( comm.getRank() == 0 ) {
+        // Create triangles from the points
+        createTriangles<NG, NP>( global_list, verticies, triangles, tol );
+        // Get the triangle neighbors
+        // auto neighbors = create_tri_neighbors<NG>( triangles );
+        AMP::Utilities::nullUse( (void *) create_tri_neighbors<NG> );
+        neighbors.resize( triangles.size(), make_array<int64_t, NG + 1>( -1 ) );
+    }
     // Create the mesh
     std::shared_ptr<TriangleMesh<NG, NP>> mesh( new TriangleMesh<NG, NP>(
         std::move( verticies ), std::move( triangles ), std::move( neighbors ), comm ) );
     return mesh;
 }
 template<size_t NG>
-static std::vector<std::array<ElementID, NG + 1>> createGlobalIDs(
-    const std::vector<std::array<int64_t, NG + 1>> &index, size_t N_local, const AMP_MPI &comm )
+static std::vector<std::array<ElementID, NG + 1>>
+createGlobalIDs( const std::vector<std::array<int64_t, NG + 1>> &index,
+                 size_t N_local,
+                 GeomType type,
+                 const AMP_MPI &comm )
 {
     // Get the index offsets for each rank
     auto N = comm.allGather( N_local );
-    std::vector<size_t> size( N_local, 0 );
+    std::vector<size_t> size( N.size(), 0 );
     size[0] = N[0];
     for ( size_t i = 1; i < N.size(); i++ )
         size[i] = size[i - 1] + N[i];
@@ -542,7 +627,6 @@ static std::vector<std::array<ElementID, NG + 1>> createGlobalIDs(
         offset[i] = offset[i - 1] + N[i - 1];
     // Create the global ids
     int myRank = comm.getRank();
-    auto type  = static_cast<GeomType>( NG );
     std::vector<std::array<ElementID, NG + 1>> ids( index.size() );
     for ( size_t i = 0; i < index.size(); i++ ) {
         for ( size_t d = 0; d <= NG; d++ ) {
@@ -576,11 +660,11 @@ TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> verticie
     sortData( verticies, tri, comm );
     // Create the global ids
     d_vert    = std::move( verticies );
-    auto tri2 = createGlobalIDs<NG>( tri, d_vert.size(), comm );
+    auto tri2 = createGlobalIDs<NG>( tri, d_vert.size(), GeomType::Vertex, comm );
     sortData( tri2, tri_nab, comm );
-    d_neighbors = createGlobalIDs<NG>( tri_nab, tri2.size(), comm );
+    d_neighbors = createGlobalIDs<NG>( tri_nab, tri2.size(), static_cast<GeomType>( NG ), comm );
     if constexpr ( NG == 1 )
-        std::swap( d_edge, tri2 ); // Replace with enable_if and std::swap eventually
+        std::swap( d_edge, tri2 );
     else if constexpr ( NG == 2 )
         std::swap( d_tri, tri2 );
     else if constexpr ( NG == 3 )
@@ -734,7 +818,7 @@ void TriangleMesh<NG, NP>::initialize()
     else if constexpr ( NG == 3 )
         AMP_ASSERT( std::is_sorted( d_tet.begin(), d_tet.end() ) );
     else
-        AMP_ERROR( "Not finished" );
+        static_assert( NG > 0 && NG <= 3, "More than 3 dimensions not yet supported" );
     AMP_ASSERT( std::is_sorted( d_neighbors.begin(), d_neighbors.end() ) );
     // Create the edges/faces
     std::vector<Edge> remote_edges;
@@ -747,7 +831,7 @@ void TriangleMesh<NG, NP>::initialize()
         getChildren<3, 1>( d_tet, d_edge, remote_edges );
         getChildren<3, 2>( d_tet, d_tri, remote_faces );
     } else {
-        AMP_ERROR( "Not finished" );
+        static_assert( NG > 0 && NG <= 3, "More than 3 dimensions not yet supported" );
     }
     if ( !remote_edges.empty() )
         AMP_ERROR( "Not finished, need to fill d_remote_edge" );
@@ -1201,13 +1285,10 @@ void TriangleMesh<NG, NP>::getNeighborIDs( const ElementID &id, std::vector<Elem
         return;
     }
     // The neighbors are any elements that share a parent
-    constexpr uint8_t N_elements[4][4] = {
-        { 1, 0, 0, 0 }, { 2, 1, 0, 0 }, { 3, 3, 1, 0 }, { 4, 6, 4, 1 }
-    };
     auto parents = getElementParents( id, static_cast<GeomType>( NG ) );
     IDs.clear();
     IDs.reserve( 20 );
-    int N = N_elements[NG][static_cast<size_t>( type )];
+    int N = n_Simplex_elements[NG][static_cast<size_t>( type )];
     for ( const auto &p : parents ) {
         ElementID tmp[6];
         getElementsIDs( p, type, tmp );
