@@ -1,24 +1,21 @@
+#include "AMP/operators/ColumnOperator.h"
+#include "AMP/operators/newFrozenVectorDesign/FirstOperator.h"
+#include "AMP/operators/newFrozenVectorDesign/SecondOperator.h"
+#include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/OnePointSolver.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/SimpleVector.h"
+#include "AMP/vectors/newFrozenVectorDesign/newFrozenVectorDesignHelpers.h"
 
 #include <cstdio>
 #include <cstring>
 #include <iostream>
 #include <vector>
 
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
-#include "AMP/utils/UnitTest.h"
-
-#include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/SimpleVector.h"
-#include "AMP/vectors/newFrozenVectorDesign/newFrozenVectorDesignHelpers.h"
-
-#include "AMP/operators/ColumnOperator.h"
-#include "AMP/operators/newFrozenVectorDesign/FirstOperator.h"
-#include "AMP/operators/newFrozenVectorDesign/SecondOperator.h"
-
-#include "AMP/solvers/ColumnSolver.h"
-#include "AMP/solvers/OnePointSolver.h"
 
 int main( int argc, char *argv[] )
 {
@@ -33,19 +30,15 @@ int main( int argc, char *argv[] )
 
     auto input_db = AMP::Database::parseInputFile( input_file );
 
-    std::shared_ptr<AMP::Database> firstOp_db = input_db->getDatabase( "FirstOperator" );
-    std::shared_ptr<AMP::Operator::OperatorParameters> firstOpParams(
-        new AMP::Operator::OperatorParameters( firstOp_db ) );
-    std::shared_ptr<AMP::Operator::FirstOperator> firstOp(
-        new AMP::Operator::FirstOperator( firstOpParams ) );
+    auto firstOp_db    = input_db->getDatabase( "FirstOperator" );
+    auto firstOpParams = std::make_shared<AMP::Operator::OperatorParameters>( firstOp_db );
+    auto firstOp       = std::make_shared<AMP::Operator::FirstOperator>( firstOpParams );
 
-    std::shared_ptr<AMP::Database> secondOp_db = input_db->getDatabase( "SecondOperator" );
-    std::shared_ptr<AMP::Operator::OperatorParameters> secondOpParams(
-        new AMP::Operator::OperatorParameters( secondOp_db ) );
-    std::shared_ptr<AMP::Operator::SecondOperator> secondOp(
-        new AMP::Operator::SecondOperator( secondOpParams ) );
+    auto secondOp_db    = input_db->getDatabase( "SecondOperator" );
+    auto secondOpParams = std::make_shared<AMP::Operator::OperatorParameters>( secondOp_db );
+    auto secondOp       = std::make_shared<AMP::Operator::SecondOperator>( secondOpParams );
 
-    std::shared_ptr<AMP::Operator::ColumnOperator> columnOp( new AMP::Operator::ColumnOperator );
+    auto columnOp = std::make_shared<AMP::Operator::ColumnOperator>();
     columnOp->append( firstOp );
     columnOp->append( secondOp );
 
@@ -53,45 +46,35 @@ int main( int argc, char *argv[] )
 
     std::shared_ptr<AMP::Database> solver_db = input_db->getDatabase( "Solver" );
 
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> firstSolverParams(
-        new AMP::Solver::SolverStrategyParameters( solver_db ) );
+    auto firstSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( solver_db );
     firstSolverParams->d_pOperator = firstOp;
-    std::shared_ptr<AMP::Solver::OnePointSolver> firstSolver(
-        new AMP::Solver::OnePointSolver( firstSolverParams ) );
+    auto firstSolver = std::make_shared<AMP::Solver::OnePointSolver>( firstSolverParams );
 
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> secondSolverParams(
-        new AMP::Solver::SolverStrategyParameters( solver_db ) );
+    auto secondSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( solver_db );
     secondSolverParams->d_pOperator = secondOp;
-    std::shared_ptr<AMP::Solver::OnePointSolver> secondSolver(
-        new AMP::Solver::OnePointSolver( secondSolverParams ) );
+    auto secondSolver = std::make_shared<AMP::Solver::OnePointSolver>( secondSolverParams );
 
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> columnSolverParams(
-        new AMP::Solver::SolverStrategyParameters( solver_db ) );
+    auto columnSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( solver_db );
     columnSolverParams->d_pOperator = columnOp;
-    std::shared_ptr<AMP::Solver::ColumnSolver> columnSolver(
-        new AMP::Solver::ColumnSolver( columnSolverParams ) );
+    auto columnSolver = std::make_shared<AMP::Solver::ColumnSolver>( columnSolverParams );
     columnSolver->append( firstSolver );
     columnSolver->append( secondSolver );
 
     std::cout << "Constructed Solvers." << std::endl;
 
-    AMP::LinearAlgebra::Variable::shared_ptr firstVar  = firstOp->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr secondVar = secondOp->getOutputVariable();
+    auto firstVar  = firstOp->getOutputVariable();
+    auto secondVar = secondOp->getOutputVariable();
 
-    AMP::LinearAlgebra::Vector::shared_ptr firstVec =
-        AMP::LinearAlgebra::SimpleVector<double>::create( 1, firstVar );
-    AMP::LinearAlgebra::Vector::shared_ptr secondVec =
-        AMP::LinearAlgebra::SimpleVector<double>::create( 1, secondVar );
+    auto firstVec  = AMP::LinearAlgebra::SimpleVector<double>::create( 1, firstVar );
+    auto secondVec = AMP::LinearAlgebra::SimpleVector<double>::create( 1, secondVar );
 
-    AMP::LinearAlgebra::CommunicationList::shared_ptr commList =
-        AMP::LinearAlgebra::CommunicationList::createEmpty( 1, AMP_COMM_SELF );
+    auto commList = AMP::LinearAlgebra::CommunicationList::createEmpty( 1, AMP_COMM_SELF );
 
     firstVec->setCommunicationList( commList );
     secondVec->setCommunicationList( commList );
 
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec =
-        AMP::LinearAlgebra::joinVectors( firstVec, secondVec );
-    AMP::LinearAlgebra::Vector::shared_ptr solVec = rhsVec->cloneVector();
+    auto rhsVec = AMP::LinearAlgebra::joinVectors( firstVec, secondVec );
+    auto solVec = rhsVec->cloneVector();
 
     std::cout << "Constructed Vectors." << std::endl;
 

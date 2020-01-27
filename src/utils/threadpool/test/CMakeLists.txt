@@ -24,6 +24,6 @@ ENDIF()
 # Add affinity tests
 COPY_TEST_FILE( input_print_affinity_1 )
 ADD_AMP_TEST( print_thread_affinities input_print_affinity_1 )
-ADD_AMP_PROVISIONAL_TEST( test_async_communication )
+ADD_AMP_TEST( test_async_communication )
 
 

@@ -15,18 +15,9 @@ Mesh {
 }
 
 CladProperties{
-    x = 0.0,    0.0126, 0.0252, 0.0378,
-        0.0,    0.0126, 0.0252, 0.0378,
-        0.0,    0.0126, 0.0252, 0.0378,
-        0.0,    0.0126, 0.0252, 0.0378
-    y = 0.0,    0.0,    0.0,    0.0,
-        0.0126, 0.0126, 0.0126, 0.0126,
-        0.0252, 0.0252, 0.0252, 0.0252,
-        0.0378, 0.0378, 0.0378, 0.0378
-    d = 0.0095, 0.0095, 0.0095, 0.0095,
-        0.0095, 0.0095, 0.0095, 0.0095,
-        0.0095, 0.0095, 0.0095, 0.0095,
-        0.0095, 0.0095, 0.0095, 0.0095
+    x = 0.0,    0.0126, 0.0252, 0.0378, 0.0,    0.0126, 0.0252, 0.0378, 0.0,    0.0126, 0.0252, 0.0378, 0.0,    0.0126, 0.0252, 0.0378
+    y = 0.0,    0.0,    0.0,    0.0,    0.0126, 0.0126, 0.0126, 0.0126, 0.0252, 0.0252, 0.0252, 0.0252, 0.0378, 0.0378, 0.0378, 0.0378
+    d = 0.0095, 0.0095, 0.0095, 0.0095, 0.0095, 0.0095, 0.0095, 0.0095, 0.0095, 0.0095, 0.0095, 0.0095, 0.0095, 0.0095, 0.0095, 0.0095
 }
 
 
@@ -44,9 +35,7 @@ SubchannelFourEqNonlinearOperator{
     Turbulence_Coefficient = 1.0
     Lateral_Form_Loss_Coefficient = 0.2
     Max_Rod_Power = 0.0                 // Rod power in W
-    Rod_Power_Fraction = 1.0,1.0,1.0,
-                         1.0,1.0,1.0,
-                         1.0,1.0,1.0
+    Rod_Power_Fraction = 1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
     Heat_Source_Type = "totalHeatGeneration"
     Heat_Shape = "Sinusoidal"
     Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
@@ -74,9 +63,7 @@ SubchannelFourEqLinearOperator{
     Turbulence_Coefficient = 1.0
     Lateral_Form_Loss_Coefficient = 0.2
     Max_Rod_Power = 0.0                 // Rod power in W
-    Rod_Power_Fraction = 1.0,1.0,1.0,
-                         1.0,1.0,1.0,
-                         1.0,1.0,1.0
+    Rod_Power_Fraction = 1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
     Heat_Source_Type = "totalHeatGeneration"
     Heat_Shape = "Sinusoidal"
     Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
