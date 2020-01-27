@@ -779,7 +779,7 @@ NonlinearSolver {
         pc_type = "shell"
         pc_side = "RIGHT"
 
-        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 10000 -ksp_rtol 1.0e-1 -ksp_atol 1.0e-11 -ksp_gmres_restart 100"
+        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 10000 -ksp_rtol 0.05 -ksp_atol 1.0e-11 -ksp_gmres_restart 1000"
 
         Preconditioner {
             print_info_level = 1

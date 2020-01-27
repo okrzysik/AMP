@@ -513,10 +513,9 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     auto flowResVec           = globalResMultiVector->subsetVectorForVariable( flowVariable );
     auto globalThermalSolVec  = globalSolMultiVector->subsetVectorForVariable( thermalVariable );
     auto globalThermalRhsVec  = globalRhsMultiVector->subsetVectorForVariable( thermalVariable );
-    // auto globalThermalResVec  = globalResMultiVector->subsetVectorForVariable( thermalVariable );
+    auto globalThermalResVec  = globalResMultiVector->subsetVectorForVariable( thermalVariable );
 
     // create nonlinear solver
-#if 0
     std::shared_ptr<AMP::Solver::SolverStrategy> nonlinearSolver;
     { // Limit the scope so we can add an if else statement for Petsc vs NOX
 
@@ -578,7 +577,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearSolverParams->d_comm          = globalComm;
         nonlinearSolverParams->d_pOperator     = nonlinearCoupledOperator;
         nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
-        nonlinearSolver.reset( new AMP::Solver::PetscSNESSolver( nonlinearSolverParams ) );
+        nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
         // create linear solver
         auto linearSolver =
@@ -590,7 +589,6 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess( false );
-#endif
 
     // Initialize the pin temperatures
     PROFILE_START( "Initialize" );
@@ -711,8 +709,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
               << std::endl;
     AMP::pout << "Initial flow residual norm: " << std::setprecision( 13 ) << flowResNorm
               << std::endl;
-    //    nonlinearSolver->solve(globalRhsMultiVector, globalSolMultiVector);
-    nonlinearCoupledOperator->apply(
+    nonlinearSolver->solve( globalRhsMultiVector, globalSolMultiVector );
+    nonlinearCoupledOperator->residual(
         globalRhsMultiVector, globalSolMultiVector, globalResMultiVector );
     AMP::pout << "Final residual norm: " << std::setprecision( 13 )
               << globalResMultiVector->L2Norm() << std::endl;
@@ -804,8 +802,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         subchannelToPointMapParams->x.size(), subchannelDensityToPointMap.getOutputVariable() );
     auto temperatureMapVec = AMP::LinearAlgebra::SimpleVector<double>::create(
         subchannelToPointMapParams->x.size(), subchannelTemperatureToPointMap.getOutputVariable() );
-    subchannelDensityToPointMap.apply( nullVec, flowSolVec, densityMapVec );
-    subchannelTemperatureToPointMap.apply( nullVec, flowSolVec, temperatureMapVec );
+    subchannelDensityToPointMap.residual( nullVec, flowSolVec, densityMapVec );
+    subchannelTemperatureToPointMap.residual( nullVec, flowSolVec, temperatureMapVec );
     if ( subchannelMesh != nullptr ) {
         auto face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
         std::vector<size_t> dofs;
@@ -865,6 +863,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     siloWriter->writeFile( exeName, 0 );
 #endif
     ut->passes( "test runs to completion" );
+#else
+    ut->expected_failure( "Solve disabled because it does not converge (requires debugging)" );
 #endif
     globalComm.barrier();
     PROFILE_STOP( "Main" );
