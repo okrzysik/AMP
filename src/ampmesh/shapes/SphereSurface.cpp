@@ -22,7 +22,7 @@ SphereSurface::SphereSurface( std::shared_ptr<AMP::Database> db )
     AMP_INSIST( range.size() == 1u, "Range must be an array of length 1" );
     d_r = range[0];
 }
-SphereSurface::SphereSurface( double r ) : Geometry(), d_r( r )
+SphereSurface::SphereSurface( double r ) : LogicalGeometry(), d_r( r )
 {
     d_physicalDim = 3;
     d_logicalDim  = 2;

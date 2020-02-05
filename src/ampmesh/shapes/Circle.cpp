@@ -21,7 +21,7 @@ Circle::Circle( std::shared_ptr<AMP::Database> db )
     AMP_INSIST( range.size() == 1u, "Range must be an array of length 1" );
     d_R = range[0];
 }
-Circle::Circle( double R ) : Geometry(), d_R( R )
+Circle::Circle( double R ) : LogicalGeometry(), d_R( R )
 {
     d_physicalDim = 2;
     d_logicalDim  = 2;

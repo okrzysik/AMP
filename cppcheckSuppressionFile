@@ -66,6 +66,7 @@ oppositeInnerCondition:*/src/ampmesh/loadBalance/loadBalanceSimulator.cc
 *:*/ampmesh/hex8_element_t.cc
 duplicateAssignExpression:*/src/ampmesh/testHelpers/meshTests.cc
 useInitializationList:*/ampmesh/structured/BoxMesh.cc
+useInitializationList:*/ampmesh/structured/StructuredGeometryMesh.cc
 
 
 // Suppress warnings for discretization

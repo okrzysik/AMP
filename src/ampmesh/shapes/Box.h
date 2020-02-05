@@ -1,7 +1,7 @@
 #ifndef included_AMP_Geometry_Box
 #define included_AMP_Geometry_Box
 
-#include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/LogicalGeometry.h"
 
 #include <vector>
 
@@ -16,7 +16,7 @@ namespace Geometry {
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
 template<std::size_t NDIM>
-class Box final : public Geometry
+class Box final : public LogicalGeometry
 {
 public:
     /**
@@ -71,7 +71,7 @@ private:
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
 template<std::size_t NDIM>
-class Grid final : public Geometry
+class Grid final : public LogicalGeometry
 {
 public:
     /**

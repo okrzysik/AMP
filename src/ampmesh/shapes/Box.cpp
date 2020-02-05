@@ -30,7 +30,7 @@ Box<NDIM>::Box( std::shared_ptr<AMP::Database> db )
         d_range[i] = range[i];
 }
 template<std::size_t NDIM>
-Box<NDIM>::Box( const std::vector<double> &range ) : Geometry()
+Box<NDIM>::Box( const std::vector<double> &range ) : LogicalGeometry()
 {
     d_physicalDim = NDIM;
     d_logicalDim  = NDIM;
@@ -43,7 +43,7 @@ Box<NDIM>::Box( const std::vector<double> &range ) : Geometry()
         d_range[i] = range[i];
 }
 template<std::size_t NDIM>
-Grid<NDIM>::Grid( std::shared_ptr<AMP::Database> db ) : Geometry()
+Grid<NDIM>::Grid( std::shared_ptr<AMP::Database> db ) : LogicalGeometry()
 {
     d_physicalDim = NDIM;
     d_logicalDim  = NDIM;
@@ -62,7 +62,7 @@ Grid<NDIM>::Grid( std::shared_ptr<AMP::Database> db ) : Geometry()
     }
 }
 template<std::size_t NDIM>
-Grid<NDIM>::Grid( const std::vector<std::vector<double>> &coord ) : Geometry()
+Grid<NDIM>::Grid( const std::vector<std::vector<double>> &coord ) : LogicalGeometry()
 {
     d_physicalDim = NDIM;
     d_logicalDim  = NDIM;

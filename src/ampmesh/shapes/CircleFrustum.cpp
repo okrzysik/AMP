@@ -44,7 +44,7 @@ CircleFrustum::CircleFrustum( std::shared_ptr<AMP::Database> db ) : d_offset{ 0,
     d_theta        = atan( d_r[0] / h2 );
 }
 CircleFrustum::CircleFrustum( const std::array<double, 2> &r, int dir, double height )
-    : Geometry(), d_dir( dir ), d_r{ r[0], r[1] }, d_h( height ), d_offset{ 0, 0, 0 }
+    : LogicalGeometry(), d_dir( dir ), d_r{ r[0], r[1] }, d_h( height ), d_offset{ 0, 0, 0 }
 {
     d_physicalDim = 3;
     d_logicalDim  = 3;

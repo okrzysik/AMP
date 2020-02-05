@@ -28,7 +28,7 @@ Tube::Tube( std::shared_ptr<AMP::Database> db )
     d_z_max = range[3];
 }
 Tube::Tube( double r_min, double r_max, double z_min, double z_max )
-    : Geometry(), d_r_min( r_min ), d_r_max( r_max ), d_z_min( z_min ), d_z_max( z_max )
+    : LogicalGeometry(), d_r_min( r_min ), d_r_max( r_max ), d_z_min( z_min ), d_z_max( z_max )
 {
     d_physicalDim = 3;
     d_logicalDim  = 3;

@@ -12,7 +12,6 @@ MultiGeometry::MultiGeometry( const std::vector<Geometry::shared_ptr> &geom )
     d_physicalDim = 0;
     for ( const auto &geom : d_geom )
         d_physicalDim = std::max( d_physicalDim, geom->getDim() );
-    d_logicalDim = 0;
 }
 double MultiGeometry::distance( const Point &pos, const Point &dir ) const
 {
@@ -53,16 +52,6 @@ Point MultiGeometry::surfaceNorm( const Point & ) const
     AMP_ERROR( "surfaceNorm is not valid for MultiGeometry" );
     return Point();
 }
-Point MultiGeometry::logical( const Point & ) const
-{
-    AMP_ERROR( "Converting to logical coordinates is not valid for MultiGeometry" );
-    return Point();
-}
-Point MultiGeometry::physical( const Point & ) const
-{
-    AMP_ERROR( "Converting to physical coordinates is not valid for MultiGeometry" );
-    return Point();
-}
 Point MultiGeometry::centroid() const
 {
     auto range = box();
@@ -89,18 +78,6 @@ std::pair<Point, Point> MultiGeometry::box() const
     range.first.setNdim( d_physicalDim );
     range.second.setNdim( d_physicalDim );
     return range;
-}
-std::vector<int> MultiGeometry::getLogicalGridSize( const std::vector<int> & ) const
-{
-    throw std::logic_error( "MultiMesh is not a logical mesh" );
-}
-std::vector<bool> MultiGeometry::getPeriodicDim() const
-{
-    throw std::logic_error( "MultiMesh is not a logical mesh" );
-}
-std::vector<int> MultiGeometry::getLogicalSurfaceIds() const
-{
-    throw std::logic_error( "MultiMesh is not a logical mesh" );
 }
 void MultiGeometry::displaceMesh( const double *x )
 {

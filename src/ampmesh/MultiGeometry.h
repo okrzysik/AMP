@@ -1,7 +1,7 @@
 #ifndef included_AMP_MultiGeometry
 #define included_AMP_MultiGeometry
 
-#include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/LogicalGeometry.h"
 
 
 namespace AMP {
@@ -43,14 +43,9 @@ public: // Functions inherited from Geometry
     virtual int NSurface() const override final;
     virtual int surface( const Point &x ) const override final;
     virtual Point surfaceNorm( const Point &x ) const override final;
-    virtual Point logical( const Point &x ) const override final;
-    virtual Point physical( const Point &x ) const override final;
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
     virtual void displaceMesh( const double *x ) override final;
-    virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
-    virtual std::vector<bool> getPeriodicDim() const override final;
-    virtual std::vector<int> getLogicalSurfaceIds() const override final;
     virtual std::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 private:

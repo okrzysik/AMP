@@ -25,7 +25,7 @@ Cylinder::Cylinder( std::shared_ptr<AMP::Database> db )
     d_z_max = range[2];
 }
 Cylinder::Cylinder( double r, double z_min, double z_max )
-    : Geometry(), d_r( r ), d_z_min( z_min ), d_z_max( z_max )
+    : LogicalGeometry(), d_r( r ), d_z_min( z_min ), d_z_max( z_max )
 {
     d_physicalDim = 3;
     d_logicalDim  = 3;

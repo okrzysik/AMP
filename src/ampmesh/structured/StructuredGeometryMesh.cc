@@ -20,19 +20,21 @@ StructuredGeometryMesh::StructuredGeometryMesh( MeshParameters::shared_ptr param
     AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ), "Communicator must be set" );
     AMP_INSIST( d_db.get(), "Database must exist" );
     // Construct the geometry
-    d_geometry = AMP::Geometry::Geometry::buildGeometry( d_db );
+    d_geometry  = AMP::Geometry::Geometry::buildGeometry( d_db );
+    d_geometry2 = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( d_geometry );
+    AMP_ASSERT( d_geometry2 );
     // Fill basic mesh information
-    PhysicalDim = d_geometry->getDim();
-    GeomDim     = static_cast<AMP::Mesh::GeomType>( d_geometry->getLogicalDim() );
+    PhysicalDim = d_geometry2->getDim();
+    GeomDim     = static_cast<AMP::Mesh::GeomType>( d_geometry2->getLogicalDim() );
     d_max_gcw   = d_db->getWithDefault( "GCW", 2 );
     AMP_ASSERT( PhysicalDim == d_db->getWithDefault( "dim", PhysicalDim ) );
-    auto size = d_geometry->getLogicalGridSize( d_db->getVector<int>( "Size" ) );
+    auto size = d_geometry2->getLogicalGridSize( d_db->getVector<int>( "Size" ) );
     for ( size_t d = 0; d < size.size(); d++ )
         d_globalSize[d] = size[d];
-    auto isPeriodic = d_geometry->getPeriodicDim();
+    auto isPeriodic = d_geometry2->getPeriodicDim();
     for ( size_t d = 0; d < isPeriodic.size(); d++ )
         d_isPeriodic[d] = isPeriodic[d];
-    auto surfaceIds = d_geometry->getLogicalSurfaceIds();
+    auto surfaceIds = d_geometry2->getLogicalSurfaceIds();
     for ( size_t d = 0; d < surfaceIds.size(); d++ )
         d_surfaceId[d] = surfaceIds[d];
     // Initialize the logical mesh
@@ -54,6 +56,7 @@ StructuredGeometryMesh::StructuredGeometryMesh( const StructuredGeometryMesh &me
     d_blockSize  = mesh.d_blockSize;
     d_numBlocks  = mesh.d_numBlocks;
     d_surfaceId  = mesh.d_surfaceId;
+    d_geometry2  = mesh.d_geometry2;
     for ( int d = 0; d < 4; d++ ) {
         for ( int i = 0; i < 6; i++ )
             d_globalSurfaceList[i][d] = mesh.d_globalSurfaceList[i][d];
@@ -72,7 +75,7 @@ void StructuredGeometryMesh::displaceMesh( const std::vector<double> &x )
         d_box_local[2 * i + 0] += x[i];
         d_box_local[2 * i + 1] += x[i];
     }
-    d_geometry->displaceMesh( x.data() );
+    d_geometry2->displaceMesh( x.data() );
 }
 void StructuredGeometryMesh::displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> )
 {
@@ -81,7 +84,7 @@ void StructuredGeometryMesh::displaceMesh( std::shared_ptr<const AMP::LinearAlge
 AMP::Geometry::Point
 StructuredGeometryMesh::physicalToLogical( const AMP::Geometry::Point &x ) const
 {
-    return d_geometry->logical( x );
+    return d_geometry2->logical( x );
 }
 void StructuredGeometryMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
@@ -89,7 +92,7 @@ void StructuredGeometryMesh::coord( const MeshElementIndex &index, double *pos )
     double x = static_cast<double>( index.index( 0 ) ) / static_cast<double>( d_globalSize[0] );
     double y = static_cast<double>( index.index( 1 ) ) / static_cast<double>( d_globalSize[1] );
     double z = static_cast<double>( index.index( 2 ) ) / static_cast<double>( d_globalSize[2] );
-    auto tmp = d_geometry->physical( AMP::Geometry::Point( x, y, z ) );
+    auto tmp = d_geometry2->physical( AMP::Geometry::Point( x, y, z ) );
     for ( int d = 0; d < PhysicalDim; d++ )
         pos[d] = tmp[d];
 }

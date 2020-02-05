@@ -50,9 +50,10 @@ size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 }
 std::vector<size_t> BoxMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
-    auto db   = params->getDatabase();
-    auto geom = AMP::Geometry::Geometry::buildGeometry( db );
-    auto size = geom->getLogicalGridSize( db->getVector<int>( "Size" ) );
+    auto db    = params->getDatabase();
+    auto geom  = AMP::Geometry::Geometry::buildGeometry( db );
+    auto geom2 = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( geom );
+    auto size  = geom2->getLogicalGridSize( db->getVector<int>( "Size" ) );
     std::vector<size_t> N( size.size() );
     for ( size_t i = 0; i < N.size(); i++ )
         N[i] = size[i];

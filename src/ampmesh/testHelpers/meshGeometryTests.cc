@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/LogicalGeometry.h"
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/testHelpers/geometryTests.h"
 #include "AMP/ampmesh/testHelpers/meshTests.h"
@@ -72,7 +73,7 @@ void meshTests::TestPhysicalLogical( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_s
         return;
     }
     // Get the geometry
-    auto geom = mesh->getGeometry();
+    auto geom = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( mesh->getGeometry() );
     if ( !geom )
         return;
     // Check the transformation of all points in the mesh

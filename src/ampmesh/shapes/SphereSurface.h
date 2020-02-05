@@ -1,7 +1,7 @@
 #ifndef included_AMP_Geometry_SphereSurface
 #define included_AMP_Geometry_SphereSurface
 
-#include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/LogicalGeometry.h"
 
 #include <vector>
 
@@ -15,7 +15,7 @@ namespace Geometry {
  * \brief A class used to abstract away geometry information from an application or mesh.
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
-class SphereSurface : public Geometry
+class SphereSurface : public LogicalGeometry
 {
 public:
     /**

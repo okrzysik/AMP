@@ -1,7 +1,7 @@
 #ifndef included_AMP_Geometry_CircleFrustum
 #define included_AMP_Geometry_CircleFrustum
 
-#include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/LogicalGeometry.h"
 
 #include <array>
 #include <vector>
@@ -16,7 +16,7 @@ namespace Geometry {
  * \brief A geometry for a square frustum
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
-class CircleFrustum : public Geometry
+class CircleFrustum : public LogicalGeometry
 {
 public:
     /**
