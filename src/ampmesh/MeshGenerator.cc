@@ -4,7 +4,7 @@
 
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
-#include "AMP/ampmesh/triangle/TriangleMesh.h"
+#include "AMP/ampmesh/triangle/TriangleHelpers.h"
 #ifdef USE_TRILINOS_STKCLASSIC
 //#include "AMP/ampmesh/STKmesh/STKMesh.h"
 #endif
@@ -44,9 +44,10 @@ std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
     } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
         auto filename = database->getWithDefault<std::string>( "FileName", "" );
-        if ( filename.substr( std::max<int>( filename.length(), 4 ) - 4 ) == ".stl" ) {
+        auto suffix   = Utilities::getSuffix( filename );
+        if ( suffix == "stl" ) {
             // We are reading an stl file
-            mesh = AMP::Mesh::TriangleMesh<2, 3>::generate( params );
+            mesh = AMP::Mesh::TriangleHelpers::generateSTL( params );
         } else {
             mesh = AMP::Mesh::BoxMesh::generate( params );
         }
@@ -114,9 +115,10 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
         auto filename = database->getWithDefault<std::string>( "FileName", "" );
-        if ( filename.substr( std::max<int>( filename.length(), 4 ) - 4 ) == ".stl" ) {
+        auto suffix   = Utilities::getSuffix( filename );
+        if ( suffix == "stl" ) {
             // We are reading an stl file
-            meshSize = AMP::Mesh::TriangleMesh<2, 3>::estimateMeshSize( params );
+            meshSize = AMP::Mesh::TriangleHelpers::readSTLHeader( filename );
         } else {
             meshSize = AMP::Mesh::BoxMesh::estimateMeshSize( params );
         }

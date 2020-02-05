@@ -321,11 +321,7 @@ public: // Default constructors
     MultiMesh &operator=( MultiMesh &&rhs ) = default;
     MultiMesh &operator=( const MultiMesh &rhs ) = delete;
 
-private:
-    //! Function to create the databases for the meshes within the multimesh
-    static std::vector<std::shared_ptr<AMP::Database>>
-    createDatabases( std::shared_ptr<AMP::Database> database );
-
+public: // Functions to help with load balancing
     //! A convienence typedef to hold a list of ranks
     typedef std::vector<int> rank_list;
 
@@ -356,9 +352,17 @@ private:
     /**
      * \brief    A function to compute the AMP_MPI comms for each mesh
      * \details  This function computes the AMP_MPI comms for each mesh given the comm groups
+     * \param comm     Parent communicator
      * \param groups   List of ranks for each communication group
      */
-    std::vector<AMP_MPI> createComms( const std::vector<rank_list> &groups );
+    static std::vector<AMP_MPI> createComms( const AMP_MPI &comm,
+                                             const std::vector<rank_list> &groups );
+
+
+private:
+    //! Function to create the databases for the meshes within the multimesh
+    static std::vector<std::shared_ptr<AMP::Database>>
+    createDatabases( std::shared_ptr<AMP::Database> database );
 
     // Structure used to create communication groups
     struct comm_groups {

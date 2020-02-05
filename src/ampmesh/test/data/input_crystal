@@ -1,0 +1,11 @@
+Mesh{
+    MeshName = "crystal"
+    MeshType = "AMP"
+    FileName = "CRYSTAL_FINAL_2mm.STL"
+    dim = 3
+    scale = 1
+    x_offset = 0
+    y_offset = 0
+    z_offset = 0
+}
+
