@@ -63,7 +63,7 @@ void MovableBoxMesh::displaceMesh( const std::vector<double> &x )
         d_box_local[2 * i + 1] += x[i];
     }
     if ( d_geometry != nullptr )
-        d_geometry->displaceMesh( x.data() );
+        d_geometry->displace( x.data() );
 }
 #ifdef USE_AMP_VECTORS
 void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
@@ -131,9 +131,9 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
 /****************************************************************
  * Copy the mesh                                                 *
  ****************************************************************/
-std::shared_ptr<Mesh> MovableBoxMesh::clone() const
+std::unique_ptr<Mesh> MovableBoxMesh::clone() const
 {
-    return std::make_shared<MovableBoxMesh>( *this );
+    return std::make_unique<MovableBoxMesh>( *this );
 }
 
 

@@ -79,17 +79,17 @@ std::pair<Point, Point> MultiGeometry::box() const
     range.second.setNdim( d_physicalDim );
     return range;
 }
-void MultiGeometry::displaceMesh( const double *x )
+void MultiGeometry::displace( const double *x )
 {
     for ( const auto &geom : d_geom )
-        geom->displaceMesh( x );
+        geom->displace( x );
 }
-std::shared_ptr<AMP::Geometry::Geometry> MultiGeometry::clone() const
+std::unique_ptr<AMP::Geometry::Geometry> MultiGeometry::clone() const
 {
     std::vector<Geometry::shared_ptr> geom2;
     for ( const auto &geom : d_geom )
         geom2.push_back( geom->clone() );
-    return std::make_shared<MultiGeometry>( geom2 );
+    return std::make_unique<MultiGeometry>( geom2 );
 }
 
 

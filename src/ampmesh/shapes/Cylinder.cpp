@@ -161,7 +161,7 @@ std::vector<int> Cylinder::getLogicalSurfaceIds() const { return { 4, 4, 4, 4, 2
 /********************************************************
  * Displace the mesh                                     *
  ********************************************************/
-void Cylinder::displaceMesh( const double *x )
+void Cylinder::displace( const double *x )
 {
     d_offset[0] += x[0];
     d_offset[1] += x[1];
@@ -172,9 +172,9 @@ void Cylinder::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-std::shared_ptr<AMP::Geometry::Geometry> Cylinder::clone() const
+std::unique_ptr<AMP::Geometry::Geometry> Cylinder::clone() const
 {
-    return std::make_shared<Cylinder>( *this );
+    return std::make_unique<Cylinder>( *this );
 }
 
 

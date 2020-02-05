@@ -204,7 +204,7 @@ std::vector<int> Tube::getLogicalSurfaceIds() const { return { 8, 4, -1, -1, 2, 
 /********************************************************
  * Displace the mesh                                     *
  ********************************************************/
-void Tube::displaceMesh( const double *x )
+void Tube::displace( const double *x )
 {
     d_offset[0] += x[0];
     d_offset[1] += x[1];
@@ -215,9 +215,9 @@ void Tube::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-std::shared_ptr<AMP::Geometry::Geometry> Tube::clone() const
+std::unique_ptr<AMP::Geometry::Geometry> Tube::clone() const
 {
-    return std::make_shared<Tube>( *this );
+    return std::make_unique<Tube>( *this );
 }
 
 

@@ -444,7 +444,7 @@ std::vector<int> Grid<NDIM>::getLogicalSurfaceIds() const
  * Displace the mesh                                     *
  ********************************************************/
 template<std::size_t NDIM>
-void Box<NDIM>::displaceMesh( const double *x )
+void Box<NDIM>::displace( const double *x )
 {
     for ( size_t d = 0; d < NDIM; d++ ) {
         d_range[2 * d + 0] += x[d];
@@ -452,7 +452,7 @@ void Box<NDIM>::displaceMesh( const double *x )
     }
 }
 template<std::size_t NDIM>
-void Grid<NDIM>::displaceMesh( const double *x )
+void Grid<NDIM>::displace( const double *x )
 {
     for ( size_t d = 0; d < NDIM; d++ ) {
         d_range[2 * d + 0] += x[d];
@@ -467,14 +467,14 @@ void Grid<NDIM>::displaceMesh( const double *x )
  * Clone the object                                      *
  ********************************************************/
 template<std::size_t NDIM>
-std::shared_ptr<AMP::Geometry::Geometry> Box<NDIM>::clone() const
+std::unique_ptr<AMP::Geometry::Geometry> Box<NDIM>::clone() const
 {
-    return std::make_shared<Box<NDIM>>( *this );
+    return std::make_unique<Box<NDIM>>( *this );
 }
 template<std::size_t NDIM>
-std::shared_ptr<AMP::Geometry::Geometry> Grid<NDIM>::clone() const
+std::unique_ptr<AMP::Geometry::Geometry> Grid<NDIM>::clone() const
 {
-    return std::make_shared<Grid<NDIM>>( *this );
+    return std::make_unique<Grid<NDIM>>( *this );
 }
 
 

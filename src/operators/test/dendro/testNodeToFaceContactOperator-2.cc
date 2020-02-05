@@ -1,23 +1,9 @@
-
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/euclidean_geometry_tools.h"
+#include "AMP/ampmesh/latex_visualization_tools.h"
+#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/vectors/Variable.h"
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorBuilder.h"
-
-#include "externVars.h"
-
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libmeshMesh.h"
-#include "AMP/utils/Writer.h"
-
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/CustomConstraintsEliminationOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -30,29 +16,34 @@
 #include "AMP/operators/mechanics/MechanicsMaterialModel.h"
 #include "AMP/operators/mechanics/MechanicsModelParameters.h"
 #include "AMP/operators/petsc/PetscMatrixShellOperator.h"
-
 #include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/ConstraintsEliminationSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
-
-
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Writer.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
 
-#include "AMP/ampmesh/euclidean_geometry_tools.h"
-#include "AMP/ampmesh/latex_visualization_tools.h"
-#include <fstream>
-
+#include "externVars.h"
 #include "testNodeToGeomType::FaceContactOperator.h"
+
+#include <fstream>
 
 
 static void selectNodes( AMP::Mesh::Mesh::shared_ptr mesh,
                          std::vector<AMP::Mesh::MeshElementID> &nodesGlobalIDs )
 {
-    AMP::Mesh::MeshIterator meshIterator =
-        mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 3 );
-    AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
-    AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
+    auto meshIterator       = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4 );
+    auto meshIterator_begin = meshIterator.begin();
+    auto meshIterator_end   = meshIterator.end();
     nodesGlobalIDs.clear();
     for ( meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator ) {
         auto coord = meshIterator->coord();
@@ -69,7 +60,7 @@ static void printNodesValues( AMP::Mesh::Mesh::shared_ptr mesh,
                               AMP::LinearAlgebra::Vector::shared_ptr vectorField,
                               std::ostream &os = std::cout )
 {
-    AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
+    auto dofManager = vectorField1->getDOFManager();
     for ( size_t i = 0; i < nodesGlobalIDs.size(); ++i ) {
         auto coord = mesh->getElement( nodesGlobalIDs[i] ).coord();
         std::vector<size_t> dofIndices;

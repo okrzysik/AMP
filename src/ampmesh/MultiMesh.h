@@ -55,7 +55,7 @@ public:
     virtual ~MultiMesh();
 
     //! Function to clone the mesh (allows use to properly copy the derived class)
-    virtual std::shared_ptr<Mesh> clone() const override;
+    virtual std::unique_ptr<Mesh> clone() const override;
 
     /**
      * \brief   Estimate the number of elements in the mesh

@@ -121,7 +121,7 @@ std::vector<int> Circle::getLogicalSurfaceIds() const { return { 1, 1, 1, 1 }; }
 /********************************************************
  * Displace the mesh                                     *
  ********************************************************/
-void Circle::displaceMesh( const double *x )
+void Circle::displace( const double *x )
 {
     d_offset[0] += x[0];
     d_offset[1] += x[1];
@@ -131,9 +131,9 @@ void Circle::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-std::shared_ptr<AMP::Geometry::Geometry> Circle::clone() const
+std::unique_ptr<AMP::Geometry::Geometry> Circle::clone() const
 {
-    return std::make_shared<Circle>( *this );
+    return std::make_unique<Circle>( *this );
 }
 
 

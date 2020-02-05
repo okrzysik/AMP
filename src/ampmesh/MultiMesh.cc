@@ -305,7 +305,7 @@ MultiMesh::~MultiMesh() = default;
 /********************************************************
  * Function to copy the mesh                             *
  ********************************************************/
-std::shared_ptr<Mesh> MultiMesh::clone() const { return std::make_shared<MultiMesh>( *this ); }
+std::unique_ptr<Mesh> MultiMesh::clone() const { return std::make_unique<MultiMesh>( *this ); }
 
 
 /********************************************************

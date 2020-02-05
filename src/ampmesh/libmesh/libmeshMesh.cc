@@ -168,10 +168,7 @@ libmeshMesh::~libmeshMesh()
 /********************************************************
  * Function to copy the mesh                             *
  ********************************************************/
-std::shared_ptr<Mesh> libmeshMesh::clone() const
-{
-    return std::shared_ptr<Mesh>( new libmeshMesh( *this ) );
-}
+std::unique_ptr<Mesh> libmeshMesh::clone() const { return std::make_unique<libmeshMesh>( *this ); }
 
 
 /********************************************************

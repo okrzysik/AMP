@@ -277,7 +277,7 @@ std::vector<int> SquareFrustum::getLogicalSurfaceIds() const { return { 1, 2, 3,
 /********************************************************
  * Displace the mesh                                     *
  ********************************************************/
-void SquareFrustum::displaceMesh( const double *x )
+void SquareFrustum::displace( const double *x )
 {
     d_range[0] += x[0];
     d_range[1] += x[0];
@@ -298,9 +298,9 @@ void SquareFrustum::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-std::shared_ptr<AMP::Geometry::Geometry> SquareFrustum::clone() const
+std::unique_ptr<AMP::Geometry::Geometry> SquareFrustum::clone() const
 {
-    return std::make_shared<SquareFrustum>( *this );
+    return std::make_unique<SquareFrustum>( *this );
 }
 
 

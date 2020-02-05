@@ -75,7 +75,7 @@ void StructuredGeometryMesh::displaceMesh( const std::vector<double> &x )
         d_box_local[2 * i + 0] += x[i];
         d_box_local[2 * i + 1] += x[i];
     }
-    d_geometry2->displaceMesh( x.data() );
+    d_geometry2->displace( x.data() );
 }
 void StructuredGeometryMesh::displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> )
 {
@@ -96,9 +96,9 @@ void StructuredGeometryMesh::coord( const MeshElementIndex &index, double *pos )
     for ( int d = 0; d < PhysicalDim; d++ )
         pos[d] = tmp[d];
 }
-std::shared_ptr<Mesh> StructuredGeometryMesh::clone() const
+std::unique_ptr<Mesh> StructuredGeometryMesh::clone() const
 {
-    return std::make_shared<StructuredGeometryMesh>( *this );
+    return std::make_unique<StructuredGeometryMesh>( *this );
 }
 
 

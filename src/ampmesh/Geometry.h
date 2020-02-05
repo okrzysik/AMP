@@ -116,10 +116,10 @@ public:
      *   The displacement vector should be the size of the physical dimension.
      * \param[int] x    Displacement vector
      */
-    virtual void displaceMesh( const double *x ) = 0;
+    virtual void displace( const double *x ) = 0;
 
     //! Clone the object
-    virtual std::shared_ptr<AMP::Geometry::Geometry> clone() const = 0;
+    virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const = 0;
 
 public:
     /**

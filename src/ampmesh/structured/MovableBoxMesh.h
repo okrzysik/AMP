@@ -58,7 +58,7 @@ public:
 #endif
 
     //! Virtual function to copy the mesh (allows us to properly copy the derived class)
-    virtual std::shared_ptr<Mesh> clone() const override;
+    virtual std::unique_ptr<Mesh> clone() const override;
 
     /**
      * \brief    Return a mesh element's coordinates given it's id.

@@ -686,9 +686,9 @@ TriangleMesh<NG, NP>::TriangleMesh( const TriangleMesh &rhs )
     }
 }
 template<size_t NG, size_t NP>
-std::shared_ptr<Mesh> TriangleMesh<NG, NP>::clone() const
+std::unique_ptr<Mesh> TriangleMesh<NG, NP>::clone() const
 {
-    return std::shared_ptr<TriangleMesh<NG, NP>>( new TriangleMesh<NG, NP>( *this ) );
+    return std::unique_ptr<TriangleMesh<NG, NP>>( new TriangleMesh<NG, NP>( *this ) );
 }
 
 
