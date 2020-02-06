@@ -83,9 +83,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
     // Create the directory (if needed)
     createDirectories( fname_in );
     // Create the file name
-    std::stringstream tmp;
-    tmp << fname_in << "_" << cycle << "." << getExtension();
-    std::string fname = tmp.str();
+    std::string fname = fname_in + "_" + std::to_string( cycle ) + "." + getExtension();
     // Check that the dimension is matched across all processors
     PROFILE_START( "sync dim", 1 );
     int dim2 = d_comm.maxReduce( d_dim );
@@ -136,10 +134,8 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
         if ( d_comm.getRank() == 0 )
             Utilities::recursiveMkdir( fname_in + "_silo", ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
         d_comm.barrier();
-        std::stringstream tmp2;
-        tmp2 << fname_in << "_silo/" << cycle << "." << d_comm.getRank() + 1 << "."
-             << getExtension();
-        auto fname_rank    = tmp2.str();
+        auto fname_rank = fname_in + "_silo/" + std::to_string( cycle ) + "." +
+                          std::to_string( d_comm.getRank() + 1 ) + "." + getExtension();
         DBfile *FileHandle = DBCreate( fname_rank.c_str(), DB_CLOBBER, DB_LOCAL, nullptr, DB_HDF5 );
         // Write the base meshes
         for ( auto &baseMesh : d_baseMeshes ) {
@@ -183,15 +179,12 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
     if ( multimesh.get() == nullptr ) {
         // We are dealing with a single mesh
         siloBaseMeshData data;
-        data.id   = mesh->meshID();
-        data.mesh = mesh;
-        data.rank = mesh->getComm().getRank() + 1;
-        std::stringstream stream;
-        stream << data.rank;
-        std::string rank = stream.str();
-        data.ownerRank   = d_comm.getRank();
-        data.meshName    = "rank_" + rank;
-        data.path        = path + mesh->getName() + "_/";
+        data.id        = mesh->meshID();
+        data.mesh      = mesh;
+        data.rank      = mesh->getComm().getRank() + 1;
+        data.ownerRank = d_comm.getRank();
+        data.meshName  = "rank_" + std::to_string( data.rank );
+        data.path      = path + mesh->getName() + "_/";
         if ( d_baseMeshes.find( mesh->meshID() ) == d_baseMeshes.end() )
             d_baseMeshes.insert( std::make_pair( mesh->meshID(), data ) );
         // Create and register a multimesh for the current mesh
@@ -212,7 +205,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
             siloMultiMeshData data2;
             data2.id       = AMP::Mesh::MeshID( tmp_id );
             data2.mesh     = mesh;
-            data2.name     = path + mesh->getName() + "_/rank_" + rank;
+            data2.name     = path + mesh->getName() + "_/rank_" + std::to_string( data.rank );
             data.ownerRank = d_comm.getRank();
             d_multiMeshes.insert( std::make_pair( data2.id, data2 ) );
         }
@@ -422,11 +415,8 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     PROFILE_STOP( "writeMesh - directory", 2 );
     // Write the elements (connectivity)
     PROFILE_START( "writeMesh - elements", 2 );
-    std::stringstream stream;
-    stream << data.rank;
-    std::string rank      = stream.str();
     std::string meshName  = data.meshName;
-    std::string zoneName  = "zone_" + rank;
+    std::string zoneName  = "zone_" + std::to_string( data.rank );
     auto element_iterator = mesh->getIterator( mesh->getGeomType(), 0 );
     auto num_elems        = (int) element_iterator.size();
     DBPutZonelist2( FileHandle,
@@ -513,7 +503,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
             // We are storing edge or face data
             AMP_ERROR( "The silo writer currently only supports GeomType::Vertex and Cell data" );
         }
-        std::string varNameRank = data.varName[i] + "P" + rank;
+        std::string varNameRank = data.varName[i] + "P" + std::to_string( data.rank );
         if ( data.varSize[i] == 1 || data.varSize[i] == d_dim ||
              data.varSize[i] == d_dim * d_dim ) {
             // We are writing a scalar, vector, or tensor variable
@@ -532,10 +522,9 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
         } else {
             // Write each component
             for ( int j = 0; j < data.varSize[i]; ++j ) {
-                std::stringstream sstream;
-                stream << varNameRank << "_" << j;
+                auto vname = varNameRank + "_" + std::to_string( j );
                 DBPutUcdvar( FileHandle,
-                             sstream.str().c_str(),
+                             vname.c_str(),
                              meshName.c_str(),
                              1,
                              (char **) varnames,
@@ -858,11 +847,9 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
                 auto varnames = new char *[N];
                 auto vartypes = new int[N];
                 for ( size_t i = 0; i < N; ++i ) {
-                    std::stringstream stream;
-                    stream << data.meshes[i].rank;
-                    auto file = getFile( data.meshes[i].file, base_path );
-                    varNames[i] =
-                        file + ":" + data.meshes[i].path + "/" + varName + "P" + stream.str();
+                    std::string rankStr = std::to_string( data.meshes[i].rank );
+                    auto file           = getFile( data.meshes[i].file, base_path );
+                    varNames[i] = file + ":" + data.meshes[i].path + "/" + varName + "P" + rankStr;
                     strrep( varNames[i], "//", "/" );
                     varnames[i] = (char *) varNames[i].c_str();
                     vartypes[i] = DB_UCDVAR;
@@ -893,9 +880,7 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
                 } else {
                     // Write each component
                     for ( int j = 0; j < varSize; ++j ) {
-                        std::stringstream stream;
-                        stream << "_" << j;
-                        std::string postfix = stream.str();
+                        std::string postfix = "_" + std::to_string( j );
                         std::vector<std::string> varNames2( data.meshes.size() );
                         for ( size_t k = 0; k < data.meshes.size(); ++k ) {
                             varNames2[k] = varNames[k] + postfix;

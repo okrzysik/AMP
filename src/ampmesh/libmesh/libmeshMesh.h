@@ -68,7 +68,7 @@ public:
     virtual ~libmeshMesh();
 
     //! Function to copy the mesh (allows use to proply copy the derived class)
-    virtual std::shared_ptr<Mesh> clone() const override;
+    virtual std::unique_ptr<Mesh> clone() const override;
 
 
     /**

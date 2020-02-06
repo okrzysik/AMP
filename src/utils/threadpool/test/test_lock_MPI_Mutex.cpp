@@ -60,7 +60,6 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     PROFILE_ENABLE( 2 );
     PROFILE_ENABLE_TRACE();
-    global_profiler.synchronize();
     PROFILE_START( "main" );
 
     {

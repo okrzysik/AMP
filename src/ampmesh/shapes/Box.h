@@ -1,7 +1,7 @@
 #ifndef included_AMP_Geometry_Box
 #define included_AMP_Geometry_Box
 
-#include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/LogicalGeometry.h"
 
 #include <vector>
 
@@ -16,7 +16,7 @@ namespace Geometry {
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
 template<std::size_t NDIM>
-class Box final : public Geometry
+class Box final : public LogicalGeometry
 {
 public:
     /**
@@ -40,6 +40,7 @@ public: // Default constructors
 
 public: // Functions inherited from Geometry
     virtual std::string getName() const override final;
+    virtual bool isConvex() const override final { return true; }
     virtual double distance( const Point &pos, const Point &dir ) const override final;
     virtual bool inside( const Point &pos ) const override final;
     virtual int NSurface() const override final { return 2 * NDIM; }
@@ -49,11 +50,11 @@ public: // Functions inherited from Geometry
     virtual Point physical( const Point &x ) const override final;
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
-    virtual void displaceMesh( const double *x ) override final;
+    virtual void displace( const double *x ) override final;
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<bool> getPeriodicDim() const override final;
     virtual std::vector<int> getLogicalSurfaceIds() const override final;
-    virtual std::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
+    virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data
@@ -71,7 +72,7 @@ private:
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
 template<std::size_t NDIM>
-class Grid final : public Geometry
+class Grid final : public LogicalGeometry
 {
 public:
     /**
@@ -95,6 +96,7 @@ public: // Default constructors
 
 public: // Functions inherited from Geometry
     virtual std::string getName() const override final;
+    virtual bool isConvex() const override final { return true; }
     virtual double distance( const Point &pos, const Point &dir ) const override final;
     virtual bool inside( const Point &pos ) const override final;
     virtual int NSurface() const override final { return 2 * NDIM; }
@@ -104,11 +106,11 @@ public: // Functions inherited from Geometry
     virtual Point physical( const Point &x ) const override final;
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
-    virtual void displaceMesh( const double *x ) override final;
+    virtual void displace( const double *x ) override final;
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<bool> getPeriodicDim() const override final;
     virtual std::vector<int> getLogicalSurfaceIds() const override final;
-    virtual std::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
+    virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data

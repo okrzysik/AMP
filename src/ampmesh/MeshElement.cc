@@ -99,6 +99,12 @@ double MeshElement::volume() const
         AMP_ERROR( "volume is not implimented for the base class (" + elementClass() + ")" );
     return element->volume();
 }
+Point MeshElement::norm() const
+{
+    if ( element == nullptr )
+        AMP_ERROR( "norm is not implimented for the base class (" + elementClass() + ")" );
+    return element->norm();
+}
 bool MeshElement::isOnSurface() const
 {
     if ( element == nullptr )

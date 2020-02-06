@@ -44,7 +44,7 @@ CircleFrustum::CircleFrustum( std::shared_ptr<AMP::Database> db ) : d_offset{ 0,
     d_theta        = atan( d_r[0] / h2 );
 }
 CircleFrustum::CircleFrustum( const std::array<double, 2> &r, int dir, double height )
-    : Geometry(), d_dir( dir ), d_r{ r[0], r[1] }, d_h( height ), d_offset{ 0, 0, 0 }
+    : LogicalGeometry(), d_dir( dir ), d_r{ r[0], r[1] }, d_h( height ), d_offset{ 0, 0, 0 }
 {
     d_physicalDim = 3;
     d_logicalDim  = 3;
@@ -311,7 +311,7 @@ std::vector<int> CircleFrustum::getLogicalSurfaceIds() const { return { 2, 2, 2,
 /********************************************************
  * Displace the mesh                                     *
  ********************************************************/
-void CircleFrustum::displaceMesh( const double *x )
+void CircleFrustum::displace( const double *x )
 {
     d_offset[0] += x[0];
     d_offset[1] += x[1];
@@ -322,9 +322,9 @@ void CircleFrustum::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-std::shared_ptr<AMP::Geometry::Geometry> CircleFrustum::clone() const
+std::unique_ptr<AMP::Geometry::Geometry> CircleFrustum::clone() const
 {
-    return std::make_shared<CircleFrustum>( *this );
+    return std::make_unique<CircleFrustum>( *this );
 }
 
 } // namespace Geometry

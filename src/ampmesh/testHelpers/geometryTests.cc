@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/LogicalGeometry.h"
 #include "AMP/utils/UnitTest.h"
 
 #include <algorithm>
@@ -85,29 +86,30 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
             interiorPoints.push_back( pos );
     }
     // Test logical transformation (if valid)
-    if ( geom.isLogical() ) {
+    auto geom2 = dynamic_cast<const AMP::Geometry::LogicalGeometry *>( &geom );
+    if ( geom2 ) {
         bool pass2 = true;
         for ( const auto &p : surfacePoints ) {
-            auto p2 = geom.logical( p );
-            auto p3 = geom.physical( p2 );
+            auto p2 = geom2->logical( p );
+            auto p3 = geom2->physical( p2 );
             for ( int d = 0; d < ndim; d++ )
                 pass2 = pass2 && fabs( p[d] - p3[d] ) < 1e-6;
         }
         for ( const auto &p : interiorPoints ) {
-            auto p2 = geom.logical( p );
-            auto p3 = geom.physical( p2 );
+            auto p2 = geom2->logical( p );
+            auto p3 = geom2->physical( p2 );
             for ( int d = 0; d < ndim; d++ )
                 pass2 = pass2 && fabs( p[d] - p3[d] ) < 1e-6;
         }
         pass = pass && pass2;
         if ( !pass_inside )
-            ut.failure( "testGeometry physical-logical-physical: " + geom.getName() );
+            ut.failure( "testGeometry physical-logical-physical: " + geom2->getName() );
     }
     // Test getting surface normals
-    if ( geom.isLogical() ) {
+    if ( geom2 ) {
         bool passNorm = true;
         for ( const auto &p : surfacePoints ) {
-            auto norm = geom.surfaceNorm( p );
+            auto norm = geom2->surfaceNorm( p );
             double n  = sqrt( norm.x() * norm.x() + norm.y() * norm.y() + norm.z() * norm.z() );
             // auto p1   = p - 1e-5 * norm;
             // auto p2   = p + 1e-5 * norm;
@@ -116,7 +118,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         }
         pass = pass && passNorm;
         if ( !passNorm )
-            ut.failure( "testGeometry surfaceNorm: " + geom.getName() );
+            ut.failure( "testGeometry surfaceNorm: " + geom2->getName() );
     }
     // Finished with all tests
     if ( pass )

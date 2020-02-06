@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 
-#define __PI__ 3.1415926535897932
+static constexpr double PI = 3.1415926535897932;
 
 int main( int argc, char **argv )
 {
@@ -43,9 +43,9 @@ int main( int argc, char **argv )
     } // end for li
 
     for ( int mi = 0; mi <= me; mi++ ) {
-        mXarr[mi]  = static_cast<double>( mi ) * a / static_cast<double>( me );
-        double th  = ( __PI__ / 2.0 ) - ( static_cast<double>( mi ) * ( __PI__ ) /
-                                         ( 4.0 * static_cast<double>( me ) ) );
+        mXarr[mi] = static_cast<double>( mi ) * a / static_cast<double>( me );
+        double th = ( PI / 2.0 ) -
+                    ( static_cast<double>( mi ) * ( PI ) / ( 4.0 * static_cast<double>( me ) ) );
         rMxArr[mi] = r * cos( th );
         rMzArr[mi] = r * sin( th );
     } // end for mi
@@ -57,7 +57,7 @@ int main( int argc, char **argv )
 
     for ( int pi = 0; pi <= pe; pi++ ) {
         pZarr[pi]  = static_cast<double>( pi ) * b / static_cast<double>( pe );
-        double th  = static_cast<double>( pi ) * ( __PI__ ) / ( 4.0 * static_cast<double>( pe ) );
+        double th  = static_cast<double>( pi ) * ( PI ) / ( 4.0 * static_cast<double>( pe ) );
         rPxArr[pi] = r * cos( th );
         rPzArr[pi] = r * sin( th );
     } // end for pi

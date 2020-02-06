@@ -22,7 +22,7 @@ Sphere::Sphere( std::shared_ptr<AMP::Database> db )
     AMP_INSIST( range.size() == 1u, "Range must be an array of length 1" );
     d_r = range[0];
 }
-Sphere::Sphere( double r ) : Geometry(), d_r( r )
+Sphere::Sphere( double r ) : LogicalGeometry(), d_r( r )
 {
     d_physicalDim = 3;
     d_logicalDim  = 3;
@@ -122,7 +122,7 @@ std::vector<int> Sphere::getLogicalSurfaceIds() const { return { 4, 4, 4, 4, 2, 
 /********************************************************
  * Displace the mesh                                     *
  ********************************************************/
-void Sphere::displaceMesh( const double *x )
+void Sphere::displace( const double *x )
 {
     d_offset[0] += x[0];
     d_offset[1] += x[1];
@@ -133,9 +133,9 @@ void Sphere::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-std::shared_ptr<AMP::Geometry::Geometry> Sphere::clone() const
+std::unique_ptr<AMP::Geometry::Geometry> Sphere::clone() const
 {
-    return std::make_shared<Sphere>( *this );
+    return std::make_unique<Sphere>( *this );
 }
 
 

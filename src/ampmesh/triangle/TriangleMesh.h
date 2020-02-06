@@ -112,9 +112,24 @@ public:
               const AMP_MPI &comm,
               double tol = 1e-12 );
 
+    /**
+     * \brief Generate a triangle mesh from local triangle coordinates
+     * \details  Create a triangle mesh from the local triangle coordinates.
+     *    Note: Triangle list should be unique for each rank, load balance will be automatically
+     * adjusted. \param triangles  List of triangles (each rank may contribute a unique list) \param
+     * comm       Communicator to use (load balance wil be automatically generated on this comm)
+     * \param tol        Relative tolerance (based on range of points) to use to determine if two
+     * points are the same
+     */
+    static std::shared_ptr<TriangleMesh<NG, NP>>
+    generate( std::vector<std::array<double, NP>> verticies,
+              std::vector<std::array<int64_t, NG + 1>> triangles,
+              std::vector<std::array<int64_t, NG + 1>> tri_nab,
+              const AMP_MPI &comm );
+
 
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
-    virtual std::shared_ptr<Mesh> clone() const override final;
+    virtual std::unique_ptr<Mesh> clone() const override final;
 
 
     /**

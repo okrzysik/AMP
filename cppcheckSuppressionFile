@@ -58,6 +58,7 @@ duplicateExpression:*/ampmesh/testHelpers/meshTests.cc
 duplicateExpression:*/ampmesh/structured/BoxMesh.cc
 noExplicitConstructor:*/ampmesh/MeshID.h
 noExplicitConstructor:*/ampmesh/MeshPoint.h
+noExplicitConstructor:*/ampmesh/MeshGeometry.h
 knownConditionTrueFalse:*/ampmesh/testHelpers/meshTestLoop.cc
 postfixOperator:*/ampmesh/testHelpers/meshTests.cc
 oppositeInnerCondition:*/src/ampmesh/MultiMesh.cc
@@ -66,6 +67,7 @@ oppositeInnerCondition:*/src/ampmesh/loadBalance/loadBalanceSimulator.cc
 *:*/ampmesh/hex8_element_t.cc
 duplicateAssignExpression:*/src/ampmesh/testHelpers/meshTests.cc
 useInitializationList:*/ampmesh/structured/BoxMesh.cc
+useInitializationList:*/ampmesh/structured/StructuredGeometryMesh.cc
 
 
 // Suppress warnings for discretization
@@ -147,6 +149,16 @@ nullPointerRedundantCheck:*/src/utils/Scanner.cc
 duplicateExpression:*/utils/Array.hpp
 nullPointer:*/utils/Array.hpp
 unreadVariable:*/utils/ReadTestMesh.cc
-
+resourceLeak:*/src/utils/test/test_DelaunayInterpolation.cpp
+knownConditionTrueFalse:*/src/utils/DelaunayInterpolation.cpp
+knownConditionTrueFalse:*/src/utils/DelaunayTessellation.cpp
+arrayIndexOutOfBounds:*/src/utils/DelaunayTessellation.cpp
+containerOutOfBounds:*/src/utils/DelaunayTessellation.cpp
+negativeContainerIndex:*/src/utils/DelaunayTessellation.cpp
+unreadVariable:*/src/utils/DelaunayInterpolation.cpp
+unreadVariable:*/src/utils/DelaunayTessellation.cpp
+uninitvar:*/src/utils/DelaunayInterpolation.cpp
+uninitvar:*/src/utils/DelaunayTessellation.cpp
+redundantAssignment:*/src/utils/kdtree.cpp
 
 

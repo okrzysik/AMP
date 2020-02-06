@@ -116,6 +116,10 @@ void renameFile( const std::string &old_filename, const std::string &new_filenam
 void deleteFile( const std::string &filename );
 
 
+//! Get the lower case suffix for a file
+std::string getSuffix( const std::string &filename );
+
+
 /*!
  * Convert an integer to a string.
  *

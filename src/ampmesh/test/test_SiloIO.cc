@@ -98,10 +98,12 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     auto position_var = std::make_shared<AMP::LinearAlgebra::Variable>( "position" );
     auto gp_var       = std::make_shared<AMP::LinearAlgebra::Variable>( "gp_var" );
     auto id_var       = std::make_shared<AMP::LinearAlgebra::Variable>( "ids" );
+    auto meshID_var   = std::make_shared<AMP::LinearAlgebra::Variable>( "MeshID" );
     auto rank_vec     = AMP::LinearAlgebra::createVector( DOF_scalar, rank_var, true );
     auto position     = AMP::LinearAlgebra::createVector( DOF_vector, position_var, true );
     auto gauss_pt     = AMP::LinearAlgebra::createVector( DOF_gauss, gp_var, true );
     auto id_vec       = AMP::LinearAlgebra::createVector( DOF_surface, id_var, true );
+    auto meshID_vec   = AMP::LinearAlgebra::createVector( DOF_scalar, meshID_var, true );
     gauss_pt->setToScalar( 100 );
     globalComm.barrier();
 #endif
@@ -136,6 +138,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     if ( submesh != nullptr )
         siloWriter->registerMesh( submesh, level );
 #ifdef USE_AMP_VECTORS
+    siloWriter->registerVector( meshID_vec, mesh, pointType, "MeshID" );
     siloWriter->registerVector( rank_vec, mesh, pointType, "rank" );
     siloWriter->registerVector( position, mesh, pointType, "position" );
     siloWriter->registerVector( gauss_pt, mesh, volumeType, "gauss_pnt" );
@@ -150,12 +153,15 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     globalComm.barrier();
     double t4 = AMP::AMP_MPI::time();
 
-    // For each submesh, store the volume
+    // For each submesh, store the mesh id and volume
     auto meshIDs = mesh->getBaseMeshIDs();
-    for ( auto id : meshIDs ) {
-        auto mesh2 = mesh->Subset( id );
+    for ( size_t i = 0; i < meshIDs.size(); i++ ) {
+        auto mesh2 = mesh->Subset( meshIDs[i] );
         if ( mesh2 != nullptr ) {
             auto volume = calcVolume( mesh2 );
+            AMP::LinearAlgebra::VS_Mesh meshSelector( mesh2 );
+            auto meshID_vec2 = meshID_vec->select( meshSelector, "mesh subset" );
+            meshID_vec2->setToScalar( i + 1 );
             siloWriter->registerMesh( mesh2, level );
             siloWriter->registerVector( volume, mesh2, mesh2->getGeomType(), "volume" );
         }

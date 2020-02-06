@@ -259,6 +259,11 @@ double libmeshMeshElement::volume() const
     auto *elem = (libMesh::Elem *) ptr_element;
     return elem->volume();
 }
+Point libmeshMeshElement::norm() const
+{
+    AMP_ERROR( "norm not implimented yet" );
+    return Point();
+}
 Point libmeshMeshElement::coord() const
 {
     if ( d_globalID.type() != GeomType::Vertex )

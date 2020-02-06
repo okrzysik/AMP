@@ -305,10 +305,10 @@ SubsetMesh::~SubsetMesh() = default;
 /********************************************************
  * Copy the mesh                                         *
  ********************************************************/
-std::shared_ptr<Mesh> SubsetMesh::clone() const
+std::unique_ptr<Mesh> SubsetMesh::clone() const
 {
     AMP_ERROR( "clone is not currently supported with SubsetMesh" );
-    return std::shared_ptr<Mesh>();
+    return std::unique_ptr<Mesh>();
 }
 
 

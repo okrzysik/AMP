@@ -132,6 +132,9 @@ public: // Virtual functions
     //! Return the volume of the current element (does not apply to verticies)
     virtual double volume() const;
 
+    //! Return the normal to the current element (does not apply to all elements)
+    virtual Point norm() const;
+
     /**
      * \brief     Return true if the element contains the point
      * \details   This function checks if the given point is inside or

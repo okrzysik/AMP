@@ -64,7 +64,7 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
     // for each mesh
     int method  = params_in->getDatabase()->getWithDefault( "LoadBalanceMethod", 1 );
     auto groups = loadBalancer( d_comm.getSize(), params->params, params->N_elements, method );
-    auto comms  = createComms( groups );
+    auto comms  = createComms( d_comm, groups );
     // Check that every mesh exist on some comm
     std::vector<int> onComm( comms.size(), 0 );
     for ( size_t i = 0; i < comms.size(); i++ ) {
@@ -305,7 +305,7 @@ MultiMesh::~MultiMesh() = default;
 /********************************************************
  * Function to copy the mesh                             *
  ********************************************************/
-std::shared_ptr<Mesh> MultiMesh::clone() const { return std::make_shared<MultiMesh>( *this ); }
+std::unique_ptr<Mesh> MultiMesh::clone() const { return std::make_unique<MultiMesh>( *this ); }
 
 
 /********************************************************
@@ -932,9 +932,10 @@ static void copyKey( std::shared_ptr<const AMP::Database> database1,
 /********************************************************
  * Function to create the sub-communicators              *
  ********************************************************/
-std::vector<AMP_MPI> MultiMesh::createComms( const std::vector<rank_list> &groups )
+std::vector<AMP_MPI> MultiMesh::createComms( const AMP_MPI &comm,
+                                             const std::vector<rank_list> &groups )
 {
-    int myRank = d_comm.getRank();
+    int myRank = comm.getRank();
     std::vector<AMP_MPI> comms( groups.size() );
     for ( size_t i = 0; i < groups.size(); i++ ) {
         int color = -1;
@@ -942,7 +943,7 @@ std::vector<AMP_MPI> MultiMesh::createComms( const std::vector<rank_list> &group
             if ( elem == myRank )
                 color = 0;
         }
-        comms[i] = d_comm.split( color, d_comm.getRank() );
+        comms[i] = comm.split( color, comm.getRank() );
         if ( color != -1 )
             AMP_ASSERT( comms[i].getSize() == (int) groups[i].size() );
     }
@@ -959,17 +960,19 @@ MultiMesh::loadBalancer( int N_procs,
                          const std::vector<size_t> &meshSizes,
                          int method )
 {
+    AMP_ASSERT( meshSizes.size() == meshParams.size() );
+    int N_meshes = meshSizes.size();
     // Deal with the special cases directly
-    if ( meshParams.size() <= 1 || N_procs == 1 || method == 0 ) {
+    if ( N_meshes <= 1 || N_procs == 1 || method == 0 ) {
         // Everybody is on the same communicator
         std::vector<int> allRanks( N_procs );
         for ( int i = 0; i < N_procs; i++ )
             allRanks[i] = i;
-        return std::vector<rank_list>( meshParams.size(), allRanks );
+        return std::vector<rank_list>( N_meshes, allRanks );
     } else if ( method == 1 ) {
         // We want to split the meshes onto independent processors
         std::vector<comm_groups> groups;
-        if ( N_procs > (int) meshParams.size() ) {
+        if ( N_procs > N_meshes ) {
             // We have more processors than meshes
             groups = independentGroups1( N_procs, meshParams, meshSizes );
         } else {
@@ -978,7 +981,7 @@ MultiMesh::loadBalancer( int N_procs,
             size_t totalMeshSize = 0;
             for ( auto &meshSize : meshSizes )
                 totalMeshSize += meshSize;
-            std::vector<double> weights( meshParams.size(), 0 );
+            std::vector<double> weights( N_meshes, 0 );
             for ( size_t i = 0; i < meshSizes.size(); i++ )
                 weights[i] = ( (double) meshSizes[i] ) / ( (double) totalMeshSize );
             // Create the ids and recursively perform the load balance
@@ -988,7 +991,7 @@ MultiMesh::loadBalancer( int N_procs,
             groups = independentGroups2( N_procs, ids );
         }
         // Split the comm into the appropriate groups
-        std::vector<rank_list> commGroups( meshParams.size() );
+        std::vector<rank_list> commGroups( N_meshes );
         int myStartRank = 0;
         for ( auto &group : groups ) {
             for ( int myRank = myStartRank; myRank < myStartRank + group.N_procs; myRank++ ) {
@@ -1003,8 +1006,8 @@ MultiMesh::loadBalancer( int N_procs,
         return commGroups;
     } else if ( method == 2 ) {
         // We want to use all processors for all meshes
-        std::vector<rank_list> commGroups( meshParams.size() );
-        for ( size_t i = 0; i < meshParams.size(); i++ ) {
+        std::vector<rank_list> commGroups( N_meshes );
+        for ( int i = 0; i < N_meshes; i++ ) {
             int N_procs2 = std::min<int>( N_procs, Mesh::maxProcs( meshParams[i] ) );
             for ( int j = 0; j < N_procs2; j++ )
                 commGroups[i].push_back( j );
@@ -1097,13 +1100,14 @@ MultiMesh::independentGroups1( int N_procs,
                                const std::vector<MeshParameters::shared_ptr> &meshParameters,
                                const std::vector<size_t> &size )
 {
+    AMP_ASSERT( size.size() == meshParameters.size() );
+    int N_meshes = size.size();
     // This will distribute the groups onto the processors such that no groups share any processors
     // Note: this requires the number of processors to be >= the number of ids
-    AMP_ASSERT( N_procs >= (int) meshParameters.size() );
-    AMP_ASSERT( size.size() == meshParameters.size() );
+    AMP_ASSERT( N_procs >= N_meshes );
     // Handle the special case if the # of processors == the # of ids
-    if ( N_procs == (int) meshParameters.size() ) {
-        std::vector<comm_groups> groups( meshParameters.size() );
+    if ( N_procs == N_meshes ) {
+        std::vector<comm_groups> groups( N_meshes );
         for ( int i = 0; i < N_procs; i++ ) {
             groups[i].N_procs = 1;
             groups[i].ids     = std::vector<int>( 1, i );
@@ -1115,7 +1119,7 @@ MultiMesh::independentGroups1( int N_procs,
     for ( size_t i = 1; i < size.size(); i++ )
         all_match = all_match && size[i] == size[0];
     if ( all_match ) {
-        std::vector<comm_groups> groups( meshParameters.size() );
+        std::vector<comm_groups> groups( N_meshes );
         int N_procs2  = N_procs;
         auto N_meshes = static_cast<int>( size.size() );
         for ( size_t i = 0; i < size.size(); i++ ) {
@@ -1129,13 +1133,13 @@ MultiMesh::independentGroups1( int N_procs,
     }
     // Start by using ~80% of the procs
     size_t N_total = 0;
-    for ( size_t i = 0; i < meshParameters.size(); i++ )
+    for ( int i = 0; i < N_meshes; i++ )
         N_total += size[i];
-    std::vector<loadBalanceSimulator> load_balance( meshParameters.size() );
-    std::vector<size_t> max_size( meshParameters.size() );
+    std::vector<loadBalanceSimulator> load_balance( N_meshes );
+    std::vector<size_t> max_size( N_meshes );
     std::vector<int> rank1( N_procs );
     int N_procs_remaining = N_procs;
-    for ( size_t i = 0; i < meshParameters.size(); i++ ) {
+    for ( int i = 0; i < N_meshes; i++ ) {
         int N_proc_local =
             floor( 0.8 * ( (double) N_procs ) * ( (double) size[i] ) / ( (double) N_total ) ) - 1;
         N_proc_local = std::min( N_proc_local, N_procs - (int) size.size() );
@@ -1177,8 +1181,8 @@ MultiMesh::independentGroups1( int N_procs,
     }
     // We have filled all processors, create the groups
     AMP_ASSERT( N_procs_remaining == 0 );
-    std::vector<comm_groups> groups( meshParameters.size() );
-    for ( size_t i = 0; i < meshParameters.size(); i++ ) {
+    std::vector<comm_groups> groups( N_meshes );
+    for ( int i = 0; i < N_meshes; i++ ) {
         groups[i].N_procs = (int) load_balance[i].getRanks().size();
         groups[i].ids     = std::vector<int>( 1, (int) i );
     }

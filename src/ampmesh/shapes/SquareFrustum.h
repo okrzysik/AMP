@@ -1,7 +1,7 @@
 #ifndef included_AMP_Geometry_SquareFrustum
 #define included_AMP_Geometry_SquareFrustum
 
-#include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/LogicalGeometry.h"
 
 #include <vector>
 
@@ -15,7 +15,7 @@ namespace Geometry {
  * \brief A geometry for a square frustum
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
-class SquareFrustum : public Geometry
+class SquareFrustum : public LogicalGeometry
 {
 public:
     /**
@@ -34,6 +34,7 @@ public:
 
 public: // Functions inherited from Geometry
     virtual std::string getName() const override final { return "SquareFrustum"; }
+    virtual bool isConvex() const override final { return true; }
     virtual double distance( const Point &pos, const Point &dir ) const override final;
     virtual bool inside( const Point &pos ) const override final;
     virtual int NSurface() const override final { return 6; }
@@ -43,11 +44,11 @@ public: // Functions inherited from Geometry
     virtual Point physical( const Point &x ) const override final;
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
-    virtual void displaceMesh( const double *x ) override final;
+    virtual void displace( const double *x ) override final;
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<bool> getPeriodicDim() const override final;
     virtual std::vector<int> getLogicalSurfaceIds() const override final;
-    virtual std::shared_ptr<AMP::Geometry::Geometry> clone() const override final;
+    virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data

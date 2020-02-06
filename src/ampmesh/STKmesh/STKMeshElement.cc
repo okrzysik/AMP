@@ -306,6 +306,7 @@ double STKMeshElement::volume() const
     const double v = volume( 0 );
     return v;
 }
+Point STKMeshElement::norm() const { AMP_ERROR( "norm not implimented yet" ); }
 std::vector<double> STKMeshElement::coord() const
 {
     if ( d_globalID.type() != GeomType::Vertex )

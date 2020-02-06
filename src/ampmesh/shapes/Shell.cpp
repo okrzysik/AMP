@@ -23,7 +23,7 @@ Shell::Shell( std::shared_ptr<AMP::Database> db )
     d_r_min = range[0];
     d_r_max = range[1];
 }
-Shell::Shell( double r_min, double r_max ) : Geometry(), d_r_min( r_min ), d_r_max( r_max )
+Shell::Shell( double r_min, double r_max ) : LogicalGeometry(), d_r_min( r_min ), d_r_max( r_max )
 {
     d_physicalDim = 3;
     d_logicalDim  = 2;
@@ -139,7 +139,7 @@ std::vector<int> Shell::getLogicalSurfaceIds() const { return { -1, -1, 1, 2, 3,
 /********************************************************
  * Displace the mesh                                     *
  ********************************************************/
-void Shell::displaceMesh( const double *x )
+void Shell::displace( const double *x )
 {
     d_offset[0] += x[0];
     d_offset[1] += x[1];
@@ -150,9 +150,9 @@ void Shell::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-std::shared_ptr<AMP::Geometry::Geometry> Shell::clone() const
+std::unique_ptr<AMP::Geometry::Geometry> Shell::clone() const
 {
-    return std::make_shared<Shell>( *this );
+    return std::make_unique<Shell>( *this );
 }
 
 

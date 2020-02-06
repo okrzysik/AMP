@@ -30,60 +30,51 @@
 #include <string>
 
 
-#define __PI__ 3.14159265
-#define __INIT_T0__( x, y, z, sg ) \
-    ( sg * cos( 0.1 * __PI__ * x ) * cos( 0.1 * __PI__ * y ) * cos( 0.1 * __PI__ * z ) )
-#define __INIT_dTdx__( x, y, z, sg )                                           \
-    ( sg * -0.1 * __PI__ * sin( 0.1 * __PI__ * x ) * cos( 0.1 * __PI__ * y ) * \
-      cos( 0.1 * __PI__ * z ) )
-#define __INIT_dTdy__( x, y, z, sg )                                           \
-    ( sg * -0.1 * __PI__ * cos( 0.1 * __PI__ * x ) * sin( 0.1 * __PI__ * y ) * \
-      cos( 0.1 * __PI__ * z ) )
-#define __INIT_dTdz__( x, y, z, sg )                                           \
-    ( sg * -0.1 * __PI__ * cos( 0.1 * __PI__ * x ) * cos( 0.1 * __PI__ * y ) * \
-      sin( 0.1 * __PI__ * z ) )
-#define __INIT_rhs__( x, y, z, sg )                                                      \
-    ( sg * -0.03 * __PI__ * __PI__ * cos( 0.1 * __PI__ * x ) * cos( 0.1 * __PI__ * y ) * \
-      cos( 0.1 * __PI__ * z ) )
+constexpr double pi = 3.14159265;
+static inline double fun_T0( double x, double y, double z, double sg )
+{
+    return ( sg * cos( 0.1 * pi * x ) * cos( 0.1 * pi * y ) * cos( 0.1 * pi * z ) );
+}
+static inline double fun_dTdx( double x, double y, double z, double sg )
+{
+    return ( sg * -0.1 * pi * sin( 0.1 * pi * x ) * cos( 0.1 * pi * y ) * cos( 0.1 * pi * z ) );
+}
+static inline double fun_dTdy( double x, double y, double z, double sg )
+{
+    return ( sg * -0.1 * pi * cos( 0.1 * pi * x ) * sin( 0.1 * pi * y ) * cos( 0.1 * pi * z ) );
+}
+static inline double fun_dTdz( double x, double y, double z, double sg )
+{
+    return ( sg * -0.1 * pi * cos( 0.1 * pi * x ) * cos( 0.1 * pi * y ) * sin( 0.1 * pi * z ) );
+}
+static inline double fun_rhs( double x, double y, double z, double sg )
+{
+    return ( sg * -0.03 * pi * pi * cos( 0.1 * pi * x ) * cos( 0.1 * pi * y ) *
+             cos( 0.1 * pi * z ) );
+}
 
 
 void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     // Input and output file names
-    //  #include <string>
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    ////////////////////////////////////
-    //    INITIALIZE THE PROBLEM      //
-    ////////////////////////////////////
-
-    // Create the map to get an available material from a string.
-    //  #include "AMP/materials/Material.h"
-
-    // Construct a smart pointer to a new database.
-    //  #include <memory>
-    //  #include "AMP/utils/Database.h"
-
 
     // Fill the database from the input file.
-    //  #include "AMP/utils/Database.h"
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-
     // Print from all cores into the output files
-    //   #include "AMP/utils/PIO.h"
     AMP::PIO::logAllNodes( log_file );
 
     //--------------------------------------------------
     //   Create the Mesh.
     //--------------------------------------------------
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db   = input_db->getDatabase( "Mesh" );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     //--------------------------------------------------
     //   Create DOF Managers.
@@ -92,62 +83,54 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     int DOFsPerNode    = 1;
     int ghostWidth     = 1;
     bool split         = true;
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, ghostWidth, DOFsPerNode, split );
-    AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
+    auto nodalDofMap   = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, ghostWidth, DOFsPerNode, split );
+    auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
 
     // Create a shared pointer to a Variable - Power - Output because it will be used in the
-    // "residual" location of
-    // apply.
+    // "residual" location of apply.
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     //------------------------------------------
     //   CREATE THE THERMAL BVP OPERATOR  //
     //------------------------------------------
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
+    auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
 
-    AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvinVec =
-        AMP::LinearAlgebra::createVector(
-            nodalDofMap, diffusionOperator->getOutputVariable(), split );
-    AMP::LinearAlgebra::Vector::shared_ptr RightHandSideVec = TemperatureInKelvinVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr ResidualVec      = TemperatureInKelvinVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr variableFluxVec  = TemperatureInKelvinVec->cloneVector();
+    auto TemperatureInKelvinVec = AMP::LinearAlgebra::createVector(
+        nodalDofMap, diffusionOperator->getOutputVariable(), split );
+    auto RightHandSideVec = TemperatureInKelvinVec->cloneVector();
+    auto ResidualVec      = TemperatureInKelvinVec->cloneVector();
+    auto variableFluxVec  = TemperatureInKelvinVec->cloneVector();
 
     RightHandSideVec->zero();
     variableFluxVec->zero();
 
     //------------------------------------------
 
-    AMP::Operator::Operator::shared_ptr boundaryOp;
-    boundaryOp = diffusionOperator->getBoundaryOperator();
+    auto boundaryOp = diffusionOperator->getBoundaryOperator();
 
-    AMP::Operator::Operator::shared_ptr robinBoundaryOp;
-    robinBoundaryOp =
-        ( std::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator>( boundaryOp ) )
+    auto robinBoundaryOp =
+        std::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator>( boundaryOp )
             ->getBoundaryOperator( 0 );
 
-    std::shared_ptr<AMP::Database> robinboundaryDatabase = std::dynamic_pointer_cast<AMP::Database>(
+    auto robinboundaryDatabase = std::dynamic_pointer_cast<AMP::Database>(
         input_db->getDatabase( "RobinMatrixCorrection" ) );
 
     robinboundaryDatabase->putScalar( "constant_flux", false );
     robinboundaryDatabase->putScalar( "skip_matrix_correction", true );
-    std::shared_ptr<AMP::Operator::RobinMatrixCorrectionParameters> correctionParameters(
-        new AMP::Operator::RobinMatrixCorrectionParameters( robinboundaryDatabase ) );
+    auto correctionParameters =
+        std::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( robinboundaryDatabase );
     //------------------------------------------
 
 
     //------------------------------------------
     // check the solution
     int zeroGhostWidth = 0;
-    AMP::Mesh::MeshIterator node =
-        meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
-    AMP::Mesh::MeshIterator end_node = node.end();
+    auto node          = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+    auto end_node      = node.end();
 
     for ( ; node != end_node; ++node ) {
         std::vector<size_t> gid;
@@ -159,32 +142,32 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 
         double val, rhs;
 
-        rhs = __INIT_rhs__( px, py, pz, -1.0 );
+        rhs = fun_rhs( px, py, pz, -1.0 );
         RightHandSideVec->setValueByGlobalID( gid[0], rhs );
 
         if ( fabs( pz - 1.0 ) <= 1.0e-12 ) {
-            val = __INIT_dTdz__( px, py, pz, 1.0 );
-            val = val + __INIT_T0__( px, py, pz, 1.0 );
+            val = fun_dTdz( px, py, pz, 1.0 );
+            val = val + fun_T0( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
         } else if ( fabs( pz + 1.0 ) <= 1.0e-12 ) {
-            val = __INIT_dTdz__( px, py, pz, -1.0 );
-            val = val + __INIT_T0__( px, py, pz, 1.0 );
+            val = fun_dTdz( px, py, pz, -1.0 );
+            val = val + fun_T0( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
         } else if ( fabs( px - 1.0 ) <= 1.0e-12 ) {
-            val = __INIT_dTdx__( px, py, pz, 1.0 );
-            val = val + __INIT_T0__( px, py, pz, 1.0 );
+            val = fun_dTdx( px, py, pz, 1.0 );
+            val = val + fun_T0( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
         } else if ( fabs( px + 1.0 ) <= 1.0e-12 ) {
-            val = __INIT_dTdx__( px, py, pz, -1.0 );
-            val = val + __INIT_T0__( px, py, pz, 1.0 );
+            val = fun_dTdx( px, py, pz, -1.0 );
+            val = val + fun_T0( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
         } else if ( fabs( py - 1.0 ) <= 1.0e-12 ) {
-            val = __INIT_dTdy__( px, py, pz, 1.0 );
-            val = val + __INIT_T0__( px, py, pz, 1.0 );
+            val = fun_dTdy( px, py, pz, 1.0 );
+            val = val + fun_T0( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
         } else if ( fabs( py + 1.0 ) <= 1.0e-12 ) {
-            val = __INIT_dTdy__( px, py, pz, -1.0 );
-            val = val + __INIT_T0__( px, py, pz, 1.0 );
+            val = fun_dTdy( px, py, pz, -1.0 );
+            val = val + fun_T0( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
         }
     } // end for node
@@ -200,15 +183,13 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
-    std::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
-        std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
+    auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
 
     // Create the power (heat source) vector.
-    AMP::LinearAlgebra::Variable::shared_ptr SourceVar = sourceOperator->getOutputVariable();
-    AMP::LinearAlgebra::Vector::shared_ptr SourceVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, SourceVar, split );
+    auto SourceVar = sourceOperator->getOutputVariable();
+    auto SourceVec = AMP::LinearAlgebra::createVector( nodalDofMap, SourceVar, split );
     SourceVec->zero();
 
     // convert the vector of specific power to power for a given basis.
@@ -231,11 +212,10 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
     // Read the input file onto a database.
-    std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
+    auto mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
     // Fill in the parameters fo the class with the info on the database.
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams(
-        new AMP::Solver::SolverStrategyParameters( mlSolver_db ) );
+    auto mlSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
 
     // Define the operature to be used by the Solver.
     mlSolverParams->d_pOperator = diffusionOperator;
@@ -248,8 +228,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
     // Create the ML Solver
-    std::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver(
-        new AMP::Solver::TrilinosMLSolver( mlSolverParams ) );
+    auto mlSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
 
     // Use a random initial guess?
     mlSolver->setZeroInitialGuess( false );
@@ -264,9 +243,9 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     double finalResidualNorm = ResidualVec->L2Norm();
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-    node                                            = node.begin();
-    AMP::LinearAlgebra::Vector::shared_ptr diffVec  = TemperatureInKelvinVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr exactVec = TemperatureInKelvinVec->cloneVector();
+    node          = node.begin();
+    auto diffVec  = TemperatureInKelvinVec->cloneVector();
+    auto exactVec = TemperatureInKelvinVec->cloneVector();
 
     diffVec->zero();
     exactVec->zero();
@@ -280,7 +259,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
         double pz = ( node->coord() )[2];
 
         double exact;
-        exact = __INIT_T0__( px, py, pz, 1.0 );
+        exact = fun_T0( px, py, pz, 1.0 );
         exactVec->setValueByGlobalID( gid[0], exact );
     }
 
@@ -302,10 +281,10 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // Plot the results
-    AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
+    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
 #ifdef USE_EXT_SILO
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector(
         TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
     siloWriter->registerVector( exactVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Exact" );

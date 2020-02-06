@@ -28,7 +28,7 @@ Tube::Tube( std::shared_ptr<AMP::Database> db )
     d_z_max = range[3];
 }
 Tube::Tube( double r_min, double r_max, double z_min, double z_max )
-    : Geometry(), d_r_min( r_min ), d_r_max( r_max ), d_z_min( z_min ), d_z_max( z_max )
+    : LogicalGeometry(), d_r_min( r_min ), d_r_max( r_max ), d_z_min( z_min ), d_z_max( z_max )
 {
     d_physicalDim = 3;
     d_logicalDim  = 3;
@@ -204,7 +204,7 @@ std::vector<int> Tube::getLogicalSurfaceIds() const { return { 8, 4, -1, -1, 2, 
 /********************************************************
  * Displace the mesh                                     *
  ********************************************************/
-void Tube::displaceMesh( const double *x )
+void Tube::displace( const double *x )
 {
     d_offset[0] += x[0];
     d_offset[1] += x[1];
@@ -215,9 +215,9 @@ void Tube::displaceMesh( const double *x )
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-std::shared_ptr<AMP::Geometry::Geometry> Tube::clone() const
+std::unique_ptr<AMP::Geometry::Geometry> Tube::clone() const
 {
-    return std::make_shared<Tube>( *this );
+    return std::make_unique<Tube>( *this );
 }
 
 

@@ -1,6 +1,7 @@
 #ifndef included_AMP_StructuredGeometryMesh
 #define included_AMP_StructuredGeometryMesh
 
+#include "AMP/ampmesh/LogicalGeometry.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
 
 #include <array>
@@ -38,7 +39,10 @@ public: // Functions derived from BoxMesh
 #endif
     virtual AMP::Geometry::Point physicalToLogical( const AMP::Geometry::Point &x ) const override;
     virtual void coord( const MeshElementIndex &index, double *pos ) const override;
-    virtual std::shared_ptr<Mesh> clone() const override;
+    virtual std::unique_ptr<Mesh> clone() const override;
+
+private:
+    std::shared_ptr<AMP::Geometry::LogicalGeometry> d_geometry2;
 };
 
 

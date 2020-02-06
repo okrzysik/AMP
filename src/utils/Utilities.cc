@@ -160,6 +160,18 @@ void Utilities::deleteFile( const std::string &filename )
         AMP_INSIST( error == 0, "Error deleting file" );
     }
 }
+
+std::string Utilities::getSuffix( const std::string &filename )
+{
+    size_t pos = filename.rfind( '.' );
+    if ( pos == std::string::npos )
+        return std::string();
+    std::string suffix = filename.substr( pos + 1 );
+    for ( auto &c : suffix )
+        c = std::tolower( c );
+    return suffix;
+}
+
 void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_node_zero_creates )
 {
     AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );

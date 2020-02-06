@@ -166,7 +166,7 @@ public:
 
 
     //! Virtual function to clone the mesh (allows us to properly copy the derived class)
-    virtual std::shared_ptr<Mesh> clone() const = 0;
+    virtual std::unique_ptr<Mesh> clone() const = 0;
 
 
     /**
