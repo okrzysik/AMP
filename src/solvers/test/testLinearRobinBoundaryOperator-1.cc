@@ -30,21 +30,28 @@
 #include <string>
 
 
-#define __PI__ 3.14159265
-#define __INIT_T0__( x, y, z, sg ) \
-    ( sg * cos( 0.1 * __PI__ * x ) * cos( 0.1 * __PI__ * y ) * cos( 0.1 * __PI__ * z ) )
-#define __INIT_dTdx__( x, y, z, sg )                                           \
-    ( sg * -0.1 * __PI__ * sin( 0.1 * __PI__ * x ) * cos( 0.1 * __PI__ * y ) * \
-      cos( 0.1 * __PI__ * z ) )
-#define __INIT_dTdy__( x, y, z, sg )                                           \
-    ( sg * -0.1 * __PI__ * cos( 0.1 * __PI__ * x ) * sin( 0.1 * __PI__ * y ) * \
-      cos( 0.1 * __PI__ * z ) )
-#define __INIT_dTdz__( x, y, z, sg )                                           \
-    ( sg * -0.1 * __PI__ * cos( 0.1 * __PI__ * x ) * cos( 0.1 * __PI__ * y ) * \
-      sin( 0.1 * __PI__ * z ) )
-#define __INIT_rhs__( x, y, z, sg )                                                      \
-    ( sg * -0.03 * __PI__ * __PI__ * cos( 0.1 * __PI__ * x ) * cos( 0.1 * __PI__ * y ) * \
-      cos( 0.1 * __PI__ * z ) )
+constexpr double pi = 3.14159265;
+static inline double fun_T0( double x, double y, double z, double sg )
+{
+    return ( sg * cos( 0.1 * pi * x ) * cos( 0.1 * pi * y ) * cos( 0.1 * pi * z ) );
+}
+static inline double fun_dTdx( double x, double y, double z, double sg )
+{
+    return ( sg * -0.1 * pi * sin( 0.1 * pi * x ) * cos( 0.1 * pi * y ) * cos( 0.1 * pi * z ) );
+}
+static inline double fun_dTdy( double x, double y, double z, double sg )
+{
+    return ( sg * -0.1 * pi * cos( 0.1 * pi * x ) * sin( 0.1 * pi * y ) * cos( 0.1 * pi * z ) );
+}
+static inline double fun_dTdz( double x, double y, double z, double sg )
+{
+    return ( sg * -0.1 * pi * cos( 0.1 * pi * x ) * cos( 0.1 * pi * y ) * sin( 0.1 * pi * z ) );
+}
+static inline double fun_rhs( double x, double y, double z, double sg )
+{
+    return ( sg * -0.03 * pi * pi * cos( 0.1 * pi * x ) * cos( 0.1 * pi * y ) *
+             cos( 0.1 * pi * z ) );
+}
 
 
 void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
@@ -135,32 +142,32 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 
         double val, rhs;
 
-        rhs = __INIT_rhs__( px, py, pz, -1.0 );
+        rhs = fun_rhs( px, py, pz, -1.0 );
         RightHandSideVec->setValueByGlobalID( gid[0], rhs );
 
         if ( fabs( pz - 1.0 ) <= 1.0e-12 ) {
-            val = __INIT_dTdz__( px, py, pz, 1.0 );
-            val = val + __INIT_T0__( px, py, pz, 1.0 );
+            val = fun_dTdz( px, py, pz, 1.0 );
+            val = val + fun_T0( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
         } else if ( fabs( pz + 1.0 ) <= 1.0e-12 ) {
-            val = __INIT_dTdz__( px, py, pz, -1.0 );
-            val = val + __INIT_T0__( px, py, pz, 1.0 );
+            val = fun_dTdz( px, py, pz, -1.0 );
+            val = val + fun_T0( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
         } else if ( fabs( px - 1.0 ) <= 1.0e-12 ) {
-            val = __INIT_dTdx__( px, py, pz, 1.0 );
-            val = val + __INIT_T0__( px, py, pz, 1.0 );
+            val = fun_dTdx( px, py, pz, 1.0 );
+            val = val + fun_T0( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
         } else if ( fabs( px + 1.0 ) <= 1.0e-12 ) {
-            val = __INIT_dTdx__( px, py, pz, -1.0 );
-            val = val + __INIT_T0__( px, py, pz, 1.0 );
+            val = fun_dTdx( px, py, pz, -1.0 );
+            val = val + fun_T0( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
         } else if ( fabs( py - 1.0 ) <= 1.0e-12 ) {
-            val = __INIT_dTdy__( px, py, pz, 1.0 );
-            val = val + __INIT_T0__( px, py, pz, 1.0 );
+            val = fun_dTdy( px, py, pz, 1.0 );
+            val = val + fun_T0( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
         } else if ( fabs( py + 1.0 ) <= 1.0e-12 ) {
-            val = __INIT_dTdy__( px, py, pz, -1.0 );
-            val = val + __INIT_T0__( px, py, pz, 1.0 );
+            val = fun_dTdy( px, py, pz, -1.0 );
+            val = val + fun_T0( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
         }
     } // end for node
@@ -252,7 +259,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
         double pz = ( node->coord() )[2];
 
         double exact;
-        exact = __INIT_T0__( px, py, pz, 1.0 );
+        exact = fun_T0( px, py, pz, 1.0 );
         exactVec->setValueByGlobalID( gid[0], exact );
     }
 

@@ -35,7 +35,6 @@ static void runTest( AMP::UnitTest *ut )
 
     // Create a simple DOFManager
     auto nodalVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "test" );
-    auto DOFparams     = std::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
     auto DOFs =
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
 

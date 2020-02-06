@@ -66,6 +66,9 @@ public:
     //! Return the volume of the current element (does not apply to verticies)
     virtual double volume() const override;
 
+    //! Return the normal to the current element (does not apply to all elements)
+    virtual Point norm() const override;
+
     //! Return the coordinates of all verticies composing the element
     virtual Point coord() const override;
 

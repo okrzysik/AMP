@@ -51,6 +51,13 @@ public:
     inline uint8_t getDim() const { return d_physicalDim; }
 
     /**
+     * \brief    Is the object convex
+     * \details  Check if the geometric object is convex
+     * @return      Returns true if the object is convex
+     */
+    virtual bool isConvex() const = 0;
+
+    /**
      * \brief    Calculate the distance to the object given a ray
      * \details  This function computes the distance to the object given a ray.
      *     If the ray is inside the object, this distance is negitive.  If the

@@ -727,6 +727,16 @@ double structuredMeshElement::volume() const
 
 
 /****************************************************************
+ * Function to get the element normal                            *
+ ****************************************************************/
+Point structuredMeshElement::norm() const
+{
+    AMP_ERROR( "norm not implimented yet" );
+    return Point();
+}
+
+
+/****************************************************************
  * Misc functions                                                *
  ****************************************************************/
 bool structuredMeshElement::containsPoint( const Point &, double ) const

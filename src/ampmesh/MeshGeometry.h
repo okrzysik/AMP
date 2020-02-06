@@ -8,8 +8,9 @@
 
 
 namespace AMP::Mesh {
-class Mesh; // Forward declare Mesh
-}
+class Mesh;        // Forward declare Mesh
+class MeshElement; // Forward declare Mesh
+} // namespace AMP::Mesh
 
 
 namespace AMP::Geometry {
@@ -31,6 +32,13 @@ public:
 
     //! Get the name of the geometry
     virtual std::string getName() const override { return "MeshGeometry"; }
+
+    /**
+     * \brief    Is the object convex
+     * \details  Check if the geometric object is convex
+     * @return      Returns true if the object is convex
+     */
+    virtual bool isConvex() const override;
 
     /**
      * \brief    Calculate the distance to the object given a ray
@@ -104,8 +112,18 @@ public:
     virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const override;
 
 
+private: // Internal functions
+    // Initialize the internal data
+    void initialize();
+
+    // Get the nearest element to a point
+    AMP::Mesh::MeshElement getNearest( const Point &x ) const;
+
+
 private: // Internal data
     std::unique_ptr<AMP::Mesh::Mesh> d_mesh;
+    std::vector<int> d_surfaceIds;
+    Point d_centroid;
 };
 
 

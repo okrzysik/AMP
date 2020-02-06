@@ -33,6 +33,7 @@ public:
 
     // Functions inherited from Geometry
     virtual std::string getName() const override final { return "Shell"; }
+    virtual bool isConvex() const override final { return true; }
     virtual double distance( const Point &pos, const Point &dir ) const override final;
     virtual bool inside( const Point &pos ) const override final;
     virtual int NSurface() const override final { return 2; }

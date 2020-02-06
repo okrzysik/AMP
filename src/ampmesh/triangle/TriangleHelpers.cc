@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/triangle/TriangleHelpers.h"
 #include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/ampmesh/MultiGeometry.h"
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/triangle/TriangleMesh.h"
 #include "AMP/utils/Database.h"
@@ -551,6 +552,46 @@ std::shared_ptr<AMP::Mesh::Mesh> generateSTL( MeshParameters::shared_ptr params 
     // Set the mesh name
     mesh->setName( name );
     return mesh;
+}
+
+
+/********************************************************
+ *  Generate mesh for geometry                           *
+ ********************************************************/
+std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry::Geometry> geom,
+                                           const AMP_MPI &comm,
+                                           const Point &resolution )
+{
+    auto multigeom = std::dynamic_pointer_cast<AMP::Geometry::MultiGeometry>( geom );
+    if ( multigeom ) {
+        std::vector<std::shared_ptr<AMP::Mesh::Mesh>> submeshes;
+        for ( auto &geom2 : multigeom->getGeometries() ) {
+            submeshes.push_back( generate( geom2, comm, resolution ) );
+            // submeshes[i]->setName( name + "_" + std::to_string( i + 1 ) );
+        }
+        return std::make_shared<MultiMesh>( "name", comm, submeshes );
+    }
+    AMP_INSIST( geom->isConvex(), "Geometry must be convex" );
+    // Get the volume points
+    std::vector<Point> points;
+    auto [x0, x1] = geom->box();
+    for ( double x = x0.x(); x <= x1.x(); x += resolution.x() ) {
+        for ( double y = x0.y(); y <= x1.y(); y += resolution.y() ) {
+            for ( double z = x0.z(); z <= x1.z(); z += resolution.z() ) {
+                Point p( x0.size(), { x, y, z } );
+                if ( geom->inside( p ) )
+                    points.push_back( p );
+            }
+        }
+    }
+    // Get the surface points
+
+    // Tessellate
+
+    // Generate the mesh
+
+    AMP_ERROR( "Not finished" );
+    return std::shared_ptr<AMP::Mesh::Mesh>();
 }
 
 

@@ -227,6 +227,12 @@ double TriangleMeshElement<NG, NP>::volume() const
     }
 }
 template<size_t NG, size_t NP>
+Point TriangleMeshElement<NG, NP>::norm() const
+{
+    AMP_ERROR( "norm not implimented yet" );
+    return Point();
+}
+template<size_t NG, size_t NP>
 Point TriangleMeshElement<NG, NP>::coord() const
 {
     if ( d_globalID.type() == GeomType::Vertex ) {

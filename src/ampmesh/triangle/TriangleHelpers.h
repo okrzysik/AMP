@@ -1,17 +1,13 @@
 #ifndef included_AMP_TriangleMeshHelpers
 #define included_AMP_TriangleMeshHelpers
 
+#include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/Mesh.h"
 #include "AMP/utils/AMP_MPI.h"
 
 #include <array>
 #include <memory>
 #include <vector>
-
-
-namespace AMP::Mesh {
-class Mesh;
-class MeshParameters;
-} // namespace AMP::Mesh
 
 
 namespace AMP::Mesh::TriangleHelpers {
@@ -49,6 +45,11 @@ std::vector<std::vector<std::array<int64_t, NG + 1>>>
 
 //! Read an STL file and generate a mesh (triangle mesh or multi-mesh)
 std::shared_ptr<AMP::Mesh::Mesh> generateSTL( std::shared_ptr<AMP::Mesh::MeshParameters> params );
+
+//! Generate a triangle mesh (or multi-mesh) from a geometry
+std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry::Geometry> geom,
+                                           const AMP_MPI &comm,
+                                           const AMP::Mesh::Point &resolution );
 
 } // namespace AMP::Mesh::TriangleHelpers
 
