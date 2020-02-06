@@ -58,6 +58,7 @@ duplicateExpression:*/ampmesh/testHelpers/meshTests.cc
 duplicateExpression:*/ampmesh/structured/BoxMesh.cc
 noExplicitConstructor:*/ampmesh/MeshID.h
 noExplicitConstructor:*/ampmesh/MeshPoint.h
+noExplicitConstructor:*/ampmesh/MeshGeometry.h
 knownConditionTrueFalse:*/ampmesh/testHelpers/meshTestLoop.cc
 postfixOperator:*/ampmesh/testHelpers/meshTests.cc
 oppositeInnerCondition:*/src/ampmesh/MultiMesh.cc

@@ -40,11 +40,7 @@ bool MeshGeometry::inside( const Point &pos ) const
 /********************************************************
  * Get the surface                                       *
  ********************************************************/
-int MeshGeometry::NSurface() const
-{
-    AMP_ERROR( "Not finished" );
-    return 0;
-}
+int MeshGeometry::NSurface() const { return d_mesh->getBlockIDs().size(); }
 int MeshGeometry::surface( const Point &x ) const
 {
     NULL_USE( x );
@@ -69,9 +65,13 @@ Point MeshGeometry::centroid() const
 }
 std::pair<Point, Point> MeshGeometry::box() const
 {
-    AMP_ERROR( "Not finished" );
-    Point p0 = { 0, 0, 0 };
-    return std::make_pair( p0, p0 );
+    auto box = d_mesh->getBoundingBox();
+    Point p0( box.size() / 2 ), p1( box.size() / 2 );
+    for ( size_t d = 0; d < box.size() / 2; d++ ) {
+        p0[d] = box[2 * d];
+        p1[d] = box[2 * d + 1];
+    }
+    return std::make_pair( p0, p1 );
 }
 
 

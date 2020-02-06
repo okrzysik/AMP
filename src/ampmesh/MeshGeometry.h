@@ -30,7 +30,7 @@ public:
     virtual ~MeshGeometry() = default;
 
     //! Get the name of the geometry
-    virtual std::string getName() const { return "MeshGeometry"; }
+    virtual std::string getName() const override { return "MeshGeometry"; }
 
     /**
      * \brief    Calculate the distance to the object given a ray
