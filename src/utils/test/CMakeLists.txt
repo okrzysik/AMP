@@ -31,4 +31,5 @@ COPY_TEST_FILE( input_SAMRAI )
 
 ADD_AMP_PROVISIONAL_TEST( test_crash )
 
-
+ADD_AMP_TEST( test_kdtree )
+ADD_AMP_TEST( test_DelaunayInterpolation )

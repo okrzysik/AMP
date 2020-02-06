@@ -149,7 +149,7 @@ nullPointerRedundantCheck:*/src/utils/Scanner.cc
 duplicateExpression:*/utils/Array.hpp
 nullPointer:*/utils/Array.hpp
 unreadVariable:*/utils/ReadTestMesh.cc
-resourceLeak:*/src/utilities/test/test_DelaunayInterpolation.cpp
+resourceLeak:*/src/utils/test/test_DelaunayInterpolation.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayInterpolation.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayTessellation.cpp
 arrayIndexOutOfBounds:*/src/utils/DelaunayTessellation.cpp
