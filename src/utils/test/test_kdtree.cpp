@@ -114,7 +114,7 @@ int run_kdtree_test( int DIM, size_t Nx, size_t Ns )
     const auto x = new const double *[DIM];
     for ( int d = 0; d < DIM; d++ )
         x[d] = &points[d][0];
-    kdtree tree( DIM, Nx, x );
+    AMP::kdtree tree( DIM, Nx, x );
     delete[] x;
     PROFILE_STOP( "create_tree" );
 

@@ -13,6 +13,7 @@
 #include <cstdio>
 #include <ctime>
 #include <limits>
+#include <memory>
 #include <random>
 #include <stdexcept>
 #include <string>
@@ -21,8 +22,9 @@
 
 
 #define printp printf
+using AMP::DelaunayInterpolation;
+using AMP::DelaunayTessellation;
 using AMP::UnitTest;
-
 
 #define NDIM_MAX 3 // The maximum number of dimensions supported (currently 3)
 
@@ -185,7 +187,7 @@ void testPointSearch( UnitTest *ut, int ndim, const std::vector<TYPE> &x )
 
 // Function to create and test the construction of the tessellation
 template<class TYPE>
-DelaunayInterpolation<TYPE> *
+std::shared_ptr<DelaunayInterpolation<TYPE>>
 createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TYPE> &x )
 {
     size_t N = x.size() / ndim;
@@ -195,7 +197,7 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
 
     // Create the tessellation
     PROFILE_START( "Create Tessellation" );
-    auto data      = new DelaunayInterpolation<TYPE>( ndim );
+    auto data      = std::make_shared<DelaunayInterpolation<TYPE>>( ndim );
     int error_code = data->create_tessellation( (int) x.size() / ndim, &x[0] );
     size_t N_tri   = data->get_N_tri();
     PROFILE_STOP( "Create Tessellation" );
@@ -203,7 +205,6 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
         ut->passes( "Created tessellation " + msg );
     } else {
         ut->failure( "Created tessellation " + msg );
-        delete data;
         return nullptr;
     }
 
@@ -220,7 +221,6 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
     delete[] tri_nab;
     if ( !pass ) {
         ut->failure( "Triangle neighbors are invalid " + msg );
-        delete data;
         return nullptr;
     }
 
@@ -285,7 +285,6 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
         int *tri  = data->get_tri( 0 );
         TYPE x1[NDIM_MAX * ( NDIM_MAX + 1 )];
         double R, c[NDIM_MAX], xi[NDIM_MAX], x2[NDIM_MAX * ( NDIM_MAX + 1 )];
-        ;
         for ( size_t i = 0; i < N_tri; i++ ) {
             for ( int d1 = 0; d1 < ndim + 1; d1++ ) {
                 int k = tri[d1 + i * ( ndim + 1 )];
@@ -544,7 +543,7 @@ void testInterpolation( UnitTest *ut,
         testPointSearch( ut, ndim, x );
 
     // Create the tessellation
-    DelaunayInterpolation<TYPE> *data = createAndTestDelaunayInterpolation<TYPE>( ut, ndim, x );
+    auto data = createAndTestDelaunayInterpolation<TYPE>( ut, ndim, x );
     if ( data == nullptr )
         return;
     size_t N_tri = data->get_N_tri();
@@ -846,7 +845,6 @@ void testInterpolation( UnitTest *ut,
         delete[] g_mask;
     }
     // Free memory
-    delete data;
     delete[] nearest;
     delete[] index1;
     delete[] index2;
