@@ -93,12 +93,7 @@ static inline double get_double( const int512_t &x ) { return x.convert_to<doubl
 #endif
 
 
-#ifdef USE_WINDOWS
-#define log2( x ) ( log( x ) / log( 2.0 ) )
-#endif
-
-#define MIN( a, b ) ( ( a <= b ) ? a : b )
-#define MAX( a, b ) ( ( a >= b ) ? a : b )
+namespace AMP {
 
 
 static bool conserved_neighbors( const int N1, const int list1[], const int N2, const int list2[] );
@@ -257,7 +252,7 @@ template<int NDIM, class TYPE, class ETYPE>
 static inline bool coplanar( const TYPE x[4][NDIM], TYPE tol )
 {
     bool is_coplanar = true;
-    if ( NDIM == 3 ) {
+    if constexpr ( NDIM == 3 ) {
         ETYPE det( 0 ), one( 1 ), neg( -1 );
         for ( int d = 0; d < NDIM + 1; d++ ) {
             ETYPE M[9];
@@ -333,8 +328,8 @@ int DelaunayTessellation::create_tessellation( const int N,
         TYPE xmin[3] = { 0, 0, 0 }, xmax[3] = { 0, 0, 0 };
         for ( int i = 0; i < N; i++ ) {
             for ( int d = 0; d < NDIM; d++ ) {
-                xmin[d] = MIN( xmin[d], x[d + i * NDIM] );
-                xmax[d] = MAX( xmax[d], x[d + i * NDIM] );
+                xmin[d] = std::min( xmin[d], x[d + i * NDIM] );
+                xmax[d] = std::max( xmax[d], x[d + i * NDIM] );
             }
         }
         TYPE domain_size = 0;
@@ -369,6 +364,7 @@ int DelaunayTessellation::create_tessellation( const int N,
         TOL_COLLINEAR = 1e-3;
         TOL_COPLANAR  = 1e-8 * r_min * r_min;
     }
+    NULL_USE( TOL_COPLANAR );
 
     // Next we need to create a list of the order in which we want to insert the values
     // We will do this by sorting the points by order of their distance from the closest pair
@@ -421,7 +417,7 @@ int DelaunayTessellation::create_tessellation( const int N,
             }
             break;
         case 3:
-            if ( NDIM == 3 ) {
+            if constexpr ( NDIM == 3 ) {
                 // Find the first point that is not coplanar with the first 3 points in I
                 TYPE x2[4][NDIM];
                 for ( int i1 = 0; i1 < 3; i1++ ) {
@@ -953,7 +949,7 @@ int DelaunayTessellation::create_tessellation( const int N,
 
     // Resort the triangle indicies so the smallest index is first (should help with caching)
     // Note: this causes tests to fail (not sure why)
-    /*if ( NDIM==2 ) {
+    /*if constexpr ( NDIM==2 ) {
         for (size_t i=0; i<N_tri; i++) {
             int *t1 = &tri[i*(NDIM+1)];
             int *n1 = &tri_nab[i*(NDIM+1)];
@@ -1161,10 +1157,17 @@ void DelaunayTessellation::swap_triangles( size_t N_tri, int i1, int i2, int *tr
  *   Eg. a line in 2D or a plane in 3D.                              *
  * Note: exact math requires N^D precision                           *
  ********************************************************************/
+static constexpr double inv_factorial( int N )
+{
+    double x = 1;
+    for ( int i = 2; i <= N; i++ )
+        x *= i;
+    return 1.0 / x;
+}
 template<int NDIM, class TYPE, class ETYPE>
 double DelaunayTessellation::calc_volume( const TYPE x[] )
 {
-    if ( NDIM == 1 ) {
+    if constexpr ( NDIM == 1 ) {
         return static_cast<double>( x[1] - x[0] );
     }
     ETYPE M[NDIM * NDIM];
@@ -1175,10 +1178,8 @@ double DelaunayTessellation::calc_volume( const TYPE x[] )
         for ( int j = 0; j < NDIM; j++ )
             M[i + j * NDIM] -= tmp;
     }
-    double Volume = get_double( DelaunayHelpers<NDIM>::det( M ) );
-    for ( int i = 2; i <= NDIM; i++ )
-        Volume /= i;
-    return Volume;
+    constexpr double C = inv_factorial( NDIM );
+    return C * get_double( DelaunayHelpers<NDIM>::det( M ) );
 }
 
 
@@ -1217,7 +1218,7 @@ int DelaunayTessellation::test_in_circumsphere( const TYPE x[],
                                                 const TYPE xi[],
                                                 const double TOL_VOL )
 {
-    if ( NDIM == 1 ) {
+    if constexpr ( NDIM == 1 ) {
         return test_in_circumsphere_1D( x, xi, TOL_VOL );
     }
     // Solve the sub-determinants (requires N^NDIM precision)
@@ -1292,7 +1293,7 @@ static inline void get_circumsphere_1D( const TYPE x[], double &R, double *cente
 template<int NDIM, class TYPE>
 void DelaunayTessellation::get_circumsphere( const TYPE x0[], double &R, double *center )
 {
-    if ( NDIM == 1 ) {
+    if constexpr ( NDIM == 1 ) {
         get_circumsphere_1D<TYPE>( x0, R, center );
         return;
     }
@@ -1595,7 +1596,7 @@ bool DelaunayTessellation::find_flip(
     int *new_tri_nab )
 {
     bool valid = false;
-    if ( NDIM == 2 ) {
+    if constexpr ( NDIM == 2 ) {
         valid = find_flip_2D<TYPE, ETYPE>( x,
                                            tri,
                                            tri_nab,
@@ -1606,7 +1607,7 @@ bool DelaunayTessellation::find_flip(
                                            index_old,
                                            new_tri,
                                            new_tri_nab );
-    } else if ( NDIM == 3 ) {
+    } else if constexpr ( NDIM == 3 ) {
         valid = find_flip_3D<TYPE, ETYPE>( x,
                                            tri,
                                            tri_nab,
@@ -2836,9 +2837,9 @@ int DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node( const int node_
         if ( new_tri_nab[i] == -1 )
             N_add++;
     }
-    if ( NDIM == 2 ) {
+    if constexpr ( NDIM == 2 ) {
         ASSERT( N_add == 2 );
-    } else if ( NDIM == 3 ) {
+    } else if constexpr ( NDIM == 3 ) {
         ASSERT( N_add >= 3 );
         ASSERT( N_add <= 2 * N_tri_new + 1 );
     }
@@ -2928,7 +2929,7 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::check_data()
         }
         ASSERT( Nf == 1 );
     }
-    if ( NDIM == 2 ) {
+    if constexpr ( NDIM == 2 ) {
         // No node should be on the face list more than twice
         auto tmp = new unsigned char[Nx];
         memset( tmp, 0, Nx );
@@ -3586,3 +3587,6 @@ void DelaunayTessellation::get_circumsphere( const int ndim,
         throw std::logic_error( "Unsupported dimension" );
     }
 }
+
+
+} // namespace AMP

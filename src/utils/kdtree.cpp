@@ -1,6 +1,10 @@
 #include "AMP/utils/kdtree.h"
 #include "AMP/utils/Utilities.h"
 
+#if USE_AMP_MESH
+#include "AMP/ampmesh/Mesh.h"
+#endif
+
 #include "ProfilerApp.h"
 
 #include <cmath>
@@ -10,10 +14,17 @@
 #define ERROR_MSG AMP_ERROR
 
 
+namespace AMP {
+
+
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-kdtree::kdtree( const int N_dim, const size_t N, const double *const *x )
+kdtree::kdtree( const int N_dim, const size_t N, const double *const *x ) : kdtree()
+{
+    initialize( N_dim, N, x );
+}
+void kdtree::initialize( const int N_dim, const size_t N, const double *const *x )
 {
     if ( N_dim < 1 || N_dim > 64 )
         ERROR_MSG( "Invalid dimension" );
@@ -62,6 +73,24 @@ kdtree::kdtree( const int N_dim, const size_t N, const double *const *x )
     kdtree::split_tree( &d_tree );
     PROFILE_STOP( "constructor" );
 }
+#if USE_AMP_MESH
+kdtree::kdtree( const std::vector<AMP::Mesh::MeshPoint<double>> &x ) : kdtree()
+{
+    if ( x.empty() )
+        return;
+    int ndim = x[0].ndim();
+    double *x2[5];
+    for ( int d = 0; d < ndim; d++ )
+        x2[d] = new double[x.size()];
+    for ( size_t i = 0; i < x.size(); i++ ) {
+        for ( int d = 0; d < ndim; d++ )
+            x2[d][i] = x[i][d];
+    }
+    initialize( ndim, x.size(), x2 );
+    for ( int d = 0; d < ndim; d++ )
+        delete[] x2[d];
+}
+#endif
 
 
 /********************************************************
@@ -473,3 +502,6 @@ size_t kdtree::kdtree_struct::memory_usage() const
         bytes += right->memory_usage();
     return bytes;
 }
+
+
+} // namespace AMP

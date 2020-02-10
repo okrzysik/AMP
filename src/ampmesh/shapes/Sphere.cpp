@@ -33,6 +33,17 @@ Sphere::Sphere( double r ) : LogicalGeometry(), d_r( r )
 
 
 /********************************************************
+ * Compute the nearest point on the surface              *
+ ********************************************************/
+Point Sphere::nearest( const Point &pos ) const
+{
+    NULL_USE( pos );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
+
+
+/********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
 double Sphere::distance( const Point &pos, const Point &ang ) const

@@ -2,15 +2,10 @@
 #define included_AMP_MeshGeometry
 
 #include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/Mesh.h"
 
 #include <memory>
 #include <vector>
-
-
-namespace AMP::Mesh {
-class Mesh;        // Forward declare Mesh
-class MeshElement; // Forward declare Mesh
-} // namespace AMP::Mesh
 
 
 namespace AMP::Geometry {
@@ -39,6 +34,15 @@ public:
      * @return      Returns true if the object is convex
      */
     virtual bool isConvex() const override;
+
+    /**
+     * \brief    Calculate the nearest point on the surface
+     * \details  This function computes the nearest point on the surface
+     * \param[in] pos   Current position of ray
+     * \param[in] dir   Direction of ray (should be normalized for most uses)
+     * @return          Returns the nearest surface point
+     */
+    virtual Point nearest( const Point &pos ) const override;
 
     /**
      * \brief    Calculate the distance to the object given a ray
@@ -111,6 +115,8 @@ public:
     //! Clone the object
     virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const override;
 
+    //! Get the mesh
+    const AMP::Mesh::Mesh &getMesh() const { return *d_mesh; }
 
 private: // Internal functions
     // Initialize the internal data

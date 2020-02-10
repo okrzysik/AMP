@@ -47,9 +47,8 @@ std::vector<std::vector<std::array<int64_t, NG + 1>>>
 std::shared_ptr<AMP::Mesh::Mesh> generateSTL( std::shared_ptr<AMP::Mesh::MeshParameters> params );
 
 //! Generate a triangle mesh (or multi-mesh) from a geometry
-std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry::Geometry> geom,
-                                           const AMP_MPI &comm,
-                                           const AMP::Mesh::Point &resolution );
+std::shared_ptr<AMP::Mesh::Mesh>
+generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, double resolution );
 
 } // namespace AMP::Mesh::TriangleHelpers
 

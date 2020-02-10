@@ -21,6 +21,9 @@
 #define PROFILE_LEVEL 3
 
 
+namespace AMP {
+
+
 static void inv_M( const int n, const double *M, double *M_inv );
 static void solve_system( const int N, const double *M, const double *b, double *x );
 static void Gauss_Seidel( const unsigned int Nb,
@@ -2372,3 +2375,6 @@ template void DelaunayInterpolation<double>::interp_cubic<double>( const double[
                                                                    double *,
                                                                    double *,
                                                                    int );
+
+
+} // namespace AMP

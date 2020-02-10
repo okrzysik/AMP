@@ -13,6 +13,12 @@ MultiGeometry::MultiGeometry( const std::vector<Geometry::shared_ptr> &geom )
     for ( const auto &geom : d_geom )
         d_physicalDim = std::max( d_physicalDim, geom->getDim() );
 }
+Point MultiGeometry::nearest( const Point &pos ) const
+{
+    NULL_USE( pos );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
 double MultiGeometry::distance( const Point &pos, const Point &dir ) const
 {
     double dist = std::numeric_limits<double>::infinity();

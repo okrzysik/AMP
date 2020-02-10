@@ -59,6 +59,17 @@ CircleFrustum::CircleFrustum( const std::array<double, 2> &r, int dir, double he
 
 
 /********************************************************
+ * Compute the nearest point on the surface              *
+ ********************************************************/
+Point CircleFrustum::nearest( const Point &pos ) const
+{
+    NULL_USE( pos );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
+
+
+/********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
 double CircleFrustum::distance( const Point &pos, const Point &ang ) const

@@ -36,6 +36,7 @@ public:
 public: // Functions inherited from Geometry
     virtual std::string getName() const override final { return "CircleFrustum"; }
     virtual bool isConvex() const override final { return true; }
+    virtual Point nearest( const Point &pos ) const override final;
     virtual double distance( const Point &pos, const Point &dir ) const override final;
     virtual bool inside( const Point &pos ) const override final;
     virtual int NSurface() const override final { return 3; }

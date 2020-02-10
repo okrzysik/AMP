@@ -263,10 +263,51 @@ double distanceToPlane( const AMP::Mesh::Point &n,
 
 
 /****************************************************************
+ * Compute the distance to a circle                              *
+ ****************************************************************/
+double distanceToCircle( double r, const AMP::Mesh::Point &pos, const AMP::Mesh::Point &ang )
+{
+    double r2   = pos.x() * pos.x() + pos.y() * pos.y();
+    bool inside = r2 < r * r;
+    double dx   = ang.x();
+    double dy   = ang.y();
+    double dr   = sqrt( dx * dx + dy * dy );
+    double D    = pos.x() * ( pos.y() + ang.y() ) - ( pos.x() + ang.x() ) * pos.y();
+    double t    = r * r * dr * dr - D * D;
+    if ( t < 0 )
+        return std::numeric_limits<double>::infinity();
+    t = sqrt( t );
+    double x1, x2, d1, d2;
+    if ( ang.x() != 0.0 ) {
+        double s = dy < 0 ? -1 : 1;
+        x1       = ( D * dy + s * dx * t ) / ( dr * dr );
+        x2       = ( D * dy - s * dx * t ) / ( dr * dr );
+        d1       = ( x1 - pos.x() ) / ang.x();
+        d2       = ( x2 - pos.x() ) / ang.x();
+    } else {
+        double s = dx < 0 ? -1 : 1;
+        x1       = ( D * dx + s * dy * t ) / ( dr * dr );
+        x2       = ( D * dx - s * dy * t ) / ( dr * dr );
+        d1       = ( x1 - pos.y() ) / ang.y();
+        d2       = ( x2 - pos.y() ) / ang.y();
+    }
+    if ( d1 < 0 )
+        d1 = std::numeric_limits<double>::infinity();
+    if ( d2 < 0 )
+        d2 = std::numeric_limits<double>::infinity();
+    double d = std::min( d1, d2 );
+    return ( inside ? -1 : 1 ) * d;
+}
+
+
+/****************************************************************
  * Compute the distance to the surface of a cylinder             *
  ****************************************************************/
 double distanceToCylinder( double r, double h, const Point &pos, const Point &ang )
 {
+    // Check if the point is inside the cylinder
+    double r2   = pos.x() * pos.x() + pos.y() * pos.y();
+    bool inside = std::abs( pos.z() ) <= 0.5 * h && r2 <= r * r;
     // First check the distance to the faces
     double d1 = ( 0.5 * h - pos.z() ) / ang.z();
     double d2 = ( -0.5 * h - pos.z() ) / ang.z();
@@ -276,41 +317,17 @@ double distanceToCylinder( double r, double h, const Point &pos, const Point &an
         d2 = std::numeric_limits<double>::infinity();
     double d  = std::min( d1, d2 );
     auto pos2 = pos + d * ang;
-    double r2 = pos2.x() * pos2.x() + pos2.y() * pos2.y();
-    if ( r2 > r * r )
-        d = std::numeric_limits<double>::infinity();
+    r2        = pos2.x() * pos2.x() + pos2.y() * pos2.y();
+    if ( r2 <= r * r )
+        return -d;
+    else if ( ang.x() == 0 && ang.y() == 0 )
+        return std::numeric_limits<double>::infinity();
     // Compute the intersection of a line with the circle of the cylinder
-    double dx = ang.x();
-    double dy = ang.y();
-    double dr = sqrt( dx * dx + dy * dy );
-    double D  = pos.x() * ( pos.y() + ang.y() ) - ( pos.x() + ang.x() ) * pos.y();
-    double t  = r * r * dr * dr - D * D;
-    if ( t >= 0 ) {
-        t         = sqrt( t );
-        double s  = dy < 0 ? -1 : 1;
-        double x1 = ( D * dy + s * dx * t ) / ( dr * dr );
-        double x2 = ( D * dy - s * dx * t ) / ( dr * dr );
-        // double y1 = ( -D * dx + abs( dy ) *t ) / ( dr*dr);
-        // double y2 = ( -D * dx - abs( dy ) *t ) / ( dr*dr);
-        // Compute the distance to the point
-        d1 = ( x1 - pos.x() ) / ang.x();
-        d2 = ( x2 - pos.x() ) / ang.x();
-        if ( d1 < 0 )
-            d1 = std::numeric_limits<double>::infinity();
-        if ( d2 < 0 )
-            d2 = std::numeric_limits<double>::infinity();
-        // Check that the z-point is within the cylinder for each point
-        double z1 = pos.z() + d1 * ang.z();
-        double z2 = pos.z() + d2 * ang.z();
-        if ( z1 < -0.5 * h || z1 > 0.5 * h )
-            d1 = std::numeric_limits<double>::infinity();
-        if ( z2 < -0.5 * h || z2 > 0.5 * h )
-            d2 = std::numeric_limits<double>::infinity();
-        d = std::min( d, std::min( d1, d2 ) );
-    }
-    // Return the distance to the closest point
-    r2          = pos.x() * pos.x() + pos.y() * pos.y();
-    bool inside = std::abs( pos.z() ) < 0.5 * h && r2 < r * r;
+    d = std::abs( distanceToCircle( r, pos, ang ) );
+    // Check that the z-point is within the cylinder
+    double z = pos.z() + d * ang.z();
+    if ( z < -0.5 * h || z > 0.5 * h )
+        d = std::numeric_limits<double>::infinity();
     return ( inside ? -1 : 1 ) * d;
 }
 

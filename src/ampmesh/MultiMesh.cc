@@ -84,16 +84,18 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
         auto new_mesh = AMP::Mesh::Mesh::buildMesh( params->params[i] );
         d_meshes.push_back( new_mesh );
     }
-    if ( d_meshes.empty() ) {
-        PhysicalDim = 0;
-        GeomDim     = static_cast<GeomType>( 0 );
-        return;
-    }
-    // Get the physical dimension and the highest geometric type
-    PhysicalDim = d_meshes[0]->getDim();
-    GeomDim     = d_meshes[0]->getGeomType();
-    d_max_gcw   = 0;
-    for ( size_t i = 1; i < d_meshes.size(); i++ ) {
+    // Get the physical dimension
+    PhysicalDim = 0;
+    if ( !d_meshes.empty() )
+        PhysicalDim = d_meshes[0]->getDim();
+    PhysicalDim = d_comm.maxReduce( PhysicalDim );
+    for ( size_t i = 0; i < d_meshes.size(); i++ )
+        AMP_INSIST( PhysicalDim == d_meshes[i]->getDim(),
+                    "Physical dimension must match for all meshes in multimesh" );
+    // Get the highest geometric type
+    GeomDim   = AMP::Mesh::GeomType::Vertex;
+    d_max_gcw = 0;
+    for ( size_t i = 0; i < d_meshes.size(); i++ ) {
         AMP_INSIST( PhysicalDim == d_meshes[i]->getDim(),
                     "Physical dimension must match for all meshes in multimesh" );
         if ( d_meshes[i]->getGeomType() > GeomDim )
@@ -104,8 +106,9 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
     GeomDim   = (GeomType) d_comm.maxReduce( (int) GeomDim );
     d_max_gcw = d_comm.maxReduce( d_max_gcw );
     // Compute the bounding box of the multimesh
-    d_box_local = d_meshes[0]->getBoundingBox();
-    for ( size_t i = 1; i < d_meshes.size(); i++ ) {
+    d_box_local = { 1e200, -1e200, 1e200, -1e200, 1e200, -1e200 };
+    d_box_local.resize( 2 * PhysicalDim );
+    for ( size_t i = 0; i < d_meshes.size(); i++ ) {
         auto meshBox = d_meshes[i]->getBoundingBox();
         for ( int j = 0; j < PhysicalDim; j++ ) {
             if ( meshBox[2 * j + 0] < d_box_local[2 * j + 0] ) {

@@ -31,6 +31,17 @@ Circle::Circle( double R ) : LogicalGeometry(), d_R( R )
 
 
 /********************************************************
+ * Compute the nearest point on the surface              *
+ ********************************************************/
+Point Circle::nearest( const Point &pos ) const
+{
+    NULL_USE( pos );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
+
+
+/********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
 double Circle::distance( const Point &pos, const Point &ang ) const

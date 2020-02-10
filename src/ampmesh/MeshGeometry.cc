@@ -36,6 +36,12 @@ void MeshGeometry::initialize()
 /********************************************************
  * Get the distance to the surface                       *
  ********************************************************/
+Point MeshGeometry::nearest( const Point &pos ) const
+{
+    NULL_USE( pos );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
 double MeshGeometry::distance( const Point &pos, const Point &dir ) const
 {
     NULL_USE( pos );

@@ -4,6 +4,9 @@
 #include <stdlib.h>
 
 
+namespace AMP {
+
+
 /********************************************************************
  * Solver helper class                                               *
  * Note: The matrix is stored in column-major order                  *
@@ -163,5 +166,7 @@ public:
     }
 };
 
+
+} // namespace AMP
 
 #endif

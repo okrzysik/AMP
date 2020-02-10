@@ -34,6 +34,17 @@ Shell::Shell( double r_min, double r_max ) : LogicalGeometry(), d_r_min( r_min )
 
 
 /********************************************************
+ * Compute the nearest point on the surface              *
+ ********************************************************/
+Point Shell::nearest( const Point &pos ) const
+{
+    NULL_USE( pos );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
+
+
+/********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
 double Shell::distance( const Point &pos, const Point &ang ) const

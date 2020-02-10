@@ -78,7 +78,9 @@ static std::array<std::array<ElementID, N2 + 1>, n_Simplex_elements[N1][N2]>
 getChildren( const std::array<ElementID, N1 + 1> &parent )
 {
     std::array<std::array<ElementID, N2 + 1>, n_Simplex_elements[N1][N2]> children;
-    if constexpr ( N2 == 0 ) {
+    if constexpr ( N1 == N2 ) {
+        children[0] = parent[0];
+    } else if constexpr ( N2 == 0 ) {
         for ( size_t i = 0; i < N1 + 1; i++ )
             children[i] = parent[i];
     } else if constexpr ( N2 == 1 ) {
@@ -86,8 +88,13 @@ getChildren( const std::array<ElementID, N1 + 1> &parent )
         for ( size_t i = 0; i < N1; i++ )
             for ( size_t j = i + 1; j <= N1; j++ )
                 children[k++] = { parent[i], parent[j] };
+    } else if constexpr ( N2 == 2 && N1 == 3 ) {
+        children[0] = { parent[1], parent[2], parent[3] };
+        children[1] = { parent[2], parent[3], parent[0] };
+        children[2] = { parent[3], parent[0], parent[1] };
+        children[3] = { parent[0], parent[1], parent[2] };
     } else {
-        throw std::logic_error( "Not finished" );
+        AMP_ERROR( "Not finished" );
     }
     for ( auto &child : children )
         std::sort( child.begin(), child.end() );

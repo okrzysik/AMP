@@ -1,15 +1,21 @@
 #include "AMP/ampmesh/triangle/TriangleHelpers.h"
+#include "AMP/ampmesh/MeshGeometry.h"
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/MultiGeometry.h"
 #include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/ampmesh/triangle/TriangleMesh.h"
 #include "AMP/utils/Database.h"
+#include "AMP/utils/DelaunayTessellation.h"
+#include "AMP/utils/NearestPairSearch.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/kdtree.h"
 
 #include "ProfilerApp.h"
 
 #include <algorithm>
 #include <map>
+#include <random>
 
 
 namespace AMP {
@@ -558,9 +564,133 @@ std::shared_ptr<AMP::Mesh::Mesh> generateSTL( MeshParameters::shared_ptr params 
 /********************************************************
  *  Generate mesh for geometry                           *
  ********************************************************/
-std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry::Geometry> geom,
-                                           const AMP_MPI &comm,
-                                           const Point &resolution )
+template<int NDIM>
+static std::shared_ptr<AMP::Mesh::Mesh> generate(
+    int N, int N_tri, const double *x, const int *tri, const int *tri_nab, const AMP_MPI &comm )
+{
+
+    std::vector<std::array<double, NDIM>> verticies( N );
+    std::vector<std::array<int64_t, NDIM + 1>> triangles( N_tri );
+    std::vector<std::array<int64_t, NDIM + 1>> tri_nab2( N_tri );
+    for ( int i = 0; i < N; i++ ) {
+        for ( int d = 0; d < NDIM; d++ )
+            verticies[i][d] = x[d + i * NDIM];
+    }
+    for ( int i = 0; i < N_tri; i++ ) {
+        for ( int d = 0; d <= NDIM; d++ ) {
+            triangles[i][d] = tri[d + i * ( NDIM + 1 )];
+            tri_nab2[i][d]  = tri_nab[d + i * ( NDIM + 1 )];
+        }
+    }
+    return TriangleMesh<NDIM, NDIM>::generate(
+        std::move( verticies ), std::move( triangles ), std::move( tri_nab2 ), comm );
+}
+static inline double dist( const kdtree &tree, const Point &p )
+{
+    double d;
+    tree.find_nearest( p.data(), &d );
+    return d;
+}
+static inline void check_nearest( const std::vector<Point> &x )
+{
+    if ( x.empty() )
+        return;
+    int ndim = x[0].ndim();
+    auto x2  = new double[ndim * x.size()];
+    for ( size_t i = 0; i < x.size(); i++ ) {
+        for ( int d = 0; d < ndim; d++ )
+            x2[d + i * ndim] = x[i][d];
+    }
+    std::pair<int, int> index;
+    if ( ndim == 1 )
+        index = find_min_dist<1, double>( x.size(), x2 );
+    else if ( ndim == 2 )
+        index = find_min_dist<2, double>( x.size(), x2 );
+    else if ( ndim == 3 )
+        index = find_min_dist<3, double>( x.size(), x2 );
+    else
+        AMP_ERROR( "Not programmed" );
+    auto dx  = x[index.first] - x[index.second];
+    double d = dx.x() * dx.x() + dx.y() * dx.y() + dx.z() * dx.z();
+    AMP_ASSERT( d > 1e-8 );
+}
+static inline std::vector<Point> getVolumePoints( const AMP::Geometry::Geometry &geom,
+                                                  double resolution )
+{
+    std::vector<Point> points;
+    auto [x0, x1] = geom.box();
+    for ( double x = x0.x(); x <= x1.x(); x += resolution ) {
+        for ( double y = x0.y(); y <= x1.y(); y += resolution ) {
+            for ( double z = x0.z(); z <= x1.z(); z += resolution ) {
+                Point p( x0.size(), { x, y, z } );
+                if ( geom.inside( p ) )
+                    points.push_back( p );
+            }
+        }
+    }
+    return points;
+}
+/*static inline std::vector<Point> getSurfacePoints( const AMP::Geometry::Geometry &geom, int N )
+{
+    std::vector<Point> points;
+    const int ndim      = geom.getDim();
+    const auto [x1, x2] = geom.box();
+    const auto x0       = 0.5 * ( x1 + x2 );
+    const auto dx       = x2 - x1;
+    if ( ndim == 3 ) {
+        double r = sqrt( dx.x() * dx.x() + dx.y() * dx.y() + dx.z() * dx.z() );
+        int n    = ceil( sqrt( N ) );
+        for ( int i = 0; i < n; i++ ) {
+            double x = ( 0.5 + i ) / (double) n;
+            for ( int j = 0; j < n; j++ ) {
+                double y = ( 0.5 + j ) / (double) n;
+                auto dir = normalize(
+                    AMP::Geometry::GeometryHelpers::map_logical_sphere_surface( r, x, y ) );
+                double d = geom.distance( x0, dir );
+                AMP_ASSERT( d < 0 );
+                points.push_back( x0 - d * dir );
+            }
+        }
+    } else {
+        AMP_ERROR( "Not finished" );
+    }
+    check_nearest( points );
+    return points;
+}*/
+static inline double getPos( int i, int N, bool isPeriodic )
+{
+    if ( N <= 1 )
+        return 0;
+    if ( isPeriodic )
+        return ( i + 0.5 ) / N;
+    return i / ( N - 1.0 );
+}
+static inline std::vector<Point>
+getLogicalSurfacePoints( const AMP::Geometry::LogicalGeometry &geom, double resolution )
+{
+    std::vector<Point> points;
+    int N[3]            = { 1, 1, 1 };
+    const auto [x1, x2] = geom.box();
+    const auto dx       = x2 - x1;
+    for ( int d = 0; d < geom.getLogicalDim(); d++ )
+        N[d] = dx[d] / resolution;
+    auto periodic = geom.getPeriodicDim();
+    periodic.resize( 3, false );
+    for ( int i = 0; i < N[0]; i++ ) {
+        double x = getPos( i, N[0], periodic[0] );
+        for ( int j = 0; j < N[1]; j++ ) {
+            double y = getPos( j, N[1], periodic[1] );
+            for ( int k = 0; k < N[2]; k++ ) {
+                double z = getPos( k, N[2], periodic[2] );
+                Point p  = geom.physical( { x, y, z } );
+                points.push_back( p );
+            }
+        }
+    }
+    return points;
+}
+std::shared_ptr<AMP::Mesh::Mesh>
+generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, double resolution )
 {
     auto multigeom = std::dynamic_pointer_cast<AMP::Geometry::MultiGeometry>( geom );
     if ( multigeom ) {
@@ -571,27 +701,75 @@ std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry::Geomet
         }
         return std::make_shared<MultiMesh>( "name", comm, submeshes );
     }
+    // Perform some basic checks
+    int ndim = geom->getDim();
     AMP_INSIST( geom->isConvex(), "Geometry must be convex" );
     // Get the volume points
-    std::vector<Point> points;
-    auto [x0, x1] = geom->box();
-    for ( double x = x0.x(); x <= x1.x(); x += resolution.x() ) {
-        for ( double y = x0.y(); y <= x1.y(); y += resolution.y() ) {
-            for ( double z = x0.z(); z <= x1.z(); z += resolution.z() ) {
-                Point p( x0.size(), { x, y, z } );
-                if ( geom->inside( p ) )
-                    points.push_back( p );
-            }
-        }
-    }
+    auto points = getVolumePoints( *geom, resolution );
     // Get the surface points
+    std::vector<Point> surface;
+    auto meshGeom    = std::dynamic_pointer_cast<AMP::Geometry::MeshGeometry>( geom );
+    auto logicalGeom = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( geom );
+    if ( meshGeom ) {
+        const auto &mesh = meshGeom->getMesh();
+        for ( auto node : mesh.getIterator( AMP::Mesh::GeomType::Vertex ) )
+            surface.push_back( node.coord() );
+    } else if ( logicalGeom ) {
+        surface = getLogicalSurfacePoints( *logicalGeom, resolution );
+    } else {
+        // surface = getSurfacePoints( *geom, N );
+    }
+    // Remove points that are too close to the surface and add the surface points
+    if ( !surface.empty() ) {
+        size_t k    = 0;
+        double tol  = 0.6 * resolution;
+        double tol2 = tol * tol;
+        for ( size_t i = 0; i < points.size(); i++ ) {
+            auto ps   = geom->nearest( points[i] );
+            double d2 = ( points[i] - ps ).norm();
+            if ( d2 >= tol2 )
+                points[k++] = points[i];
+        }
+        points.resize( k );
+        for ( size_t i = 0; i < surface.size(); i++ )
+            points.push_back( surface[i] );
+    }
+    check_nearest( points );
+    // Smooth the points to try and make the distance between all points ~ equal
 
     // Tessellate
-
+    auto [lb, ub] = geom->box();
+    auto dx       = ub - lb;
+    int N         = points.size();
+    auto x1       = new double[ndim * N];
+    auto x2       = new int[ndim * N];
+    for ( int i = 0; i < N; i++ ) {
+        for ( int d = 0; d < ndim; d++ ) {
+            double x         = points[i][d];
+            double tmp       = 2.0 * ( x - lb[d] ) / dx[d] - 1.0;
+            int xi           = round( 1000000 * tmp );
+            x1[d + i * ndim] = x;
+            x2[d + i * ndim] = xi;
+        }
+    }
+    int *tri     = nullptr;
+    int *tri_nab = nullptr;
+    auto N_tri   = DelaunayTessellation::create_tessellation( ndim, N, x2, &tri, &tri_nab );
+    AMP_ASSERT( N_tri > 0 );
     // Generate the mesh
-
-    AMP_ERROR( "Not finished" );
-    return std::shared_ptr<AMP::Mesh::Mesh>();
+    std::shared_ptr<AMP::Mesh::Mesh> mesh;
+    if ( ndim == 2 ) {
+        mesh = generate<2>( N, N_tri, x1, tri, tri_nab, comm );
+    } else if ( ndim == 3 ) {
+        mesh = generate<3>( N, N_tri, x1, tri, tri_nab, comm );
+    } else {
+        AMP_ERROR( "Not supported yet" );
+    }
+    delete[] x1;
+    delete[] x2;
+    delete[] tri;
+    delete[] tri_nab;
+    return mesh;
 }
 
 

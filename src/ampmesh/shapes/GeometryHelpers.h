@@ -165,6 +165,20 @@ double distanceToPlane( const AMP::Mesh::Point &n,
 
 
 /**
+ * \brief   Compute the intersection of a ray and circle (2D)
+ * \details  This function will compute the intersection of a ray with a circle.
+ *    It assumes a circle of radius r centered at the origin.
+ *    If the ray is inside the cylinder the distance is negative.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] r         Radius of circle
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * @return              Returns the distance
+ */
+double distanceToCircle( double r, const AMP::Mesh::Point &pos, const AMP::Mesh::Point &ang );
+
+
+/**
  * \brief   Compute the intersection of a ray and cylinder
  * \details  This function will compute the intersection of a ray with a cylinder.
  *    It assumes a cylinder of radius r and height h, centered at the origin

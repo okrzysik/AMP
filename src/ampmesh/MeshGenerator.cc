@@ -1,10 +1,10 @@
 // This file stores the routines to generate the meshes for AMP::Mesh::Mesh
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/utils/Utilities.h"
-
+#include "AMP/ampmesh/MeshPoint.h"
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
 #include "AMP/ampmesh/triangle/TriangleHelpers.h"
+#include "AMP/utils/Utilities.h"
 #ifdef USE_TRILINOS_STKCLASSIC
 //#include "AMP/ampmesh/STKmesh/STKMesh.h"
 #endif
@@ -31,19 +31,19 @@ std::map<std::string, AMP::Mesh::Mesh::generatorType> AMP::Mesh::Mesh::d_generat
  ********************************************************/
 std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_ptr &params )
 {
-    auto database = params->d_db;
-    AMP_ASSERT( database != nullptr );
-    AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
-    AMP_INSIST( database->keyExists( "MeshName" ), "MeshName must exist in input database" );
-    std::string MeshType = database->getString( "MeshType" );
-    std::string MeshName = database->getString( "MeshName" );
+    auto db = params->d_db;
+    AMP_ASSERT( db != nullptr );
+    AMP_INSIST( db->keyExists( "MeshType" ), "MeshType must exist in input database" );
+    AMP_INSIST( db->keyExists( "MeshName" ), "MeshName must exist in input database" );
+    auto MeshType = db->getString( "MeshType" );
+    auto MeshName = db->getString( "MeshName" );
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
-    if ( MeshType == std::string( "Multimesh" ) ) {
+    if ( MeshType == "Multimesh" ) {
         // The mesh is a multimesh
         mesh = std::make_shared<AMP::Mesh::MultiMesh>( params );
-    } else if ( MeshType == std::string( "AMP" ) ) {
+    } else if ( MeshType == "AMP" ) {
         // The mesh is a AMP mesh
-        auto filename = database->getWithDefault<std::string>( "FileName", "" );
+        auto filename = db->getWithDefault<std::string>( "FileName", "" );
         auto suffix   = Utilities::getSuffix( filename );
         if ( suffix == "stl" ) {
             // We are reading an stl file
@@ -51,14 +51,24 @@ std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
         } else {
             mesh = AMP::Mesh::BoxMesh::generate( params );
         }
-    } else if ( MeshType == std::string( "libMesh" ) ) {
+    } else if ( MeshType == "TriangleGeometryMesh" ) {
+        // We will build a triangle mesh from a geometry
+        auto geom_db   = db->getDatabase( "Geometry" );
+        double dist[3] = { db->getWithDefault( "x_offset", 0.0 ),
+                           db->getWithDefault( "y_offset", 0.0 ),
+                           db->getWithDefault( "z_offset", 0.0 ) };
+        auto geom      = AMP::Geometry::Geometry::buildGeometry( geom_db );
+        geom->displace( dist );
+        auto res = db->getScalar<double>( "Resolution" );
+        mesh     = AMP::Mesh::TriangleHelpers::generate( geom, params->getComm(), res );
+    } else if ( MeshType == "libMesh" ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH
         mesh = std::make_shared<AMP::Mesh::libmeshMesh>( params );
 #else
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif
-    } else if ( MeshType == std::string( "STKMesh" ) ) {
+    } else if ( MeshType == "STKMesh" ) {
 // The mesh is a stk mesh
 #ifdef USE_TRILINOS_STKClassic
         // mesh = std::make_shared<AMP::Mesh::STKMesh>( params );
@@ -66,7 +76,7 @@ std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
 #else
         AMP_ERROR( "AMP was compiled without support for STKMesh" );
 #endif
-    } else if ( MeshType == std::string( "moab" ) || MeshType == std::string( "MOAB" ) ) {
+    } else if ( MeshType == "moab" || MeshType == "MOAB" ) {
 // The mesh is a MOAB mesh
 #ifdef USE_EXT_MOAB
         mesh = std::make_shared<AMP::Mesh::moabMesh>( params );
@@ -80,7 +90,7 @@ std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
             mesh = it->second( params );
         } else {
             // Unknown mesh type
-            AMP_ERROR( std::string( "Unknown mesh type (" ) + MeshType + std::string( ")" ) );
+            AMP_ERROR( "Unknown mesh type (" + MeshType + ")" );
         }
     }
     mesh->setName( MeshName );
@@ -93,28 +103,28 @@ std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
  ********************************************************/
 size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
-    auto database = params->d_db;
-    AMP_ASSERT( database != nullptr );
+    auto db = params->d_db;
+    AMP_ASSERT( db != nullptr );
     size_t meshSize = 0;
-    if ( database->keyExists( "NumberOfElements" ) ) {
+    if ( db->keyExists( "NumberOfElements" ) ) {
         // User specified the number of elements, this should override everything
-        meshSize = (size_t) database->getScalar<int>( "NumberOfElements" );
+        meshSize = (size_t) db->getScalar<int>( "NumberOfElements" );
         // Adjust the number of elements by a weight if desired
-        if ( database->keyExists( "Weight" ) ) {
-            double weight = database->getScalar<double>( "Weight" );
+        if ( db->keyExists( "Weight" ) ) {
+            double weight = db->getScalar<double>( "Weight" );
             meshSize      = (size_t) ceil( weight * ( (double) meshSize ) );
         }
         return meshSize;
     }
     // This is being called through the base class, call the appropriate function
-    AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
-    std::string MeshType = database->getString( "MeshType" );
-    if ( MeshType == std::string( "Multimesh" ) ) {
+    AMP_INSIST( db->keyExists( "MeshType" ), "MeshType must exist in input database" );
+    auto MeshType = db->getString( "MeshType" );
+    if ( MeshType == "Multimesh" ) {
         // The mesh is a multimesh
         meshSize = AMP::Mesh::MultiMesh::estimateMeshSize( params );
-    } else if ( MeshType == std::string( "AMP" ) ) {
+    } else if ( MeshType == "AMP" ) {
         // The mesh is a AMP mesh
-        auto filename = database->getWithDefault<std::string>( "FileName", "" );
+        auto filename = db->getWithDefault<std::string>( "FileName", "" );
         auto suffix   = Utilities::getSuffix( filename );
         if ( suffix == "stl" ) {
             // We are reading an stl file
@@ -122,14 +132,23 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         } else {
             meshSize = AMP::Mesh::BoxMesh::estimateMeshSize( params );
         }
-    } else if ( MeshType == std::string( "libMesh" ) ) {
+    } else if ( MeshType == "TriangleGeometryMesh" ) {
+        // We will build a triangle mesh from a geometry
+        auto geom_db    = db->getDatabase( "Geometry" );
+        auto geometry   = AMP::Geometry::Geometry::buildGeometry( geom_db );
+        auto [lb, ub]   = geometry->box();
+        auto resolution = db->getVector<double>( "Resolution" );
+        meshSize        = 1;
+        for ( int d = 0; d < lb.ndim(); d++ )
+            meshSize *= std::max<int64_t>( ( ub[d] - lb[d] ) / resolution[d], 1 );
+    } else if ( MeshType == "libMesh" ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH
         meshSize = AMP::Mesh::libmeshMesh::estimateMeshSize( params );
 #else
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif
-    } else if ( MeshType == std::string( "STKMesh" ) ) {
+    } else if ( MeshType == "STKMesh" ) {
 // The mesh is a stkMesh mesh
 #ifdef USE_TRILINOS_STKCLASSIC
         // meshSize = AMP::Mesh::STKMesh::estimateMeshSize( params );
@@ -137,8 +156,8 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 #else
         AMP_ERROR( "AMP was compiled without support for STKMesh" );
 #endif
-    } else if ( database->keyExists( "NumberOfElements" ) ) {
-        int NumberOfElements = database->getScalar<int>( "NumberOfElements" );
+    } else if ( db->keyExists( "NumberOfElements" ) ) {
+        int NumberOfElements = db->getScalar<int>( "NumberOfElements" );
         meshSize             = NumberOfElements;
     } else {
         // Unknown mesh type
@@ -153,18 +172,28 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
  ********************************************************/
 size_t Mesh::maxProcs( const MeshParameters::shared_ptr &params )
 {
-    auto database = params->d_db;
-    AMP_ASSERT( database != nullptr );
+    auto db = params->d_db;
+    AMP_ASSERT( db != nullptr );
+    // Check if the user is specifying the maximum number of processors
+    if ( db->keyExists( "maxProcs" ) )
+        return db->getScalar<int64_t>( "maxProcs" );
     // This is being called through the base class, call the appropriate function
-    AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
-    std::string MeshType = database->getString( "MeshType" );
+    AMP_INSIST( db->keyExists( "MeshType" ), "MeshType must exist in input database" );
+    std::string MeshType = db->getString( "MeshType" );
     size_t maxSize       = 0;
     if ( MeshType == std::string( "Multimesh" ) ) {
         // The mesh is a multimesh
         maxSize = AMP::Mesh::MultiMesh::maxProcs( params );
     } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
-        maxSize = AMP::Mesh::BoxMesh::maxProcs( params );
+        auto filename = db->getWithDefault<std::string>( "FileName", "" );
+        auto suffix   = Utilities::getSuffix( filename );
+        if ( suffix == "stl" ) {
+            // We are reading an stl file
+            maxSize = AMP::Mesh::TriangleHelpers::readSTLHeader( filename );
+        } else {
+            maxSize = AMP::Mesh::BoxMesh::maxProcs( params );
+        }
     } else if ( MeshType == std::string( "libMesh" ) ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH

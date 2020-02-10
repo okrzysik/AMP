@@ -6,6 +6,9 @@
 #include <vector>
 
 
+namespace AMP {
+
+
 /** \class DelaunayInterpolation
  *
  * This class provides Delaunay Tessellation.
@@ -583,5 +586,8 @@ private:
         void check_data();
     };
 };
+
+
+} // namespace AMP
 
 #endif

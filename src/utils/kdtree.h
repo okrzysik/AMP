@@ -7,6 +7,15 @@
 #include <vector>
 
 
+namespace AMP::Mesh {
+template<class TYPE>
+class MeshPoint; // Forward declare MeshPoint
+} // namespace AMP::Mesh
+
+
+namespace AMP {
+
+
 /**
  * \class kdtree
  * \brief A class used to to perform kd-tree based operations
@@ -29,6 +38,14 @@ public:
      * \param[in] x     The coordinates of each point in the tree (x[ndim][N])
      */
     kdtree( int ndim, size_t N, const double *const *x );
+
+
+    /**
+     * \brief   Default constructor
+     * \details  This an alternative constructor for creating the kdtree
+     * \param[in] x     The coordinates of each point in the tree
+     */
+    kdtree( const std::vector<AMP::Mesh::MeshPoint<double>> &x );
 
 
     //!  Destructor
@@ -72,21 +89,20 @@ public:
      * \brief   Search the tree for the nearest neighbor point
      * \details  This will return the index of the nearest neighbor in the tree
      * \param[in] x       The coordinates of the point to search (NDIM)
-     * \param[out] dist   Optional output array to return the distance to the nearest neighbor (1)
-     * \param[out] pos    Optional output array to return the position of the nearest neighbor
-     * (NDIM)
+     * \param[out] dist   Optional output array to return the distance to the nearest neighbor
+     * (1) \param[out] pos    Optional output array to return the position of the nearest
+     * neighbor (NDIM)
      */
     size_t find_nearest( const double *x, double *dist = nullptr, double *pos = nullptr ) const;
 
     /**
      * \brief   Search the tree for the nearest neighbor point
-     * \details  This will return the index of the nearest neighbor in the tree for each given point
-     * \param[in] N       The number of points we want to search
-     * \param[in] x       The coordinates of the points to search ( NDIM x N )
-     * \param[out] index  The index of the nearest neighbors (N)
-     * \param[out] dist   Optional output array to return the distance to the nearest neighbor (N)
-     * \param[out] pos    Optional output array to return the position of the nearest neighbor
-     * (NDIMxN)
+     * \details  This will return the index of the nearest neighbor in the tree for each given
+     * point \param[in] N       The number of points we want to search \param[in] x       The
+     * coordinates of the points to search ( NDIM x N ) \param[out] index  The index of the
+     * nearest neighbors (N) \param[out] dist   Optional output array to return the distance to
+     * the nearest neighbor (N) \param[out] pos    Optional output array to return the position
+     * of the nearest neighbor (NDIMxN)
      */
     void find_nearest( int N,
                        const double *x,
@@ -116,9 +132,9 @@ private:
     // Structure used to store the kdtree
     struct kdtree_struct {
         // Number of dimensions
-        unsigned char N_dim;
+        uint8_t N_dim;
         // Current splitting dimension
-        unsigned char split_dim;
+        uint8_t split_dim;
         // Number of points in the tree (starting at this node)
         unsigned int N;
         // The point of splitting
@@ -152,6 +168,9 @@ private:
         d_N   = 0;
     };
 
+    // Initialize the data
+    void initialize( int ndim, size_t N, const double *const *x );
+
     // Internal data
     unsigned int d_dim;
     size_t d_N;
@@ -168,5 +187,9 @@ private:
     static inline void check_neighbor(
         const kdtree_struct *tree, const double *x, size_t *index, double &dist, double *pos );
 };
+
+
+} // namespace AMP
+
 
 #endif

@@ -58,6 +58,15 @@ public:
     virtual bool isConvex() const = 0;
 
     /**
+     * \brief    Calculate the nearest point on the surface
+     * \details  This function computes the nearest point on the surface
+     * \param[in] pos   Current position of ray
+     * \param[in] dir   Direction of ray (should be normalized for most uses)
+     * @return          Returns the nearest surface point
+     */
+    virtual Point nearest( const Point &pos ) const = 0;
+
+    /**
      * \brief    Calculate the distance to the object given a ray
      * \details  This function computes the distance to the object given a ray.
      *     If the ray is inside the object, this distance is negitive.  If the

@@ -6,6 +6,9 @@
 #include "AMP/utils/kdtree.h"
 
 
+namespace AMP {
+
+
 /** \class DelaunayInterpolation
  *
  * This class provides Delaunay based N-dimensional simplex interpolation.
@@ -403,5 +406,8 @@ private:
                              // the starting triangle)
     mutable kdtree *d_tree;  // Nearest neighbor search tree
 };
+
+
+} // namespace AMP
 
 #endif

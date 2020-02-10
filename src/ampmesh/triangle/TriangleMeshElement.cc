@@ -1,6 +1,7 @@
 #include "AMP/ampmesh/triangle/TriangleMeshElement.h"
 #include "AMP/ampmesh/triangle/TriangleMesh.h"
 #include "AMP/ampmesh/triangle/TriangleMeshIterator.h"
+#include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -178,6 +179,13 @@ void TriangleMeshElement<NG, NP>::getNeighbors(
 /****************************************************************
  * Functions to get basic element properties                     *
  ****************************************************************/
+static constexpr double inv_factorial( int N )
+{
+    double x = 1;
+    for ( int i = 2; i <= N; i++ )
+        x *= i;
+    return 1.0 / x;
+}
 template<size_t N>
 static inline double dot( const std::array<double, N> &x, const std::array<double, N> &y )
 {
@@ -202,7 +210,7 @@ static inline std::array<double, N> operator-( const std::array<double, N> &x,
 template<size_t NG, size_t NP>
 double TriangleMeshElement<NG, NP>::volume() const
 {
-    if constexpr ( NG == 0 ) { // Replace if statements with if constexpr when supported
+    if constexpr ( NG == 0 ) {
         return 0;
     } else if constexpr ( NG == 1 ) {
         ElementID ids[2];
@@ -221,6 +229,26 @@ double TriangleMeshElement<NG, NP>::volume() const
         auto AC  = p0 - d_mesh->getPos( ids[2] );
         double t = dot( AB, AC );
         return 0.5 * sqrt( dot( AB, AB ) * dot( AC, AC ) - t * t );
+    } else if constexpr ( NG == NP ) {
+        /* Calculate the volume of a N-dimensional simplex:
+         *         1  |  x1-x4   x2-x4   x3-x4  |
+         *    V = --  |  y1-y4   y2-y4   y3-y4  |   (3D)
+         *        n!  |  z1-z4   z2-z4   z3-z4  |
+         * Note: the sign of the volume depends on the order of the points.
+         *   It will be positive for points stored in a clockwise manner
+         * Note:  If the volume is zero, then the simplex is invalid
+         *   Eg. a line in 2D or a plane in 3D.             */
+        ElementID ids[NG + 1];
+        d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
+        double M[NG * NG];
+        auto p0 = d_mesh->getPos( ids[NG] );
+        for ( size_t i = 0; i < NG; i++ ) {
+            auto p = d_mesh->getPos( ids[i] );
+            for ( size_t d = 0; d < NG; d++ )
+                M[d + i * NG] = p[d] - p0[d];
+        }
+        constexpr double C = inv_factorial( NG );
+        return std::abs( C * DelaunayHelpers<NG>::det( M ) );
     } else {
         AMP_ERROR( "Not finished" );
         return 0;
