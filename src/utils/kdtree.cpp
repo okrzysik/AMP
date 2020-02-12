@@ -476,6 +476,47 @@ kdtree::kdtree_struct::kdtree_struct()
     left      = nullptr;
     right     = nullptr;
 }
+kdtree::kdtree_struct::kdtree_struct( kdtree_struct &&rhs )
+{
+    N_dim       = rhs.N_dim;
+    split_dim   = rhs.split_dim;
+    N           = rhs.N;
+    x_split     = rhs.x_split;
+    x_start     = rhs.x_start;
+    x_end       = rhs.x_end;
+    x           = rhs.x;
+    index       = rhs.index;
+    left        = rhs.left;
+    right       = rhs.right;
+    rhs.x_start = nullptr;
+    rhs.x_end   = nullptr;
+    rhs.x       = nullptr;
+    rhs.index   = nullptr;
+    rhs.left    = nullptr;
+    rhs.right   = nullptr;
+}
+kdtree::kdtree_struct &kdtree::kdtree_struct::operator=( kdtree_struct &&rhs )
+{
+    if ( this == &rhs )
+        return *this;
+    N_dim       = rhs.N_dim;
+    split_dim   = rhs.split_dim;
+    N           = rhs.N;
+    x_split     = rhs.x_split;
+    x_start     = rhs.x_start;
+    x_end       = rhs.x_end;
+    x           = rhs.x;
+    index       = rhs.index;
+    left        = rhs.left;
+    right       = rhs.right;
+    rhs.x_start = nullptr;
+    rhs.x_end   = nullptr;
+    rhs.x       = nullptr;
+    rhs.index   = nullptr;
+    rhs.left    = nullptr;
+    rhs.right   = nullptr;
+    return *this;
+}
 kdtree::kdtree_struct::~kdtree_struct()
 {
     delete left;

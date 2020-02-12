@@ -617,6 +617,7 @@ static inline void check_nearest( const std::vector<Point> &x )
 static inline std::vector<Point> getVolumePoints( const AMP::Geometry::Geometry &geom,
                                                   double resolution )
 {
+    // Create interior points from an arbitrary geometry
     std::vector<Point> points;
     auto [x0, x1] = geom.box();
     for ( double x = x0.x(); x <= x1.x(); x += resolution ) {
@@ -630,8 +631,9 @@ static inline std::vector<Point> getVolumePoints( const AMP::Geometry::Geometry 
     }
     return points;
 }
-/*static inline std::vector<Point> getSurfacePoints( const AMP::Geometry::Geometry &geom, int N )
+static inline std::vector<Point> getSurfacePoints( const AMP::Geometry::Geometry &geom, int N )
 {
+    // Create surface points for an arbitrary geometry
     std::vector<Point> points;
     const int ndim      = geom.getDim();
     const auto [x1, x2] = geom.box();
@@ -656,7 +658,7 @@ static inline std::vector<Point> getVolumePoints( const AMP::Geometry::Geometry 
     }
     check_nearest( points );
     return points;
-}*/
+}
 static inline double getPos( int i, int N, bool isPeriodic )
 {
     if ( N <= 1 )
@@ -665,15 +667,14 @@ static inline double getPos( int i, int N, bool isPeriodic )
         return ( i + 0.5 ) / N;
     return i / ( N - 1.0 );
 }
-static inline std::vector<Point>
-getLogicalSurfacePoints( const AMP::Geometry::LogicalGeometry &geom, double resolution )
+static inline std::vector<Point> getLogicalPoints( const AMP::Geometry::LogicalGeometry &geom,
+                                                   double resolution )
 {
+    // Create surface/interior points for a logical geometry
     std::vector<Point> points;
-    int N[3]            = { 1, 1, 1 };
-    const auto [x1, x2] = geom.box();
-    const auto dx       = x2 - x1;
-    for ( int d = 0; d < geom.getLogicalDim(); d++ )
-        N[d] = dx[d] / resolution;
+    int ndim = geom.getDim();
+    auto N   = geom.getLogicalGridSize( std::vector<double>( ndim, resolution ) );
+    N.resize( 3, 1 );
     auto periodic = geom.getPeriodicDim();
     periodic.resize( 3, false );
     for ( int i = 0; i < N[0]; i++ ) {
@@ -687,6 +688,31 @@ getLogicalSurfacePoints( const AMP::Geometry::LogicalGeometry &geom, double reso
             }
         }
     }
+    return points;
+}
+static inline std::vector<Point> combineSurfaceVolumePoints( const std::vector<Point> &volume,
+                                                             const std::vector<Point> &surface,
+                                                             const AMP::Geometry::Geometry &geom,
+                                                             double resolution )
+{
+    // Add the points in the volume
+    std::vector<Point> points = volume;
+    // Remove volume points that are close to the surface
+    size_t k    = 0;
+    double tol  = 0.6 * resolution;
+    double tol2 = tol * tol;
+    for ( size_t i = 0; i < points.size(); i++ ) {
+        auto ps   = geom.nearest( points[i] );
+        double d2 = ( points[i] - ps ).norm();
+        if ( d2 >= tol2 )
+            points[k++] = points[i];
+    }
+    // Add the surface points
+    points.resize( k );
+    for ( size_t i = 0; i < surface.size(); i++ )
+        points.push_back( surface[i] );
+    // Check the distance
+    check_nearest( points );
     return points;
 }
 std::shared_ptr<AMP::Mesh::Mesh>
@@ -704,37 +730,31 @@ generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, do
     // Perform some basic checks
     int ndim = geom->getDim();
     AMP_INSIST( geom->isConvex(), "Geometry must be convex" );
-    // Get the volume points
-    auto points = getVolumePoints( *geom, resolution );
-    // Get the surface points
-    std::vector<Point> surface;
     auto meshGeom    = std::dynamic_pointer_cast<AMP::Geometry::MeshGeometry>( geom );
     auto logicalGeom = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( geom );
-    if ( meshGeom ) {
+    // Create the grid verticies
+    std::vector<Point> points;
+    if ( logicalGeom ) {
+        // We are dealing with a logical geometry
+        points = getLogicalPoints( *logicalGeom, resolution );
+    } else if ( meshGeom ) {
+        // Get the volume points
+        auto interior = getVolumePoints( *geom, resolution );
+        // Get the surface points
+        std::vector<Point> surface;
         const auto &mesh = meshGeom->getMesh();
         for ( auto node : mesh.getIterator( AMP::Mesh::GeomType::Vertex ) )
             surface.push_back( node.coord() );
-    } else if ( logicalGeom ) {
-        surface = getLogicalSurfacePoints( *logicalGeom, resolution );
+        // Combine
+        points = combineSurfaceVolumePoints( interior, surface, *geom, resolution );
     } else {
-        // surface = getSurfacePoints( *geom, N );
+        // Get the volume points
+        auto interior = getVolumePoints( *geom, resolution );
+        // Get the surface points
+        auto surface = getSurfacePoints( *geom, 0.1 * interior.size() );
+        // Combine
+        points = combineSurfaceVolumePoints( interior, surface, *geom, resolution );
     }
-    // Remove points that are too close to the surface and add the surface points
-    if ( !surface.empty() ) {
-        size_t k    = 0;
-        double tol  = 0.6 * resolution;
-        double tol2 = tol * tol;
-        for ( size_t i = 0; i < points.size(); i++ ) {
-            auto ps   = geom->nearest( points[i] );
-            double d2 = ( points[i] - ps ).norm();
-            if ( d2 >= tol2 )
-                points[k++] = points[i];
-        }
-        points.resize( k );
-        for ( size_t i = 0; i < surface.size(); i++ )
-            points.push_back( surface[i] );
-    }
-    check_nearest( points );
     // Smooth the points to try and make the distance between all points ~ equal
 
     // Tessellate

@@ -122,7 +122,7 @@ static inline std::array<double, 3> nearest2( const double x[3], const double s[
     double min  = std::min( { d[0], d[1], d[2], d[3], d[4], d[5] } );
     if ( d[0] == min )
         return { 0, p[1], p[2] };
-    if ( d[2] == min )
+    if ( d[1] == min )
         return { s[0], p[1], p[2] };
     if ( d[2] == min )
         return { p[0], 0, p[2] };
@@ -457,6 +457,24 @@ std::vector<int> Grid<NDIM>::getLogicalGridSize( const std::vector<int> &x ) con
 {
     AMP_ASSERT( x.size() == NDIM );
     return x;
+}
+template<std::size_t NDIM>
+std::vector<int> Box<NDIM>::getLogicalGridSize( const std::vector<double> &res ) const
+{
+    AMP_ASSERT( res.size() == NDIM );
+    std::vector<int> size( NDIM );
+    for ( size_t d = 0; d < NDIM; d++ )
+        size[d] = ( d_range[2 * d + 1] - d_range[2 * d] ) / res[d];
+    return size;
+}
+template<std::size_t NDIM>
+std::vector<int> Grid<NDIM>::getLogicalGridSize( const std::vector<double> &res ) const
+{
+    AMP_ASSERT( res.size() == NDIM );
+    std::vector<int> size( NDIM );
+    for ( size_t d = 0; d < NDIM; d++ )
+        size[d] = ( d_range[2 * d + 1] - d_range[2 * d] ) / res[d];
+    return size;
 }
 template<std::size_t NDIM>
 std::vector<bool> Box<NDIM>::getPeriodicDim() const

@@ -137,10 +137,10 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         auto geom_db    = db->getDatabase( "Geometry" );
         auto geometry   = AMP::Geometry::Geometry::buildGeometry( geom_db );
         auto [lb, ub]   = geometry->box();
-        auto resolution = db->getVector<double>( "Resolution" );
+        auto resolution = db->getScalar<double>( "Resolution" );
         meshSize        = 1;
         for ( int d = 0; d < lb.ndim(); d++ )
-            meshSize *= std::max<int64_t>( ( ub[d] - lb[d] ) / resolution[d], 1 );
+            meshSize *= std::max<int64_t>( ( ub[d] - lb[d] ) / resolution, 1 );
     } else if ( MeshType == "libMesh" ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH

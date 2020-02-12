@@ -196,6 +196,24 @@ static inline double dot( const std::array<double, N> &x, const std::array<doubl
     else if constexpr ( N == 3 )
         return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
 }
+static inline std::array<double, 3> cross( const std::array<double, 3> &x,
+                                           const std::array<double, 3> &y )
+{
+    return { x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0] };
+}
+template<size_t N>
+static inline std::array<double, N> normalize( const std::array<double, N> &x )
+{
+    if constexpr ( N == 1 ) {
+        return { 1.0 };
+    } else if constexpr ( N == 2 ) {
+        double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] );
+        return { tmp * x[0], tmp * x[1] };
+    } else if constexpr ( N == 3 ) {
+        double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
+        return { tmp * x[0], tmp * x[1], tmp * x[2] };
+    }
+}
 template<size_t N>
 static inline std::array<double, N> operator-( const std::array<double, N> &x,
                                                const std::array<double, N> &y )
@@ -257,7 +275,17 @@ double TriangleMeshElement<NG, NP>::volume() const
 template<size_t NG, size_t NP>
 Point TriangleMeshElement<NG, NP>::norm() const
 {
-    AMP_ERROR( "norm not implimented yet" );
+    if constexpr ( NG == 2 && NP == 3 ) {
+        ElementID ids[3];
+        d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
+        auto p0 = d_mesh->getPos( ids[0] );
+        auto AB = p0 - d_mesh->getPos( ids[1] );
+        auto AC = p0 - d_mesh->getPos( ids[2] );
+        auto n  = normalize( cross( AB, AC ) );
+        return { n[0], n[1], n[2] };
+    } else {
+        AMP_ERROR( "Not finished" );
+    }
     return Point();
 }
 template<size_t NG, size_t NP>

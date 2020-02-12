@@ -387,6 +387,7 @@ TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> verticie
                                     std::vector<std::array<int64_t, NG + 1>> tri,
                                     std::vector<std::array<int64_t, NG + 1>> tri_nab,
                                     const AMP_MPI &comm )
+    : d_pos_hash( 0 )
 {
     AMP_ASSERT( tri.size() == 0 || comm.getRank() == 0 );
     AMP_ASSERT( tri_nab.size() == tri.size() );
@@ -873,6 +874,11 @@ TriangleMesh<NG, NP>::getBlockIDIterator( const GeomType type, const int id, con
  * Functions to dispace the mesh                                 *
  ****************************************************************/
 template<size_t NG, size_t NP>
+uint64_t TriangleMesh<NG, NP>::positionHash() const
+{
+    return d_pos_hash;
+}
+template<size_t NG, size_t NP>
 void TriangleMesh<NG, NP>::displaceMesh( const std::vector<double> &x )
 {
     AMP_ASSERT( x.size() == NP );
@@ -890,6 +896,7 @@ void TriangleMesh<NG, NP>::displaceMesh( const std::vector<double> &x )
         d_box_local[2 * d + 0] += x[d];
         d_box_local[2 * d + 1] += x[d];
     }
+    d_pos_hash++;
 }
 #ifdef USE_AMP_VECTORS
 template<size_t NG, size_t NP>
@@ -915,6 +922,7 @@ void TriangleMesh<NG, NP>::displaceMesh( std::shared_ptr<const AMP::LinearAlgebr
     }
     // Update the bounding box
     initializeBoundingBox();
+    d_pos_hash++;
 #else
     AMP_ERROR( "displaceMesh requires DISCRETIZATION" );
 #endif

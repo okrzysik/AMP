@@ -296,6 +296,18 @@ public:
 
 
     /**
+     * \brief    Identify if the position has moved
+     * \details  This function will return a hash that can be used to
+     *    identify if the mesh has been moved.  Any time that displaceMesh
+     *    is called, the hash value should change.  There is no requirement
+     *    that dispacing a mesh and returning it back to the original position
+     *    will return the original hash.
+     * @return   hash value with current position id
+     */
+    virtual uint64_t positionHash() const override;
+
+
+    /**
      * \brief    Displace the entire mesh
      * \details  This function will displace the entire mesh by a scalar value.
      *   This function is a blocking call for the mesh communicator, and requires
@@ -343,7 +355,7 @@ protected:
 
     // Return the coordinated of the given vertex
     // Note: no error checking is done to make sure it is a valid vertex
-    const Point &getPos( const ElementID &id ) const;
+    const TriangleMesh::Point &getPos( const ElementID &id ) const;
 
     // Check if the element is on the given boundry, block, etc
     bool isOnSurface( const ElementID &elemID ) const;
@@ -386,6 +398,9 @@ private: // Internal data
     std::vector<TriangleMeshIterator<NG, NP>> d_surface_iterators;
     std::vector<std::vector<TriangleMeshIterator<NG, NP>>> d_boundary_iterators;
     std::vector<std::vector<TriangleMeshIterator<NG, NP>>> d_block_iterators;
+
+    // Index indicating number of times the position has changed
+    uint64_t d_pos_hash;
 };
 
 

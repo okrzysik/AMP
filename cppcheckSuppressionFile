@@ -126,7 +126,7 @@ knownConditionTrueFalse:*/src/time_integrators/test/testIDA_NonlinearColumnOpera
 
 // Suppress warnings for utils
 noConstructor:*/AMP/utils/RNG.h
-duplicateExpression:*/utils/Array.hpp
+duplicateExpression:*/AMP/utils/Array.hpp
 passedByValue:*/utils/test/test_AMP_MPI.cc
 copyCtorPointerCopying:*/src/utils/AMP_MPI.cc
 noExplicitConstructor:*/AMP/utils/Array.h
@@ -134,6 +134,7 @@ noExplicitConstructor:*/AMP/utils/ArraySize.h
 noExplicitConstructor:*/AMP/utils/AMP_MPI.h
 noExplicitConstructor:*/AMP/utils/Database.h
 noExplicitConstructor:*/AMP/utils/string_view.h
+noExplicitConstructor:*/AMP/utils/kdtree.h
 noExplicitConstructor:*/utils/test/test_AMP_MPI.cc
 passedByValue:*/utils/threadpool/test/test_thread_pool.cpp
 memleak:*/utils/test/test_AMPManager.cc

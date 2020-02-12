@@ -1,4 +1,6 @@
 #include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshGeometry.h"
 #include "AMP/ampmesh/shapes/Box.h"
 #include "AMP/ampmesh/shapes/Circle.h"
 #include "AMP/ampmesh/shapes/CircleFrustum.h"
@@ -62,6 +64,13 @@ Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
         geom.reset( new SquareFrustum( db ) );
     } else if ( generator.compare( "circle_frustrum" ) == 0 ) {
         geom.reset( new CircleFrustum( db ) );
+    } else if ( generator.compare( "Mesh" ) == 0 ) {
+        // Generate a mesh geometry
+        auto mesh_db = db->getDatabase( "Mesh" );
+        auto params  = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+        params->setComm( AMP_COMM_SELF );
+        auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+        geom.reset( new MeshGeometry( mesh ) );
     } else {
         AMP_ERROR( "Unknown generator" );
     }

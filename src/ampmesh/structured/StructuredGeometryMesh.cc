@@ -9,7 +9,7 @@ namespace Mesh {
  * Constructors                                                 *
  ****************************************************************/
 StructuredGeometryMesh::StructuredGeometryMesh( MeshParameters::shared_ptr params )
-    : BoxMesh( params )
+    : BoxMesh( params ), d_pos_hash( 0 )
 {
     // Basic defaults
     d_globalSize.fill( 1 );
@@ -57,6 +57,7 @@ StructuredGeometryMesh::StructuredGeometryMesh( const StructuredGeometryMesh &me
     d_numBlocks  = mesh.d_numBlocks;
     d_surfaceId  = mesh.d_surfaceId;
     d_geometry2  = mesh.d_geometry2;
+    d_pos_hash   = mesh.d_pos_hash;
     for ( int d = 0; d < 4; d++ ) {
         for ( int i = 0; i < 6; i++ )
             d_globalSurfaceList[i][d] = mesh.d_globalSurfaceList[i][d];
@@ -67,6 +68,7 @@ StructuredGeometryMesh::StructuredGeometryMesh( const StructuredGeometryMesh &me
  * Basic functions                                               *
  ****************************************************************/
 Mesh::Movable StructuredGeometryMesh::isMeshMovable() const { return Mesh::Movable::Displace; }
+uint64_t StructuredGeometryMesh::positionHash() const { return d_pos_hash; }
 void StructuredGeometryMesh::displaceMesh( const std::vector<double> &x )
 {
     for ( int i = 0; i < PhysicalDim; i++ ) {
@@ -76,6 +78,7 @@ void StructuredGeometryMesh::displaceMesh( const std::vector<double> &x )
         d_box_local[2 * i + 1] += x[i];
     }
     d_geometry2->displace( x.data() );
+    d_pos_hash++;
 }
 void StructuredGeometryMesh::displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> )
 {

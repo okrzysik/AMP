@@ -126,6 +126,12 @@ std::vector<int> Sphere::getLogicalGridSize( const std::vector<int> &x ) const
     AMP_INSIST( x.size() == 1u, "Size must be an array of length 1" );
     return { 2 * x[0], 2 * x[0], 2 * x[0] };
 }
+std::vector<int> Sphere::getLogicalGridSize( const std::vector<double> &res ) const
+{
+    AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
 std::vector<bool> Sphere::getPeriodicDim() const { return { false, false, false }; }
 std::vector<int> Sphere::getLogicalSurfaceIds() const { return { 4, 4, 4, 4, 2, 1 }; }
 

@@ -208,6 +208,12 @@ std::vector<int> Tube::getLogicalGridSize( const std::vector<int> &x ) const
     AMP_INSIST( x.size() == 3u, "Size must be an array of length 1" );
     return { x[0], x[1], x[2] };
 }
+std::vector<int> Tube::getLogicalGridSize( const std::vector<double> &res ) const
+{
+    AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
 std::vector<bool> Tube::getPeriodicDim() const { return { false, true, false }; }
 std::vector<int> Tube::getLogicalSurfaceIds() const { return { 8, 4, -1, -1, 2, 1 }; }
 

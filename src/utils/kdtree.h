@@ -30,6 +30,9 @@ namespace AMP {
 class kdtree
 {
 public:
+    // Empty constructor
+    kdtree() : d_dim( 0 ), d_N( 0 ) {}
+
     /**
      * \brief   Default constructor
      * \details  This is the default constructor for creating the kdtree
@@ -39,7 +42,6 @@ public:
      */
     kdtree( int ndim, size_t N, const double *const *x );
 
-
     /**
      * \brief   Default constructor
      * \details  This an alternative constructor for creating the kdtree
@@ -47,9 +49,20 @@ public:
      */
     kdtree( const std::vector<AMP::Mesh::MeshPoint<double>> &x );
 
-
     //!  Destructor
     ~kdtree();
+
+    //! Copy constructor
+    kdtree( const kdtree & ) = delete;
+
+    //! Move constructor
+    kdtree( kdtree && ) = default;
+
+    //! Assignment operator
+    kdtree &operator=( const kdtree & ) = delete;
+
+    //! Move operator
+    kdtree &operator=( kdtree && ) = default;
 
 
     /**
@@ -150,22 +163,16 @@ private:
         // Pointers to the left and right sides of the tree
         kdtree_struct *left;
         kdtree_struct *right;
-        // Constructor
+        // Constructors
         kdtree_struct();
+        kdtree_struct( const kdtree_struct & ) = delete;
+        kdtree_struct &operator=( const kdtree_struct & ) = delete;
+        kdtree_struct( kdtree_struct && );
+        kdtree_struct &operator=( kdtree_struct && );
         // Destructor
         ~kdtree_struct();
         // Return the memory usage
         size_t memory_usage() const;
-
-    private:
-        kdtree_struct( const kdtree_struct &rhs ); // Protect the copy constructor
-    };
-
-    // Private constructor
-    kdtree()
-    {
-        d_dim = 0;
-        d_N   = 0;
     };
 
     // Initialize the data

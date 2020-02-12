@@ -281,6 +281,12 @@ std::vector<int> SquareFrustum::getLogicalGridSize( const std::vector<int> &x ) 
     AMP_INSIST( x.size() == 3u, "Size must be an array of length 3" );
     return { x[0], x[1], x[2] };
 }
+std::vector<int> SquareFrustum::getLogicalGridSize( const std::vector<double> &res ) const
+{
+    AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
 std::vector<bool> SquareFrustum::getPeriodicDim() const { return { false, false, false }; }
 std::vector<int> SquareFrustum::getLogicalSurfaceIds() const { return { 1, 2, 3, 4, 5, 6 }; }
 

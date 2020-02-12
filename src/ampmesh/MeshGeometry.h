@@ -3,6 +3,7 @@
 
 #include "AMP/ampmesh/Geometry.h"
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/utils/kdtree.h"
 
 #include <memory>
 #include <vector>
@@ -16,11 +17,11 @@ namespace AMP::Geometry {
  * \brief A class used to abstract away geometry information from an application or mesh.
  * \details  This class provides a geometry implimentation based on a surface mesh
  */
-class MeshGeometry final : Geometry
+class MeshGeometry final : public Geometry
 {
 public:
     //! Default constructor
-    MeshGeometry( std::unique_ptr<AMP::Mesh::Mesh> mesh );
+    MeshGeometry( std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     //! Destructor
     virtual ~MeshGeometry() = default;
@@ -121,15 +122,19 @@ public:
 private: // Internal functions
     // Initialize the internal data
     void initialize();
+    void initializePosition() const;
 
     // Get the nearest element to a point
-    AMP::Mesh::MeshElement getNearest( const Point &x ) const;
+    std::pair<AMP::Mesh::MeshElement, Point> getNearestElement( const Point &x ) const;
 
 
 private: // Internal data
-    std::unique_ptr<AMP::Mesh::Mesh> d_mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
     std::vector<int> d_surfaceIds;
-    Point d_centroid;
+    std::vector<AMP::Mesh::MeshElement> d_nodes;
+    mutable uint64_t d_pos_hash;
+    mutable Point d_centroid;
+    mutable kdtree d_tree;
 };
 
 

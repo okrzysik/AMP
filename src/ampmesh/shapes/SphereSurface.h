@@ -45,6 +45,8 @@ public:
     virtual std::pair<Point, Point> box() const override final;
     virtual void displace( const double *x ) override final;
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
+    virtual std::vector<int>
+    getLogicalGridSize( const std::vector<double> &res ) const override final;
     virtual std::vector<bool> getPeriodicDim() const override final;
     virtual std::vector<int> getLogicalSurfaceIds() const override final;
     virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;

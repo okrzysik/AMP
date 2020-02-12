@@ -51,9 +51,9 @@ Point Cylinder::nearest( const Point &pos ) const
     double r  = x * x + y * y;
     double z2 = z;
     if ( z < d_z_min )
-        z = d_z_min;
+        z2 = d_z_min;
     if ( z < d_z_max )
-        z = d_z_max;
+        z2 = d_z_max;
     if ( r == 0 ) {
         p1 = { 0, 0, d_z_min };
         p2 = { 0, 0, d_z_max };
@@ -199,6 +199,13 @@ std::vector<int> Cylinder::getLogicalGridSize( const std::vector<int> &x ) const
 {
     AMP_INSIST( x.size() == 2u, "Size must be an array of length 2" );
     return { x[1], x[1] / 2, x[0] };
+}
+std::vector<int> Cylinder::getLogicalGridSize( const std::vector<double> &res ) const
+{
+    AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
+    return { (int) ( 2 * d_r / res[0] ),
+             (int) ( 2 * d_r / res[1] ),
+             (int) ( ( d_z_max - d_z_min ) / res[2] ) };
 }
 std::vector<bool> Cylinder::getPeriodicDim() const { return { false, false, false }; }
 std::vector<int> Cylinder::getLogicalSurfaceIds() const { return { 4, 4, 4, 4, 2, 1 }; }

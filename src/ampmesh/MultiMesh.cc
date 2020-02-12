@@ -822,6 +822,15 @@ Mesh::Movable MultiMesh::isMeshMovable() const
         value = std::min( value, static_cast<int>( elem->isMeshMovable() ) );
     return static_cast<Mesh::Movable>( value );
 }
+uint64_t MultiMesh::positionHash() const
+{
+    uint64_t hash = 0;
+    for ( uint64_t i = 0; i < d_meshes.size(); i++ ) {
+        auto h = d_meshes[i]->positionHash();
+        hash   = hash ^ ( ( h * 0x9E3779B97F4A7C15 ) << i );
+    }
+    return hash;
+}
 void MultiMesh::displaceMesh( const std::vector<double> &x_in )
 {
     // Check x
@@ -832,8 +841,8 @@ void MultiMesh::displaceMesh( const std::vector<double> &x_in )
     for ( size_t i = 0; i < x.size(); i++ )
         AMP_INSIST( fabs( x[i] - x_in[i] ) < 1e-12, "x does not match on all processors" );
     // Displace the meshes
-    for ( auto &elem : d_meshes )
-        elem->displaceMesh( x );
+    for ( auto &mesh : d_meshes )
+        mesh->displaceMesh( x );
     // Update the bounding box
     for ( int i = 0; i < PhysicalDim; i++ ) {
         d_box[2 * i + 0] += x[i];

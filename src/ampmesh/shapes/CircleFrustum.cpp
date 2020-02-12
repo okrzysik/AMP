@@ -315,6 +315,12 @@ std::vector<int> CircleFrustum::getLogicalGridSize( const std::vector<int> &x ) 
     AMP_INSIST( x.size() == 2, "Size must be an array of length 2" );
     return { x[0], x[0], x[1] };
 }
+std::vector<int> CircleFrustum::getLogicalGridSize( const std::vector<double> &res ) const
+{
+    AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
 std::vector<bool> CircleFrustum::getPeriodicDim() const { return { false, false, false }; }
 std::vector<int> CircleFrustum::getLogicalSurfaceIds() const { return { 2, 2, 2, 2, 0, 1 }; }
 
