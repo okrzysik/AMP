@@ -52,11 +52,10 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     globalComm.barrier();
     double meshBeginTime = MPI_Wtime();
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db    = input_db->getDatabase( "Mesh" );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
     globalComm.barrier();
     double meshEndTime = MPI_Wtime();
     if ( !rank ) {
@@ -68,15 +67,13 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     int DOFsPerNode     = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
-    AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-    AMP::LinearAlgebra::Variable::shared_ptr dummyVariable(
-        new AMP::LinearAlgebra::Variable( "Dummy" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr dummyVector = createVector( DOFs, dummyVariable, split );
+    auto DOFs           = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+    auto dummyVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Dummy" );
+    auto dummyVector   = createVector( DOFs, dummyVariable, split );
 
-    AMP::Mesh::MeshIterator node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-    AMP::Mesh::MeshIterator end_node = node.end();
+    auto node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto end_node = node.end();
     for ( ; node != end_node; ++node ) {
         std::vector<size_t> globalID;
         DOFs->getDOFs( node->globalID(), globalID );

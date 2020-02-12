@@ -16,18 +16,23 @@
 #include "AMP/utils/Utilities.h"
 
 
+using materialMap = std::map<std::string, std::shared_ptr<std::vector<double>>>;
+static inline auto make_shared_vector( size_t N, double v = 0 )
+{
+    return std::make_shared<std::vector<double>>( N, v );
+}
+
+
 void checkConsistency( double h, double p, double T, bool &allCorrect, bool &allConsistent )
 {
-    using namespace AMP::Materials;
-    std::shared_ptr<AMP::Materials::Material> mat =
-        AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(
-            "WaterLibrary" );                                  // get water library
+    auto mat = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(
+        "WaterLibrary" );                                      // get water library
     auto temperatureProperty = mat->property( "Temperature" ); // temperature property
     auto enthalpyProperty    = mat->property( "Enthalpy" );    // enthalpy property
 
-    std::map<std::string, std::shared_ptr<std::vector<double>>> tempMap;
-    tempMap.insert( std::make_pair( "enthalpy", std::make_shared<std::vector<double>>( 1, h ) ) );
-    tempMap.insert( std::make_pair( "pressure", std::make_shared<std::vector<double>>( 1, p ) ) );
+    materialMap tempMap;
+    tempMap.insert( std::make_pair( "enthalpy", make_shared_vector( 1, h ) ) );
+    tempMap.insert( std::make_pair( "pressure", make_shared_vector( 1, p ) ) );
     std::vector<double> tempOutput( 1 );
     temperatureProperty->evalv( tempOutput, tempMap );
     // check that answer is correct
@@ -37,10 +42,9 @@ void checkConsistency( double h, double p, double T, bool &allCorrect, bool &all
         allCorrect = false;
     }
     // check that enthalpy function resturns original enthalpy
-    std::map<std::string, std::shared_ptr<std::vector<double>>> hMap;
-    hMap.insert( std::make_pair( "temperature",
-                                 std::make_shared<std::vector<double>>( 1, tempOutput[0] ) ) );
-    hMap.insert( std::make_pair( "pressure", std::make_shared<std::vector<double>>( 1, p ) ) );
+    materialMap hMap;
+    hMap.insert( std::make_pair( "temperature", make_shared_vector( 1, tempOutput[0] ) ) );
+    hMap.insert( std::make_pair( "pressure", make_shared_vector( 1, p ) ) );
     std::vector<double> hOutput( 1 );
     enthalpyProperty->evalv( hOutput, hMap );
     if ( !AMP::Utilities::approx_equal( hOutput[0], h, 0.01 ) )
@@ -52,35 +56,31 @@ int main( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    using namespace AMP::Materials;
-
     bool good = true;
 
     // test constructors for temperature
-    std::shared_ptr<AMP::Materials::Material> mat =
-        AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(
-            "WaterLibrary" );                                  // get water library
-    auto temperatureProperty = mat->property( "Temperature" ); // temperature property
+    auto mat = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(
+        "WaterLibrary" );                                      // get water library
+    auto temperatureProperty = mat->property( "Temperature" ); // temperature
     auto liquidEnthalpyProperty =
-        mat->property( "SaturatedLiquidEnthalpy" ); // saturated liquid enthalpy property
+        mat->property( "SaturatedLiquidEnthalpy" ); // saturated liquid enthalpy
     auto vaporEnthalpyProperty =
-        mat->property( "SaturatedVaporEnthalpy" );           // saturated vapor enthalpy property
-    auto volumeProperty = mat->property( "SpecificVolume" ); // specific volume property
-    auto conductivityProperty =
-        mat->property( "ThermalConductivity" );                   // thermal conductivity property
-    auto viscosityProperty = mat->property( "DynamicViscosity" ); // dynamic viscosity property
-    auto enthalpyProperty  = mat->property( "Enthalpy" );         // enthalpy property
+        mat->property( "SaturatedVaporEnthalpy" );                      // saturated vapor enthalpy
+    auto volumeProperty       = mat->property( "SpecificVolume" );      // specific volume
+    auto conductivityProperty = mat->property( "ThermalConductivity" ); // thermal conductivity
+    auto viscosityProperty    = mat->property( "DynamicViscosity" );    // dynamic viscosity
+    auto enthalpyProperty     = mat->property( "Enthalpy" );            // enthalpy
 
     // test property accessors for temperature
-    std::string tcname = temperatureProperty->get_name();
-    std::string tcsorc = temperatureProperty->get_source();
+    auto tcname = temperatureProperty->get_name();
+    auto tcsorc = temperatureProperty->get_source();
     AMP::pout << "\n";
-    good = good && tcname == std::string( "WaterLibrary_Temperature" );
+    good = good && tcname == "WaterLibrary_Temperature";
     AMP::pout << "Temperature name is " << tcname << "\n";
     AMP::pout << "Temperature source is " << tcsorc << "\n";
-    std::vector<std::string> args = temperatureProperty->get_arguments();
-    good                          = good && args[0] == "enthalpy";
-    good                          = good && args[1] == "pressure";
+    auto args = temperatureProperty->get_arguments();
+    good      = good && args[0] == "enthalpy";
+    good      = good && args[1] == "pressure";
     AMP::pout << "Temperature property arguments are " << args[0] << " and " << args[1] << "\n\n";
     unsigned int nargs = temperatureProperty->get_number_arguments();
     good               = good && nargs == 2;
@@ -88,22 +88,18 @@ int main( int argc, char **argv )
     // test material accessors, all arguments present
     const size_t n =
         3; // size of input and output arrays for comparison with known thermodynamic values
-    std::shared_ptr<std::vector<double>> enthalpyInput(
-        new std::vector<double>( n ) ); // enthalpy input
-    std::shared_ptr<std::vector<double>> pressureInput(
-        new std::vector<double>( n ) ); // pressure input
-    std::shared_ptr<std::vector<double>> temperatureInput(
-        new std::vector<double>( n ) ); // temperature input
-    std::shared_ptr<std::vector<double>> temperatureInputEnthalpy(
-        new std::vector<double>( n ) ); // temperature input for enthalpy function
-    std::shared_ptr<std::vector<double>> densityInput(
-        new std::vector<double>( n ) ); // density input
-    std::shared_ptr<std::vector<double>> temperatureIdenticalInput(
-        new std::vector<double>( n ) ); // temperature input array with identical values
-    std::shared_ptr<std::vector<double>> enthalpyIdenticalInput(
-        new std::vector<double>( n ) ); // enthalpy input array with identical values
-    std::shared_ptr<std::vector<double>> pressureIdenticalInput(
-        new std::vector<double>( n ) );            // pressure input array with identical values
+    auto enthalpyInput    = make_shared_vector( n ); // enthalpy input
+    auto pressureInput    = make_shared_vector( n ); // pressure input
+    auto temperatureInput = make_shared_vector( n ); // temperature input
+    auto temperatureInputEnthalpy =
+        make_shared_vector( n );                 // temperature input for enthalpy function
+    auto densityInput = make_shared_vector( n ); // density input
+    auto temperatureIdenticalInput =
+        make_shared_vector( n ); // temperature input array with identical values
+    auto enthalpyIdenticalInput =
+        make_shared_vector( n ); // enthalpy input array with identical values
+    auto pressureIdenticalInput =
+        make_shared_vector( n );                   // pressure input array with identical values
     std::vector<double> temperatureOutput( n );    // temperature output
     std::vector<double> liquidEnthalpyOutput( n ); // saturated liquid enthalpy output
     std::vector<double> volumeOutput( n );         // specific volume output
@@ -141,30 +137,30 @@ int main( int argc, char **argv )
     {
         // argument maps for each property function
         // temperature
-        std::map<std::string, std::shared_ptr<std::vector<double>>> temperatureArgMap;
+        materialMap temperatureArgMap;
         temperatureArgMap.insert( std::make_pair( "enthalpy", enthalpyInput ) );
         temperatureArgMap.insert( std::make_pair( "pressure", pressureInput ) );
         // saturated liquid enthalpy
-        std::map<std::string, std::shared_ptr<std::vector<double>>> liquidEnthalpyArgMap;
+        materialMap liquidEnthalpyArgMap;
         liquidEnthalpyArgMap.insert( std::make_pair( "pressure", pressureInput ) );
         // specific volume
-        std::map<std::string, std::shared_ptr<std::vector<double>>> volumeArgMap;
+        materialMap volumeArgMap;
         volumeArgMap.insert( std::make_pair( "enthalpy", enthalpyInput ) );
         volumeArgMap.insert( std::make_pair( "pressure", pressureInput ) );
         // thermal conductivity
-        std::map<std::string, std::shared_ptr<std::vector<double>>> conductivityArgMap;
+        materialMap conductivityArgMap;
         conductivityArgMap.insert( std::make_pair( "temperature", temperatureInput ) );
         conductivityArgMap.insert( std::make_pair( "density", densityInput ) );
         // dynamic viscosity
-        std::map<std::string, std::shared_ptr<std::vector<double>>> viscosityArgMap;
+        materialMap viscosityArgMap;
         viscosityArgMap.insert( std::make_pair( "temperature", temperatureInput ) );
         viscosityArgMap.insert( std::make_pair( "density", densityInput ) );
         // enthalpy
-        std::map<std::string, std::shared_ptr<std::vector<double>>> enthalpyArgMap;
+        materialMap enthalpyArgMap;
         enthalpyArgMap.insert( std::make_pair( "temperature", temperatureInputEnthalpy ) );
         enthalpyArgMap.insert( std::make_pair( "pressure", pressureInput ) );
         // temperature identical values case
-        std::map<std::string, std::shared_ptr<std::vector<double>>> temperatureIdenticalArgMap;
+        materialMap temperatureIdenticalArgMap;
         temperatureIdenticalArgMap.insert( std::make_pair( "enthalpy", enthalpyIdenticalInput ) );
         temperatureIdenticalArgMap.insert( std::make_pair( "pressure", pressureIdenticalInput ) );
 
@@ -308,7 +304,7 @@ int main( int argc, char **argv )
     // temperature, one argument: enthalpy
     {
         double knownSolution = 392.224; // T [K]	@ {0.5 MPa, 500 kJ/kg}
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
+        materialMap argMap;
         argMap.insert( std::make_pair( "enthalpy", enthalpyIdenticalInput ) );
         std::vector<double> temperatureOutput_def( temperatureOutput );
         temperatureProperty->evalv( temperatureOutput_def, argMap );
@@ -321,7 +317,7 @@ int main( int argc, char **argv )
     // temperature, no argument
     {
         double knownSolution = 320.835; // T [K]	@ {0.5 MPa, 200 kJ/kg}
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
+        materialMap argMap;
         std::vector<double> temperatureOutput_def( temperatureOutput );
         temperatureProperty->evalv( temperatureOutput_def, argMap );
         if ( !AMP::Utilities::approx_equal( temperatureOutput_def[0], knownSolution, 0.01 ) ) {
@@ -333,7 +329,7 @@ int main( int argc, char **argv )
     // saturated liquid enthalpy, no argument
     {
         double knownSolution = 640.185e3; // Hf [J/kg]	@ {0.5 MPa}
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
+        materialMap argMap;
         std::vector<double> liquidEnthalpyOutput_def( liquidEnthalpyOutput );
         liquidEnthalpyProperty->evalv( liquidEnthalpyOutput_def, argMap );
         if ( !AMP::Utilities::approx_equal( liquidEnthalpyOutput_def[0], knownSolution, 0.01 ) ) {
@@ -345,7 +341,7 @@ int main( int argc, char **argv )
     // specific volume, one argument: enthalpy
     {
         double knownSolution = 0.00105962; // v [m3/kg]	@ {0.5 MPa, 500 kJ/kg}
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
+        materialMap argMap;
         argMap.insert( std::make_pair( "enthalpy", enthalpyIdenticalInput ) );
         std::vector<double> volumeOutput_def( volumeOutput );
         volumeProperty->evalv( volumeOutput_def, argMap );
@@ -358,7 +354,7 @@ int main( int argc, char **argv )
     // specific volume, no argument
     {
         double knownSolution = 0.00101083; // v [m3/kg]	@ {0.5 MPa, 200 kJ/kg}
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
+        materialMap argMap;
         std::vector<double> volumeOutput_def( volumeOutput );
         volumeProperty->evalv( volumeOutput_def, argMap );
         if ( !AMP::Utilities::approx_equal( volumeOutput_def[0], knownSolution, 0.01 ) ) {
@@ -370,7 +366,7 @@ int main( int argc, char **argv )
     // thermal conductivity, one argument: enthalpy
     {
         double knownSolution = 0.731; // k [W/m-K]	@ {400 K, 973.919 kg/m3}
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
+        materialMap argMap;
         argMap.insert( std::make_pair( "temperature", temperatureIdenticalInput ) );
         std::vector<double> conductivityOutput_def( conductivityOutput );
         conductivityProperty->evalv( conductivityOutput_def, argMap );
@@ -383,7 +379,7 @@ int main( int argc, char **argv )
     // thermal conductivity, no argument
     {
         double knownSolution = 0.668247; // k [W/m-K]	@ {350 K, 973.919 kg/m3}
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
+        materialMap argMap;
         std::vector<double> conductivityOutput_def( conductivityOutput );
         conductivityProperty->evalv( conductivityOutput_def, argMap );
         if ( !AMP::Utilities::approx_equal( conductivityOutput_def[0], knownSolution, 0.01 ) ) {
@@ -395,7 +391,7 @@ int main( int argc, char **argv )
     // dynamic viscosity, one argument: enthalpy
     {
         double knownSolution = 0.000239; // u [Pa-s]	@ {400 K, 973.919 kg/m3}
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
+        materialMap argMap;
         argMap.insert( std::make_pair( "temperature", temperatureIdenticalInput ) );
         std::vector<double> viscosityOutput_def( viscosityOutput );
         viscosityProperty->evalv( viscosityOutput_def, argMap );
@@ -408,7 +404,7 @@ int main( int argc, char **argv )
     // dynamic viscosity, no argument
     {
         double knownSolution = 0.000368895; // u [Pa-s]	@ {350 K, 973.919 kg/m3}
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
+        materialMap argMap;
         std::vector<double> viscosityOutput_def( viscosityOutput );
         viscosityProperty->evalv( viscosityOutput_def, argMap );
         if ( !AMP::Utilities::approx_equal( viscosityOutput_def[0], knownSolution, 0.01 ) ) {
@@ -420,7 +416,7 @@ int main( int argc, char **argv )
     // enthalpy, one argument: temperature
     {
         double knownSolution = 533.121e3; // h [J/kg]	@ {400 K, 0.5 MPa}
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
+        materialMap argMap;
         argMap.insert( std::make_pair( "temperature", temperatureIdenticalInput ) );
         std::vector<double> enthalpyOutput_def( enthalpyOutput );
         enthalpyProperty->evalv( enthalpyOutput_def, argMap );
@@ -433,7 +429,7 @@ int main( int argc, char **argv )
     // enthalpy, no argument
     {
         double knownSolution = 200.0e3; // h [J/kg]	@ {320.835 K, 0.5 MPa}
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
+        materialMap argMap;
         std::vector<double> enthalpyOutput_def( enthalpyOutput );
         enthalpyProperty->evalv( enthalpyOutput_def, argMap );
         if ( !AMP::Utilities::approx_equal( enthalpyOutput_def[0], knownSolution, 0.01 ) ) {
@@ -472,12 +468,12 @@ int main( int argc, char **argv )
     // Matlab script used to generate values is located in data/waterlibrary.m
     AMP::pout << "\nExtended library tests:\n============================\n";
     bool extra_passed = true;
-    std::shared_ptr<std::vector<double>> pvec( new std::vector<double>( 1 ) );
-    std::shared_ptr<std::vector<double>> hvec( new std::vector<double>( 1 ) );
+    auto pvec         = make_shared_vector( 1 );
+    auto hvec         = make_shared_vector( 1 );
     double expected;
 
     // Test saturated liquid enthalpy
-    std::map<std::string, std::shared_ptr<std::vector<double>>> pArgs;
+    materialMap pArgs;
     pArgs.insert( std::make_pair( "pressure", pvec ) );
     std::vector<double> h( 1 );
     double tol = 1e-6;
@@ -545,7 +541,7 @@ int main( int argc, char **argv )
     }
 
     // Test TemperatureProp
-    std::map<std::string, std::shared_ptr<std::vector<double>>> hpArgs;
+    materialMap hpArgs;
     hpArgs.insert( std::make_pair( "enthalpy", hvec ) );
     hpArgs.insert( std::make_pair( "pressure", pvec ) );
     std::vector<double> T( 1 );

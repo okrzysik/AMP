@@ -6,6 +6,7 @@
 #include "AMP/discretization/structuredFaceDOFManager.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/utils/AMP_MPI.h"
+
 #include "DOFManager_tests.h"
 
 
@@ -19,10 +20,10 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
     // Get the mesh
     GENERATOR mesh_generator;
     mesh_generator.build_mesh();
-    AMP::Mesh::Mesh::shared_ptr mesh = mesh_generator.getMesh();
+    auto mesh = mesh_generator.getMesh();
 
     // Create a simple DOF manager
-    AMP::Discretization::DOFManager::shared_ptr DOF = AMP::Discretization::simpleDOFManager::create(
+    auto DOF = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, 1, SPLIT );
     testGetDOFIterator( ut, mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 ), DOF );
 
@@ -32,9 +33,8 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
     testSubsetMesh( mesh, DOF, true, 1, 1, ut );
 
     // Subset for iterators
-    AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
-    AMP::Discretization::DOFManager::shared_ptr subsetDOF =
-        DOF->subset( iterator, mesh->getComm() );
+    auto iterator  = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
+    auto subsetDOF = DOF->subset( iterator, mesh->getComm() );
     testGetDOFIterator( ut, mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 ), subsetDOF );
     if ( *DOF == *subsetDOF )
         ut->passes( "Subset DOF on full mesh iterator: " + GENERATOR::name() );
@@ -52,8 +52,7 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
 
 // Subset using VectorSelector
 #ifdef USE_AMP_VECTORS
-    AMP::Mesh::Mesh::shared_ptr submesh =
-        mesh->Subset( mesh->getSurfaceIterator( AMP::Mesh::GeomType::Face, 1 ) );
+    auto submesh = mesh->Subset( mesh->getSurfaceIterator( AMP::Mesh::GeomType::Face, 1 ) );
     AMP::LinearAlgebra::MeshIteratorVariable meshSubsetVariable(
         "surfaceSubset",
         submesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 ),
@@ -64,7 +63,7 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
 
     // Test subsetting for a subset mesh
     if ( mesh->getGeomType() == AMP::Mesh::GeomType::Volume ) {
-        AMP::Mesh::Mesh::shared_ptr surface_mesh =
+        auto surface_mesh =
             mesh->Subset( mesh->getSurfaceIterator( AMP::Mesh::GeomType::Face, 1 ) );
         subsetDOF = DOF->subset( surface_mesh );
         size_t N1 = surface_mesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
@@ -84,21 +83,17 @@ void testSimpleDOFManager( AMP::UnitTest *ut )
     // Get the mesh
     GENERATOR mesh_generator;
     mesh_generator.build_mesh();
-    AMP::Mesh::Mesh::shared_ptr mesh = mesh_generator.getMesh();
+    auto mesh = mesh_generator.getMesh();
 
     // Create some simple DOF managers
-    AMP::Discretization::DOFManager::shared_ptr DOF1 =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 0, 1, false );
-    AMP::Discretization::DOFManager::shared_ptr DOF2 =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 1, 1, false );
-    AMP::Discretization::DOFManager::shared_ptr DOF3 =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 1, 3, false );
-    AMP::Discretization::DOFManager::shared_ptr DOF4 =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto DOF1 = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 0, 1, false );
+    auto DOF2 = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, false );
+    auto DOF3 = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 3, false );
+    auto DOF4 = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     // Run basic tests that should be valid for all DOFManagers
     testBasics( DOF1, ut );
@@ -134,11 +129,11 @@ void testSimpleDOFManager( AMP::UnitTest *ut )
         ut->failure( "DOFs agree: " + GENERATOR::name() );
 
     // Check that the iterator size matches the mesh
-    AMP::Mesh::MeshIterator meshIterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-    AMP::Mesh::MeshIterator DOF1Iterator = DOF1->getIterator();
-    AMP::Mesh::MeshIterator DOF2Iterator = DOF2->getIterator();
-    AMP::Mesh::MeshIterator DOF3Iterator = DOF3->getIterator();
-    AMP::Mesh::MeshIterator DOF4Iterator = DOF4->getIterator();
+    auto meshIterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto DOF1Iterator = DOF1->getIterator();
+    auto DOF2Iterator = DOF2->getIterator();
+    auto DOF3Iterator = DOF3->getIterator();
+    auto DOF4Iterator = DOF4->getIterator();
     if ( DOF1Iterator.size() == meshIterator.size() )
         ut->passes( "DOF1 has the correct size for the iterator: " + GENERATOR::name() );
     else
@@ -187,12 +182,10 @@ void testMultiDOFManager( AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr mesh = mesh_generator.getMesh();
 
     // Create a simple DOF manager and check if it is a multiDOF manager
-    AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto DOFs = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     if ( std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh ).get() != nullptr ) {
-        std::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF =
-            std::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>( DOFs );
+        auto multiDOF = std::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>( DOFs );
         if ( multiDOF.get() != nullptr ) {
             ut->passes( "Created multiDOFManager from simpleDOFManager: " + GENERATOR::name() );
             testMultiDOFMap( ut, multiDOF );
@@ -214,11 +207,9 @@ void testMultiDOFManager( AMP::UnitTest *ut )
 #endif
 
     // Create a multiDOFManager with repeated mesh elements and make sure the iterator only iterates
-    // once through each
-    // element
+    // once through each element
     std::vector<AMP::Discretization::DOFManager::shared_ptr> managers( 2, DOFs );
-    AMP::Discretization::DOFManager::shared_ptr DOF2(
-        new AMP::Discretization::multiDOFManager( DOFs->getComm(), managers ) );
+    auto DOF2 = std::make_shared<AMP::Discretization::multiDOFManager>( DOFs->getComm(), managers );
     AMP::Mesh::MeshIterator iterator1 = DOFs->getIterator();
     AMP::Mesh::MeshIterator iterator2 = DOF2->getIterator();
     if ( iterator1.size() == iterator2.size() )
@@ -244,8 +235,7 @@ void testStructureDOFManager( AMP::UnitTest *ut )
 
     // Create a simple DOF manager and check if it is a multiDOF manager
     int dofsPerFace[3] = { Nx, Ny, Nz };
-    AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::structuredFaceDOFManager::create( mesh, dofsPerFace, GCW );
+    auto DOFs = AMP::Discretization::structuredFaceDOFManager::create( mesh, dofsPerFace, GCW );
 
     // Run basic tests that should be valid for all DOFManagers
     testBasics( DOFs, ut );
@@ -254,11 +244,10 @@ void testStructureDOFManager( AMP::UnitTest *ut )
 
     // Check getRowDOFs
     if ( Nx > 0 && Ny > 0 && Nz > 0 ) {
-        bool pass                  = true;
-        AMP::Mesh::MeshIterator it = mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+        bool pass = true;
+        auto it   = mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
         for ( size_t ii = 0; ii < it.size(); ++ii, ++it ) {
-            std::vector<AMP::Mesh::MeshElement> faces =
-                it->getElements( AMP::Mesh::GeomType::Face );
+            auto faces = it->getElements( AMP::Mesh::GeomType::Face );
             for ( size_t i = 0; i < faces.size(); i++ ) {
                 std::vector<size_t> rows = DOFs->getRowDOFs( faces[i] );
                 std::vector<size_t> dofs;

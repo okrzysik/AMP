@@ -1,4 +1,3 @@
-
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
 #include "AMP/operators/BVPOperatorParameters.h"
@@ -37,27 +36,20 @@ static void myTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db    = input_db->getDatabase( "Mesh" );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
-    AMP::Discretization::DOFManager::shared_ptr dofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
-
-    //  AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is
-    //  missing!");
-    //  int NumberOfLoadingSteps = input_db->getScalar<int>("NumberOfLoadingSteps");
+    auto dofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     // Material model shared by both the linear and nonlinear operators
     AMP_INSIST( input_db->keyExists( "VonMises_Model" ), "Key ''VonMises_Model'' is missing!" );
-    std::shared_ptr<AMP::Database> matModel_db = input_db->getDatabase( "VonMises_Model" );
-    std::shared_ptr<AMP::Operator::MechanicsMaterialModelParameters> matModelParams(
-        new AMP::Operator::MechanicsMaterialModelParameters( matModel_db ) );
-    std::shared_ptr<AMP::Operator::VonMisesElastoPlasticModel> matModel(
-        new AMP::Operator::VonMisesElastoPlasticModel( matModelParams ) );
+    auto matModel_db = input_db->getDatabase( "VonMises_Model" );
+    auto matModelParams =
+        std::make_shared<AMP::Operator::MechanicsMaterialModelParameters>( matModel_db );
+    auto matModel = std::make_shared<AMP::Operator::VonMisesElastoPlasticModel>( matModelParams );
 
     for ( int useReduced = 0; useReduced < 2; useReduced++ ) {
 
@@ -79,119 +71,113 @@ static void myTest( AMP::UnitTest *ut )
             mechLinElemDbStr    = "Mechanics_Linear_Element_Normal";
         }
 
-        std::shared_ptr<AMP::Database> nonLinElemOp_db =
-            input_db->getDatabase( mechNonlinElemDbStr );
-        std::shared_ptr<AMP::Operator::ElementOperationParameters> nonLinElemOpParams(
-            new AMP::Operator::ElementOperationParameters( nonLinElemOp_db ) );
-        std::shared_ptr<AMP::Operator::MechanicsNonlinearElement> mechNonlinElem(
-            new AMP::Operator::MechanicsNonlinearElement( nonLinElemOpParams ) );
+        auto nonLinElemOp_db = input_db->getDatabase( mechNonlinElemDbStr );
+        auto nonLinElemOpParams =
+            std::make_shared<AMP::Operator::ElementOperationParameters>( nonLinElemOp_db );
+        auto mechNonlinElem =
+            std::make_shared<AMP::Operator::MechanicsNonlinearElement>( nonLinElemOpParams );
 
         AMP_INSIST( input_db->keyExists( "Mechanics_Nonlinear_Assembly" ),
                     "Key ''Mechanics_Nonlinear_Assembly'' is missing!" );
-        std::shared_ptr<AMP::Database> mechNonlinAssembly_db =
-            input_db->getDatabase( "Mechanics_Nonlinear_Assembly" );
-        std::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperatorParameters> mechNonlinOpParams(
-            new AMP::Operator::MechanicsNonlinearFEOperatorParameters( mechNonlinAssembly_db ) );
+        auto mechNonlinAssembly_db = input_db->getDatabase( "Mechanics_Nonlinear_Assembly" );
+        auto mechNonlinOpParams =
+            std::make_shared<AMP::Operator::MechanicsNonlinearFEOperatorParameters>(
+                mechNonlinAssembly_db );
         mechNonlinOpParams->d_materialModel                                  = matModel;
         mechNonlinOpParams->d_elemOp                                         = mechNonlinElem;
         mechNonlinOpParams->d_Mesh                                           = meshAdapter;
         mechNonlinOpParams->d_dofMap[AMP::Operator::Mechanics::DISPLACEMENT] = dofMap;
-        std::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechNonlinOp(
-            new AMP::Operator::MechanicsNonlinearFEOperator( mechNonlinOpParams ) );
+        auto mechNonlinOp =
+            std::make_shared<AMP::Operator::MechanicsNonlinearFEOperator>( mechNonlinOpParams );
 
-        AMP::LinearAlgebra::Variable::shared_ptr var = mechNonlinOp->getOutputVariable();
+        auto var = mechNonlinOp->getOutputVariable();
 
-        std::shared_ptr<AMP::Database> linElemOp_db = input_db->getDatabase( mechLinElemDbStr );
-        std::shared_ptr<AMP::Operator::ElementOperationParameters> linElemOpParams(
-            new AMP::Operator::ElementOperationParameters( linElemOp_db ) );
-        std::shared_ptr<AMP::Operator::MechanicsLinearElement> mechLinElem(
-            new AMP::Operator::MechanicsLinearElement( linElemOpParams ) );
+        auto linElemOp_db = input_db->getDatabase( mechLinElemDbStr );
+        auto linElemOpParams =
+            std::make_shared<AMP::Operator::ElementOperationParameters>( linElemOp_db );
+        auto mechLinElem =
+            std::make_shared<AMP::Operator::MechanicsLinearElement>( linElemOpParams );
 
         AMP_INSIST( input_db->keyExists( "Mechanics_Linear_Assembly" ),
                     "Key ''Mechanics_Linear_Assembly'' is missing!" );
-        std::shared_ptr<AMP::Database> mechLinAssembly_db =
-            input_db->getDatabase( "Mechanics_Linear_Assembly" );
-        std::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechLinOpParams(
-            new AMP::Operator::MechanicsLinearFEOperatorParameters( mechLinAssembly_db ) );
+        auto mechLinAssembly_db = input_db->getDatabase( "Mechanics_Linear_Assembly" );
+        auto mechLinOpParams = std::make_shared<AMP::Operator::MechanicsLinearFEOperatorParameters>(
+            mechLinAssembly_db );
         mechLinOpParams->d_materialModel = matModel;
         mechLinOpParams->d_elemOp        = mechLinElem;
         mechLinOpParams->d_Mesh          = meshAdapter;
         mechLinOpParams->d_inDofMap      = dofMap;
         mechLinOpParams->d_outDofMap     = dofMap;
-        std::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechLinOp(
-            new AMP::Operator::MechanicsLinearFEOperator( mechLinOpParams ) );
+        auto mechLinOp =
+            std::make_shared<AMP::Operator::MechanicsLinearFEOperator>( mechLinOpParams );
 
         AMP_INSIST( input_db->keyExists( "Displacement_Boundary" ),
                     "Key ''Displacement_Boundary'' is missing!" );
-        std::shared_ptr<AMP::Database> disp_db = input_db->getDatabase( "Displacement_Boundary" );
-        std::shared_ptr<AMP::Operator::DirichletMatrixCorrectionParameters> dirichletOpParams(
-            new AMP::Operator::DirichletMatrixCorrectionParameters( disp_db ) );
+        auto disp_db = input_db->getDatabase( "Displacement_Boundary" );
+        auto dirichletOpParams =
+            std::make_shared<AMP::Operator::DirichletMatrixCorrectionParameters>( disp_db );
         dirichletOpParams->d_inputMatrix = mechLinOp->getMatrix();
         // This is just the variable used to extract the dof_map.
         // This boundary operator itself has an empty input and output variable
         dirichletOpParams->d_variable = var;
         dirichletOpParams->d_Mesh     = meshAdapter;
-        std::shared_ptr<AMP::Operator::DirichletMatrixCorrection> dirichletMatOp(
-            new AMP::Operator::DirichletMatrixCorrection( dirichletOpParams ) );
+        auto dirichletMatOp =
+            std::make_shared<AMP::Operator::DirichletMatrixCorrection>( dirichletOpParams );
 
-        std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters>
-            dirichletDispInVecParams(
-                new AMP::Operator::DirichletVectorCorrectionParameters( disp_db ) );
+        auto dirichletDispInVecParams =
+            std::make_shared<AMP::Operator::DirichletVectorCorrectionParameters>( disp_db );
         // This has an in-place apply. So, it has an empty input variable and
         // the output variable is the same as what it is operating on.
         dirichletDispInVecParams->d_variable = var;
         dirichletDispInVecParams->d_Mesh     = meshAdapter;
-        std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletDispInVecOp(
-            new AMP::Operator::DirichletVectorCorrection( dirichletDispInVecParams ) );
+        auto dirichletDispInVecOp =
+            std::make_shared<AMP::Operator::DirichletVectorCorrection>( dirichletDispInVecParams );
 
-        std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters>
-            dirichletDispOutVecParams(
-                new AMP::Operator::DirichletVectorCorrectionParameters( disp_db ) );
+        auto dirichletDispOutVecParams =
+            std::make_shared<AMP::Operator::DirichletVectorCorrectionParameters>( disp_db );
         // This has an in-place apply. So, it has an empty input variable and
         // the output variable is the same as what it is operating on.
         dirichletDispOutVecParams->d_variable = var;
         dirichletDispOutVecParams->d_Mesh     = meshAdapter;
-        std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletDispOutVecOp(
-            new AMP::Operator::DirichletVectorCorrection( dirichletDispOutVecParams ) );
+        auto dirichletDispOutVecOp =
+            std::make_shared<AMP::Operator::DirichletVectorCorrection>( dirichletDispOutVecParams );
 
         AMP_INSIST( input_db->keyExists( "LinearBVPOperator" ),
                     "Key ''LinearBVPOperator'' is missing!" );
-        std::shared_ptr<AMP::Database> linBvpOp_db = input_db->getDatabase( "LinearBVPOperator" );
-        std::shared_ptr<AMP::Operator::BVPOperatorParameters> linBvpOperatorParams(
-            new AMP::Operator::BVPOperatorParameters( linBvpOp_db ) );
+        auto linBvpOp_db = input_db->getDatabase( "LinearBVPOperator" );
+        auto linBvpOperatorParams =
+            std::make_shared<AMP::Operator::BVPOperatorParameters>( linBvpOp_db );
         linBvpOperatorParams->d_volumeOperator   = mechLinOp;
         linBvpOperatorParams->d_boundaryOperator = dirichletMatOp;
-        std::shared_ptr<AMP::Operator::LinearBVPOperator> linBvpOperator(
-            new AMP::Operator::LinearBVPOperator( linBvpOperatorParams ) );
+        auto linBvpOperator =
+            std::make_shared<AMP::Operator::LinearBVPOperator>( linBvpOperatorParams );
 
         AMP_INSIST( input_db->keyExists( "NonlinearBVPOperator" ),
                     "Key ''NonlinearBVPOperator'' is missing!" );
-        std::shared_ptr<AMP::Database> nonlinBvpOp_db =
-            input_db->getDatabase( "NonlinearBVPOperator" );
-        std::shared_ptr<AMP::Operator::BVPOperatorParameters> nonlinBvpOperatorParams(
-            new AMP::Operator::BVPOperatorParameters( nonlinBvpOp_db ) );
+        auto nonlinBvpOp_db = input_db->getDatabase( "NonlinearBVPOperator" );
+        auto nonlinBvpOperatorParams =
+            std::make_shared<AMP::Operator::BVPOperatorParameters>( nonlinBvpOp_db );
         nonlinBvpOperatorParams->d_volumeOperator   = mechNonlinOp;
         nonlinBvpOperatorParams->d_boundaryOperator = dirichletDispOutVecOp;
-        std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinBvpOperator(
-            new AMP::Operator::NonlinearBVPOperator( nonlinBvpOperatorParams ) );
+        auto nonlinBvpOperator =
+            std::make_shared<AMP::Operator::NonlinearBVPOperator>( nonlinBvpOperatorParams );
 
         AMP_INSIST( input_db->keyExists( "Load_Boundary" ), "Key ''Load_Boundary'' is missing!" );
-        std::shared_ptr<AMP::Database> load_db = input_db->getDatabase( "Load_Boundary" );
-        std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> dirichletLoadVecParams(
-            new AMP::Operator::DirichletVectorCorrectionParameters( load_db ) );
+        auto load_db = input_db->getDatabase( "Load_Boundary" );
+        auto dirichletLoadVecParams =
+            std::make_shared<AMP::Operator::DirichletVectorCorrectionParameters>( load_db );
         // This has an in-place apply. So, it has an empty input variable and
         // the output variable is the same as what it is operating on.
         dirichletLoadVecParams->d_variable = var;
         dirichletLoadVecParams->d_Mesh     = meshAdapter;
-        std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp(
-            new AMP::Operator::DirichletVectorCorrection( dirichletLoadVecParams ) );
+        auto dirichletLoadVecOp =
+            std::make_shared<AMP::Operator::DirichletVectorCorrection>( dirichletLoadVecParams );
 
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-        AMP::LinearAlgebra::Vector::shared_ptr mechNlSolVec =
-            AMP::LinearAlgebra::createVector( dofMap, var, true );
-        AMP::LinearAlgebra::Vector::shared_ptr mechNlRhsVec = mechNlSolVec->cloneVector();
-        AMP::LinearAlgebra::Vector::shared_ptr mechNlResVec = mechNlSolVec->cloneVector();
+        auto mechNlSolVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
+        auto mechNlRhsVec = mechNlSolVec->cloneVector();
+        auto mechNlResVec = mechNlSolVec->cloneVector();
 
         mechNlRhsVec->setToScalar( 0.0 );
         dirichletLoadVecOp->apply( nullVec, mechNlRhsVec );

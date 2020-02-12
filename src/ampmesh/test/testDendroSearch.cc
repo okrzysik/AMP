@@ -110,7 +110,7 @@ void drawSpacePartition( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                          double const *point_of_view,
                          std::ostream &os )
 {
-    std::vector<double> space = meshAdapter->getBoundingBox();
+    auto space = meshAdapter->getBoundingBox();
     drawOctant( &( space[0] ), 0, 0, 0, 0, 2, point_of_view, os );
 
     drawOctant( &( space[0] ), 0, 0, 0, 1, 2, point_of_view, os );
@@ -147,10 +147,10 @@ void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                       double const *point_of_view,
                                       const std::string &option = "" )
 {
-    AMP::Mesh::MeshIterator boundaryIterator =
+    auto boundaryIterator =
         meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, boundaryID );
-    AMP::Mesh::MeshIterator boundaryIterator_begin = boundaryIterator.begin(),
-                            boundaryIterator_end   = boundaryIterator.end();
+    auto boundaryIterator_begin = boundaryIterator.begin();
+    auto boundaryIterator_end   = boundaryIterator.end();
     std::vector<AMP::Mesh::MeshElement> faceVertices;
     std::vector<double> faceGeomType::VertexCoordinates;
     double faceData[12]          = { 0.0 };
@@ -212,14 +212,14 @@ void run( const std::string &meshFileName,
     // Load the mesh
     globalComm.barrier();
     double meshBeginTime = MPI_Wtime();
-    std::shared_ptr<AMP::Database> mesh_db( new AMP::Database( "input_db" ) );
+    auto mesh_db         = std::make_shared<AMP::Database>( "input_db" );
     mesh_db->putScalar( "MeshName", "PelletMeshes" );
     mesh_db->putScalar( "MeshType", "Multimesh" );
     mesh_db->putScalar( "MeshDatabasePrefix", "Mesh_" );
     mesh_db->putScalar( "MeshArrayDatabasePrefix", "MeshArray_" );
     if ( false ) {
         mesh_db->putDatabase( "MeshArray_1" );
-        std::shared_ptr<AMP::Database> meshArray_db = mesh_db->getDatabase( "MeshArray_1" );
+        auto meshArray_db = mesh_db->getDatabase( "MeshArray_1" );
         meshArray_db->putScalar( "N", numberOfMeshes );
         meshArray_db->putScalar( "iterator", "%i" );
         std::vector<int> meshIndices;
@@ -297,10 +297,9 @@ void run( const std::string &meshFileName,
     }
 
 
-    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
     globalComm.barrier();
     double meshEndTime = MPI_Wtime();
     size_t numberGlobalVolumeElements =
@@ -337,15 +336,13 @@ void run( const std::string &meshFileName,
     int DOFsPerNode     = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
-    AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-    AMP::LinearAlgebra::Variable::shared_ptr dummyVariable(
-        new AMP::LinearAlgebra::Variable( "Dummy" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr dummyVector = createVector( DOFs, dummyVariable, split );
+    auto DOFs           = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+    auto dummyVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Dummy" );
+    auto dummyVector   = createVector( DOFs, dummyVariable, split );
 
-    AMP::Mesh::MeshIterator node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-    AMP::Mesh::MeshIterator end_node = node.end();
+    auto node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto end_node = node.end();
     for ( ; node != end_node; ++node ) {
         std::vector<size_t> globalID;
         DOFs->getDOFs( node->globalID(), globalID );

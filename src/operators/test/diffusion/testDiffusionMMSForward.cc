@@ -18,13 +18,13 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
 #include "../applyTests.h"
 
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <string>
 
 
@@ -35,77 +35,58 @@ static void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
     // Initialization
     std::string input_file = exeName;
     std::string log_file   = "output_" + exeName;
-
     AMP::PIO::logOnlyNodeZero( log_file );
 
     // Input database
-
-    AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
-    auto input_db           = AMP::Database::parseInputFile( input_file );
+    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+    auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    //--------------------------------------------------
-    //   Create the Mesh.
-    //--------------------------------------------------
+    //   Create the Mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db   = input_db->getDatabase( "Mesh" );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
-    //--------------------------------------------------
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     // Create diffusion operator (nonlinear operator)
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    std::shared_ptr<AMP::Operator::Operator> nonlinearOperator =
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "NonlinearDiffusionOp", input_db, elementModel );
-    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> diffOp =
+    auto nonlinearOperator = AMP::Operator::OperatorBuilder::createOperator(
+        meshAdapter, "NonlinearDiffusionOp", input_db, elementModel );
+    auto diffOp =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>( nonlinearOperator );
 
     // Get source mass operator
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
-    std::shared_ptr<AMP::Operator::Operator> sourceOperator =
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "ManufacturedSourceOperator", input_db, sourcePhysicsModel );
-    std::shared_ptr<AMP::Operator::MassLinearFEOperator> sourceOp =
+    auto sourceOperator = AMP::Operator::OperatorBuilder::createOperator(
+        meshAdapter, "ManufacturedSourceOperator", input_db, sourcePhysicsModel );
+    auto sourceOp =
         std::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>( sourceOperator );
-
-    std::shared_ptr<AMP::Operator::MassDensityModel> densityModel = sourceOp->getDensityModel();
-    std::shared_ptr<AMP::ManufacturedSolution> mfgSolution =
-        densityModel->getManufacturedSolution();
+    auto densityModel = sourceOp->getDensityModel();
+    auto mfgSolution  = densityModel->getManufacturedSolution();
 
     // Set up input and output vectors
-    // AMP::LinearAlgebra::Variable::shared_ptr solVar =
-    // diffOp->getInputVariable(diffOp->getPrincipalVariableId());
+    // auto solVar = diffOp->getInputVariable(diffOp->getPrincipalVariableId());
     ut->failure( "Converted incorrectly" );
-    AMP::LinearAlgebra::Variable::shared_ptr solVar    = diffOp->getInputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr rhsVar    = diffOp->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr resVar    = diffOp->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr sourceVar = sourceOp->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr workVar   = sourceOp->getOutputVariable();
+    auto solVar    = diffOp->getInputVariable();
+    auto rhsVar    = diffOp->getOutputVariable();
+    auto resVar    = diffOp->getOutputVariable();
+    auto sourceVar = sourceOp->getOutputVariable();
+    auto workVar   = sourceOp->getOutputVariable();
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Create a DOF manager for a nodal vector
     int DOFsPerNode     = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
+    auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // create solution, rhs, and residual vectors
-    AMP::LinearAlgebra::Vector::shared_ptr solVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, solVar );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, rhsVar );
-    AMP::LinearAlgebra::Vector::shared_ptr resVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, resVar );
-    AMP::LinearAlgebra::Vector::shared_ptr sourceVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, sourceVar );
-    AMP::LinearAlgebra::Vector::shared_ptr workVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, workVar );
+    auto solVec    = AMP::LinearAlgebra::createVector( nodalDofMap, solVar );
+    auto rhsVec    = AMP::LinearAlgebra::createVector( nodalDofMap, rhsVar );
+    auto resVec    = AMP::LinearAlgebra::createVector( nodalDofMap, resVar );
+    auto sourceVec = AMP::LinearAlgebra::createVector( nodalDofMap, sourceVar );
+    auto workVec   = AMP::LinearAlgebra::createVector( nodalDofMap, workVar );
 
     rhsVec->setToScalar( 0.0 );
 
@@ -135,10 +116,10 @@ static void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
     // Output Mathematica form (requires serial execution)
     for ( int i = 0; i < globalComm.getSize(); i++ ) {
         if ( globalComm.getRank() == i ) {
-            std::string filename          = "data_" + exeName;
-            int rank                      = globalComm.getRank();
-            int nranks                    = globalComm.getSize();
-            std::ios_base::openmode omode = std::ios_base::out;
+            auto filename = "data_" + exeName;
+            int rank      = globalComm.getRank();
+            int nranks    = globalComm.getSize();
+            auto omode    = std::ios_base::out;
             if ( rank > 0 )
                 omode |= std::ios_base::app;
             std::ofstream file( filename.c_str(), omode );
@@ -193,7 +174,7 @@ static void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
 
 // Plot the results
 #ifdef USE_EXT_SILO
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
 
     siloWriter->registerVector(

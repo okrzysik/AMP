@@ -47,12 +47,9 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    std::shared_ptr<AMP::Database> subchannel_db =
-        input_db->getDatabase( "SubchannelPhysicsModel" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params(
-        new AMP::Operator::ElementPhysicsModelParameters( subchannel_db ) );
-    std::shared_ptr<AMP::Operator::SubchannelPhysicsModel> subchannelPhysicsModel(
-        new AMP::Operator::SubchannelPhysicsModel( params ) );
+    auto subchannel_db = input_db->getDatabase( "SubchannelPhysicsModel" );
+    auto params = std::make_shared<AMP::Operator::ElementPhysicsModelParameters>( subchannel_db );
+    auto subchannelPhysicsModel = std::make_shared<AMP::Operator::SubchannelPhysicsModel>( params );
 
     if ( subchannelPhysicsModel.get() ) {
         ut->passes( exeName + ": creation" );
@@ -64,27 +61,27 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     // test function evaluations
     // =======================================================
     // create input argument maps
-    const unsigned int n = 3;
-    std::shared_ptr<std::vector<double>> enthalpyInput( new std::vector<double>( n ) );
-    ( *enthalpyInput )[0] = 500.0e3;
-    ( *enthalpyInput )[1] = 1.0e6;
-    ( *enthalpyInput )[2] = 100.0e3;
-    std::shared_ptr<std::vector<double>> pressureInput( new std::vector<double>( n ) );
-    ( *pressureInput )[0] = 1.0e6;
-    ( *pressureInput )[1] = 15.0e6;
-    ( *pressureInput )[2] = 30.0e3;
-    std::shared_ptr<std::vector<double>> temperatureInput( new std::vector<double>( n ) );
-    ( *temperatureInput )[0] = 400.0;
-    ( *temperatureInput )[1] = 600.0;
-    ( *temperatureInput )[2] = 300.0;
-    std::shared_ptr<std::vector<double>> temperatureInput2( new std::vector<double>( n ) );
+    const unsigned int n      = 3;
+    auto enthalpyInput        = std::make_shared<std::vector<double>>( n );
+    ( *enthalpyInput )[0]     = 500.0e3;
+    ( *enthalpyInput )[1]     = 1.0e6;
+    ( *enthalpyInput )[2]     = 100.0e3;
+    auto pressureInput        = std::make_shared<std::vector<double>>( n );
+    ( *pressureInput )[0]     = 1.0e6;
+    ( *pressureInput )[1]     = 15.0e6;
+    ( *pressureInput )[2]     = 30.0e3;
+    auto temperatureInput     = std::make_shared<std::vector<double>>( n );
+    ( *temperatureInput )[0]  = 400.0;
+    ( *temperatureInput )[1]  = 600.0;
+    ( *temperatureInput )[2]  = 300.0;
+    auto temperatureInput2    = std::make_shared<std::vector<double>>( n );
     ( *temperatureInput2 )[0] = 392.140;
     ( *temperatureInput2 )[1] = 504.658;
     ( *temperatureInput2 )[2] = 297.004;
-    std::shared_ptr<std::vector<double>> densityInput( new std::vector<double>( n ) );
-    ( *densityInput )[0] = 937.871;
-    ( *densityInput )[1] = 659.388;
-    ( *densityInput )[2] = 996.526;
+    auto densityInput         = std::make_shared<std::vector<double>>( n );
+    ( *densityInput )[0]      = 937.871;
+    ( *densityInput )[1]      = 659.388;
+    ( *densityInput )[2]      = 996.526;
     std::map<std::string, std::shared_ptr<std::vector<double>>> temperatureArgs;
     temperatureArgs.insert( std::make_pair( "enthalpy", enthalpyInput ) );
     temperatureArgs.insert( std::make_pair( "pressure", pressureInput ) );
