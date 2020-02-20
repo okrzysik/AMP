@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/MeshElement.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 
 namespace AMP {
 namespace Mesh {
@@ -147,6 +148,87 @@ MeshElementID MeshElement::globalID() const
     if ( element == nullptr )
         return MeshElementID();
     return element->globalID();
+}
+
+
+/********************************************************
+ * Return points in the volume at the given resolution   *
+ ********************************************************/
+std::vector<Point> MeshElement::sample( double dx ) const
+{
+    auto type = globalID().type();
+    if ( type == AMP::Mesh::GeomType::Vertex )
+        return std::vector<Point>( 1, coord() );
+    // Get the nodes
+    auto nodes = getElements( AMP::Mesh::GeomType::Vertex );
+    std::vector<Point> x( nodes.size() );
+    for ( size_t i = 0; i < nodes.size(); i++ )
+        x[i] = nodes[i].coord();
+    // Check if we are dealing with a volume (in the coordinate space)
+    if ( static_cast<int>( type ) == x[0].ndim() ) {
+        // Create a uniform grid
+        AMP_ERROR( "Not finished" );
+    }
+    // Code for the different object types
+    std::vector<Point> p;
+    if ( type == AMP::Mesh::GeomType::Edge ) {
+        // We are dealing with an edge (easy)
+        AMP_ASSERT( x.size() == 2u );
+        double d = ( x[1] - x[0] ).abs();
+        double N = d / dx;
+        int n    = N;
+        for ( int i = 0; i < n; i++ )
+            p.push_back( x[0] + ( 0.5 * ( N - n ) + n ) * dx * ( x[1] - x[0] ) );
+    } else if ( x.size() == 3u ) {
+        // We are dealing with a triangle
+        p = AMP::Geometry::GeometryHelpers::subdivide( { x[0], x[1], x[2] }, dx );
+    } else if ( type == AMP::Mesh::GeomType::Face ) {
+        // Get the normal
+        auto n      = norm();
+        auto center = x[0];
+        for ( size_t i = 1; i < nodes.size(); i++ )
+            center += x[i];
+        center *= 1.0 / nodes.size();
+        // Get two perpendicular unit vectors in the plane
+        // Choose the furthest point for the first vector
+        Point v1;
+        double tmp = 0;
+        for ( size_t i = 0; i < x.size(); i++ ) {
+            auto v = x[i] - center;
+            auto d = v.norm();
+            if ( d > tmp ) {
+                v1  = normalize( v );
+                tmp = d;
+            }
+        }
+        // Compute the second vector using the norm and the first
+        auto v2 = normalize( cross( n, v1 ) );
+        // Get the range in the unit vectors
+        double range[4] = { 0, 0, 0, 0 };
+        for ( size_t i = 0; i < x.size(); i++ ) {
+            double d1 = dot( x[i] - center, v1 );
+            double d2 = dot( x[i] - center, v2 );
+            range[0]  = std::min( range[0], d1 );
+            range[1]  = std::max( range[1], d1 );
+            range[2]  = std::min( range[2], d2 );
+            range[3]  = std::max( range[3], d2 );
+        }
+        // Create the points
+        auto N1 = ( range[1] - range[0] ) / dx;
+        auto N2 = ( range[3] - range[2] ) / dx;
+        auto x1 = range[0] + 0.5 * ( N1 - floor( N1 ) );
+        auto x2 = range[2] + 0.5 * ( N2 - floor( N2 ) );
+        for ( double d1 = x1; d1 <= range[1]; d1 += dx ) {
+            for ( double d2 = x2; d2 <= range[3]; d2 += dx ) {
+                Point p1 = center + d1 * v1 + d2 * v2;
+                if ( containsPoint( p1 ) )
+                    p.push_back( p1 );
+            }
+        }
+    } else {
+        AMP_ERROR( "Not finished" );
+    }
+    return p;
 }
 
 

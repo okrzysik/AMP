@@ -6,9 +6,7 @@
 #include <set>
 
 
-namespace AMP {
-namespace Geometry {
-namespace GeometryHelpers {
+namespace AMP::Geometry::GeometryHelpers {
 
 
 /**
@@ -148,6 +146,20 @@ AMP::Mesh::Point map_shell_logical( double r1, double r2, double x, double y, do
 
 
 /**
+ * \brief   Compute the intersection of a ray and a box
+ * \details  This function will compute the intersection of a ray with a box.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * \param[in] box       Box coordinates (x_min,x_max,y_min,y_max,z_min,z_max)
+ * @return              Returns the distance
+ */
+double distanceToBox( const AMP::Mesh::Point &pos,
+                      const AMP::Mesh::Point &ang,
+                      const std::array<double, 6> &box );
+
+
+/**
  * \brief   Compute the intersection of a ray and an infinite plane
  * \details  This function will compute the intersection of a ray with an infinite plane.
  *    The plane is described by the normal and a point on the plane.
@@ -226,8 +238,70 @@ double distanceToCone( const AMP::Mesh::Point &V,
                        const AMP::Mesh::Point &ang );
 
 
-} // namespace GeometryHelpers
-} // namespace Geometry
-} // namespace AMP
+/**
+ * \brief   Compute the barycentric coordinates
+ * \details  This function will compute the barycentric coordinates
+ *    determine the normal.
+ * \param[in] x         Verticies
+ * \param[in] p         Point of interest
+ * @return              Returns the barycentric coordinates
+ */
+template<int N1, int N2>
+std::array<double, N1> barycentric( const std::array<double, N2> ( &x )[N1],
+                                    const std::array<double, N2> &p );
+
+
+/**
+ * \brief   Compute the normal to a plane defined by 3 points
+ * \details  This function will compute the normal to a plane
+ *    defined by three points.  The order of the points will
+ *    determine the normal.
+ * \param[in] p1        First vertex
+ * \param[in] p2        Second vertex
+ * \param[in] p3        Third vertex
+ * @return              Returns the normal
+ */
+std::array<double, 3> normal( const std::array<double, 3> &v1,
+                              const std::array<double, 3> &v2,
+                              const std::array<double, 3> &v3 );
+
+
+/**
+ * \brief   Find the nearest point to a line segment
+ * \details  This function will compute the nearest point to a line segment in 3D.
+ * \param[in] v1        First vertex
+ * \param[in] v2        Second vertex
+ * \param[in] p         Point of interest
+ * @return              Returns the normal
+ */
+std::array<double, 3> nearest( const std::array<double, 3> &v1,
+                               const std::array<double, 3> &v2,
+                               const std::array<double, 3> &p );
+
+
+/**
+ * \brief   Find the nearest point to on a triangle
+ * \details  This function will compute the nearest point to a triangle
+ *    defined by three points in 3D.
+ * \param[in] v         Verticies
+ * \param[in] p         Point of interest
+ * @return              Returns the normal
+ */
+std::array<double, 3> nearest( const std::array<double, 3> ( &v )[3],
+                               const std::array<double, 3> &p );
+
+
+/**
+ * \brief   Subdivide a triangle
+ * \details  Given the verticies of a triangle, sub-divide the triangle
+ *     recursively until it is with the resolution, returning the new set of points
+ * \param[in] v         Verticies
+ * \param[in] res       Desired resolution
+ * @return              Returns the new points (excluding the verticies)
+ */
+std::vector<AMP::Mesh::Point> subdivide( const std::array<AMP::Mesh::Point, 3> &v, double res );
+
+
+} // namespace AMP::Geometry::GeometryHelpers
 
 #endif

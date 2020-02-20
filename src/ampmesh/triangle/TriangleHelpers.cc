@@ -659,6 +659,30 @@ static inline std::vector<Point> getSurfacePoints( const AMP::Geometry::Geometry
     check_nearest( points );
     return points;
 }
+static inline std::vector<Point> getMeshSurfacePoints( const AMP::Geometry::MeshGeometry &geom,
+                                                       double resolution )
+{
+    // Create surface points for a mesh geometry
+    std::vector<Point> surface;
+    // Start with the verticies to preserve the geometry
+    const auto &mesh = geom.getMesh();
+    for ( auto node : mesh.getIterator( AMP::Mesh::GeomType::Vertex ) )
+        surface.push_back( node.coord() );
+    // Create a kdtree to quickly calculate distances
+    kdtree tree( surface );
+    // Loop through the elements on the surface
+    for ( const auto &elem : mesh.getIterator( mesh.getGeomType() ) ) {
+        auto points = elem.sample( resolution );
+        for ( const auto &p : points ) {
+            if ( dist( tree, p ) > 0.8 * resolution ) {
+                surface.push_back( p );
+                tree.add( p.data() );
+            }
+        }
+    }
+    check_nearest( surface );
+    return surface;
+}
 static inline double getPos( int i, int N, bool isPeriodic )
 {
     if ( N <= 1 )
@@ -741,10 +765,7 @@ generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, do
         // Get the volume points
         auto interior = getVolumePoints( *geom, resolution );
         // Get the surface points
-        std::vector<Point> surface;
-        const auto &mesh = meshGeom->getMesh();
-        for ( auto node : mesh.getIterator( AMP::Mesh::GeomType::Vertex ) )
-            surface.push_back( node.coord() );
+        auto surface = getMeshSurfacePoints( *meshGeom, resolution );
         // Combine
         points = combineSurfaceVolumePoints( interior, surface, *geom, resolution );
     } else {

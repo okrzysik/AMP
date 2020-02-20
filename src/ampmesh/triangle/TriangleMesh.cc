@@ -596,16 +596,16 @@ void TriangleMesh<NG, NP>::initialize()
     // Initialize the iterators
     int max_gcw = size == 1 ? 0 : d_max_gcw;
     d_iterators.resize( ( max_gcw + 1 ) * ( NG + 1 ) );
-    d_iterators[0] = TriangleMeshIterator<NG, NP>(
+    d_iterators[0] = TriangleMeshIterator<NG, NP, 0>(
         this, createLocalList( d_vert.size(), GeomType::Vertex, rank ) );
-    if ( NG >= 1 )
-        d_iterators[1] = TriangleMeshIterator<NG, NP>(
+    if constexpr ( NG >= 1 )
+        d_iterators[1] = TriangleMeshIterator<NG, NP, 1>(
             this, createLocalList( d_edge.size(), GeomType::Edge, rank ) );
-    if ( NG >= 2 )
-        d_iterators[2] = TriangleMeshIterator<NG, NP>(
+    if constexpr ( NG >= 2 )
+        d_iterators[2] = TriangleMeshIterator<NG, NP, 2>(
             this, createLocalList( d_tri.size(), GeomType::Face, rank ) );
-    if ( NG >= 3 )
-        d_iterators[3] = TriangleMeshIterator<NG, NP>(
+    if constexpr ( NG >= 3 )
+        d_iterators[3] = TriangleMeshIterator<NG, NP, 3>(
             this, createLocalList( d_tet.size(), GeomType::Volume, rank ) );
     for ( int gcw = 1; gcw <= max_gcw; gcw++ ) {
         AMP_ERROR( "Not finished" );
@@ -721,9 +721,25 @@ size_t TriangleMesh<NG, NP>::maxProcs( const MeshParameters::shared_ptr &params 
  * Function to return the element given an ID                    *
  ****************************************************************/
 template<size_t NG, size_t NP>
+MeshElement *TriangleMesh<NG, NP>::getElement2( const MeshElementID &id ) const
+{
+    if ( id.type() == AMP::Mesh::GeomType::Vertex )
+        return new TriangleMeshElement<NG, NP, 0>( id, this );
+    if constexpr ( NG > 0 )
+        if ( id.type() == AMP::Mesh::GeomType::Edge )
+            return new TriangleMeshElement<NG, NP, 1>( id, this );
+    if constexpr ( NG > 1 )
+        if ( id.type() == AMP::Mesh::GeomType::Face )
+            return new TriangleMeshElement<NG, NP, 2>( id, this );
+    if constexpr ( NG > 2 )
+        if ( id.type() == AMP::Mesh::GeomType::Volume )
+            return new TriangleMeshElement<NG, NP, 3>( id, this );
+    return nullptr;
+}
+template<size_t NG, size_t NP>
 MeshElement TriangleMesh<NG, NP>::getElement( const MeshElementID &id ) const
 {
-    return TriangleMeshElement<NG, NP>( id, this );
+    return MeshElement( getElement2( id ) );
 }
 
 
@@ -753,7 +769,7 @@ std::vector<MeshElement> TriangleMesh<NG, NP>::getElementParents( const MeshElem
     auto ids = getElementParents( elem.globalID().elemID(), type );
     std::vector<MeshElement> parents( ids.size() );
     for ( size_t i = 0; i < ids.size(); i++ )
-        parents[i] = TriangleMeshElement<NG, NP>( MeshElementID( d_meshID, ids[i] ), this );
+        parents[i] = getElement( MeshElementID( d_meshID, ids[i] ) );
     return parents;
 }
 
@@ -1062,7 +1078,7 @@ template<size_t NG, size_t NP>
 bool TriangleMesh<NG, NP>::isOnSurface( const ElementID &elemID ) const
 {
     const auto &it = d_surface_iterators[static_cast<size_t>( elemID.type() )];
-    return inIterator( elemID, it );
+    return inIterator( elemID, &it );
 }
 template<size_t NG, size_t NP>
 bool TriangleMesh<NG, NP>::isOnBoundary( const ElementID &elemID, int id ) const
@@ -1075,7 +1091,7 @@ bool TriangleMesh<NG, NP>::isOnBoundary( const ElementID &elemID, int id ) const
     if ( index >= (int) d_boundary_iterators[id].size() )
         return false;
     const auto &it = d_boundary_iterators[id][index];
-    return inIterator( elemID, it );
+    return inIterator( elemID, &it );
 }
 template<size_t NG, size_t NP>
 bool TriangleMesh<NG, NP>::isInBlock( const ElementID &elemID, int id ) const
@@ -1088,18 +1104,39 @@ bool TriangleMesh<NG, NP>::isInBlock( const ElementID &elemID, int id ) const
     if ( index >= (int) d_block_iterators[id].size() )
         return false;
     const auto &it = d_block_iterators[id][index];
-    return inIterator( elemID, it );
+    return inIterator( elemID, &it );
 }
 template<size_t NG, size_t NP>
-bool TriangleMesh<NG, NP>::inIterator( const ElementID &id, const TriangleMeshIterator<NG, NP> &it )
+bool TriangleMesh<NG, NP>::inIterator( const ElementID &id, const MeshIterator *it )
 {
-    if ( it.size() == 0 )
+    if ( it->size() == 0 )
         return false;
-    const auto &list = *it.d_list;
-    bool found       = false;
-    for ( size_t i = 0; i < list.size(); i++ )
-        found = found || list[i] == id;
-    return found;
+    auto type = id.type();
+    auto find = []( auto id, auto it ) {
+        const auto &list = *it->d_list;
+        bool found       = false;
+        for ( size_t i = 0; i < list.size(); i++ )
+            found = found || list[i] == id;
+        return found;
+    };
+    if ( type == AMP::Mesh::GeomType::Vertex ) {
+        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 0> *>( it );
+        AMP_ASSERT( it2 );
+        return find( id, it2 );
+    } else if ( type == AMP::Mesh::GeomType::Edge ) {
+        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 1> *>( it );
+        AMP_ASSERT( it2 );
+        return find( id, it2 );
+    } else if ( type == AMP::Mesh::GeomType::Face ) {
+        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 2> *>( it );
+        AMP_ASSERT( it2 );
+        return find( id, it2 );
+    } else if ( type == AMP::Mesh::GeomType::Volume ) {
+        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 3> *>( it );
+        AMP_ASSERT( it2 );
+        return find( id, it2 );
+    }
+    return false;
 }
 
 

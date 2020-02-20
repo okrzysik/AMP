@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/shapes/Box.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
@@ -155,67 +156,15 @@ Point Grid<NDIM>::nearest( const Point &pos ) const
 /********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
-static inline double calcDist( const Point &pos, const Point &ang, const double *range )
-{
-    constexpr double tol = 1e-12;
-    // Compute the distance to each surface
-    double d1 = ( range[0] - pos.x() ) / ang.x();
-    double d2 = ( range[1] - pos.x() ) / ang.x();
-    double d3 = ( range[2] - pos.y() ) / ang.y();
-    double d4 = ( range[3] - pos.y() ) / ang.y();
-    double d5 = ( range[4] - pos.z() ) / ang.z();
-    double d6 = ( range[5] - pos.z() ) / ang.z();
-    if ( d1 < 0 )
-        d1 = std::numeric_limits<double>::infinity();
-    if ( d2 < 0 )
-        d2 = std::numeric_limits<double>::infinity();
-    if ( d3 < 0 )
-        d3 = std::numeric_limits<double>::infinity();
-    if ( d4 < 0 )
-        d4 = std::numeric_limits<double>::infinity();
-    if ( d5 < 0 )
-        d5 = std::numeric_limits<double>::infinity();
-    if ( d6 < 0 )
-        d6 = std::numeric_limits<double>::infinity();
-    // Check if the intersection of each surface is within the bounds of the box
-    auto p1     = pos + d1 * ang;
-    auto p2     = pos + d2 * ang;
-    auto p3     = pos + d3 * ang;
-    auto p4     = pos + d4 * ang;
-    auto p5     = pos + d5 * ang;
-    auto p6     = pos + d6 * ang;
-    auto inside = [tol, range]( const Point &p ) {
-        return ( ( p.x() >= range[0] - tol ) && ( p.x() <= range[1] + tol ) ) &&
-               ( ( p.y() >= range[2] - tol ) && ( p.y() <= range[3] + tol ) ) &&
-               ( ( p.z() >= range[4] - tol ) && ( p.z() <= range[5] + tol ) );
-    };
-    if ( !inside( p1 ) )
-        d1 = std::numeric_limits<double>::infinity();
-    if ( !inside( p2 ) )
-        d2 = std::numeric_limits<double>::infinity();
-    if ( !inside( p3 ) )
-        d3 = std::numeric_limits<double>::infinity();
-    if ( !inside( p4 ) )
-        d4 = std::numeric_limits<double>::infinity();
-    if ( !inside( p5 ) )
-        d5 = std::numeric_limits<double>::infinity();
-    if ( !inside( p6 ) )
-        d6 = std::numeric_limits<double>::infinity();
-    // Return the closest surface
-    double d = std::min( { d1, d2, d3, d4, d5, d6 } );
-    if ( inside( pos ) && d < 1e100 )
-        d = -d;
-    return d;
-}
 template<std::size_t NDIM>
 double Box<NDIM>::distance( const Point &pos, const Point &ang ) const
 {
-    return calcDist( pos, ang, d_range );
+    return GeometryHelpers::distanceToBox( pos, ang, d_range );
 }
 template<std::size_t NDIM>
 double Grid<NDIM>::distance( const Point &pos, const Point &ang ) const
 {
-    return calcDist( pos, ang, d_range );
+    return GeometryHelpers::distanceToBox( pos, ang, d_range );
 }
 
 

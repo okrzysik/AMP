@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <utility>
 
+namespace AMP {
 
 //! Function to compute the closest pair of points
 /*!
@@ -15,6 +16,7 @@
 template<int NDIM, class TYPE>
 inline std::pair<int, int> find_min_dist( const int N, const TYPE *x );
 
+} // namespace AMP
 
 #include "AMP/utils/NearestPairSearch.hpp"
 

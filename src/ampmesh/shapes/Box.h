@@ -3,6 +3,7 @@
 
 #include "AMP/ampmesh/LogicalGeometry.h"
 
+#include <array>
 #include <vector>
 
 
@@ -61,7 +62,7 @@ public: // Functions inherited from Geometry
 
 protected:
     // Internal data
-    double d_range[6];
+    std::array<double, 6> d_range;
 
 private:
     // Private constuctor
@@ -120,7 +121,7 @@ public: // Functions inherited from Geometry
 
 protected:
     // Internal data
-    double d_range[6];
+    std::array<double, 6> d_range;
     std::vector<double> d_coord[NDIM];
 
 private:

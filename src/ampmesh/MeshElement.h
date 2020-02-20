@@ -44,6 +44,9 @@ public:
     //! Move assignment operator
     inline MeshElement &operator=( MeshElement && );
 
+    //! Create a mesh element taking ownership
+    inline MeshElement( MeshElement * );
+
     //! Destructor for a MeshElement
     virtual inline ~MeshElement();
 
@@ -106,6 +109,14 @@ public: // non-virtual functions
      * \param TOL   The tolerance to use for the computation.
      */
     inline bool containsPoint( const std::vector<double> &pos, double TOL = 1e-12 ) const;
+
+
+    /**
+     * \brief    Get points in the element
+     * \details  This function returns points in the volume at the given resolution
+     * \param dx    Resolution to use
+     */
+    std::vector<Point> sample( double dx ) const;
 
 
 public: // Virtual functions

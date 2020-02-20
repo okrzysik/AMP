@@ -159,6 +159,13 @@ public:
         d_data[2] -= rhs.d_data[2];
         return *this;
     }
+    constexpr MeshPoint &operator*=( const TYPE &rhs ) noexcept
+    {
+        d_data[0] *= rhs;
+        d_data[1] *= rhs;
+        d_data[2] *= rhs;
+        return *this;
+    }
 
     // Comparison operators
     constexpr bool operator==( const MeshPoint &rhs ) const
@@ -256,14 +263,14 @@ inline AMP::Mesh::MeshPoint<TYPE> operator+( const AMP::Mesh::MeshPoint<TYPE> &a
     TYPE c[3] = { a.x() + b.x(), a.y() + b.y(), a.z() + b.z() };
     return AMP::Mesh::MeshPoint<TYPE>( a.size(), c );
 }
-template<class TYPE, class TYPE2>
-inline AMP::Mesh::MeshPoint<TYPE> operator+( const AMP::Mesh::MeshPoint<TYPE> &a, const TYPE2 &b )
+template<class TYPE>
+inline AMP::Mesh::MeshPoint<TYPE> operator+( const AMP::Mesh::MeshPoint<TYPE> &a, const TYPE &b )
 {
     TYPE c[3] = { a.x() + b, a.y() + b, a.z() + b };
     return AMP::Mesh::MeshPoint<TYPE>( a.size(), c );
 }
-template<class TYPE, class TYPE2>
-inline AMP::Mesh::MeshPoint<TYPE> operator+( const TYPE2 &a, const AMP::Mesh::MeshPoint<TYPE> &b )
+template<class TYPE>
+inline AMP::Mesh::MeshPoint<TYPE> operator+( const TYPE &a, const AMP::Mesh::MeshPoint<TYPE> &b )
 {
     TYPE c[3] = { a + b.x(), a + b.y(), a + b.z() };
     return AMP::Mesh::MeshPoint<TYPE>( b.size(), c );
@@ -275,14 +282,14 @@ inline AMP::Mesh::MeshPoint<TYPE> operator-( const AMP::Mesh::MeshPoint<TYPE> &a
     TYPE c[3] = { a.x() - b.x(), a.y() - b.y(), a.z() - b.z() };
     return AMP::Mesh::MeshPoint<TYPE>( a.size(), c );
 }
-template<class TYPE, class TYPE2>
-inline AMP::Mesh::MeshPoint<TYPE> operator-( const AMP::Mesh::MeshPoint<TYPE> &a, const TYPE2 &b )
+template<class TYPE>
+inline AMP::Mesh::MeshPoint<TYPE> operator-( const AMP::Mesh::MeshPoint<TYPE> &a, const TYPE &b )
 {
     TYPE c[3] = { a.x() - b, a.y() - b, a.z() - b };
     return AMP::Mesh::MeshPoint<TYPE>( a.size(), c );
 }
-template<class TYPE, class TYPE2>
-inline AMP::Mesh::MeshPoint<TYPE> operator-( const TYPE2 &a, const AMP::Mesh::MeshPoint<TYPE> &b )
+template<class TYPE>
+inline AMP::Mesh::MeshPoint<TYPE> operator-( const TYPE &a, const AMP::Mesh::MeshPoint<TYPE> &b )
 {
     TYPE c[3] = { a - b.x(), a - b.y(), a - b.z() };
     return AMP::Mesh::MeshPoint<TYPE>( b.size(), c );
@@ -296,8 +303,8 @@ inline AMP::Mesh::MeshPoint<TYPE> operator-( const AMP::Mesh::MeshPoint<TYPE> &a
     c.z()  = -a.z();
     return c;
 }
-template<class TYPE, class TYPE2>
-inline AMP::Mesh::MeshPoint<TYPE> operator*( const AMP::Mesh::MeshPoint<TYPE> &a, const TYPE2 &b )
+template<class TYPE>
+inline AMP::Mesh::MeshPoint<TYPE> operator*( const AMP::Mesh::MeshPoint<TYPE> &a, const TYPE &b )
 {
     auto c = a;
     c.x() *= b;
@@ -305,8 +312,8 @@ inline AMP::Mesh::MeshPoint<TYPE> operator*( const AMP::Mesh::MeshPoint<TYPE> &a
     c.z() *= b;
     return c;
 }
-template<class TYPE, class TYPE2>
-inline AMP::Mesh::MeshPoint<TYPE> operator*( const TYPE2 &a, const AMP::Mesh::MeshPoint<TYPE> &b )
+template<class TYPE>
+inline AMP::Mesh::MeshPoint<TYPE> operator*( const TYPE &a, const AMP::Mesh::MeshPoint<TYPE> &b )
 {
     auto c = b;
     c.x() *= a;

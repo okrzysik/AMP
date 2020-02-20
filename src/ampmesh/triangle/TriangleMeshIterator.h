@@ -14,7 +14,7 @@ template<size_t NG, size_t NP>
 class TriangleMesh;
 
 
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 class TriangleMeshIterator final : public MeshIterator
 {
 public:
@@ -82,7 +82,7 @@ private:
     // Data members
     const AMP::Mesh::TriangleMesh<NG, NP> *d_mesh;
     std::shared_ptr<const std::vector<ElementID>> d_list;
-    TriangleMeshElement<NG, NP> d_cur_element;
+    TriangleMeshElement<NG, NP, TYPE> d_cur_element;
 
 private:
     static constexpr uint32_t getTypeID();

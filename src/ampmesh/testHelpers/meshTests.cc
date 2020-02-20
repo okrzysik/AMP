@@ -144,6 +144,8 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
     bool volume_pass   = true;
     bool coord_pass    = true;
     bool centroid_pass = true;
+    bool nearest_pass  = false;
+    bool distance_pass = false;
     bool elements_pass = true;
     bool block_pass    = true;
     int neighbor_pass  = 1;
@@ -228,8 +230,9 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
                 id_pass = false;
         }
     }
+
     if ( id_pass && type_pass && volume_pass && coord_pass && elements_pass && neighbor_pass == 1 &&
-         block_pass ) {
+         block_pass && nearest_pass && distance_pass ) {
         ut->passes( "elements passed" );
     } else {
         if ( !id_pass )
@@ -240,6 +243,10 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
             ut->failure( "elements failed volume test" );
         if ( !coord_pass )
             ut->failure( "elements failed coord test" );
+        if ( !nearest_pass )
+            ut->failure( "element nearest test not implimented yet" );
+        if ( !distance_pass )
+            ut->failure( "element distance test not implimented yet" );
         if ( !centroid_pass )
             ut->failure( "elements failed centroid test" );
         if ( !elements_pass )

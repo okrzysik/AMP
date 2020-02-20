@@ -1,6 +1,7 @@
 #include "AMP/ampmesh/MeshGeometry.h"
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshElement.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 
 
 namespace AMP::Geometry {
@@ -59,15 +60,23 @@ double MeshGeometry::distance( const Point &pos, const Point &dir ) const
     // Update cached data if position moved
     if ( d_pos_hash != d_mesh->positionHash() )
         initializePosition();
-    auto x = pos;
-    // Update cached data if position moved
-    if ( d_pos_hash != d_mesh->positionHash() )
-        initializePosition();
-    const auto type = d_mesh->getGeomType();
+    // Get the bounding box for the mesh
+    std::array<double, 6> box = { 0, 0, 0, 0, 0, 0 };
+    const auto box2           = d_mesh->getBoundingBox();
+    for ( size_t i = 0; i < box2.size(); i++ )
+        box[i] = box2[i];
+    // Compute the distance
+    auto x               = pos;
+    const auto type      = d_mesh->getGeomType();
+    constexpr double inf = std::numeric_limits<double>::infinity();
     while ( true ) {
+        // Check that the updated ray will intersect the bounding box
+        if ( AMP::Geometry::GeometryHelpers::distanceToBox( x, dir, box ) == inf )
+            return inf;
         // Find the nearest node
         double d = 0;
         size_t i = d_tree.find_nearest( x.data(), &d );
+        AMP_ASSERT( i < d_nodes.size() );
         // For each parent element identify if we intersect the element
         for ( const auto &parent : d_mesh->getElementParents( d_nodes[i], type ) ) {
             // Find the distance to the element (if we intersect)
@@ -82,8 +91,16 @@ double MeshGeometry::distance( const Point &pos, const Point &dir ) const
 }
 bool MeshGeometry::inside( const Point &pos ) const
 {
-    double dist = distance( pos, pos - centroid() );
-    return dist <= 0;
+    // Get the nearest element
+    auto [elem, p2] = getNearestElement( pos );
+    auto vec        = p2 - pos;
+    if ( vec.norm() < 1e-6 )
+        return true; // We are on the surface
+    // Get the element normal
+    auto n = elem.norm();
+    // Check if the vector to intersection is in the same direction as the normal
+    double t = dot( vec, n );
+    return t > 0;
 }
 
 
@@ -159,7 +176,7 @@ std::pair<AMP::Mesh::MeshElement, Point> MeshGeometry::getNearestElement( const 
     const auto type = d_mesh->getGeomType();
     for ( const auto &parent : d_mesh->getElementParents( d_nodes[i], type ) ) {
         auto p2 = parent.nearest( x );
-        auto d2 = abs( p - p2 );
+        auto d2 = ( x - p2 ).norm();
         if ( d2 < d ) {
             d    = d2;
             p    = p2;

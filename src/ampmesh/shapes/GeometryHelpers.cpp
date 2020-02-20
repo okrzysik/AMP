@@ -5,9 +5,90 @@
 #include <algorithm>
 #include <cmath>
 
-namespace AMP {
-namespace Geometry {
-namespace GeometryHelpers {
+
+/****************************************************************
+ * Overload basic array operations                               *
+ ****************************************************************/
+template<size_t N>
+static inline std::array<double, N> operator*( double x, const std::array<double, N> &y )
+{
+    if constexpr ( N == 1 )
+        return { x * y[0] };
+    else if constexpr ( N == 2 )
+        return { x * y[0], x * y[1] };
+    else if constexpr ( N == 3 )
+        return { x * y[0], x * y[1], x * y[2] };
+}
+template<size_t N>
+static inline std::array<double, N> operator+( const std::array<double, N> &x,
+                                               const std::array<double, N> &y )
+{
+    if constexpr ( N == 1 )
+        return { x[0] + y[0] };
+    else if constexpr ( N == 2 )
+        return { x[0] + y[0], x[1] + y[1] };
+    else if constexpr ( N == 3 )
+        return { x[0] + y[0], x[1] + y[1], x[2] + y[2] };
+}
+template<size_t N>
+static inline std::array<double, N> operator-( const std::array<double, N> &x,
+                                               const std::array<double, N> &y )
+{
+    if constexpr ( N == 1 )
+        return { x[0] - y[0] };
+    else if constexpr ( N == 2 )
+        return { x[0] - y[0], x[1] - y[1] };
+    else if constexpr ( N == 3 )
+        return { x[0] - y[0], x[1] - y[1], x[2] - y[2] };
+}
+static constexpr double inv_factorial( int N )
+{
+    double x = 1;
+    for ( int i = 2; i <= N; i++ )
+        x *= i;
+    return 1.0 / x;
+}
+template<size_t N>
+static inline double abs( const std::array<double, N> &x )
+{
+    if constexpr ( N == 1 )
+        return std::abs( x[0] );
+    else if constexpr ( N == 2 )
+        return sqrt( x[0] * x[0] + x[1] * x[1] );
+    else if constexpr ( N == 3 )
+        return sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
+}
+template<size_t N>
+static inline double dot( const std::array<double, N> &x, const std::array<double, N> &y )
+{
+    if constexpr ( N == 1 )
+        return x[0] * y[0];
+    else if constexpr ( N == 2 )
+        return x[0] * y[0] + x[1] * y[1];
+    else if constexpr ( N == 3 )
+        return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+}
+static inline std::array<double, 3> cross( const std::array<double, 3> &x,
+                                           const std::array<double, 3> &y )
+{
+    return { x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0] };
+}
+template<size_t N>
+static inline std::array<double, N> normalize( const std::array<double, N> &x )
+{
+    if constexpr ( N == 1 ) {
+        return { 1.0 };
+    } else if constexpr ( N == 2 ) {
+        double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] );
+        return { tmp * x[0], tmp * x[1] };
+    } else if constexpr ( N == 3 ) {
+        double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
+        return { tmp * x[0], tmp * x[1], tmp * x[2] };
+    }
+}
+
+
+namespace AMP::Geometry::GeometryHelpers {
 
 
 /****************************************************************
@@ -263,6 +344,65 @@ double distanceToPlane( const AMP::Mesh::Point &n,
 
 
 /****************************************************************
+ * Compute the distance to a box                                 *
+ ****************************************************************/
+double distanceToBox( const AMP::Mesh::Point &pos,
+                      const AMP::Mesh::Point &ang,
+                      const std::array<double, 6> &range )
+{
+    constexpr double tol = 1e-12;
+    // Compute the distance to each surface
+    double d1 = ( range[0] - pos.x() ) / ang.x();
+    double d2 = ( range[1] - pos.x() ) / ang.x();
+    double d3 = ( range[2] - pos.y() ) / ang.y();
+    double d4 = ( range[3] - pos.y() ) / ang.y();
+    double d5 = ( range[4] - pos.z() ) / ang.z();
+    double d6 = ( range[5] - pos.z() ) / ang.z();
+    if ( d1 < 0 )
+        d1 = std::numeric_limits<double>::infinity();
+    if ( d2 < 0 )
+        d2 = std::numeric_limits<double>::infinity();
+    if ( d3 < 0 )
+        d3 = std::numeric_limits<double>::infinity();
+    if ( d4 < 0 )
+        d4 = std::numeric_limits<double>::infinity();
+    if ( d5 < 0 )
+        d5 = std::numeric_limits<double>::infinity();
+    if ( d6 < 0 )
+        d6 = std::numeric_limits<double>::infinity();
+    // Check if the intersection of each surface is within the bounds of the box
+    auto p1     = pos + d1 * ang;
+    auto p2     = pos + d2 * ang;
+    auto p3     = pos + d3 * ang;
+    auto p4     = pos + d4 * ang;
+    auto p5     = pos + d5 * ang;
+    auto p6     = pos + d6 * ang;
+    auto inside = [tol, range]( const Point &p ) {
+        return ( ( p.x() >= range[0] - tol ) && ( p.x() <= range[1] + tol ) ) &&
+               ( ( p.y() >= range[2] - tol ) && ( p.y() <= range[3] + tol ) ) &&
+               ( ( p.z() >= range[4] - tol ) && ( p.z() <= range[5] + tol ) );
+    };
+    if ( !inside( p1 ) )
+        d1 = std::numeric_limits<double>::infinity();
+    if ( !inside( p2 ) )
+        d2 = std::numeric_limits<double>::infinity();
+    if ( !inside( p3 ) )
+        d3 = std::numeric_limits<double>::infinity();
+    if ( !inside( p4 ) )
+        d4 = std::numeric_limits<double>::infinity();
+    if ( !inside( p5 ) )
+        d5 = std::numeric_limits<double>::infinity();
+    if ( !inside( p6 ) )
+        d6 = std::numeric_limits<double>::infinity();
+    // Return the closest surface
+    double d = std::min( { d1, d2, d3, d4, d5, d6 } );
+    if ( inside( pos ) && d < 1e100 )
+        d = -d;
+    return d;
+}
+
+
+/****************************************************************
  * Compute the distance to a circle                              *
  ****************************************************************/
 double distanceToCircle( double r, const AMP::Mesh::Point &pos, const AMP::Mesh::Point &ang )
@@ -392,6 +532,133 @@ double distanceToCone( const AMP::Mesh::Point &V,
 }
 
 
-} // namespace GeometryHelpers
-} // namespace Geometry
-} // namespace AMP
+/****************************************************************
+ * Compute the normal to a plane                                 *
+ ****************************************************************/
+std::array<double, 3> normal( const std::array<double, 3> &v1,
+                              const std::array<double, 3> &v2,
+                              const std::array<double, 3> &v3 )
+{
+    return normalize( cross( v1 - v2, v1 - v3 ) );
+}
+
+
+/****************************************************************
+ * Get the Barycentric coordinates (u, v, w) for point p with   *
+ *   respect to triangle (a, b, c)                              *
+ ***************************************************************/
+template<>
+std::array<double, 3> barycentric<3, 3>( const std::array<double, 3> ( &x )[3],
+                                         const std::array<double, 3> &p )
+{
+    auto v0  = x[1] - x[0];
+    auto v1  = x[2] - x[0];
+    auto v2  = p - x[0];
+    auto d00 = dot( v0, v0 );
+    auto d01 = dot( v0, v1 );
+    auto d11 = dot( v1, v1 );
+    auto d20 = dot( v2, v0 );
+    auto d21 = dot( v2, v1 );
+    auto inv = 1.0 / ( d00 * d11 - d01 * d01 );
+    auto v   = inv * ( d11 * d20 - d01 * d21 );
+    auto w   = inv * ( d00 * d21 - d01 * d20 );
+    auto u   = 1.0 - v - w;
+    return { u, v, w };
+}
+
+
+/****************************************************************
+ * Compute the nearest point to a line segment                   *
+ ****************************************************************/
+std::array<double, 3> nearest( const std::array<double, 3> &A,
+                               const std::array<double, 3> &B,
+                               const std::array<double, 3> &P )
+{
+    auto v = B - A;
+    auto u = A - P;
+    auto t = -dot( v, u ) / dot( v, v );
+    t      = std::min( std::max( t, 0.0 ), 1.0 );
+    return ( 1.0 - t ) * A + t * B;
+}
+
+
+/****************************************************************
+ * Compute the nearest point to a triangle                       *
+ ****************************************************************/
+std::array<double, 3> nearest( const std::array<double, 3> ( &v )[3],
+                               const std::array<double, 3> &p0 )
+{
+    constexpr double TOL = 1e-8;
+    // Get the normal and a point on the plane containing the triangle
+    auto n = AMP::Geometry::GeometryHelpers::normal( v[0], v[1], v[2] );
+    // Find the closest point on the plane
+    double d = dot( n, p0 - v[0] );
+    auto p   = p0 - d * n;
+    // Compute the barycentric coordinates
+    auto L = barycentric<3, 3>( v, p );
+    if ( L[0] > -TOL && L[1] > -TOL && L[2] > -TOL ) {
+        // Point is inside triangle
+        return p;
+    } else if ( L[1] <= 0 && L[2] <= 0 ) {
+        // Point is closest to the first vertex
+        return v[0];
+    } else if ( L[0] <= 0 && L[2] <= 0 ) {
+        // Point is closest to the second vertex
+        return v[1];
+    } else if ( L[0] <= 0 && L[1] <= 0 ) {
+        // Point is closest to the third vertex
+        return v[2];
+    } else if ( L[0] <= 0 ) {
+        // Point is closest to line between second and third verticies
+        return nearest( v[1], v[2], p0 );
+    } else if ( L[1] <= 0 ) {
+        // Point is closest to line between first and third verticies
+        return nearest( v[0], v[2], p0 );
+    } else {
+        // Point is closest to line between first and second verticies
+        return nearest( v[0], v[1], p0 );
+    }
+}
+
+
+/****************************************************************
+ * Recursively divide the triangle                               *
+ ****************************************************************/
+std::vector<AMP::Mesh::Point> subdivide( const std::array<AMP::Mesh::Point, 3> &v, double res )
+{
+    double d1  = ( v[0] - v[1] ).norm();
+    double d2  = ( v[0] - v[2] ).norm();
+    double d3  = ( v[1] - v[2] ).norm();
+    double max = std::max( { d1, d2, d3 } );
+    if ( max < res * res )
+        return std::vector<AMP::Mesh::Point>();
+    std::vector<AMP::Mesh::Point> s1, s2;
+    if ( d1 == max ) {
+        auto p = 0.5 * ( v[0] + v[1] );
+        s1     = subdivide( { v[0], p, v[2] }, res );
+        s2     = subdivide( { p, v[1], v[2] }, res );
+        s1.push_back( p );
+    } else if ( d2 == max ) {
+        auto p = 0.5 * ( v[0] + v[2] );
+        s1     = subdivide( { v[0], v[1], p }, res );
+        s2     = subdivide( { p, v[1], v[2] }, res );
+        s1.push_back( p );
+    } else {
+        auto p = 0.5 * ( v[1] + v[2] );
+        s1     = subdivide( { v[0], v[1], p }, res );
+        s2     = subdivide( { v[0], p, v[2] }, res );
+        s1.push_back( p );
+    }
+    const double tol = 0.5 * res * res;
+    for ( const auto &p : s2 ) {
+        bool found = false;
+        for ( const auto &p0 : s1 )
+            found = found || ( p0 - p ).norm() < tol;
+        if ( !found )
+            s1.push_back( p );
+    }
+    return s1;
+}
+
+
+} // namespace AMP::Geometry::GeometryHelpers

@@ -24,9 +24,9 @@ namespace AMP {
 namespace Mesh {
 
 
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 class TriangleMeshIterator;
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 class TriangleMeshElement;
 
 
@@ -353,6 +353,9 @@ protected:
     // Return the IDs of the parent elements
     std::vector<ElementID> getElementParents( const ElementID &id, const GeomType type ) const;
 
+    // Return a new element (user must delete)
+    MeshElement *getElement2( const MeshElementID &id ) const;
+
     // Return the coordinated of the given vertex
     // Note: no error checking is done to make sure it is a valid vertex
     const TriangleMesh::Point &getPos( const ElementID &id ) const;
@@ -361,11 +364,17 @@ protected:
     bool isOnSurface( const ElementID &elemID ) const;
     bool isOnBoundary( const ElementID &elemID, int id ) const;
     bool isInBlock( const ElementID &elemID, int id ) const;
-    static bool inIterator( const ElementID &id, const TriangleMeshIterator<NG, NP> &it );
+    static bool inIterator( const ElementID &id, const MeshIterator *it );
 
     // Friends
-    friend TriangleMeshIterator<NG, NP>;
-    friend TriangleMeshElement<NG, NP>;
+    friend TriangleMeshIterator<NG, NP, 0>;
+    friend TriangleMeshIterator<NG, NP, 1>;
+    friend TriangleMeshIterator<NG, NP, 2>;
+    friend TriangleMeshIterator<NG, NP, 3>;
+    friend TriangleMeshElement<NG, NP, 0>;
+    friend TriangleMeshElement<NG, NP, 1>;
+    friend TriangleMeshElement<NG, NP, 2>;
+    friend TriangleMeshElement<NG, NP, 3>;
 
 
 private: // Internal data
@@ -394,10 +403,10 @@ private: // Internal data
     std::vector<std::array<ElementID, 6>> d_tet_edge;
 
     // Store common iterators
-    std::vector<TriangleMeshIterator<NG, NP>> d_iterators;
-    std::vector<TriangleMeshIterator<NG, NP>> d_surface_iterators;
-    std::vector<std::vector<TriangleMeshIterator<NG, NP>>> d_boundary_iterators;
-    std::vector<std::vector<TriangleMeshIterator<NG, NP>>> d_block_iterators;
+    std::vector<MeshIterator> d_iterators;
+    std::vector<MeshIterator> d_surface_iterators;
+    std::vector<std::vector<MeshIterator>> d_boundary_iterators;
+    std::vector<std::vector<MeshIterator>> d_block_iterators;
 
     // Index indicating number of times the position has changed
     uint64_t d_pos_hash;
