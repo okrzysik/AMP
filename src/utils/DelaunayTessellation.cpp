@@ -27,19 +27,18 @@ namespace DelaunayTessellation {
 
 // Templated form of test_in_circumsphere
 template<int NDIM, class TYPE, class ETYPE>
-static int test_in_circumsphere( const TYPE x[], const TYPE xi[], const double TOL_VOL );
+static int test_in_circumsphere( const std::array<TYPE, NDIM> x[],
+                                 const std::array<TYPE, NDIM> &xi,
+                                 const double TOL_VOL );
 
 // Templated form of get_circumsphere
 template<int NDIM, class TYPE>
-static void get_circumsphere( const TYPE x[], double &R, double *c );
-
-// Templated form of compute_Barycentric
-template<int NDIM, class TYPE, class ETYPE>
-static void compute_Barycentric( const TYPE *x, const TYPE *xi, double *L );
+static void get_circumsphere( const std::array<TYPE, NDIM> x[], double &R, double *c );
 
 // Function to remove sliver triangles on the surface
 template<int NDIM, class TYPE, class ETYPE>
-static void clean_triangles( const int N, const TYPE *x, size_t &N_tri, int *tri, int *tri_nab );
+static void clean_triangles(
+    const int N, const std::array<TYPE, NDIM> *x, size_t &N_tri, int *tri, int *tri_nab );
 
 // Function to swap the indicies of two triangles
 template<int NDIM>
@@ -68,215 +67,6 @@ static bool find_flip( const std::array<TYPE, NDIM> *x,
                        int *index_old,
                        int *new_tri,
                        int *new_tri_nab );
-
-
-//! Function to perform a flip in 2D
-/*!
- * This function perform a 2-2 flip in 2D.  If sucessful, the function
- * will return true.  This function also needs to calculate the triangle neighbors.
- * Note: in 2D there is only 1 type of flip (the 2-2 flip).
- * @param N             The number of verticies
- * @param x             The coordinates of the verticies (2xN)
- * @param N_tri         The number of triangles
- * @param tri           The current list of triangles (3xN_tri)
- * @param tri_nab       The current list of triangle neighbors (3xN_tri)
- * @param t1            The index of the first triangle
- * @param s1            The surface index on the first triangle
- * @param t2            The index of the second triangle
- * @param s2            The surface index on the second triangle
- * @param index_old     (output) The list of triangles that have been replaced (1x2)
- * @param new_tri       (output) The new triangles that were created (3x2)
- * @param new_tri_nab   (output) The new triangles neighbors (3x2)
- *                          new_tri_nab >= 0   - Triangle neighbor is an existing triangle (with
- * the given index)
- *                          new_tri_nab -(i+1) - Triangle neighbor is the ith new triangle
- *                          new_tri_nab ==-1   - Triangle face is on the convex hull
- * @param TOL_VOL       The tolerance to use for determining if a simplex is valid
- */
-template<class TYPE, class ETYPE>
-static bool flip_2D( const std::array<TYPE, 2> x[],
-                     const int tri[],
-                     const int tri_nab[],
-                     const int t1,
-                     const int s1,
-                     const int t2,
-                     const int s2,
-                     int *index_old,
-                     int *new_tri,
-                     int *new_tri_nab,
-                     const double TOL_VOL );
-
-
-//! Function to perform a 2-2 flip in 3D
-/*!
- * This function performs a 2-2 flip in 3D.  If the flip can be applied, the function
- * will return true.  Note: a valid 2-2 flip in 3D requires that 4 of the
- * verticies are coplanar and on the convex hull.
- * In 3D the possible edge flips are:
- *   2-3 flip in which we break the 2 triangles into 3
- *   3-2 flip which is the reverse of the 2-3 flip
- *   4-4 flip in which we change 4 triangles into 4 new triangles and is
- *       necessary when 4 verticies are coplanar
- *   2-2 flip which is the 4-4 flip, but the coplanar verticies lie on the convex hull
- * @param N             The number of verticies
- * @param x             The coordinates of the verticies (2xN)
- * @param N_tri         The number of triangles
- * @param tri           The current list of triangles (3xN_tri)
- * @param tri_nab       The current list of triangle neighbors (3xN_tri)
- * @param t1            The index of the first triangle
- * @param s1            The surface index on the first triangle
- * @param t2            The index of the second triangle
- * @param s2            The surface index on the second triangle
- * @param index_old     (output) The list of triangles that have been replaced (1x2)
- * @param new_tri       (output) The new triangles that were created (3x2)
- * @param new_tri_nab   (output) The new triangles neighbors (3x2)
- *                          new_tri_nab >= 0   - Triangle neighbor is an existing triangle (with
- * the given index)
- *                          new_tri_nab -(i+1) - Triangle neighbor is the ith new triangle
- *                          new_tri_nab ==-1   - Triangle face is on the convex hull
- * @param TOL_VOL       The tolerance to use for determining if a simplex is valid
- */
-template<class TYPE, class ETYPE>
-static bool flip_3D_22( const std::array<TYPE, 3> x[],
-                        const int tri[],
-                        const int tri_nab[],
-                        const int t1,
-                        const int s1,
-                        const int t2,
-                        const int s2,
-                        int *index_old,
-                        int *new_tri,
-                        int *new_tri_nab,
-                        const double TOL_VOL );
-
-
-//! Function to perform a 2-3 flip in 3D
-/*!
- * This function performs a 2-3 flip in 3D.  If the flip can be applied, the function
- * will return true.
- * In 3D the possible edge flips are:
- *   2-3 flip in which we break the 2 triangles into 3
- *   3-2 flip which is the reverse of the 2-3 flip
- *   4-4 flip in which we change 4 triangles into 4 new triangles and is
- *       necessary when 4 verticies are coplanar
- *   2-2 flip which is the 4-4 flip, but the coplanar verticies lie on the convex hull
- * @param N             The number of verticies
- * @param x             The coordinates of the verticies (2xN)
- * @param N_tri         The number of triangles
- * @param tri           The current list of triangles (3xN_tri)
- * @param tri_nab       The current list of triangle neighbors (3xN_tri)
- * @param t1            The index of the first triangle
- * @param s1            The surface index on the first triangle
- * @param t2            The index of the second triangle
- * @param s2            The surface index on the second triangle
- * @param index_old     (output) The list of triangles that have been replaced (1x2)
- * @param new_tri       (output) The new triangles that were created (3x2)
- * @param new_tri_nab   (output) The new triangles neighbors (3x2)
- *                          new_tri_nab >= 0   - Triangle neighbor is an existing triangle (with
- * the given index)
- *                          new_tri_nab -(i+1) - Triangle neighbor is the ith new triangle
- *                          new_tri_nab ==-1   - Triangle face is on the convex hull
- * @param TOL_VOL       The tolerance to use for determining if a simplex is valid
- */
-template<class TYPE, class ETYPE>
-static bool flip_3D_23( const std::array<TYPE, 3> x[],
-                        const int tri[],
-                        const int tri_nab[],
-                        const int t1,
-                        const int s1,
-                        const int t2,
-                        const int s2,
-                        int *index_old,
-                        int *new_tri,
-                        int *new_tri_nab,
-                        const double TOL_VOL );
-
-
-//! Function to perform a 3-2 flip in 3D
-/*!
- * This function performs a 3-2 flip in 3D.  If the flip can be applied, the function
- * will return true.
- * In 3D the possible edge flips are:
- *   2-3 flip in which we break the 2 triangles into 3
- *   3-2 flip which is the reverse of the 2-3 flip
- *   4-4 flip in which we change 4 triangles into 4 new triangles and is
- *       necessary when 4 verticies are coplanar
- *   2-2 flip which is the 4-4 flip, but the coplanar verticies lie on the convex hull
- * @param N             The number of verticies
- * @param x             The coordinates of the verticies (2xN)
- * @param N_tri         The number of triangles
- * @param tri           The current list of triangles (3xN_tri)
- * @param tri_nab       The current list of triangle neighbors (3xN_tri)
- * @param t1            The index of the first triangle
- * @param s1            The surface index on the first triangle
- * @param t2            The index of the second triangle
- * @param s2            The surface index on the second triangle
- * @param index_old     (output) The list of triangles that have been replaced (1x2)
- * @param new_tri       (output) The new triangles that were created (3x2)
- * @param new_tri_nab   (output) The new triangles neighbors (3x2)
- *                          new_tri_nab >= 0   - Triangle neighbor is an existing triangle (with
- * the given index)
- *                          new_tri_nab -(i+1) - Triangle neighbor is the ith new triangle
- *                          new_tri_nab ==-1   - Triangle face is on the convex hull
- * @param TOL_VOL       The tolerance to use for determining if a simplex is valid
- */
-template<class TYPE, class ETYPE>
-static bool flip_3D_32( const std::array<TYPE, 3> x[],
-                        const int tri[],
-                        const int tri_nab[],
-                        const int t1,
-                        const int s1,
-                        const int t2,
-                        const int s2,
-                        int *index_old,
-                        int *new_tri,
-                        int *new_tri_nab,
-                        const double TOL_VOL );
-
-
-//! Function to perform a 4-4 flip in 3D
-/*!
- * This function performs a 4-4 flip in 3D.  If the flip can be applied, the function
- * will return true.  Note: a valid 4-4 flip in 3D requires 4 triangles to form
- * an octahedron with 4 verticies sharing a plane.
- * Note: there may be many valid flips (especially for a structured grid), but this function
- * will only return 1.
- * In 3D the possible edge flips are:
- *   2-3 flip in which we break the 2 triangles into 3
- *   3-2 flip which is the reverse of the 2-3 flip
- *   4-4 flip in which we change 4 triangles into 4 new triangles and is
- *       necessary when 4 verticies are coplanar
- *   2-2 flip which is the 4-4 flip, but the coplanar verticies lie on the convex hull
- * @param N             The number of verticies
- * @param x             The coordinates of the verticies (2xN)
- * @param N_tri         The number of triangles
- * @param tri           The current list of triangles (3xN_tri)
- * @param tri_nab       The current list of triangle neighbors (3xN_tri)
- * @param t1            The index of the first triangle
- * @param s1            The surface index on the first triangle
- * @param t2            The index of the second triangle
- * @param s2            The surface index on the second triangle
- * @param index_old     (output) The list of triangles that have been replaced (1x2)
- * @param new_tri       (output) The new triangles that were created (3x2)
- * @param new_tri_nab   (output) The new triangles neighbors (3x2)
- *                          new_tri_nab >= 0   - Triangle neighbor is an existing triangle (with
- * the given index)
- *                          new_tri_nab -(i+1) - Triangle neighbor is the ith new triangle
- *                          new_tri_nab ==-1   - Triangle face is on the convex hull
- * @param TOL_VOL       The tolerance to use for determining if a simplex is valid
- */
-template<class TYPE, class ETYPE>
-static bool flip_3D_44( const std::array<TYPE, 3> x[],
-                        const int tri[],
-                        const int tri_nab[],
-                        const int t1,
-                        const int s1,
-                        const int t2,
-                        const int s2,
-                        int *index_old,
-                        int *new_tri,
-                        int *new_tri_nab,
-                        const double TOL_VOL );
 
 
 /********************************************************************
@@ -544,8 +334,8 @@ int create_tessellation( const int N, const TYPE x_in[], int *tri_out[], int *tr
     // We will do this by sorting the points by order of their distance from the closest pair
     // Compute the square of the radius
     PROFILE_START( "create-order", 3 );
-    auto R2 = new ETYPE[N];
-    int i1  = index_pair.first;
+    std::vector<ETYPE> R2( N );
+    int i1 = index_pair.first;
     for ( int i = 0; i < N; i++ ) {
         R2[i] = ETYPE( 0 );
         for ( int d = 0; d < NDIM; d++ ) {
@@ -554,12 +344,12 @@ int create_tessellation( const int N, const TYPE x_in[], int *tri_out[], int *tr
         }
     }
     // Sort the points, keeping track of the index
-    auto I = new int[N];
+    std::vector<int> I( N );
     for ( int i = 0; i < N; i++ ) {
         I[i] = i;
     }
-    AMP::Utilities::quicksort( N, R2, I );
-    delete[] R2;
+    AMP::Utilities::quicksort( R2, I );
+    R2 = std::vector<ETYPE>();
     PROFILE_STOP( "create-order", 3 );
 
     // Resort the first few points so that the first ndim+1 points are not collinear or coplanar
@@ -630,7 +420,6 @@ int create_tessellation( const int N, const TYPE x_in[], int *tri_out[], int *tr
         x2[i] = x[tri[i]];
     double volume = calc_volume<NDIM, TYPE, ETYPE>( x2 );
     if ( fabs( volume ) <= TOL_VOL ) {
-        delete[] I;
         delete[] tri;
         throw std::logic_error( "Error creating initial triangle" );
     } else if ( volume < 0 ) {
@@ -770,11 +559,8 @@ int create_tessellation( const int N, const TYPE x_in[], int *tri_out[], int *tr
                     int m  = tri[j1 + elem.t1 * ( NDIM + 1 )];
                     x2[j1] = x[m];
                 }
-                TYPE v[NDIM];
-                int m = tri[elem.f2 + elem.t2 * ( NDIM + 1 )];
-                for ( int j = 0; j < NDIM; j++ )
-                    v[j] = x[m][j];
-                int test  = test_in_circumsphere<NDIM, TYPE, ETYPE>( x2[0].data(), v, TOL_VOL );
+                int m     = tri[elem.f2 + elem.t2 * ( NDIM + 1 )];
+                int test  = test_in_circumsphere<NDIM, TYPE, ETYPE>( x2, x[m], TOL_VOL );
                 elem.test = ( test != 1 ) ? 0xFF : 0x01;
             }
             // Remove all surfaces that are good
@@ -987,7 +773,7 @@ int create_tessellation( const int N, const TYPE x_in[], int *tri_out[], int *tr
     delete[] face;
     PROFILE_STOP( "create-add_points", 3 );
     check_surface.clear();
-    delete[] I;
+    I = std::vector<int>();
 
     // Delete any unused triangles
     PROFILE_START( "clean up", 3 );
@@ -1049,7 +835,7 @@ int create_tessellation( const int N, const TYPE x_in[], int *tri_out[], int *tr
     PROFILE_STOP( "clean up", 3 );
 
     // Remove triangles that are only likely to create problesm
-    // clean_triangles<NDIM,TYPE,ETYPE>( N, x, N_tri, tri, tri_nab );
+    // clean_triangles<NDIM,TYPE,ETYPE>( N, x.data(), N_tri, tri, tri_nab );
 
     // Resort the triangle indicies so the smallest index is first (should help with caching)
     // Note: this causes tests to fail (not sure why)
@@ -1115,7 +901,8 @@ constexpr double vol_sphere( double r )
         static_assert( NDIM > 0 && NDIM <= 3 );
 }
 template<int NDIM, class TYPE, class ETYPE>
-void clean_triangles( const int N, const TYPE *x, size_t &N_tri, int *tri, int *tri_nab )
+void clean_triangles(
+    const int N, const std::array<TYPE, NDIM> *x, size_t &N_tri, int *tri, int *tri_nab )
 {
     // Get a list of all triangles on the boundary and a figure of merit
     // We will use the ratio of the volume of the circumsphere to the volume of the simplex
@@ -1259,14 +1046,16 @@ void swap_triangles( size_t N_tri, int i1, int i2, int *tri, int *tri_nab )
  * Note: this implimentation requires N^D precision                      *
  ************************************************************************/
 template<int NDIM, class TYPE, class ETYPE>
-int test_in_circumsphere( const TYPE x[], const TYPE xi[], const double TOL_VOL )
+int test_in_circumsphere( const std::array<TYPE, NDIM> x[],
+                          const std::array<TYPE, NDIM> &xi,
+                          const double TOL_VOL )
 {
     if constexpr ( NDIM == 1 ) {
-        if ( fabs( static_cast<double>( *xi - x[0] ) ) <= TOL_VOL ||
-             fabs( static_cast<double>( *xi - x[1] ) ) <= TOL_VOL ) {
+        if ( fabs( static_cast<double>( xi[0] - x[0][0] ) ) <= TOL_VOL ||
+             fabs( static_cast<double>( xi[0] - x[1][0] ) ) <= TOL_VOL ) {
             return 0;
         }
-        if ( ( *xi < x[0] && *xi < x[1] ) || ( *xi > x[0] && *xi > x[1] ) )
+        if ( ( xi[0] < x[0][0] && xi[0] < x[1][0] ) || ( xi[0] > x[0][0] && xi[0] > x[1][0] ) )
             return -1;
     }
     // Solve the sub-determinants (requires N^NDIM precision)
@@ -1277,12 +1066,12 @@ int test_in_circumsphere( const TYPE x[], const TYPE xi[], const double TOL_VOL 
         ETYPE A2[NDIM * NDIM];
         ETYPE sum( 0 );
         for ( int j = 0; j < NDIM; j++ ) {
-            ETYPE tmp( x[j + d * NDIM] - xi[j] );
+            ETYPE tmp( x[d][j] - xi[j] );
             sum += tmp * tmp;
             for ( int i = 0; i < d; i++ )
-                A2[i + j * NDIM] = ETYPE( x[j + i * NDIM] - xi[j] );
+                A2[i + j * NDIM] = ETYPE( x[i][j] - xi[j] );
             for ( int i = d + 1; i <= NDIM; i++ )
-                A2[i - 1 + j * NDIM] = ETYPE( x[j + i * NDIM] - xi[j] );
+                A2[i - 1 + j * NDIM] = ETYPE( x[i][j] - xi[j] );
         }
         R[d] = sum;
         R2 += get_double( R[d] );
@@ -1333,17 +1122,17 @@ int test_in_circumsphere( const TYPE x[], const TYPE xi[], const double TOL_VOL 
  * Note: This version does not use exact math                            *
  ************************************************************************/
 template<int NDIM, class TYPE>
-void get_circumsphere( const TYPE x0[], double &R, double *center )
+void get_circumsphere( const std::array<TYPE, NDIM> x0[], double &R, double *center )
 {
     if constexpr ( NDIM == 1 ) {
-        center[0] = 0.5 * ( x0[0] + x0[1] );
-        R         = 0.5 * ( x0[0] - x0[1] );
+        center[0] = 0.5 * ( x0[0][0] + x0[1][0] );
+        R         = 0.5 * ( x0[0][0] - x0[1][0] );
         return;
     }
     long double x[NDIM * NDIM];
     for ( int i = 0; i < NDIM; i++ ) {
         for ( int j = 0; j < NDIM; j++ )
-            x[j + i * NDIM] = get_double( x0[j + ( i + 1 ) * NDIM] - x0[j] );
+            x[j + i * NDIM] = get_double( x0[i + 1][j] - x0[0][j] );
     }
     long double A[NDIM * NDIM], D[NDIM][NDIM * NDIM];
     for ( int i = 0; i < NDIM; i++ ) {
@@ -1365,10 +1154,43 @@ void get_circumsphere( const TYPE x0[], double &R, double *center )
     for ( int i = 0; i < NDIM; i++ ) {
         long double d =
             ( ( i % 2 == 0 ) ? 1 : -1 ) * get_double( DelaunayHelpers<NDIM>::det( D[i] ) );
-        center[i] = static_cast<double>( d / ( 2 * a ) + static_cast<long double>( x0[i] ) );
+        center[i] = static_cast<double>( d / ( 2 * a ) + static_cast<long double>( x0[0][i] ) );
         R += d * d;
     }
     R = sqrt( R ) / fabs( static_cast<double>( 2 * a ) );
+}
+
+
+/****************************************************************
+ * Function to compute the Barycentric coordinates               *
+ * Note: we use exact math until we perform the normalization    *
+ *    The exact math component requires N^(D-1) precision        *
+ ****************************************************************/
+template<int NDIM, class TYPE, class ETYPE>
+std::array<double, NDIM + 1> compute_Barycentric( const std::array<TYPE, NDIM> *x,
+                                                  const std::array<TYPE, NDIM> &xi )
+{
+    // Compute the barycentric coordinates T*L=r-r0
+    // http://en.wikipedia.org/wiki/Barycentric_coordinate_system_(mathematics)
+    ETYPE T[NDIM * NDIM];
+    for ( int i = 0; i < NDIM; i++ ) {
+        for ( int j = 0; j < NDIM; j++ )
+            T[j + i * NDIM] = x[i][j] - x[NDIM][j];
+    }
+    ETYPE r[NDIM];
+    for ( int i = 0; i < NDIM; i++ )
+        r[i] = xi[i] - x[NDIM][i];
+    ETYPE L2[NDIM + 1], det( 0 );
+    DelaunayHelpers<NDIM>::solve_system( T, r, L2, det );
+    L2[NDIM] = det;
+    for ( int i = 0; i < NDIM; i++ )
+        L2[NDIM] -= L2[i];
+    // Perform the normalization (will require inexact math)
+    double scale = 1.0 / get_double( det );
+    std::array<double, NDIM + 1> L;
+    for ( int i = 0; i < NDIM + 1; i++ )
+        L[i] = get_double( L2[i] ) * scale;
+    return L;
 }
 
 
@@ -1397,43 +1219,918 @@ bool test_flip_valid( const std::array<TYPE, NDIM> x[],
                       const std::array<TYPE, NDIM> &xi )
 {
     constexpr double TOL = getFlipTOL<TYPE>();
-    double L[NDIM + 1];
-    compute_Barycentric<NDIM, TYPE, ETYPE>( x[0].data(), xi.data(), L );
-    bool is_valid = true;
+    auto L               = compute_Barycentric<NDIM, TYPE, ETYPE>( x, xi );
+    bool is_valid        = true;
     for ( int j = 0; j <= NDIM; j++ )
         is_valid = is_valid && ( j == i || L[j] >= -TOL );
     return is_valid;
 }
 
 
-/****************************************************************
- * Function to compute the Barycentric coordinates               *
- * Note: we use exact math until we perform the normalization    *
- *    The exact math component requires N^(D-1) precision        *
- ****************************************************************/
-template<int NDIM, class TYPE, class ETYPE>
-void compute_Barycentric( const TYPE *x, const TYPE *xi, double *L )
+/************************************************************************
+ * This function performs a flip in 2D                                   *
+ * Note: all indicies are hard-coded for ndim=2 and some loops have been *
+ * unrolled to simplify the code and improve performance                 *
+ ************************************************************************/
+template<class TYPE, class ETYPE>
+bool flip_2D( const std::array<TYPE, 2> x[],
+              const int tri[],
+              const int tri_nab[],
+              const int t1,
+              const int s1,
+              const int t2,
+              const int s2,
+              int *index_old,
+              int *new_tri,
+              int *new_tri_nab,
+              const double TOL_VOL )
 {
-    // Compute the barycentric coordinates T*L=r-r0
-    // http://en.wikipedia.org/wiki/Barycentric_coordinate_system_(mathematics)
-    ETYPE T[NDIM * NDIM];
-    for ( int i = 0; i < NDIM; i++ ) {
-        for ( int j = 0; j < NDIM; j++ ) {
-            T[j + i * NDIM] = ETYPE( x[j + i * NDIM] - x[j + NDIM * NDIM] );
+    // Check if the flip is valid (it should always be valid in 2D if it is necessary)
+    std::array<TYPE, 2> x2[3], xi;
+    for ( int i = 0; i < 3; i++ ) {
+        int k = tri[i + t1 * 3];
+        x2[i] = x[k];
+    }
+    int k        = tri[s2 + t2 * 3];
+    xi           = x[k];
+    bool isvalid = test_flip_valid<2, TYPE, ETYPE>( x2, s1, xi );
+    if ( !isvalid ) {
+        // We need to do an edge flip, and the edge flip is not valid
+        // This should not actually occur
+        return false;
+    }
+    // Create the new triangles that are formed by the edge flips and the neighbor list
+    index_old[0] = t1;
+    index_old[1] = t2;
+    int is[2], tn[4];
+    if ( s1 == 0 ) {
+        is[0] = tri[1 + 3 * t1];
+        is[1] = tri[2 + 3 * t1];
+        tn[0] = tri_nab[1 + 3 * t1];
+        tn[1] = tri_nab[2 + 3 * t1];
+    } else if ( s1 == 1 ) {
+        is[0] = tri[0 + 3 * t1];
+        is[1] = tri[2 + 3 * t1];
+        tn[0] = tri_nab[0 + 3 * t1];
+        tn[1] = tri_nab[2 + 3 * t1];
+    } else {
+        is[0] = tri[0 + 3 * t1];
+        is[1] = tri[1 + 3 * t1];
+        tn[0] = tri_nab[0 + 3 * t1];
+        tn[1] = tri_nab[1 + 3 * t1];
+    }
+    if ( is[0] == tri[0 + 3 * t2] )
+        tn[2] = tri_nab[0 + 3 * t2];
+    else if ( is[0] == tri[1 + 3 * t2] )
+        tn[2] = tri_nab[1 + 3 * t2];
+    else
+        tn[2] = tri_nab[2 + 3 * t2];
+    if ( is[1] == tri[0 + 3 * t2] )
+        tn[3] = tri_nab[0 + 3 * t2];
+    else if ( is[1] == tri[1 + 3 * t2] )
+        tn[3] = tri_nab[1 + 3 * t2];
+    else
+        tn[3] = tri_nab[2 + 3 * t2];
+    int in1        = tri[s1 + 3 * t1];
+    int in2        = tri[s2 + 3 * t2];
+    new_tri[0]     = in1;
+    new_tri[1]     = in2;
+    new_tri[2]     = is[0];
+    new_tri[3]     = in1;
+    new_tri[4]     = in2;
+    new_tri[5]     = is[1];
+    new_tri_nab[0] = tn[3];
+    new_tri_nab[1] = tn[1];
+    new_tri_nab[2] = -3;
+    new_tri_nab[3] = tn[2];
+    new_tri_nab[4] = tn[0];
+    new_tri_nab[5] = -2;
+    // Check that the new triagles are valid (and have the proper ordering)
+    isvalid = true;
+    for ( int it = 0; it < 2; it++ ) {
+        for ( int i = 0; i < 3; i++ ) {
+            int k = new_tri[i + it * 3];
+            x2[i] = x[k];
+        }
+        double volume = calc_volume<2, TYPE, ETYPE>( x2 );
+        if ( fabs( volume ) <= TOL_VOL ) {
+            // The triangle is invalid (collinear)
+            isvalid = false;
+        } else if ( volume < 0 ) {
+            // The ordering of the points is invalid, swap the last two points (we want the volume
+            // to be positive)
+            int tmp                 = new_tri[1 + it * 3];
+            new_tri[1 + it * 3]     = new_tri[2 + it * 3];
+            new_tri[2 + it * 3]     = tmp;
+            tmp                     = new_tri_nab[1 + it * 3];
+            new_tri_nab[1 + it * 3] = new_tri_nab[2 + it * 3];
+            new_tri_nab[2 + it * 3] = tmp;
         }
     }
-    ETYPE r[NDIM];
-    for ( int i = 0; i < NDIM; i++ )
-        r[i] = ETYPE( xi[i] - x[i + NDIM * NDIM] );
-    ETYPE L2[NDIM + 1], det( 0 );
-    DelaunayHelpers<NDIM>::solve_system( T, r, L2, det );
-    L2[NDIM] = det;
-    for ( int i = 0; i < NDIM; i++ )
-        L2[NDIM] -= L2[i];
-    // Perform the normalization (will require inexact math)
-    double scale = 1.0 / get_double( det );
-    for ( int i = 0; i < NDIM + 1; i++ )
-        L[i] = get_double( L2[i] ) * scale;
+    return isvalid;
+}
+
+
+/************************************************************************
+ * This function performs a 2-2 flip in 3D                               *
+ * Note: all indicies are hard-coded for ndim=3 and some loops may be    *
+ * unrolled to simplify the code or improve performance                  *
+ ************************************************************************/
+template<class TYPE, class ETYPE>
+bool flip_3D_22( const std::array<TYPE, 3> x[],
+                 const int tri[],
+                 const int tri_nab[],
+                 const int t1,
+                 const int s1,
+                 const int t2,
+                 const int s2,
+                 int *index_old,
+                 int *new_tri,
+                 int *new_tri_nab,
+                 const double TOL_VOL )
+{
+    // The 2-2 fip is only valid when 4 of the verticies lie on a plane on the convex hull
+    // This is likely for structured grids
+    for ( int i1 = 0; i1 < 4; i1++ ) {
+        if ( tri_nab[i1 + 4 * t1] != -1 ) {
+            // The face does not lie on the convex hull
+            continue;
+        }
+        for ( int i2 = 0; i2 < 4; i2++ ) {
+            if ( tri_nab[i2 + 4 * t2] != -1 ) {
+                // The face does not lie on the convex hull
+                continue;
+            }
+            if ( tri[i1 + 4 * t1] != tri[i2 + 4 * t2] ) {
+                // The 5th vertex does not match for the two triangles
+                continue;
+            }
+            // Get the list of the 4 verticies on the convex hull
+            int v1, v2, v3, v4;
+            v1 = tri[s1 + 4 * t1];
+            v2 = tri[s2 + 4 * t2];
+            v3 = -1;
+            v4 = -1;
+            for ( int j = 0; j < 4; j++ ) {
+                if ( j == i1 || j == s1 )
+                    continue;
+                if ( v3 == -1 )
+                    v3 = tri[j + 4 * t1];
+                else
+                    v4 = tri[j + 4 * t1];
+            }
+            // Check if the 4 verticies are coplanar (the resulting simplex will have a volume of 0)
+            std::array<TYPE, 3> x2[4] = { x[v1], x[v2], x[v3], x[v4] };
+            double vol                = fabs( calc_volume<3, TYPE, ETYPE>( x2 ) );
+            if ( vol > TOL_VOL ) {
+                // The points are not coplanar
+                continue;
+            }
+            // Create the new triangles that are formed by the 2-2 edge flip
+            int v5       = tri[i1 + 4 * t1];
+            index_old[0] = t1;
+            index_old[1] = t2;
+            new_tri[0]   = v1;
+            new_tri[1]   = v2;
+            new_tri[2]   = v3;
+            new_tri[3]   = v5; // The first triangle
+            new_tri[4]   = v1;
+            new_tri[5]   = v2;
+            new_tri[6]   = v4;
+            new_tri[7]   = v5; // The second triangle
+            // Check that the new triagles are valid (this can occur if they are planar)
+            bool isvalid = true;
+            for ( int it = 0; it < 2; it++ ) {
+                for ( int i = 0; i < 4; i++ ) {
+                    int k = new_tri[i + it * 4];
+                    x2[i] = x[k];
+                }
+                double volume = calc_volume<3, TYPE, ETYPE>( x2 );
+                if ( fabs( volume ) <= TOL_VOL ) {
+                    // The triangle is invalid (collinear)
+                    isvalid = false;
+                } else if ( volume < 0 ) {
+                    // The ordering of the points is invalid, swap the last two points (we want the
+                    // volume to be positive)
+                    int tmp             = new_tri[2 + it * 4];
+                    new_tri[2 + it * 4] = new_tri[3 + it * 4];
+                    new_tri[3 + it * 4] = tmp;
+                }
+            }
+            if ( !isvalid )
+                continue;
+            // Check that the new triangles are Delanuay (we have already checked that they are
+            // valid)
+            for ( int j = 0; j < 4; j++ ) {
+                int k = new_tri[j];
+                x2[j] = x[k];
+            }
+            int test = test_in_circumsphere<3, TYPE, ETYPE>( x2, x[v4], TOL_VOL );
+            if ( test == 1 ) {
+                // The flip did not fix the Delaunay condition
+                continue;
+            }
+            // Compute the triangle neighbors (this is a less efficient, but general method)
+            const int N_old = 2;
+            const int N_new = 2;
+            int f1, f2;
+            for ( int j = 0; j < N_new * 4; j++ )
+                new_tri_nab[j] = -1;
+            for ( int j1 = 0; j1 < N_new; j1++ ) {
+                for ( int j2 = j1 + 1; j2 < N_new;
+                      j2++ ) { // We only need to loop through unchecked triangles
+                    bool are_neighbors =
+                        are_tri_neighbors( 3, &new_tri[j1 * 4], &new_tri[j2 * 4], &f1, &f2 );
+                    if ( are_neighbors ) {
+                        new_tri_nab[j1 * 4 + f1] = -j2 - 2;
+                        new_tri_nab[j2 * 4 + f2] = -j1 - 2;
+                    } else {
+                        printf( "Internal error (flip_3D_22)\n" );
+                        return false;
+                    }
+                }
+            }
+            int neighbors[8];
+            for ( int j1 = 0; j1 < N_old; j1++ ) {
+                for ( int j2 = 0; j2 < 4; j2++ )
+                    neighbors[j2 + j1 * 4] = tri_nab[j2 + index_old[j1] * 4];
+            }
+            for ( auto &neighbor : neighbors ) {
+                for ( int j2 = 0; j2 < N_old; j2++ ) {
+                    if ( neighbor == index_old[j2] )
+                        neighbor = -1;
+                }
+            }
+            for ( int j1 = 0; j1 < N_new; j1++ ) {
+                for ( auto &neighbor : neighbors ) {
+                    if ( neighbor == -1 )
+                        continue;
+                    bool are_neighbors =
+                        are_tri_neighbors( 3, &new_tri[j1 * 4], &tri[neighbor * 4], &f1, &f2 );
+                    if ( are_neighbors )
+                        new_tri_nab[j1 * 4 + f1] = neighbor;
+                }
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+
+/************************************************************************
+ * This function performs a 3-2 flip in 3D                               *
+ * Note: all indicies are hard-coded for ndim=3 and some loops may be    *
+ * unrolled to simplify the code or improve performance                  *
+ ************************************************************************/
+template<class TYPE, class ETYPE>
+bool flip_3D_32( const std::array<TYPE, 3> x[],
+                 const int tri[],
+                 const int tri_nab[],
+                 const int t1,
+                 const int,
+                 const int t2,
+                 const int,
+                 int *index_old,
+                 int *new_tri,
+                 int *new_tri_nab,
+                 const double TOL_VOL )
+{
+    // Search for triangles that are neighbors to both t1 and t2
+    int nab_list[4];
+    int N_nab = 0;
+    for ( int i1 = 0; i1 < 4; i1++ ) {
+        for ( int i2 = 0; i2 < 4; i2++ ) {
+            if ( tri_nab[i1 + 4 * t1] == tri_nab[i2 + 4 * t2] && tri_nab[i1 + 4 * t1] != -1 ) {
+                nab_list[N_nab] = tri_nab[i1 + 4 * t1];
+                N_nab++;
+            }
+        }
+    }
+    if ( N_nab == 0 ) {
+        // No triangle neighbors both t1 and t2
+        return false;
+    }
+    for ( int i = 0; i < N_nab; i++ ) {
+        // The nodes that are common to all 3 triangles are the unique verticies on the 3 new
+        // triangles
+        int nodes[4];
+        for ( int j = 0; j < 4; j++ )
+            nodes[j] = tri[j + 4 * nab_list[i]];
+        for ( auto &node : nodes ) {
+            bool found1 = false;
+            bool found2 = false;
+            for ( int j2 = 0; j2 < 4; j2++ ) {
+                if ( node == tri[j2 + 4 * t1] )
+                    found1 = true;
+                if ( node == tri[j2 + 4 * t2] )
+                    found2 = true;
+            }
+            if ( !found1 || !found2 )
+                node = -1;
+        }
+        int N_nodes = 0;
+        for ( auto &node : nodes ) {
+            if ( node != -1 ) {
+                nodes[N_nodes] = node;
+                N_nodes++;
+            }
+        }
+        if ( N_nodes != 2 ) {
+            // This should not occur
+            printf( "Unexpected error\n" );
+            return false;
+        }
+        int t[3];
+        t[0] = t1;
+        t[1] = t2;
+        t[2] = nab_list[i];
+        int surf[4];
+        int k = 0;
+        for ( auto &elem : t ) {
+            for ( int j2 = 0; j2 < 4; j2++ ) {
+                int tmp = tri[j2 + 4 * elem];
+                if ( tmp != nodes[0] && tmp != nodes[1] ) {
+                    bool in_surf = false;
+                    for ( int j3 = 0; j3 < k; j3++ ) {
+                        if ( tmp == surf[j3] )
+                            in_surf = true;
+                    }
+                    if ( !in_surf ) {
+                        surf[k] = tmp;
+                        k++;
+                    }
+                }
+            }
+        }
+        if ( k != 3 ) {
+            // This should not occur
+            printf( "Unexpected error\n" );
+            return false;
+        }
+        // Create the new triangles
+        index_old[0] = t1;
+        index_old[1] = t2;
+        index_old[2] = nab_list[i];
+        new_tri[0]   = nodes[0];
+        new_tri[1]   = surf[0];
+        new_tri[2]   = surf[1];
+        new_tri[3]   = surf[2];
+        new_tri[4]   = nodes[1];
+        new_tri[5]   = surf[0];
+        new_tri[6]   = surf[1];
+        new_tri[7]   = surf[2];
+        // Check that the new triangles are valid (this can occur if they are planar)
+        std::array<TYPE, 3> x2[4];
+        bool isvalid = true;
+        for ( int it = 0; it < 2; it++ ) {
+            for ( int i = 0; i < 4; i++ ) {
+                int k = new_tri[i + it * 4];
+                x2[i] = x[k];
+            }
+            double volume = calc_volume<3, TYPE, ETYPE>( x2 );
+            if ( fabs( volume ) <= TOL_VOL ) {
+                // The triangle is invalid (collinear)
+                isvalid = false;
+            } else if ( volume < 0 ) {
+                // The ordering of the points is invalid, swap the last two points (we want the
+                // volume to be positive)
+                int tmp             = new_tri[2 + it * 4];
+                new_tri[2 + it * 4] = new_tri[3 + it * 4];
+                new_tri[3 + it * 4] = tmp;
+            }
+        }
+        if ( !isvalid )
+            continue;
+        // Check that the new triangles are Delanuay (we have already checked that they are valid)
+        for ( int j = 0; j < 4; j++ ) {
+            int k = new_tri[j];
+            x2[j] = x[k];
+        }
+        int test = test_in_circumsphere<3, TYPE, ETYPE>( x2, x[nodes[1]], TOL_VOL );
+        if ( test == 1 ) {
+            // The new triangles did not fixed the surface
+            continue;
+        }
+        // Compute the triangle neighbors (this is a less efficient, but general method)
+        const int N_old = 3;
+        const int N_new = 2;
+        int f1, f2;
+        for ( int j = 0; j < N_new * 4; j++ )
+            new_tri_nab[j] = -1;
+        for ( int j1 = 0; j1 < N_new; j1++ ) {
+            for ( int j2 = j1 + 1; j2 < N_new;
+                  j2++ ) { // We only need to loop through unchecked triangles
+                bool are_neighbors =
+                    are_tri_neighbors( 3, &new_tri[j1 * 4], &new_tri[j2 * 4], &f1, &f2 );
+                if ( are_neighbors ) {
+                    new_tri_nab[j1 * 4 + f1] = -j2 - 2;
+                    new_tri_nab[j2 * 4 + f2] = -j1 - 2;
+                } else {
+                    printf( "Internal error (flip_3D_32)\n" );
+                    return false;
+                }
+            }
+        }
+        int neighbors[12];
+        for ( int j1 = 0; j1 < N_old; j1++ ) {
+            for ( int j2 = 0; j2 < 4; j2++ )
+                neighbors[j2 + j1 * 4] = tri_nab[j2 + index_old[j1] * 4];
+        }
+        for ( auto &neighbor : neighbors ) {
+            for ( int j2 = 0; j2 < N_old; j2++ ) {
+                if ( neighbor == index_old[j2] )
+                    neighbor = -1;
+            }
+        }
+        for ( int j1 = 0; j1 < N_new; j1++ ) {
+            for ( auto &neighbor : neighbors ) {
+                if ( neighbor == -1 )
+                    continue;
+                bool are_neighbors =
+                    are_tri_neighbors( 3, &new_tri[j1 * 4], &tri[neighbor * 4], &f1, &f2 );
+                if ( are_neighbors )
+                    new_tri_nab[j1 * 4 + f1] = neighbor;
+            }
+        }
+        // Finished
+        return true;
+    }
+    return false;
+}
+
+
+/************************************************************************
+ * This function performs a 2-3 flip in 3D                               *
+ * Note: all indicies are hard-coded for ndim=3 and some loops may be    *
+ * unrolled to simplify the code or improve performance                  *
+ ************************************************************************/
+template<class TYPE, class ETYPE>
+bool flip_3D_23( const std::array<TYPE, 3> x[],
+                 const int tri[],
+                 const int tri_nab[],
+                 const int t1,
+                 const int s1,
+                 const int t2,
+                 const int s2,
+                 int *index_old,
+                 int *new_tri,
+                 int *new_tri_nab,
+                 const double TOL_VOL )
+{
+    // First lets check if the flip is valid
+    std::array<TYPE, 3> x2[4];
+    for ( int i = 0; i < 4; i++ ) {
+        int k = tri[i + 4 * t1];
+        x2[i] = x[k];
+    }
+    int k        = tri[s2 + 4 * t2];
+    bool isvalid = test_flip_valid<3, TYPE, ETYPE>( x2, s1, x[k] );
+    if ( !isvalid ) {
+        // We need to do an edge flip, and the edge flip is not valid
+        return false;
+    }
+    // Form the new triangles
+    int is[3], in[2] = { 0, 0 };
+    k = 0;
+    for ( int i = 0; i < 4; i++ ) {
+        if ( i == s1 ) {
+            in[0] = tri[i + 4 * t1];
+        } else {
+            is[k] = tri[i + 4 * t1];
+            k++;
+        }
+    }
+    in[1]        = tri[s2 + 4 * t2];
+    index_old[0] = t1;
+    index_old[1] = t2;
+    new_tri[0]   = in[0];
+    new_tri[1]   = in[1];
+    new_tri[2]   = is[0];
+    new_tri[3]   = is[1];
+    new_tri[4]   = in[0];
+    new_tri[5]   = in[1];
+    new_tri[6]   = is[0];
+    new_tri[7]   = is[2];
+    new_tri[8]   = in[0];
+    new_tri[9]   = in[1];
+    new_tri[10]  = is[1];
+    new_tri[11]  = is[2];
+    // Check that the new triagles are valid (this can occur if they are planar)
+    isvalid = true;
+    for ( int it = 0; it < 3; it++ ) {
+        for ( int i = 0; i < 4; i++ ) {
+            int k = new_tri[i + it * 4];
+            x2[i] = x[k];
+        }
+        double volume = calc_volume<3, TYPE, ETYPE>( x2 );
+        if ( fabs( volume ) <= TOL_VOL ) {
+            // The triangle is invalid (collinear)
+            isvalid = false;
+        } else if ( volume < 0 ) {
+            // The ordering of the points is invalid, swap the last two points (we want the volume
+            // to be positive)
+            int tmp             = new_tri[2 + it * 4];
+            new_tri[2 + it * 4] = new_tri[3 + it * 4];
+            new_tri[3 + it * 4] = tmp;
+        }
+    }
+    if ( !isvalid )
+        return false;
+    // Check that the new triangles are Delanuay (we have already checked that they are valid)
+    for ( int it = 0; it < 3; it++ ) {
+        for ( int i = 0; i < 4; i++ ) {
+            int k = new_tri[i + it * 4];
+            x2[i] = x[k];
+        }
+        int k;
+        if ( it == 0 ) {
+            k = is[2];
+        } else if ( it == 1 ) {
+            k = is[1];
+        } else {
+            k = is[0];
+        }
+        int test = test_in_circumsphere<3, TYPE, ETYPE>( x2, x[k], TOL_VOL );
+        if ( test == 1 ) {
+            // The new triangles did not fix the surface
+            isvalid = false;
+        }
+    }
+    if ( !isvalid )
+        return false;
+    // Compute the triangle neighbors (this is a less efficient, but general method)
+    const int N_old = 2;
+    const int N_new = 3;
+    int f1, f2;
+    for ( int j = 0; j < N_new * 4; j++ )
+        new_tri_nab[j] = -1;
+    for ( int j1 = 0; j1 < N_new; j1++ ) {
+        for ( int j2 = j1 + 1; j2 < N_new;
+              j2++ ) { // We only need to loop through unchecked triangles
+            bool are_neighbors =
+                are_tri_neighbors( 3, &new_tri[j1 * 4], &new_tri[j2 * 4], &f1, &f2 );
+            if ( are_neighbors ) {
+                new_tri_nab[j1 * 4 + f1] = -j2 - 2;
+                new_tri_nab[j2 * 4 + f2] = -j1 - 2;
+            } else {
+                printf( "Internal error (flip_3D_23)\n" );
+                return false;
+            }
+        }
+    }
+    int neighbors[8];
+    for ( int j1 = 0; j1 < N_old; j1++ ) {
+        for ( int j2 = 0; j2 < 4; j2++ )
+            neighbors[j2 + j1 * 4] = tri_nab[j2 + index_old[j1] * 4];
+    }
+    for ( auto &neighbor : neighbors ) {
+        for ( int j2 = 0; j2 < N_old; j2++ ) {
+            if ( neighbor == index_old[j2] )
+                neighbor = -1;
+        }
+    }
+    for ( int j1 = 0; j1 < N_new; j1++ ) {
+        for ( auto &neighbor : neighbors ) {
+            if ( neighbor == -1 )
+                continue;
+            bool are_neighbors =
+                are_tri_neighbors( 3, &new_tri[j1 * 4], &tri[neighbor * 4], &f1, &f2 );
+            if ( are_neighbors )
+                new_tri_nab[j1 * 4 + f1] = neighbor;
+        }
+    }
+    return true;
+}
+
+
+/************************************************************************
+ * This function performs a 4-4 flip in 3D                               *
+ * Note: all indicies are hard-coded for ndim=3 and some loops may be    *
+ * unrolled to simplify the code or improve performance                  *
+ ************************************************************************/
+template<class TYPE, class ETYPE>
+bool flip_3D_44( const std::array<TYPE, 3> x[],
+                 const int tri[],
+                 const int tri_nab[],
+                 const int t1,
+                 const int s1,
+                 const int t2,
+                 const int s2,
+                 int *index_old,
+                 int *new_tri,
+                 int *new_tri_nab,
+                 const double TOL_VOL )
+{
+    // Loop through the triangle neighbors for both t1 and t2, to find
+    // a pair of triangles that form and octahedron
+    for ( int i1 = 0; i1 < 4; i1++ ) {
+        int t3 = tri_nab[i1 + 4 * t1];
+        for ( int i2 = 0; i2 < 4; i2++ ) {
+            int t4 = tri_nab[i2 + 4 * t2];
+            if ( t3 == -1 || t3 == t2 || t4 == -1 || t4 == t1 || t3 == t4 ) {
+                // We do not have 4 unique triangles
+                continue;
+            }
+            if ( tri_nab[0 + 4 * t3] != t4 && tri_nab[1 + 4 * t3] != t4 &&
+                 tri_nab[2 + 4 * t3] != t4 && tri_nab[3 + 4 * t3] != t4 ) {
+                // The 4 triangles do not form an octahedron
+                continue;
+            }
+            // Get a list of the surface ids
+            int s12, s13, s21, s24, s31 = 0, s34 = 0, s42 = 0, s43 = 0;
+            s12 = s1;
+            s13 = i1;
+            s21 = s2;
+            s24 = i2;
+            for ( int i = 0; i < 4; i++ ) {
+                if ( tri_nab[i + 4 * t3] == t1 )
+                    s31 = i;
+                if ( tri_nab[i + 4 * t3] == t4 )
+                    s34 = i;
+                if ( tri_nab[i + 4 * t4] == t2 )
+                    s42 = i;
+                if ( tri_nab[i + 4 * t4] == t3 )
+                    s43 = i;
+            }
+            // Get a list of the unique nodes
+            int nodes[16];
+            for ( auto &node : nodes )
+                node = -1;
+            for ( int i = 0; i < 4; i++ )
+                nodes[i] = tri[i + 4 * t1];
+            int N_nodes = 4;
+            for ( int j1 = 0; j1 < 4; j1++ ) {
+                bool found = false;
+                for ( int j2 = 0; j2 < N_nodes; j2++ ) {
+                    if ( tri[j1 + 4 * t2] == nodes[j2] )
+                        found = true;
+                }
+                if ( !found ) {
+                    nodes[N_nodes] = tri[j1 + 4 * t2];
+                    N_nodes++;
+                }
+            }
+            for ( int j1 = 0; j1 < 4; j1++ ) {
+                bool found = false;
+                for ( int j2 = 0; j2 < N_nodes; j2++ ) {
+                    if ( tri[j1 + 4 * t3] == nodes[j2] )
+                        found = true;
+                }
+                if ( !found ) {
+                    nodes[N_nodes] = tri[j1 + 4 * t3];
+                    N_nodes++;
+                }
+            }
+            for ( int j1 = 0; j1 < 4; j1++ ) {
+                bool found = false;
+                for ( int j2 = 0; j2 < N_nodes; j2++ ) {
+                    if ( tri[j1 + 4 * t4] == nodes[j2] )
+                        found = true;
+                }
+                if ( !found ) {
+                    nodes[N_nodes] = tri[j1 + 4 * t4];
+                    N_nodes++;
+                }
+            }
+            if ( N_nodes != 6 ) {
+                // We still do not have a valid octahedron
+                printf( "Unexpected number of nodes\n" );
+                continue;
+            }
+            // Check if any 4 of the nodes are coplanar (the resulting simplex will have a volume of
+            // 0)
+            // Note: while there are 15 combinations of 4 points, in reality
+            // because the triangle faces already specify groups of 3 that
+            // are coplanar, we only need to check 2 groups of points
+            int set1[4], set2[4];
+            for ( int i = 0; i < 4; i++ ) {
+                set1[i] = tri[i + 4 * t1];
+                set2[i] = tri[i + 4 * t1];
+            }
+            set1[s13] = tri[s21 + t2 * 4];
+            set2[s12] = tri[s31 + t3 * 4];
+            std::array<TYPE, 3> x2[4];
+            double vol1, vol2;
+            for ( int j1 = 0; j1 < 4; j1++ ) {
+                x2[j1] = x[set1[j1]];
+            }
+            vol1 = fabs( calc_volume<3, TYPE, ETYPE>( x2 ) );
+            for ( int j1 = 0; j1 < 4; j1++ ) {
+                x2[j1] = x[set2[j1]];
+            }
+            vol2 = fabs( calc_volume<3, TYPE, ETYPE>( x2 ) );
+            for ( int it = 0; it < 2; it++ ) { // Loop through the sets (2)
+                if ( it == 0 ) {
+                    // Check set 1
+                    if ( vol1 > TOL_VOL ) {
+                        // Set 1 is not coplanar
+                        continue;
+                    }
+                    // Set 1 is coplanar, check if the line between the two unused points passes
+                    // through the 4 points in the set. If it does, then test_flip_valid will be
+                    // true
+                    // using either the current triangle and neighbor, or using the other 2
+                    // triangles
+                    for ( int j1 = 0; j1 < 4; j1++ ) {
+                        int k  = tri[j1 + 4 * t1];
+                        x2[j1] = x[k];
+                    }
+                    auto xi        = x[tri[s21 + 4 * t2]];
+                    bool is_valid1 = test_flip_valid<3, TYPE, ETYPE>( x2, s12, xi );
+                    for ( int j1 = 0; j1 < 4; j1++ ) {
+                        int k  = tri[j1 + 4 * t3];
+                        x2[j1] = x[k];
+                    }
+                    bool is_valid2 = test_flip_valid<3, TYPE, ETYPE>( x2, s34, xi );
+                    if ( !is_valid1 && !is_valid2 ) {
+                        // The flip is not valid
+                        continue;
+                    }
+                } else if ( it == 1 ) {
+                    // Check set 2
+                    if ( vol2 > TOL_VOL ) {
+                        // Set 1 is not coplanar
+                        continue;
+                    }
+                    // Set 2 is coplanar, check if the line between the two unused points passes
+                    // through the 4 points in the set. If it does, then test_flip_valid will be
+                    // true
+                    // using either the current triangle and neighbor, or using the other 2
+                    // triangles
+                    for ( int j1 = 0; j1 < 4; j1++ ) {
+                        int k  = tri[j1 + 4 * t1];
+                        x2[j1] = x[k];
+                    }
+                    auto xi        = x[tri[s31 + 4 * t3]];
+                    bool is_valid1 = test_flip_valid<3, TYPE, ETYPE>( x2, s13, xi );
+                    for ( int j1 = 0; j1 < 4; j1++ ) {
+                        int k  = tri[j1 + 4 * t2];
+                        x2[j1] = x[k];
+                    }
+                    bool is_valid2 = test_flip_valid<3, TYPE, ETYPE>( x2, s24, xi );
+                    if ( !is_valid1 && !is_valid2 ) {
+                        // The flip is not valid
+                        continue;
+                    }
+                } else {
+                    printf( "Unexpected error\n" );
+                    return false;
+                }
+                // Get a list of the nodes common to all triangles
+                int node_all[4];
+                int k = 0;
+                for ( int i = 0; i < 4; i++ ) {
+                    int tmp     = tri[i + 4 * t1];
+                    bool found2 = false;
+                    for ( int j = 0; j < 4; j++ ) {
+                        if ( tri[j + 4 * t2] == tmp )
+                            found2 = true;
+                    }
+                    bool found3 = false;
+                    for ( int j = 0; j < 4; j++ ) {
+                        if ( tri[j + 4 * t3] == tmp )
+                            found3 = true;
+                    }
+                    bool found4 = false;
+                    for ( int j = 0; j < 4; j++ ) {
+                        if ( tri[j + 4 * t3] == tmp )
+                            found4 = true;
+                    }
+                    if ( found2 && found3 && found4 ) {
+                        node_all[k] = tmp;
+                        k++;
+                    }
+                }
+                if ( k != 2 ) {
+                    printf( "Unexpected error\n" );
+                    return false;
+                }
+                // We have a valid flip, create the triangles
+                index_old[0] = t1;
+                index_old[1] = t2;
+                index_old[2] = t3;
+                index_old[3] = t4;
+                if ( it == 0 ) {
+                    // The 1-3 and 2-4 faces form the plane
+                    new_tri[0]  = tri[s12 + 4 * t1];
+                    new_tri[1]  = tri[s21 + 4 * t2];
+                    new_tri[2]  = tri[s13 + 4 * t1];
+                    new_tri[3]  = node_all[0];
+                    new_tri[4]  = tri[s12 + 4 * t1];
+                    new_tri[5]  = tri[s21 + 4 * t2];
+                    new_tri[6]  = tri[s13 + 4 * t1];
+                    new_tri[7]  = node_all[1];
+                    new_tri[8]  = tri[s34 + 4 * t3];
+                    new_tri[9]  = tri[s43 + 4 * t4];
+                    new_tri[10] = tri[s31 + 4 * t3];
+                    new_tri[11] = node_all[0];
+                    new_tri[12] = tri[s34 + 4 * t3];
+                    new_tri[13] = tri[s43 + 4 * t4];
+                    new_tri[14] = tri[s31 + 4 * t3];
+                    new_tri[15] = node_all[1];
+                } else {
+                    // The 1-2 and 3-4 faces form the plane
+                    new_tri[0]  = tri[s13 + 4 * t1];
+                    new_tri[1]  = tri[s31 + 4 * t3];
+                    new_tri[2]  = tri[s12 + 4 * t1];
+                    new_tri[3]  = node_all[0];
+                    new_tri[4]  = tri[s13 + 4 * t1];
+                    new_tri[5]  = tri[s31 + 4 * t3];
+                    new_tri[6]  = tri[s12 + 4 * t1];
+                    new_tri[7]  = node_all[1];
+                    new_tri[8]  = tri[s24 + 4 * t2];
+                    new_tri[9]  = tri[s42 + 4 * t4];
+                    new_tri[10] = tri[s21 + 4 * t2];
+                    new_tri[11] = node_all[0];
+                    new_tri[12] = tri[s24 + 4 * t2];
+                    new_tri[13] = tri[s42 + 4 * t4];
+                    new_tri[14] = tri[s21 + 4 * t2];
+                    new_tri[15] = node_all[1];
+                }
+                // Check that the new triagles are valid (this can occur if they are planar)
+                bool isvalid = true;
+                for ( int it2 = 0; it2 < 4; it2++ ) {
+                    for ( int i = 0; i < 4; i++ ) {
+                        int k = new_tri[i + it2 * 4];
+                        x2[i] = x[k];
+                    }
+                    double volume = calc_volume<3, TYPE, ETYPE>( x2 );
+                    if ( fabs( volume ) <= TOL_VOL ) {
+                        // The triangle is invalid (coplanar)
+                        isvalid = false;
+                    } else if ( volume < 0 ) {
+                        // The ordering of the points is invalid, swap the last two points (we want
+                        // the volume to be positive)
+                        int tmp              = new_tri[2 + it2 * 4];
+                        new_tri[2 + it2 * 4] = new_tri[3 + it2 * 4];
+                        new_tri[3 + it2 * 4] = tmp;
+                    }
+                }
+                if ( !isvalid )
+                    continue;
+                // Check that the new triangles are Delanuay (we have already checked that they are
+                // valid)
+                for ( int it2 = 0; it2 < 4; it2++ ) { // Loop through the test cases
+                    for ( int i = 0; i < 4; i++ ) {
+                        int k = new_tri[i + it2 * 4];
+                        x2[i] = x[k];
+                    }
+                    int k = -1;
+                    if ( it2 == 0 || it2 == 2 )
+                        k = new_tri[7];
+                    else if ( it2 == 1 || it2 == 3 )
+                        k = new_tri[3];
+                    int test = test_in_circumsphere<3, TYPE, ETYPE>( x2, x[k], TOL_VOL );
+                    if ( test == 1 )
+                        isvalid = false;
+                }
+                if ( !isvalid )
+                    continue;
+                // Compute the triangle neighbors (this is a less efficient, but general method)
+                const int N_old = 4;
+                const int N_new = 4;
+                int f1, f2;
+                for ( int j = 0; j < N_new * 4; j++ )
+                    new_tri_nab[j] = -1;
+                for ( int j1 = 0; j1 < N_new; j1++ ) {
+                    for ( int j2 = j1 + 1; j2 < N_new;
+                          j2++ ) { // We only need to loop through unchecked triangles
+                        bool are_neighbors =
+                            are_tri_neighbors( 3, &new_tri[j1 * 4], &new_tri[j2 * 4], &f1, &f2 );
+                        if ( are_neighbors ) {
+                            new_tri_nab[j1 * 4 + f1] = -j2 - 2;
+                            new_tri_nab[j2 * 4 + f2] = -j1 - 2;
+                        }
+                    }
+                }
+                int neighbors[16];
+                for ( int j1 = 0; j1 < N_old; j1++ ) {
+                    for ( int j2 = 0; j2 < 4; j2++ )
+                        neighbors[j2 + j1 * 4] = tri_nab[j2 + index_old[j1] * 4];
+                }
+                for ( auto &neighbor : neighbors ) {
+                    for ( int j2 = 0; j2 < N_old; j2++ ) {
+                        if ( neighbor == index_old[j2] )
+                            neighbor = -1;
+                    }
+                }
+                for ( int j1 = 0; j1 < N_new; j1++ ) {
+                    for ( auto &neighbor : neighbors ) {
+                        if ( neighbor == -1 )
+                            continue;
+                        bool are_neighbors =
+                            are_tri_neighbors( 3, &new_tri[j1 * 4], &tri[neighbor * 4], &f1, &f2 );
+                        if ( are_neighbors )
+                            new_tri_nab[j1 * 4 + f1] = neighbor;
+                    }
+                }
+                // Finished
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 
@@ -1653,919 +2350,6 @@ bool find_flip( const std::array<TYPE, NDIM> *x,
 }
 
 
-/************************************************************************
- * This function performs a flip in 2D                                   *
- * Note: all indicies are hard-coded for ndim=2 and some loops have been *
- * unrolled to simplify the code and improve performance                 *
- ************************************************************************/
-template<class TYPE, class ETYPE>
-bool flip_2D( const std::array<TYPE, 2> x[],
-              const int tri[],
-              const int tri_nab[],
-              const int t1,
-              const int s1,
-              const int t2,
-              const int s2,
-              int *index_old,
-              int *new_tri,
-              int *new_tri_nab,
-              const double TOL_VOL )
-{
-    // Check if the flip is valid (it should always be valid in 2D if it is necessary)
-    std::array<TYPE, 2> x2[3], xi;
-    for ( int i = 0; i < 3; i++ ) {
-        int k = tri[i + t1 * 3];
-        x2[i] = x[k];
-    }
-    int k        = tri[s2 + t2 * 3];
-    xi           = x[k];
-    bool isvalid = test_flip_valid<2, TYPE, ETYPE>( x2, s1, xi );
-    if ( !isvalid ) {
-        // We need to do an edge flip, and the edge flip is not valid
-        // This should not actually occur
-        return false;
-    }
-    // Create the new triangles that are formed by the edge flips and the neighbor list
-    index_old[0] = t1;
-    index_old[1] = t2;
-    int is[2], tn[4];
-    if ( s1 == 0 ) {
-        is[0] = tri[1 + 3 * t1];
-        is[1] = tri[2 + 3 * t1];
-        tn[0] = tri_nab[1 + 3 * t1];
-        tn[1] = tri_nab[2 + 3 * t1];
-    } else if ( s1 == 1 ) {
-        is[0] = tri[0 + 3 * t1];
-        is[1] = tri[2 + 3 * t1];
-        tn[0] = tri_nab[0 + 3 * t1];
-        tn[1] = tri_nab[2 + 3 * t1];
-    } else {
-        is[0] = tri[0 + 3 * t1];
-        is[1] = tri[1 + 3 * t1];
-        tn[0] = tri_nab[0 + 3 * t1];
-        tn[1] = tri_nab[1 + 3 * t1];
-    }
-    if ( is[0] == tri[0 + 3 * t2] )
-        tn[2] = tri_nab[0 + 3 * t2];
-    else if ( is[0] == tri[1 + 3 * t2] )
-        tn[2] = tri_nab[1 + 3 * t2];
-    else
-        tn[2] = tri_nab[2 + 3 * t2];
-    if ( is[1] == tri[0 + 3 * t2] )
-        tn[3] = tri_nab[0 + 3 * t2];
-    else if ( is[1] == tri[1 + 3 * t2] )
-        tn[3] = tri_nab[1 + 3 * t2];
-    else
-        tn[3] = tri_nab[2 + 3 * t2];
-    int in1        = tri[s1 + 3 * t1];
-    int in2        = tri[s2 + 3 * t2];
-    new_tri[0]     = in1;
-    new_tri[1]     = in2;
-    new_tri[2]     = is[0];
-    new_tri[3]     = in1;
-    new_tri[4]     = in2;
-    new_tri[5]     = is[1];
-    new_tri_nab[0] = tn[3];
-    new_tri_nab[1] = tn[1];
-    new_tri_nab[2] = -3;
-    new_tri_nab[3] = tn[2];
-    new_tri_nab[4] = tn[0];
-    new_tri_nab[5] = -2;
-    // Check that the new triagles are valid (and have the proper ordering)
-    isvalid = true;
-    for ( int it = 0; it < 2; it++ ) {
-        for ( int i = 0; i < 3; i++ ) {
-            int k = new_tri[i + it * 3];
-            x2[i] = x[k];
-        }
-        double volume = calc_volume<2, TYPE, ETYPE>( x2 );
-        if ( fabs( volume ) <= TOL_VOL ) {
-            // The triangle is invalid (collinear)
-            isvalid = false;
-        } else if ( volume < 0 ) {
-            // The ordering of the points is invalid, swap the last two points (we want the volume
-            // to be positive)
-            int tmp                 = new_tri[1 + it * 3];
-            new_tri[1 + it * 3]     = new_tri[2 + it * 3];
-            new_tri[2 + it * 3]     = tmp;
-            tmp                     = new_tri_nab[1 + it * 3];
-            new_tri_nab[1 + it * 3] = new_tri_nab[2 + it * 3];
-            new_tri_nab[2 + it * 3] = tmp;
-        }
-    }
-    return isvalid;
-}
-
-
-/************************************************************************
- * This function performs a 2-2 flip in 3D                               *
- * Note: all indicies are hard-coded for ndim=3 and some loops may be    *
- * unrolled to simplify the code or improve performance                  *
- ************************************************************************/
-template<class TYPE, class ETYPE>
-bool flip_3D_22( const std::array<TYPE, 3> x[],
-                 const int tri[],
-                 const int tri_nab[],
-                 const int t1,
-                 const int s1,
-                 const int t2,
-                 const int s2,
-                 int *index_old,
-                 int *new_tri,
-                 int *new_tri_nab,
-                 const double TOL_VOL )
-{
-    // The 2-2 fip is only valid when 4 of the verticies lie on a plane on the convex hull
-    // This is likely for structured grids
-    for ( int i1 = 0; i1 < 4; i1++ ) {
-        if ( tri_nab[i1 + 4 * t1] != -1 ) {
-            // The face does not lie on the convex hull
-            continue;
-        }
-        for ( int i2 = 0; i2 < 4; i2++ ) {
-            if ( tri_nab[i2 + 4 * t2] != -1 ) {
-                // The face does not lie on the convex hull
-                continue;
-            }
-            if ( tri[i1 + 4 * t1] != tri[i2 + 4 * t2] ) {
-                // The 5th vertex does not match for the two triangles
-                continue;
-            }
-            // Get the list of the 4 verticies on the convex hull
-            int v1, v2, v3, v4;
-            v1 = tri[s1 + 4 * t1];
-            v2 = tri[s2 + 4 * t2];
-            v3 = -1;
-            v4 = -1;
-            for ( int j = 0; j < 4; j++ ) {
-                if ( j == i1 || j == s1 )
-                    continue;
-                if ( v3 == -1 )
-                    v3 = tri[j + 4 * t1];
-                else
-                    v4 = tri[j + 4 * t1];
-            }
-            // Check if the 4 verticies are coplanar (the resulting simplex will have a volume of 0)
-            std::array<TYPE, 3> x2[4] = { x[v1], x[v2], x[v3], x[v4] };
-            double vol                = fabs( calc_volume<3, TYPE, ETYPE>( x2 ) );
-            if ( vol > TOL_VOL ) {
-                // The points are not coplanar
-                continue;
-            }
-            // Create the new triangles that are formed by the 2-2 edge flip
-            int v5       = tri[i1 + 4 * t1];
-            index_old[0] = t1;
-            index_old[1] = t2;
-            new_tri[0]   = v1;
-            new_tri[1]   = v2;
-            new_tri[2]   = v3;
-            new_tri[3]   = v5; // The first triangle
-            new_tri[4]   = v1;
-            new_tri[5]   = v2;
-            new_tri[6]   = v4;
-            new_tri[7]   = v5; // The second triangle
-            // Check that the new triagles are valid (this can occur if they are planar)
-            bool isvalid = true;
-            for ( int it = 0; it < 2; it++ ) {
-                for ( int i = 0; i < 4; i++ ) {
-                    int k = new_tri[i + it * 4];
-                    x2[i] = x[k];
-                }
-                double volume = calc_volume<3, TYPE, ETYPE>( x2 );
-                if ( fabs( volume ) <= TOL_VOL ) {
-                    // The triangle is invalid (collinear)
-                    isvalid = false;
-                } else if ( volume < 0 ) {
-                    // The ordering of the points is invalid, swap the last two points (we want the
-                    // volume to be positive)
-                    int tmp             = new_tri[2 + it * 4];
-                    new_tri[2 + it * 4] = new_tri[3 + it * 4];
-                    new_tri[3 + it * 4] = tmp;
-                }
-            }
-            if ( !isvalid )
-                continue;
-            // Check that the new triangles are Delanuay (we have already checked that they are
-            // valid)
-            for ( int j = 0; j < 4; j++ ) {
-                int k = new_tri[j];
-                x2[j] = x[k];
-            }
-            auto xv  = x[v4];
-            int test = test_in_circumsphere<3, TYPE, ETYPE>( x2[0].data(), xv.data(), TOL_VOL );
-            if ( test == 1 ) {
-                // The flip did not fix the Delaunay condition
-                continue;
-            }
-            // Compute the triangle neighbors (this is a less efficient, but general method)
-            const int N_old = 2;
-            const int N_new = 2;
-            int f1, f2;
-            for ( int j = 0; j < N_new * 4; j++ )
-                new_tri_nab[j] = -1;
-            for ( int j1 = 0; j1 < N_new; j1++ ) {
-                for ( int j2 = j1 + 1; j2 < N_new;
-                      j2++ ) { // We only need to loop through unchecked triangles
-                    bool are_neighbors =
-                        are_tri_neighbors( 3, &new_tri[j1 * 4], &new_tri[j2 * 4], &f1, &f2 );
-                    if ( are_neighbors ) {
-                        new_tri_nab[j1 * 4 + f1] = -j2 - 2;
-                        new_tri_nab[j2 * 4 + f2] = -j1 - 2;
-                    } else {
-                        printf( "Internal error (flip_3D_22)\n" );
-                        return false;
-                    }
-                }
-            }
-            int neighbors[8];
-            for ( int j1 = 0; j1 < N_old; j1++ ) {
-                for ( int j2 = 0; j2 < 4; j2++ )
-                    neighbors[j2 + j1 * 4] = tri_nab[j2 + index_old[j1] * 4];
-            }
-            for ( auto &neighbor : neighbors ) {
-                for ( int j2 = 0; j2 < N_old; j2++ ) {
-                    if ( neighbor == index_old[j2] )
-                        neighbor = -1;
-                }
-            }
-            for ( int j1 = 0; j1 < N_new; j1++ ) {
-                for ( auto &neighbor : neighbors ) {
-                    if ( neighbor == -1 )
-                        continue;
-                    bool are_neighbors =
-                        are_tri_neighbors( 3, &new_tri[j1 * 4], &tri[neighbor * 4], &f1, &f2 );
-                    if ( are_neighbors )
-                        new_tri_nab[j1 * 4 + f1] = neighbor;
-                }
-            }
-            return true;
-        }
-    }
-    return false;
-}
-
-
-/************************************************************************
- * This function performs a 3-2 flip in 3D                               *
- * Note: all indicies are hard-coded for ndim=3 and some loops may be    *
- * unrolled to simplify the code or improve performance                  *
- ************************************************************************/
-template<class TYPE, class ETYPE>
-bool flip_3D_32( const std::array<TYPE, 3> x[],
-                 const int tri[],
-                 const int tri_nab[],
-                 const int t1,
-                 const int,
-                 const int t2,
-                 const int,
-                 int *index_old,
-                 int *new_tri,
-                 int *new_tri_nab,
-                 const double TOL_VOL )
-{
-    // Search for triangles that are neighbors to both t1 and t2
-    int nab_list[4];
-    int N_nab = 0;
-    for ( int i1 = 0; i1 < 4; i1++ ) {
-        for ( int i2 = 0; i2 < 4; i2++ ) {
-            if ( tri_nab[i1 + 4 * t1] == tri_nab[i2 + 4 * t2] && tri_nab[i1 + 4 * t1] != -1 ) {
-                nab_list[N_nab] = tri_nab[i1 + 4 * t1];
-                N_nab++;
-            }
-        }
-    }
-    if ( N_nab == 0 ) {
-        // No triangle neighbors both t1 and t2
-        return false;
-    }
-    for ( int i = 0; i < N_nab; i++ ) {
-        // The nodes that are common to all 3 triangles are the unique verticies on the 3 new
-        // triangles
-        int nodes[4];
-        for ( int j = 0; j < 4; j++ )
-            nodes[j] = tri[j + 4 * nab_list[i]];
-        for ( auto &node : nodes ) {
-            bool found1 = false;
-            bool found2 = false;
-            for ( int j2 = 0; j2 < 4; j2++ ) {
-                if ( node == tri[j2 + 4 * t1] )
-                    found1 = true;
-                if ( node == tri[j2 + 4 * t2] )
-                    found2 = true;
-            }
-            if ( !found1 || !found2 )
-                node = -1;
-        }
-        int N_nodes = 0;
-        for ( auto &node : nodes ) {
-            if ( node != -1 ) {
-                nodes[N_nodes] = node;
-                N_nodes++;
-            }
-        }
-        if ( N_nodes != 2 ) {
-            // This should not occur
-            printf( "Unexpected error\n" );
-            return false;
-        }
-        int t[3];
-        t[0] = t1;
-        t[1] = t2;
-        t[2] = nab_list[i];
-        int surf[4];
-        int k = 0;
-        for ( auto &elem : t ) {
-            for ( int j2 = 0; j2 < 4; j2++ ) {
-                int tmp = tri[j2 + 4 * elem];
-                if ( tmp != nodes[0] && tmp != nodes[1] ) {
-                    bool in_surf = false;
-                    for ( int j3 = 0; j3 < k; j3++ ) {
-                        if ( tmp == surf[j3] )
-                            in_surf = true;
-                    }
-                    if ( !in_surf ) {
-                        surf[k] = tmp;
-                        k++;
-                    }
-                }
-            }
-        }
-        if ( k != 3 ) {
-            // This should not occur
-            printf( "Unexpected error\n" );
-            return false;
-        }
-        // Create the new triangles
-        index_old[0] = t1;
-        index_old[1] = t2;
-        index_old[2] = nab_list[i];
-        new_tri[0]   = nodes[0];
-        new_tri[1]   = surf[0];
-        new_tri[2]   = surf[1];
-        new_tri[3]   = surf[2];
-        new_tri[4]   = nodes[1];
-        new_tri[5]   = surf[0];
-        new_tri[6]   = surf[1];
-        new_tri[7]   = surf[2];
-        // Check that the new triangles are valid (this can occur if they are planar)
-        std::array<TYPE, 3> x2[4];
-        bool isvalid = true;
-        for ( int it = 0; it < 2; it++ ) {
-            for ( int i = 0; i < 4; i++ ) {
-                int k = new_tri[i + it * 4];
-                x2[i] = x[k];
-            }
-            double volume = calc_volume<3, TYPE, ETYPE>( x2 );
-            if ( fabs( volume ) <= TOL_VOL ) {
-                // The triangle is invalid (collinear)
-                isvalid = false;
-            } else if ( volume < 0 ) {
-                // The ordering of the points is invalid, swap the last two points (we want the
-                // volume to be positive)
-                int tmp             = new_tri[2 + it * 4];
-                new_tri[2 + it * 4] = new_tri[3 + it * 4];
-                new_tri[3 + it * 4] = tmp;
-            }
-        }
-        if ( !isvalid )
-            continue;
-        // Check that the new triangles are Delanuay (we have already checked that they are valid)
-        for ( int j = 0; j < 4; j++ ) {
-            int k = new_tri[j];
-            x2[j] = x[k];
-        }
-        auto xv  = x[nodes[1]];
-        int test = test_in_circumsphere<3, TYPE, ETYPE>( x2[0].data(), xv.data(), TOL_VOL );
-        if ( test == 1 ) {
-            // The new triangles did not fixed the surface
-            continue;
-        }
-        // Compute the triangle neighbors (this is a less efficient, but general method)
-        const int N_old = 3;
-        const int N_new = 2;
-        int f1, f2;
-        for ( int j = 0; j < N_new * 4; j++ )
-            new_tri_nab[j] = -1;
-        for ( int j1 = 0; j1 < N_new; j1++ ) {
-            for ( int j2 = j1 + 1; j2 < N_new;
-                  j2++ ) { // We only need to loop through unchecked triangles
-                bool are_neighbors =
-                    are_tri_neighbors( 3, &new_tri[j1 * 4], &new_tri[j2 * 4], &f1, &f2 );
-                if ( are_neighbors ) {
-                    new_tri_nab[j1 * 4 + f1] = -j2 - 2;
-                    new_tri_nab[j2 * 4 + f2] = -j1 - 2;
-                } else {
-                    printf( "Internal error (flip_3D_32)\n" );
-                    return false;
-                }
-            }
-        }
-        int neighbors[12];
-        for ( int j1 = 0; j1 < N_old; j1++ ) {
-            for ( int j2 = 0; j2 < 4; j2++ )
-                neighbors[j2 + j1 * 4] = tri_nab[j2 + index_old[j1] * 4];
-        }
-        for ( auto &neighbor : neighbors ) {
-            for ( int j2 = 0; j2 < N_old; j2++ ) {
-                if ( neighbor == index_old[j2] )
-                    neighbor = -1;
-            }
-        }
-        for ( int j1 = 0; j1 < N_new; j1++ ) {
-            for ( auto &neighbor : neighbors ) {
-                if ( neighbor == -1 )
-                    continue;
-                bool are_neighbors =
-                    are_tri_neighbors( 3, &new_tri[j1 * 4], &tri[neighbor * 4], &f1, &f2 );
-                if ( are_neighbors )
-                    new_tri_nab[j1 * 4 + f1] = neighbor;
-            }
-        }
-        // Finished
-        return true;
-    }
-    return false;
-}
-
-
-/************************************************************************
- * This function performs a 2-3 flip in 3D                               *
- * Note: all indicies are hard-coded for ndim=3 and some loops may be    *
- * unrolled to simplify the code or improve performance                  *
- ************************************************************************/
-template<class TYPE, class ETYPE>
-bool flip_3D_23( const std::array<TYPE, 3> x[],
-                 const int tri[],
-                 const int tri_nab[],
-                 const int t1,
-                 const int s1,
-                 const int t2,
-                 const int s2,
-                 int *index_old,
-                 int *new_tri,
-                 int *new_tri_nab,
-                 const double TOL_VOL )
-{
-    // First lets check if the flip is valid
-    std::array<TYPE, 3> x2[4], xi;
-    for ( int i = 0; i < 4; i++ ) {
-        int k = tri[i + 4 * t1];
-        x2[i] = x[k];
-    }
-    int k        = tri[s2 + 4 * t2];
-    xi           = x[k];
-    bool isvalid = test_flip_valid<3, TYPE, ETYPE>( x2, s1, xi );
-    if ( !isvalid ) {
-        // We need to do an edge flip, and the edge flip is not valid
-        return false;
-    }
-    // Form the new triangles
-    int is[3], in[2] = { 0, 0 };
-    k = 0;
-    for ( int i = 0; i < 4; i++ ) {
-        if ( i == s1 ) {
-            in[0] = tri[i + 4 * t1];
-        } else {
-            is[k] = tri[i + 4 * t1];
-            k++;
-        }
-    }
-    in[1]        = tri[s2 + 4 * t2];
-    index_old[0] = t1;
-    index_old[1] = t2;
-    new_tri[0]   = in[0];
-    new_tri[1]   = in[1];
-    new_tri[2]   = is[0];
-    new_tri[3]   = is[1];
-    new_tri[4]   = in[0];
-    new_tri[5]   = in[1];
-    new_tri[6]   = is[0];
-    new_tri[7]   = is[2];
-    new_tri[8]   = in[0];
-    new_tri[9]   = in[1];
-    new_tri[10]  = is[1];
-    new_tri[11]  = is[2];
-    // Check that the new triagles are valid (this can occur if they are planar)
-    isvalid = true;
-    for ( int it = 0; it < 3; it++ ) {
-        for ( int i = 0; i < 4; i++ ) {
-            int k = new_tri[i + it * 4];
-            x2[i] = x[k];
-        }
-        double volume = calc_volume<3, TYPE, ETYPE>( x2 );
-        if ( fabs( volume ) <= TOL_VOL ) {
-            // The triangle is invalid (collinear)
-            isvalid = false;
-        } else if ( volume < 0 ) {
-            // The ordering of the points is invalid, swap the last two points (we want the volume
-            // to be positive)
-            int tmp             = new_tri[2 + it * 4];
-            new_tri[2 + it * 4] = new_tri[3 + it * 4];
-            new_tri[3 + it * 4] = tmp;
-        }
-    }
-    if ( !isvalid )
-        return false;
-    // Check that the new triangles are Delanuay (we have already checked that they are valid)
-    for ( int it = 0; it < 3; it++ ) {
-        for ( int i = 0; i < 4; i++ ) {
-            int k = new_tri[i + it * 4];
-            x2[i] = x[k];
-        }
-        int k;
-        if ( it == 0 ) {
-            k = is[2];
-        } else if ( it == 1 ) {
-            k = is[1];
-        } else {
-            k = is[0];
-        }
-        xi       = x[k];
-        int test = test_in_circumsphere<3, TYPE, ETYPE>( x2[0].data(), xi.data(), TOL_VOL );
-        if ( test == 1 ) {
-            // The new triangles did not fix the surface
-            isvalid = false;
-        }
-    }
-    if ( !isvalid )
-        return false;
-    // Compute the triangle neighbors (this is a less efficient, but general method)
-    const int N_old = 2;
-    const int N_new = 3;
-    int f1, f2;
-    for ( int j = 0; j < N_new * 4; j++ )
-        new_tri_nab[j] = -1;
-    for ( int j1 = 0; j1 < N_new; j1++ ) {
-        for ( int j2 = j1 + 1; j2 < N_new;
-              j2++ ) { // We only need to loop through unchecked triangles
-            bool are_neighbors =
-                are_tri_neighbors( 3, &new_tri[j1 * 4], &new_tri[j2 * 4], &f1, &f2 );
-            if ( are_neighbors ) {
-                new_tri_nab[j1 * 4 + f1] = -j2 - 2;
-                new_tri_nab[j2 * 4 + f2] = -j1 - 2;
-            } else {
-                printf( "Internal error (flip_3D_23)\n" );
-                return false;
-            }
-        }
-    }
-    int neighbors[8];
-    for ( int j1 = 0; j1 < N_old; j1++ ) {
-        for ( int j2 = 0; j2 < 4; j2++ )
-            neighbors[j2 + j1 * 4] = tri_nab[j2 + index_old[j1] * 4];
-    }
-    for ( auto &neighbor : neighbors ) {
-        for ( int j2 = 0; j2 < N_old; j2++ ) {
-            if ( neighbor == index_old[j2] )
-                neighbor = -1;
-        }
-    }
-    for ( int j1 = 0; j1 < N_new; j1++ ) {
-        for ( auto &neighbor : neighbors ) {
-            if ( neighbor == -1 )
-                continue;
-            bool are_neighbors =
-                are_tri_neighbors( 3, &new_tri[j1 * 4], &tri[neighbor * 4], &f1, &f2 );
-            if ( are_neighbors )
-                new_tri_nab[j1 * 4 + f1] = neighbor;
-        }
-    }
-    return true;
-}
-
-
-/************************************************************************
- * This function performs a 4-4 flip in 3D                               *
- * Note: all indicies are hard-coded for ndim=3 and some loops may be    *
- * unrolled to simplify the code or improve performance                  *
- ************************************************************************/
-template<class TYPE, class ETYPE>
-bool flip_3D_44( const std::array<TYPE, 3> x[],
-                 const int tri[],
-                 const int tri_nab[],
-                 const int t1,
-                 const int s1,
-                 const int t2,
-                 const int s2,
-                 int *index_old,
-                 int *new_tri,
-                 int *new_tri_nab,
-                 const double TOL_VOL )
-{
-    // Loop through the triangle neighbors for both t1 and t2, to find
-    // a pair of triangles that form and octahedron
-    for ( int i1 = 0; i1 < 4; i1++ ) {
-        int t3 = tri_nab[i1 + 4 * t1];
-        for ( int i2 = 0; i2 < 4; i2++ ) {
-            int t4 = tri_nab[i2 + 4 * t2];
-            if ( t3 == -1 || t3 == t2 || t4 == -1 || t4 == t1 || t3 == t4 ) {
-                // We do not have 4 unique triangles
-                continue;
-            }
-            if ( tri_nab[0 + 4 * t3] != t4 && tri_nab[1 + 4 * t3] != t4 &&
-                 tri_nab[2 + 4 * t3] != t4 && tri_nab[3 + 4 * t3] != t4 ) {
-                // The 4 triangles do not form an octahedron
-                continue;
-            }
-            // Get a list of the surface ids
-            int s12, s13, s21, s24, s31 = 0, s34 = 0, s42 = 0, s43 = 0;
-            s12 = s1;
-            s13 = i1;
-            s21 = s2;
-            s24 = i2;
-            for ( int i = 0; i < 4; i++ ) {
-                if ( tri_nab[i + 4 * t3] == t1 )
-                    s31 = i;
-                if ( tri_nab[i + 4 * t3] == t4 )
-                    s34 = i;
-                if ( tri_nab[i + 4 * t4] == t2 )
-                    s42 = i;
-                if ( tri_nab[i + 4 * t4] == t3 )
-                    s43 = i;
-            }
-            // Get a list of the unique nodes
-            int nodes[16];
-            for ( auto &node : nodes )
-                node = -1;
-            for ( int i = 0; i < 4; i++ )
-                nodes[i] = tri[i + 4 * t1];
-            int N_nodes = 4;
-            for ( int j1 = 0; j1 < 4; j1++ ) {
-                bool found = false;
-                for ( int j2 = 0; j2 < N_nodes; j2++ ) {
-                    if ( tri[j1 + 4 * t2] == nodes[j2] )
-                        found = true;
-                }
-                if ( !found ) {
-                    nodes[N_nodes] = tri[j1 + 4 * t2];
-                    N_nodes++;
-                }
-            }
-            for ( int j1 = 0; j1 < 4; j1++ ) {
-                bool found = false;
-                for ( int j2 = 0; j2 < N_nodes; j2++ ) {
-                    if ( tri[j1 + 4 * t3] == nodes[j2] )
-                        found = true;
-                }
-                if ( !found ) {
-                    nodes[N_nodes] = tri[j1 + 4 * t3];
-                    N_nodes++;
-                }
-            }
-            for ( int j1 = 0; j1 < 4; j1++ ) {
-                bool found = false;
-                for ( int j2 = 0; j2 < N_nodes; j2++ ) {
-                    if ( tri[j1 + 4 * t4] == nodes[j2] )
-                        found = true;
-                }
-                if ( !found ) {
-                    nodes[N_nodes] = tri[j1 + 4 * t4];
-                    N_nodes++;
-                }
-            }
-            if ( N_nodes != 6 ) {
-                // We still do not have a valid octahedron
-                printf( "Unexpected number of nodes\n" );
-                continue;
-            }
-            // Check if any 4 of the nodes are coplanar (the resulting simplex will have a volume of
-            // 0)
-            // Note: while there are 15 combinations of 4 points, in reality
-            // because the triangle faces already specify groups of 3 that
-            // are coplanar, we only need to check 2 groups of points
-            int set1[4], set2[4];
-            for ( int i = 0; i < 4; i++ ) {
-                set1[i] = tri[i + 4 * t1];
-                set2[i] = tri[i + 4 * t1];
-            }
-            set1[s13] = tri[s21 + t2 * 4];
-            set2[s12] = tri[s31 + t3 * 4];
-            std::array<TYPE, 3> x2[4], xi;
-            double vol1, vol2;
-            for ( int j1 = 0; j1 < 4; j1++ ) {
-                x2[j1] = x[set1[j1]];
-            }
-            vol1 = fabs( calc_volume<3, TYPE, ETYPE>( x2 ) );
-            for ( int j1 = 0; j1 < 4; j1++ ) {
-                x2[j1] = x[set2[j1]];
-            }
-            vol2 = fabs( calc_volume<3, TYPE, ETYPE>( x2 ) );
-            for ( int it = 0; it < 2; it++ ) { // Loop through the sets (2)
-                if ( it == 0 ) {
-                    // Check set 1
-                    if ( vol1 > TOL_VOL ) {
-                        // Set 1 is not coplanar
-                        continue;
-                    }
-                    // Set 1 is coplanar, check if the line between the two unused points passes
-                    // through the 4 points in the set. If it does, then test_flip_valid will be
-                    // true
-                    // using either the current triangle and neighbor, or using the other 2
-                    // triangles
-                    for ( int j1 = 0; j1 < 4; j1++ ) {
-                        int k  = tri[j1 + 4 * t1];
-                        x2[j1] = x[k];
-                    }
-                    xi             = x[tri[s21 + 4 * t2]];
-                    bool is_valid1 = test_flip_valid<3, TYPE, ETYPE>( x2, s12, xi );
-                    for ( int j1 = 0; j1 < 4; j1++ ) {
-                        int k  = tri[j1 + 4 * t3];
-                        x2[j1] = x[k];
-                    }
-                    bool is_valid2 = test_flip_valid<3, TYPE, ETYPE>( x2, s34, xi );
-                    if ( !is_valid1 && !is_valid2 ) {
-                        // The flip is not valid
-                        continue;
-                    }
-                } else if ( it == 1 ) {
-                    // Check set 2
-                    if ( vol2 > TOL_VOL ) {
-                        // Set 1 is not coplanar
-                        continue;
-                    }
-                    // Set 2 is coplanar, check if the line between the two unused points passes
-                    // through the 4 points in the set. If it does, then test_flip_valid will be
-                    // true
-                    // using either the current triangle and neighbor, or using the other 2
-                    // triangles
-                    for ( int j1 = 0; j1 < 4; j1++ ) {
-                        int k  = tri[j1 + 4 * t1];
-                        x2[j1] = x[k];
-                    }
-                    xi             = x[tri[s31 + 4 * t3]];
-                    bool is_valid1 = test_flip_valid<3, TYPE, ETYPE>( x2, s13, xi );
-                    for ( int j1 = 0; j1 < 4; j1++ ) {
-                        int k  = tri[j1 + 4 * t2];
-                        x2[j1] = x[k];
-                    }
-                    bool is_valid2 = test_flip_valid<3, TYPE, ETYPE>( x2, s24, xi );
-                    if ( !is_valid1 && !is_valid2 ) {
-                        // The flip is not valid
-                        continue;
-                    }
-                } else {
-                    printf( "Unexpected error\n" );
-                    return false;
-                }
-                // Get a list of the nodes common to all triangles
-                int node_all[4];
-                int k = 0;
-                for ( int i = 0; i < 4; i++ ) {
-                    int tmp     = tri[i + 4 * t1];
-                    bool found2 = false;
-                    for ( int j = 0; j < 4; j++ ) {
-                        if ( tri[j + 4 * t2] == tmp )
-                            found2 = true;
-                    }
-                    bool found3 = false;
-                    for ( int j = 0; j < 4; j++ ) {
-                        if ( tri[j + 4 * t3] == tmp )
-                            found3 = true;
-                    }
-                    bool found4 = false;
-                    for ( int j = 0; j < 4; j++ ) {
-                        if ( tri[j + 4 * t3] == tmp )
-                            found4 = true;
-                    }
-                    if ( found2 && found3 && found4 ) {
-                        node_all[k] = tmp;
-                        k++;
-                    }
-                }
-                if ( k != 2 ) {
-                    printf( "Unexpected error\n" );
-                    return false;
-                }
-                // We have a valid flip, create the triangles
-                index_old[0] = t1;
-                index_old[1] = t2;
-                index_old[2] = t3;
-                index_old[3] = t4;
-                if ( it == 0 ) {
-                    // The 1-3 and 2-4 faces form the plane
-                    new_tri[0]  = tri[s12 + 4 * t1];
-                    new_tri[1]  = tri[s21 + 4 * t2];
-                    new_tri[2]  = tri[s13 + 4 * t1];
-                    new_tri[3]  = node_all[0];
-                    new_tri[4]  = tri[s12 + 4 * t1];
-                    new_tri[5]  = tri[s21 + 4 * t2];
-                    new_tri[6]  = tri[s13 + 4 * t1];
-                    new_tri[7]  = node_all[1];
-                    new_tri[8]  = tri[s34 + 4 * t3];
-                    new_tri[9]  = tri[s43 + 4 * t4];
-                    new_tri[10] = tri[s31 + 4 * t3];
-                    new_tri[11] = node_all[0];
-                    new_tri[12] = tri[s34 + 4 * t3];
-                    new_tri[13] = tri[s43 + 4 * t4];
-                    new_tri[14] = tri[s31 + 4 * t3];
-                    new_tri[15] = node_all[1];
-                } else {
-                    // The 1-2 and 3-4 faces form the plane
-                    new_tri[0]  = tri[s13 + 4 * t1];
-                    new_tri[1]  = tri[s31 + 4 * t3];
-                    new_tri[2]  = tri[s12 + 4 * t1];
-                    new_tri[3]  = node_all[0];
-                    new_tri[4]  = tri[s13 + 4 * t1];
-                    new_tri[5]  = tri[s31 + 4 * t3];
-                    new_tri[6]  = tri[s12 + 4 * t1];
-                    new_tri[7]  = node_all[1];
-                    new_tri[8]  = tri[s24 + 4 * t2];
-                    new_tri[9]  = tri[s42 + 4 * t4];
-                    new_tri[10] = tri[s21 + 4 * t2];
-                    new_tri[11] = node_all[0];
-                    new_tri[12] = tri[s24 + 4 * t2];
-                    new_tri[13] = tri[s42 + 4 * t4];
-                    new_tri[14] = tri[s21 + 4 * t2];
-                    new_tri[15] = node_all[1];
-                }
-                // Check that the new triagles are valid (this can occur if they are planar)
-                bool isvalid = true;
-                for ( int it2 = 0; it2 < 4; it2++ ) {
-                    for ( int i = 0; i < 4; i++ ) {
-                        int k = new_tri[i + it2 * 4];
-                        x2[i] = x[k];
-                    }
-                    double volume = calc_volume<3, TYPE, ETYPE>( x2 );
-                    if ( fabs( volume ) <= TOL_VOL ) {
-                        // The triangle is invalid (coplanar)
-                        isvalid = false;
-                    } else if ( volume < 0 ) {
-                        // The ordering of the points is invalid, swap the last two points (we want
-                        // the volume to be positive)
-                        int tmp              = new_tri[2 + it2 * 4];
-                        new_tri[2 + it2 * 4] = new_tri[3 + it2 * 4];
-                        new_tri[3 + it2 * 4] = tmp;
-                    }
-                }
-                if ( !isvalid )
-                    continue;
-                // Check that the new triangles are Delanuay (we have already checked that they are
-                // valid)
-                for ( int it2 = 0; it2 < 4; it2++ ) { // Loop through the test cases
-                    for ( int i = 0; i < 4; i++ ) {
-                        int k = new_tri[i + it2 * 4];
-                        x2[i] = x[k];
-                    }
-                    int k = -1;
-                    if ( it2 == 0 || it2 == 2 )
-                        k = new_tri[7];
-                    else if ( it2 == 1 || it2 == 3 )
-                        k = new_tri[3];
-                    xi = x[k];
-                    int test =
-                        test_in_circumsphere<3, TYPE, ETYPE>( x2[0].data(), xi.data(), TOL_VOL );
-                    if ( test == 1 )
-                        isvalid = false;
-                }
-                if ( !isvalid )
-                    continue;
-                // Compute the triangle neighbors (this is a less efficient, but general method)
-                const int N_old = 4;
-                const int N_new = 4;
-                int f1, f2;
-                for ( int j = 0; j < N_new * 4; j++ )
-                    new_tri_nab[j] = -1;
-                for ( int j1 = 0; j1 < N_new; j1++ ) {
-                    for ( int j2 = j1 + 1; j2 < N_new;
-                          j2++ ) { // We only need to loop through unchecked triangles
-                        bool are_neighbors =
-                            are_tri_neighbors( 3, &new_tri[j1 * 4], &new_tri[j2 * 4], &f1, &f2 );
-                        if ( are_neighbors ) {
-                            new_tri_nab[j1 * 4 + f1] = -j2 - 2;
-                            new_tri_nab[j2 * 4 + f2] = -j1 - 2;
-                        }
-                    }
-                }
-                int neighbors[16];
-                for ( int j1 = 0; j1 < N_old; j1++ ) {
-                    for ( int j2 = 0; j2 < 4; j2++ )
-                        neighbors[j2 + j1 * 4] = tri_nab[j2 + index_old[j1] * 4];
-                }
-                for ( auto &neighbor : neighbors ) {
-                    for ( int j2 = 0; j2 < N_old; j2++ ) {
-                        if ( neighbor == index_old[j2] )
-                            neighbor = -1;
-                    }
-                }
-                for ( int j1 = 0; j1 < N_new; j1++ ) {
-                    for ( auto &neighbor : neighbors ) {
-                        if ( neighbor == -1 )
-                            continue;
-                        bool are_neighbors =
-                            are_tri_neighbors( 3, &new_tri[j1 * 4], &tri[neighbor * 4], &f1, &f2 );
-                        if ( are_neighbors )
-                            new_tri_nab[j1 * 4 + f1] = neighbor;
-                    }
-                }
-                // Finished
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-
 /********************************************************************
  * Primary interfaces                                                *
  ********************************************************************/
@@ -2660,12 +2444,19 @@ int create_tessellation(
 #endif
     return N_tri;
 }
-template<std::size_t NDIM>
-static inline void copy_x2( const double *x, std::array<double, NDIM> x2[] )
+template<std::size_t NDIM, class TYPE>
+static inline void copy_x2( const TYPE *x, std::array<TYPE, NDIM> x2[] )
 {
     for ( size_t i = 0; i <= NDIM; i++ )
         for ( size_t d = 0; d < NDIM; d++ )
             x2[i][d] = x[d + i * NDIM];
+}
+template<size_t NDIM>
+static inline double calc_volume2( const double x[] )
+{
+    std::array<double, NDIM> x2[NDIM + 1];
+    copy_x2( x, x2 );
+    return calc_volume<NDIM, double, long double>( x2 );
 }
 double calc_volume( int ndim, const double x[] )
 {
@@ -2673,31 +2464,33 @@ double calc_volume( int ndim, const double x[] )
     if ( ndim == 1 ) {
         vol = x[1] - x[0];
     } else if ( ndim == 2 ) {
-        std::array<double, 2> x2[3];
-        copy_x2( x, x2 );
-        vol = calc_volume<2, double, long double>( x2 );
+        vol = calc_volume2<2>( x );
     } else if ( ndim == 3 ) {
-        std::array<double, 3> x2[4];
-        copy_x2( x, x2 );
-        vol = calc_volume<3, double, long double>( x2 );
+        vol = calc_volume2<3>( x );
     } else if ( ndim == 4 ) {
-        std::array<double, 4> x2[5];
-        copy_x2( x, x2 );
-        vol = calc_volume<4, double, long double>( x2 );
+        vol = calc_volume2<4>( x );
     } else {
         throw std::logic_error( "Unsupported dimension" );
     }
     return vol;
 }
+template<size_t NDIM, class TYPE, class ETYPE>
+static inline int test_in_circumsphere2( const TYPE x[], const TYPE xi[], const double TOL_VOL )
+{
+    std::array<TYPE, NDIM> x2[NDIM + 1], xi2;
+    copy_x2( x, x2 );
+    std::copy( xi, xi + NDIM, xi2.begin() );
+    return test_in_circumsphere<NDIM, TYPE, ETYPE>( x2, xi2, TOL_VOL );
+}
 int test_in_circumsphere( int ndim, const double x[], const double xi[], const double TOL_VOL )
 {
     int test = -2;
     if ( ndim == 1 ) {
-        test = test_in_circumsphere<1, double, long double>( x, xi, TOL_VOL );
+        test = test_in_circumsphere2<1, double, long double>( x, xi, TOL_VOL );
     } else if ( ndim == 2 ) {
-        test = test_in_circumsphere<2, double, long double>( x, xi, TOL_VOL );
+        test = test_in_circumsphere2<2, double, long double>( x, xi, TOL_VOL );
     } else if ( ndim == 3 ) {
-        test = test_in_circumsphere<3, double, long double>( x, xi, TOL_VOL );
+        test = test_in_circumsphere2<3, double, long double>( x, xi, TOL_VOL );
     } else {
         throw std::logic_error( "Unsupported dimension" );
     }
@@ -2707,20 +2500,20 @@ int test_in_circumsphere( int ndim, const int x[], const int xi[], const double 
 {
     int test = -2;
     if ( ndim == 1 ) {
-        test = test_in_circumsphere<1, int, int>( x, xi, TOL_VOL );
+        test = test_in_circumsphere2<1, int, int>( x, xi, TOL_VOL );
     } else if ( ndim == 2 ) {
-        test = test_in_circumsphere<2, int, int64_t>( x, xi, TOL_VOL );
+        test = test_in_circumsphere2<2, int, int64_t>( x, xi, TOL_VOL );
     } else if ( ndim == 3 ) {
         const uint64_t x_max = std::max( maxabs( ndim * ( ndim + 1 ), x ), maxabs( ndim, xi ) );
         if ( x_max < 768 ) {
-            test = test_in_circumsphere<3, int, int>( x, xi, TOL_VOL );
+            test = test_in_circumsphere2<3, int, int>( x, xi, TOL_VOL );
         } else if ( x_max < 1048576 ) {
-            test = test_in_circumsphere<3, int, int64_t>( x, xi, TOL_VOL );
+            test = test_in_circumsphere2<3, int, int64_t>( x, xi, TOL_VOL );
         } else {
 #ifdef DISABLE_EXTENDED
             AMP_ERROR( "create_tessellation (int) is disabled for large ints" );
 #else
-            test = test_in_circumsphere<3, int, int128_t>( x, xi, TOL_VOL );
+            test = test_in_circumsphere2<3, int, int128_t>( x, xi, TOL_VOL );
 #endif
         }
     } else {
@@ -2728,14 +2521,21 @@ int test_in_circumsphere( int ndim, const int x[], const int xi[], const double 
     }
     return test;
 }
+template<size_t NDIM, class TYPE>
+static inline void get_circumsphere2( const TYPE x[], double &R, double *center )
+{
+    std::array<TYPE, NDIM> x2[NDIM + 1];
+    copy_x2( x, x2 );
+    get_circumsphere<NDIM, TYPE>( x2, R, center );
+}
 void get_circumsphere( const int ndim, const double x[], double &R, double *center )
 {
     if ( ndim == 1 ) {
-        get_circumsphere<1, double>( x, R, center );
+        get_circumsphere2<1, double>( x, R, center );
     } else if ( ndim == 2 ) {
-        get_circumsphere<2, double>( x, R, center );
+        get_circumsphere2<2, double>( x, R, center );
     } else if ( ndim == 3 ) {
-        get_circumsphere<3, double>( x, R, center );
+        get_circumsphere2<3, double>( x, R, center );
     } else {
         throw std::logic_error( "Unsupported dimension" );
     }
@@ -2743,11 +2543,11 @@ void get_circumsphere( const int ndim, const double x[], double &R, double *cent
 void get_circumsphere( const int ndim, const int x[], double &R, double *center )
 {
     if ( ndim == 1 ) {
-        get_circumsphere<1, int>( x, R, center );
+        get_circumsphere2<1, int>( x, R, center );
     } else if ( ndim == 2 ) {
-        get_circumsphere<2, int>( x, R, center );
+        get_circumsphere2<2, int>( x, R, center );
     } else if ( ndim == 3 ) {
-        get_circumsphere<3, int>( x, R, center );
+        get_circumsphere2<3, int>( x, R, center );
     } else {
         throw std::logic_error( "Unsupported dimension" );
     }
