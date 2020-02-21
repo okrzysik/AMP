@@ -58,7 +58,7 @@ struct check_surface_struct {
 
 // Function to find a valid flip
 template<int NDIM, class TYPE, class ETYPE>
-static bool find_flip( const TYPE *x,
+static bool find_flip( const std::array<TYPE, NDIM> *x,
                        const int *tri,
                        const int *tri_nab,
                        const double TOL_VOL,
@@ -68,41 +68,6 @@ static bool find_flip( const TYPE *x,
                        int *index_old,
                        int *new_tri,
                        int *new_tri_nab );
-template<class TYPE, class ETYPE>
-static inline bool find_flip_2D( const TYPE *x,
-                                 const int *tri,
-                                 const int *tri_nab,
-                                 const double TOL_VOL,
-                                 std::vector<check_surface_struct> &check_surface,
-                                 int &N_tri_old,
-                                 int &N_tri_new,
-                                 int *index_old,
-                                 int *new_tri,
-                                 int *new_tri_nab );
-template<class TYPE, class ETYPE>
-static inline bool find_flip_3D( const TYPE *x,
-                                 const int *tri,
-                                 const int *tri_nab,
-                                 const double TOL_VOL,
-                                 std::vector<check_surface_struct> &check_surface,
-                                 int &N_tri_old,
-                                 int &N_tri_new,
-                                 int *index_old,
-                                 int *new_tri,
-                                 int *new_tri_nab );
-
-
-//! Function to check if a simple flip is valid
-/*!
- * This function checks if a simple flip is valid.  To be valid, the line
- * between the two points that are not on the surface and the intersection
- * of the face must lie within the face.
- * @param x         The coordinates of the verticies of the simplex
- * @param i         The face to check
- * @param xi        The coordinates of the vertex to check
- */
-template<int NDIM, class TYPE, class ETYPE>
-static bool test_flip_valid( const TYPE x[], const int i, const TYPE xi[] );
 
 
 //! Function to perform a flip in 2D
@@ -129,7 +94,7 @@ static bool test_flip_valid( const TYPE x[], const int i, const TYPE xi[] );
  * @param TOL_VOL       The tolerance to use for determining if a simplex is valid
  */
 template<class TYPE, class ETYPE>
-static bool flip_2D( const TYPE x[],
+static bool flip_2D( const std::array<TYPE, 2> x[],
                      const int tri[],
                      const int tri_nab[],
                      const int t1,
@@ -172,7 +137,7 @@ static bool flip_2D( const TYPE x[],
  * @param TOL_VOL       The tolerance to use for determining if a simplex is valid
  */
 template<class TYPE, class ETYPE>
-static bool flip_3D_22( const TYPE x[],
+static bool flip_3D_22( const std::array<TYPE, 3> x[],
                         const int tri[],
                         const int tri_nab[],
                         const int t1,
@@ -214,7 +179,7 @@ static bool flip_3D_22( const TYPE x[],
  * @param TOL_VOL       The tolerance to use for determining if a simplex is valid
  */
 template<class TYPE, class ETYPE>
-static bool flip_3D_23( const TYPE x[],
+static bool flip_3D_23( const std::array<TYPE, 3> x[],
                         const int tri[],
                         const int tri_nab[],
                         const int t1,
@@ -256,7 +221,7 @@ static bool flip_3D_23( const TYPE x[],
  * @param TOL_VOL       The tolerance to use for determining if a simplex is valid
  */
 template<class TYPE, class ETYPE>
-static bool flip_3D_32( const TYPE x[],
+static bool flip_3D_32( const std::array<TYPE, 3> x[],
                         const int tri[],
                         const int tri_nab[],
                         const int t1,
@@ -301,7 +266,7 @@ static bool flip_3D_32( const TYPE x[],
  * @param TOL_VOL       The tolerance to use for determining if a simplex is valid
  */
 template<class TYPE, class ETYPE>
-static bool flip_3D_44( const TYPE x[],
+static bool flip_3D_44( const std::array<TYPE, 3> x[],
                         const int tri[],
                         const int tri_nab[],
                         const int t1,
@@ -421,7 +386,7 @@ inline double dot<int64_t>( int N, const int64_t *x, const int64_t *y )
  * Test if 3 points are co-linear                                    *
  ********************************************************************/
 template<int NDIM, class TYPE, class ETYPE>
-static inline bool collinear( const TYPE x[3][NDIM], double tol )
+static inline bool collinear( const std::array<TYPE, NDIM> *x, double tol )
 {
     double r1[NDIM];
     double r2[NDIM];
@@ -456,7 +421,7 @@ static inline bool collinear( const TYPE x[3][NDIM], double tol )
  * Note: for exact math this requires N^D precision                  *
  ********************************************************************/
 template<int NDIM, class TYPE, class ETYPE>
-static inline bool coplanar( const TYPE x[4][NDIM], TYPE tol )
+static inline bool coplanar( const std::array<TYPE, NDIM> *x, TYPE tol )
 {
     bool is_coplanar = true;
     if constexpr ( NDIM == 3 ) {
@@ -517,12 +482,19 @@ check_tri_size( size_t N_tri, int NDIM, size_t size_old, int *tri[], int *tri_na
  * This is the main function that creates the tessellation           *
  ********************************************************************/
 template<int NDIM, class TYPE, class ETYPE>
-int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_nab_out[] )
+int create_tessellation( const int N, const TYPE x_in[], int *tri_out[], int *tri_nab_out[] )
 {
+    using Point = std::array<TYPE, NDIM>;
+
     if ( N < NDIM + 1 )
         throw std::logic_error( "Insufficient number of points" );
 
     PROFILE_SCOPED( timer, "create_tessellation", 3 );
+
+    std::vector<Point> x( N );
+    for ( int i = 0; i < N; i++ )
+        for ( size_t d = 0; d < NDIM; d++ )
+            x[i][d] = x_in[d + i * NDIM];
 
     // Check that no two points match and get the closest pair of points
     std::pair<int, int> index_pair( -1, -1 );
@@ -532,8 +504,8 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
         TYPE xmin[3] = { 0, 0, 0 }, xmax[3] = { 0, 0, 0 };
         for ( int i = 0; i < N; i++ ) {
             for ( int d = 0; d < NDIM; d++ ) {
-                xmin[d] = std::min( xmin[d], x[d + i * NDIM] );
-                xmax[d] = std::max( xmax[d], x[d + i * NDIM] );
+                xmin[d] = std::min( xmin[d], x[i][d] );
+                xmax[d] = std::max( xmax[d], x[i][d] );
             }
         }
         TYPE domain_size = 0;
@@ -543,13 +515,13 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
 
         // First, get the two closest points and check that they are not the same
         PROFILE_START( "create-find_min_dist", 3 );
-        index_pair = find_min_dist<NDIM, TYPE>( N, x );
+        index_pair = find_min_dist<NDIM, TYPE>( N, x[0].data() );
         PROFILE_STOP( "create-find_min_dist", 3 );
         int i1 = index_pair.first;
         int i2 = index_pair.second;
         r_min  = 0;
         for ( int d = 0; d < NDIM; d++ ) {
-            auto tmp = static_cast<double>( x[d + NDIM * i1] - x[d + NDIM * i2] );
+            auto tmp = static_cast<double>( x[i1][d] - x[i2][d] );
             r_min += tmp * tmp;
         }
         r_min = sqrt( r_min );
@@ -577,7 +549,7 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
     for ( int i = 0; i < N; i++ ) {
         R2[i] = ETYPE( 0 );
         for ( int d = 0; d < NDIM; d++ ) {
-            ETYPE tmp( x[d + i * NDIM] - x[d + i1 * NDIM] );
+            ETYPE tmp( x[i][d] - x[i1][d] );
             R2[i] += tmp * tmp;
         }
     }
@@ -596,18 +568,14 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
         switch ( i ) {
         case 2:
             // Find the first point that is not collinear with the first 2 points in I
-            TYPE x2[3][NDIM];
-            for ( int j = 0; j < NDIM; j++ ) {
-                x2[0][j] = x[j + I[0] * NDIM];
-                x2[1][j] = x[j + I[1] * NDIM];
-            }
+            Point x2[3];
+            x2[0] = x[I[0]];
+            x2[1] = x[I[1]];
             while ( true ) {
-                for ( int j = 0; j < NDIM; j++ )
-                    x2[2][j] = x[j + I[ik] * NDIM];
+                x2[2]             = x[I[ik]];
                 bool is_collinear = collinear<NDIM, TYPE, ETYPE>( x2, TOL_COLLINEAR );
-                if ( !is_collinear ) {
+                if ( !is_collinear )
                     break;
-                }
                 ik++;
                 if ( ik >= N ) {
                     // No 3 non-collinear points were found
@@ -618,18 +586,14 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
         case 3:
             if constexpr ( NDIM == 3 ) {
                 // Find the first point that is not coplanar with the first 3 points in I
-                TYPE x2[4][NDIM];
-                for ( int i1 = 0; i1 < 3; i1++ ) {
-                    for ( int j = 0; j < NDIM; j++ )
-                        x2[i1][j] = x[j + I[i1] * NDIM];
-                }
+                Point x2[4];
+                for ( int i1 = 0; i1 < 3; i1++ )
+                    x2[i1] = x[I[i1]];
                 while ( true ) {
-                    for ( int j = 0; j < NDIM; j++ )
-                        x2[3][j] = x[j + I[ik] * NDIM];
+                    x2[3]            = x[I[ik]];
                     bool is_coplanar = coplanar<NDIM, TYPE, ETYPE>( x2, (TYPE) TOL_COPLANAR );
-                    if ( !is_coplanar ) {
+                    if ( !is_coplanar )
                         break;
-                    }
                     ik++;
                     if ( ik >= N ) {
                         // No 4 non-coplanar points were found
@@ -653,20 +617,17 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
         }
     }
 
-    size_t size_tri = ( (size_t) 1 ) << (int) ceil(
-                          log2( 2.0 * ( (double) N ) *
-                                ( NDIM + 1 ) ) ); // Initial ammount of memory to allocate for tri
-    auto tri = new int[size_tri];
+    // Initial ammount of memory to allocate for tri
+    size_t size_tri = ( (size_t) 1 ) << (int) ceil( log2( 2.0 * ( (double) N ) * ( NDIM + 1 ) ) );
+    auto tri        = new int[size_tri];
     for ( size_t i = 0; i < size_tri; i++ )
         tri[i] = -1;
     size_t N_tri = 1;
     for ( int i = 0; i <= NDIM; i++ )
         tri[i] = I[i];
-    TYPE x2[NDIM * ( NDIM + 1 )];
-    for ( int i = 0; i <= NDIM; i++ ) {
-        for ( int j = 0; j < NDIM; j++ )
-            x2[j + i * NDIM] = x[j + NDIM * tri[i]];
-    }
+    Point x2[NDIM + 1];
+    for ( int i = 0; i <= NDIM; i++ )
+        x2[i] = x[tri[i]];
     double volume = calc_volume<NDIM, TYPE, ETYPE>( x2 );
     if ( fabs( volume ) <= TOL_VOL ) {
         delete[] I;
@@ -685,7 +646,7 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
         tri_nab[i] = -1;
 
     // Maintain a list of the triangle faces on the convex hull
-    FaceList<NDIM, TYPE, ETYPE> face_list( N, x, 0, tri, TOL_VOL );
+    FaceList<NDIM, TYPE, ETYPE> face_list( N, x.data(), 0, tri, TOL_VOL );
 
     // Maintain a list of the unused triangles (those that are all -1, but less than N_tri)
     std::vector<size_t> unused;
@@ -742,7 +703,7 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
         }
 #if DEBUG_CHECK == 2
         bool all_valid = check_current_triangles<NDIM, TYPE, ETYPE>(
-            N, x, N_tri, tri, tri_nab, unused, TOL_VOL );
+            N, x.data(), N_tri, tri, tri_nab, unused, TOL_VOL );
         if ( !all_valid )
             throw std::logic_error( "Failed internal triangle check" );
 #endif
@@ -806,15 +767,14 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
                     continue;
                 }
                 for ( int j1 = 0; j1 < NDIM + 1; j1++ ) {
-                    int m = tri[j1 + elem.t1 * ( NDIM + 1 )];
-                    for ( int j2 = 0; j2 < NDIM; j2++ )
-                        x2[j2 + j1 * NDIM] = x[j2 + m * NDIM];
+                    int m  = tri[j1 + elem.t1 * ( NDIM + 1 )];
+                    x2[j1] = x[m];
                 }
                 TYPE v[NDIM];
                 int m = tri[elem.f2 + elem.t2 * ( NDIM + 1 )];
                 for ( int j = 0; j < NDIM; j++ )
-                    v[j] = x[j + m * NDIM];
-                int test  = test_in_circumsphere<NDIM, TYPE, ETYPE>( x2, v, TOL_VOL );
+                    v[j] = x[m][j];
+                int test  = test_in_circumsphere<NDIM, TYPE, ETYPE>( x2[0].data(), v, TOL_VOL );
                 elem.test = ( test != 1 ) ? 0xFF : 0x01;
             }
             // Remove all surfaces that are good
@@ -836,7 +796,7 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
             int index_old[5], new_tri[( NDIM + 1 ) * 4], new_tri_nab[( NDIM + 1 ) * 4];
             int N_tri_old     = 0;
             int N_tri_new     = 0;
-            bool flipped_edge = find_flip<NDIM, TYPE, ETYPE>( x,
+            bool flipped_edge = find_flip<NDIM, TYPE, ETYPE>( x.data(),
                                                               tri,
                                                               tri_nab,
                                                               TOL_VOL,
@@ -850,7 +810,7 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
                 // We did not find any valid flips, this is an error
                 for ( auto &elem : check_surface )
                     elem.test = 0;
-                bool test = find_flip<NDIM, TYPE, ETYPE>( x,
+                bool test = find_flip<NDIM, TYPE, ETYPE>( x.data(),
                                                           tri,
                                                           tri_nab,
                                                           TOL_VOL,
@@ -1005,7 +965,7 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
 // Check the current triangles for errors (Only when debug is set, very expensive)
 #if DEBUG_CHECK == 2
             all_valid = check_current_triangles<NDIM, TYPE, ETYPE>(
-                N, x, N_tri, tri, tri_nab, unused, TOL_VOL );
+                N, x.data(), N_tri, tri, tri_nab, unused, TOL_VOL );
             if ( !all_valid )
                 throw std::logic_error( "Failed internal triangle check" );
 #endif
@@ -1015,7 +975,7 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
 // Check the current triangles for errors (Only when debug is set, very expensive)
 #if DEBUG_CHECK == 2
         all_valid = check_current_triangles<NDIM, TYPE, ETYPE>(
-            N, x, N_tri, tri, tri_nab, unused, TOL_VOL );
+            N, x.data(), N_tri, tri, tri_nab, unused, TOL_VOL );
         if ( !all_valid )
             throw std::logic_error( "Failed internal triangle check" );
 #endif
@@ -1115,8 +1075,8 @@ int create_tessellation( const int N, const TYPE x[], int *tri_out[], int *tri_n
     // Resort the triangles so the are sorted by the first index (improves caching)
 
     // Check the final set of triangles to make sure they are all valid
-    bool all_valid =
-        check_current_triangles<NDIM, TYPE, ETYPE>( N, x, N_tri, tri, tri_nab, unused, TOL_VOL );
+    bool all_valid = check_current_triangles<NDIM, TYPE, ETYPE>(
+        N, x.data(), N_tri, tri, tri_nab, unused, TOL_VOL );
     if ( !all_valid )
         throw std::logic_error( "Final check of triangles failed" );
 
@@ -1168,11 +1128,10 @@ void clean_triangles( const int N, const TYPE *x, size_t &N_tri, int *tri, int *
                 on_boundary = true;
         }
         if ( on_boundary ) {
-            double x2[NDIM * ( NDIM + 1 )];
+            std::array<TYPE, NDIM> x2[NDIM + 1];
             for ( int j = 0; j < NDIM + 1; j++ ) {
                 int k = tri[j + i * ( NDIM + 1 )];
-                for ( int d = 0; d < NDIM; d++ )
-                    x2[d + j * NDIM] = x[d + k * NDIM];
+                x2[j] = x[k];
             }
             double vol = calc_volume<NDIM, TYPE, ETYPE>( x2 );
             double R, center[NDIM];
@@ -1433,11 +1392,13 @@ constexpr double getFlipTOL()
     }
 }
 template<int NDIM, class TYPE, class ETYPE>
-bool test_flip_valid( const TYPE x[], const int i, const TYPE xi[] )
+bool test_flip_valid( const std::array<TYPE, NDIM> x[],
+                      const int i,
+                      const std::array<TYPE, NDIM> &xi )
 {
     constexpr double TOL = getFlipTOL<TYPE>();
     double L[NDIM + 1];
-    compute_Barycentric<NDIM, TYPE, ETYPE>( x, xi, L );
+    compute_Barycentric<NDIM, TYPE, ETYPE>( x[0].data(), xi.data(), L );
     bool is_valid = true;
     for ( int j = 0; j <= NDIM; j++ )
         is_valid = is_valid && ( j == i || L[j] >= -TOL );
@@ -1488,7 +1449,7 @@ void compute_Barycentric( const TYPE *x, const TYPE *xi, double *L )
  *      new_tri_nab ==-1   - Triangle face is on the convex hull         *
  ************************************************************************/
 template<class TYPE, class ETYPE>
-inline bool find_flip_2D( const TYPE *x,
+inline bool find_flip_2D( const std::array<TYPE, 2> *x,
                           const int *tri,
                           const int *tri_nab,
                           const double TOL_VOL,
@@ -1514,12 +1475,10 @@ inline bool find_flip_2D( const TYPE *x,
 #if DEBUG_CHECK >= 1
         TYPE x1[6], x2[6], xi1[2], xi2[2];
         for ( int j = 0; j < 3; j++ ) {
-            int m1        = tri[j + t1 * 3];
-            int m2        = tri[j + t2 * 3];
-            x1[0 + j * 2] = x[0 + m1 * 2];
-            x1[1 + j * 2] = x[1 + m1 * 2];
-            x2[0 + j * 2] = x[0 + m2 * 2];
-            x2[1 + j * 2] = x[1 + m2 * 2];
+            int m1 = tri[j + t1 * 3];
+            int m2 = tri[j + t2 * 3];
+            x1[j]  = x[m1];
+            x2[j]  = x[m2];
         }
         xi1[0]    = x2[0 + 2 * s2];
         xi1[1]    = x2[1 + 2 * s2];
@@ -1547,7 +1506,7 @@ inline bool find_flip_2D( const TYPE *x,
     return found;
 }
 template<class TYPE, class ETYPE>
-inline bool find_flip_3D( const TYPE *x,
+inline bool find_flip_3D( const std::array<TYPE, 3> *x,
                           const int *tri,
                           const int *tri_nab,
                           const double TOL_VOL,
@@ -1655,7 +1614,7 @@ inline bool find_flip_3D( const TYPE *x,
     return found;
 }
 template<int NDIM, class TYPE, class ETYPE>
-bool find_flip( const TYPE *x,
+bool find_flip( const std::array<TYPE, NDIM> *x,
                 const int *tri,
                 const int *tri_nab,
                 const double TOL_VOL,
@@ -1700,7 +1659,7 @@ bool find_flip( const TYPE *x,
  * unrolled to simplify the code and improve performance                 *
  ************************************************************************/
 template<class TYPE, class ETYPE>
-bool flip_2D( const TYPE x[],
+bool flip_2D( const std::array<TYPE, 2> x[],
               const int tri[],
               const int tri_nab[],
               const int t1,
@@ -1713,15 +1672,13 @@ bool flip_2D( const TYPE x[],
               const double TOL_VOL )
 {
     // Check if the flip is valid (it should always be valid in 2D if it is necessary)
-    TYPE x2[6], xi[2];
+    std::array<TYPE, 2> x2[3], xi;
     for ( int i = 0; i < 3; i++ ) {
-        int k         = tri[i + t1 * 3];
-        x2[0 + i * 2] = x[0 + k * 2];
-        x2[1 + i * 2] = x[1 + k * 2];
+        int k = tri[i + t1 * 3];
+        x2[i] = x[k];
     }
     int k        = tri[s2 + t2 * 3];
-    xi[0]        = x[0 + 2 * k];
-    xi[1]        = x[1 + 2 * k];
+    xi           = x[k];
     bool isvalid = test_flip_valid<2, TYPE, ETYPE>( x2, s1, xi );
     if ( !isvalid ) {
         // We need to do an edge flip, and the edge flip is not valid
@@ -1778,9 +1735,8 @@ bool flip_2D( const TYPE x[],
     isvalid = true;
     for ( int it = 0; it < 2; it++ ) {
         for ( int i = 0; i < 3; i++ ) {
-            int k         = new_tri[i + it * 3];
-            x2[0 + i * 2] = x[0 + k * 2];
-            x2[1 + i * 2] = x[1 + k * 2];
+            int k = new_tri[i + it * 3];
+            x2[i] = x[k];
         }
         double volume = calc_volume<2, TYPE, ETYPE>( x2 );
         if ( fabs( volume ) <= TOL_VOL ) {
@@ -1807,7 +1763,7 @@ bool flip_2D( const TYPE x[],
  * unrolled to simplify the code or improve performance                  *
  ************************************************************************/
 template<class TYPE, class ETYPE>
-bool flip_3D_22( const TYPE x[],
+bool flip_3D_22( const std::array<TYPE, 3> x[],
                  const int tri[],
                  const int tri_nab[],
                  const int t1,
@@ -1850,20 +1806,8 @@ bool flip_3D_22( const TYPE x[],
                     v4 = tri[j + 4 * t1];
             }
             // Check if the 4 verticies are coplanar (the resulting simplex will have a volume of 0)
-            TYPE x2[12];
-            x2[0]      = x[0 + 3 * v1];
-            x2[1]      = x[1 + 3 * v1];
-            x2[2]      = x[2 + 3 * v1];
-            x2[3]      = x[0 + 3 * v2];
-            x2[4]      = x[1 + 3 * v2];
-            x2[5]      = x[2 + 3 * v2];
-            x2[6]      = x[0 + 3 * v3];
-            x2[7]      = x[1 + 3 * v3];
-            x2[8]      = x[2 + 3 * v3];
-            x2[9]      = x[0 + 3 * v4];
-            x2[10]     = x[1 + 3 * v4];
-            x2[11]     = x[2 + 3 * v4];
-            double vol = fabs( calc_volume<3, TYPE, ETYPE>( x2 ) );
+            std::array<TYPE, 3> x2[4] = { x[v1], x[v2], x[v3], x[v4] };
+            double vol                = fabs( calc_volume<3, TYPE, ETYPE>( x2 ) );
             if ( vol > TOL_VOL ) {
                 // The points are not coplanar
                 continue;
@@ -1884,10 +1828,8 @@ bool flip_3D_22( const TYPE x[],
             bool isvalid = true;
             for ( int it = 0; it < 2; it++ ) {
                 for ( int i = 0; i < 4; i++ ) {
-                    int k         = new_tri[i + it * 4];
-                    x2[0 + i * 3] = x[0 + k * 3];
-                    x2[1 + i * 3] = x[1 + k * 3];
-                    x2[2 + i * 3] = x[2 + k * 3];
+                    int k = new_tri[i + it * 4];
+                    x2[i] = x[k];
                 }
                 double volume = calc_volume<3, TYPE, ETYPE>( x2 );
                 if ( fabs( volume ) <= TOL_VOL ) {
@@ -1905,17 +1847,12 @@ bool flip_3D_22( const TYPE x[],
                 continue;
             // Check that the new triangles are Delanuay (we have already checked that they are
             // valid)
-            TYPE xv[3];
             for ( int j = 0; j < 4; j++ ) {
-                int k         = new_tri[j];
-                x2[0 + 3 * j] = x[0 + 3 * k];
-                x2[1 + 3 * j] = x[1 + 3 * k];
-                x2[2 + 3 * j] = x[2 + 3 * k];
+                int k = new_tri[j];
+                x2[j] = x[k];
             }
-            xv[0]    = x[0 + 3 * v4];
-            xv[1]    = x[1 + 3 * v4];
-            xv[2]    = x[2 + 3 * v4];
-            int test = test_in_circumsphere<3, TYPE, ETYPE>( x2, xv, TOL_VOL );
+            auto xv  = x[v4];
+            int test = test_in_circumsphere<3, TYPE, ETYPE>( x2[0].data(), xv.data(), TOL_VOL );
             if ( test == 1 ) {
                 // The flip did not fix the Delaunay condition
                 continue;
@@ -1974,7 +1911,7 @@ bool flip_3D_22( const TYPE x[],
  * unrolled to simplify the code or improve performance                  *
  ************************************************************************/
 template<class TYPE, class ETYPE>
-bool flip_3D_32( const TYPE x[],
+bool flip_3D_32( const std::array<TYPE, 3> x[],
                  const int tri[],
                  const int tri_nab[],
                  const int t1,
@@ -2071,14 +2008,12 @@ bool flip_3D_32( const TYPE x[],
         new_tri[6]   = surf[1];
         new_tri[7]   = surf[2];
         // Check that the new triangles are valid (this can occur if they are planar)
-        TYPE x2[12];
+        std::array<TYPE, 3> x2[4];
         bool isvalid = true;
         for ( int it = 0; it < 2; it++ ) {
             for ( int i = 0; i < 4; i++ ) {
-                int k         = new_tri[i + it * 4];
-                x2[0 + i * 3] = x[0 + k * 3];
-                x2[1 + i * 3] = x[1 + k * 3];
-                x2[2 + i * 3] = x[2 + k * 3];
+                int k = new_tri[i + it * 4];
+                x2[i] = x[k];
             }
             double volume = calc_volume<3, TYPE, ETYPE>( x2 );
             if ( fabs( volume ) <= TOL_VOL ) {
@@ -2095,17 +2030,12 @@ bool flip_3D_32( const TYPE x[],
         if ( !isvalid )
             continue;
         // Check that the new triangles are Delanuay (we have already checked that they are valid)
-        TYPE xv[3];
         for ( int j = 0; j < 4; j++ ) {
-            int k         = new_tri[j];
-            x2[0 + 3 * j] = x[0 + 3 * k];
-            x2[1 + 3 * j] = x[1 + 3 * k];
-            x2[2 + 3 * j] = x[2 + 3 * k];
+            int k = new_tri[j];
+            x2[j] = x[k];
         }
-        xv[0]    = x[0 + 3 * nodes[1]];
-        xv[1]    = x[1 + 3 * nodes[1]];
-        xv[2]    = x[2 + 3 * nodes[1]];
-        int test = test_in_circumsphere<3, TYPE, ETYPE>( x2, xv, TOL_VOL );
+        auto xv  = x[nodes[1]];
+        int test = test_in_circumsphere<3, TYPE, ETYPE>( x2[0].data(), xv.data(), TOL_VOL );
         if ( test == 1 ) {
             // The new triangles did not fixed the surface
             continue;
@@ -2164,7 +2094,7 @@ bool flip_3D_32( const TYPE x[],
  * unrolled to simplify the code or improve performance                  *
  ************************************************************************/
 template<class TYPE, class ETYPE>
-bool flip_3D_23( const TYPE x[],
+bool flip_3D_23( const std::array<TYPE, 3> x[],
                  const int tri[],
                  const int tri_nab[],
                  const int t1,
@@ -2177,17 +2107,13 @@ bool flip_3D_23( const TYPE x[],
                  const double TOL_VOL )
 {
     // First lets check if the flip is valid
-    TYPE x2[12], xi[3];
+    std::array<TYPE, 3> x2[4], xi;
     for ( int i = 0; i < 4; i++ ) {
-        int k         = tri[i + 4 * t1];
-        x2[0 + 3 * i] = x[0 + 3 * k];
-        x2[1 + 3 * i] = x[1 + 3 * k];
-        x2[2 + 3 * i] = x[2 + 3 * k];
+        int k = tri[i + 4 * t1];
+        x2[i] = x[k];
     }
     int k        = tri[s2 + 4 * t2];
-    xi[0]        = x[0 + 3 * k];
-    xi[1]        = x[1 + 3 * k];
-    xi[2]        = x[2 + 3 * k];
+    xi           = x[k];
     bool isvalid = test_flip_valid<3, TYPE, ETYPE>( x2, s1, xi );
     if ( !isvalid ) {
         // We need to do an edge flip, and the edge flip is not valid
@@ -2223,10 +2149,8 @@ bool flip_3D_23( const TYPE x[],
     isvalid = true;
     for ( int it = 0; it < 3; it++ ) {
         for ( int i = 0; i < 4; i++ ) {
-            int k         = new_tri[i + it * 4];
-            x2[0 + i * 3] = x[0 + k * 3];
-            x2[1 + i * 3] = x[1 + k * 3];
-            x2[2 + i * 3] = x[2 + k * 3];
+            int k = new_tri[i + it * 4];
+            x2[i] = x[k];
         }
         double volume = calc_volume<3, TYPE, ETYPE>( x2 );
         if ( fabs( volume ) <= TOL_VOL ) {
@@ -2245,10 +2169,8 @@ bool flip_3D_23( const TYPE x[],
     // Check that the new triangles are Delanuay (we have already checked that they are valid)
     for ( int it = 0; it < 3; it++ ) {
         for ( int i = 0; i < 4; i++ ) {
-            int k         = new_tri[i + it * 4];
-            x2[0 + i * 3] = x[0 + k * 3];
-            x2[1 + i * 3] = x[1 + k * 3];
-            x2[2 + i * 3] = x[2 + k * 3];
+            int k = new_tri[i + it * 4];
+            x2[i] = x[k];
         }
         int k;
         if ( it == 0 ) {
@@ -2258,10 +2180,8 @@ bool flip_3D_23( const TYPE x[],
         } else {
             k = is[0];
         }
-        xi[0]    = x[0 + k * 3];
-        xi[1]    = x[1 + k * 3];
-        xi[2]    = x[2 + k * 3];
-        int test = test_in_circumsphere<3, TYPE, ETYPE>( x2, xi, TOL_VOL );
+        xi       = x[k];
+        int test = test_in_circumsphere<3, TYPE, ETYPE>( x2[0].data(), xi.data(), TOL_VOL );
         if ( test == 1 ) {
             // The new triangles did not fix the surface
             isvalid = false;
@@ -2320,7 +2240,7 @@ bool flip_3D_23( const TYPE x[],
  * unrolled to simplify the code or improve performance                  *
  ************************************************************************/
 template<class TYPE, class ETYPE>
-bool flip_3D_44( const TYPE x[],
+bool flip_3D_44( const std::array<TYPE, 3> x[],
                  const int tri[],
                  const int tri_nab[],
                  const int t1,
@@ -2420,16 +2340,14 @@ bool flip_3D_44( const TYPE x[],
             }
             set1[s13] = tri[s21 + t2 * 4];
             set2[s12] = tri[s31 + t3 * 4];
-            TYPE x2[12], xi[3];
+            std::array<TYPE, 3> x2[4], xi;
             double vol1, vol2;
             for ( int j1 = 0; j1 < 4; j1++ ) {
-                for ( int j2 = 0; j2 < 3; j2++ )
-                    x2[j2 + 3 * j1] = x[j2 + 3 * set1[j1]];
+                x2[j1] = x[set1[j1]];
             }
             vol1 = fabs( calc_volume<3, TYPE, ETYPE>( x2 ) );
             for ( int j1 = 0; j1 < 4; j1++ ) {
-                for ( int j2 = 0; j2 < 3; j2++ )
-                    x2[j2 + 3 * j1] = x[j2 + 3 * set2[j1]];
+                x2[j1] = x[set2[j1]];
             }
             vol2 = fabs( calc_volume<3, TYPE, ETYPE>( x2 ) );
             for ( int it = 0; it < 2; it++ ) { // Loop through the sets (2)
@@ -2445,17 +2363,14 @@ bool flip_3D_44( const TYPE x[],
                     // using either the current triangle and neighbor, or using the other 2
                     // triangles
                     for ( int j1 = 0; j1 < 4; j1++ ) {
-                        int k = tri[j1 + 4 * t1];
-                        for ( int j2 = 0; j2 < 3; j2++ )
-                            x2[j2 + 3 * j1] = x[j2 + 3 * k];
+                        int k  = tri[j1 + 4 * t1];
+                        x2[j1] = x[k];
                     }
-                    for ( int j = 0; j < 3; j++ )
-                        xi[j] = x[j + 3 * tri[s21 + 4 * t2]];
+                    xi             = x[tri[s21 + 4 * t2]];
                     bool is_valid1 = test_flip_valid<3, TYPE, ETYPE>( x2, s12, xi );
                     for ( int j1 = 0; j1 < 4; j1++ ) {
-                        int k = tri[j1 + 4 * t3];
-                        for ( int j2 = 0; j2 < 3; j2++ )
-                            x2[j2 + 3 * j1] = x[j2 + 3 * k];
+                        int k  = tri[j1 + 4 * t3];
+                        x2[j1] = x[k];
                     }
                     bool is_valid2 = test_flip_valid<3, TYPE, ETYPE>( x2, s34, xi );
                     if ( !is_valid1 && !is_valid2 ) {
@@ -2474,17 +2389,14 @@ bool flip_3D_44( const TYPE x[],
                     // using either the current triangle and neighbor, or using the other 2
                     // triangles
                     for ( int j1 = 0; j1 < 4; j1++ ) {
-                        int k = tri[j1 + 4 * t1];
-                        for ( int j2 = 0; j2 < 3; j2++ )
-                            x2[j2 + 3 * j1] = x[j2 + 3 * k];
+                        int k  = tri[j1 + 4 * t1];
+                        x2[j1] = x[k];
                     }
-                    for ( int j = 0; j < 3; j++ )
-                        xi[j] = x[j + 3 * tri[s31 + 4 * t3]];
+                    xi             = x[tri[s31 + 4 * t3]];
                     bool is_valid1 = test_flip_valid<3, TYPE, ETYPE>( x2, s13, xi );
                     for ( int j1 = 0; j1 < 4; j1++ ) {
-                        int k = tri[j1 + 4 * t2];
-                        for ( int j2 = 0; j2 < 3; j2++ )
-                            x2[j2 + 3 * j1] = x[j2 + 3 * k];
+                        int k  = tri[j1 + 4 * t2];
+                        x2[j1] = x[k];
                     }
                     bool is_valid2 = test_flip_valid<3, TYPE, ETYPE>( x2, s24, xi );
                     if ( !is_valid1 && !is_valid2 ) {
@@ -2570,10 +2482,8 @@ bool flip_3D_44( const TYPE x[],
                 bool isvalid = true;
                 for ( int it2 = 0; it2 < 4; it2++ ) {
                     for ( int i = 0; i < 4; i++ ) {
-                        int k         = new_tri[i + it2 * 4];
-                        x2[0 + i * 3] = x[0 + k * 3];
-                        x2[1 + i * 3] = x[1 + k * 3];
-                        x2[2 + i * 3] = x[2 + k * 3];
+                        int k = new_tri[i + it2 * 4];
+                        x2[i] = x[k];
                     }
                     double volume = calc_volume<3, TYPE, ETYPE>( x2 );
                     if ( fabs( volume ) <= TOL_VOL ) {
@@ -2593,20 +2503,17 @@ bool flip_3D_44( const TYPE x[],
                 // valid)
                 for ( int it2 = 0; it2 < 4; it2++ ) { // Loop through the test cases
                     for ( int i = 0; i < 4; i++ ) {
-                        int k         = new_tri[i + it2 * 4];
-                        x2[0 + i * 3] = x[0 + k * 3];
-                        x2[1 + i * 3] = x[1 + k * 3];
-                        x2[2 + i * 3] = x[2 + k * 3];
+                        int k = new_tri[i + it2 * 4];
+                        x2[i] = x[k];
                     }
                     int k = -1;
                     if ( it2 == 0 || it2 == 2 )
                         k = new_tri[7];
                     else if ( it2 == 1 || it2 == 3 )
                         k = new_tri[3];
-                    xi[0]    = x[0 + 3 * k];
-                    xi[1]    = x[1 + 3 * k];
-                    xi[2]    = x[2 + 3 * k];
-                    int test = test_in_circumsphere<3, TYPE, ETYPE>( x2, xi, TOL_VOL );
+                    xi = x[k];
+                    int test =
+                        test_in_circumsphere<3, TYPE, ETYPE>( x2[0].data(), xi.data(), TOL_VOL );
                     if ( test == 1 )
                         isvalid = false;
                 }
@@ -2753,17 +2660,30 @@ int create_tessellation(
 #endif
     return N_tri;
 }
+template<std::size_t NDIM>
+static inline void copy_x2( const double *x, std::array<double, NDIM> x2[] )
+{
+    for ( size_t i = 0; i <= NDIM; i++ )
+        for ( size_t d = 0; d < NDIM; d++ )
+            x2[i][d] = x[d + i * NDIM];
+}
 double calc_volume( int ndim, const double x[] )
 {
     double vol = 0.0;
     if ( ndim == 1 ) {
         vol = x[1] - x[0];
     } else if ( ndim == 2 ) {
-        vol = calc_volume<2, double, long double>( x );
+        std::array<double, 2> x2[3];
+        copy_x2( x, x2 );
+        vol = calc_volume<2, double, long double>( x2 );
     } else if ( ndim == 3 ) {
-        vol = calc_volume<3, double, long double>( x );
+        std::array<double, 3> x2[4];
+        copy_x2( x, x2 );
+        vol = calc_volume<3, double, long double>( x2 );
     } else if ( ndim == 4 ) {
-        vol = calc_volume<4, double, long double>( x );
+        std::array<double, 4> x2[5];
+        copy_x2( x, x2 );
+        vol = calc_volume<4, double, long double>( x2 );
     } else {
         throw std::logic_error( "Unsupported dimension" );
     }

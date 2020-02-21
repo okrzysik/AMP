@@ -1,6 +1,7 @@
 #ifndef included_AMP_DelaunayFaceList
 #define included_AMP_DelaunayFaceList
 
+#include <array>
 #include <stdint.h>
 #include <stdlib.h>
 #include <vector>
@@ -20,6 +21,8 @@ template<int NDIM, class TYPE, class ETYPE>
 class FaceList
 {
 public:
+    using Point = std::array<TYPE, NDIM>;
+
     /*! @brief  Standard constructor
      *  @detailed  Default constructor to be used
      * @param N         The number of verticies
@@ -29,7 +32,7 @@ public:
      * @param tri_id    The initial triangle id
      * @param new_tri   The triangle list (NDIM+1)
      */
-    FaceList( const int N, const TYPE *x, const int tri_id, const int tri[], const TYPE TOL_VOL );
+    FaceList( const int N, const Point *x, const int tri_id, const int tri[], const TYPE TOL_VOL );
 
     //! Empty destructor.
     ~FaceList();
@@ -102,10 +105,10 @@ private:
     struct face_data_struct {
         int prev;
         int next;
-        int tri_id;         // Triangle id
-        int face_id;        // Face id
-        int index[NDIM];    // Indicies of the face verticies
-        TYPE x[NDIM][NDIM]; // Coordinates of the face verticies
+        int tri_id;      // Triangle id
+        int face_id;     // Face id
+        int index[NDIM]; // Indicies of the face verticies
+        Point x[NDIM];   // Coordinates of the face verticies
         // Function to reset data to a NULL state
         void reset();
     };
@@ -115,14 +118,14 @@ private:
     int N_face;   // The number of faces on the convex hull
     int size;
     int hash_table[1024]; // Internal hash table to improve performance when search for a given face
-    const TYPE *x0;       // The vertex coordinates
+    const Point *x0;      // The vertex coordinates
     double xc[NDIM];      // A point within the centroid
     double TOL_vol;       // Tolerance to use for calculation
     face_data_struct *data; // The stored data
 
     // Function that calculates the distance between a plane and a point
-    double calc_surface_distance( const TYPE x[NDIM][NDIM], const TYPE xi[] ) const;
-    bool outside_triangle( const TYPE x[NDIM][NDIM], const TYPE xi[] ) const;
+    double calc_surface_distance( const Point x[NDIM], const Point &xi ) const;
+    bool outside_triangle( const Point x[NDIM], const Point &xi ) const;
 
     // Function to get a unique index for each face
     inline size_t get_face_index( int face, int tri ) { return face + tri * ( NDIM + 1 ); }
