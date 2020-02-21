@@ -752,8 +752,8 @@ generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, do
         return std::make_shared<MultiMesh>( "name", comm, submeshes );
     }
     // Perform some basic checks
-    int ndim = geom->getDim();
-    AMP_INSIST( geom->isConvex(), "Geometry must be convex" );
+    int ndim         = geom->getDim();
+    bool isConvex    = geom->isConvex();
     auto meshGeom    = std::dynamic_pointer_cast<AMP::Geometry::MeshGeometry>( geom );
     auto logicalGeom = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( geom );
     // Create the grid verticies
@@ -797,6 +797,21 @@ generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, do
     int *tri_nab = nullptr;
     auto N_tri   = DelaunayTessellation::create_tessellation( ndim, N, x2, &tri, &tri_nab );
     AMP_ASSERT( N_tri > 0 );
+    // Try to remove triangles outside the domain
+    if ( !isConvex ) {
+        AMP_WARNING( "non-convex domains are not fully supported yet" );
+        // Identify the triangles that need to be removed
+        std::vector<bool> remove( N_tri, false );
+        const double tmp = 1.0 / ( ndim + 1.0 );
+        for ( int64_t i = 0; i < N_tri; i++ ) {
+            Point center( ndim, { 0, 0, 0 } );
+            for ( int j = 0; j <= ndim; j++ )
+                center += points[tri[i * ( ndim + 1 ) + j]];
+            center *= tmp;
+            remove[i] = !geom->inside( center );
+        }
+        // Remove the triangles
+    }
     // Generate the mesh
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( ndim == 2 ) {

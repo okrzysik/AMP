@@ -194,12 +194,12 @@ bool MeshGeometry::isConvex() const
 {
     bool is_convex = true;
     auto [lb, ub]  = box();
-    double tol     = 1e-6 * abs( ub - lb );
+    double tol     = 1e-4 * abs( ub - lb );
     for ( const auto &elem : d_mesh->getIterator( d_mesh->getGeomType() ) ) {
         // Get the normal to the plane of the element
         auto n = elem.norm();
         // Get a point in the plane
-        auto a = elem.getElements( AMP::Mesh::GeomType::Vertex )[0].coord();
+        auto a = elem.centroid();
         // Check the verticies of the neighboring elements to ensure they are not behind the plane
         for ( const auto &neighbor : elem.getNeighbors() ) {
             for ( const auto &node : neighbor->getElements( AMP::Mesh::GeomType::Vertex ) ) {
