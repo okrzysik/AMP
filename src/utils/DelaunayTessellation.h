@@ -1,6 +1,7 @@
 #ifndef included_AMP_DelaunayTessellation
 #define included_AMP_DelaunayTessellation
 
+#include <array>
 #include <stdint.h>
 #include <stdlib.h>
 #include <vector>
@@ -62,6 +63,13 @@ int create_tessellation(
 int create_tessellation( const int ndim, const int N, const int x[], int *tri[], int *tri_nab[] );
 int create_tessellation(
     const int ndim, const int N, const int64_t x[], int *tri[], int *tri_nab[] );
+
+template<uint8_t NDIM>
+std::tuple<std::array<int, NDIM + 1>, std::array<int, NDIM + 1>>
+create_tessellation( const std::vector<std::array<double, NDIM>> &x );
+template<uint8_t NDIM>
+std::tuple<std::array<int, NDIM + 1>, std::array<int, NDIM + 1>>
+create_tessellation( const std::vector<std::array<int, NDIM>> &x );
 
 
 //! Function to calculate the volume of a simplex

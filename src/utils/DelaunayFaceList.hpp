@@ -461,26 +461,30 @@ int DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
         x2[NDIM]      = x0[node_id];
         double volume = fabs( calc_volume<NDIM, TYPE, ETYPE>( x2 ) );
         if ( volume <= TOL_vol ) {
-            // printf("%e %e\n",dist,volume);
             continue;
         }
         // Create a new triangle consisting of the current point and the current face
+        Triangle tri, nab;
         for ( int j = 0; j < NDIM; j++ )
-            new_tri[N_tri_new][j] = data[i].index[j];
-        new_tri[N_tri_new][NDIM] = node_id;
+            tri[j] = data[i].index[j];
+        tri[NDIM] = node_id;
         for ( int j = 0; j < NDIM; j++ )
-            new_tri_nab[N_tri_new][j] = -1;
-        new_tri_nab[N_tri_new][NDIM] = tri_num;
-        neighbor[N_tri_new]          = tri_num;
-        face_id[N_tri_new]           = face_num;
+            nab[j] = -1;
+        nab[NDIM] = tri_num;
+        int id;
         if ( !unused.empty() ) {
-            new_tri_id[N_tri_new] = unused.back();
+            id = unused.back();
             unused.pop_back();
         } else {
-            new_tri_id[N_tri_new] = N_tri;
+            id = N_tri;
             N_tri++;
         }
-        ids[N_tri_new] = i;
+        new_tri_id[N_tri_new]  = id;
+        new_tri[N_tri_new]     = tri;
+        new_tri_nab[N_tri_new] = nab;
+        neighbor[N_tri_new]    = tri_num;
+        face_id[N_tri_new]     = face_num;
+        ids[N_tri_new]         = i;
         N_tri_new++;
     }
     if ( N_tri_new == 0 ) {
