@@ -21,7 +21,8 @@ template<int NDIM, class TYPE, class ETYPE>
 class FaceList
 {
 public:
-    using Point = std::array<TYPE, NDIM>;
+    using Point    = std::array<TYPE, NDIM>;
+    using Triangle = std::array<int, NDIM + 1>;
 
     /*! @brief  Standard constructor
      *  @detailed  Default constructor to be used
@@ -32,7 +33,8 @@ public:
      * @param tri_id    The initial triangle id
      * @param new_tri   The triangle list (NDIM+1)
      */
-    FaceList( const int N, const Point *x, const int tri_id, const int tri[], const TYPE TOL_VOL );
+    FaceList(
+        const int N, const Point *x, const int tri_id, const Triangle &tri, const TYPE TOL_VOL );
 
     //! Empty destructor.
     ~FaceList();
@@ -52,7 +54,7 @@ public:
      *     -2 - All other errors
      * @param[in] node_id       The vertex index to add
      * @param[in/out] unused    A list of unused triangle ids
-     * @param[inout]  id0       The first index to use for new triangle ids
+     * @param[in/out]  id0      The first index to use for new triangle ids
      * @param[out] new_tri_id   A list of valid ids to use for new triangles
      * @param[out] new_tri      The list of new triangles that were created
      * @param[out] new_tri_nab  The list of triangle neighbors for the new triangles
@@ -65,8 +67,8 @@ public:
                   std::vector<size_t> &unused,
                   size_t &N_tri,
                   unsigned int *new_tri_id,
-                  int *new_tri,
-                  int *new_tri_nab,
+                  Triangle *new_tri,
+                  Triangle *new_tri_nab,
                   int *neighbor,
                   int *face_id );
 
@@ -93,7 +95,7 @@ public:
                       const int old_fid[],
                       const int new_tid[],
                       const int new_fid[],
-                      const int tri[] );
+                      const Triangle *tri );
 
 private:
     // Private constructors
