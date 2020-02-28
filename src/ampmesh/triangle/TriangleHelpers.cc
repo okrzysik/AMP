@@ -429,14 +429,35 @@ static std::vector<std::array<int64_t, NG + 1>>
             faceMap.insert( std::make_pair( id, tmp ) );
         }
     }
-    // Choose a triangle at random and store the edges
+    // Choose an initial triangle
+    size_t i0 = 0;
+    int count = 100;
+    for ( size_t i = 0; i < tri.size(); i++ ) {
+        int Nf_max = 0;
+        for ( size_t j = 0; j <= NG; j++ ) {
+            // Get each face of the triangle
+            auto face = getFace( tri[i], j );
+            // auto id   = hash<NG, true>( face );
+            // Reverse the order
+            std::reverse( face.begin(), face.end() );
+            auto id2 = hash<NG, true>( face );
+            // Get the number of matching faces
+            int Nf = faceMap.count( id2 );
+            Nf_max = std::max( Nf_max, Nf );
+        }
+        if ( Nf_max < count ) {
+            count = Nf_max;
+            i0    = i;
+        }
+    }
+    // Add the initial triangle store the edges
     std::vector<bool> used( tri.size(), false );
     std::vector<std::array<int64_t, NG + 1>> tri2;
     std::vector<std::pair<uint64_t, int64_t>> faces;
-    used[0] = true;
-    tri2.push_back( tri[0] );
-    addFaces<NG>( tri[0], 0, faces );
-    erase( faceMap, 0 );
+    used[i0] = true;
+    tri2.push_back( tri[i0] );
+    addFaces<NG>( tri[i0], i0, faces );
+    erase( faceMap, i0 );
     // Add triangles until all faces have been filled
     while ( !faces.empty() ) {
         bool found = false;
@@ -500,38 +521,47 @@ std::shared_ptr<AMP::Mesh::Mesh> generateSTL( MeshParameters::shared_ptr params 
     typedef std::vector<std::array<double, 3>> pointset;
     typedef std::vector<std::array<int64_t, 3>> triset;
     pointset vert;
-    std::vector<triset> tri( 1 );
+    std::vector<triset> tri( 1 ), tri_nab;
     if ( comm.getRank() == 0 ) {
         auto scale     = db->getWithDefault<double>( "scale", 1.0 );
         auto triangles = TriangleHelpers::readSTL( filename, scale );
         // Create triangles from the points
         double tol = 1e-6;
         TriangleHelpers::createTriangles<2, 3>( triangles, vert, tri[0], tol );
-        // Find the number of unique triangles (duplicates may indicate multiple objects
-        size_t N2 = TriangleHelpers::count<2>( tri[0] );
-        if ( N2 > 1 ) {
+        // Find the number of unique triangles (duplicates may indicate multiple objects)
+        bool multidomain = TriangleHelpers::count<2>( tri[0] ) > 1;
+        if ( multidomain && db->getWithDefault<bool>( "split", true ) ) {
             // Try to split the domains
-            tri = TriangleHelpers::splitDomains<2>( tri[0] );
+            tri         = TriangleHelpers::splitDomains<2>( tri[0] );
+            multidomain = false;
+        }
+        // Create the triangle neighbors
+        tri_nab.resize( tri.size() );
+        if ( !multidomain ) {
+            for ( size_t i = 0; i < tri.size(); i++ ) {
+                // Get the triangle neighbors
+                tri_nab[i] = TriangleHelpers::create_tri_neighbors<2>( tri[i] );
+                // Check if the geometry is closed
+                bool closed = true;
+                for ( const auto &t : tri_nab[i] ) {
+                    for ( const auto &p : t )
+                        closed = closed && p >= 0;
+                }
+                if ( !closed )
+                    AMP_WARNING( "Geometry is not closed" );
+            }
+        } else {
+            AMP_WARNING( "Not splitting multi-domain, no neighbor info will be created" );
+            for ( size_t i = 0; i < tri.size(); i++ ) {
+                tri_nab[i].resize( tri[i].size() );
+                for ( auto &t : tri_nab[i] )
+                    t.fill( -1 );
+            }
         }
     }
     size_t N_domains = comm.bcast( tri.size(), 0 );
     tri.resize( N_domains );
-    // Create the triangle neighbors
-    std::vector<triset> tri_nab( N_domains );
-    if ( comm.getRank() == 0 ) {
-        for ( size_t i = 0; i < N_domains; i++ ) {
-            // Get the triangle neighbors
-            tri_nab[i] = TriangleHelpers::create_tri_neighbors<2>( tri[i] );
-            // Check if the geometry is closed
-            bool closed = true;
-            for ( const auto &t : tri_nab[i] ) {
-                for ( const auto &p : t )
-                    closed = closed && p >= 0;
-            }
-            if ( !closed )
-                AMP_WARNING( "Geometry is not closed" );
-        }
-    }
+    tri_nab.resize( N_domains );
     // Create the mesh
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( N_domains == 1 ) {

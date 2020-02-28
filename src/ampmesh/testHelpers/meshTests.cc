@@ -244,9 +244,9 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
         if ( !coord_pass )
             ut->failure( "elements failed coord test" );
         if ( !nearest_pass )
-            ut->failure( "element nearest test not implimented yet" );
+            ut->expected_failure( "element nearest test not implimented yet" );
         if ( !distance_pass )
-            ut->failure( "element distance test not implimented yet" );
+            ut->expected_failure( "element distance test not implimented yet" );
         if ( !centroid_pass )
             ut->failure( "elements failed centroid test" );
         if ( !elements_pass )

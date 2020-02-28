@@ -2464,9 +2464,9 @@ int create_tessellation(
         throw std::logic_error( "To be stable, all vaues of x must < 2^62 for type int" );
     int N_tri = -1;
 #ifdef DISABLE_EXTENDED
-    throw std::logic_error( "create_tessellation (int64_t) is disabled" );
     NULL_USE( tri );
     NULL_USE( tri_nab );
+    throw std::logic_error( "create_tessellation (int64_t) is disabled" );
 #else
     if ( ndim == 2 ) {
         N_tri = create_tessellation<2, int64_t, int128_t>( N, x, tri, tri_nab );

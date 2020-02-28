@@ -100,7 +100,7 @@ static constexpr double inv_factorial( int N )
     return 1.0 / x;
 }
 template<int NDIM, class TYPE, class ETYPE>
-double calc_volume( const std::array<TYPE, NDIM> x[] )
+double calc_volume( const std::array<TYPE, NDIM> *x )
 {
     if constexpr ( NDIM == 1 )
         return static_cast<double>( x[1][0] - x[0][0] );
@@ -234,7 +234,7 @@ bool check_current_triangles( int N,
                               const std::vector<size_t> &unused,
                               double TOL_VOL )
 {
-    if ( N_tri <= 0 )
+    if ( N_tri == 0 )
         return false;
     NULL_USE( TOL_VOL );
     PROFILE_START_L2( "check_current_triangles" );

@@ -297,11 +297,8 @@ inline AMP::Mesh::MeshPoint<TYPE> operator-( const TYPE &a, const AMP::Mesh::Mes
 template<class TYPE>
 inline AMP::Mesh::MeshPoint<TYPE> operator-( const AMP::Mesh::MeshPoint<TYPE> &a )
 {
-    auto c = a;
-    c.x()  = -a.x();
-    c.y()  = -a.y();
-    c.z()  = -a.z();
-    return c;
+    TYPE c[3] = { -a.x(), -a.y(), -a.z() };
+    return AMP::Mesh::MeshPoint<TYPE>( a.size(), c );
 }
 template<class TYPE>
 inline AMP::Mesh::MeshPoint<TYPE> operator*( const AMP::Mesh::MeshPoint<TYPE> &a, const TYPE &b )

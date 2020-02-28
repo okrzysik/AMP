@@ -302,6 +302,11 @@ std::array<double, 3> nearest( const std::array<double, 3> ( &v )[3],
 std::vector<AMP::Mesh::Point> subdivide( const std::array<AMP::Mesh::Point, 3> &v, double res );
 
 
+//! Compute the normal to the plane formed by 3 points
+AMP::Mesh::Point
+normal( const AMP::Mesh::Point &a, const AMP::Mesh::Point &b, const AMP::Mesh::Point &c );
+
+
 } // namespace AMP::Geometry::GeometryHelpers
 
 #endif

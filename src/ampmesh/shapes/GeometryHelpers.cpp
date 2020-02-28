@@ -661,4 +661,14 @@ std::vector<AMP::Mesh::Point> subdivide( const std::array<AMP::Mesh::Point, 3> &
 }
 
 
+/****************************************************************
+ * Compute the normal to the plane formed by 3 points            *
+ ****************************************************************/
+AMP::Mesh::Point
+normal( const AMP::Mesh::Point &a, const AMP::Mesh::Point &b, const AMP::Mesh::Point &c )
+{
+    return normalize( cross( b - a, c - a ) );
+}
+
+
 } // namespace AMP::Geometry::GeometryHelpers

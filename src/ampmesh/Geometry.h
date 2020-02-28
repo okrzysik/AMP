@@ -158,12 +158,6 @@ protected:
     Geometry &operator=( Geometry && ) = delete;
     Geometry &operator=( const Geometry & ) = delete;
 
-protected: // Helper functions
-    // Compute the normal to the plane formed by 3 points
-    static inline Point normal( const Point &a, const Point &b, const Point &c )
-    {
-        return normalize( cross( b - a, c - a ) );
-    }
 
 protected: // Internal data
     uint8_t d_physicalDim;

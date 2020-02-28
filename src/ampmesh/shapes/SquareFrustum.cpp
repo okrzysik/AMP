@@ -86,7 +86,7 @@ void SquareFrustum::initialize( const std::vector<double> &range, int dir, doubl
     d_face[5][3] = physical( { 1, 1, 1 } );
     // Compute the face normals
     for ( int i = 0; i < 6; i++ )
-        d_normal[i] = normal( d_face[i][0], d_face[i][1], d_face[i][2] );
+        d_normal[i] = GeometryHelpers::normal( d_face[i][0], d_face[i][1], d_face[i][2] );
     // Ensure the normals are pointed out from the center
     auto center = physical( { 0.5, 0.5, 0.5 } );
     for ( int i = 0; i < 6; i++ ) {
