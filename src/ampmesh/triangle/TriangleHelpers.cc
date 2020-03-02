@@ -466,7 +466,7 @@ static std::vector<std::array<int64_t, NG + 1>>
             AMP_ASSERT( Nf > 0 );
             if ( Nf == 1 ) {
                 // We are dealing with a unique match, add the triangle
-                auto it = faceMap.find( faces[0].first );
+                auto it = faceMap.find( faces[i].first );
                 int j   = it->second >> 4;
                 used[j] = true;
                 tri2.push_back( tri[j] );
@@ -478,8 +478,22 @@ static std::vector<std::array<int64_t, NG + 1>>
         }
         if ( found )
             continue;
-        // We have multiple faces to choose from, need to choose wisely
-        AMP_ERROR( "Not finished" );
+        // We have multiple faces to choose from, try to remove a subdomain from the remaining faces
+        try {
+            std::vector<std::array<int64_t, NG + 1>> tri3;
+            for ( size_t j = 0; j < tri.size(); j++ ) {
+                if ( !used[j] )
+                    tri3.push_back( tri[j] );
+            }
+            auto tri4 = removeSubDomain<NG>( tri3 );
+            for ( const auto t : tri2 )
+                tri3.push_back( t );
+            std::swap( tri, tri3 );
+            return tri4;
+        } catch ( ... ) {
+        }
+        // Still no luck
+        AMP_ERROR( "Unable to resolve multiple faces" );
     }
     // Remove triangles that were used
     size_t k = 0;
