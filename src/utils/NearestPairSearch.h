@@ -4,6 +4,14 @@
 #include <iostream>
 #include <stdlib.h>
 #include <utility>
+#include <vector>
+
+
+namespace AMP::Mesh {
+template<class TYPE>
+class MeshPoint; // Forward declare MeshPoint
+} // namespace AMP::Mesh
+
 
 namespace AMP {
 
@@ -15,6 +23,15 @@ namespace AMP {
  */
 template<int NDIM, class TYPE>
 inline std::pair<int, int> find_min_dist( const int N, const TYPE *x );
+
+
+//! Function to compute the closest pair of points
+/*!
+ * This function will calculate the closest pair of points in a list
+ * @param x         The coordinates of the verticies
+ */
+std::pair<int, int> find_min_dist( const std::vector<AMP::Mesh::MeshPoint<double>> &x );
+
 
 } // namespace AMP
 

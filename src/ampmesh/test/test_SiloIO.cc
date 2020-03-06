@@ -88,6 +88,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     // Create a simple DOFManager
     auto DOFparams  = std::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
     auto DOF_scalar = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 1, true );
+    auto DOF_volume = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 1, true );
     auto DOF_vector = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 3, true );
     auto DOF_gauss  = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 8, true );
     auto DOF_surface =
@@ -99,11 +100,13 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     auto gp_var       = std::make_shared<AMP::LinearAlgebra::Variable>( "gp_var" );
     auto id_var       = std::make_shared<AMP::LinearAlgebra::Variable>( "ids" );
     auto meshID_var   = std::make_shared<AMP::LinearAlgebra::Variable>( "MeshID" );
+    auto block_var    = std::make_shared<AMP::LinearAlgebra::Variable>( "block" );
     auto rank_vec     = AMP::LinearAlgebra::createVector( DOF_scalar, rank_var, true );
     auto position     = AMP::LinearAlgebra::createVector( DOF_vector, position_var, true );
     auto gauss_pt     = AMP::LinearAlgebra::createVector( DOF_gauss, gp_var, true );
     auto id_vec       = AMP::LinearAlgebra::createVector( DOF_surface, id_var, true );
     auto meshID_vec   = AMP::LinearAlgebra::createVector( DOF_scalar, meshID_var, true );
+    auto block_vec    = AMP::LinearAlgebra::createVector( DOF_volume, block_var, true );
     gauss_pt->setToScalar( 100 );
     globalComm.barrier();
 #endif
@@ -139,6 +142,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
         siloWriter->registerMesh( submesh, level );
 #ifdef USE_AMP_VECTORS
     siloWriter->registerVector( meshID_vec, mesh, pointType, "MeshID" );
+    siloWriter->registerVector( block_vec, mesh, volumeType, "BlockID" );
     siloWriter->registerVector( rank_vec, mesh, pointType, "rank" );
     siloWriter->registerVector( position, mesh, pointType, "position" );
     siloWriter->registerVector( gauss_pt, mesh, volumeType, "gauss_pnt" );
@@ -172,23 +176,27 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     rank_vec->setToScalar( globalComm.getRank() );
     rank_vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     std::vector<size_t> dofs;
-    for ( auto it = DOF_vector->getIterator(); it != it.end(); ++it ) {
-        AMP::Mesh::MeshElementID id = it->globalID();
-        DOF_vector->getDOFs( id, dofs );
-        auto pos = it->coord();
+    for ( auto elem : DOF_vector->getIterator() ) {
+        DOF_vector->getDOFs( elem.globalID(), dofs );
+        auto pos = elem.coord();
         position->setValuesByGlobalID( dofs.size(), dofs.data(), pos.data() );
     }
     position->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    block_vec->setToScalar( -1 );
+    for ( auto &id : mesh->getBlockIDs() ) {
+        for ( auto elem : mesh->getBlockIDIterator( volumeType, id, 0 ) ) {
+            DOF_volume->getDOFs( elem.globalID(), dofs );
+            block_vec->setValueByGlobalID( dofs[0], id );
+        }
+    }
+    block_vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     if ( submesh != nullptr ) {
         id_vec->setToScalar( -1 );
-        auto ids = submesh->getBoundaryIDs();
-        for ( auto &id : ids ) {
-            auto it = submesh->getBoundaryIDIterator( surfaceType, id, 0 );
-            for ( size_t j = 0; j < it.size(); j++ ) {
-                DOF_surface->getDOFs( it->globalID(), dofs );
+        for ( auto &id : submesh->getBoundaryIDs() ) {
+            for ( auto elem : submesh->getBoundaryIDIterator( surfaceType, id, 0 ) ) {
+                DOF_surface->getDOFs( elem.globalID(), dofs );
                 AMP_ASSERT( dofs.size() == 1 );
                 id_vec->setValueByGlobalID( dofs[0], id );
-                ++it;
             }
         }
     }

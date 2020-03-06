@@ -91,16 +91,25 @@ double MeshGeometry::distance( const Point &pos, const Point &dir ) const
 }
 bool MeshGeometry::inside( const Point &pos ) const
 {
-    // Get the nearest element
-    auto [elem, p2] = getNearestElement( pos );
-    auto vec        = p2 - pos;
-    if ( vec.norm() < 1e-6 )
-        return true; // We are on the surface
-    // Get the element normal
-    auto n = elem.norm();
-    // Check if the vector to intersection is in the same direction as the normal
-    double t = dot( vec, n );
-    return t > 0;
+    // Update cached data if position moved
+    if ( d_pos_hash != d_mesh->positionHash() )
+        initializePosition();
+    // Get the nearest node
+    size_t i = d_tree.find_nearest( pos.data() );
+    auto vec = d_nodes[i].coord() - pos;
+    if ( vec.norm() < 1e-8 )
+        return true; // We are at the node
+    // Search each parent to determine if it is behind the plane
+    bool test    = true;
+    auto parents = d_mesh->getElementParents( d_nodes[i], d_mesh->getGeomType() );
+    for ( const auto &elem : parents ) {
+        // Get the element normal
+        auto n = elem.norm();
+        // Check if the vector to intersection is in the same direction as the normal
+        double t = dot( vec, n );
+        test     = test && t >= -1e-12;
+    }
+    return test;
 }
 
 
@@ -174,7 +183,9 @@ std::pair<AMP::Mesh::MeshElement, Point> MeshGeometry::getNearestElement( const 
     Point p;
     AMP::Mesh::MeshElement elem;
     const auto type = d_mesh->getGeomType();
-    for ( const auto &parent : d_mesh->getElementParents( d_nodes[i], type ) ) {
+    auto parents    = d_mesh->getElementParents( d_nodes[i], type );
+    AMP_INSIST( !parents.empty(), "Error with mesh, node has no parents" );
+    for ( const auto &parent : parents ) {
         auto p2 = parent.nearest( x );
         auto d2 = ( x - p2 ).norm();
         if ( d2 < d ) {

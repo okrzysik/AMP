@@ -260,10 +260,8 @@ public:
 
 
     /**
-     * \brief    Return an MeshIterator over the given geometric objects on the given boundary ID
-     * set
+     * \brief    Iterate on the given boundary ID
      * \details  Return an MeshIterator over the given geometric objects on the given boundary ID
-     * set
      * \param type   Geometric type to iterate over
      * \param id     Boundary id for the elements (example: sideset id)
      * \param gcw    Desired ghost cell width

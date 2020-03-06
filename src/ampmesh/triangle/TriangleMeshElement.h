@@ -11,7 +11,7 @@ namespace AMP {
 namespace Mesh {
 
 
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 class TriangleMesh;
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 class TriangleMeshIterator;

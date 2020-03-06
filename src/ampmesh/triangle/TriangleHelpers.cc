@@ -367,6 +367,65 @@ create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri )
 
 
 /****************************************************************
+ * Create triangles/verticies from a set of triangles specified  *
+ * by their coordinates                                          *
+ ****************************************************************/
+static inline std::array<double, 3> calcNorm( const std::vector<std::array<double, 3>> &x,
+                                              const std::array<int64_t, 3> &tri )
+{
+    return AMP::Geometry::GeometryHelpers::normal( x[tri[0]], x[tri[1]], x[tri[2]] );
+}
+static inline double dot( const std::array<double, 3> &x, const std::array<double, 3> &y )
+{
+    return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+}
+template<size_t NG, size_t NP>
+static std::vector<int> createBlockIDs( const std::vector<std::array<double, NP>> &verticies,
+                                        const std::vector<std::array<int64_t, NG + 1>> &tri,
+                                        const std::vector<std::array<int64_t, NG + 1>> &tri_nab )
+{
+    if ( tri.empty() )
+        return std::vector<int>();
+    // Calculate the normal for each triangle face
+    typedef std::array<double, NP> Point;
+    std::vector<Point> norm( tri.size() );
+    for ( size_t i = 0; i < tri.size(); i++ )
+        norm[i] = calcNorm( verticies, tri[i] );
+    // Identify different blocks by the change in the normal
+    int nextBlockID = 0;
+    std::vector<int> blockID( tri.size(), -1 );
+    std::vector<bool> finished( tri.size(), false );
+    std::set<size_t> queued;
+    double tol = 0.1;
+    for ( size_t i = 0; i < tri.size(); i++ ) {
+        if ( finished[i] )
+            continue;
+        blockID[i] = nextBlockID++;
+        queued.insert( i );
+        while ( !queued.empty() ) {
+            auto it  = queued.begin();
+            size_t j = *it;
+            queued.erase( it );
+            finished[j] = true;
+            for ( auto k : tri_nab[j] ) {
+                if ( k == -1 )
+                    continue; // There is no neighbor
+                if ( finished[k] )
+                    continue; // We already examined this neighbor
+                auto theta = acos( dot( norm[j], norm[k] ) );
+                if ( theta <= tol ) {
+                    // The norm is within tol, set the block id
+                    blockID[k] = blockID[j];
+                    queued.insert( k );
+                }
+            }
+        }
+    }
+    return blockID;
+}
+
+
+/****************************************************************
  * Try to split the mesh into seperate independent domains       *
  ****************************************************************/
 static inline std::array<int64_t, 2> getFace( const std::array<int64_t, 3> &tri, size_t i )
@@ -576,15 +635,20 @@ std::shared_ptr<AMP::Mesh::Mesh> generateSTL( MeshParameters::shared_ptr params 
     size_t N_domains = comm.bcast( tri.size(), 0 );
     tri.resize( N_domains );
     tri_nab.resize( N_domains );
+    // Create the block ids
+    std::vector<std::vector<int>> blocks( N_domains );
+    for ( size_t i = 0; i < N_domains; i++ )
+        blocks[i] = createBlockIDs<2, 3>( vert, tri[i], tri_nab[i] );
     // Create the mesh
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( N_domains == 1 ) {
-        mesh = TriangleMesh<2, 3>::generate( vert, tri[0], tri_nab[0], comm );
+        mesh = TriangleMesh<2, 3>::generate( vert, tri[0], tri_nab[0], comm, nullptr, blocks[0] );
     } else {
         // For now have all meshes on the same communicator
         std::vector<std::shared_ptr<AMP::Mesh::Mesh>> submeshes( N_domains );
         for ( size_t i = 0; i < N_domains; i++ ) {
-            submeshes[i] = TriangleMesh<2, 3>::generate( vert, tri[i], tri_nab[i], comm );
+            submeshes[i] =
+                TriangleMesh<2, 3>::generate( vert, tri[i], tri_nab[i], comm, nullptr, blocks[i] );
             submeshes[i]->setName( name + "_" + std::to_string( i + 1 ) );
         }
         mesh.reset( new MultiMesh( name, comm, submeshes ) );
@@ -609,8 +673,13 @@ std::shared_ptr<AMP::Mesh::Mesh> generateSTL( MeshParameters::shared_ptr params 
  *  Generate mesh for geometry                           *
  ********************************************************/
 template<int NDIM>
-static std::shared_ptr<AMP::Mesh::Mesh> generate(
-    int N, int N_tri, const double *x, const int *tri, const int *tri_nab, const AMP_MPI &comm )
+static std::shared_ptr<AMP::Mesh::Mesh> generate( int N,
+                                                  int N_tri,
+                                                  const double *x,
+                                                  const int *tri,
+                                                  const int *tri_nab,
+                                                  const AMP_MPI &comm,
+                                                  std::shared_ptr<Geometry::Geometry> geom )
 {
 
     std::vector<std::array<double, NDIM>> verticies( N );
@@ -626,8 +695,11 @@ static std::shared_ptr<AMP::Mesh::Mesh> generate(
             tri_nab2[i][d]  = tri_nab[d + i * ( NDIM + 1 )];
         }
     }
-    return TriangleMesh<NDIM, NDIM>::generate(
-        std::move( verticies ), std::move( triangles ), std::move( tri_nab2 ), comm );
+    return TriangleMesh<NDIM, NDIM>::generate( std::move( verticies ),
+                                               std::move( triangles ),
+                                               std::move( tri_nab2 ),
+                                               comm,
+                                               std::move( geom ) );
 }
 static inline double dist( const kdtree &tree, const Point &p )
 {
@@ -639,23 +711,9 @@ static inline void check_nearest( const std::vector<Point> &x )
 {
     if ( x.empty() )
         return;
-    int ndim = x[0].ndim();
-    auto x2  = new double[ndim * x.size()];
-    for ( size_t i = 0; i < x.size(); i++ ) {
-        for ( int d = 0; d < ndim; d++ )
-            x2[d + i * ndim] = x[i][d];
-    }
-    std::pair<int, int> index;
-    if ( ndim == 1 )
-        index = find_min_dist<1, double>( x.size(), x2 );
-    else if ( ndim == 2 )
-        index = find_min_dist<2, double>( x.size(), x2 );
-    else if ( ndim == 3 )
-        index = find_min_dist<3, double>( x.size(), x2 );
-    else
-        AMP_ERROR( "Not programmed" );
-    auto dx  = x[index.first] - x[index.second];
-    double d = dx.x() * dx.x() + dx.y() * dx.y() + dx.z() * dx.z();
+    auto index = find_min_dist( x );
+    auto dx    = x[index.first] - x[index.second];
+    double d   = dx.abs();
     AMP_ASSERT( d > 1e-8 );
 }
 static inline std::vector<Point> getVolumePoints( const AMP::Geometry::Geometry &geom,
@@ -712,6 +770,7 @@ static inline std::vector<Point> getMeshSurfacePoints( const AMP::Geometry::Mesh
     const auto &mesh = geom.getMesh();
     for ( auto node : mesh.getIterator( AMP::Mesh::GeomType::Vertex ) )
         surface.push_back( node.coord() );
+    check_nearest( surface );
     // Create a kdtree to quickly calculate distances
     kdtree tree( surface );
     // Loop through the elements on the surface
@@ -789,10 +848,8 @@ generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, do
     auto multigeom = std::dynamic_pointer_cast<AMP::Geometry::MultiGeometry>( geom );
     if ( multigeom ) {
         std::vector<std::shared_ptr<AMP::Mesh::Mesh>> submeshes;
-        for ( auto &geom2 : multigeom->getGeometries() ) {
+        for ( auto &geom2 : multigeom->getGeometries() )
             submeshes.push_back( generate( geom2, comm, resolution ) );
-            // submeshes[i]->setName( name + "_" + std::to_string( i + 1 ) );
-        }
         return std::make_shared<MultiMesh>( "name", comm, submeshes );
     }
     // Perform some basic checks
@@ -859,12 +916,14 @@ generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, do
     // Generate the mesh
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( ndim == 2 ) {
-        mesh = generate<2>( N, N_tri, x1, tri, tri_nab, comm );
+        mesh = generate<2>( N, N_tri, x1, tri, tri_nab, comm, geom );
     } else if ( ndim == 3 ) {
-        mesh = generate<3>( N, N_tri, x1, tri, tri_nab, comm );
+        mesh = generate<3>( N, N_tri, x1, tri, tri_nab, comm, geom );
     } else {
         AMP_ERROR( "Not supported yet" );
     }
+    if ( meshGeom )
+        mesh->setName( meshGeom->getMesh().getName() );
     delete[] x1;
     delete[] x2;
     delete[] tri;

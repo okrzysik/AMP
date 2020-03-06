@@ -1,6 +1,8 @@
 #include "AMP/ampmesh/Geometry.h"
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshGeometry.h"
+#include "AMP/ampmesh/MultiGeometry.h"
+#include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/shapes/Box.h"
 #include "AMP/ampmesh/shapes/Circle.h"
 #include "AMP/ampmesh/shapes/CircleFrustum.h"
@@ -69,8 +71,16 @@ Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
         auto mesh_db = db->getDatabase( "Mesh" );
         auto params  = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
         params->setComm( AMP_COMM_SELF );
-        auto mesh = AMP::Mesh::Mesh::buildMesh( params );
-        geom.reset( new MeshGeometry( mesh ) );
+        auto mesh      = AMP::Mesh::Mesh::buildMesh( params );
+        auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+        if ( multimesh ) {
+            std::vector<Geometry::shared_ptr> geoms;
+            for ( const auto &mesh : multimesh->getMeshes() )
+                geoms.push_back( std::make_shared<MeshGeometry>( mesh ) );
+            geom = std::make_shared<MultiGeometry>( geoms );
+        } else {
+            geom = std::make_shared<MeshGeometry>( mesh );
+        }
     } else {
         AMP_ERROR( "Unknown generator" );
     }
