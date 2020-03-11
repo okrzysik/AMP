@@ -111,14 +111,6 @@ public: // non-virtual functions
     inline bool containsPoint( const std::vector<double> &pos, double TOL = 1e-12 ) const;
 
 
-    /**
-     * \brief    Get points in the element
-     * \details  This function returns points in the volume at the given resolution
-     * \param dx    Resolution to use
-     */
-    std::vector<Point> sample( double dx ) const;
-
-
 public: // Virtual functions
     //! Return the unique global ID of the element
     virtual MeshElementID globalID() const;

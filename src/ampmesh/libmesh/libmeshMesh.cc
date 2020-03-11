@@ -661,15 +661,14 @@ MeshIterator libmeshMesh::getIterator( const GeomType type, const int gcw ) cons
         }
     } else {
         // All other types require a pre-constructed list
-        std::map<GeomType, std::shared_ptr<std::vector<MeshElement>>>::const_iterator it1, it2;
         if ( gcw == 0 ) {
-            it1 = d_localElements.find( type );
+            auto it1 = d_localElements.find( type );
             if ( it1 == d_localElements.end() )
                 AMP_ERROR( "Internal error in libmeshMesh::getIterator" );
             it = MultiVectorIterator( it1->second, 0 );
         } else if ( gcw == 1 ) {
-            it1 = d_localElements.find( type );
-            it2 = d_ghostElements.find( type );
+            auto it1 = d_localElements.find( type );
+            auto it2 = d_ghostElements.find( type );
             if ( it1 == d_localElements.end() || it2 == d_ghostElements.end() )
                 AMP_ERROR( "Internal error in libmeshMesh::getIterator" );
             std::vector<MeshIterator> iterators( 2 );
@@ -741,9 +740,17 @@ libmeshMesh::getBoundaryIDIterator( const GeomType type, const int id, const int
  * Return an iterator over the given block ids           *
  ********************************************************/
 std::vector<int> libmeshMesh::getBlockIDs() const { return d_block_ids; }
-MeshIterator libmeshMesh::getBlockIDIterator( const GeomType, const int, const int ) const
+MeshIterator
+libmeshMesh::getBlockIDIterator( const GeomType type, const int id, const int gcw ) const
 {
-    AMP_ERROR( "getBoundaryIDIterator is not implimented yet" );
+    if ( d_block_ids.size() == 1 ) {
+        if ( d_block_ids[0] == id )
+            return getIterator( type, gcw );
+        else
+            return MeshIterator();
+    } else {
+        AMP_ERROR( "getBlockIDIterator is not implimented yet" );
+    }
     return MeshIterator();
 }
 

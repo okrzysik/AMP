@@ -113,17 +113,6 @@ double calc_volume( const std::array<TYPE, NDIM> *x )
     constexpr double C = inv_factorial( NDIM );
     return C * get_double( DelaunayHelpers<NDIM>::det( M ) );
 }
-/*template<int NDIM, class TYPE, class ETYPE>
-double calc_volume( const TYPE x[] )
-{
-    // This will be removed
-    std::array<TYPE, NDIM> x2[NDIM + 1];
-    for ( int i = 0; i <= NDIM; i++ ) {
-        for ( int d = 0; d < NDIM; d++ )
-            x2[i][d] = x[d + i * NDIM];
-    }
-    return calc_volume<NDIM, TYPE, ETYPE>( x2 );
-}*/
 
 
 /********************************************************************

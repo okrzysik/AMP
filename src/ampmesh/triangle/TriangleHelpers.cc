@@ -1,11 +1,15 @@
 #include "AMP/ampmesh/triangle/TriangleHelpers.h"
 #include "AMP/ampmesh/MeshGeometry.h"
 #include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/ampmesh/MeshUtilities.h"
 #include "AMP/ampmesh/MultiGeometry.h"
 #include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/ampmesh/shapes/Circle.h"
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
+#include "AMP/ampmesh/shapes/Sphere.h"
 #include "AMP/ampmesh/triangle/TriangleMesh.h"
 #include "AMP/utils/Database.h"
+#include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/DelaunayTessellation.h"
 #include "AMP/utils/NearestPairSearch.h"
 #include "AMP/utils/Utilities.h"
@@ -311,7 +315,6 @@ create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri )
     }
     // Note, if a triangle is a neighbor, it will share all but the current node
     int size[NG];
-    int error = 0;
     for ( int64_t i = 0; i < (int64_t) tri.size(); i++ ) {
         // Loop through the different faces of the triangle
         for ( size_t j = 0; j <= NG; j++ ) {
@@ -331,36 +334,27 @@ create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri )
             int64_t m               = 0;
             if ( N_int == 0 || N_int > 2 ) {
                 // We cannot have less than 1 triangle or more than 2 triangles sharing NDIM nodes
-                error = 1;
-                break;
+                AMP_ERROR( "Error in create_tri_neighbors detected" );
             } else if ( intersection[0] == i ) {
                 m = intersection[1];
             } else if ( intersection[1] == i ) {
                 m = intersection[0];
             } else {
                 // One of the triangles must be the current triangle
-                error = 1;
-                break;
+                AMP_ERROR( "Error in create_tri_neighbors detected" );
             }
             tri_nab[i][j] = m;
         }
-        if ( error != 0 )
-            break;
     }
     // Check tri_nab
     for ( int64_t i = 0; i < (int64_t) tri.size(); i++ ) {
         for ( size_t d = 0; d <= NG; d++ ) {
             if ( tri_nab[i][d] < -1 || tri_nab[i][d] >= (int64_t) tri.size() || tri_nab[i][d] == i )
-                error = 2;
+                AMP_ERROR( "Internal error" );
         }
     }
     delete[] tri_list[0];
     delete[] tri_list;
-    if ( error == 1 ) {
-        throw std::logic_error( "Error in create_tri_neighbors detected" );
-    } else if ( error == 2 ) {
-        throw std::logic_error( "Internal error" );
-    }
     PROFILE_STOP( "create_tri_neighbors", 1 );
     return tri_nab;
 }
@@ -672,41 +666,6 @@ std::shared_ptr<AMP::Mesh::Mesh> generateSTL( MeshParameters::shared_ptr params 
 /********************************************************
  *  Generate mesh for geometry                           *
  ********************************************************/
-template<int NDIM>
-static std::shared_ptr<AMP::Mesh::Mesh> generate( int N,
-                                                  int N_tri,
-                                                  const double *x,
-                                                  const int *tri,
-                                                  const int *tri_nab,
-                                                  const AMP_MPI &comm,
-                                                  std::shared_ptr<Geometry::Geometry> geom )
-{
-
-    std::vector<std::array<double, NDIM>> verticies( N );
-    std::vector<std::array<int64_t, NDIM + 1>> triangles( N_tri );
-    std::vector<std::array<int64_t, NDIM + 1>> tri_nab2( N_tri );
-    for ( int i = 0; i < N; i++ ) {
-        for ( int d = 0; d < NDIM; d++ )
-            verticies[i][d] = x[d + i * NDIM];
-    }
-    for ( int i = 0; i < N_tri; i++ ) {
-        for ( int d = 0; d <= NDIM; d++ ) {
-            triangles[i][d] = tri[d + i * ( NDIM + 1 )];
-            tri_nab2[i][d]  = tri_nab[d + i * ( NDIM + 1 )];
-        }
-    }
-    return TriangleMesh<NDIM, NDIM>::generate( std::move( verticies ),
-                                               std::move( triangles ),
-                                               std::move( tri_nab2 ),
-                                               comm,
-                                               std::move( geom ) );
-}
-static inline double dist( const kdtree &tree, const Point &p )
-{
-    double d;
-    tree.find_nearest( p.data(), &d );
-    return d;
-}
 static inline void check_nearest( const std::vector<Point> &x )
 {
     if ( x.empty() )
@@ -720,12 +679,18 @@ static inline std::vector<Point> getVolumePoints( const AMP::Geometry::Geometry 
                                                   double resolution )
 {
     // Create interior points from an arbitrary geometry
+    // Note: we can adjust the points so that they are not aligned
+    //    on xyz grids which may help with the tessellation
     std::vector<Point> points;
     auto [x0, x1] = geom.box();
+    // auto xc = 0.7 * ( x0 + x1 );
+    // double tol = 0.7 * resolution / ( x1 - x0 ).abs();
     for ( double x = x0.x(); x <= x1.x(); x += resolution ) {
         for ( double y = x0.y(); y <= x1.y(); y += resolution ) {
             for ( double z = x0.z(); z <= x1.z(); z += resolution ) {
                 Point p( x0.size(), { x, y, z } );
+                // auto p2 = p - xc;
+                // p -= ( tol * p2.abs() ) * p2;
                 if ( geom.inside( p ) )
                     points.push_back( p );
             }
@@ -760,31 +725,6 @@ static inline std::vector<Point> getSurfacePoints( const AMP::Geometry::Geometry
     }
     check_nearest( points );
     return points;
-}
-static inline std::vector<Point> getMeshSurfacePoints( const AMP::Geometry::MeshGeometry &geom,
-                                                       double resolution )
-{
-    // Create surface points for a mesh geometry
-    std::vector<Point> surface;
-    // Start with the verticies to preserve the geometry
-    const auto &mesh = geom.getMesh();
-    for ( auto node : mesh.getIterator( AMP::Mesh::GeomType::Vertex ) )
-        surface.push_back( node.coord() );
-    check_nearest( surface );
-    // Create a kdtree to quickly calculate distances
-    kdtree tree( surface );
-    // Loop through the elements on the surface
-    for ( const auto &elem : mesh.getIterator( mesh.getGeomType() ) ) {
-        auto points = elem.sample( resolution );
-        for ( const auto &p : points ) {
-            if ( dist( tree, p ) > 0.8 * resolution ) {
-                surface.push_back( p );
-                tree.add( p.data() );
-            }
-        }
-    }
-    check_nearest( surface );
-    return surface;
 }
 static inline double getPos( int i, int N, bool isPeriodic )
 {
@@ -842,6 +782,130 @@ static inline std::vector<Point> combineSurfaceVolumePoints( const std::vector<P
     check_nearest( points );
     return points;
 }
+template<uint8_t NDIM>
+static void removeTriangles( std::vector<std::array<int, NDIM + 1>> &tri,
+                             std::vector<std::array<int, NDIM + 1>> &tri_nab,
+                             const std::vector<bool> &remove )
+{
+    std::vector<int64_t> map( tri.size(), -1 );
+    size_t N = 0;
+    for ( size_t i = 0; i < tri.size(); i++ ) {
+        if ( !remove[i] )
+            map[i] = N++;
+    }
+    if ( N == tri.size() )
+        return;
+    for ( size_t i = 0; i < tri.size(); i++ ) {
+        if ( !remove[i] ) {
+            tri[map[i]] = tri[i];
+            for ( int d = 0; d <= NDIM; d++ ) {
+                if ( tri_nab[i][d] == -1 )
+                    tri_nab[i][d] = -1;
+                else if ( remove[tri_nab[i][d]] )
+                    tri_nab[i][d] = -1;
+                else
+                    tri_nab[i][d] = map[tri_nab[i][d]];
+            }
+            tri_nab[map[i]] = tri_nab[i];
+        }
+    }
+    tri.resize( N );
+    tri_nab.resize( N );
+}
+template<uint8_t NDIM>
+static std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry::Geometry> geom,
+                                                  const std::vector<Point> &points,
+                                                  const AMP_MPI &comm )
+{
+    // Tessellate
+    auto [lb, ub] = geom->box();
+    auto dx       = ub - lb;
+    int N         = points.size();
+    std::vector<std::array<double, NDIM>> x1( points.size() );
+    std::vector<std::array<int, NDIM>> x2( points.size() );
+    for ( int i = 0; i < N; i++ ) {
+        for ( int d = 0; d < NDIM; d++ ) {
+            double x   = points[i][d];
+            double tmp = 2.0 * ( x - lb[d] ) / dx[d] - 1.0;
+            int xi     = round( 1000000 * tmp );
+            x1[i][d]   = x;
+            x2[i][d]   = xi;
+        }
+    }
+    NULL_USE( x2 );
+    auto [tri, tri_nab] = DelaunayTessellation::create_tessellation<NDIM>( x1 );
+    AMP_ASSERT( !tri.empty() );
+    // Delete triangles that have duplicate neighbors
+    {
+        // Identify the triangles that need to be removed
+        std::vector<bool> remove( tri.size(), false );
+        for ( size_t i = 0; i < tri.size(); i++ ) {
+            for ( int d = 0; d <= NDIM; d++ ) {
+                if ( tri_nab[i][d] == -1 )
+                    continue;
+                int count = 0;
+                for ( int d2 = 0; d2 <= NDIM; d2++ ) {
+                    if ( tri_nab[i][d] == tri_nab[i][d2] )
+                        count++;
+                }
+                if ( count != 1 )
+                    remove[i] = true;
+            }
+        }
+        // Remove the triangles
+        removeTriangles<NDIM>( tri, tri_nab, remove );
+    }
+    // Delete surface triangles that have zero volume
+    if constexpr ( NDIM == 3 ) {
+        // Identify the triangles that need to be removed
+        std::vector<bool> remove( tri.size(), false );
+        for ( size_t i = 0; i < tri.size(); i++ ) {
+            if ( tri_nab[i][0] >= 0 && tri_nab[i][1] >= 0 && tri_nab[i][2] >= 0 &&
+                 tri_nab[i][3] >= 0 )
+                continue;
+            Point x[4];
+            for ( int j = 0; j <= NDIM; j++ )
+                x[j] = points[tri[i][j]];
+            double M[9];
+            for ( size_t i = 0; i < 3; i++ ) {
+                for ( size_t d = 0; d < 3; d++ )
+                    M[d + i * 3] = x[i][d] - x[3][d];
+            }
+            constexpr double C = 1.0 / 6.0;
+            double V           = std::abs( C * DelaunayHelpers<NDIM>::det( M ) );
+            remove[i]          = V < 1e-6;
+        }
+        // Remove the triangles
+        removeTriangles<NDIM>( tri, tri_nab, remove );
+    }
+    // Try to remove triangles outside the domain
+    bool isConvex = geom->isConvex();
+    if ( !isConvex ) {
+        AMP_WARNING( "non-convex domains are not fully supported yet" );
+        // Identify the triangles that need to be removed
+        std::vector<bool> remove( tri.size(), false );
+        const double tmp = 1.0 / ( NDIM + 1.0 );
+        for ( size_t i = 0; i < tri.size(); i++ ) {
+            Point center( NDIM, { 0, 0, 0 } );
+            for ( int j = 0; j <= NDIM; j++ )
+                center += points[tri[i][j]];
+            center *= tmp;
+            remove[i] = !geom->inside( center );
+        }
+        // Remove the triangles
+        removeTriangles<NDIM>( tri, tri_nab, remove );
+    }
+    // Generate the mesh
+    std::vector<std::array<int64_t, NDIM + 1>> tri2( tri.size() ), tri_nab2( tri.size() );
+    for ( size_t i = 0; i < tri.size(); i++ ) {
+        for ( int d = 0; d <= NDIM; d++ ) {
+            tri2[i][d]     = tri[i][d];
+            tri_nab2[i][d] = tri_nab[i][d];
+        }
+    }
+    return TriangleMesh<NDIM, NDIM>::generate(
+        std::move( x1 ), std::move( tri2 ), std::move( tri_nab2 ), comm, std::move( geom ) );
+}
 std::shared_ptr<AMP::Mesh::Mesh>
 generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, double resolution )
 {
@@ -854,7 +918,6 @@ generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, do
     }
     // Perform some basic checks
     int ndim         = geom->getDim();
-    bool isConvex    = geom->isConvex();
     auto meshGeom    = std::dynamic_pointer_cast<AMP::Geometry::MeshGeometry>( geom );
     auto logicalGeom = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( geom );
     // Create the grid verticies
@@ -866,7 +929,9 @@ generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, do
         // Get the volume points
         auto interior = getVolumePoints( *geom, resolution );
         // Get the surface points
-        auto surface = getMeshSurfacePoints( *meshGeom, resolution );
+        auto &mesh   = meshGeom->getMesh();
+        auto data    = sample( mesh, resolution );
+        auto surface = std::get<0>( data );
         // Combine
         points = combineSurfaceVolumePoints( interior, surface, *geom, resolution );
     } else {
@@ -879,55 +944,17 @@ generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, do
     }
     // Smooth the points to try and make the distance between all points ~ equal
 
-    // Tessellate
-    auto [lb, ub] = geom->box();
-    auto dx       = ub - lb;
-    int N         = points.size();
-    auto x1       = new double[ndim * N];
-    auto x2       = new int[ndim * N];
-    for ( int i = 0; i < N; i++ ) {
-        for ( int d = 0; d < ndim; d++ ) {
-            double x         = points[i][d];
-            double tmp       = 2.0 * ( x - lb[d] ) / dx[d] - 1.0;
-            int xi           = round( 1000000 * tmp );
-            x1[d + i * ndim] = x;
-            x2[d + i * ndim] = xi;
-        }
-    }
-    int *tri     = nullptr;
-    int *tri_nab = nullptr;
-    auto N_tri   = DelaunayTessellation::create_tessellation( ndim, N, x2, &tri, &tri_nab );
-    AMP_ASSERT( N_tri > 0 );
-    // Try to remove triangles outside the domain
-    if ( !isConvex ) {
-        AMP_WARNING( "non-convex domains are not fully supported yet" );
-        // Identify the triangles that need to be removed
-        std::vector<bool> remove( N_tri, false );
-        const double tmp = 1.0 / ( ndim + 1.0 );
-        for ( int64_t i = 0; i < N_tri; i++ ) {
-            Point center( ndim, { 0, 0, 0 } );
-            for ( int j = 0; j <= ndim; j++ )
-                center += points[tri[i * ( ndim + 1 ) + j]];
-            center *= tmp;
-            remove[i] = !geom->inside( center );
-        }
-        // Remove the triangles
-    }
-    // Generate the mesh
+    // Tessellate and generate the mesh
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( ndim == 2 ) {
-        mesh = generate<2>( N, N_tri, x1, tri, tri_nab, comm, geom );
+        mesh = generate<2>( geom, points, comm );
     } else if ( ndim == 3 ) {
-        mesh = generate<3>( N, N_tri, x1, tri, tri_nab, comm, geom );
+        mesh = generate<3>( geom, points, comm );
     } else {
         AMP_ERROR( "Not supported yet" );
     }
     if ( meshGeom )
         mesh->setName( meshGeom->getMesh().getName() );
-    delete[] x1;
-    delete[] x2;
-    delete[] tri;
-    delete[] tri_nab;
     return mesh;
 }
 

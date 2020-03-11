@@ -2371,14 +2371,26 @@ uint64_t maxabs( const int N, const TYPE *x )
     }
     return x_max;
 }
-template<uint8_t NDIM>
-std::tuple<std::array<int, NDIM + 1>, std::array<int, NDIM + 1>>
-create_tessellation( const std::vector<std::array<double, NDIM>> &x )
+template<std::size_t NDIM, class TYPE>
+uint64_t maxabs( const std::vector<std::array<TYPE, NDIM>> &x )
 {
-    return create_tessellation<2, double, long double>( x );
+    uint64_t x_max = 0;
+    for ( const auto &y : x ) {
+        for ( auto z : y ) {
+            TYPE x2 = z >= 0 ? z : -z;
+            x_max   = std::max<uint64_t>( static_cast<uint64_t>( x2 ), x_max );
+        }
+    }
+    return x_max;
 }
 template<uint8_t NDIM>
-std::tuple<std::array<int, NDIM + 1>, std::array<int, NDIM + 1>>
+std::tuple<std::vector<std::array<int, NDIM + 1>>, std::vector<std::array<int, NDIM + 1>>>
+create_tessellation( const std::vector<std::array<double, NDIM>> &x )
+{
+    return create_tessellation<NDIM, double, long double>( x );
+}
+template<uint8_t NDIM>
+std::tuple<std::vector<std::array<int, NDIM + 1>>, std::vector<std::array<int, NDIM + 1>>>
 create_tessellation( const std::vector<std::array<int, NDIM>> &x )
 {
     // Check that all values of x are < 2^30
@@ -2400,7 +2412,6 @@ create_tessellation( const std::vector<std::array<int, NDIM>> &x )
         }
     }
 }
-
 int create_tessellation( const int ndim, const int N, const double x[], int *tri[], int *tri_nab[] )
 {
     int N_tri = -1;
@@ -2584,6 +2595,19 @@ void get_circumsphere( const int ndim, const int x[], double &R, double *center 
         throw std::logic_error( "Unsupported dimension" );
     }
 }
+
+
+/********************************************************************
+ * Explicit instantiations                                           *
+ ********************************************************************/
+template std::tuple<std::vector<std::array<int, 3>>, std::vector<std::array<int, 3>>>
+create_tessellation<2>( const std::vector<std::array<double, 2>> & );
+template std::tuple<std::vector<std::array<int, 3>>, std::vector<std::array<int, 3>>>
+create_tessellation<2>( const std::vector<std::array<int, 2>> &x );
+template std::tuple<std::vector<std::array<int, 4>>, std::vector<std::array<int, 4>>>
+create_tessellation<3>( const std::vector<std::array<double, 3>> & );
+template std::tuple<std::vector<std::array<int, 4>>, std::vector<std::array<int, 4>>>
+create_tessellation<3>( const std::vector<std::array<int, 3>> &x );
 
 
 } // namespace DelaunayTessellation

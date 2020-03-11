@@ -26,6 +26,12 @@ public:
     //! Destructor
     virtual ~MeshGeometry() = default;
 
+    //! Copy constructor
+    MeshGeometry( const MeshGeometry & ) = delete;
+
+    //! Assignment operator
+    MeshGeometry &operator=( const MeshGeometry & ) = delete;
+
     //! Get the name of the geometry
     virtual std::string getName() const override { return "MeshGeometry"; }
 
@@ -125,16 +131,17 @@ private: // Internal functions
     void initializePosition() const;
 
     // Get the nearest element to a point
-    std::pair<AMP::Mesh::MeshElement, Point> getNearestElement( const Point &x ) const;
+    std::vector<AMP::Mesh::MeshElement> getNearestElements( const Point &x ) const;
+    std::pair<AMP::Mesh::MeshElement, Point> getNearestPoint( const Point &x ) const;
 
 
 private: // Internal data
     std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
     std::vector<int> d_surfaceIds;
-    std::vector<AMP::Mesh::MeshElement> d_nodes;
     mutable uint64_t d_pos_hash;
     mutable Point d_centroid;
     mutable kdtree d_tree;
+    mutable std::vector<AMP::Mesh::MeshElementID> d_ids;
 };
 
 

@@ -81,6 +81,15 @@ public:
         for ( size_t d = 1; d < std::min<size_t>( d_ndim, x.size() ); d++ )
             d_data[d] = *( ++it );
     }
+    template<std::size_t NDIM>
+    constexpr MeshPoint( const std::array<TYPE, NDIM> &x ) : d_ndim( NDIM )
+    {
+        d_data[0] = 0;
+        d_data[1] = 0;
+        d_data[2] = 0;
+        for ( size_t d = 0; d < NDIM; d++ )
+            d_data[d] = x[d];
+    }
 
     // Copy/assigment operators
     constexpr MeshPoint( MeshPoint && ) noexcept      = default;

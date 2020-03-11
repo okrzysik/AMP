@@ -155,6 +155,7 @@ resourceLeak:*/src/utils/test/test_DelaunayInterpolation.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayInterpolation.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayTessellation.cpp
 arrayIndexOutOfBounds:*/src/utils/DelaunayTessellation.cpp
+arrayIndexOutOfBounds:*/AMP/utils/DelaunayFaceList.hpp
 containerOutOfBounds:*/src/utils/DelaunayTessellation.cpp
 negativeContainerIndex:*/src/utils/DelaunayTessellation.cpp
 unreadVariable:*/src/utils/DelaunayInterpolation.cpp

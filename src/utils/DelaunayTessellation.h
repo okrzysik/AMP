@@ -65,10 +65,10 @@ int create_tessellation(
     const int ndim, const int N, const int64_t x[], int *tri[], int *tri_nab[] );
 
 template<uint8_t NDIM>
-std::tuple<std::array<int, NDIM + 1>, std::array<int, NDIM + 1>>
+std::tuple<std::vector<std::array<int, NDIM + 1>>, std::vector<std::array<int, NDIM + 1>>>
 create_tessellation( const std::vector<std::array<double, NDIM>> &x );
 template<uint8_t NDIM>
-std::tuple<std::array<int, NDIM + 1>, std::array<int, NDIM + 1>>
+std::tuple<std::vector<std::array<int, NDIM + 1>>, std::vector<std::array<int, NDIM + 1>>>
 create_tessellation( const std::vector<std::array<int, NDIM>> &x );
 
 

@@ -318,18 +318,10 @@ static void sortData( std::vector<TYPE> &data,
             if ( y != -1 )
                 y = map[y];
     }
-    int c1[3] = { 0, 0, 0 };
-    for ( size_t i = 0; i < block.size(); i++ )
-        c1[block[i]]++;
-    printf( "%i %i %i\n", c1[0], c1[1], c1[2] );
     AMP_ASSERT( I.size() == block.size() );
     std::vector<int> tmp = block;
     for ( size_t i = 0; i < block.size(); i++ )
         block[i] = tmp[I[i]];
-    int c2[3] = { 0, 0, 0 };
-    for ( size_t i = 0; i < block.size(); i++ )
-        c2[block[i]]++;
-    printf( "%i %i %i\n", c2[0], c2[1], c2[2] );
 }
 
 
@@ -563,8 +555,8 @@ TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> verticie
         }
         for ( size_t gcw = 0; gcw < d_iterators.size(); gcw++ ) {
             for ( int type2 = 0; type2 < NG; type2++ ) {
-                auto type =
-                    static_cast<GeomType>( type2 ) std::vector<std::vector<ElementID>> list( Ns );
+                auto type = static_cast<GeomType>( type2 );
+                std::vector<std::vector<ElementID>> list( Ns );
                 for ( const auto &elem : getSurfaceIterator( type, gcw ) ) {
                     auto p = elem.centroid();
                     int s  = d_geometry->surface( p );
@@ -579,8 +571,8 @@ TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> verticie
         }
     } else {
         d_boundary_ids = std::vector<int>( 1, 0 );
-        d_boundary_ids.resize( 1 );
-        d_boundary_ids[0] = d_surface_iterators;
+        d_boundary_iterators.resize( 1 );
+        d_boundary_iterators[0] = d_surface_iterators;
     }
 }
 
@@ -1136,7 +1128,7 @@ void TriangleMesh<NG, NP>::displaceMesh( std::shared_ptr<const AMP::LinearAlgebr
  *  Get the coordinated of the given vertex or the centroid      *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-const std::array<double, NP> &TriangleMesh<NG, NP>::getPos( const ElementID &id ) const
+std::array<double, NP> TriangleMesh<NG, NP>::getPos( const ElementID &id ) const
 {
     if ( id.is_local() )
         return d_vert[id.local_id()];
@@ -1240,7 +1232,6 @@ void TriangleMesh<NG, NP>::getNeighborIDs( const ElementID &id, std::vector<Elem
         return;
     }
     // The neighbors are any elements that share a parent
-
     IDs.clear();
     IDs.reserve( 20 );
     int N        = n_Simplex_elements[NG][static_cast<size_t>( type )];

@@ -294,7 +294,8 @@ double TriangleMeshElement<NG, NP, TYPE>::volume() const
                 M[d + i * TYPE] = x[i][d] - x[TYPE][d];
         }
         constexpr double C = inv_factorial( TYPE );
-        return std::abs( C * DelaunayHelpers<TYPE>::det( M ) );
+        double V           = std::abs( C * DelaunayHelpers<TYPE>::det( M ) );
+        return V;
     } else {
         AMP_ERROR( "Not finished" );
         return 0;
@@ -317,7 +318,7 @@ template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 MeshPoint<double> TriangleMeshElement<NG, NP, TYPE>::coord() const
 {
     if constexpr ( TYPE == 0 ) {
-        auto &x = d_mesh->getPos( d_globalID.elemID() );
+        auto x = d_mesh->getPos( d_globalID.elemID() );
         return MeshPoint<double>( NP, x.data() );
     } else {
         AMP_ERROR( "coord is only valid for verticies: " + std::to_string( (int) TYPE ) );
@@ -327,10 +328,10 @@ MeshPoint<double> TriangleMeshElement<NG, NP, TYPE>::coord() const
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 MeshPoint<double> TriangleMeshElement<NG, NP, TYPE>::centroid() const
 {
+    if constexpr ( TYPE == 0 )
+        return MeshPoint<double>( d_mesh->getPos( d_globalID.elemID() ) );
     std::array<double, NP> x2[TYPE + 1];
     getVertexCoord( x2 );
-    if constexpr ( TYPE == 0 )
-        return MeshPoint<double>( NP, x2[0].data() );
     ElementID ids[TYPE + 1];
     d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
     MeshPoint<double> x( (size_t) NP );

@@ -44,12 +44,11 @@ public:
         d_size.resize( data.size() );
         d_offset.resize( data.size() );
         d_data.resize( Nt );
-        size_t count = 0;
-        for ( size_t i = 0; i < data.size(); i++ ) {
+        for ( size_t i = 0, k = 0; i < data.size(); i++ ) {
             d_size[i]   = data[i].size();
-            d_offset[i] = count;
-            for ( size_t j = 0; j < d_size[i]; j++, count++ )
-                d_data[count] = data[i][j];
+            d_offset[i] = k;
+            for ( size_t j = 0; j < d_size[i]; j++, k++ )
+                d_data[k] = data[i][j];
         }
     }
     inline const ElementID *begin( size_t i ) const
@@ -365,7 +364,7 @@ protected:
 
     // Return the coordinated of the given vertex
     // Note: no error checking is done to make sure it is a valid vertex
-    const TriangleMesh::Point &getPos( const ElementID &id ) const;
+    TriangleMesh::Point getPos( const ElementID &id ) const;
 
     // Check if the element is on the given boundry, block, etc
     bool isOnSurface( const ElementID &elemID ) const;
