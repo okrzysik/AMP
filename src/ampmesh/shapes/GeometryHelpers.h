@@ -207,6 +207,24 @@ distanceToCylinder( double r, double h, const AMP::Mesh::Point &pos, const AMP::
 
 
 /**
+ * \brief   Compute the intersection of a ray and tube
+ * \details  This function will compute the intersection of a ray with a tube.
+ *    It assumes a tube ith inner radius r1, outer radius r2, and height h
+ *    centered at the origin along the z axis: z=[-h/2,h/2].
+ *    If the ray is inside the cylinder the distance is negative.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] r1        Inner radius of cylinder
+ * \param[in] r2        Outer radius of cylinder
+ * \param[in] h         Height of cylinder
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * @return              Returns the distance
+ */
+double distanceToTube(
+    double r1, double r2, double h, const AMP::Mesh::Point &pos, const AMP::Mesh::Point &ang );
+
+
+/**
  * \brief   Compute the intersection of a ray and sphere
  * \details  This function will compute the intersection of a ray with a cylinder.
  *    It assumes a sphere of radius r and height h, centered at the origin.

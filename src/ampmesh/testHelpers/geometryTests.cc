@@ -10,6 +10,16 @@ namespace AMP {
 namespace Geometry {
 
 
+// Generate a random direction
+static inline Point genRandDir( int ndim )
+{
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dis( -1, 1 );
+    return normalize( Point( ndim, { dis( gen ), dis( gen ), dis( gen ) } ) );
+}
+
+
 // Run all geometry based tests
 void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
 {
@@ -25,28 +35,20 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         ut.failure( "testGeometry centroid/box: " + geom.getName() );
     // Use a series of rays projecting from the centroid to get points on the surface
     std::vector<Point> surfacePoints;
-    std::random_device rd;
-    std::mt19937 gen( rd() );
-    std::uniform_real_distribution<double> dis( -1, 1 );
     bool all_hit = true;
     for ( int i = 0; i < 10000; i++ ) {
-        Point dir( ndim, { 0, 0, 0 } );
-        for ( int d = 0; d < ndim; d++ )
-            dir[d] = dis( gen );
-        double norm = sqrt( dir.x() * dir.x() + dir.y() * dir.y() + dir.z() * dir.z() );
-        dir         = { dir.x() / norm, dir.y() / norm, dir.z() / norm };
-        double dist = geom.distance( center, dir );
-        AMP_ASSERT( dist == dist );
-        all_hit = all_hit && dist <= 0;
-        if ( dist > 1e100 )
-            continue; // Ray did not intersect geometry
-        // Find outermost surface
-        Point p = center;
-        do {
-            p += dir * std::abs( dist );
-            dist = 1e-4 + std::abs( geom.distance( p + 1e-4 * dir, dir ) );
-        } while ( dist < 1e100 );
-        surfacePoints.push_back( p );
+        // Keep each surface the ray hits
+        auto dir = genRandDir( ndim );
+        double d = geom.distance( center, dir );
+        AMP_ASSERT( d == d );
+        all_hit   = all_hit && d <= 0;
+        double d2 = 0;
+        while ( fabs( d ) < 1e100 ) {
+            d2 += fabs( d );
+            surfacePoints.push_back( center + d2 * dir );
+            d2 += 1e-6;
+            d = geom.distance( center + d2 * dir, dir );
+        }
     }
     pass = pass && !surfacePoints.empty();
     if ( surfacePoints.empty() )
@@ -60,20 +62,29 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     pass = pass && pass_inside;
     if ( !pass_inside )
         ut.failure( "testGeometry surface inside geometry: " + geom.getName() );
-    // Project each surface point beyond the object and back propagate to get the same point
+    // Project each surface point in a random direction and back propagate to get the same point
     bool pass_projection = true;
     auto length          = box.second - box.first;
-    const double d0      = 0.1 * std::max( { length.x(), length.y(), length.z() } );
+    const double d0      = 0.2 * std::max( { length.x(), length.y(), length.z() } );
     for ( const auto &tmp : surfacePoints ) {
-        auto ang        = normalize( center - tmp );
-        auto pos        = tmp - d0 * ang;
-        double d        = geom.distance( pos, ang );
-        pass_projection = pass_inside && fabs( fabs( d ) - d0 ) < 1e-5;
+        auto ang = genRandDir( ndim );
+        auto pos = tmp - d0 * ang;
+        double d = fabs( geom.distance( pos, ang ) );
+        while ( d < d0 - 1e-5 ) {
+            // We may have crossed multiple surfaces, find the original
+            d += 1e-6;
+            auto pos2 = pos + d * ang;
+            d += fabs( geom.distance( pos2, ang ) );
+        }
+        if ( fabs( d - d0 ) > 1e-5 )
+            pass_projection = false;
     }
     pass = pass && pass_projection;
     if ( !pass_projection )
         ut.failure( "testGeometry distances do not match: " + geom.getName() );
     // Get a set of interior points by randomly sampling the space
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
     std::uniform_real_distribution<double> dist[3];
     for ( int d = 0; d < ndim; d++ )
         dist[d] = std::uniform_real_distribution<double>( box.first[d], box.second[d] );

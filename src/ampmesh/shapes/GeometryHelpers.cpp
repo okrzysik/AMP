@@ -451,24 +451,78 @@ double distanceToCylinder( double r, double h, const Point &pos, const Point &an
     // First check the distance to the faces
     double d1 = ( 0.5 * h - pos.z() ) / ang.z();
     double d2 = ( -0.5 * h - pos.z() ) / ang.z();
-    if ( d1 <= 0 )
+    if ( d1 <= 0 || ang.z() == 0 )
         d1 = std::numeric_limits<double>::infinity();
-    if ( d2 <= 0 )
+    if ( d2 <= 0 || ang.z() == 0 )
         d2 = std::numeric_limits<double>::infinity();
-    double d  = std::min( d1, d2 );
-    auto pos2 = pos + d * ang;
+    auto pos2 = pos + std::min( d1, d2 ) * ang;
     r2        = pos2.x() * pos2.x() + pos2.y() * pos2.y();
-    if ( r2 <= r * r )
-        return -d;
-    else if ( ang.x() == 0 && ang.y() == 0 )
-        return std::numeric_limits<double>::infinity();
+    if ( r2 > r * r ) {
+        d1 = std::numeric_limits<double>::infinity();
+        d2 = std::numeric_limits<double>::infinity();
+    }
     // Compute the intersection of a line with the circle of the cylinder
-    d = std::abs( distanceToCircle( r, pos, ang ) );
+    double d3 = std::abs( distanceToCircle( r, pos, ang ) );
     // Check that the z-point is within the cylinder
-    double z = pos.z() + d * ang.z();
-    if ( z < -0.5 * h || z > 0.5 * h )
-        d = std::numeric_limits<double>::infinity();
-    return ( inside ? -1 : 1 ) * d;
+    double z = pos.z() + d3 * ang.z();
+    if ( fabs( z ) > 0.5 * h )
+        d3 = std::numeric_limits<double>::infinity();
+    // Return the closest surface
+    double d = std::min( { d1, d2, d3 } );
+    if ( d < 1e100 )
+        return ( inside ? -1 : 1 ) * d;
+    return std::numeric_limits<double>::infinity();
+}
+
+
+/****************************************************************
+ * Compute the distance to the surface of a cylinder             *
+ ****************************************************************/
+double distanceToTube( double r_min, double r_max, double h, const Point &pos, const Point &ang )
+{
+    double r_min2 = r_min * r_min;
+    double r_max2 = r_max * r_max;
+    // Check if the point is inside the tube
+    double r2   = pos.x() * pos.x() + pos.y() * pos.y();
+    bool inside = std::abs( pos.z() ) <= 0.5 * h && r2 >= r_min2 && r2 <= r_max2;
+    // Check the distance to the faces
+    double d1 = ( 0.5 * h - pos.z() ) / ang.z();
+    double d2 = ( -0.5 * h - pos.z() ) / ang.z();
+    if ( d1 <= 0 || ang.z() == 0 )
+        d1 = std::numeric_limits<double>::infinity();
+    if ( d2 <= 0 || ang.z() == 0 )
+        d2 = std::numeric_limits<double>::infinity();
+    auto pos2 = pos + std::min( d1, d2 ) * ang;
+    r2        = pos2.x() * pos2.x() + pos2.y() * pos2.y();
+    if ( r2 < r_min2 || r2 > r_max2 ) {
+        d1 = std::numeric_limits<double>::infinity();
+        d2 = std::numeric_limits<double>::infinity();
+    }
+    // Check the intersection of a line with the circles of the tube
+    auto checkCircle = [pos, ang, h]( double r ) {
+        if ( ang.x() == 0 && ang.y() == 0 )
+            return std::numeric_limits<double>::infinity();
+        double d = std::abs( distanceToCircle( r, pos, ang ) );
+        double z = pos.z() + d * ang.z();
+        // We did not intersect with the surface, check for a second intersection
+        if ( fabs( z ) > 0.5 * h ) {
+            d += 1e-8;
+            auto pos2 = pos + d * ang;
+            double d2 = std::abs( distanceToCircle( r, pos2, ang ) );
+            d += d2;
+            z = pos.z() + d * ang.z();
+            if ( fabs( z ) > 0.5 * h )
+                d = std::numeric_limits<double>::infinity();
+        }
+        return d;
+    };
+    double d3 = checkCircle( r_min );
+    double d4 = checkCircle( r_max );
+    // Return the closest surface
+    double d = std::min( { d1, d2, d3, d4 } );
+    if ( d < 1e100 )
+        return ( inside ? -1 : 1 ) * d;
+    return std::numeric_limits<double>::infinity();
 }
 
 

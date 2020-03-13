@@ -570,9 +570,14 @@ TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> verticie
             }
         }
     } else {
-        d_boundary_ids = std::vector<int>( 1, 0 );
-        d_boundary_iterators.resize( 1 );
-        d_boundary_iterators[0] = d_surface_iterators;
+        if ( d_surface_iterators.back()[0].size() == 0 ) {
+            d_boundary_ids.clear();
+            d_boundary_iterators.clear();
+        } else {
+            d_boundary_ids = std::vector<int>( 1, 0 );
+            d_boundary_iterators.resize( 1 );
+            d_boundary_iterators[0] = d_surface_iterators;
+        }
     }
 }
 
