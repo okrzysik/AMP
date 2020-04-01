@@ -2178,7 +2178,7 @@ inline bool find_flip_2D( const std::array<TYPE, 2> *x,
         int t1 = elem.t1;
         int t2 = elem.t2;
 #if DEBUG_CHECK >= 1
-        TYPE x1[6], x2[6], xi1[2], xi2[2];
+        TYPE x1[6] = { 0 }, x2[6] = { 0 }, xi1[2] = { 0 }, xi2[2] = { 0 };
         for ( int j = 0; j < 3; j++ ) {
             int m1 = tri[j + t1 * 3];
             int m2 = tri[j + t2 * 3];
@@ -2522,6 +2522,7 @@ static inline int test_in_circumsphere2( const TYPE x[], const TYPE xi[], const 
 {
     std::array<TYPE, NDIM> x2[NDIM + 1], xi2;
     copy_x2( x, x2 );
+    xi2.fill( 0 );
     std::copy( xi, xi + NDIM, xi2.begin() );
     return test_in_circumsphere<NDIM, TYPE, ETYPE>( x2, xi2, TOL_VOL );
 }

@@ -1,11 +1,11 @@
-BEGIN_PACKAGE_CONFIG ( time_integrators )
-ADD_PACKAGE_SUBDIRECTORY ( oxide )
+BEGIN_PACKAGE_CONFIG( time_integrators )
+ADD_PACKAGE_SUBDIRECTORY( oxide )
 
 IF ( USE_EXT_SUNDIALS )
-    ADD_PACKAGE_SUBDIRECTORY ( sundials )
+    ADD_PACKAGE_SUBDIRECTORY( sundials )
 ENDIF()
 
-INSTALL_AMP_TARGET ( time_integrators )
+INSTALL_AMP_TARGET( time_integrators )
 
-ADD_SUBDIRECTORY ( test )
+ADD_SUBDIRECTORY( test )
 

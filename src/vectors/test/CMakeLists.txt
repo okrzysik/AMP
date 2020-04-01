@@ -3,7 +3,6 @@
 ############################################################################
 
 COPY_TEST_FILE( input_testMultiVector )
-COPY_MESH_FILE ( brick.e )
 
 INITIALIZE_TESTBUILDER()
 

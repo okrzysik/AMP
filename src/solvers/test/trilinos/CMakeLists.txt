@@ -16,22 +16,24 @@ COPY_TEST_FILE( input_testTrilinosNOXSolver )
 
 
 # Copy test data
-COPY_MESH_FILE( cube27.e )
-COPY_MESH_FILE( cube4096.e )
-COPY_MESH_FILE( cube64.with.boundary.labels.e )
-COPY_MESH_FILE( halden_1_pellet_9mil.e )
-COPY_MESH_FILE( halden_1_clad.e )
+IF ( AMP_DATA )
+    COPY_MESH_FILE( cube27.e )
+    COPY_MESH_FILE( cube4096.e )
+    COPY_MESH_FILE( cube64.with.boundary.labels.e )
+    COPY_MESH_FILE( halden_1_pellet_9mil.e )
+    COPY_MESH_FILE( halden_1_clad.e )
+ENDIF()
 
 
 # Add the tests
 INITIALIZE_TESTBUILDER()
-IF( USE_TRILINOS_NOX )
+IF( USE_TRILINOS_NOX AND AMP_DATA )
     ADD_TB_TEST_1_2_4( testTrilinosNOXSolver )
 ENDIF()
-IF( USE_EXT_LIBMESH AND USE_TRILINOS_NOX )
+IF( USE_EXT_LIBMESH AND USE_TRILINOS_NOX AND AMP_DATA )
     ADD_TB_TEST_1_2_4( testTrilinosNOX_NonlinearThermal )
 ENDIF()
-IF( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
+IF( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_TRILINOS AND AMP_DATA )
     ADD_TB_TEST_1_2_4( testTrilinosMLSolver_LinearThermalRobin )
     ADD_TB_TEST_1_2_4( testTrilinosMLSolver_LinearThermalOperator_bar )
     ADD_TB_TEST_1_2_4( testTrilinosMLSolver_LinearFickOperator_bar )

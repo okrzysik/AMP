@@ -2,18 +2,19 @@
 #  Configure tests
 ############################################################################
 
-# Copy meshes and input files
-COPY_MESH_FILE ( pellet_1x.e )
-COPY_MESH_FILE ( clad_1x_1pellet.e )
-COPY_MESH_FILE ( cube343H27.e )
-COPY_MESH_FILE ( pellet_lo_res.e )
-COPY_MESH_FILE ( clad_lo_res_4pellet.e )
-#COPY_TEST_FILE( input_Mesh )
+# Copy meshes
+IF ( AMP_DATA )
+    COPY_MESH_FILE( pellet_1x.e )
+    COPY_MESH_FILE( clad_1x_1pellet.e )
+    COPY_MESH_FILE( cube343H27.e )
+    COPY_MESH_FILE( pellet_lo_res.e )
+    COPY_MESH_FILE( clad_lo_res_4pellet.e )
+ENDIF()
 
 # Add tests
-IF ( USE_AMP_MESH )
-    ADD_AMP_TEST_1_2_4 ( test_Discretization )
+IF ( USE_AMP_MESH AND AMP_DATA )
+    ADD_AMP_TEST_1_2_4( test_Discretization )
     IF ( USE_EXT_LIBMESH )
-        ADD_AMP_TEST_1_2_4 ( test_libmeshElement )
+        ADD_AMP_TEST_1_2_4( test_libmeshElement )
     ENDIF()
 ENDIF()

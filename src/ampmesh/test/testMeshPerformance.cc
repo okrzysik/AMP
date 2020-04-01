@@ -29,13 +29,14 @@ void testMeshGenerators( AMP::UnitTest &ut )
     runTest<AMP::unit_test::AMPCylinderGenerator>( ut );
     runTest<AMP::unit_test::AMPMultiMeshGenerator>( ut );
     runTest<AMP::unit_test::AMPCubeGenerator<4>>( ut );
-// libmesh generators
+// libMesh generators
 #ifdef USE_EXT_LIBMESH
-    // Test the libmesh cube generator
     runTest<AMP::unit_test::LibMeshCubeGenerator<5>>( ut );
+    runTest<AMP::unit_test::libMeshThreeElementGenerator>( ut );
+#ifdef USE_AMP_DATA
     runTest<AMP::unit_test::ExodusReaderGenerator<>>( ut );
     runTest<AMP::unit_test::ExodusReaderGenerator<2>>( ut );
-    runTest<AMP::unit_test::libMeshThreeElementGenerator>( ut );
+#endif
 #endif
     PROFILE_STOP( "testMeshGenerators" );
 }

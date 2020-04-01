@@ -2,16 +2,7 @@
 #  Configure tests
 ############################################################################
 
-# Copy meshes and input files
-COPY_MESH_FILE( pellet_1x.e )
-COPY_MESH_FILE( clad_1x_1pellet.e )
-COPY_MESH_FILE( clad_1x_2pellet.e )
-COPY_MESH_FILE( clad_1x_3pellet.e )
-COPY_MESH_FILE( cube343H27.e )
-COPY_MESH_FILE( pellet_lo_res.e )
-COPY_MESH_FILE( clad_lo_res_4pellet.e )
-COPY_MESH_FILE( multiElementMesh.e )
-COPY_MESH_FILE( Utah_teapot.stl )
+# Copy input files
 COPY_TEST_FILE( input_Mesh )
 COPY_TEST_FILE( input_SiloIO-1 )
 COPY_TEST_FILE( input_SiloIO-2 )
@@ -28,9 +19,22 @@ COPY_TEST_FILE( input_stl )
 COPY_TEST_FILE( input_crystal )
 COPY_TEST_FILE( CRYSTAL_FINAL_2mm.STL )
 
+# Copy meshes
+IF ( AMP_DATA )
+    COPY_MESH_FILE( pellet_1x.e )
+    COPY_MESH_FILE( clad_1x_1pellet.e )
+    COPY_MESH_FILE( clad_1x_2pellet.e )
+    COPY_MESH_FILE( clad_1x_3pellet.e )
+    COPY_MESH_FILE( cube343H27.e )
+    COPY_MESH_FILE( pellet_lo_res.e )
+    COPY_MESH_FILE( clad_lo_res_4pellet.e )
+    COPY_MESH_FILE( multiElementMesh.e )
+    COPY_MESH_FILE( Utah_teapot.stl )
+ENDIF()
+
 # test the load balancer
 ADD_AMP_TEST( test_LoadBalance 8 inputMultiPellet348 )
-IF ( USE_EXT_LIBMESH )
+IF ( USE_EXT_LIBMESH AND AMP_DATA )
     ADD_AMP_TEST( test_LoadBalance 1 input_Mesh )
     ADD_AMP_TEST( test_LoadBalance 2 input_Mesh )
     ADD_AMP_TEST( test_LoadBalance 4 input_Mesh )
@@ -41,7 +45,6 @@ ADD_AMP_TEST( test_LoadBalance 64000 inputMultiPellet348 )
 
 # Add tests
 ADD_AMP_TEST( test_GeometryHelpers )
-ADD_AMP_TEST( test_Mesh input_stl ) # Currently only works on 1 rank, move to zoo when fixed
 ADD_AMP_TEST_PARALLEL( test_Mesh 4 input_AMP_mesh_zoo_2D )
 ADD_AMP_TEST_PARALLEL( test_Mesh 4 input_AMP_mesh_zoo_3D )
 IF( USE_EXT_PETSC AND USE_EXT_TRILINOS )
@@ -49,20 +52,18 @@ IF( USE_EXT_PETSC AND USE_EXT_TRILINOS )
 ELSE()
     ADD_AMP_TEST( test_Mesh )
 ENDIF()
-
 ADD_AMP_TEST( testMeshPerformance )
 IF ( USE_EXT_LIBMESH )
     ADD_AMP_TEST_1_2_4( test_InitializeLibmesh )
 ENDIF()
 ADD_AMP_TEST_1_2_4( test_StructuredMeshHelpers )
-
-#ADD_AMP_TEST( testHex8ElementMapping )
-#ADD_AMP_TEST( testHex8ElementLinearInterpolation )
-#ADD_AMP_TEST( testHex8ElementNormalToFaces )
 ADD_AMP_TEST( testTriangleProjection )
-ADD_AMP_TEST( test_SiloIO input_stl )
 ADD_AMP_TEST( test_SiloIO input_crystal )
-IF ( USE_EXT_LIBMESH )
+IF ( AMP_DATA )
+    ADD_AMP_TEST( test_Mesh input_stl ) # Currently only works on 1 rank
+    ADD_AMP_TEST( test_SiloIO input_stl )
+ENDIF()
+IF ( USE_EXT_LIBMESH AND AMP_DATA )
     ADD_AMP_TEST_1_2_4 ( test_SiloIO input_SiloIO-1 )
 ELSE()
     ADD_AMP_TEST_1_2_4 ( test_SiloIO input_SiloIO-2 )
@@ -76,4 +77,8 @@ ADD_AMP_TEST_1_2_4( testMultiMeshSubset )
 COPY_TEST_FILE( input_testMultiMeshSubset )
 ADD_AMP_TEST_1_2_4( testMultiMeshOwnerRank )
 COPY_TEST_FILE( input_testMultiMeshOwnerRank )
+
+#ADD_AMP_TEST( testHex8ElementMapping )
+#ADD_AMP_TEST( testHex8ElementLinearInterpolation )
+#ADD_AMP_TEST( testHex8ElementNormalToFaces )
 

@@ -47,24 +47,29 @@ COPY_TEST_FILE( input_testConstraintsEliminationOperator )
 
 
 # Copy test data
-COPY_MESH_FILE( brick.e )
-COPY_MESH_FILE ( cylinder270.e )
-COPY_MESH_FILE ( cylinder270.e )
+IF ( AMP_DATA )
+    COPY_MESH_FILE( brick.e )
+    COPY_MESH_FILE ( cylinder270.e )
+    COPY_MESH_FILE ( cylinder270.e )
+ENDIF()
 
 
 # Add the tests
 INITIALIZE_TESTBUILDER()
-ADD_TB_TEST_1_2_4( testLinearMechanics_reset )
-ADD_TB_TEST_1_2_4( testLinearMechanics_eigenValues )
-ADD_TB_TEST_1_2_4( testNonlinearMechanics )
-ADD_TB_TEST_1_2_4( testNonlinearMechanics_apply )
-ADD_TB_TEST_1_2_4( testNonlinearThermoMechanics )
-ADD_TB_TEST_1_2_4( testNonlinearThermoMechanics_bug )
-ADD_TB_TEST_1_2_4( testNonlinearThermalOxygenDiffusionWithMechanics )
-ADD_TB_TEST_1_2_4( testNonlinearMechanics_reset )
-ADD_TB_TEST_1_2_4( testMaterialModels_ElasticDamageThermalStrain )
-IF ( USE_EXT_PETSC )
-    ADD_TB_TEST_1_2_4 ( testConstraintsEliminationOperator )
+# We need to sort out which tests rely on AMP_DATA
+IF ( AMP_DATA )
+    ADD_TB_TEST_1_2_4( testLinearMechanics_reset )
+    ADD_TB_TEST_1_2_4( testLinearMechanics_eigenValues )
+    ADD_TB_TEST_1_2_4( testNonlinearMechanics )
+    ADD_TB_TEST_1_2_4( testNonlinearMechanics_apply )
+    ADD_TB_TEST_1_2_4( testNonlinearThermoMechanics )
+    ADD_TB_TEST_1_2_4( testNonlinearThermoMechanics_bug )
+    ADD_TB_TEST_1_2_4( testNonlinearThermalOxygenDiffusionWithMechanics )
+    ADD_TB_TEST_1_2_4( testNonlinearMechanics_reset )
+    ADD_TB_TEST_1_2_4( testMaterialModels_ElasticDamageThermalStrain )
+    IF ( USE_EXT_PETSC )
+        ADD_TB_TEST_1_2_4 ( testConstraintsEliminationOperator )
+    ENDIF()
 ENDIF()
 FINALIZE_TESTBUILDER()
 
