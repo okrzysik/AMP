@@ -479,6 +479,7 @@ size_t SubsetMesh::numGhostElements( const GeomType type, int gcw ) const
         AMP_ERROR( "Maximum ghost width exceeded" );
     return d_elements[(int) type][gcw]->size();
 }
+uint64_t SubsetMesh::positionHash() const { return d_parent_mesh->positionHash(); }
 Mesh::Movable SubsetMesh::isMeshMovable() const { return Mesh::Movable::Fixed; }
 void SubsetMesh::displaceMesh( const std::vector<double> & )
 {

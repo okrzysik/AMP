@@ -22,7 +22,7 @@ namespace Mesh {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh ) : BoxMesh( mesh )
+MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh ) : BoxMesh( mesh ), d_pos_hash( 0 )
 {
     // Get a list of all nodes on the current processor
     MeshIterator nodeIterator = mesh.getIterator( GeomType::Vertex, d_max_gcw );
@@ -51,6 +51,7 @@ MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh ) : BoxMesh( mesh
  * Functions to displace the mesh                                *
  ****************************************************************/
 Mesh::Movable MovableBoxMesh::isMeshMovable() const { return Mesh::Movable::Deform; }
+uint64_t MovableBoxMesh::positionHash() const { return d_pos_hash; }
 void MovableBoxMesh::displaceMesh( const std::vector<double> &x )
 {
     AMP_ASSERT( x.size() == PhysicalDim );
@@ -64,6 +65,7 @@ void MovableBoxMesh::displaceMesh( const std::vector<double> &x )
     }
     if ( d_geometry != nullptr )
         d_geometry->displace( x.data() );
+    d_pos_hash++;
 }
 #ifdef USE_AMP_VECTORS
 void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
@@ -121,6 +123,7 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
         d_box[2 * i + 0] = d_comm.minReduce( d_box_local[2 * i + 0] );
         d_box[2 * i + 1] = d_comm.maxReduce( d_box_local[2 * i + 1] );
     }
+    d_pos_hash++;
 #else
     AMP_ERROR( "displaceMesh requires DISCRETIZATION" );
 #endif

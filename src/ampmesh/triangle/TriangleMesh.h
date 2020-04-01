@@ -24,9 +24,9 @@ namespace AMP {
 namespace Mesh {
 
 
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 class TriangleMeshIterator;
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 class TriangleMeshElement;
 
 
@@ -44,12 +44,11 @@ public:
         d_size.resize( data.size() );
         d_offset.resize( data.size() );
         d_data.resize( Nt );
-        size_t count = 0;
-        for ( size_t i = 0; i < data.size(); i++ ) {
+        for ( size_t i = 0, k = 0; i < data.size(); i++ ) {
             d_size[i]   = data[i].size();
-            d_offset[i] = count;
-            for ( size_t j = 0; j < d_size[i]; j++, count++ )
-                d_data[count] = data[i][j];
+            d_offset[i] = k;
+            for ( size_t j = 0; j < d_size[i]; j++, k++ )
+                d_data[k] = data[i][j];
         }
     }
     inline const ElementID *begin( size_t i ) const
@@ -64,10 +63,6 @@ public:
             return nullptr;
         return &d_data[d_offset[i] + d_size[i]];
     }
-    inline std::vector<TYPE> get( size_t i ) const
-    {
-        return std::vector<TYPE>( begin( i ), end( i ) );
-    }
 
 private:
     std::vector<size_t> d_size;
@@ -80,7 +75,7 @@ private:
  * \class TriangleMesh
  * \brief A class used to represent an unstructured mesh of Triangles/Tetrahedrals
  */
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 class TriangleMesh : public AMP::Mesh::Mesh
 {
 public: // Convenience typedefs
@@ -115,17 +110,22 @@ public:
     /**
      * \brief Generate a triangle mesh from local triangle coordinates
      * \details  Create a triangle mesh from the local triangle coordinates.
-     *    Note: Triangle list should be unique for each rank, load balance will be automatically
-     * adjusted. \param triangles  List of triangles (each rank may contribute a unique list) \param
-     * comm       Communicator to use (load balance wil be automatically generated on this comm)
-     * \param tol        Relative tolerance (based on range of points) to use to determine if two
-     * points are the same
+     *    Note: Triangle list should be unique for each rank,
+     *          load balance will be automatically adjusted.
+     * \param verticies  List of verticies
+     * \param triangles  List of triangles (each rank may contribute a unique list)
+     * \param tri_nab    List of triangles neighbors
+     * \param comm       Communicator to use (load balance wil be automatically generated on this
+     * comm) \param geom       Optional geometry to associate with the mesh \param blockID Optional
+     * vector with the block id for each triangle
      */
     static std::shared_ptr<TriangleMesh<NG, NP>>
     generate( std::vector<std::array<double, NP>> verticies,
               std::vector<std::array<int64_t, NG + 1>> triangles,
               std::vector<std::array<int64_t, NG + 1>> tri_nab,
-              const AMP_MPI &comm );
+              const AMP_MPI &comm,
+              std::shared_ptr<Geometry::Geometry> geom = nullptr,
+              std::vector<int> blockID                 = std::vector<int>() );
 
 
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
@@ -296,6 +296,18 @@ public:
 
 
     /**
+     * \brief    Identify if the position has moved
+     * \details  This function will return a hash that can be used to
+     *    identify if the mesh has been moved.  Any time that displaceMesh
+     *    is called, the hash value should change.  There is no requirement
+     *    that dispacing a mesh and returning it back to the original position
+     *    will return the original hash.
+     * @return   hash value with current position id
+     */
+    virtual uint64_t positionHash() const override;
+
+
+    /**
      * \brief    Displace the entire mesh
      * \details  This function will displace the entire mesh by a scalar value.
      *   This function is a blocking call for the mesh communicator, and requires
@@ -326,11 +338,16 @@ protected:
     explicit TriangleMesh( std::vector<std::array<double, NP>> verticies,
                            std::vector<std::array<int64_t, NG + 1>> triangles,
                            std::vector<std::array<int64_t, NG + 1>> tri_nab,
-                           const AMP_MPI &comm );
+                           const AMP_MPI &comm,
+                           std::shared_ptr<Geometry::Geometry> geom,
+                           std::vector<int> block );
     void initialize();
     void initializeBoundingBox();
 
 protected:
+    // Create an iterator from a list
+    MeshIterator createIterator( std::shared_ptr<std::vector<ElementID>> ) const;
+
     // Return the IDs of the elements composing the current element
     void getElementsIDs( const ElementID &id, const GeomType type, ElementID *IDs ) const;
     inline void getVerticies( const ElementID &id, int &N, ElementID *IDs ) const;
@@ -339,21 +356,31 @@ protected:
     void getNeighborIDs( const ElementID &id, std::vector<ElementID> &IDs ) const;
 
     // Return the IDs of the parent elements
-    std::vector<ElementID> getElementParents( const ElementID &id, const GeomType type ) const;
+    std::pair<const ElementID *, const ElementID *> getElementParents( const ElementID &id,
+                                                                       const GeomType type ) const;
+
+    // Return a new element (user must delete)
+    MeshElement *getElement2( const MeshElementID &id ) const;
 
     // Return the coordinated of the given vertex
     // Note: no error checking is done to make sure it is a valid vertex
-    const Point &getPos( const ElementID &id ) const;
+    TriangleMesh::Point getPos( const ElementID &id ) const;
 
     // Check if the element is on the given boundry, block, etc
     bool isOnSurface( const ElementID &elemID ) const;
     bool isOnBoundary( const ElementID &elemID, int id ) const;
     bool isInBlock( const ElementID &elemID, int id ) const;
-    static bool inIterator( const ElementID &id, const TriangleMeshIterator<NG, NP> &it );
+    static bool inIterator( const ElementID &id, const MeshIterator *it );
 
     // Friends
-    friend TriangleMeshIterator<NG, NP>;
-    friend TriangleMeshElement<NG, NP>;
+    friend TriangleMeshIterator<NG, NP, 0>;
+    friend TriangleMeshIterator<NG, NP, 1>;
+    friend TriangleMeshIterator<NG, NP, 2>;
+    friend TriangleMeshIterator<NG, NP, 3>;
+    friend TriangleMeshElement<NG, NP, 0>;
+    friend TriangleMeshElement<NG, NP, 1>;
+    friend TriangleMeshElement<NG, NP, 2>;
+    friend TriangleMeshElement<NG, NP, 3>;
 
 
 private: // Internal data
@@ -361,17 +388,21 @@ private: // Internal data
     std::array<size_t, 4> d_N_global;
 
     // Store the local triangle data
+    typedef std::array<ElementID, NG + 1> NeighborIDs;
     std::vector<Point> d_vert;
     std::vector<Edge> d_edge;
     std::vector<Triangle> d_tri;
     std::vector<Tetrahedron> d_tet;
-    std::vector<std::array<ElementID, NG + 1>> d_neighbors;
+    std::vector<NeighborIDs> d_neighbors;
+    std::vector<int> d_blockID;
 
     // Store the ghost data
     std::map<ElementID, Point> d_remote_vert;
     std::map<ElementID, Edge> d_remote_edge;
     std::map<ElementID, Triangle> d_remote_tri;
     std::map<ElementID, Tetrahedron> d_remote_tet;
+    std::map<ElementID, NeighborIDs> d_remote_neighbors;
+    std::map<ElementID, int> d_remote_blockID;
 
     // Store the parent data
     StoreCompressedList<ElementID> d_parents[NG][NG + 1];
@@ -382,10 +413,15 @@ private: // Internal data
     std::vector<std::array<ElementID, 6>> d_tet_edge;
 
     // Store common iterators
-    std::vector<TriangleMeshIterator<NG, NP>> d_iterators;
-    std::vector<TriangleMeshIterator<NG, NP>> d_surface_iterators;
-    std::vector<std::vector<TriangleMeshIterator<NG, NP>>> d_boundary_iterators;
-    std::vector<std::vector<TriangleMeshIterator<NG, NP>>> d_block_iterators;
+    std::vector<int> d_block_ids, d_boundary_ids;
+    using IteratorSet = std::array<MeshIterator, NG + 1>;
+    std::vector<IteratorSet> d_iterators;                       // [gcw][type]
+    std::vector<IteratorSet> d_surface_iterators;               // [gcw][type]
+    std::vector<std::vector<IteratorSet>> d_boundary_iterators; // [id][gcw][type]
+    std::vector<std::vector<IteratorSet>> d_block_iterators;    // [id][gcw][type]
+
+    // Index indicating number of times the position has changed
+    uint64_t d_pos_hash;
 };
 
 

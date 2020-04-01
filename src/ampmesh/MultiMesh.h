@@ -277,6 +277,19 @@ public:
      */
     virtual Mesh::Movable isMeshMovable() const override;
 
+
+    /**
+     * \brief    Identify if the position has moved
+     * \details  This function will return a hash that can be used to
+     *    identify if the mesh has been moved.  Any time that displaceMesh
+     *    is called, the hash value should change.  There is no requirement
+     *    that dispacing a mesh and returning it back to the original position
+     *    will return the original hash.
+     * @return   hash value with current position id
+     */
+    virtual uint64_t positionHash() const override;
+
+
     /**
      * \brief    Displace the entire mesh
      * \details  This function will displace the entire mesh by a scalar value.

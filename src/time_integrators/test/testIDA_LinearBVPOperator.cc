@@ -30,7 +30,7 @@
 #include <string>
 
 
-static inline double fun( double x, double y, double z, double t )
+static inline double fun( double x, double y, double z )
 {
     return ( 750.0 + 10000.0 * ( 0.5 + x ) * ( 0.5 - x ) * ( 0.5 + y ) * ( 0.5 - y ) * ( 0.5 + z ) *
                          ( 0.5 - z ) );
@@ -140,7 +140,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             double px  = ( node->coord() )[0];
             double py  = ( node->coord() )[1];
             double pz  = ( node->coord() )[2];
-            double val = fun( px, py, pz, 0 );
+            double val = fun( px, py, pz );
 
             // cout << "val = " << val << endl;
             // cout << "counter = " << counter << "gid.size() = " << gid.size() << endl;

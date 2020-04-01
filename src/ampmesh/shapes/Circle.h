@@ -33,6 +33,7 @@ public:
     // Functions inherited from Geometry
     virtual std::string getName() const override final { return "Circle"; }
     virtual bool isConvex() const override final { return true; }
+    virtual Point nearest( const Point &pos ) const override final;
     virtual double distance( const Point &pos, const Point &dir ) const override final;
     virtual bool inside( const Point &pos ) const override final;
     virtual int NSurface() const override final { return 1; }
@@ -44,6 +45,8 @@ public:
     virtual std::pair<Point, Point> box() const override final;
     virtual void displace( const double *x ) override final;
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
+    virtual std::vector<int>
+    getLogicalGridSize( const std::vector<double> &res ) const override final;
     virtual std::vector<bool> getPeriodicDim() const override final;
     virtual std::vector<int> getLogicalSurfaceIds() const override final;
     virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;

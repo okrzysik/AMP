@@ -18,11 +18,11 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
 #include "../applyTests.h"
 
 #include <iostream>
+#include <memory>
 #include <string>
 
 
@@ -33,88 +33,66 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     // Initialization
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-
     AMP::PIO::logOnlyNodeZero( log_file );
 
     // Input database
-
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    //--------------------------------------------------
     //   Create the Mesh.
-    //--------------------------------------------------
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db   = input_db->getDatabase( "Mesh" );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
-    //--------------------------------------------------
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     // Create nonlinear Diffusion BVP operator and access volume nonlinear Diffusion operator
-    std::shared_ptr<AMP::Database> nbvp_db = std::dynamic_pointer_cast<AMP::Database>(
+    auto nbvp_db = std::dynamic_pointer_cast<AMP::Database>(
         input_db->getDatabase( "ThermalNonlinearBVPOperator" ) );
-    std::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "ThermalNonlinearBVPOperator", input_db );
-    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
+    auto nlinBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
+        meshAdapter, "ThermalNonlinearBVPOperator", input_db );
+    auto nlinBVPOp =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
-    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nlinOp =
-        std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
-            nlinBVPOp->getVolumeOperator() );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
-        nlinOp->getTransportModel();
+    auto nlinOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
+        nlinBVPOp->getVolumeOperator() );
+    auto elementPhysicsModel = nlinOp->getTransportModel();
 
     // use the linear BVP operator to create a thermal linear operator with bc's
-    std::shared_ptr<AMP::Operator::Operator> linBVPOperator =
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "ThermalLinearBVPOperator", input_db, elementPhysicsModel );
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> linBVPOp =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
-    // std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> linOp =
-    //        std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(linBVPOp->getVolumeOperator());
-
+    auto linBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
+        meshAdapter, "ThermalLinearBVPOperator", input_db, elementPhysicsModel );
+    auto linBVPOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
     ut->passes( exeName + ": creation" );
     std::cout.flush();
 
     // Set up input and output vectors
-    AMP::LinearAlgebra::Variable::shared_ptr bvpSolVar = nlinOp->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr bvpRhsVar = nlinOp->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr bvpResVar = nlinOp->getOutputVariable();
+    auto bvpSolVar = nlinOp->getOutputVariable();
+    auto bvpRhsVar = nlinOp->getOutputVariable();
+    auto bvpResVar = nlinOp->getOutputVariable();
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Create a DOF manager for a nodal vector
     int DOFsPerNode     = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
+    auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // create solution, rhs, and residual vectors
-    AMP::LinearAlgebra::Vector::shared_ptr bvpSolVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, bvpSolVar );
-    AMP::LinearAlgebra::Vector::shared_ptr bvpRhsVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, bvpRhsVar );
-    AMP::LinearAlgebra::Vector::shared_ptr bvpResVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, bvpResVar );
+    auto bvpSolVec = AMP::LinearAlgebra::createVector( nodalDofMap, bvpSolVar );
+    auto bvpRhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, bvpRhsVar );
+    auto bvpResVec = AMP::LinearAlgebra::createVector( nodalDofMap, bvpResVar );
 
     bvpRhsVec->setToScalar( 0.0 );
 
-    std::shared_ptr<AMP::Database> volOp_db =
-        input_db->getDatabase( nbvp_db->getString( "VolumeOperator" ) );
-    std::shared_ptr<AMP::Database> model_db =
-        input_db->getDatabase( volOp_db->getString( "LocalModel" ) );
-    std::string property = model_db->getString( "Property" );
+    auto volOp_db = input_db->getDatabase( nbvp_db->getString( "VolumeOperator" ) );
+    auto model_db = input_db->getDatabase( volOp_db->getString( "LocalModel" ) );
+    auto property = model_db->getString( "Property" );
 
     // set shift, scale for applyTests
     double shift = 0., scale = 1.;
     std::vector<double> range( 2 );
-    std::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel =
+    auto transportModel =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( elementPhysicsModel );
-    AMP::Materials::Material::shared_ptr mat = transportModel->getMaterial();
+    auto mat = transportModel->getMaterial();
     if ( nlinOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
         if ( ( mat->property( property ) )->is_argument( "temperature" ) ) {
             range = ( mat->property( property ) )->get_arg_range( "temperature" ); // Compile error

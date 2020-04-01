@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/MeshElement.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 
 namespace AMP {
 namespace Mesh {
@@ -104,6 +105,18 @@ Point MeshElement::norm() const
     if ( element == nullptr )
         AMP_ERROR( "norm is not implimented for the base class (" + elementClass() + ")" );
     return element->norm();
+}
+Point MeshElement::nearest( const Point &pos ) const
+{
+    if ( element == nullptr )
+        AMP_ERROR( "nearest is not implimented for the base class (" + elementClass() + ")" );
+    return element->nearest( pos );
+}
+double MeshElement::distance( const Point &pos, const Point &dir ) const
+{
+    if ( element == nullptr )
+        AMP_ERROR( "distance is not implimented for the base class (" + elementClass() + ")" );
+    return element->distance( pos, dir );
 }
 bool MeshElement::isOnSurface() const
 {

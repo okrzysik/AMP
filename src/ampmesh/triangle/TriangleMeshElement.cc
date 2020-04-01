@@ -1,7 +1,83 @@
 #include "AMP/ampmesh/triangle/TriangleMeshElement.h"
+#include "AMP/ampmesh/MeshPoint.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/ampmesh/triangle/TriangleMesh.h"
 #include "AMP/ampmesh/triangle/TriangleMeshIterator.h"
+#include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/Utilities.h"
+
+#include <limits>
+
+
+/****************************************************************
+ * Overload basic operations                                     *
+ ****************************************************************/
+template<size_t N>
+static inline std::array<double, N> operator*( double x, const std::array<double, N> &y )
+{
+    if constexpr ( N == 1 )
+        return { x * y[0] };
+    else if constexpr ( N == 2 )
+        return { x * y[0], x * y[1] };
+    else if constexpr ( N == 3 )
+        return { x * y[0], x * y[1], x * y[2] };
+}
+template<size_t N>
+static inline std::array<double, N> operator-( const std::array<double, N> &x,
+                                               const std::array<double, N> &y )
+{
+    if constexpr ( N == 1 )
+        return { x[0] - y[0] };
+    else if constexpr ( N == 2 )
+        return { x[0] - y[0], x[1] - y[1] };
+    else if constexpr ( N == 3 )
+        return { x[0] - y[0], x[1] - y[1], x[2] - y[2] };
+}
+static constexpr double inv_factorial( int N )
+{
+    double x = 1;
+    for ( int i = 2; i <= N; i++ )
+        x *= i;
+    return 1.0 / x;
+}
+template<size_t N>
+static inline double abs( const std::array<double, N> &x )
+{
+    if constexpr ( N == 1 )
+        return std::abs( x[0] );
+    else if constexpr ( N == 2 )
+        return sqrt( x[0] * x[0] + x[1] * x[1] );
+    else if constexpr ( N == 3 )
+        return sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
+}
+template<size_t N>
+static inline double dot( const std::array<double, N> &x, const std::array<double, N> &y )
+{
+    if constexpr ( N == 1 )
+        return x[0] * y[0];
+    else if constexpr ( N == 2 )
+        return x[0] * y[0] + x[1] * y[1];
+    else if constexpr ( N == 3 )
+        return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+}
+static inline std::array<double, 3> cross( const std::array<double, 3> &x,
+                                           const std::array<double, 3> &y )
+{
+    return { x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0] };
+}
+template<size_t N>
+static inline std::array<double, N> normalize( const std::array<double, N> &x )
+{
+    if constexpr ( N == 1 ) {
+        return { 1.0 };
+    } else if constexpr ( N == 2 ) {
+        double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] );
+        return { tmp * x[0], tmp * x[1] };
+    } else if constexpr ( N == 3 ) {
+        double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
+        return { tmp * x[0], tmp * x[1], tmp * x[2] };
+    }
+}
 
 
 namespace AMP {
@@ -24,60 +100,58 @@ static constexpr uint8_t n_Simplex_elements[4][4] = {
 /********************************************************
  * Create a unique id for each class                     *
  ********************************************************/
-template<size_t NG, size_t NP>
-constexpr uint32_t TriangleMeshElement<NG, NP>::getTypeID()
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+constexpr uint32_t TriangleMeshElement<NG, NP, TYPE>::getTypeID()
 {
-    static_assert( NG > 0 && NP <= 3 && NP >= NG );
-    if constexpr ( NG == 1 && NP == 1 )
-        return AMP::Utilities::hash_char( "TriangleMeshElement<1,1>" );
-    else if constexpr ( NG == 1 && NP == 2 )
-        return AMP::Utilities::hash_char( "TriangleMeshElement<1,2>" );
-    else if constexpr ( NG == 1 && NP == 3 )
-        return AMP::Utilities::hash_char( "TriangleMeshElement<1,3>" );
-    else if constexpr ( NG == 2 && NP == 2 )
-        return AMP::Utilities::hash_char( "TriangleMeshElement<2,2>" );
-    else if constexpr ( NG == 2 && NP == 3 )
-        return AMP::Utilities::hash_char( "TriangleMeshElement<2,3>" );
-    else if constexpr ( NG == 3 && NP == 3 )
-        return AMP::Utilities::hash_char( "TriangleMeshElement<3,3>" );
+    char name[] = "TriangleMeshElement<0,0,0>";
+    name[21]    = 48 + NG;
+    name[23]    = 48 + NP;
+    name[25]    = 48 + TYPE;
+    return AMP::Utilities::hash_char( name );
 }
 
 
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-template<size_t NG, size_t NP>
-TriangleMeshElement<NG, NP>::TriangleMeshElement()
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement()
 {
     typeID  = getTypeID();
     element = nullptr;
     d_mesh  = nullptr;
 }
-template<size_t NG, size_t NP>
-TriangleMeshElement<NG, NP>::TriangleMeshElement( const MeshElementID &id,
-                                                  const TriangleMesh<NG, NP> *mesh )
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( const MeshElementID &id,
+                                                        const TriangleMesh<NG, NP> *mesh )
 {
     typeID     = getTypeID();
     element    = nullptr;
     d_globalID = id;
     d_mesh     = mesh;
+#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
+    auto type = static_cast<uint8_t>( id.type() );
+    if ( type != TYPE && type != 255 )
+        printf( "%i %i %i %i\n", NG, NP, TYPE, type );
+    AMP_ASSERT( type == TYPE || type == 255 );
+#endif
 }
-template<size_t NG, size_t NP>
-TriangleMeshElement<NG, NP>::TriangleMeshElement( const TriangleMeshElement &rhs )
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( const TriangleMeshElement &rhs )
     : MeshElement(), d_mesh( rhs.d_mesh ), d_globalID( rhs.d_globalID )
 {
     typeID  = getTypeID();
     element = rhs.element;
 }
-template<size_t NG, size_t NP>
-TriangleMeshElement<NG, NP>::TriangleMeshElement( TriangleMeshElement &&rhs )
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( TriangleMeshElement &&rhs )
     : MeshElement(), d_mesh( rhs.d_mesh ), d_globalID{ rhs.d_globalID }
 {
     typeID  = rhs.typeID;
     element = nullptr;
 }
-template<size_t NG, size_t NP>
-TriangleMeshElement<NG, NP> &TriangleMeshElement<NG, NP>::
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+TriangleMeshElement<NG, NP, TYPE> &TriangleMeshElement<NG, NP, TYPE>::
 operator=( const TriangleMeshElement &rhs )
 {
     if ( &rhs == this )
@@ -88,8 +162,9 @@ operator=( const TriangleMeshElement &rhs )
     d_mesh     = rhs.d_mesh;
     return *this;
 }
-template<size_t NG, size_t NP>
-TriangleMeshElement<NG, NP> &TriangleMeshElement<NG, NP>::operator=( TriangleMeshElement &&rhs )
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+TriangleMeshElement<NG, NP, TYPE> &TriangleMeshElement<NG, NP, TYPE>::
+operator=( TriangleMeshElement &&rhs )
 {
     if ( &rhs == this )
         return *this;
@@ -104,18 +179,18 @@ TriangleMeshElement<NG, NP> &TriangleMeshElement<NG, NP>::operator=( TriangleMes
 /****************************************************************
  * Function to clone the element                                 *
  ****************************************************************/
-template<size_t NG, size_t NP>
-MeshElement *TriangleMeshElement<NG, NP>::clone() const
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+MeshElement *TriangleMeshElement<NG, NP, TYPE>::clone() const
 {
-    return new TriangleMeshElement<NG, NP>( *this );
+    return new TriangleMeshElement<NG, NP, TYPE>( *this );
 }
 
 
 /****************************************************************
  * Return the global rank of the owner rank                      *
  ****************************************************************/
-template<size_t NG, size_t NP>
-unsigned int TriangleMeshElement<NG, NP>::globalOwnerRank() const
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+unsigned int TriangleMeshElement<NG, NP, TYPE>::globalOwnerRank() const
 {
     return d_mesh->getComm().globalRanks()[d_globalID.owner_rank()];
 }
@@ -124,16 +199,12 @@ unsigned int TriangleMeshElement<NG, NP>::globalOwnerRank() const
 /****************************************************************
  * Function to get the elements composing the current element    *
  ****************************************************************/
-static constexpr int get_N_elements( const GeomType &src, const GeomType &dst )
-{
-    return n_Simplex_elements[static_cast<int>( src )][static_cast<int>( dst )];
-}
-template<size_t NG, size_t NP>
-void TriangleMeshElement<NG, NP>::getElementsID( const GeomType type,
-                                                 std::vector<MeshElementID> &ID ) const
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+void TriangleMeshElement<NG, NP, TYPE>::getElementsID( const GeomType type,
+                                                       std::vector<MeshElementID> &ID ) const
 {
     // Number of elements composing a given type
-    int N = get_N_elements( d_globalID.type(), type );
+    int N = n_Simplex_elements[TYPE][static_cast<uint8_t>( type )];
     // Get the element ids
     ElementID tmp[6];
     d_mesh->getElementsIDs( d_globalID.elemID(), type, tmp );
@@ -141,12 +212,12 @@ void TriangleMeshElement<NG, NP>::getElementsID( const GeomType type,
     for ( int i = 0; i < N; i++ )
         ID[i] = MeshElementID( d_globalID.meshID(), tmp[i] );
 }
-template<size_t NG, size_t NP>
-void TriangleMeshElement<NG, NP>::getElements( const GeomType type,
-                                               std::vector<MeshElement> &children ) const
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+void TriangleMeshElement<NG, NP, TYPE>::getElements( const GeomType type,
+                                                     std::vector<MeshElement> &children ) const
 {
     // Number of elements composing a given type
-    int N = get_N_elements( d_globalID.type(), type );
+    int N = n_Simplex_elements[TYPE][static_cast<uint8_t>( type )];
     // Get the element ids
     ElementID tmp[6];
     d_mesh->getElementsIDs( d_globalID.elemID(), type, tmp );
@@ -154,15 +225,15 @@ void TriangleMeshElement<NG, NP>::getElements( const GeomType type,
     auto meshID = d_globalID.meshID();
     children.resize( N );
     for ( int i = 0; i < N; i++ )
-        children[i] = TriangleMeshElement<NG, NP>( MeshElementID( meshID, tmp[i] ), d_mesh );
+        children[i] = d_mesh->getElement( MeshElementID( meshID, tmp[i] ) );
 }
 
 
 /****************************************************************
  * Function to get the neighboring elements                      *
  ****************************************************************/
-template<size_t NG, size_t NP>
-void TriangleMeshElement<NG, NP>::getNeighbors(
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+void TriangleMeshElement<NG, NP, TYPE>::getNeighbors(
     std::vector<MeshElement::shared_ptr> &neighbors ) const
 {
     std::vector<ElementID> neighborIDs;
@@ -170,132 +241,230 @@ void TriangleMeshElement<NG, NP>::getNeighbors(
     neighbors.resize( neighborIDs.size() );
     auto meshID = d_globalID.meshID();
     for ( size_t i = 0; i < neighborIDs.size(); i++ )
-        neighbors[i].reset(
-            new TriangleMeshElement<NG, NP>( MeshElementID( meshID, neighborIDs[i] ), d_mesh ) );
+        neighbors[i].reset( d_mesh->getElement2( MeshElementID( meshID, neighborIDs[i] ) ) );
+}
+
+
+/****************************************************************
+ * Get the coordinates of the verticies                          *
+ ****************************************************************/
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+inline void TriangleMeshElement<NG, NP, TYPE>::getVertexCoord( std::array<double, NP> *x ) const
+{
+    if constexpr ( TYPE == 0 ) {
+        x[0] == d_mesh->getPos( d_globalID.elemID() );
+    } else {
+        ElementID ids[TYPE + 1];
+        d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
+        for ( size_t i = 0; i <= TYPE; i++ )
+            x[i] = d_mesh->getPos( ids[i] );
+    }
 }
 
 
 /****************************************************************
  * Functions to get basic element properties                     *
  ****************************************************************/
-template<size_t N>
-static inline double dot( const std::array<double, N> &x, const std::array<double, N> &y )
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+double TriangleMeshElement<NG, NP, TYPE>::volume() const
 {
-    if constexpr ( N == 1 )
-        return x[0] * y[0];
-    else if constexpr ( N == 2 )
-        return x[0] * y[0] + x[1] * y[1];
-    else if constexpr ( N == 3 )
-        return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
-}
-template<size_t N>
-static inline std::array<double, N> operator-( const std::array<double, N> &x,
-                                               const std::array<double, N> &y )
-{
-    if constexpr ( N == 1 )
-        return { x[0] - y[0] };
-    else if constexpr ( N == 2 )
-        return { x[0] - y[0], x[1] - y[1] };
-    else if constexpr ( N == 3 )
-        return { x[0] - y[0], x[1] - y[1], x[2] - y[2] };
-}
-template<size_t NG, size_t NP>
-double TriangleMeshElement<NG, NP>::volume() const
-{
-    if constexpr ( NG == 0 ) { // Replace if statements with if constexpr when supported
+    std::array<double, NP> x[TYPE + 1];
+    getVertexCoord( x );
+    if constexpr ( TYPE == 0 ) {
         return 0;
-    } else if constexpr ( NG == 1 ) {
-        ElementID ids[2];
-        d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
-        auto p1     = d_mesh->getPos( ids[0] );
-        auto p2     = d_mesh->getPos( ids[1] );
-        double dist = 0;
-        for ( size_t d = 0; d < NP; d++ )
-            dist += ( p1[d] - p2[d] ) * ( p1[d] - p2[d] );
-        return dist;
-    } else if constexpr ( NG == 2 ) {
-        ElementID ids[3];
-        d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
-        auto p0  = d_mesh->getPos( ids[0] );
-        auto AB  = p0 - d_mesh->getPos( ids[1] );
-        auto AC  = p0 - d_mesh->getPos( ids[2] );
+    } else if constexpr ( TYPE == 1 ) {
+        return abs( x[1] - x[0] );
+    } else if constexpr ( TYPE == 2 ) {
+        auto AB  = x[1] - x[0];
+        auto AC  = x[2] - x[0];
         double t = dot( AB, AC );
         return 0.5 * sqrt( dot( AB, AB ) * dot( AC, AC ) - t * t );
+    } else if constexpr ( TYPE == NP ) {
+        /* Calculate the volume of a N-dimensional simplex:
+         *         1  |  x1-x4   x2-x4   x3-x4  |
+         *    V = --  |  y1-y4   y2-y4   y3-y4  |   (3D)
+         *        n!  |  z1-z4   z2-z4   z3-z4  |
+         * Note: the sign of the volume depends on the order of the points.
+         *   It will be positive for points stored in a clockwise manner
+         * Note:  If the volume is zero, then the simplex is invalid
+         *   Eg. a line in 2D or a plane in 3D.             */
+        double M[TYPE * TYPE];
+        for ( size_t i = 0; i < TYPE; i++ ) {
+            for ( size_t d = 0; d < TYPE; d++ )
+                M[d + i * TYPE] = x[i][d] - x[TYPE][d];
+        }
+        constexpr double C = inv_factorial( TYPE );
+        double V           = std::abs( C * DelaunayHelpers<TYPE>::det( M ) );
+        return V;
     } else {
         AMP_ERROR( "Not finished" );
         return 0;
     }
 }
-template<size_t NG, size_t NP>
-Point TriangleMeshElement<NG, NP>::norm() const
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+MeshPoint<double> TriangleMeshElement<NG, NP, TYPE>::norm() const
 {
-    AMP_ERROR( "norm not implimented yet" );
-    return Point();
-}
-template<size_t NG, size_t NP>
-Point TriangleMeshElement<NG, NP>::coord() const
-{
-    if ( d_globalID.type() == GeomType::Vertex ) {
-        auto &x = d_mesh->getPos( d_globalID.elemID() );
-        return Point( NP, x.data() );
+    std::array<double, NP> x[TYPE + 1];
+    getVertexCoord( x );
+    if constexpr ( TYPE == 2 && NP == 3 ) {
+        auto n = AMP::Geometry::GeometryHelpers::normal( x[0], x[1], x[2] );
+        return { n[0], n[1], n[2] };
     } else {
-        AMP_ERROR( "coord is only valid for verticies" );
+        AMP_ERROR( "Not finished" );
     }
-    return Point();
+    return MeshPoint<double>();
 }
-template<size_t NG, size_t NP>
-Point TriangleMeshElement<NG, NP>::centroid() const
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+MeshPoint<double> TriangleMeshElement<NG, NP, TYPE>::coord() const
 {
-    if ( d_globalID.type() == GeomType::Vertex ) {
-        auto &x = d_mesh->getPos( d_globalID.elemID() );
-        return Point( NP, x.data() );
+    if constexpr ( TYPE == 0 ) {
+        auto x = d_mesh->getPos( d_globalID.elemID() );
+        return MeshPoint<double>( NP, x.data() );
+    } else {
+        AMP_ERROR( "coord is only valid for verticies: " + std::to_string( (int) TYPE ) );
+        return MeshPoint<double>();
     }
-    ElementID ids[NG + 1];
+}
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+MeshPoint<double> TriangleMeshElement<NG, NP, TYPE>::centroid() const
+{
+    if constexpr ( TYPE == 0 )
+        return MeshPoint<double>( d_mesh->getPos( d_globalID.elemID() ) );
+    std::array<double, NP> x2[TYPE + 1];
+    getVertexCoord( x2 );
+    ElementID ids[TYPE + 1];
     d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
-    Point x( NP );
-    for ( size_t i = 0; i <= NG; i++ ) {
-        auto &x2 = d_mesh->getPos( ids[i] );
+    MeshPoint<double> x( (size_t) NP );
+    for ( size_t i = 0; i <= TYPE; i++ ) {
         for ( size_t d = 0; d < NP; d++ )
-            x[d] += x2[d];
+            x[d] += x2[i][d];
     }
     for ( size_t d = 0; d < NP; d++ )
-        x[d] /= ( NG + 1 );
+        x[d] /= ( TYPE + 1 );
     return x;
 }
-template<size_t NG, size_t NP>
-bool TriangleMeshElement<NG, NP>::containsPoint( const Point &pos, double TOL ) const
+template<size_t N>
+std::array<double, N> convert( const MeshPoint<double> &p )
 {
-    NULL_USE( pos );
-    NULL_USE( TOL );
-    AMP_ERROR( "Not finished" );
+    std::array<double, N> p2;
+    for ( size_t i = 0; i < N; i++ )
+        p2[i] = p[i];
+    return p2;
+}
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+bool TriangleMeshElement<NG, NP, TYPE>::containsPoint( const MeshPoint<double> &pos,
+                                                       double TOL ) const
+{
+    // Get the vertex coordinates
+    std::array<double, NP> x[TYPE + 1];
+    getVertexCoord( x );
+    // Check if the point is in the triangle
+    if constexpr ( TYPE == 2 && NP == 3 ) {
+        // Compute barycentric coordinates
+        auto L =
+            AMP::Geometry::GeometryHelpers::barycentric<3, 3>( x, { pos.x(), pos.y(), pos.z() } );
+        return ( L[0] >= -TOL ) && ( L[1] >= -TOL ) && ( L[2] >= -TOL );
+    } else {
+        AMP_ERROR( "Not finished" );
+    }
     return false;
 }
-template<size_t NG, size_t NP>
-bool TriangleMeshElement<NG, NP>::isOnSurface() const
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+bool TriangleMeshElement<NG, NP, TYPE>::isOnSurface() const
 {
     return d_mesh->isOnSurface( d_globalID.elemID() );
 }
-template<size_t NG, size_t NP>
-bool TriangleMeshElement<NG, NP>::isOnBoundary( int id ) const
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+bool TriangleMeshElement<NG, NP, TYPE>::isOnBoundary( int id ) const
 {
     return d_mesh->isOnBoundary( d_globalID.elemID(), id );
 }
-template<size_t NG, size_t NP>
-bool TriangleMeshElement<NG, NP>::isInBlock( int id ) const
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+bool TriangleMeshElement<NG, NP, TYPE>::isInBlock( int id ) const
 {
     return d_mesh->isInBlock( d_globalID.elemID(), id );
+}
+
+
+/****************************************************************
+ * Calculate the nearest point on the element                    *
+ ****************************************************************/
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+MeshPoint<double> TriangleMeshElement<NG, NP, TYPE>::nearest( const MeshPoint<double> &pos ) const
+{
+    // Get the vertex coordinates
+    std::array<double, NP> v[TYPE + 1];
+    getVertexCoord( v );
+    if constexpr ( TYPE == 2 && NP == 3 ) {
+        auto p = AMP::Geometry::GeometryHelpers::nearest( v, { pos.x(), pos.y(), pos.z() } );
+        return { p[0], p[1], p[2] };
+    } else {
+        AMP_ERROR( "Not finished" );
+    }
+    return MeshPoint<double>();
+}
+
+
+/****************************************************************
+ * Calculate the distance to the element                         *
+ ****************************************************************/
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+double TriangleMeshElement<NG, NP, TYPE>::distance( const MeshPoint<double> &pos,
+                                                    const MeshPoint<double> &dir ) const
+{
+    // Get the vertex coordinates
+    std::array<double, NP> x[TYPE + 1];
+    getVertexCoord( x );
+    if constexpr ( TYPE == 2 && NP == 3 ) {
+        // Get the normal and a point on the plane containing the triangle
+        auto n = AMP::Geometry::GeometryHelpers::normal( x[0], x[1], x[2] );
+        // Find the point of intersection with the line and the plane
+        std::array<double, 3> l0 = { pos[0], pos[1], pos[2] };
+        std::array<double, 3> l  = { dir[0], dir[1], dir[2] };
+        double d                 = dot( x[0] - l0, n ) / dot( l, n );
+        if ( fabs( d ) < 1e-8 ) {
+            // Point is either in the element or the line and plane do not intersect
+            if ( containsPoint( pos, 1e-8 ) )
+                return 0;
+            else
+                return std::numeric_limits<double>::infinity();
+        }
+        if ( d < 0 ) {
+            // Ray is pointed away from element
+            return std::numeric_limits<double>::infinity();
+        }
+        // Calculate point of intersection and check if it is in the element
+        auto p2 = pos + d * dir;
+        if ( containsPoint( { p2[0], p2[1], p2[2] }, 1e-8 ) )
+            return d;
+        else
+            return std::numeric_limits<double>::infinity();
+    } else {
+        AMP_ERROR( "Not finished" );
+    }
+    return 0;
 }
 
 
 /********************************************************
  *  Explicit instantiations of TriangleMeshElement       *
  ********************************************************/
-template class TriangleMeshElement<1, 1>;
-template class TriangleMeshElement<1, 2>;
-template class TriangleMeshElement<1, 3>;
-template class TriangleMeshElement<2, 2>;
-template class TriangleMeshElement<2, 3>;
-template class TriangleMeshElement<3, 3>;
+template class TriangleMeshElement<1, 1, 0>;
+template class TriangleMeshElement<1, 1, 1>;
+template class TriangleMeshElement<1, 2, 0>;
+template class TriangleMeshElement<1, 2, 1>;
+template class TriangleMeshElement<1, 3, 0>;
+template class TriangleMeshElement<1, 3, 1>;
+template class TriangleMeshElement<2, 2, 0>;
+template class TriangleMeshElement<2, 2, 1>;
+template class TriangleMeshElement<2, 2, 2>;
+template class TriangleMeshElement<2, 3, 0>;
+template class TriangleMeshElement<2, 3, 1>;
+template class TriangleMeshElement<2, 3, 2>;
+template class TriangleMeshElement<3, 3, 0>;
+template class TriangleMeshElement<3, 3, 1>;
+template class TriangleMeshElement<3, 3, 2>;
+template class TriangleMeshElement<3, 3, 3>;
 
 
 } // namespace Mesh

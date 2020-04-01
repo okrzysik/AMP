@@ -33,6 +33,7 @@ public:
 
 public: // Functions derived from BoxMesh
     virtual Mesh::Movable isMeshMovable() const override;
+    virtual uint64_t positionHash() const override;
     virtual void displaceMesh( const std::vector<double> &x ) override;
 #ifdef USE_AMP_VECTORS
     virtual void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> ) override;
@@ -42,6 +43,7 @@ public: // Functions derived from BoxMesh
     virtual std::unique_ptr<Mesh> clone() const override;
 
 private:
+    uint32_t d_pos_hash;
     std::shared_ptr<AMP::Geometry::LogicalGeometry> d_geometry2;
 };
 

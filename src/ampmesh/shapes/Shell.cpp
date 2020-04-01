@@ -34,6 +34,17 @@ Shell::Shell( double r_min, double r_max ) : LogicalGeometry(), d_r_min( r_min )
 
 
 /********************************************************
+ * Compute the nearest point on the surface              *
+ ********************************************************/
+Point Shell::nearest( const Point &pos ) const
+{
+    NULL_USE( pos );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
+
+
+/********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
 double Shell::distance( const Point &pos, const Point &ang ) const
@@ -131,6 +142,12 @@ std::vector<int> Shell::getLogicalGridSize( const std::vector<int> &x ) const
 {
     AMP_INSIST( x.size() == 2u, "Size must be an array of length 2" );
     return { 2 * x[0], 2 * x[0], x[1] };
+}
+std::vector<int> Shell::getLogicalGridSize( const std::vector<double> &res ) const
+{
+    AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
+    AMP_ERROR( "Not finished" );
+    return {};
 }
 std::vector<bool> Shell::getPeriodicDim() const { return { true, false, false }; }
 std::vector<int> Shell::getLogicalSurfaceIds() const { return { -1, -1, 1, 2, 3, 4 }; }

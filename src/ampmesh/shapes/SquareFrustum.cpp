@@ -86,7 +86,7 @@ void SquareFrustum::initialize( const std::vector<double> &range, int dir, doubl
     d_face[5][3] = physical( { 1, 1, 1 } );
     // Compute the face normals
     for ( int i = 0; i < 6; i++ )
-        d_normal[i] = normal( d_face[i][0], d_face[i][1], d_face[i][2] );
+        d_normal[i] = GeometryHelpers::normal( d_face[i][0], d_face[i][1], d_face[i][2] );
     // Ensure the normals are pointed out from the center
     auto center = physical( { 0.5, 0.5, 0.5 } );
     for ( int i = 0; i < 6; i++ ) {
@@ -94,6 +94,17 @@ void SquareFrustum::initialize( const std::vector<double> &range, int dir, doubl
         if ( t < 0 )
             d_normal[i] = -d_normal[i];
     }
+}
+
+
+/********************************************************
+ * Compute the nearest point on the surface              *
+ ********************************************************/
+Point SquareFrustum::nearest( const Point &pos ) const
+{
+    NULL_USE( pos );
+    AMP_ERROR( "Not finished" );
+    return {};
 }
 
 
@@ -269,6 +280,12 @@ std::vector<int> SquareFrustum::getLogicalGridSize( const std::vector<int> &x ) 
 {
     AMP_INSIST( x.size() == 3u, "Size must be an array of length 3" );
     return { x[0], x[1], x[2] };
+}
+std::vector<int> SquareFrustum::getLogicalGridSize( const std::vector<double> &res ) const
+{
+    AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
+    AMP_ERROR( "Not finished" );
+    return {};
 }
 std::vector<bool> SquareFrustum::getPeriodicDim() const { return { false, false, false }; }
 std::vector<int> SquareFrustum::getLogicalSurfaceIds() const { return { 1, 2, 3, 4, 5, 6 }; }

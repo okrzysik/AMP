@@ -260,10 +260,8 @@ public:
 
 
     /**
-     * \brief    Return an MeshIterator over the given geometric objects on the given boundary ID
-     * set
+     * \brief    Iterate on the given boundary ID
      * \details  Return an MeshIterator over the given geometric objects on the given boundary ID
-     * set
      * \param type   Geometric type to iterate over
      * \param id     Boundary id for the elements (example: sideset id)
      * \param gcw    Desired ghost cell width
@@ -422,6 +420,18 @@ public:
      * @return   enum indicating the extent the mesh can be moved
      */
     virtual Movable isMeshMovable() const = 0;
+
+
+    /**
+     * \brief    Identify if the position has moved
+     * \details  This function will return a hash that can be used to
+     *    identify if the mesh has been moved.  Any time that displaceMesh
+     *    is called, the hash value should change.  There is no requirement
+     *    that dispacing a mesh and returning it back to the original position
+     *    will return the original hash.
+     * @return   hash value with current position id
+     */
+    virtual uint64_t positionHash() const = 0;
 
 
     /**

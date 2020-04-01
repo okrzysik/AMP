@@ -73,12 +73,14 @@ static constexpr uint8_t n_Simplex_elements[10][10] = {
 /****************************************************************
  * Get the children from an element                              *
  ****************************************************************/
-template<size_t N1, size_t N2>
+template<uint8_t N1, uint8_t N2>
 static std::array<std::array<ElementID, N2 + 1>, n_Simplex_elements[N1][N2]>
 getChildren( const std::array<ElementID, N1 + 1> &parent )
 {
     std::array<std::array<ElementID, N2 + 1>, n_Simplex_elements[N1][N2]> children;
-    if constexpr ( N2 == 0 ) {
+    if constexpr ( N1 == N2 ) {
+        children[0] = parent[0];
+    } else if constexpr ( N2 == 0 ) {
         for ( size_t i = 0; i < N1 + 1; i++ )
             children[i] = parent[i];
     } else if constexpr ( N2 == 1 ) {
@@ -86,8 +88,13 @@ getChildren( const std::array<ElementID, N1 + 1> &parent )
         for ( size_t i = 0; i < N1; i++ )
             for ( size_t j = i + 1; j <= N1; j++ )
                 children[k++] = { parent[i], parent[j] };
+    } else if constexpr ( N2 == 2 && N1 == 3 ) {
+        children[0] = { parent[1], parent[2], parent[3] };
+        children[1] = { parent[2], parent[3], parent[0] };
+        children[2] = { parent[3], parent[0], parent[1] };
+        children[3] = { parent[0], parent[1], parent[2] };
     } else {
-        throw std::logic_error( "Not finished" );
+        AMP_ERROR( "Not finished" );
     }
     for ( auto &child : children )
         std::sort( child.begin(), child.end() );
@@ -111,6 +118,38 @@ static void getChildren( const std::vector<std::array<ElementID, N1 + 1>> &tri,
     }
     std::sort( local.begin(), local.end() );
     std::sort( remote.begin(), remote.end() );
+}
+
+
+/****************************************************************
+ * Remove unused verticies                                       *
+ ****************************************************************/
+template<uint8_t NG, uint8_t NP>
+static void removeUnusedVerticies( std::vector<std::array<double, NP>> &verticies,
+                                   std::vector<std::array<int64_t, NG + 1>> &tri )
+{
+    // Check which verticies are used
+    std::vector<bool> used( verticies.size() );
+    for ( auto &t : tri ) {
+        for ( auto i : t )
+            used[i] = true;
+    }
+    // Create a map to renumber and remove unused verticies
+    std::vector<size_t> map( used.size(), -1 );
+    size_t N = 0;
+    for ( size_t i = 0; i < used.size(); i++ ) {
+        if ( used[i] ) {
+            map[i]       = N;
+            verticies[N] = verticies[i];
+            N++;
+        }
+    }
+    verticies.resize( N );
+    // Renumber triangles
+    for ( auto &t : tri ) {
+        for ( auto &i : t )
+            i = map[i];
+    }
 }
 
 
@@ -178,10 +217,11 @@ sendData( const std::vector<TYPE> &data, const std::vector<size_t> &rank, const 
     }
     return out;
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 static void loadBalance( std::vector<std::array<double, NP>> &verticies,
                          std::vector<std::array<int64_t, NG + 1>> &tri,
                          std::vector<std::array<int64_t, NG + 1>> &tri_nab,
+                         std::vector<int> &block,
                          const AMP_MPI &comm )
 {
     // Perform the load balancing
@@ -232,6 +272,7 @@ static void loadBalance( std::vector<std::array<double, NP>> &verticies,
     verticies = sendData( verticies, rank_node, comm );
     tri       = sendData( tri, rank_node, comm );
     tri_nab   = sendData( tri_nab, rank_node, comm );
+    block     = sendData( block, rank_node, comm );
 }
 template<size_t NDIM, class TYPE>
 static void sortData( std::vector<TYPE> &data,
@@ -255,12 +296,39 @@ static void sortData( std::vector<TYPE> &data,
                 y = map[y];
     }
 }
+template<size_t NDIM, class TYPE>
+static void sortData( std::vector<TYPE> &data,
+                      std::vector<std::array<int64_t, NDIM>> &index,
+                      std::vector<int> &block,
+                      const AMP_MPI &comm )
+{
+    // Sort the local data updating the indicies
+    std::vector<size_t> I, J;
+    AMP::Utilities::unique( data, I, J );
+    AMP_ASSERT( I.size() == J.size() );
+    auto N        = comm.allGather( data.size() );
+    size_t offset = 0;
+    for ( int i = 0; i < comm.getRank(); i++ )
+        offset += N[i];
+    for ( auto &v : J )
+        v += offset;
+    auto map = comm.allGather( J );
+    for ( auto &x : index ) {
+        for ( auto &y : x )
+            if ( y != -1 )
+                y = map[y];
+    }
+    AMP_ASSERT( I.size() == block.size() );
+    std::vector<int> tmp = block;
+    for ( size_t i = 0; i < block.size(); i++ )
+        block[i] = tmp[I[i]];
+}
 
 
 /****************************************************************
  * Generator                                                     *
  ****************************************************************/
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 std::shared_ptr<TriangleMesh<NG, NP>>
 TriangleMesh<NG, NP>::generate( MeshParameters::shared_ptr params )
 {
@@ -291,20 +359,26 @@ TriangleMesh<NG, NP>::generate( MeshParameters::shared_ptr params )
         mesh->displaceMesh( displacement );
     return mesh;
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 std::shared_ptr<TriangleMesh<NG, NP>>
 TriangleMesh<NG, NP>::generate( std::vector<std::array<double, NP>> vert,
                                 std::vector<std::array<int64_t, NG + 1>> tri,
                                 std::vector<std::array<int64_t, NG + 1>> tri_nab,
-                                const AMP_MPI &comm )
+                                const AMP_MPI &comm,
+                                std::shared_ptr<Geometry::Geometry> geom,
+                                std::vector<int> block )
 {
     if ( comm.getRank() != 0 )
         AMP_ASSERT( vert.empty() && tri.empty() && tri_nab.empty() );
-    std::shared_ptr<TriangleMesh<NG, NP>> mesh( new TriangleMesh<NG, NP>(
-        std::move( vert ), std::move( tri ), std::move( tri_nab ), comm ) );
+    std::shared_ptr<TriangleMesh<NG, NP>> mesh( new TriangleMesh<NG, NP>( std::move( vert ),
+                                                                          std::move( tri ),
+                                                                          std::move( tri_nab ),
+                                                                          comm,
+                                                                          std::move( geom ),
+                                                                          std::move( block ) ) );
     return mesh;
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 std::shared_ptr<TriangleMesh<NG, NP>> TriangleMesh<NG, NP>::generate(
     const std::vector<std::array<std::array<double, NP>, NG + 1>> &tri_list,
     const AMP_MPI &comm,
@@ -343,11 +417,15 @@ std::shared_ptr<TriangleMesh<NG, NP>> TriangleMesh<NG, NP>::generate(
         }
     }
     // Create the mesh
-    std::shared_ptr<TriangleMesh<NG, NP>> mesh( new TriangleMesh<NG, NP>(
-        std::move( verticies ), std::move( triangles ), std::move( neighbors ), comm ) );
+    std::shared_ptr<TriangleMesh<NG, NP>> mesh( new TriangleMesh<NG, NP>( std::move( verticies ),
+                                                                          std::move( triangles ),
+                                                                          std::move( neighbors ),
+                                                                          comm,
+                                                                          nullptr,
+                                                                          std::vector<int>() ) );
     return mesh;
 }
-template<size_t NG>
+template<uint8_t NG>
 static std::vector<std::array<ElementID, NG + 1>>
 createGlobalIDs( const std::vector<std::array<int64_t, NG + 1>> &index,
                  size_t N_local,
@@ -368,6 +446,8 @@ createGlobalIDs( const std::vector<std::array<int64_t, NG + 1>> &index,
     std::vector<std::array<ElementID, NG + 1>> ids( index.size() );
     for ( size_t i = 0; i < index.size(); i++ ) {
         for ( size_t d = 0; d <= NG; d++ ) {
+            if ( index[i][d] == -1 )
+                continue;
             int rank  = AMP::Utilities::findfirst<size_t>( size, index[i][d] );
             int local = index[i][d] - offset[rank];
             ids[i][d] = ElementID( rank == myRank, type, local, rank );
@@ -375,14 +455,21 @@ createGlobalIDs( const std::vector<std::array<int64_t, NG + 1>> &index,
     }
     return ids;
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> verticies,
                                     std::vector<std::array<int64_t, NG + 1>> tri,
                                     std::vector<std::array<int64_t, NG + 1>> tri_nab,
-                                    const AMP_MPI &comm )
+                                    const AMP_MPI &comm,
+                                    std::shared_ptr<Geometry::Geometry> geom_in,
+                                    std::vector<int> block )
+    : d_pos_hash( 0 )
 {
+    // Run some basic checks
     AMP_ASSERT( tri.size() == 0 || comm.getRank() == 0 );
     AMP_ASSERT( tri_nab.size() == tri.size() );
+    if ( block.empty() )
+        block = std::vector<int>( tri.size(), 0 );
+    AMP_ASSERT( block.size() == tri.size() );
     // Set basic mesh info
     d_db        = nullptr;
     d_params    = nullptr;
@@ -392,14 +479,20 @@ TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> verticie
     d_max_gcw   = 0;
     d_comm      = comm;
     d_name      = "NULL";
+    d_geometry  = std::move( geom_in );
     setMeshID();
+    // Remove verticies that are not used
+    if ( comm.getRank() == 0 )
+        removeUnusedVerticies<NG, NP>( verticies, tri );
+    else
+        AMP_ASSERT( tri.empty() && verticies.empty() );
     // Perform the load balancing
-    loadBalance<NG, NP>( verticies, tri, tri_nab, comm );
+    loadBalance<NG, NP>( verticies, tri, tri_nab, block, comm );
     sortData( verticies, tri, comm );
     // Create the global ids
     d_vert    = std::move( verticies );
     auto tri2 = createGlobalIDs<NG>( tri, d_vert.size(), GeomType::Vertex, comm );
-    sortData( tri2, tri_nab, comm );
+    sortData( tri2, tri_nab, block, comm );
     d_neighbors = createGlobalIDs<NG>( tri_nab, tri2.size(), static_cast<GeomType>( NG ), comm );
     if constexpr ( NG == 1 )
         std::swap( d_edge, tri2 );
@@ -414,9 +507,78 @@ TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> verticie
     }
     // Initialize the iterators and some common data
     initialize();
-    // Create the surface, block, and boundary iterators
-    d_block_iterators.resize( 1 );
-    d_block_iterators[0] = d_iterators;
+    // Create the block iterators
+    d_blockID = std::move( block );
+    std::set<int> blockSet( d_blockID.begin(), d_blockID.end() );
+    d_block_ids = std::vector<int>( blockSet.begin(), blockSet.end() );
+    d_block_iterators.resize( d_block_ids.size() );
+    for ( size_t i = 0; i < d_block_ids.size(); i++ ) {
+        auto id0 = d_block_ids[i];
+        d_block_iterators[i].resize( d_iterators.size() );
+        for ( size_t gcw = 0; gcw < d_iterators.size(); gcw++ ) {
+            for ( int type = 0; type <= NG; type++ ) {
+                auto list_ptr = std::make_shared<std::vector<ElementID>>();
+                auto &list    = *list_ptr;
+                for ( const auto &elem : d_iterators[gcw][type] ) {
+                    auto id = elem.globalID().elemID();
+                    if ( isInBlock( id, id0 ) )
+                        list.push_back( id );
+                }
+                std::sort( list.begin(), list.end() );
+                d_block_iterators[i][gcw][type] = createIterator( list_ptr );
+            }
+        }
+    }
+    // Create the surface iterators
+    d_surface_iterators.resize( d_iterators.size() );
+    for ( size_t gcw = 0; gcw < d_iterators.size(); gcw++ ) {
+        for ( int type = 0; type <= NG; type++ ) {
+            auto list_ptr = std::make_shared<std::vector<ElementID>>();
+            auto &list    = *list_ptr;
+            for ( const auto &elem : d_iterators[gcw][type] ) {
+                auto id = elem.globalID().elemID();
+                if ( isOnSurface( id ) )
+                    list.push_back( id );
+            }
+            std::sort( list.begin(), list.end() );
+            d_surface_iterators[gcw][type] = createIterator( list_ptr );
+        }
+    }
+    // Create the boundary iterators
+    if ( d_geometry ) {
+        int Ns = d_geometry->NSurface();
+        d_boundary_ids.resize( Ns );
+        d_boundary_iterators.resize( Ns );
+        for ( int i = 0; i < Ns; i++ ) {
+            d_boundary_ids[i] = i;
+            d_boundary_iterators[i].resize( d_iterators.size() );
+        }
+        for ( size_t gcw = 0; gcw < d_iterators.size(); gcw++ ) {
+            for ( int type2 = 0; type2 < NG; type2++ ) {
+                auto type = static_cast<GeomType>( type2 );
+                std::vector<std::vector<ElementID>> list( Ns );
+                for ( const auto &elem : getSurfaceIterator( type, gcw ) ) {
+                    auto p = elem.centroid();
+                    int s  = d_geometry->surface( p );
+                    list[s].push_back( elem.globalID().elemID() );
+                }
+                for ( int i = 0; i < Ns; i++ ) {
+                    std::sort( list[i].begin(), list[i].end() );
+                    auto ptr = std::make_shared<std::vector<ElementID>>( std::move( list[i] ) );
+                    d_boundary_iterators[i][gcw][type2] = createIterator( ptr );
+                }
+            }
+        }
+    } else {
+        if ( d_surface_iterators.back()[0].size() == 0 ) {
+            d_boundary_ids.clear();
+            d_boundary_iterators.clear();
+        } else {
+            d_boundary_ids = std::vector<int>( 1, 0 );
+            d_boundary_iterators.resize( 1 );
+            d_boundary_iterators[0] = d_surface_iterators;
+        }
+    }
 }
 
 
@@ -442,7 +604,7 @@ static std::shared_ptr<std::vector<ElementID>> createLocalList( size_t N, GeomTy
         ( *list )[i] = ElementID( true, type, i, rank );
     return list;
 }
-template<size_t NG>
+template<uint8_t NG>
 static StoreCompressedList<ElementID>
 computeNodeParents( size_t N_points,
                     const std::vector<std::array<ElementID, NG + 1>> &tri,
@@ -470,7 +632,7 @@ computeNodeParents( size_t N_points,
     // Return the parents
     return StoreCompressedList<ElementID>( parents );
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 void TriangleMesh<NG, NP>::initializeBoundingBox()
 {
     // Initialize the bounding box
@@ -542,7 +704,7 @@ getChildrenIDs( const std::vector<std::array<ElementID, N1 + 1>> &elements,
     }
     return ids;
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 void TriangleMesh<NG, NP>::initialize()
 {
     int rank = d_comm.getRank();
@@ -570,6 +732,8 @@ void TriangleMesh<NG, NP>::initialize()
     } else {
         static_assert( NG > 0 && NG <= 3, "More than 3 dimensions not yet supported" );
     }
+    if ( !d_remote_tri.empty() )
+        AMP_ERROR( "Not finished, need to fill d_remote_neighbors" );
     if ( !remote_edges.empty() )
         AMP_ERROR( "Not finished, need to fill d_remote_edge" );
     if ( !remote_faces.empty() )
@@ -587,18 +751,16 @@ void TriangleMesh<NG, NP>::initialize()
     initializeBoundingBox();
     // Initialize the iterators
     int max_gcw = size == 1 ? 0 : d_max_gcw;
-    d_iterators.resize( ( max_gcw + 1 ) * ( NG + 1 ) );
-    d_iterators[0] = TriangleMeshIterator<NG, NP>(
-        this, createLocalList( d_vert.size(), GeomType::Vertex, rank ) );
-    if ( NG >= 1 )
-        d_iterators[1] = TriangleMeshIterator<NG, NP>(
-            this, createLocalList( d_edge.size(), GeomType::Edge, rank ) );
-    if ( NG >= 2 )
-        d_iterators[2] = TriangleMeshIterator<NG, NP>(
-            this, createLocalList( d_tri.size(), GeomType::Face, rank ) );
-    if ( NG >= 3 )
-        d_iterators[3] = TriangleMeshIterator<NG, NP>(
-            this, createLocalList( d_tet.size(), GeomType::Volume, rank ) );
+    d_iterators.resize( max_gcw + 1 );
+    d_iterators[0][0] = createIterator( createLocalList( d_vert.size(), GeomType::Vertex, rank ) );
+    if constexpr ( NG >= 1 )
+        d_iterators[0][1] =
+            createIterator( createLocalList( d_edge.size(), GeomType::Edge, rank ) );
+    if constexpr ( NG >= 2 )
+        d_iterators[0][2] = createIterator( createLocalList( d_tri.size(), GeomType::Face, rank ) );
+    if constexpr ( NG >= 3 )
+        d_iterators[0][3] =
+            createIterator( createLocalList( d_tet.size(), GeomType::Volume, rank ) );
     for ( int gcw = 1; gcw <= max_gcw; gcw++ ) {
         AMP_ERROR( "Not finished" );
     }
@@ -624,12 +786,40 @@ void TriangleMesh<NG, NP>::initialize()
         d_tet_tri  = getChildrenIDs<3, 2>( d_tet, d_tri, d_remote_tri, rank );
     }
 }
+template<uint8_t NG, uint8_t NP>
+MeshIterator
+TriangleMesh<NG, NP>::createIterator( std::shared_ptr<std::vector<ElementID>> list ) const
+{
+    if ( list->empty() )
+        return MeshIterator();
+    auto type = ( *list )[0].type();
+    bool test = true;
+    for ( const auto &id : *list )
+        test = test && id.type() == type;
+    AMP_ASSERT( test );
+    if ( type == GeomType::Vertex )
+        return TriangleMeshIterator<NG, NP, 0>( this, list );
+    if constexpr ( NG >= 1 ) {
+        if ( type == GeomType::Edge )
+            return TriangleMeshIterator<NG, NP, 1>( this, list );
+    }
+    if constexpr ( NG >= 2 ) {
+        if ( type == GeomType::Face )
+            return TriangleMeshIterator<NG, NP, 2>( this, list );
+    }
+    if constexpr ( NG >= 3 ) {
+        if ( type == GeomType::Volume )
+            return TriangleMeshIterator<NG, NP, 3>( this, list );
+    }
+    AMP_ERROR( "Internal error" );
+    return MeshIterator();
+}
 
 
 /****************************************************************
  * Estimate the mesh size                                        *
  ****************************************************************/
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 size_t TriangleMesh<NG, NP>::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     size_t N      = 0;
@@ -656,7 +846,7 @@ size_t TriangleMesh<NG, NP>::estimateMeshSize( const MeshParameters::shared_ptr 
 /****************************************************************
  * Constructor                                                   *
  ****************************************************************/
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 TriangleMesh<NG, NP>::TriangleMesh( MeshParameters::shared_ptr params_in ) : Mesh( params_in )
 {
     // Check for valid inputs
@@ -665,7 +855,7 @@ TriangleMesh<NG, NP>::TriangleMesh( MeshParameters::shared_ptr params_in ) : Mes
     AMP_INSIST( d_db.get(), "Database must exist" );
     AMP_ERROR( "Not finished" );
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 TriangleMesh<NG, NP>::TriangleMesh( const TriangleMesh &rhs )
     : Mesh( rhs.d_params ),
       d_N_global{ rhs.d_N_global },
@@ -685,7 +875,7 @@ TriangleMesh<NG, NP>::TriangleMesh( const TriangleMesh &rhs )
         }
     }
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 std::unique_ptr<Mesh> TriangleMesh<NG, NP>::clone() const
 {
     return std::unique_ptr<TriangleMesh<NG, NP>>( new TriangleMesh<NG, NP>( *this ) );
@@ -695,14 +885,14 @@ std::unique_ptr<Mesh> TriangleMesh<NG, NP>::clone() const
 /****************************************************************
  * De-constructor                                                *
  ****************************************************************/
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 TriangleMesh<NG, NP>::~TriangleMesh() = default;
 
 
 /****************************************************************
  * Estimate the maximum number of processors                     *
  ****************************************************************/
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 size_t TriangleMesh<NG, NP>::maxProcs( const MeshParameters::shared_ptr &params )
 {
     return estimateMeshSize( params );
@@ -712,19 +902,35 @@ size_t TriangleMesh<NG, NP>::maxProcs( const MeshParameters::shared_ptr &params 
 /****************************************************************
  * Function to return the element given an ID                    *
  ****************************************************************/
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
+MeshElement *TriangleMesh<NG, NP>::getElement2( const MeshElementID &id ) const
+{
+    if ( id.type() == AMP::Mesh::GeomType::Vertex )
+        return new TriangleMeshElement<NG, NP, 0>( id, this );
+    if constexpr ( NG > 0 )
+        if ( id.type() == AMP::Mesh::GeomType::Edge )
+            return new TriangleMeshElement<NG, NP, 1>( id, this );
+    if constexpr ( NG > 1 )
+        if ( id.type() == AMP::Mesh::GeomType::Face )
+            return new TriangleMeshElement<NG, NP, 2>( id, this );
+    if constexpr ( NG > 2 )
+        if ( id.type() == AMP::Mesh::GeomType::Volume )
+            return new TriangleMeshElement<NG, NP, 3>( id, this );
+    return nullptr;
+}
+template<uint8_t NG, uint8_t NP>
 MeshElement TriangleMesh<NG, NP>::getElement( const MeshElementID &id ) const
 {
-    return TriangleMeshElement<NG, NP>( id, this );
+    return MeshElement( getElement2( id ) );
 }
 
 
 /********************************************************
  * Function to return parents of an element              *
  ********************************************************/
-template<size_t NG, size_t NP>
-std::vector<ElementID> TriangleMesh<NG, NP>::getElementParents( const ElementID &id,
-                                                                const GeomType type ) const
+template<uint8_t NG, uint8_t NP>
+std::pair<const ElementID *, const ElementID *>
+TriangleMesh<NG, NP>::getElementParents( const ElementID &id, const GeomType type ) const
 {
     size_t type1 = static_cast<size_t>( id.type() );
     size_t type2 = static_cast<size_t>( type );
@@ -736,16 +942,19 @@ std::vector<ElementID> TriangleMesh<NG, NP>::getElementParents( const ElementID 
     if ( type2 <= type1 )
         AMP_ERROR( "Trying to get parents of the same or smaller type as the current element" );
     // Get the parents
-    return d_parents[type1][type2].get( id.local_id() );
+    const auto index = id.local_id();
+    const auto &list = d_parents[type1][type2];
+    return std::make_pair( list.begin( index ), list.end( index ) );
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 std::vector<MeshElement> TriangleMesh<NG, NP>::getElementParents( const MeshElement &elem,
                                                                   const GeomType type ) const
 {
     auto ids = getElementParents( elem.globalID().elemID(), type );
-    std::vector<MeshElement> parents( ids.size() );
-    for ( size_t i = 0; i < ids.size(); i++ )
-        parents[i] = TriangleMeshElement<NG, NP>( MeshElementID( d_meshID, ids[i] ), this );
+    std::vector<MeshElement> parents( ids.second - ids.first );
+    auto it = ids.first;
+    for ( size_t i = 0; i < parents.size(); i++, ++it )
+        parents[i] = getElement( MeshElementID( d_meshID, *it ) );
     return parents;
 }
 
@@ -753,7 +962,7 @@ std::vector<MeshElement> TriangleMesh<NG, NP>::getElementParents( const MeshElem
 /****************************************************************
  * Functions to return the number of elements                    *
  ****************************************************************/
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 size_t TriangleMesh<NG, NP>::numLocalElements( const GeomType type ) const
 {
     if ( type == GeomType::Vertex )
@@ -766,80 +975,76 @@ size_t TriangleMesh<NG, NP>::numLocalElements( const GeomType type ) const
         return d_tet.size();
     return 0;
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 size_t TriangleMesh<NG, NP>::numGlobalElements( const GeomType type ) const
 {
     if ( static_cast<uint8_t>( type ) <= NG )
         return d_N_global[static_cast<uint8_t>( type )];
     return 0;
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 size_t TriangleMesh<NG, NP>::numGhostElements( const GeomType type, int gcw ) const
 {
     if ( gcw == 0 || d_comm.getSize() == 1 )
         return 0;
-    int index1 = static_cast<int>( type );
-    int index2 = static_cast<int>( type ) + gcw * ( NG + 1 );
-    return d_iterators[index2].size() - d_iterators[index1].size();
+    int type2 = static_cast<int>( type );
+    return d_iterators[gcw][type2].size() - d_iterators[0][type2].size();
 }
 
 
 /****************************************************************
  * Function to get an iterator                                   *
  ****************************************************************/
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 MeshIterator TriangleMesh<NG, NP>::getIterator( const GeomType type, const int gcw ) const
 {
     if ( static_cast<size_t>( type ) > NG || gcw > d_max_gcw )
         return MeshIterator();
     int gcw2  = d_comm.getSize() == 1 ? 0 : gcw;
-    int index = static_cast<int>( type ) + gcw2 * ( NG + 1 );
-    return d_iterators[index];
+    int type2 = static_cast<int>( type );
+    return d_iterators[gcw2][type2];
 }
 
 
 /****************************************************************
  * Function to get an iterator over the surface                  *
  ****************************************************************/
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 MeshIterator TriangleMesh<NG, NP>::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
-    if ( static_cast<size_t>( type ) > NG || gcw > d_max_gcw )
-        return MeshIterator();
     int gcw2  = d_comm.getSize() == 1 ? 0 : gcw;
-    int index = static_cast<int>( type ) + gcw2 * ( NG + 1 );
-    if ( index >= (int) d_surface_iterators.size() )
+    int type2 = static_cast<int>( type );
+    if ( type2 > NG || gcw > d_max_gcw )
         return MeshIterator();
-    return d_surface_iterators[index];
+    return d_surface_iterators[gcw2][type2];
 }
 
 
 /****************************************************************
  * Functions to get the boundaries                               *
  ****************************************************************/
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 std::vector<int> TriangleMesh<NG, NP>::getBoundaryIDs() const
 {
-    std::vector<int> ids( d_boundary_iterators.size() );
-    for ( size_t i = 0; i < d_boundary_iterators.size(); i++ )
-        ids[i] = i;
-    return ids;
+    return d_boundary_ids;
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 MeshIterator TriangleMesh<NG, NP>::getBoundaryIDIterator( const GeomType type,
                                                           const int id,
                                                           const int gcw ) const
 {
-    if ( static_cast<size_t>( type ) > NG || gcw > d_max_gcw ||
-         id >= (int) d_boundary_iterators.size() )
+    int gcw2     = d_comm.getSize() == 1 ? 0 : gcw;
+    int type2    = static_cast<int>( type );
+    size_t index = d_boundary_iterators.size();
+    for ( size_t i = 0; i < d_boundary_iterators.size(); i++ ) {
+        if ( d_boundary_ids[i] == id )
+            index = i;
+    }
+    if ( type2 > NG || gcw > d_max_gcw || index >= d_boundary_iterators.size() )
         return MeshIterator();
-    int gcw2  = d_comm.getSize() == 1 ? 0 : gcw;
-    int index = static_cast<int>( type ) + gcw2 * ( NG + 1 );
-    if ( index >= (int) d_boundary_iterators[id].size() )
-        return MeshIterator();
-    return d_boundary_iterators[id][index];
+    return d_boundary_iterators[index][gcw2][type2];
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 std::vector<int> TriangleMesh<NG, NP>::getBlockIDs() const
 {
     std::vector<int> ids( d_block_iterators.size() );
@@ -847,25 +1052,32 @@ std::vector<int> TriangleMesh<NG, NP>::getBlockIDs() const
         ids[i] = i;
     return ids;
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 MeshIterator
 TriangleMesh<NG, NP>::getBlockIDIterator( const GeomType type, const int id, const int gcw ) const
 {
-    if ( static_cast<size_t>( type ) > NG || gcw > d_max_gcw ||
-         id >= (int) d_block_iterators.size() )
+    int gcw2     = d_comm.getSize() == 1 ? 0 : gcw;
+    int type2    = static_cast<int>( type );
+    size_t index = d_block_iterators.size();
+    for ( size_t i = 0; i < d_block_iterators.size(); i++ ) {
+        if ( d_block_ids[i] == id )
+            index = i;
+    }
+    if ( type2 > NG || gcw > d_max_gcw || index >= d_block_iterators.size() )
         return MeshIterator();
-    int gcw2  = d_comm.getSize() == 1 ? 0 : gcw;
-    int index = static_cast<int>( type ) + gcw2 * ( NG + 1 );
-    if ( index >= (int) d_block_iterators[id].size() )
-        return MeshIterator();
-    return d_block_iterators[id][index];
+    return d_block_iterators[index][gcw2][type2];
 }
 
 
 /****************************************************************
  * Functions to dispace the mesh                                 *
  ****************************************************************/
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
+uint64_t TriangleMesh<NG, NP>::positionHash() const
+{
+    return d_pos_hash;
+}
+template<uint8_t NG, uint8_t NP>
 void TriangleMesh<NG, NP>::displaceMesh( const std::vector<double> &x )
 {
     AMP_ASSERT( x.size() == NP );
@@ -883,9 +1095,10 @@ void TriangleMesh<NG, NP>::displaceMesh( const std::vector<double> &x )
         d_box_local[2 * d + 0] += x[d];
         d_box_local[2 * d + 1] += x[d];
     }
+    d_pos_hash++;
 }
 #ifdef USE_AMP_VECTORS
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 void TriangleMesh<NG, NP>::displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x )
 {
 #ifdef USE_AMP_DISCRETIZATION
@@ -908,6 +1121,7 @@ void TriangleMesh<NG, NP>::displaceMesh( std::shared_ptr<const AMP::LinearAlgebr
     }
     // Update the bounding box
     initializeBoundingBox();
+    d_pos_hash++;
 #else
     AMP_ERROR( "displaceMesh requires DISCRETIZATION" );
 #endif
@@ -918,8 +1132,8 @@ void TriangleMesh<NG, NP>::displaceMesh( std::shared_ptr<const AMP::LinearAlgebr
 /****************************************************************
  *  Get the coordinated of the given vertex or the centroid      *
  ****************************************************************/
-template<size_t NG, size_t NP>
-const std::array<double, NP> &TriangleMesh<NG, NP>::getPos( const ElementID &id ) const
+template<uint8_t NG, uint8_t NP>
+std::array<double, NP> TriangleMesh<NG, NP>::getPos( const ElementID &id ) const
 {
     if ( id.is_local() )
         return d_vert[id.local_id()];
@@ -931,7 +1145,7 @@ const std::array<double, NP> &TriangleMesh<NG, NP>::getPos( const ElementID &id 
 /****************************************************************
  * Return the IDs of the elements composing the current element  *
  ****************************************************************/
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 inline void TriangleMesh<NG, NP>::getVerticies( const ElementID &id, int &N, ElementID *IDs ) const
 {
     auto type = id.type();
@@ -974,7 +1188,7 @@ inline void TriangleMesh<NG, NP>::getVerticies( const ElementID &id, int &N, Ele
         AMP_ERROR( "Not finished" );
     }
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 void TriangleMesh<NG, NP>::getElementsIDs( const ElementID &id,
                                            const GeomType type,
                                            ElementID *IDs ) const
@@ -1009,7 +1223,7 @@ void TriangleMesh<NG, NP>::getElementsIDs( const ElementID &id,
 /********************************************************
  *  Get the neighboring elements                         *
  ********************************************************/
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 void TriangleMesh<NG, NP>::getNeighborIDs( const ElementID &id, std::vector<ElementID> &IDs ) const
 {
     if ( !id.is_local() )
@@ -1023,13 +1237,13 @@ void TriangleMesh<NG, NP>::getNeighborIDs( const ElementID &id, std::vector<Elem
         return;
     }
     // The neighbors are any elements that share a parent
-    auto parents = getElementParents( id, static_cast<GeomType>( NG ) );
     IDs.clear();
     IDs.reserve( 20 );
-    int N = n_Simplex_elements[NG][static_cast<size_t>( type )];
-    for ( const auto &p : parents ) {
+    int N        = n_Simplex_elements[NG][static_cast<size_t>( type )];
+    auto parents = getElementParents( id, static_cast<GeomType>( NG ) );
+    for ( auto p = parents.first; p != parents.second; ++p ) {
         ElementID tmp[6];
-        getElementsIDs( p, type, tmp );
+        getElementsIDs( *p, type, tmp );
         for ( int i = 0; i < N; i++ ) {
             if ( tmp[i] != id && !tmp[i].isNull() )
                 IDs.push_back( tmp[i] );
@@ -1043,48 +1257,100 @@ void TriangleMesh<NG, NP>::getNeighborIDs( const ElementID &id, std::vector<Elem
 /********************************************************
  *  Check if element is on the boundary, block, etc.     *
  ********************************************************/
-template<size_t NG, size_t NP>
-bool TriangleMesh<NG, NP>::isOnSurface( const ElementID &elemID ) const
+template<uint8_t NG, uint8_t NP>
+bool TriangleMesh<NG, NP>::isOnSurface( const ElementID &id ) const
 {
-    const auto &it = d_surface_iterators[static_cast<size_t>( elemID.type() )];
-    return inIterator( elemID, it );
+    if ( static_cast<uint8_t>( id.type() ) == NG ) {
+        // Triangle is on the surface if any neighbor is null
+        bool test = false;
+        if ( id.is_local() ) {
+            for ( const auto &tmp : d_neighbors[id.local_id()] )
+                test = test || tmp.isNull();
+        } else {
+            auto it = d_remote_neighbors.find( id );
+            for ( const auto &tmp : it->second )
+                test = test || tmp.isNull();
+        }
+        return test;
+    } else if ( static_cast<uint8_t>( id.type() ) == NG - 1 ) {
+        // Face is on the surface if it has one parent
+        auto parents = getElementParents( id, static_cast<GeomType>( NG ) );
+        return parents.second - parents.first == 1;
+    } else {
+        // Node/edge is on the surface if any face is on the surface
+        auto parents = getElementParents( id, static_cast<GeomType>( NG - 1 ) );
+        for ( auto p = parents.first; p != parents.second; ++p ) {
+            if ( isOnSurface( *p ) )
+                return true;
+        }
+    }
+    return false;
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 bool TriangleMesh<NG, NP>::isOnBoundary( const ElementID &elemID, int id ) const
 {
-    size_t type = static_cast<size_t>( elemID.type() );
-    if ( type > NG || id >= (int) d_boundary_iterators.size() )
+    int type     = static_cast<int>( elemID.type() );
+    size_t index = d_boundary_iterators.size();
+    for ( size_t i = 0; i < d_boundary_iterators.size(); i++ ) {
+        if ( d_boundary_ids[i] == id )
+            index = i;
+    }
+    if ( type > NG || index >= d_block_iterators.size() )
         return false;
-    int gcw2  = d_comm.getSize() == 1 ? 0 : d_max_gcw;
-    int index = type + gcw2 * ( NG + 1 );
-    if ( index >= (int) d_boundary_iterators[id].size() )
-        return false;
-    const auto &it = d_boundary_iterators[id][index];
-    return inIterator( elemID, it );
+    const auto &it = d_boundary_iterators[index].back()[type];
+    return inIterator( elemID, &it );
 }
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 bool TriangleMesh<NG, NP>::isInBlock( const ElementID &elemID, int id ) const
 {
-    size_t type = static_cast<size_t>( elemID.type() );
-    if ( type > NG || id >= (int) d_block_iterators.size() )
-        return false;
-    int gcw2  = d_comm.getSize() == 1 ? 0 : d_max_gcw;
-    int index = type + gcw2 * ( NG + 1 );
-    if ( index >= (int) d_block_iterators[id].size() )
-        return false;
-    const auto &it = d_block_iterators[id][index];
-    return inIterator( elemID, it );
+    if ( static_cast<uint8_t>( elemID.type() ) == NG ) {
+        if ( elemID.is_local() ) {
+            return id == d_blockID[elemID.local_id()];
+        } else {
+            auto it = d_remote_blockID.find( elemID );
+            AMP_ASSERT( it != d_remote_blockID.end() );
+            return id == it->second;
+        }
+    } else {
+        auto parents = getElementParents( elemID, static_cast<GeomType>( NG ) );
+        for ( auto p = parents.first; p != parents.second; ++p ) {
+            if ( isInBlock( *p, id ) )
+                return true;
+        }
+    }
+    return false;
 }
-template<size_t NG, size_t NP>
-bool TriangleMesh<NG, NP>::inIterator( const ElementID &id, const TriangleMeshIterator<NG, NP> &it )
+template<uint8_t NG, uint8_t NP>
+bool TriangleMesh<NG, NP>::inIterator( const ElementID &id, const MeshIterator *it )
 {
-    if ( it.size() == 0 )
+    if ( it->size() == 0 )
         return false;
-    const auto &list = *it.d_list;
-    bool found       = false;
-    for ( size_t i = 0; i < list.size(); i++ )
-        found = found || list[i] == id;
-    return found;
+    auto type = id.type();
+    auto find = []( auto id, auto it ) {
+        const auto &list = *it->d_list;
+        bool found       = false;
+        for ( size_t i = 0; i < list.size(); i++ )
+            found = found || list[i] == id;
+        return found;
+    };
+    if ( type == AMP::Mesh::GeomType::Vertex ) {
+        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 0> *>( it );
+        AMP_ASSERT( it2 );
+        return find( id, it2 );
+    } else if ( type == AMP::Mesh::GeomType::Edge ) {
+        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 1> *>( it );
+        AMP_ASSERT( it2 );
+        return find( id, it2 );
+    } else if ( type == AMP::Mesh::GeomType::Face ) {
+        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 2> *>( it );
+        AMP_ASSERT( it2 );
+        return find( id, it2 );
+    } else if ( type == AMP::Mesh::GeomType::Volume ) {
+        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 3> *>( it );
+        AMP_ASSERT( it2 );
+        return find( id, it2 );
+    }
+    return false;
 }
 
 

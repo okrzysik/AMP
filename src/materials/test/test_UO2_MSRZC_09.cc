@@ -1,11 +1,3 @@
-/*
- * test_U02_MSRZC_09.cc
- *
- *  Created on: Feb 8, 2010
- *      Author: gad
- */
-
-
 #include <iostream>
 #include <string>
 #include <valarray>
@@ -23,13 +15,10 @@ int main( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    using namespace AMP::Materials;
-
     bool good = true;
 
     // test constructors
-    std::shared_ptr<AMP::Materials::Material> mat =
-        AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( "UO2_MSRZC_09" );
+    auto mat  = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( "UO2_MSRZC_09" );
     auto prop = mat->property( "ThermalConductivity" );
 
     // test property accessors
@@ -38,17 +27,17 @@ int main( int argc, char **argv )
     good          = good && tcname == string( "UO2_MSRZC_09_ThermalConductivity" );
     std::cout << "thermal conductivity name is " << tcname << "\n";
     std::cout << "thermal conductivity source is " << tcsorc << "\n";
-    vector<string> args = prop->get_arguments();
-    good                = good && args[0] == "temperature";
-    good                = good && args[1] == "concentration";
+    auto args = prop->get_arguments();
+    good      = good && args[0] == "temperature";
+    good      = good && args[1] == "concentration";
     std::cout << "arguments are " << args[0] << " " << args[1] << "\n";
-    unsigned int nargs = prop->get_number_arguments();
-    good               = good && nargs == 2;
+    auto nargs = prop->get_number_arguments();
+    good       = good && nargs == 2;
 
     // test material accessors, all arguments present
     size_t n = 10;
-    std::shared_ptr<std::vector<double>> tv( new std::vector<double>( n ) );
-    std::shared_ptr<std::vector<double>> uv( new std::vector<double>( n ) );
+    auto tv  = std::make_shared<std::vector<double>>( n );
+    auto uv  = std::make_shared<std::vector<double>>( n );
     vector<double> tcv( n );
     for ( size_t i = 0; i < n; i++ ) {
         ( *tv )[i] = 563.4;

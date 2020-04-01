@@ -30,7 +30,7 @@
 #include <string>
 
 
-static inline double fun( double x, double y, double z, double t )
+static inline double fun( double x, double y, double z )
 {
     return ( 750.0 + 10000.0 * ( 0.5 + x ) * ( 0.5 - x ) * ( 0.5 + y ) * ( 0.5 - y ) * ( 0.5 + z ) *
                          ( 0.5 - z ) );
@@ -129,7 +129,7 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
         double py = ( node->coord() )[1];
         double pz = ( node->coord() )[2];
 
-        double val = fun( px, py, pz, 0 );
+        double val = fun( px, py, pz );
         for ( auto &elem : gid ) {
             initialCondition->setValueByGlobalID( elem, val );
         } // end for i

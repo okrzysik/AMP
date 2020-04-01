@@ -10,10 +10,10 @@ void testLibmeshElement( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     AMP::Discretization::createLibmeshElements list;
     try {
-        AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume, 1 );
+        auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume, 1 );
         list.reinit( iterator );
         for ( size_t i = 0; i < iterator.size(); i++ ) {
-            const libMesh::Elem *elem = list.getElement( iterator->globalID() );
+            auto elem = list.getElement( iterator->globalID() );
             AMP_ASSERT( AMP::Utilities::approx_equal( elem->volume(), iterator->volume() ) );
             ++iterator;
         }
@@ -22,10 +22,10 @@ void testLibmeshElement( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh )
         ut->failure( "Created volume elements" );
     }
     try {
-        AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::GeomType::Face, 1 );
+        auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Face, 1 );
         list.reinit( iterator );
         for ( size_t i = 0; i < iterator.size(); i++ ) {
-            const libMesh::Elem *elem = list.getElement( iterator->globalID() );
+            auto elem = list.getElement( iterator->globalID() );
             AMP_ASSERT( AMP::Utilities::approx_equal( elem->volume(), iterator->volume() ) );
             ++iterator;
         }
@@ -46,16 +46,14 @@ int main( int argc, char **argv )
 
     // Run the tests
     {
-        std::shared_ptr<AMP::unit_test::MeshGenerator> generator(
-            new AMP::unit_test::ExodusReaderGenerator<> );
+        std::shared_ptr<AMP::unit_test::MeshGenerator> generator;
+        generator = std::make_shared<AMP::unit_test::ExodusReaderGenerator<>>();
         generator->build_mesh();
         testLibmeshElement( &ut, generator->getMesh() );
-        generator = std::shared_ptr<AMP::unit_test::MeshGenerator>(
-            new AMP::unit_test::AMPCubeGenerator<5> );
+        generator = std::make_shared<AMP::unit_test::AMPCubeGenerator<5>>();
         generator->build_mesh();
         testLibmeshElement( &ut, generator->getMesh() );
-        generator = std::shared_ptr<AMP::unit_test::MeshGenerator>(
-            new AMP::unit_test::AMPMultiMeshGenerator );
+        generator = std::make_shared<AMP::unit_test::AMPMultiMeshGenerator>();
         generator->build_mesh();
         testLibmeshElement( &ut, generator->getMesh() );
     }

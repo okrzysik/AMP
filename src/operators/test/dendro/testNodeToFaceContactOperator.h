@@ -59,11 +59,11 @@ static void computeFuelTemperature( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                     double linearHeatGenerationRate,
                                     double fuelThermalConductivity )
 {
-    AMP::Mesh::MeshIterator meshIterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
-    AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
-    AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
-    double epsilon                             = 1.0e-14;
-    double radius, temperature;
+    auto meshIterator       = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
+    auto meshIterator_begin = meshIterator.begin();
+    auto meshIterator_end   = meshIterator.end();
+    double epsilon          = 1.0e-14;
+    double temperature;
     my_p.R_fo    = fuelOuterRadius;
     my_p.T_fo    = fuelOuterRadiusTemperature;
     my_p.q_prime = linearHeatGenerationRate;
@@ -72,8 +72,9 @@ static void computeFuelTemperature( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     std::vector<double> vertexCoord;
     std::vector<size_t> DOFsIndices;
     for ( meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator ) {
-        vertexCoord = meshIterator->coord();
-        radius = std::sqrt( vertexCoord[0] * vertexCoord[0] + vertexCoord[1] * vertexCoord[1] );
+        auto vertexCoord = meshIterator->coord();
+        auto radius =
+            std::sqrt( vertexCoord[0] * vertexCoord[0] + vertexCoord[1] * vertexCoord[1] );
         AMP_ASSERT( radius <= fuelOuterRadius + epsilon );
         my_p.r = radius;
         solver.solve( temperature, &my_p );
@@ -91,21 +92,20 @@ static void computeCladTemperature( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                     double cladOuterRadiusTemperature,
                                     double cladThermalConductivity )
 {
-    AMP::Mesh::MeshIterator meshIterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
-    AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
-    AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
-    std::vector<double> vertexCoord;
+    auto meshIterator       = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
+    auto meshIterator_begin = meshIterator.begin();
+    auto meshIterator_end   = meshIterator.end();
     std::vector<size_t> DOFsIndices;
     double epsilon = 1.0e-14;
-    double radius, temperature;
     for ( meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator ) {
-        vertexCoord = meshIterator->coord();
-        radius = std::sqrt( vertexCoord[0] * vertexCoord[0] + vertexCoord[1] * vertexCoord[1] );
+        auto vertexCoord = meshIterator->coord();
+        auto radius =
+            std::sqrt( vertexCoord[0] * vertexCoord[0] + vertexCoord[1] * vertexCoord[1] );
         AMP_ASSERT( ( radius >= cladInnerRadius - epsilon ) &&
                     ( radius <= cladOuterRadius + epsilon ) );
-        temperature = cladOuterRadiusTemperature + linearHeatGenerationRate / ( 2.0 * M_PI ) /
-                                                       cladThermalConductivity *
-                                                       std::log( cladOuterRadius / radius );
+        auto temperature = cladOuterRadiusTemperature + linearHeatGenerationRate / ( 2.0 * M_PI ) /
+                                                            cladThermalConductivity *
+                                                            std::log( cladOuterRadius / radius );
         temperatureField->getDOFManager()->getDOFs( meshIterator->globalID(), DOFsIndices );
         AMP_ASSERT( DOFsIndices.size() == 1 );
         temperatureField->setLocalValuesByGlobalID( 1, &( DOFsIndices[0] ), &temperature );
@@ -201,18 +201,15 @@ static void applyCustomDirichletCondition(
     std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>> const &constraints,
     AMP::LinearAlgebra::Matrix::shared_ptr mat )
 {
-    AMP::Discretization::DOFManager::shared_ptr dofManager = rhs->getDOFManager();
+    auto dofManager = rhs->getDOFManager();
     std::vector<size_t> dofIndices;
     if ( mat.get() != NULL ) {
         char xyz[]   = "xyz";
         size_t count = 0;
         std::vector<double> coord;
-        AMP::LinearAlgebra::Vector::shared_ptr dir = rhs->cloneVector();
+        auto dir = rhs->cloneVector();
         dir->zero();
-        for ( std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>>::const_iterator it =
-                  constraints.begin();
-              it != constraints.end();
-              ++it ) {
+        for ( auto it = constraints.begin(); it != constraints.end(); ++it ) {
             AMP_ASSERT( ( meshAdapter->getElement( it->first ) ).isOnSurface() );
             dofManager->getDOFs( it->first, dofIndices );
             coord = ( meshAdapter->getElement( it->first ) ).coord();
@@ -226,10 +223,7 @@ static void applyCustomDirichletCondition(
         }     // end for
         dir->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         mat->mult( dir, cor );
-        for ( std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>>::const_iterator it =
-                  constraints.begin();
-              it != constraints.end();
-              ++it ) {
+        for ( auto it = constraints.begin(); it != constraints.end(); ++it ) {
             dofManager->getDOFs( it->first, dofIndices );
             for ( std::map<size_t, double>::const_iterator jt = it->second.begin();
                   jt != it->second.end();
@@ -243,8 +237,7 @@ static void applyCustomDirichletCondition(
                     } // end if
                 }     // end for k
             }         // end for jt
-            std::vector<AMP::Mesh::MeshElement::shared_ptr> neighbors =
-                ( meshAdapter->getElement( it->first ) ).getNeighbors();
+            auto neighbors = ( meshAdapter->getElement( it->first ) ).getNeighbors();
             std::vector<size_t> neighborsDofIndices;
             for ( size_t n = 0; n < neighbors.size(); ++n ) {
                 dofManager->getDOFs( neighbors[n]->globalID(), neighborsDofIndices );
@@ -263,14 +256,9 @@ static void applyCustomDirichletCondition(
         mat->makeConsistent();
     } // end if
     rhs->subtract( rhs, cor );
-    for ( std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>>::const_iterator it =
-              constraints.begin();
-          it != constraints.end();
-          ++it ) {
+    for ( auto it = constraints.begin(); it != constraints.end(); ++it ) {
         dofManager->getDOFs( it->first, dofIndices );
-        for ( std::map<size_t, double>::const_iterator jt = it->second.begin();
-              jt != it->second.end();
-              ++jt ) {
+        for ( auto jt = it->second.begin(); jt != it->second.end(); ++jt ) {
             rhs->setLocalValueByGlobalID( dofIndices[jt->first], jt->second );
         } // end for jt
     }     // end for it
@@ -278,16 +266,14 @@ static void applyCustomDirichletCondition(
 
 static void shrinkMesh( AMP::Mesh::Mesh::shared_ptr mesh, double const shrinkFactor )
 {
-    AMP::Discretization::DOFManager::shared_ptr dofManager =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 0, 3, false );
-    AMP::LinearAlgebra::Variable::shared_ptr dispVar( new AMP::LinearAlgebra::Variable( "disp" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr dispVec =
-        AMP::LinearAlgebra::createVector( dofManager, dispVar, false );
+    auto dofManager = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 0, 3, false );
+    auto dispVar = std::make_shared<AMP::LinearAlgebra::Variable>( "disp" );
+    auto dispVec = AMP::LinearAlgebra::createVector( dofManager, dispVar, false );
     dispVec->zero();
-    AMP::Mesh::MeshIterator meshIterator       = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
-    AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
-    AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
+    auto meshIterator       = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
+    auto meshIterator_begin = meshIterator.begin();
+    auto meshIterator_end   = meshIterator.end();
     std::vector<double> vertexCoord( 3 ), vertexDisp( 3 );
     std::vector<size_t> dofIndices;
     for ( meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator ) {
@@ -305,22 +291,20 @@ static void shrinkMesh( AMP::Mesh::Mesh::shared_ptr mesh, double const shrinkFac
 
 static void rotateMesh( AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    AMP::Discretization::DOFManager::shared_ptr dofManager =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 0, 3, false );
-    AMP::LinearAlgebra::Variable::shared_ptr dispVar( new AMP::LinearAlgebra::Variable( "disp" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr dispVec =
-        AMP::LinearAlgebra::createVector( dofManager, dispVar, false );
+    auto dofManager = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 0, 3, false );
+    auto dispVar = std::make_shared<AMP::LinearAlgebra::Variable>( "disp" );
+    auto dispVec = AMP::LinearAlgebra::createVector( dofManager, dispVar, false );
     dispVec->zero();
-    AMP::Mesh::MeshIterator meshIterator       = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
-    AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
-    AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
+    auto meshIterator       = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
+    auto meshIterator_begin = meshIterator.begin();
+    auto meshIterator_end   = meshIterator.end();
     for ( meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator ) {
-        std::vector<double> oldGeomType::VertexCoord = meshIterator->coord();
-        std::vector<size_t> dofIndices;
+        auto oldGeomType::VertexCoord = meshIterator->coord();
+        auto dofIndices;
         dofManager->getDOFs( meshIterator->globalID(), dofIndices );
         AMP_ASSERT( dofIndices.size() == 3 );
-        std::vector<double> newGeomType::VertexCoord( oldGeomType::VertexCoord );
+        auto newGeomType::VertexCoord( oldGeomType::VertexCoord );
         // 15 degrees around the z axis
         //    rotate_points(2, M_PI / 12.0, 1, &(newGeomType::VertexCoord[0]));
         rotate_points( 2, M_PI / 2.0, 1, &( newGeomType::VertexCoord[0] ) );
@@ -374,12 +358,11 @@ static void computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
     size_t countVertices    = 0;
     std::vector<size_t> verticesInHowManyGeomType::VolumeElements( numLocalVertices, 1 );
     std::vector<size_t> verticesDOFIndex( numLocalVertices );
-    AMP::Mesh::MeshIterator meshIterator       = mesh->getIterator( AMP::Mesh::GeomType::Volume );
-    AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
-    AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
+    auto meshIterator       = mesh->getIterator( AMP::Mesh::GeomType::Volume );
+    auto meshIterator_begin = meshIterator.begin();
+    auto meshIterator_end   = meshIterator.end();
     for ( meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator ) {
-        std::vector<AMP::Mesh::MeshElement> volumeVertices =
-            meshIterator->getElements( AMP::Mesh::GeomType::Vertex );
+        auto volumeVertices = meshIterator->getElements( AMP::Mesh::GeomType::Vertex );
         AMP_ASSERT( volumeVertices.size() == 8 );
         std::vector<AMP::Mesh::MeshElementID> volumeVerticesGlobalIDs( 8 );
         double volumeVerticesCoordinates[24];
@@ -548,23 +531,17 @@ computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
 {
 
     AMP::LinearAlgebra::VS_Mesh vectorSelector( mesh );
-    AMP::LinearAlgebra::Vector::shared_ptr subsetDisplacementField = displacementField->select(
+    auto subsetDisplacementField = displacementField->select(
         vectorSelector, ( displacementField->getVariable() )->getName() );
-    AMP::LinearAlgebra::Vector::shared_ptr subsetSigmaXX =
-        sigmaXX->select( vectorSelector, ( sigmaXX->getVariable() )->getName() );
-    AMP::LinearAlgebra::Vector::shared_ptr subsetSigmaYY =
-        sigmaYY->select( vectorSelector, ( sigmaYY->getVariable() )->getName() );
-    AMP::LinearAlgebra::Vector::shared_ptr subsetSigmaZZ =
-        sigmaZZ->select( vectorSelector, ( sigmaZZ->getVariable() )->getName() );
-    AMP::LinearAlgebra::Vector::shared_ptr subsetSigmaYZ =
-        sigmaYZ->select( vectorSelector, ( sigmaYZ->getVariable() )->getName() );
-    AMP::LinearAlgebra::Vector::shared_ptr subsetSigmaXZ =
-        sigmaXZ->select( vectorSelector, ( sigmaXZ->getVariable() )->getName() );
-    AMP::LinearAlgebra::Vector::shared_ptr subsetSigmaXY =
-        sigmaXY->select( vectorSelector, ( sigmaXY->getVariable() )->getName() );
-    AMP::LinearAlgebra::Vector::shared_ptr subsetSigmaEff =
+    auto subsetSigmaXX = sigmaXX->select( vectorSelector, ( sigmaXX->getVariable() )->getName() );
+    auto subsetSigmaYY = sigmaYY->select( vectorSelector, ( sigmaYY->getVariable() )->getName() );
+    auto subsetSigmaZZ = sigmaZZ->select( vectorSelector, ( sigmaZZ->getVariable() )->getName() );
+    auto subsetSigmaYZ = sigmaYZ->select( vectorSelector, ( sigmaYZ->getVariable() )->getName() );
+    auto subsetSigmaXZ = sigmaXZ->select( vectorSelector, ( sigmaXZ->getVariable() )->getName() );
+    auto subsetSigmaXY = sigmaXY->select( vectorSelector, ( sigmaXY->getVariable() )->getName() );
+    auto subsetSigmaEff =
         sigmaEff->select( vectorSelector, ( sigmaEff->getVariable() )->getName() );
-    AMP::LinearAlgebra::Vector::shared_ptr subsetTemperatureField =
+    auto subsetTemperatureField =
         temperatureField->select( vectorSelector, ( temperatureField->getVariable() )->getName() );
 
     double youngsModulus =
@@ -597,14 +574,12 @@ static void drawVerticesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                       double const *point_of_view,
                                       const std::string &option = "" )
 {
-    AMP::Mesh::MeshIterator boundaryIterator =
+    auto boundaryIterator =
         meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, boundaryID );
-    AMP::Mesh::MeshIterator boundaryIterator_begin = boundaryIterator.begin(),
-                            boundaryIterator_end   = boundaryIterator.end();
+    auto boundaryIterator_begin = boundaryIterator.begin();
+    auto boundaryIterator_end   = boundaryIterator.end();
     std::vector<double> vertexCoordinates;
-
     os << std::setprecision( 6 ) << std::fixed;
-
     for ( boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end;
           ++boundaryIterator ) {
         vertexCoordinates = boundaryIterator->coord();
@@ -619,17 +594,15 @@ static void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAda
                                              double const *point_of_view,
                                              const std::string &option = "" )
 {
-    AMP::Mesh::MeshIterator boundaryIterator =
+    auto boundaryIterator =
         meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, boundaryID );
-    AMP::Mesh::MeshIterator boundaryIterator_begin = boundaryIterator.begin(),
-                            boundaryIterator_end   = boundaryIterator.end();
+    auto boundaryIterator_begin = boundaryIterator.begin();
+    auto boundaryIterator_end   = boundaryIterator.end();
     std::vector<AMP::Mesh::MeshElement> faceVertices;
     std::vector<double> faceGeomType::VertexCoordinates;
     double faceData[12]          = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
     double const *faceDataPtr[4] = { faceData, faceData + 3, faceData + 6, faceData + 9 };
-
     os << std::setprecision( 6 ) << std::fixed;
-
     for ( boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end;
           ++boundaryIterator ) {
         faceVertices = boundaryIterator->getElements( AMP::Mesh::GeomType::Vertex );
@@ -661,14 +634,14 @@ static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
                    bool verbose     = false,
                    std::ostream &os = std::cout )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr res    = sol->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr dir    = sol->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr ext    = sol->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr oldSol = sol->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr oldRes = sol->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr oldDir = sol->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr matVec = sol->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+    auto res    = sol->cloneVector();
+    auto dir    = sol->cloneVector();
+    auto ext    = sol->cloneVector();
+    auto oldSol = sol->cloneVector();
+    auto oldRes = sol->cloneVector();
+    auto oldDir = sol->cloneVector();
+    auto matVec = sol->cloneVector();
+    auto nullVec;
 
     op->apply( nullVec, sol, matVec, 1.0, 0.0 );
     oldRes->subtract( rhs, matVec );

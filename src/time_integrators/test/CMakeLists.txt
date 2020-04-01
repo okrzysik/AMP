@@ -18,8 +18,10 @@ COPY_TEST_FILE( input_testOxideTimeIntegrator-1 )
 
 
 # Copy test data
-COPY_MESH_FILE( unitCubeDirichlet.e )
-COPY_MESH_FILE( simple_linear_thermomech.e )
+IF ( AMP_DATA )
+    COPY_MESH_FILE( unitCubeDirichlet.e )
+    COPY_MESH_FILE( simple_linear_thermomech.e )
+ENDIF()
 
 
 # Add the tests
@@ -27,9 +29,9 @@ INITIALIZE_TESTBUILDER()
 ADD_TB_TEST_1_2_4( testTimeIntegratorParameters )
 ADD_TB_TEST_1_2_4( testOxideTimeIntegrator )
 IF ( USE_EXT_LIBMESH AND USE_EXT_TRILINOS AND USE_EXT_PETSC )
-    ADD_TB_PROVISIONAL_TEST( testBackwardEulerTimeIntegrator )    
+    ADD_TB_PROVISIONAL_TEST( testBackwardEulerTimeIntegrator AND AMP_DATA )    
 ENDIF()
-IF ( USE_EXT_SUNDIALS AND USE_EXT_TRILINOS AND USE_EXT_PETSC )
+IF ( USE_EXT_SUNDIALS AND USE_EXT_TRILINOS AND USE_EXT_PETSC AND AMP_DATA )
     ADD_TB_TEST( testIDATimeIntegrator )
     ADD_TB_TEST_1_2_4( testIDA_LinearBVPOperator )
     ADD_TB_TEST_1_2_4( testIDA_NonlinearBVPOperator )

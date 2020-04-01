@@ -11,9 +11,9 @@ namespace AMP {
 namespace Mesh {
 
 
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP>
 class TriangleMesh;
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 class TriangleMeshIterator;
 
 
@@ -24,7 +24,7 @@ class TriangleMeshIterator;
  * A mesh element can be thought of as the smallest unit of a mesh.  It is of a type
  * of GeomType.  This class is derived to store a TriangleMesh element.
  */
-template<size_t NG, size_t NP>
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 class TriangleMeshElement final : public MeshElement
 {
 public:
@@ -67,10 +67,10 @@ public:
     virtual double volume() const override;
 
     //! Return the normal to the current element (does not apply to all elements)
-    virtual Point norm() const override;
+    virtual MeshPoint<double> norm() const override;
 
     //! Return the coordinates of all verticies composing the element
-    virtual Point coord() const override;
+    virtual MeshPoint<double> coord() const override;
 
     /**
      * \brief     Return the centroid of the element
@@ -78,7 +78,7 @@ public:
      *   centroid is defined as the average of the coordinates of the verticies.
      *   The centroid of a vertex is the vertex and will return the same result as coord().
      */
-    virtual Point centroid() const override;
+    virtual MeshPoint<double> centroid() const override;
 
     /**
      * \brief     Return true if the element contains the point
@@ -88,7 +88,25 @@ public:
      * \param pos   The coordinates of the point to check.
      * \param TOL   The tolerance to use for the computation.
      */
-    virtual bool containsPoint( const Point &pos, double TOL = 1e-12 ) const override;
+    virtual bool containsPoint( const MeshPoint<double> &pos, double TOL = 1e-12 ) const override;
+
+    /**
+     * \brief    Calculate the nearest point on the element
+     * \details  This function computes nearest point on/in the element to the given point
+     * \param[in] pos   Current position of the point
+     */
+    virtual MeshPoint<double> nearest( const MeshPoint<double> &pos ) const override;
+
+    /**
+     * \brief    Calculate the distance to the element given a ray
+     * \details  This function computes the distance to the element given a ray.
+     *     If the ray will never intersect the element, this distance is inf.
+     * \param[in] pos   Current position of ray
+     * \param[in] dir   Direction of ray (should be normalized for most uses)
+     * @return          Returns the distance to the element surface
+     */
+    virtual double distance( const MeshPoint<double> &pos,
+                             const MeshPoint<double> &dir ) const override;
 
     //! Check if the element is on the surface
     virtual bool isOnSurface() const override;
@@ -121,11 +139,15 @@ protected:
     //! Clone the iterator
     virtual MeshElement *clone() const override;
 
+    //! Get the verticies composing the element
+    inline void getVertexCoord( std::array<double, NP> *x ) const;
+
     // The pointer to the current mesh
     const TriangleMesh<NG, NP> *d_mesh;
 
+    // Friends
     friend class AMP::Mesh::TriangleMesh<NG, NP>;
-    friend class AMP::Mesh::TriangleMeshIterator<NG, NP>;
+    friend class AMP::Mesh::TriangleMeshIterator<NG, NP, TYPE>;
 
 private:
     static constexpr uint32_t getTypeID();

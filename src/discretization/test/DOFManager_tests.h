@@ -18,17 +18,15 @@
 
 #include "../../ampmesh/test/meshGenerators.h"
 
-using namespace AMP::unit_test;
-
 
 // Function to test getting the DOFs for a mesh iterator
 void testGetDOFIterator( AMP::UnitTest *ut,
                          const AMP::Mesh::MeshIterator &iterator,
                          AMP::Discretization::DOFManager::shared_ptr DOF )
 {
-    bool pass1                  = true;
-    bool pass2                  = true;
-    AMP::Mesh::MeshIterator cur = iterator.begin();
+    bool pass1 = true;
+    bool pass2 = true;
+    auto cur   = iterator.begin();
     std::vector<size_t> dofs;
     for ( size_t i = 0; i < cur.size(); i++ ) {
         const auto id = cur->globalID();
@@ -104,8 +102,7 @@ void testBasics( AMP::Discretization::DOFManager::shared_ptr DOF, AMP::UnitTest 
 // Test subsetting for different comms
 void testSubsetComm( AMP::Discretization::DOFManager::shared_ptr DOF, AMP::UnitTest *ut )
 {
-    AMP::Discretization::DOFManager::shared_ptr subsetDOF;
-    subsetDOF = DOF->subset( AMP::AMP_MPI( AMP_COMM_WORLD ) );
+    auto subsetDOF = DOF->subset( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     if ( *DOF == *subsetDOF )
         ut->passes( "Subset DOF for COMM_WORLD" );
     else
@@ -132,24 +129,22 @@ void testSubsetMesh( AMP::Mesh::Mesh::shared_ptr mesh,
                      int gcw,
                      AMP::UnitTest *ut )
 {
-    AMP::Discretization::DOFManager::shared_ptr subsetDOF;
-    subsetDOF = DOF->subset( mesh );
+    auto subsetDOF = DOF->subset( mesh );
     if ( *DOF == *subsetDOF )
         ut->passes( "Subset DOF on full mesh" );
     else
         ut->failure( "Subset DOF on full mesh" );
-    std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
+    auto meshIDs = mesh->getBaseMeshIDs();
     if ( meshIDs.size() > 1 && is_nodal ) {
         bool passes = true;
         for ( size_t i = 0; i < meshIDs.size(); i++ ) {
-            AMP::Mesh::Mesh::shared_ptr subsetMesh = mesh->Subset( meshIDs[i] );
+            auto subsetMesh = mesh->Subset( meshIDs[i] );
             if ( subsetMesh.get() != nullptr ) {
                 subsetDOF = DOF->subset( subsetMesh );
                 testGetDOFIterator(
                     ut, subsetMesh->getIterator( AMP::Mesh::GeomType::Vertex, gcw ), subsetDOF );
-                AMP::Discretization::DOFManager::shared_ptr mesh_DOF =
-                    AMP::Discretization::simpleDOFManager::create(
-                        subsetMesh, AMP::Mesh::GeomType::Vertex, gcw, DOFsPerNode, false );
+                auto mesh_DOF = AMP::Discretization::simpleDOFManager::create(
+                    subsetMesh, AMP::Mesh::GeomType::Vertex, gcw, DOFsPerNode, false );
                 if ( *mesh_DOF != *subsetDOF )
                     passes = false;
             }
@@ -173,7 +168,7 @@ void testMultiDOFMap( AMP::UnitTest *ut,
         globalDOFList[i] = i;
 
     // Loop through the DOFManagers
-    std::vector<AMP::Discretization::DOFManager::shared_ptr> managers = multiDOF->getDOFManagers();
+    auto managers = multiDOF->getDOFManagers();
     for ( size_t i = 0; i < managers.size(); i++ ) {
         AMP::AMP_MPI comm = managers[i]->getComm();
         comm.barrier();
@@ -200,8 +195,8 @@ void testMultiDOFMap( AMP::UnitTest *ut,
         else
             ut->failure( "Conversion from global to sub DOFs in multiDOFManager" );
         // Check that we can convert back to the global ids
-        std::vector<size_t> globalDOFList2 = multiDOF->getGlobalDOF( (int) i, localDOFList );
-        passes                             = globalDOFList2.size() == localDOFList.size();
+        auto globalDOFList2 = multiDOF->getGlobalDOF( (int) i, localDOFList );
+        passes              = globalDOFList2.size() == localDOFList.size();
         for ( size_t j = 0; j < globalDOFList2.size(); j++ ) {
             if ( globalDOFList2[j] != localToGlobal[j] )
                 passes = false;
@@ -219,21 +214,18 @@ void testMultiDOFMap( AMP::UnitTest *ut,
 void testMultiDOFVector( AMP::UnitTest *ut, AMP::Discretization::DOFManager::shared_ptr DOF )
 {
     // Create the individual vectors
-    AMP::LinearAlgebra::Variable::shared_ptr var1( new AMP::LinearAlgebra::Variable( "a" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr var2( new AMP::LinearAlgebra::Variable( "b" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr var3( new AMP::LinearAlgebra::Variable( "c" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr vec1 =
-        AMP::LinearAlgebra::createVector( DOF, var1, true );
-    AMP::LinearAlgebra::Vector::shared_ptr vec2 =
-        AMP::LinearAlgebra::createVector( DOF, var2, true );
+    auto var1 = std::make_shared<AMP::LinearAlgebra::Variable>( "a" );
+    auto var2 = std::make_shared<AMP::LinearAlgebra::Variable>( "b" );
+    auto var3 = std::make_shared<AMP::LinearAlgebra::Variable>( "c" );
+    auto vec1 = AMP::LinearAlgebra::createVector( DOF, var1, true );
+    auto vec2 = AMP::LinearAlgebra::createVector( DOF, var2, true );
     // Create the multivector
-    std::shared_ptr<AMP::LinearAlgebra::MultiVector> multiVector =
-        AMP::LinearAlgebra::MultiVector::create( var3, DOF->getComm() );
+    auto multiVector = AMP::LinearAlgebra::MultiVector::create( var3, DOF->getComm() );
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vectors( 2 );
     vectors[0] = vec1;
     vectors[1] = vec2;
     multiVector->addVector( vectors );
-    AMP::Discretization::DOFManager::shared_ptr multiDOF = multiVector->getDOFManager();
+    auto multiDOF = multiVector->getDOFManager();
     // Check that we can set each value correctly
     multiVector->zero();
     multiVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );

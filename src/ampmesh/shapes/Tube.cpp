@@ -39,6 +39,17 @@ Tube::Tube( double r_min, double r_max, double z_min, double z_max )
 
 
 /********************************************************
+ * Compute the nearest point on the surface              *
+ ********************************************************/
+Point Tube::nearest( const Point &pos ) const
+{
+    NULL_USE( pos );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
+
+
+/********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
 double Tube::distance( const Point &pos, const Point &ang ) const
@@ -48,26 +59,8 @@ double Tube::distance( const Point &pos, const Point &ang ) const
     double x = pos.x() - d_offset[0];
     double y = pos.y() - d_offset[1];
     double z = pos.z() - d_offset[2] - 0.5 * ( d_z_min + d_z_max );
-    // Compute the distance to the cylinders
-    double d1 = GeometryHelpers::distanceToCylinder( d_r_min, h, { x, y, z }, ang );
-    double d2 = GeometryHelpers::distanceToCylinder( d_r_max, h, { x, y, z }, ang );
-    double d  = std::min( std::abs( d1 ), std::abs( d2 ) );
-    // Compute the point of intersection
-    auto p    = Point( { x, y, z } ) + d * ang;
-    double r2 = p.x() * p.x() + p.y() * p.y();
-    if ( r2 >= d_r_min * d_r_min - 1e-12 ) {
-        bool inside = r2 <= d_r_max * d_r_max && std::abs( p.z() ) <= 0.5 * h;
-        return ( inside ? -1 : 1 ) * d;
-    }
-    if ( p.z() * ang.z() > 0 )
-        return std::numeric_limits<double>::infinity();
-    double d3 = GeometryHelpers::distanceToCylinder( d_r_min, 1e200, p, ang );
-    d         = d + std::abs( d3 );
-    p         = Point( { x, y, z } ) + d * ang;
-    r2        = p.x() * p.x() + p.y() * p.y();
-    if ( r2 >= d_r_min * d_r_min - 1e-12 && std::abs( p.z() ) <= 0.5 * h )
-        return d;
-    return std::numeric_limits<double>::infinity();
+    // Compute the distance to the tube
+    return GeometryHelpers::distanceToTube( d_r_min, d_r_max, h, { x, y, z }, ang );
 }
 
 
@@ -196,6 +189,12 @@ std::vector<int> Tube::getLogicalGridSize( const std::vector<int> &x ) const
 {
     AMP_INSIST( x.size() == 3u, "Size must be an array of length 1" );
     return { x[0], x[1], x[2] };
+}
+std::vector<int> Tube::getLogicalGridSize( const std::vector<double> &res ) const
+{
+    AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
+    AMP_ERROR( "Not finished" );
+    return {};
 }
 std::vector<bool> Tube::getPeriodicDim() const { return { false, true, false }; }
 std::vector<int> Tube::getLogicalSurfaceIds() const { return { 8, 4, -1, -1, 2, 1 }; }

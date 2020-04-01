@@ -114,7 +114,7 @@ int run_kdtree_test( int DIM, size_t Nx, size_t Ns )
     const auto x = new const double *[DIM];
     for ( int d = 0; d < DIM; d++ )
         x[d] = &points[d][0];
-    kdtree tree( DIM, Nx, x );
+    AMP::kdtree tree( DIM, Nx, x );
     delete[] x;
     PROFILE_STOP( "create_tree" );
 
@@ -175,7 +175,6 @@ int main( int argc, char *argv[] )
     int error = 0;
     PROFILE_ENABLE( 3 );
     PROFILE_ENABLE_TRACE();
-    global_profiler.synchronize();
 
     // Run a 1D test
     PROFILE_START( "1D kdtree" );
@@ -195,17 +194,17 @@ int main( int argc, char *argv[] )
     error += run_kdtree_test( 3, 100000, 100000 );
     PROFILE_STOP( "3D kdtree" );
 
-    // Run a 5D test
-    PROFILE_START( "5D kdtree" );
-    error += run_kdtree_test( 5, 10, 10 );
-    error += run_kdtree_test( 5, 10000, 2000 );
-    PROFILE_STOP( "5D kdtree" );
+    /*    // Run a 5D test
+        PROFILE_START( "5D kdtree" );
+        error += run_kdtree_test( 5, 10, 10 );
+        error += run_kdtree_test( 5, 10000, 2000 );
+        PROFILE_STOP( "5D kdtree" );
 
-    // Run a 10D test
-    PROFILE_START( "10D kdtree" );
-    error += run_kdtree_test( 10, 10, 10 );
-    error += run_kdtree_test( 10, 10000, 2000 );
-    PROFILE_STOP( "10D kdtree" );
+        // Run a 10D test
+        PROFILE_START( "10D kdtree" );
+        error += run_kdtree_test( 10, 10, 10 );
+        error += run_kdtree_test( 10, 10000, 2000 );
+        PROFILE_STOP( "10D kdtree" );*/
 
     // Save the results
     PROFILE_SAVE( "test_kdtree" );

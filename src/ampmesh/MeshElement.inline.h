@@ -65,6 +65,15 @@ MeshElement &MeshElement::operator=( MeshElement &&rhs )
         element = rhs.clone();
     return *this;
 }
+MeshElement::MeshElement( MeshElement *rhs ) : typeID( getTypeID() ), element( nullptr )
+{
+    if ( rhs->element ) {
+        std::swap( element, rhs->element );
+        delete rhs;
+    } else {
+        element = rhs;
+    }
+}
 
 
 /********************************************************

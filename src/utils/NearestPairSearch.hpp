@@ -7,6 +7,9 @@
 #include <math.h>
 
 
+namespace AMP {
+
+
 // subroutine to find the minimum distance between any two points
 template<int NDIM, class TYPE>
 inline std::pair<int, int> find_min_dist2( const size_t N, const TYPE *const *x, double &dist )
@@ -80,7 +83,8 @@ inline std::pair<int, int> find_min_dist2( const size_t N, const TYPE *const *x,
         }
     }
     // Divide the points in half and recursively find the closest pair in each half
-    size_t k       = AMP::Utilities::findfirst<TYPE>( N, x2[split], median );
+    size_t k = AMP::Utilities::findfirst<TYPE>( N, x2[split], median );
+    AMP_ASSERT( k > 0 && k < N );
     TYPE *x3[NDIM] = { nullptr };
     for ( int d = 0; d < NDIM; d++ )
         x3[d] = &x2[d][k];
@@ -188,5 +192,7 @@ inline std::pair<int, int> find_min_dist( const int N, const TYPE *x )
     return index;
 }
 
+
+} // namespace AMP
 
 #endif

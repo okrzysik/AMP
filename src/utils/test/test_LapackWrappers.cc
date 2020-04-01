@@ -33,7 +33,7 @@ int main( int, char *[] )
 
     // Run the basic tests
     printf( "\nRunning double precision basic tests\n" );
-    int err = Lapack<double>::run_all_test(); 
+    int err = Lapack<double>::run_all_test();
     if ( err == 0 ) {
         printf( "  passed dp tests\n" );
     } else {
@@ -41,7 +41,7 @@ int main( int, char *[] )
         N_errors += err;
     }
     printf( "\nRunning single precision basic tests\n" );
-    err = Lapack<float>::run_all_test(); 
+    err = Lapack<float>::run_all_test();
     if ( err == 0 ) {
         printf( "  passed sp tests\n" );
     } else {

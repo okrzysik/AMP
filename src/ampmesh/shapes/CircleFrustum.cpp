@@ -59,6 +59,17 @@ CircleFrustum::CircleFrustum( const std::array<double, 2> &r, int dir, double he
 
 
 /********************************************************
+ * Compute the nearest point on the surface              *
+ ********************************************************/
+Point CircleFrustum::nearest( const Point &pos ) const
+{
+    NULL_USE( pos );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
+
+
+/********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
 double CircleFrustum::distance( const Point &pos, const Point &ang ) const
@@ -303,6 +314,12 @@ std::vector<int> CircleFrustum::getLogicalGridSize( const std::vector<int> &x ) 
 {
     AMP_INSIST( x.size() == 2, "Size must be an array of length 2" );
     return { x[0], x[0], x[1] };
+}
+std::vector<int> CircleFrustum::getLogicalGridSize( const std::vector<double> &res ) const
+{
+    AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
+    AMP_ERROR( "Not finished" );
+    return {};
 }
 std::vector<bool> CircleFrustum::getPeriodicDim() const { return { false, false, false }; }
 std::vector<int> CircleFrustum::getLogicalSurfaceIds() const { return { 2, 2, 2, 2, 0, 1 }; }

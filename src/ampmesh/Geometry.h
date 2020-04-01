@@ -58,6 +58,15 @@ public:
     virtual bool isConvex() const = 0;
 
     /**
+     * \brief    Calculate the nearest point on the surface
+     * \details  This function computes the nearest point on the surface
+     * \param[in] pos   Current position of ray
+     * \param[in] dir   Direction of ray (should be normalized for most uses)
+     * @return          Returns the nearest surface point
+     */
+    virtual Point nearest( const Point &pos ) const = 0;
+
+    /**
      * \brief    Calculate the distance to the object given a ray
      * \details  This function computes the distance to the object given a ray.
      *     If the ray is inside the object, this distance is negitive.  If the
@@ -149,12 +158,6 @@ protected:
     Geometry &operator=( Geometry && ) = delete;
     Geometry &operator=( const Geometry & ) = delete;
 
-protected: // Helper functions
-    // Compute the normal to the plane formed by 3 points
-    static inline Point normal( const Point &a, const Point &b, const Point &c )
-    {
-        return normalize( cross( b - a, c - a ) );
-    }
 
 protected: // Internal data
     uint8_t d_physicalDim;

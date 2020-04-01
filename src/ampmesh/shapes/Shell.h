@@ -34,6 +34,7 @@ public:
     // Functions inherited from Geometry
     virtual std::string getName() const override final { return "Shell"; }
     virtual bool isConvex() const override final { return true; }
+    virtual Point nearest( const Point &pos ) const override final;
     virtual double distance( const Point &pos, const Point &dir ) const override final;
     virtual bool inside( const Point &pos ) const override final;
     virtual int NSurface() const override final { return 2; }
@@ -47,6 +48,8 @@ public:
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<bool> getPeriodicDim() const override final;
     virtual std::vector<int> getLogicalSurfaceIds() const override final;
+    virtual std::vector<int>
+    getLogicalGridSize( const std::vector<double> &res ) const override final;
     virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:

@@ -1,15 +1,6 @@
-#include "AMP/materials/Material.h"
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include "AMP/vectors/Variable.h"
-#include <memory>
-#include <string>
-
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/materials/Material.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -17,13 +8,21 @@
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/libmesh/SourceNonlinearElement.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
+#include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include "ProfilerApp.h"
 
 #include <exception>
+#include <memory>
+#include <string>
 
 
 static void adjust( const AMP::LinearAlgebra::Vector::shared_ptr vec,
@@ -210,59 +209,45 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
 
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db   = input_db->getDatabase( "Mesh" );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
-    //--------------------------------------------------
     //   CREATE THE VOLUME INTEGRAL OPERATOR -----------
-    //--------------------------------------------------
-
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
-    std::shared_ptr<AMP::Database> sourceDatabase =
-        input_db->getDatabase( "VolumeIntegralOperator" );
+    auto sourceDatabase = input_db->getDatabase( "VolumeIntegralOperator" );
     AMP::pout << "before sourceOp" << std::endl;
-    std::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
-        std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "VolumeIntegralOperator", input_db, transportModel ) );
+    auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "VolumeIntegralOperator", input_db, transportModel ) );
     AMP::pout << "after sourceOp" << std::endl;
-    AMP::LinearAlgebra::Variable::shared_ptr inputVariable  = sourceOperator->getInputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr outputVariable = sourceOperator->getOutputVariable();
+    auto inputVariable  = sourceOperator->getInputVariable();
+    auto outputVariable = sourceOperator->getOutputVariable();
 
     // Create a DOF manager for a gauss point vector
-    int DOFsPerElement  = 8;
-    int DOFsPerNode     = 1;
-    int ghostWidth      = 0;
-    int nodalGhostWidth = 1;
-    bool split          = true;
-    AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-
-    AMP::LinearAlgebra::Vector::shared_ptr solVec =
-        AMP::LinearAlgebra::createVector( gaussPointDofMap, inputVariable, split );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable, split );
-    AMP::LinearAlgebra::Vector::shared_ptr resVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable, split );
-    AMP::LinearAlgebra::Vector::shared_ptr workVec =
-        AMP::LinearAlgebra::createVector( gaussPointDofMap, inputVariable, split );
+    int DOFsPerElement    = 8;
+    int DOFsPerNode       = 1;
+    int ghostWidth        = 0;
+    int nodalGhostWidth   = 1;
+    bool split            = true;
+    auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
+    auto nodalDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+    auto solVec  = AMP::LinearAlgebra::createVector( gaussPointDofMap, inputVariable, split );
+    auto rhsVec  = AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable, split );
+    auto resVec  = AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable, split );
+    auto workVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, inputVariable, split );
 
     ut->passes( exeName + " : create" );
 
-    std::string msgPrefix = exeName + ": VolumeIntegralOperator reset";
+    auto msgPrefix = exeName + ": VolumeIntegralOperator reset";
     // test reset
     try {
-        std::shared_ptr<AMP::Operator::VolumeIntegralOperatorParameters> volumeIntegralParameters(
-            new AMP::Operator::VolumeIntegralOperatorParameters( sourceDatabase ) );
+        auto volumeIntegralParameters =
+            std::make_shared<AMP::Operator::VolumeIntegralOperatorParameters>( sourceDatabase );
         sourceOperator->reset( volumeIntegralParameters );
         ut->passes( msgPrefix + " : pass " );
     } catch ( const std::exception & ) {
@@ -270,9 +255,8 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // test apply
-    msgPrefix = exeName + ": VolumeIntegralOperator apply";
-    std::shared_ptr<AMP::Operator::Operator> testOperator =
-        std::dynamic_pointer_cast<AMP::Operator::Operator>( sourceOperator );
+    msgPrefix         = exeName + ": VolumeIntegralOperator apply";
+    auto testOperator = std::dynamic_pointer_cast<AMP::Operator::Operator>( sourceOperator );
     applyTest( ut, msgPrefix, testOperator, rhsVec, solVec, resVec, workVec );
 
     ut->passes( msgPrefix );

@@ -40,7 +40,8 @@ namespace Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-libmeshMesh::libmeshMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_in )
+libmeshMesh::libmeshMesh( const MeshParameters::shared_ptr &params_in )
+    : Mesh( params_in ), d_pos_hash( 0 )
 {
     PROFILE_START( "constructor" );
     this->d_max_gcw = 1;
@@ -129,6 +130,7 @@ libmeshMesh::libmeshMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( 
     PROFILE_STOP( "constructor" );
 }
 libmeshMesh::libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh, const std::string &name )
+    : d_pos_hash( 0 )
 {
     // Set the base properties
     d_libMesh = mesh;
@@ -659,15 +661,14 @@ MeshIterator libmeshMesh::getIterator( const GeomType type, const int gcw ) cons
         }
     } else {
         // All other types require a pre-constructed list
-        std::map<GeomType, std::shared_ptr<std::vector<MeshElement>>>::const_iterator it1, it2;
         if ( gcw == 0 ) {
-            it1 = d_localElements.find( type );
+            auto it1 = d_localElements.find( type );
             if ( it1 == d_localElements.end() )
                 AMP_ERROR( "Internal error in libmeshMesh::getIterator" );
             it = MultiVectorIterator( it1->second, 0 );
         } else if ( gcw == 1 ) {
-            it1 = d_localElements.find( type );
-            it2 = d_ghostElements.find( type );
+            auto it1 = d_localElements.find( type );
+            auto it2 = d_ghostElements.find( type );
             if ( it1 == d_localElements.end() || it2 == d_ghostElements.end() )
                 AMP_ERROR( "Internal error in libmeshMesh::getIterator" );
             std::vector<MeshIterator> iterators( 2 );
@@ -739,9 +740,17 @@ libmeshMesh::getBoundaryIDIterator( const GeomType type, const int id, const int
  * Return an iterator over the given block ids           *
  ********************************************************/
 std::vector<int> libmeshMesh::getBlockIDs() const { return d_block_ids; }
-MeshIterator libmeshMesh::getBlockIDIterator( const GeomType, const int, const int ) const
+MeshIterator
+libmeshMesh::getBlockIDIterator( const GeomType type, const int id, const int gcw ) const
 {
-    AMP_ERROR( "getBoundaryIDIterator is not implimented yet" );
+    if ( d_block_ids.size() == 1 ) {
+        if ( d_block_ids[0] == id )
+            return getIterator( type, gcw );
+        else
+            return MeshIterator();
+    } else {
+        AMP_ERROR( "getBlockIDIterator is not implimented yet" );
+    }
     return MeshIterator();
 }
 
@@ -813,6 +822,7 @@ MeshElement libmeshMesh::getElement( const MeshElementID &elem_id ) const
  * Displace a mesh                                       *
  ********************************************************/
 Mesh::Movable libmeshMesh::isMeshMovable() const { return Mesh::Movable::Displace; }
+uint64_t libmeshMesh::positionHash() const { return d_pos_hash; }
 void libmeshMesh::displaceMesh( const std::vector<double> &x_in )
 {
     // Check x
@@ -838,6 +848,7 @@ void libmeshMesh::displaceMesh( const std::vector<double> &x_in )
         d_box_local[2 * i + 0] += x[i];
         d_box_local[2 * i + 1] += x[i];
     }
+    d_pos_hash++;
 }
 #ifdef USE_AMP_VECTORS
 void libmeshMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
@@ -912,6 +923,7 @@ void libmeshMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_p
         d_box[2 * i + 0] = d_comm.minReduce( d_box_local[2 * i + 0] );
         d_box[2 * i + 1] = d_comm.maxReduce( d_box_local[2 * i + 1] );
     }
+    d_pos_hash++;
 #else
     AMP_ERROR( "displaceMesh requires DISCRETIZATION" );
 #endif

@@ -263,11 +263,16 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
 {
     // Make sure the mesh has been registered
     registerMesh( mesh );
+    // Return if the vector is empty
+    if ( !vec )
+        return;
     // Perform some error checking
     auto DOFs = vec->getDOFManager();
     auto it1  = mesh->getIterator( type, 0 );
     auto it2  = DOFs->getIterator();
     auto it3  = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, it1, it2 );
+    if ( it1.size() == 0 )
+        return;
     if ( it1.size() != it3.size() )
         AMP_ERROR( "vector does not cover the entire mesh for the given entity type" );
     std::vector<size_t> dofs;

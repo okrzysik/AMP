@@ -33,6 +33,17 @@ SphereSurface::SphereSurface( double r ) : LogicalGeometry(), d_r( r )
 
 
 /********************************************************
+ * Compute the nearest point on the surface              *
+ ********************************************************/
+Point SphereSurface::nearest( const Point &pos ) const
+{
+    NULL_USE( pos );
+    AMP_ERROR( "Not finished" );
+    return {};
+}
+
+
+/********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
 double SphereSurface::distance( const Point &pos, const Point &ang ) const
@@ -118,6 +129,12 @@ std::vector<int> SphereSurface::getLogicalGridSize( const std::vector<int> &x ) 
 {
     AMP_INSIST( x.size() == 1u, "Size must be an array of length 1" );
     return { x[0], x[0] / 2, 1 };
+}
+std::vector<int> SphereSurface::getLogicalGridSize( const std::vector<double> &res ) const
+{
+    AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
+    AMP_ERROR( "Not finished" );
+    return {};
 }
 std::vector<bool> SphereSurface::getPeriodicDim() const { return { true, false, false }; }
 std::vector<int> SphereSurface::getLogicalSurfaceIds() const { return { -1, -1, -1, -1, -1, -1 }; }

@@ -13,6 +13,7 @@
 #include <cstdio>
 #include <ctime>
 #include <limits>
+#include <memory>
 #include <random>
 #include <stdexcept>
 #include <string>
@@ -21,8 +22,6 @@
 
 
 #define printp printf
-using AMP::UnitTest;
-
 
 #define NDIM_MAX 3 // The maximum number of dimensions supported (currently 3)
 
@@ -120,7 +119,7 @@ std::pair<int, std::vector<double>> readPoints( const char *filename )
 
 // Test for the nearest pair search
 template<class TYPE>
-void testPointSearch( UnitTest *ut, int ndim, const std::vector<TYPE> &x )
+void testPointSearch( AMP::UnitTest *ut, int ndim, const std::vector<TYPE> &x )
 {
     // Test the nearest point search
     PROFILE_START( "Test point search 1" );
@@ -143,15 +142,15 @@ void testPointSearch( UnitTest *ut, int ndim, const std::vector<TYPE> &x )
     PROFILE_START( "Test point search 2" );
     std::pair<int, int> index2;
     if ( ndim == 1 )
-        index2 = find_min_dist<1, TYPE>( (int) x.size(), &x[0] );
+        index2 = AMP::find_min_dist<1, TYPE>( (int) x.size(), &x[0] );
     else if ( ndim == 2 )
-        index2 = find_min_dist<2, TYPE>( (int) x.size() / 2, &x[0] );
+        index2 = AMP::find_min_dist<2, TYPE>( (int) x.size() / 2, &x[0] );
     else if ( ndim == 3 )
-        index2 = find_min_dist<3, TYPE>( (int) x.size() / 3, &x[0] );
+        index2 = AMP::find_min_dist<3, TYPE>( (int) x.size() / 3, &x[0] );
     else if ( ndim == 4 )
-        index2 = find_min_dist<4, TYPE>( (int) x.size() / 4, &x[0] );
+        index2 = AMP::find_min_dist<4, TYPE>( (int) x.size() / 4, &x[0] );
     else if ( ndim == 5 )
-        index2 = find_min_dist<5, TYPE>( (int) x.size() / 5, &x[0] );
+        index2 = AMP::find_min_dist<5, TYPE>( (int) x.size() / 5, &x[0] );
     double dist2 = 0.0;
     for ( int d = 0; d < ndim; d++ ) {
         auto tmp = static_cast<double>( x[d + index2.first * ndim] - x[d + index2.second * ndim] );
@@ -185,8 +184,8 @@ void testPointSearch( UnitTest *ut, int ndim, const std::vector<TYPE> &x )
 
 // Function to create and test the construction of the tessellation
 template<class TYPE>
-DelaunayInterpolation<TYPE> *
-createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TYPE> &x )
+std::shared_ptr<AMP::DelaunayInterpolation<TYPE>>
+createAndTestDelaunayInterpolation( AMP::UnitTest *ut, int ndim, const std::vector<TYPE> &x )
 {
     size_t N = x.size() / ndim;
     char tmp[32];
@@ -195,7 +194,7 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
 
     // Create the tessellation
     PROFILE_START( "Create Tessellation" );
-    auto data      = new DelaunayInterpolation<TYPE>( ndim );
+    auto data      = std::make_shared<AMP::DelaunayInterpolation<TYPE>>( ndim );
     int error_code = data->create_tessellation( (int) x.size() / ndim, &x[0] );
     size_t N_tri   = data->get_N_tri();
     PROFILE_STOP( "Create Tessellation" );
@@ -203,7 +202,6 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
         ut->passes( "Created tessellation " + msg );
     } else {
         ut->failure( "Created tessellation " + msg );
-        delete data;
         return nullptr;
     }
 
@@ -220,7 +218,6 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
     delete[] tri_nab;
     if ( !pass ) {
         ut->failure( "Triangle neighbors are invalid " + msg );
-        delete data;
         return nullptr;
     }
 
@@ -231,7 +228,8 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
     size_t bytes2 = data->memory_usage( 2 );
     size_t bytes3 = data->memory_usage( 3 );
     size_t bytes4 = data->memory_usage( 4 );
-    if ( bytes1 != sizeof( DelaunayInterpolation<TYPE> ) + ( ndim + 1 ) * N_tri * sizeof( int ) )
+    if ( bytes1 !=
+         sizeof( AMP::DelaunayInterpolation<TYPE> ) + ( ndim + 1 ) * N_tri * sizeof( int ) )
         ut->failure( "memory_usage(1) fails " + msg );
     if ( bytes2 != bytes1 + ndim * N * sizeof( TYPE ) )
         ut->failure( "memory_usage(2) fails " + msg );
@@ -260,7 +258,7 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
                 error = true;
         }
     }
-    DelaunayInterpolation<TYPE> data2( ndim );
+    AMP::DelaunayInterpolation<TYPE> data2( ndim );
     data2.create_tessellation( (int) N, &x[0], 0, (int) N_tri, tri );
     if ( data2.get_N_tri() != N_tri )
         error = true;
@@ -270,7 +268,7 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
     delete[] x2;
     delete[] tri;
     data2.create_tessellation( 0, nullptr, 0, 0, nullptr );
-    if ( data2.memory_usage() != sizeof( DelaunayInterpolation<TYPE> ) )
+    if ( data2.memory_usage() != sizeof( AMP::DelaunayInterpolation<TYPE> ) )
         error = true;
     if ( !error )
         ut->passes( "Copy of tessellation " + msg );
@@ -285,7 +283,6 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
         int *tri  = data->get_tri( 0 );
         TYPE x1[NDIM_MAX * ( NDIM_MAX + 1 )];
         double R, c[NDIM_MAX], xi[NDIM_MAX], x2[NDIM_MAX * ( NDIM_MAX + 1 )];
-        ;
         for ( size_t i = 0; i < N_tri; i++ ) {
             for ( int d1 = 0; d1 < ndim + 1; d1++ ) {
                 int k = tri[d1 + i * ( ndim + 1 )];
@@ -294,7 +291,7 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
                     x2[d2 + d1 * ndim] = x[d2 + k * ndim];
                 }
             }
-            DelaunayTessellation::get_circumsphere( ndim, x1, R, c );
+            AMP::DelaunayTessellation::get_circumsphere( ndim, x1, R, c );
             if ( R < 0 ) {
                 pass = false;
             }
@@ -309,13 +306,13 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
                 for ( int d = 0; d < ndim; d++ )
                     xi[d] = c[d];
                 xi[j]     = c[j] - 10.0 * R;
-                int test1 = DelaunayTessellation::test_in_circumsphere( ndim, x2, xi, 0 );
+                int test1 = AMP::DelaunayTessellation::test_in_circumsphere( ndim, x2, xi, 0 );
                 xi[j]     = c[j] - 0.1 * R;
-                int test2 = DelaunayTessellation::test_in_circumsphere( ndim, x2, xi, 0 );
+                int test2 = AMP::DelaunayTessellation::test_in_circumsphere( ndim, x2, xi, 0 );
                 xi[j]     = c[j] + 10.0 * R;
-                int test3 = DelaunayTessellation::test_in_circumsphere( ndim, x2, xi, 0 );
+                int test3 = AMP::DelaunayTessellation::test_in_circumsphere( ndim, x2, xi, 0 );
                 xi[j]     = c[j] + 0.1 * R;
-                int test4 = DelaunayTessellation::test_in_circumsphere( ndim, x2, xi, 0 );
+                int test4 = AMP::DelaunayTessellation::test_in_circumsphere( ndim, x2, xi, 0 );
                 if ( test1 != -1 || test2 != 1 || test3 != -1 || test4 != 1 ) {
                     pass = false;
                 }
@@ -344,7 +341,7 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
                 for ( int d2 = 0; d2 < ndim; d2++ )
                     x2[d2 + d1 * ndim] = x[d2 + tri2[d1] * ndim];
             }
-            double vol = DelaunayTessellation::calc_volume( ndim, x2 );
+            double vol = AMP::DelaunayTessellation::calc_volume( ndim, x2 );
             if ( vol < 0 ) {
                 neg_vol = true;
                 vol     = -vol;
@@ -378,7 +375,7 @@ createAndTestDelaunayInterpolation( UnitTest *ut, int ndim, const std::vector<TY
             for ( size_t j = 0; j < N; j++ ) {
                 for ( int d = 0; d < ndim; d++ )
                     xi[d] = x[d + j * ndim];
-                int test = DelaunayTessellation::test_in_circumsphere( ndim, x2, xi, 1e-8 );
+                int test = AMP::DelaunayTessellation::test_in_circumsphere( ndim, x2, xi, 1e-8 );
                 if ( test == 1 ) {
                     pass_circumsphere = false;
                     break;
@@ -528,7 +525,7 @@ std::vector<double> convert_to_double<int>( const std::vector<int> &x0 )
     return x;
 }
 template<class TYPE>
-void testInterpolation( UnitTest *ut,
+void testInterpolation( AMP::UnitTest *ut,
                         int ndim,
                         const std::vector<TYPE> &x,
                         bool check_extrap = true )
@@ -544,7 +541,7 @@ void testInterpolation( UnitTest *ut,
         testPointSearch( ut, ndim, x );
 
     // Create the tessellation
-    DelaunayInterpolation<TYPE> *data = createAndTestDelaunayInterpolation<TYPE>( ut, ndim, x );
+    auto data = createAndTestDelaunayInterpolation<TYPE>( ut, ndim, x );
     if ( data == nullptr )
         return;
     size_t N_tri = data->get_N_tri();
@@ -846,7 +843,6 @@ void testInterpolation( UnitTest *ut,
         delete[] g_mask;
     }
     // Free memory
-    delete data;
     delete[] nearest;
     delete[] index1;
     delete[] index2;
@@ -1013,7 +1009,7 @@ std::pair<int, std::vector<TYPE>> createProblem( int problem )
 
 
 // Test the random number generator
-void testRandomNumber( UnitTest *ut, size_t N )
+void testRandomNumber( AMP::UnitTest *ut, size_t N )
 {
     PROFILE_START( "testRandomNumber" );
     std::vector<double> data( N );
@@ -1046,17 +1042,17 @@ void testRandomNumber( UnitTest *ut, size_t N )
 
 // Get the convergence
 template<class TYPE>
-void testConvergence( UnitTest *ut, int ndim )
+void testConvergence( AMP::UnitTest *ut, int ndim )
 {
     // Create two grids with different resolution
-    int box[6]             = { -1000, 1000, -1000, 1000, -1000, 1000 };
-    int dx1[6]             = { 100, 100, 100 };
-    int dx2[6]             = { 50, 50, 50 };
-    std::vector<TYPE> set1 = createBoxPoints<TYPE>( 3, box, dx1 );
-    std::vector<TYPE> set2 = createBoxPoints<TYPE>( 3, box, dx2 );
+    int box[6] = { -1000, 1000, -1000, 1000, -1000, 1000 };
+    int dx1[6] = { 100, 100, 100 };
+    int dx2[6] = { 50, 50, 50 };
+    auto set1  = createBoxPoints<TYPE>( 3, box, dx1 );
+    auto set2  = createBoxPoints<TYPE>( 3, box, dx2 );
     // Create the tessellation
-    DelaunayInterpolation<TYPE> *data1 = createAndTestDelaunayInterpolation<TYPE>( ut, ndim, set1 );
-    DelaunayInterpolation<TYPE> *data2 = createAndTestDelaunayInterpolation<TYPE>( ut, ndim, set2 );
+    auto data1 = createAndTestDelaunayInterpolation<TYPE>( ut, ndim, set1 );
+    auto data2 = createAndTestDelaunayInterpolation<TYPE>( ut, ndim, set2 );
     // Check the convergence for different interpolation method
     for ( int method = 0; method < 3; method++ ) {}
     NULL_USE( data1 );
@@ -1068,7 +1064,7 @@ void testConvergence( UnitTest *ut, int ndim )
 int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
-    UnitTest ut;
+    AMP::UnitTest ut;
     srand( static_cast<unsigned int>( time( nullptr ) ) );
     PROFILE_ENABLE( 3 ); // 0: code, 1: tests, 3: basic timers, 5: all timers
 

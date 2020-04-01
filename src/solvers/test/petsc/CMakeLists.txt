@@ -39,21 +39,23 @@ COPY_TEST_FILE( input_testPetscSNESSolver )
 
 
 # Copy test data
-COPY_MESH_FILE( brick.e )
-COPY_MESH_FILE( halden_3pel_clad_1x.e )
-COPY_MESH_FILE( halden_contact_pellet_9mil_1x.e )
-COPY_MESH_FILE( halden_1_pellet_9mil.e )
-COPY_MESH_FILE( halden_1_clad.e )
-COPY_MESH_FILE( cylinder4K.e )
-COPY_MESH_FILE( halden_3pel_clad_1x.e )
+IF ( AMP_DATA )
+    COPY_MESH_FILE( brick.e )
+    COPY_MESH_FILE( halden_3pel_clad_1x.e )
+    COPY_MESH_FILE( halden_contact_pellet_9mil_1x.e )
+    COPY_MESH_FILE( halden_1_pellet_9mil.e )
+    COPY_MESH_FILE( halden_1_clad.e )
+    COPY_MESH_FILE( cylinder4K.e )
+    COPY_MESH_FILE( halden_3pel_clad_1x.e )
+ENDIF()
 
 
 # Add the tests
 INITIALIZE_TESTBUILDER()
-IF ( USE_EXT_TRILINOS )
+IF ( USE_EXT_TRILINOS AND AMP_DATA )
     ADD_TB_TEST_1_2_4( testPetscSNESSolver )
 ENDIF()
-IF ( USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
+IF ( USE_EXT_LIBMESH AND USE_EXT_TRILINOS AND AMP_DATA )
     ADD_TB_TEST_1_2_4( testPetscSNESSolver_NonlinearThermal_1 )
     ADD_TB_WEEKLY_TEST( testPetscSNESSolver_NonlinearThermal_2 8 )
     ADD_TB_WEEKLY_TEST( testPetscSNESSolver_NonlinearFick 8 )

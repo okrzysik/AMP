@@ -44,6 +44,9 @@ public:
     //! Move assignment operator
     inline MeshElement &operator=( MeshElement && );
 
+    //! Create a mesh element taking ownership
+    inline MeshElement( MeshElement * );
+
     //! Destructor for a MeshElement
     virtual inline ~MeshElement();
 
@@ -144,6 +147,23 @@ public: // Virtual functions
      * \param TOL   The tolerance to use for the computation.
      */
     virtual bool containsPoint( const Point &pos, double TOL = 1e-12 ) const;
+
+    /**
+     * \brief    Calculate the nearest point on the element
+     * \details  This function computes nearest point on/in the element to the given point
+     * \param[in] pos   Current position of the point
+     */
+    virtual Point nearest( const Point &pos ) const;
+
+    /**
+     * \brief    Calculate the distance to the element given a ray
+     * \details  This function computes the distance to the element given a ray.
+     *     If the ray will never intersect the element, this distance is inf.
+     * \param[in] pos   Current position of ray
+     * \param[in] dir   Direction of ray (should be normalized for most uses)
+     * @return          Returns the distance to the element surface
+     */
+    virtual double distance( const Point &pos, const Point &dir ) const;
 
     //! Check if the element is on the surface
     virtual bool isOnSurface() const;

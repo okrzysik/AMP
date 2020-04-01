@@ -1,22 +1,18 @@
-
+#include "AMP/materials/Material.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 
-#include <memory>
-
-#include "AMP/materials/Material.h"
-
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
 void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string matname = "UO2_MSRZC_09";
-    std::shared_ptr<AMP::Materials::Material> material =
-        AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+    auto material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
 
     std::map<std::string, std::shared_ptr<std::vector<double>>> inputMaterialParameters;
 
@@ -24,9 +20,9 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string burnupString      = "burnup";
     std::string oxygenString      = "concentration";
 
-    std::shared_ptr<std::vector<double>> tempVec( new std::vector<double> );
-    std::shared_ptr<std::vector<double>> burnupVec( new std::vector<double> );
-    std::shared_ptr<std::vector<double>> oxygenVec( new std::vector<double> );
+    auto tempVec   = std::make_shared<std::vector<double>>();
+    auto burnupVec = std::make_shared<std::vector<double>>();
+    auto oxygenVec = std::make_shared<std::vector<double>>();
 
     tempVec->push_back( 310.0 );
     burnupVec->push_back( 0.0 );

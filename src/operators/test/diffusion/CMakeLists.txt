@@ -67,24 +67,29 @@ COPY_TEST_FILE( input_linearThermalDiffusion+FickDiffusion-UO2MSRZC09-1 )
 
 
 # Copy test data
-COPY_MESH_FILE( brick.e )
-COPY_MESH_FILE( cube64.with.boundary.labels.e )
-COPY_MESH_FILE( cube4096.e )
-COPY_MESH_FILE( cylinder4K.e )
-COPY_MESH_FILE( shell3150mesh.e )
+IF ( AMP_DATA )
+    COPY_MESH_FILE( brick.e )
+    COPY_MESH_FILE( cube64.with.boundary.labels.e )
+    COPY_MESH_FILE( cube4096.e )
+    COPY_MESH_FILE( cylinder4K.e )
+    COPY_MESH_FILE( shell3150mesh.e )
+ENDIF()
 
 
 # Add the tests
 INITIALIZE_TESTBUILDER()
-ADD_TB_TEST_1_2_4( testNonlinearThermalOxygenDiffusion_1 )
-ADD_TB_TEST_1_2_4( testLinearDiffusion_1 )
-ADD_TB_TEST_1_2_4( testLinearDiffusion_2 )
-ADD_TB_TEST_1_2_4( testNonlinearDiffusion_1 )
-ADD_TB_TEST_1_2_4( testNonlinearDiffusion_2 )
-ADD_TB_TEST_1_2_4( testDiffusionBVP_1 )
-ADD_TB_TEST_1_2_4( testDiffusionManufacturedSolution_1 )
-ADD_TB_TEST_1_2_4( testTensorDiffusionManufacturedSolution_1 )
-ADD_TB_PROVISIONAL_TEST( testDiffusionMMSForward )
+# We need to sort out which tests rely on AMP_DATA
+IF ( AMP_DATA )
+    ADD_TB_TEST_1_2_4( testNonlinearThermalOxygenDiffusion_1 )
+    ADD_TB_TEST_1_2_4( testLinearDiffusion_1 )
+    ADD_TB_TEST_1_2_4( testLinearDiffusion_2 )
+    ADD_TB_TEST_1_2_4( testNonlinearDiffusion_1 )
+    ADD_TB_TEST_1_2_4( testNonlinearDiffusion_2 )
+    ADD_TB_TEST_1_2_4( testDiffusionBVP_1 )
+    ADD_TB_TEST_1_2_4( testDiffusionManufacturedSolution_1 )
+    ADD_TB_TEST_1_2_4( testTensorDiffusionManufacturedSolution_1 )
+    ADD_TB_PROVISIONAL_TEST( testDiffusionMMSForward )
+ENDIF()
 FINALIZE_TESTBUILDER()
 
 

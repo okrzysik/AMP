@@ -2,15 +2,11 @@
 #define included_AMP_MeshGeometry
 
 #include "AMP/ampmesh/Geometry.h"
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/utils/kdtree.h"
 
 #include <memory>
 #include <vector>
-
-
-namespace AMP::Mesh {
-class Mesh;        // Forward declare Mesh
-class MeshElement; // Forward declare Mesh
-} // namespace AMP::Mesh
 
 
 namespace AMP::Geometry {
@@ -21,14 +17,20 @@ namespace AMP::Geometry {
  * \brief A class used to abstract away geometry information from an application or mesh.
  * \details  This class provides a geometry implimentation based on a surface mesh
  */
-class MeshGeometry final : Geometry
+class MeshGeometry final : public Geometry
 {
 public:
     //! Default constructor
-    MeshGeometry( std::unique_ptr<AMP::Mesh::Mesh> mesh );
+    MeshGeometry( std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     //! Destructor
     virtual ~MeshGeometry() = default;
+
+    //! Copy constructor
+    MeshGeometry( const MeshGeometry & ) = delete;
+
+    //! Assignment operator
+    MeshGeometry &operator=( const MeshGeometry & ) = delete;
 
     //! Get the name of the geometry
     virtual std::string getName() const override { return "MeshGeometry"; }
@@ -39,6 +41,15 @@ public:
      * @return      Returns true if the object is convex
      */
     virtual bool isConvex() const override;
+
+    /**
+     * \brief    Calculate the nearest point on the surface
+     * \details  This function computes the nearest point on the surface
+     * \param[in] pos   Current position of ray
+     * \param[in] dir   Direction of ray (should be normalized for most uses)
+     * @return          Returns the nearest surface point
+     */
+    virtual Point nearest( const Point &pos ) const override;
 
     /**
      * \brief    Calculate the distance to the object given a ray
@@ -111,19 +122,26 @@ public:
     //! Clone the object
     virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const override;
 
+    //! Get the mesh
+    const AMP::Mesh::Mesh &getMesh() const { return *d_mesh; }
 
 private: // Internal functions
     // Initialize the internal data
     void initialize();
+    void initializePosition() const;
 
     // Get the nearest element to a point
-    AMP::Mesh::MeshElement getNearest( const Point &x ) const;
+    std::vector<AMP::Mesh::MeshElement> getNearestElements( const Point &x ) const;
+    std::pair<AMP::Mesh::MeshElement, Point> getNearestPoint( const Point &x ) const;
 
 
 private: // Internal data
-    std::unique_ptr<AMP::Mesh::Mesh> d_mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
     std::vector<int> d_surfaceIds;
-    Point d_centroid;
+    mutable uint64_t d_pos_hash;
+    mutable Point d_centroid;
+    mutable kdtree d_tree;
+    mutable std::vector<AMP::Mesh::MeshElementID> d_ids;
 };
 
 

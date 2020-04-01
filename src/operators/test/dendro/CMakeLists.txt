@@ -16,13 +16,14 @@ COPY_TEST_FILE( input_testNodeToFaceContactOperator-5 )
 
 
 # Copy test data
-COPY_MESH_FILE( simple_pellet_1x.e )
-COPY_MESH_FILE( two_fused_simple_pellets_1x.e )
-COPY_MESH_FILE(my_cylinder.e)
+IF ( AMP_DATA )
+    COPY_MESH_FILE( simple_pellet_1x.e )
+    COPY_MESH_FILE( two_fused_simple_pellets_1x.e )
+    COPY_MESH_FILE(my_cylinder.e)
+ENDIF()
 
 
 # Add the tests
-
 IF( USE_EXT_DENDRO AND USE_EXT_PETSC )
    # R.S.: This needs to be fixed!
     ## does not work in parallel - ADD_AMP_TEST_1_2_4( testNodeToFaceContactOperator )
