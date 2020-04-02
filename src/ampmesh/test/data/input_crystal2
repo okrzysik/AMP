@@ -9,7 +9,7 @@ Mesh{
     // Heatsink mesh
     Mesh_1 {
         MeshName = "heatsink"
-        MeshType = "libMesh"
+        MeshType = "AMP"
         Generator = "cube"
         dim = 3
         size = 5, 20, 20
@@ -20,7 +20,7 @@ Mesh{
     // Laser crystal mesh
     Mesh_2 {
         MeshName = "laser_crystal"
-        MeshType = "libMesh"
+        MeshType = "AMP"
         Generator = "cube"
         dim = 3
         size = 10, 20, 20
@@ -36,7 +36,7 @@ Mesh{
         MeshArrayDatabasePrefix = "MeshArray_"
         Mesh_1 {
             MeshName = "absorbing_crystal_1"
-            MeshType = "libMesh"
+            MeshType = "AMP"
             Generator = "cube"
             dim = 3
             size = 5, 3, 8
@@ -45,7 +45,7 @@ Mesh{
         }
         Mesh_2 {
             MeshName = "absorbing_crystal_2"
-            MeshType = "libMesh"
+            MeshType = "AMP"
             Generator = "cube"
             dim = 3
             size = 5, 3, 8
@@ -54,7 +54,7 @@ Mesh{
         }
         Mesh_3 {
             MeshName = "absorbing_crystal_3"
-            MeshType = "libMesh"
+            MeshType = "AMP"
             Generator = "cube"
             dim = 3
             size = 5, 8, 3
@@ -63,7 +63,7 @@ Mesh{
         }
         Mesh_4 {
             MeshName = "absorbing_crystal_4"
-            MeshType = "libMesh"
+            MeshType = "AMP"
             Generator = "cube"
             dim = 3
             size = 5, 8, 3
