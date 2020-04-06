@@ -94,10 +94,6 @@ public:
 
 // Functions to add work to the thread pool
 // clang-format off
-template<class... Args1, class... Args2> constexpr bool argsMatch()
-{
-    return true;
-}
 template<class Ret, class... Args1, class... Args2>
 inline ThreadPoolID ThreadPool_add_work(
     ThreadPool *tpool, int priority, std::function<Ret( Args1... )> fun, std::tuple<Args2...> &&args )
@@ -113,11 +109,11 @@ inline ThreadPoolID ThreadPool_add_work(
     auto work = new WorkItemFull<Ret, decltype(fun), Args2...>( std::move( fun ), std::move( args ) );
     return ThreadPool::add_work( tpool, work, priority );
 }
-template<class Ret, class... Args1, class... Args2>
+template<class Ret>
 inline ThreadPoolID ThreadPool_add_work(
     ThreadPool *tpool, int priority, Ret ( *routine )(), std::tuple<std::nullptr_t>&& )
 {
-    std::function<Ret( Args1... )> fun = routine;
+    std::function<Ret()> fun = routine;
     auto work = new WorkItemFull<Ret, decltype(fun)>( std::move( fun ) );
     return ThreadPool::add_work( tpool, work, priority );
 }
