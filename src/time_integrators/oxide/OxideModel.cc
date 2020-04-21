@@ -1,5 +1,6 @@
 #include "OxideModel.h"
 #include "AMP/utils/Utilities.h"
+#include "LapackWrappers.h"
 #include <cmath>
 
 #include <algorithm>
@@ -7,11 +8,6 @@
 
 namespace AMP {
 namespace TimeIntegrator {
-
-
-extern "C" {
-extern void dgtsv_( int *, int *, double *, double *, double *, double *, int *, int * );
-}
 
 
 /************************************************************************
@@ -324,9 +320,8 @@ void OxideModel::solveLinearDiffusionLayer( const int N,
         lower[N - 2] = -0.5 * dt / ( h1 * h1 ) * Db[N - 1] + 0.5 * dt / h1 * vi;
     }
     // Solve the system
-    int error = 0, one = 1;
-    int N2 = N;
-    dgtsv_( &N2, &one, lower, diag, upper, rhs, &N2, &error );
+    int error = 0;
+    Lapack<double>::gtsv( N, 1, lower, diag, upper, rhs, N, error );
     if ( error != 0 ) {
         printf( "Error solving tridiagonal system\n" );
     }
