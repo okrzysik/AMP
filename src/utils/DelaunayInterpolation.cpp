@@ -2083,7 +2083,7 @@ static void inv_M( const int N, const double *M, double *M_inv )
 #if USE_LAPACK == 0
         // No method to compute the inverse, return all zeros
         AMP::perr << "Need to link LAPACK\n";
-        for ( int i = 0; i < n * n; i++ )
+        for ( int i = 0; i < N * N; i++ )
             M_inv[i] = M[i];
 #else
         // Call Lapack to compute the inverse
