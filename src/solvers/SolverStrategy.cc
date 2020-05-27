@@ -73,6 +73,7 @@ void SolverStrategy::resetOperator(
         d_pOperator->reset( params );
     }
 }
+
 void SolverStrategy::reset( std::shared_ptr<SolverStrategyParameters> ) {}
 
 
@@ -86,19 +87,8 @@ void SolverStrategy::setConvergenceTolerance( const int max_iterations, const do
     d_iMaxIterations = max_iterations;
     d_dMaxError      = max_error;
 }
+
 void SolverStrategy::setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> ) {}
-
-
-/****************************************************************
- * Empty functions                                               *
- ****************************************************************/
-void SolverStrategy::appendSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr ) {}
-void SolverStrategy::appendRhsVector( AMP::LinearAlgebra::Vector::shared_ptr ) {}
-void SolverStrategy::formRhs( double,
-                              AMP::LinearAlgebra::Vector::shared_ptr,
-                              AMP::LinearAlgebra::Vector::const_shared_ptr )
-{
-}
 
 } // namespace Solver
 } // namespace AMP

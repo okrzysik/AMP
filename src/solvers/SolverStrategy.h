@@ -119,24 +119,6 @@ public:
     }
 
     /**
-     * \brief  Append the vectors of interest to the solution vector
-     * \details  This function will append the necessary vectors that this solver
-     *  owns to the global vector provided.  Note that each solver may own any number
-     *  of vectors, but no vector may be owned by multiple solvers.
-     * \param vec   The multivector to append
-     */
-    virtual void appendSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
-
-    /**
-     * \brief  Append the vectors of interest to the rhs vector
-     * \details  This function will append the necessary vectors that this solver
-     *  owns to the global vector provided.  Note that each solver may own any number
-     *  of vectors, but no vector may be owned by multiple solvers.
-     * \param vec   The multivector to append
-     */
-    virtual void appendRhsVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
-
-    /**
      * \brief  Registers a writer with the solver
      * \details  This function will register a writer with the solver.  The solver
      *  may then register any vector components it "owns" with the writer.
@@ -146,20 +128,6 @@ public:
     {
         d_writer = writer;
     }
-
-    /**
-     * \brief Prepare for solve.
-     * \details This function provides a solver an opportunity to perform certain
-     *  operations in preparation for a solve that are not formally part of the
-     *  solve.  Updating time-step dependent parameters and building RHS vectors
-     *  would naturally fall into this category.
-     * \param t  The current time.
-     * \param f  The global rhs multivector.
-     * \param u  The global solution multivector.
-     */
-    virtual void formRhs( double t,
-                          AMP::LinearAlgebra::Vector::shared_ptr f,
-                          AMP::LinearAlgebra::Vector::const_shared_ptr u );
 
     /**
      * Resets the operator registered with the solver with new parameters if necessary
