@@ -31,6 +31,7 @@ public:
      * \details  This is the default constructor for creating the kdtree
      * \param[in] N     The number of points in the tree
      * \param[in] x     The coordinates of each point in the tree
+     * \param[in] data  Data to associate with the nodes
      */
     kdtree2( size_t N, const Point *x, const TYPE *data );
 

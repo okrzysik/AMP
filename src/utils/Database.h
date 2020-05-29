@@ -318,7 +318,6 @@ public:
      * If the specified key already exists in the database an error is thrown.
      *
      * @param key       Key name in database.
-     * @param db        Database to store
      */
     inline std::shared_ptr<Database> putDatabase( const AMP::string_view &key )
     {

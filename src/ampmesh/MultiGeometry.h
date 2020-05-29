@@ -22,9 +22,7 @@ public:
      * \brief Contructor to create a MultiMesh from existing meshes
      * \details  This constructor takes a list of meshes and a communicator
      *    and generates the appropriate multimesh
-     * \param name      Name of the new mesh
-     * \param comm      Desired communicator for the multimesh
-     * \param meshes    Meshes to be used as part of the multimesh
+     * \param geom      Sub-geometries
      */
     explicit MultiGeometry( const std::vector<Geometry::shared_ptr> &geom );
 

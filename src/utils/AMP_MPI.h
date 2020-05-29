@@ -811,7 +811,7 @@ public: // Member functions
 
     /*!
      * Each processor sends every other processor an array
-     * @param[in] x      Input array for allGather
+     * @param[in] x_in   Input array for allGather
      * @return           Output array for allGather
      */
     template<class type>

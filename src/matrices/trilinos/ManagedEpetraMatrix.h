@@ -55,11 +55,10 @@ public:
      */
     explicit ManagedEpetraMatrix( Epetra_CrsMatrix *m, bool dele = false );
 
-    /** \brief Destructor
-     */
+    //! Destructor
     virtual ~ManagedEpetraMatrix() {}
 
-    virtual void createValuesByGlobalID( size_t row, const std::vector<size_t> &cols ) override;
+    virtual void createValuesByGlobalID( size_t, const std::vector<size_t> & ) override;
 
 
     virtual void mult( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;

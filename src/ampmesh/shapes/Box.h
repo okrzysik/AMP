@@ -29,7 +29,6 @@ public:
     /**
      * \brief Construct a box
      * \param range     The range of the box [xmin, xmax, ymin, ymax, zmin, zmax, ...]
-     * \param coord     Optional list of coordinates to adjust the logical - physical mapping
      */
     explicit Box( const std::vector<double> &range );
 
@@ -87,7 +86,6 @@ public:
 
     /**
      * \brief Construct a grid geometry
-     * \param range     The range of the box [xmin, xmax, ymin, ymax, zmin, zmax, ...]
      * \param coord     Optional list of coordinates to adjust the logical - physical mapping
      */
     explicit Grid( const std::vector<std::vector<double>> &coord );

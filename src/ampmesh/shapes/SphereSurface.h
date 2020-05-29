@@ -26,7 +26,7 @@ public:
 
     /**
      * \brief Construct a SphereSurface geometry
-     * \param range     The range of the SphereSurface [xmin, xmax, ymin, ymax, zmin, zmax, ...]
+     * \param R     The radius
      */
     explicit SphereSurface( double R );
 

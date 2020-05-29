@@ -25,13 +25,14 @@ public:
     using Triangle = std::array<int, NDIM + 1>;
 
     /*! @brief  Standard constructor
-     *  @detailed  Default constructor to be used
+     *  @details  Default constructor to be used
      * @param N         The number of verticies
      * @param x         The coordinates of the nodes (NDIM x N)
      *                  Note: coordinates must not change or be deleted during lifetime of
      *                  FaceList.
      * @param tri_id    The initial triangle id
-     * @param new_tri   The triangle list (NDIM+1)
+     * @param tri       The triangle list (NDIM+1)
+     * @param TOL_VOL   The tolerance to use
      */
     FaceList(
         const int N, const Point *x, const int tri_id, const Triangle &tri, const TYPE TOL_VOL );
@@ -43,7 +44,7 @@ public:
     int get_N_face() { return N_face; }
 
     /*! @brief  Function to add a node to the convex hull
-     *  @detailed  This function will add a new node to the convex hull.  In the process of
+     *  @details  This function will add a new node to the convex hull.  In the process of
      *     of adding the node, some faces will be removed, new faces will be added,
      *     and new triangles will be generated.  This function will return the new triangles
      *     which must be added.  Note: the new triangles are not necessarilly Delaunay.
@@ -53,14 +54,14 @@ public:
      *     -1 - Invalid triangle created (eg. the triangle is flat in 3d or a line in 2D)
      *     -2 - All other errors
      * @param[in] node_id       The vertex index to add
-     * @param[in/out] unused    A list of unused triangle ids
-     * @param[in/out]  id0      The first index to use for new triangle ids
+     * @param[in,out] unused    A list of unused triangle ids
+     * @param[in,out] N_tri     The number of triangles
      * @param[out] new_tri_id   A list of valid ids to use for new triangles
      * @param[out] new_tri      The list of new triangles that were created
      * @param[out] new_tri_nab  The list of triangle neighbors for the new triangles
      * @param[out] neighbor     The list of existing triangles that are neighbors to the new
      * triangles
-     * @param[out] neighbor     The list of existing triangle faces that are neighbors to the
+     * @param[out] face_id      The list of existing triangle faces that are neighbors to the
      * new triangles
      */
     int add_node( const int node_id,

@@ -67,7 +67,7 @@ public:
     typedef std::shared_ptr<const AMP::Mesh::Mesh> const_shared_ptr;
 
     /**
-     *\typedef generator
+     *\typedef generatorType
      *\brief  Generator for meshes
      *\details  This is a user-supplied function to generate a mesh.  Users may register their
      *     own mesh generators using registerGenerator and the mesh builder will call them.

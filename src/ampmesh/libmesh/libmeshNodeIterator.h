@@ -62,7 +62,6 @@ public:
 
 protected:
     /** Default constructor
-     * \param type      Entity type:  0: node, 1: element
      * \param mesh      Pointer to the libMesh mesh
      * \param gcw       gcw to use
      * \param begin     Pointer to iterator with the begining position

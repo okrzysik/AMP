@@ -42,19 +42,16 @@ public: // Virtual functions
     inline size_t numberOfDataBlocks() const override { return 0; }
 
     /** \brief Number of elements in a data block
-     * \param[in] i  particular data block
      * \return The size of a particular block
      */
     inline size_t sizeOfDataBlock( size_t = 0 ) const override { return 0; }
 
 
     /**\brief Copy data into this vector
-     *\param[in] buf  Buffer to copy from
      */
     inline void putRawData( const double * ) override {}
 
     /**\brief Copy data out of this vector
-     *\param[out] buf  Buffer to copy to
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
     inline void copyOutRawData( double * ) const override {}
@@ -76,8 +73,6 @@ public: // Virtual functions
     /**
      * \brief Set values in the vector by their local offset
      * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[in] vals the values to place in the vector
      * \details This will set the owned values for this core.  All indices are
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
@@ -90,8 +85,6 @@ public: // Virtual functions
     /**
      * \brief Set owned values using global identifier
      * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[in] vals the values to place in the vector
      *
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
      */
@@ -103,8 +96,6 @@ public: // Virtual functions
     /**
      * \brief Add values to vector entities by their local offset
      * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[in] vals the values to place in the vector
      * \details This will set the owned values for this core.  All indices are
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
@@ -118,8 +109,6 @@ public: // Virtual functions
     /**
      * \brief Add owned values using global identifier
      * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[in] vals the values to place in the vector
      *
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
@@ -132,8 +121,6 @@ public: // Virtual functions
     /**
      * \brief Get local values in the vector by their global offset
      * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[out] vals the values to place in the vector
      * \details This will get any value owned by this core.
      */
     inline void getLocalValuesByGlobalID( int num, size_t *, double * ) const override
@@ -153,24 +140,20 @@ public: // Advanced virtual functions
     inline uint64_t getDataID() const override { return 0; }
 
     /** \brief Return a pointer to a particular block of memory in the vector
-     * \param i The block to return
      */
     inline void *getRawDataBlockAsVoid( size_t ) override { return nullptr; }
 
     /** \brief Return a pointer to a particular block of memory in the
      * vector
-     * \param i        The block to return
      */
     inline const void *getRawDataBlockAsVoid( size_t ) const override { return nullptr; }
 
     /** \brief Return the result of sizeof(TYPE) for the given data block
-     * \param i The block to return
      */
     inline size_t sizeofDataBlockType( size_t ) const override { return sizeof( TYPE ); }
 
     /** \brief Is the data of the given type
      * \param hash     The hash code: typeid(myint).hash_code()
-     * \param block    The block id to check
      */
     inline bool isTypeId( size_t hash, size_t ) const override
     {

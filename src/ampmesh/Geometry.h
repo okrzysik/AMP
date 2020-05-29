@@ -61,7 +61,6 @@ public:
      * \brief    Calculate the nearest point on the surface
      * \details  This function computes the nearest point on the surface
      * \param[in] pos   Current position of ray
-     * \param[in] dir   Direction of ray (should be normalized for most uses)
      * @return          Returns the nearest surface point
      */
     virtual Point nearest( const Point &pos ) const = 0;
@@ -130,7 +129,7 @@ public:
      * \brief    Displace the entire geometry
      * \details  This function will displace the entire geometry by a scalar value.
      *   The displacement vector should be the size of the physical dimension.
-     * \param[int] x    Displacement vector
+     * \param[in] x    Displacement vector
      */
     virtual void displace( const double *x ) = 0;
 
@@ -142,7 +141,7 @@ public:
      * \brief   Create a geometry
      * \details  This function will create a geometry based on
      *   the input database.
-     * \param params Parameters for constructing a geometry from an input database
+     * \param[in] db    Parameters for constructing a geometry from an input database
      */
     static std::shared_ptr<AMP::Geometry::Geometry>
     buildGeometry( std::shared_ptr<AMP::Database> db );

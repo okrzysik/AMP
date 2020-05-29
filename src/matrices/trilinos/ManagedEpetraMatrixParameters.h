@@ -108,10 +108,9 @@ public:
     void addColumns( int i, int *cols );
 
     /** \brief  Add columns to a description
-     * \param[in] i  The number of columns
      * \param[in] cols  The column ids
      */
-    void addColumns( const std::set<size_t> &col );
+    void addColumns( const std::set<size_t> &cols );
 
 private:
     std::shared_ptr<Epetra_Map> d_eRowMap;

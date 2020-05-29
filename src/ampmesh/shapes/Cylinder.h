@@ -26,7 +26,9 @@ public:
 
     /**
      * \brief Construct a Cylinder geometry
-     * \param range     The range of the Cylinder [xmin, xmax, ymin, ymax, zmin, zmax, ...]
+     * \param r         The radius of the cylinder
+     * \param z_min     The lower z-coordinate
+     * \param z_max     The upper z-coordinate
      */
     explicit Cylinder( double r, double z_min, double z_max );
 

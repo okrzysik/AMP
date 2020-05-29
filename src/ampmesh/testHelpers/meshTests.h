@@ -320,6 +320,7 @@ private: // Private data
           * \brief Check a mesh iterator
           * \details  This test performs a series of simple tests on a single mesh element iterator
           * \param[out] ut           Unit test class to report the results
+          * \param[in] mesh          mesh for the iterator
           * \param[in] iterator      local iterator over elements
           * \param[in] N_local       number of local elements for the iterator
           * \param[in] N_ghost       number of ghost elements for the iterator

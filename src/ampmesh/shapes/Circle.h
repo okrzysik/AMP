@@ -26,7 +26,7 @@ public:
 
     /**
      * \brief Construct a Circle geometry
-     * \param range     The range of the Circle [xmin, xmax, ymin, ymax, zmin, zmax, ...]
+     * \param R         The circle radius
      */
     explicit Circle( double R );
 

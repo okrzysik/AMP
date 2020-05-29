@@ -210,7 +210,6 @@ private:
      * \brief Returns the local minimum of the quotient of two vectors:
      *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
      * \param[in] x a vector
-     * \param[in] y a vector
      * \return \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
      */
     virtual double localMinQuotient( const VectorOperations &x ) const override;
@@ -218,7 +217,6 @@ private:
     /**
      * \brief Return a weighted norm of a vector
      * \param[in] x a vector
-     * \param[in] y a vector
      * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_i \mathit{this}^2_i}{n}}\f]
      */
     virtual double localWrmsNorm( const VectorOperations &x ) const override;
@@ -226,7 +224,6 @@ private:
     /**
      * \brief Return a weighted norm of a subset of a vector
      * \param[in] x a vector
-     * \param[in] y a vector
      * \param[in] mask a vector
      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0}
      * \mathit{this}^2_iy^2_i}{n}}\f]

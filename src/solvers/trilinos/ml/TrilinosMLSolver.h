@@ -111,11 +111,11 @@ public:
 
      23. name: aggregation_aux_threshold, type: double, (optional), default_values: 0.0
 
-    24. name: null_space_type, type: string, (optional), default value: none
+     24. name: null_space_type, type: string, (optional), default value: none
 
-      25. name: null_space_dimension, type: integer, (optional), default value: 3
+     25. name: null_space_dimension, type: integer, (optional), default value: 3
 
-      26. name: null_space_add_default_vectors, type: bool, (optional), default value: true
+     26. name: null_space_add_default_vectors, type: bool, (optional), default value: true
       */
     explicit TrilinosMLSolver( std::shared_ptr<TrilinosMLSolverParameters> parameters );
 

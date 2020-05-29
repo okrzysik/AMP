@@ -1,4 +1,4 @@
-
+// \cond HIDDEN_SYMBOLS
 #ifndef DENDRO_SEARCH
 #define DENDRO_SEARCH
 
@@ -133,3 +133,5 @@ struct DendroSearch::ProjectOnBoundaryData {
 } // namespace AMP
 
 #endif // DENDRO_SEARCH
+
+// \endcond

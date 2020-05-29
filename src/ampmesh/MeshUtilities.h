@@ -12,7 +12,8 @@ namespace AMP::Mesh {
  * \brief    Get points in the mesh
  * \details  This function returns points in the mesh at the given resolution.
  *     Note: The nodes are always used.
- * \param dx    Resolution to use.
+ * \param mesh  Mesh to sample
+ * \param dx    Resolution to use
  *              Note: if dx=0, then an automatic resolution is used.
  */
 std::tuple<std::vector<Point>, std::vector<MeshElementID>> sample( const Mesh &mesh, double dx );
@@ -21,6 +22,7 @@ std::tuple<std::vector<Point>, std::vector<MeshElementID>> sample( const Mesh &m
 /**
  * \brief    Get points in the element
  * \details  This function returns points in the mesh element at the given resolution.
+ * \param elem  Element to sample
  * \param dx    Resolution to use.
  */
 std::vector<Point> sample( const MeshElement &elem, double dx );

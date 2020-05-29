@@ -1,0 +1,19 @@
+Mesh{
+    MeshName = "crystal"
+    MeshType = "TriangleGeometryMesh"
+    Geometry {
+        Generator = "Mesh"
+        Mesh{
+            MeshName = "crystal_geom"
+            MeshType = "AMP"
+            FileName = "CRYSTAL_FINAL_2mm.STL"
+            dim = 3
+            scale = 0.0393701
+            x_offset = -21.3681
+            y_offset = -14.4062
+            z_offset = -21.4308
+        }
+    }
+    Resolution = 2
+}
+

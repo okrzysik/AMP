@@ -13,6 +13,7 @@ namespace Geometry {
  * \brief Run all geometry based tests
  * \details  This test runs all the geometry-based tests
  * \param[in] geom          Geometry to test
+ * \param[in] ut            Unit test
  */
 void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut );
 

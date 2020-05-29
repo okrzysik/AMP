@@ -99,8 +99,7 @@ private:
      *  \param x x-coordinate
      *  \param y y-coordinate
      *  \param z z-coordinate
-     *  \param c specification of boundary conditions (length >= 6)
-     *  \param a arbitrary parameters (length >= 1)
+     *  \param mfs manufactured solution
      */
     static void quad_neumann( std::valarray<double> &result,
                               const double x,

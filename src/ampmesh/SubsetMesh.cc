@@ -367,6 +367,10 @@ MeshIterator SubsetMesh::getIterator( const GeomType type, const int gcw ) const
 {
     int gcw2   = gcw;
     auto type2 = static_cast<int>( type );
+    if ( (int) d_elements.size() <= type2 || gcw < 0 )
+        return MeshIterator();
+    if ( d_elements[type2].empty() )
+        return MeshIterator();
     if ( gcw2 >= (int) d_elements[type2].size() )
         gcw2 = (int) d_elements[type2].size() - 1;
     if ( gcw2 == 0 )
@@ -411,10 +415,26 @@ SubsetMesh::getBoundaryIDIterator( const GeomType type, const int id, const int 
     return MultiIterator( iterators, 0 );
 }
 std::vector<int> SubsetMesh::getBlockIDs() const { return d_blockIdSets; }
-MeshIterator SubsetMesh::getBlockIDIterator( const GeomType, const int, const int ) const
+MeshIterator
+SubsetMesh::getBlockIDIterator( const GeomType type, const int id, const int gcw ) const
 {
-    AMP_ERROR( "getBlockIDIterator is not implimented for SubsetMesh yet" );
-    return MeshIterator();
+    std::vector<MeshIterator> iterators;
+    iterators.reserve( gcw + 1 );
+    for ( int i = 0; i <= gcw; i++ ) {
+        map_id_struct map_id;
+        map_id.id   = id;
+        map_id.type = type;
+        map_id.gcw  = i;
+        auto map_it = d_blockSets.find( map_id );
+        if ( map_it == d_blockSets.end() )
+            continue;
+        iterators.push_back( MultiVectorIterator( map_it->second, 0 ) );
+    }
+    if ( iterators.empty() )
+        return MeshIterator();
+    if ( iterators.size() == 1 )
+        return iterators[0];
+    return MultiIterator( iterators, 0 );
 }
 
 

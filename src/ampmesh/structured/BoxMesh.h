@@ -117,7 +117,7 @@ public:
          * \param side  Side of the parent element (ignored if it is the parent or vertex)
          * \param x     Logical coordinate of the element
          * \param y     Logical coordinate of the element
-         * \param x     Logical coordinate of the element
+         * \param z     Logical coordinate of the element
          */
         constexpr explicit MeshElementIndex(
             GeomType type, uint8_t side, int x, int y = 0, int z = 0 );

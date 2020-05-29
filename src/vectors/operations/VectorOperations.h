@@ -311,59 +311,124 @@ public: // Non-virtual functions
      * \param[in] mask a vector
      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
      */
-
     static double wrmsNormMask( const VectorOperations &x,
                                 const VectorOperations &y,
                                 const VectorOperations &mask );
 
 
 public: // shared_ptr wrappers
-    /// @copydoc VectorOperations::equals(const VectorOperations&,double)
+    /**
+     * \brief  Determine if two vectors are equal using an absolute tolerance
+     * \param[in] rhs      Vector to compare to
+     * \param[in] tol      Tolerance of comparison
+     * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
+     */
     inline bool equals( std::shared_ptr<const VectorOperations> rhs, double tol = 0.000001 );
+
     /// @copydoc VectorOperations::scale(double,const VectorOperations&)
     inline void scale( double alpha, std::shared_ptr<const VectorOperations> x );
+
     /// @copydoc VectorOperations::copy(const VectorOperations&)
     inline void copy( std::shared_ptr<const VectorOperations> x );
+
     /// @copydoc VectorOperations::add(const VectorOperations&,const VectorOperations&)
     inline void add( std::shared_ptr<const VectorOperations> x,
                      std::shared_ptr<const VectorOperations> y );
+
     /// @copydoc VectorOperations::addScalar(const VectorOperations&,double)
     inline void addScalar( std::shared_ptr<const VectorOperations> x, double alpha );
+
     /// @copydoc VectorOperations::subtract(const VectorOperations&,const VectorOperations&)
     inline void subtract( std::shared_ptr<const VectorOperations> x,
                           std::shared_ptr<const VectorOperations> y );
+
     /// @copydoc VectorOperations::multiply(const VectorOperations&,const VectorOperations&)
     inline void multiply( std::shared_ptr<const VectorOperations> x,
                           std::shared_ptr<const VectorOperations> y );
+
     /// @copydoc VectorOperations::divide(const VectorOperations&,const VectorOperations&)
     inline void divide( std::shared_ptr<const VectorOperations> x,
                         std::shared_ptr<const VectorOperations> y );
-    /// @copydoc VectorOperations::reciprocal(const VectorOperations&)
+
+    /**
+     * \param x  a vector
+     * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i =
+     * 1/x_i\f$.
+     */
     inline void reciprocal( std::shared_ptr<const VectorOperations> x );
-    /// @copydoc VectorOperations::linearSum(double,const VectorOperations&,double,const
-    /// VectorOperations&)
+
+    /**
+     * \brief Set a vector to be a linear combination of two vectors.
+     *      \f$\mathit{this}_i = \alpha x_i + \beta y_i\f$.
+     * \param[in] alpha     a scalar
+     * \param[in] x         a vector
+     * \param[in] beta      a scalar
+     * \param[in] y         a vector
+     */
     inline void linearSum( double alpha,
                            std::shared_ptr<const VectorOperations> x,
                            double beta,
                            std::shared_ptr<const VectorOperations> y );
-    /// @copydoc VectorOperations::axpy(double,const VectorOperations&,const VectorOperations&)
+
+    /**
+     * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
+     * \param[in] alpha    a scalar
+     * \param[in] x        a vector
+     * \param[in] y        a vector
+     */
     inline void axpy( double alpha,
                       std::shared_ptr<const VectorOperations> x,
                       std::shared_ptr<const VectorOperations> y );
-    /// @copydoc VectorOperations::axpby(double,double,const VectorOperations&)
+
+    /**
+     * \brief Set this vector alpha * x + this.
+     *     \f$\mathit{this}_i = \alpha x_i + \beta \mathit{this}_i \f$
+     * \param[in] alpha    a scalar
+     * \param[in] beta     a scalar
+     * \param[in] x        a vector
+     */
     inline void axpby( double alpha, double beta, std::shared_ptr<const VectorOperations> x );
-    /// @copydoc VectorOperations::ans(const VectorOperations&)
+
+    /**
+     * \brief Set this to the component-wise absolute value of a vector.
+     *     \f$\mathit{this}_i = |x_i|\f$.
+     * \param[in] x        a vector
+     */
     inline void abs( std::shared_ptr<const VectorOperations> x );
-    /// @copydoc VectorOperations::dot(const VectorOperations&)
+
+    /**
+     * \brief Return the dot product of this vector with the argument vector.
+     * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
+     * \param[in] x        a vector
+     */
     inline double dot( std::shared_ptr<const VectorOperations> x ) const;
-    /// @copydoc VectorOperations::minQuotient(const VectorOperations&,const VectorOperations&)
+
+    /**
+     * \brief Returns the minimum of the quotient of two vectors:
+     *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
+     */
     static inline double minQuotient( std::shared_ptr<const VectorOperations> x,
                                       std::shared_ptr<const VectorOperations> y );
-    /// @copydoc VectorOperations::wrmsNorm(const VectorOperations&,const VectorOperations&)
+
+    /**
+     * \brief Return a weighted norm of a vector
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
+     */
     static inline double wrmsNorm( std::shared_ptr<const VectorOperations> x,
                                    std::shared_ptr<const VectorOperations> y );
-    /// @copydoc VectorOperations::wrmsNormMask(const VectorOperations&,const
-    /// VectorOperations&,const VectorOperations&)
+
+    /**
+     * \brief Return a weighted norm of a subset of a vector
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \param[in] mask a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
+     */
     static inline double wrmsNormMask( std::shared_ptr<const VectorOperations> x,
                                        std::shared_ptr<const VectorOperations> y,
                                        std::shared_ptr<const VectorOperations> mask );

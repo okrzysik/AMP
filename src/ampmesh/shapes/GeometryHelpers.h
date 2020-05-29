@@ -274,9 +274,9 @@ std::array<double, N1> barycentric( const std::array<double, N2> ( &x )[N1],
  * \details  This function will compute the normal to a plane
  *    defined by three points.  The order of the points will
  *    determine the normal.
- * \param[in] p1        First vertex
- * \param[in] p2        Second vertex
- * \param[in] p3        Third vertex
+ * \param[in] v1        First vertex
+ * \param[in] v2        Second vertex
+ * \param[in] v3        Third vertex
  * @return              Returns the normal
  */
 std::array<double, 3> normal( const std::array<double, 3> &v1,

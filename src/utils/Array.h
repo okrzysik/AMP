@@ -295,7 +295,7 @@ public: // Views/copies/subset
 
     /*!
      * Fill the array with the given value
-     * @param value         Value to fill
+     * @param y         Value to fill
      */
     inline void fill( const TYPE &y )
     {
@@ -305,7 +305,7 @@ public: // Views/copies/subset
 
     /*!
      * Scale the array by the given value
-     * @param scale         Value to scale by
+     * @param y         Value to scale by
      */
     template<class TYPE2>
     inline void scale( const TYPE2 &y )

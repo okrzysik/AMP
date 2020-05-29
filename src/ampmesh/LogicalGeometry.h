@@ -47,7 +47,7 @@ public:
      * \brief    Return the logical grid size
      * \details  This function will return the dimensions of a logical grid
      *    given a size that makes sense for the object.
-     * \param[int] x    Input size
+     * \param[in] x    Input size
      * @return          Return the logical boundary ids (2*logicalDim)
      */
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const = 0;
@@ -56,7 +56,7 @@ public:
      * \brief    Return the logical grid size
      * \details  This function will return the dimensions of a logical grid
      *    given a desired resolution
-     * \param[int] res  Desired resolution
+     * \param[in] res  Desired resolution
      * @return          Return the logical boundary ids (2*logicalDim)
      */
     virtual std::vector<int> getLogicalGridSize( const std::vector<double> &res ) const = 0;

@@ -1,3 +1,4 @@
+// \cond HIDDEN_SYMBOLS
 #ifndef included_AMP_NoteToGeomType::FaceContactOperator
 #define included_AMP_NoteToGeomType ::FaceContactOperator
 
@@ -12,6 +13,7 @@
 
 namespace AMP {
 namespace Operator {
+
 
 /**
   An abstract base class for representing a linear operator. This class
@@ -183,7 +185,11 @@ struct AnotherDataWithNoName {
 struct GeomType::FaceData {
     AMP::Mesh::MeshElementID d_GeomType::FaceVerticesGlobalIDs[4];
 };
+
+
 } // namespace Operator
 } // namespace AMP
 
 #endif
+
+// \endcond

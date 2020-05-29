@@ -261,27 +261,29 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                              AMP::Mesh::GeomType type,
                              const std::string &name_in )
 {
+    // Return if the vector or mesh is empty
+    if ( !vec || !mesh )
+        return;
     // Make sure the mesh has been registered
     registerMesh( mesh );
-    // Return if the vector is empty
-    if ( !vec )
-        return;
     // Perform some error checking
     auto DOFs = vec->getDOFManager();
-    auto it1  = mesh->getIterator( type, 0 );
-    auto it2  = DOFs->getIterator();
-    auto it3  = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, it1, it2 );
-    if ( it1.size() == 0 )
+    if ( !DOFs )
+        return;
+    auto it1 = mesh->getIterator( type, 0 );
+    auto it2 = DOFs->getIterator();
+    auto it3 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, it1, it2 );
+    if ( it1.size() == 0 || it2.size() == 0 )
         return;
     if ( it1.size() != it3.size() )
-        AMP_ERROR( "vector does not cover the entire mesh for the given entity type" );
+        AMP_WARNING( "vector does not cover the entire mesh for the given entity type" );
     std::vector<size_t> dofs;
     DOFs->getDOFs( it1->globalID(), dofs );
     int DOFsPerPoint = dofs.size();
     if ( type == AMP::Mesh::GeomType::Vertex )
         it1 = mesh->getIterator( type, 1 );
-    for ( size_t i = 0; i < it1.size(); ++i, ++it1 ) {
-        DOFs->getDOFs( it1->globalID(), dofs );
+    for ( const auto &elem : DOFs->getIterator() ) {
+        DOFs->getDOFs( elem.globalID(), dofs );
         AMP_ASSERT( (int) dofs.size() == DOFsPerPoint );
     }
     // Register the vector with the appropriate base meshes

@@ -41,9 +41,8 @@ public:
     void setComm( const AMP::AMP_MPI &comm );
 
     /**
-     * \brief       Set the comm for the mesh
-     * \details     Set the communicator that will be used to construct the mesh
-     * \param comm  The desired communicator
+     * \brief       Get the comm for the mesh
+     * \details     Get the communicator for the mesh
      */
     const AMP::AMP_MPI &getComm() const { return comm; };
 
