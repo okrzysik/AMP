@@ -108,7 +108,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Variable::shared_ptr TemperatureVar(
         new AMP::LinearAlgebra::Variable( "Temperature" ) );
 
-    double intguess = input_db->getWithDefault<double>( "InitialGuess", 400 );
+    double intguess = input_db->getWithDefault<double>( "InitialGuess", 400.0 );
 
     AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvin =
         AMP::LinearAlgebra::createVector( nodalDofMap, TemperatureVar );
@@ -360,7 +360,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     mapCladToFlow->setZLocations( mapFlowToClad->getZLocations() );
 
     //-------------------------------------
-    size_t flowVecSize = mapFlowToClad->getNumZlocations();
+    unsigned int flowVecSize = mapFlowToClad->getNumZlocations();
 
     //--------------------------------------
     //     CREATE THE FLOW OPERATOR   ------
