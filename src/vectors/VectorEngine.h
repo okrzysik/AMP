@@ -111,14 +111,6 @@ public:
      * \return  The communicator associated with this engine
      */
     virtual AMP_MPI getComm() const = 0;
-
-
-public: // Deprecated functions
-    //! Return a contiguous block of data
-    inline void *getDataBlock( size_t i ) { return getRawDataBlockAsVoid( i ); }
-
-    //! Return a contiguous block of data
-    inline const void *getDataBlock( size_t i ) const { return getRawDataBlockAsVoid( i ); }
 };
 
 
