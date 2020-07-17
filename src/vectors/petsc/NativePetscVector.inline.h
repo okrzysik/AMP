@@ -32,7 +32,7 @@ inline size_t NativePetscVector::sizeOfDataBlock( size_t i ) const
         return 0;
     return getLocalSize();
 }
-
+#if 0
 
 inline std::shared_ptr<VectorData> NativePetscVector::getNewBuffer()
 {
@@ -58,7 +58,7 @@ inline void NativePetscVector::swapEngines( std::shared_ptr<VectorEngine> p )
     Vector::shared_ptr p2 = std::dynamic_pointer_cast<Vector>( p );
     Vector::swapVectors( p2 );
 }
-
+#endif
 
 inline void NativePetscVector::getValuesByLocalID( int numVals, size_t *ndx, double *vals ) const
 {
@@ -73,11 +73,11 @@ inline Vector::shared_ptr NativePetscVector::getManagedVectorCopy( AMP_MPI comm 
                                           d_petscVec );
     return pRet;
 }
-
+#if 0
 
 inline AMP_MPI NativePetscVector::getComm() const { return Vector::getComm(); }
 
-
+#endif
 inline Vector::shared_ptr NativePetscVector::getManagedVectorDuplicate( AMP_MPI comm )
 {
     Vector::shared_ptr pRet = ManagedPetscVector::createFromPetscVec( d_petscVec, comm );
