@@ -3,7 +3,6 @@
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/NativeVector.h"
-#include "AMP/vectors/VectorEngine.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "AMP/vectors/petsc/PetscVector.h"
 
@@ -61,7 +60,6 @@ public:
  */
 class NativePetscVector : public NativeVector,
                           public PetscVector,
-  //                          public VectorEngine,
                           public VectorOperationsDefault<double>
 {
 public:
@@ -142,17 +140,7 @@ public:
     virtual size_t getGlobalSize() const override;
 
     virtual void putRawData( const double * ) override;
-#if 0
-    virtual std::shared_ptr<VectorData> getNewBuffer() override;
-    virtual bool sameEngine( VectorEngine & ) const override;
-    virtual std::shared_ptr<VectorEngine>
-    cloneEngine( std::shared_ptr<VectorData> p ) const override;
-
-    virtual void swapEngines( std::shared_ptr<VectorEngine> ) override;
-#endif
     virtual void swapData( VectorData &rhs ) override;
-
-    //   virtual AMP_MPI getComm() const override;
 
     virtual void copyOutRawData( double *out ) const override;
 
