@@ -8,34 +8,6 @@ ENABLE_WARNINGS
 
 namespace AMP {
 namespace LinearAlgebra {
-
-#if 0
-inline std::shared_ptr<VectorData> NativeThyraVector::getNewBuffer()
-{
-    return std::shared_ptr<VectorData>();
-}
-
-
-inline bool NativeThyraVector::sameEngine( VectorEngine &e ) const
-{
-    return dynamic_cast<NativeThyraVector *>( &e );
-}
-
-
-inline std::shared_ptr<VectorEngine>
-    NativeThyraVector::cloneEngine( std::shared_ptr<VectorData> ) const
-{
-    return std::dynamic_pointer_cast<VectorEngine>( Vector::cloneVector( "engine_clone" ) );
-}
-
-
-inline void NativeThyraVector::swapEngines( std::shared_ptr<VectorEngine> p )
-{
-    Vector::shared_ptr p2 = std::dynamic_pointer_cast<Vector>( p );
-    Vector::swapVectors( p2 );
-}
-
-#endif
  
 inline void NativeThyraVector::getValuesByLocalID( int numVals, size_t *ndx, double *vals ) const
 {
@@ -49,10 +21,6 @@ inline Vector::shared_ptr NativeThyraVector::getManagedVectorCopy( AMP_MPI comm 
     AMP_ERROR( "Not programmed yet" );
     return Vector::shared_ptr();
 }
-
-#if 0
-inline AMP_MPI NativeThyraVector::getComm() const { return Vector::getComm(); }
-#endif
  
 inline Vector::shared_ptr NativeThyraVector::getManagedVectorDuplicate( AMP_MPI comm )
 {
