@@ -17,7 +17,7 @@ namespace LinearAlgebra {
  * Constructors                                                          *
  ************************************************************************/
 NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
-    : NativeVector(), ThyraVector(), VectorEngine()
+  : NativeVector(), ThyraVector()//, VectorEngine()
 {
     auto params = std::dynamic_pointer_cast<NativeThyraVectorParameters>( in_params );
     AMP_ASSERT( params != nullptr );

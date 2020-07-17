@@ -44,7 +44,7 @@ public:
  */
 class NativeThyraVector : public NativeVector,
                           public ThyraVector,
-                          public VectorEngine,
+  //                          public VectorEngine,
                           public VectorOperationsDefault<double>
 {
 public:
@@ -108,12 +108,14 @@ public:
     virtual size_t getLocalSize() const override;
     virtual size_t getGlobalSize() const override;
     virtual void putRawData( const double * ) override;
+#if 0
     virtual std::shared_ptr<VectorData> getNewBuffer() override;
     virtual bool sameEngine( VectorEngine & ) const override;
     virtual std::shared_ptr<VectorEngine>
     cloneEngine( std::shared_ptr<VectorData> p ) const override;
     virtual void swapEngines( std::shared_ptr<VectorEngine> ) override;
     virtual AMP_MPI getComm() const override;
+#endif
     virtual void copyOutRawData( double *out ) const override;
     virtual uint64_t getDataID() const override
     {
