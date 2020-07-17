@@ -88,6 +88,14 @@ public:
      */
     virtual ~PetscKrylovSolver();
 
+
+    //! static create routine that is used by SolverFactory
+    static std::shared_ptr<SolverStrategy>
+    createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    {
+        return std::make_shared<PetscKrylovSolver>( solverStrategyParameters );
+    }
+
     /**
      * Solve the system \f$Au = 0\f$.
      * @param [in] f : shared pointer to right hand side vector

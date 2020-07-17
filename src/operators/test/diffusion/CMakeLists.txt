@@ -21,6 +21,8 @@ COPY_TEST_FILE( input_linearBVP-Thermal+Fick+Dirichlet-TUI-1 )
 COPY_TEST_FILE( input_linearBVP-Thermal+Fick+Dirichlet-UO2MSRZC09-1 )
 COPY_TEST_FILE( input_linearBVP-Thermal+Fick+Robin-TUI-1 )
 COPY_TEST_FILE( input_linearBVP-Thermal+Fick+Robin-UO2MSRZC09-1 )
+ADD_AMP_TEST_1_2_4 ( testLinearOperatorFromMatrix-1 )
+
 COPY_TEST_FILE( input_Diffusion-TUI-Thermal-1  )
 COPY_TEST_FILE( input_Diffusion-TUI-Fick-1 )
 COPY_TEST_FILE( input_Diffusion-TUI-Soret-1 )

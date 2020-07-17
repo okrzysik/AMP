@@ -124,6 +124,14 @@ public:
      */
     virtual ~TrilinosMLSolver();
 
+
+    //! static create routine that is used by SolverFactory
+    static std::shared_ptr<SolverStrategy>
+    createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    {
+        return std::make_shared<TrilinosMLSolver>( solverStrategyParameters );
+    }
+
     /**
      * Solve the system \f$Au = f\f$.
      @param [in] f : shared pointer to right hand side vector

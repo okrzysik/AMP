@@ -33,7 +33,18 @@ public:
         acceptable values (false, true),
         side effect: if false sets string pc_type to "none"
      */
-    explicit CGSolver( std::shared_ptr<KrylovSolverParameters> parameters );
+    explicit CGSolver( std::shared_ptr<SolverStrategyParameters> parameters );
+
+    /**
+     * static create routine that is used by SolverFactory
+     @param [in] parameters The parameters object
+     contains a database objects with the fields listed for the constructor above
+     */
+    static std::shared_ptr<SolverStrategy>
+    createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    {
+        return std::make_shared<CGSolver>( solverStrategyParameters );
+    }
 
     /**
      * Default destructor

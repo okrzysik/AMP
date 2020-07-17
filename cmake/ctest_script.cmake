@@ -6,7 +6,7 @@
 
 
 # Set the Project variables
-SET( PROJ AMP )
+SET( PROJ AMP2 )
 
 
 # Set platform specific variables

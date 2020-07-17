@@ -45,7 +45,18 @@ public:
      acceptable values ("RIGHT", "LEFT", "SYMMETRIC" )
          active only when uses_preconditioner set to true
      */
-    explicit BiCGSTABSolver( std::shared_ptr<KrylovSolverParameters> parameters );
+    explicit BiCGSTABSolver( std::shared_ptr<SolverStrategyParameters> parameters );
+
+    /**
+     * static create routine that is used by SolverFactory
+     @param [in] parameters The parameters object
+     contains a database objects with the fields listed for the constructor above
+     */
+    static std::shared_ptr<SolverStrategy>
+    createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    {
+        return std::make_shared<BiCGSTABSolver>( solverStrategyParameters );
+    }
 
     /**
      * Default destructor

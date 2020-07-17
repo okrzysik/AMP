@@ -1,5 +1,6 @@
 #include "AMP/solvers/CGSolver.h"
 #include "AMP/operators/LinearOperator.h"
+#include "AMP/solvers/KrylovSolverParameters.h"
 #include "ProfilerApp.h"
 
 
@@ -9,9 +10,9 @@ namespace Solver {
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-CGSolver::CGSolver() = default;
+CGSolver::CGSolver() {}
 
-CGSolver::CGSolver( std::shared_ptr<KrylovSolverParameters> parameters )
+CGSolver::CGSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
@@ -24,15 +25,14 @@ CGSolver::CGSolver( std::shared_ptr<KrylovSolverParameters> parameters )
 /****************************************************************
  *  Destructor                                                   *
  ****************************************************************/
-CGSolver::~CGSolver() = default;
+CGSolver::~CGSolver() {}
 
 /****************************************************************
  *  Initialize                                                   *
  ****************************************************************/
 void CGSolver::initialize( std::shared_ptr<SolverStrategyParameters> const params )
 {
-    std::shared_ptr<KrylovSolverParameters> parameters =
-        std::dynamic_pointer_cast<KrylovSolverParameters>( params );
+    auto parameters = std::dynamic_pointer_cast<KrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
