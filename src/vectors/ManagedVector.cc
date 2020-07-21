@@ -1,4 +1,5 @@
 #include "AMP/vectors/ManagedVector.h"
+#include "AMP/vectors/MultiVector.h"
 #include "AMP/utils/Utilities.h"
 #include <iostream>
 #include <stdexcept>
