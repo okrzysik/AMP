@@ -12,7 +12,6 @@ inline const Epetra_Vector &EpetraVectorEngine::getEpetra_Vector() const { retur
 
 inline AMP_MPI EpetraVectorEngine::getComm() const {
   return d_Params->getComm();
-  //  return getEngineParameters()->getComm();
 }
 
 } // namespace LinearAlgebra

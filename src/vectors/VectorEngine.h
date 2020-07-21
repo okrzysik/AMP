@@ -44,9 +44,6 @@ public:
     //! Return the first DOF on this core
     inline size_t beginDOF() const { return d_begin; }
 
-    //! Return 1 past the last DOF on this core
-    inline size_t endDOF() const { return d_end; }
-
     /** \brief  Return the Epetra_MpiComm for this engine
      * \return The Epetra_MpiComm
      */
@@ -94,12 +91,6 @@ public:
      * \param[in,out] p  The engine to exchange with
      */
     virtual void swapEngines( std::shared_ptr<VectorEngine> p ) = 0;
-
-
-    /** \brief  Get the parameters used to create this engine
-     * \return The parameters
-     */
-    virtual VectorEngineParameters::shared_ptr getEngineParameters() const;
 
     /** \brief  Return the communicator associated with this engine
      * \return  The communicator associated with this engine
