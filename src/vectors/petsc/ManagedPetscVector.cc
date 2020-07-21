@@ -797,11 +797,16 @@ void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
                     "PETsc is compiled with 32-bit integers and "
                     "we are trying to use a vector with more "
                     "than 2^31 elements" );
-
+#if 1
+    auto ids                              = new PetscInt[dest.getLocalSize()];
+    auto begin                            = (PetscInt) dest.getLocalStartID();
+    auto end                              = (PetscInt) begin+dest.getLocalsize()-1;    
+#else
     const VectorEngineParameters &eparams = *( params->d_Engine->getEngineParameters() );
     auto ids                              = new PetscInt[eparams.getLocalSize()];
     auto begin                            = (PetscInt) eparams.beginDOF();
     auto end                              = (PetscInt) eparams.endDOF();
+#endif
     for ( PetscInt i = begin; i < end; i++ )
         ids[i - begin] = i;
     VecGetValues( source, dest.getLocalSize(), ids, dest.getRawDataBlock<double>() );
