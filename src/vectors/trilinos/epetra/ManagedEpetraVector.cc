@@ -1,4 +1,5 @@
 #include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
+#include "EpetraVectorEngine.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/data/VectorDataCPU.h"
 
