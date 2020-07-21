@@ -14,11 +14,5 @@ inline AMP_MPI EpetraVectorEngine::getComm() const {
   return getEngineParameters()->getComm();
 }
 
-inline bool EpetraVectorEngine::sameEngine( VectorEngine &e ) const
-{
-    return dynamic_cast<EpetraVectorEngine *>( &e ) != nullptr;
-}
-
-
 } // namespace LinearAlgebra
 } // namespace AMP

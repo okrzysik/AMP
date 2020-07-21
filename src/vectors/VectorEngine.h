@@ -84,12 +84,6 @@ public:
      */
     virtual std::shared_ptr<VectorData> getNewBuffer() = 0;
 
-    /** \brief  True if engines are the same
-     * \param[in]  e  Engine to compare against
-     * \return True if the engine is the same type as this
-     */
-    virtual bool sameEngine( VectorEngine &e ) const = 0;
-
     /** \brief  Return a copy of this engine
      * \param[in]  p  The buffer to use for the copy.
      * \return  The new engine

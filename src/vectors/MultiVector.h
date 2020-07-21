@@ -183,7 +183,6 @@ public:
 
     // Vector engine functions
     virtual std::shared_ptr<VectorData> getNewBuffer() override;
-    virtual bool sameEngine( VectorEngine &rhs ) const override;
     virtual std::shared_ptr<VectorEngine> cloneEngine( std::shared_ptr<VectorData> ) const override;
     virtual void swapEngines( std::shared_ptr<VectorEngine> p ) override;
 
