@@ -43,7 +43,6 @@ public:
  */
 class NativeThyraVector : public NativeVector,
                           public ThyraVector,
-  //                          public VectorEngine,
                           public VectorOperationsDefault<double>
 {
 public:
