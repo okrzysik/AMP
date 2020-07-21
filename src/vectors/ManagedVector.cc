@@ -34,8 +34,7 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     if ( d_pParameters->d_Buffer.get() != nullptr )
         d_vBuffer = d_pParameters->d_Buffer;
     else
-      //        d_vBuffer = d_pParameters->d_Engine->getNewBuffer();
-      d_vBuffer = nullptr;
+      d_vBuffer = d_pParameters->d_Engine->getNewBuffer();
     if ( d_pParameters->d_CloneEngine )
         d_Engine = d_pParameters->d_Engine->cloneEngine( d_vBuffer );
     else
