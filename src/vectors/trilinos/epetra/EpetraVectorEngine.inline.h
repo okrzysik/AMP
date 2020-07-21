@@ -11,11 +11,7 @@ inline Epetra_Vector &EpetraVectorEngine::getEpetra_Vector() { return d_epetraVe
 inline const Epetra_Vector &EpetraVectorEngine::getEpetra_Vector() const { return d_epetraVector; }
 
 inline AMP_MPI EpetraVectorEngine::getComm() const {
-  #if 1
-  return VectorOperations::getComm();
-#else
   return getEngineParameters()->getComm();
-#endif
 }
 
 inline bool EpetraVectorEngine::sameEngine( VectorEngine &e ) const
