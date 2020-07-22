@@ -1,5 +1,6 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
+#include "AMP/vectors/trilinos/epetra/NativeEpetraVector.h"
 
 
 namespace AMP {
