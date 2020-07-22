@@ -8,22 +8,37 @@ namespace LinearAlgebra {
 
 static inline const Epetra_Vector &getEpetraVector( const VectorOperations &vec )
 {
-    auto epetra = dynamic_cast<const EpetraVectorEngine *>( &vec );
-    AMP_INSIST( epetra != nullptr, "Not an EpetraVectorEngine" );
-    return epetra->getEpetra_Vector();
+    auto epetraEngine = dynamic_cast<const EpetraVectorEngine *>( &vec );
+    if(epetraEngine)
+      return epetra->getEpetra_Vector();
+    else {
+      auto epetraVec = dynamic_cast<const NativeEpetraVector *>( &vec );      
+      AMP_INSIST( epetraVec != nullptr, "Not a NativeEpetraVector" );
+      return epetraVec->getEpetra_Vector();
+    }
 }
 
 Epetra_Vector &EpetraVectorOperations::getEpetra_Vector()
 {
-    auto epetra = dynamic_cast<EpetraVectorEngine *>( this );
-    AMP_INSIST( epetra != nullptr, "Not an EpetraVectorEngine" );
-    return epetra->getEpetra_Vector();
+    auto epetraEngine = dynamic_cast<const EpetraVectorEngine *>( &vec );
+    if(epetraEngine)
+      return epetra->getEpetra_Vector();
+    else {
+      auto epetraVec = dynamic_cast<const NativeEpetraVector *>( &vec );      
+      AMP_INSIST( epetraVec != nullptr, "Not a NativeEpetraVector" );
+      return epetraVec->getEpetra_Vector();
+    }
 }
 const Epetra_Vector &EpetraVectorOperations::getEpetra_Vector() const
 {
-    auto epetra = dynamic_cast<const EpetraVectorEngine *>( this );
-    AMP_INSIST( epetra != nullptr, "Not an EpetraVectorEngine" );
-    return epetra->getEpetra_Vector();
+    auto epetraEngine = dynamic_cast<const EpetraVectorEngine *>( &vec );
+    if(epetraEngine)
+      return epetra->getEpetra_Vector();
+    else {
+      auto epetraVec = dynamic_cast<const NativeEpetraVector *>( &vec );      
+      AMP_INSIST( epetraVec != nullptr, "Not a NativeEpetraVector" );
+      return epetraVec->getEpetra_Vector();
+    }
 }
 
 
