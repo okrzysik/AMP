@@ -233,7 +233,9 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     // Initialize the parallel IO
     PIO::initialize();
     // Initialze call stack
-    if ( properties.stack_trace_type == 3 )
+    if ( comm_world.getSize() == 1 )
+        abort_stackType = std::min( abort_stackType, 2 );
+    if ( abort_stackType == 3 )
         StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
     // Initialize the random number generator
     AMP::RNG::initialize( 123 );
