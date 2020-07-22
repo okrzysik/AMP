@@ -308,18 +308,29 @@ std::pair<Point, Point> CircleFrustum::box() const
 
 
 /********************************************************
+ * Return the volume                                     *
+ ********************************************************/
+double CircleFrustum::volume() const
+{
+    constexpr double pi = 3.141592653589793;
+    double R            = 0.5 * ( d_r[0] + d_r[1] );
+    return d_h * pi * R * R;
+}
+
+
+/********************************************************
  * Return the logical grid                               *
  ********************************************************/
 std::vector<int> CircleFrustum::getLogicalGridSize( const std::vector<int> &x ) const
 {
     AMP_INSIST( x.size() == 2, "Size must be an array of length 2" );
-    return { x[0], x[0], x[1] };
+    return { 2 * x[0], 2 * x[0], x[1] };
 }
 std::vector<int> CircleFrustum::getLogicalGridSize( const std::vector<double> &res ) const
 {
     AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
-    AMP_ERROR( "Not finished" );
-    return {};
+    double R = std::max( d_r[0], d_r[1] );
+    return { (int) ( R / res[0] ), (int) ( R / res[1] ), (int) ( d_h / res[2] ) };
 }
 std::vector<bool> CircleFrustum::getPeriodicDim() const { return { false, false, false }; }
 std::vector<int> CircleFrustum::getLogicalSurfaceIds() const { return { 2, 2, 2, 2, 0, 1 }; }

@@ -32,6 +32,7 @@ public:
 
     // Functions inherited from Geometry
     virtual std::string getName() const override final { return "SphereSurface"; }
+    AMP::Mesh::GeomType getGeomType() const override final { return AMP::Mesh::GeomType::Face; }
     virtual bool isConvex() const override final { return true; }
     virtual Point nearest( const Point &pos ) const override final;
     virtual double distance( const Point &pos, const Point &dir ) const override final;
@@ -43,6 +44,7 @@ public:
     virtual Point physical( const Point &x ) const override final;
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
+    virtual double volume() const override final;
     virtual void displace( const double *x ) override final;
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<int>

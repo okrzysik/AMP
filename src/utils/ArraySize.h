@@ -386,35 +386,35 @@ constexpr ArraySize cat( const ArraySize &x, const ArraySize &y )
 }
 
 
+} // namespace AMP
+
+
 // Operator overloads
-constexpr ArraySize operator*( size_t v, const ArraySize &x )
+constexpr AMP::ArraySize operator*( size_t v, const AMP::ArraySize &x )
 {
     size_t N[5] = { v * x[0], v * x[1], v * x[2], v * x[3], v * x[4] };
-    return ArraySize( x.ndim(), N );
+    return AMP::ArraySize( x.ndim(), N );
 }
-constexpr ArraySize operator*( const ArraySize &x, size_t v )
+constexpr AMP::ArraySize operator*( const AMP::ArraySize &x, size_t v )
 {
     size_t N[5] = { v * x[0], v * x[1], v * x[2], v * x[3], v * x[4] };
-    return ArraySize( x.ndim(), N );
+    return AMP::ArraySize( x.ndim(), N );
 }
-constexpr ArraySize operator-( const ArraySize &x, size_t v )
+constexpr AMP::ArraySize operator-( const AMP::ArraySize &x, size_t v )
 {
     size_t N[5] = { x[0] - v, x[1] - v, x[2] - v, x[3] - v, x[4] - v };
-    return ArraySize( x.ndim(), N );
+    return AMP::ArraySize( x.ndim(), N );
 }
-constexpr ArraySize operator+( const ArraySize &x, size_t v )
+constexpr AMP::ArraySize operator+( const AMP::ArraySize &x, size_t v )
 {
     size_t N[5] = { x[0] + v, x[1] + v, x[2] + v, x[3] + v, x[4] + v };
-    return ArraySize( x.ndim(), N );
+    return AMP::ArraySize( x.ndim(), N );
 }
-constexpr ArraySize operator+( size_t v, const ArraySize &x )
+constexpr AMP::ArraySize operator+( size_t v, const AMP::ArraySize &x )
 {
     size_t N[5] = { x[0] + v, x[1] + v, x[2] + v, x[3] + v, x[4] + v };
-    return ArraySize( x.ndim(), N );
+    return AMP::ArraySize( x.ndim(), N );
 }
-
-
-} // namespace AMP
 
 
 #endif

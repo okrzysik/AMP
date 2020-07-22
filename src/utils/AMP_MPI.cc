@@ -233,26 +233,33 @@ std::array<int, 2> MPI_CLASS::version()
 }
 std::string MPI_CLASS::info()
 {
+    std::string MPI_info;
 #ifdef USE_MPI
 #if MPI_VERSION >= 3
     int MPI_version_length = 0;
     char MPI_version_string[MPI_MAX_LIBRARY_VERSION_STRING];
     MPI_Get_library_version( MPI_version_string, &MPI_version_length );
     if ( MPI_version_length > 0 ) {
-        std::string MPI_info( MPI_version_string, MPI_version_length );
+        MPI_info = std::string ( MPI_version_string, MPI_version_length );
         size_t pos = MPI_info.find( '\n' );
         while ( pos != std::string::npos ) {
             MPI_info.insert( pos + 1, "   " );
             pos = MPI_info.find( '\n', pos + 1 );
         }
-        return MPI_info;
     }
-#endif
-    auto tmp = version();
-    return std::to_string( tmp[0] ) + "." + std::to_string( tmp[0] );
 #else
-    return std::string();
+    auto tmp = version();
+    MPI_info = std::to_string( tmp[0] ) + "." + std::to_string( tmp[0] );
 #endif
+    size_t pos = MPI_info.find( "\n\n" );
+    while ( pos != std::string::npos ) {
+        MPI_info.erase( pos + 1, 1 );
+        pos = MPI_info.find( '\n', pos + 1 );
+    }
+    if ( MPI_info.back() == '\n' )
+        MPI_info.pop_back();
+#endif
+    return MPI_info;
 }
 
 
@@ -1167,6 +1174,20 @@ int MPI_CLASS::newTag()
 /************************************************************************
  *  allReduce                                                            *
  ************************************************************************/
+static inline void setBit( uint64_t *x, size_t index )
+{
+    size_t i      = index >> 6;
+    size_t j      = index & 0x3F;
+    uint64_t mask = ( (uint64_t) 0x01 ) << j;
+    x[i]          = x[i] | mask;
+}
+static inline bool readBit( const uint64_t *x, size_t index )
+{
+    size_t i      = index >> 6;
+    size_t j      = index & 0x3F;
+    uint64_t mask = ( (uint64_t) 0x01 ) << j;
+    return ( x[i] & mask ) != 0;
+}
 bool MPI_CLASS::allReduce( const bool value ) const
 {
     bool ret = value;
@@ -1179,6 +1200,29 @@ bool MPI_CLASS::allReduce( const bool value ) const
 #endif
     }
     return ret;
+}
+void MPI_CLASS::allReduce( std::vector<bool> &x ) const
+{
+    if ( comm_size <= 1 )
+        return;
+#ifdef USE_MPI
+    size_t N  = ( x.size() + 63 ) / 64;
+    auto send = new uint64_t[N];
+    auto recv = new uint64_t[N];
+    memset( send, 0, N * sizeof( int64_t ) );
+    memset( recv, 0, N * sizeof( int64_t ) );
+    for ( size_t i = 0; i < x.size(); i++ ) {
+        if ( x[i] )
+            setBit( send, i );
+    }
+    MPI_Allreduce( send, recv, N, MPI_UINT64_T, MPI_BAND, communicator );
+    for ( size_t i = 0; i < x.size(); i++ )
+        x[i] = readBit( recv, i );
+    delete[] send;
+    delete[] recv;
+#else
+    MPI_ERROR( "This shouldn't be possible" );
+#endif
 }
 
 
@@ -1197,6 +1241,29 @@ bool MPI_CLASS::anyReduce( const bool value ) const
 #endif
     }
     return ret;
+}
+void MPI_CLASS::anyReduce( std::vector<bool> &x ) const
+{
+    if ( comm_size <= 1 )
+        return;
+#ifdef USE_MPI
+    size_t N  = ( x.size() + 63 ) / 64;
+    auto send = new uint64_t[N];
+    auto recv = new uint64_t[N];
+    memset( send, 0, N * sizeof( int64_t ) );
+    memset( recv, 0, N * sizeof( int64_t ) );
+    for ( size_t i = 0; i < x.size(); i++ ) {
+        if ( x[i] )
+            setBit( send, i );
+    }
+    MPI_Allreduce( send, recv, N, MPI_UINT64_T, MPI_BOR, communicator );
+    for ( size_t i = 0; i < x.size(); i++ )
+        x[i] = readBit( recv, i );
+    delete[] send;
+    delete[] recv;
+#else
+    MPI_ERROR( "This shouldn't be possible" );
+#endif
 }
 
 

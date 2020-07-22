@@ -193,6 +193,16 @@ std::pair<Point, Point> Cylinder::box() const
 
 
 /********************************************************
+ * Return the volume                                     *
+ ********************************************************/
+double Cylinder::volume() const
+{
+    constexpr double pi = 3.141592653589793;
+    return ( d_z_max - d_z_min ) * pi * d_r * d_r;
+}
+
+
+/********************************************************
  * Return the logical grid                               *
  ********************************************************/
 std::vector<int> Cylinder::getLogicalGridSize( const std::vector<int> &x ) const

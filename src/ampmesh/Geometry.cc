@@ -84,7 +84,16 @@ Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
     } else {
         AMP_ERROR( "Unknown generator" );
     }
+    // Displace the geometry
+    double dist[3] = { db->getWithDefault( "x_offset", 0.0 ),
+                       db->getWithDefault( "y_offset", 0.0 ),
+                       db->getWithDefault( "z_offset", 0.0 ) };
+    geom->displace( dist );
     return geom;
+}
+AMP::Mesh::GeomType Geometry::getGeomType() const
+{
+    return static_cast<AMP::Mesh::GeomType>( d_physicalDim );
 }
 
 

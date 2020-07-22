@@ -45,6 +45,7 @@ public: // Functions inherited from Geometry
     virtual Point surfaceNorm( const Point &x ) const override final;
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
+    virtual double volume() const override final;
     virtual void displace( const double *x ) override final;
     virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
 

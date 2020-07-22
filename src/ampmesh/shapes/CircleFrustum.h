@@ -46,6 +46,7 @@ public: // Functions inherited from Geometry
     virtual Point physical( const Point &x ) const override final;
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
+    virtual double volume() const override final;
     virtual void displace( const double *x ) override final;
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<bool> getPeriodicDim() const override final;

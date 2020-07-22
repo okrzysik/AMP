@@ -118,6 +118,16 @@ std::pair<Point, Point> Circle::box() const
 
 
 /********************************************************
+ * Return the volume                                     *
+ ********************************************************/
+double Circle::volume() const
+{
+    constexpr double pi = 3.141592653589793;
+    return pi * d_R * d_R;
+}
+
+
+/********************************************************
  * Return the logical grid                               *
  ********************************************************/
 std::vector<int> Circle::getLogicalGridSize( const std::vector<int> &x ) const

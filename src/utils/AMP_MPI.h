@@ -470,6 +470,24 @@ public: // Member functions
 
 
     /**
+     * \brief   Boolean all reduce
+     * \details This function performs a boolean all reduce across all processors.
+     *   It returns true iff all processor are true;
+     * \param value  The input value for the all reduce
+     */
+    void allReduce( std::vector<bool> &value ) const;
+
+
+    /**
+     * \brief   Boolean any reduce
+     * \details This function performs a boolean any reduce across all processors.
+     *   It returns true if any processor is true;
+     * \param value  The input value for the all reduce
+     */
+    void anyReduce( std::vector<bool> &value ) const;
+
+
+    /**
      * \brief   Sum Reduce
      * \details This function performs a sum all reduce across all processor.
      *   It returns the sum across all processors;

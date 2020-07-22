@@ -394,7 +394,7 @@ void testArray( UnitTest &ut )
 int main( int argc, char *argv[] )
 {
     // Startup
-    AMP::AMP_MPI::start_MPI( argc, argv );
+    AMPManager::startup( argc, argv );
     UnitTest ut;
 
     // Run basic ArraySize tests
@@ -492,12 +492,21 @@ int main( int argc, char *argv[] )
         test_interp<double>( ut, { 30, 30, 30 } );
     }
 
+    // Test print
+    {
+        Array<uint16_t> M1( 3, 4 );
+        M1.rand();
+        pout << std::endl;
+        M1.print( pout, "M1" );
+        pout << std::endl;
+    }
+
     // Finished
     ut.report( 1 );
     auto num_failed = static_cast<int>( ut.NumFailGlobal() );
     if ( num_failed == 0 )
         pout << "All tests passed\n";
     ut.reset();
-    AMP::AMP_MPI::stop_MPI();
+    AMPManager::shutdown();
     return num_failed;
 }

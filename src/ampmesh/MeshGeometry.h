@@ -3,7 +3,7 @@
 
 #include "AMP/ampmesh/Geometry.h"
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/utils/kdtree.h"
+#include "AMP/ampmesh/MeshUtilities.h"
 
 #include <memory>
 #include <vector>
@@ -111,6 +111,13 @@ public:
     virtual std::pair<Point, Point> box() const override;
 
     /**
+     * \brief    Return the volume
+     * \details  This function will return the interior volume of the object
+     * @return          Returns the volume
+     */
+    virtual double volume() const override;
+
+    /**
      * \brief    Displace the entire geometry
      * \details  This function will displace the entire geometry by a scalar value.
      *   The displacement vector should be the size of the physical dimension.
@@ -125,10 +132,6 @@ public:
     const AMP::Mesh::Mesh &getMesh() const { return *d_mesh; }
 
 private: // Internal functions
-    // Initialize the internal data
-    void initialize();
-    void initializePosition() const;
-
     // Get the nearest element to a point
     std::vector<AMP::Mesh::MeshElement> getNearestElements( const Point &x ) const;
     std::pair<AMP::Mesh::MeshElement, Point> getNearestPoint( const Point &x ) const;
@@ -137,10 +140,7 @@ private: // Internal functions
 private: // Internal data
     std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
     std::vector<int> d_surfaceIds;
-    mutable uint64_t d_pos_hash;
-    mutable Point d_centroid;
-    mutable kdtree d_tree;
-    mutable std::vector<AMP::Mesh::MeshElementID> d_ids;
+    AMP::Mesh::ElementFinder d_find;
 };
 
 

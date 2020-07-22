@@ -1,6 +1,7 @@
 #ifndef included_AMP_Geometry
 #define included_AMP_Geometry
 
+#include "AMP/ampmesh/MeshID.h"
 #include "AMP/ampmesh/MeshPoint.h"
 #include <memory>
 
@@ -49,6 +50,15 @@ public:
      * @return      Returns the number of physical dimensions
      */
     inline uint8_t getDim() const { return d_physicalDim; }
+
+
+    /**
+     * \brief    Get the geometric type for the geometry
+     * \details  This function returns the largest geometric type supported by the geometry
+     * @return      Returns the geometric dimensions
+     */
+    virtual AMP::Mesh::GeomType getGeomType() const;
+
 
     /**
      * \brief    Is the object convex
@@ -124,6 +134,13 @@ public:
      * @return          Returns the bounding box [lb,ub]
      */
     virtual std::pair<Point, Point> box() const = 0;
+
+    /**
+     * \brief    Return the volume
+     * \details  This function will return the interior volume of the object
+     * @return          Returns the volume
+     */
+    virtual double volume() const = 0;
 
     /**
      * \brief    Displace the entire geometry

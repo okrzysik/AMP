@@ -183,6 +183,19 @@ std::pair<Point, Point> Tube::box() const
 
 
 /********************************************************
+ * Return the volume                                     *
+ ********************************************************/
+double Tube::volume() const
+{
+    constexpr double pi = 3.141592653589793;
+    double h            = d_z_max - d_z_min;
+    double V1           = h * pi * d_r_max * d_r_max;
+    double V2           = h * pi * d_r_min * d_r_min;
+    return V1 - V2;
+}
+
+
+/********************************************************
  * Return the logical grid                               *
  ********************************************************/
 std::vector<int> Tube::getLogicalGridSize( const std::vector<int> &x ) const

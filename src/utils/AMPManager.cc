@@ -233,7 +233,8 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     // Initialize the parallel IO
     PIO::initialize();
     // Initialze call stack
-    StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
+    if ( properties.stack_trace_type == 3 )
+        StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
     // Initialize the random number generator
     AMP::RNG::initialize( 123 );
     // Initialize cuda

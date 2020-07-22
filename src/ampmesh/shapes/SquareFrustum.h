@@ -45,6 +45,7 @@ public: // Functions inherited from Geometry
     virtual Point physical( const Point &x ) const override final;
     virtual Point centroid() const override final;
     virtual std::pair<Point, Point> box() const override final;
+    virtual double volume() const override final;
     virtual void displace( const double *x ) override final;
     virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<int>
@@ -59,8 +60,9 @@ protected:
     double d_range[6];        // The bounding box size
     double d_pyramid_size[3]; // The underlying rotated pyramid size
     double d_scale_height;    // Ratio of frustum to pyramid height
-    Point d_face[6][4];       // Points forming each face
-    Point d_normal[6];        // Normal to each face
+    double d_volume;
+    Point d_face[6][4]; // Points forming each face
+    Point d_normal[6];  // Normal to each face
 
 private:
     // Private constuctor

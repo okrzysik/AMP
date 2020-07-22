@@ -393,6 +393,27 @@ std::pair<Point, Point> Grid<NDIM>::box() const
 
 
 /********************************************************
+ * Return the volume                                     *
+ ********************************************************/
+template<std::size_t NDIM>
+double Box<NDIM>::volume() const
+{
+    double v = 1.0;
+    for ( size_t d = 0; d < NDIM; d++ )
+        v *= d_range[2 * d + 1] - d_range[2 * d];
+    return v;
+}
+template<std::size_t NDIM>
+double Grid<NDIM>::volume() const
+{
+    double v = 1.0;
+    for ( size_t d = 0; d < NDIM; d++ )
+        v *= d_range[2 * d + 1] - d_range[2 * d];
+    return v;
+}
+
+
+/********************************************************
  * Return the logical grid                               *
  ********************************************************/
 template<std::size_t NDIM>

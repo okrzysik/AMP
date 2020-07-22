@@ -266,51 +266,51 @@ using Point = MeshPoint<double>;
  * Operator overloading                                          *
  ****************************************************************/
 template<class TYPE>
-inline AMP::Mesh::MeshPoint<TYPE> operator+( const AMP::Mesh::MeshPoint<TYPE> &a,
-                                             const AMP::Mesh::MeshPoint<TYPE> &b )
+constexpr AMP::Mesh::MeshPoint<TYPE> operator+( const AMP::Mesh::MeshPoint<TYPE> &a,
+                                                const AMP::Mesh::MeshPoint<TYPE> &b )
 {
     TYPE c[3] = { a.x() + b.x(), a.y() + b.y(), a.z() + b.z() };
     return AMP::Mesh::MeshPoint<TYPE>( a.size(), c );
 }
 template<class TYPE>
-inline AMP::Mesh::MeshPoint<TYPE> operator+( const AMP::Mesh::MeshPoint<TYPE> &a, const TYPE &b )
+constexpr AMP::Mesh::MeshPoint<TYPE> operator+( const AMP::Mesh::MeshPoint<TYPE> &a, const TYPE &b )
 {
     TYPE c[3] = { a.x() + b, a.y() + b, a.z() + b };
     return AMP::Mesh::MeshPoint<TYPE>( a.size(), c );
 }
 template<class TYPE>
-inline AMP::Mesh::MeshPoint<TYPE> operator+( const TYPE &a, const AMP::Mesh::MeshPoint<TYPE> &b )
+constexpr AMP::Mesh::MeshPoint<TYPE> operator+( const TYPE &a, const AMP::Mesh::MeshPoint<TYPE> &b )
 {
     TYPE c[3] = { a + b.x(), a + b.y(), a + b.z() };
     return AMP::Mesh::MeshPoint<TYPE>( b.size(), c );
 }
 template<class TYPE>
-inline AMP::Mesh::MeshPoint<TYPE> operator-( const AMP::Mesh::MeshPoint<TYPE> &a,
-                                             const AMP::Mesh::MeshPoint<TYPE> &b )
+constexpr AMP::Mesh::MeshPoint<TYPE> operator-( const AMP::Mesh::MeshPoint<TYPE> &a,
+                                                const AMP::Mesh::MeshPoint<TYPE> &b )
 {
     TYPE c[3] = { a.x() - b.x(), a.y() - b.y(), a.z() - b.z() };
     return AMP::Mesh::MeshPoint<TYPE>( a.size(), c );
 }
 template<class TYPE>
-inline AMP::Mesh::MeshPoint<TYPE> operator-( const AMP::Mesh::MeshPoint<TYPE> &a, const TYPE &b )
+constexpr AMP::Mesh::MeshPoint<TYPE> operator-( const AMP::Mesh::MeshPoint<TYPE> &a, const TYPE &b )
 {
     TYPE c[3] = { a.x() - b, a.y() - b, a.z() - b };
     return AMP::Mesh::MeshPoint<TYPE>( a.size(), c );
 }
 template<class TYPE>
-inline AMP::Mesh::MeshPoint<TYPE> operator-( const TYPE &a, const AMP::Mesh::MeshPoint<TYPE> &b )
+constexpr AMP::Mesh::MeshPoint<TYPE> operator-( const TYPE &a, const AMP::Mesh::MeshPoint<TYPE> &b )
 {
     TYPE c[3] = { a - b.x(), a - b.y(), a - b.z() };
     return AMP::Mesh::MeshPoint<TYPE>( b.size(), c );
 }
 template<class TYPE>
-inline AMP::Mesh::MeshPoint<TYPE> operator-( const AMP::Mesh::MeshPoint<TYPE> &a )
+constexpr AMP::Mesh::MeshPoint<TYPE> operator-( const AMP::Mesh::MeshPoint<TYPE> &a )
 {
     TYPE c[3] = { -a.x(), -a.y(), -a.z() };
     return AMP::Mesh::MeshPoint<TYPE>( a.size(), c );
 }
 template<class TYPE>
-inline AMP::Mesh::MeshPoint<TYPE> operator*( const AMP::Mesh::MeshPoint<TYPE> &a, const TYPE &b )
+constexpr AMP::Mesh::MeshPoint<TYPE> operator*( const AMP::Mesh::MeshPoint<TYPE> &a, const TYPE &b )
 {
     auto c = a;
     c.x() *= b;
@@ -319,7 +319,7 @@ inline AMP::Mesh::MeshPoint<TYPE> operator*( const AMP::Mesh::MeshPoint<TYPE> &a
     return c;
 }
 template<class TYPE>
-inline AMP::Mesh::MeshPoint<TYPE> operator*( const TYPE &a, const AMP::Mesh::MeshPoint<TYPE> &b )
+constexpr AMP::Mesh::MeshPoint<TYPE> operator*( const TYPE &a, const AMP::Mesh::MeshPoint<TYPE> &b )
 {
     auto c = b;
     c.x() *= a;
@@ -333,25 +333,25 @@ inline AMP::Mesh::MeshPoint<TYPE> operator*( const TYPE &a, const AMP::Mesh::Mes
  * Helper functions                                              *
  ****************************************************************/
 template<class TYPE>
-inline TYPE abs( const AMP::Mesh::MeshPoint<TYPE> &x )
+constexpr TYPE abs( const AMP::Mesh::MeshPoint<TYPE> &x )
 {
     return x.abs();
 }
 template<class TYPE>
-inline TYPE dot( const AMP::Mesh::MeshPoint<TYPE> &a, const AMP::Mesh::MeshPoint<TYPE> &b )
+constexpr TYPE dot( const AMP::Mesh::MeshPoint<TYPE> &a, const AMP::Mesh::MeshPoint<TYPE> &b )
 {
     return a.x() * b.x() + a.y() * b.y() + a.z() * b.z();
 }
 template<class TYPE>
-inline AMP::Mesh::MeshPoint<TYPE> cross( const AMP::Mesh::MeshPoint<TYPE> &a,
-                                         const AMP::Mesh::MeshPoint<TYPE> &b )
+constexpr AMP::Mesh::MeshPoint<TYPE> cross( const AMP::Mesh::MeshPoint<TYPE> &a,
+                                            const AMP::Mesh::MeshPoint<TYPE> &b )
 {
     return AMP::Mesh::MeshPoint<TYPE>( a.y() * b.z() - a.z() * b.y(),
                                        a.z() * b.x() - a.x() * b.z(),
                                        a.x() * b.y() - a.y() * b.x() );
 }
 template<class TYPE>
-inline AMP::Mesh::MeshPoint<TYPE> normalize( const AMP::Mesh::MeshPoint<TYPE> &x )
+constexpr AMP::Mesh::MeshPoint<TYPE> normalize( const AMP::Mesh::MeshPoint<TYPE> &x )
 {
     auto y   = x;
     double t = 1.0 / x.abs();

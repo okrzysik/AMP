@@ -1,5 +1,7 @@
 #include "AMP/ampmesh/Geometry.h"
 #include "AMP/ampmesh/LogicalGeometry.h"
+#include "AMP/ampmesh/MeshUtilities.h"
+#include "AMP/ampmesh/MultiGeometry.h"
 #include "AMP/utils/UnitTest.h"
 
 #include <algorithm>
@@ -130,6 +132,29 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         pass = pass && passNorm;
         if ( !passNorm )
             ut.failure( "testGeometry surfaceNorm: " + geom2->getName() );
+    }
+    // Test getting the volume
+    {
+        double volume    = geom.volume();
+        double boxVolume = 1.0;
+        for ( int d = 0; d < ndim; d++ )
+            boxVolume *= box.second[d] - box.first[d];
+        bool passVol = volume > 0;
+        if ( ndim == static_cast<int>( geom.getGeomType() ) )
+            passVol = passVol && volume <= boxVolume;
+        pass = pass && passVol;
+        if ( !passVol )
+            ut.failure( "testGeometry volume: " + geom.getName() );
+        // Test mesh utilities volume overlap
+        auto multigeom = dynamic_cast<const MultiGeometry *>( &geom );
+        if ( ndim == static_cast<int>( geom.getGeomType() ) && multigeom == nullptr ) {
+            auto tmp      = AMP::Mesh::volumeOverlap( geom, { 35, 35, 35 } );
+            double vol2   = tmp.sum();
+            bool passVol2 = fabs( vol2 - volume ) < 0.01 * volume;
+            pass          = pass && passVol2;
+            if ( !passVol2 )
+                ut.failure( "testGeometry volumeOverlap: " + geom.getName() );
+        }
     }
     // Finished with all tests
     if ( pass )

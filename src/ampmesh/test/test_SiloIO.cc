@@ -91,8 +91,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     auto DOF_volume = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 1, true );
     auto DOF_vector = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 3, true );
     auto DOF_gauss  = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 8, true );
-    auto DOF_surface =
-        AMP::Discretization::simpleDOFManager::create( submesh, surfaceType, 0, 1, true );
+
 
     // Create the vectors
     auto rank_var     = std::make_shared<AMP::LinearAlgebra::Variable>( "rank" );
@@ -104,7 +103,6 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     auto rank_vec     = AMP::LinearAlgebra::createVector( DOF_scalar, rank_var, true );
     auto position     = AMP::LinearAlgebra::createVector( DOF_vector, position_var, true );
     auto gauss_pt     = AMP::LinearAlgebra::createVector( DOF_gauss, gp_var, true );
-    auto id_vec       = AMP::LinearAlgebra::createVector( DOF_surface, id_var, true );
     auto meshID_vec   = AMP::LinearAlgebra::createVector( DOF_scalar, meshID_var, true );
     auto block_vec    = AMP::LinearAlgebra::createVector( DOF_volume, block_var, true );
     gauss_pt->setToScalar( 100 );
@@ -148,7 +146,6 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     siloWriter->registerVector( gauss_pt, mesh, volumeType, "gauss_pnt" );
     if ( submesh != nullptr ) {
         siloWriter->registerVector( z_surface, submesh, pointType, "z_surface" );
-        siloWriter->registerVector( id_vec, submesh, surfaceType, "surface_ids" );
     }
     // Register a vector over the clad
     if ( clad.get() != nullptr )
@@ -157,7 +154,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     globalComm.barrier();
     double t4 = AMP::AMP_MPI::time();
 
-    // For each submesh, store the mesh id and volume
+    // For each submesh, store the mesh id, surface ids, and volume
     auto meshIDs = mesh->getBaseMeshIDs();
     for ( size_t i = 0; i < meshIDs.size(); i++ ) {
         auto mesh2 = mesh->Subset( meshIDs[i] );
@@ -168,6 +165,23 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
             meshID_vec2->setToScalar( i + 1 );
             siloWriter->registerMesh( mesh2, level );
             siloWriter->registerVector( volume, mesh2, mesh2->getGeomType(), "volume" );
+            // Get the surface
+            auto surfaceMesh = mesh2->Subset( mesh2->getSurfaceIterator( surfaceType, 1 ) );
+            if ( surfaceMesh ) {
+                auto DOF_surface = AMP::Discretization::simpleDOFManager::create(
+                    surfaceMesh, surfaceType, 0, 1, true );
+                auto id_vec = AMP::LinearAlgebra::createVector( DOF_surface, id_var, true );
+                siloWriter->registerVector( id_vec, surfaceMesh, surfaceType, "surface_ids" );
+                id_vec->setToScalar( -1 );
+                std::vector<size_t> dofs;
+                for ( auto &id : surfaceMesh->getBoundaryIDs() ) {
+                    for ( auto elem : surfaceMesh->getBoundaryIDIterator( surfaceType, id, 0 ) ) {
+                        DOF_surface->getDOFs( elem.globalID(), dofs );
+                        AMP_ASSERT( dofs.size() == 1 );
+                        id_vec->setValueByGlobalID( dofs[0], id );
+                    }
+                }
+            }
         }
     }
 
@@ -190,16 +204,6 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
         }
     }
     block_vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
-    if ( submesh != nullptr ) {
-        id_vec->setToScalar( -1 );
-        for ( auto &id : submesh->getBoundaryIDs() ) {
-            for ( auto elem : submesh->getBoundaryIDIterator( surfaceType, id, 0 ) ) {
-                DOF_surface->getDOFs( elem.globalID(), dofs );
-                AMP_ASSERT( dofs.size() == 1 );
-                id_vec->setValueByGlobalID( dofs[0], id );
-            }
-        }
-    }
     globalComm.barrier();
 #endif
     double t5 = AMP::AMP_MPI::time();

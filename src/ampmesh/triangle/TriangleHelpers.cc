@@ -1,6 +1,7 @@
 #include "AMP/ampmesh/triangle/TriangleHelpers.h"
 #include "AMP/ampmesh/MeshGeometry.h"
 #include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/ampmesh/MeshPoint.h"
 #include "AMP/ampmesh/MeshUtilities.h"
 #include "AMP/ampmesh/MultiGeometry.h"
 #include "AMP/ampmesh/MultiMesh.h"
@@ -833,7 +834,26 @@ static std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry:
         }
     }
     NULL_USE( x2 );
-    auto [tri, tri_nab] = DelaunayTessellation::create_tessellation<NDIM>( x1 );
+    std::vector<std::array<int, NDIM + 1>> tri, tri_nab;
+    try {
+        // Try to tessellate with the acutal points
+        std::tie( tri, tri_nab ) = DelaunayTessellation::create_tessellation<NDIM>( x1 );
+    } catch ( ... ) {
+        try {
+            // Try to tessellate with the integer points
+            std::tie( tri, tri_nab ) = DelaunayTessellation::create_tessellation<NDIM>( x2 );
+        } catch ( ... ) {
+            // Failed to tessellate
+            auto fid = fopen( "failed_points.csv", "wb" );
+            for ( const auto &p : x1 ) {
+                for ( const auto &v : p )
+                    fprintf( fid, "%0.12f ", v );
+                fprintf( fid, "\n" );
+            }
+            fclose( fid );
+            AMP_ERROR( "Failed to tessellate" );
+        }
+    }
     AMP_ASSERT( !tri.empty() );
     // Delete triangles that have duplicate neighbors
     {

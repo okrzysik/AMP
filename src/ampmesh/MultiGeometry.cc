@@ -85,6 +85,13 @@ std::pair<Point, Point> MultiGeometry::box() const
     range.second.setNdim( d_physicalDim );
     return range;
 }
+double MultiGeometry::volume() const
+{
+    double V = 0;
+    for ( const auto &geom : d_geom )
+        V += geom->volume();
+    return V;
+}
 void MultiGeometry::displace( const double *x )
 {
     for ( const auto &geom : d_geom )

@@ -136,6 +136,18 @@ std::pair<Point, Point> Shell::box() const
 
 
 /********************************************************
+ * Return the volume                                     *
+ ********************************************************/
+double Shell::volume() const
+{
+    constexpr double pi = 3.141592653589793;
+    double V1           = 4.0 / 3.0 * pi * d_r_max * d_r_max * d_r_max;
+    double V2           = 4.0 / 3.0 * pi * d_r_min * d_r_min * d_r_min;
+    return V1 - V2;
+}
+
+
+/********************************************************
  * Return the logical grid                               *
  ********************************************************/
 std::vector<int> Shell::getLogicalGridSize( const std::vector<int> &x ) const

@@ -776,10 +776,13 @@ private:
 };
 
 
+} // namespace AMP
+
+
 /********************************************************
  *  ostream operator                                     *
  ********************************************************/
-inline std::ostream &operator<<( std::ostream &out, const ArraySize &s )
+inline std::ostream &operator<<( std::ostream &out, const AMP::ArraySize &s )
 {
     out << "[" << s[0];
     for ( size_t i = 1; i < s.ndim(); i++ )
@@ -793,49 +796,51 @@ inline std::ostream &operator<<( std::ostream &out, const ArraySize &s )
  *  Math operations                                      *
  ********************************************************/
 template<class TYPE, class FUN, class Allocator>
-inline Array<TYPE, FUN, Allocator> operator+( const Array<TYPE, FUN, Allocator> &a,
-                                              const Array<TYPE, FUN, Allocator> &b )
+inline AMP::Array<TYPE, FUN, Allocator> operator+( const AMP::Array<TYPE, FUN, Allocator> &a,
+                                                   const AMP::Array<TYPE, FUN, Allocator> &b )
 {
-    Array<TYPE, FUN, Allocator> c;
+    AMP::Array<TYPE, FUN, Allocator> c;
     const auto &op = []( const TYPE &a, const TYPE &b ) { return a + b; };
     FUN::transform( op, a, b, c );
     return c;
 }
 template<class TYPE, class FUN, class Allocator>
-inline Array<TYPE, FUN, Allocator> operator-( const Array<TYPE, FUN, Allocator> &a,
-                                              const Array<TYPE, FUN, Allocator> &b )
+inline AMP::Array<TYPE, FUN, Allocator> operator-( const AMP::Array<TYPE, FUN, Allocator> &a,
+                                                   const AMP::Array<TYPE, FUN, Allocator> &b )
 {
-    Array<TYPE, FUN, Allocator> c;
+    AMP::Array<TYPE, FUN, Allocator> c;
     const auto &op = []( const TYPE &a, const TYPE &b ) { return a - b; };
     FUN::transform( op, a, b, c );
     return c;
 }
 template<class TYPE, class FUN, class Allocator>
-inline Array<TYPE, FUN, Allocator> operator*( const Array<TYPE, FUN, Allocator> &a,
-                                              const Array<TYPE, FUN, Allocator> &b )
+inline AMP::Array<TYPE, FUN, Allocator> operator*( const AMP::Array<TYPE, FUN, Allocator> &a,
+                                                   const AMP::Array<TYPE, FUN, Allocator> &b )
 {
-    Array<TYPE, FUN, Allocator> c;
+    AMP::Array<TYPE, FUN, Allocator> c;
     FUN::multiply( a, b, c );
     return c;
 }
 template<class TYPE, class FUN, class Allocator>
-inline Array<TYPE, FUN, Allocator> operator*( const Array<TYPE, FUN, Allocator> &a,
-                                              const std::vector<TYPE> &b )
+inline AMP::Array<TYPE, FUN, Allocator> operator*( const AMP::Array<TYPE, FUN, Allocator> &a,
+                                                   const std::vector<TYPE> &b )
 {
-    Array<TYPE, FUN, Allocator> b2, c;
+    AMP::Array<TYPE, FUN, Allocator> b2, c;
     b2.viewRaw( { b.size() }, const_cast<TYPE *>( b.data() ) );
     FUN::multiply( a, b2, c );
     return c;
 }
 template<class TYPE, class FUN, class Allocator>
-inline Array<TYPE, FUN, Allocator> operator*( const TYPE &a, const Array<TYPE, FUN, Allocator> &b )
+inline AMP::Array<TYPE, FUN, Allocator> operator*( const TYPE &a,
+                                                   const AMP::Array<TYPE, FUN, Allocator> &b )
 {
     auto c = b;
     c.scale( a );
     return c;
 }
 template<class TYPE, class FUN, class Allocator>
-inline Array<TYPE, FUN, Allocator> operator*( const Array<TYPE, FUN, Allocator> &a, const TYPE &b )
+inline AMP::Array<TYPE, FUN, Allocator> operator*( const AMP::Array<TYPE, FUN, Allocator> &a,
+                                                   const TYPE &b )
 {
     auto c = a;
     c.scale( b );
@@ -848,7 +853,7 @@ inline Array<TYPE, FUN, Allocator> operator*( const Array<TYPE, FUN, Allocator> 
  ********************************************************/
 template<class TYPE, class FUN, class Allocator>
 template<class TYPE2>
-inline void Array<TYPE, FUN, Allocator>::copy( const TYPE2 *data )
+inline void AMP::Array<TYPE, FUN, Allocator>::copy( const TYPE2 *data )
 {
     if constexpr ( std::is_same<TYPE, TYPE2>::value ) {
         std::copy( data, data + d_size.length(), d_data );
@@ -859,7 +864,7 @@ inline void Array<TYPE, FUN, Allocator>::copy( const TYPE2 *data )
 }
 template<class TYPE, class FUN, class Allocator>
 template<class TYPE2>
-inline void Array<TYPE, FUN, Allocator>::copyTo( TYPE2 *data ) const
+inline void AMP::Array<TYPE, FUN, Allocator>::copyTo( TYPE2 *data ) const
 {
     if constexpr ( std::is_same<TYPE, TYPE2>::value ) {
         std::copy( d_data, d_data + d_size.length(), data );
@@ -869,7 +874,5 @@ inline void Array<TYPE, FUN, Allocator>::copyTo( TYPE2 *data ) const
     }
 }
 
-
-} // namespace AMP
 
 #endif

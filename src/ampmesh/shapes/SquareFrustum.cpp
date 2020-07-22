@@ -94,6 +94,31 @@ void SquareFrustum::initialize( const std::vector<double> &range, int dir, doubl
         if ( t < 0 )
             d_normal[i] = -d_normal[i];
     }
+    // Compute the volume
+    double h, S1, S2;
+    if ( dir / 2 == 0 ) {
+        h  = ( physical( { 1, 0, 0 } ) - physical( { 0, 0, 0 } ) ).x(); // Height
+        S1 = ( physical( { 0, 1, 0 } ) - physical( { 0, 0, 0 } ) ).y() *
+             ( physical( { 0, 0, 1 } ) - physical( { 0, 0, 0 } ) ).z(); // Surface area 2
+        S2 = ( physical( { 1, 1, 0 } ) - physical( { 1, 0, 0 } ) ).y() *
+             ( physical( { 1, 0, 1 } ) - physical( { 1, 0, 0 } ) ).z(); // Surface area 2
+    } else if ( dir / 2 == 1 ) {
+        h  = ( physical( { 0, 1, 0 } ) - physical( { 0, 0, 0 } ) ).y(); // Height
+        S1 = ( physical( { 1, 0, 0 } ) - physical( { 0, 0, 0 } ) ).x() *
+             ( physical( { 0, 0, 1 } ) - physical( { 0, 0, 0 } ) ).z(); // Surface area 2
+        S2 = ( physical( { 1, 1, 0 } ) - physical( { 0, 1, 0 } ) ).x() *
+             ( physical( { 0, 1, 1 } ) - physical( { 0, 1, 0 } ) ).z(); // Surface area 2
+    } else {
+        h  = ( physical( { 0, 0, 1 } ) - physical( { 0, 0, 0 } ) ).z(); // Height
+        S1 = ( physical( { 1, 0, 0 } ) - physical( { 0, 0, 0 } ) ).x() *
+             ( physical( { 0, 1, 0 } ) - physical( { 0, 0, 0 } ) ).y(); // Surface area 2
+        S2 = ( physical( { 1, 0, 1 } ) - physical( { 0, 0, 1 } ) ).x() *
+             ( physical( { 0, 1, 1 } ) - physical( { 0, 0, 1 } ) ).y(); // Surface area 2
+    }
+    h        = fabs( h );
+    S1       = fabs( S1 );
+    S2       = fabs( S2 );
+    d_volume = h / 3.0 * ( S1 + S2 + sqrt( S1 * S2 ) );
 }
 
 
@@ -271,6 +296,12 @@ std::pair<Point, Point> SquareFrustum::box() const
     Point ub = { d_range[1], d_range[3], d_range[5] };
     return { lb, ub };
 }
+
+
+/********************************************************
+ * Return the volume                                     *
+ ********************************************************/
+double SquareFrustum::volume() const { return d_volume; }
 
 
 /********************************************************

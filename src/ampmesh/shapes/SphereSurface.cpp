@@ -123,6 +123,16 @@ std::pair<Point, Point> SphereSurface::box() const
 
 
 /********************************************************
+ * Return the volume                                     *
+ ********************************************************/
+double SphereSurface::volume() const
+{
+    constexpr double pi = 3.141592653589793;
+    return 4 * pi * d_r * d_r;
+}
+
+
+/********************************************************
  * Return the logical grid                               *
  ********************************************************/
 std::vector<int> SphereSurface::getLogicalGridSize( const std::vector<int> &x ) const
