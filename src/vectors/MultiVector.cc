@@ -455,10 +455,6 @@ void MultiVector::aliasVector( Vector &other )
         d_vVectors[i]->aliasVector( getVector( other, i ) );
 }
 std::shared_ptr<VectorData> MultiVector::getNewBuffer() { return std::shared_ptr<VectorData>(); }
-bool MultiVector::sameEngine( VectorEngine &rhs ) const
-{
-    return dynamic_cast<MultiVector *>( &rhs ) != nullptr;
-}
 void MultiVector::swapEngines( std::shared_ptr<VectorEngine> p )
 {
     auto vec = std::dynamic_pointer_cast<MultiVector>( p );

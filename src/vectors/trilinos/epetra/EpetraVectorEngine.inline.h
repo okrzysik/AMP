@@ -10,13 +10,9 @@ inline Epetra_Vector &EpetraVectorEngine::getEpetra_Vector() { return d_epetraVe
 
 inline const Epetra_Vector &EpetraVectorEngine::getEpetra_Vector() const { return d_epetraVector; }
 
-inline AMP_MPI EpetraVectorEngine::getComm() const { return getEngineParameters()->getComm(); }
-
-inline bool EpetraVectorEngine::sameEngine( VectorEngine &e ) const
-{
-    return dynamic_cast<EpetraVectorEngine *>( &e ) != nullptr;
+inline AMP_MPI EpetraVectorEngine::getComm() const {
+  return d_Params->getComm();
 }
-
 
 } // namespace LinearAlgebra
 } // namespace AMP

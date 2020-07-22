@@ -74,13 +74,13 @@ inline ManagedVectorParameters::ManagedVectorParameters()
 
 inline void *ManagedVector::getRawDataBlockAsVoid( size_t i )
 {
-    return d_Engine->getDataBlock( i );
+    return d_Engine->getRawDataBlockAsVoid( i );
 }
 
 
 inline const void *ManagedVector::getRawDataBlockAsVoid( size_t i ) const
 {
-    return d_Engine->getDataBlock( i );
+    return d_Engine->getRawDataBlockAsVoid( i );
 }
 
 

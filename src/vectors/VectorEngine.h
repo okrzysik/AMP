@@ -44,9 +44,6 @@ public:
     //! Return the first DOF on this core
     inline size_t beginDOF() const { return d_begin; }
 
-    //! Return 1 past the last DOF on this core
-    inline size_t endDOF() const { return d_end; }
-
     /** \brief  Return the Epetra_MpiComm for this engine
      * \return The Epetra_MpiComm
      */
@@ -84,12 +81,6 @@ public:
      */
     virtual std::shared_ptr<VectorData> getNewBuffer() = 0;
 
-    /** \brief  True if engines are the same
-     * \param[in]  e  Engine to compare against
-     * \return True if the engine is the same type as this
-     */
-    virtual bool sameEngine( VectorEngine &e ) const = 0;
-
     /** \brief  Return a copy of this engine
      * \param[in]  p  The buffer to use for the copy.
      * \return  The new engine
@@ -101,24 +92,10 @@ public:
      */
     virtual void swapEngines( std::shared_ptr<VectorEngine> p ) = 0;
 
-
-    /** \brief  Get the parameters used to create this engine
-     * \return The parameters
-     */
-    virtual VectorEngineParameters::shared_ptr getEngineParameters() const;
-
     /** \brief  Return the communicator associated with this engine
      * \return  The communicator associated with this engine
      */
     virtual AMP_MPI getComm() const = 0;
-
-
-public: // Deprecated functions
-    //! Return a contiguous block of data
-    inline void *getDataBlock( size_t i ) { return getRawDataBlockAsVoid( i ); }
-
-    //! Return a contiguous block of data
-    inline const void *getDataBlock( size_t i ) const { return getRawDataBlockAsVoid( i ); }
 };
 
 

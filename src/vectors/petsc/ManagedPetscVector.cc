@@ -798,10 +798,10 @@ void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
                     "we are trying to use a vector with more "
                     "than 2^31 elements" );
 
-    const VectorEngineParameters &eparams = *( params->d_Engine->getEngineParameters() );
-    auto ids                              = new PetscInt[eparams.getLocalSize()];
-    auto begin                            = (PetscInt) eparams.beginDOF();
-    auto end                              = (PetscInt) eparams.endDOF();
+    auto ids                              = new PetscInt[dest.getLocalSize()];
+    auto begin                            = (PetscInt) dest.getLocalStartID();
+    auto end                              = (PetscInt) begin+dest.getLocalSize()-1;    
+
     for ( PetscInt i = begin; i < end; i++ )
         ids[i - begin] = i;
     VecGetValues( source, dest.getLocalSize(), ids, dest.getRawDataBlock<double>() );
