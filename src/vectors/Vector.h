@@ -27,10 +27,10 @@ public:
     typedef std::shared_ptr<VectorParameters> shared_ptr;
 
     //! The CommunicationList for a vector
-    CommunicationList::shared_ptr d_CommList;
+    CommunicationList::shared_ptr d_CommList = nullptr;
 
     //! The DOF_Manager for a vector
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManager;
+    AMP::Discretization::DOFManager::shared_ptr d_DOFManager = nullptr;
 };
 
 

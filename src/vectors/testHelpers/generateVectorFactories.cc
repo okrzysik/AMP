@@ -8,6 +8,9 @@
 #endif
 
 #ifdef USE_EXT_TRILINOS
+#ifdef USE_TRILINOS_EPETRA
+#include "AMP/vectors/trilinos/epetra/NativeEpetraVector.h"
+#endif
 #ifdef USE_TRILINOS_THYRA
 #include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
 #endif
@@ -225,6 +228,13 @@ std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
         } else {
             AMP_ERROR( "Unknown template argument for SimpleManagedVectorFactory" );
         }
+    } else if ( factoryName == "NativeEpetraVectorFactory" ) {
+        AMP_ASSERT( args.size() == 0 );
+#ifdef USE_TRILINOS_EPETRA
+        factory.reset( new NativeEpetraVectorFactory() );
+#else
+        AMP_ERROR( "Generator is not valid without support for Epetra" );
+#endif
     } else if ( factoryName == "NativeThyraFactory" ) {
         AMP_ASSERT( args.size() == 0 );
 #ifdef USE_TRILINOS_THYRA

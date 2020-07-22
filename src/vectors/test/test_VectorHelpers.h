@@ -24,6 +24,13 @@ const std::string ArrayFactory1  = "ArrayVectorFactory<4,10,false,double>";
 const std::string ArrayFactory2  = "ArrayVectorFactory<4,10, true,double>";
 const std::string SNPVFactory    = "SimplePetscNativeFactory";
 const std::string SMEVFactory    = "SimpleManagedVectorFactory<ManagedEpetraVector>";
+
+#if defined( USE_EXT_TRILINOS )
+#ifdef USE_TRILINOS_EPETRA
+const std::string NEVFactory    = "NativeEpetraVectorFactory";
+#endif
+#endif
+
 #ifdef USE_EXT_PETSC
 const std::string NPVFactory = "NativePetscVectorFactory";
 const std::string MVFactory1 = "MultiVectorFactory<" + SMEVFactory + ", 1, " + SNPVFactory + ", 1>";
@@ -36,6 +43,7 @@ const std::string MVFactory2 =
     "MultiVectorFactory<SimpleVectorFactory<15,false>,3," + SMEVFactory + ",2>";
 const std::string MVFactory3 = "MultiVectorFactory<" + MVFactory1 + ", 2, " + MVFactory2 + ", 2>";
 #endif
+
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
 const std::string ViewSMEVFactory =
     "ViewFactory<PetscVector,SimpleManagedVectorFactory<ManagedEpetraVector>>";
@@ -47,6 +55,13 @@ const std::string ViewMVFactory2 = "ViewFactory<PetscVector,MultiVectorFactory<"
 const std::string ViewMVFactory3 = "ViewFactory<PetscVector,MultiVectorFactory<" + ViewMVFactory1 +
                                    ",2," + ViewMVFactory2 + ",2>>";
 #endif
+
+#if defined( USE_EXT_TRILINOS )
+#ifdef USE_TRILINOS_EPETRA
+const std::string CloneNEVFactory    = "CloneFactory<NativeEpetraVectorFactory>";
+#endif
+#endif
+
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
 const std::string CloneSMEVFactory =
     "CloneFactory<SimpleManagedVectorFactory<ManagedEpetraVector>>";

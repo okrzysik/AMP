@@ -41,7 +41,6 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     else
         d_Engine = d_pParameters->d_Engine;
     d_pParameters->d_CloneEngine = true;
-    if (d_Engine) std::cout << typeid(*d_Engine).name() << std::endl;
 }
 ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
@@ -52,7 +51,6 @@ ManagedVector::ManagedVector( shared_ptr alias )
     d_pParameters = vec->d_pParameters;
     setVariable( vec->getVariable() );
     aliasGhostBuffer( vec );
-    if (d_Engine) std::cout << typeid(*d_Engine).name() << std::endl;
 }
 
 
