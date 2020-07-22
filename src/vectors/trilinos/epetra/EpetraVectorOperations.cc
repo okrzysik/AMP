@@ -11,7 +11,7 @@ static inline const Epetra_Vector &getEpetraVector( const VectorOperations &vec 
 {
     auto epetraEngine = dynamic_cast<const EpetraVectorEngine *>( &vec );
     if(epetraEngine)
-      return epetra->getEpetra_Vector();
+      return epetraEngine->getEpetra_Vector();
     else {
       auto epetraVec = dynamic_cast<const NativeEpetraVector *>( &vec );      
       AMP_INSIST( epetraVec != nullptr, "Not a NativeEpetraVector" );
