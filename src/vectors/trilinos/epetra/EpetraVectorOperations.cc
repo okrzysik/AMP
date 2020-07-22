@@ -21,22 +21,22 @@ static inline const Epetra_Vector &getEpetraVector( const VectorOperations &vec 
 
 Epetra_Vector &EpetraVectorOperations::getEpetra_Vector()
 {
-    auto epetraEngine = dynamic_cast<const EpetraVectorEngine *>( *this );
+    auto epetraEngine = dynamic_cast<const EpetraVectorEngine *>( this );
     if(epetraEngine)
       return epetra->getEpetra_Vector();
     else {
-      auto epetraVec = dynamic_cast<const NativeEpetraVector *>( *this );      
+      auto epetraVec = dynamic_cast<const NativeEpetraVector *>( this );      
       AMP_INSIST( epetraVec != nullptr, "Not a NativeEpetraVector" );
       return epetraVec->getEpetra_Vector();
     }
 }
 const Epetra_Vector &EpetraVectorOperations::getEpetra_Vector() const
 {
-    auto epetraEngine = dynamic_cast<const EpetraVectorEngine *>( *this );
+    auto epetraEngine = dynamic_cast<const EpetraVectorEngine *>( this );
     if(epetraEngine)
       return epetra->getEpetra_Vector();
     else {
-      auto epetraVec = dynamic_cast<const NativeEpetraVector *>( *this );      
+      auto epetraVec = dynamic_cast<const NativeEpetraVector *>( this );      
       AMP_INSIST( epetraVec != nullptr, "Not a NativeEpetraVector" );
       return epetraVec->getEpetra_Vector();
     }
