@@ -16,6 +16,19 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
+// Check if the vector engine is a multi-vector (I don't think this case exists)
+[[deprecated("We are removing VectorEngine from MultiVector (remove when complete)")]]    
+void checkEngine( Vector::const_shared_ptr vec )
+{
+    auto managed = std::dynamic_pointer_cast<const ManagedVector>( vec );
+    if ( managed ) {
+        auto multivec = std::dynamic_pointer_cast<const MultiVector>( managed->getVectorEngine() );
+        if ( multivec )
+            throw std::logic_error( "Engine is a multivector" );
+    }
+}
+
+
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
@@ -85,19 +98,11 @@ std::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr vec, const AM
     // Check to see if this is a multivector
     auto multivec = std::dynamic_pointer_cast<MultiVector>( vec );
     if ( multivec ) {
-        if ( !comm.isNull() )
-            AMP_ASSERT( comm.compare( vec->getComm() ) != 0 );
+        AMP_ASSERT( comm.isNull() || comm.compare( vec->getComm() ) != 0 );
+        return multivec;
     }
     // Check to see if the engine is a multivector
-    auto managed = std::dynamic_pointer_cast<ManagedVector>( vec );
-    if ( managed ) {
-        auto vec2 = std::dynamic_pointer_cast<MultiVector>( managed->getVectorEngine() );
-        if ( vec2 ) {
-            if ( !comm.isNull() )
-                AMP_ASSERT( comm.compare( vec->getComm() ) != 0 );
-            multivec = vec2;
-        }
-    }
+    checkEngine( vec );
     // If still don't have a multivector, make one
     if ( !multivec ) {
         if ( comm.isNull() )
@@ -113,19 +118,11 @@ std::shared_ptr<const MultiVector> MultiVector::constView( Vector::const_shared_
     // Check to see if this is a multivector
     auto multivec = std::dynamic_pointer_cast<const MultiVector>( vec );
     if ( multivec ) {
-        if ( !comm.isNull() )
-            AMP_ASSERT( comm.compare( vec->getComm() ) != 0 );
+        AMP_ASSERT( comm.isNull() || comm.compare( vec->getComm() ) != 0 );
+        return multivec;
     }
     // Check to see if the engine is a multivector
-    auto managed = std::dynamic_pointer_cast<const ManagedVector>( vec );
-    if ( managed ) {
-        auto vec2 = std::dynamic_pointer_cast<const MultiVector>( managed->getVectorEngine() );
-        if ( vec2 ) {
-            if ( !comm.isNull() )
-                AMP_ASSERT( comm.compare( vec->getComm() ) != 0 );
-            multivec = vec2;
-        }
-    }
+    checkEngine( vec );
     // If still don't have a multivector, make one
     if ( !multivec ) {
         if ( comm.isNull() )
@@ -204,11 +201,8 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
         if ( vec->getGlobalSize() == 0 )
             return;
         auto multivec = std::dynamic_pointer_cast<MultiVector>( vec );
-        if ( multivec == nullptr ) {
-            auto managed = std::dynamic_pointer_cast<ManagedVector>( vec );
-            if ( managed )
-                multivec = std::dynamic_pointer_cast<MultiVector>( managed->getVectorEngine() );
-        }
+        if ( !multivec )
+            checkEngine( vec );
         if ( multivec.get() != nullptr ) {
             for ( size_t i = 0; i != multivec->getNumberOfSubvectors(); i++ )
                 addVectorHelper( multivec->getVector( i ) );

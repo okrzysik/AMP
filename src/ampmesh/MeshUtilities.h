@@ -51,7 +51,7 @@ class ElementFinder final
 {
 public:
     //! Empty constructor
-    ElementFinder() : d_pos_hash( 0 ) {}
+    ElementFinder() : d_pos_hash( 0 ), d_type( AMP::Mesh::GeomType::Vertex ) {}
 
     //! Empty constructor
     ElementFinder(
