@@ -25,21 +25,15 @@ class MultiVector : public Vector,
                     public DataChangePassThrough
 {
 public:
-    //!  Iterator typedef
-    typedef std::vector<Vector::shared_ptr>::iterator vector_iterator;
-
-    //!  Iterator typedef
-    typedef std::vector<Vector::shared_ptr>::const_iterator vector_const_iterator;
-
     /** \brief Return the first vector in the MultiVector
      * \return The first vector
      */
-    vector_iterator beginVector();
+    inline auto beginVector() { return d_vVectors.begin(); }
 
     /** \brief Return one past the last vector in the MultiVector
      * \return One past the last vector
      */
-    vector_iterator endVector();
+    inline auto endVector() { return d_vVectors.begin(); }
 
     /** \brief Determine if a Vector is a constituent
      * \param[in]  p  The vector to look for

@@ -25,10 +25,6 @@ inline AMP_MPI MultiVector::getComm() const { return d_Comm; }
 
 inline void MultiVector::dataChanged() { fireDataChange(); }
 
-inline MultiVector::vector_iterator MultiVector::beginVector() { return d_vVectors.begin(); }
-
-inline MultiVector::vector_iterator MultiVector::endVector() { return d_vVectors.end(); }
-
 inline const Vector::shared_ptr &MultiVector::getVector( const VectorOperations &rhs,
                                                          size_t which ) const
 {

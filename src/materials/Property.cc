@@ -22,9 +22,7 @@ Property<double>::make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVecto
     if ( d_n_arguments > 0 ) {
         size_t xls = d_translator.size();
         AMP_INSIST( xls > 0, "attempt to make MultiVector map without setting translator" );
-        for ( AMP::LinearAlgebra::MultiVector::vector_const_iterator vec = args->beginVector();
-              vec != args->endVector();
-              ++vec ) {
+        for ( auto vec = args->beginVector(); vec != args->endVector(); ++vec ) {
             std::string name = ( *vec )->getVariable()->getName();
 
             for ( auto &elem : d_translator ) {
