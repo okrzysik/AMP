@@ -101,39 +101,39 @@ protected:
 
 
 public: // Derived from VectorData
-    virtual size_t numberOfDataBlocks() const override;
-    virtual size_t sizeOfDataBlock( size_t i ) const override;
-    virtual size_t getLocalSize() const override;
-    virtual size_t getGlobalSize() const override;
-    virtual void getValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    virtual void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    virtual void getGhostValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    virtual void setValuesByGlobalID( int i, size_t *, const double *val ) override;
-    virtual void setLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
-    virtual void setGhostValuesByGlobalID( int i, size_t *, const double *val ) override;
-    virtual void setValuesByLocalID( int i, size_t *, const double *val ) override;
-    virtual void addValuesByLocalID( int i, size_t *, const double *val ) override;
-    virtual void addLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
-    virtual void putRawData( const double *in ) override;
-    virtual void copyOutRawData( double *in ) const override;
-    virtual UpdateState getUpdateStatus() const override;
-    virtual void setUpdateStatus( UpdateState state ) override;
-    virtual uint64_t getDataID() const override
+    size_t numberOfDataBlocks() const override;
+    size_t sizeOfDataBlock( size_t i ) const override;
+    size_t getLocalSize() const override;
+    size_t getGlobalSize() const override;
+    void getValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
+    void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
+    void getGhostValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
+    void setValuesByGlobalID( int i, size_t *, const double *val ) override;
+    void setLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
+    void setGhostValuesByGlobalID( int i, size_t *, const double *val ) override;
+    void setValuesByLocalID( int i, size_t *, const double *val ) override;
+    void addValuesByLocalID( int i, size_t *, const double *val ) override;
+    void addLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
+    void putRawData( const double *in ) override;
+    void copyOutRawData( double *in ) const override;
+    UpdateState getUpdateStatus() const override;
+    void setUpdateStatus( UpdateState state ) override;
+    uint64_t getDataID() const override
     {
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
     }
-    virtual bool isTypeId( size_t hash, size_t ) const override
+    bool isTypeId( size_t hash, size_t ) const override
     {
         return hash == typeid( double ).hash_code();
     }
-    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
-    virtual std::string VectorDataName() const override { return type(); }
-    virtual void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
+    size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
+    std::string VectorDataName() const override { return type(); }
+    void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 
 protected: // Derived from VectorData
-    virtual void dataChanged() override;
-    virtual void *getRawDataBlockAsVoid( size_t i ) override;
-    virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
+    void dataChanged() override;
+    void *getRawDataBlockAsVoid( size_t i ) override;
+    const void *getRawDataBlockAsVoid( size_t i ) const override;
 
 
 public: // Derived from VectorOperations
@@ -141,22 +141,22 @@ public: // Derived from VectorOperations
     double L2Norm( void ) const override;
     double maxNorm( void ) const override;
     double dot( const VectorOperations &x ) const override;
-    virtual void
+    void
     axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void axpby( double alpha, double beta, const VectorOperations &x ) override;
-    virtual void abs( const VectorOperations &x ) override;
-    virtual double min( void ) const override;
-    virtual double max( void ) const override;
-    virtual void setRandomValues( void ) override;
-    virtual void setToScalar( double alpha ) override;
-    virtual void scale( double alpha, const VectorOperations &x ) override;
-    virtual void scale( double alpha ) override;
-    virtual void add( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void divide( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void reciprocal( const VectorOperations &x ) override;
-    virtual void linearSum( double alpha,
+    void axpby( double alpha, double beta, const VectorOperations &x ) override;
+    void abs( const VectorOperations &x ) override;
+    double min( void ) const override;
+    double max( void ) const override;
+    void setRandomValues( void ) override;
+    void setToScalar( double alpha ) override;
+    void scale( double alpha, const VectorOperations &x ) override;
+    void scale( double alpha ) override;
+    void add( const VectorOperations &x, const VectorOperations &y ) override;
+    void subtract( const VectorOperations &x, const VectorOperations &y ) override;
+    void multiply( const VectorOperations &x, const VectorOperations &y ) override;
+    void divide( const VectorOperations &x, const VectorOperations &y ) override;
+    void reciprocal( const VectorOperations &x ) override;
+    void linearSum( double alpha,
                             const VectorOperations &x,
                             double beta,
                             const VectorOperations &y ) override;
@@ -165,20 +165,20 @@ public: // Derived from VectorOperations
 public: // Derived from Vector
     using Vector::cloneVector;
     std::string type() const override;
-    virtual std::shared_ptr<Vector> cloneVector( const Variable::shared_ptr name ) const override;
-    virtual std::shared_ptr<ParameterBase> getParameters() override;
-    virtual Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
-    virtual Vector::const_shared_ptr
+    std::shared_ptr<Vector> cloneVector( const Variable::shared_ptr name ) const override;
+    std::shared_ptr<ParameterBase> getParameters() override;
+    Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
+    Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
-    virtual void copy( const VectorOperations &src ) override;
-    virtual void swapVectors( Vector &other ) override;
-    virtual void aliasVector( Vector &other ) override;
+    void copy( const VectorOperations &src ) override;
+    void swapVectors( Vector &other ) override;
+    void aliasVector( Vector &other ) override;
 
 
 protected: // Derived from Vector
-    virtual Vector::shared_ptr selectInto( const VectorSelector & ) override;
-    virtual Vector::const_shared_ptr selectInto( const VectorSelector & ) const override;
-    virtual void addCommunicationListToParameters( CommunicationList::shared_ptr comm ) override;
+    Vector::shared_ptr selectInto( const VectorSelector & ) override;
+    Vector::const_shared_ptr selectInto( const VectorSelector & ) const override;
+    void addCommunicationListToParameters( CommunicationList::shared_ptr comm ) override;
 
 
 public: // Pull VectorOperations into the current scope

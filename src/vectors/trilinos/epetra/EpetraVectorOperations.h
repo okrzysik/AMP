@@ -24,35 +24,35 @@ public:
     EpetraVectorOperations() {}
 
     // virtual void addScalar ( const VectorOperations & , double );
-    virtual void setToScalar( double alpha ) override;
-    virtual void scale( double alpha, const VectorOperations &x ) override;
-    virtual void scale( double alpha ) override;
-    virtual void add( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void divide( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void reciprocal( const VectorOperations &x ) override;
-    virtual void linearSum( double alpha,
+    void setToScalar( double alpha ) override;
+    void scale( double alpha, const VectorOperations &x ) override;
+    void scale( double alpha ) override;
+    void add( const VectorOperations &x, const VectorOperations &y ) override;
+    void subtract( const VectorOperations &x, const VectorOperations &y ) override;
+    void multiply( const VectorOperations &x, const VectorOperations &y ) override;
+    void divide( const VectorOperations &x, const VectorOperations &y ) override;
+    void reciprocal( const VectorOperations &x ) override;
+    void linearSum( double alpha,
                             const VectorOperations &x,
                             double beta,
                             const VectorOperations &y ) override;
-    virtual void
+    void
     axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void axpby( double alpha, double beta, const VectorOperations &x ) override;
-    virtual void abs( const VectorOperations &x ) override;
-    virtual double min( void ) const override;
-    virtual double max( void ) const override;
-    virtual void setRandomValues( void ) override;
-    virtual double L1Norm( void ) const override;
-    virtual double L2Norm( void ) const override;
-    virtual double maxNorm( void ) const override;
-    virtual double dot( const VectorOperations &x ) const override;
-    virtual double localMin( void ) const override;
-    virtual double localMax( void ) const override;
-    virtual double localL1Norm( void ) const override;
-    virtual double localL2Norm( void ) const override;
-    virtual double localMaxNorm() const override;
-    virtual double localDot( const VectorOperations &x ) const override;
+    void axpby( double alpha, double beta, const VectorOperations &x ) override;
+    void abs( const VectorOperations &x ) override;
+    double min( void ) const override;
+    double max( void ) const override;
+    void setRandomValues( void ) override;
+    double L1Norm( void ) const override;
+    double L2Norm( void ) const override;
+    double maxNorm( void ) const override;
+    double dot( const VectorOperations &x ) const override;
+    double localMin( void ) const override;
+    double localMax( void ) const override;
+    double localL1Norm( void ) const override;
+    double localL2Norm( void ) const override;
+    double localMaxNorm() const override;
+    double localDot( const VectorOperations &x ) const override;
 
 
 public: // Pull VectorOperations into the current scope

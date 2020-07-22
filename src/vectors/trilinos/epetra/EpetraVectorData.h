@@ -23,32 +23,32 @@ public: // Virtual functions
     //! Virtual destructor
     virtual ~EpetraVectorData() {}
 
-    virtual std::string VectorDataName() const override { return "EpetraVectorData"; }
-    virtual size_t getLocalSize() const override { return d_iLocalSize; }
-    virtual size_t getGlobalSize() const override { return d_iGlobalSize; }
-    virtual size_t getLocalStartID() const override { return d_iLocalStart; }
-    virtual size_t numberOfDataBlocks() const override { return 1; }
-    virtual size_t sizeOfDataBlock( size_t i ) const override { return i == 0 ? d_iLocalSize : 0; }
-    virtual void setValuesByLocalID( int i, size_t *, const double *val ) override;
-    virtual void setLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
-    virtual void addValuesByLocalID( int i, size_t *, const double *val ) override;
-    virtual void addLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
-    virtual void getValuesByLocalID( int i, size_t *, double *val ) const override;
-    virtual void getLocalValuesByGlobalID( int i, size_t *, double *val ) const override;
-    virtual void putRawData( const double *in ) override;
-    virtual void copyOutRawData( double *out ) const override;
-    virtual uint64_t getDataID() const override
+    std::string VectorDataName() const override { return "EpetraVectorData"; }
+    size_t getLocalSize() const override { return d_iLocalSize; }
+    size_t getGlobalSize() const override { return d_iGlobalSize; }
+    size_t getLocalStartID() const override { return d_iLocalStart; }
+    size_t numberOfDataBlocks() const override { return 1; }
+    size_t sizeOfDataBlock( size_t i ) const override { return i == 0 ? d_iLocalSize : 0; }
+    void setValuesByLocalID( int i, size_t *, const double *val ) override;
+    void setLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
+    void addValuesByLocalID( int i, size_t *, const double *val ) override;
+    void addLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
+    void getValuesByLocalID( int i, size_t *, double *val ) const override;
+    void getLocalValuesByGlobalID( int i, size_t *, double *val ) const override;
+    void putRawData( const double *in ) override;
+    void copyOutRawData( double *out ) const override;
+    uint64_t getDataID() const override
     {
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
     }
-    virtual void *getRawDataBlockAsVoid( size_t i ) override;
-    virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
-    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
-    virtual bool isTypeId( size_t hash, size_t ) const override
+    void *getRawDataBlockAsVoid( size_t i ) override;
+    const void *getRawDataBlockAsVoid( size_t i ) const override;
+    size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
+    bool isTypeId( size_t hash, size_t ) const override
     {
         return hash == typeid( double ).hash_code();
     }
-    virtual void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
+    void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 
 
 protected:

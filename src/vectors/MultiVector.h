@@ -160,30 +160,30 @@ public:
     //!  Destructor
     virtual ~MultiVector();
 
-    virtual void
+    void
     dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const override;
-    virtual void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const override;
-    virtual std::string type() const override;
+    void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const override;
+    std::string type() const override;
 
-    virtual AMP_MPI getComm() const override;
+    AMP_MPI getComm() const override;
 
-    virtual Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
-    virtual Vector::const_shared_ptr
+    Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
+    Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
-    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
-    virtual void swapVectors( Vector &other ) override;
-    virtual void aliasVector( Vector &other ) override;
-    virtual void assemble() override;
+    Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
+    void swapVectors( Vector &other ) override;
+    void aliasVector( Vector &other ) override;
+    void assemble() override;
 
     // Vector engine functions
-    virtual std::shared_ptr<VectorData> getNewBuffer() override;
-    virtual std::shared_ptr<VectorEngine> cloneEngine( std::shared_ptr<VectorData> ) const override;
-    virtual void swapEngines( std::shared_ptr<VectorEngine> p ) override;
+    std::shared_ptr<VectorData> getNewBuffer() override;
+    std::shared_ptr<VectorEngine> cloneEngine( std::shared_ptr<VectorData> ) const override;
+    void swapEngines( std::shared_ptr<VectorEngine> p ) override;
 
 
 protected:
-    virtual Vector::shared_ptr selectInto( const VectorSelector & ) override;
-    virtual Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const override;
+    Vector::shared_ptr selectInto( const VectorSelector & ) override;
+    Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const override;
 
     //! The communicator this multivector is on
     AMP_MPI d_Comm;
@@ -212,7 +212,7 @@ protected:
      */
     explicit MultiVector( const std::string &name );
 
-    virtual void dataChanged() override;
+    void dataChanged() override;
 
 private:
     // Helper function to add a vector without updating the DOF manager

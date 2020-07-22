@@ -92,10 +92,10 @@ public:
 
 public: // Functions derived from VectorEngine
     AMP_MPI getComm() const override;
-    virtual std::shared_ptr<VectorEngine>
+    std::shared_ptr<VectorEngine>
     cloneEngine( std::shared_ptr<VectorData> p ) const override;
-    virtual void swapEngines( std::shared_ptr<VectorEngine> ) override;
-    virtual std::shared_ptr<VectorData> getNewBuffer() override;
+    void swapEngines( std::shared_ptr<VectorEngine> ) override;
+    std::shared_ptr<VectorData> getNewBuffer() override;
 };
 
 

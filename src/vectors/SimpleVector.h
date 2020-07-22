@@ -73,11 +73,11 @@ public:
 public: // Functions derived from Vector
     using Vector::cloneVector;
 
-    virtual std::string type() const override { return "Simple Vector"; }
-    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
-    virtual void swapVectors( Vector &other ) override;
-    virtual void aliasVector( Vector &other ) override;
-    virtual void assemble() override;
+    std::string type() const override { return "Simple Vector"; }
+    Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
+    void swapVectors( Vector &other ) override;
+    void aliasVector( Vector &other ) override;
+    void assemble() override;
 };
 
 

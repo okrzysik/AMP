@@ -71,9 +71,9 @@ public:
     AMP_MPI getComm() const override { return d_comm; }
 
     using Vector::cloneVector;
-    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
-    virtual void swapVectors( Vector &other ) override;
-    virtual void aliasVector( Vector &other ) override;
+    Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
+    void swapVectors( Vector &other ) override;
+    void aliasVector( Vector &other ) override;
 
     //! resize the ArrayVector and reset the internal data structures
     void resize( const std::vector<size_t> &localDims );
@@ -225,7 +225,7 @@ public:
     void assemble() override { AMP_ERROR( "Not implemented" ); }
 
     //! Get the type name
-    virtual std::string VectorDataName() const override { return "ArrayVector"; }
+    std::string VectorDataName() const override { return "ArrayVector"; }
 
 protected:
     /** \brief Return a pointer to a particular block of memory in the
@@ -248,12 +248,12 @@ protected:
         return d_array.data();
     }
 
-    virtual bool isTypeId( size_t hash, size_t ) const override
+    bool isTypeId( size_t hash, size_t ) const override
     {
         return hash == typeid( T ).hash_code();
     }
-    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
-    virtual void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
+    size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
+    void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 };
 
 } // namespace LinearAlgebra
