@@ -114,13 +114,13 @@ NativeEpetraVector::NativeEpetraVector( std::shared_ptr<VectorParameters> alias,
     d_buf_scope = buf;
 }
 
-inline NativeEpetraVector::~NativeEpetraVector() {}
+NativeEpetraVector::~NativeEpetraVector() {}
 
-inline Epetra_Vector &NativeEpetraVector::getEpetra_Vector() { return d_epetraVector; }
+Epetra_Vector &NativeEpetraVector::getEpetra_Vector() { return d_epetraVector; }
 
-inline const Epetra_Vector &NativeEpetraVector::getEpetra_Vector() const { return d_epetraVector; }
+const Epetra_Vector &NativeEpetraVector::getEpetra_Vector() const { return d_epetraVector; }
 
-inline AMP_MPI NativeEpetraVector::getComm() const {
+AMP_MPI NativeEpetraVector::getComm() const {
   
   return std::dynamic_pointer_cast<NativeEpetraVectorParameters>(d_Params)->getComm();
 }
