@@ -63,68 +63,68 @@ public:
 
 
     //! Overloaded functions
-    virtual std::string type() const override { return "Native Thyra Vector"; }
-    virtual std::string VectorDataName() const override { return "NativeThyraVector"; }
-    virtual Vector::shared_ptr getManagedVectorCopy( AMP_MPI comm ) override;
-    virtual Vector::shared_ptr getManagedVectorDuplicate( AMP_MPI comm ) override;
-    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
-    virtual void copy( const VectorOperations &vec ) override;
-    virtual void swapVectors( Vector &other ) override;
-    virtual void aliasVector( Vector & ) override;
-    virtual size_t numberOfDataBlocks() const override;
-    virtual size_t sizeOfDataBlock( size_t i ) const override;
-    virtual void setToScalar( double alpha ) override;
-    virtual void scale( double alpha, const VectorOperations &x ) override;
-    virtual void scale( double alpha ) override;
-    virtual void add( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void divide( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void reciprocal( const VectorOperations &x ) override;
-    virtual void linearSum( double alpha,
+    std::string type() const override { return "Native Thyra Vector"; }
+    std::string VectorDataName() const override { return "NativeThyraVector"; }
+    Vector::shared_ptr getManagedVectorCopy( AMP_MPI comm ) override;
+    Vector::shared_ptr getManagedVectorDuplicate( AMP_MPI comm ) override;
+    Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
+    void copy( const VectorOperations &vec ) override;
+    void swapVectors( Vector &other ) override;
+    void aliasVector( Vector & ) override;
+    size_t numberOfDataBlocks() const override;
+    size_t sizeOfDataBlock( size_t i ) const override;
+    void setToScalar( double alpha ) override;
+    void scale( double alpha, const VectorOperations &x ) override;
+    void scale( double alpha ) override;
+    void add( const VectorOperations &x, const VectorOperations &y ) override;
+    void subtract( const VectorOperations &x, const VectorOperations &y ) override;
+    void multiply( const VectorOperations &x, const VectorOperations &y ) override;
+    void divide( const VectorOperations &x, const VectorOperations &y ) override;
+    void reciprocal( const VectorOperations &x ) override;
+    void linearSum( double alpha,
                             const VectorOperations &x,
                             double beta,
                             const VectorOperations &y ) override;
-    virtual void
+    void
     axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void axpby( double alpha, double beta, const VectorOperations &x ) override;
-    virtual void abs( const VectorOperations &x ) override;
-    virtual double min( void ) const override;
-    virtual double max( void ) const override;
-    virtual void setRandomValues( void ) override;
-    virtual double L1Norm( void ) const override;
-    virtual double L2Norm( void ) const override;
-    virtual double maxNorm( void ) const override;
-    virtual double dot( const VectorOperations &x ) const override;
-    virtual void setValuesByLocalID( int, size_t *, const double * ) override;
-    virtual void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
-    virtual void addValuesByLocalID( int, size_t *, const double * ) override;
-    virtual void addLocalValuesByGlobalID( int, size_t *, const double * ) override;
-    virtual void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    virtual void getValuesByLocalID( int numVals, size_t *ndx, double *vals ) const override;
-    virtual void assemble() override;
-    virtual size_t getLocalSize() const override;
-    virtual size_t getGlobalSize() const override;
-    virtual void putRawData( const double * ) override;
-    virtual void copyOutRawData( double *out ) const override;
-    virtual uint64_t getDataID() const override
+    void axpby( double alpha, double beta, const VectorOperations &x ) override;
+    void abs( const VectorOperations &x ) override;
+    double min( void ) const override;
+    double max( void ) const override;
+    void setRandomValues( void ) override;
+    double L1Norm( void ) const override;
+    double L2Norm( void ) const override;
+    double maxNorm( void ) const override;
+    double dot( const VectorOperations &x ) const override;
+    void setValuesByLocalID( int, size_t *, const double * ) override;
+    void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
+    void addValuesByLocalID( int, size_t *, const double * ) override;
+    void addLocalValuesByGlobalID( int, size_t *, const double * ) override;
+    void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
+    void getValuesByLocalID( int numVals, size_t *ndx, double *vals ) const override;
+    void assemble() override;
+    size_t getLocalSize() const override;
+    size_t getGlobalSize() const override;
+    void putRawData( const double * ) override;
+    void copyOutRawData( double *out ) const override;
+    uint64_t getDataID() const override
     {
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
     }
-    virtual bool isTypeId( size_t hash, size_t ) const override
+    bool isTypeId( size_t hash, size_t ) const override
     {
         return hash == typeid( double ).hash_code();
     }
-    virtual void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
+    void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 
 
 protected:
     //! Empty constructor.
     NativeThyraVector();
 
-    virtual void *getRawDataBlockAsVoid( size_t i ) override;
-    virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
-    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
+    void *getRawDataBlockAsVoid( size_t i ) override;
+    const void *getRawDataBlockAsVoid( size_t i ) const override;
+    size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
 
 private:
     size_t d_local;
