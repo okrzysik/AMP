@@ -155,7 +155,7 @@ void NativeEpetraVector::swapVectors( Vector &other )
     getEpetra_Vector().ResetView( oth_pointer );
 }
 
-void NativeEpetraVector::aliasVector( Vector &other )
+void NativeEpetraVector::aliasVector( Vector & )
 {
   AMP_ERROR("NativeEpetraVector::aliasVector not implemented");
 }
