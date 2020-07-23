@@ -38,19 +38,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    std::shared_ptr<AMP::Operator::ElasticDamageThermalStrainModel> edtsModel;
-    // std::shared_ptr<AMP::IsotropicElasticModel> vmepModel;
-
-    std::shared_ptr<AMP::Database> matModelDatabase =
-        input_db->getDatabase( "MechanicsMaterialModel" );
-    elementPhysicsModel =
+    auto matModelDatabase = input_db->getDatabase( "MechanicsMaterialModel" );
+    auto elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( matModelDatabase );
-    edtsModel = std::dynamic_pointer_cast<AMP::Operator::ElasticDamageThermalStrainModel>(
+    auto edtsModel = std::dynamic_pointer_cast<AMP::Operator::ElasticDamageThermalStrainModel>(
         elementPhysicsModel );
     // vmepModel = std::dynamic_pointer_cast<AMP::IsotropicElasticModel>(elementPhysicsModel);
 

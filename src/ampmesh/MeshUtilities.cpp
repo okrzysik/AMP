@@ -179,7 +179,58 @@ std::vector<Point> sample( const MeshElement &elem, double dx )
 /********************************************************
  * Compute the volume overlap with a geometry            *
  ********************************************************/
-inline double cellVolume(
+inline double cellVolume2D(
+    const AMP::Geometry::Geometry &geom, double x0[2], double dx[2], bool in[4], double tol )
+{
+    bool all_inside  = in[0] && in[1] && in[2] && in[3];
+    bool all_outside = !in[0] && !in[1] && !in[2] && !in[3];
+    double vol       = dx[0] * dx[1];
+    if ( all_inside ) {
+        // The entire cell is inside
+        return vol;
+    } else if ( all_outside ) {
+        // The entire cell is outside
+        return 0;
+    } else if ( vol < 4 * tol ) {
+        // The error is less than the tolerance
+        int count = 0;
+        for ( int i = 0; i < 4; i++ ) {
+            if ( in[i] )
+                count++;
+        }
+        return count * vol / 4.0;
+    } else {
+        // Subdivide the cell to estimate the volume
+        bool in2[3][3];
+        in2[0][0] = in[0];
+        in2[2][0] = in[1];
+        in2[0][2] = in[2];
+        in2[2][2] = in[3];
+        for ( int i = 0; i < 3; i++ ) {
+            double x = x0[0] + 0.5 * i * dx[0];
+            for ( int j = 0; j < 3; j++ ) {
+                double y = x0[1] + 0.5 * j * dx[1];
+                if ( i % 2 == 0 && j % 2 == 0 )
+                    continue;
+                in2[i][j] = geom.inside( { x, y } );
+            }
+        }
+        // Subdivide the cell to recursively estimate the volume
+        double volume = 0;
+        double dx2[2] = { 0.5 * dx[0], 0.5 * dx[1] };
+        for ( int i = 0; i < 2; i++ ) {
+            double x = x0[0] + 0.5 * i * dx[0];
+            for ( int j = 0; j < 2; j++ ) {
+                double y     = x0[1] + 0.5 * j * dx[1];
+                double xy[2] = { x, y };
+                bool in3[8]  = { in2[i][j], in2[i + 1][j], in2[i][j + 1], in2[i + 1][j + 1] };
+                volume += cellVolume2D( geom, xy, dx2, in3, tol );
+            }
+        }
+        return volume;
+    }
+}
+inline double cellVolume3D(
     const AMP::Geometry::Geometry &geom, double x0[3], double dx[3], bool in[8], double tol )
 {
     bool all_inside  = in[0] && in[1] && in[2] && in[3] && in[4] && in[5] && in[6] && in[7];
@@ -236,7 +287,7 @@ inline double cellVolume(
                                     in2[i][j + 1][k],     in2[i + 1][j + 1][k],
                                     in2[i][j][k + 1],     in2[i + 1][j][k + 1],
                                     in2[i][j + 1][k + 1], in2[i + 1][j + 1][k + 1] };
-                    volume += cellVolume( geom, xyz, dx2, in3, tol );
+                    volume += cellVolume3D( geom, xyz, dx2, in3, tol );
                 }
             }
         }
@@ -247,7 +298,35 @@ Array<double> volumeOverlap( const AMP::Geometry::Geometry &geom, const std::vec
 {
     AMP_ASSERT( N.size() == geom.getDim() );
     Array<double> volume;
-    if ( geom.getDim() == 3 ) {
+    if ( geom.getDim() == 2 ) {
+        // Get the bounding box
+        auto [lb, ub] = geom.box();
+        double dx[2]  = { ( ub[0] - lb[0] ) / N[0], ( ub[1] - lb[1] ) / N[1] };
+        // Get the volume for each cell
+        volume.resize( N[0], N[1] );
+        volume.fill( 0 );
+        Array<bool> inside( N[0] + 1, N[1] + 1 );
+        inside.fill( false );
+        for ( int j = 0; j <= N[1]; j++ ) {
+            double y = lb[1] + j * dx[1];
+            for ( int i = 0; i <= N[0]; i++ ) {
+                double x       = lb[0] + i * dx[0];
+                inside( i, j ) = geom.inside( { x, y } );
+            }
+        }
+        double tol = 0.01 * dx[0] * dx[1];
+        for ( int j = 0; j < N[1]; j++ ) {
+            double y = lb[1] + j * dx[1];
+            for ( int i = 0; i < N[0]; i++ ) {
+                double x     = lb[0] + i * dx[0];
+                double xy[2] = { x, y };
+                bool in[4]   = {
+                    inside( i, j ), inside( i + 1, j ), inside( i, j + 1 ), inside( i + 1, j + 1 )
+                };
+                volume( i, j ) = cellVolume2D( geom, xy, dx, in, tol );
+            }
+        }
+    } else if ( geom.getDim() == 3 ) {
         // Get the bounding box
         auto [lb, ub] = geom.box();
         double dx[3]  = { ( ub[0] - lb[0] ) / N[0],
@@ -280,7 +359,7 @@ Array<double> volumeOverlap( const AMP::Geometry::Geometry &geom, const std::vec
                                    inside( i, j + 1, k ),     inside( i + 1, j + 1, k ),
                                    inside( i, j, k + 1 ),     inside( i + 1, j, k + 1 ),
                                    inside( i, j + 1, k + 1 ), inside( i + 1, j + 1, k + 1 ) };
-                    volume( i, j, k ) = cellVolume( geom, xyz, dx, in, tol );
+                    volume( i, j, k ) = cellVolume3D( geom, xyz, dx, in, tol );
                 }
             }
         }

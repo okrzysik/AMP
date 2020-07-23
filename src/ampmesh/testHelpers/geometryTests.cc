@@ -148,7 +148,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         // Test mesh utilities volume overlap
         auto multigeom = dynamic_cast<const MultiGeometry *>( &geom );
         if ( ndim == static_cast<int>( geom.getGeomType() ) && multigeom == nullptr ) {
-            auto tmp      = AMP::Mesh::volumeOverlap( geom, { 35, 35, 35 } );
+            auto tmp      = AMP::Mesh::volumeOverlap( geom, std::vector<int>( ndim, 35 ) );
             double vol2   = tmp.sum();
             bool passVol2 = fabs( vol2 - volume ) < 0.01 * volume;
             pass          = pass && passVol2;

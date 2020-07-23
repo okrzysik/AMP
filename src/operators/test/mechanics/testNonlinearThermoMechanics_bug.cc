@@ -42,18 +42,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //--------------------------------------------------
     //   Create the Mesh.
     //--------------------------------------------------
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db   = input_db->getDatabase( "Mesh" );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear mechanics
     AMP_INSIST( input_db->keyExists( "testNonlinearMechanicsOperator" ), "key missing!" );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
-    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsOperator =
+    auto nonlinearMechanicsOperator =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "testNonlinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
@@ -64,16 +63,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
-    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator =
-        std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
+    auto nonlinearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a column operator object for nonlinear thermomechanics
     std::shared_ptr<AMP::Operator::OperatorParameters> params;
-    std::shared_ptr<AMP::Operator::ColumnOperator> nonlinearThermoMechanicsOperator(
-        new AMP::Operator::ColumnOperator( params ) );
+    auto nonlinearThermoMechanicsOperator =
+        std::make_shared<AMP::Operator::ColumnOperator>( params );
     nonlinearThermoMechanicsOperator->append( nonlinearMechanicsOperator );
     nonlinearThermoMechanicsOperator->append( nonlinearThermalOperator );
 
@@ -82,30 +80,24 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     int DOFsPerNode     = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+    auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     int displacementDOFsPerNode = 3;
-    AMP::Discretization::DOFManager::shared_ptr displDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter,
-                                                       AMP::Mesh::GeomType::Vertex,
-                                                       nodalGhostWidth,
-                                                       displacementDOFsPerNode,
-                                                       split );
+    auto displDofMap            = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, displacementDOFsPerNode, split );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the input multi-variable
-    std::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsVolumeOperator =
+    auto mechanicsVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsOperator->getVolumeOperator() );
-    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator =
+    auto thermalVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearThermalOperator->getVolumeOperator() );
 
     // initialize the input multi-variable
-    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputMultiVariable =
-        std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
-            mechanicsVolumeOperator->getInputVariable() );
+    auto inputMultiVariable = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
+        mechanicsVolumeOperator->getInputVariable() );
     std::vector<AMP::LinearAlgebra::Variable::shared_ptr> inputVariables;
     std::vector<AMP::Discretization::DOFManager::shared_ptr> inputDOFs;
     for ( size_t i = 0; i < inputMultiVariable->numVariables(); i++ ) {
@@ -127,14 +119,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // initialize the output variable
-    AMP::LinearAlgebra::Variable::shared_ptr outputVariable =
-        nonlinearThermoMechanicsOperator->getOutputVariable();
+    auto outputVariable = nonlinearThermoMechanicsOperator->getOutputVariable();
 
     // create solution, rhs, and residual vectors
-    std::shared_ptr<AMP::LinearAlgebra::Vector> solVec =
+    auto solVec =
         AMP::LinearAlgebra::MultiVector::create( inputMultiVariable, meshAdapter->getComm() );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> resVec =
-        AMP::LinearAlgebra::MultiVector::create( outputVariable, meshAdapter->getComm() );
+    auto resVec = AMP::LinearAlgebra::MultiVector::create( outputVariable, meshAdapter->getComm() );
     for ( size_t i = 0; i < inputVariables.size(); i++ ) {
         if ( inputVariables[i].get() != nullptr ) {
             std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( solVec )->addVector(
@@ -158,11 +148,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //  (thermalVolumeOperator->getInputVariable())->getVariable(AMP::Operator::Diffusion::TEMPERATURE)
     //  );
     //  placeholder line till diffusion is converted:
-    AMP::LinearAlgebra::Variable::shared_ptr temperatureVariable =
-        std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
-            thermalVolumeOperator->getInputVariable() )
-            ->getVariable( AMP::Operator::Diffusion::TEMPERATURE );
-    AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec =
+    auto temperatureVariable = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
+                                   thermalVolumeOperator->getInputVariable() )
+                                   ->getVariable( AMP::Operator::Diffusion::TEMPERATURE );
+    auto referenceTemperatureVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, temperatureVariable );
     referenceTemperatureVec->setToScalar( 300.0 );
     mechanicsVolumeOperator->setReferenceTemperature( referenceTemperatureVec );

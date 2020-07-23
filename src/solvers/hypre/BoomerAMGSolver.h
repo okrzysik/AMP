@@ -4,11 +4,14 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 
+DISABLE_WARNINGS
 extern "C" {
 #include "HYPRE.h"
 #include "HYPRE_IJ_mv.h"
 #include "HYPRE_parcsr_ls.h"
 }
+ENABLE_WARNINGS
+
 
 namespace AMP {
 namespace Solver {
@@ -131,47 +134,47 @@ private:
 
     HYPRE_Solver d_solver; //! pointer to HYPRE BoomerAMG solver
 
-    bool d_bComputeResidual     = false; //! whether to compute the residual  before and after solve
-    
-    int d_num_functions         = 1;
-    int d_min_iterations        = 0;
-    int d_max_coarse_size       = 800;
-    int d_min_coarse_size       = 100;
-    int d_max_levels            = 10;
-    int d_coarsen_type          = 10;
-    int d_measure_type          = 0;
-    int d_agg_num_levels        = 0;
-    int d_num_paths             = 1;
-    int d_cgc_iterations        = 1;
-    int d_nodal                 = 0;
-    int d_nodal_diag            = 0;
-    int d_interp_type           = 6;
-    int d_P_max_elements        = 4;
-    int d_separate_weights      = 0;
-    int d_agg_interp_type       = 4;
-    int d_agg_P_max_elements    = 0;
-    int d_agg_P12_max_elements  = 0;
-    int d_number_samples        = 0;
-    int d_cycle_type            = 1;
-    int d_additive_level        = -1;
-    int d_mult_additive_level   = -1;
-    int d_simple_level          = -1;
-    int d_add_P_max_elmts       = 0;
-    int d_number_sweeps         = 1;
-    int d_relax_type            = 13;
-    int d_relax_order           = 0;
-    int d_chebyshev_order       = 2;
-    int d_smooth_type           = 6;
-    int d_smooth_number_levels  = 0;
-    int d_smooth_number_sweeps  = 1;
-    int d_schwarz_variant       = 0;
-    int d_schwarz_overlap       = 1;
-    int d_schwarz_domain_type   = 2;
-    int d_schwarz_nonsymmetric  = 0;
-    int d_logging               = 0;
-    int d_debug_flag            = 0;
-    int d_rap2                  = 0;
-    int d_keep_transpose        = 1;
+    bool d_bComputeResidual = false; //! whether to compute the residual  before and after solve
+
+    int d_num_functions        = 1;
+    int d_min_iterations       = 0;
+    int d_max_coarse_size      = 800;
+    int d_min_coarse_size      = 100;
+    int d_max_levels           = 10;
+    int d_coarsen_type         = 10;
+    int d_measure_type         = 0;
+    int d_agg_num_levels       = 0;
+    int d_num_paths            = 1;
+    int d_cgc_iterations       = 1;
+    int d_nodal                = 0;
+    int d_nodal_diag           = 0;
+    int d_interp_type          = 6;
+    int d_P_max_elements       = 4;
+    int d_separate_weights     = 0;
+    int d_agg_interp_type      = 4;
+    int d_agg_P_max_elements   = 0;
+    int d_agg_P12_max_elements = 0;
+    int d_number_samples       = 0;
+    int d_cycle_type           = 1;
+    int d_additive_level       = -1;
+    int d_mult_additive_level  = -1;
+    int d_simple_level         = -1;
+    int d_add_P_max_elmts      = 0;
+    int d_number_sweeps        = 1;
+    int d_relax_type           = 13;
+    int d_relax_order          = 0;
+    int d_chebyshev_order      = 2;
+    int d_smooth_type          = 6;
+    int d_smooth_number_levels = 0;
+    int d_smooth_number_sweeps = 1;
+    int d_schwarz_variant      = 0;
+    int d_schwarz_overlap      = 1;
+    int d_schwarz_domain_type  = 2;
+    int d_schwarz_nonsymmetric = 0;
+    int d_logging              = 0;
+    int d_debug_flag           = 0;
+    int d_rap2                 = 0;
+    int d_keep_transpose       = 1;
 
     double d_strong_threshold      = 0.25;
     double d_max_row_sum           = 0.9;

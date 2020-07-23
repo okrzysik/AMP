@@ -25,45 +25,38 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db    = input_db->getDatabase( "Mesh" );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     AMP_INSIST( input_db->keyExists( "testNonlinearMechanicsOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> testNonlinOperator =
+    auto testNonlinOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "testNonlinearMechanicsOperator", input_db ) );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
-        testNonlinOperator->getMaterialModel();
+    auto elementPhysicsModel = testNonlinOperator->getMaterialModel();
 
     AMP_INSIST( input_db->keyExists( "testLinearMechanicsOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> testLinOperator =
-        std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "testLinearMechanicsOperator", input_db, elementPhysicsModel ) );
+    auto testLinOperator = std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "testLinearMechanicsOperator", input_db, elementPhysicsModel ) );
 
     ut->passes( exeName + " : create" );
 
-    AMP::Discretization::DOFManager::shared_ptr dofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto dofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
-    AMP::LinearAlgebra::Variable::shared_ptr var = testNonlinOperator->getOutputVariable();
-
-    AMP::LinearAlgebra::Vector::shared_ptr solVec =
-        AMP::LinearAlgebra::createVector( dofMap, var, true );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
+    auto var    = testNonlinOperator->getOutputVariable();
+    auto solVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
+    auto rhsVec = solVec->cloneVector();
+    auto resVec = solVec->cloneVector();
 
     for ( int j = 0; j < 3; j++ ) {
         solVec->setRandomValues();
@@ -75,8 +68,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     ut->passes( exeName + " : apply" );
 
-    std::shared_ptr<AMP::Operator::OperatorParameters> resetParams =
-        testNonlinOperator->getParameters( "Jacobian", solVec );
+    auto resetParams = testNonlinOperator->getParameters( "Jacobian", solVec );
 
     ut->passes( exeName + " : getJac" );
 

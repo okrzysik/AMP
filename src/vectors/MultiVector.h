@@ -33,7 +33,7 @@ public:
     /** \brief Return one past the last vector in the MultiVector
      * \return One past the last vector
      */
-    inline auto endVector() { return d_vVectors.begin(); }
+    inline auto endVector() { return d_vVectors.end(); }
 
     /** \brief Determine if a Vector is a constituent
      * \param[in]  p  The vector to look for
