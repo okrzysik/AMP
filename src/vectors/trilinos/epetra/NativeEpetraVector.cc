@@ -1,4 +1,5 @@
 #include "AMP/vectors/trilinos/epetra/NativeEpetraVector.h"
+#include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorDataCPU.h"
 #include "AMP/utils/Utilities.h"
 
@@ -44,7 +45,6 @@ NativeEpetraVectorParameters::NativeEpetraVectorParameters( size_t local_size,
 {
     d_comm.sumScan( &local_size, &d_end, 1 );
     d_begin = d_end - local_size;
-  
 }
 NativeEpetraVectorParameters::NativeEpetraVectorParameters( size_t local_size,
                                                             size_t global_size,
@@ -112,6 +112,14 @@ NativeEpetraVector::NativeEpetraVector( std::shared_ptr<VectorParameters> alias,
 {
     d_Params    = alias;
     d_buf_scope = buf;
+    CommunicationListParameters::shared_ptr params( new CommunicationListParameters() );
+    params->d_comm      = getComm();
+    auto local_size = std::dynamic_pointer_cast<NativeEpetraVectorParameters>( alias )->getLocalSize();
+    params->d_localsize = local_size;
+    setCommunicationList( std::make_shared<CommunicationList>( params ) );
+    d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>( local_size,
+                                                                      getComm() );
+  
 }
 
 NativeEpetraVector::~NativeEpetraVector() {}
