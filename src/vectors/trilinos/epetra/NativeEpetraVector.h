@@ -128,7 +128,7 @@ public: // Functions derived from Vector
     void aliasVector( Vector &other ) override;
     /** \brief  Return the communicator this Vector spans
      */
-    AMP_MPI getComm() const;
+    AMP_MPI getComm() const override;
     void assemble() override;
 };
 
