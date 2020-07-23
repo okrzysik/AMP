@@ -77,32 +77,31 @@ public:
 
     /** \brief Destructor
      */
-    virtual ~EpetraVectorEngine();
+    virtual ~EpetraVectorEngine() {}
 
     /** \brief  Get the raw Epetra_Vector
      * \return  The Epetra_Vector currently used by this engine
      */
-    Epetra_Vector &getEpetra_Vector();
+    inline Epetra_Vector &getEpetra_Vector() { return d_epetraVector; }
 
     /** \brief  Get the raw Epetra_Vector
      * \return  The Epetra_Vector currently used by this engine
      */
-    const Epetra_Vector &getEpetra_Vector() const;
+    inline const Epetra_Vector &getEpetra_Vector() const { return d_epetraVector; }
 
 
 public: // Functions derived from VectorEngine
-    AMP_MPI getComm() const override;
-    std::shared_ptr<VectorEngine>
-    cloneEngine( std::shared_ptr<VectorData> p ) const override;
+    std::shared_ptr<VectorEngine> cloneEngine( std::shared_ptr<VectorData> p ) const override;
     void swapEngines( std::shared_ptr<VectorEngine> ) override;
-    std::shared_ptr<VectorData> getNewBuffer() override;
+
+public: // Functions derived from VectorData
+    using VectorData::getComm;
+    AMP_MPI getComm() const { return d_Params->getComm(); }
 };
 
 
 } // namespace LinearAlgebra
 } // namespace AMP
 
-
-#include "EpetraVectorEngine.inline.h"
 
 #endif

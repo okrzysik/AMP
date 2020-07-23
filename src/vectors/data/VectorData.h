@@ -286,6 +286,10 @@ public: // Advanced functions
      */
     virtual void swapData( VectorData &rhs ) = 0;
 
+    /** \brief Clone the data
+     */
+    virtual std::shared_ptr<VectorData> cloneData() const;
+
 
 public:
     /** \brief Write owned data to an std::ostream
@@ -344,6 +348,9 @@ public: // Virtual functions dealing with the update status
      * the BROADCAST should be used.
      */
     virtual void makeConsistent( ScatterType t );
+
+    //! Get the communicator
+    virtual AMP_MPI getComm() const;
 
 
 public: // Non-virtual functions
@@ -424,6 +431,7 @@ public: // Non-virtual functions
      * \see makeConsistent
      */
     void copyGhostValues( const VectorData &rhs );
+
 
 public:
     /** \brief Notify listeners that data has changed in this vector.

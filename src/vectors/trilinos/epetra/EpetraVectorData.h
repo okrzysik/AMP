@@ -49,6 +49,7 @@ public: // Virtual functions
         return hash == typeid( double ).hash_code();
     }
     void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
+    std::shared_ptr<VectorData> cloneData() const override;
 
 
 protected:

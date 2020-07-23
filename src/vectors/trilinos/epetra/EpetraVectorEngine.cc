@@ -109,13 +109,6 @@ EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<VectorEngineParameters> 
 }
 
 
-std::shared_ptr<VectorData> EpetraVectorEngine::getNewBuffer()
-{
-    auto buffer = std::make_shared<VectorDataCPU<double>>(
-        getLocalStartID(), getLocalSize(), getGlobalSize() );
-    return buffer;
-}
-
 void EpetraVectorEngine::swapEngines( std::shared_ptr<VectorEngine> x )
 {
     double *my_pointer;

@@ -176,7 +176,6 @@ public:
     void assemble() override;
 
     // Vector engine functions
-    std::shared_ptr<VectorData> getNewBuffer() override;
     std::shared_ptr<VectorEngine> cloneEngine( std::shared_ptr<VectorData> ) const override;
     void swapEngines( std::shared_ptr<VectorEngine> p ) override;
 

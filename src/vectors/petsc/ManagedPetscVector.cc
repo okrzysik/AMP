@@ -11,7 +11,6 @@
 
 #include "petsc/private/vecimpl.h"
 #include "petscsys.h"
-#include "petsc/private/vecimpl.h"
 
 
 // Overridden Petsc functions!
@@ -696,8 +695,8 @@ namespace LinearAlgebra {
 
 void ManagedPetscVector::initPetsc()
 {
-    AMP_MPI comm =
-        std::dynamic_pointer_cast<ManagedVectorParameters>( getParameters() )->d_Engine->getComm();
+    auto params  = std::dynamic_pointer_cast<ManagedVectorParameters>( getParameters() );
+    AMP_MPI comm = std::dynamic_pointer_cast<VectorData>( params->d_Engine )->getComm();
     VecCreate( comm.getCommunicator(), &d_petscVec );
 
     d_petscVec->data        = this;
@@ -798,9 +797,9 @@ void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
                     "we are trying to use a vector with more "
                     "than 2^31 elements" );
 
-    auto ids                              = new PetscInt[dest.getLocalSize()];
-    auto begin                            = (PetscInt) dest.getLocalStartID();
-    auto end                              = (PetscInt) begin+dest.getLocalSize()-1;    
+    auto ids       = new PetscInt[dest.getLocalSize()];
+    PetscInt begin = dest.getLocalStartID();
+    PetscInt end   = begin + dest.getLocalSize() - 1;
 
     for ( PetscInt i = begin; i < end; i++ )
         ids[i - begin] = i;

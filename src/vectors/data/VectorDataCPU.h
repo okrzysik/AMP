@@ -170,6 +170,13 @@ public: // Advanced virtual functions
      */
     void swapData( VectorData &rhs ) override;
 
+    /** \brief Clone the data
+     */
+    std::shared_ptr<VectorData> cloneData() const override
+    {
+        return std::make_shared<VectorDataCPU<TYPE>>( *this );
+    }
+
 
 public: // Non-virtual functions
     /** \brief Access the raw element

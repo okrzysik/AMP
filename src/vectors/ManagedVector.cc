@@ -1,6 +1,6 @@
 #include "AMP/vectors/ManagedVector.h"
-#include "AMP/vectors/MultiVector.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/vectors/MultiVector.h"
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -35,7 +35,7 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     if ( d_pParameters->d_Buffer.get() != nullptr )
         d_vBuffer = d_pParameters->d_Buffer;
     else
-      d_vBuffer = d_pParameters->d_Engine->getNewBuffer();
+        d_vBuffer = d_pParameters->d_Engine->cloneData();
     if ( d_pParameters->d_CloneEngine )
         d_Engine = d_pParameters->d_Engine->cloneEngine( d_vBuffer );
     else

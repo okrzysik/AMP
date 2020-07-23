@@ -76,11 +76,6 @@ public:
      */
     virtual ~VectorEngine();
 
-    /** \brief Allocate a new buffer
-     * \return A shared pointer to a new buffer
-     */
-    virtual std::shared_ptr<VectorData> getNewBuffer() = 0;
-
     /** \brief  Return a copy of this engine
      * \param[in]  p  The buffer to use for the copy.
      * \return  The new engine
@@ -91,11 +86,6 @@ public:
      * \param[in,out] p  The engine to exchange with
      */
     virtual void swapEngines( std::shared_ptr<VectorEngine> p ) = 0;
-
-    /** \brief  Return the communicator associated with this engine
-     * \return  The communicator associated with this engine
-     */
-    virtual AMP_MPI getComm() const = 0;
 };
 
 

@@ -17,9 +17,8 @@ namespace LinearAlgebra {
 
 
 // Check if the vector engine is a multi-vector (I don't think this case exists)
-[[deprecated("We are removing VectorEngine from MultiVector (remove when complete)")]]    
-void checkEngine( Vector::const_shared_ptr vec )
-{
+[[deprecated( "We are removing VectorEngine from MultiVector (remove when complete)" )]] void
+checkEngine( Vector::const_shared_ptr vec ) {
     auto managed = std::dynamic_pointer_cast<const ManagedVector>( vec );
     if ( managed ) {
         auto multivec = std::dynamic_pointer_cast<const MultiVector>( managed->getVectorEngine() );
@@ -448,7 +447,6 @@ void MultiVector::aliasVector( Vector &other )
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         d_vVectors[i]->aliasVector( getVector( other, i ) );
 }
-std::shared_ptr<VectorData> MultiVector::getNewBuffer() { return std::shared_ptr<VectorData>(); }
 void MultiVector::swapEngines( std::shared_ptr<VectorEngine> p )
 {
     auto vec = std::dynamic_pointer_cast<MultiVector>( p );

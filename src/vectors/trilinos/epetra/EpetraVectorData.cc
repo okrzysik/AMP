@@ -1,4 +1,5 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
+#include "AMP/vectors/data/VectorDataCPU.h"
 
 
 namespace AMP {
@@ -92,6 +93,13 @@ void EpetraVectorData::putRawData( const double *in )
 }
 
 void EpetraVectorData::copyOutRawData( double *out ) const { d_epetraVector.ExtractCopy( out ); }
+
+std::shared_ptr<VectorData> EpetraVectorData::cloneData() const
+{
+    auto buffer = std::make_shared<VectorDataCPU<double>>(
+        getLocalStartID(), getLocalSize(), getGlobalSize() );
+    return buffer;
+}
 
 
 } // namespace LinearAlgebra

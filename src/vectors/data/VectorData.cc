@@ -1,5 +1,4 @@
 #include "AMP/vectors/data/VectorData.h"
-#include "AMP/vectors/data/VectorDataCPU.hpp"
 
 
 namespace AMP {
@@ -123,6 +122,17 @@ void VectorData::makeConsistent( ScatterType t )
     d_CommList->unpackReceiveBufferSet( recv_vec, *this );
     *d_UpdateState = UpdateState::UNCHANGED;
     this->setUpdateStatus( UpdateState::UNCHANGED );
+}
+
+
+/****************************************************************
+ * Default clone                                                 *
+ ****************************************************************/
+std::shared_ptr<VectorData> VectorData::cloneData() const { return std::shared_ptr<VectorData>(); }
+AMP_MPI VectorData::getComm() const
+{
+    AMP_ASSERT( d_CommList );
+    return d_CommList->getComm();
 }
 
 
