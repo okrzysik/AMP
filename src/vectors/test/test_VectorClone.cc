@@ -11,7 +11,14 @@ int test_VectorClone( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+    
+#if defined( USE_EXT_TRILINOS )
+
+    AMP::pout << "Testing NativeEpetraVector" << std::endl;
+    testManagedVector( ut, CloneNEVFactory );
+    AMP::pout << std::endl;
+    
+#if defined( USE_EXT_PETSC )
     AMP::pout << "Testing Iterator" << std::endl;
     VectorIteratorTests( ut, CloneMVFactory1 );
     AMP::pout << std::endl;
@@ -31,13 +38,8 @@ int test_VectorClone( int argc, char **argv )
     AMP::pout << "Testing multivector of multivector" << std::endl;
     testManagedVector( ut, CloneMVFactory3 );
     AMP::pout << std::endl;
+#endif
 
-#elif defined( USE_EXT_TRILINOS ) 
-
-    AMP::pout << "Testing NativeEpetraVector" << std::endl;
-    testManagedVector( ut, CloneNEVFactory );
-    AMP::pout << std::endl;
-    
 #else
     ut.expected_failure( "Compiled without petsc or trilinos" );
 #endif
