@@ -108,9 +108,9 @@ NativeEpetraVector::NativeEpetraVector( std::shared_ptr<VectorParameters> alias,
           getBufferPtr( buf ),
           std::dynamic_pointer_cast<NativeEpetraVectorParameters>( alias )->beginDOF(),
           std::dynamic_pointer_cast<NativeEpetraVectorParameters>( alias )->getLocalSize(),
-          std::dynamic_pointer_cast<NativeEpetraVectorParameters>( alias )->getGlobalSize() )
+          std::dynamic_pointer_cast<NativeEpetraVectorParameters>( alias )->getGlobalSize() ),
+      d_Params{ alias}
 {
-    d_Params    = alias;
     d_buf_scope = buf;
     CommunicationListParameters::shared_ptr params( new CommunicationListParameters() );
     params->d_comm      = getComm();
