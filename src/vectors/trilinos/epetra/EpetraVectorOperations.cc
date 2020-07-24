@@ -154,38 +154,5 @@ double EpetraVectorOperations::dot( const VectorOperations &x ) const
     return retVal;
 }
 
-double EpetraVectorOperations::localDot( const VectorOperations & ) const
-{
-    AMP_ERROR( "Not implemented" );
-    return 0;
-}
-
-double EpetraVectorOperations::localMin() const
-{
-    AMP_ERROR( "Not implemented" );
-    return 0;
-}
-double EpetraVectorOperations::localMax() const
-{
-    AMP_ERROR( "Not implemented" );
-    return 0;
-}
-double EpetraVectorOperations::localL1Norm() const
-{
-    AMP_ERROR( "Not implemented" );
-    return 0;
-}
-double EpetraVectorOperations::localL2Norm() const
-{
-    AMP_ERROR( "Not implemented" );
-    return 0;
-}
-double EpetraVectorOperations::localMaxNorm() const
-{
-    AMP_ERROR( "Not implemented" );
-    return 0;
-}
-
-
 } // namespace LinearAlgebra
 } // namespace AMP

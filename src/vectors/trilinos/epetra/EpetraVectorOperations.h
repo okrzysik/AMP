@@ -47,13 +47,6 @@ public:
     double L2Norm( void ) const override;
     double maxNorm( void ) const override;
     double dot( const VectorOperations &x ) const override;
-    double localMin( void ) const override;
-    double localMax( void ) const override;
-    double localL1Norm( void ) const override;
-    double localL2Norm( void ) const override;
-    double localMaxNorm() const override;
-    double localDot( const VectorOperations &x ) const override;
-
 
 public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::abs;
@@ -72,6 +65,12 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::wrmsNorm;
     using VectorOperationsDefault::wrmsNormMask;
 
+    using VectorOperationsDefault::localMin;
+    using VectorOperationsDefault::localMax;
+    using VectorOperationsDefault::localL1Norm;
+    using VectorOperationsDefault::localL2Norm;
+    using VectorOperationsDefault::localMaxNorm;
+    using VectorOperationsDefault::localDot;
 protected:
     Epetra_Vector &getEpetra_Vector();
     const Epetra_Vector &getEpetra_Vector() const;
