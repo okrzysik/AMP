@@ -119,7 +119,5 @@ public:
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "SundialsVector.inline.h"
-
 
 #endif

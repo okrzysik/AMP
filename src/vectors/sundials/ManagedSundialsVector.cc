@@ -356,5 +356,21 @@ realtype ManagedSundialsVector::minquotient_AMP( N_Vector x, N_Vector w )
     // is this OK?
     return ( px->minQuotient( *px, *pw ) );
 }
+
+ManagedVector *ManagedSundialsVector::getNewRawPtr() const
+{
+    return new ManagedSundialsVector(
+        std::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
+}
+
+std::string ManagedSundialsVector::type() const
+{
+    std::string retVal = "Managed SUNDIALS Vector";
+    retVal += ManagedVector::type();
+    return retVal;
+}
+
+void ManagedSundialsVector::assemble() {}
+
 } // namespace LinearAlgebra
 } // namespace AMP

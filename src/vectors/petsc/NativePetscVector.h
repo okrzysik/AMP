@@ -6,7 +6,6 @@
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "AMP/vectors/petsc/PetscVector.h"
 
-
 namespace AMP {
 namespace LinearAlgebra {
 
@@ -201,7 +200,5 @@ public: // Pull VectorOperations into the current scope
 
 } // namespace LinearAlgebra
 } // namespace AMP
-
-#include "NativePetscVector.inline.h"
 
 #endif

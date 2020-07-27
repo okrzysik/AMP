@@ -86,6 +86,4 @@ private:
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "ManagedSundialsVector.inline.h"
-
 #endif

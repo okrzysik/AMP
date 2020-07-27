@@ -167,6 +167,4 @@ public:
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "PetscVector.inline.h"
-
 #endif
