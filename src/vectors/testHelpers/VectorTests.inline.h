@@ -3,6 +3,7 @@
 
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
+#include "AMP/vectors/data/VectorDataIterator.h"
 
 
 namespace AMP {

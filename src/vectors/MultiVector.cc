@@ -457,6 +457,37 @@ Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) c
     return retVec;
 }
 
+Vector::shared_ptr MultiVector::getVector( size_t i ) { return d_vVectors[i]; }
+
+Vector::const_shared_ptr MultiVector::getVector( size_t i ) const { return d_vVectors[i]; }
+
+size_t MultiVector::getNumberOfSubvectors() const { return d_vVectors.size(); }
+
+std::string MultiVector::type() const { return "MultiVector"; }
+
+MultiVector::~MultiVector() {}
+
+AMP_MPI MultiVector::getComm() const { return d_Comm; }
+
+void MultiVector::dataChanged() { fireDataChange(); }
+
+const Vector::shared_ptr &MultiVector::getVector( const VectorOperations &rhs,
+                                                         size_t which ) const
+{
+    auto x = dynamic_cast<const MultiVector *>( &rhs );
+    AMP_ASSERT( x != nullptr );
+    AMP_ASSERT( which < x->d_vVectors.size() );
+    return x->d_vVectors[which];
+}
+
+Vector::shared_ptr &MultiVector::getVector( VectorOperations &rhs, size_t which ) const
+{
+    auto x = dynamic_cast<MultiVector *>( &rhs );
+    AMP_ASSERT( x != nullptr );
+    AMP_ASSERT( which < x->d_vVectors.size() );
+    return x->d_vVectors[which];
+}
+
 
 } // namespace LinearAlgebra
 } // namespace AMP

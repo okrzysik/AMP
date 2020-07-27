@@ -261,6 +261,4 @@ private:
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "CommunicationList.inline.h"
-
 #endif

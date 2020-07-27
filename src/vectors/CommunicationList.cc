@@ -303,5 +303,40 @@ void CommunicationList::scatter_add( std::vector<double> &in, std::vector<double
 
     d_comm.allToAll( send_buf, send_sizes, send_disps, recv_buf, recv_sizes, recv_disps, true );
 }
+
+size_t CommunicationList::numLocalRows() const { return d_iNumRows; }
+
+void CommunicationList::finalize()
+{
+    if ( !d_bFinalized ) {
+        d_bFinalized = true;
+    }
+}
+
+size_t CommunicationList::getTotalSize() const { return d_iTotalRows; }
+
+
+CommunicationList::~CommunicationList() {}
+
+const std::vector<size_t> &CommunicationList::getGhostIDList() const
+{
+    return d_ReceiveDOFList;
+}
+
+const std::vector<size_t> &CommunicationList::getReplicatedIDList() const
+{
+    return d_SendDOFList;
+}
+
+size_t CommunicationList::getVectorReceiveBufferSize() const
+{
+    return d_ReceiveDOFList.size();
+}
+
+size_t CommunicationList::getVectorSendBufferSize() const { return d_SendDOFList.size(); }
+
+size_t CommunicationList::getStartGID() const { return d_iBegin; }
+
+const AMP_MPI &CommunicationList::getComm() const { return d_comm; }
 } // namespace LinearAlgebra
 } // namespace AMP

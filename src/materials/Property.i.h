@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <sstream>
 
+#include "AMP/vectors/data/VectorDataIterator.h"
+
 namespace AMP {
 namespace Materials {
 

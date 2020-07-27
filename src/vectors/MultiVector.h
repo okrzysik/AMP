@@ -249,7 +249,5 @@ public: // Pull VectorOperations into the current scope
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "MultiVector.inline.h"
-
 
 #endif

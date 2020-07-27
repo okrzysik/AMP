@@ -1,5 +1,6 @@
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "AMP/vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/data/VectorDataIterator.h"
 
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorEngine.h"

@@ -6,6 +6,7 @@
 #include "AMP/vectors/SubsetVariable.h"
 #include "AMP/vectors/SubsetVector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/data/VectorDataIterator.h"
 
 #include "ProfilerApp.h"
 
