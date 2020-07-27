@@ -157,7 +157,4 @@ public: // Pull VectorOperations into the current scope
 } // namespace LinearAlgebra
 } // namespace AMP
 
-
-#include "NativeThyraVector.inline.h"
-
 #endif
