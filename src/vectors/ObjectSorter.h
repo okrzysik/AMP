@@ -19,7 +19,7 @@ public:
 
     /** Constructor
      */
-    ObjectSorterParameters();
+    inline ObjectSorterParameters() : d_FirstObject( 0 ){};
 
     /** The id of the first object on a core
      */
@@ -32,12 +32,12 @@ public:
 class ObjectSorter
 {
 private:
-    ObjectSorter( const ObjectSorter &rhs );
+    ObjectSorter( const ObjectSorter &rhs ) {}
 
 protected:
     /** Default constructor
      */
-    ObjectSorter();
+    inline ObjectSorter() {}
 
     /** The id of the first object on a core
      */
@@ -58,16 +58,16 @@ public:
 
     /** Create an ObjectSorter from a set of parameters
      */
-    ObjectSorter( Parameters::shared_ptr params );
+    inline ObjectSorter( Parameters::shared_ptr params ) { d_FirstObject = params->d_FirstObject; }
 
     /** Destructor
      */
-    virtual ~ObjectSorter();
+    virtual ~ObjectSorter() {}
 
     /** \brief Return the first object on this core.
       \return The id of the first object on this core.
       */
-    size_t getFirstObject();
+    inline size_t getFirstObject() { return d_FirstObject; }
 
     /** \brief Map operation
      * \param[in] id The id in the preimage of the map
@@ -80,9 +80,10 @@ public:
      */
     virtual size_t size() const = 0;
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "ObjectSorter.inline.h"
 
 #endif

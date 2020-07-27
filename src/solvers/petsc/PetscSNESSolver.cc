@@ -3,7 +3,6 @@
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/ExternalVectorDeleter.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
 
@@ -12,7 +11,6 @@
 #include "petsc/private/vecimpl.h"
 #include "petscmat.h"
 #include "petscsnes.h"
-#include "petsc/private/vecimpl.h"
 
 
 namespace AMP {
@@ -244,11 +242,9 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
     auto *xvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( x->data );
     auto *rvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( r->data );
 
-    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_x( xvec,
-                                                      AMP::LinearAlgebra::ExternalVectorDeleter() );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_x( xvec, []( auto ) {} );
     std::shared_ptr<AMP::LinearAlgebra::Vector> sp_f;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_r( rvec,
-                                                      AMP::LinearAlgebra::ExternalVectorDeleter() );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_r( rvec, []( auto ) {} );
 
     if ( sp_f.get() != nullptr )
         sp_f->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
@@ -441,8 +437,7 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat, void *ctx 
     }
 
     auto *pVecShell = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( x->data );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> pSolution(
-        pVecShell, AMP::LinearAlgebra::ExternalVectorDeleter() );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> pSolution( pVecShell, []( auto ) {} );
 
     auto op            = pSNESSolver->getOperator();
     auto op_parameters = op->getParameters( "Jacobian", pSolution );
@@ -494,10 +489,8 @@ PetscErrorCode PetscSNESSolver::lineSearchPreCheck(
     auto *xvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( x->data );
     auto *yvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( y->data );
 
-    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_x( xvec,
-                                                      AMP::LinearAlgebra::ExternalVectorDeleter() );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_y( yvec,
-                                                      AMP::LinearAlgebra::ExternalVectorDeleter() );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_x( xvec, []( auto ) {} );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_y( yvec, []( auto ) {} );
 
     pScratchVector->add( sp_x, sp_y );
 
@@ -539,10 +532,8 @@ PetscErrorCode PetscSNESSolver::mffdCheckBounds( void *checkctx, Vec U, Vec a, P
     auto *uvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( U->data );
     auto *avec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
 
-    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_u( uvec,
-                                                      AMP::LinearAlgebra::ExternalVectorDeleter() );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_a( avec,
-                                                      AMP::LinearAlgebra::ExternalVectorDeleter() );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_u( uvec, []( auto ) {} );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_a( avec, []( auto ) {} );
 
     // check for column operators
     auto pColumnOperator =

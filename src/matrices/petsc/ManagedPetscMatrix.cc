@@ -1,9 +1,7 @@
 #include "petsc/private/vecimpl.h"
 #include "petscmat.h"
 #include "petscvec.h"
-#include "petsc/private/vecimpl.h"
 
-#include "AMP/vectors/ExternalVectorDeleter.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "AMP/vectors/petsc/PetscVector.h"
@@ -24,10 +22,8 @@ PetscErrorCode _AMP_Mult( Mat m, Vec i, Vec o )
     AMP::LinearAlgebra::Vector *pVecOut =
         reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( o->data );
 
-    AMP::LinearAlgebra::Vector::shared_ptr pvin( pVecIn,
-                                                 AMP::LinearAlgebra::ExternalVectorDeleter() );
-    AMP::LinearAlgebra::Vector::shared_ptr pvout( pVecOut,
-                                                  AMP::LinearAlgebra::ExternalVectorDeleter() );
+    AMP::LinearAlgebra::Vector::shared_ptr pvin( pVecIn, []( auto ) {} );
+    AMP::LinearAlgebra::Vector::shared_ptr pvout( pVecOut, []( auto ) {} );
 
     pMatrix->mult( pvin, pvout );
     return 0;
@@ -47,10 +43,8 @@ PetscErrorCode _AMP_Mult_add( Mat m, Vec i, Vec a, Vec o )
     AMP::LinearAlgebra::Vector *pVecOut =
         reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( o->data );
 
-    AMP::LinearAlgebra::Vector::shared_ptr pvin( pVecIn,
-                                                 AMP::LinearAlgebra::ExternalVectorDeleter() );
-    AMP::LinearAlgebra::Vector::shared_ptr pvout( pVecOut,
-                                                  AMP::LinearAlgebra::ExternalVectorDeleter() );
+    AMP::LinearAlgebra::Vector::shared_ptr pvin( pVecIn, []( auto ) {} );
+    AMP::LinearAlgebra::Vector::shared_ptr pvout( pVecOut, []( auto ) {} );
 
     pMatrix->mult( pvin, pvout );
     pVecOut->add( *pVecOut, *pVecAdd );
@@ -67,7 +61,7 @@ PetscErrorCode _AMP_GetDiagonal( Mat m, Vec d )
         reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *>( ctx );
     AMP::LinearAlgebra::Vector *pVecIn =
         reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( d->data );
-    AMP::LinearAlgebra::Vector::shared_ptr t( pVecIn, AMP::LinearAlgebra::ExternalVectorDeleter() );
+    AMP::LinearAlgebra::Vector::shared_ptr t( pVecIn, []( auto ) {} );
     pMatrix->extractDiagonal( t );
     return 0;
 }

@@ -456,10 +456,6 @@ Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) c
     retVec->updateVectorOperations();
     return retVec;
 }
-std::shared_ptr<VectorEngine> MultiVector::cloneEngine( std::shared_ptr<VectorData> ) const
-{
-    return std::dynamic_pointer_cast<VectorEngine>( Vector::cloneVector( "engine_clone" ) );
-}
 
 
 } // namespace LinearAlgebra

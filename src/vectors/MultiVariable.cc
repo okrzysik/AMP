@@ -152,5 +152,17 @@ void MultiVariable::removeDuplicateVariables()
     }
     d_vVariables = unique_list;
 }
+
+
+void MultiVariable::setUnits( const std::string &units )
+{
+    Variable::setUnits( units );
+    auto curVar = beginVariable();
+    while ( curVar != endVariable() ) {
+        ( *curVar )->setUnits( units );
+        ++curVar;
+    }
+}
+
 } // namespace LinearAlgebra
 } // namespace AMP

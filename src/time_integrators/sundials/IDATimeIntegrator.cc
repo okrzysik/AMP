@@ -5,7 +5,6 @@
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/time_integrators/sundials/IDATimeIntegrator.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/ExternalVectorDeleter.h"
 
 #ifdef USE_EXT_SUNDIALS
 // Note:  sundials 2.4.0 has a memory leak that can cause some tests to fail
@@ -381,15 +380,12 @@ int IDATimeIntegrator::IDAResTrial(
     std::shared_ptr<AMP::LinearAlgebra::Vector> f;
 
 
-    AMP::LinearAlgebra::ExternalVectorDeleter d;
-
-
     AMP::LinearAlgebra::Vector *pyy =
         static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( yy->content );
     AMP::LinearAlgebra::Vector *pyp =
         static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( yp->content );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy( pyy, d );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yp( pyp, d );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy( pyy, []( auto ) {} );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yp( pyp, []( auto ) {} );
     amp_yy->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     amp_yp->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
@@ -447,11 +443,9 @@ int IDATimeIntegrator::IDAPrecSetup( realtype tt,
 
     if ( OrderHasChanged || StepSizeHasChanged ) {
 
-        AMP::LinearAlgebra::ExternalVectorDeleter d;
-
         AMP::LinearAlgebra::Vector *pyy =
             static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( yy->content );
-        std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy( pyy, d );
+        std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy( pyy, []( auto ) {} );
         std::shared_ptr<AMP::Operator::OperatorParameters> jacParams =
             user_data->getIDATimeOperator()->getParameters( "Jacobian", amp_yy );
         std::shared_ptr<AMP::Database> &db = jacParams->d_db;
@@ -493,13 +487,12 @@ int IDATimeIntegrator::IDAPrecSolve( realtype,
 {
     auto user_data = reinterpret_cast<IDATimeIntegrator *>( user_data_in );
 
-    AMP::LinearAlgebra::ExternalVectorDeleter d;
     AMP::LinearAlgebra::Vector *pr =
         static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( rvec->content );
     AMP::LinearAlgebra::Vector *pz =
         static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( zvec->content );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> amp_rvec( pr, d );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> amp_zvec( pz, d );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> amp_rvec( pr, []( auto ) {} );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> amp_zvec( pz, []( auto ) {} );
 
     user_data->getPreconditioner()->solve( amp_rvec, amp_zvec );
 

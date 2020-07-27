@@ -26,7 +26,7 @@ public:
     typedef std::shared_ptr<VectorIndexer> shared_ptr;
 
     /** \brief Destructor */
-    virtual ~VectorIndexer();
+    virtual ~VectorIndexer() {}
 
     /** \brief Given a global id in the underlying vector, this returns true
      * if the global id is in the SubsetVector.
@@ -62,9 +62,9 @@ public:
      */
     virtual size_t getNumLocalElements( std::shared_ptr<Vector> v ) const = 0;
 };
+
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "VectorIndexer.inline.h"
 
 #endif

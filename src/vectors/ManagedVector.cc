@@ -1,6 +1,7 @@
 #include "AMP/vectors/ManagedVector.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/VectorEngine.h"
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -33,7 +34,7 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
       d_pParameters( std::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
 {
     d_vBuffer = d_pParameters->d_Buffer;
-    d_Engine  = std::dynamic_pointer_cast<VectorEngine>( d_pParameters->d_Engine );
+    d_Engine  = d_pParameters->d_Engine;
     AMP_ASSERT( d_vBuffer );
     AMP_ASSERT( d_Engine );
 }
@@ -483,7 +484,7 @@ double ManagedVector::dot( const VectorOperations &x ) const
 std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
 {
     std::shared_ptr<Vector> retVal( getNewRawPtr() );
-    getManaged( retVal )->d_Engine = cloneVectorEngine( std::shared_ptr<VectorData>() );
+    getManaged( retVal )->d_Engine = cloneVectorEngine();
     retVal->setVariable( name );
     return retVal;
 }

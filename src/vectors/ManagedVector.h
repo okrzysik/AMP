@@ -4,7 +4,6 @@
 
 #include "AMP/vectors/DataChangeFirer.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorEngine.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 
 #include <stdexcept>

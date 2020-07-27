@@ -27,22 +27,22 @@ public:
     /** \brief Get the first variable in the MultiVariable
      * \return An iterator pointing to the first variable
      */
-    inline iterator beginVariable();
+    inline iterator beginVariable() { return d_vVariables.begin(); }
 
     /** \brief Get end of the MultiVariable array
      * \return An iterator pointing to the end
      */
-    inline iterator endVariable();
+    inline iterator endVariable() { return d_vVariables.end(); }
 
     /** \brief Get the first variable in the MultiVariable
      * \return An iterator pointing to the first variable
      */
-    inline const_iterator beginVariable() const;
+    inline const_iterator beginVariable() const { return d_vVariables.begin(); }
 
     /** \brief Get end of the MultiVariable array
      * \return An iterator pointing to the end
      */
-    inline const_iterator endVariable() const;
+    inline const_iterator endVariable() const { return d_vVariables.end(); }
 
     /** \brief If there are multiple matching variables in the list, this
      *  will remove them.  Note that may change the etnry order and will remove any null entries.
@@ -134,8 +134,10 @@ protected:
     //! List of variables comprising the MultiVariable
     std::vector<Variable::shared_ptr> d_vVariables;
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "MultiVariable.inline.h"
+
 #endif

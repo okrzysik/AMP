@@ -93,6 +93,8 @@ private:
     std::vector<size_t> d_dataBlockSize;               // The size of the data blocks
     std::vector<double *> d_dataBlockPtr;              // The pointers to the data blocks
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

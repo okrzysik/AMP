@@ -4,7 +4,6 @@
 
 #include "AMP/vectors/DataChangePassThrough.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorEngine.h"
 #include "AMP/vectors/data/MultiVectorData.h"
 #include "AMP/vectors/operations/MultiVectorOperations.h"
 
@@ -19,7 +18,6 @@ namespace LinearAlgebra {
  *    accomplishes this task.
  */
 class MultiVector : public Vector,
-                    public VectorEngine,
                     public MultiVectorData,
                     public MultiVectorOperations,
                     public DataChangePassThrough
@@ -174,9 +172,6 @@ public:
     void swapVectors( Vector &other ) override;
     void aliasVector( Vector &other ) override;
     void assemble() override;
-
-    // Vector engine functions
-    std::shared_ptr<VectorEngine> cloneEngine( std::shared_ptr<VectorData> ) const override;
 
 
 protected:

@@ -28,7 +28,10 @@ public:
     /** \brief Construct a NativeVector from a set of parameters
      * \param[in] params  The parameters describing the NativeVector
      */
-    explicit NativeVector( parameters_ptr params );
+    explicit inline NativeVector( parameters_ptr params )
+        : Vector( std::dynamic_pointer_cast<VectorParameters>( params ) )
+    {
+    }
 
     //! Virtual Destuctor
     virtual ~NativeVector() {}
@@ -47,13 +50,12 @@ public:
 
 protected:
     //! Empty constructor.
-    NativeVector();
+    inline NativeVector() {}
 };
 
 
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "NativeVector.inline.h"
 
 #endif

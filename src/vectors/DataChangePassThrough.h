@@ -43,21 +43,22 @@ public:
     /** \brief Construct the object
      * \details  This is an empty function
      */
-    DataChangePassThrough();
+    inline DataChangePassThrough() {}
 
     /** \brief Destroy the object
      * \details  This is an empty function since the base classes handle deregistration
      */
-    virtual ~DataChangePassThrough();
+    virtual ~DataChangePassThrough() {}
 
     /** \brief Invoke the dataChange method on all registered listeners.
      * \details  This simply calls the fireDataChange() method of the DataChangeFirer class
      */
-    virtual void dataChanged() override;
+    virtual void dataChanged() override { fireDataChange(); }
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "DataChangePassThrough.inline.h"
 
 #endif

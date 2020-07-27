@@ -16,22 +16,10 @@ class VectorData;
 
 
 /**
-  \brief  A class used to hold vector operations
-
-  \details
-
-  VectorOperations is a class used to perform vector operations such as dot
-  product, norms, etc.  Currently, there are two classes that inherit from
-  VectorOperations:  Vector and VectorEngine.
-
-  Perhaps a word or two on the difference.  A Vector has data and a operations.
-  VectorOperations operates on data.  The difference can be seen in the Vec
-  interface in PETSc.  A Vec holds data and keeps pointers to operation functions.
-  The engine is the litany of Vec functions:  VecAbs, VecSetValues, VecNorm, etc.
-
-  If you are reading this portion of the documentation, odds are you do not need
-  to know about VectorOperations.
-  */
+ * \brief  A class used to hold vector operations
+ * \details  VectorOperations is a class used to perform vector operations
+ *    such as dot product, norms, etc.
+ */
 class VectorOperations
 {
 public:

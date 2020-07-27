@@ -1,6 +1,5 @@
 #include "AMP/operators/petsc/PetscMatrixShellOperator.h"
 #include "AMP/matrices/petsc/NativePetscMatrix.h"
-#include "AMP/vectors/ExternalVectorDeleter.h"
 #include "AMP/vectors/petsc/NativePetscVector.h"
 
 #include "petsc/private/vecimpl.h"
@@ -64,12 +63,11 @@ PetscErrorCode PetscMatrixShellOperator::mult( Mat mat, Vec in, Vec out )
     MatShellGetContext( mat, &ctx );
     auto *op = reinterpret_cast<PetscMatrixShellOperator *>( ctx );
 
-    AMP::LinearAlgebra::Vector::shared_ptr inVec(
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data ),
-        AMP::LinearAlgebra::ExternalVectorDeleter() );
-    AMP::LinearAlgebra::Vector::shared_ptr outVec(
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( out->data ),
-        AMP::LinearAlgebra::ExternalVectorDeleter() );
+    auto in2  = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
+    auto out2 = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( out->data );
+
+    AMP::LinearAlgebra::Vector::shared_ptr inVec( in2, []( auto ) {} );
+    AMP::LinearAlgebra::Vector::shared_ptr outVec( out2, []( auto ) {} );
 
     ( op->d_operator )->apply( inVec, outVec );
 
