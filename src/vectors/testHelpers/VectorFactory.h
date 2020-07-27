@@ -14,8 +14,8 @@
 #include "AMP/vectors/petsc/NativePetscVector.h"
 #endif
 #ifdef USE_EXT_TRILINOS
-#include "AMP/vectors/trilinos/epetra/NativeEpetraVector.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
+#include "AMP/vectors/trilinos/epetra/NativeEpetraVector.h"
 #endif
 
 
@@ -175,7 +175,8 @@ public:
             std::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
         auto retVal =
             std::make_shared<AMP::LinearAlgebra::NativeEpetraVector>( epetraParams, buffer );
-        retVal->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "Test NativeEpetraVector" ) );
+        retVal->setVariable(
+            std::make_shared<AMP::LinearAlgebra::Variable>( "Test NativeEpetraVector" ) );
         return retVal;
     }
 
@@ -187,7 +188,7 @@ public:
     }
 };
 
- template<typename TYPE>
+template<typename TYPE>
 class SimpleManagedVectorFactory : public VectorFactory
 {
 public:
@@ -207,10 +208,10 @@ public:
         auto epetraParams = std::make_shared<AMP::LinearAlgebra::EpetraVectorEngineParameters>(
             nLocal, nGlobal, globalComm );
         auto managedParams = std::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
-        auto buffer =
+        managedParams->d_Buffer =
             std::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
-        managedParams->d_Engine =
-            std::make_shared<AMP::LinearAlgebra::EpetraVectorEngine>( epetraParams, buffer );
+        managedParams->d_Engine = std::make_shared<AMP::LinearAlgebra::EpetraVectorEngine>(
+            epetraParams, managedParams->d_Buffer );
         managedParams->d_CommList =
             AMP::LinearAlgebra::CommunicationList::createEmpty( nLocal, globalComm );
         managedParams->d_DOFManager =
@@ -345,7 +346,7 @@ public:
         return rtn;
     }
 
-    virtual std::string name() const override { return "ViewFactory"; }
+    virtual std::string name() const override { return "ViewFactory<" + d_factory->name() + ">"; }
 
     virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
     {

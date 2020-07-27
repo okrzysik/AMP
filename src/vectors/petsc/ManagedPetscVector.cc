@@ -849,18 +849,21 @@ bool ManagedPetscVector::constructedWithPetscDuplicate() { return d_bMadeWithPet
 
 ManagedPetscVector *ManagedPetscVector::rawClone() const
 {
-    std::shared_ptr<ManagedVectorParameters> p( new ManagedPetscVectorParameters );
-    if ( !d_vBuffer ) {
-        p->d_Engine = d_Engine->cloneEngine( std::shared_ptr<VectorData>() );
+    auto p      = std::make_shared<ManagedPetscVectorParameters>();
+    p->d_Buffer = d_vBuffer->cloneData();
+    if ( !p->d_Buffer ) {
+        auto vec    = std::dynamic_pointer_cast<Vector>( d_Engine );
+        auto vec2   = vec->cloneVector();
+        p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
+        p->d_Engine = std::dynamic_pointer_cast<VectorOperations>( vec2 );
     } else {
         p->d_Buffer = std::make_shared<VectorDataCPU<double>>(
             d_vBuffer->getLocalStartID(), d_vBuffer->getLocalSize(), d_vBuffer->getGlobalSize() );
-        p->d_Engine = d_Engine->cloneEngine( p->d_Buffer );
+        p->d_Engine = cloneVectorEngine( p->d_Buffer );
     }
     p->d_CommList   = getCommunicationList();
     p->d_DOFManager = getDOFManager();
-    ManagedPetscVector *retVal =
-        new ManagedPetscVector( std::dynamic_pointer_cast<VectorParameters>( p ) );
+    auto retVal     = new ManagedPetscVector( p );
     return retVal;
 }
 

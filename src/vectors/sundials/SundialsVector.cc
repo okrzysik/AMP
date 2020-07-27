@@ -14,14 +14,14 @@ Vector::const_shared_ptr SundialsVector::constView( Vector::const_shared_ptr inV
     } else if ( inVector->hasView<SundialsVector>() ) {
         return inVector->getView<SundialsVector>();
     } else if ( std::dynamic_pointer_cast<const ManagedVector>( inVector ) ) {
-        Vector::shared_ptr inVector2 = std::const_pointer_cast<Vector>( inVector );
-        retVal                       = Vector::shared_ptr( new ManagedSundialsVector( inVector2 ) );
+        auto inVector2 = std::const_pointer_cast<Vector>( inVector );
+        retVal         = std::make_shared<ManagedSundialsVector>( inVector2 );
         inVector->registerView( retVal );
     } else if ( std::dynamic_pointer_cast<const VectorEngine>( inVector ) ) {
-        Vector::shared_ptr inVector2 = std::const_pointer_cast<Vector>( inVector );
-        auto new_params              = new ManagedSundialsVectorParameters;
-        new_params->d_Engine         = std::dynamic_pointer_cast<VectorEngine>( inVector2 );
-        new_params->d_CloneEngine    = false;
+        auto inVector2       = std::const_pointer_cast<Vector>( inVector );
+        auto new_params      = std::make_shared<ManagedSundialsVectorParameters>();
+        new_params->d_Engine = std::dynamic_pointer_cast<VectorOperations>( inVector2 );
+        new_params->d_Buffer = std::dynamic_pointer_cast<VectorData>( inVector2 );
         if ( inVector->getCommunicationList().get() != nullptr )
             new_params->d_CommList = inVector->getCommunicationList();
         else
@@ -32,16 +32,15 @@ Vector::const_shared_ptr SundialsVector::constView( Vector::const_shared_ptr inV
         else
             new_params->d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>(
                 inVector->getLocalSize(), inVector->getComm() );
-        ManagedSundialsVector *t =
-            new ManagedSundialsVector( VectorParameters::shared_ptr( new_params ) );
+        auto t = std::make_shared<ManagedSundialsVector>( new_params );
         t->setVariable( inVector->getVariable() );
         t->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
-        retVal = Vector::shared_ptr( t );
+        retVal = t;
         inVector->registerView( retVal );
     } else {
         // Create a multivector to wrap the given vector and create a view
-        Vector::shared_ptr inVector2 = std::const_pointer_cast<Vector>( inVector );
-        retVal                       = view( MultiVector::view( inVector2, inVector->getComm() ) );
+        auto inVector2 = std::const_pointer_cast<Vector>( inVector );
+        retVal         = view( MultiVector::view( inVector2, inVector->getComm() ) );
         inVector2->registerView( retVal );
     }
     return retVal;
@@ -56,12 +55,12 @@ Vector::shared_ptr SundialsVector::view( Vector::shared_ptr inVector )
     } else if ( inVector->hasView<SundialsVector>() ) {
         retVal = inVector->getView<SundialsVector>();
     } else if ( std::dynamic_pointer_cast<ManagedVector>( inVector ) ) {
-        retVal = Vector::shared_ptr( new ManagedSundialsVector( inVector ) );
+        retVal = std::make_shared<ManagedSundialsVector>( inVector );
         inVector->registerView( retVal );
     } else if ( std::dynamic_pointer_cast<VectorEngine>( inVector ) ) {
-        auto new_params           = new ManagedSundialsVectorParameters;
-        new_params->d_Engine      = std::dynamic_pointer_cast<VectorEngine>( inVector );
-        new_params->d_CloneEngine = false;
+        auto new_params      = std::make_shared<ManagedSundialsVectorParameters>();
+        new_params->d_Engine = std::dynamic_pointer_cast<VectorOperations>( inVector );
+        new_params->d_Buffer = std::dynamic_pointer_cast<VectorData>( inVector );
         if ( inVector->getCommunicationList().get() != nullptr )
             new_params->d_CommList = inVector->getCommunicationList();
         else
@@ -72,11 +71,10 @@ Vector::shared_ptr SundialsVector::view( Vector::shared_ptr inVector )
         else
             new_params->d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>(
                 inVector->getLocalSize(), inVector->getComm() );
-        ManagedSundialsVector *t =
-            new ManagedSundialsVector( VectorParameters::shared_ptr( new_params ) );
+        auto t = std::make_shared<ManagedSundialsVector>( new_params );
         t->setVariable( inVector->getVariable() );
         t->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
-        retVal = Vector::shared_ptr( t );
+        retVal = t;
         inVector->registerView( retVal );
     } else {
         // Create a multivector to wrap the given vector and create a view

@@ -131,30 +131,17 @@ public:
 
     /**
      *  \brief  If needed, create a PETSc wrapper for AmpVector.  Otherwise, return AmpVector.
-     *  \param  AmpVector  a shared pointer to a Vector
-     *
      *  \details The function attempts to return a view with the least amount of work.
-     *  IT WILL NEVER COPY DATA.
-     *  - If AmpVector is already a PetscVector, it is returned.
-     *  - Else, if AmpVector is a ManagedVector, it is wrapped and returned
-     *  - Else, if AmpVector can be used as a VectorEngine, a new ManagedVector
-     *    is created and returned.
-     *  Otherwise, this function will throw an error.
+     *     It will never copy data.  If the vector cannot be wrapped it wll return an error.
+     *  \param  AmpVector  a shared pointer to a Vector
      */
     static Vector::shared_ptr view( Vector::shared_ptr AmpVector );
 
     /**
-     *  \brief  If needed, create a const PETSc wrapper for AmpVector.  Otherwise, return
-     * AmpVector.
-     *  \param  AmpVector  a shared pointer to a Vector
-     *
+     *  \brief  If needed, create a PETSc wrapper for AmpVector.  Otherwise, return AmpVector.
      *  \details The function attempts to return a view with the least amount of work.
-     *  IT WILL NEVER COPY DATA.
-     *  - If AmpVector is already a PetscVector, it is returned.
-     *  - Else, if AmpVector is a ManagedVector, it is wrapped and returned
-     *  - Else, if AmpVector can be used as a VectorEngine, a new ManagedVector
-     *    is created and returned.
-     *  Otherwise, this function will throw an error.
+     *     It will never copy data.  If the vector cannot be wrapped it wll return an error.
+     *  \param  AmpVector  a shared pointer to a Vector
      */
     static Vector::const_shared_ptr constView( Vector::const_shared_ptr AmpVector );
 

@@ -92,11 +92,10 @@ public:
 
 public: // Functions derived from VectorEngine
     std::shared_ptr<VectorEngine> cloneEngine( std::shared_ptr<VectorData> p ) const override;
-    void swapEngines( std::shared_ptr<VectorEngine> ) override;
 
 public: // Functions derived from VectorData
     using VectorData::getComm;
-    AMP_MPI getComm() const { return d_Params->getComm(); }
+    AMP_MPI getComm() const override { return d_Params->getComm(); }
 };
 
 

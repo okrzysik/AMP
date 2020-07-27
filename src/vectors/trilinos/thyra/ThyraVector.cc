@@ -44,7 +44,7 @@ Vector::const_shared_ptr ThyraVector::constView( Vector::const_shared_ptr inVect
         Vector::shared_ptr inVector2 = std::const_pointer_cast<Vector>( inVector );
         auto *newParams              = new ManagedThyraVectorParameters;
         newParams->d_Engine          = std::dynamic_pointer_cast<VectorEngine>( inVector2 );
-        newParams->d_CloneEngine     = false;
+        newParams->d_Buffer          = std::dynamic_pointer_cast<VectorData>( inVector2 );
         AMP_INSIST( inVector->getCommunicationList().get() != nullptr,
                     "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();
@@ -79,9 +79,9 @@ Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
         retVal = Vector::shared_ptr( new ManagedThyraVector( inVector ) );
         inVector->registerView( retVal );
     } else if ( std::dynamic_pointer_cast<VectorEngine>( inVector ) ) {
-        auto *newParams          = new ManagedThyraVectorParameters;
-        newParams->d_Engine      = std::dynamic_pointer_cast<VectorEngine>( inVector );
-        newParams->d_CloneEngine = false;
+        auto *newParams     = new ManagedThyraVectorParameters;
+        newParams->d_Engine = std::dynamic_pointer_cast<VectorEngine>( inVector );
+        newParams->d_Buffer = std::dynamic_pointer_cast<VectorData>( inVector );
         AMP_INSIST( inVector->getCommunicationList().get() != nullptr,
                     "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();

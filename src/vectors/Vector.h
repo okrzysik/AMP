@@ -214,7 +214,7 @@ public: // Virtual functions
 
     /** \brief  Return the communicator this Vector spans
      */
-    virtual AMP_MPI getComm() const;
+    virtual AMP_MPI getComm() const override;
 
 
     /** \brief  Selects a portion of this vector and puts a view into a vector

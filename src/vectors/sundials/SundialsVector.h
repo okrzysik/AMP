@@ -95,32 +95,18 @@ public:
     const N_Vector &getNVector() const;
 
     /**
+     *  \brief  If needed, create a Sundials wrapper for AmpVector.  Otherwise, return AmpVector.
+     *  \details The function attempts to return a view with the least amount of work.
+     *     It will never copy data.  If the vector cannot be wrapped it wll return an error.
      *  \param  AmpVector  a shared pointer to a Vector
-     *  \brief  If one does not exist, create a Sundials wrapper for AmpVector.  Otherwise, return
-     * AmpVector.
-     *
-     *  The function attempts to return a view with the least amount of work.
-     *  IT WILL NEVER COPY DATA.
-     *  - If AmpVector is already a SundialsVector, it is returned.
-     *  - Else, if AmpVector is a ManagedVector, it is wrapped and returned
-     *  - Else, if AmpVector can be used as a VectorEngine, a new ManagedVector
-     *    is created and returned
-     *  Otherwise, this function will throw an error.
      */
     static Vector::shared_ptr view( Vector::shared_ptr AmpVector );
 
     /**
+     *  \brief  If needed, create a Sundials wrapper for AmpVector.  Otherwise, return AmpVector.
+     *  \details The function attempts to return a view with the least amount of work.
+     *     It will never copy data.  If the vector cannot be wrapped it wll return an error.
      *  \param  AmpVector  a shared pointer to a Vector
-     *  \brief  If one does not exist, create a const Sundials wrapper for AmpVector.  Otherwise,
-     * return AmpVector.
-     *
-     *  The function attempts to return a view with the least amount of work.
-     *  IT WILL NEVER COPY DATA.
-     *  - If AmpVector is already a SundialsVector, it is returned.
-     *  - Else, if AmpVector is a ManagedVector, it is wrapped and returned
-     *  - Else, if AmpVector can be used as a VectorEngine, a new ManagedVector
-     *    is created and returned.
-     *  Otherwise, this function will throw an error.
      */
     static Vector::const_shared_ptr constView( Vector::const_shared_ptr AmpVector );
 

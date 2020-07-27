@@ -74,23 +74,17 @@ protected:
 public:
     /** \brief  Destructor
      */
-    virtual ~VectorEngine();
+    virtual ~VectorEngine() {}
 
     /** \brief  Return a copy of this engine
      * \param[in]  p  The buffer to use for the copy.
      * \return  The new engine
      */
     virtual std::shared_ptr<VectorEngine> cloneEngine( std::shared_ptr<VectorData> p ) const = 0;
-
-    /** \brief Swap engines
-     * \param[in,out] p  The engine to exchange with
-     */
-    virtual void swapEngines( std::shared_ptr<VectorEngine> p ) = 0;
 };
 
 
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "VectorEngine.inline.h"
 #endif

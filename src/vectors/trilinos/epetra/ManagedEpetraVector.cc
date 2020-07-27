@@ -1,6 +1,6 @@
 #include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
-#include "EpetraVectorEngine.h"
 #include "AMP/vectors/data/VectorDataCPU.h"
+#include "EpetraVectorEngine.h"
 
 
 namespace AMP {
@@ -42,11 +42,10 @@ inline Vector::shared_ptr ManagedEpetraVector::cloneVector( const Variable::shar
     auto p      = std::make_shared<ManagedVectorParameters>();
     p->d_Buffer = std::make_shared<VectorDataCPU<double>>(
         d_vBuffer->getLocalStartID(), d_vBuffer->getLocalSize(), d_vBuffer->getGlobalSize() );
-    p->d_Engine      = d_pParameters->d_Engine->cloneEngine( p->d_Buffer );
-    p->d_CommList    = getCommunicationList();
-    p->d_DOFManager  = getDOFManager();
-    p->d_CloneEngine = false;
-    auto retVal      = std::make_shared<ManagedEpetraVector>( p );
+    p->d_Engine     = cloneVectorEngine( p->d_Buffer );
+    p->d_CommList   = getCommunicationList();
+    p->d_DOFManager = getDOFManager();
+    auto retVal     = std::make_shared<ManagedEpetraVector>( p );
     retVal->setVariable( var );
     return retVal;
 }

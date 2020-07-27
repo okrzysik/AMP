@@ -104,20 +104,11 @@ EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<VectorEngineParameters> 
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() )
 {
-    d_Params    = alias;
-    d_buf_scope = buf;
+    d_Params     = alias;
+    d_buf_scope  = buf;
+    d_VectorData = dynamic_cast<VectorData *>( this );
 }
 
-
-void EpetraVectorEngine::swapEngines( std::shared_ptr<VectorEngine> x )
-{
-    double *my_pointer;
-    double *oth_pointer;
-    getEpetra_Vector().ExtractView( &my_pointer );
-    getEpetraVector( *x ).ExtractView( &oth_pointer );
-    getEpetraVector( *x ).ResetView( my_pointer );
-    getEpetra_Vector().ResetView( oth_pointer );
-}
 
 std::shared_ptr<VectorEngine> EpetraVectorEngine::cloneEngine( std::shared_ptr<VectorData> p ) const
 {

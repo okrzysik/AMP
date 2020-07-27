@@ -29,13 +29,10 @@ public:
     ManagedVectorParameters();
 
     //! The VectorEngine to use with the managed vector
-    std::shared_ptr<VectorEngine> d_Engine;
+    std::shared_ptr<VectorOperations> d_Engine;
 
     //! Buffer to use for the managed vector
     std::shared_ptr<VectorData> d_Buffer;
-
-    //! Indicates whether the engine should be used as is or cloned
-    bool d_CloneEngine;
 };
 
 
@@ -62,7 +59,7 @@ public:
     explicit ManagedVector( const Vector::shared_ptr alias );
 
     //! Destructor
-    virtual ~ManagedVector();
+    virtual ~ManagedVector() {}
 
     /** \brief  If a vector has multiple views to multiple external packages
      * associated with it, this will return the barest version of the vector
@@ -77,8 +74,10 @@ public:
     /** \brief  Return the engine associated with this ManagedVector
      * \return The engine
      */
-    std::shared_ptr<VectorEngine> getVectorEngine();
-    std::shared_ptr<const VectorEngine> getVectorEngine() const;
+    inline std::shared_ptr<VectorOperations> getVectorEngine() { return d_Engine; }
+    inline std::shared_ptr<const VectorOperations> getVectorEngine() const { return d_Engine; }
+    std::shared_ptr<VectorOperations>
+    cloneVectorEngine( std::shared_ptr<VectorData> p = std::shared_ptr<VectorData>() ) const;
 
     virtual bool isAnAliasOf( Vector &rhs );
     virtual bool isAnAliasOf( Vector::shared_ptr rhs );
@@ -91,7 +90,7 @@ protected:
     std::shared_ptr<VectorData> d_vBuffer;
 
     //! The engine to act on the buffer
-    std::shared_ptr<VectorEngine> d_Engine;
+    std::shared_ptr<VectorOperations> d_Engine;
 
     //! The parameters used to create this vector
     std::shared_ptr<ManagedVectorParameters> d_pParameters;
@@ -141,8 +140,7 @@ public: // Derived from VectorOperations
     double L2Norm( void ) const override;
     double maxNorm( void ) const override;
     double dot( const VectorOperations &x ) const override;
-    void
-    axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
+    void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
     void axpby( double alpha, double beta, const VectorOperations &x ) override;
     void abs( const VectorOperations &x ) override;
     double min( void ) const override;
@@ -157,9 +155,9 @@ public: // Derived from VectorOperations
     void divide( const VectorOperations &x, const VectorOperations &y ) override;
     void reciprocal( const VectorOperations &x ) override;
     void linearSum( double alpha,
-                            const VectorOperations &x,
-                            double beta,
-                            const VectorOperations &y ) override;
+                    const VectorOperations &x,
+                    double beta,
+                    const VectorOperations &y ) override;
 
 
 public: // Derived from Vector
@@ -209,6 +207,5 @@ private:
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "ManagedVector.inline.h"
 
 #endif

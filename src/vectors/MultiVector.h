@@ -19,9 +19,9 @@ namespace LinearAlgebra {
  *    accomplishes this task.
  */
 class MultiVector : public Vector,
+                    public VectorEngine,
                     public MultiVectorData,
                     public MultiVectorOperations,
-                    public VectorEngine,
                     public DataChangePassThrough
 {
 public:
@@ -177,7 +177,6 @@ public:
 
     // Vector engine functions
     std::shared_ptr<VectorEngine> cloneEngine( std::shared_ptr<VectorData> ) const override;
-    void swapEngines( std::shared_ptr<VectorEngine> p ) override;
 
 
 protected:
