@@ -120,6 +120,33 @@ std::shared_ptr<VectorEngine> EpetraVectorEngine::cloneEngine( std::shared_ptr<V
     return std::make_shared<EpetraVectorEngine>( d_Params, p );
 }
 
+Vector::shared_ptr EpetraVectorEngine::cloneVector( const Variable::shared_ptr name ) const
+{
+    auto params = std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params );
+    auto buffer = std::make_shared<VectorDataCPU<double>>(
+        params->beginDOF(), params->getLocalSize(), params->getGlobalSize() );
+
+    auto retVal = std::make_shared<EpetraVectorEngine>( d_Params, buffer );
+    retVal->setVariable( name );
+    return retVal;
+}
+
+void EpetraVectorEngine::swapVectors( Vector &other )
+{
+    double *my_pointer;
+    double *oth_pointer;
+    getEpetra_Vector().ExtractView( &my_pointer );
+    getEpetraVector( other ).ExtractView( &oth_pointer );
+    getEpetraVector( other ).ResetView( my_pointer );
+    getEpetra_Vector().ResetView( oth_pointer );
+}
+
+void EpetraVectorEngine::aliasVector( Vector & )
+{
+    AMP_ERROR( "EpetraVectorEngine::aliasVector not implemented" );
+}
+
+void EpetraVectorEngine::assemble() {}
 
 } // namespace LinearAlgebra
 } // namespace AMP

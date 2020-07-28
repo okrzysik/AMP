@@ -62,6 +62,7 @@ private:
  * reason, the EpetraVectorEngine contains the Epetra_Vector to operate on.
  */
 class EpetraVectorEngine : public VectorEngine,
+                           public Vector,
                            public EpetraVectorData,
                            public EpetraVectorOperations
 {
@@ -96,6 +97,15 @@ public: // Functions derived from VectorEngine
 public: // Functions derived from VectorData
     using VectorData::getComm;
     AMP_MPI getComm() const override { return d_Params->getComm(); }
+
+ public: // Functions derived from Vector
+    using Vector::cloneVector;
+
+    std::string type() const override { return "EpetraVectorEngine"; }
+    Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
+    void swapVectors( Vector &other ) override;
+    void aliasVector( Vector &other ) override;
+    void assemble() override;
 };
 
 
