@@ -52,10 +52,11 @@ std::shared_ptr<VectorOperations>
 ManagedVector::cloneVectorEngine( std::shared_ptr<VectorData> p ) const
 {
     auto multivec = std::dynamic_pointer_cast<MultiVector>( d_Engine );
-    if ( multivec )
+    if ( multivec ) {
 	std::cout << "ManagedPetscVector::rawClone of  " << multivec->type() << std::endl;
         return std::dynamic_pointer_cast<VectorOperations>(
             multivec->cloneVector( "engine_clone" ) );
+    }
     auto engine = std::dynamic_pointer_cast<VectorEngine>( d_Engine );
     if ( engine ) {
 	std::cout << "ManagedVector::cloneEngine " << std::endl;      
