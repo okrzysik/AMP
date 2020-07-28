@@ -76,8 +76,6 @@ ManagedSundialsVector *ManagedSundialsVector::rawClone() const
         p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
         p->d_Engine = std::dynamic_pointer_cast<VectorOperations>( vec2 );
     } else {
-        p->d_Buffer = std::make_shared<VectorDataCPU<double>>(
-            d_vBuffer->getLocalStartID(), d_vBuffer->getLocalSize(), d_vBuffer->getGlobalSize() );
         p->d_Engine = cloneVectorEngine( p->d_Buffer );
     }
     p->d_CommList   = getCommunicationList();
