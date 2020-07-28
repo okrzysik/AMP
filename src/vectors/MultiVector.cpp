@@ -471,8 +471,7 @@ AMP_MPI MultiVector::getComm() const { return d_Comm; }
 
 void MultiVector::dataChanged() { fireDataChange(); }
 
-const Vector::shared_ptr &MultiVector::getVector( const VectorOperations &rhs,
-                                                         size_t which ) const
+const Vector::shared_ptr &MultiVector::getVector( const VectorOperations &rhs, size_t which ) const
 {
     auto x = dynamic_cast<const MultiVector *>( &rhs );
     AMP_ASSERT( x != nullptr );

@@ -104,11 +104,10 @@ public:
     void divide( const VectorOperations &x, const VectorOperations &y ) override;
     void reciprocal( const VectorOperations &x ) override;
     void linearSum( double alpha,
-                            const VectorOperations &x,
-                            double beta,
-                            const VectorOperations &y ) override;
-    void
-    axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
+                    const VectorOperations &x,
+                    double beta,
+                    const VectorOperations &y ) override;
+    void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
     void axpby( double alpha, double beta, const VectorOperations &x ) override;
     void abs( const VectorOperations &x ) override;
     double min( void ) const override;

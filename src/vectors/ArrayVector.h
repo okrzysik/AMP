@@ -248,10 +248,7 @@ protected:
         return d_array.data();
     }
 
-    bool isTypeId( size_t hash, size_t ) const override
-    {
-        return hash == typeid( T ).hash_code();
-    }
+    bool isTypeId( size_t hash, size_t ) const override { return hash == typeid( T ).hash_code(); }
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
     void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 };

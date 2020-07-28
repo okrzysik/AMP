@@ -1,7 +1,7 @@
 #include "AMP/operators/petsc/PetscMatrixShellOperator.h"
 #include "AMP/matrices/petsc/NativePetscMatrix.h"
-#include "AMP/vectors/petsc/NativePetscVector.h"
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/NativePetscVector.h"
 
 #include "petsc/private/vecimpl.h"
 

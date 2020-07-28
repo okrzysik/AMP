@@ -27,7 +27,7 @@ const std::string SMEVFactory    = "SimpleManagedVectorFactory<ManagedEpetraVect
 
 #if defined( USE_EXT_TRILINOS )
 #ifdef USE_TRILINOS_EPETRA
-const std::string NEVFactory    = "NativeEpetraVectorFactory";
+const std::string NEVFactory = "NativeEpetraVectorFactory";
 #endif
 #endif
 
@@ -58,7 +58,7 @@ const std::string ViewMVFactory3 = "ViewFactory<PetscVector,MultiVectorFactory<"
 
 #if defined( USE_EXT_TRILINOS )
 #ifdef USE_TRILINOS_EPETRA
-const std::string CloneNEVFactory    = "CloneFactory<NativeEpetraVectorFactory>";
+const std::string CloneNEVFactory = "CloneFactory<NativeEpetraVectorFactory>";
 #endif
 #endif
 

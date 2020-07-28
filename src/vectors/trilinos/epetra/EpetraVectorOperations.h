@@ -33,11 +33,10 @@ public:
     void divide( const VectorOperations &x, const VectorOperations &y ) override;
     void reciprocal( const VectorOperations &x ) override;
     void linearSum( double alpha,
-                            const VectorOperations &x,
-                            double beta,
-                            const VectorOperations &y ) override;
-    void
-    axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
+                    const VectorOperations &x,
+                    double beta,
+                    const VectorOperations &y ) override;
+    void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
     void axpby( double alpha, double beta, const VectorOperations &x ) override;
     void abs( const VectorOperations &x ) override;
     double min( void ) const override;
@@ -65,12 +64,13 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::wrmsNorm;
     using VectorOperationsDefault::wrmsNormMask;
 
-    using VectorOperationsDefault::localMin;
-    using VectorOperationsDefault::localMax;
+    using VectorOperationsDefault::localDot;
     using VectorOperationsDefault::localL1Norm;
     using VectorOperationsDefault::localL2Norm;
+    using VectorOperationsDefault::localMax;
     using VectorOperationsDefault::localMaxNorm;
-    using VectorOperationsDefault::localDot;
+    using VectorOperationsDefault::localMin;
+
 protected:
     Epetra_Vector &getEpetra_Vector();
     const Epetra_Vector &getEpetra_Vector() const;

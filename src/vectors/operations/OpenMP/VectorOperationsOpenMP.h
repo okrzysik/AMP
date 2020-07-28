@@ -125,9 +125,9 @@ public:
      *  \f$\mathit{this}_i = \alpha x_i + \beta y_i\f$.
      */
     void linearSum( double alpha,
-                            const VectorOperations &x,
-                            double beta,
-                            const VectorOperations &y ) override;
+                    const VectorOperations &x,
+                    double beta,
+                    const VectorOperations &y ) override;
 
     /**
      * \param alpha a scalar
@@ -135,8 +135,7 @@ public:
      * \param y a vector
      * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
      */
-    void
-    axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
+    void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
 
     /**
      * \param alpha a scalar
@@ -230,7 +229,7 @@ private:
      * \mathit{this}^2_iy^2_i}{n}}\f]
      */
     double localWrmsNormMask( const VectorOperations &x,
-                                      const VectorOperations &mask ) const override;
+                              const VectorOperations &mask ) const override;
 
 
 public: // Pull VectorOperations into the current scope

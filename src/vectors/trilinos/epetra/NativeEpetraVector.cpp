@@ -1,7 +1,7 @@
 #include "AMP/vectors/trilinos/epetra/NativeEpetraVector.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorDataCPU.h"
-#include "AMP/utils/Utilities.h"
 
 #ifdef USE_EXT_MPI
 #include <Epetra_MpiComm.h>
@@ -41,7 +41,7 @@ static inline Epetra_Vector &getEpetraVector( VectorOperations &vec )
 NativeEpetraVectorParameters::NativeEpetraVectorParameters( size_t local_size,
                                                             size_t global_size,
                                                             const AMP_MPI &comm )
-  : VectorParameters(), d_local_size{local_size}, d_global_size{global_size}, d_comm{comm}
+    : VectorParameters(), d_local_size{ local_size }, d_global_size{ global_size }, d_comm{ comm }
 {
     d_comm.sumScan( &local_size, &d_end, 1 );
     d_begin = d_end - local_size;
@@ -50,12 +50,16 @@ NativeEpetraVectorParameters::NativeEpetraVectorParameters( size_t local_size,
                                                             size_t global_size,
                                                             std::shared_ptr<Epetra_Map> emap,
                                                             const AMP_MPI &ecomm )
-  : VectorParameters(), d_local_size{local_size}, d_global_size{global_size}, d_comm{ecomm}, d_emap( std::move( emap ))
+    : VectorParameters(),
+      d_local_size{ local_size },
+      d_global_size{ global_size },
+      d_comm{ ecomm },
+      d_emap( std::move( emap ) )
 {
     d_comm.sumScan( &local_size, &d_end, 1 );
     d_begin = d_end - local_size;
 }
-												    
+
 NativeEpetraVectorParameters::~NativeEpetraVectorParameters() = default;
 
 
@@ -78,8 +82,8 @@ Epetra_Map &NativeEpetraVectorParameters::getEpetraMap()
     // std::vector<int> ids(local_size,0);
     // for (size_t i=0; i<local_size; i++)
     //    ids[i] = (int) (i+d_begin);
-    // d_emap = std::shared_ptr<Epetra_Map> ( new Epetra_Map ( (int) d_global_size, (int) local_size,
-    // &ids[0], 0, comm ) );
+    // d_emap = std::shared_ptr<Epetra_Map> ( new Epetra_Map ( (int) d_global_size, (int)
+    // local_size, &ids[0], 0, comm ) );
     d_emap = std::make_shared<Epetra_Map>( (int) d_global_size, (int) local_size, 0, comm );
     // Check the map to make sure it is correct
     AMP_ASSERT( local_size == (size_t) d_emap->NumMyPoints() );
@@ -109,17 +113,16 @@ NativeEpetraVector::NativeEpetraVector( std::shared_ptr<VectorParameters> alias,
           std::dynamic_pointer_cast<NativeEpetraVectorParameters>( alias )->beginDOF(),
           std::dynamic_pointer_cast<NativeEpetraVectorParameters>( alias )->getLocalSize(),
           std::dynamic_pointer_cast<NativeEpetraVectorParameters>( alias )->getGlobalSize() ),
-      d_Params{ alias}
+      d_Params{ alias }
 {
     d_buf_scope = buf;
     CommunicationListParameters::shared_ptr params( new CommunicationListParameters() );
-    params->d_comm      = getComm();
-    auto local_size = std::dynamic_pointer_cast<NativeEpetraVectorParameters>( alias )->getLocalSize();
+    params->d_comm = getComm();
+    auto local_size =
+        std::dynamic_pointer_cast<NativeEpetraVectorParameters>( alias )->getLocalSize();
     params->d_localsize = local_size;
     setCommunicationList( std::make_shared<CommunicationList>( params ) );
-    d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>( local_size,
-                                                                      getComm() );
-  
+    d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>( local_size, getComm() );
 }
 
 NativeEpetraVector::~NativeEpetraVector() {}
@@ -128,21 +131,21 @@ Epetra_Vector &NativeEpetraVector::getEpetra_Vector() { return d_epetraVector; }
 
 const Epetra_Vector &NativeEpetraVector::getEpetra_Vector() const { return d_epetraVector; }
 
-AMP_MPI NativeEpetraVector::getComm() const {
-  
-  return std::dynamic_pointer_cast<NativeEpetraVectorParameters>(d_Params)->getComm();
+AMP_MPI NativeEpetraVector::getComm() const
+{
+
+    return std::dynamic_pointer_cast<NativeEpetraVectorParameters>( d_Params )->getComm();
 }
 
 Vector::shared_ptr NativeEpetraVector::cloneVector( const Variable::shared_ptr name ) const
 {
-  auto params = std::dynamic_pointer_cast<NativeEpetraVectorParameters>( d_Params );
-  auto buffer = std::make_shared<VectorDataCPU<double>>( params->beginDOF(),
-							 params->getLocalSize(),
-							 params->getGlobalSize());
-  
-  auto retVal = std::make_shared<NativeEpetraVector>(d_Params, buffer);
-  retVal->setVariable( name );
-  return retVal;
+    auto params = std::dynamic_pointer_cast<NativeEpetraVectorParameters>( d_Params );
+    auto buffer = std::make_shared<VectorDataCPU<double>>(
+        params->beginDOF(), params->getLocalSize(), params->getGlobalSize() );
+
+    auto retVal = std::make_shared<NativeEpetraVector>( d_Params, buffer );
+    retVal->setVariable( name );
+    return retVal;
 }
 
 void NativeEpetraVector::swapVectors( Vector &other )
@@ -157,12 +160,10 @@ void NativeEpetraVector::swapVectors( Vector &other )
 
 void NativeEpetraVector::aliasVector( Vector & )
 {
-  AMP_ERROR("NativeEpetraVector::aliasVector not implemented");
+    AMP_ERROR( "NativeEpetraVector::aliasVector not implemented" );
 }
 
-void NativeEpetraVector::assemble()
-{
-}
+void NativeEpetraVector::assemble() {}
 
 } // namespace LinearAlgebra
 } // namespace AMP

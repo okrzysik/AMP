@@ -75,8 +75,8 @@ TriangleMeshIterator<NG, NP, TYPE>::TriangleMeshIterator( const TriangleMeshIter
     d_element  = &d_cur_element;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-TriangleMeshIterator<NG, NP, TYPE> &TriangleMeshIterator<NG, NP, TYPE>::
-operator=( const TriangleMeshIterator &rhs )
+TriangleMeshIterator<NG, NP, TYPE> &
+TriangleMeshIterator<NG, NP, TYPE>::operator=( const TriangleMeshIterator &rhs )
 {
     if ( this == &rhs )
         return *this;

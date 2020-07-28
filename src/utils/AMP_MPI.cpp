@@ -240,7 +240,7 @@ std::string MPI_CLASS::info()
     char MPI_version_string[MPI_MAX_LIBRARY_VERSION_STRING];
     MPI_Get_library_version( MPI_version_string, &MPI_version_length );
     if ( MPI_version_length > 0 ) {
-        MPI_info = std::string ( MPI_version_string, MPI_version_length );
+        MPI_info   = std::string( MPI_version_string, MPI_version_length );
         size_t pos = MPI_info.find( '\n' );
         while ( pos != std::string::npos ) {
             MPI_info.insert( pos + 1, "   " );

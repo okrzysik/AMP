@@ -122,13 +122,11 @@ public: // Virtual functions
      */
     void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override;
 
-    void
-    setGhostValuesByGlobalID( int num, size_t *indices, const double *in_vals ) override;
+    void setGhostValuesByGlobalID( int num, size_t *indices, const double *in_vals ) override;
     void setValuesByGlobalID( int num, size_t *indices, const double *in_vals ) override;
     void addValuesByGlobalID( int num, size_t *indices, const double *in_vals ) override;
     void getValuesByGlobalID( int num, size_t *indices, double *out_vals ) const override;
-    void
-    getGhostValuesByGlobalID( int num, size_t *indices, double *out_vals ) const override;
+    void getGhostValuesByGlobalID( int num, size_t *indices, double *out_vals ) const override;
     void getValuesByLocalID( int num, size_t *indices, double *out_vals ) const override;
     size_t getGhostSize() const override;
     void makeConsistent( ScatterType t ) override;

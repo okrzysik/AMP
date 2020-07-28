@@ -195,22 +195,22 @@ public:
         local_mesh->reserve_elem( num_elem );
         local_mesh->reserve_nodes( num_nodes );
 
-        local_mesh->add_point(::libMesh::Point( 0.0, 0.0, 0.0 ), 0 );
-        local_mesh->add_point(::libMesh::Point( 0.5, 0.0, 0.0 ), 1 );
-        local_mesh->add_point(::libMesh::Point( 0.5, 0.5, 0.0 ), 2 );
-        local_mesh->add_point(::libMesh::Point( 0.0, 0.5, 0.0 ), 3 );
-        local_mesh->add_point(::libMesh::Point( 0.0, 0.0, 0.5 ), 4 );
-        local_mesh->add_point(::libMesh::Point( 0.5, 0.0, 0.5 ), 5 );
-        local_mesh->add_point(::libMesh::Point( 0.5, 0.5, 0.5 ), 6 );
-        local_mesh->add_point(::libMesh::Point( 0.0, 0.5, 0.5 ), 7 );
-        local_mesh->add_point(::libMesh::Point( 1.0, 0.0, 0.0 ), 8 );
-        local_mesh->add_point(::libMesh::Point( 1.0, 0.5, 0.0 ), 9 );
-        local_mesh->add_point(::libMesh::Point( 1.0, 0.0, 0.5 ), 10 );
-        local_mesh->add_point(::libMesh::Point( 1.0, 0.5, 0.5 ), 11 );
-        local_mesh->add_point(::libMesh::Point( 1.0, 1.0, 0.0 ), 12 );
-        local_mesh->add_point(::libMesh::Point( 0.5, 1.0, 0.0 ), 13 );
-        local_mesh->add_point(::libMesh::Point( 1.0, 1.0, 0.5 ), 14 );
-        local_mesh->add_point(::libMesh::Point( 0.5, 1.0, 0.5 ), 15 );
+        local_mesh->add_point( ::libMesh::Point( 0.0, 0.0, 0.0 ), 0 );
+        local_mesh->add_point( ::libMesh::Point( 0.5, 0.0, 0.0 ), 1 );
+        local_mesh->add_point( ::libMesh::Point( 0.5, 0.5, 0.0 ), 2 );
+        local_mesh->add_point( ::libMesh::Point( 0.0, 0.5, 0.0 ), 3 );
+        local_mesh->add_point( ::libMesh::Point( 0.0, 0.0, 0.5 ), 4 );
+        local_mesh->add_point( ::libMesh::Point( 0.5, 0.0, 0.5 ), 5 );
+        local_mesh->add_point( ::libMesh::Point( 0.5, 0.5, 0.5 ), 6 );
+        local_mesh->add_point( ::libMesh::Point( 0.0, 0.5, 0.5 ), 7 );
+        local_mesh->add_point( ::libMesh::Point( 1.0, 0.0, 0.0 ), 8 );
+        local_mesh->add_point( ::libMesh::Point( 1.0, 0.5, 0.0 ), 9 );
+        local_mesh->add_point( ::libMesh::Point( 1.0, 0.0, 0.5 ), 10 );
+        local_mesh->add_point( ::libMesh::Point( 1.0, 0.5, 0.5 ), 11 );
+        local_mesh->add_point( ::libMesh::Point( 1.0, 1.0, 0.0 ), 12 );
+        local_mesh->add_point( ::libMesh::Point( 0.5, 1.0, 0.0 ), 13 );
+        local_mesh->add_point( ::libMesh::Point( 1.0, 1.0, 0.5 ), 14 );
+        local_mesh->add_point( ::libMesh::Point( 0.5, 1.0, 0.5 ), 15 );
 
         auto elemNodeMap = getElemNodeMap();
         for ( size_t i = 0; i < elemNodeMap.size(); i++ ) {

@@ -41,7 +41,7 @@ create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri );
 //! Create triangles neighbors from the triangles
 template<size_t NG>
 std::vector<std::vector<std::array<int64_t, NG + 1>>>
-    splitDomains( std::vector<std::array<int64_t, NG + 1>> tri );
+splitDomains( std::vector<std::array<int64_t, NG + 1>> tri );
 
 //! Read an STL file and generate a mesh (triangle mesh or multi-mesh)
 std::shared_ptr<AMP::Mesh::Mesh> generateSTL( std::shared_ptr<AMP::Mesh::MeshParameters> params );

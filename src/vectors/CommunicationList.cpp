@@ -318,20 +318,11 @@ size_t CommunicationList::getTotalSize() const { return d_iTotalRows; }
 
 CommunicationList::~CommunicationList() {}
 
-const std::vector<size_t> &CommunicationList::getGhostIDList() const
-{
-    return d_ReceiveDOFList;
-}
+const std::vector<size_t> &CommunicationList::getGhostIDList() const { return d_ReceiveDOFList; }
 
-const std::vector<size_t> &CommunicationList::getReplicatedIDList() const
-{
-    return d_SendDOFList;
-}
+const std::vector<size_t> &CommunicationList::getReplicatedIDList() const { return d_SendDOFList; }
 
-size_t CommunicationList::getVectorReceiveBufferSize() const
-{
-    return d_ReceiveDOFList.size();
-}
+size_t CommunicationList::getVectorReceiveBufferSize() const { return d_ReceiveDOFList.size(); }
 
 size_t CommunicationList::getVectorSendBufferSize() const { return d_SendDOFList.size(); }
 

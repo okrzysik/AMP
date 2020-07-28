@@ -217,7 +217,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
-    auto comm         = AMP::AMP_MPI( AMP_COMM_WORLD );
+    auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
 
     auto linearSolver = buildSolver( input_db, "LinearSolver", comm, linearOperator );
 
@@ -246,16 +246,17 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
 
     if ( finalResidualNorm > 10.0 ) {
 
-      auto solver_db = input_db->getDatabase( "LinearSolver" );   
-      auto solver_combo_name = solver_db->getString( "name" );
-      auto use_preconditioner = solver_db->getWithDefault<bool>( "use_preconditioner", false );
-      if( use_preconditioner ) {
-	std::string pc_name = solver_db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
-	solver_combo_name = solver_combo_name+"+"+pc_name;
-      }
-      
-      ut->failure( solver_combo_name + " does not solve a linear thermal problem with a nuclear "
-                     "source term." );
+        auto solver_db          = input_db->getDatabase( "LinearSolver" );
+        auto solver_combo_name  = solver_db->getString( "name" );
+        auto use_preconditioner = solver_db->getWithDefault<bool>( "use_preconditioner", false );
+        if ( use_preconditioner ) {
+            std::string pc_name =
+                solver_db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
+            solver_combo_name = solver_combo_name + "+" + pc_name;
+        }
+
+        ut->failure( solver_combo_name + " does not solve a linear thermal problem with a nuclear "
+                                         "source term." );
     }
 
     // Plot the results

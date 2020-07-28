@@ -218,8 +218,8 @@ void linearFickTest( AMP::UnitTest *ut )
                 file.close();
             }
         }
-	if ( passes )
-	  ut->passes( "The linear fick solve is verified." );
+        if ( passes )
+            ut->passes( "The linear fick solve is verified." );
     }
 
 // Plot the results

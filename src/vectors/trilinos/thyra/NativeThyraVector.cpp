@@ -5,9 +5,9 @@
 // Trilinos includes
 DISABLE_WARNINGS
 //#include "Thyra_SpmdVectorBase_def.hpp"
+#include "Thyra_DefaultSpmdVector_def.hpp"
 #include "Thyra_VectorStdOps_def.hpp"
 #include "Trilinos_version.h"
-#include "Thyra_DefaultSpmdVector_def.hpp"
 ENABLE_WARNINGS
 
 
@@ -19,7 +19,7 @@ namespace LinearAlgebra {
  * Constructors                                                          *
  ************************************************************************/
 NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
-  : NativeVector(), ThyraVector()
+    : NativeVector(), ThyraVector()
 {
     auto params = std::dynamic_pointer_cast<NativeThyraVectorParameters>( in_params );
     AMP_ASSERT( params != nullptr );
@@ -160,7 +160,7 @@ Vector::shared_ptr NativeThyraVector::getManagedVectorCopy( AMP_MPI comm )
     AMP_ERROR( "Not programmed yet" );
     return Vector::shared_ptr();
 }
- 
+
 Vector::shared_ptr NativeThyraVector::getManagedVectorDuplicate( AMP_MPI comm )
 {
     NULL_USE( comm );
@@ -218,10 +218,7 @@ void NativeThyraVector::scale( double alpha, const VectorOperations &x )
 }
 
 
-void NativeThyraVector::scale( double alpha )
-{
-    Thyra::scale<double>( alpha, d_thyraVec.ptr() );
-}
+void NativeThyraVector::scale( double alpha ) { Thyra::scale<double>( alpha, d_thyraVec.ptr() ); }
 
 
 void NativeThyraVector::add( const VectorOperations &x, const VectorOperations &y )
@@ -263,9 +260,9 @@ void NativeThyraVector::reciprocal( const VectorOperations &x )
 
 
 void NativeThyraVector::linearSum( double alpha,
-                                          const VectorOperations &x,
-                                          double beta,
-                                          const VectorOperations &y )
+                                   const VectorOperations &x,
+                                   double beta,
+                                   const VectorOperations &y )
 {
     std::vector<double> alpha_vec( 2, 1.0 );
     alpha_vec[0] = alpha;
@@ -279,8 +276,7 @@ void NativeThyraVector::linearSum( double alpha,
 }
 
 
-void
-NativeThyraVector::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
+void NativeThyraVector::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
 {
     linearSum( alpha, x, 1.0, y );
 }
@@ -314,22 +310,13 @@ void NativeThyraVector::setRandomValues( void )
 }
 
 
-double NativeThyraVector::L1Norm( void ) const
-{
-    return Thyra::norm_1<double>( *d_thyraVec );
-}
+double NativeThyraVector::L1Norm( void ) const { return Thyra::norm_1<double>( *d_thyraVec ); }
 
 
-double NativeThyraVector::L2Norm( void ) const
-{
-    return Thyra::norm_2<double>( *d_thyraVec );
-}
+double NativeThyraVector::L2Norm( void ) const { return Thyra::norm_2<double>( *d_thyraVec ); }
 
 
-double NativeThyraVector::maxNorm( void ) const
-{
-    return Thyra::norm_inf<double>( *d_thyraVec );
-}
+double NativeThyraVector::maxNorm( void ) const { return Thyra::norm_inf<double>( *d_thyraVec ); }
 
 
 double NativeThyraVector::dot( const VectorOperations &x ) const
@@ -347,8 +334,7 @@ void NativeThyraVector::setValuesByLocalID( int num, size_t *indices, const doub
 }
 
 
-void
-NativeThyraVector::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+void NativeThyraVector::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
     NULL_USE( num );
     NULL_USE( indices );
@@ -366,8 +352,7 @@ void NativeThyraVector::addValuesByLocalID( int num, size_t *indices, const doub
 }
 
 
-void
-NativeThyraVector::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+void NativeThyraVector::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
     NULL_USE( num );
     NULL_USE( indices );
@@ -385,8 +370,7 @@ size_t NativeThyraVector::getLocalSize() const { return d_local; }
 size_t NativeThyraVector::getGlobalSize() const { return d_thyraVec->space()->dim(); }
 
 
-void
-NativeThyraVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
+void NativeThyraVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
     NULL_USE( numVals );
     NULL_USE( ndx );

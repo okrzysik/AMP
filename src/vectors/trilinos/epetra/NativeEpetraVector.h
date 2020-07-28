@@ -65,13 +65,13 @@ public:
     inline AMP_MPI getComm() const { return d_comm; }
 
 private:
-    size_t d_begin = 0;  // Starting DOF
+    size_t d_begin = 0; // Starting DOF
 
-    size_t d_end   = 0;    // Ending DOF
+    size_t d_end = 0; // Ending DOF
 
     //! The local size of the vector
-    size_t d_local_size  = 0;
-    
+    size_t d_local_size = 0;
+
     //! The global size of the vector
     size_t d_global_size = 0;
 
@@ -80,7 +80,6 @@ private:
 
     //! Epetra map
     std::shared_ptr<Epetra_Map> d_emap = nullptr;
-    
 };
 
 
@@ -90,12 +89,10 @@ private:
  * libraries, it is very difficult to separate the data from the engine.  For this
  * reason, the NativeEpetraVector contains the Epetra_Vector to operate on.
  */
-class NativeEpetraVector : public Vector,
-                           public EpetraVectorData,
-                           public EpetraVectorOperations
+class NativeEpetraVector : public Vector, public EpetraVectorData, public EpetraVectorOperations
 {
 protected:
-  std::shared_ptr<VectorParameters> d_Params;
+    std::shared_ptr<VectorParameters> d_Params;
 
 public:
     /** \brief Constructor

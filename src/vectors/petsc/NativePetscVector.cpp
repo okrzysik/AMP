@@ -10,7 +10,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params )
-  : NativeVector(), PetscVector()
+    : NativeVector(), PetscVector()
 {
     auto npvParams = std::dynamic_pointer_cast<NativePetscVectorParameters>( in_params );
     d_petscVec     = npvParams->d_InVec;
@@ -210,10 +210,10 @@ void NativePetscVector::scale( double alpha )
 
 // Function to perform  this = alpha x + beta y + gamma this
 void NativePetscVector::axpbypcz( double alpha,
-                                         const VectorOperations &vx,
-                                         double beta,
-                                         const VectorOperations &vy,
-                                         double gamma )
+                                  const VectorOperations &vx,
+                                  double beta,
+                                  const VectorOperations &vy,
+                                  double gamma )
 {
     resetArray();
     Vec x = dynamic_cast<const NativePetscVector *>( &vx )->getVec();
@@ -279,16 +279,15 @@ void NativePetscVector::reciprocal( const VectorOperations &x )
 
 
 void NativePetscVector::linearSum( double alpha,
-                                          const VectorOperations &x,
-                                          double beta,
-                                          const VectorOperations &y )
+                                   const VectorOperations &x,
+                                   double beta,
+                                   const VectorOperations &y )
 {
     axpbypcz( alpha, x, beta, y, 0.0 );
 }
 
 
-void
-NativePetscVector::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
+void NativePetscVector::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
 {
     axpbypcz( alpha, x, 1.0, y, 0.0 );
 }
@@ -373,8 +372,7 @@ void NativePetscVector::setValuesByLocalID( int num, size_t *indices, const doub
 }
 
 
-void
-NativePetscVector::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+void NativePetscVector::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
     resetArray();
     if ( sizeof( size_t ) == sizeof( PetscInt ) ) {
@@ -396,8 +394,7 @@ void NativePetscVector::addValuesByLocalID( int num, size_t *indices, const doub
 }
 
 
-void
-NativePetscVector::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+void NativePetscVector::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
     resetArray();
     if ( sizeof( size_t ) == sizeof( PetscInt ) ) {
@@ -455,8 +452,7 @@ const void *NativePetscVector::getRawDataBlockAsVoid( size_t i ) const
 }
 
 
-void
-NativePetscVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
+void NativePetscVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
     if ( numVals == 0 )
         return;

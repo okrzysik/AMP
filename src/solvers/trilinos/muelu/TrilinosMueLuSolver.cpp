@@ -106,9 +106,10 @@ TrilinosMueLuSolver::getSmootherFactory( const int level )
 {
     std::string ifpackType;
     Teuchos::RCP<MueLu::SmootherPrototype<SC, LO, GO, NO>> smootherPrototype;
-   
-    //const auto &mueLuLevel = d_mueluHierarchy->GetLevel( level );
-    //    const auto A           = mueLuLevel->Get<Teuchos::RCP<Xpetra::Operator<SC, LO, GO, NO>>>( "A" );
+
+    // const auto &mueLuLevel = d_mueluHierarchy->GetLevel( level );
+    //    const auto A           = mueLuLevel->Get<Teuchos::RCP<Xpetra::Operator<SC, LO, GO, NO>>>(
+    //    "A" );
 
     auto &smootherParams = getSmootherParameters( level );
 
@@ -153,7 +154,7 @@ TrilinosMueLuSolver::getXpetraMatrix( std::shared_ptr<AMP::Operator::LinearOpera
 
 Teuchos::ParameterList &TrilinosMueLuSolver::getSmootherParameters( const int level )
 {
-    NULL_USE(level);
+    NULL_USE( level );
     auto &smootherParams = d_MueLuParameterList.get<Teuchos::ParameterList>( "smoother: params" );
 
 #if 0
