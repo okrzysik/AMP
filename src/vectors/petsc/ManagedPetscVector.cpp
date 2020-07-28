@@ -743,7 +743,6 @@ ManagedPetscVector::ManagedPetscVector( VectorParameters::shared_ptr params )
 {
     initPetsc();
     registerListener( this );
-    AMP_ERROR("ManagedPetscVector( VectorParameters::shared_ptr params");
 }
 
 
@@ -754,7 +753,6 @@ ManagedPetscVector::ManagedPetscVector( Vector::shared_ptr alias )
     auto firer = std::dynamic_pointer_cast<DataChangeFirer>( alias );
     if ( firer )
         firer->registerListener( this );
-    AMP_ERROR("ManagedPetscVector( Vector::shared_ptr alias)");
 }
 
 
