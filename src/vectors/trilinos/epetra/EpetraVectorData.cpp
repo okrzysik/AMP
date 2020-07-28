@@ -96,6 +96,10 @@ void EpetraVectorData::copyOutRawData( double *out ) const { d_epetraVector.Extr
 
 std::shared_ptr<VectorData> EpetraVectorData::cloneData() const
 {
+  std::cout << "EpetraVectorData::cloneData with "
+	    << "getLocalStartID() " << getLocalStartID()
+	    << ", getLocalSize() " << getLocalSize()
+	    << ", getGlobalSize()" << getGlobalSize() << std::endl;
     auto buffer = std::make_shared<VectorDataCPU<double>>(
         getLocalStartID(), getLocalSize(), getGlobalSize() );
     return buffer;
