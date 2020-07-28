@@ -40,8 +40,11 @@ inline ManagedVector *ManagedEpetraVector::getNewRawPtr() const
 inline Vector::shared_ptr ManagedEpetraVector::cloneVector( const Variable::shared_ptr var ) const
 {
     auto p      = std::make_shared<ManagedVectorParameters>();
-    p->d_Buffer = std::make_shared<VectorDataCPU<double>>(
-        d_vBuffer->getLocalStartID(), d_vBuffer->getLocalSize(), d_vBuffer->getGlobalSize() );
+
+    // at present all the code I have seen has an implicit
+    // assumption that d_vBuffer is non null. In future this should change
+    // if we allow for the case that this is null
+    p->d_Buffer     = d_vBuffer->cloneData();   
     p->d_Engine     = cloneVectorEngine( p->d_Buffer );
     p->d_CommList   = getCommunicationList();
     p->d_DOFManager = getDOFManager();

@@ -854,6 +854,7 @@ ManagedPetscVector *ManagedPetscVector::rawClone() const
     p->d_Buffer = d_vBuffer->cloneData();
     if ( !p->d_Buffer ) {
         auto vec    = std::dynamic_pointer_cast<Vector>( d_Engine );
+	AMP_ASSERT(vec);
         auto vec2   = vec->cloneVector();
         p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
         p->d_Engine = std::dynamic_pointer_cast<VectorOperations>( vec2 );

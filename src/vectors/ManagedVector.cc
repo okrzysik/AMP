@@ -58,9 +58,6 @@ ManagedVector::cloneVectorEngine( std::shared_ptr<VectorData> p ) const
     auto engine = std::dynamic_pointer_cast<VectorEngine>( d_Engine );
     if ( engine )
         return engine->cloneEngine( p );
-    // auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
-    // if ( vec )
-    //    return std::dynamic_pointer_cast<VectorOperations>( vec->cloneVector( "engine_clone" ) );
     AMP_ERROR( "Unable to clone engine" );
     return std::shared_ptr<VectorOperations>();
 }
