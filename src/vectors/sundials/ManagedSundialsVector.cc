@@ -1,5 +1,5 @@
 #include "AMP/vectors/sundials/ManagedSundialsVector.h"
-#include "AMP/vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/data/VectorData.h"
 
 #include "AMP/utils/UtilityMacros.h"
 
