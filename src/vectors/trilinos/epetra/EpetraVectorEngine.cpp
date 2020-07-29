@@ -83,6 +83,7 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
     AMP_ASSERT( 0 == (size_t) d_emap->MinAllGID() );
     AMP_ASSERT( d_global - 1 == (size_t) d_emap->MaxAllGID() );
     AMP_ASSERT( 0 == (size_t) d_emap->MinLID() );
+    AMP_ASSERT( d_emap->LinearMap() );
     if ( local_size == 0 )
         AMP_ASSERT( 0 == (size_t) d_emap->MaxLID() );
     else
@@ -108,7 +109,6 @@ EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<VectorEngineParameters> 
     d_buf_scope  = buf;
     d_VectorData = dynamic_cast<VectorData *>( this );
 }
-
 
 std::shared_ptr<VectorEngine> EpetraVectorEngine::cloneEngine( std::shared_ptr<VectorData> p ) const
 {
