@@ -300,7 +300,7 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     AMP_ASSERT(
         ( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
         ( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
-    std::cout << "SNES Update Status " << u->getUpdateStatus() << std::endl;
+    std::cout << "SNES Update Status " << static_cast<std::underlying_type<AMP::LinearAlgebra::Vector::UpdateState>::type>(u->getUpdateStatus()) << std::endl;
     AMP_ASSERT(
         ( spRhs->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
         ( spRhs->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
