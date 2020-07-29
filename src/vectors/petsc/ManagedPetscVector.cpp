@@ -854,7 +854,7 @@ ManagedPetscVector *ManagedPetscVector::rawClone() const
     auto p      = std::make_shared<ManagedPetscVectorParameters>();
     auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec ) {
-        auto vec2   = vec->cloneVector();
+        auto vec2   = vec->cloneVector("ManagedPetscVectorClone");
         p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
         p->d_Engine = std::dynamic_pointer_cast<VectorOperations>( vec2 );
     } else {
