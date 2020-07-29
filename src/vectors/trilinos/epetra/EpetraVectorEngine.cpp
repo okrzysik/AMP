@@ -97,7 +97,8 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
  ********************************************************/
 EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<VectorEngineParameters> alias,
                                         std::shared_ptr<VectorData> buf )
-    : EpetraVectorData(
+  : Vector(),
+    EpetraVectorData(
           View,
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
           getBufferPtr( buf ),
