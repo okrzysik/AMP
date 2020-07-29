@@ -62,7 +62,7 @@ Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
     } else {
         // Create a multivector to wrap the given vector and create a view
         auto engineParams = std::make_shared<EpetraVectorEngineParameters>(
-            inVector->getLocalSize(), inVector->getGlobalSize(), inVector->getComm() );
+            inVector->getCommunicationList(), inVector->getDOFManager() );
         auto engine = std::make_shared<EpetraVectorEngine>( engineParams, inVector );
         retVal      = createManagedEpetraVector( inVector, engine );
     }

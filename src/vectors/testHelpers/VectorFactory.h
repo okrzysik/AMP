@@ -205,17 +205,18 @@ public:
         AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
         const int start   = nLocal * globalComm.getRank();
         const int nGlobal = nLocal * globalComm.getSize();
-        auto epetraParams = std::make_shared<AMP::LinearAlgebra::EpetraVectorEngineParameters>(
-            nLocal, nGlobal, globalComm );
+	auto commList = AMP::LinearAlgebra::CommunicationList::createEmpty( nLocal, globalComm );
+	auto dofManager = std::make_shared<AMP::Discretization::DOFManager>( nLocal, globalComm );
+        auto epetraParams = std::make_shared<AMP::LinearAlgebra::EpetraVectorEngineParameters>( commList, dofManager );
         auto managedParams = std::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
         managedParams->d_Buffer =
             std::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
         managedParams->d_Engine = std::make_shared<AMP::LinearAlgebra::EpetraVectorEngine>(
             epetraParams, managedParams->d_Buffer );
-        managedParams->d_CommList =
-            AMP::LinearAlgebra::CommunicationList::createEmpty( nLocal, globalComm );
-        managedParams->d_DOFManager =
-            std::make_shared<AMP::Discretization::DOFManager>( nLocal, globalComm );
+        managedParams->d_CommList = commList;
+            
+        managedParams->d_DOFManager = dofManager;
+            
         auto retval = std::make_shared<TYPE>( managedParams );
         retval->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
         return retval;
