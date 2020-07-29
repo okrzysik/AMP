@@ -37,10 +37,11 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     d_Engine  = d_pParameters->d_Engine;
     AMP_ASSERT( d_vBuffer );
     AMP_ASSERT( d_Engine );
-    auto engine = std::dynamic_pointer_cast<VectorEngine>( d_Engine );
-    if ( engine ) {
-      auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
-      if(vec) vec->setCommunicationList(getCommunicationList());
+    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    if(vec) vec->setCommunicationList(getCommunicationList());
+    else {
+      AMP_ERROR("ManagedVector::ManagedVector() should not have reached here!");
+      
     }    
 }
 ManagedVector::ManagedVector( shared_ptr alias )
@@ -53,24 +54,6 @@ ManagedVector::ManagedVector( shared_ptr alias )
     setVariable( vec->getVariable() );
     aliasGhostBuffer( vec );
 }
-std::shared_ptr<VectorOperations>
-ManagedVector::cloneVectorEngine( std::shared_ptr<VectorData> p ) const
-{
-    auto multivec = std::dynamic_pointer_cast<MultiVector>( d_Engine );
-    if ( multivec ) {
-	std::cout << "ManagedPetscVector::rawClone of  " << multivec->type() << std::endl;
-        return std::dynamic_pointer_cast<VectorOperations>(
-            multivec->cloneVector( "engine_clone" ) );
-    }
-    auto engine = std::dynamic_pointer_cast<VectorEngine>( d_Engine );
-    if ( engine ) {
-	std::cout << "ManagedVector::cloneEngine " << std::endl;      
-        return engine->cloneEngine( p );
-    }
-    AMP_ERROR( "Unable to clone engine" );
-    return std::shared_ptr<VectorOperations>();
-}
-
 
 /********************************************************
  * Subset                                                *
@@ -489,7 +472,6 @@ double ManagedVector::dot( const VectorOperations &x ) const
 
 std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
 {
-#if 1
     std::shared_ptr<Vector> retVal( getNewRawPtr() );
     auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec ) {
@@ -499,9 +481,6 @@ std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr n
     } else {
       AMP_ERROR("ManagedVector::cloneVector() should not have reached here!");
     }    
-#else
-    getManaged( retVal )->d_Engine = cloneVectorEngine();
-#endif
     retVal->setVariable( name );
     return retVal;
 }
