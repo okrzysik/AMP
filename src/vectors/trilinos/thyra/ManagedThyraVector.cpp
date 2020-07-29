@@ -52,11 +52,13 @@ std::string ManagedThyraVector::ManagedThyraVector::type() const
 Vector::shared_ptr ManagedThyraVector::cloneVector( const Variable::shared_ptr var ) const
 {
     std::shared_ptr<ManagedThyraVectorParameters> p( new ManagedThyraVectorParameters() );
-    p->d_Engine = cloneVectorEngine( p->d_Buffer );
-    p->d_Buffer = std::dynamic_pointer_cast<VectorData>( d_vBuffer )->cloneData();
-    if ( !p->d_Buffer ) {
-        auto vec    = std::dynamic_pointer_cast<Vector>( p->d_Engine );
-        p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec );
+    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    if ( vec ) {
+        auto vec2   = vec->cloneVector("ManagedThyraVectorClone");
+        p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
+        p->d_Engine = std::dynamic_pointer_cast<VectorOperations>( vec2 );
+    } else {
+      AMP_ERROR("ManagedThyraVector::rawClone() should not have reached here!");
     }
     p->d_CommList             = getCommunicationList();
     p->d_DOFManager           = getDOFManager();
