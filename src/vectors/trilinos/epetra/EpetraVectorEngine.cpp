@@ -36,6 +36,20 @@ static inline Epetra_Vector &getEpetraVector( VectorOperations &vec )
 /********************************************************
  * EpetraVectorEngineParameters constructors             *
  ********************************************************/
+EpetraVectorEngineParameters::EpetraVectorEngineParameters( std::shared_ptr<CommunicationList> commList,
+							    std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
+  : VectorParameters()
+{
+  d_CommList      = commList;
+  d_DOFManager    = dofManager;
+  AMP_INSIST(d_DOFManager, "Requires a non null DOFManager" );
+  auto local_size = d_DOFManager->numLocalDOF();
+  d_global        = d_DOFManager->numGlobalDOF();
+  d_comm          = d_DOFManager->getComm();
+  d_comm.sumScan( &local_size, &d_end, 1 );
+  d_begin = d_end - local_size;
+}
+  
 EpetraVectorEngineParameters::EpetraVectorEngineParameters( size_t local_size,
                                                             size_t global_size,
                                                             const AMP_MPI &comm )

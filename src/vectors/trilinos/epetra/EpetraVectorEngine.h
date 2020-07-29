@@ -15,9 +15,16 @@ namespace LinearAlgebra {
 /** \class EpetraVectorEngineParameters
  * \brief Class that details how to construct an EpetraVectorEngine
  */
-class EpetraVectorEngineParameters
+class EpetraVectorEngineParameters: public VectorParameters
 {
 public:
+
+    /** \brief Constructor
+     * \param[in] commList: communication list
+     * \param[in] dofManager: DOFManager
+    */
+    EpetraVectorEngineParameters( std::shared_ptr<CommunicationList> commList,
+				  std::shared_ptr<AMP::Discretization::DOFManager> dofManager );
     /** \brief Constructor
         \param[in] local_size     The number of elements on this core
         \param[in] global_size    The number of elements in total
@@ -62,14 +69,12 @@ public:
      */
     inline AMP_MPI getComm() const { return d_comm; }
 
-protected:
-    size_t d_begin;  // Starting DOF
-    size_t d_end;    // Ending DOF
-    size_t d_global; // Number of global DOFs
-    AMP_MPI d_comm;  // Comm
-
 private:
-    std::shared_ptr<Epetra_Map> d_emap; // Epetra map
+    size_t d_begin  = 0;  // Starting DOF
+    size_t d_end    = 0;    // Ending DOF
+    size_t d_global = 0; // Number of global DOFs
+    AMP_MPI d_comm;  // Comm
+    std::shared_ptr<Epetra_Map> d_emap = nullptr; // Epetra map
 };
 
 
