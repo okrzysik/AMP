@@ -852,26 +852,13 @@ bool ManagedPetscVector::constructedWithPetscDuplicate() { return d_bMadeWithPet
 ManagedPetscVector *ManagedPetscVector::rawClone() const
 {
     auto p      = std::make_shared<ManagedPetscVectorParameters>();
-    p->d_Buffer = d_vBuffer->cloneData();
-    if ( !p->d_Buffer ) {
-        auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
-	std::cout << "ManagedPetscVector::rawClone of  " << vec->type() << std::endl;
-        AMP_ASSERT( vec );
+    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    if ( vec ) {
         auto vec2   = vec->cloneVector();
         p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
         p->d_Engine = std::dynamic_pointer_cast<VectorOperations>( vec2 );
     } else {
-	std::cout << "ManagedPetscVector::cloneVectorEngine " << std::endl;
-	#if 1
-        auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
-        AMP_ASSERT( vec );
-        auto vec2   = vec->cloneVector("ManagedPetscVectorClone");
-        p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
-        p->d_Engine = std::dynamic_pointer_cast<VectorOperations>( vec2 );
- 	
-	#else
-        p->d_Engine = cloneVectorEngine( p->d_Buffer );
-#endif
+      AMP_ERROR("ManagedPetscVector::rawClone() should not have reached here!");
     }
     p->d_CommList   = getCommunicationList();
     p->d_DOFManager = getDOFManager();
