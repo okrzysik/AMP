@@ -36,6 +36,9 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     d_Engine  = d_pParameters->d_Engine;
     AMP_ASSERT( d_vBuffer );
     AMP_ASSERT( d_Engine );
+    d_vBuffer->setUpdateStatusPtr(getUpdateStatusPtr());
+    auto vec = std::dynamic_pointer_cast<Vector>(d_Engine);
+    if(vec) vec->setUpdateStatusPtr(getUpdateStatusPtr());
 }
 ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
@@ -46,6 +49,9 @@ ManagedVector::ManagedVector( shared_ptr alias )
     d_pParameters = vec->d_pParameters;
     setVariable( vec->getVariable() );
     aliasGhostBuffer( vec );
+    if (d_vBuffer) d_vBuffer->setUpdateStatusPtr(getUpdateStatusPtr());
+    auto vec2 = std::dynamic_pointer_cast<Vector>(d_Engine);
+    if(vec2) vec2->setUpdateStatusPtr(getUpdateStatusPtr());
 }
 
 /********************************************************
@@ -108,11 +114,7 @@ void ManagedVector::copy( const VectorOperations &other )
         // We have two data engines, perform the copy between them
         vec1->copy( vec2 );
         fireDataChange();
-	#if 1
-	setUpdateStatus( *( other.getVectorData()->getUpdateStatusPtr() ) );
-	#else
         *d_UpdateState = *( other.getVectorData()->getUpdateStatusPtr() );
-	#endif
     } else {
         // Default, general case
         VectorOperationsDefault::copy( other );
@@ -168,6 +170,14 @@ void ManagedVector::swapVectors( Vector &other )
     std::swap( d_vBuffer, in->d_vBuffer );
     std::swap( d_Engine, in->d_Engine );
     std::swap( d_pParameters, in->d_pParameters );
+
+    d_vBuffer->setUpdateStatusPtr(getUpdateStatusPtr());
+    auto vec = std::dynamic_pointer_cast<Vector>(d_Engine);
+    if(vec) vec->setUpdateStatusPtr(getUpdateStatusPtr());
+
+    in->d_vBuffer->setUpdateStatusPtr(in->getUpdateStatusPtr());
+    vec = std::dynamic_pointer_cast<Vector>(in->d_Engine);
+    if(vec) vec->setUpdateStatusPtr(in->getUpdateStatusPtr());
 }
 
 
@@ -207,11 +217,7 @@ void ManagedVector::setValuesByLocalID( int i, size_t *id, const double *val )
 {
     AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
     if ( *d_UpdateState == UpdateState::UNCHANGED )
-#if 1
-      setUpdateStatus(UpdateState::LOCAL_CHANGED);
-#else
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
-#endif
     d_Engine->getVectorData()->setValuesByLocalID( i, id, val );
     fireDataChange();
 }
@@ -220,11 +226,7 @@ void ManagedVector::setLocalValuesByGlobalID( int numVals, size_t *ndx, const do
 {
     AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
     if ( *d_UpdateState == UpdateState::UNCHANGED )
-#if 1
-      setUpdateStatus(UpdateState::LOCAL_CHANGED);
-#else
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
-#endif
     d_Engine->getVectorData()->setLocalValuesByGlobalID( numVals, ndx, vals );
     fireDataChange();
 }
@@ -244,11 +246,7 @@ void ManagedVector::setValuesByGlobalID( int numVals, size_t *ndx, const double 
     Vector::shared_ptr vec = std::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() != nullptr ) {
         AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
-#if 1
-      setUpdateStatus(UpdateState::SETTING);
-#else
         *d_UpdateState = UpdateState::SETTING;
-#endif
         vec->setValuesByGlobalID( numVals, ndx, vals );
         fireDataChange();
     } else {
@@ -281,11 +279,7 @@ void ManagedVector::addValuesByLocalID( int i, size_t *id, const double *val )
 {
     AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
     if ( *d_UpdateState == UpdateState::UNCHANGED )
-#if 1
-      setUpdateStatus(UpdateState::LOCAL_CHANGED);
-#else
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
-#endif
     d_Engine->getVectorData()->addValuesByLocalID( i, id, val );
     fireDataChange();
 }
@@ -294,11 +288,8 @@ void ManagedVector::addLocalValuesByGlobalID( int i, size_t *id, const double *v
 {
     AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
     if ( *d_UpdateState == UpdateState::UNCHANGED )
-#if 1
-      setUpdateStatus(UpdateState::LOCAL_CHANGED);
-#else
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
-#endif
+
     d_Engine->getVectorData()->addLocalValuesByGlobalID( i, id, val );
     fireDataChange();
 }
@@ -528,8 +519,7 @@ Vector::shared_ptr ManagedVector::getRootVector()
 void ManagedVector::dataChanged()
 {
     if ( *d_UpdateState == UpdateState::UNCHANGED )
-       setUpdateStatus( UpdateState::LOCAL_CHANGED );
-    //        *d_UpdateState = UpdateState::LOCAL_CHANGED;
+       *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 
