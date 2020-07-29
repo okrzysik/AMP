@@ -489,8 +489,19 @@ double ManagedVector::dot( const VectorOperations &x ) const
 
 std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
 {
+#if 1
     std::shared_ptr<Vector> retVal( getNewRawPtr() );
+    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    if ( vec ) {
+        auto vec2   = vec->cloneVector("ManagedVectorClone");
+        getManaged( retVal )->d_vBuffer = std::dynamic_pointer_cast<VectorData>( vec2 );
+        getManaged( retVal )->d_Engine = std::dynamic_pointer_cast<VectorOperations>( vec2 );
+    } else {
+      AMP_ERROR("ManagedVector::cloneVector() should not have reached here!");
+    }    
+#else
     getManaged( retVal )->d_Engine = cloneVectorEngine();
+#endif
     retVal->setVariable( name );
     return retVal;
 }
