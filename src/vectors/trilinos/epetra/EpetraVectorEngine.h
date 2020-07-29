@@ -98,7 +98,7 @@ public: // Functions derived from VectorData
     using VectorData::getComm;
     AMP_MPI getComm() const override { return d_Params->getComm(); }
 
- public: // Functions derived from Vector
+public: // Functions derived from Vector
     using Vector::cloneVector;
 
     std::string type() const override { return "EpetraVectorEngine"; }

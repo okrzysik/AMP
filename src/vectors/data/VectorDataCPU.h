@@ -175,10 +175,9 @@ public: // Advanced virtual functions
     std::shared_ptr<VectorData> cloneData() const override
     {
         auto retVal = std::make_shared<VectorDataCPU<TYPE>>( *this );
-	std::cout << "VectorDataCPU::cloneData with "
-		  << " startIndex " << retVal->d_startIndex
-		  << ", localSize " << retVal->d_Data.size()
-		  << ", globalSize " << retVal->d_globalSize << std::endl;
+        std::cout << "VectorDataCPU::cloneData with "
+                  << " startIndex " << retVal->d_startIndex << ", localSize "
+                  << retVal->d_Data.size() << ", globalSize " << retVal->d_globalSize << std::endl;
         return retVal;
     }
 

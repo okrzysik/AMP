@@ -38,11 +38,11 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     AMP_ASSERT( d_vBuffer );
     AMP_ASSERT( d_Engine );
     auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
-    if(vec) vec->setCommunicationList(getCommunicationList());
+    if ( vec )
+        vec->setCommunicationList( getCommunicationList() );
     else {
-      AMP_ERROR("ManagedVector::ManagedVector() should not have reached here!");
-      
-    }    
+        AMP_ERROR( "ManagedVector::ManagedVector() should not have reached here!" );
+    }
 }
 ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
@@ -475,12 +475,12 @@ std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr n
     std::shared_ptr<Vector> retVal( getNewRawPtr() );
     auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec ) {
-        auto vec2   = vec->cloneVector("ManagedVectorClone");
+        auto vec2                       = vec->cloneVector( "ManagedVectorClone" );
         getManaged( retVal )->d_vBuffer = std::dynamic_pointer_cast<VectorData>( vec2 );
-        getManaged( retVal )->d_Engine = std::dynamic_pointer_cast<VectorOperations>( vec2 );
+        getManaged( retVal )->d_Engine  = std::dynamic_pointer_cast<VectorOperations>( vec2 );
     } else {
-      AMP_ERROR("ManagedVector::cloneVector() should not have reached here!");
-    }    
+        AMP_ERROR( "ManagedVector::cloneVector() should not have reached here!" );
+    }
     retVal->setVariable( name );
     return retVal;
 }

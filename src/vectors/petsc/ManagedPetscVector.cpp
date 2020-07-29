@@ -813,7 +813,9 @@ std::shared_ptr<AMP::LinearAlgebra::Vector> ManagedPetscVector::createFromPetscV
                                                                                     AMP_MPI &comm )
 {
 #ifdef USE_EXT_TRILINOS
-    std::cout << "ManagedPetscVector::createFromPetscVec: Create an EpetraVectorEngine to store data" << std::endl;
+    std::cout
+        << "ManagedPetscVector::createFromPetscVec: Create an EpetraVectorEngine to store data"
+        << std::endl;
     PetscInt local_size, global_size, local_start, local_end;
     VecGetLocalSize( source, &local_size );
     VecGetSize( source, &global_size );
@@ -851,14 +853,14 @@ bool ManagedPetscVector::constructedWithPetscDuplicate() { return d_bMadeWithPet
 
 ManagedPetscVector *ManagedPetscVector::rawClone() const
 {
-    auto p      = std::make_shared<ManagedPetscVectorParameters>();
+    auto p   = std::make_shared<ManagedPetscVectorParameters>();
     auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec ) {
-        auto vec2   = vec->cloneVector("ManagedPetscVectorClone");
+        auto vec2   = vec->cloneVector( "ManagedPetscVectorClone" );
         p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
         p->d_Engine = std::dynamic_pointer_cast<VectorOperations>( vec2 );
     } else {
-      AMP_ERROR("ManagedPetscVector::rawClone() should not have reached here!");
+        AMP_ERROR( "ManagedPetscVector::rawClone() should not have reached here!" );
     }
     p->d_CommList   = getCommunicationList();
     p->d_DOFManager = getDOFManager();

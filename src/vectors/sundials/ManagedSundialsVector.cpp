@@ -68,14 +68,14 @@ Vector::shared_ptr ManagedSundialsVector::cloneVector( const Variable::shared_pt
 }
 ManagedSundialsVector *ManagedSundialsVector::rawClone() const
 {
-    auto p      = std::make_shared<ManagedSundialsVectorParameters>();
+    auto p   = std::make_shared<ManagedSundialsVectorParameters>();
     auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec ) {
-        auto vec2   = vec->cloneVector("ManagedSundialsVectorClone");
+        auto vec2   = vec->cloneVector( "ManagedSundialsVectorClone" );
         p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
         p->d_Engine = std::dynamic_pointer_cast<VectorOperations>( vec2 );
     } else {
-      AMP_ERROR("ManagedSundialsVector::rawClone() should not have reached here!");
+        AMP_ERROR( "ManagedSundialsVector::rawClone() should not have reached here!" );
     }
     p->d_CommList   = getCommunicationList();
     p->d_DOFManager = getDOFManager();

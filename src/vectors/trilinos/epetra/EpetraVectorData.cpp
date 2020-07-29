@@ -79,16 +79,16 @@ void EpetraVectorData::getValuesByLocalID( int, size_t *, double * ) const
     AMP_ERROR( "EpetraVectorData::getValuesByLocalID() This shouldn't be called" );
 }
 
-void EpetraVectorData::getLocalValuesByGlobalID( int num, size_t *indices, double * vals) const
+void EpetraVectorData::getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
 {
-  //    AMP_ERROR( "EpetraVectorData::getLocalValuesByGlobalID() This shouldn't be called" );
+    //    AMP_ERROR( "EpetraVectorData::getLocalValuesByGlobalID() This shouldn't be called" );
     if ( num == 0 )
         return;
     double *data;
     d_epetraVector.ExtractView( &data );
     for ( int i = 0; i < num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_iLocalStart && indices[i] < d_iLocalStart+d_iLocalSize  );
-        vals[i] = static_cast<double>( data[indices[i] - d_iLocalStart] );        
+        AMP_ASSERT( indices[i] >= d_iLocalStart && indices[i] < d_iLocalStart + d_iLocalSize );
+        vals[i] = static_cast<double>( data[indices[i] - d_iLocalStart] );
     }
 }
 
@@ -104,10 +104,9 @@ void EpetraVectorData::copyOutRawData( double *out ) const { d_epetraVector.Extr
 
 std::shared_ptr<VectorData> EpetraVectorData::cloneData() const
 {
-  std::cout << "EpetraVectorData::cloneData with "
-	    << "getLocalStartID() " << getLocalStartID()
-	    << ", getLocalSize() " << getLocalSize()
-	    << ", getGlobalSize()" << getGlobalSize() << std::endl;
+    std::cout << "EpetraVectorData::cloneData with "
+              << "getLocalStartID() " << getLocalStartID() << ", getLocalSize() " << getLocalSize()
+              << ", getGlobalSize()" << getGlobalSize() << std::endl;
     auto buffer = std::make_shared<VectorDataCPU<double>>(
         getLocalStartID(), getLocalSize(), getGlobalSize() );
     return buffer;

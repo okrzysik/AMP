@@ -97,8 +97,8 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
  ********************************************************/
 EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<VectorEngineParameters> alias,
                                         std::shared_ptr<VectorData> buf )
-  : Vector(),
-    EpetraVectorData(
+    : Vector(),
+      EpetraVectorData(
           View,
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
           getBufferPtr( buf ),
@@ -113,11 +113,15 @@ EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<VectorEngineParameters> 
 
 std::shared_ptr<VectorEngine> EpetraVectorEngine::cloneEngine( std::shared_ptr<VectorData> p ) const
 {
-  std::cout << "EpetraVectorEngine::cloneEngine with "
-	    << " d_startIndex " << std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params )->beginDOF()
-	    << " d_localSize " << std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params )->getLocalSize()
-	    << " d_globalSize " << std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params )->getGlobalSize()
-	    << std::endl;
+    std::cout
+        << "EpetraVectorEngine::cloneEngine with "
+        << " d_startIndex "
+        << std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params )->beginDOF()
+        << " d_localSize "
+        << std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params )->getLocalSize()
+        << " d_globalSize "
+        << std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params )->getGlobalSize()
+        << std::endl;
     return std::make_shared<EpetraVectorEngine>( d_Params, p );
 }
 
