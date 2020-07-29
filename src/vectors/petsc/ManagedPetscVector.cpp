@@ -812,9 +812,6 @@ std::shared_ptr<AMP::LinearAlgebra::Vector> ManagedPetscVector::createFromPetscV
                                                                                     AMP_MPI &comm )
 {
 #ifdef USE_EXT_TRILINOS
-    std::cout
-        << "ManagedPetscVector::createFromPetscVec: Create an EpetraVectorEngine to store data"
-        << std::endl;
     PetscInt local_size, global_size, local_start, local_end;
     VecGetLocalSize( source, &local_size );
     VecGetSize( source, &global_size );
