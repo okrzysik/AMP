@@ -92,8 +92,8 @@ Vector::shared_ptr ManagedEpetraMatrix::getLeftVector() const
     int globalSize = memp->getGlobalNumberOfRows();
     int localStart = memp->getRightDOFManager()->beginDOF();
     #if 1
-    auto p_eng     = std::make_shared<EpetraVectorEngineParameters>( memp->d_CommListLeft,
-								     memp->getLeftDOFManager() );
+    auto p_eng     = std::make_shared<EpetraVectorEngineParameters>( memp->d_CommListRight,
+								     memp->getRightDOFManager() );
     #else
     auto p_eng     = std::make_shared<EpetraVectorEngineParameters>(
         localSize, globalSize, memp->getEpetraComm() );
