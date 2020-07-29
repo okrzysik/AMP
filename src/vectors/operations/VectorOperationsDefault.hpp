@@ -212,7 +212,7 @@ void VectorOperationsDefault<TYPE>::zero()
             ghosts[i] = 0;
     }
     // Override the status state since we set the ghost values
-    *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
+    //    *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
 }
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::setToScalar( double alpha )
@@ -229,7 +229,7 @@ void VectorOperationsDefault<TYPE>::setToScalar( double alpha )
             ghosts[i] = alpha;
     }
     // Override the status state since we set the ghost values
-    *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
+    //    *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
 }
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::setRandomValues()
