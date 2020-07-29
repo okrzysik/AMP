@@ -33,6 +33,20 @@ static inline Epetra_Vector &getEpetraVector( VectorOperations &vec )
     return epetra->getEpetra_Vector();
 }
 
+/********************************************************
+ * VectorEngineParameters constructors             *
+ ********************************************************/
+VectorEngineParameters::VectorEngineParameters( size_t local_size,
+                                                size_t global_size,
+                                                const AMP_MPI &comm )
+    : d_begin( 0 ), d_end( 0 ), d_global( 0 ), d_comm( comm )
+{
+    d_global = global_size;
+    d_comm.sumScan( &local_size, &d_end, 1 );
+    d_begin = d_end - local_size;
+}
+VectorEngineParameters::~VectorEngineParameters() = default;
+
 
 /********************************************************
  * EpetraVectorEngineParameters constructors             *
@@ -109,20 +123,6 @@ EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<VectorEngineParameters> 
     d_Params     = alias;
     d_buf_scope  = buf;
     d_VectorData = dynamic_cast<VectorData *>( this );
-}
-
-std::shared_ptr<VectorEngine> EpetraVectorEngine::cloneEngine( std::shared_ptr<VectorData> p ) const
-{
-    std::cout
-        << "EpetraVectorEngine::cloneEngine with "
-        << " d_startIndex "
-        << std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params )->beginDOF()
-        << " d_localSize "
-        << std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params )->getLocalSize()
-        << " d_globalSize "
-        << std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params )->getGlobalSize()
-        << std::endl;
-    return std::make_shared<EpetraVectorEngine>( d_Params, p );
 }
 
 Vector::shared_ptr EpetraVectorEngine::cloneVector( const Variable::shared_ptr name ) const

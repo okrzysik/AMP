@@ -3,7 +3,6 @@
 #include "AMP/vectors/data/VectorDataIterator.h"
 
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/VectorEngine.h"
 #include "AMP/vectors/petsc/PetscVector.h"
 #ifdef USE_EXT_TRILINOS
 #include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"

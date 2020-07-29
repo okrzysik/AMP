@@ -5,14 +5,58 @@
 #include <Epetra_Vector.h>
 
 #include "EpetraVector.h"
-
-#include "AMP/vectors/VectorEngine.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
 
 
 namespace AMP {
 namespace LinearAlgebra {
+
+
+/**
+ * \brief The parameters necessary to build a VectorEngine.
+ * \details  This is currently empty since there is no default
+ * engine...yet
+ */
+
+class VectorEngineParameters
+{
+public:
+    typedef std::shared_ptr<VectorEngineParameters> shared_ptr;
+
+    /** \brief Constructor
+        \param[in] local_size     The number of elements on this core
+        \param[in] global_size    The number of elements in total
+        \param[in] comm           Communicator to create the vector on
+        \details  This assumes a contiguous allocation of data.
+                  Core 0 has global ids \f$(0,1,\ldots,n-1)\f$,
+                  core 1 has global ids \f$(n,n+1,n+2,\ldots,m)\f$, etc.
+      */
+    VectorEngineParameters( size_t local_size, size_t global_size, const AMP_MPI &comm );
+
+    //! destructor
+    virtual ~VectorEngineParameters();
+
+    //! Return the local size
+    inline size_t getLocalSize() const { return d_end - d_begin; }
+
+    //! Return the local size
+    inline size_t getGlobalSize() const { return d_global; }
+
+    //! Return the first DOF on this core
+    inline size_t beginDOF() const { return d_begin; }
+
+    /** \brief  Return the Epetra_MpiComm for this engine
+     * \return The Epetra_MpiComm
+     */
+    inline AMP_MPI getComm() const { return d_comm; }
+
+protected:
+    size_t d_begin;  // Starting DOF
+    size_t d_end;    // Ending DOF
+    size_t d_global; // Number of global DOFs
+    AMP_MPI d_comm;  // Comm
+};
 
 /** \class EpetraVectorEngineParameters
  * \brief Class that details how to construct an EpetraVectorEngine
@@ -61,8 +105,7 @@ private:
  * libraries, it is very difficult to separate the data from the engine.  For this
  * reason, the EpetraVectorEngine contains the Epetra_Vector to operate on.
  */
-class EpetraVectorEngine : public VectorEngine,
-                           public Vector,
+class EpetraVectorEngine : public Vector,
                            public EpetraVectorData,
                            public EpetraVectorOperations
 {
@@ -90,10 +133,6 @@ public:
      */
     inline const Epetra_Vector &getEpetra_Vector() const { return d_epetraVector; }
 
-
-public: // Functions derived from VectorEngine
-    std::shared_ptr<VectorEngine> cloneEngine( std::shared_ptr<VectorData> p ) const override;
-
 public: // Functions derived from VectorData
     using VectorData::getComm;
     AMP_MPI getComm() const override { return d_Params->getComm(); }
@@ -106,6 +145,9 @@ public: // Functions derived from Vector
     void swapVectors( Vector &other ) override;
     void aliasVector( Vector &other ) override;
     void assemble() override;
+
+protected:
+    VectorEngineParameters::shared_ptr d_Params;
 };
 
 
