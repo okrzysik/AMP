@@ -34,36 +34,27 @@ static inline Epetra_Vector &getEpetraVector( VectorOperations &vec )
 }
 
 /********************************************************
- * VectorEngineParameters constructors             *
- ********************************************************/
-VectorEngineParameters::VectorEngineParameters( size_t local_size,
-                                                size_t global_size,
-                                                const AMP_MPI &comm )
-    : d_begin( 0 ), d_end( 0 ), d_global( 0 ), d_comm( comm )
-{
-    d_global = global_size;
-    d_comm.sumScan( &local_size, &d_end, 1 );
-    d_begin = d_end - local_size;
-}
-VectorEngineParameters::~VectorEngineParameters() = default;
-
-
-/********************************************************
  * EpetraVectorEngineParameters constructors             *
  ********************************************************/
 EpetraVectorEngineParameters::EpetraVectorEngineParameters( size_t local_size,
                                                             size_t global_size,
                                                             const AMP_MPI &comm )
-    : VectorEngineParameters( local_size, global_size, comm )
+  : d_begin{0}, d_end{0}, d_global{global_size}, d_comm{comm}
 {
+    d_comm.sumScan( &local_size, &d_end, 1 );
+    d_begin = d_end - local_size;
 }
+
 EpetraVectorEngineParameters::EpetraVectorEngineParameters( size_t local_size,
                                                             size_t global_size,
                                                             std::shared_ptr<Epetra_Map> emap,
                                                             const AMP_MPI &ecomm )
-    : VectorEngineParameters( local_size, global_size, ecomm ), d_emap( std::move( emap ) )
+  : d_begin{0}, d_end{0}, d_global{global_size}, d_comm{ecomm}, d_emap( std::move( emap ) )
 {
+    d_comm.sumScan( &local_size, &d_end, 1 );
+    d_begin = d_end - local_size;
 }
+
 EpetraVectorEngineParameters::~EpetraVectorEngineParameters() = default;
 
 
@@ -109,7 +100,7 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<VectorEngineParameters> alias,
+EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<EpetraVectorEngineParameters> alias,
                                         std::shared_ptr<VectorData> buf )
     : Vector(),
       EpetraVectorData(
