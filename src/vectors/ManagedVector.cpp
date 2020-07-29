@@ -1,7 +1,6 @@
 #include "AMP/vectors/ManagedVector.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/VectorEngine.h"
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -37,6 +36,9 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     d_Engine  = d_pParameters->d_Engine;
     AMP_ASSERT( d_vBuffer );
     AMP_ASSERT( d_Engine );
+    d_vBuffer->setUpdateStatusPtr(getUpdateStatusPtr());
+    auto vec = std::dynamic_pointer_cast<Vector>(d_Engine);
+    if(vec) vec->setUpdateStatusPtr(getUpdateStatusPtr());
 }
 ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
@@ -47,25 +49,10 @@ ManagedVector::ManagedVector( shared_ptr alias )
     d_pParameters = vec->d_pParameters;
     setVariable( vec->getVariable() );
     aliasGhostBuffer( vec );
+    if (d_vBuffer) d_vBuffer->setUpdateStatusPtr(getUpdateStatusPtr());
+    auto vec2 = std::dynamic_pointer_cast<Vector>(d_Engine);
+    if(vec2) vec2->setUpdateStatusPtr(getUpdateStatusPtr());
 }
-std::shared_ptr<VectorOperations>
-ManagedVector::cloneVectorEngine( std::shared_ptr<VectorData> p ) const
-{
-    auto multivec = std::dynamic_pointer_cast<MultiVector>( d_Engine );
-    if ( multivec ) {
-        std::cout << "ManagedPetscVector::rawClone of  " << multivec->type() << std::endl;
-        return std::dynamic_pointer_cast<VectorOperations>(
-            multivec->cloneVector( "engine_clone" ) );
-    }
-    auto engine = std::dynamic_pointer_cast<VectorEngine>( d_Engine );
-    if ( engine ) {
-        std::cout << "ManagedVector::cloneEngine " << std::endl;
-        return engine->cloneEngine( p );
-    }
-    AMP_ERROR( "Unable to clone engine" );
-    return std::shared_ptr<VectorOperations>();
-}
-
 
 /********************************************************
  * Subset                                                *
@@ -183,6 +170,14 @@ void ManagedVector::swapVectors( Vector &other )
     std::swap( d_vBuffer, in->d_vBuffer );
     std::swap( d_Engine, in->d_Engine );
     std::swap( d_pParameters, in->d_pParameters );
+
+    d_vBuffer->setUpdateStatusPtr(getUpdateStatusPtr());
+    auto vec = std::dynamic_pointer_cast<Vector>(d_Engine);
+    if(vec) vec->setUpdateStatusPtr(getUpdateStatusPtr());
+
+    in->d_vBuffer->setUpdateStatusPtr(in->getUpdateStatusPtr());
+    vec = std::dynamic_pointer_cast<Vector>(in->d_Engine);
+    if(vec) vec->setUpdateStatusPtr(in->getUpdateStatusPtr());
 }
 
 
@@ -294,6 +289,7 @@ void ManagedVector::addLocalValuesByGlobalID( int i, size_t *id, const double *v
     AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
+
     d_Engine->getVectorData()->addLocalValuesByGlobalID( i, id, val );
     fireDataChange();
 }
@@ -485,7 +481,14 @@ double ManagedVector::dot( const VectorOperations &x ) const
 std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
 {
     std::shared_ptr<Vector> retVal( getNewRawPtr() );
-    getManaged( retVal )->d_Engine = cloneVectorEngine();
+    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    if ( vec ) {
+        auto vec2                       = vec->cloneVector( "ManagedVectorClone" );
+        getManaged( retVal )->d_vBuffer = std::dynamic_pointer_cast<VectorData>( vec2 );
+        getManaged( retVal )->d_Engine  = std::dynamic_pointer_cast<VectorOperations>( vec2 );
+    } else {
+        AMP_ERROR( "ManagedVector::cloneVector() should not have reached here!" );
+    }
     retVal->setVariable( name );
     return retVal;
 }
@@ -516,7 +519,7 @@ Vector::shared_ptr ManagedVector::getRootVector()
 void ManagedVector::dataChanged()
 {
     if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
+       *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 

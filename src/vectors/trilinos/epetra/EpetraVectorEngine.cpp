@@ -33,23 +33,42 @@ static inline Epetra_Vector &getEpetraVector( VectorOperations &vec )
     return epetra->getEpetra_Vector();
 }
 
-
 /********************************************************
  * EpetraVectorEngineParameters constructors             *
  ********************************************************/
+EpetraVectorEngineParameters::EpetraVectorEngineParameters( std::shared_ptr<CommunicationList> commList,
+							    std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
+  : VectorParameters()
+{
+  d_CommList      = commList;
+  d_DOFManager    = dofManager;
+  AMP_INSIST(d_DOFManager, "Requires a non null DOFManager" );
+  auto local_size = d_DOFManager->numLocalDOF();
+  d_global        = d_DOFManager->numGlobalDOF();
+  d_comm          = d_DOFManager->getComm();
+  d_comm.sumScan( &local_size, &d_end, 1 );
+  d_begin = d_end - local_size;
+}
+  
 EpetraVectorEngineParameters::EpetraVectorEngineParameters( size_t local_size,
                                                             size_t global_size,
                                                             const AMP_MPI &comm )
-    : VectorEngineParameters( local_size, global_size, comm )
+  : d_begin{0}, d_end{0}, d_global{global_size}, d_comm{comm}
 {
+    d_comm.sumScan( &local_size, &d_end, 1 );
+    d_begin = d_end - local_size;
 }
+
 EpetraVectorEngineParameters::EpetraVectorEngineParameters( size_t local_size,
                                                             size_t global_size,
                                                             std::shared_ptr<Epetra_Map> emap,
                                                             const AMP_MPI &ecomm )
-    : VectorEngineParameters( local_size, global_size, ecomm ), d_emap( std::move( emap ) )
+  : d_begin{0}, d_end{0}, d_global{global_size}, d_comm{ecomm}, d_emap( std::move( emap ) )
 {
+    d_comm.sumScan( &local_size, &d_end, 1 );
+    d_begin = d_end - local_size;
 }
+
 EpetraVectorEngineParameters::~EpetraVectorEngineParameters() = default;
 
 
@@ -83,6 +102,7 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
     AMP_ASSERT( 0 == (size_t) d_emap->MinAllGID() );
     AMP_ASSERT( d_global - 1 == (size_t) d_emap->MaxAllGID() );
     AMP_ASSERT( 0 == (size_t) d_emap->MinLID() );
+    AMP_ASSERT( d_emap->LinearMap() );
     if ( local_size == 0 )
         AMP_ASSERT( 0 == (size_t) d_emap->MaxLID() );
     else
@@ -94,9 +114,10 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<VectorEngineParameters> alias,
+EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<EpetraVectorEngineParameters> alias,
                                         std::shared_ptr<VectorData> buf )
-    : EpetraVectorData(
+    : Vector(alias),
+      EpetraVectorData(
           View,
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
           getBufferPtr( buf ),
@@ -109,21 +130,33 @@ EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<VectorEngineParameters> 
     d_VectorData = dynamic_cast<VectorData *>( this );
 }
 
-
-std::shared_ptr<VectorEngine> EpetraVectorEngine::cloneEngine( std::shared_ptr<VectorData> p ) const
+Vector::shared_ptr EpetraVectorEngine::cloneVector( const Variable::shared_ptr name ) const
 {
-    std::cout
-        << "EpetraVectorEngine::cloneEngine with "
-        << " d_startIndex "
-        << std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params )->beginDOF()
-        << " d_localSize "
-        << std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params )->getLocalSize()
-        << " d_globalSize "
-        << std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params )->getGlobalSize()
-        << std::endl;
-    return std::make_shared<EpetraVectorEngine>( d_Params, p );
+    auto params = std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params );
+    auto buffer = std::make_shared<VectorDataCPU<double>>(
+        params->beginDOF(), params->getLocalSize(), params->getGlobalSize() );
+
+    auto retVal = std::make_shared<EpetraVectorEngine>( d_Params, buffer );
+    retVal->setVariable( name );
+    return retVal;
 }
 
+void EpetraVectorEngine::swapVectors( Vector &other )
+{
+    double *my_pointer;
+    double *oth_pointer;
+    getEpetra_Vector().ExtractView( &my_pointer );
+    getEpetraVector( other ).ExtractView( &oth_pointer );
+    getEpetraVector( other ).ResetView( my_pointer );
+    getEpetra_Vector().ResetView( oth_pointer );
+}
+
+void EpetraVectorEngine::aliasVector( Vector & )
+{
+    AMP_ERROR( "EpetraVectorEngine::aliasVector not implemented" );
+}
+
+void EpetraVectorEngine::assemble() {}
 
 } // namespace LinearAlgebra
 } // namespace AMP

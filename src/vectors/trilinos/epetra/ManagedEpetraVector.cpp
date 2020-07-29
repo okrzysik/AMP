@@ -39,13 +39,15 @@ inline ManagedVector *ManagedEpetraVector::getNewRawPtr() const
 
 inline Vector::shared_ptr ManagedEpetraVector::cloneVector( const Variable::shared_ptr var ) const
 {
-    auto p = std::make_shared<ManagedVectorParameters>();
-
-    // at present all the code I have seen has an implicit
-    // assumption that d_vBuffer is non null. In future this should change
-    // if we allow for the case that this is null
-    p->d_Buffer     = d_vBuffer->cloneData();
-    p->d_Engine     = cloneVectorEngine( p->d_Buffer );
+    auto p   = std::make_shared<ManagedVectorParameters>();
+    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    if ( vec ) {
+        auto vec2   = vec->cloneVector( "ManagedPetscVectorClone" );
+        p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
+        p->d_Engine = std::dynamic_pointer_cast<VectorOperations>( vec2 );
+    } else {
+        AMP_ERROR( "ManagedPetscVector::rawClone() should not have reached here!" );
+    }
     p->d_CommList   = getCommunicationList();
     p->d_DOFManager = getDOFManager();
     auto retVal     = std::make_shared<ManagedEpetraVector>( p );

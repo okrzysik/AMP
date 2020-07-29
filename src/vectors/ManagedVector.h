@@ -75,8 +75,6 @@ public:
      */
     inline std::shared_ptr<VectorOperations> getVectorEngine() { return d_Engine; }
     inline std::shared_ptr<const VectorOperations> getVectorEngine() const { return d_Engine; }
-    std::shared_ptr<VectorOperations>
-    cloneVectorEngine( std::shared_ptr<VectorData> p = std::shared_ptr<VectorData>() ) const;
 
     virtual bool isAnAliasOf( Vector &rhs );
     virtual bool isAnAliasOf( Vector::shared_ptr rhs );
