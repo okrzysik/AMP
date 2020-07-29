@@ -36,9 +36,10 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     d_Engine  = d_pParameters->d_Engine;
     AMP_ASSERT( d_vBuffer );
     AMP_ASSERT( d_Engine );
-    d_vBuffer->setUpdateStatusPtr(getUpdateStatusPtr());
-    auto vec = std::dynamic_pointer_cast<Vector>(d_Engine);
-    if(vec) vec->setUpdateStatusPtr(getUpdateStatusPtr());
+    d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
+    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    if ( vec )
+        vec->setUpdateStatusPtr( getUpdateStatusPtr() );
 }
 ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
@@ -49,9 +50,11 @@ ManagedVector::ManagedVector( shared_ptr alias )
     d_pParameters = vec->d_pParameters;
     setVariable( vec->getVariable() );
     aliasGhostBuffer( vec );
-    if (d_vBuffer) d_vBuffer->setUpdateStatusPtr(getUpdateStatusPtr());
-    auto vec2 = std::dynamic_pointer_cast<Vector>(d_Engine);
-    if(vec2) vec2->setUpdateStatusPtr(getUpdateStatusPtr());
+    if ( d_vBuffer )
+        d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
+    auto vec2 = std::dynamic_pointer_cast<Vector>( d_Engine );
+    if ( vec2 )
+        vec2->setUpdateStatusPtr( getUpdateStatusPtr() );
 }
 
 /********************************************************
@@ -171,13 +174,15 @@ void ManagedVector::swapVectors( Vector &other )
     std::swap( d_Engine, in->d_Engine );
     std::swap( d_pParameters, in->d_pParameters );
 
-    d_vBuffer->setUpdateStatusPtr(getUpdateStatusPtr());
-    auto vec = std::dynamic_pointer_cast<Vector>(d_Engine);
-    if(vec) vec->setUpdateStatusPtr(getUpdateStatusPtr());
+    d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
+    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    if ( vec )
+        vec->setUpdateStatusPtr( getUpdateStatusPtr() );
 
-    in->d_vBuffer->setUpdateStatusPtr(in->getUpdateStatusPtr());
-    vec = std::dynamic_pointer_cast<Vector>(in->d_Engine);
-    if(vec) vec->setUpdateStatusPtr(in->getUpdateStatusPtr());
+    in->d_vBuffer->setUpdateStatusPtr( in->getUpdateStatusPtr() );
+    vec = std::dynamic_pointer_cast<Vector>( in->d_Engine );
+    if ( vec )
+        vec->setUpdateStatusPtr( in->getUpdateStatusPtr() );
 }
 
 
@@ -519,7 +524,7 @@ Vector::shared_ptr ManagedVector::getRootVector()
 void ManagedVector::dataChanged()
 {
     if ( *d_UpdateState == UpdateState::UNCHANGED )
-       *d_UpdateState = UpdateState::LOCAL_CHANGED;
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 

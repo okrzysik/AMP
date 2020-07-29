@@ -189,7 +189,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         ++face;
     }
     solVec->copyVector( manufacturedVec );
-    solVec->setUpdateStatus(AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED);
+    solVec->setUpdateStatus( AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
 
     // get nonlinear solver database
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );

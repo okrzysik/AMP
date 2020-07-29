@@ -36,24 +36,25 @@ static inline Epetra_Vector &getEpetraVector( VectorOperations &vec )
 /********************************************************
  * EpetraVectorEngineParameters constructors             *
  ********************************************************/
-EpetraVectorEngineParameters::EpetraVectorEngineParameters( std::shared_ptr<CommunicationList> commList,
-							    std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
-  : VectorParameters()
+EpetraVectorEngineParameters::EpetraVectorEngineParameters(
+    std::shared_ptr<CommunicationList> commList,
+    std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
+    : VectorParameters()
 {
-  d_CommList      = commList;
-  d_DOFManager    = dofManager;
-  AMP_INSIST(d_DOFManager, "Requires a non null DOFManager" );
-  auto local_size = d_DOFManager->numLocalDOF();
-  d_global        = d_DOFManager->numGlobalDOF();
-  d_comm          = d_DOFManager->getComm();
-  d_comm.sumScan( &local_size, &d_end, 1 );
-  d_begin = d_end - local_size;
+    d_CommList   = commList;
+    d_DOFManager = dofManager;
+    AMP_INSIST( d_DOFManager, "Requires a non null DOFManager" );
+    auto local_size = d_DOFManager->numLocalDOF();
+    d_global        = d_DOFManager->numGlobalDOF();
+    d_comm          = d_DOFManager->getComm();
+    d_comm.sumScan( &local_size, &d_end, 1 );
+    d_begin = d_end - local_size;
 }
-  
+
 EpetraVectorEngineParameters::EpetraVectorEngineParameters( size_t local_size,
                                                             size_t global_size,
                                                             const AMP_MPI &comm )
-  : d_begin{0}, d_end{0}, d_global{global_size}, d_comm{comm}
+    : d_begin{ 0 }, d_end{ 0 }, d_global{ global_size }, d_comm{ comm }
 {
     d_comm.sumScan( &local_size, &d_end, 1 );
     d_begin = d_end - local_size;
@@ -63,7 +64,11 @@ EpetraVectorEngineParameters::EpetraVectorEngineParameters( size_t local_size,
                                                             size_t global_size,
                                                             std::shared_ptr<Epetra_Map> emap,
                                                             const AMP_MPI &ecomm )
-  : d_begin{0}, d_end{0}, d_global{global_size}, d_comm{ecomm}, d_emap( std::move( emap ) )
+    : d_begin{ 0 },
+      d_end{ 0 },
+      d_global{ global_size },
+      d_comm{ ecomm },
+      d_emap( std::move( emap ) )
 {
     d_comm.sumScan( &local_size, &d_end, 1 );
     d_begin = d_end - local_size;
@@ -116,7 +121,7 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
  ********************************************************/
 EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<EpetraVectorEngineParameters> alias,
                                         std::shared_ptr<VectorData> buf )
-    : Vector(alias),
+    : Vector( alias ),
       EpetraVectorData(
           View,
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),

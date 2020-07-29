@@ -67,8 +67,8 @@ Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
     int globalSize = memp->getGlobalNumberOfColumns();
     int localStart = memp->getRightDOFManager()->beginDOF();
 
-    auto p_eng     = std::make_shared<EpetraVectorEngineParameters>( memp->d_CommListRight,
-								     memp->getRightDOFManager() );
+    auto p_eng    = std::make_shared<EpetraVectorEngineParameters>( memp->d_CommListRight,
+                                                                 memp->getRightDOFManager() );
     auto p_params = std::make_shared<ManagedVectorParameters>();
     p_params->d_Buffer =
         std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
@@ -89,8 +89,8 @@ Vector::shared_ptr ManagedEpetraMatrix::getLeftVector() const
     int localStart = memp->getRightDOFManager()->beginDOF();
 
     // need to verify the comm list and dof manager are right for non square
-    auto p_eng     = std::make_shared<EpetraVectorEngineParameters>( memp->d_CommListRight,
-								     memp->getRightDOFManager() );
+    auto p_eng    = std::make_shared<EpetraVectorEngineParameters>( memp->d_CommListRight,
+                                                                 memp->getRightDOFManager() );
     auto p_params = std::make_shared<ManagedVectorParameters>();
     p_params->d_Buffer =
         std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );

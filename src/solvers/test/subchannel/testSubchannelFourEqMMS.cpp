@@ -254,7 +254,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         }
     }
     solVec->copyVector( manufacturedVec );
-    solVec->setUpdateStatus(AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED);
+    solVec->setUpdateStatus( AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
     //=============================================================================
     // solve
     //=============================================================================

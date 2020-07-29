@@ -4,9 +4,9 @@
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 
-#include "EpetraVector.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
+#include "EpetraVector.h"
 
 
 namespace AMP {
@@ -15,16 +15,15 @@ namespace LinearAlgebra {
 /** \class EpetraVectorEngineParameters
  * \brief Class that details how to construct an EpetraVectorEngine
  */
-class EpetraVectorEngineParameters: public VectorParameters
+class EpetraVectorEngineParameters : public VectorParameters
 {
 public:
-
     /** \brief Constructor
      * \param[in] commList: communication list
      * \param[in] dofManager: DOFManager
-    */
+     */
     EpetraVectorEngineParameters( std::shared_ptr<CommunicationList> commList,
-				  std::shared_ptr<AMP::Discretization::DOFManager> dofManager );
+                                  std::shared_ptr<AMP::Discretization::DOFManager> dofManager );
     /** \brief Constructor
         \param[in] local_size     The number of elements on this core
         \param[in] global_size    The number of elements in total
@@ -70,10 +69,10 @@ public:
     inline AMP_MPI getComm() const { return d_comm; }
 
 private:
-    size_t d_begin  = 0;  // Starting DOF
-    size_t d_end    = 0;    // Ending DOF
-    size_t d_global = 0; // Number of global DOFs
-    AMP_MPI d_comm;  // Comm
+    size_t d_begin  = 0;                          // Starting DOF
+    size_t d_end    = 0;                          // Ending DOF
+    size_t d_global = 0;                          // Number of global DOFs
+    AMP_MPI d_comm;                               // Comm
     std::shared_ptr<Epetra_Map> d_emap = nullptr; // Epetra map
 };
 
@@ -84,9 +83,7 @@ private:
  * libraries, it is very difficult to separate the data from the engine.  For this
  * reason, the EpetraVectorEngine contains the Epetra_Vector to operate on.
  */
-class EpetraVectorEngine : public Vector,
-                           public EpetraVectorData,
-                           public EpetraVectorOperations
+class EpetraVectorEngine : public Vector, public EpetraVectorData, public EpetraVectorOperations
 {
 
 
