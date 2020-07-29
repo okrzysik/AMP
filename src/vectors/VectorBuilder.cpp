@@ -109,12 +109,7 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
         // Create the vector parameters
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
         auto mvparams  = std::make_shared<ManagedPetscVectorParameters>();
-	#if 1
         auto eveparams = std::make_shared<EpetraVectorEngineParameters>( comm_list, DOFs) ;
-	#else
-        auto eveparams = std::make_shared<EpetraVectorEngineParameters>(
-            DOFs->numLocalDOF(), DOFs->numGlobalDOF(), DOFs->getComm() );
-	#endif
         comm.barrier();
         auto t_buffer = std::make_shared<VectorDataCPU<double>>(
             DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
