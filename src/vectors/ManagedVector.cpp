@@ -37,6 +37,11 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     d_Engine  = d_pParameters->d_Engine;
     AMP_ASSERT( d_vBuffer );
     AMP_ASSERT( d_Engine );
+    auto engine = std::dynamic_pointer_cast<VectorEngine>( d_Engine );
+    if ( engine ) {
+      auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+      if(vec) vec->setCommunicationList(getCommunicationList());
+    }    
 }
 ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
