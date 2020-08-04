@@ -153,169 +153,6 @@ void NativePetscVector::copy( const VectorOperations &src )
 }
 
 
-void NativePetscVector::setToScalar( double alpha )
-{
-    resetArray();
-    VecSet( d_petscVec, alpha );
-}
-
-
-void NativePetscVector::scale( double alpha, const VectorOperations &x )
-{
-    resetArray();
-    copyVector( dynamic_cast<const NativePetscVector *>( &x )->shared_from_this() );
-    VecScale( d_petscVec, alpha );
-}
-
-
-void NativePetscVector::scale( double alpha )
-{
-    resetArray();
-    VecScale( d_petscVec, alpha );
-}
-
-
-// Function to perform  this = alpha x + beta y + gamma this
-void NativePetscVector::axpbypcz( double alpha,
-                                  const VectorOperations &vx,
-                                  double beta,
-                                  const VectorOperations &vy,
-                                  double gamma )
-{
-  axpbypcz( alpha,
-	    *(vx.getVectorData()),
-	    beta,
-	    *(vy.getVectorData()),
-	    gamma,
-	    *getVectorData() );
-}
-
-
-void NativePetscVector::add( const VectorOperations &x, const VectorOperations &y )
-{
-    axpbypcz( 1.0, x, 1.0, y, 0.0 );
-}
-
-
-void NativePetscVector::subtract( const VectorOperations &x, const VectorOperations &y )
-{
-    axpbypcz( 1.0, x, -1.0, y, 0.0 );
-}
-
-
-void NativePetscVector::multiply( const VectorOperations &x, const VectorOperations &y )
-{
-    resetArray();
-    VecPointwiseMult( d_petscVec,
-                      dynamic_cast<const NativePetscVector *>( &x )->getVec(),
-                      dynamic_cast<const NativePetscVector *>( &y )->getVec() );
-}
-
-
-void NativePetscVector::divide( const VectorOperations &x, const VectorOperations &y )
-{
-    resetArray();
-    VecPointwiseDivide( d_petscVec,
-                        dynamic_cast<const NativePetscVector *>( &x )->getVec(),
-                        dynamic_cast<const NativePetscVector *>( &y )->getVec() );
-}
-
-
-void NativePetscVector::reciprocal( const VectorOperations &x )
-{
-    resetArray();
-    copyVector( dynamic_cast<const Vector *>( &x )->shared_from_this() );
-    VecReciprocal( d_petscVec );
-}
-
-
-void NativePetscVector::linearSum( double alpha,
-                                   const VectorOperations &x,
-                                   double beta,
-                                   const VectorOperations &y )
-{
-    axpbypcz( alpha, x, beta, y, 0.0 );
-}
-
-
-void NativePetscVector::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
-{
-    axpbypcz( alpha, x, 1.0, y, 0.0 );
-}
-
-
-void NativePetscVector::axpby( double alpha, double beta, const VectorOperations &x )
-{
-    axpbypcz( alpha, x, beta, *this, 0.0 );
-}
-
-
-void NativePetscVector::abs( const VectorOperations &x )
-{
-    resetArray();
-    copyVector( dynamic_cast<const Vector *>( &x )->shared_from_this() );
-    VecAbs( d_petscVec );
-}
-
-double NativePetscVector::min( void ) const
-{
-    resetArray();
-    double val;
-    VecMin( d_petscVec, PETSC_NULL, &val );
-    return val;
-}
-
-double NativePetscVector::max( void ) const
-{
-    resetArray();
-    double val;
-    VecMax( d_petscVec, PETSC_NULL, &val );
-    return val;
-}
-
-
-void NativePetscVector::setRandomValues( void )
-{
-    resetArray();
-    VecSetRandom( d_petscVec, getPetscRandom( getComm() ) );
-}
-
-
-double NativePetscVector::L1Norm( void ) const
-{
-    resetArray();
-    double ans;
-    VecNorm( d_petscVec, NORM_1, &ans );
-    return ans;
-}
-
-
-double NativePetscVector::L2Norm( void ) const
-{
-    resetArray();
-    double ans;
-    VecNorm( d_petscVec, NORM_2, &ans );
-    return ans;
-}
-
-
-double NativePetscVector::maxNorm( void ) const
-{
-    resetArray();
-    double ans;
-    VecNorm( d_petscVec, NORM_INFINITY, &ans );
-    return ans;
-}
-
-
-double NativePetscVector::dot( const VectorOperations &x ) const
-{
-    resetArray();
-    double ans;
-    VecDot( d_petscVec, dynamic_cast<const NativePetscVector *>( &x )->getVec(), &ans );
-    return ans;
-}
-
 void NativePetscVector::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
     for ( int i = 0; i != num; i++ )
@@ -418,6 +255,144 @@ void NativePetscVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, doub
     }
 }
 
+void NativePetscVector::setToScalar( double alpha )
+{
+  setToScalar(alpha, *getVectorData() );
+}
+
+
+void NativePetscVector::scale( double alpha, const VectorOperations &x )
+{
+  scale(alpha, *(x.getVectorData()), *getVectorData());
+}
+
+
+void NativePetscVector::scale( double alpha )
+{
+  scale(alpha, *getVectorData());
+}
+
+
+// Function to perform  this = alpha x + beta y + gamma this
+void NativePetscVector::axpbypcz( double alpha,
+                                  const VectorOperations &vx,
+                                  double beta,
+                                  const VectorOperations &vy,
+                                  double gamma )
+{
+  axpbypcz( alpha,
+	    *(vx.getVectorData()),
+	    beta,
+	    *(vy.getVectorData()),
+	    gamma,
+	    *getVectorData() );
+}
+
+
+void NativePetscVector::add( const VectorOperations &x, const VectorOperations &y )
+{
+  add( *(x.getVectorData()), *(y.getVectorData()), *getVectorData() );
+}
+
+
+void NativePetscVector::subtract( const VectorOperations &x, const VectorOperations &y )
+{
+  subtract( *(x.getVectorData()), *(y.getVectorData()), *getVectorData() );
+}
+
+
+void NativePetscVector::multiply( const VectorOperations &x, const VectorOperations &y )
+{
+  multiply( *(x.getVectorData()), *(y.getVectorData()), *getVectorData() );
+}
+
+
+void NativePetscVector::divide( const VectorOperations &x, const VectorOperations &y )
+{
+  divide( *(x.getVectorData()), *(y.getVectorData()), *getVectorData() );
+}
+
+
+void NativePetscVector::reciprocal( const VectorOperations &x )
+{
+  reciprocal( *(x.getVectorData()), *getVectorData() );
+}
+
+
+void NativePetscVector::linearSum( double alpha,
+                                   const VectorOperations &x,
+                                   double beta,
+                                   const VectorOperations &y )
+{
+  linearSum( alpha,
+	     *(x.getVectorData()),
+	     beta,
+	     *(y.getVectorData()),
+	     *getVectorData() );
+}
+
+
+void NativePetscVector::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
+{
+  axpy( alpha,
+	*(x.getVectorData()),
+	*(y.getVectorData()),
+	*getVectorData() );
+}
+
+
+void NativePetscVector::axpby( double alpha, double beta, const VectorOperations &x )
+{
+  axpby( alpha,
+	 beta,
+	 *(x.getVectorData()),
+	 *getVectorData() );
+}
+
+
+void NativePetscVector::abs( const VectorOperations &x )
+{
+    abs( *(x.getVectorData()), *getVectorData() );
+}
+
+void NativePetscVector::setRandomValues( void )
+{
+   setRandomValues( *getVectorData() );
+}
+
+double NativePetscVector::min( void ) const
+{
+  return min( *getVectorData() );
+}
+
+double NativePetscVector::max( void ) const
+{
+  return max( *getVectorData() );
+}
+
+double NativePetscVector::L1Norm( void ) const
+{
+  return L1Norm( *getVectorData() );
+}
+
+
+double NativePetscVector::L2Norm( void ) const
+{
+  return L2Norm( *getVectorData() );
+}
+
+
+double NativePetscVector::maxNorm( void ) const
+{
+  return maxNorm( *getVectorData() );
+}
+
+
+double NativePetscVector::dot( const VectorOperations &x ) const
+{
+    return dot( *(x.getVectorData()), *getVectorData() );
+}
+
 //**********************************************************************
 // Static functions that operate on VectorData objects
 
@@ -436,6 +411,23 @@ Vec NativePetscVector::getPetscVec( const VectorData &vx )
     return nx->getVec();
 }
 
+Vec NativePetscVector::getConstPetscVec( const VectorData &vx )
+{
+    return dynamic_cast<const NativePetscVector *>( &vx )->getVec();
+}
+
+NativePetscVector *
+NativePetscVector::getNativeVec( VectorData &vx  )
+{
+  return dynamic_cast<NativePetscVector *>( &vx );
+}
+
+const NativePetscVector *
+NativePetscVector::getNativeVec( const VectorData &vx  )
+{
+  return dynamic_cast<const NativePetscVector *>( &vx );
+}
+
 // Function to perform  this = alpha x + beta y + gamma z
 void NativePetscVector::axpbypcz( double alpha,
                                   const VectorData &vx,
@@ -444,11 +436,10 @@ void NativePetscVector::axpbypcz( double alpha,
                                   double gamma,
 				  VectorData &vz)
 {
-    Vec x = dynamic_cast<const NativePetscVector *>( &vx )->getVec();
-    Vec y = dynamic_cast<const NativePetscVector *>( &vy )->getVec();
-    auto nz = dynamic_cast<NativePetscVector *>( &vz );
-    Vec z = nz->getVec();
-    nz->resetArray();
+    Vec x = getConstPetscVec(vx);
+    Vec y = getConstPetscVec(vy);
+    Vec z = getPetscVec(vz);
+
     if ( x != y && x != z && y != z ) {
         // We can safely perform  z = alpha x + beta y + gamma z
         VecAXPBYPCZ( z, alpha, beta, gamma, x, y );
@@ -467,6 +458,148 @@ void NativePetscVector::axpbypcz( double alpha,
     } else {
         AMP_ERROR( "Internal error\n" );
     }
+}
+
+
+void NativePetscVector::setToScalar( double alpha, VectorData &x )
+{
+    auto vec = getPetscVec(x);
+    VecSet( vec, alpha );
+}
+
+
+void NativePetscVector::scale( double alpha, const VectorData &x, VectorData &y )
+{
+    auto nx = getNativeVec(x);
+    auto ny = getNativeVec(y);
+    ny->resetArray();
+    ny->copyVector( nx->shared_from_this() );
+    VecScale( ny->getVec(), alpha );
+}
+
+
+void NativePetscVector::scale( double alpha, VectorData &x )
+{
+    VecScale( getPetscVec(x), alpha );
+}
+
+void NativePetscVector::add( const VectorData &x, const VectorData &y, VectorData &z )
+{
+  axpbypcz( 1.0, x, 1.0, y, 0.0, z );
+}
+
+
+void NativePetscVector::subtract( const VectorData &x, const VectorData &y, VectorData &z  )
+{
+  axpbypcz( 1.0, x, -1.0, y, 0.0, z );
+}
+
+
+void NativePetscVector::multiply( const VectorData &x, const VectorData &y, VectorData &z )
+{
+    VecPointwiseMult( getPetscVec(z),
+                      getConstPetscVec(x),
+                      getConstPetscVec(y) );
+}
+
+
+void NativePetscVector::divide( const VectorData &x, const VectorData &y, VectorData &z )
+{
+    VecPointwiseDivide( getPetscVec(z),
+			getConstPetscVec(x),
+			getConstPetscVec(y) );
+}
+
+
+void NativePetscVector::reciprocal( const VectorData &x, VectorData &y )
+{
+    auto nx = getNativeVec(x);
+    auto ny = getNativeVec(y);
+    ny->resetArray();
+    ny->copyVector( nx->shared_from_this() );
+    VecReciprocal( ny->getVec() );
+}
+
+
+void NativePetscVector::linearSum( double alpha,
+                                   const VectorData &x,
+                                   double beta,
+                                   const VectorData &y,
+				   VectorData &z)
+{
+  axpbypcz( alpha, x, beta, y, 0.0, z );
+}
+
+
+void NativePetscVector::axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z )
+{
+  axpbypcz( alpha, x, 1.0, y, 0.0, z );
+}
+
+
+void NativePetscVector::axpby( double alpha, double beta, const VectorData &x, VectorData &vz )
+{
+  auto &z = *getNativeVec(vz);
+  axpbypcz( alpha, x, beta, z, 0.0, z );
+}
+
+
+void NativePetscVector::abs( const VectorData &x, VectorData &y )
+{
+    auto nx = getNativeVec(x);
+    auto ny = getNativeVec(y);
+    ny->resetArray();
+    ny->copyVector( nx->shared_from_this() );
+    VecAbs( ny->getVec() );
+}
+
+void NativePetscVector::setRandomValues( VectorData &x )
+{
+    auto nx = getNativeVec(x);
+    nx->resetArray();
+    VecSetRandom( nx->getVec(), nx->getPetscRandom( nx->getComm() ) );
+}
+
+double NativePetscVector::min( const VectorData &x ) 
+{
+    double val;
+    VecMin( getConstPetscVec(x), PETSC_NULL, &val );
+    return val;
+}
+
+double NativePetscVector::max( const VectorData &x ) 
+{
+    double val;
+    VecMax( getConstPetscVec(x), PETSC_NULL, &val );
+    return val;
+}
+
+double NativePetscVector::dot( const VectorData &x, const VectorData &y )
+{
+    double ans;
+    VecDot( getPetscVec(y), getConstPetscVec(x), &ans );
+    return ans;
+}
+
+double NativePetscVector::L1Norm( const VectorData &x ) 
+{
+    double ans;
+    VecNorm( getConstPetscVec(x), NORM_1, &ans );
+    return ans;
+}
+
+double NativePetscVector::L2Norm( const VectorData &x ) 
+{
+    double ans;
+    VecNorm( getConstPetscVec(x), NORM_2, &ans );
+    return ans;
+}
+
+double NativePetscVector::maxNorm( const VectorData &x ) 
+{
+    double ans;
+    VecNorm( getConstPetscVec(x), NORM_INFINITY, &ans );
+    return ans;
 }
 
 double NativePetscVector::localL1Norm( const VectorData &vx )
@@ -503,7 +636,6 @@ double NativePetscVector::localMaxNorm( const VectorData &vx )
     CHKERRQ( ierr );
     return ans;
 }
-
 
 } // namespace LinearAlgebra
 } // namespace AMP
