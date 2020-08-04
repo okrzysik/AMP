@@ -706,7 +706,7 @@ void VectorOperationsDefault<TYPE>::setRandomValues( RNG::shared_ptr rng, Vector
 }
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::copy( const VectorData &x, VectorData &z )
+void VectorOperationsDefault<TYPE>::copy( const VectorData &x, VectorData &y )
 {
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     std::copy( x.begin<TYPE>(), x.end<TYPE>(), y.begin<TYPE>() );
