@@ -68,36 +68,19 @@ void NativePetscVector::swapData( VectorData & ) { AMP_ERROR( "Not finished" ); 
 
 double NativePetscVector::localL1Norm( void ) const
 {
-    resetArray();
-    double ans;
-    PetscErrorCode ierr;
-    ierr = ( *d_petscVec->ops->norm_local )( d_petscVec, NORM_1, &ans );
-    CHKERRQ( ierr );
-    return ans;
+  return localL1Norm( *getVectorData());
 }
 
 
 double NativePetscVector::localL2Norm( void ) const
 {
-    resetArray();
-    double ans;
-    PetscErrorCode ierr;
-
-    ierr = ( *d_petscVec->ops->norm_local )( d_petscVec, NORM_2, &ans );
-    CHKERRQ( ierr );
-    return ans;
+  return localL2Norm( *getVectorData());
 }
 
 
 double NativePetscVector::localMaxNorm( void ) const
 {
-    resetArray();
-    double ans;
-    PetscErrorCode ierr;
-
-    ierr = ( *d_petscVec->ops->norm_local )( d_petscVec, NORM_INFINITY, &ans );
-    CHKERRQ( ierr );
-    return ans;
+  return localMaxNorm( *getVectorData());
 }
 
 
@@ -199,28 +182,12 @@ void NativePetscVector::axpbypcz( double alpha,
                                   const VectorOperations &vy,
                                   double gamma )
 {
-    resetArray();
-    Vec x = dynamic_cast<const NativePetscVector *>( &vx )->getVec();
-    Vec y = dynamic_cast<const NativePetscVector *>( &vy )->getVec();
-    Vec z = d_petscVec;
-    if ( x != y && x != z && y != z ) {
-        // We can safely perform  z = alpha x + beta y + gamma z
-        VecAXPBYPCZ( z, alpha, beta, gamma, x, y );
-    } else if ( x != y && x == z ) {
-        // x==z:  z = (alpha+gamma)*z + beta*y
-        double scale = alpha + gamma;
-        VecAXPBY( z, beta, scale, y );
-    } else if ( x != y && y == z ) {
-        // y==z:  z = (beta+gamma)*z + alpha*x
-        double scale = beta + gamma;
-        VecAXPBY( z, alpha, scale, x );
-    } else if ( x == y && x == z ) {
-        // x==y==z:  z = (alpha+beta+gamma)*z
-        double scale = alpha + beta + gamma;
-        VecScale( z, scale );
-    } else {
-        AMP_ERROR( "Internal error\n" );
-    }
+  axpbypcz( alpha,
+	    *(vx.getVectorData()),
+	    beta,
+	    *(vy.getVectorData()),
+	    gamma,
+	    *getVectorData() );
 }
 
 
@@ -450,6 +417,93 @@ void NativePetscVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, doub
         VecGetValues( d_petscVec, numVals, &ndx2[0], vals );
     }
 }
+
+//**********************************************************************
+// Static functions that operate on VectorData objects
+
+// Helper function
+Vec NativePetscVector::getPetscVec( VectorData &vx )
+{
+    auto nx = dynamic_cast<NativePetscVector *>( &vx );
+    nx->resetArray();
+    return nx->getVec();
+}
+
+Vec NativePetscVector::getPetscVec( const VectorData &vx )
+{
+    auto nx = dynamic_cast<const NativePetscVector *>( &vx );
+    nx->resetArray();
+    return nx->getVec();
+}
+
+// Function to perform  this = alpha x + beta y + gamma z
+void NativePetscVector::axpbypcz( double alpha,
+                                  const VectorData &vx,
+                                  double beta,
+                                  const VectorData &vy,
+                                  double gamma,
+				  VectorData &vz)
+{
+    Vec x = dynamic_cast<const NativePetscVector *>( &vx )->getVec();
+    Vec y = dynamic_cast<const NativePetscVector *>( &vy )->getVec();
+    auto nz = dynamic_cast<NativePetscVector *>( &vz );
+    Vec z = nz->getVec();
+    nz->resetArray();
+    if ( x != y && x != z && y != z ) {
+        // We can safely perform  z = alpha x + beta y + gamma z
+        VecAXPBYPCZ( z, alpha, beta, gamma, x, y );
+    } else if ( x != y && x == z ) {
+        // x==z:  z = (alpha+gamma)*z + beta*y
+        double scale = alpha + gamma;
+        VecAXPBY( z, beta, scale, y );
+    } else if ( x != y && y == z ) {
+        // y==z:  z = (beta+gamma)*z + alpha*x
+        double scale = beta + gamma;
+        VecAXPBY( z, alpha, scale, x );
+    } else if ( x == y && x == z ) {
+        // x==y==z:  z = (alpha+beta+gamma)*z
+        double scale = alpha + beta + gamma;
+        VecScale( z, scale );
+    } else {
+        AMP_ERROR( "Internal error\n" );
+    }
+}
+
+double NativePetscVector::localL1Norm( const VectorData &vx )
+{
+    Vec x = getPetscVec(vx);
+
+    double ans;
+    PetscErrorCode ierr;
+    ierr = ( *x->ops->norm_local )( x, NORM_1, &ans );
+    CHKERRQ( ierr );
+    return ans;
+}
+
+double NativePetscVector::localL2Norm( const VectorData &vx  )
+{
+    Vec x = getPetscVec(vx);
+
+    double ans;
+    PetscErrorCode ierr;
+
+    ierr = ( *x->ops->norm_local )( x, NORM_2, &ans );
+    CHKERRQ( ierr );
+    return ans;
+}
+
+double NativePetscVector::localMaxNorm( const VectorData &vx )
+{
+    Vec x = getPetscVec(vx);
+
+    double ans;
+    PetscErrorCode ierr;
+
+    ierr = ( *x->ops->norm_local )( x, NORM_INFINITY, &ans );
+    CHKERRQ( ierr );
+    return ans;
+}
+
 
 } // namespace LinearAlgebra
 } // namespace AMP

@@ -163,6 +163,20 @@ protected:
                            const VectorOperations &y,
                            double gamma );
 
+    // static functions that operate on VectorData
+    static Vec getPetscVec( VectorData &vx );
+    static Vec getPetscVec( const VectorData &vx );
+    static double localL1Norm( const VectorData &vx );
+    static double localL2Norm( const VectorData &vx  );
+    static double localMaxNorm( const VectorData &vx );
+
+    static void axpbypcz( double alpha,
+			  const VectorData &x,
+			  double beta,
+			  const VectorData &y,
+			  double gamma,
+			  VectorData &z);
+
 private:
     std::shared_ptr<VectorParameters> d_pParameters;
     bool d_bDeleteMe;
