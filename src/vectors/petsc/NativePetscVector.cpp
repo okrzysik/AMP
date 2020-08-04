@@ -10,7 +10,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params )
-    : NativeVector(), PetscVector()
+    : Vector(), PetscVector()
 {
     auto npvParams = std::dynamic_pointer_cast<NativePetscVectorParameters>( in_params );
     d_petscVec     = npvParams->d_InVec;
@@ -130,22 +130,6 @@ void NativePetscVector::getValuesByLocalID( int numVals, size_t *ndx, double *va
 {
     Vector::getValuesByLocalID( numVals, ndx, vals );
 }
-
-
-Vector::shared_ptr NativePetscVector::getManagedVectorCopy( AMP_MPI comm )
-{
-    Vector::shared_ptr pRet = ManagedPetscVector::createFromPetscVec( d_petscVec, comm );
-    ManagedPetscVector::copyFromPetscVec( *std::dynamic_pointer_cast<ManagedPetscVector>( pRet ),
-                                          d_petscVec );
-    return pRet;
-}
-
-Vector::shared_ptr NativePetscVector::getManagedVectorDuplicate( AMP_MPI comm )
-{
-    Vector::shared_ptr pRet = ManagedPetscVector::createFromPetscVec( d_petscVec, comm );
-    return pRet;
-}
-
 
 std::shared_ptr<ParameterBase> NativePetscVector::getParameters() { return d_pParameters; }
 

@@ -1,7 +1,6 @@
 #ifndef included_AMP_NativeThyraVector
 #define included_AMP_NativeThyraVector
 
-#include "AMP/vectors/NativeVector.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
@@ -13,7 +12,7 @@ namespace LinearAlgebra {
 /** \class NativeThyraVectorParameters
  * \brief Parameters to set when creating a NativeThyraVector
  */
-class NativeThyraVectorParameters : public NativeVectorParameters
+class NativeThyraVectorParameters : public VectorParameters
 {
 public:
     //! The vector to wrap
@@ -41,17 +40,11 @@ public:
  * \see ThyraVector
  * \see ManagedThyraVector
  */
-class NativeThyraVector : public NativeVector,
+class NativeThyraVector : public Vector,
                           public ThyraVector,
                           public VectorOperationsDefault<double>
 {
 public:
-    //! Conveninece typedef
-    typedef NativeVector::parameters_ptr parameters_ptr;
-
-    //! Conveninece typedef
-    typedef NativeVectorParameters parameters;
-
 
     /** \brief Construct a wrapper for a Thyra Vec from a set of parameters
      * \param[in] params The parameters describing the Vec
@@ -65,8 +58,6 @@ public:
     //! Overloaded functions
     std::string type() const override { return "Native Thyra Vector"; }
     std::string VectorDataName() const override { return "NativeThyraVector"; }
-    Vector::shared_ptr getManagedVectorCopy( AMP_MPI comm ) override;
-    Vector::shared_ptr getManagedVectorDuplicate( AMP_MPI comm ) override;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
     void copy( const VectorOperations &vec ) override;
     void swapVectors( Vector &other ) override;

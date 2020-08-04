@@ -2,7 +2,7 @@
 #define included_AMP_NativePetscVector
 
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/vectors/NativeVector.h"
+#include "AMP/vectors/Vector.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "AMP/vectors/petsc/PetscVector.h"
 
@@ -18,7 +18,7 @@ namespace LinearAlgebra {
 /** \class NativePetscVectorParameters
  * \brief Parameters to set when creating a NativePetscVector
  */
-class NativePetscVectorParameters : public NativeVectorParameters
+class NativePetscVectorParameters : public VectorParameters
 {
 public:
     //!  The vector to wrap
@@ -57,17 +57,11 @@ public:
  * \see PetscVector
  * \see ManagedPetscVector
  */
-class NativePetscVector : public NativeVector,
+class NativePetscVector : public Vector,
                           public PetscVector,
                           public VectorOperationsDefault<double>
 {
 public:
-    //! Conveninece typedef
-    typedef NativeVector::parameters_ptr parameters_ptr;
-
-    //! Conveninece typedef
-    typedef NativeVectorParameters parameters;
-
 
     /** \brief Construct a wrapper for a PETSc Vec from a set of parameters
      * \param[in] params The parameters describing the Vec
@@ -78,11 +72,7 @@ public:
     virtual ~NativePetscVector();
 
     std::string type() const override { return "Native PETSc Vector"; }
-
-    Vector::shared_ptr getManagedVectorCopy( AMP_MPI comm ) override;
-
-    Vector::shared_ptr getManagedVectorDuplicate( AMP_MPI comm ) override;
-
+    
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
     void copy( const VectorOperations &vec ) override;
@@ -174,7 +164,7 @@ protected:
                            double gamma );
 
 private:
-    parameters_ptr d_pParameters;
+    std::shared_ptr<VectorParameters> d_pParameters;
     bool d_bDeleteMe;
     mutable double *d_pArray; // mutable so that we can cache the value
 
