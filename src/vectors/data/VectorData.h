@@ -537,7 +537,10 @@ public: // Non virtual functions
      */
     void setUpdateStatusPtr( std::shared_ptr<UpdateState> rhs );
 
+    bool hasGhosts( void ) { return (d_Ghosts!=nullptr); }
 
+    std::vector<double> &getGhosts() { return *d_Ghosts; }
+    
 protected: // Internal data
     //! The communication list for this vector
     CommunicationList::shared_ptr d_CommList;

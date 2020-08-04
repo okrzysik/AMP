@@ -100,16 +100,15 @@ public:
     void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
     void axpby( double alpha, double beta, const VectorOperations &x ) override;
     void abs( const VectorOperations &x ) override;
-    double min( void ) const override;
-    double max( void ) const override;
     void setRandomValues( void ) override;
 
+    double min( void ) const override;
+    double max( void ) const override;
+    using Vector::dot;
+    double dot( const VectorOperations &x ) const override;
     double L1Norm( void ) const override;
     double L2Norm( void ) const override;
     double maxNorm( void ) const override;
-    using Vector::dot;
-    double dot( const VectorOperations &x ) const override;
-
     double localL1Norm( void ) const override;
     double localL2Norm( void ) const override;
     double localMaxNorm( void ) const override;
@@ -173,6 +172,7 @@ protected:
     static const NativePetscVector *getNativeVec( const VectorData &vx );
 
     static void setToScalar( double alpha, VectorData &z );
+    static void setRandomValues( VectorData &x );    
     static void scale( double alpha, const VectorData &x, VectorData &y );
     static void scale( double alpha, VectorData &x );
     static void add( const VectorData &x, const VectorData &y, VectorData &z );
@@ -188,7 +188,6 @@ protected:
     static void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z );
     static void axpby( double alpha, double beta, const VectorData &x, VectorData &y );
     static void abs( const VectorData &x, VectorData &z );
-    static void setRandomValues( VectorData &x );    
 
     static double min( const VectorData &x );
     static double max( const VectorData &x );

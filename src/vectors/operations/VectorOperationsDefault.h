@@ -231,23 +231,64 @@ protected:
     double localWrmsNormMask( const VectorOperations &x,
                               const VectorOperations &mask ) const override;
 
+protected:
+
+    static void zero( VectorData &z );
+    static void setToScalar( double alpha, VectorData &z );
+    static void setRandomValues( VectorData &x );    
+    static void setRandomValues( RNG::shared_ptr rng, VectorData &x );    
+    static void scale( double alpha, const VectorData &x, VectorData &y );
+    static void scale( double alpha, VectorData &x );
+    static void add( const VectorData &x, const VectorData &y, VectorData &z );
+    static void subtract( const VectorData &x, const VectorData &y, VectorData &z );
+    static void multiply( const VectorData &x, const VectorData &y, VectorData &z );
+    static void divide( const VectorData &x, const VectorData &y, VectorData &z );
+    static void reciprocal( const VectorData &x, VectorData &y );
+    static void linearSum( double alpha,
+			   const VectorData &x,
+			   double beta,
+			   const VectorData &y,
+			   VectorData &z);
+    static void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z );
+    static void axpby( double alpha, double beta, const VectorData &x, VectorData &y );
+    static void abs( const VectorData &x, VectorData &z );
+    static void addScalar( const VectorData &x, double alpha_in, VectorData &y );
+
+    static double localMin( const VectorData &x );
+    static double localMax( const VectorData &x );
+    static double localL1Norm( const VectorData &x );
+    static double localL2Norm( const VectorData &x  );
+    static double localMaxNorm( const VectorData &x );
+    static double localDot( const VectorData &x, const VectorData &y );
+    static double localMinQuotient( const VectorData &x, const VectorData &y );
+    static double localWrmsNorm( const VectorData &x, const VectorData &y );
+    static double localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y );
+    static bool   localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 );
 
 public: // Pull VectorOperations into the current scope
-    using VectorOperations::abs;
-    using VectorOperations::add;
-    using VectorOperations::addScalar;
-    using VectorOperations::axpby;
-    using VectorOperations::axpy;
-    using VectorOperations::divide;
-    using VectorOperations::dot;
-    using VectorOperations::equals;
-    using VectorOperations::linearSum;
-    using VectorOperations::minQuotient;
-    using VectorOperations::multiply;
-    using VectorOperations::reciprocal;
-    using VectorOperations::scale;
     using VectorOperations::setRandomValues;
+    using VectorOperations::scale;
+    using VectorOperations::add;
     using VectorOperations::subtract;
+    using VectorOperations::multiply;
+    using VectorOperations::divide;
+    using VectorOperations::reciprocal;
+    using VectorOperations::linearSum;
+    using VectorOperations::axpy;
+    using VectorOperations::axpby;
+    using VectorOperations::abs;
+    using VectorOperations::min;
+    using VectorOperations::max;
+    using VectorOperations::dot;
+    using VectorOperations::L1Norm;
+    using VectorOperations::L2Norm;
+    using VectorOperations::maxNorm;
+    using VectorOperations::localL1Norm;
+    using VectorOperations::localL2Norm;
+    using VectorOperations::localMaxNorm;
+    using VectorOperations::addScalar;
+    using VectorOperations::equals;
+    using VectorOperations::minQuotient;
     using VectorOperations::wrmsNorm;
     using VectorOperations::wrmsNormMask;
 };

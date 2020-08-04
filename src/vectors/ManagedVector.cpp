@@ -306,6 +306,12 @@ void ManagedVector::copyOutRawData( double *in ) const
     d_Engine->getVectorData()->copyOutRawData( in );
 }
 
+void ManagedVector::setToScalar( double alpha )
+{
+    d_Engine->setToScalar( alpha );
+    dataChanged();
+    this->makeConsistent( ScatterType::CONSISTENT_SET );
+}
 
 void ManagedVector::scale( double alpha, const VectorOperations &x )
 {
@@ -442,13 +448,6 @@ void ManagedVector::abs( const VectorOperations &x )
     dataChanged();
 }
 
-
-double ManagedVector::min() const { return d_Engine->min(); }
-
-
-double ManagedVector::max() const { return d_Engine->max(); }
-
-
 void ManagedVector::setRandomValues()
 {
     d_Engine->setRandomValues();
@@ -456,23 +455,9 @@ void ManagedVector::setRandomValues()
     this->makeConsistent( ScatterType::CONSISTENT_SET );
 }
 
+double ManagedVector::min() const { return d_Engine->min(); }
 
-void ManagedVector::setToScalar( double alpha )
-{
-    d_Engine->setToScalar( alpha );
-    dataChanged();
-    this->makeConsistent( ScatterType::CONSISTENT_SET );
-}
-
-
-double ManagedVector::L1Norm() const { return d_Engine->L1Norm(); }
-
-
-double ManagedVector::L2Norm() const { return d_Engine->L2Norm(); }
-
-
-double ManagedVector::maxNorm() const { return d_Engine->maxNorm(); }
-
+double ManagedVector::max() const { return d_Engine->max(); }
 
 double ManagedVector::dot( const VectorOperations &x ) const
 {
@@ -482,6 +467,13 @@ double ManagedVector::dot( const VectorOperations &x ) const
     return VectorOperationsDefault::dot( x );
 }
 
+double ManagedVector::L1Norm() const { return d_Engine->L1Norm(); }
+
+
+double ManagedVector::L2Norm() const { return d_Engine->L2Norm(); }
+
+
+double ManagedVector::maxNorm() const { return d_Engine->maxNorm(); }
 
 std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
 {

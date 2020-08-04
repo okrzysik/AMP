@@ -260,6 +260,10 @@ void NativePetscVector::setToScalar( double alpha )
   setToScalar(alpha, *getVectorData() );
 }
 
+void NativePetscVector::setRandomValues( void )
+{
+   setRandomValues( *getVectorData() );
+}
 
 void NativePetscVector::scale( double alpha, const VectorOperations &x )
 {
@@ -353,11 +357,6 @@ void NativePetscVector::axpby( double alpha, double beta, const VectorOperations
 void NativePetscVector::abs( const VectorOperations &x )
 {
     abs( *(x.getVectorData()), *getVectorData() );
-}
-
-void NativePetscVector::setRandomValues( void )
-{
-   setRandomValues( *getVectorData() );
 }
 
 double NativePetscVector::min( void ) const
@@ -467,6 +466,12 @@ void NativePetscVector::setToScalar( double alpha, VectorData &x )
     VecSet( vec, alpha );
 }
 
+void NativePetscVector::setRandomValues( VectorData &x )
+{
+    auto nx = getNativeVec(x);
+    nx->resetArray();
+    VecSetRandom( nx->getVec(), nx->getPetscRandom( nx->getComm() ) );
+}
 
 void NativePetscVector::scale( double alpha, const VectorData &x, VectorData &y )
 {
@@ -551,13 +556,6 @@ void NativePetscVector::abs( const VectorData &x, VectorData &y )
     ny->resetArray();
     ny->copyVector( nx->shared_from_this() );
     VecAbs( ny->getVec() );
-}
-
-void NativePetscVector::setRandomValues( VectorData &x )
-{
-    auto nx = getNativeVec(x);
-    nx->resetArray();
-    VecSetRandom( nx->getVec(), nx->getPetscRandom( nx->getComm() ) );
 }
 
 double NativePetscVector::min( const VectorData &x ) 
