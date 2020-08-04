@@ -50,6 +50,12 @@ void VectorOperationsDefault<TYPE>::setRandomValues( RNG::shared_ptr rng  )
 }
 
 template<typename TYPE>
+void VectorOperationsDefault<TYPE>::copy( const VectorOperations &x )
+{
+  copy( *(x.getVectorData()), *getVectorData());
+}
+  
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::scale( double alpha, const VectorOperations &x )
 {
   scale(alpha, *(x.getVectorData()), *getVectorData());
@@ -129,6 +135,12 @@ void VectorOperationsDefault<TYPE>::abs( const VectorOperations &x )
 }
 
 template<typename TYPE>
+void VectorOperationsDefault<TYPE>::addScalar( const VectorOperations &x, double alpha_in )
+{
+  addScalar( *(x.getVectorData()), alpha_in, *getVectorData() );
+}
+
+template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localMin( void ) const
 {
   return localMin( *getVectorData() );
@@ -168,6 +180,25 @@ template<typename TYPE>
 bool VectorOperationsDefault<TYPE>::localEquals( const VectorOperations &rhs, double tol ) const
 {
   return localEquals( *(rhs.getVectorData()), *getVectorData(), tol );
+}
+
+template<typename TYPE>
+double VectorOperationsDefault<TYPE>::localMinQuotient( const VectorOperations &x ) const
+{
+  return localMinQuotient(*(x.getVectorData()), *getVectorData());
+}
+
+template<typename TYPE>
+double VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorOperations &x ) const
+{
+  return localWrmsNorm(*(x.getVectorData()), *getVectorData());
+}
+
+template<typename TYPE>
+double VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorOperations &x,
+                                                         const VectorOperations &mask ) const
+{
+  return localWrmsNormMask( *(x.getVectorData()), *(mask.getVectorData()), *getVectorData());
 }
   
 #else
@@ -672,6 +703,14 @@ void VectorOperationsDefault<TYPE>::setRandomValues( RNG::shared_ptr rng, Vector
     }
     // Call makeConsistent to leave the vector in a consistent state
     x.makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::copy( const VectorData &x, VectorData &z )
+{
+    AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
+    std::copy( x.begin<TYPE>(), x.end<TYPE>(), y.begin<TYPE>() );
+    y.copyGhostValues( x );
 }
 
 template<typename TYPE>

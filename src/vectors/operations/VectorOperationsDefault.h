@@ -237,6 +237,7 @@ protected:
     static void setToScalar( double alpha, VectorData &z );
     static void setRandomValues( VectorData &x );    
     static void setRandomValues( RNG::shared_ptr rng, VectorData &x );    
+    static void copy( const VectorData &x, VectorData &z );
     static void scale( double alpha, const VectorData &x, VectorData &y );
     static void scale( double alpha, VectorData &x );
     static void add( const VectorData &x, const VectorData &y, VectorData &z );
