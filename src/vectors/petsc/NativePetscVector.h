@@ -2,6 +2,7 @@
 #define included_AMP_NativePetscVector
 
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/vectors/Vector.h"
 #include "AMP/vectors/NativeVector.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "AMP/vectors/petsc/PetscVector.h"
@@ -57,7 +58,7 @@ public:
  * \see PetscVector
  * \see ManagedPetscVector
  */
-class NativePetscVector : public NativeVector,
+class NativePetscVector : public Vector,
                           public PetscVector,
                           public VectorOperationsDefault<double>
 {
@@ -78,11 +79,7 @@ public:
     virtual ~NativePetscVector();
 
     std::string type() const override { return "Native PETSc Vector"; }
-
-    Vector::shared_ptr getManagedVectorCopy( AMP_MPI comm ) override;
-
-    Vector::shared_ptr getManagedVectorDuplicate( AMP_MPI comm ) override;
-
+    
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
     void copy( const VectorOperations &vec ) override;

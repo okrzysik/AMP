@@ -19,7 +19,7 @@ namespace LinearAlgebra {
  * Constructors                                                          *
  ************************************************************************/
 NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
-    : NativeVector(), ThyraVector()
+    : Vector(), ThyraVector()
 {
     auto params = std::dynamic_pointer_cast<NativeThyraVectorParameters>( in_params );
     AMP_ASSERT( params != nullptr );
@@ -152,23 +152,6 @@ void NativeThyraVector::getValuesByLocalID( int numVals, size_t *ndx, double *va
 {
     Vector::getValuesByLocalID( numVals, ndx, vals );
 }
-
-
-Vector::shared_ptr NativeThyraVector::getManagedVectorCopy( AMP_MPI comm )
-{
-    NULL_USE( comm );
-    AMP_ERROR( "Not programmed yet" );
-    return Vector::shared_ptr();
-}
-
-Vector::shared_ptr NativeThyraVector::getManagedVectorDuplicate( AMP_MPI comm )
-{
-    NULL_USE( comm );
-
-    AMP_ERROR( "Not programmed yet" );
-    return Vector::shared_ptr();
-}
-
 
 void NativeThyraVector::aliasVector( Vector & ) { AMP_ERROR( "not implemented" ); }
 

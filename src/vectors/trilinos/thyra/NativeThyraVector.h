@@ -41,7 +41,7 @@ public:
  * \see ThyraVector
  * \see ManagedThyraVector
  */
-class NativeThyraVector : public NativeVector,
+class NativeThyraVector : public Vector,
                           public ThyraVector,
                           public VectorOperationsDefault<double>
 {
@@ -65,8 +65,6 @@ public:
     //! Overloaded functions
     std::string type() const override { return "Native Thyra Vector"; }
     std::string VectorDataName() const override { return "NativeThyraVector"; }
-    Vector::shared_ptr getManagedVectorCopy( AMP_MPI comm ) override;
-    Vector::shared_ptr getManagedVectorDuplicate( AMP_MPI comm ) override;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
     void copy( const VectorOperations &vec ) override;
     void swapVectors( Vector &other ) override;
