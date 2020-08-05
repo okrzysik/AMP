@@ -179,7 +179,154 @@ NativeThyraVector::getThyraVec( const Vector::const_shared_ptr &vec )
     return vec2->getVec();
 }
 
+Teuchos::RCP<const Thyra::VectorBase<double>>
+NativeThyraVector::getThyraVec( const VectorData &v )
+{
+    auto vec = dynamic_cast<const Vector *>( &v );
+    AMP_ASSERT( vec != nullptr );
+    auto vec2 = std::dynamic_pointer_cast<const ThyraVector>(
+        ThyraVector::constView( vec->shared_from_this() ) );
+    AMP_ASSERT( vec2 != nullptr );
+    return vec2->getVec();
+}
 
+Teuchos::RCP<Thyra::VectorBase<double>>
+NativeThyraVector::getThyraVec( VectorData &v )
+{
+    auto vec = dynamic_cast<Vector *>( &v );
+    AMP_ASSERT( vec != nullptr );
+    auto vec2 = std::dynamic_pointer_cast<ThyraVector>(
+        ThyraVector::view( vec->shared_from_this() ) );
+    AMP_ASSERT( vec2 != nullptr );
+    return vec2->getVec();
+}
+#if 1
+void NativeThyraVector::copy( const VectorOperations &src_vec )
+{
+  copy( *(src_vec.getVectorData()), *getVectorData() );
+}
+
+void NativeThyraVector::setToScalar( double alpha )
+{
+  setToScalar(alpha, *getVectorData() );
+}
+
+void NativeThyraVector::setRandomValues( void )
+{
+   setRandomValues( *getVectorData() );
+}
+
+void NativeThyraVector::scale( double alpha, const VectorOperations &x )
+{
+  scale(alpha, *(x.getVectorData()), *getVectorData());
+}
+
+
+void NativeThyraVector::scale( double alpha )
+{
+  scale(alpha, *getVectorData());
+}
+
+void NativeThyraVector::add( const VectorOperations &x, const VectorOperations &y )
+{
+  add( *(x.getVectorData()), *(y.getVectorData()), *getVectorData() );
+}
+
+
+void NativeThyraVector::subtract( const VectorOperations &x, const VectorOperations &y )
+{
+  subtract( *(x.getVectorData()), *(y.getVectorData()), *getVectorData() );
+}
+
+
+void NativeThyraVector::multiply( const VectorOperations &x, const VectorOperations &y )
+{
+  multiply( *(x.getVectorData()), *(y.getVectorData()), *getVectorData() );
+}
+
+
+void NativeThyraVector::divide( const VectorOperations &x, const VectorOperations &y )
+{
+  divide( *(x.getVectorData()), *(y.getVectorData()), *getVectorData() );
+}
+
+
+void NativeThyraVector::reciprocal( const VectorOperations &x )
+{
+  reciprocal( *(x.getVectorData()), *getVectorData() );
+}
+
+
+void NativeThyraVector::linearSum( double alpha,
+                                   const VectorOperations &x,
+                                   double beta,
+                                   const VectorOperations &y )
+{
+  linearSum( alpha,
+	     *(x.getVectorData()),
+	     beta,
+	     *(y.getVectorData()),
+	     *getVectorData() );
+}
+
+
+void NativeThyraVector::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
+{
+  axpy( alpha,
+	*(x.getVectorData()),
+	*(y.getVectorData()),
+	*getVectorData() );
+}
+
+
+void NativeThyraVector::axpby( double alpha, double beta, const VectorOperations &x )
+{
+  axpby( alpha,
+	 beta,
+	 *(x.getVectorData()),
+	 *getVectorData() );
+}
+
+
+void NativeThyraVector::abs( const VectorOperations &x )
+{
+    abs( *(x.getVectorData()), *getVectorData() );
+}
+
+double NativeThyraVector::min( void ) const
+{
+  return min( *getVectorData() );
+}
+
+double NativeThyraVector::max( void ) const
+{
+  return max( *getVectorData() );
+}
+
+double NativeThyraVector::L1Norm( void ) const
+{
+  return L1Norm( *getVectorData() );
+}
+
+
+double NativeThyraVector::L2Norm( void ) const
+{
+  return L2Norm( *getVectorData() );
+}
+
+
+double NativeThyraVector::maxNorm( void ) const
+{
+  return maxNorm( *getVectorData() );
+}
+
+
+double NativeThyraVector::dot( const VectorOperations &x ) const
+{
+    return dot( *(x.getVectorData()), *getVectorData() );
+}
+
+#else
 void NativeThyraVector::copy( const VectorOperations &src_vec )
 {
     Thyra::copy<double>( *( getThyraVec( src_vec ) ), d_thyraVec.ptr() );
@@ -306,7 +453,7 @@ double NativeThyraVector::dot( const VectorOperations &x ) const
 {
     return Thyra::dot<double>( *getThyraVec( x ), *d_thyraVec );
 }
-
+#endif
 
 void NativeThyraVector::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
@@ -361,5 +508,189 @@ void NativeThyraVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, doub
     AMP_ERROR( "not implemented" );
 }
 
+void NativeThyraVector::setToScalar( double alpha, VectorData &x )
+{
+  Thyra::put_scalar<double>( alpha, getThyraVec(x).ptr() );
+}
+
+void NativeThyraVector::setRandomValues( VectorData &x )
+{
+    Thyra::randomize<double>( 0.0, 1.0, getThyraVec(x).ptr() );
+}
+
+void NativeThyraVector::setRandomValues( RNG::shared_ptr rng, VectorData &x )
+{
+}
+
+void NativeThyraVector::copy( const VectorData &x, VectorData &y )
+{
+    Thyra::copy<double>( *( getThyraVec(x) ), getThyraVec(y).ptr() );
+}
+
+void NativeThyraVector::scale( double alpha, VectorData &x )
+{
+  Thyra::scale<double>( alpha, getThyraVec(x).ptr() );
+}
+
+void NativeThyraVector::scale( double alpha, const VectorData &x, VectorData &y )
+{
+    auto src = dynamic_cast<const Vector *>( &x );
+    AMP_ASSERT( src != nullptr );
+    auto dst = dynamic_cast<Vector *>( &y );
+    AMP_ASSERT( dst != nullptr );
+    dst->copyVector( src->shared_from_this() );
+    Thyra::scale<double>( alpha, getThyraVec(y).ptr() );
+}
+
+void NativeThyraVector::add( const VectorData &x, const VectorData &y, VectorData &z )
+{
+  linearSum( 1.0, x, 1.0, y, z );
+}
+
+void NativeThyraVector::subtract( const VectorData &x, const VectorData &y, VectorData &z  )
+{
+  linearSum( 1.0, x, -1.0, y, z );
+}
+
+void NativeThyraVector::multiply( const VectorData &x, const VectorData &y, VectorData &z )
+{
+    auto xv = getThyraVec( x );
+    auto yv = getThyraVec( y );
+    auto zv = getThyraVec( z );
+    Thyra::put_scalar<double>( 0.0, zv.ptr() );
+    Thyra::ele_wise_prod<double>(
+        1.0, *xv, *yv, zv.ptr() );
+}
+
+void NativeThyraVector::divide( const VectorData &x, const VectorData &y, VectorData &z )
+{
+    auto xv = getThyraVec( x );
+    auto yv = getThyraVec( y );
+    auto zv = getThyraVec( z );
+    Thyra::put_scalar<double>( 0.0, zv.ptr() );
+    Thyra::ele_wise_divide<double>(
+        1.0, *xv, *yv, zv.ptr() );
+}
+
+void NativeThyraVector::reciprocal( const VectorData &x, VectorData &y )
+{
+#if TRILINOS_MAJOR_MINOR_VERSION <= 100800
+  Thyra::reciprocal<double>( getThyraVec(y).ptr(), *( getThyraVec( x ) ) );
+#else
+    Thyra::reciprocal<double>( *( getThyraVec( x ) ), getThyraVec(y).ptr() );
+#endif
+}
+
+void NativeThyraVector::linearSum( double alpha_in,
+                                   const VectorData &x,
+                                   double beta_in,
+                                   const VectorData &y,
+				   VectorData &z)
+{
+    std::vector<double> alpha_vec( 2, 1.0 );
+    alpha_vec[0] = alpha_in;
+    alpha_vec[1] = beta_in;
+    std::vector<Teuchos::Ptr<const Thyra::VectorBase<double>>> vecs( 2 );
+    vecs[0] = getThyraVec( x ).ptr();
+    vecs[1] = getThyraVec( y ).ptr();
+    Teuchos::ArrayView<double> alpha_view( alpha_vec );
+    Teuchos::ArrayView<Teuchos::Ptr<const Thyra::VectorBase<double>>> vecs_view( vecs );
+    Thyra::linear_combination<double>( alpha_view, vecs_view, 0.0, getThyraVec(z).ptr() );
+}
+
+void NativeThyraVector::axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z )
+{
+  linearSum( alpha, x, 1.0, y, z );
+}
+
+void NativeThyraVector::axpby( double alpha, double beta, const VectorData &x, VectorData &z )
+{
+  linearSum( alpha, x, beta, z, z );
+}
+
+void NativeThyraVector::abs( const VectorData &x, VectorData &y )
+{
+#if TRILINOS_MAJOR_MINOR_VERSION <= 100800
+  Thyra::abs<double>( getThyraVec(y).ptr(), *getThyraVec( x ) );
+#else
+    Thyra::abs<double>( *getThyraVec( x ), getThyraVec(y).ptr() );
+#endif
+}
+
+double NativeThyraVector::min( const VectorData &x ) 
+{
+  return Thyra::min<double>( *getThyraVec( x ) );
+}
+
+double NativeThyraVector::max( const VectorData &x ) 
+{
+  return Thyra::max<double>( *getThyraVec( x ) );
+}
+
+double NativeThyraVector::L1Norm( const VectorData &x ) 
+{
+  return Thyra::norm_1<double>( *getThyraVec( x ) );
+}
+
+double NativeThyraVector::L2Norm( const VectorData &x ) 
+{
+  return Thyra::norm_2<double>( *getThyraVec( x ) );
+}
+
+double NativeThyraVector::maxNorm( const VectorData &x ) 
+{
+  return Thyra::norm_inf<double>( *getThyraVec( x ) );
+}
+
+double NativeThyraVector::dot( const VectorData &x, const VectorData &y )
+{
+    return Thyra::dot<double>( *getThyraVec(x), *getThyraVec(y) );
+}
+
+#if 0
+void NativeThyraVector::addScalar( const VectorData &x, double alpha_in, VectorData &y )
+{
+}
+
+double NativeThyraVector::localMin( const VectorData &x ) 
+{
+}
+
+double NativeThyraVector::localMax( const VectorData &x ) 
+{
+}
+
+double NativeThyraVector::localL1Norm( const VectorData &x ) 
+{
+}
+
+double NativeThyraVector::localL2Norm( const VectorData &x ) 
+{
+}
+
+double NativeThyraVector::localMaxNorm( const VectorData &x ) 
+{
+}
+
+double NativeThyraVector::localDot( const VectorData &x, const VectorData &y )
+{
+}
+
+double NativeThyraVector::localMinQuotient( const VectorData &x, const VectorData &y )
+{
+}
+
+double NativeThyraVector::localWrmsNorm( const VectorData &x, const VectorData &y )
+{
+}
+
+double NativeThyraVector::localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y )
+{
+}
+
+bool NativeThyraVector::localEquals( const VectorData &x, const VectorData &y, double tol )
+{
+}
+#endif
 } // namespace LinearAlgebra
 } // namespace AMP

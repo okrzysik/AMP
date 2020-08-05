@@ -1,4 +1,5 @@
 #include "AMP/vectors/operations/MultiVectorOperations.h"
+#include "AMP/vectors/data/MultiVectorData.h"
 
 
 namespace AMP {
@@ -358,6 +359,154 @@ void MultiVectorOperations::scale( double alpha )
         d_operations[i]->scale( alpha );
 }
 
+  #if 0
+//**********************************************************************
+// Static functions that operate on VectorData objects
+
+VectorData *MultiVectorOperations::getVectorDataComponent( VectorData &x, size_t i )
+{
+  auto x2 = dynamic_cast<MultiVectorData *>( &x );
+  AMP_ASSERT(x2 && (i<x2->numberOfComponents()));
+  return x2->getVectorData(i);
+}
+
+const MultiVectorData *MultiVectorOperations::getMultiVectorData( const VectorData &x )
+{
+  return dynamic_cast<const MultiVectorData *>( &x );
+}
+
+MultiVectorData *MultiVectorOperations::getMultiVectorData( VectorData &x )
+{
+  return dynamic_cast<MultiVectorData *>( &x );
+}
+
+void MultiVectorOperations::zero( VectorData &x )
+{
+  auto mData = getMultiVectorData(x);
+  
+  for ( size_t i = 0; i != mData->numberOfComponents(); ++i ) {
+    
+    d_operations[i]->zero( getVectorDataComponent(x,i) );
+  }
+}
+
+void MultiVectorOperations::setToScalar( double alpha, VectorData &x )
+{
+  for ( size_t i = 0; i != d_operations.size(); i++ ) {
+    d_operations[i]->setToScalar( alpha,  getVectorData(x,i) );
+  }
+}
+
+void MultiVectorOperations::setRandomValues( VectorData &x )
+{
+  for ( size_t i = 0; i != d_operations.size(); i++ ) {
+    d_operations[i]->setRandomValues( getVectorData(x,i) );
+  }
+}
+
+void MultiVectorOperations::setRandomValues( RNG::shared_ptr rng, VectorData &x )
+{
+  for ( size_t i = 0; i != d_operations.size(); i++ ) {
+    d_operations[i]->setRandomValues( rng, getVectorData(x,i) );
+  }
+}
+
+void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
+{
+}
+
+void MultiVectorOperations::scale( double alpha, VectorData &x )
+{
+}
+
+void MultiVectorOperations::scale( double alpha, const VectorData &x, VectorData &y )
+{
+}
+
+void MultiVectorOperations::add( const VectorData &x, const VectorData &y, VectorData &z )
+{
+}
+
+void MultiVectorOperations::subtract( const VectorData &x, const VectorData &y, VectorData &z  )
+{
+}
+
+void MultiVectorOperations::multiply( const VectorData &x, const VectorData &y, VectorData &z )
+{
+}
+
+void MultiVectorOperations::divide( const VectorData &x, const VectorData &y, VectorData &z )
+{
+}
+
+void MultiVectorOperations::reciprocal( const VectorData &x, VectorData &y )
+{
+}
+
+void MultiVectorOperations::linearSum( double alpha_in,
+                                   const VectorData &x,
+                                   double beta_in,
+                                   const VectorData &y,
+				   VectorData &z)
+{
+}
+
+void MultiVectorOperations::axpy( double alpha_in, const VectorData &x, const VectorData &y, VectorData &z )
+{
+}
+
+void MultiVectorOperations::axpby( double alpha_in, double beta_in, const VectorData &x, VectorData &z )
+{
+}
+
+void MultiVectorOperations::abs( const VectorData &x, VectorData &y )
+{
+}
+
+void MultiVectorOperations::addScalar( const VectorData &x, double alpha_in, VectorData &y )
+{
+}
+
+double MultiVectorOperations::localMin( const VectorData &x ) 
+{
+}
+
+double MultiVectorOperations::localMax( const VectorData &x ) 
+{
+}
+
+double MultiVectorOperations::localL1Norm( const VectorData &x ) 
+{
+}
+
+double MultiVectorOperations::localL2Norm( const VectorData &x ) 
+{
+}
+
+double MultiVectorOperations::localMaxNorm( const VectorData &x ) 
+{
+}
+
+double MultiVectorOperations::localDot( const VectorData &x, const VectorData &y )
+{
+}
+
+double MultiVectorOperations::localMinQuotient( const VectorData &x, const VectorData &y )
+{
+}
+
+double MultiVectorOperations::localWrmsNorm( const VectorData &x, const VectorData &y )
+{
+}
+
+double MultiVectorOperations::localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y )
+{
+}
+
+bool MultiVectorOperations::localEquals( const VectorData &x, const VectorData &y, double tol )
+{
+}
+#endif
 
 } // namespace LinearAlgebra
 } // namespace AMP
