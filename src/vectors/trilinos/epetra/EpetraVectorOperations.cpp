@@ -195,7 +195,7 @@ void EpetraVectorOperations::setToScalar( double alpha, VectorData &x )
 void EpetraVectorOperations::setRandomValues( VectorData &x )
 {
     getEpetraVector(x).Random();
-    abs( x );
+    abs( x, x );
 }
 
 void EpetraVectorOperations::scale( double alpha, const VectorData &x, VectorData &y )
@@ -244,7 +244,7 @@ void EpetraVectorOperations::linearSum( double alpha,
 
 void EpetraVectorOperations::axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z )
 {
-  linearSum( alpha, x, beta, y, z );
+  linearSum( alpha, x, 1.0, y, z );
 }
 
 void EpetraVectorOperations::axpby( double alpha, double beta, const VectorData &x, VectorData &z )
