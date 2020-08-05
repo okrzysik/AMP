@@ -212,7 +212,6 @@ void VectorOperationsOpenMP<TYPE>::zero( VectorData &x )
         *it = 0;
     if ( x.hasGhosts() ) {
         auto &ghosts = x.getGhosts();
-#pragma omp parallel for
         for ( size_t i = 0; i != ghosts.size(); i++ )
             ghosts[i] = 0;
     }
@@ -229,8 +228,7 @@ void VectorOperationsOpenMP<TYPE>::setToScalar( double alpha, VectorData &x )
         *it = alpha;
     if ( x.hasGhosts() ) {
       auto &ghosts = x.getGhosts();
-#pragma omp parallel for
-        for ( size_t i = 0; i != ghosts.size(); i++ )
+      for ( size_t i = 0; i != ghosts.size(); i++ )
             ghosts[i] = alpha;
     }
     // Override the status state since we set the ghost values
