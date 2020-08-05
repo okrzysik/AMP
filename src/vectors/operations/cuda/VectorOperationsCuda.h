@@ -233,6 +233,40 @@ private:
     virtual double localWrmsNormMask( const VectorOperations &x,
                                       const VectorOperations &mask ) const override;
 
+protected:
+//  functions that operate on VectorData 
+    void zero( VectorData &z );
+    void setToScalar( double alpha, VectorData &z );
+    void setRandomValues( VectorData &x );    
+    void setRandomValues( RNG::shared_ptr rng, VectorData &x );    
+    void copy( const VectorData &x, VectorData &z );
+    void scale( double alpha, const VectorData &x, VectorData &y );
+    void scale( double alpha, VectorData &x );
+    void add( const VectorData &x, const VectorData &y, VectorData &z );
+    void subtract( const VectorData &x, const VectorData &y, VectorData &z );
+    void multiply( const VectorData &x, const VectorData &y, VectorData &z );
+    void divide( const VectorData &x, const VectorData &y, VectorData &z );
+    void reciprocal( const VectorData &x, VectorData &y );
+    void linearSum( double alpha,
+			   const VectorData &x,
+			   double beta,
+			   const VectorData &y,
+			   VectorData &z);
+    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z );
+    void axpby( double alpha, double beta, const VectorData &x, VectorData &y );
+    void abs( const VectorData &x, VectorData &z );
+    void addScalar( const VectorData &x, double alpha_in, VectorData &y );
+
+    double localMin( const VectorData &x );
+    double localMax( const VectorData &x );
+    double localL1Norm( const VectorData &x );
+    double localL2Norm( const VectorData &x  );
+    double localMaxNorm( const VectorData &x );
+    double localDot( const VectorData &x, const VectorData &y );
+    double localMinQuotient( const VectorData &x, const VectorData &y );
+    double localWrmsNorm( const VectorData &x, const VectorData &y );
+    double localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y );
+    bool   localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 );
 
 public: // Pull VectorOperations into the current scope
     using VectorOperations::abs;
