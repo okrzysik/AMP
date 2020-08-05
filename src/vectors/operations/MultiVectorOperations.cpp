@@ -359,10 +359,9 @@ void MultiVectorOperations::scale( double alpha )
         d_operations[i]->scale( alpha );
 }
 
-  #if 0
 //**********************************************************************
 // Static functions that operate on VectorData objects
-
+#if 0
 VectorData *MultiVectorOperations::getVectorDataComponent( VectorData &x, size_t i )
 {
   auto x2 = dynamic_cast<MultiVectorData *>( &x );
@@ -386,33 +385,52 @@ void MultiVectorOperations::zero( VectorData &x )
   
   for ( size_t i = 0; i != mData->numberOfComponents(); ++i ) {
     
-    d_operations[i]->zero( getVectorDataComponent(x,i) );
+    d_operations[i]->zero( *getVectorDataComponent(x,i) );
   }
 }
 
 void MultiVectorOperations::setToScalar( double alpha, VectorData &x )
 {
   for ( size_t i = 0; i != d_operations.size(); i++ ) {
-    d_operations[i]->setToScalar( alpha,  getVectorData(x,i) );
+    d_operations[i]->setToScalar( alpha,  *getVectorDataComponent(x,i) );
   }
 }
 
 void MultiVectorOperations::setRandomValues( VectorData &x )
 {
   for ( size_t i = 0; i != d_operations.size(); i++ ) {
-    d_operations[i]->setRandomValues( getVectorData(x,i) );
+    d_operations[i]->setRandomValues( *getVectorDataComponent(x,i) );
   }
 }
 
 void MultiVectorOperations::setRandomValues( RNG::shared_ptr rng, VectorData &x )
 {
   for ( size_t i = 0; i != d_operations.size(); i++ ) {
-    d_operations[i]->setRandomValues( rng, getVectorData(x,i) );
+    d_operations[i]->setRandomValues( rng, *getVectorDataComponent(x,i) );
   }
 }
 
 void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
 {
+  auto xc = getMultiVectorData(x);
+
+  if ( xc ) {
+        // Both this and x are multivectors
+        for ( size_t i = 0; i != d_operations.size(); i++ )
+	  d_operations[i]->copy( *getVectorDataComponent(x,i), *getVectorDataComponent(y,i) ) );
+    } else {
+        // x is not a multivector, try to call a default implimentation
+        auto y2 = *getMultiVectorData(y);
+        auto x2 = *xc;
+        AMP_ASSERT( x2->getLocalSize() == y2->getLocalSize() );
+        if ( x2->isType<double>() && y2->isType<double>() ) {
+            std::copy( x2->begin<double>(), x2->end<double>(), y2->begin<double>() );
+        } else if ( x2->isType<float>() && y2->isType<float>() ) {
+            std::copy( x2->begin<float>(), x2->end<float>(), y2->begin<float>() );
+        } else {
+            AMP_ERROR( "Unable to discern data types" );
+        }
+    }
 }
 
 void MultiVectorOperations::scale( double alpha, VectorData &x )
@@ -507,6 +525,5 @@ bool MultiVectorOperations::localEquals( const VectorData &x, const VectorData &
 {
 }
 #endif
-
 } // namespace LinearAlgebra
 } // namespace AMP

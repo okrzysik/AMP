@@ -237,38 +237,38 @@ protected:
     static MultiVectorData *getMultiVectorData( VectorData &x );
     static const MultiVectorData *getMultiVectorData( const VectorData &x );
 #if 0
-    static void zero( VectorData &z );
-    static void setToScalar( double alpha, VectorData &z );
-    static void setRandomValues( VectorData &x );    
-    static void setRandomValues( RNG::shared_ptr rng, VectorData &x );    
-    static void copy( const VectorData &x, VectorData &z );
-    static void scale( double alpha, const VectorData &x, VectorData &y );
-    static void scale( double alpha, VectorData &x );
-    static void add( const VectorData &x, const VectorData &y, VectorData &z );
-    static void subtract( const VectorData &x, const VectorData &y, VectorData &z );
-    static void multiply( const VectorData &x, const VectorData &y, VectorData &z );
-    static void divide( const VectorData &x, const VectorData &y, VectorData &z );
-    static void reciprocal( const VectorData &x, VectorData &y );
-    static void linearSum( double alpha,
+    void zero( VectorData &z );
+    void setToScalar( double alpha, VectorData &z );
+    void setRandomValues( VectorData &x );    
+    void setRandomValues( RNG::shared_ptr rng, VectorData &x );    
+    void copy( const VectorData &x, VectorData &z );
+    void scale( double alpha, const VectorData &x, VectorData &y );
+    void scale( double alpha, VectorData &x );
+    void add( const VectorData &x, const VectorData &y, VectorData &z );
+    void subtract( const VectorData &x, const VectorData &y, VectorData &z );
+    void multiply( const VectorData &x, const VectorData &y, VectorData &z );
+    void divide( const VectorData &x, const VectorData &y, VectorData &z );
+    void reciprocal( const VectorData &x, VectorData &y );
+    void linearSum( double alpha,
 			   const VectorData &x,
 			   double beta,
 			   const VectorData &y,
 			   VectorData &z);
-    static void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z );
-    static void axpby( double alpha, double beta, const VectorData &x, VectorData &y );
-    static void abs( const VectorData &x, VectorData &z );
-    static void addScalar( const VectorData &x, double alpha_in, VectorData &y );
+    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z );
+    void axpby( double alpha, double beta, const VectorData &x, VectorData &y );
+    void abs( const VectorData &x, VectorData &z );
+    void addScalar( const VectorData &x, double alpha_in, VectorData &y );
 
-    static double localMin( const VectorData &x );
-    static double localMax( const VectorData &x );
-    static double localL1Norm( const VectorData &x );
-    static double localL2Norm( const VectorData &x  );
-    static double localMaxNorm( const VectorData &x );
-    static double localDot( const VectorData &x, const VectorData &y );
-    static double localMinQuotient( const VectorData &x, const VectorData &y );
-    static double localWrmsNorm( const VectorData &x, const VectorData &y );
-    static double localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y );
-    static bool   localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 );
+    double localMin( const VectorData &x );
+    double localMax( const VectorData &x );
+    double localL1Norm( const VectorData &x );
+    double localL2Norm( const VectorData &x  );
+    double localMaxNorm( const VectorData &x );
+    double localDot( const VectorData &x, const VectorData &y );
+    double localMinQuotient( const VectorData &x, const VectorData &y );
+    double localWrmsNorm( const VectorData &x, const VectorData &y );
+    double localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y );
+    bool   localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 );
 #endif
 protected:
     // Internal data
