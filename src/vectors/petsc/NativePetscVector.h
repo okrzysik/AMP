@@ -163,7 +163,7 @@ protected:
                            double gamma );
 
     //**********************************************************************
-    // static functions that operate on VectorData
+    // functions that operate on VectorData
     static Vec getPetscVec( VectorData &x );
     static Vec getPetscVec( const VectorData &x );
     static Vec getConstPetscVec( const VectorData &x );
@@ -171,35 +171,35 @@ protected:
     static NativePetscVector *getNativeVec( VectorData &vx );
     static const NativePetscVector *getNativeVec( const VectorData &vx );
 
-    static void setToScalar( double alpha, VectorData &z );
-    static void setRandomValues( VectorData &x );    
-    static void scale( double alpha, const VectorData &x, VectorData &y );
-    static void scale( double alpha, VectorData &x );
-    static void add( const VectorData &x, const VectorData &y, VectorData &z );
-    static void subtract( const VectorData &x, const VectorData &y, VectorData &z );
-    static void multiply( const VectorData &x, const VectorData &y, VectorData &z );
-    static void divide( const VectorData &x, const VectorData &y, VectorData &z );
-    static void reciprocal( const VectorData &x, VectorData &y );
-    static void linearSum( double alpha,
+    void setToScalar( double alpha, VectorData &z );
+    void setRandomValues( VectorData &x );    
+    void scale( double alpha, const VectorData &x, VectorData &y );
+    void scale( double alpha, VectorData &x );
+    void add( const VectorData &x, const VectorData &y, VectorData &z );
+    void subtract( const VectorData &x, const VectorData &y, VectorData &z );
+    void multiply( const VectorData &x, const VectorData &y, VectorData &z );
+    void divide( const VectorData &x, const VectorData &y, VectorData &z );
+    void reciprocal( const VectorData &x, VectorData &y );
+    void linearSum( double alpha,
 			   const VectorData &x,
 			   double beta,
 			   const VectorData &y,
 			   VectorData &z);
-    static void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z );
-    static void axpby( double alpha, double beta, const VectorData &x, VectorData &y );
-    static void abs( const VectorData &x, VectorData &z );
+    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z );
+    void axpby( double alpha, double beta, const VectorData &x, VectorData &y );
+    void abs( const VectorData &x, VectorData &z );
 
-    static double min( const VectorData &x );
-    static double max( const VectorData &x );
-    static double dot( const VectorData &x, const VectorData &y );
-    static double L1Norm( const VectorData &x );
-    static double L2Norm( const VectorData &x );
-    static double maxNorm( const VectorData &x );
-    static double localL1Norm( const VectorData &x );
-    static double localL2Norm( const VectorData &x  );
-    static double localMaxNorm( const VectorData &x );
+    double min( const VectorData &x );
+    double max( const VectorData &x );
+    double dot( const VectorData &x, const VectorData &y );
+    double L1Norm( const VectorData &x );
+    double L2Norm( const VectorData &x );
+    double maxNorm( const VectorData &x );
+    double localL1Norm( const VectorData &x );
+    double localL2Norm( const VectorData &x  );
+    double localMaxNorm( const VectorData &x );
 
-    static void axpbypcz( double alpha,
+    void axpbypcz( double alpha,
 			  const VectorData &x,
 			  double beta,
 			  const VectorData &y,
