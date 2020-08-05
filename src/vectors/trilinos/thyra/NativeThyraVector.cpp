@@ -490,32 +490,32 @@ void NativeThyraVector::abs( const VectorData &x, VectorData &y )
 #endif
 }
 
-double NativeThyraVector::min( const VectorData &x ) 
+double NativeThyraVector::min( const VectorData &x )  const
 {
   return Thyra::min<double>( *getThyraVec( x ) );
 }
 
-double NativeThyraVector::max( const VectorData &x ) 
+double NativeThyraVector::max( const VectorData &x )  const
 {
   return Thyra::max<double>( *getThyraVec( x ) );
 }
 
-double NativeThyraVector::L1Norm( const VectorData &x ) 
+double NativeThyraVector::L1Norm( const VectorData &x )  const
 {
   return Thyra::norm_1<double>( *getThyraVec( x ) );
 }
 
-double NativeThyraVector::L2Norm( const VectorData &x ) 
+double NativeThyraVector::L2Norm( const VectorData &x )  const
 {
   return Thyra::norm_2<double>( *getThyraVec( x ) );
 }
 
-double NativeThyraVector::maxNorm( const VectorData &x ) 
+double NativeThyraVector::maxNorm( const VectorData &x )  const
 {
   return Thyra::norm_inf<double>( *getThyraVec( x ) );
 }
 
-double NativeThyraVector::dot( const VectorData &x, const VectorData &y )
+double NativeThyraVector::dot( const VectorData &x, const VectorData &y ) const
 {
     return Thyra::dot<double>( *getThyraVec(x), *getThyraVec(y) );
 }

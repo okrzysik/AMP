@@ -189,15 +189,15 @@ protected:
     void axpby( double alpha, double beta, const VectorData &x, VectorData &y );
     void abs( const VectorData &x, VectorData &z );
 
-    double min( const VectorData &x );
-    double max( const VectorData &x );
-    double dot( const VectorData &x, const VectorData &y );
-    double L1Norm( const VectorData &x );
-    double L2Norm( const VectorData &x );
-    double maxNorm( const VectorData &x );
-    double localL1Norm( const VectorData &x );
-    double localL2Norm( const VectorData &x  );
-    double localMaxNorm( const VectorData &x );
+    double min( const VectorData &x ) const;
+    double max( const VectorData &x ) const;
+    double dot( const VectorData &x, const VectorData &y ) const;
+    double L1Norm( const VectorData &x ) const;
+    double L2Norm( const VectorData &x ) const;
+    double maxNorm( const VectorData &x ) const;
+    double localL1Norm( const VectorData &x ) const;
+    double localL2Norm( const VectorData &x  ) const;
+    double localMaxNorm( const VectorData &x ) const;
 
     void axpbypcz( double alpha,
 			  const VectorData &x,

@@ -501,7 +501,7 @@ void VectorOperationsCuda<TYPE>::addScalar( const VectorData &x, double alpha_in
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localMin( const VectorData &x ) 
+double VectorOperationsCuda<TYPE>::localMin( const VectorData &x )  const
 {
     double result = 0;
     if ( checkData(x) ) {
@@ -520,7 +520,7 @@ double VectorOperationsCuda<TYPE>::localMin( const VectorData &x )
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localMax( const VectorData &x ) 
+double VectorOperationsCuda<TYPE>::localMax( const VectorData &x )  const
 {
     double result = 0;
     if ( checkData(x) ) {
@@ -539,7 +539,7 @@ double VectorOperationsCuda<TYPE>::localMax( const VectorData &x )
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localL1Norm( const VectorData &x ) 
+double VectorOperationsCuda<TYPE>::localL1Norm( const VectorData &x )  const
 {
     double result = 0;
     if ( checkData(x) ) {
@@ -556,7 +556,7 @@ double VectorOperationsCuda<TYPE>::localL1Norm( const VectorData &x )
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localL2Norm( const VectorData &x ) 
+double VectorOperationsCuda<TYPE>::localL2Norm( const VectorData &x )  const
 {
     double result = 0;
     if ( checkData(x) ) {
@@ -574,7 +574,7 @@ double VectorOperationsCuda<TYPE>::localL2Norm( const VectorData &x )
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localMaxNorm( const VectorData &x ) 
+double VectorOperationsCuda<TYPE>::localMaxNorm( const VectorData &x )  const
 {
     double result = 0;
     if ( checkData(x) ) {
@@ -591,7 +591,7 @@ double VectorOperationsCuda<TYPE>::localMaxNorm( const VectorData &x )
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localDot( const VectorData &x, const VectorData &y )
+double VectorOperationsCuda<TYPE>::localDot( const VectorData &x, const VectorData &y ) const
 {
     double result = 0;
     if ( checkData( x, y ) ) {
@@ -607,7 +607,7 @@ double VectorOperationsCuda<TYPE>::localDot( const VectorData &x, const VectorDa
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localMinQuotient( const VectorData &x, const VectorData &y )
+double VectorOperationsCuda<TYPE>::localMinQuotient( const VectorData &x, const VectorData &y ) const
 {
     double result = 0;
     if ( checkData(x,y) ) {
@@ -636,7 +636,7 @@ struct thrust_wrs {
 };
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localWrmsNorm( const VectorData &x, const VectorData &y )
+double VectorOperationsCuda<TYPE>::localWrmsNorm( const VectorData &x, const VectorData &y ) const
 {
     double result = 0;
     if ( checkData(x, y) ) {
@@ -653,14 +653,14 @@ double VectorOperationsCuda<TYPE>::localWrmsNorm( const VectorData &x, const Vec
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y )
+double VectorOperationsCuda<TYPE>::localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const
 {
     // Default to VectorOperationsDefault (on cpu)
   return VectorOperationsDefault<TYPE>::localWrmsNormMask( x, mask, y );
 }
 
 template<typename TYPE>
-bool VectorOperationsCuda<TYPE>::localEquals( const VectorData &x, const VectorData &y, double tol )
+bool VectorOperationsCuda<TYPE>::localEquals( const VectorData &x, const VectorData &y, double tol ) const
 {
   if ( checkData( x, y ) ) {
         // Call Cuda

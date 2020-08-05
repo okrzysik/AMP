@@ -257,16 +257,16 @@ protected:
     void abs( const VectorData &x, VectorData &z );
     void addScalar( const VectorData &x, double alpha_in, VectorData &y );
 
-    double localMin( const VectorData &x );
-    double localMax( const VectorData &x );
-    double localL1Norm( const VectorData &x );
-    double localL2Norm( const VectorData &x  );
-    double localMaxNorm( const VectorData &x );
-    double localDot( const VectorData &x, const VectorData &y );
-    double localMinQuotient( const VectorData &x, const VectorData &y );
-    double localWrmsNorm( const VectorData &x, const VectorData &y );
-    double localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y );
-    bool   localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 );
+    double localMin( const VectorData &x ) const;
+    double localMax( const VectorData &x ) const;
+    double localL1Norm( const VectorData &x ) const;
+    double localL2Norm( const VectorData &x  ) const;
+    double localMaxNorm( const VectorData &x ) const;
+    double localDot( const VectorData &x, const VectorData &y ) const;
+    double localMinQuotient( const VectorData &x, const VectorData &y ) const;
+    double localWrmsNorm( const VectorData &x, const VectorData &y ) const;
+    double localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const;
+    bool   localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) const;
 
 public: // Pull VectorOperations into the current scope
     using VectorOperations::abs;

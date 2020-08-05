@@ -558,35 +558,35 @@ void NativePetscVector::abs( const VectorData &x, VectorData &y )
     VecAbs( ny->getVec() );
 }
 
-double NativePetscVector::min( const VectorData &x ) 
+double NativePetscVector::min( const VectorData &x )  const
 {
     double val;
     VecMin( getConstPetscVec(x), PETSC_NULL, &val );
     return val;
 }
 
-double NativePetscVector::max( const VectorData &x ) 
+double NativePetscVector::max( const VectorData &x )  const
 {
     double val;
     VecMax( getConstPetscVec(x), PETSC_NULL, &val );
     return val;
 }
 
-double NativePetscVector::dot( const VectorData &x, const VectorData &y )
+double NativePetscVector::dot( const VectorData &x, const VectorData &y ) const
 {
     double ans;
     VecDot( getPetscVec(y), getConstPetscVec(x), &ans );
     return ans;
 }
 
-double NativePetscVector::L1Norm( const VectorData &x ) 
+double NativePetscVector::L1Norm( const VectorData &x )  const
 {
     double ans;
     VecNorm( getConstPetscVec(x), NORM_1, &ans );
     return ans;
 }
 
-double NativePetscVector::L2Norm( const VectorData &x ) 
+double NativePetscVector::L2Norm( const VectorData &x ) const 
 {
     double ans;
     VecNorm( getConstPetscVec(x), NORM_2, &ans );
@@ -600,7 +600,7 @@ double NativePetscVector::maxNorm( const VectorData &x )
     return ans;
 }
 
-double NativePetscVector::localL1Norm( const VectorData &vx )
+double NativePetscVector::localL1Norm( const VectorData &vx ) const
 {
     Vec x = getPetscVec(vx);
 
@@ -611,7 +611,7 @@ double NativePetscVector::localL1Norm( const VectorData &vx )
     return ans;
 }
 
-double NativePetscVector::localL2Norm( const VectorData &vx  )
+double NativePetscVector::localL2Norm( const VectorData &vx  ) const
 {
     Vec x = getPetscVec(vx);
 
@@ -623,7 +623,7 @@ double NativePetscVector::localL2Norm( const VectorData &vx  )
     return ans;
 }
 
-double NativePetscVector::localMaxNorm( const VectorData &vx )
+double NativePetscVector::localMaxNorm( const VectorData &vx ) const
 {
     Vec x = getPetscVec(vx);
 

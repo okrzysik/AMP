@@ -132,12 +132,12 @@ protected:
     void abs( const VectorData &x, VectorData &z );
     //    void addScalar( const VectorData &x, double alpha_in, VectorData &y );
 
-    double min( const VectorData &x );
-    double max( const VectorData &x );
-    double L1Norm( const VectorData &x );
-    double L2Norm( const VectorData &x  );
-    double maxNorm( const VectorData &x );
-    double dot( const VectorData &x, const VectorData &y );
+    double min( const VectorData &x ) const;
+    double max( const VectorData &x ) const;
+    double L1Norm( const VectorData &x ) const;
+    double L2Norm( const VectorData &x  ) const;
+    double maxNorm( const VectorData &x ) const;
+    double dot( const VectorData &x, const VectorData &y ) const;
 #if 0
     // might need to implement
     double localMin( const VectorData &x );
