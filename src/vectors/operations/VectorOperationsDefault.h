@@ -232,7 +232,7 @@ protected:
                               const VectorOperations &mask ) const override;
 
 protected:
-
+//  static function that operate on VectorData 
     static void zero( VectorData &z );
     static void setToScalar( double alpha, VectorData &z );
     static void setRandomValues( VectorData &x );    

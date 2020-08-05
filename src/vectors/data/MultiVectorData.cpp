@@ -415,6 +415,10 @@ void MultiVectorData::partitionLocalValues( const int num,
     PROFILE_STOP( "partitionLocalValues", 2 );
 }
 
+VectorData *MultiVectorData::getVectorData( size_t i )
+{
+  return d_data[i];
+}
 
 } // namespace LinearAlgebra
 } // namespace AMP
