@@ -593,7 +593,7 @@ double NativePetscVector::L2Norm( const VectorData &x ) const
     return ans;
 }
 
-double NativePetscVector::maxNorm( const VectorData &x ) 
+double NativePetscVector::maxNorm( const VectorData &x )  const
 {
     double ans;
     VecNorm( getConstPetscVec(x), NORM_INFINITY, &ans );
