@@ -31,11 +31,11 @@ static inline const Epetra_Vector &getEpetraVector( const VectorData &vec )
 }
 static inline Epetra_Vector &getEpetraVector( VectorData &vec )
 {
-    auto epetraEngine = dynamic_cast<const EpetraVectorEngine *>( &vec );
+    auto epetraEngine = dynamic_cast<EpetraVectorEngine *>( &vec );
     if ( epetraEngine )
         return epetraEngine->getEpetra_Vector();
     else {
-        auto epetraVec = dynamic_cast<const NativeEpetraVector *>( &vec );
+        auto epetraVec = dynamic_cast<NativeEpetraVector *>( &vec );
         AMP_INSIST( epetraVec != nullptr, "Not a NativeEpetraVector" );
         return epetraVec->getEpetra_Vector();
     }
