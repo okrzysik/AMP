@@ -47,6 +47,35 @@ public:
     double maxNorm( void ) const override;
     double dot( const VectorOperations &x ) const override;
 
+ protected:
+    void setToScalar( double alpha, VectorData &z );
+    void setRandomValues( VectorData &x );    
+    void scale( double alpha, const VectorData &x, VectorData &y );
+    void scale( double alpha, VectorData &x );
+    void add( const VectorData &x, const VectorData &y, VectorData &z );
+    void subtract( const VectorData &x, const VectorData &y, VectorData &z );
+    void multiply( const VectorData &x, const VectorData &y, VectorData &z );
+    void divide( const VectorData &x, const VectorData &y, VectorData &z );
+    void reciprocal( const VectorData &x, VectorData &y );
+    void linearSum( double alpha,
+			   const VectorData &x,
+			   double beta,
+			   const VectorData &y,
+			   VectorData &z);
+    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z );
+    void axpby( double alpha, double beta, const VectorData &x, VectorData &y );
+    void abs( const VectorData &x, VectorData &z );
+
+    double min( const VectorData &x ) const;
+    double max( const VectorData &x ) const;
+    double dot( const VectorData &x, const VectorData &y ) const;
+    double L1Norm( const VectorData &x ) const;
+    double L2Norm( const VectorData &x ) const;
+    double maxNorm( const VectorData &x ) const;
+    //    double localL1Norm( const VectorData &x ) const;
+    //    double localL2Norm( const VectorData &x  ) const;
+    //    double localMaxNorm( const VectorData &x ) const;
+
 public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::abs;
     using VectorOperationsDefault::add;
