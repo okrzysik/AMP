@@ -156,36 +156,36 @@ public: // Derived from VectorOperations
     double L1Norm( void ) const override;
     double L2Norm( void ) const override;
     double maxNorm( void ) const override;
-#if 0
-    // will re-enable soon
-protected:
+
+public:
     //**********************************************************************
-    // static functions that operate on VectorData
-    static void setToScalar( double alpha, VectorData &z );
-    static void setRandomValues( VectorData &x );    
-    static void scale( double alpha, const VectorData &x, VectorData &y );
-    static void scale( double alpha, VectorData &x );
-    static void add( const VectorData &x, const VectorData &y, VectorData &z );
-    static void subtract( const VectorData &x, const VectorData &y, VectorData &z );
-    static void multiply( const VectorData &x, const VectorData &y, VectorData &z );
-    static void divide( const VectorData &x, const VectorData &y, VectorData &z );
-    static void reciprocal( const VectorData &x, VectorData &y );
-    static void linearSum( double alpha,
+    // functions that operate on VectorData
+    void copy( const VectorData &src, VectorData &dst ) override;
+    void setToScalar( double alpha, VectorData &z ) override;
+    void setRandomValues( VectorData &x ) override;    
+    void scale( double alpha, const VectorData &x, VectorData &y ) override;
+    void scale( double alpha, VectorData &x ) override;
+    void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void subtract( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void multiply( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void reciprocal( const VectorData &x, VectorData &y ) override;
+    void linearSum( double alpha,
 			   const VectorData &x,
 			   double beta,
 			   const VectorData &y,
-			   VectorData &z);
-    static void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z );
-    static void axpby( double alpha, double beta, const VectorData &x, VectorData &y );
-    static void abs( const VectorData &x, VectorData &z );
+			   VectorData &z) override;
+    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
+    void abs( const VectorData &x, VectorData &z ) override;
 
-    static double min( const VectorData &x );
-    static double max( const VectorData &x );
-    static double dot( const VectorData &x, const VectorData &y );
-    static double L1Norm( const VectorData &x );
-    static double L2Norm( const VectorData &x );
-    static double maxNorm( const VectorData &x );
-#endif    
+    double min( const VectorData &x ) const override;
+    double max( const VectorData &x ) const override;
+    double dot( const VectorData &x, const VectorData &y ) const override;
+    double L1Norm( const VectorData &x ) const override;
+    double L2Norm( const VectorData &x ) const override;
+    double maxNorm( const VectorData &x ) const override;
+
 public: // Derived from Vector
     using Vector::cloneVector;
     std::string type() const override;

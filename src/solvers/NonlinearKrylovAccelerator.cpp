@@ -194,8 +194,8 @@ void NonlinearKrylovAccelerator::correction( std::shared_ptr<AMP::LinearAlgebra:
         /* Normalize w_1 and apply same factor to v_1. */
         v = d_pCorrectionVectors[d_iFirstVectorIndex];
 
-        v->scale( 1.0 / s, *v );
-        w->scale( 1.0 / s, *w );
+        v->scale( 1.0 / s, (AMP::LinearAlgebra::VectorData&) *v );
+        w->scale( 1.0 / s, (AMP::LinearAlgebra::VectorData&) *w );
 
         /* Update H. */
         for ( k = d_piNext[d_iFirstVectorIndex]; k != EOL; k = d_piNext[k] ) {

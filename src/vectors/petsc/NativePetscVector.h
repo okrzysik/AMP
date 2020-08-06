@@ -171,33 +171,35 @@ protected:
     static NativePetscVector *getNativeVec( VectorData &vx );
     static const NativePetscVector *getNativeVec( const VectorData &vx );
 
-    void setToScalar( double alpha, VectorData &z );
-    void setRandomValues( VectorData &x );    
-    void scale( double alpha, const VectorData &x, VectorData &y );
-    void scale( double alpha, VectorData &x );
-    void add( const VectorData &x, const VectorData &y, VectorData &z );
-    void subtract( const VectorData &x, const VectorData &y, VectorData &z );
-    void multiply( const VectorData &x, const VectorData &y, VectorData &z );
-    void divide( const VectorData &x, const VectorData &y, VectorData &z );
-    void reciprocal( const VectorData &x, VectorData &y );
+ public:
+    void copy( const VectorData &x, VectorData &z ) override;
+    void setToScalar( double alpha, VectorData &z ) override;
+    void setRandomValues( VectorData &x ) override;    
+    void scale( double alpha, const VectorData &x, VectorData &y ) override;
+    void scale( double alpha, VectorData &x ) override;
+    void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void subtract( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void multiply( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void reciprocal( const VectorData &x, VectorData &y ) override;
     void linearSum( double alpha,
 			   const VectorData &x,
 			   double beta,
 			   const VectorData &y,
-			   VectorData &z);
-    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z );
-    void axpby( double alpha, double beta, const VectorData &x, VectorData &y );
-    void abs( const VectorData &x, VectorData &z );
+			   VectorData &z) override;
+    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
+    void abs( const VectorData &x, VectorData &z ) override;
 
-    double min( const VectorData &x ) const;
-    double max( const VectorData &x ) const;
-    double dot( const VectorData &x, const VectorData &y ) const;
-    double L1Norm( const VectorData &x ) const;
-    double L2Norm( const VectorData &x ) const;
-    double maxNorm( const VectorData &x ) const;
-    double localL1Norm( const VectorData &x ) const;
-    double localL2Norm( const VectorData &x  ) const;
-    double localMaxNorm( const VectorData &x ) const;
+    double min( const VectorData &x ) const override;
+    double max( const VectorData &x ) const override;
+    double dot( const VectorData &x, const VectorData &y ) const override;
+    double L1Norm( const VectorData &x ) const override;
+    double L2Norm( const VectorData &x ) const override;
+    double maxNorm( const VectorData &x ) const override;
+    double localL1Norm( const VectorData &x ) const override;
+    double localL2Norm( const VectorData &x  ) const override;
+    double localMaxNorm( const VectorData &x ) const override;
 
     void axpbypcz( double alpha,
 			  const VectorData &x,

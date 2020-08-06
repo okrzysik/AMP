@@ -104,6 +104,49 @@ bool VectorOperations::equals( const VectorOperations &rhs, double tol ) const
     return equal;
 }
 
+double VectorOperations::min( const VectorData &x ) const
+{
+    double ans = localMin(x);
+    if ( hasComm() )
+        ans = getComm().minReduce( ans );
+    return ans;
+}
+double VectorOperations::max( const VectorData &x) const
+{
+    double ans = localMax(x);
+    if ( hasComm() )
+        ans = getComm().maxReduce( ans );
+    return ans;
+}
+double VectorOperations::dot( const VectorData &x, const VectorData &y ) const
+{
+    double ans = localDot( x, y );
+    if ( hasComm() )
+        ans = getComm().sumReduce( ans );
+    return ans;
+}
+double VectorOperations::L1Norm(const VectorData &x) const
+{
+    double ans = localL1Norm(x);
+    if ( hasComm() )
+        ans = getComm().sumReduce( ans );
+    return ans;
+}
+double VectorOperations::maxNorm(const VectorData &x) const
+{
+    double ans = localMaxNorm(x);
+    if ( hasComm() )
+        ans = getComm().maxReduce( ans );
+    return ans;
+}
+double VectorOperations::L2Norm(const VectorData &x) const
+{
+    double ans = localL2Norm(x);
+    if ( hasComm() )
+        ans = sqrt( getComm().sumReduce( ans * ans ) );
+    return ans;
+}
+
 
 } // namespace LinearAlgebra
 } // namespace AMP

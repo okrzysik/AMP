@@ -458,7 +458,14 @@ void NativePetscVector::axpbypcz( double alpha,
         AMP_ERROR( "Internal error\n" );
     }
 }
-
+void NativePetscVector::copy( const VectorData &x, VectorData &y )
+{
+    auto nx = getNativeVec(x);
+    auto ny = getNativeVec(y);
+    ny->resetArray();    
+    VecCopy( nx->getVec(), ny->getVec() );
+    y.copyGhostValues(x);
+}
 
 void NativePetscVector::setToScalar( double alpha, VectorData &x )
 {

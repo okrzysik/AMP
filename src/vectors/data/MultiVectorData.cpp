@@ -420,6 +420,11 @@ VectorData *MultiVectorData::getVectorData( size_t i )
   return d_data[i];
 }
 
+const VectorData *MultiVectorData::getVectorData( size_t i ) const
+{
+  return d_data[i];
+}
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

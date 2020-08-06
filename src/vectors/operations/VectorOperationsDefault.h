@@ -231,40 +231,40 @@ protected:
     double localWrmsNormMask( const VectorOperations &x,
                               const VectorOperations &mask ) const override;
 
-protected:
-//  static function that operate on VectorData 
-    void zero( VectorData &z );
-    void setToScalar( double alpha, VectorData &z );
-    void setRandomValues( VectorData &x );    
-    void setRandomValues( RNG::shared_ptr rng, VectorData &x );    
-    void copy( const VectorData &x, VectorData &z );
-    void scale( double alpha, const VectorData &x, VectorData &y );
-    void scale( double alpha, VectorData &x );
-    void add( const VectorData &x, const VectorData &y, VectorData &z );
-    void subtract( const VectorData &x, const VectorData &y, VectorData &z );
-    void multiply( const VectorData &x, const VectorData &y, VectorData &z );
-    void divide( const VectorData &x, const VectorData &y, VectorData &z );
-    void reciprocal( const VectorData &x, VectorData &y );
+public:
+//  function that operate on VectorData 
+    void copy( const VectorData &x, VectorData &z ) override;
+    void zero( VectorData &z ) override;
+    void setToScalar( double alpha, VectorData &z ) override;
+    void setRandomValues( VectorData &x ) override;    
+    void setRandomValues( RNG::shared_ptr rng, VectorData &x ) override;    
+    void scale( double alpha, const VectorData &x, VectorData &y ) override;
+    void scale( double alpha, VectorData &x ) override;
+    void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void subtract( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void multiply( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void reciprocal( const VectorData &x, VectorData &y ) override;
     void linearSum( double alpha,
 			   const VectorData &x,
 			   double beta,
 			   const VectorData &y,
-			   VectorData &z);
-    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z );
-    void axpby( double alpha, double beta, const VectorData &x, VectorData &y );
-    void abs( const VectorData &x, VectorData &z );
-    void addScalar( const VectorData &x, double alpha_in, VectorData &y );
+			   VectorData &z) override;
+    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
+    void abs( const VectorData &x, VectorData &z ) override;
+    void addScalar( const VectorData &x, double alpha_in, VectorData &y ) override;
 
-    double localMin( const VectorData &x ) const;
-    double localMax( const VectorData &x ) const;
-    double localL1Norm( const VectorData &x ) const;
-    double localL2Norm( const VectorData &x  ) const;
-    double localMaxNorm( const VectorData &x ) const;
-    double localDot( const VectorData &x, const VectorData &y ) const;
-    double localMinQuotient( const VectorData &x, const VectorData &y ) const;
-    double localWrmsNorm( const VectorData &x, const VectorData &y ) const;
-    double localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const;
-    bool   localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) const;
+    double localMin( const VectorData &x ) const override;
+    double localMax( const VectorData &x ) const override;
+    double localL1Norm( const VectorData &x ) const override;
+    double localL2Norm( const VectorData &x  ) const override;
+    double localMaxNorm( const VectorData &x ) const override;
+    double localDot( const VectorData &x, const VectorData &y ) const override;
+    double localMinQuotient( const VectorData &x, const VectorData &y ) const override;
+    double localWrmsNorm( const VectorData &x, const VectorData &y ) const override;
+    double localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const override;
+    bool   localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) const override;
 
 public: // Pull VectorOperations into the current scope
     using VectorOperations::setRandomValues;

@@ -23,6 +23,33 @@ static inline std::shared_ptr<ManagedVector> getManaged( std::shared_ptr<Vector>
     AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
     return y;
 }
+static inline const ManagedVector *getManagedVector( const VectorData &x )
+{
+    auto y = dynamic_cast<const ManagedVector *>( &x );
+    return y;
+}
+static inline ManagedVector *getManagedVector( VectorData &x )
+{
+    auto y = dynamic_cast<ManagedVector *>( &x );
+    AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
+    return y;
+}
+static inline VectorData *getEngineData( VectorData &x )
+{
+    auto y = dynamic_cast<ManagedVector *>( &x );    
+    AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
+    auto engine = y->getVectorEngine();
+    AMP_INSIST( engine, "ManagedVector Engine is Null" );
+    return engine->getVectorData();
+}
+static inline const VectorData *getEngineData( const VectorData &x )
+{
+    auto y = dynamic_cast<const ManagedVector *>( &x );    
+    AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
+    auto engine = y->getVectorEngine();
+    AMP_INSIST( engine, "ManagedVector Engine is Null" );
+    return engine->getVectorData();
+}
 
 
 /********************************************************
@@ -98,32 +125,6 @@ bool ManagedVector::isAnAliasOf( Vector &rhs )
     }
     return retVal;
 }
-
-
-void ManagedVector::copy( const VectorOperations &other )
-{
-    auto rhs_managed = dynamic_cast<const ManagedVector *>( &other );
-    std::shared_ptr<Vector> vec1;
-    std::shared_ptr<const Vector> vec2;
-    if ( rhs_managed != nullptr ) {
-        // We are dealing with two managed vectors, check if they both have data engines
-        if ( d_Engine.get() != nullptr )
-            vec1 = std::dynamic_pointer_cast<Vector>( d_Engine );
-        if ( rhs_managed->d_Engine.get() != nullptr )
-            vec2 = std::dynamic_pointer_cast<const Vector>( rhs_managed->d_Engine );
-    }
-    // Perform the copy
-    if ( vec1 != nullptr && vec2 != nullptr ) {
-        // We have two data engines, perform the copy between them
-        vec1->copy( vec2 );
-        fireDataChange();
-        *d_UpdateState = *( other.getVectorData()->getUpdateStatusPtr() );
-    } else {
-        // Default, general case
-        VectorOperationsDefault::copy( other );
-    }
-}
-
 
 Vector::UpdateState ManagedVector::getUpdateStatus() const
 {
@@ -306,175 +307,6 @@ void ManagedVector::copyOutRawData( double *in ) const
     d_Engine->getVectorData()->copyOutRawData( in );
 }
 
-void ManagedVector::setToScalar( double alpha )
-{
-    d_Engine->setToScalar( alpha );
-    dataChanged();
-    this->makeConsistent( ScatterType::CONSISTENT_SET );
-}
-
-void ManagedVector::scale( double alpha, const VectorOperations &x )
-{
-    auto x2 = dynamic_cast<const ManagedVector *>( &x );
-    if ( x2 != nullptr ) {
-        d_Engine->scale( alpha, x2->d_Engine );
-    } else {
-        VectorOperationsDefault::scale( alpha, x );
-    }
-    dataChanged();
-}
-
-
-void ManagedVector::scale( double alpha )
-{
-    d_Engine->scale( alpha );
-    dataChanged();
-}
-
-
-void ManagedVector::add( const VectorOperations &x, const VectorOperations &y )
-{
-    auto x2 = dynamic_cast<const ManagedVector *>( &x );
-    auto y2 = dynamic_cast<const ManagedVector *>( &y );
-    if ( x2 != nullptr && y2 != nullptr ) {
-        d_Engine->add( x2->d_Engine, y2->d_Engine );
-    } else {
-        VectorOperationsDefault::add( x, y );
-    }
-    dataChanged();
-}
-
-
-void ManagedVector::subtract( const VectorOperations &x, const VectorOperations &y )
-{
-    auto x2 = dynamic_cast<const ManagedVector *>( &x );
-    auto y2 = dynamic_cast<const ManagedVector *>( &y );
-    if ( x2 != nullptr && y2 != nullptr ) {
-        d_Engine->subtract( x2->d_Engine, y2->d_Engine );
-    } else {
-        VectorOperationsDefault::subtract( x, y );
-    }
-    dataChanged();
-}
-
-
-void ManagedVector::multiply( const VectorOperations &x, const VectorOperations &y )
-{
-    auto x2 = dynamic_cast<const ManagedVector *>( &x );
-    auto y2 = dynamic_cast<const ManagedVector *>( &y );
-    if ( x2 != nullptr && y2 != nullptr ) {
-        d_Engine->multiply( x2->d_Engine, y2->d_Engine );
-    } else {
-        VectorOperationsDefault::multiply( x, y );
-    }
-    dataChanged();
-}
-
-
-void ManagedVector::divide( const VectorOperations &x, const VectorOperations &y )
-{
-    auto x2 = dynamic_cast<const ManagedVector *>( &x );
-    auto y2 = dynamic_cast<const ManagedVector *>( &y );
-    if ( x2 != nullptr && y2 != nullptr ) {
-        d_Engine->divide( x2->d_Engine, y2->d_Engine );
-    } else {
-        VectorOperationsDefault::divide( x, y );
-    }
-    dataChanged();
-}
-
-
-void ManagedVector::reciprocal( const VectorOperations &x )
-{
-    auto x2 = dynamic_cast<const ManagedVector *>( &x );
-    if ( x2 != nullptr ) {
-        d_Engine->reciprocal( x2->d_Engine );
-    } else {
-        VectorOperationsDefault::reciprocal( x );
-    }
-    dataChanged();
-}
-
-
-void ManagedVector::linearSum( double alpha,
-                               const VectorOperations &x,
-                               double beta,
-                               const VectorOperations &y )
-{
-    auto x2 = dynamic_cast<const ManagedVector *>( &x );
-    auto y2 = dynamic_cast<const ManagedVector *>( &y );
-    if ( x2 != nullptr && y2 != nullptr ) {
-        d_Engine->linearSum( alpha, x2->d_Engine, beta, y2->d_Engine );
-    } else {
-        VectorOperationsDefault::linearSum( alpha, x, beta, y );
-    }
-    dataChanged();
-}
-
-
-void ManagedVector::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
-{
-    auto x2 = dynamic_cast<const ManagedVector *>( &x );
-    auto y2 = dynamic_cast<const ManagedVector *>( &y );
-    if ( x2 != nullptr && y2 != nullptr ) {
-        d_Engine->axpy( alpha, x2->d_Engine, y2->d_Engine );
-    } else {
-        VectorOperationsDefault::axpy( alpha, x, y );
-    }
-    dataChanged();
-}
-
-
-void ManagedVector::axpby( double alpha, double beta, const VectorOperations &x )
-{
-    auto x2 = dynamic_cast<const ManagedVector *>( &x );
-    if ( x2 != nullptr ) {
-        d_Engine->axpby( alpha, beta, x2->d_Engine );
-    } else {
-        VectorOperationsDefault::axpby( alpha, beta, x );
-    }
-    dataChanged();
-}
-
-
-void ManagedVector::abs( const VectorOperations &x )
-{
-    auto x2 = dynamic_cast<const ManagedVector *>( &x );
-    if ( x2 != nullptr ) {
-        d_Engine->abs( x2->d_Engine );
-    } else {
-        VectorOperationsDefault::abs( x );
-    }
-    dataChanged();
-}
-
-void ManagedVector::setRandomValues()
-{
-    d_Engine->setRandomValues();
-    dataChanged();
-    this->makeConsistent( ScatterType::CONSISTENT_SET );
-}
-
-double ManagedVector::min() const { return d_Engine->min(); }
-
-double ManagedVector::max() const { return d_Engine->max(); }
-
-double ManagedVector::dot( const VectorOperations &x ) const
-{
-    auto x2 = dynamic_cast<const ManagedVector *>( &x );
-    if ( x2 != nullptr )
-        return d_Engine->dot( x2->d_Engine );
-    return VectorOperationsDefault::dot( x );
-}
-
-double ManagedVector::L1Norm() const { return d_Engine->L1Norm(); }
-
-
-double ManagedVector::L2Norm() const { return d_Engine->L2Norm(); }
-
-
-double ManagedVector::maxNorm() const { return d_Engine->maxNorm(); }
-
 std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
 {
     std::shared_ptr<Vector> retVal( getNewRawPtr() );
@@ -597,6 +429,340 @@ size_t ManagedVector::getLocalSize() const { return d_Engine->getVectorData()->g
 
 size_t ManagedVector::getGlobalSize() const { return d_Engine->getVectorData()->getGlobalSize(); }
 
+
+void ManagedVector::copy( const VectorOperations &x )
+{
+  copy(*(x.getVectorData()), *getVectorData());
+}
+
+void ManagedVector::setToScalar( double alpha )
+{
+  setToScalar(alpha, *getVectorData() );
+}
+
+void ManagedVector::setRandomValues( void )
+{
+   setRandomValues( *getVectorData() );
+}
+
+void ManagedVector::scale( double alpha, const VectorOperations &x )
+{
+  scale(alpha, *(x.getVectorData()), *getVectorData());
+}
+
+
+void ManagedVector::scale( double alpha )
+{
+  scale(alpha, *getVectorData());
+}
+
+void ManagedVector::add( const VectorOperations &x, const VectorOperations &y )
+{
+  add( *(x.getVectorData()), *(y.getVectorData()), *getVectorData() );
+}
+
+
+void ManagedVector::subtract( const VectorOperations &x, const VectorOperations &y )
+{
+  subtract( *(x.getVectorData()), *(y.getVectorData()), *getVectorData() );
+}
+
+
+void ManagedVector::multiply( const VectorOperations &x, const VectorOperations &y )
+{
+  multiply( *(x.getVectorData()), *(y.getVectorData()), *getVectorData() );
+}
+
+
+void ManagedVector::divide( const VectorOperations &x, const VectorOperations &y )
+{
+  divide( *(x.getVectorData()), *(y.getVectorData()), *getVectorData() );
+}
+
+
+void ManagedVector::reciprocal( const VectorOperations &x )
+{
+  reciprocal( *(x.getVectorData()), *getVectorData() );
+}
+
+
+void ManagedVector::linearSum( double alpha,
+                                   const VectorOperations &x,
+                                   double beta,
+                                   const VectorOperations &y )
+{
+  linearSum( alpha,
+	     *(x.getVectorData()),
+	     beta,
+	     *(y.getVectorData()),
+	     *getVectorData() );
+}
+
+
+void ManagedVector::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
+{
+  axpy( alpha,
+	*(x.getVectorData()),
+	*(y.getVectorData()),
+	*getVectorData() );
+}
+
+
+void ManagedVector::axpby( double alpha, double beta, const VectorOperations &x )
+{
+  axpby( alpha,
+	 beta,
+	 *(x.getVectorData()),
+	 *getVectorData() );
+}
+
+
+void ManagedVector::abs( const VectorOperations &x )
+{
+    abs( *(x.getVectorData()), *getVectorData() );
+}
+
+double ManagedVector::min( void ) const
+{
+  return min( *getVectorData() );
+}
+
+double ManagedVector::max( void ) const
+{
+  return max( *getVectorData() );
+}
+
+double ManagedVector::L1Norm( void ) const
+{
+  return L1Norm( *getVectorData() );
+}
+
+
+double ManagedVector::L2Norm( void ) const
+{
+  return L2Norm( *getVectorData() );
+}
+
+
+double ManagedVector::maxNorm( void ) const
+{
+  return maxNorm( *getVectorData() );
+}
+
+
+double ManagedVector::dot( const VectorOperations &x ) const
+{
+    return dot( *(x.getVectorData()), *getVectorData() );
+}
+
+//**********************************************************************
+// Functions that operate on VectorData objects
+
+void ManagedVector::copy( const VectorData &src, VectorData &dst )
+{
+    auto src_managed  = getManagedVector(src);
+    auto dst_managed  = getManagedVector(dst);
+    std::shared_ptr<Vector> vec1;
+    std::shared_ptr<const Vector> vec2;
+    if ( src_managed && dst_managed ) {
+        // We are dealing with two managed vectors, check if they both have data engines
+        if ( dst_managed->d_Engine.get() )
+            vec1 = std::dynamic_pointer_cast<Vector>( dst_managed->d_Engine );
+        if ( src_managed->d_Engine.get() != nullptr )
+            vec2 = std::dynamic_pointer_cast<const Vector>( src_managed->d_Engine );
+    }
+    // Perform the copy
+    if ( vec1 != nullptr && vec2 != nullptr ) {
+        // We have two data engines, perform the copy between them
+        vec1->copy( vec2 );
+        fireDataChange();
+        *(dst_managed->d_UpdateState) = *( src.getUpdateStatusPtr() );
+    } else {
+        // Default, general case
+      VectorOperationsDefault::copy( src, dst );
+    }
+}
+
+void ManagedVector::setToScalar( double alpha, VectorData &x )
+{
+  auto xm    = getManagedVector(x);
+  auto xdata = getEngineData(x);
+  xm->d_Engine->setToScalar( alpha, *xdata );
+  dataChanged();
+  xm->makeConsistent( ScatterType::CONSISTENT_SET );
+
+}
+
+void ManagedVector::setRandomValues( VectorData &x )
+{
+    auto xm    = getManagedVector(x);
+    auto xdata = getEngineData(x);
+    xm->d_Engine->setRandomValues(*xdata);
+    dataChanged();
+    xm->makeConsistent( ScatterType::CONSISTENT_SET );
+}
+
+void ManagedVector::scale( double alpha, const VectorData &x, VectorData &y )
+{
+    auto x2 = getManagedVector(x);
+    if ( x2 != nullptr ) {
+        auto y2 = getManagedVector(y);
+        y2->d_Engine->scale( alpha, *getEngineData(x), *getEngineData(y) );
+    } else {
+      VectorOperationsDefault::scale( alpha, x, y );
+    }
+    dataChanged();
+}
+
+void ManagedVector::scale( double alpha, VectorData &x )
+{
+    auto y = getManagedVector(x);
+    y->d_Engine->scale( alpha, *getEngineData(x) );
+    dataChanged();
+}
+
+void ManagedVector::add( const VectorData &x, const VectorData &y, VectorData &z )
+{
+    auto x2 = getManagedVector(x);
+    auto y2 = getManagedVector(y);
+    if ( x2 != nullptr && y2 != nullptr ) {
+        auto z2 = getManagedVector(z);
+        z2->d_Engine->add( *getEngineData(x), *getEngineData(y), *getEngineData(z) );
+    } else {
+      VectorOperationsDefault::add( x, y, z );
+    }
+    dataChanged();
+}
+
+void ManagedVector::subtract( const VectorData &x, const VectorData &y, VectorData &z  )
+{
+    auto x2 = getManagedVector(x);
+    auto y2 = getManagedVector(y);
+    if ( x2 != nullptr && y2 != nullptr ) {
+        auto z2 = getManagedVector(z);
+        z2->d_Engine->subtract( *getEngineData(x), *getEngineData(y), *getEngineData(z) );
+    } else {
+      VectorOperationsDefault::subtract( x, y, z );
+    }
+    dataChanged();
+}
+
+void ManagedVector::multiply( const VectorData &x, const VectorData &y, VectorData &z )
+{
+    auto x2 = getManagedVector(x);
+    auto y2 = getManagedVector(y);
+    if ( x2 != nullptr && y2 != nullptr ) {
+        auto z2 = getManagedVector(z);
+        z2->d_Engine->multiply( *getEngineData(x), *getEngineData(y), *getEngineData(z) );
+    } else {
+      VectorOperationsDefault::multiply( x, y, z );
+    }
+    dataChanged();
+}
+
+void ManagedVector::divide( const VectorData &x, const VectorData &y, VectorData &z )
+{
+    auto x2 = getManagedVector(x);
+    auto y2 = getManagedVector(y);
+    if ( x2 != nullptr && y2 != nullptr ) {
+        auto z2 = getManagedVector(z);
+        z2->d_Engine->divide( *getEngineData(x), *getEngineData(y), *getEngineData(z) );
+    } else {
+      VectorOperationsDefault::divide( x, y, z );
+    }
+    dataChanged();
+}
+
+void ManagedVector::reciprocal( const VectorData &x, VectorData &y )
+{
+    auto x2 = getManagedVector(x);
+    if ( x2 != nullptr ) {
+        auto y2 = getManagedVector(y);
+        y2->d_Engine->reciprocal( *getEngineData(x), *getEngineData(y) );
+    } else {
+      VectorOperationsDefault::reciprocal( x, y );
+    }
+    dataChanged();
+}
+
+void ManagedVector::linearSum( double alpha,
+			       const VectorData &x,
+			       double beta,
+			       const VectorData &y,
+			       VectorData &z)
+{
+    auto x2 = getManagedVector(x);
+    auto y2 = getManagedVector(y);
+    if ( x2 != nullptr && y2 != nullptr ) {
+        auto z2 = getManagedVector(z);
+        z2->d_Engine->linearSum( alpha, *getEngineData(x), beta, *getEngineData(y), *getEngineData(z) );
+    } else {
+      VectorOperationsDefault::linearSum( alpha, x, beta, y, z );
+    }
+    dataChanged();
+}
+
+void ManagedVector::axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z )
+{
+  linearSum(alpha, x, 1.0, y, z);
+}
+
+void ManagedVector::axpby( double alpha, double beta, const VectorData &x, VectorData &z )
+{
+  linearSum(alpha, x, beta, z, z);
+}
+
+void ManagedVector::abs( const VectorData &x, VectorData &y )
+{
+    auto x2 = getManagedVector(x);
+    if ( x2 != nullptr ) {
+        auto y2 = getManagedVector(y);      
+        y2->d_Engine->abs( *getEngineData(x), *getEngineData(y) );
+    } else {
+      VectorOperationsDefault::abs( x, y );
+    }
+    dataChanged();
+}
+
+double ManagedVector::min( const VectorData &x )  const
+{
+    auto x2 = getManagedVector(x);
+    return x2->d_Engine->min(*getEngineData(x));
+}
+
+double ManagedVector::max( const VectorData &x )  const
+{
+    auto x2 = getManagedVector(x);
+    return x2->d_Engine->max(*getEngineData(x));
+}
+
+double ManagedVector::dot( const VectorData &x, const VectorData &y ) const
+{
+    auto x2 = getManagedVector(x);
+    if ( x2 != nullptr ) {
+      auto y2 = getManagedVector(y);      
+      return y2->d_Engine->dot( *getEngineData(x), *getEngineData(y) );
+    }
+    return VectorOperationsDefault::dot( x, y );
+}
+
+double ManagedVector::L1Norm( const VectorData &x )  const
+{
+    auto x2 = getManagedVector(x);
+    return x2->d_Engine->L1Norm(*getEngineData(x));
+}
+
+double ManagedVector::L2Norm( const VectorData &x ) const 
+{
+    auto x2 = getManagedVector(x);
+    return x2->d_Engine->L2Norm(*getEngineData(x));
+}
+
+double ManagedVector::maxNorm( const VectorData &x )  const
+{
+    auto x2 = getManagedVector(x);
+    return x2->d_Engine->maxNorm(*getEngineData(x));
+}
 
 } // namespace LinearAlgebra
 } // namespace AMP

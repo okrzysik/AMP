@@ -104,7 +104,7 @@ int RK4TimeIntegrator::advanceSolution( const double dt, const bool )
     // u_new = un+ dt*(k1+2*k2+2*k3+k4)/6
     d_k1_vec->add( *d_k1_vec, *d_k4_vec );
     d_k2_vec->add( *d_k2_vec, *d_k3_vec );
-    d_k2_vec->scale( 2.0, *d_k2_vec );
+    d_k2_vec->scale( 2.0, (AMP::LinearAlgebra::VectorData&) *d_k2_vec );
     d_k1_vec->add( *d_k1_vec, *d_k2_vec );
 
     d_new_solution->axpy( dt / 6.0, *d_k1_vec, *d_solution );

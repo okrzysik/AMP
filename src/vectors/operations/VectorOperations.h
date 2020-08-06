@@ -264,7 +264,46 @@ public:
     virtual double localWrmsNormMask( const VectorOperations &x,
                                       const VectorOperations &mask ) const = 0;
 
+    // VectorData versions
+    virtual void copy( const VectorData &x, VectorData &z ) = 0;
+    virtual void zero( VectorData &x ) = 0;
+    virtual void setToScalar( double alpha, VectorData &z ) = 0;
+    virtual void setRandomValues( VectorData &x ) = 0;    
+    virtual void setRandomValues( RNG::shared_ptr rng, VectorData &x ) = 0;    
+    virtual void scale( double alpha, const VectorData &x, VectorData &y ) = 0;
+    virtual void scale( double alpha, VectorData &x ) = 0;
+    virtual void add( const VectorData &x, const VectorData &y, VectorData &z ) = 0;
+    virtual void subtract( const VectorData &x, const VectorData &y, VectorData &z ) = 0;
+    virtual void multiply( const VectorData &x, const VectorData &y, VectorData &z ) = 0;
+    virtual void divide( const VectorData &x, const VectorData &y, VectorData &z ) = 0;
+    virtual void reciprocal( const VectorData &x, VectorData &y ) = 0;
+    virtual void linearSum( double alpha,
+			   const VectorData &x,
+			   double beta,
+			   const VectorData &y,
+			   VectorData &z) = 0;
+    virtual void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) = 0;
+    virtual void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) = 0;
+    virtual void abs( const VectorData &x, VectorData &z ) = 0;
+    virtual void addScalar( const VectorData &x, double alpha_in, VectorData &y ) = 0;
 
+    virtual double min( const VectorData &x ) const;
+    virtual double max( const VectorData &x ) const;
+    virtual double L1Norm( const VectorData &x ) const;
+    virtual double L2Norm( const VectorData &x  ) const;
+    virtual double maxNorm( const VectorData &x ) const;
+    virtual double dot( const VectorData &x, const VectorData &y ) const;
+    virtual double localMin( const VectorData &x ) const = 0;
+    virtual double localMax( const VectorData &x ) const = 0;
+    virtual double localL1Norm( const VectorData &x ) const = 0;
+    virtual double localL2Norm( const VectorData &x  ) const = 0;
+    virtual double localMaxNorm( const VectorData &x ) const = 0;
+    virtual double localDot( const VectorData &x, const VectorData &y ) const = 0;
+    virtual double localMinQuotient( const VectorData &x, const VectorData &y ) const = 0;
+    virtual double localWrmsNorm( const VectorData &x, const VectorData &y ) const = 0;
+    virtual double localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const = 0;
+    virtual bool   localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) const = 0;
+    
 public: // Non-virtual functions
     /**
      * \brief  Determine if two vectors are equal using an absolute tolerance
