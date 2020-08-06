@@ -186,7 +186,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearSolver->setPreconditioner( pcSolver );
 
     double scaleValue = 1.0;
-    scaledRhsVec->scale( scaleValue, rhsVec );
+    scaledRhsVec->scale( scaleValue, rhsVec, scaledRhsVec );
     AMP::pout << "L2 Norm of RHS at loading step 1 is " << scaledRhsVec->L2Norm() << std::endl;
 
     double currTime = 1000.0;

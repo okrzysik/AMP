@@ -145,7 +145,7 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     for ( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
 
-        rho[1] = r_tilde->dot( res );
+      rho[1] = r_tilde->dot( res, r_tilde );
 
         double angle = std::sqrt( std::fabs( rho[1] ) );
         double eps   = std::numeric_limits<double>::epsilon();
@@ -168,8 +168,8 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         } else {
 
             beta = ( rho[1] / rho[0] ) * ( alpha / omega );
-            p->axpy( -omega, v, p );
-            p->axpy( beta, p, res );
+            p->axpy( -omega, v, p, p );
+            p->axpy( beta, p, res, p );
         }
 
         std::shared_ptr<AMP::LinearAlgebra::Vector> p_hat = u->cloneVector();
@@ -183,18 +183,18 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         d_pOperator->apply( p_hat, v );
 
-        alpha = r_tilde->dot( v );
+        alpha = r_tilde->dot( v, r_tilde );
         AMP_ASSERT( alpha != 0.0 );
         alpha = rho[1] / alpha;
 
         std::shared_ptr<AMP::LinearAlgebra::Vector> s = res->cloneVector();
-        s->axpy( -alpha, v, res );
+        s->axpy( -alpha, v, res, s );
 
         const double s_norm = s->L2Norm();
 
         if ( s_norm < d_dRelativeTolerance ) {
             // early convergence
-            u->axpy( alpha, p_hat, u );
+	  u->axpy( alpha, p_hat, u, u );
             // add in code for final relative residual
             break;
         }
@@ -211,13 +211,13 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         std::shared_ptr<AMP::LinearAlgebra::Vector> t = res->cloneVector();
         d_pOperator->apply( s_hat, t );
 
-        const double t_sqnorm = t->dot( t );
-        omega                 = ( t_sqnorm == 0.0 ) ? 0.0 : t->dot( s ) / t_sqnorm;
+        const double t_sqnorm = t->dot( t, t );
+        omega                 = ( t_sqnorm == 0.0 ) ? 0.0 : t->dot( s, t ) / t_sqnorm;
 
-        u->axpy( alpha, p_hat, u );
-        u->axpy( omega, s_hat, u );
+        u->axpy( alpha, p_hat, u, u );
+        u->axpy( omega, s_hat, u, u );
 
-        res->axpy( -omega, t, s );
+        res->axpy( -omega, t, s, res );
 
         // compute the current residual norm
         res_norm = res->L2Norm();

@@ -574,7 +574,7 @@ void ManagedVector::copy( const VectorData &src, VectorData &dst )
     // Perform the copy
     if ( vec1 != nullptr && vec2 != nullptr ) {
         // We have two data engines, perform the copy between them
-        vec1->copy( vec2 );
+        vec1->copy( vec2, vec1 );
         fireDataChange();
         *(dst_managed->d_UpdateState) = *( src.getUpdateStatusPtr() );
     } else {

@@ -98,7 +98,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
             d_prePostOperator->runPreApply( x, f_out, exact );
         // Apply the AMP::Operator to compute r = A(u) - rhs
         d_nonlinearOp->apply( x, f_out );
-        f_out->axpby( -1, 1, d_rhs );
+        f_out->axpby( -1, 1, d_rhs, f_out );
         if ( d_prePostOperator != nullptr )
             d_prePostOperator->runPostApply( x, f_out, exact );
     }

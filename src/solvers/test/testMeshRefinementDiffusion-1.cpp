@@ -373,7 +373,7 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
 
     thermMapVec->copyVector( manufacturedNormalGradient );
     thermMapVec->scale( 1 / 20. );
-    thermMapVec->add( thermMapVec, manufacturedSolution );
+    thermMapVec->add( thermMapVec, manufacturedSolution, thermMapVec );
 
     registerMapswithThermalOperator( input_db, nonlinearThermalColumnOperator, thermMapVec );
 
@@ -491,7 +491,7 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
     //  nonlinearThermalCoupledOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0,
     //  -1.0);
     nonlinearThermalColumnOperator->residual( integratedRHSVec, TemperatureVec, ResidualVec );
-    solutionError->subtract( TemperatureVec, manufacturedSolution );
+    solutionError->subtract( TemperatureVec, manufacturedSolution, solutionError );
 
     std::cout << "Max of ||U-Uh|| : " << solutionError->max()
               << " Min of ||U-Uh|| : " << solutionError->min() << std::endl;

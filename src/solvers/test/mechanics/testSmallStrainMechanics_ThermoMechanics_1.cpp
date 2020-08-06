@@ -123,20 +123,20 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     tempVec->setToScalar( 301.0 );
 
     burnVec->setRandomValues();
-    burnVec->abs( burnVec );
+    burnVec->abs( burnVec, burnVec );
     double maxBurnVec        = burnVec->max();
     double oneOverMaxBurnVec = 1.0 / maxBurnVec;
     burnVec->scale( oneOverMaxBurnVec );
     burnVec->scale( 0.2 );
 
     lhgrVec->setRandomValues();
-    lhgrVec->abs( lhgrVec );
+    lhgrVec->abs( lhgrVec, lhgrVec );
     double maxLHGRVec        = lhgrVec->max();
     double oneOverMaxLHGRVec = 1.0 / maxLHGRVec;
     lhgrVec->scale( oneOverMaxLHGRVec );
     lhgrVec->scale( 0.2 );
     double constLHGR = 0.4;
-    lhgrVec->addScalar( lhgrVec, constLHGR );
+    lhgrVec->addScalar( lhgrVec, constLHGR, lhgrVec );
 
     mechanicsNonlinearVolumeOperator->setReferenceTemperature( tempVecRef );
     mechanicsNonlinearVolumeOperator->setVector( AMP::Operator::Mechanics::TEMPERATURE, tempVec );
@@ -208,7 +208,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         tempVec->setToScalar( finalTemperature );
 
         double scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
-        scaledRhsVec->scale( scaleValue, rhsVec );
+        scaledRhsVec->scale( scaleValue, rhsVec, scaledRhsVec );
         AMP::pout << "L2 Norm of RHS at loading step " << ( step + 1 ) << " is "
                   << scaledRhsVec->L2Norm() << std::endl;
 

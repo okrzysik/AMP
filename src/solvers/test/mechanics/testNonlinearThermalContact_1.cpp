@@ -473,7 +473,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         std::cout << "Residual Norm on Clad after " << cnt
                   << " iteration is : " << ResidualVec2->L2Norm() << std::endl;
 
-        vecLag2->subtract( TemperatureInKelvinVec2, vecLag2 );
+        vecLag2->subtract( TemperatureInKelvinVec2, vecLag2, vecLag2 );
 
 //          if( nodes == 2 ) {
 #ifdef USE_EXT_SILO

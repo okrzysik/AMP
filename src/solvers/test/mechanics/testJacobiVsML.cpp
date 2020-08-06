@@ -90,7 +90,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
             bvpOperator->apply( mechSolVec, matOutVec );
 
-            mechResVec->subtract( mechRhsVec, matOutVec );
+            mechResVec->subtract( mechRhsVec, matOutVec, mechResVec );
 
             pVec->copyVector( mechResVec );
 
@@ -105,17 +105,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 std::cout << "CG-Iter = " << iter << " MatOutNorm2 = " << std::setprecision( 15 )
                           << matOutNorm << std::endl;
 
-                double resOldDot = mechResVec->dot( mechResVec );
+                double resOldDot = mechResVec->dot( mechResVec, mechResVec );
 
-                double alphaDenom = matOutVec->dot( pVec );
+                double alphaDenom = matOutVec->dot( pVec, matOutVec );
 
                 double alpha = resOldDot / alphaDenom;
 
-                mechSolVec->axpy( alpha, pVec, mechSolVec );
+                mechSolVec->axpy( alpha, pVec, mechSolVec, mechSolVec );
 
-                mechResVec->axpy( -alpha, matOutVec, mechResVec );
+                mechResVec->axpy( -alpha, matOutVec, mechResVec, mechResVec );
 
-                double resNewDot = mechResVec->dot( mechResVec );
+                double resNewDot = mechResVec->dot( mechResVec, mechResVec );
 
                 double beta = resNewDot / resOldDot;
 
@@ -126,7 +126,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                           << " beta = " << std::setprecision( 15 ) << beta << std::endl
                           << std::endl;
 
-                pVec->axpy( beta, pVec, mechResVec );
+                pVec->axpy( beta, pVec, mechResVec, pVec );
             }
 
             std::cout << std::endl << std::endl;

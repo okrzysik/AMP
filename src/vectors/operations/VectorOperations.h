@@ -344,50 +344,49 @@ public: // Non-virtual functions
 
 
 public: // shared_ptr wrappers
-#if 0
     /**
      * \brief  Determine if two vectors are equal using an absolute tolerance
      * \param[in] rhs      Vector to compare to
      * \param[in] tol      Tolerance of comparison
      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
      */
-    inline bool equals( std::shared_ptr<const VectorData> rhs, std::shared_ptr<const VectorData> lhs, double tol = 0.000001 );
-
+    inline bool equals( std::shared_ptr<const VectorOperations> rhs, double tol = 0.000001 );
+#if 1
     /// @copydoc VectorData::scale(double,const VectorData&)
-    inline void scale( double alpha, std::shared_ptr<const VectorData> x, std::shared_ptr<const VectorData> y );
+    inline void scale( double alpha, std::shared_ptr<const VectorData> x, std::shared_ptr<VectorData> y );
 
     /// @copydoc VectorData::copy(const VectorData&)
-    inline void copy( std::shared_ptr<const VectorData> x, std::shared_ptr<const VectorData> y );
+    inline void copy( std::shared_ptr<const VectorData> x, std::shared_ptr<VectorData> y );
 
     /// @copydoc VectorData::add(const VectorData&,const VectorData&)
     inline void add( std::shared_ptr<const VectorData> x,
                      std::shared_ptr<const VectorData> y,
-		     std::shared_ptr<const VectorData> z );
+		     std::shared_ptr<VectorData> z );
 
     /// @copydoc VectorData::addScalar(const VectorData&,double)
-    inline void addScalar( std::shared_ptr<const VectorData> x, double alpha, std::shared_ptr<const VectorData> y );
+    inline void addScalar( std::shared_ptr<const VectorData> x, double alpha, std::shared_ptr<VectorData> y );
 
     /// @copydoc VectorData::subtract(const VectorData&,const VectorData&)
     inline void subtract( std::shared_ptr<const VectorData> x,
                           std::shared_ptr<const VectorData> y,
-			  std::shared_ptr<const VectorData> z );
+			  std::shared_ptr<VectorData> z );
 
     /// @copydoc VectorData::multiply(const VectorData&,const VectorData&)
     inline void multiply( std::shared_ptr<const VectorData> x,
                           std::shared_ptr<const VectorData> y,
-			  std::shared_ptr<const VectorData> z );
+			  std::shared_ptr<VectorData> z );
 
     /// @copydoc VectorData::divide(const VectorData&,const VectorData&)
     inline void divide( std::shared_ptr<const VectorData> x,
                         std::shared_ptr<const VectorData> y,
-			std::shared_ptr<const VectorData> z );
+			std::shared_ptr<VectorData> z );
 
     /**
      * \param x  a vector
      * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i =
      * 1/x_i\f$.
      */
-    inline void reciprocal( std::shared_ptr<const VectorData> x, std::shared_ptr<const VectorData> y );
+    inline void reciprocal( std::shared_ptr<const VectorData> x, std::shared_ptr<VectorData> y );
 
     /**
      * \brief Set a vector to be a linear combination of two vectors.
@@ -401,7 +400,7 @@ public: // shared_ptr wrappers
                            std::shared_ptr<const VectorData> x,
                            double beta,
                            std::shared_ptr<const VectorData> y,
-			   std::shared_ptr<const VectorData> z );
+			   std::shared_ptr<VectorData> z );
 
     /**
      * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
@@ -412,7 +411,7 @@ public: // shared_ptr wrappers
     inline void axpy( double alpha,
                       std::shared_ptr<const VectorData> x,
                       std::shared_ptr<const VectorData> y,
-		      std::shared_ptr<const VectorData> z );
+		      std::shared_ptr<VectorData> z );
 
     /**
      * \brief Set this vector alpha * x + this.
@@ -421,14 +420,14 @@ public: // shared_ptr wrappers
      * \param[in] beta     a scalar
      * \param[in] x        a vector
      */
-    inline void axpby( double alpha, double beta, std::shared_ptr<const VectorData> x, std::shared_ptr<const VectorData> y );
+    inline void axpby( double alpha, double beta, std::shared_ptr<const VectorData> x, std::shared_ptr<VectorData> y );
 
     /**
      * \brief Set this to the component-wise absolute value of a vector.
      *     \f$\mathit{this}_i = |x_i|\f$.
      * \param[in] x        a vector
      */
-    inline void abs( std::shared_ptr<const VectorData> x, std::shared_ptr<const VectorData> y );
+    inline void abs( std::shared_ptr<const VectorData> x, std::shared_ptr<VectorData> y );
 
     /**
      * \brief Return the dot product of this vector with the argument vector.
@@ -436,44 +435,7 @@ public: // shared_ptr wrappers
      * \param[in] x        a vector
      */
     inline double dot( std::shared_ptr<const VectorData> x, std::shared_ptr<const VectorData> y ) const;
-
-    /**
-     * \brief Returns the minimum of the quotient of two vectors:
-     *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
-     * \param[in] x a vector
-     * \param[in] y a vector
-     * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
-     */
-    static inline double minQuotient( std::shared_ptr<const VectorData> x,
-                                      std::shared_ptr<const VectorData> y );
-
-    /**
-     * \brief Return a weighted norm of a vector
-     * \param[in] x a vector
-     * \param[in] y a vector
-     * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
-     */
-    static inline double wrmsNorm( std::shared_ptr<const VectorData> x,
-                                   std::shared_ptr<const VectorData> y );
-
-    /**
-     * \brief Return a weighted norm of a subset of a vector
-     * \param[in] x a vector
-     * \param[in] y a vector
-     * \param[in] mask a vector
-     * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
-     */
-    static inline double wrmsNormMask( std::shared_ptr<const VectorData> x,
-				       std::shared_ptr<const VectorData> mask,
-				       std::shared_ptr<const VectorData> y );
 #else
-    /**
-     * \brief  Determine if two vectors are equal using an absolute tolerance
-     * \param[in] rhs      Vector to compare to
-     * \param[in] tol      Tolerance of comparison
-     * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
-     */
-    inline bool equals( std::shared_ptr<const VectorOperations> rhs, double tol = 0.000001 );
 
     /// @copydoc VectorOperations::scale(double,const VectorOperations&)
     inline void scale( double alpha, std::shared_ptr<const VectorOperations> x );
@@ -553,6 +515,7 @@ public: // shared_ptr wrappers
      */
     inline double dot( std::shared_ptr<const VectorOperations> x ) const;
 
+#endif
     /**
      * \brief Returns the minimum of the quotient of two vectors:
      *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
@@ -582,7 +545,6 @@ public: // shared_ptr wrappers
     static inline double wrmsNormMask( std::shared_ptr<const VectorOperations> x,
                                        std::shared_ptr<const VectorOperations> y,
                                        std::shared_ptr<const VectorOperations> mask );
-#endif
 public:
     //! Return the pointer to the VectorData
     inline VectorData *getVectorData() { return d_VectorData; }

@@ -189,7 +189,7 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     while ( k < d_iMaxIterations ) {
 
         ++k;
-        auto sigma = res->dot( v );
+        auto sigma = res->dot( v, res );
 
         // replace by soft-equal
         if ( sigma == 0.0 ) {
@@ -203,7 +203,7 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
             if ( j == 1 ) {
 
-                y[1]->axpy( -alpha, v, y[0] );
+	      y[1]->axpy( -alpha, v, y[0], y[1] );
 
                 if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
@@ -217,8 +217,8 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             }
 
             const int m = 2 * k - 1 + j;
-            w->axpy( -alpha, u[j], w );
-            d->axpy( ( theta * theta * eta / alpha ), d, y[j] );
+            w->axpy( -alpha, u[j], w, w );
+            d->axpy( ( theta * theta * eta / alpha ), d, y[j], d );
 
             theta        = w->L2Norm() / tau;
             const auto c = 1.0 / std::sqrt( 1 + theta * theta );
@@ -226,7 +226,7 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             eta          = c * c * alpha;
 
             // update the increment to the solution
-            delta->axpy( eta, d, delta );
+            delta->axpy( eta, d, delta, delta );
 
             if ( tau * ( std::sqrt( (double) ( m + 1 ) ) ) <= terminate_tol ) {
 
@@ -248,7 +248,7 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             } else {
                 z = delta;
             }
-            x->axpy( 1.0, z, x );
+            x->axpy( 1.0, z, x, x );
             return;
         }
 
@@ -258,11 +258,11 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             AMP_ERROR( "TFQMR breakdown, rho == 0 " );
         }
 
-        const auto rho_n = res->dot( w );
+        const auto rho_n = res->dot( w, res );
         const auto beta  = rho_n / rho;
         rho              = rho_n;
 
-        y[0]->axpy( beta, y[1], w );
+        y[0]->axpy( beta, y[1], w, y[0] );
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
@@ -275,8 +275,8 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         d_pOperator->apply( z, u[0] );
 
-        v->axpy( beta, v, u[1] );
-        v->axpy( beta, v, u[0] );
+        v->axpy( beta, v, u[1], v );
+        v->axpy( beta, v, u[0], v );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
             std::cout << "TFQMR: iteration " << ( k + 1 ) << ", residual " << tau << std::endl;

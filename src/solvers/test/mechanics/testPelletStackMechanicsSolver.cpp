@@ -100,7 +100,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         double scaleValue =
             ( static_cast<double>( step + 1 ) ) / ( static_cast<double>( NumberOfLoadingSteps ) );
-        scaledRhsVec->scale( scaleValue, rhsVec );
+        scaledRhsVec->scale( scaleValue, rhsVec, scaledRhsVec );
 
         if ( useThermalLoad ) {
             double initialTemp = global_input_db->getScalar<double>( "InitialTemperature" );

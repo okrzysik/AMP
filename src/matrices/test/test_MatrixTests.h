@@ -155,7 +155,7 @@ public:
         vector2lhs->copyVector( vector1lhs );
         matrix1->mult( vector1lhs, vector1rhs );
         matrix2->mult( vector2lhs, vector2rhs ); // vector2rhs = - vector1rhs
-        vectorresult->add( vector1rhs, vector2rhs );
+        vectorresult->add( vector1rhs, vector2rhs, vectorresult );
         if ( vectorresult->L1Norm() < 0.000001 )
             utils->passes( "matrices are opposite" );
         else
@@ -215,7 +215,7 @@ public:
         matrix2->mult( vector2lhs, vector2rhs ); // vector2rhs = 1.234567vector1rhs
 
         vector1rhs->scale( 1.234567 );
-        vectorresult->subtract( vector1rhs, vector2rhs );
+        vectorresult->subtract( vector1rhs, vector2rhs, vectorresult );
 
         if ( vectorresult->L1Norm() < 0.000001 )
             utils->passes( "matrices are equally scaled" );
@@ -301,7 +301,7 @@ public:
         vectorlhs->setRandomValues();
         matrix->mult( vectorlhs, vectorrhs );
         normlhs = vectorlhs->L2Norm();
-        vectorrhs->subtract( vectorlhs, vectorrhs );
+        vectorrhs->subtract( vectorlhs, vectorrhs, vectorrhs );
         normrhs = vectorrhs->L2Norm();
         if ( ( normlhs > 0 ) && ( normrhs < 0.0000001 ) )
             utils->passes( "mult by I matrix" );

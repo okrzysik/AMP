@@ -130,7 +130,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Applying the pressure load
     pressureLoadVecOp->addRHScorrection( mechPressureVec );
-    mechNlRhsVec->add( mechNlRhsVec, mechPressureVec );
+    mechNlRhsVec->add( mechNlRhsVec, mechPressureVec, mechNlRhsVec );
 
     std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     std::shared_ptr<AMP::Database> linearSolver_db =
@@ -173,7 +173,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "The current loading step is " << ( step + 1 ) << std::endl;
 
         double scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
-        mechNlScaledRhsVec->scale( scaleValue, mechNlRhsVec );
+        mechNlScaledRhsVec->scale( scaleValue, mechNlRhsVec, mechNlScaledRhsVec );
         mechNlScaledRhsVec->makeConsistent(
             AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         AMP::pout << "L2 Norm of RHS at loading step " << ( step + 1 ) << " is "

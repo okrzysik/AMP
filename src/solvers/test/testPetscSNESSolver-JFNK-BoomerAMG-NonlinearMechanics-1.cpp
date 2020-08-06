@@ -140,7 +140,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         AMP::pout << "The current loading step is " << ( step + 1 ) << std::endl;
 
         double scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
-        mechNlScaledRhsVec->scale( scaleValue, mechNlRhsVec );
+        mechNlScaledRhsVec->scale( scaleValue, mechNlRhsVec, mechNlScaledRhsVec );
         AMP::pout << "L2 Norm of RHS at loading step " << ( step + 1 ) << " is "
                   << mechNlScaledRhsVec->L2Norm() << std::endl;
 

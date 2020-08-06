@@ -72,7 +72,7 @@ static void myTest( AMP::UnitTest *ut )
     auto finalTempVec = initTempVec->cloneVector();
 
     initTempVec->setRandomValues();
-    initTempVec->abs( initTempVec );
+    initTempVec->abs( initTempVec, initTempVec );
     double initTempConst = input_db->getWithDefault<double>( "INIT_TEMP_CONST", 10.0 );
     initTempVec->scale( initTempConst );
     initTempVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
@@ -181,7 +181,7 @@ static void myTest( AMP::UnitTest *ut )
         AMP::pout << "The current loading step is " << ( step + 1 ) << std::endl;
 
         double scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
-        mechNlScaledRhsVec->scale( scaleValue, mechNlRhsVec );
+        mechNlScaledRhsVec->scale( scaleValue, mechNlRhsVec, mechNlScaledRhsVec );
         mechNlScaledRhsVec->makeConsistent(
             AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         AMP::pout << "L2 Norm at loading step " << ( step + 1 ) << " is "

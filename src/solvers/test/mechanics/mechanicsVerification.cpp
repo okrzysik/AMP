@@ -441,7 +441,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
 
     // Compute exact error and check its L2 norm
     auto exactErrVec = exactSolVec->cloneVector();
-    exactErrVec->subtract( exactSolVec, solVec );
+    exactErrVec->subtract( exactSolVec, solVec, exactErrVec );
 
     AMP::pout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n"
               << "<<<< exact error norm = " << std::setprecision( 15 ) << exactErrVec->L2Norm()

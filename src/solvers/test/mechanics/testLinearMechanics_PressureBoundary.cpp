@@ -103,7 +103,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     pressNorm = mechPressureVec->L2Norm();
     AMP::pout << "Pressure Norm after Apply: " << pressNorm << std::endl;
 
-    mechRhsVec->add( mechRhsVec, mechPressureVec );
+    mechRhsVec->add( mechRhsVec, mechPressureVec, mechRhsVec );
 
     rhsNorm = mechRhsVec->L2Norm();
     AMP::pout << "Total RHS Norm: " << rhsNorm << std::endl;

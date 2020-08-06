@@ -28,7 +28,7 @@ public:
         AMP::LinearAlgebra::Vector::const_shared_ptr inS =
             u->constSubsetVectorForVariable( d_secondaryVar );
         AMP::LinearAlgebra::Vector::shared_ptr out = r->subsetVectorForVariable( d_primaryVar );
-        out->linearSum( d_constant, inP, 1.0, inS );
+        out->linearSum( d_constant, inP, 1.0, inS, out );
     }
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override

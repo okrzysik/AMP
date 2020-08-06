@@ -110,7 +110,7 @@ void BlockOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP::LinearAlgebra::Vector::shared_ptr nullVec;
             d_blocks[i][j]->apply( u, rCopy );
         }
-        rInternal->add( rInternal, rCopy );
+        rInternal->add( rInternal, rCopy, rInternal );
     }
 }
 

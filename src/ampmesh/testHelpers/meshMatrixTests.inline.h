@@ -57,7 +57,7 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
     matrixb->makeConsistent();
     matrixb->setDiagonal( vector2 );
     matrixb->mult( vector1, vector2 );
-    vector1->subtract( vector1, vector2 );
+    vector1->subtract( vector1, vector2, vector1 );
 
     if ( vector1->L1Norm() < 0.0000001 )
         utils->passes( "created identity matrix from mesh" );

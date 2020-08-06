@@ -156,7 +156,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr diagonalVec    = FMat->extractDiagonal();
     AMP::LinearAlgebra::Vector::shared_ptr diagonalInvVec = diagonalVec->cloneVector();
-    diagonalInvVec->reciprocal( diagonalVec );
+    diagonalInvVec->reciprocal( diagonalVec, diagonalInvVec );
 
     AMP::LinearAlgebra::Matrix::shared_ptr DMat = FMat->cloneMatrix();
     DMat->zero();
@@ -219,10 +219,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // STEP 3 :
     DInvBtMat->mult( pressureUpdateVec, velocityUpdateVec );
-    velocitySolVec->subtract( velocityPrimeVec, velocityUpdateVec );
+    velocitySolVec->subtract( velocityPrimeVec, velocityUpdateVec, velocitySolVec );
 
     // STEP 4 :
-    pressureSolVec->add( velocityPrimeVec, pressureUpdateVec );
+    pressureSolVec->add( velocityPrimeVec, pressureUpdateVec, pressureSolVec );
 
     ut->passes( "Ran to completion" );
 }

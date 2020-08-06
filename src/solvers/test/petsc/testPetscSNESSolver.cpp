@@ -69,7 +69,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolver->solve( f, u );
     ut->passes( "PetscSNESSolver solve called with simple vector" );
     auto x = u->cloneVector();
-    x->subtract( u, f );
+    x->subtract( u, f, x );
     double error = x->L2Norm() / f->L2Norm();
     if ( fabs( error ) < 1e-8 )
         ut->passes( "Solve with simple vector passed" );
