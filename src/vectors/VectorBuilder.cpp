@@ -114,7 +114,8 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
         auto t_buffer = std::make_shared<VectorDataCPU<double>>(
             DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
         auto epetra_engine     = std::make_shared<EpetraVectorEngine>( eveparams, t_buffer );
-        mvparams->d_Engine     = epetra_engine;
+        epetra_engine->setVariable( variable );
+	mvparams->d_Engine     = epetra_engine;
         mvparams->d_Buffer     = t_buffer;
         mvparams->d_CommList   = comm_list;
         mvparams->d_DOFManager = DOFs;
@@ -132,7 +133,8 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
         auto t_buffer = std::make_shared<VectorDataCPU<double>>(
             DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
         auto epetra_engine     = std::make_shared<EpetraVectorEngine>( eveparams, t_buffer );
-        mvparams->d_Engine     = epetra_engine;
+        epetra_engine->setVariable( variable );
+	mvparams->d_Engine     = epetra_engine;
         mvparams->d_Buffer     = t_buffer;
         mvparams->d_CommList   = comm_list;
         mvparams->d_DOFManager = DOFs;
