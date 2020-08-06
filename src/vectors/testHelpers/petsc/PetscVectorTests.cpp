@@ -938,7 +938,7 @@ void PetscVectorTests::VerifySetPetscVector( AMP::UnitTest *utils )
          ( fabs( vectorb->maxNorm() - 6.0 ) < 0.000001 ) )
         utils->passes( "setToScalar passes for managed petsc" );
     else {
-      std::cout << "setToScalar (3) vectorb->L1Norm()" << vectorb->L1Norm() << ", vectorb->maxNorm()" << vectorb->maxNorm() << std::endl;
+      std::cout << "setToScalar (6) vectorb->L1Norm()" << vectorb->L1Norm() << ", vectorb->maxNorm()" << vectorb->maxNorm() << std::endl;
       utils->failure( "setToScalar fails for managed petsc" );
     }
 }
