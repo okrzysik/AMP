@@ -210,10 +210,10 @@ void ManagedSundialsVector::divide_AMP( N_Vector x, N_Vector y, N_Vector z )
  */
 void ManagedSundialsVector::scale_AMP( realtype c, N_Vector x, N_Vector z )
 {
-    VectorData *px = static_cast<VectorData *>( x->content );
-    VectorData *pz = static_cast<VectorData *>( z->content );
+    auto px = static_cast<ManagedSundialsVector *>( x->content );
+    auto pz = static_cast<ManagedSundialsVector *>( z->content );
 
-    ( static_cast<ManagedSundialsVector *>( z->content ) )->scale( c, *px, *pz );
+    ( static_cast<ManagedSundialsVector *>( z->content ) )->scale( c, (VectorData &)*px, (VectorData &)*pz );
 }
 
 /**
