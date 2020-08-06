@@ -604,6 +604,8 @@ void ManagedVector::setRandomValues( VectorData &x )
 
 void ManagedVector::scale( double alpha, const VectorData &x, VectorData &y )
 {
+  std::cout << "x : " << typeid(x).name() << std::endl;
+  std::cout << "y : " << typeid(y).name() << std::endl;
     auto x2 = getManagedVector(x);
     if ( x2 != nullptr ) {
         auto y2 = getManagedVector(y);
