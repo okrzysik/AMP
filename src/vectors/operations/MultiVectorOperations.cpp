@@ -701,7 +701,7 @@ double MultiVectorOperations::localMaxNorm( const VectorData &x )  const
         return 0;
     }
     for ( size_t i = 0; i != d_operations.size(); i++ )
-        ans += d_operations[i]->localMaxNorm( *getVectorDataComponent(x,i));
+      ans = std::max(ans, d_operations[i]->localMaxNorm( *getVectorDataComponent(x,i)));
     return ans;
 }
 
