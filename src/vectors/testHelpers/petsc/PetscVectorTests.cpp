@@ -923,8 +923,10 @@ void PetscVectorTests::VerifySetPetscVector( AMP::UnitTest *utils )
     if ( ( fabs( vectorb->L1Norm() - vectorb->getGlobalSize() * 3.0 ) < 0.000001 ) &&
          ( fabs( vectorb->maxNorm() - 3.0 ) < 0.000001 ) )
         utils->passes( "VecSet passes for managed petsc" );
-    else
-        utils->failure( "VecSet fails for managed petsc" );
+    else {
+      std::cout << "VecSet (3) vectorb->L1Norm()" << vectorb->L1Norm() << ", vectorb->maxNorm()" << vectorb->maxNorm() << std::endl;
+      utils->failure( "VecSet fails for managed petsc" );
+    }
     vectora->setToScalar( 5.0 );
     vectorb->setToScalar( 6.0 );
     if ( ( fabs( vectora->L1Norm() - vectora->getGlobalSize() * 5.0 ) < 0.000001 ) &&
@@ -935,8 +937,10 @@ void PetscVectorTests::VerifySetPetscVector( AMP::UnitTest *utils )
     if ( ( fabs( vectorb->L1Norm() - vectorb->getGlobalSize() * 6.0 ) < 0.000001 ) &&
          ( fabs( vectorb->maxNorm() - 6.0 ) < 0.000001 ) )
         utils->passes( "setToScalar passes for managed petsc" );
-    else
-        utils->failure( "setToScalar fails for managed petsc" );
+    else {
+      std::cout << "setToScalar (3) vectorb->L1Norm()" << vectorb->L1Norm() << ", vectorb->maxNorm()" << vectorb->maxNorm() << std::endl;
+      utils->failure( "setToScalar fails for managed petsc" );
+    }
 }
 
 
