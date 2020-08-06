@@ -688,9 +688,11 @@ double MultiVectorOperations::localL2Norm( const VectorData &x )  const
     if ( d_operations.empty() ) {
         return 0;
     }
-    for ( size_t i = 0; i != d_operations.size(); i++ )
-        ans += d_operations[i]->localL2Norm( *getVectorDataComponent(x,i));
-    return ans;
+    for ( size_t i = 0; i != d_operations.size(); i++ ) {
+        const auto tmp = d_operations[i]->localL2Norm( *getVectorDataComponent(x,i)); 
+        ans += tmp*tmp;
+    }
+	return sqrt(ans);
 }
 
 double MultiVectorOperations::localMaxNorm( const VectorData &x )  const
