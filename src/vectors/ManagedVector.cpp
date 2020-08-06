@@ -26,7 +26,6 @@ static inline std::shared_ptr<ManagedVector> getManaged( std::shared_ptr<Vector>
 static inline const ManagedVector *getManagedVector( const VectorData &x )
 {
     auto y = dynamic_cast<const ManagedVector *>( &x );
-    AMP_INSIST( y != nullptr, "x is not a const ManagedVector" );
     return y;
 }
 static inline ManagedVector *getManagedVector( VectorData &x )
@@ -612,6 +611,7 @@ void ManagedVector::scale( double alpha, const VectorData &x, VectorData &y )
         auto y2 = getManagedVector(y);
         y2->d_Engine->scale( alpha, *getEngineData(x), *getEngineData(y) );
     } else {
+      std::cout << "x is not a const ManagedVector" << std::endl;
       VectorOperationsDefault::scale( alpha, x, y );
     }
     dataChanged();
