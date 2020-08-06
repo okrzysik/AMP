@@ -29,7 +29,6 @@ public:
     //! Clone the operations
     virtual std::shared_ptr<VectorOperations> cloneOperations() const = 0;
 
-private:
     /**
      * \brief  Set vector equal to x
      *      For Vectors, \f$\mathit{this}_i = x_i\f$.
