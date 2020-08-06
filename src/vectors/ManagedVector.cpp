@@ -102,7 +102,7 @@ Vector::shared_ptr ManagedVector::subsetVectorForVariable( Variable::const_share
 Vector::const_shared_ptr
 ManagedVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
 {
-  std::cout << "ManagedVector::constSubsetVectorForVariable: " << name.getName() <<std::endl;
+  std::cout << "ManagedVector::constSubsetVectorForVariable: " << name->getName() <<std::endl;
     Vector::const_shared_ptr retVal;
     if ( !retVal )
         retVal = Vector::constSubsetVectorForVariable( name );
