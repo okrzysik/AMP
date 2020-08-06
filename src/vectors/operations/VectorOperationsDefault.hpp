@@ -280,35 +280,26 @@ void VectorOperationsDefault<TYPE>::copy( const VectorData &x, VectorData &y )
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::scale( double alpha, VectorData &x )
 {
-    std::cout << "Entering" << std::endl;
     auto curMe = x.begin<TYPE>();
-    std::cout << "Past x.begin" << std::endl;
     auto last  = x.end<TYPE>();
-    std::cout << "Past x.end" << std::endl;
     while ( curMe != last ) {
         *curMe *= alpha;
         ++curMe;
     }
-    std::cout << "Exiting" << std::endl;
 }
 
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::scale( double alpha, const VectorData &x, VectorData &y )
 {
-    std::cout << "Entering" << std::endl;
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
     auto curMe  = y.begin<TYPE>();
-    std::cout << "Past y.begin" << std::endl;
     auto last   = y.end<TYPE>();
-    std::cout << "Past y.end" << std::endl;
     auto curRhs = x.begin<TYPE>();
-    std::cout << "Past x.begin" << std::endl;
     while ( curMe != last ) {
         *curMe = alpha * *curRhs;
         ++curRhs;
         ++curMe;
     }
-    std::cout << "Exiting" << std::endl;
 }
 
 template<typename TYPE>

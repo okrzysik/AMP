@@ -102,7 +102,6 @@ Vector::shared_ptr ManagedVector::subsetVectorForVariable( Variable::const_share
 Vector::const_shared_ptr
 ManagedVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
 {
-  std::cout << "ManagedVector::constSubsetVectorForVariable: " << name->getName() <<std::endl;
     Vector::const_shared_ptr retVal;
     if ( !retVal )
         retVal = Vector::constSubsetVectorForVariable( name );
@@ -605,14 +604,11 @@ void ManagedVector::setRandomValues( VectorData &x )
 
 void ManagedVector::scale( double alpha, const VectorData &x, VectorData &y )
 {
-  std::cout << "x : " << typeid(x).name() << std::endl;
-  std::cout << "y : " << typeid(y).name() << std::endl;
     auto x2 = getManagedVector(x);
     if ( x2 != nullptr ) {
         auto y2 = getManagedVector(y);
         y2->d_Engine->scale( alpha, *getEngineData(x), *getEngineData(y) );
     } else {
-      std::cout << "x is not a const ManagedVector" << std::endl;
       VectorOperationsDefault::scale( alpha, x, y );
     }
     dataChanged();
