@@ -38,7 +38,7 @@ inline std::vector<double> &VectorOperations::getGhosts() { return *( d_VectorDa
 /****************************************************************
  * Wrappers for shared_ptr                                       *
  ****************************************************************/
-#if 1
+#if 0
 inline bool VectorOperations::equals( std::shared_ptr<const VectorData> x, std::shared_ptr<const VectorData> y, double tol )
 {
   return equals( *x, *y, tol );

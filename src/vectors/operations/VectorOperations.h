@@ -345,7 +345,7 @@ public: // Non-virtual functions
 
 
 public: // shared_ptr wrappers
-#if 1
+#if 0
     /**
      * \brief  Determine if two vectors are equal using an absolute tolerance
      * \param[in] rhs      Vector to compare to
