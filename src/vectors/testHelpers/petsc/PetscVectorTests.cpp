@@ -924,7 +924,7 @@ void PetscVectorTests::VerifySetPetscVector( AMP::UnitTest *utils )
          ( fabs( vectorb->maxNorm() - 3.0 ) < 0.000001 ) )
         utils->passes( "VecSet passes for managed petsc" );
     else {
-      std::cout << "VecSet (3) vectorb->L1Norm()" << vectorb->L1Norm() << ", vectorb->maxNorm()" << vectorb->maxNorm() << std::endl;
+      std::cout << "VecSet (3) vectorb->L1Norm()" << vectorb->L1Norm() << ", vectorb->maxNorm()" << vectorb->maxNorm() << "vectorb->getGlobalSize()" << vectorb->getGlobalSize()  << std::endl;
       utils->failure( "VecSet fails for managed petsc" );
     }
     vectora->setToScalar( 5.0 );
