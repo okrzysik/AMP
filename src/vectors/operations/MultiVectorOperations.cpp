@@ -620,10 +620,11 @@ void MultiVectorOperations::abs( const VectorData &x, VectorData &y )
       for ( size_t i = 0; i != d_operations.size(); i++ ){
 	std::cout << "MultiVector component x " << i <<  std::endl;
 	getVectorDataComponent(x,i)->dumpOwnedData(AMP::pout);
-	std::cout << "MultiVector component y " << i <<  std::endl;
-	getVectorDataComponent(y,i)->dumpOwnedData(AMP::pout);
         d_operations[i]->abs( *getVectorDataComponent(x,i),
 			      *getVectorDataComponent(y,i) );
+	std::cout << "MultiVector component y " << i <<  std::endl;
+	getVectorDataComponent(y,i)->dumpOwnedData(AMP::pout);
+	AMP_ERROR("Quit for now");
       }
     } else {
        AMP_ERROR("MultiVectorOperations::abs requires x, y to be MultiVectorData");
