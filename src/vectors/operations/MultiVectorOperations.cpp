@@ -419,8 +419,6 @@ void MultiVectorOperations::setRandomValues( RNG::shared_ptr rng, VectorData &x 
 void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
 {
   
-  std::cout << "x " <<typeid(x).name() <<std::endl;
-  std::cout << "y " <<typeid(y).name() <<std::endl;
   auto xc = getMultiVectorData(x);
   auto yc = getMultiVectorData(y);
 
@@ -428,7 +426,6 @@ void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
         // Both this and x are multivectors
         for ( size_t i = 0; i != d_operations.size(); i++ )
 	  d_operations[i]->copy( *getVectorDataComponent(x,i), *getVectorDataComponent(y,i) );
-	std::cout << "Both are multivectors" <<std::endl;
     } else {
         // x is not a multivector, try to call a default implementation
         AMP_ASSERT( x.getLocalSize() == y.getLocalSize() );
