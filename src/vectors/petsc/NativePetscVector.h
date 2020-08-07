@@ -82,37 +82,6 @@ public:
     std::string VectorDataName() const override { return "NativePetscVector"; }
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
-
-#if 0
-    void copy( const VectorOperations &vec ) override;
-    void setToScalar( double alpha ) override;
-    void scale( double alpha, const VectorOperations &x ) override;
-    void scale( double alpha ) override;
-    void add( const VectorOperations &x, const VectorOperations &y ) override;
-    void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-    void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-    void divide( const VectorOperations &x, const VectorOperations &y ) override;
-    void reciprocal( const VectorOperations &x ) override;
-    void linearSum( double alpha,
-                    const VectorOperations &x,
-                    double beta,
-                    const VectorOperations &y ) override;
-    void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-    void axpby( double alpha, double beta, const VectorOperations &x ) override;
-    void abs( const VectorOperations &x ) override;
-    void setRandomValues( void ) override;
-
-    double min( void ) const override;
-    double max( void ) const override;
-    using Vector::dot;
-    double dot( const VectorOperations &x ) const override;
-    double L1Norm( void ) const override;
-    double L2Norm( void ) const override;
-    double maxNorm( void ) const override;
-    double localL1Norm( void ) const override;
-    double localL2Norm( void ) const override;
-    double localMaxNorm( void ) const override;
-#endif
     
     void setValuesByLocalID( int, size_t *, const double * ) override;
     void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
@@ -155,14 +124,6 @@ protected:
 
     void resetArray();
     void resetArray() const;
-#if 0
-    // Function to perform  this = alpha x + beta y + gamma this
-    virtual void axpbypcz( double alpha,
-                           const VectorOperations &x,
-                           double beta,
-                           const VectorOperations &y,
-                           double gamma );
-#endif
     //**********************************************************************
     // functions that operate on VectorData
     static Vec getPetscVec( VectorData &x );
