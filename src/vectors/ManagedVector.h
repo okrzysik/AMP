@@ -131,35 +131,6 @@ protected: // Derived from VectorData
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
 
-
-public: // Derived from VectorOperations
-#if 0
-    void copy( const VectorOperations &src ) override;
-    void setToScalar( double alpha ) override;
-    void scale( double alpha, const VectorOperations &x ) override;
-    void scale( double alpha ) override;
-    void add( const VectorOperations &x, const VectorOperations &y ) override;
-    void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-    void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-    void divide( const VectorOperations &x, const VectorOperations &y ) override;
-    void reciprocal( const VectorOperations &x ) override;
-    void linearSum( double alpha,
-                    const VectorOperations &x,
-                    double beta,
-                    const VectorOperations &y ) override;
-    void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-    void axpby( double alpha, double beta, const VectorOperations &x ) override;
-    void abs( const VectorOperations &x ) override;
-    void setRandomValues( void ) override;
-    
-    double min( void ) const override;
-    double max( void ) const override;
-    double dot( const VectorOperations &x ) const override;
-    double L1Norm( void ) const override;
-    double L2Norm( void ) const override;
-    double maxNorm( void ) const override;
-#endif
-    
 public:
     //**********************************************************************
     // functions that operate on VectorData
