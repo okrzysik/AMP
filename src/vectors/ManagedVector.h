@@ -81,7 +81,6 @@ public:
 
     virtual std::shared_ptr<ManagedVectorParameters> getManagedVectorParameters();
 
-
 protected:
     //! The buffer used to store data
     std::shared_ptr<VectorData> d_vBuffer;
@@ -131,31 +130,34 @@ protected: // Derived from VectorData
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
 
-
-public: // Derived from VectorOperations
-    double L1Norm( void ) const override;
-    double L2Norm( void ) const override;
-    double maxNorm( void ) const override;
-    double dot( const VectorOperations &x ) const override;
-    void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-    void axpby( double alpha, double beta, const VectorOperations &x ) override;
-    void abs( const VectorOperations &x ) override;
-    double min( void ) const override;
-    double max( void ) const override;
-    void setRandomValues( void ) override;
-    void setToScalar( double alpha ) override;
-    void scale( double alpha, const VectorOperations &x ) override;
-    void scale( double alpha ) override;
-    void add( const VectorOperations &x, const VectorOperations &y ) override;
-    void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-    void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-    void divide( const VectorOperations &x, const VectorOperations &y ) override;
-    void reciprocal( const VectorOperations &x ) override;
+public:
+    //**********************************************************************
+    // functions that operate on VectorData
+    void copy( const VectorData &src, VectorData &dst ) override;
+    void setToScalar( double alpha, VectorData &z ) override;
+    void setRandomValues( VectorData &x ) override;    
+    void scale( double alpha, const VectorData &x, VectorData &y ) override;
+    void scale( double alpha, VectorData &x ) override;
+    void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void subtract( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void multiply( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void reciprocal( const VectorData &x, VectorData &y ) override;
     void linearSum( double alpha,
-                    const VectorOperations &x,
-                    double beta,
-                    const VectorOperations &y ) override;
+			   const VectorData &x,
+			   double beta,
+			   const VectorData &y,
+			   VectorData &z) override;
+    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
+    void abs( const VectorData &x, VectorData &z ) override;
 
+    double min( const VectorData &x ) const override;
+    double max( const VectorData &x ) const override;
+    double dot( const VectorData &x, const VectorData &y ) const override;
+    double L1Norm( const VectorData &x ) const override;
+    double L2Norm( const VectorData &x ) const override;
+    double maxNorm( const VectorData &x ) const override;
 
 public: // Derived from Vector
     using Vector::cloneVector;
@@ -165,7 +167,6 @@ public: // Derived from Vector
     Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
-    void copy( const VectorOperations &src ) override;
     void swapVectors( Vector &other ) override;
     void aliasVector( Vector &other ) override;
 
@@ -195,6 +196,11 @@ public: // Pull VectorOperations into the current scope
     using VectorOperations::wrmsNorm;
     using VectorOperations::wrmsNormMask;
     using VectorOperations::zero;
+    using VectorOperations::min;
+    using VectorOperations::max;
+    using VectorOperations::L1Norm;
+    using VectorOperations::L2Norm;
+    using VectorOperations::maxNorm;
 
 private:
     ManagedVector();

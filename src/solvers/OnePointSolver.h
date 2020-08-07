@@ -27,12 +27,12 @@ public:
         AMP::LinearAlgebra::Vector::shared_ptr myU =
             u->subsetVectorForVariable( d_onePointOp->getOutputVariable() );
         if ( d_bUseZeroInitialGuess ) {
-            myU->zero();
+            myU->zero(myU);
         }
         AMP::LinearAlgebra::Vector::shared_ptr r = myU->cloneVector();
         d_onePointOp->residual( f, u, r );
         double inverseConstant = 1.0 / ( d_onePointOp->getConstant() );
-        myU->axpy( inverseConstant, r, myU );
+        myU->axpy( inverseConstant, r, myU, myU );
         // If you want to use an external solver library like Petsc or Trilinos here
         // then you will need to use the two functions defined in the
         // vectors/newFrozenVectorDesign/newFrozenVectorDesignHelpers.h file

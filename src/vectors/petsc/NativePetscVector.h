@@ -75,7 +75,6 @@ public:
     
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
-    void copy( const VectorOperations &vec ) override;
 
     void swapVectors( Vector &other ) override;
     void aliasVector( Vector & ) override;
@@ -83,37 +82,7 @@ public:
     std::string VectorDataName() const override { return "NativePetscVector"; }
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
-
-
-    void setToScalar( double alpha ) override;
-    void scale( double alpha, const VectorOperations &x ) override;
-    void scale( double alpha ) override;
-    void add( const VectorOperations &x, const VectorOperations &y ) override;
-    void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-    void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-    void divide( const VectorOperations &x, const VectorOperations &y ) override;
-    void reciprocal( const VectorOperations &x ) override;
-    void linearSum( double alpha,
-                    const VectorOperations &x,
-                    double beta,
-                    const VectorOperations &y ) override;
-    void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-    void axpby( double alpha, double beta, const VectorOperations &x ) override;
-    void abs( const VectorOperations &x ) override;
-    double min( void ) const override;
-    double max( void ) const override;
-    void setRandomValues( void ) override;
-
-    double L1Norm( void ) const override;
-    double L2Norm( void ) const override;
-    double maxNorm( void ) const override;
-    using Vector::dot;
-    double dot( const VectorOperations &x ) const override;
-
-    double localL1Norm( void ) const override;
-    double localL2Norm( void ) const override;
-    double localMaxNorm( void ) const override;
-
+    
     void setValuesByLocalID( int, size_t *, const double * ) override;
     void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
     void addValuesByLocalID( int, size_t *, const double * ) override;
@@ -155,13 +124,52 @@ protected:
 
     void resetArray();
     void resetArray() const;
+    //**********************************************************************
+    // functions that operate on VectorData
+    static Vec getPetscVec( VectorData &x );
+    static Vec getPetscVec( const VectorData &x );
+    static Vec getConstPetscVec( const VectorData &x );
+    
+    static NativePetscVector *getNativeVec( VectorData &vx );
+    static const NativePetscVector *getNativeVec( const VectorData &vx );
 
-    // Function to perform  this = alpha x + beta y + gamma this
-    virtual void axpbypcz( double alpha,
-                           const VectorOperations &x,
-                           double beta,
-                           const VectorOperations &y,
-                           double gamma );
+ public:
+    void copy( const VectorData &x, VectorData &z ) override;
+    void setToScalar( double alpha, VectorData &z ) override;
+    void setRandomValues( VectorData &x ) override;    
+    void scale( double alpha, const VectorData &x, VectorData &y ) override;
+    void scale( double alpha, VectorData &x ) override;
+    void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void subtract( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void multiply( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void reciprocal( const VectorData &x, VectorData &y ) override;
+    void linearSum( double alpha,
+			   const VectorData &x,
+			   double beta,
+			   const VectorData &y,
+			   VectorData &z) override;
+    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
+    void abs( const VectorData &x, VectorData &z ) override;
+
+    double min( const VectorData &x ) const override;
+    double max( const VectorData &x ) const override;
+    double dot( const VectorData &x, const VectorData &y ) const override;
+    double L1Norm( const VectorData &x ) const override;
+    double L2Norm( const VectorData &x ) const override;
+    double maxNorm( const VectorData &x ) const override;
+    double localL1Norm( const VectorData &x ) const override;
+    double localL2Norm( const VectorData &x  ) const override;
+    double localMaxNorm( const VectorData &x ) const override;
+
+    void axpbypcz( double alpha,
+			  const VectorData &x,
+			  double beta,
+			  const VectorData &y,
+			  double gamma,
+			  VectorData &z);
+    //**********************************************************************
 
 private:
     std::shared_ptr<VectorParameters> d_pParameters;
@@ -184,6 +192,12 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::subtract;
     using VectorOperationsDefault::wrmsNorm;
     using VectorOperationsDefault::wrmsNormMask;
+    using VectorOperationsDefault::min;
+    using VectorOperationsDefault::max;
+    using VectorOperationsDefault::L1Norm;
+    using VectorOperationsDefault::L2Norm;
+    using VectorOperationsDefault::maxNorm;
+    
 };
 
 

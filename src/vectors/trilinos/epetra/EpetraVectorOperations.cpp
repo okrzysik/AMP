@@ -18,6 +18,28 @@ static inline const Epetra_Vector &getEpetraVector( const VectorOperations &vec 
         return epetraVec->getEpetra_Vector();
     }
 }
+static inline const Epetra_Vector &getEpetraVector( const VectorData &vec )
+{
+    auto epetraEngine = dynamic_cast<const EpetraVectorEngine *>( &vec );
+    if ( epetraEngine )
+        return epetraEngine->getEpetra_Vector();
+    else {
+        auto epetraVec = dynamic_cast<const NativeEpetraVector *>( &vec );
+        AMP_INSIST( epetraVec != nullptr, "Not a NativeEpetraVector" );
+        return epetraVec->getEpetra_Vector();
+    }
+}
+static inline Epetra_Vector &getEpetraVector( VectorData &vec )
+{
+    auto epetraEngine = dynamic_cast<EpetraVectorEngine *>( &vec );
+    if ( epetraEngine )
+        return epetraEngine->getEpetra_Vector();
+    else {
+        auto epetraVec = dynamic_cast<NativeEpetraVector *>( &vec );
+        AMP_INSIST( epetraVec != nullptr, "Not a NativeEpetraVector" );
+        return epetraVec->getEpetra_Vector();
+    }
+}
 
 Epetra_Vector &EpetraVectorOperations::getEpetra_Vector()
 {
@@ -42,115 +64,118 @@ const Epetra_Vector &EpetraVectorOperations::getEpetra_Vector() const
     }
 }
 
+//**********************************************************************
+// Functions that operate on VectorData objects
 
-void EpetraVectorOperations::setToScalar( const double alpha )
+void EpetraVectorOperations::setToScalar( double alpha, VectorData &x )
 {
-    getEpetra_Vector().PutScalar( alpha );
+    getEpetraVector(x).PutScalar( alpha );
 }
 
-void EpetraVectorOperations::scale( double alpha, const VectorOperations &x )
+void EpetraVectorOperations::setRandomValues( VectorData &x )
 {
-    getEpetra_Vector().Scale( alpha, getEpetraVector( x ) );
+    getEpetraVector(x).Random();
+    abs( x, x );
 }
 
-void EpetraVectorOperations::add( const VectorOperations &x, const VectorOperations &y )
+void EpetraVectorOperations::scale( double alpha, const VectorData &x, VectorData &y )
 {
-    getEpetra_Vector().Update( 1., getEpetraVector( x ), 1., getEpetraVector( y ), 0. );
+    getEpetraVector(y).Scale( alpha, getEpetraVector( x ) );
 }
 
-void EpetraVectorOperations::subtract( const VectorOperations &x, const VectorOperations &y )
+void EpetraVectorOperations::scale( double alpha, VectorData &x )
 {
-    getEpetra_Vector().Update( 1., getEpetraVector( x ), -1., getEpetraVector( y ), 0. );
+  getEpetraVector(x).Scale( alpha );
 }
 
-void EpetraVectorOperations::multiply( const VectorOperations &x, const VectorOperations &y )
+void EpetraVectorOperations::add( const VectorData &x, const VectorData &y, VectorData &z )
 {
-    getEpetra_Vector().Multiply( 1., getEpetraVector( x ), getEpetraVector( y ), 0. );
+    getEpetraVector(z).Update( 1., getEpetraVector( x ), 1., getEpetraVector( y ), 0. );
 }
 
-void EpetraVectorOperations::divide( const VectorOperations &x, const VectorOperations &y )
+void EpetraVectorOperations::subtract( const VectorData &x, const VectorData &y, VectorData &z  )
 {
-    getEpetra_Vector().ReciprocalMultiply( 1., getEpetraVector( y ), getEpetraVector( x ), 0. );
+    getEpetraVector(z).Update( 1., getEpetraVector( x ), -1., getEpetraVector( y ), 0. );
 }
 
-void EpetraVectorOperations::reciprocal( const VectorOperations &x )
+void EpetraVectorOperations::multiply( const VectorData &x, const VectorData &y, VectorData &z )
 {
-    getEpetra_Vector().Reciprocal( getEpetraVector( x ) );
+    getEpetraVector(z).Multiply( 1., getEpetraVector( x ), getEpetraVector( y ), 0. );
+}
+
+void EpetraVectorOperations::divide( const VectorData &x, const VectorData &y, VectorData &z )
+{
+    getEpetraVector(z).ReciprocalMultiply( 1., getEpetraVector( y ), getEpetraVector( x ), 0. );
+}
+
+void EpetraVectorOperations::reciprocal( const VectorData &x, VectorData &y )
+{
+    getEpetraVector(y).Reciprocal( getEpetraVector( x ) );
 }
 
 void EpetraVectorOperations::linearSum( double alpha,
-                                        const VectorOperations &x,
-                                        double beta,
-                                        const VectorOperations &y )
+                                   const VectorData &x,
+                                   double beta,
+                                   const VectorData &y,
+				   VectorData &z)
 {
-    getEpetra_Vector().Update( alpha, getEpetraVector( x ), beta, getEpetraVector( y ), 0. );
+    getEpetraVector(z).Update( alpha, getEpetraVector( x ), beta, getEpetraVector( y ), 0. );
 }
 
-void EpetraVectorOperations::axpy( double alpha,
-                                   const VectorOperations &x,
-                                   const VectorOperations &y )
+void EpetraVectorOperations::axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z )
 {
-    linearSum( alpha, x, 1., y );
+  linearSum( alpha, x, 1.0, y, z );
 }
 
-void EpetraVectorOperations::axpby( double alpha, double beta, const VectorOperations &x )
+void EpetraVectorOperations::axpby( double alpha, double beta, const VectorData &x, VectorData &z )
 {
-    linearSum( alpha, x, beta, *this );
+  linearSum( alpha, x, beta, z, z );
 }
 
-void EpetraVectorOperations::abs( const VectorOperations &x )
+void EpetraVectorOperations::abs( const VectorData &x, VectorData &y )
 {
-    getEpetra_Vector().Abs( getEpetraVector( x ) );
+    getEpetraVector(y).Abs( getEpetraVector( x ) );
 }
 
-double EpetraVectorOperations::min() const
+double EpetraVectorOperations::min( const VectorData &x )  const
 {
     double retVal;
-    getEpetra_Vector().MinValue( &retVal );
+    getEpetraVector(x).MinValue( &retVal );
     return retVal;
 }
 
-double EpetraVectorOperations::max() const
+double EpetraVectorOperations::max( const VectorData &x )  const
 {
     double retVal;
-    getEpetra_Vector().MaxValue( &retVal );
+    getEpetraVector(x).MaxValue( &retVal );
     return retVal;
 }
 
-void EpetraVectorOperations::setRandomValues()
-{
-    getEpetra_Vector().Random();
-    this->abs( *this );
-}
-
-void EpetraVectorOperations::scale( double alpha ) { getEpetra_Vector().Scale( alpha ); }
-
-double EpetraVectorOperations::L1Norm() const
+double EpetraVectorOperations::dot( const VectorData &x, const VectorData &y ) const
 {
     double retVal;
-    getEpetra_Vector().Norm1( &retVal );
+    getEpetraVector(y).Dot( getEpetraVector( x ), &retVal );
     return retVal;
 }
 
-double EpetraVectorOperations::L2Norm() const
+double EpetraVectorOperations::L1Norm( const VectorData &x )  const
 {
     double retVal;
-    getEpetra_Vector().Norm2( &retVal );
+    getEpetraVector(x).Norm1( &retVal );
     return retVal;
 }
 
-
-double EpetraVectorOperations::maxNorm() const
+double EpetraVectorOperations::L2Norm( const VectorData &x ) const 
 {
     double retVal;
-    getEpetra_Vector().NormInf( &retVal );
+    getEpetraVector(x).Norm2( &retVal );
     return retVal;
 }
 
-double EpetraVectorOperations::dot( const VectorOperations &x ) const
+double EpetraVectorOperations::maxNorm( const VectorData &x )  const
 {
     double retVal;
-    getEpetra_Vector().Dot( getEpetraVector( x ), &retVal );
+    getEpetraVector(x).NormInf( &retVal );
     return retVal;
 }
 

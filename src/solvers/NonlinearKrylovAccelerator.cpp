@@ -148,8 +148,8 @@ void NonlinearKrylovAccelerator::setInitialGuess(
         d_bSolverInitialized = true;
     }
 
-    d_pvResidual->setToScalar( 0.0 );
-    d_pvCorrection->setToScalar( 0.0 );
+    d_pvResidual->setToScalar( 0.0, d_pvResidual );
+    d_pvCorrection->setToScalar( 0.0, d_pvCorrection );
 }
 
 
@@ -175,8 +175,8 @@ void NonlinearKrylovAccelerator::correction( std::shared_ptr<AMP::LinearAlgebra:
 
         /* next function difference w_1 */
         w = d_pFunctionDifferenceVectors[d_iFirstVectorIndex];
-        w->axpy( -1.0, *f, *w );
-        s = w->L2Norm();
+        w->axpy( -1.0, *f, *w, *w );
+        s = w->L2Norm(w);
 
         /* If the function difference is 0, we can't update the subspace with
         this data; so we toss it out and continue.  In this case it is likely
@@ -200,7 +200,7 @@ void NonlinearKrylovAccelerator::correction( std::shared_ptr<AMP::LinearAlgebra:
         /* Update H. */
         for ( k = d_piNext[d_iFirstVectorIndex]; k != EOL; k = d_piNext[k] ) {
             d_ppdFunctionDifferenceInnerProducts[d_iFirstVectorIndex][k] =
-                w->dot( *d_pFunctionDifferenceVectors[k] );
+	      w->dot( *d_pFunctionDifferenceVectors[k], *w );
         }
 
         /*
@@ -283,7 +283,7 @@ void NonlinearKrylovAccelerator::correction( std::shared_ptr<AMP::LinearAlgebra:
         /* Project f onto the span of the w vectors: */
         /* forward substitution */
         for ( j = d_iFirstVectorIndex; j != EOL; j = d_piNext[j] ) {
-            double cj = f->dot( *d_pFunctionDifferenceVectors[j] );
+	  double cj = f->dot( *d_pFunctionDifferenceVectors[j], *f );
 
             for ( i = d_iFirstVectorIndex; i != j; i = d_piNext[i] ) {
                 cj -= d_ppdFunctionDifferenceInnerProducts[j][i] * c[i];
@@ -302,8 +302,8 @@ void NonlinearKrylovAccelerator::correction( std::shared_ptr<AMP::LinearAlgebra:
 
         /* The accelerated correction */
         for ( k = d_iFirstVectorIndex; k != EOL; k = d_piNext[k] ) {
-            f->axpy( c[k], *d_pCorrectionVectors[k], *f );
-            f->axpy( -c[k], *d_pFunctionDifferenceVectors[k], *f );
+	  f->axpy( c[k], *d_pCorrectionVectors[k], *f, *f );
+	  f->axpy( -c[k], *d_pFunctionDifferenceVectors[k], *f, *f );
         }
 
         delete[] c;
@@ -345,7 +345,7 @@ void NonlinearKrylovAccelerator::solve( std::shared_ptr<const AMP::LinearAlgebra
 
     // compute residual
     d_pOperator->residual( f, d_pvSolution, d_pvResidual );
-    residual_norm = d_pvResidual->L2Norm();
+    residual_norm = d_pvResidual->L2Norm(d_pvResidual);
 
     if ( d_bPrintResiduals ) {
         AMP::pout << "NonlinearKrylovAccelerator::solve: iteration : " << d_iNonlinearIterationCount
@@ -377,7 +377,7 @@ void NonlinearKrylovAccelerator::solve( std::shared_ptr<const AMP::LinearAlgebra
         if ( d_iDebugPrintInfoLevel > 3 ) {
             // compute residual
             d_pOperator->residual( f, d_pvSolution, d_pvResidual );
-            residual_norm = d_pvResidual->L2Norm();
+            residual_norm = d_pvResidual->L2Norm(d_pvResidual);
             std::cout << "NonlinearKrylovAccelerator::solve: L2 norm of preconditioner residual "
                       << residual_norm << std::endl;
         }
@@ -387,24 +387,24 @@ void NonlinearKrylovAccelerator::solve( std::shared_ptr<const AMP::LinearAlgebra
         this->correction( d_pvCorrection );
 
         if ( d_iDebugPrintInfoLevel > 3 ) {
-            double pcSolutionNorm = d_pvCorrection->L2Norm();
+            double pcSolutionNorm = d_pvCorrection->L2Norm(d_pvCorrection);
             std::cout << "NonlinearKrylovAccelerator::solve: L2 norm of correction from NLKAIN "
                       << pcSolutionNorm << std::endl;
         }
 
         // correct current solution
-        d_pvSolution->axpy( 1.0, *d_pvCorrection, *d_pvSolution );
+        d_pvSolution->axpy( 1.0, *d_pvCorrection, *d_pvSolution, *d_pvSolution );
 
         // compute the residual
         d_pOperator->residual( f, d_pvSolution, d_pvResidual );
 
         if ( d_iDebugPrintInfoLevel > 3 ) {
-            double pcSolutionNorm = d_pvResidual->L2Norm();
+            double pcSolutionNorm = d_pvResidual->L2Norm(d_pvResidual);
             std::cout << "NonlinearKrylovAccelerator::solve: L2 norm of corrected residual "
                       << pcSolutionNorm << std::endl;
         }
 
-        residual_norm = d_pvResidual->L2Norm();
+        residual_norm = d_pvResidual->L2Norm(d_pvResidual);
         d_iNonlinearIterationCount++;
 
         if ( d_bPrintResiduals ) {

@@ -131,9 +131,9 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     // set default values of input variables
     auto inConcVec = solVec->subsetVectorForVariable( cVar );
     auto inTempVec = solVec->subsetVectorForVariable( tVar );
-    inConcVec->setToScalar( defaults[1] ); // compile error
-    inTempVec->setToScalar( defaults[0] ); // compile error
-    rhsVec->setToScalar( 0. );
+    inConcVec->setToScalar( defaults[1], inConcVec ); // compile error
+    inTempVec->setToScalar( defaults[0], inTempVec ); // compile error
+    rhsVec->setToScalar( 0., rhsVec );
 
     AMP_INSIST( nlinOp->isValidInput( solVec ), "input variable not set up correctly" );
 
@@ -146,11 +146,11 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Test linear reset from getJacobianParameters
     for ( int i = 0; i < 3; i++ ) {
-        inConcVec->setRandomValues();
-        inTempVec->setRandomValues();
+        inConcVec->setRandomValues(inConcVec);
+        inTempVec->setRandomValues(inTempVec);
         adjust( solVec, shift, scale, 2 );
-        rhsVec->setRandomValues();
-        resVec->setRandomValues();
+        rhsVec->setRandomValues(rhsVec);
+        resVec->setRandomValues(resVec);
         std::shared_ptr<AMP::Operator::OperatorParameters> jacparams =
             nlinBVPOp->getParameters( "Jacobian", solVec );
         linBVPOp->reset( jacparams );

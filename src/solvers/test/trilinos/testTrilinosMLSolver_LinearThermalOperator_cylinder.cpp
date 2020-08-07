@@ -215,7 +215,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = ResidualVec->L2Norm();
+    double finalResidualNorm = ResidualVec->L2Norm(ResidualVec);
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {

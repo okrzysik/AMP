@@ -15,15 +15,15 @@ inline void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,
 {
     auto mvec = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vec );
     if ( !mvec ) {
-        vec->scale( scale[0] );
-        vec->addScalar( vec, shift[0] );
+      vec->scale( scale[0], vec );
+        vec->addScalar( vec, shift[0], vec );
     } else {
         size_t nvecs = mvec->getNumberOfSubvectors();
         AMP_INSIST( nshift <= nvecs, "not enough subvectors" );
         for ( size_t i = 0; i < nshift; i++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr subvec = mvec->getVector( i );
-            subvec->scale( scale[i] );
-            subvec->addScalar( subvec, shift[i] );
+            subvec->scale( scale[i], subvec );
+            subvec->addScalar( subvec, shift[i], subvec );
         }
     }
     vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
@@ -55,9 +55,9 @@ inline void applyTests( AMP::UnitTest *ut,
     AMP::pout << "ApplyTest #1" << std::endl;
     std::string msg = msgPrefix + " : apply with random f, u, r, a=1, b=-1.0";
     for ( int j = 0; j < 3; j++ ) {
-        solVec->setRandomValues();
-        rhsVec->setRandomValues();
-        resVec->setRandomValues();
+        solVec->setRandomValues(solVec);
+        rhsVec->setRandomValues(rhsVec);
+        resVec->setRandomValues(resVec);
         adjust( solVec, shift, scale, nshift );
         testOperator->residual( rhsVec, solVec, resVec );
     } // end for j
@@ -69,8 +69,8 @@ inline void applyTests( AMP::UnitTest *ut,
     msg = msgPrefix + " : apply with f NULL, random u, r, a=1, b=-1.0";
     for ( int j = 0; j < 3; j++ ) {
         AMP::LinearAlgebra::Vector::shared_ptr fVec;
-        solVec->setRandomValues();
-        resVec->setRandomValues();
+        solVec->setRandomValues(solVec);
+        resVec->setRandomValues(resVec);
         adjust( solVec, shift, scale, nshift );
         testOperator->residual( fVec, solVec, resVec );
     }
@@ -84,8 +84,8 @@ inline void applyTests( AMP::UnitTest *ut,
     try {
         for ( int j = 0; j < 3; j++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr uVec;
-            rhsVec->setRandomValues();
-            resVec->setRandomValues();
+            rhsVec->setRandomValues(rhsVec);
+            resVec->setRandomValues(resVec);
             testOperator->residual( rhsVec, uVec, resVec );
         } // end for j
         ut->failure( msg );
@@ -99,8 +99,8 @@ inline void applyTests( AMP::UnitTest *ut,
     try {
         for ( int j = 0; j < 3; j++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr rVec;
-            solVec->setRandomValues();
-            rhsVec->setRandomValues();
+            solVec->setRandomValues(solVec);
+            rhsVec->setRandomValues(rhsVec);
             adjust( solVec, shift, scale, nshift );
             testOperator->residual( rhsVec, solVec, rVec );
         } // end for j
@@ -116,7 +116,7 @@ inline void applyTests( AMP::UnitTest *ut,
         for ( int j = 0; j < 3; j++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr fVec;
             AMP::LinearAlgebra::Vector::shared_ptr uVec;
-            resVec->setRandomValues();
+            resVec->setRandomValues(resVec);
             testOperator->residual( fVec, uVec, resVec );
         } // end for j
         ut->failure( msg );
@@ -131,7 +131,7 @@ inline void applyTests( AMP::UnitTest *ut,
         for ( int j = 0; j < 3; j++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr uVec;
             AMP::LinearAlgebra::Vector::shared_ptr rVec;
-            rhsVec->setRandomValues();
+            rhsVec->setRandomValues(rhsVec);
             testOperator->residual( rhsVec, uVec, rVec );
         } // end for j
         ut->failure( msg );
@@ -146,7 +146,7 @@ inline void applyTests( AMP::UnitTest *ut,
         for ( int j = 0; j < 3; j++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr rVec;
             AMP::LinearAlgebra::Vector::shared_ptr fVec;
-            solVec->setRandomValues();
+            solVec->setRandomValues(solVec);
             adjust( solVec, shift, scale, nshift );
             testOperator->residual( fVec, solVec, rVec );
         } // end for j

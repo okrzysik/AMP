@@ -50,16 +50,16 @@ void meshTests::simpleNodalVectorTests( AMP::UnitTest *utils,
         utils->failure( "ghost vector size: " + mesh->getName() );
 
     // Try some trival operations
-    vectora->setRandomValues();
-    double t1 = vectora->L2Norm();
-    vectora->abs( vectora );
-    if ( fabs( vectora->L2Norm() - t1 ) < 0.0000001 )
+    vectora->setRandomValues(vectora);
+    double t1 = vectora->L2Norm(vectora);
+    vectora->abs( vectora, vectora );
+    if ( fabs( vectora->L2Norm(vectora) - t1 ) < 0.0000001 )
         utils->passes( "non-trivial random vector" );
     else
         utils->failure( "non-trivial random vector: + " + mesh->getName() );
-    vectorb->setToScalar( 3. );
-    vectora->multiply( vectora, vectorb );
-    if ( fabs( vectora->L2Norm() - 3. * t1 ) < 0.00000001 )
+    vectorb->setToScalar( 3., vectorb );
+    vectora->multiply( vectora, vectorb, vectora );
+    if ( fabs( vectora->L2Norm(vectora) - 3. * t1 ) < 0.00000001 )
         utils->passes( "trivial usage" );
     else
         utils->failure( "trivial usage: " + mesh->getName() );

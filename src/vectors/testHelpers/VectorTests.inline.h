@@ -62,7 +62,7 @@ void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_p
     else
         utils->failure( "Subtracting arbitrary iterators " );
 
-    p->setToScalar( 5.0 );
+    p->setToScalar( 5.0, p );
     i = 0;
     for ( cur1 = p->begin(); cur1 != end; ++cur1 ) {
         if ( ( *cur1 ) != 5.0 )

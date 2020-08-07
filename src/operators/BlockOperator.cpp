@@ -103,14 +103,14 @@ void BlockOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable( tmpOutVar );
 
-    rInternal->zero();
+    rInternal->zero(rInternal);
     AMP::LinearAlgebra::Vector::shared_ptr rCopy = rInternal->cloneVector();
     for ( int j = 0; j < d_iNumColumnBlocks; j++ ) {
         for ( int i = 0; i < d_iNumRowBlocks; i++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr nullVec;
             d_blocks[i][j]->apply( u, rCopy );
         }
-        rInternal->add( rInternal, rCopy );
+        rInternal->add( rInternal, rCopy, rInternal );
     }
 }
 

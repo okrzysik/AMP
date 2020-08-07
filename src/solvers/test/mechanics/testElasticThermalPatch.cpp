@@ -95,22 +95,22 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Set Initial Temperature
     AMP_INSIST( input_db->keyExists( "INIT_TEMP_CONST" ), "key missing!" );
     double initTempVal = input_db->getScalar<double>( "INIT_TEMP_CONST" );
-    initTempVec->setToScalar( initTempVal );
+    initTempVec->setToScalar( initTempVal, initTempVec );
     mechanicsNonlinearVolumeOperator->setReferenceTemperature( initTempVec );
 
     // Set Final Temperature
     AMP_INSIST( input_db->keyExists( "FINAL_TEMP_CONST" ), "key missing!" );
     double finalTempVal = input_db->getScalar<double>( "FINAL_TEMP_CONST" );
-    finalTempVec->setToScalar( finalTempVal );
+    finalTempVec->setToScalar( finalTempVal, finalTempVec );
     mechanicsNonlinearVolumeOperator->setVector( AMP::Operator::Mechanics::TEMPERATURE,
                                                  finalTempVec );
 
     // Initial guess
-    solVec->zero();
+    solVec->zero(solVec);
     nonlinearMechanicsBVPoperator->modifyInitialSolutionVector( solVec );
 
     // RHS
-    rhsVec->zero();
+    rhsVec->zero(rhsVec);
     nonlinearMechanicsBVPoperator->modifyRHSvector( rhsVec );
 
     std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );

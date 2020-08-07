@@ -163,8 +163,8 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     auto ri = ampVector->cloneVector();
     auto rf = ampVector->cloneVector();
 
-    f->zero();
-    u->setRandomValues();
+    f->zero(f);
+    u->setRandomValues(u);
 
     // ************************************************************************************************
     // make sure the database on theinput file exists for the linear solver
@@ -185,8 +185,8 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     linearOp->residual( f, u, rf );
 
     // Check the L2 norm of the residuals.
-    const double finalResidualNorm   = rf->L2Norm();
-    const double initialResidualNorm = ri->L2Norm();
+    const double finalResidualNorm   = rf->L2Norm(rf);
+    const double initialResidualNorm = ri->L2Norm(ri);
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
     AMP::pout << "Final Residual Norm  : " << finalResidualNorm << std::endl;
 

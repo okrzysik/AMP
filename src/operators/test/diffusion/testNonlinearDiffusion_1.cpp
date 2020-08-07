@@ -117,9 +117,9 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     auto tVec = AMP::LinearAlgebra::createVector( nodalDofMap, tVar );
     auto cVec = AMP::LinearAlgebra::createVector( nodalDofMap, cVar );
     auto bVec = AMP::LinearAlgebra::createVector( nodalDofMap, bVar );
-    tVec->setToScalar( defTemp );
-    cVec->setToScalar( defConc );
-    bVec->setToScalar( defBurn );
+    tVec->setToScalar( defTemp, tVec );
+    cVec->setToScalar( defConc, cVec );
+    bVec->setToScalar( defBurn, bVec );
 
     // set principal variable vector and shift for applyTests
     double shift = 0., scale = 1.;
@@ -192,20 +192,20 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         for ( unsigned int i = 0; i < numNonPrincIds; i++ ) {
             nonPrincVecs[i] = AMP::LinearAlgebra::createVector( nodalDofMap, nonPrincVars[i] );
             if ( nonPrincIds[i] == AMP::Operator::Diffusion::TEMPERATURE )
-                nonPrincVecs[i]->setToScalar( defTemp );
+	      nonPrincVecs[i]->setToScalar( defTemp, nonPrincVecs[i] );
             if ( nonPrincIds[i] == AMP::Operator::Diffusion::CONCENTRATION )
-                nonPrincVecs[i]->setToScalar( defConc );
+	      nonPrincVecs[i]->setToScalar( defConc, nonPrincVecs[i] );
             if ( nonPrincIds[i] == AMP::Operator::Diffusion::BURNUP )
-                nonPrincVecs[i]->setToScalar( defBurn );
+	      nonPrincVecs[i]->setToScalar( defBurn, nonPrincVecs[i] );
         }
-        diffRhsVec->setToScalar( 0.0 );
+        diffRhsVec->setToScalar( 0.0, diffRhsVec );
         applyTests(
             ut, msgPrefix, nonlinearOperator, diffRhsVec, diffSolVec, diffResVec, shift, scale );
         std::cout.flush();
 
         // Test getJacobianParameters and linear operator creation
         {
-            diffSolVec->setRandomValues();
+            diffSolVec->setRandomValues(diffSolVec);
             adjust( diffSolVec, shift, scale );
             auto jacParams = diffOp->getParameters( "Jacobian", diffSolVec );
             linOp->reset(
@@ -251,7 +251,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     {
         auto testVec = AMP::LinearAlgebra::createVector( nodalDofMap, diffSolVar );
 
-        testVec->setToScalar( -1000. );
+        testVec->setToScalar( -1000., testVec );
         if ( not diffOp->isValidInput( testVec ) )
             ut->passes( exeName + ": validInput-1" );
         else {
@@ -264,7 +264,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
                 ut->failure( exeName + ": validInput-1" );
             }
         }
-        testVec->setToScalar( 1.e99 );
+        testVec->setToScalar( 1.e99, testVec );
         if ( not diffOp->isValidInput( testVec ) )
             ut->passes( exeName + ": validInput-2" );
         else {
@@ -277,7 +277,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
                 ut->failure( exeName + ": validInput-2" );
             }
         }
-        testVec->setToScalar( 1.e99 );
+        testVec->setToScalar( 1.e99, testVec );
         std::cout.flush();
     }
 }

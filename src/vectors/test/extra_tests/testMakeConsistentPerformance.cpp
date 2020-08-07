@@ -43,8 +43,8 @@ static void runTest( AMP::UnitTest *ut )
     auto v2 = createVector( DOFs, nodalVariable );
 
     // Initialize the vectors
-    v1->setToScalar( 0.0 );
-    v2->setToScalar( 0.0 );
+    v1->setToScalar( 0.0, v1 );
+    v2->setToScalar( 0.0, v2 );
 
     // Time makeConsistentSet
     globalComm.barrier();

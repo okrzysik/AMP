@@ -41,10 +41,10 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
     }
 
     // Run some tests
-    vector1->setRandomValues();
+    vector1->setRandomValues(vector1);
     matrixa->makeConsistent();
     matrixa->mult( vector1, vector2 );
-    if ( vector2->L1Norm() < 0.00000001 )
+    if ( vector2->L1Norm(vector2) < 0.00000001 )
         utils->passes( "obtained 0 matrix from mesh" );
     else
         utils->failure( "did not obtain 0 matrix from mesh" );
@@ -53,13 +53,13 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
     // Matrixa is fixed with no entires.
     auto matrixb = AMP::LinearAlgebra::createMatrix( vector1, vector2 );
 
-    vector2->setToScalar( 1. );
+    vector2->setToScalar( 1., vector2 );
     matrixb->makeConsistent();
     matrixb->setDiagonal( vector2 );
     matrixb->mult( vector1, vector2 );
-    vector1->subtract( vector1, vector2 );
+    vector1->subtract( vector1, vector2, vector1 );
 
-    if ( vector1->L1Norm() < 0.0000001 )
+    if ( vector1->L1Norm(vector1) < 0.0000001 )
         utils->passes( "created identity matrix from mesh" );
     else
         utils->failure( "created identity matrix from mesh" );

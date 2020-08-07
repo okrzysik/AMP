@@ -162,7 +162,7 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     //----------------------------------------------------------------------------//
     auto thermVar                = nonlinearThermalOperator->getOutputVariable();
     auto referenceTemperatureVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermVar, true );
-    referenceTemperatureVec->setToScalar( 300.0 );
+    referenceTemperatureVec->setToScalar( 300.0, referenceTemperatureVec );
     nonlinearMechanicsVolumeOperator->setReferenceTemperature( referenceTemperatureVec );
 
     //---------------------------------------------------------------------------//

@@ -24,78 +24,328 @@ std::shared_ptr<VectorOperations> VectorOperationsDefault<TYPE>::cloneOperations
     return ptr;
 }
 
+//**********************************************************************
+// Static functions that operate on VectorData objects
 
-/****************************************************************
- * min, max, norms, etc.                                         *
- ****************************************************************/
 template<typename TYPE>
-bool VectorOperationsDefault<TYPE>::localEquals( const VectorOperations &rhs, double tol ) const
+void VectorOperationsDefault<TYPE>::zero( VectorData &x )
 {
-    const auto &x = *d_VectorData;
-    const auto &y = *rhs.getVectorData();
-    if ( ( x.getGlobalSize() != y.getGlobalSize() ) || ( x.getLocalSize() != y.getLocalSize() ) )
-        return false;
-    bool equal = true;
-    auto cur1  = x.constBegin<TYPE>();
-    auto cur2  = y.constBegin<TYPE>();
-    auto last  = x.constEnd<TYPE>();
-    while ( cur1 != last ) {
-        if ( fabs( *cur1 - *cur2 ) > tol ) {
-            equal = false;
-            break;
-        }
-        ++cur1;
-        ++cur2;
+    auto curMe = x.begin<TYPE>();
+    auto last  = x.end<TYPE>();
+    while ( curMe != last ) {
+        *curMe = 0;
+        ++curMe;
     }
-    return equal;
+    if ( x.hasGhosts() ) {
+      auto &ghosts = x.getGhosts();
+        for ( size_t i = 0; i != ghosts.size(); i++ )
+            ghosts[i] = 0;
+    }
+    // Override the status state since we set the ghost values
+    *( x.getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
 }
+
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localMin( void ) const
+void VectorOperationsDefault<TYPE>::setToScalar( double alpha, VectorData &x )
 {
-    size_t N_blocks = d_VectorData->numberOfDataBlocks();
+    auto curMe = x.begin<TYPE>();
+    auto last  = x.end<TYPE>();
+    while ( curMe != last ) {
+        *curMe = alpha;
+        ++curMe;
+    }
+    if ( x.hasGhosts() ) {
+      auto &ghosts = x.getGhosts();
+        for ( size_t i = 0; i != ghosts.size(); i++ )
+            ghosts[i] = alpha;
+    }
+    // Override the status state since we set the ghost values
+    *( x.getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::setRandomValues( VectorData &x )
+{
+    RandomVariable<double> r( 0, 1, Vector::getDefaultRNG() );
+    auto curMe = x.begin<TYPE>();
+    auto last  = x.end<TYPE>();
+    while ( curMe != last ) {
+        double curRand = r;
+        *curMe         = curRand;
+        ++curMe;
+    }
+    // Call makeConsistent to leave the vector in a consistent state
+    x.makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::setRandomValues( RNG::shared_ptr rng, VectorData &x )
+{
+    RandomVariable<double> r( 0, 1, rng );
+    auto curMe = x.begin<TYPE>();
+    auto last  = x.end<TYPE>();
+    while ( curMe != last ) {
+        double curRand = r;
+        *curMe         = curRand;
+        ++curMe;
+    }
+    // Call makeConsistent to leave the vector in a consistent state
+    x.makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::copy( const VectorData &x, VectorData &y )
+{
+    AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
+    std::copy( x.begin<TYPE>(), x.end<TYPE>(), y.begin<TYPE>() );
+    y.copyGhostValues( x );
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::scale( double alpha, VectorData &x )
+{
+    auto curMe = x.begin<TYPE>();
+    auto last  = x.end<TYPE>();
+    while ( curMe != last ) {
+        *curMe *= alpha;
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::scale( double alpha, const VectorData &x, VectorData &y )
+{
+    AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
+    auto curMe  = y.begin<TYPE>();
+    auto last   = y.end<TYPE>();
+    auto curRhs = x.begin<TYPE>();
+    while ( curMe != last ) {
+        *curMe = alpha * *curRhs;
+        ++curRhs;
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::add( const VectorData &x, const VectorData &y, VectorData &z )
+{
+    AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
+    AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
+    auto curMe   = z.begin<TYPE>();
+    auto last    = z.end<TYPE>();
+    auto curXRhs = x.begin<TYPE>();
+    auto curYRhs = y.begin<TYPE>();
+    while ( curMe != last ) {
+        *curMe = *curXRhs + *curYRhs;
+        ++curXRhs;
+        ++curYRhs;
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::subtract( const VectorData &x, const VectorData &y, VectorData &z  )
+{
+    AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
+    AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
+    auto curMe   = z.begin<TYPE>();
+    auto last    = z.end<TYPE>();
+    auto curXRhs = x.begin<TYPE>();
+    auto curYRhs = y.begin<TYPE>();
+    while ( curMe != last ) {
+        *curMe = *curXRhs - *curYRhs;
+        ++curXRhs;
+        ++curYRhs;
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::multiply( const VectorData &x, const VectorData &y, VectorData &z )
+{
+    AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
+    AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
+    auto curMe   = z.begin<TYPE>();
+    auto last    = z.end<TYPE>();
+    auto curXRhs = x.begin<TYPE>();
+    auto curYRhs = y.begin<TYPE>();
+    while ( curMe != last ) {
+        *curMe = *curXRhs * *curYRhs;
+        ++curXRhs;
+        ++curYRhs;
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::divide( const VectorData &x, const VectorData &y, VectorData &z )
+{
+    AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
+    AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
+    auto curMe   = z.begin<TYPE>();
+    auto last    = z.end<TYPE>();
+    auto curXRhs = x.begin<TYPE>();
+    auto curYRhs = y.begin<TYPE>();
+    while ( curMe != last ) {
+        *curMe = *curXRhs / *curYRhs;
+        ++curXRhs;
+        ++curYRhs;
+        ++curMe;
+    }
+}
+
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::reciprocal( const VectorData &x, VectorData &y )
+{
+    AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
+    auto curMe  = y.begin<TYPE>();
+    auto last   = y.end<TYPE>();
+    auto curRhs = x.begin<TYPE>();
+    while ( curMe != last ) {
+        *curMe = 1.0 / *curRhs;
+        ++curRhs;
+        ++curMe;
+    }
+}
+
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::linearSum( double alpha_in,
+                                   const VectorData &x,
+                                   double beta_in,
+                                   const VectorData &y,
+				   VectorData &z)
+{
+    const TYPE alpha = static_cast<TYPE>( alpha_in );
+    const TYPE beta  = static_cast<TYPE>( beta_in );
+    AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
+    AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
+    auto curMe   = z.begin<TYPE>();
+    auto last    = z.end<TYPE>();
+    auto curXRhs = x.begin<TYPE>();
+    auto curYRhs = y.begin<TYPE>();
+    while ( curMe != last ) {
+        *curMe = alpha * *curXRhs + beta * *curYRhs;
+        ++curXRhs;
+        ++curYRhs;
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::axpy( double alpha_in, const VectorData &x, const VectorData &y, VectorData &z )
+{
+    const TYPE alpha = static_cast<TYPE>( alpha_in );
+    AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
+    AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
+    auto curMe   = z.begin<TYPE>();
+    auto last    = z.end<TYPE>();
+    auto curXRhs = x.begin<TYPE>();
+    auto curYRhs = y.begin<TYPE>();
+    while ( curMe != last ) {
+        *curMe = alpha * *curXRhs + *curYRhs;
+        ++curXRhs;
+        ++curYRhs;
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::axpby( double alpha_in, double beta_in, const VectorData &x, VectorData &z )
+{
+    const TYPE alpha = static_cast<TYPE>( alpha_in );
+    const TYPE beta  = static_cast<TYPE>( beta_in );
+    AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
+    auto curMe   = z.begin<TYPE>();
+    auto last    = z.end<TYPE>();
+    auto curXRhs = x.begin<TYPE>();
+    while ( curMe != last ) {
+        *curMe = alpha * *curXRhs + beta * *curMe;
+        ++curXRhs;
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::abs( const VectorData &x, VectorData &y )
+{
+    AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
+    auto curMe  = y.begin<TYPE>();
+    auto last   = y.end<TYPE>();
+    auto curRhs = x.begin<TYPE>();
+    while ( curMe != last ) {
+        *curMe = fabs( *curRhs );
+        ++curRhs;
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::addScalar( const VectorData &x, double alpha_in, VectorData &y )
+{
+    const TYPE alpha = static_cast<TYPE>( alpha_in );
+    AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
+    auto curMe   = y.begin<TYPE>();
+    auto last    = y.end<TYPE>();
+    auto curXRhs = x.begin<TYPE>();
+    while ( curMe != last ) {
+        *curMe = *curXRhs + alpha;
+        ++curXRhs;
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+double VectorOperationsDefault<TYPE>::localMin( const VectorData &x )  const
+{
+    size_t N_blocks = x.numberOfDataBlocks();
     TYPE ans        = std::numeric_limits<TYPE>::max();
     for ( size_t i = 0; i < N_blocks; i++ ) {
-        size_t size      = d_VectorData->sizeOfDataBlock( i );
-        const TYPE *data = d_VectorData->getRawDataBlock<TYPE>( i );
+        size_t size      = x.sizeOfDataBlock( i );
+        const TYPE *data = x.getRawDataBlock<TYPE>( i );
         for ( size_t j = 0; j < size; j++ )
             ans = std::min( data[j], ans );
     }
     return static_cast<double>( ans );
 }
+
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localMax( void ) const
+double VectorOperationsDefault<TYPE>::localMax( const VectorData &x )  const
 {
-    size_t N_blocks = d_VectorData->numberOfDataBlocks();
+    size_t N_blocks = x.numberOfDataBlocks();
     TYPE ans        = std::numeric_limits<TYPE>::lowest();
     for ( size_t i = 0; i < N_blocks; i++ ) {
-        size_t size      = d_VectorData->sizeOfDataBlock( i );
-        const TYPE *data = d_VectorData->getRawDataBlock<TYPE>( i );
+        size_t size      = x.sizeOfDataBlock( i );
+        const TYPE *data = x.getRawDataBlock<TYPE>( i );
         for ( size_t j = 0; j < size; j++ )
             ans = std::max( data[j], ans );
     }
     return static_cast<double>( ans );
 }
+
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localL1Norm( void ) const
+double VectorOperationsDefault<TYPE>::localL1Norm( const VectorData &x )  const
 {
-    size_t N_blocks = d_VectorData->numberOfDataBlocks();
+    size_t N_blocks = x.numberOfDataBlocks();
     double ans      = 0;
     for ( size_t i = 0; i < N_blocks; i++ ) {
-        size_t size      = d_VectorData->sizeOfDataBlock( i );
-        const TYPE *data = d_VectorData->getRawDataBlock<TYPE>( i );
+        size_t size      = x.sizeOfDataBlock( i );
+        const TYPE *data = x.getRawDataBlock<TYPE>( i );
         for ( size_t j = 0; j < size; j++ )
             ans += static_cast<double>( std::abs( data[j] ) );
     }
     return ans;
 }
+
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localL2Norm( void ) const
+double VectorOperationsDefault<TYPE>::localL2Norm( const VectorData &x )  const
 {
-    size_t N_blocks = d_VectorData->numberOfDataBlocks();
+    size_t N_blocks = x.numberOfDataBlocks();
     double ans      = 0;
     for ( size_t i = 0; i < N_blocks; i++ ) {
-        size_t size      = d_VectorData->sizeOfDataBlock( i );
-        const TYPE *data = d_VectorData->getRawDataBlock<TYPE>( i );
+        size_t size      = x.sizeOfDataBlock( i );
+        const TYPE *data = x.getRawDataBlock<TYPE>( i );
         for ( size_t j = 0; j < size; j++ ) {
             double tmp = static_cast<double>( data[j] );
             ans += tmp * tmp;
@@ -103,26 +353,28 @@ double VectorOperationsDefault<TYPE>::localL2Norm( void ) const
     }
     return sqrt( ans );
 }
+
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localMaxNorm( void ) const
+double VectorOperationsDefault<TYPE>::localMaxNorm( const VectorData &x )  const
 {
-    size_t N_blocks = d_VectorData->numberOfDataBlocks();
+    size_t N_blocks = x.numberOfDataBlocks();
     TYPE ans        = 0;
     for ( size_t i = 0; i < N_blocks; i++ ) {
-        size_t size      = d_VectorData->sizeOfDataBlock( i );
-        const TYPE *data = d_VectorData->getRawDataBlock<TYPE>( i );
+        size_t size      = x.sizeOfDataBlock( i );
+        const TYPE *data = x.getRawDataBlock<TYPE>( i );
         for ( size_t j = 0; j < size; j++ )
             ans = std::max( std::abs( data[j] ), ans );
     }
     return static_cast<double>( ans );
 }
+
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localDot( const VectorOperations &x ) const
+double VectorOperationsDefault<TYPE>::localDot( const VectorData &x, const VectorData &y ) const
 {
-    AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
-    auto curMe   = d_VectorData->constBegin<TYPE>();
-    auto last    = d_VectorData->constEnd<TYPE>();
-    auto curXRhs = x.getVectorData()->constBegin<TYPE>();
+    AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
+    auto curMe   = y.constBegin<TYPE>();
+    auto last    = y.constEnd<TYPE>();
+    auto curXRhs = x.constBegin<TYPE>();
     double ans   = 0;
     while ( curMe != last ) {
         double v1 = static_cast<double>( *curMe );
@@ -133,12 +385,13 @@ double VectorOperationsDefault<TYPE>::localDot( const VectorOperations &x ) cons
     }
     return ans;
 }
+
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localMinQuotient( const VectorOperations &x ) const
+double VectorOperationsDefault<TYPE>::localMinQuotient( const VectorData &x, const VectorData &y ) const
 {
-    auto curx  = x.getVectorData()->constBegin<TYPE>();
-    auto endx  = x.getVectorData()->constEnd<TYPE>();
-    auto cury  = d_VectorData->constBegin<TYPE>();
+    auto curx  = x.constBegin<TYPE>();
+    auto endx  = x.constEnd<TYPE>();
+    auto cury  = y.constBegin<TYPE>();
     double ans = std::numeric_limits<double>::max();
     while ( curx != endx ) {
         if ( *cury != 0 ) {
@@ -151,12 +404,13 @@ double VectorOperationsDefault<TYPE>::localMinQuotient( const VectorOperations &
     }
     return ans;
 }
+
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorOperations &x ) const
+double VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorData &x, const VectorData &y ) const
 {
-    auto curx  = x.getVectorData()->constBegin<TYPE>();
-    auto endx  = x.getVectorData()->constEnd<TYPE>();
-    auto cury  = d_VectorData->constBegin<TYPE>();
+    auto curx  = x.constBegin<TYPE>();
+    auto endx  = x.constEnd<TYPE>();
+    auto cury  = y.constBegin<TYPE>();
     double ans = 0;
     size_t N   = 0;
     while ( curx != endx ) {
@@ -169,14 +423,14 @@ double VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorOperations &x )
     }
     return sqrt( ans / N );
 }
+
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorOperations &x,
-                                                         const VectorOperations &mask ) const
+double VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const
 {
-    auto curx  = x.getVectorData()->constBegin<TYPE>();
-    auto endx  = x.getVectorData()->constEnd<TYPE>();
-    auto cury  = d_VectorData->constBegin<TYPE>();
-    auto curm  = mask.getVectorData()->constBegin<TYPE>();
+    auto curx  = x.constBegin<TYPE>();
+    auto endx  = x.constEnd<TYPE>();
+    auto cury  = y.constBegin<TYPE>();
+    auto curm  = mask.constBegin<TYPE>();
     double ans = 0;
     size_t N   = 0;
     while ( curx != endx ) {
@@ -193,268 +447,24 @@ double VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorOperations 
     return sqrt( ans / N );
 }
 
-
-/****************************************************************
- * Functions to initalize the data                               *
- ****************************************************************/
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::zero()
+bool VectorOperationsDefault<TYPE>::localEquals( const VectorData &x, const VectorData &y, double tol ) const
 {
-    auto curMe = d_VectorData->begin<TYPE>();
-    auto last  = d_VectorData->end<TYPE>();
-    while ( curMe != last ) {
-        *curMe = 0;
-        ++curMe;
+    if ( ( x.getGlobalSize() != y.getGlobalSize() ) || ( x.getLocalSize() != y.getLocalSize() ) )
+        return false;
+    bool equal = true;
+    auto cur1  = x.constBegin<TYPE>();
+    auto cur2  = y.constBegin<TYPE>();
+    auto last  = x.constEnd<TYPE>();
+    while ( cur1 != last ) {
+        if ( fabs( *cur1 - *cur2 ) > tol ) {
+            equal = false;
+            break;
+        }
+        ++cur1;
+        ++cur2;
     }
-    if ( hasGhosts() ) {
-        auto &ghosts = getGhosts();
-        for ( size_t i = 0; i != ghosts.size(); i++ )
-            ghosts[i] = 0;
-    }
-    // Override the status state since we set the ghost values
-    *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::setToScalar( double alpha )
-{
-    auto curMe = d_VectorData->begin<TYPE>();
-    auto last  = d_VectorData->end<TYPE>();
-    while ( curMe != last ) {
-        *curMe = alpha;
-        ++curMe;
-    }
-    if ( hasGhosts() ) {
-        auto &ghosts = getGhosts();
-        for ( size_t i = 0; i != ghosts.size(); i++ )
-            ghosts[i] = alpha;
-    }
-    // Override the status state since we set the ghost values
-    *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::setRandomValues()
-{
-    RandomVariable<double> r( 0, 1, Vector::getDefaultRNG() );
-    auto curMe = d_VectorData->begin<TYPE>();
-    auto last  = d_VectorData->end<TYPE>();
-    while ( curMe != last ) {
-        double curRand = r;
-        *curMe         = curRand;
-        ++curMe;
-    }
-    // Call makeConsistent to leave the vector in a consistent state
-    d_VectorData->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::setRandomValues( RNG::shared_ptr rng )
-{
-    RandomVariable<double> r( 0, 1, rng );
-    auto curMe = d_VectorData->begin<TYPE>();
-    auto last  = d_VectorData->end<TYPE>();
-    while ( curMe != last ) {
-        *curMe = r;
-        ++curMe;
-    }
-    // Call makeConsistent to leave the vector in a consistent state
-    d_VectorData->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
-}
-
-
-/****************************************************************
- * Basic linear algebra                                          *
- ****************************************************************/
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::copy( const VectorOperations &x )
-{
-    auto x_data = x.getVectorData();
-    auto y_data = d_VectorData;
-    AMP_ASSERT( x_data->getLocalSize() == y_data->getLocalSize() );
-    std::copy( x_data->begin<TYPE>(), x_data->end<TYPE>(), y_data->template begin<TYPE>() );
-    y_data->copyGhostValues( *x_data );
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::scale( double alpha )
-{
-    auto curMe = d_VectorData->begin<TYPE>();
-    auto last  = d_VectorData->end<TYPE>();
-    while ( curMe != last ) {
-        *curMe *= alpha;
-        ++curMe;
-    }
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::scale( double alpha, const VectorOperations &x )
-{
-    AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
-    auto curMe  = d_VectorData->begin<TYPE>();
-    auto last   = d_VectorData->end<TYPE>();
-    auto curRhs = x.getVectorData()->begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = alpha * *curRhs;
-        ++curRhs;
-        ++curMe;
-    }
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::add( const VectorOperations &x, const VectorOperations &y )
-{
-    AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
-    AMP_ASSERT( d_VectorData->getLocalSize() == y.getVectorData()->getLocalSize() );
-    auto curMe   = d_VectorData->begin<TYPE>();
-    auto last    = d_VectorData->end<TYPE>();
-    auto curXRhs = x.getVectorData()->begin<TYPE>();
-    auto curYRhs = y.getVectorData()->begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = *curXRhs + *curYRhs;
-        ++curXRhs;
-        ++curYRhs;
-        ++curMe;
-    }
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::subtract( const VectorOperations &x, const VectorOperations &y )
-{
-    AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
-    AMP_ASSERT( d_VectorData->getLocalSize() == y.getVectorData()->getLocalSize() );
-    auto curMe   = d_VectorData->begin<TYPE>();
-    auto last    = d_VectorData->end<TYPE>();
-    auto curXRhs = x.getVectorData()->begin<TYPE>();
-    auto curYRhs = y.getVectorData()->begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = *curXRhs - *curYRhs;
-        ++curXRhs;
-        ++curYRhs;
-        ++curMe;
-    }
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::multiply( const VectorOperations &x, const VectorOperations &y )
-{
-    AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
-    AMP_ASSERT( d_VectorData->getLocalSize() == y.getVectorData()->getLocalSize() );
-    auto curMe   = d_VectorData->begin<TYPE>();
-    auto last    = d_VectorData->end<TYPE>();
-    auto curXRhs = x.getVectorData()->begin<TYPE>();
-    auto curYRhs = y.getVectorData()->begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = *curXRhs * *curYRhs;
-        ++curXRhs;
-        ++curYRhs;
-        ++curMe;
-    }
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::divide( const VectorOperations &x, const VectorOperations &y )
-{
-    AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
-    AMP_ASSERT( d_VectorData->getLocalSize() == y.getVectorData()->getLocalSize() );
-    auto curMe   = d_VectorData->begin<TYPE>();
-    auto last    = d_VectorData->end<TYPE>();
-    auto curXRhs = x.getVectorData()->begin<TYPE>();
-    auto curYRhs = y.getVectorData()->begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = *curXRhs / *curYRhs;
-        ++curXRhs;
-        ++curYRhs;
-        ++curMe;
-    }
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::reciprocal( const VectorOperations &x )
-{
-    AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
-    auto curMe  = d_VectorData->begin<TYPE>();
-    auto last   = d_VectorData->end<TYPE>();
-    auto curRhs = x.getVectorData()->begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = 1. / *curRhs;
-        ++curRhs;
-        ++curMe;
-    }
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::linearSum( double alpha_in,
-                                               const VectorOperations &x,
-                                               double beta_in,
-                                               const VectorOperations &y )
-{
-    const TYPE alpha = static_cast<TYPE>( alpha_in );
-    const TYPE beta  = static_cast<TYPE>( beta_in );
-    AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
-    AMP_ASSERT( d_VectorData->getLocalSize() == y.getVectorData()->getLocalSize() );
-    auto curMe   = d_VectorData->begin<TYPE>();
-    auto last    = d_VectorData->end<TYPE>();
-    auto curXRhs = x.getVectorData()->begin<TYPE>();
-    auto curYRhs = y.getVectorData()->begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = alpha * *curXRhs + beta * *curYRhs;
-        ++curXRhs;
-        ++curYRhs;
-        ++curMe;
-    }
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::axpy( double alpha_in,
-                                          const VectorOperations &x,
-                                          const VectorOperations &y )
-{
-    const TYPE alpha = static_cast<TYPE>( alpha_in );
-    AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
-    AMP_ASSERT( d_VectorData->getLocalSize() == y.getVectorData()->getLocalSize() );
-    auto curMe   = d_VectorData->begin<TYPE>();
-    auto last    = d_VectorData->end<TYPE>();
-    auto curXRhs = x.getVectorData()->begin<TYPE>();
-    auto curYRhs = y.getVectorData()->begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = alpha * *curXRhs + *curYRhs;
-        ++curXRhs;
-        ++curYRhs;
-        ++curMe;
-    }
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::axpby( double alpha_in,
-                                           double beta_in,
-                                           const VectorOperations &x )
-{
-    const TYPE alpha = static_cast<TYPE>( alpha_in );
-    const TYPE beta  = static_cast<TYPE>( beta_in );
-    AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
-    auto curMe   = d_VectorData->begin<TYPE>();
-    auto last    = d_VectorData->end<TYPE>();
-    auto curXRhs = x.getVectorData()->begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = alpha * *curXRhs + beta * *curMe;
-        ++curXRhs;
-        ++curMe;
-    }
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::abs( const VectorOperations &x )
-{
-    AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
-    auto curMe   = d_VectorData->begin<TYPE>();
-    auto last    = d_VectorData->end<TYPE>();
-    auto curXRhs = x.getVectorData()->begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = fabs( *curXRhs );
-        ++curXRhs;
-        ++curMe;
-    }
-}
-template<typename TYPE>
-void VectorOperationsDefault<TYPE>::addScalar( const VectorOperations &x, double alpha_in )
-{
-    const TYPE alpha = static_cast<TYPE>( alpha_in );
-    AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
-    auto curMe   = d_VectorData->begin<TYPE>();
-    auto last    = d_VectorData->end<TYPE>();
-    auto curXRhs = x.getVectorData()->begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = *curXRhs + alpha;
-        ++curXRhs;
-        ++curMe;
-    }
+    return equal;
 }
 
 

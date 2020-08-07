@@ -32,7 +32,7 @@ void computeTemperatureRhsVector(
 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal =
         rhsVec->subsetVectorForVariable( displacementVar );
-    rInternal->zero();
+    rInternal->zero(rInternal);
 
     auto elementRhsDatabase    = input_db->getDatabase( "RhsElements" );
     auto materialModelDatabase = input_db->getDatabase( "RhsMaterialModel" );

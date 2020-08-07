@@ -117,7 +117,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     // Create the power (heat source) vector.
     auto powerInWattsVar = sourceOperator->getOutputVariable();
     auto powerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, powerInWattsVar );
-    powerInWattsVec->zero();
+    powerInWattsVec->zero(powerInWattsVec);
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, powerInWattsVec );
@@ -161,8 +161,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     initialConditionPrime->makeConsistent(
         AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
-    std::cout << "With Counter " << counter << " Max initial temp " << initialCondition->max()
-              << " Min initial temp " << initialCondition->min() << std::endl;
+    std::cout << "With Counter " << counter << " Max initial temp " << initialCondition->max(initialCondition)
+              << " Min initial temp " << initialCondition->min(initialCondition) << std::endl;
 
     // create a copy of the rhs which can be modified at each time step (maybe)
     f->copyVector( powerInWattsVec );
@@ -192,13 +192,13 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     auto residualVec = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
 
     linearOperator->apply( initialCondition, residualVec );
-    std::cout << "Residual Norm of linearTimeOp apply : " << residualVec->L2Norm() << std::endl;
+    std::cout << "Residual Norm of linearTimeOp apply : " << residualVec->L2Norm(residualVec) << std::endl;
 
     massOperator->apply( initialCondition, residualVec );
-    std::cout << "Residual Norm of linearTimeOp apply : " << residualVec->L2Norm() << std::endl;
+    std::cout << "Residual Norm of linearTimeOp apply : " << residualVec->L2Norm(residualVec) << std::endl;
 
     linearTimeOperator->apply( initialCondition, residualVec );
-    std::cout << "Residual Norm of linearTimeOp apply : " << residualVec->L2Norm() << std::endl;
+    std::cout << "Residual Norm of linearTimeOp apply : " << residualVec->L2Norm(residualVec) << std::endl;
 
     // ---------------------------------------------------------------------------------------
     // create a preconditioner
@@ -285,8 +285,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             ut->failure( "Tested IDATimeIntegrator's advanceSolution. FAIL!!" );
         }
 
-        max = pIDATimeIntegrator->getCurrentSolution()->max();
-        min = pIDATimeIntegrator->getCurrentSolution()->min();
+	auto sol = pIDATimeIntegrator->getCurrentSolution();
+        max = sol->max(sol);
+        min = sol->min(sol);
 
         std::cout << "current_time = " << current_time << std::endl;
         std::cout << "max val of the current solution = " << max << std::endl;

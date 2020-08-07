@@ -22,30 +22,35 @@ class EpetraVectorOperations : virtual public VectorOperationsDefault<double>
 public:
     // Constructor
     EpetraVectorOperations() {}
-
-    // virtual void addScalar ( const VectorOperations & , double );
-    void setToScalar( double alpha ) override;
-    void scale( double alpha, const VectorOperations &x ) override;
-    void scale( double alpha ) override;
-    void add( const VectorOperations &x, const VectorOperations &y ) override;
-    void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-    void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-    void divide( const VectorOperations &x, const VectorOperations &y ) override;
-    void reciprocal( const VectorOperations &x ) override;
+   
+ public:
+    void setToScalar( double alpha, VectorData &z ) override;
+    void setRandomValues( VectorData &x ) override;    
+    void scale( double alpha, const VectorData &x, VectorData &y ) override;
+    void scale( double alpha, VectorData &x ) override;
+    void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void subtract( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void multiply( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void reciprocal( const VectorData &x, VectorData &y ) override;
     void linearSum( double alpha,
-                    const VectorOperations &x,
-                    double beta,
-                    const VectorOperations &y ) override;
-    void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-    void axpby( double alpha, double beta, const VectorOperations &x ) override;
-    void abs( const VectorOperations &x ) override;
-    double min( void ) const override;
-    double max( void ) const override;
-    void setRandomValues( void ) override;
-    double L1Norm( void ) const override;
-    double L2Norm( void ) const override;
-    double maxNorm( void ) const override;
-    double dot( const VectorOperations &x ) const override;
+			   const VectorData &x,
+			   double beta,
+			   const VectorData &y,
+			   VectorData &z) override;
+    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
+    void abs( const VectorData &x, VectorData &z ) override;
+
+    double min( const VectorData &x ) const override;
+    double max( const VectorData &x ) const override;
+    double dot( const VectorData &x, const VectorData &y ) const override;
+    double L1Norm( const VectorData &x ) const override;
+    double L2Norm( const VectorData &x ) const override;
+    double maxNorm( const VectorData &x ) const override;
+    //    double localL1Norm( const VectorData &x ) const override;
+    //    double localL2Norm( const VectorData &x  ) const override;
+    //    double localMaxNorm( const VectorData &x ) const override;
 
 public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::abs;
@@ -71,6 +76,11 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::localMaxNorm;
     using VectorOperationsDefault::localMin;
 
+    using VectorOperationsDefault::min;
+    using VectorOperationsDefault::max;
+    using VectorOperationsDefault::L1Norm;
+    using VectorOperationsDefault::L2Norm;
+    using VectorOperationsDefault::maxNorm;
 protected:
     Epetra_Vector &getEpetra_Vector();
     const Epetra_Vector &getEpetra_Vector() const;

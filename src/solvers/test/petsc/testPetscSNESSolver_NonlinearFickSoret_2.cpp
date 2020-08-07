@@ -123,8 +123,8 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto soretFrozen = soretOp->getFrozen();
 
     double lenscale = input_db->getScalar<double>( "LengthScale" );
-    soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setToScalar(
-        300. ); // Fill in manufactured solution
+    soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setToScalar( 300.,
+								     soretFrozen[AMP::Operator::Diffusion::TEMPERATURE] ); // Fill in manufactured solution
     int zeroGhostWidth = 0;
     auto iterator      = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
     for ( ; iterator != iterator.end(); ++iterator ) {
@@ -143,16 +143,16 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     // Initial guess
 
     double initialValue = input_db->getScalar<double>( "InitialValue" );
-    solVec->setToScalar( initialValue );
-    double initialGuessNorm = solVec->L2Norm();
+    solVec->setToScalar( initialValue, solVec );
+    double initialGuessNorm = solVec->L2Norm(solVec);
     std::cout << "initial guess norm = " << initialGuessNorm << "\n";
 
     nlinBVPOp->modifyInitialSolutionVector( solVec );
 
-    initialGuessNorm = solVec->L2Norm();
+    initialGuessNorm = solVec->L2Norm(solVec);
     std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
 
-    rhsVec->setToScalar( 0.0 );
+    rhsVec->setToScalar( 0.0, rhsVec );
     nlinBVPOp->modifyRHSvector( rhsVec );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------/
@@ -187,7 +187,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     linearSolver->setPreconditioner( linearFickPreconditioner );
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm();
+    double initialResidualNorm = resVec->L2Norm(resVec);
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
@@ -197,7 +197,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm();
+    double finalResidualNorm = resVec->L2Norm(resVec);
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 

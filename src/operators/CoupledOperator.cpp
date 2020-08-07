@@ -60,9 +60,9 @@ void CoupledOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     // the rhs can be NULL
     if ( f.get() != nullptr ) {
         //        AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetOutputVector( f );
-        r->subtract( f, r );
+      r->subtract( f, r, r );
     } else {
-        r->scale( -1.0 );
+      r->scale( -1.0, r );
     }
 
     r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );

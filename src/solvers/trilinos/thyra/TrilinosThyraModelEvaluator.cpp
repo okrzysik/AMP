@@ -84,7 +84,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
 
     if ( f_out != nullptr ) {
         // Evaluate the residual:  r = A(u) - rhs
-        f_out->zero();
+        f_out->zero(f_out);
         auto eval  = outArgs.get_f();
         bool exact = true;
         if ( eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_EXACT ) {
@@ -98,7 +98,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
             d_prePostOperator->runPreApply( x, f_out, exact );
         // Apply the AMP::Operator to compute r = A(u) - rhs
         d_nonlinearOp->apply( x, f_out );
-        f_out->axpby( -1, 1, d_rhs );
+        f_out->axpby( -1, 1, d_rhs, f_out );
         if ( d_prePostOperator != nullptr )
             d_prePostOperator->runPostApply( x, f_out, exact );
     }

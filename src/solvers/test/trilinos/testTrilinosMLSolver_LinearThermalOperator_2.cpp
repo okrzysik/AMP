@@ -103,14 +103,14 @@ static void linearThermalTest( AMP::UnitTest *ut )
     // Create the power (heat source) vector.
     auto PowerInWattsVar = sourceOperator->getOutputVariable();
     auto PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
-    PowerInWattsVec->zero();
+    PowerInWattsVec->zero(PowerInWattsVec);
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
 
-    t1 = SpecificPowerVec->L2Norm();
+    t1 = SpecificPowerVec->L2Norm(SpecificPowerVec);
     std::cout << "n1 = " << t1 << std::endl;
-    t1 = PowerInWattsVec->L2Norm();
+    t1 = PowerInWattsVec->L2Norm(PowerInWattsVec);
     std::cout << "n1 = " << t1 << std::endl;
 
     ////////////////////////////////////
@@ -128,7 +128,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     auto ResidualVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
-    RightHandSideVec->setToScalar( 0.0 );
+    RightHandSideVec->setToScalar( 0.0, RightHandSideVec );
 
     ///////////////////////////////////////////////
     //   Add the boundary conditions corrections //
@@ -138,9 +138,9 @@ static void linearThermalTest( AMP::UnitTest *ut )
 
     diffusionOperator->modifyRHSvector( RightHandSideVec );
 
-    auto rhsNorm = RightHandSideVec->L2Norm();
+    auto rhsNorm = RightHandSideVec->L2Norm(RightHandSideVec);
     std::cout << "RHS Norm 1: " << rhsNorm << std::endl;
-    rhsNorm = PowerInWattsVec->L2Norm();
+    rhsNorm = PowerInWattsVec->L2Norm(PowerInWattsVec);
     std::cout << "RHS Norm 2: " << rhsNorm << std::endl;
 
 
@@ -158,13 +158,13 @@ static void linearThermalTest( AMP::UnitTest *ut )
     mlSolverParams->d_pOperator = diffusionOperator;
 
     // Set initial guess
-    TemperatureInKelvinVec->setToScalar( 1.0 );
+    TemperatureInKelvinVec->setToScalar( 1.0, TemperatureInKelvinVec );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = TemperatureInKelvinVec->L2Norm();
+    double initSolNorm = TemperatureInKelvinVec->L2Norm(TemperatureInKelvinVec);
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
-    rhsNorm = RightHandSideVec->L2Norm();
+    rhsNorm = RightHandSideVec->L2Norm(RightHandSideVec);
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
     // Create the ML Solver
@@ -173,24 +173,24 @@ static void linearThermalTest( AMP::UnitTest *ut )
     // Use a random initial guess?
     mlSolver->setZeroInitialGuess( false );
 
-    AMP::pout << "RHS Max: " << RightHandSideVec->max() << std::endl;
-    AMP::pout << "RHS Min: " << RightHandSideVec->min() << std::endl;
-    AMP::pout << "RHS L1-norm: " << RightHandSideVec->L1Norm() << std::endl;
-    AMP::pout << "RHS L2-norm: " << RightHandSideVec->L2Norm() << std::endl;
+    AMP::pout << "RHS Max: " << RightHandSideVec->max(RightHandSideVec) << std::endl;
+    AMP::pout << "RHS Min: " << RightHandSideVec->min(RightHandSideVec) << std::endl;
+    AMP::pout << "RHS L1-norm: " << RightHandSideVec->L1Norm(RightHandSideVec) << std::endl;
+    AMP::pout << "RHS L2-norm: " << RightHandSideVec->L2Norm(RightHandSideVec) << std::endl;
 
     // Solve the prblem.
     mlSolver->solve( RightHandSideVec, TemperatureInKelvinVec );
 
-    AMP::pout << "Solution Max: " << TemperatureInKelvinVec->max() << std::endl;
-    AMP::pout << "Solution Min: " << TemperatureInKelvinVec->min() << std::endl;
-    AMP::pout << "Solution L1-norm: " << TemperatureInKelvinVec->L1Norm() << std::endl;
-    AMP::pout << "Solution L2-norm: " << TemperatureInKelvinVec->L2Norm() << std::endl;
+    AMP::pout << "Solution Max: " << TemperatureInKelvinVec->max(TemperatureInKelvinVec) << std::endl;
+    AMP::pout << "Solution Min: " << TemperatureInKelvinVec->min(TemperatureInKelvinVec) << std::endl;
+    AMP::pout << "Solution L1-norm: " << TemperatureInKelvinVec->L1Norm(TemperatureInKelvinVec) << std::endl;
+    AMP::pout << "Solution L2-norm: " << TemperatureInKelvinVec->L2Norm(TemperatureInKelvinVec) << std::endl;
 
     // Compute the residual
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = ResidualVec->L2Norm();
+    double finalResidualNorm = ResidualVec->L2Norm(ResidualVec);
     AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {

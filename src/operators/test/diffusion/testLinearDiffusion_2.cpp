@@ -93,15 +93,15 @@ static void linearTest( AMP::UnitTest *ut,
     std::shared_ptr<AMP::LinearAlgebra::Vector> tempVec, concVec, burnVec;
     if ( not diffFEOp_db->getWithDefault( "FixedTemperature", false ) ) {
         tempVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, tempVar, true );
-        tempVec->setToScalar( defTemp );
+        tempVec->setToScalar( defTemp, tempVec );
     }
     if ( not diffFEOp_db->getWithDefault( "FixedConcentration", false ) ) {
         concVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, concVar, true );
-        concVec->setToScalar( defConc );
+        concVec->setToScalar( defConc, concVec );
     }
     if ( not diffFEOp_db->getWithDefault( "FixedBurnup", false ) ) {
         burnVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, burnVar, true );
-        burnVec->setToScalar( defBurn );
+        burnVec->setToScalar( defBurn, burnVec );
     }
     diffOpParams->d_transportModel = transportModel;
     diffOpParams->d_temperature    = tempVec;
@@ -120,7 +120,7 @@ static void linearTest( AMP::UnitTest *ut,
     auto diffSolVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffSolVar, true );
     auto diffRhsVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffRhsVar, true );
     auto diffResVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffResVar, true );
-    diffRhsVec->setToScalar( 0.0 );
+    diffRhsVec->setToScalar( 0.0, diffRhsVec );
 
     auto curNode = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     auto endNode = curNode.end();

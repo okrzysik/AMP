@@ -391,7 +391,7 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
         clad_surface, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto variable = std::make_shared<AMP::LinearAlgebra::Variable>( "ChannelDiameter" );
     auto diameter = AMP::LinearAlgebra::createVector( DOF, variable );
-    diameter->zero();
+    diameter->zero(diameter);
     auto it = clad_surface->getIterator( AMP::Mesh::GeomType::Vertex );
     std::vector<size_t> dofs( 1 );
     size_t Nx = x.size() - 1;

@@ -51,7 +51,7 @@ void NonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 2 )
-        AMP::pout << "L2 norm of result of NonlinearFEOperator::apply is: " << rInternal->L2Norm()
+        AMP::pout << "L2 norm of result of NonlinearFEOperator::apply is: " << rInternal->L2Norm(rInternal)
                   << std::endl;
     if ( d_iDebugPrintInfoLevel > 5 )
         std::cout << rInternal << std::endl;

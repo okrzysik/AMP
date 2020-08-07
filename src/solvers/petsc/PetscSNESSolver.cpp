@@ -257,7 +257,7 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
     std::shared_ptr<AMP::Operator::Operator> op( ( (PetscSNESSolver *) ctx )->getOperator() );
 
     op->residual( sp_f, sp_x, sp_r );
-    sp_r->scale( -1.0 );
+    sp_r->scale( -1.0, sp_r );
 
     AMP_ASSERT(
         ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
@@ -277,7 +277,7 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     PROFILE_START( "solve" );
 
     if ( d_iDebugPrintInfoLevel > 2 )
-        AMP::pout << "L2 Norm of u in PetscSNESSolver::solve before view " << u->L2Norm()
+        AMP::pout << "L2 Norm of u in PetscSNESSolver::solve before view " << u->L2Norm(u)
                   << std::endl;
 
     // Get petsc views of the vectors
@@ -308,7 +308,7 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
         ( spSol->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
 
     if ( d_iDebugPrintInfoLevel > 2 )
-        AMP::pout << "L2 Norm of u in PetscSNESSolver::solve after view " << spSol->L2Norm()
+        AMP::pout << "L2 Norm of u in PetscSNESSolver::solve after view " << spSol->L2Norm(spSol)
                   << std::endl;
 
     // if the dynamic cast yielded a valid pointer
@@ -492,7 +492,7 @@ PetscErrorCode PetscSNESSolver::lineSearchPreCheck(
     std::shared_ptr<AMP::LinearAlgebra::Vector> sp_x( xvec, []( auto ) {} );
     std::shared_ptr<AMP::LinearAlgebra::Vector> sp_y( yvec, []( auto ) {} );
 
-    pScratchVector->add( sp_x, sp_y );
+    pScratchVector->add( sp_x, sp_y, pScratchVector );
 
     if ( isVectorValid( pOperator, pScratchVector, xvec->getComm() ) ) {
         *changed_y = PETSC_FALSE;
@@ -506,8 +506,8 @@ PetscErrorCode PetscSNESSolver::lineSearchPreCheck(
             for ( int i = 0; i < iNumberOfLineSearchPreCheckAttempts; i++ ) {
                 AMP::pout << "Attempting to scale search, attempt number " << i << std::endl;
                 double lambda = 0.5;
-                sp_y->scale( lambda, sp_y );
-                pScratchVector->add( sp_x, sp_y );
+                sp_y->scale( lambda, sp_y, sp_y );
+                pScratchVector->add( sp_x, sp_y, pScratchVector );
                 if ( isVectorValid( pOperator, pScratchVector, xvec->getComm() ) ) {
                     ierr       = 0;
                     *changed_y = PETSC_TRUE;
@@ -549,15 +549,15 @@ PetscErrorCode PetscSNESSolver::mffdCheckBounds( void *checkctx, Vec U, Vec a, P
     auto uv    = sp_u->subsetVectorForVariable( opVar );
     auto av    = sp_a->subsetVectorForVariable( opVar );
 
-    scv->axpy( *h, av, uv );
+    scv->axpy( *h, av, uv, scv );
 
     // the code below is only valid for ensuring positivity
     // will do for now
     if ( isVectorValid( pOperator, scv, uvec->getComm() ) ) {
         double minVal = PetscAbsScalar( ( *h ) * 1.01 );
-        scv->divide( uv, av );
-        scv->abs( scv );
-        minVal = std::min( scv->min(), minVal );
+        scv->divide( uv, av, scv );
+        scv->abs( scv, scv );
+        minVal = std::min( scv->min(scv), minVal );
         if ( minVal <= PetscAbsScalar( *h ) ) {
             AMP::pout << "Scaling h back from  " << ( *h ) << " to " << 0.99 * minVal << std::endl;
             if ( PetscRealPart( *h ) > 0.0 )

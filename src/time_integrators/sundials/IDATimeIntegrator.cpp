@@ -210,7 +210,7 @@ void IDATimeIntegrator::setupVectors()
     // clone vectors so they have the same data layout as d_solution
     d_residual = d_solution->cloneVector();
     // Set initial value of vectors to 0.
-    d_residual->setToScalar( (double) 0.0 );
+    d_residual->setToScalar( (double) 0.0, d_residual );
 }
 
 

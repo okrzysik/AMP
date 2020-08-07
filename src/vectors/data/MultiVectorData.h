@@ -171,7 +171,11 @@ public: // Advanced virtual functions
      */
     void swapData( VectorData &rhs ) override;
 
+    VectorData *getVectorData( size_t i );
+    const VectorData *getVectorData( size_t i ) const;
 
+    size_t numberOfComponents( void ) const { return d_data.size(); }
+    
 protected:
     MultiVectorData() : d_globalDOFManager( nullptr ) {}
 

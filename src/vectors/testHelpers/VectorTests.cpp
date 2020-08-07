@@ -43,7 +43,7 @@ void VectorTests::CopyVectorConsistency( AMP::UnitTest *utils )
     double *t2       = nullptr;
     size_t *ndx      = nullptr;
     size_t numGhosts = commList->getGhostIDList().size();
-    vec1->setRandomValues();
+    vec1->setRandomValues(vec1);
     vec2->copyVector( vec1 );
     if ( numGhosts ) {
         t1  = new double[numGhosts];
@@ -96,7 +96,7 @@ void VectorTests::Bug_728( AMP::UnitTest *utils )
 void VectorTests::SetToScalarVector( AMP::UnitTest *utils )
 {
     auto vector = d_factory->getVector();
-    vector->setToScalar( 0. );
+    vector->setToScalar( 0., vector );
     utils->passes( "setToScalar ran to completion " + d_factory->name() );
     bool fail   = false;
     auto curVec = vector->begin();
@@ -113,7 +113,7 @@ void VectorTests::SetToScalarVector( AMP::UnitTest *utils )
     else
         utils->failure( "Failed to set scalar to 0 " + d_factory->name() );
     fail = false;
-    vector->setToScalar( 5. );
+    vector->setToScalar( 5., vector );
     auto curVal = vector->begin();
     while ( curVal != endVec ) {
         if ( *curVal != 5. ) {
@@ -143,7 +143,7 @@ void VectorTests::CloneVector( AMP::UnitTest *utils )
 {
     auto vector = d_factory->getVector();
     auto clone  = vector->cloneVector( "cloned vector" );
-    clone->setToScalar( 0. );
+    clone->setToScalar( 0., clone );
     utils->passes( "Clone created " + d_factory->name() );
     bool pass = true;
     for ( size_t i = 0; i != vector->numberOfDataBlocks(); i++ ) {
@@ -163,12 +163,12 @@ void VectorTests::DotProductVector( AMP::UnitTest *utils )
 {
     auto vector1( d_factory->getVector() );
     auto vector2( d_factory->getVector() );
-    vector1->setToScalar( 1. );
-    vector2->setToScalar( 2. );
-    auto d11 = vector1->dot( vector1 );
-    auto d12 = vector1->dot( vector2 );
-    auto d21 = vector2->dot( vector1 );
-    auto d22 = vector2->dot( vector2 );
+    vector1->setToScalar( 1., vector1 );
+    vector2->setToScalar( 2., vector2 );
+    auto d11 = vector1->dot( vector1, vector1 );
+    auto d12 = vector1->dot( vector2, vector1 );
+    auto d21 = vector2->dot( vector1, vector2 );
+    auto d22 = vector2->dot( vector2, vector2 );
     if ( 2. * d11 == d12 )
         utils->passes( "dot product 1 " + d_factory->name() );
     else
@@ -195,16 +195,16 @@ void VectorTests::DotProductVector( AMP::UnitTest *utils )
 void VectorTests::L2NormVector( AMP::UnitTest *utils )
 {
     auto vector = d_factory->getVector();
-    vector->setToScalar( 1. );
-    auto norm  = vector->L2Norm();
-    auto norm2 = vector->dot( vector );
+    vector->setToScalar( 1., vector );
+    auto norm  = vector->L2Norm(vector);
+    auto norm2 = vector->dot( vector, vector );
     if ( fabs( norm * norm - norm2 ) < 0.000001 )
         utils->passes( "L2 norm 1 " + d_factory->name() );
     else
         utils->failure( "L2 norm 1 " + d_factory->name() );
-    vector->setRandomValues();
-    norm  = vector->L2Norm();
-    norm2 = vector->dot( vector );
+    vector->setRandomValues(vector);
+    norm  = vector->L2Norm(vector);
+    norm2 = vector->dot( vector, vector );
     if ( fabs( norm * norm - norm2 ) < 0.000001 )
         utils->passes( "L2 norm 2 " + d_factory->name() );
     else
@@ -216,11 +216,13 @@ void VectorTests::AbsVector( AMP::UnitTest *utils )
 {
     auto vec1 = d_factory->getVector();
     auto vec2 = vec1->cloneVector();
-    vec1->setRandomValues();
+    vec1->setRandomValues(vec1);
+    auto min = vec1->min(vec1);
+    vec1->addScalar(vec1, fabs(min)+.01, vec1);
     vec2->copyVector( vec1 );
-    vec2->scale( -1.0 );
-    vec2->abs( vec2 );
-    if ( vec1->equals( vec2 ) )
+    vec2->scale( -1.0, vec2 );
+    vec2->abs( vec2, vec2 );
+    if ( vec1->equals( vec2, vec1 ) )
         utils->passes( "Abs passes " + d_factory->name() );
     else
         utils->failure( "Abs fails " + d_factory->name() );
@@ -231,11 +233,11 @@ void VectorTests::L1NormVector( AMP::UnitTest *utils )
 {
     auto vector = d_factory->getVector();
     auto vector_1( d_factory->getVector() );
-    vector->setRandomValues();
-    vector_1->setToScalar( 1. );
-    auto norm = vector->L1Norm();
-    vector->abs( vector );
-    auto norm2 = vector->dot( vector_1 );
+    vector->setRandomValues(vector);
+    vector_1->setToScalar( 1., vector_1 );
+    auto norm = vector->L1Norm(vector);
+    vector->abs( vector, vector );
+    auto norm2 = vector->dot( vector_1, vector );
     if ( fabs( norm - norm2 ) < 0.000001 )
         utils->passes( "L1 norm " + d_factory->name() );
     else
@@ -246,9 +248,9 @@ void VectorTests::L1NormVector( AMP::UnitTest *utils )
 void VectorTests::MaxNormVector( AMP::UnitTest *utils )
 {
     auto vector = d_factory->getVector();
-    vector->setRandomValues();
-    auto infNorm = vector->maxNorm();
-    vector->abs( vector );
+    vector->setRandomValues(vector);
+    auto infNorm = vector->maxNorm(vector);
+    vector->abs( vector, vector );
     auto curData     = vector->begin();
     auto endData     = vector->end();
     double local_ans = *curData;
@@ -269,8 +271,8 @@ void VectorTests::ScaleVector( AMP::UnitTest *utils )
     auto vector1( d_factory->getVector() );
     auto vector2( d_factory->getVector() );
     double beta = 1.2345;
-    vector2->setRandomValues();
-    vector1->scale( beta, vector2 );
+    vector2->setRandomValues(vector2);
+    vector1->scale( beta, vector2, vector1 );
     bool pass     = true;
     auto curData1 = vector1->begin();
     auto endData1 = vector1->end();
@@ -285,9 +287,9 @@ void VectorTests::ScaleVector( AMP::UnitTest *utils )
         utils->passes( "scale vector 1 " + d_factory->name() );
     else
         utils->failure( "scale vector 1 " + d_factory->name() );
-    vector2->scale( beta );
-    vector1->subtract( vector2, vector1 );
-    if ( vector1->maxNorm() < 0.0000001 )
+    vector2->scale( beta, vector2 );
+    vector1->subtract( vector2, vector1, vector1 );
+    if ( vector1->maxNorm(vector1) < 0.0000001 )
         utils->passes( "scale vector 2 " + d_factory->name() );
     else
         utils->failure( "scale vector 2 " + d_factory->name() );
@@ -298,7 +300,7 @@ void VectorTests::ScaleVector( AMP::UnitTest *utils )
 void VectorTests::Bug_491( AMP::UnitTest *utils )
 {
     auto vector1( d_factory->getVector() );
-    vector1->setRandomValues();
+    vector1->setRandomValues(vector1);
     auto managed_petsc = AMP::LinearAlgebra::PetscVector::view( vector1 );
     auto petsc_vec  = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( managed_petsc );
     Vec managed_vec = petsc_vec->getVec();
@@ -317,10 +319,10 @@ void VectorTests::Bug_491( AMP::UnitTest *utils )
     VecNorm( managed_vec, NORM_INFINITY, &ninf );
 
     // Now, we perform some math on vector1
-    vector1->scale( 100000 );
-    double sp_n1  = vector1->L1Norm();
-    double sp_n2  = vector1->L2Norm();
-    double sp_inf = vector1->maxNorm();
+    vector1->scale( 100000, vector1 );
+    double sp_n1  = vector1->L1Norm(vector1);
+    double sp_n2  = vector1->L2Norm(vector1);
+    double sp_inf = vector1->maxNorm(vector1);
 
     // Check to see if petsc cache has been invalidated
     VecNormBegin( managed_vec, NORM_1, &n1 );
@@ -347,15 +349,15 @@ void VectorTests::Bug_491( AMP::UnitTest *utils )
     VecNorm( managed_vec, NORM_2, &n2 );
     VecNorm( managed_vec, NORM_INFINITY, &ninf );
 
-    if ( fabs( n1 - vector1->L1Norm() ) < 0.00000001 * n1 )
+    if ( fabs( n1 - vector1->L1Norm(vector1) ) < 0.00000001 * n1 )
         utils->passes( "L1 norm -- Petsc interface begin/end " + d_factory->name() );
     else
         utils->failure( "l1 norm -- Petsc interface begin/end " + d_factory->name() );
-    if ( fabs( n2 - vector1->L2Norm() ) < 0.00000001 * n1 )
+    if ( fabs( n2 - vector1->L2Norm(vector1) ) < 0.00000001 * n1 )
         utils->passes( "L2 norm -- Petsc interface begin/end " + d_factory->name() );
     else
         utils->failure( "l2 norm -- Petsc interface begin/end " + d_factory->name() );
-    if ( fabs( ninf - vector1->maxNorm() ) < 0.00000001 * n1 )
+    if ( fabs( ninf - vector1->maxNorm(vector1) ) < 0.00000001 * n1 )
         utils->passes( "inf norm -- Petsc interface begin/end " + d_factory->name() );
     else
         utils->failure( "inf norm -- Petsc interface begin/end " + d_factory->name() );
@@ -368,9 +370,9 @@ void VectorTests::AddVector( AMP::UnitTest *utils )
     auto vector1( d_factory->getVector() );
     auto vector2( d_factory->getVector() );
     auto vector3( d_factory->getVector() );
-    vector1->setRandomValues();
-    vector2->setRandomValues();
-    vector3->add( vector1, vector2 );
+    vector1->setRandomValues(vector1);
+    vector2->setRandomValues(vector2);
+    vector3->add( vector1, vector2, vector3 );
     bool pass     = true;
     auto curData1 = vector1->begin();
     auto endData1 = vector1->end();
@@ -397,9 +399,9 @@ void VectorTests::SubtractVector( AMP::UnitTest *utils )
     auto vector2( d_factory->getVector() );
     auto vector3( d_factory->getVector() );
     auto vector4( d_factory->getVector() );
-    vector1->setRandomValues();
-    vector2->setRandomValues();
-    vector3->subtract( vector1, vector2 );
+    vector1->setRandomValues(vector1);
+    vector2->setRandomValues(vector2);
+    vector3->subtract( vector1, vector2, vector3 );
     bool pass     = true;
     auto curData1 = vector1->begin();
     auto endData1 = vector1->end();
@@ -416,10 +418,10 @@ void VectorTests::SubtractVector( AMP::UnitTest *utils )
         utils->passes( "vector subtract 1 " + d_factory->name() );
     else
         utils->failure( "vector subtract 1 " + d_factory->name() );
-    vector2->scale( -1. );
-    vector4->add( vector1, vector2 );
-    vector4->subtract( vector3, vector4 );
-    if ( vector4->maxNorm() < 0.0000001 )
+    vector2->scale( -1., vector2 );
+    vector4->add( vector1, vector2, vector4 );
+    vector4->subtract( vector3, vector4, vector4 );
+    if ( vector4->maxNorm(vector4) < 0.0000001 )
         utils->passes( "vector subtract 2 " + d_factory->name() );
     else
         utils->failure( "vector subtract 2 " + d_factory->name() );
@@ -431,9 +433,9 @@ void VectorTests::MultiplyVector( AMP::UnitTest *utils )
     auto vector1( d_factory->getVector() );
     auto vector2( d_factory->getVector() );
     auto vector3( d_factory->getVector() );
-    vector1->setRandomValues();
-    vector2->setToScalar( 3. );
-    vector3->multiply( vector1, vector2 );
+    vector1->setRandomValues(vector1);
+    vector2->setToScalar( 3., vector2 );
+    vector3->multiply( vector1, vector2, vector3 );
     bool pass     = true;
     auto curData1 = vector1->begin();
     auto endData1 = vector1->end();
@@ -458,9 +460,9 @@ void VectorTests::DivideVector( AMP::UnitTest *utils )
     auto vector1( d_factory->getVector() );
     auto vector2( d_factory->getVector() );
     auto vector3( d_factory->getVector() );
-    vector1->setRandomValues();
-    vector2->setRandomValues();
-    vector3->divide( vector1, vector2 );
+    vector1->setRandomValues(vector1);
+    vector2->setRandomValues(vector2);
+    vector3->divide( vector1, vector2, vector3 );
     bool pass    = true;
     auto curVal1 = vector1->begin();
     auto curVal2 = vector2->begin();
@@ -505,9 +507,9 @@ void VectorTests::VectorIteratorTests( AMP::UnitTest *utils )
 void VectorTests::VerifyVectorMin( AMP::UnitTest *utils )
 {
     auto vec = d_factory->getVector();
-    vec->setRandomValues();
-    vec->scale( -1.0 ); // make negative
-    if ( fabs( vec->min() + vec->maxNorm() ) < 1.e-10 )
+    vec->setRandomValues(vec);
+    vec->scale( -1.0, vec ); // make negative
+    if ( fabs( vec->min(vec) + vec->maxNorm(vec) ) < 1.e-10 )
         utils->passes( "minimum of negative vector == ||.||_infty " + d_factory->name() );
     else
         utils->failure( "minimum of negative vector != ||.||_infty " + d_factory->name() );
@@ -517,8 +519,8 @@ void VectorTests::VerifyVectorMin( AMP::UnitTest *utils )
 void VectorTests::VerifyVectorMax( AMP::UnitTest *utils )
 {
     auto vec = d_factory->getVector();
-    vec->setRandomValues();
-    if ( fabs( vec->max() - vec->maxNorm() ) < 1.e-10 )
+    vec->setRandomValues(vec);
+    if ( fabs( vec->max(vec) - vec->maxNorm(vec) ) < 1.e-10 )
         utils->passes( "maximum of positive vector == ||.||_infty " + d_factory->name() );
     else
         utils->failure( "maximum of positive vector != ||.||_infty " + d_factory->name() );
@@ -530,13 +532,13 @@ void VectorTests::VerifyVectorMaxMin( AMP::UnitTest *utils )
     auto vec    = d_factory->getVector();
     bool passes = true;
     for ( size_t i = 0; i != 10; i++ ) {
-        vec->setRandomValues();
-        vec->addScalar( vec, -0.5 );
-        vec->scale( 2.0 ); // vec i.i.d [-1,1);
-        auto max = vec->max();
-        auto min = vec->min();
+        vec->setRandomValues(vec);
+        vec->addScalar( vec, -0.5, vec );
+        vec->scale( 2.0, vec ); // vec i.i.d [-1,1);
+        auto max = vec->max(vec);
+        auto min = vec->min(vec);
         auto ans = std::max( fabs( max ), fabs( min ) );
-        if ( fabs( ans - vec->maxNorm() ) >= 1.e-20 )
+        if ( fabs( ans - vec->maxNorm(vec) ) >= 1.e-20 )
             passes = false;
     }
     if ( passes )
@@ -549,15 +551,15 @@ void VectorTests::VerifyVectorMaxMin( AMP::UnitTest *utils )
 static void SetRandomValuesVectorVerify( AMP::UnitTest *utils,
                                          AMP::LinearAlgebra::Vector::shared_ptr v )
 {
-    if ( v->min() >= 0 )
+    if ( v->min(v) >= 0 )
         utils->passes( "SetRandomValuesVector: Min value >= 0" );
     else
         utils->failure( "SetRandomValuesVector: Min value < 0" );
-    if ( v->max() < 1 )
+    if ( v->max(v) < 1 )
         utils->passes( "SetRandomValuesVector: Max value < 1" );
     else
         utils->failure( "SetRandomValuesVector: Max value >= 1" );
-    if ( v->L2Norm() > 0 )
+    if ( v->L2Norm(v) > 0 )
         utils->passes( "SetRandomValuesVector: Non-zero vector created" );
     else
         utils->failure( "SetRandomValuesVector: Zero vector created" );
@@ -567,8 +569,8 @@ void VectorTests::SetRandomValuesVector( AMP::UnitTest *utils )
     auto vector  = d_factory->getVector();
     auto l2norm1 = -1;
     for ( size_t i = 0; i < 5; i++ ) {
-        vector->setRandomValues();
-        auto l2norm2 = vector->L2Norm();
+        vector->setRandomValues(vector);
+        auto l2norm2 = vector->L2Norm(vector);
         if ( fabs( l2norm1 - l2norm2 ) > 0.000001 )
             utils->passes( "Distinct vector created " + d_factory->name() );
         else
@@ -586,12 +588,12 @@ void VectorTests::ReciprocalVector( AMP::UnitTest *utils )
     auto vectorc = d_factory->getVector();
     auto vectord = d_factory->getVector();
     auto vector1 = d_factory->getVector();
-    vectora->setRandomValues();
-    vectorb->reciprocal( vectora );
-    vector1->setToScalar( 1. );
-    vectorc->divide( vector1, vectora );
-    vectord->subtract( vectorb, vectorc );
-    if ( vectord->maxNorm() < 0.0000001 ) {
+    vectora->setRandomValues(vectora);
+    vectorb->reciprocal( vectora, vectorb );
+    vector1->setToScalar( 1., vector1 );
+    vectorc->divide( vector1, vectora, vectorc );
+    vectord->subtract( vectorb, vectorc, vectord );
+    if ( vectord->maxNorm(vectord) < 0.0000001 ) {
         utils->passes( "vector::reciprocal " + d_factory->name() );
     } else {
         utils->failure( "vector::reciprocal " + d_factory->name() );
@@ -609,14 +611,14 @@ static void LinearSumVectorRun( std::shared_ptr<const VectorFactory> factory,
     auto vectorb = factory->getVector();
     auto vectorc = factory->getVector();
     auto vectord = factory->getVector();
-    vectora->setRandomValues();
-    vectorb->setRandomValues();
-    vectorc->linearSum( alpha, vectora, beta, vectorb );
-    vectora->scale( alpha );
-    vectorb->scale( beta );
-    vectord->add( vectora, vectorb );
-    vectord->subtract( vectorc, vectord );
-    if ( vectord->maxNorm() < 0.0000001 )
+    vectora->setRandomValues(vectora);
+    vectorb->setRandomValues(vectorb);
+    vectorc->linearSum( alpha, vectora, beta, vectorb, vectorc );
+    vectora->scale( alpha, vectora );
+    vectorb->scale( beta, vectorb );
+    vectord->add( vectora, vectorb, vectord );
+    vectord->subtract( vectorc, vectord, vectord );
+    if ( vectord->maxNorm(vectord) < 0.0000001 )
         utils->passes( msg );
     else
         utils->failure( msg );
@@ -639,12 +641,12 @@ static void AxpyVectorRun( std::shared_ptr<const VectorFactory> factory,
     auto vectorb = factory->getVector();
     auto vectorc = factory->getVector();
     auto vectord = factory->getVector();
-    vectora->setRandomValues();
-    vectorb->setRandomValues();
-    vectorc->linearSum( alpha, vectora, 1., vectorb );
-    vectord->axpy( alpha, vectora, vectorb );
-    vectorc->subtract( vectorc, vectord );
-    if ( vectorc->maxNorm() < 0.0000001 )
+    vectora->setRandomValues(vectora);
+    vectorb->setRandomValues(vectorb);
+    vectorc->linearSum( alpha, vectora, 1., vectorb, vectorc );
+    vectord->axpy( alpha, vectora, vectorb, vectord );
+    vectorc->subtract( vectorc, vectord, vectorc );
+    if ( vectorc->maxNorm(vectorc) < 0.0000001 )
         utils->passes( msg );
     else
         utils->failure( msg );
@@ -667,20 +669,20 @@ static void AxpbyVectorRun( std::shared_ptr<const VectorFactory> factory,
     auto vectorb1 = factory->getVector();
     auto vectorc  = factory->getVector();
     auto vectord  = factory->getVector();
-    vectora->setRandomValues();
-    vectorb->setRandomValues();
+    vectora->setRandomValues(vectora);
+    vectorb->setRandomValues(vectorb);
     vectorc->copyVector( vectorb );
-    vectorb1->linearSum( alpha, vectora, beta, vectorb );
-    vectorb->linearSum( alpha, vectora, beta, vectorb );
-    vectorc->axpby( alpha, beta, vectora );
-    vectord->subtract( vectorc, vectorb1 );
-    auto maxNorm = vectord->maxNorm();
+    vectorb1->linearSum( alpha, vectora, beta, vectorb, vectorb1 );
+    vectorb->linearSum( alpha, vectora, beta, vectorb, vectorb );
+    vectorc->axpby( alpha, beta, vectora, vectorc );
+    vectord->subtract( vectorc, vectorb1, vectord );
+    auto maxNorm = vectord->maxNorm(vectord);
     if ( maxNorm < 0.0000001 )
         utils->passes( msg );
     else
         utils->failure( msg );
-    vectord->subtract( vectorc, vectorb );
-    maxNorm = vectord->maxNorm();
+    vectord->subtract( vectorc, vectorb, vectord );
+    maxNorm = vectord->maxNorm(vectord);
     if ( maxNorm < 0.0000001 )
         utils->passes( msg );
     else
@@ -701,18 +703,18 @@ void VectorTests::CopyVector( AMP::UnitTest *utils )
     auto vectorb = d_factory->getVector();
     auto vectorc = d_factory->getVector();
 
-    vectora->setRandomValues();
+    vectora->setRandomValues(vectora);
     vectorb->copyVector( vectora );
-    vectorc->subtract( vectora, vectorb );
-    if ( vectorc->maxNorm() == 0 )
+    vectorc->subtract( vectora, vectorb, vectorc );
+    if ( vectorc->maxNorm(vectorc) == 0 )
         utils->passes( "copy vector 1" );
     else
         utils->failure( "copy vector 1" );
 
-    vectora->scale( 100. );
-    vectorc->subtract( vectora, vectorb );
-    auto c_maxNorm = vectorc->maxNorm();
-    auto b_maxNorm = vectorb->maxNorm();
+    vectora->scale( 100., vectora );
+    vectorc->subtract( vectora, vectorb, vectorc );
+    auto c_maxNorm = vectorc->maxNorm(vectorc);
+    auto b_maxNorm = vectorb->maxNorm(vectorb);
     if ( fabs( c_maxNorm - 99 * b_maxNorm ) < 1e-12 * b_maxNorm )
         utils->passes( "copy vector 2" );
     else
@@ -725,14 +727,14 @@ void VectorTests::CopyRawDataBlockVector( AMP::UnitTest *utils )
     auto vectora = d_factory->getVector();
     auto vectorb = d_factory->getVector();
     auto vectorc = d_factory->getVector();
-    vectora->setRandomValues();
-    vectorb->zero();
+    vectora->setRandomValues(vectora);
+    vectorb->zero(vectorb);
     auto buf = new double[vectora->getLocalSize()];
     vectora->copyOutRawData( buf );
     vectorb->putRawData( buf );
     delete[] buf;
-    vectorc->subtract( vectora, vectorb );
-    if ( vectorc->maxNorm() == 0 )
+    vectorc->subtract( vectora, vectorb, vectorc );
+    if ( vectorc->maxNorm(vectorc) == 0 )
         utils->passes( "copy raw data block" );
     else
         utils->failure( "copy raw data block" );
@@ -763,7 +765,7 @@ void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
         utils->failure( "verify makeConsistent () for add " + d_factory->name() );
 
     // Zero the vector
-    vector->zero();
+    vector->zero(vector);
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED )
         utils->failure( "zero leaves vector in UpdateState::UNCHANGED state " + d_factory->name() );
 
@@ -842,7 +844,7 @@ void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
     auto vector = d_factory->getVector();
 
     // Zero the vector
-    vector->zero();
+    vector->zero(vector);
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED )
         utils->failure( "zero leaves vector in UpdateState::UNCHANGED state " + d_factory->name() );
 

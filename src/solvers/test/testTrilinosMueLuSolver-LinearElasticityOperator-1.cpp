@@ -66,23 +66,23 @@ void linearElasticTest( AMP::UnitTest *ut )
     AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = mechSolVec->cloneVector();
     AMP::LinearAlgebra::Vector::shared_ptr mechResVec = mechSolVec->cloneVector();
 
-    mechSolVec->setToScalar( 0.5 );
-    mechRhsVec->setToScalar( 0.0 );
-    mechResVec->setToScalar( 0.0 );
+    mechSolVec->setToScalar( 0.5, mechSolVec );
+    mechRhsVec->setToScalar( 0.0, mechRhsVec );
+    mechResVec->setToScalar( 0.0, mechResVec );
 
     dirichletVecOp->apply( nullVec, mechRhsVec );
 
-    double rhsNorm = mechRhsVec->L2Norm();
+    double rhsNorm = mechRhsVec->L2Norm(mechRhsVec);
 
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
-    double initSolNorm = mechSolVec->L2Norm();
+    double initSolNorm = mechSolVec->L2Norm(mechSolVec);
 
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-    double initResidualNorm = mechResVec->L2Norm();
+    double initResidualNorm = mechResVec->L2Norm(mechResVec);
 
     std::cout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
@@ -108,7 +108,7 @@ void linearElasticTest( AMP::UnitTest *ut )
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-    double finalResidualNorm = mechResVec->L2Norm();
+    double finalResidualNorm = mechResVec->L2Norm(mechResVec);
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 

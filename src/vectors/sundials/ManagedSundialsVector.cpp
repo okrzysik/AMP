@@ -166,8 +166,9 @@ void ManagedSundialsVector::linearSum_AMP(
 {
     Vector *px = static_cast<ManagedSundialsVector *>( x->content );
     Vector *py = static_cast<ManagedSundialsVector *>( y->content );
+    Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
 
-    ( static_cast<ManagedSundialsVector *>( z->content ) )->linearSum( a, *px, b, *py );
+    pz->linearSum( a, *px, b, *py, *pz );
 }
 
 /**
@@ -176,7 +177,8 @@ void ManagedSundialsVector::linearSum_AMP(
 
 void ManagedSundialsVector::setToScalar_AMP( realtype c, N_Vector z )
 {
-    ( static_cast<ManagedSundialsVector *>( z->content ) )->setToScalar( c );
+   Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
+   pz->setToScalar( c, *pz );
 }
 
 /**
@@ -189,7 +191,7 @@ void ManagedSundialsVector::multiply_AMP( N_Vector x, N_Vector y, N_Vector z )
     Vector *py = static_cast<ManagedSundialsVector *>( y->content );
     Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
 
-    pz->multiply( *px, *py );
+    pz->multiply( *px, *py, *pz );
 }
 
 /**
@@ -202,7 +204,7 @@ void ManagedSundialsVector::divide_AMP( N_Vector x, N_Vector y, N_Vector z )
     Vector *py = static_cast<ManagedSundialsVector *>( y->content );
     Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
 
-    pz->divide( *px, *py );
+    pz->divide( *px, *py, *pz );
 }
 
 /**
@@ -210,9 +212,10 @@ void ManagedSundialsVector::divide_AMP( N_Vector x, N_Vector y, N_Vector z )
  */
 void ManagedSundialsVector::scale_AMP( realtype c, N_Vector x, N_Vector z )
 {
-    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
+    auto px = static_cast<ManagedSundialsVector *>( x->content );
+    auto pz = static_cast<ManagedSundialsVector *>( z->content );
 
-    ( static_cast<ManagedSundialsVector *>( z->content ) )->scale( c, *px );
+    pz->scale( c, *px, *pz );
 }
 
 /**
@@ -222,8 +225,9 @@ void ManagedSundialsVector::scale_AMP( realtype c, N_Vector x, N_Vector z )
 void ManagedSundialsVector::abs_AMP( N_Vector x, N_Vector z )
 {
     Vector *px = static_cast<ManagedSundialsVector *>( x->content );
+    Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
 
-    ( static_cast<ManagedSundialsVector *>( z->content ) )->abs( *px );
+    pz->abs( *px, *pz );
 }
 
 /**
@@ -232,8 +236,9 @@ void ManagedSundialsVector::abs_AMP( N_Vector x, N_Vector z )
 void ManagedSundialsVector::reciprocal_AMP( N_Vector x, N_Vector z )
 {
     Vector *px = static_cast<ManagedSundialsVector *>( x->content );
+    Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
 
-    ( static_cast<ManagedSundialsVector *>( z->content ) )->reciprocal( *px );
+    pz->reciprocal( *px, *pz );
 }
 
 /**
@@ -243,10 +248,11 @@ void ManagedSundialsVector::reciprocal_AMP( N_Vector x, N_Vector z )
 void ManagedSundialsVector::addScalar_AMP( N_Vector x, realtype b, N_Vector z )
 {
     Vector *px           = static_cast<ManagedSundialsVector *>( x->content );
+    Vector *pz           = static_cast<ManagedSundialsVector *>( z->content );
     Vector::shared_ptr t = px->cloneVector();
-    t->setToScalar( b );
+    t->setToScalar( b, *t );
 
-    ( static_cast<ManagedSundialsVector *>( z->content ) )->add( *px, *t );
+    pz->add( *px, *t, *pz );
 }
 
 /**
@@ -257,8 +263,9 @@ realtype ManagedSundialsVector::dot_AMP( N_Vector x, N_Vector y )
     double dotprod;
 
     Vector *px = static_cast<ManagedSundialsVector *>( x->content );
+    Vector *py = static_cast<ManagedSundialsVector *>( y->content );
 
-    dotprod = ( static_cast<ManagedSundialsVector *>( y->content ) )->dot( *px );
+    dotprod = py->dot( *px, *py );
     return ( dotprod );
 }
 
@@ -269,7 +276,9 @@ realtype ManagedSundialsVector::maxNorm_AMP( N_Vector x )
 {
     double maxnorm;
 
-    maxnorm = ( static_cast<ManagedSundialsVector *>( x->content ) )->maxNorm();
+    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
+
+    maxnorm = px->maxNorm(*px);
 
     return ( maxnorm );
 }
@@ -281,7 +290,8 @@ realtype ManagedSundialsVector::min_AMP( N_Vector x )
 {
     double min;
 
-    min = ( static_cast<ManagedSundialsVector *>( x->content ) )->min();
+    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
+    min = px->min(*px);
 
     return ( min );
 }
@@ -292,7 +302,8 @@ realtype ManagedSundialsVector::min_AMP( N_Vector x )
 realtype ManagedSundialsVector::L1Norm_AMP( N_Vector x )
 {
     double l1norm;
-    l1norm = ( static_cast<ManagedSundialsVector *>( x->content ) )->L1Norm();
+    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
+    l1norm = px->L1Norm(*px);
     return ( l1norm );
 }
 
@@ -307,7 +318,7 @@ realtype ManagedSundialsVector::WRMSNorm_AMP( N_Vector x, N_Vector w )
     Vector *px = static_cast<ManagedSundialsVector *>( x->content );
     Vector *pw = static_cast<ManagedSundialsVector *>( w->content );
     // is this OK?
-    return Vector::wrmsNorm( *px, *pw );
+    return px->wrmsNorm( *px, *pw );
 }
 
 
@@ -318,7 +329,7 @@ realtype ManagedSundialsVector::WRMSNormMask_AMP( N_Vector x, N_Vector w, N_Vect
     Vector *pm = static_cast<ManagedSundialsVector *>( id->content );
 
     // is this OK?
-    return Vector::wrmsNormMask( *px, *pw, *pm );
+    return px->wrmsNormMask( *px, *pm, *pw );
 }
 
 

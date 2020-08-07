@@ -59,7 +59,7 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr mapSolutionSlave =
         AMP::LinearAlgebra::createVector( DOFs, testVariable );
 
-    mapSolution->setToScalar( 0.0 );
+    mapSolution->setToScalar( 0.0, mapSolution );
 
     // Create the map operators
     std::shared_ptr<AMP::Database> map3dto1d_db1 =

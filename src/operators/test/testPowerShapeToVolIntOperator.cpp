@@ -63,7 +63,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
     auto shapeInpVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, shapeVar, split );
     auto shapeOutVec = shapeInpVec->cloneVector();
 
-    shapeInpVec->setToScalar( 1. );
+    shapeInpVec->setToScalar( 1., shapeInpVec );
 
     // CREATE THE VOLUME INTEGRAL OPERATOR
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
@@ -88,7 +88,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     AMP::pout << "shapeOutVec->max/min"
-              << " : " << shapeOutVec->min() << " : " << shapeOutVec->max() << std::endl;
+              << " : " << shapeOutVec->min(shapeOutVec) << " : " << shapeOutVec->max(shapeOutVec) << std::endl;
     ut->passes( "PowerShape didn't crash the system" );
 
     try {

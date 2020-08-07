@@ -106,7 +106,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto sourceVec = AMP::LinearAlgebra::createVector( nodalDofMap, sourceVar );
     auto workVec   = AMP::LinearAlgebra::createVector( nodalDofMap, workVar );
 
-    rhsVec->setToScalar( 0.0 );
+    rhsVec->setToScalar( 0.0, rhsVec );
 
     // Fill in manufactured solution
     int zeroGhostWidth = 0;
@@ -129,7 +129,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Evaluate action of diffusion operator
     nlinBVPOp->residual( sourceVec, solVec, resVec );
-    resVec->scale( -1.0 );
+    resVec->scale( -1.0, resVec );
 
     // Output Mathematica form (requires serial execution)
     for ( int i = 0; i < globalComm.getSize(); i++ ) {

@@ -132,7 +132,6 @@ EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<EpetraVectorEngineParame
 {
     d_Params     = alias;
     d_buf_scope  = buf;
-    d_VectorData = dynamic_cast<VectorData *>( this );
 }
 
 Vector::shared_ptr EpetraVectorEngine::cloneVector( const Variable::shared_ptr name ) const
