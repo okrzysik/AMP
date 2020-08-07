@@ -425,10 +425,13 @@ void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
         // Both this and x are multivectors
         for ( size_t i = 0; i != d_operations.size(); i++ )
 	  d_operations[i]->copy( *getVectorDataComponent(x,i), *getVectorDataComponent(y,i) );
+	std::cout << "Both are multivectors" <<std::endl;
     } else {
         // x is not a multivector, try to call a default implementation
         auto y2 = yc;
         auto x2 = xc;
+	std::cout << "xc " <<typeid(xc).name() <<std::endl;
+	std::cout << "yc " <<typeid(yc).name() <<std::endl;
         AMP_ASSERT( x2->getLocalSize() == y2->getLocalSize() );
         if ( x2->isType<double>() && y2->isType<double>() ) {
             std::copy( x2->begin<double>(), x2->end<double>(), y2->begin<double>() );
