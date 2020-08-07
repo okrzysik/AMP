@@ -12,7 +12,7 @@ namespace LinearAlgebra {
  ****************************************************************/
 VectorOperations::VectorOperations() : d_VectorData( nullptr ) {}
 
-
+#if 0
 /****************************************************************
  * min, max, norms, etc.                                         *
  * Note: these routines require communication                    *
@@ -103,6 +103,19 @@ bool VectorOperations::equals( const VectorOperations &rhs, double tol ) const
         equal = getComm().allReduce( equal );
     return equal;
 }
+#endif
+  
+/****************************************************************
+ * equals                                                        *
+ * Note: these routines require communication                    *
+ ****************************************************************/
+bool VectorOperations::equals( const VectorData &a, const VectorData &b, double tol ) const
+{
+  bool equal = localEquals( a, b, tol );
+    if ( hasComm() )
+        equal = getComm().allReduce( equal );
+    return equal;
+}
 
 double VectorOperations::min( const VectorData &x ) const
 {
@@ -145,6 +158,63 @@ double VectorOperations::L2Norm(const VectorData &x) const
     if ( hasComm() )
         ans = sqrt( getComm().sumReduce( ans * ans ) );
     return ans;
+}
+double VectorOperations::minQuotient( const VectorData &x, const VectorData &y ) const
+{
+  double ans = localMinQuotient( x, y );
+    if ( y.getCommunicationList() )
+        ans = y.getComm().minReduce( ans );
+    AMP_INSIST( ans < std::numeric_limits<double>::max(),
+                "denominator is the zero vector on an entire process" );
+    return ans;
+}
+
+double VectorOperations::wrmsNorm( const VectorData &x, const VectorData &y ) const
+{
+    double ans = localWrmsNorm( x, y );
+    if ( y.getCommunicationList() ) {
+        size_t N1 = y.getCommunicationList()->numLocalRows();
+        size_t N2 = y.getCommunicationList()->getTotalSize();
+        ans       = sqrt( y.getComm().sumReduce( ans * ans * N1 ) / N2 );
+    }
+    return ans;
+}
+double VectorOperations::wrmsNormMask( const VectorData &x,
+                                       const VectorData &mask,
+                                       const VectorData &y ) const
+{
+    double ans = localWrmsNormMask( x, mask, y );
+    if ( y.getCommunicationList() ) {
+        size_t N1 = y.getCommunicationList()->numLocalRows();
+        size_t N2 = y.getCommunicationList()->getTotalSize();
+        ans       = sqrt( y.getComm().sumReduce( ans * ans * N1 ) / N2 );
+    }
+    return ans;
+}
+
+/****************************************************************
+ * min, max, norms, etc.                                         *
+ * Note: these routines require communication                    *
+ ****************************************************************/
+double VectorOperations::min(std::shared_ptr<const VectorData> x) const
+{
+  return min(*x);
+}
+double VectorOperations::max(std::shared_ptr<const VectorData> x) const
+{
+  return max(*x);
+}
+double VectorOperations::L1Norm(std::shared_ptr<const VectorData> x) const
+{
+  return L1Norm(*x);
+}
+double VectorOperations::L2Norm(std::shared_ptr<const VectorData> x) const
+{
+  return L2Norm(*x);
+}
+double VectorOperations::maxNorm(std::shared_ptr<const VectorData> x) const
+{
+  return maxNorm(*x);
 }
 
 

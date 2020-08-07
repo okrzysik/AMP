@@ -64,7 +64,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto vec = AMP::LinearAlgebra::createVector( nodalScalarDOF, var, true );
-    vec->zero();
+    vec->zero(vec);
 
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
@@ -156,7 +156,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_ADD );
 
-    double l2Norm = vec->L2Norm();
+    double l2Norm = vec->L2Norm(vec);
     std::cout << "size = " << vec->getGlobalSize() << std::endl;
     std::cout << "L2 Norm = " << std::setprecision( 15 ) << l2Norm << std::endl;
 

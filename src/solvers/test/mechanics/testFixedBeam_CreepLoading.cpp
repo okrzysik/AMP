@@ -130,11 +130,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::LinearAlgebra::createVector( NodalScalarDOF, burnVar );
 
     // Initial guess
-    solVec->zero();
+    solVec->zero(solVec);
     nonlinearMechanicsBVPoperator->modifyInitialSolutionVector( solVec );
 
     // RHS
-    rhsVec->zero();
+    rhsVec->zero(rhsVec);
     dirichletLoadVecOp->apply( nullVec, rhsVec );
     nonlinearMechanicsBVPoperator->modifyRHSvector( rhsVec );
 
@@ -146,9 +146,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #endif
 
     // Adding the Temperature and Burnup
-    tempVecRef->setToScalar( 301.0 );
-    tempVec->setToScalar( 301.0 );
-    burnVec->setToScalar( 10.0 );
+    tempVecRef->setToScalar( 301.0, tempVecRef );
+    tempVec->setToScalar( 301.0, tempVec );
+    burnVec->setToScalar( 10.0, burnVec );
 
     mechanicsNonlinearVolumeOperator->setReferenceTemperature( tempVecRef );
     mechanicsNonlinearVolumeOperator->setVector( AMP::Operator::Mechanics::TEMPERATURE, tempVec );
@@ -187,7 +187,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     double scaleValue = 1.0;
     scaledRhsVec->scale( scaleValue, rhsVec, scaledRhsVec );
-    AMP::pout << "L2 Norm of RHS at loading step 1 is " << scaledRhsVec->L2Norm() << std::endl;
+    AMP::pout << "L2 Norm of RHS at loading step 1 is " << scaledRhsVec->L2Norm(scaledRhsVec) << std::endl;
 
     double currTime = 1000.0;
     mechanicsNonlinearMaterialModel->updateTime( currTime );
@@ -203,17 +203,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "The current loading step is " << ( step + 1 ) << std::endl;
 
         double finalTemperature = 500.0;
-        tempVec->setToScalar( finalTemperature );
+        tempVec->setToScalar( finalTemperature, tempVec );
 
         nonlinearMechanicsBVPoperator->residual( scaledRhsVec, solVec, resVec );
-        double initialResidualNorm = resVec->L2Norm();
+        double initialResidualNorm = resVec->L2Norm(resVec);
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
         nonlinearSolver->solve( scaledRhsVec, solVec );
 
         nonlinearMechanicsBVPoperator->residual( scaledRhsVec, solVec, resVec );
-        double finalResidualNorm = resVec->L2Norm();
+        double finalResidualNorm = resVec->L2Norm(resVec);
         AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                   << finalResidualNorm << std::endl;
 
@@ -223,7 +223,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             ut->passes( "Nonlinear solve for current loading step" );
         }
 
-        double finalSolNorm = solVec->L2Norm();
+        double finalSolNorm = solVec->L2Norm(solVec);
 
         AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
@@ -234,9 +234,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::LinearAlgebra::Vector::shared_ptr mechWvec =
             solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
 
-        double finalMaxU = mechUvec->maxNorm();
-        double finalMaxV = mechVvec->maxNorm();
-        double finalMaxW = mechWvec->maxNorm();
+        double finalMaxU = mechUvec->maxNorm(mechUvec);
+        double finalMaxV = mechVvec->maxNorm(mechVvec);
+        double finalMaxW = mechWvec->maxNorm(mechWvec);
 
         AMP::pout << "Maximum U displacement: " << finalMaxU << std::endl;
         AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;

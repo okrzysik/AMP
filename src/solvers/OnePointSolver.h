@@ -27,7 +27,7 @@ public:
         AMP::LinearAlgebra::Vector::shared_ptr myU =
             u->subsetVectorForVariable( d_onePointOp->getOutputVariable() );
         if ( d_bUseZeroInitialGuess ) {
-            myU->zero();
+            myU->zero(myU);
         }
         AMP::LinearAlgebra::Vector::shared_ptr r = myU->cloneVector();
         d_onePointOp->residual( f, u, r );

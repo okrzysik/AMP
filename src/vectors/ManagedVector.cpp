@@ -429,7 +429,7 @@ size_t ManagedVector::getLocalSize() const { return d_Engine->getVectorData()->g
 
 size_t ManagedVector::getGlobalSize() const { return d_Engine->getVectorData()->getGlobalSize(); }
 
-
+#if 0
 void ManagedVector::copy( const VectorOperations &x )
 {
   copy(*(x.getVectorData()), *getVectorData());
@@ -554,6 +554,7 @@ double ManagedVector::dot( const VectorOperations &x ) const
 {
     return dot( *(x.getVectorData()), *getVectorData() );
 }
+#endif
 
 //**********************************************************************
 // Functions that operate on VectorData objects

@@ -81,7 +81,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto bvpRhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, bvpRhsVar );
     auto bvpResVec = AMP::LinearAlgebra::createVector( nodalDofMap, bvpResVar );
 
-    bvpRhsVec->setToScalar( 0.0 );
+    bvpRhsVec->setToScalar( 0.0, bvpRhsVec );
 
     auto volOp_db = input_db->getDatabase( nbvp_db->getString( "VolumeOperator" ) );
     auto model_db = input_db->getDatabase( volOp_db->getString( "LocalModel" ) );
@@ -123,10 +123,10 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Test linear reset from getJacobianParameters
     for ( int i = 0; i < 3; i++ ) {
-        bvpSolVec->setRandomValues();
+        bvpSolVec->setRandomValues(bvpSolVec);
         adjust( bvpSolVec, shift, scale );
-        bvpRhsVec->setRandomValues();
-        bvpResVec->setRandomValues();
+        bvpRhsVec->setRandomValues(bvpRhsVec);
+        bvpResVec->setRandomValues(bvpResVec);
         std::shared_ptr<AMP::Operator::OperatorParameters> jacparams =
             nlinBVPOp->getParameters( "Jacobian", bvpSolVec );
         linBVPOp->reset( jacparams );

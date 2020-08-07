@@ -16,13 +16,13 @@ void RowOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP::LinearAlgebra::Vector::shared_ptr rOriginal =
         r->subsetVectorForVariable( d_OutputVariable );
 
-    rOriginal->zero();
+    rOriginal->zero(rOriginal);
 
     for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
         rInternal[i] = rOriginal->cloneVector();
-        rInternal[i]->zero();
+        rInternal[i]->zero(rInternal[i]);
         d_Operators[i]->apply( u, rInternal[i] );
-        rInternal[i]->scale( scalea[i] );
+        rInternal[i]->scale( scalea[i], rInternal[i] );
     }
 
     for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {

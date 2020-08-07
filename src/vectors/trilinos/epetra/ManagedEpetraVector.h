@@ -45,7 +45,9 @@ public:
 
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const override;
+#if 0
     void copy( const VectorOperations &vec ) override;
+#endif
     void copy( const VectorData &src,  VectorData &dst) override;
 
     Epetra_Vector &getEpetra_Vector() override;

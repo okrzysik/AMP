@@ -55,10 +55,10 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
     auto SpecificPowerShapeVec =
         AMP::LinearAlgebra::createVector( dof_map, SpecificPowerShapeVar, split );
     auto SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector();
-    SpecificPowerMagnitudeVec->setToScalar( 4157. );
+    SpecificPowerMagnitudeVec->setToScalar( 4157., SpecificPowerMagnitudeVec );
 
     // Set the initial value for all nodes of SpecificPowerVec to zero
-    SpecificPowerShapeVec->setToScalar( 0.0 );
+    SpecificPowerShapeVec->setToScalar( 0.0, SpecificPowerShapeVec );
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     try {
         shape->apply( SpecificPowerMagnitudeVec, SpecificPowerShapeVec );
@@ -80,7 +80,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 #endif
 
     AMP::pout << "SpecificPowerShapeVec->max()"
-              << " : " << SpecificPowerShapeVec->min() << " : " << SpecificPowerShapeVec->max()
+              << " : " << SpecificPowerShapeVec->min(SpecificPowerShapeVec) << " : " << SpecificPowerShapeVec->max(SpecificPowerShapeVec)
               << std::endl;
     // Check that the data is non-negative
     bool itpasses  = true;

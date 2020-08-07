@@ -77,7 +77,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
-    const double f_norm = f->L2Norm();
+    const double f_norm = f->L2Norm(f);
 
     // enhance with convergence reason, number of iterations etc
     if ( f_norm == 0.0 )
@@ -86,7 +86,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     const double terminate_tol = d_dRelativeTolerance * f_norm;
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
-        std::cout << "CGSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
+        std::cout << "CGSolver::solve: initial L2Norm of solution vector: " << u->L2Norm(u)
                   << std::endl;
         std::cout << "CGSolver::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
     }
@@ -110,7 +110,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         d_pOperator->residual( f, u, r );
     }
     // compute the current residual norm
-    double current_res = r->L2Norm();
+    double current_res = r->L2Norm(r);
 
     // return if the residual is already low enough
     if ( current_res < terminate_tol ) {
@@ -159,7 +159,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         r->axpy( -alpha, w, r, r );
 
         // compute the current residual norm
-        current_res = r->L2Norm();
+        current_res = r->L2Norm(r);
         // check if converged
         if ( current_res < terminate_tol ) {
             // set a convergence reason
@@ -181,7 +181,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
+        std::cout << "L2Norm of solution: " << u->L2Norm(u) << std::endl;
     }
 
     PROFILE_STOP( "solve" );

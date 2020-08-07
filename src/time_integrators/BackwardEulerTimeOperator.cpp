@@ -27,28 +27,28 @@ void BackwardEulerTimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_
 
     if ( d_pMassOperator.get() != nullptr ) {
         if ( d_bLinearMassOperator ) {
-            d_pScratchVector->subtract( *u, *d_pPreviousTimeSolution );
+	  d_pScratchVector->subtract( u, d_pPreviousTimeSolution, d_pScratchVector );
             d_pMassOperator->apply( d_pScratchVector, r );
-            r->scale( 1.0 / d_dCurrentDt );
+            r->scale( 1.0 / d_dCurrentDt, r );
         } else {
             d_pMassOperator->apply( d_pPreviousTimeSolution, d_pScratchVector );
             d_pMassOperator->apply( u, r );
-            r->scale( -1.0 );
-            r->add( *r, *d_pScratchVector );
-            r->scale( 1.0 / d_dCurrentDt );
+            r->scale( -1.0, r );
+            r->add( r, d_pScratchVector, r );
+            r->scale( 1.0 / d_dCurrentDt, r );
         }
     } else {
-        r->subtract( *u, *d_pPreviousTimeSolution );
-        r->scale( 1.0 / d_dCurrentDt );
+      r->subtract( u, d_pPreviousTimeSolution, r );
+      r->scale( 1.0 / d_dCurrentDt, r );
     }
 
     d_pRhsOperator->residual( fTmp, u, d_pScratchVector );
 
-    r->add( *r, *d_pScratchVector );
+    r->add( r, d_pScratchVector, r );
 
     // subtract any source sink terms and boundary corrections
 
-    r->subtract( *r, *d_pSourceTerm );
+    r->subtract( r, d_pSourceTerm, r );
 }
 } // namespace TimeIntegrator
 } // namespace AMP

@@ -62,13 +62,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     ut->passes( "TrilinosNOXSolver created" );
 
     // Call solve with a simple vector
-    u->setRandomValues();
-    f->setRandomValues();
+    u->setRandomValues(u);
+    f->setRandomValues(f);
     nonlinearSolver->solve( f, u );
     ut->passes( "TrilinosNOXSolver solve called with simple vector" );
     AMP::LinearAlgebra::Vector::shared_ptr x = u->cloneVector();
     x->subtract( u, f, x );
-    double error = x->L2Norm() / std::max( f->L2Norm(), 1.0 );
+    double error = x->L2Norm(x) / std::max( f->L2Norm(f), 1.0 );
     if ( fabs( error ) < 1e-8 )
         ut->passes( "Solve with simple vector passed" );
     else
@@ -84,8 +84,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::LinearAlgebra::MultiVector::create( "multivector", solverComm );
     mu->addVector( u );
     mf->addVector( f );
-    mu->setRandomValues();
-    mf->zero();
+    mu->setRandomValues(mu);
+    mf->zero(*mf);
     nonlinearSolver->solve( mf, mu );
     ut->passes( "TrilinosNOXSolver solve called with multivector" );
 }

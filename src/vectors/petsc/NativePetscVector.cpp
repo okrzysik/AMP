@@ -65,25 +65,6 @@ void NativePetscVector::copyOutRawData( double *out ) const
 
 void NativePetscVector::swapData( VectorData & ) { AMP_ERROR( "Not finished" ); }
 
-
-double NativePetscVector::localL1Norm( void ) const
-{
-  return localL1Norm( *getVectorData());
-}
-
-
-double NativePetscVector::localL2Norm( void ) const
-{
-  return localL2Norm( *getVectorData());
-}
-
-
-double NativePetscVector::localMaxNorm( void ) const
-{
-  return localMaxNorm( *getVectorData());
-}
-
-
 NativePetscVectorParameters::NativePetscVectorParameters( Vec v, bool deleteable )
 {
     // Get the communicator from the PETSc vector
@@ -143,15 +124,6 @@ void NativePetscVector::swapVectors( Vector &other )
     resetArray();
     VecSwap( d_petscVec, dynamic_cast<NativePetscVector *>( &other )->getVec() );
 }
-
-
-void NativePetscVector::copy( const VectorOperations &src )
-{
-    resetArray();
-    VecCopy( dynamic_cast<const NativePetscVector *>( &src )->getVec(), d_petscVec );
-    copyGhostValues( *dynamic_cast<const VectorData *>( &src ) );
-}
-
 
 void NativePetscVector::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
@@ -253,6 +225,31 @@ void NativePetscVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, doub
             ndx2[i] = (PetscInt) ndx[i];
         VecGetValues( d_petscVec, numVals, &ndx2[0], vals );
     }
+}
+#if 0
+
+double NativePetscVector::localL1Norm( void ) const
+{
+  return localL1Norm( *getVectorData());
+}
+
+
+double NativePetscVector::localL2Norm( void ) const
+{
+  return localL2Norm( *getVectorData());
+}
+
+
+double NativePetscVector::localMaxNorm( void ) const
+{
+  return localMaxNorm( *getVectorData());
+}
+
+void NativePetscVector::copy( const VectorOperations &src )
+{
+    resetArray();
+    VecCopy( dynamic_cast<const NativePetscVector *>( &src )->getVec(), d_petscVec );
+    copyGhostValues( *dynamic_cast<const VectorData *>( &src ) );
 }
 
 void NativePetscVector::setToScalar( double alpha )
@@ -391,6 +388,7 @@ double NativePetscVector::dot( const VectorOperations &x ) const
 {
     return dot( *(x.getVectorData()), *getVectorData() );
 }
+#endif
 
 //**********************************************************************
 // Static functions that operate on VectorData objects

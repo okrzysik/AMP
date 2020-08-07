@@ -75,8 +75,8 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     gapmaps->setVector( v2 );
 
     // Initialize the vectors
-    v1->setToScalar( 0.0 );
-    v2->setToScalar( 0.0 );
+    v1->setToScalar( 0.0, v1 );
+    v2->setToScalar( 0.0, v2 );
     size_t N_maps = (size_t) map_db->getScalar<int>( "N_maps" );
     auto mesh1    = map_db->getVector<std::string>( "Mesh1" );
     auto mesh2    = map_db->getVector<std::string>( "Mesh2" );
@@ -113,7 +113,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     globalComm.barrier();
     gapmaps->apply( v1, v2 );
     v1->subtract( v1, v2, v1 );
-    if ( v1->maxNorm() < 1.e-12 )
+    if ( v1->maxNorm(v1) < 1.e-12 )
         ut->passes( "Node to node map test" );
     else
         ut->failure( "Node to node map test" );

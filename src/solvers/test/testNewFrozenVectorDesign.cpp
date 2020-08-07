@@ -78,8 +78,8 @@ int main( int argc, char *argv[] )
 
     std::cout << "Constructed Vectors." << std::endl;
 
-    firstVec->setToScalar( 3.0 );
-    secondVec->setToScalar( 5.0 );
+    firstVec->setToScalar( 3.0, firstVec );
+    secondVec->setToScalar( 5.0, secondVec );
 
     std::cout << "Formed RHS." << std::endl;
 

@@ -133,7 +133,7 @@ void TrilinosMatrixShellOperator::getColumn( int column,
     AMP::LinearAlgebra::Vector::shared_ptr outVec =
         AMP::LinearAlgebra::createVector( d_nodalDofMap, getOutputVariable(), false );
 
-    inVec->zero();
+    inVec->zero(inVec);
     inVec->setValueByGlobalID( column, 1.0 );
     inVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 

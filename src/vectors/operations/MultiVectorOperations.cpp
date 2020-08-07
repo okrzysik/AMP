@@ -15,7 +15,7 @@ std::shared_ptr<VectorOperations> MultiVectorOperations::cloneOperations() const
     return ptr;
 }
 
-
+#if 0
 /****************************************************************
  * min, max, norms, etc.                                         *
  ****************************************************************/
@@ -358,7 +358,7 @@ void MultiVectorOperations::scale( double alpha )
     for ( size_t i = 0; i != d_operations.size(); i++ )
         d_operations[i]->scale( alpha );
 }
-
+#endif
 //**********************************************************************
 // Static functions that operate on VectorData objects
 
@@ -622,7 +622,7 @@ void MultiVectorOperations::abs( const VectorData &x, VectorData &y )
         d_operations[i]->abs( *getVectorDataComponent(x,i),
 			      *getVectorDataComponent(y,i) );
     } else {
-       AMP_ERROR("MultiVectorOperations::linearSum requires x, y to be MultiVectorData");
+       AMP_ERROR("MultiVectorOperations::abs requires x, y to be MultiVectorData");
     }
 }
 

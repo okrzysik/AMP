@@ -72,7 +72,7 @@ bool VectorOperationsCuda<TYPE>::checkData( const VectorData &x,
         && y.numberOfDataBlocks() == 1 ;
         && z.numberOfDataBlocks() == 1 ;
 }
-
+#if 0
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::zero( )
 {
@@ -248,6 +248,7 @@ double VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorOperations 
 {
   return localWrmsNormMask( *(x.getVectorData()), *(mask.getVectorData()), *getVectorData());
 }
+#endif
   
 //**********************************************************************
 // Static functions that operate on VectorData objects

@@ -17,7 +17,7 @@ ManagedEpetraVector::ManagedEpetraVector( shared_ptr alias )
     : ManagedVector( alias ), EpetraVector()
 {
 }
-
+#if 0
 void ManagedEpetraVector::copy( const VectorOperations &src )
 {
     // there must be a more sensible way of doing this but I can't find the documentation - BP
@@ -30,7 +30,8 @@ void ManagedEpetraVector::copy( const VectorOperations &src )
         VectorOperationsDefault<double>::copy( src );
     }
 }
-
+#endif
+  
 void ManagedEpetraVector::copy( const VectorData &src,  VectorData &dst)
 {
     // there must be a more sensible way of doing this but I can't find the documentation - BP

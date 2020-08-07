@@ -75,7 +75,6 @@ public:
     
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
-    void copy( const VectorOperations &vec ) override;
 
     void swapVectors( Vector &other ) override;
     void aliasVector( Vector & ) override;
@@ -84,7 +83,8 @@ public:
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
 
-
+#if 0
+    void copy( const VectorOperations &vec ) override;
     void setToScalar( double alpha ) override;
     void scale( double alpha, const VectorOperations &x ) override;
     void scale( double alpha ) override;
@@ -112,7 +112,8 @@ public:
     double localL1Norm( void ) const override;
     double localL2Norm( void ) const override;
     double localMaxNorm( void ) const override;
-
+#endif
+    
     void setValuesByLocalID( int, size_t *, const double * ) override;
     void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
     void addValuesByLocalID( int, size_t *, const double * ) override;
@@ -154,14 +155,14 @@ protected:
 
     void resetArray();
     void resetArray() const;
-
+#if 0
     // Function to perform  this = alpha x + beta y + gamma this
     virtual void axpbypcz( double alpha,
                            const VectorOperations &x,
                            double beta,
                            const VectorOperations &y,
                            double gamma );
-
+#endif
     //**********************************************************************
     // functions that operate on VectorData
     static Vec getPetscVec( VectorData &x );
@@ -230,6 +231,12 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::subtract;
     using VectorOperationsDefault::wrmsNorm;
     using VectorOperationsDefault::wrmsNormMask;
+    using VectorOperationsDefault::min;
+    using VectorOperationsDefault::max;
+    using VectorOperationsDefault::L1Norm;
+    using VectorOperationsDefault::L2Norm;
+    using VectorOperationsDefault::maxNorm;
+    
 };
 
 

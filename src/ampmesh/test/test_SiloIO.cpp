@@ -42,7 +42,7 @@ AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr m
         AMP::Discretization::simpleDOFManager::create( mesh, mesh->getGeomType(), 0, 1, false );
     auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "volume" );
     auto vec = AMP::LinearAlgebra::createVector( DOF, var, true );
-    vec->zero();
+    vec->zero(vec);
     std::vector<size_t> dofs;
     for ( const auto &elem : mesh->getIterator( mesh->getGeomType(), 0 ) ) {
         double volume = elem.volume();
@@ -105,7 +105,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     auto gauss_pt     = AMP::LinearAlgebra::createVector( DOF_gauss, gp_var, true );
     auto meshID_vec   = AMP::LinearAlgebra::createVector( DOF_scalar, meshID_var, true );
     auto block_vec    = AMP::LinearAlgebra::createVector( DOF_volume, block_var, true );
-    gauss_pt->setToScalar( 100 );
+    gauss_pt->setToScalar( 100, gauss_pt );
     globalComm.barrier();
 #endif
     double t3 = AMP::AMP_MPI::time();
@@ -162,7 +162,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
             auto volume = calcVolume( mesh2 );
             AMP::LinearAlgebra::VS_Mesh meshSelector( mesh2 );
             auto meshID_vec2 = meshID_vec->select( meshSelector, "mesh subset" );
-            meshID_vec2->setToScalar( i + 1 );
+            meshID_vec2->setToScalar( i + 1, meshID_vec2 );
             siloWriter->registerMesh( mesh2, level );
             siloWriter->registerVector( volume, mesh2, mesh2->getGeomType(), "volume" );
             // Get the surface
@@ -172,7 +172,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
                     surfaceMesh, surfaceType, 0, 1, true );
                 auto id_vec = AMP::LinearAlgebra::createVector( DOF_surface, id_var, true );
                 siloWriter->registerVector( id_vec, surfaceMesh, surfaceType, "surface_ids" );
-                id_vec->setToScalar( -1 );
+                id_vec->setToScalar( -1, id_vec );
                 std::vector<size_t> dofs;
                 for ( auto &id : surfaceMesh->getBoundaryIDs() ) {
                     for ( auto elem : surfaceMesh->getBoundaryIDIterator( surfaceType, id, 0 ) ) {
@@ -187,7 +187,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
 
 // Initialize the data
 #ifdef USE_AMP_VECTORS
-    rank_vec->setToScalar( globalComm.getRank() );
+    rank_vec->setToScalar( globalComm.getRank(), rank_vec );
     rank_vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     std::vector<size_t> dofs;
     for ( auto elem : DOF_vector->getIterator() ) {
@@ -196,7 +196,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
         position->setValuesByGlobalID( dofs.size(), dofs.data(), pos.data() );
     }
     position->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
-    block_vec->setToScalar( -1 );
+    block_vec->setToScalar( -1, block_vec );
     for ( auto &id : mesh->getBlockIDs() ) {
         for ( auto elem : mesh->getBlockIDIterator( volumeType, id, 0 ) ) {
             DOF_volume->getDOFs( elem.globalID(), dofs );

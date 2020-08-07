@@ -115,31 +115,31 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Create the power (heat source) vector.
     auto PowerInWattsVar = sourceOperator->getOutputVariable();
     auto PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
-    PowerInWattsVec->zero();
+    PowerInWattsVec->zero(*PowerInWattsVec);
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
     rhsVec->copyVector( PowerInWattsVec );
     auto precision = std::setprecision( 10 );
-    AMP::pout << "RHS L2 norm before corrections = " << precision << rhsVec->L2Norm() << "\n";
-    AMP::pout << "RHS max before corrections = " << precision << rhsVec->max() << "\n";
-    AMP::pout << "RHS min before corrections = " << precision << rhsVec->min() << "\n";
+    AMP::pout << "RHS L2 norm before corrections = " << precision << rhsVec->L2Norm(rhsVec) << "\n";
+    AMP::pout << "RHS max before corrections = " << precision << rhsVec->max(rhsVec) << "\n";
+    AMP::pout << "RHS min before corrections = " << precision << rhsVec->min(rhsVec) << "\n";
     nonlinearThermalOperator->modifyRHSvector( rhsVec );
-    AMP::pout << "RHS L2 norm after corrections = " << precision << rhsVec->L2Norm() << "\n";
-    AMP::pout << "RHS max after corrections = " << precision << rhsVec->max() << "\n";
-    AMP::pout << "RHS min after corrections = " << precision << rhsVec->min() << "\n";
+    AMP::pout << "RHS L2 norm after corrections = " << precision << rhsVec->L2Norm(rhsVec) << "\n";
+    AMP::pout << "RHS max after corrections = " << precision << rhsVec->max(rhsVec) << "\n";
+    AMP::pout << "RHS min after corrections = " << precision << rhsVec->min(rhsVec) << "\n";
 
     // Initial guess
     double initGuess = input_db->getWithDefault<double>( "InitialGuess", 400.0 );
-    solVec->setToScalar( initGuess );
-    AMP::pout << "initial guess L2 norm before corrections = " << solVec->L2Norm() << "\n";
-    AMP::pout << "initial guess max before corrections = " << solVec->max() << "\n";
-    AMP::pout << "initial guess min before corrections = " << solVec->min() << "\n";
+    solVec->setToScalar( initGuess, solVec );
+    AMP::pout << "initial guess L2 norm before corrections = " << solVec->L2Norm(solVec) << "\n";
+    AMP::pout << "initial guess max before corrections = " << solVec->max(solVec) << "\n";
+    AMP::pout << "initial guess min before corrections = " << solVec->min(solVec) << "\n";
 
     nonlinearThermalOperator->modifyInitialSolutionVector( solVec );
-    AMP::pout << "initial guess L2 norm after corrections = " << solVec->L2Norm() << "\n";
-    AMP::pout << "initial guess max after corrections = " << solVec->max() << "\n";
-    AMP::pout << "initial guess min after corrections = " << solVec->min() << "\n";
+    AMP::pout << "initial guess L2 norm after corrections = " << solVec->L2Norm(solVec) << "\n";
+    AMP::pout << "initial guess max after corrections = " << solVec->max(solVec) << "\n";
+    AMP::pout << "initial guess min after corrections = " << solVec->min(solVec) << "\n";
 
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
@@ -174,7 +174,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearSolver->setPreconditioner( linearThermalPreconditioner );
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
 
-    double initialResidualNorm = resVec->L2Norm();
+    double initialResidualNorm = resVec->L2Norm(resVec);
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
     double expectedVal = 20.7018;
@@ -185,21 +185,21 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolver->setZeroInitialGuess( false );
     nonlinearSolver->solve( rhsVec, solVec );
 
-    std::cout << "Final Solution Norm: " << solVec->L2Norm() << std::endl;
+    std::cout << "Final Solution Norm: " << solVec->L2Norm(solVec) << std::endl;
     expectedVal = 45612;
-    if ( !AMP::Utilities::approx_equal( expectedVal, solVec->L2Norm(), 1e-5 ) ) {
+    if ( !AMP::Utilities::approx_equal( expectedVal, solVec->L2Norm(solVec), 1e-5 ) ) {
         ut->failure( "the Final Solution Norm has changed." );
     }
 
-    AMP::pout << " Solution Max: " << precision << solVec->max() << std::endl;
-    AMP::pout << " Solution Min: " << precision << solVec->min() << std::endl;
-    AMP::pout << " Solution L1 Norm: " << precision << solVec->L1Norm() << std::endl;
-    AMP::pout << " Solution L2 Norm: " << precision << solVec->L2Norm() << std::endl;
+    AMP::pout << " Solution Max: " << precision << solVec->max(solVec) << std::endl;
+    AMP::pout << " Solution Min: " << precision << solVec->min(solVec) << std::endl;
+    AMP::pout << " Solution L1 Norm: " << precision << solVec->L1Norm(solVec) << std::endl;
+    AMP::pout << " Solution L2 Norm: " << precision << solVec->L2Norm(solVec) << std::endl;
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm();
-    double finalSolutionNorm = solVec->L2Norm();
+    double finalResidualNorm = resVec->L2Norm(resVec);
+    double finalSolutionNorm = solVec->L2Norm(solVec);
     AMP::pout << "Final Residual Norm: " << precision << finalResidualNorm << std::endl;
     AMP::pout << "Final Solution Norm: " << precision << finalSolutionNorm << std::endl;
 

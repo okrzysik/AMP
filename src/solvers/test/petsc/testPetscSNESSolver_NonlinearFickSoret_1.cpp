@@ -100,16 +100,16 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial guess
 
-    solVec->setToScalar( .05 );
-    double initialGuessNorm = solVec->L2Norm();
+    solVec->setToScalar( .05, solVec );
+    double initialGuessNorm = solVec->L2Norm(solVec);
     std::cout << "initial guess norm = " << initialGuessNorm << "\n";
 
     nonlinearFickOperator->modifyInitialSolutionVector( solVec );
 
-    initialGuessNorm = solVec->L2Norm();
+    initialGuessNorm = solVec->L2Norm(solVec);
     std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
 
-    rhsVec->setToScalar( 0.0 );
+    rhsVec->setToScalar( 0.0, rhsVec );
     nonlinearFickOperator->modifyRHSvector( rhsVec );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------/
@@ -144,7 +144,7 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
     linearSolver->setPreconditioner( linearFickPreconditioner );
 
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm();
+    double initialResidualNorm = resVec->L2Norm(resVec);
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
@@ -154,7 +154,7 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
 
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm();
+    double finalResidualNorm = resVec->L2Norm(resVec);
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
@@ -253,7 +253,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create parameters for reset test and reset fick and soret operators
     auto tVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, tVar, true );
-    tVec->setToScalar( 300. );
+    tVec->setToScalar( 300., tVec );
 
     fickOp->setVector( 0, tVec );
     soretOp->setVector( 0, tVec );
@@ -269,16 +269,16 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial guess
 
-    solVec->setToScalar( .05 );
-    double initialGuessNorm = solVec->L2Norm();
+    solVec->setToScalar( .05, solVec );
+    double initialGuessNorm = solVec->L2Norm(solVec);
     std::cout << "initial guess norm = " << initialGuessNorm << "\n";
 
     nlinBVPOp->modifyInitialSolutionVector( solVec );
 
-    initialGuessNorm = solVec->L2Norm();
+    initialGuessNorm = solVec->L2Norm(solVec);
     std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
 
-    rhsVec->setToScalar( 0.0 );
+    rhsVec->setToScalar( 0.0, rhsVec );
     nlinBVPOp->modifyRHSvector( rhsVec );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------/
@@ -313,7 +313,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     linearSolver->setPreconditioner( linearFickPreconditioner );
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm();
+    double initialResidualNorm = resVec->L2Norm(resVec);
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
@@ -323,7 +323,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm();
+    double finalResidualNorm = resVec->L2Norm(resVec);
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 

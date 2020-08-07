@@ -63,7 +63,7 @@ const Epetra_Vector &EpetraVectorOperations::getEpetra_Vector() const
         return epetraVec->getEpetra_Vector();
     }
 }
-
+#if 0
 void EpetraVectorOperations::setToScalar( double alpha )
 {
   setToScalar(alpha, *getVectorData() );
@@ -183,7 +183,8 @@ double EpetraVectorOperations::dot( const VectorOperations &x ) const
 {
     return dot( *(x.getVectorData()), *getVectorData() );
 }
-
+#endif
+  
 //**********************************************************************
 // Functions that operate on VectorData objects
 

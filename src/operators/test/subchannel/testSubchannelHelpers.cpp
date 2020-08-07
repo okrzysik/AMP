@@ -143,9 +143,9 @@ static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
         auto subchannelEnthalpy = flowVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
         auto subchannelPressure = flowVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
         subchannelEnthalpy->setToScalar( AMP::Operator::Subchannel::scaleEnthalpy *
-                                         enthalpyResult[0] );
-        subchannelPressure->setToScalar( AMP::Operator::Subchannel::scalePressure * pressure );
-        cladTemp->setToScalar( clad_temp );
+                                         enthalpyResult[0], subchannelEnthalpy );
+        subchannelPressure->setToScalar( AMP::Operator::Subchannel::scalePressure * pressure, subchannelPressure );
+        cladTemp->setToScalar( clad_temp, cladTemp );
     }
     pass = true;
     for ( size_t sc = 0; sc < N_subchannels; sc++ ) {

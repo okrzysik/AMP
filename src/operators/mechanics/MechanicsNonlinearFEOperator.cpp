@@ -101,12 +101,12 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
             d_dofMap[Mechanics::DISPLACEMENT],
             d_inpVariables->getVariable( Mechanics::DISPLACEMENT ),
             true );
-        d_refXYZ->zero();
+        d_refXYZ->zero(d_refXYZ);
         for ( unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++ ) {
             if ( d_isActive[i] ) {
                 d_inVec_pre[i] = AMP::LinearAlgebra::createVector(
                     d_dofMap[i], d_inpVariables->getVariable( i ), true );
-                d_inVec_pre[i]->zero();
+                d_inVec_pre[i]->zero(d_inVec_pre[i]);
             }
         }
     }
@@ -142,7 +142,7 @@ void MechanicsNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
     } // end for i
 
     d_outVec = mySubsetVector( r, d_outVariable );
-    d_outVec->zero();
+    d_outVec->zero(d_outVec);
 
     d_materialModel->preNonlinearAssembly();
 

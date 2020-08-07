@@ -26,7 +26,7 @@ public:
 
     //! Clone the operations
     std::shared_ptr<VectorOperations> cloneOperations() const override;
-
+#if 0
     /**
      * \brief  Set vector equal to x
      *      For Vectors, \f$\mathit{this}_i = x_i\f$.
@@ -230,6 +230,7 @@ private:
      */
     double localWrmsNormMask( const VectorOperations &x,
                               const VectorOperations &mask ) const override;
+#endif
 
 public:
 //  function that operate on VectorData 

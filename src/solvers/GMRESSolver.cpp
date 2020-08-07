@@ -100,7 +100,7 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
-    double f_norm = f->L2Norm();
+    double f_norm = f->L2Norm(f);
 
     // if the rhs is zero we try to converge to the relative convergence
     // NOTE:: update this test for a better 'almost equal'
@@ -111,7 +111,7 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     const double terminate_tol = d_dRelativeTolerance * f_norm;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "GMRESSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
+        std::cout << "GMRESSolver::solve: initial L2Norm of solution vector: " << u->L2Norm(u)
                   << std::endl;
         std::cout << "GMRESSolver::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
     }
@@ -126,7 +126,7 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
         res->copyVector( f );
-        u->setToScalar( 0.0 );
+        u->setToScalar( 0.0, u );
     } else {
         d_pOperator->residual( f, u, res );
     }
@@ -134,7 +134,7 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     d_nr = -1;
 
     // compute the current residual norm
-    const double beta = res->L2Norm();
+    const double beta = res->L2Norm(res);
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
         std::cout << "GMRES: initial residual " << beta << std::endl;
@@ -152,7 +152,7 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     // normalize the first basis vector
-    res->scale( 1.0 / beta );
+    res->scale( 1.0 / beta, res );
 
     // push the residual as the first basis vector
     d_vBasis.push_back( res );
@@ -187,7 +187,7 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // replace the conditional by a soft equality
         // check for happy breakdown
         if ( v_norm != 0.0 ) {
-            v->scale( 1.0 / v_norm );
+	  v->scale( 1.0 / v_norm, v );
             v->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         }
 
@@ -238,7 +238,7 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // update the current approximation with the correction
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
-        z->setToScalar( 0.0 );
+      z->setToScalar( 0.0, z );
 
         for ( int i = 0; i <= d_nr; ++i ) {
 	  z->axpy( d_dy[i], d_vBasis[i], z, z );
@@ -257,8 +257,8 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         d_pOperator->residual( f, u, res );
-        std::cout << "GMRES: Final residual: " << res->L2Norm() << std::endl;
-        std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
+        std::cout << "GMRES: Final residual: " << res->L2Norm(res) << std::endl;
+        std::cout << "L2Norm of solution: " << u->L2Norm(u) << std::endl;
     }
 
     PROFILE_STOP( "solve" );
@@ -287,7 +287,7 @@ void GMRESSolver::orthogonalize( std::shared_ptr<AMP::LinearAlgebra::Vector> v )
     v->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     // h_{k+1, k}
-    const auto v_norm         = v->L2Norm();
+    const auto v_norm         = v->L2Norm(v);
     d_dHessenberg( k, k - 1 ) = v_norm; // adjusting for zero starting index
 }
 

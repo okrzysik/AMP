@@ -111,7 +111,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         // Create the power (heat source) vector.
         auto powerInWattsVar = sourceOperator->getOutputVariable();
         auto powerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, powerInWattsVar );
-        powerInWattsVec->zero();
+        powerInWattsVec->zero(powerInWattsVec);
 
         // convert the vector of specific power to power for a given basis.
         sourceOperator->apply( SpecificPowerVec, powerInWattsVec );
@@ -148,7 +148,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
                 initialCondition->setValueByGlobalID( elem, val );
             } // end for i
         }     // end for node
-        initialConditionPrime->zero();
+        initialConditionPrime->zero(initialConditionPrime);
 
         // create a copy of the rhs which can be modified at each time step (maybe)
         f->copyVector( powerInWattsVec );
@@ -235,8 +235,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
                 ut->failure( "Tested IDATimeIntegrator's advanceSolution. FAIL!!" );
             }
 
-            max = pIDATimeIntegrator->getCurrentSolution()->max();
-            min = pIDATimeIntegrator->getCurrentSolution()->min();
+	    auto sol = pIDATimeIntegrator->getCurrentSolution();
+            max = sol->max(sol);
+            min = sol->min(sol);
 
             std::cout << "current_time = " << current_time << std::endl;
             std::cout << "max val of the current solution = " << max << std::endl;

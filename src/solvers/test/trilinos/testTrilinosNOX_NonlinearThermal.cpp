@@ -101,14 +101,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial guess
 
-    solVec->setToScalar( 400. );
+    solVec->setToScalar( 400., solVec );
     // solVec->setToScalar(557.2);
-    double initialGuessNorm = solVec->L2Norm();
+    double initialGuessNorm = solVec->L2Norm(solVec);
     std::cout << "initial guess norm = " << initialGuessNorm << "\n";
 
     nonlinearThermalOperator->modifyInitialSolutionVector( solVec );
 
-    initialGuessNorm = solVec->L2Norm();
+    initialGuessNorm = solVec->L2Norm(solVec);
     std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
 
     ////////////////////////////////////
@@ -126,7 +126,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Set the SpecificPowerVec to the residual of the neutronicsOperator
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
-    SpecificPowerVec->scale( -1.0 );
+    SpecificPowerVec->scale( -1.0, SpecificPowerVec );
     SpecificPowerVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     /////////////////////////////////////////////////////
@@ -143,7 +143,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Create the power (heat source) vector.
     auto PowerInWattsVar = sourceOperator->getOutputVariable();
     auto PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
-    PowerInWattsVec->zero();
+    PowerInWattsVec->zero(*PowerInWattsVec);
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->residual( nullVec, SpecificPowerVec, PowerInWattsVec );
@@ -152,7 +152,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearThermalOperator->modifyRHSvector( rhsVec );
 
-    double initialRhsNorm = rhsVec->L2Norm();
+    double initialRhsNorm = rhsVec->L2Norm(rhsVec);
     std::cout << "rhs norm  after modifyRHSvector = " << initialRhsNorm << "\n";
     double expectedVal = 0.688628;
     if ( !AMP::Utilities::approx_equal( expectedVal, initialRhsNorm, 1e-5 ) )
@@ -182,7 +182,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         std::make_shared<AMP::Solver::TrilinosNOXSolver>( nonlinearSolverParams );
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm();
+    double initialResidualNorm = resVec->L2Norm(resVec);
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
     expectedVal = 3625.84;
@@ -199,9 +199,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm();
-    double finalSolutionNorm = solVec->L2Norm();
-    double finalRhsNorm      = rhsVec->L2Norm();
+    double finalResidualNorm = resVec->L2Norm(resVec);
+    double finalSolutionNorm = solVec->L2Norm(solVec);
+    double finalRhsNorm      = rhsVec->L2Norm(rhsVec);
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
     std::cout << "Final Solution Norm: " << finalSolutionNorm << std::endl;

@@ -200,7 +200,7 @@ NativeThyraVector::getThyraVec( VectorData &v )
     AMP_ASSERT( vec2 != nullptr );
     return vec2->getVec();
 }
-
+#if 0
 void NativeThyraVector::copy( const VectorOperations &src_vec )
 {
   copy( *(src_vec.getVectorData()), *getVectorData() );
@@ -325,6 +325,7 @@ double NativeThyraVector::dot( const VectorOperations &x ) const
 {
     return dot( *(x.getVectorData()), *getVectorData() );
 }
+#endif
 
 void NativeThyraVector::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {

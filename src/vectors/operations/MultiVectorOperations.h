@@ -26,7 +26,7 @@ public:
 
     //! Clone the operations
     std::shared_ptr<VectorOperations> cloneOperations() const override;
-
+#if 0
     /**
      * \brief  Set vector equal to x
      *      For Vectors, \f$\mathit{this}_i = x_i\f$.
@@ -204,7 +204,6 @@ public:
      */
     void addScalar( const VectorOperations &x, double alpha ) override;
 
-
 private:
     /**
      * \brief Returns the local minimum of the quotient of two vectors:
@@ -230,7 +229,10 @@ private:
      */
     double localWrmsNormMask( const VectorOperations &x,
                               const VectorOperations &mask ) const override;
+#endif
 
+private:
+    
 //  static function that operate on VectorData
     static VectorData *getVectorDataComponent( VectorData &x, size_t i );
     static const VectorData *getVectorDataComponent( const VectorData &x, size_t i );

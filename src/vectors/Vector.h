@@ -246,7 +246,7 @@ public: // Constructor/destructors
 
 public: // Non-virtual functions
     /// @copydoc VectorOperations::copy(const VectorOperations&)
-    inline void copyVector( std::shared_ptr<const Vector> x ) { copy( *x ); }
+    inline void copyVector( std::shared_ptr<const Vector> x ) { copy( *x, *this ); }
 
     /** \brief Change the variable associated with this vector
      * \param[in] name  The new variable

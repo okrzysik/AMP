@@ -19,7 +19,7 @@ public:
     {
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         d_tractionOp->apply( nullVec, r );
-        r->scale( -1.0 );
+        r->scale( -1.0, r );
     }
 
     void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs ) override

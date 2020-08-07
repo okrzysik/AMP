@@ -71,10 +71,10 @@ static void myTest( AMP::UnitTest *ut )
     auto initTempVec  = AMP::LinearAlgebra::createVector( tempDofMap, temperatureVariable, true );
     auto finalTempVec = initTempVec->cloneVector();
 
-    initTempVec->setRandomValues();
+    initTempVec->setRandomValues(initTempVec);
     initTempVec->abs( initTempVec, initTempVec );
     double initTempConst = input_db->getWithDefault<double>( "INIT_TEMP_CONST", 10.0 );
-    initTempVec->scale( initTempConst );
+    initTempVec->scale( initTempConst, initTempVec );
     initTempVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     bool setFinalTempEqualsInitialTemp =
@@ -83,9 +83,9 @@ static void myTest( AMP::UnitTest *ut )
     if ( setFinalTempEqualsInitialTemp ) {
         finalTempVec->copyVector( initTempVec );
     } else {
-        finalTempVec->setRandomValues();
+        finalTempVec->setRandomValues(finalTempVec);
         double finalTempConst = input_db->getWithDefault<double>( "FINAL_TEMP_CONST", 12.0 );
-        finalTempVec->scale( finalTempConst );
+        finalTempVec->scale( finalTempConst, finalTempVec );
     }
     finalTempVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
@@ -125,17 +125,17 @@ static void myTest( AMP::UnitTest *ut )
 
 
     // Initial guess for NL solver must satisfy the displacement boundary conditions
-    mechNlSolVec->setToScalar( 0.0 );
+    mechNlSolVec->setToScalar( 0.0, mechNlSolVec );
     dirichletDispInVecOp->apply( nullVec, mechNlSolVec );
     mechNlSolVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     nonlinBvpOperator->apply( mechNlSolVec, mechNlResVec );
     linBvpOperator->reset( nonlinBvpOperator->getParameters( "Jacobian", mechNlSolVec ) );
 
-    mechNlRhsVec->setToScalar( 0.0 );
+    mechNlRhsVec->setToScalar( 0.0, mechNlRhsVec );
     dirichletLoadVecOp->apply( nullVec, mechNlRhsVec );
 
-    double initSolNorm = mechNlSolVec->L2Norm();
+    double initSolNorm = mechNlSolVec->L2Norm(mechNlSolVec);
 
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
@@ -185,10 +185,10 @@ static void myTest( AMP::UnitTest *ut )
         mechNlScaledRhsVec->makeConsistent(
             AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         AMP::pout << "L2 Norm at loading step " << ( step + 1 ) << " is "
-                  << mechNlScaledRhsVec->L2Norm() << std::endl;
+                  << mechNlScaledRhsVec->L2Norm(mechNlScaledRhsVec) << std::endl;
 
         nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-        double initialResidualNorm = mechNlResVec->L2Norm();
+        double initialResidualNorm = mechNlResVec->L2Norm(mechNlResVec);
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
@@ -199,7 +199,7 @@ static void myTest( AMP::UnitTest *ut )
             nonlinearSolver->solve( mechNlScaledRhsVec, mechNlSolVec );
 
             nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-            double finalResidualNorm = mechNlResVec->L2Norm();
+            double finalResidualNorm = mechNlResVec->L2Norm(mechNlResVec);
             AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                       << finalResidualNorm << std::endl;
 
@@ -221,7 +221,7 @@ static void myTest( AMP::UnitTest *ut )
 #endif
     }
 
-    double finalSolNorm = mechNlSolVec->L2Norm();
+    double finalSolNorm = mechNlSolVec->L2Norm(mechNlSolVec);
     AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
     ut->passes( exeName );

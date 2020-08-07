@@ -63,7 +63,7 @@ public:
     void aliasVector( Vector & ) override;
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
-
+#if 0
     void setToScalar( double alpha ) override;
     void copy( const VectorOperations &vec ) override;
     void setRandomValues( void ) override;
@@ -87,7 +87,8 @@ public:
     double L2Norm( void ) const override;
     double maxNorm( void ) const override;
     double dot( const VectorOperations &x ) const override;
-
+#endif
+    
     void setValuesByLocalID( int, size_t *, const double * ) override;
     void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
     void addValuesByLocalID( int, size_t *, const double * ) override;
@@ -187,6 +188,11 @@ public: // Pull VectorOperations into the current scope
     using Vector::subtract;
     using Vector::wrmsNorm;
     using Vector::wrmsNormMask;
+    using Vector::min;
+    using Vector::max;
+    using Vector::L1Norm;
+    using Vector::L2Norm;
+    using Vector::maxNorm;
 };
 
 

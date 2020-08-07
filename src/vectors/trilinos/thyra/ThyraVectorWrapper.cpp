@@ -194,7 +194,7 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
             // We are performing a series of axpby operations:
             //    y(:,i) = alpha*sum(M(:,j)*X(j,i)) + beta*Y(:,i)
             // First compute tmp = sum(M(:,j)*X(j,i))
-            tmp->zero();
+            tmp->zero(tmp);
             for ( size_t j = 0; j < d_vecs.size(); j++ ) {
                 AMP_ASSERT( j < d_cols.size() );
                 double x = Thyra::get_ele( *( X.col( i ) ), d_cols[j] );
@@ -235,7 +235,7 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
 void ThyraVectorWrapper::assignImpl( double alpha )
 {
     for ( auto &vec : d_vecs ) {
-        vec->setToScalar( alpha );
+      vec->setToScalar( alpha, vec );
     }
 }
 

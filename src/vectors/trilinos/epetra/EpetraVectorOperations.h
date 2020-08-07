@@ -22,7 +22,7 @@ class EpetraVectorOperations : virtual public VectorOperationsDefault<double>
 public:
     // Constructor
     EpetraVectorOperations() {}
-
+#if 0
     // virtual void addScalar ( const VectorOperations & , double );
     void setToScalar( double alpha ) override;
     void scale( double alpha, const VectorOperations &x ) override;
@@ -46,7 +46,8 @@ public:
     double L2Norm( void ) const override;
     double maxNorm( void ) const override;
     double dot( const VectorOperations &x ) const override;
-
+#endif
+    
  public:
     void setToScalar( double alpha, VectorData &z ) override;
     void setRandomValues( VectorData &x ) override;    
@@ -100,6 +101,11 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::localMaxNorm;
     using VectorOperationsDefault::localMin;
 
+    using VectorOperationsDefault::min;
+    using VectorOperationsDefault::max;
+    using VectorOperationsDefault::L1Norm;
+    using VectorOperationsDefault::L2Norm;
+    using VectorOperationsDefault::maxNorm;
 protected:
     Epetra_Vector &getEpetra_Vector();
     const Epetra_Vector &getEpetra_Vector() const;

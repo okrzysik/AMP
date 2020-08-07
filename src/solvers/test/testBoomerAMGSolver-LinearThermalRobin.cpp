@@ -107,7 +107,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     AMP::LinearAlgebra::Variable::shared_ptr PowerInWattsVar = sourceOperator->getOutputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr PowerInWattsVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
-    PowerInWattsVec->zero();
+    PowerInWattsVec->zero(PowerInWattsVec);
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
@@ -129,8 +129,8 @@ void linearThermalTest( AMP::UnitTest *ut )
     AMP::LinearAlgebra::Vector::shared_ptr ResidualVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
-    RightHandSideVec->setToScalar( 0.0 );
-    double rhsNorm = RightHandSideVec->L2Norm();
+    RightHandSideVec->setToScalar( 0.0, RightHandSideVec );
+    double rhsNorm = RightHandSideVec->L2Norm(RightHandSideVec);
 
     ///////////////////////////////////////////////
     //   Add the boundary conditions corrections //
@@ -147,14 +147,14 @@ void linearThermalTest( AMP::UnitTest *ut )
 
     RightHandSideVec->subtract( PowerInWattsVec, boundaryOpCorrectionVec, RightHandSideVec );
 
-    rhsNorm = RightHandSideVec->L2Norm();
+    rhsNorm = RightHandSideVec->L2Norm(RightHandSideVec);
     std::cout << "RHS Norm after BC Correction " << rhsNorm << std::endl;
 
-    rhsNorm = RightHandSideVec->L2Norm();
+    rhsNorm = RightHandSideVec->L2Norm(RightHandSideVec);
     std::cout << "RHS Norm 1: " << rhsNorm << std::endl;
-    rhsNorm = PowerInWattsVec->L2Norm();
+    rhsNorm = PowerInWattsVec->L2Norm(PowerInWattsVec);
     std::cout << "RHS Norm 2: " << rhsNorm << std::endl;
-    rhsNorm = boundaryOpCorrectionVec->L2Norm();
+    rhsNorm = boundaryOpCorrectionVec->L2Norm(boundaryOpCorrectionVec);
     std::cout << "RHS Norm 3: " << rhsNorm << std::endl;
 
     /////////////////////////////////////////////
@@ -172,13 +172,13 @@ void linearThermalTest( AMP::UnitTest *ut )
     mlSolverParams->d_pOperator = diffusionOperator;
 
     // Set initial guess
-    TemperatureInKelvinVec->setToScalar( 1.0 );
+    TemperatureInKelvinVec->setToScalar( 1.0, TemperatureInKelvinVec );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = TemperatureInKelvinVec->L2Norm();
+    double initSolNorm = TemperatureInKelvinVec->L2Norm(TemperatureInKelvinVec);
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
-    rhsNorm = RightHandSideVec->L2Norm();
+    rhsNorm = RightHandSideVec->L2Norm(RightHandSideVec);
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
     // Create the ML Solver
@@ -194,7 +194,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = ResidualVec->L2Norm();
+    double finalResidualNorm = ResidualVec->L2Norm(ResidualVec);
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {

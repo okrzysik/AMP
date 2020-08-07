@@ -38,16 +38,33 @@ inline std::vector<double> &VectorOperations::getGhosts() { return *( d_VectorDa
 /****************************************************************
  * Wrappers for shared_ptr                                       *
  ****************************************************************/
-inline bool VectorOperations::equals( std::shared_ptr<const VectorOperations> x, double tol )
+#if 1
+inline bool VectorOperations::equals( std::shared_ptr<const VectorData> x, std::shared_ptr<const VectorData> y, double tol ) const
 {
-    return equals( *x, tol );
+  return equals( *x, *y, tol );
 }
 
-#if 1
+inline void VectorOperations::zero( std::shared_ptr<VectorData> x )
+{
+  zero(*x);
+}
+inline void VectorOperations::setToScalar( double alpha, std::shared_ptr<VectorData> x )
+{
+  setToScalar(alpha, *x);
+}
 
+inline void VectorOperations::setRandomValues( std::shared_ptr<VectorData> x )
+{
+  setRandomValues(*x);
+}
+ 
 inline void VectorOperations::copy( std::shared_ptr<const VectorData> x, std::shared_ptr<VectorData> y )
 {
   copy( *x, *y );
+}
+inline void VectorOperations::scale( double alpha, std::shared_ptr<VectorData> x )
+{
+  scale( alpha, *x );
 }
 inline void VectorOperations::scale( double alpha, std::shared_ptr<const VectorData> x, std::shared_ptr<VectorData> y )
 {
@@ -110,6 +127,25 @@ inline double VectorOperations::dot( std::shared_ptr<const VectorData> x, std::s
 {
     return dot( *x, *y );
 }
+
+inline double VectorOperations::minQuotient( std::shared_ptr<const VectorData> x,
+                                             std::shared_ptr<const VectorData> y ) const
+{
+    return minQuotient( *x, *y );
+}
+inline double VectorOperations::wrmsNorm( std::shared_ptr<const VectorData> x,
+                                          std::shared_ptr<const VectorData> y ) const
+{
+    return wrmsNorm( *x, *y );
+}
+inline double VectorOperations::wrmsNormMask( std::shared_ptr<const VectorData> x,
+                                              std::shared_ptr<const VectorData> mask,
+                                              std::shared_ptr<const VectorData> y ) const
+{
+  return wrmsNormMask( *x, *mask, *y );
+}
+ 
+ 
 #else
 
 inline void VectorOperations::copy( std::shared_ptr<const VectorOperations> x )
@@ -171,7 +207,6 @@ inline double VectorOperations::dot( std::shared_ptr<const VectorOperations> x )
 {
     return dot( *x );
 }
-#endif
 
 inline double VectorOperations::minQuotient( std::shared_ptr<const VectorOperations> x,
                                              std::shared_ptr<const VectorOperations> y )
@@ -189,6 +224,7 @@ inline double VectorOperations::wrmsNormMask( std::shared_ptr<const VectorOperat
 {
     return wrmsNormMask( *x, *y, *mask );
 }
+#endif
  
 
 } // namespace LinearAlgebra

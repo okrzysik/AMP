@@ -29,6 +29,7 @@ public:
     //! Clone the operations
     virtual std::shared_ptr<VectorOperations> cloneOperations() const = 0;
 
+#if 0
     /**
      * \brief  Set vector equal to x
      *      For Vectors, \f$\mathit{this}_i = x_i\f$.
@@ -263,6 +264,7 @@ public:
      */
     virtual double localWrmsNormMask( const VectorOperations &x,
                                       const VectorOperations &mask ) const = 0;
+#endif
 public:
     // VectorData versions
     virtual void copy( const VectorData &x, VectorData &z ) = 0;
@@ -292,7 +294,14 @@ public:
     virtual double L1Norm( const VectorData &x ) const;
     virtual double L2Norm( const VectorData &x  ) const;
     virtual double maxNorm( const VectorData &x ) const;
+    virtual double minQuotient( const VectorData &x, const VectorData &y ) const;
+    virtual double wrmsNorm( const VectorData &x, const VectorData &y ) const;
+    virtual double wrmsNormMask( const VectorData &x,
+				 const VectorData &mask,
+				 const VectorData &y ) const;
     virtual double dot( const VectorData &x, const VectorData &y ) const;
+    virtual bool   equals( const VectorData &a, const VectorData &b, double tol ) const;
+
     virtual double localMin( const VectorData &x ) const = 0;
     virtual double localMax( const VectorData &x ) const = 0;
     virtual double localL1Norm( const VectorData &x ) const = 0;
@@ -305,15 +314,8 @@ public:
     virtual bool   localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) const = 0;
     
 public: // Non-virtual functions
-    /**
-     * \brief  Determine if two vectors are equal using an absolute tolerance
-     * \param[in] rhs      Vector to compare to
-     * \param[in] tol      Tolerance of comparison
-     * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
-     */
-    bool equals( const VectorOperations &rhs, double tol = 0.000001 ) const;
 
-
+#if 0
     /**
      * \brief Returns the minimum of the quotient of two vectors:
      *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
@@ -342,16 +344,32 @@ public: // Non-virtual functions
                                 const VectorOperations &y,
                                 const VectorOperations &mask );
 
-
+#endif
 public: // shared_ptr wrappers
+
+#if 1
     /**
      * \brief  Determine if two vectors are equal using an absolute tolerance
      * \param[in] rhs      Vector to compare to
      * \param[in] tol      Tolerance of comparison
      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
      */
-    inline bool equals( std::shared_ptr<const VectorOperations> rhs, double tol = 0.000001 );
-#if 1
+    inline bool equals( std::shared_ptr<const VectorData> rhs, std::shared_ptr<const VectorData> lhs, double tol = 0.000001 ) const;
+
+    inline void zero( std::shared_ptr<VectorData> x );
+
+    /**
+     * \brief  Set all compenents of a vector to a scalar.
+     *      For Vectors, the components of <em>this</em> are set to \f$\alpha\f$.
+     * \param[in] alpha     scalar double value
+     */
+    inline void setToScalar( double alpha, std::shared_ptr<VectorData> x );
+
+    inline void setRandomValues( std::shared_ptr<VectorData> x );
+
+    /// @copydoc VectorData::scale(double,const VectorData&)
+    inline void scale( double alpha, std::shared_ptr<VectorData> x );
+
     /// @copydoc VectorData::scale(double,const VectorData&)
     inline void scale( double alpha, std::shared_ptr<const VectorData> x, std::shared_ptr<VectorData> y );
 
@@ -435,6 +453,65 @@ public: // shared_ptr wrappers
      * \param[in] x        a vector
      */
     inline double dot( std::shared_ptr<const VectorData> x, std::shared_ptr<const VectorData> y ) const;
+
+
+    /**
+     * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
+     */
+    virtual double min( std::shared_ptr<const VectorData> x ) const;
+
+    /**
+     * \brief Return the maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
+     */
+    virtual double max( std::shared_ptr<const VectorData> x ) const;
+
+    /**
+     * \brief Return discrete @f$ L_1 @f$ -norm of this vector.
+     * \details Returns \f[\sum_i |\mathit{this}_i|\f]
+     */
+    virtual double L1Norm( std::shared_ptr<const VectorData> x ) const;
+
+    /**
+     * \brief Return discrete @f$ L_2 @f$ -norm of this vector.
+     * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
+     */
+    virtual double L2Norm( std::shared_ptr<const VectorData> x ) const;
+
+    /**
+     * \brief Return the @f$ L_\infty @f$ -norm of this vector.
+     * \details Returns \f[\max_i |\mathit{this}_i|\f]
+     */
+    virtual double maxNorm( std::shared_ptr<const VectorData> x ) const;
+    /**
+     * \brief Returns the minimum of the quotient of two vectors:
+     *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
+     */
+    inline double minQuotient( std::shared_ptr<const VectorData> x,
+			       std::shared_ptr<const VectorData> y ) const;
+
+    /**
+     * \brief Return a weighted norm of a vector
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
+     */
+    inline double wrmsNorm( std::shared_ptr<const VectorData> x,
+			    std::shared_ptr<const VectorData> y ) const;
+    
+    /**
+     * \brief Return a weighted norm of a subset of a vector
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \param[in] mask a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
+     */
+    inline double wrmsNormMask( std::shared_ptr<const VectorData> x,
+				std::shared_ptr<const VectorData> mask,
+				std::shared_ptr<const VectorData> y ) const;
+
 #else
 
     /// @copydoc VectorOperations::scale(double,const VectorOperations&)
@@ -515,7 +592,6 @@ public: // shared_ptr wrappers
      */
     inline double dot( std::shared_ptr<const VectorOperations> x ) const;
 
-#endif
     /**
      * \brief Returns the minimum of the quotient of two vectors:
      *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
@@ -545,6 +621,9 @@ public: // shared_ptr wrappers
     static inline double wrmsNormMask( std::shared_ptr<const VectorOperations> x,
                                        std::shared_ptr<const VectorOperations> y,
                                        std::shared_ptr<const VectorOperations> mask );
+
+#endif
+
 public:
     //! Return the pointer to the VectorData
     inline VectorData *getVectorData() { return d_VectorData; }

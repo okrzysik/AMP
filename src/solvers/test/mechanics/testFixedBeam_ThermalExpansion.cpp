@@ -126,11 +126,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::LinearAlgebra::createVector( NodalVectorDOF, burnVar );
 
     // Initial guess
-    solVec->zero();
+    solVec->zero(solVec);
     nonlinearMechanicsBVPoperator->modifyInitialSolutionVector( solVec );
 
     // RHS
-    rhsVec->zero();
+    rhsVec->zero(rhsVec);
     dirichletLoadVecOp->apply( nullVec, rhsVec );
     nonlinearMechanicsBVPoperator->modifyRHSvector( rhsVec );
 
@@ -141,9 +141,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #endif
 
     // Adding the Temperature and Burnup
-    tempVecRef->setToScalar( 301.0 );
-    tempVec->setToScalar( 301.0 );
-    burnVec->setToScalar( 10.0 );
+    tempVecRef->setToScalar( 301.0, tempVecRef );
+    tempVec->setToScalar( 301.0, tempVec );
+    burnVec->setToScalar( 10.0, burnVec );
 
     mechanicsNonlinearVolumeOperator->setReferenceTemperature( tempVecRef );
     mechanicsNonlinearVolumeOperator->setVector( AMP::Operator::Mechanics::TEMPERATURE, tempVec );
@@ -156,8 +156,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearMechanicsBVPoperator->reset(
         nonlinearMechanicsBVPoperator->getParameters( "Jacobian", solVec ) );
 
+    auto diag = ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal();
     double epsilon =
-        1.0e-13 * ( ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
+        1.0e-13 * diag->L1Norm(diag);
 
     std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     std::shared_ptr<AMP::Database> linearSolver_db =
@@ -207,17 +208,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "The current loading step is " << ( step + 1 ) << std::endl;
 
         double finalTemperature = 301.0 + ( ( (double) ( step + 1 ) ) * 200.0 );
-        tempVec->setToScalar( finalTemperature );
+        tempVec->setToScalar( finalTemperature, tempVec );
 
         nonlinearMechanicsBVPoperator->residual( rhsVec, solVec, resVec );
-        double initialResidualNorm = resVec->L2Norm();
+        double initialResidualNorm = resVec->L2Norm(resVec);
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
         nonlinearSolver->solve( rhsVec, solVec );
 
         nonlinearMechanicsBVPoperator->residual( rhsVec, solVec, resVec );
-        double finalResidualNorm = resVec->L2Norm();
+        double finalResidualNorm = resVec->L2Norm(resVec);
         AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                   << finalResidualNorm << std::endl;
 
@@ -227,7 +228,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             ut->passes( "Nonlinear solve for current loading step" );
         }
 
-        double finalSolNorm = solVec->L2Norm();
+        double finalSolNorm = solVec->L2Norm(solVec);
 
         AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
@@ -238,9 +239,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::LinearAlgebra::Vector::shared_ptr mechWvec =
             solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
 
-        double finalMaxU = mechUvec->maxNorm();
-        double finalMaxV = mechVvec->maxNorm();
-        double finalMaxW = mechWvec->maxNorm();
+        double finalMaxU = mechUvec->maxNorm(mechUvec);
+        double finalMaxV = mechVvec->maxNorm(mechVvec);
+        double finalMaxW = mechWvec->maxNorm(mechWvec);
 
         AMP::pout << "Maximum U displacement: " << finalMaxU << std::endl;
         AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;

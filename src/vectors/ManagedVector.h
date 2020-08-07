@@ -133,6 +133,8 @@ protected: // Derived from VectorData
 
 
 public: // Derived from VectorOperations
+#if 0
+    void copy( const VectorOperations &src ) override;
     void setToScalar( double alpha ) override;
     void scale( double alpha, const VectorOperations &x ) override;
     void scale( double alpha ) override;
@@ -156,7 +158,8 @@ public: // Derived from VectorOperations
     double L1Norm( void ) const override;
     double L2Norm( void ) const override;
     double maxNorm( void ) const override;
-
+#endif
+    
 public:
     //**********************************************************************
     // functions that operate on VectorData
@@ -194,7 +197,6 @@ public: // Derived from Vector
     Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
-    void copy( const VectorOperations &src ) override;
     void swapVectors( Vector &other ) override;
     void aliasVector( Vector &other ) override;
 
@@ -224,6 +226,11 @@ public: // Pull VectorOperations into the current scope
     using VectorOperations::wrmsNorm;
     using VectorOperations::wrmsNormMask;
     using VectorOperations::zero;
+    using VectorOperations::min;
+    using VectorOperations::max;
+    using VectorOperations::L1Norm;
+    using VectorOperations::L2Norm;
+    using VectorOperations::maxNorm;
 
 private:
     ManagedVector();

@@ -67,12 +67,12 @@ void SundialsVectorTests::LinearSumSundialsVector( AMP::UnitTest *utils )
     N_Vector vec_b = getVec( vectorb );
     N_Vector vec_c = getVec( vectorc );
 
-    vectora->setRandomValues();
-    vectorb->setRandomValues();
+    vectora->setRandomValues(vectora);
+    vectorb->setRandomValues(vectorb);
     N_VLinearSum( .2, vec_a, .5, vec_b, vec_c );
     vectord->linearSum( .2, vectora, .5, vectorb, vectord );
     vectord->subtract( vectord, vectorc, vectord );
-    if ( vectord->maxNorm() < 0.000001 )
+    if ( vectord->maxNorm(vectord) < 0.000001 )
         utils->passes( "random linear sum" );
     else
         utils->failure( "random linear sum" );
@@ -84,15 +84,15 @@ void SundialsVectorTests::ConstSundialsVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
     N_Vector vec_a = getVec( vectora );
     N_VConst( 0., vec_a );
-    double maxNorm = vectora->maxNorm();
+    double maxNorm = vectora->maxNorm(vectora);
     if ( maxNorm > 0 )
         utils->failure( "Nonzero inf norm" );
     else
         utils->passes( "Set vector to 0" );
 
     N_VConst( 1., vec_a );
-    maxNorm       = vectora->maxNorm();
-    double L1Norm = vectora->L1Norm();
+    maxNorm       = vectora->maxNorm(vectora);
+    double L1Norm = vectora->L1Norm(vectora);
     if ( ( maxNorm == 1. ) && ( L1Norm == (double) vectora->getGlobalSize() ) )
         utils->passes( "Set vector to 1" );
     else
@@ -111,12 +111,12 @@ void SundialsVectorTests::ProdSundialsVector( AMP::UnitTest *utils )
     N_Vector vec_b = getVec( vectorb );
     N_Vector vec_c = getVec( vectorc );
 
-    vectora->setRandomValues();
-    vectorb->setRandomValues();
+    vectora->setRandomValues(vectora);
+    vectorb->setRandomValues(vectorb);
     N_VProd( vec_a, vec_b, vec_c );
     vectord->multiply( vectora, vectorb, vectord );
     vectord->subtract( vectorc, vectord, vectord );
-    double norm = vectord->maxNorm();
+    double norm = vectord->maxNorm(vectord);
     if ( norm < 0.000001 )
         utils->passes( "Products match" );
     else
@@ -135,12 +135,12 @@ void SundialsVectorTests::DivSundialsVector( AMP::UnitTest *utils )
     N_Vector vec_b = getVec( vectorb );
     N_Vector vec_c = getVec( vectorc );
 
-    vectora->setRandomValues();
-    vectorb->setRandomValues();
+    vectora->setRandomValues(vectora);
+    vectorb->setRandomValues(vectorb);
     N_VDiv( vec_a, vec_b, vec_c );
     vectord->divide( vectora, vectorb, vectord );
     vectord->subtract( vectorc, vectord, vectord );
-    if ( vectord->maxNorm() < 0.000001 )
+    if ( vectord->maxNorm(vectord) < 0.000001 )
         utils->passes( "Quotients match" );
     else
         utils->failure( "Quotients are mis-matched" );
@@ -156,11 +156,11 @@ void SundialsVectorTests::ScaleSundialsVector( AMP::UnitTest *utils )
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
 
-    vectora->setRandomValues();
+    vectora->setRandomValues(vectora);
     N_VScale( 2.0, vec_a, vec_b );
     vectorc->scale( 2.0, vectora, vectorc );
     vectorc->subtract( vectorc, vectorb, vectorc );
-    if ( vectorc->maxNorm() < 0.000001 )
+    if ( vectorc->maxNorm(vectorc) < 0.000001 )
         utils->passes( "Scalings match" );
     else
         utils->failure( "Scalings are mis-matched" );
@@ -176,13 +176,13 @@ void SundialsVectorTests::AbsSundialsVector( AMP::UnitTest *utils )
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
 
-    vectora->setRandomValues();
-    vectorc->setToScalar( 0.5 );
+    vectora->setRandomValues(vectora);
+    vectorc->setToScalar( 0.5, vectorc );
     vectora->subtract( vectora, vectorc, vectora );
     N_VAbs( vec_a, vec_b );
     vectorc->abs( vectora, vectorc );
     vectorc->subtract( vectorc, vectorb, vectorc );
-    if ( vectorc->maxNorm() < 0.000001 )
+    if ( vectorc->maxNorm(vectorc) < 0.000001 )
         utils->passes( "Values match" );
     else
         utils->failure( "Values are mis-matched" );
@@ -198,11 +198,11 @@ void SundialsVectorTests::InvSundialsVector( AMP::UnitTest *utils )
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
 
-    vectora->setRandomValues();
+    vectora->setRandomValues(vectora);
     N_VInv( vec_a, vec_b );
     vectorc->reciprocal( vectora, vectorc );
     vectorc->subtract( vectorc, vectorb, vectorc );
-    if ( vectorc->maxNorm() < 0.000001 )
+    if ( vectorc->maxNorm(vectorc) < 0.000001 )
         utils->passes( "Scalings match" );
     else
         utils->failure( "Scalings are mis-matched" );
@@ -218,11 +218,11 @@ void SundialsVectorTests::AddConstSundialsVector( AMP::UnitTest *utils )
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
 
-    vectora->setRandomValues();
+    vectora->setRandomValues(vectora);
     N_VAddConst( vec_a, .3, vec_b );
     vectorc->addScalar( vectora, .3, vectorc );
     vectorc->subtract( vectorb, vectorc, vectorc );
-    double norm = vectorc->maxNorm();
+    double norm = vectorc->maxNorm(vectorc);
     if ( norm < 0.00000001 )
         utils->passes( "N_VAddConst" );
     else
@@ -238,8 +238,8 @@ void SundialsVectorTests::DotProdSundialsVector( AMP::UnitTest *utils )
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
 
-    vectora->setRandomValues();
-    vectorb->setRandomValues();
+    vectora->setRandomValues(vectora);
+    vectorb->setRandomValues(vectorb);
     double d1 = N_VDotProd( vec_a, vec_b );
     double d2 = vectora->dot( vectorb, vectora );
     if ( fabs( d1 - d2 ) < 0.00000001 )
@@ -255,10 +255,10 @@ void SundialsVectorTests::MaxNormSundialsVector( AMP::UnitTest *utils )
 
     N_Vector vec_a = getVec( vectora );
 
-    vectora->setRandomValues();
+    vectora->setRandomValues(vectora);
 
     double d1 = N_VMaxNorm( vec_a );
-    double d2 = vectora->maxNorm();
+    double d2 = vectora->maxNorm(vectora);
     if ( fabs( d1 - d2 ) < 0.00000001 )
         utils->passes( "N_VMaxNorm" );
     else
@@ -277,11 +277,11 @@ void SundialsVectorTests::WRMSNormSundialsVector( AMP::UnitTest *utils )
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
 
-    vectora->setRandomValues();
-    vectorb->setRandomValues();
+    vectora->setRandomValues(vectora);
+    vectorb->setRandomValues(vectorb);
 
     double d1 = N_VWrmsNorm( vec_a, vec_b );
-    double d2 = AMP::LinearAlgebra::Vector::wrmsNorm( vectora, vectorb );
+    double d2 = vectorb->wrmsNorm( vectora, vectorb );
     if ( fabs( d1 - d2 ) < 0.00000001 )
         utils->passes( "N_VWrmsNorm" );
     else
@@ -295,10 +295,10 @@ void SundialsVectorTests::MinSundialsVector( AMP::UnitTest *utils )
 
     N_Vector vec_a = getVec( vectora );
 
-    vectora->setRandomValues();
+    vectora->setRandomValues(vectora);
 
     double d1 = N_VMin( vec_a );
-    double d2 = vectora->min();
+    double d2 = vectora->min(vectora);
     if ( fabs( d1 - d2 ) < 0.00000001 )
         utils->passes( "N_VMin" );
     else
@@ -312,10 +312,10 @@ void SundialsVectorTests::L1NormSundialsVector( AMP::UnitTest *utils )
 
     N_Vector vec_a = getVec( vectora );
 
-    vectora->setRandomValues();
+    vectora->setRandomValues(vectora);
 
     double d1 = N_VL1Norm( vec_a );
-    double d2 = vectora->L1Norm();
+    double d2 = vectora->L1Norm(vectora);
     if ( fabs( d1 - d2 ) < 0.00000001 )
         utils->passes( "N_VL1Norm" );
     else
@@ -331,11 +331,11 @@ void SundialsVectorTests::MinQuotientSundialsVector( AMP::UnitTest *utils )
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
 
-    vectora->setRandomValues();
-    vectorb->setRandomValues();
+    vectora->setRandomValues(vectora);
+    vectorb->setRandomValues(vectorb);
 
     double d1 = N_VMinQuotient( vec_a, vec_b );
-    double d2 = AMP::LinearAlgebra::Vector::minQuotient( vectora, vectorb );
+    double d2 = vectorb->minQuotient( vectora, vectorb );
     if ( fabs( d1 - d2 ) < 0.00000001 )
         utils->passes( "N_VMinQuotient" );
     else

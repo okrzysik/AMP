@@ -64,13 +64,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     ut->passes( "PetscSNESSolver created" );
 
     // Call solve with a simple vector
-    u->setRandomValues();
-    f->setRandomValues();
+    u->setRandomValues(u);
+    f->setRandomValues(f);
     nonlinearSolver->solve( f, u );
     ut->passes( "PetscSNESSolver solve called with simple vector" );
     auto x = u->cloneVector();
     x->subtract( u, f, x );
-    double error = x->L2Norm() / f->L2Norm();
+    double error = x->L2Norm(x) / f->L2Norm(f);
     if ( fabs( error ) < 1e-8 )
         ut->passes( "Solve with simple vector passed" );
     else
@@ -83,8 +83,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mf = AMP::LinearAlgebra::MultiVector::create( "multivector", solverComm );
     mu->addVector( u );
     mf->addVector( f );
-    mu->setRandomValues();
-    mf->zero();
+    mu->setRandomValues(mu);
+    mf->zero(*mf);
     nonlinearSolver->solve( mf, mu );
 
     if ( N_error0 == ut->NumFailLocal() )

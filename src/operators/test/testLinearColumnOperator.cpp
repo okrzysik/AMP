@@ -142,11 +142,11 @@ static void myTest( AMP::UnitTest *ut )
                 auto opVar = inputVariables[iv];
                 if ( opVar->getName() == "temperature" ) {
                     auto tVec = solVec->subsetVectorForVariable( inputVariables[iv] );
-                    tVec->setToScalar( defTemp );
+                    tVec->setToScalar( defTemp, tVec );
                 }
                 if ( opVar->getName() == "concentration" ) {
                     auto cVec = solVec->subsetVectorForVariable( inputVariables[iv] );
-                    cVec->setToScalar( defConc );
+                    cVec->setToScalar( defConc, cVec );
                 }
             }
 

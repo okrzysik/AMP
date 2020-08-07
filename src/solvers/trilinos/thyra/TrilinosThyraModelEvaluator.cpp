@@ -84,7 +84,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
 
     if ( f_out != nullptr ) {
         // Evaluate the residual:  r = A(u) - rhs
-        f_out->zero();
+        f_out->zero(f_out);
         auto eval  = outArgs.get_f();
         bool exact = true;
         if ( eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_EXACT ) {

@@ -92,8 +92,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
         AMP::LinearAlgebra::Vector::shared_ptr initialConditionPrime =
             AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
-        initialCondition->zero();
-        initialConditionPrime->zero();
+        initialCondition->zero(initialCondition);
+        initialConditionPrime->zero(initialConditionPrime);
 
         // get the ida database
         AMP_INSIST( input_db->keyExists( "IDATimeIntegrator" ),

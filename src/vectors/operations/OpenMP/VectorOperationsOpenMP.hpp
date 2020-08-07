@@ -23,7 +23,7 @@ std::shared_ptr<VectorOperations> VectorOperationsOpenMP<TYPE>::cloneOperations(
     auto ptr = std::make_shared<VectorOperationsOpenMP<TYPE>>();
     return ptr;
 }
-
+#if 0
 template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::zero( )
 {
@@ -199,7 +199,7 @@ double VectorOperationsOpenMP<TYPE>::localWrmsNormMask( const VectorOperations &
 {
   return localWrmsNormMask( *(x.getVectorData()), *(mask.getVectorData()), *getVectorData());
 }
- 
+#endif
 //**********************************************************************
 // Static functions that operate on VectorData objects
 
