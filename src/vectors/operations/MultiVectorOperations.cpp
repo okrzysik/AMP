@@ -431,15 +431,11 @@ void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
 	std::cout << "Both are multivectors" <<std::endl;
     } else {
         // x is not a multivector, try to call a default implementation
-        auto y2 = yc;
-        auto x2 = xc;
-	std::cout << "xc " <<typeid(xc).name() <<std::endl;
-	std::cout << "yc " <<typeid(yc).name() <<std::endl;
-        AMP_ASSERT( x2->getLocalSize() == y2->getLocalSize() );
-        if ( x2->isType<double>() && y2->isType<double>() ) {
-            std::copy( x2->begin<double>(), x2->end<double>(), y2->begin<double>() );
-        } else if ( x2->isType<float>() && y2->isType<float>() ) {
-            std::copy( x2->begin<float>(), x2->end<float>(), y2->begin<float>() );
+        AMP_ASSERT( x.getLocalSize() == y.getLocalSize() );
+        if ( x.isType<double>() && y.isType<double>() ) {
+            std::copy( x.begin<double>(), x.end<double>(), y.begin<double>() );
+        } else if ( x.isType<float>() && y.isType<float>() ) {
+            std::copy( x.begin<float>(), x.end<float>(), y.begin<float>() );
         } else {
             AMP_ERROR( "Unable to discern data types" );
         }
