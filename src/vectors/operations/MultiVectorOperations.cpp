@@ -623,6 +623,7 @@ void MultiVectorOperations::abs( const VectorData &x, VectorData &y )
 	
         d_operations[i]->abs( *getVectorDataComponent(x,i),
 			      *getVectorDataComponent(y,i) );
+      }
     } else {
        AMP_ERROR("MultiVectorOperations::abs requires x, y to be MultiVectorData");
     }
