@@ -218,7 +218,6 @@ void VectorTests::AbsVector( AMP::UnitTest *utils )
     auto vec2 = vec1->cloneVector();
     vec1->setRandomValues(vec1);
     auto min = vec1->min(vec1);
-    std::cout << "min value is " << min << std::endl;
     vec1->addScalar(vec1, fabs(min)+.01, vec1);
     vec2->copyVector( vec1 );
     vec2->scale( -1.0, vec2 );

@@ -454,7 +454,6 @@ void VectorOperationsDefault<TYPE>::abs( const VectorData &x, VectorData &y )
     auto curRhs = x.begin<TYPE>();
     while ( curMe != last ) {
         *curMe = fabs( *curRhs );
-	std::cout << "x " << *curRhs << ", fabs(x) " << *curMe <<std::endl;
         ++curRhs;
         ++curMe;
     }

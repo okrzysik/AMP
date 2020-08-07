@@ -609,6 +609,7 @@ void MultiVectorOperations::axpby( double alpha_in, double beta_in, const Vector
 
 void MultiVectorOperations::abs( const VectorData &x, VectorData &y )
 {
+  std::cout "Entering MultiVectorOperations::abs" <<std::endl; 
     if ( d_operations.empty() ) {
         return;
     }
@@ -624,8 +625,8 @@ void MultiVectorOperations::abs( const VectorData &x, VectorData &y )
 			      *getVectorDataComponent(y,i) );
 	std::cout << "MultiVector component y " << i <<  std::endl;
 	getVectorDataComponent(y,i)->dumpOwnedData(AMP::pout);
-	AMP_ERROR("Quit for now");
       }
+      AMP_ERROR("Quit for now");
     } else {
        AMP_ERROR("MultiVectorOperations::abs requires x, y to be MultiVectorData");
     }
