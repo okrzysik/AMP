@@ -614,10 +614,13 @@ void MultiVectorOperations::abs( const VectorData &x, VectorData &y )
     }
     auto x2 = getMultiVectorData(x);
     auto y2 = getMultiVectorData(y);
-    if ( x2 && y2 ) {      
+    if ( x2 && y2 ) {
       AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
       AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
-      for ( size_t i = 0; i != d_operations.size(); i++ )
+      for ( size_t i = 0; i != d_operations.size(); i++ ){
+	std::cout << "MultiVector component x" << i << " is " << typeid(getVectorDataComponent(x,i)).name() << std::endl;
+	std::cout << "MultiVector component y" << i << " is " << typeid(getVectorDataComponent(y,i)).name() << std::endl;
+	
         d_operations[i]->abs( *getVectorDataComponent(x,i),
 			      *getVectorDataComponent(y,i) );
     } else {
