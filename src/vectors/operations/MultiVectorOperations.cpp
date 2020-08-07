@@ -418,6 +418,9 @@ void MultiVectorOperations::setRandomValues( RNG::shared_ptr rng, VectorData &x 
 
 void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
 {
+  
+  std::cout << "x " <<typeid(x).name() <<std::endl;
+  std::cout << "y " <<typeid(y).name() <<std::endl;
   auto xc = getMultiVectorData(x);
   auto yc = getMultiVectorData(y);
 
