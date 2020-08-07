@@ -593,6 +593,30 @@ void MultiVectorOperations::linearSum( double alpha_in,
 				      *getVectorDataComponent(z,i) );
 	
     } else {
+        AMP_ASSERT( x.getLocalSize() == y.getLocalSize() );
+        AMP_ASSERT( x.getLocalSize() == z.getLocalSize() );
+        if ( x.isType<double>() && y.isType<double>() ) {
+  	    auto xit  = x.begin<double>();
+  	    auto yit  = y.begin<double>();
+  	    auto zit  = z.begin<double>();
+  	    auto xend = x.end<double>();
+	    while(xit!=xend) {
+	      *zit = alpha_in*(*xit)+beta_in*(*yit);
+	      ++xit; ++yit; ++zit;
+	    }
+        } else if ( x.isType<float>() && y.isType<float>() ) {
+  	    auto xit  = x.begin<float>();
+  	    auto yit  = y.begin<float>();
+  	    auto zit  = z.begin<float>();
+  	    auto xend = x.end<float>();
+	    while(xit!=xend) {
+	      *zit = alpha_in*(*xit)+beta_in*(*yit);
+	      ++xit; ++yit; ++zit;
+	    }
+        } else {
+            AMP_ERROR( "Unable to discern data types" );
+        }
+      
        AMP_ERROR("MultiVectorOperations::linearSum requires x, y, z to be MultiVectorData");
     }
 }
@@ -641,7 +665,7 @@ void MultiVectorOperations::addScalar( const VectorData &x, double alpha_in, Vec
 				    alpha_in,
 				    *getVectorDataComponent(y,i) );
     } else {
-       AMP_ERROR("MultiVectorOperations::linearSum requires x, y to be MultiVectorData");
+       AMP_ERROR("MultiVectorOperations::addScalar requires x, y to be MultiVectorData");
     }
 }
 
