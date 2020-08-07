@@ -36,7 +36,6 @@ static inline ManagedVector *getManagedVector( VectorData &x )
 }
 static inline VectorData *getEngineData( VectorData &x )
 {
-    VectorData *retVal = nullptr;
     auto y = dynamic_cast<ManagedVector *>( &x );    
     AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
     auto engine = y->getVectorEngine();
