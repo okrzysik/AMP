@@ -616,8 +616,6 @@ void MultiVectorOperations::linearSum( double alpha_in,
         } else {
             AMP_ERROR( "Unable to discern data types" );
         }
-      
-       AMP_ERROR("MultiVectorOperations::linearSum requires x, y, z to be MultiVectorData");
     }
 }
 
