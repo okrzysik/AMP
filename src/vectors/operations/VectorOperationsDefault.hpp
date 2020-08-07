@@ -447,7 +447,6 @@ void VectorOperationsDefault<TYPE>::axpby( double alpha_in, double beta_in, cons
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::abs( const VectorData &x, VectorData &y )
 {
-    std::cout << "Entering VectorOperationsDefault<TYPE>::abs" << typeid(x).name()<< std::endl;
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
     auto curMe  = y.begin<TYPE>();
     auto last   = y.end<TYPE>();
