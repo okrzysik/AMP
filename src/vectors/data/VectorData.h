@@ -334,8 +334,9 @@ public: // Virtual functions dealing with the update status
 
     //! Get the communicator
     virtual AMP_MPI getComm() const;
-
-
+  
+    bool hasComm( void ) const { return (d_CommList!=nullptr); }
+    
 public: // Non-virtual functions
     /**
      * \brief Return an iterator to the beginning of the data

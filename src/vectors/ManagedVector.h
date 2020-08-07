@@ -81,7 +81,6 @@ public:
 
     virtual std::shared_ptr<ManagedVectorParameters> getManagedVectorParameters();
 
-
 protected:
     //! The buffer used to store data
     std::shared_ptr<VectorData> d_vBuffer;

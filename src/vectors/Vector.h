@@ -231,6 +231,12 @@ public: // Virtual functions
      */
     virtual void addCommunicationListToParameters( CommunicationList::shared_ptr commList );
 
+    //! Return the pointer to the VectorData
+    inline VectorData *getVectorData() { return d_VectorData; }
+
+    //! Return the pointer to the VectorData
+    inline const VectorData *getVectorData() const { return d_VectorData; }
+
 
 public: // Constructor/destructors
     /** \brief Constructor
@@ -353,6 +359,9 @@ private:
     // The following are not implemented
     explicit Vector( const Vector & );
     void operator=( const Vector & );
+
+    // Pointer to *this as a VectorData object
+    VectorData *d_VectorData;
 
     // output stream for vector data
     std::ostream *d_output_stream;

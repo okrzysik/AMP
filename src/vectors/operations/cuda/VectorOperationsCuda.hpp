@@ -99,8 +99,8 @@ void VectorOperationsCuda<TYPE>::setToScalar( double alpha, VectorData &x )
             ++curMe;
         }
     }
-    if ( hasGhosts() ) {
-        auto &ghosts = getGhosts();
+    if ( x.hasGhosts() ) {
+        auto &ghosts = x.getGhosts();
         for ( size_t i = 0; i != ghosts.size(); i++ )
             ghosts[i] = alpha;
     }

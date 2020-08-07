@@ -8,33 +8,6 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-
-/****************************************************************
- * Get the comm                                                  *
- ****************************************************************/
-inline bool VectorOperations::hasComm() const
-{
-    if ( d_VectorData == nullptr )
-        return false;
-    return d_VectorData->getCommunicationList() != nullptr;
-}
-inline const AMP_MPI &VectorOperations::getComm() const
-{
-    return d_VectorData->getCommunicationList()->getComm();
-}
-
-
-/****************************************************************
- * Access ghost values                                           *
- ****************************************************************/
-inline bool VectorOperations::hasGhosts() const
-{
-    if ( d_VectorData == nullptr )
-        return false;
-    return d_VectorData->d_Ghosts != nullptr;
-}
-inline std::vector<double> &VectorOperations::getGhosts() { return *( d_VectorData->d_Ghosts ); }
-
 /****************************************************************
  * Wrappers for shared_ptr                                       *
  ****************************************************************/

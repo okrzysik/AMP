@@ -461,29 +461,8 @@ public: // shared_ptr wrappers
 				std::shared_ptr<const VectorData> y ) const;
 
 
-public:
-    //! Return the pointer to the VectorData
-    inline VectorData *getVectorData() { return d_VectorData; }
-
-    //! Return the pointer to the VectorData
-    inline const VectorData *getVectorData() const { return d_VectorData; }
-
-    //! Do we have a valid communicator
-    inline bool hasComm() const;
-
-    //! Do we have a valid communicator
-    inline const AMP_MPI &getComm() const;
-
 protected:
     VectorOperations();
-
-    inline bool hasGhosts() const;
-    inline std::vector<double> &getGhosts();
-
-
-protected: // Internal data
-    // Pointer to *this as a VectorData object
-    VectorData *d_VectorData;
 };
 
 
