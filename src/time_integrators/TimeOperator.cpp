@@ -86,7 +86,7 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP_INSIST( ( rInternal != nullptr ), "NULL Residual/Output Vector" );
 
     d_pScratchVector = rInternal->cloneVector();
-    d_pScratchVector->zero(d_pScratchVector);
+    d_pScratchVector->zero( d_pScratchVector );
 
     d_pMassOperator->apply( u, rInternal );
     rInternal->scale( 1.0 / d_dCurrentDt, rInternal );

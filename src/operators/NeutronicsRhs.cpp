@@ -174,7 +174,7 @@ void NeutronicsRhs::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         double value = d_fixedValues[this_step];
         rInternal->setToScalar( value, rInternal );
     } else {
-        rInternal->zero(rInternal);
+        rInternal->zero( rInternal );
         int ghostWidth = 0;
         AMP::Mesh::MeshIterator elem =
             d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
@@ -188,7 +188,7 @@ void NeutronicsRhs::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
         int gp = 0;
         std::vector<size_t> gid;
-        AMP::pout << "The intial value is: " << rInternal->L2Norm(rInternal) << std::endl;
+        AMP::pout << "The intial value is: " << rInternal->L2Norm( rInternal ) << std::endl;
         for ( ; elem != end_elems; ++elem ) {
             dof_map->getDOFs( elem->globalID(), gid );
             for ( unsigned int i = 0; i < DOFsPerVolume; gp++, i++ ) {

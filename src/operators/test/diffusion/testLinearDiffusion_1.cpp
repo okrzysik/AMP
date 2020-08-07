@@ -70,9 +70,9 @@ static void linearTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Test apply
     for ( int i = 0; i < 10; i++ ) {
-        diffSolVec->setRandomValues(diffSolVec);
-        diffRhsVec->setRandomValues(diffRhsVec);
-        diffResVec->setRandomValues(diffResVec);
+        diffSolVec->setRandomValues( diffSolVec );
+        diffRhsVec->setRandomValues( diffRhsVec );
+        diffResVec->setRandomValues( diffResVec );
         diffOp->residual( diffRhsVec, diffSolVec, diffResVec );
     } // end for i
 

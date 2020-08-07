@@ -205,12 +205,13 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
             AMP_ASSERT( d_inVec[var]->getUpdateStatus() ==
                         AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
             if ( d_iDebugPrintInfoLevel > 5 )
-                std::cout << "Max Value inside preAssembly: " << d_inVec[var]->max(d_inVec[var]) << std::endl;
+                std::cout << "Max Value inside preAssembly: " << d_inVec[var]->max( d_inVec[var] )
+                          << std::endl;
         }
     }
 
     d_outVec = subsetOutputVector( r );
-    d_outVec->zero(d_outVec);
+    d_outVec->zero( d_outVec );
 
     d_transportModel->preNonlinearAssembly();
 

@@ -106,11 +106,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                  finalTempVec );
 
     // Initial guess
-    solVec->zero(solVec);
+    solVec->zero( solVec );
     nonlinearMechanicsBVPoperator->modifyInitialSolutionVector( solVec );
 
     // RHS
-    rhsVec->zero(rhsVec);
+    rhsVec->zero( rhsVec );
     nonlinearMechanicsBVPoperator->modifyRHSvector( rhsVec );
 
     std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );

@@ -234,7 +234,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Get initial residual
     nlinBVPOp->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm(resVec);
+    double initialResidualNorm = resVec->L2Norm( resVec );
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
     // Run solver
@@ -243,7 +243,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Get final residual
     nlinBVPOp->residual( rhsVec, solVec, resVec );
-    double finalResidualNorm = resVec->L2Norm(resVec);
+    double finalResidualNorm = resVec->L2Norm( resVec );
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     // Final communication

@@ -84,7 +84,8 @@ NOX::StatusTest::StatusType AndersonStatusTest::checkStatus( const NOX::Solver::
             AMP_ASSERT( thisPrevVec );
             AMP::LinearAlgebra::Vector::shared_ptr thisDiffVec = thisCurVec->cloneVector();
             thisDiffVec->subtract( thisCurVec, thisPrevVec, thisDiffVec );
-            d_relativeResiduals[i] = thisDiffVec->L2Norm(thisDiffVec) / thisCurVec->L2Norm(thisCurVec);
+            d_relativeResiduals[i] =
+                thisDiffVec->L2Norm( thisDiffVec ) / thisCurVec->L2Norm( thisCurVec );
             if ( d_relativeResiduals[i] > d_tolerances[i] )
                 converged = false;
         }

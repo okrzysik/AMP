@@ -106,7 +106,7 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
     // Create the power (heat source) vector.
     auto powerInWattsVar = sourceOperator->getOutputVariable();
     auto powerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, powerInWattsVar );
-    powerInWattsVec->zero(powerInWattsVec);
+    powerInWattsVec->zero( powerInWattsVec );
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, powerInWattsVec );
@@ -171,9 +171,9 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
 
         std::cout << j++ << "-th timestep" << std::endl;
 
-	auto sol = BDFTimeIntegrator->getCurrentSolution();
-        max = sol->max(sol);
-        min = sol->min(sol);
+        auto sol = BDFTimeIntegrator->getCurrentSolution();
+        max      = sol->max( sol );
+        min      = sol->min( sol );
 
         std::cout << "current_time = " << current_time << std::endl;
         std::cout << "max val of the current solution = " << max << std::endl;

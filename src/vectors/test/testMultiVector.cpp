@@ -75,15 +75,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // Try to copy data between the single vector and multivector
-    singleVector->setRandomValues(singleVector);
+    singleVector->setRandomValues( singleVector );
     multiVector->copyVector( singleVector );
-    if ( AMP::Utilities::approx_equal( singleVector->L2Norm(singleVector), multiVector->L2Norm(multiVector), 1e-12 ) )
+    if ( AMP::Utilities::approx_equal(
+             singleVector->L2Norm( singleVector ), multiVector->L2Norm( multiVector ), 1e-12 ) )
         ut->passes( "Data copied from single vector to multivector" );
     else
         ut->failure( "Data copied from single vector to multivector" );
-    singleVector->zero(singleVector);
+    singleVector->zero( singleVector );
     singleVector->copyVector( multiVector );
-    if ( AMP::Utilities::approx_equal( singleVector->L2Norm(singleVector), multiVector->L2Norm(multiVector), 1e-12 ) )
+    if ( AMP::Utilities::approx_equal(
+             singleVector->L2Norm( singleVector ), multiVector->L2Norm( multiVector ), 1e-12 ) )
         ut->passes( "Data copied from multivector to single vector" );
     else
         ut->failure( "Data copied from multivector to single vector" );

@@ -31,8 +31,8 @@ void ManagedEpetraVector::copy( const VectorOperations &src )
     }
 }
 #endif
-  
-void ManagedEpetraVector::copy( const VectorData &src,  VectorData &dst)
+
+void ManagedEpetraVector::copy( const VectorData &src, VectorData &dst )
 {
     // there must be a more sensible way of doing this but I can't find the documentation - BP
     auto srcVec = dynamic_cast<const ManagedEpetraVector *>( &src );
@@ -42,7 +42,7 @@ void ManagedEpetraVector::copy( const VectorData &src,  VectorData &dst)
         dstVec->getEpetra_Vector().Scale( scale, srcVec->getEpetra_Vector() );
         dst.copyGhostValues( src );
     } else {
-      VectorOperationsDefault<double>::copy( src, dst );
+        VectorOperationsDefault<double>::copy( src, dst );
     }
 }
 

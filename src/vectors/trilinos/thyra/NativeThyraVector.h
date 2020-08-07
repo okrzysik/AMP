@@ -40,12 +40,9 @@ public:
  * \see ThyraVector
  * \see ManagedThyraVector
  */
-class NativeThyraVector : public Vector,
-                          public ThyraVector,
-                          public VectorOperationsDefault<double>
+class NativeThyraVector : public Vector, public ThyraVector, public VectorOperationsDefault<double>
 {
 public:
-
     /** \brief Construct a wrapper for a Thyra Vec from a set of parameters
      * \param[in] params The parameters describing the Vec
      */
@@ -63,7 +60,7 @@ public:
     void aliasVector( Vector & ) override;
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
-    
+
     void setValuesByLocalID( int, size_t *, const double * ) override;
     void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
     void addValuesByLocalID( int, size_t *, const double * ) override;
@@ -86,10 +83,10 @@ public:
     void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 
 public:
-//  function that operate on VectorData
+    //  function that operate on VectorData
     void setToScalar( double alpha, VectorData &z ) override;
-    void setRandomValues( VectorData &x ) override;    
-    void setRandomValues( RNG::shared_ptr rng, VectorData &x ) override;    
+    void setRandomValues( VectorData &x ) override;
+    void setRandomValues( RNG::shared_ptr rng, VectorData &x ) override;
     void copy( const VectorData &x, VectorData &z ) override;
     void scale( double alpha, const VectorData &x, VectorData &y ) override;
     void scale( double alpha, VectorData &x ) override;
@@ -99,10 +96,10 @@ public:
     void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
     void reciprocal( const VectorData &x, VectorData &y ) override;
     void linearSum( double alpha,
-			   const VectorData &x,
-			   double beta,
-			   const VectorData &y,
-			   VectorData &z) override;
+                    const VectorData &x,
+                    double beta,
+                    const VectorData &y,
+                    VectorData &z ) override;
     void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
     void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
     void abs( const VectorData &x, VectorData &z ) override;
@@ -111,7 +108,7 @@ public:
     double min( const VectorData &x ) const override;
     double max( const VectorData &x ) const override;
     double L1Norm( const VectorData &x ) const override;
-    double L2Norm( const VectorData &x  ) const override;
+    double L2Norm( const VectorData &x ) const override;
     double maxNorm( const VectorData &x ) const override;
     double dot( const VectorData &x, const VectorData &y ) const override;
 #if 0
@@ -127,7 +124,7 @@ public:
     double localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) override;
     bool   localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) override;
 #endif
-    
+
 protected:
     //! Empty constructor.
     NativeThyraVector();
@@ -145,7 +142,7 @@ private:
 
     static Teuchos::RCP<const Thyra::VectorBase<double>> getThyraVec( const VectorData &v );
     static Teuchos::RCP<Thyra::VectorBase<double>> getThyraVec( VectorData &v );
-    
+
 public: // Pull VectorOperations into the current scope
     using Vector::abs;
     using Vector::add;
@@ -154,7 +151,12 @@ public: // Pull VectorOperations into the current scope
     using Vector::cloneVector;
     using Vector::divide;
     using Vector::dot;
+    using Vector::L1Norm;
+    using Vector::L2Norm;
     using Vector::linearSum;
+    using Vector::max;
+    using Vector::maxNorm;
+    using Vector::min;
     using Vector::minQuotient;
     using Vector::multiply;
     using Vector::reciprocal;
@@ -163,11 +165,6 @@ public: // Pull VectorOperations into the current scope
     using Vector::subtract;
     using Vector::wrmsNorm;
     using Vector::wrmsNormMask;
-    using Vector::min;
-    using Vector::max;
-    using Vector::L1Norm;
-    using Vector::L2Norm;
-    using Vector::maxNorm;
 };
 
 

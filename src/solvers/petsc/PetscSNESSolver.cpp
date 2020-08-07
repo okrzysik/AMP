@@ -277,7 +277,7 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     PROFILE_START( "solve" );
 
     if ( d_iDebugPrintInfoLevel > 2 )
-        AMP::pout << "L2 Norm of u in PetscSNESSolver::solve before view " << u->L2Norm(u)
+        AMP::pout << "L2 Norm of u in PetscSNESSolver::solve before view " << u->L2Norm( u )
                   << std::endl;
 
     // Get petsc views of the vectors
@@ -308,7 +308,7 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
         ( spSol->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
 
     if ( d_iDebugPrintInfoLevel > 2 )
-        AMP::pout << "L2 Norm of u in PetscSNESSolver::solve after view " << spSol->L2Norm(spSol)
+        AMP::pout << "L2 Norm of u in PetscSNESSolver::solve after view " << spSol->L2Norm( spSol )
                   << std::endl;
 
     // if the dynamic cast yielded a valid pointer
@@ -557,7 +557,7 @@ PetscErrorCode PetscSNESSolver::mffdCheckBounds( void *checkctx, Vec U, Vec a, P
         double minVal = PetscAbsScalar( ( *h ) * 1.01 );
         scv->divide( uv, av, scv );
         scv->abs( scv, scv );
-        minVal = std::min( scv->min(scv), minVal );
+        minVal = std::min( scv->min( scv ), minVal );
         if ( minVal <= PetscAbsScalar( *h ) ) {
             AMP::pout << "Scaling h back from  " << ( *h ) << " to " << 0.99 * minVal << std::endl;
             if ( PetscRealPart( *h ) > 0.0 )

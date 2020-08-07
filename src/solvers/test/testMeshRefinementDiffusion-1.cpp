@@ -397,14 +397,16 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
 #endif
 
     TemperatureVec->copyVector( manufacturedSolution );
-    std::cout << "Max value of manufactured solution : " << manufacturedSolution->max(manufacturedSolution)
-              << std::endl;
-    std::cout << "Min value of manufactured solution : " << manufacturedSolution->min(manufacturedSolution)
-              << std::endl;
-    std::cout << "Max value of manufactured RHS : " << manufacturedRHS->max(manufacturedRHS)
-              << " normal gradient: " << manufacturedNormalGradient->max(manufacturedNormalGradient) << std::endl;
-    std::cout << "Min value of manufactured RHS : " << manufacturedRHS->min(manufacturedRHS)
-              << " normal gradient: " << manufacturedNormalGradient->min(manufacturedNormalGradient) << std::endl;
+    std::cout << "Max value of manufactured solution : "
+              << manufacturedSolution->max( manufacturedSolution ) << std::endl;
+    std::cout << "Min value of manufactured solution : "
+              << manufacturedSolution->min( manufacturedSolution ) << std::endl;
+    std::cout << "Max value of manufactured RHS : " << manufacturedRHS->max( manufacturedRHS )
+              << " normal gradient: "
+              << manufacturedNormalGradient->max( manufacturedNormalGradient ) << std::endl;
+    std::cout << "Min value of manufactured RHS : " << manufacturedRHS->min( manufacturedRHS )
+              << " normal gradient: "
+              << manufacturedNormalGradient->min( manufacturedNormalGradient ) << std::endl;
 
     //------------------------------------------
     // OPERATOR APPLY TO CALCULATE        //
@@ -427,7 +429,7 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
 
     auto rhsVar           = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
     auto integratedRHSVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, rhsVar, true );
-    integratedRHSVec->zero(integratedRHSVec);
+    integratedRHSVec->zero( integratedRHSVec );
 
     volumeIntegralColumnOperator->apply( manufacturedRHS, integratedRHSVec );
 
@@ -466,7 +468,7 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
      */
     nonlinearThermalColumnOperator->residual( integratedRHSVec, TemperatureVec, ResidualVec );
     ResidualVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
-    double initialResidualNorm = ResidualVec->L2Norm(ResidualVec);
+    double initialResidualNorm = ResidualVec->L2Norm( ResidualVec );
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
@@ -493,8 +495,8 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
     nonlinearThermalColumnOperator->residual( integratedRHSVec, TemperatureVec, ResidualVec );
     solutionError->subtract( TemperatureVec, manufacturedSolution, solutionError );
 
-    std::cout << "Max of ||U-Uh|| : " << solutionError->max(solutionError)
-              << " Min of ||U-Uh|| : " << solutionError->min(solutionError) << std::endl;
+    std::cout << "Max of ||U-Uh|| : " << solutionError->max( solutionError )
+              << " Min of ||U-Uh|| : " << solutionError->min( solutionError ) << std::endl;
 
     TemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
@@ -519,8 +521,8 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
 
     std::cout << "Discretized error norm for ||U-Uh|| : " << sqrt( TotalNorm2 ) << std::endl;
 
-    std::cout << "Max of U : " << TemperatureVec->max(TemperatureVec) << " Min of U : " << TemperatureVec->min(TemperatureVec)
-              << std::endl;
+    std::cout << "Max of U : " << TemperatureVec->max( TemperatureVec )
+              << " Min of U : " << TemperatureVec->min( TemperatureVec ) << std::endl;
 
 
 #ifdef USE_EXT_SILO

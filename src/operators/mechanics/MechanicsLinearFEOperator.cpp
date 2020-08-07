@@ -35,7 +35,7 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
 
     if ( d_useUpdatedLagrangian ) {
         d_refXYZ = AMP::LinearAlgebra::createVector( d_inDofMap, d_inputVariable, true );
-        d_refXYZ->zero(d_refXYZ);
+        d_refXYZ->zero( d_refXYZ );
 
         AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
         AMP::Mesh::MeshIterator end_el = el.end();

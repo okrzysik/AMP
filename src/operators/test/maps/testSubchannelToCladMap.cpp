@@ -170,7 +170,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
         gauss_DOFs = AMP::Discretization::simpleDOFManager::create(
             pin_mesh, AMP::Mesh::GeomType::Face, 1, 4 );
         T_gauss = AMP::LinearAlgebra::createVector( gauss_DOFs, temperature );
-        T_gauss->zero(T_gauss);
+        T_gauss->zero( T_gauss );
     }
     map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladGPMap>(
         manager, gauss_map_db );

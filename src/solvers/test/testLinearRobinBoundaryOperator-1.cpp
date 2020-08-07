@@ -105,8 +105,8 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     auto ResidualVec      = TemperatureInKelvinVec->cloneVector();
     auto variableFluxVec  = TemperatureInKelvinVec->cloneVector();
 
-    RightHandSideVec->zero(RightHandSideVec);
-    variableFluxVec->zero(variableFluxVec);
+    RightHandSideVec->zero( RightHandSideVec );
+    variableFluxVec->zero( variableFluxVec );
 
     //------------------------------------------
 
@@ -190,7 +190,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     // Create the power (heat source) vector.
     auto SourceVar = sourceOperator->getOutputVariable();
     auto SourceVec = AMP::LinearAlgebra::createVector( nodalDofMap, SourceVar, split );
-    SourceVec->zero(SourceVec);
+    SourceVec->zero( SourceVec );
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( RightHandSideVec, SourceVec );
@@ -199,11 +199,11 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     //   Add the boundary conditions corrections //
     //------------------------------------------
 
-    std::cout << "RHS Norm before BC Correction " << SourceVec->L2Norm(SourceVec) << std::endl;
+    std::cout << "RHS Norm before BC Correction " << SourceVec->L2Norm( SourceVec ) << std::endl;
 
     diffusionOperator->modifyRHSvector( SourceVec );
 
-    auto rhsNorm = SourceVec->L2Norm(SourceVec);
+    auto rhsNorm = SourceVec->L2Norm( SourceVec );
     std::cout << "RHS Norm after BC Correction " << rhsNorm << std::endl;
 
     //------------------------------------------
@@ -224,7 +224,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     TemperatureInKelvinVec->setToScalar( 1.0, TemperatureInKelvinVec );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = TemperatureInKelvinVec->L2Norm(TemperatureInKelvinVec);
+    double initSolNorm = TemperatureInKelvinVec->L2Norm( TemperatureInKelvinVec );
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
     // Create the ML Solver
@@ -240,15 +240,15 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     diffusionOperator->residual( SourceVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = ResidualVec->L2Norm(ResidualVec);
+    double finalResidualNorm = ResidualVec->L2Norm( ResidualVec );
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     node          = node.begin();
     auto diffVec  = TemperatureInKelvinVec->cloneVector();
     auto exactVec = TemperatureInKelvinVec->cloneVector();
 
-    diffVec->zero(diffVec);
-    exactVec->zero(exactVec);
+    diffVec->zero( diffVec );
+    exactVec->zero( exactVec );
 
     for ( ; node != end_node; ++node ) {
         std::vector<size_t> gid;
@@ -265,13 +265,13 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 
     diffVec->subtract( exactVec, TemperatureInKelvinVec, diffVec );
 
-    double exactNorm = exactVec->L1Norm(exactVec);
+    double exactNorm = exactVec->L1Norm( exactVec );
     std::cout << "L2norm of exactVec " << exactNorm << std::endl;
 
-    double solutionNorm = TemperatureInKelvinVec->L1Norm(TemperatureInKelvinVec);
+    double solutionNorm = TemperatureInKelvinVec->L1Norm( TemperatureInKelvinVec );
     std::cout << "L2norm of solutionVec " << solutionNorm << std::endl;
 
-    double errorNorm = diffVec->L1Norm(diffVec);
+    double errorNorm = diffVec->L1Norm( diffVec );
     std::cout << "L1norm of DiffVec " << errorNorm << std::endl;
 
     if ( errorNorm > 1.0 ) {

@@ -37,7 +37,7 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 {
     if ( d_cloningHappened == 0 ) {
         d_pScratchVector = r->cloneVector();
-        d_pScratchVector->zero(d_pScratchVector);
+        d_pScratchVector->zero( d_pScratchVector );
         d_cloningHappened = true;
     }
 
@@ -51,7 +51,7 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     if ( d_pAlgebraicVariable.get() != nullptr ) {
         std::shared_ptr<AMP::LinearAlgebra::Vector> algebraicComponent =
             d_pScratchVector->subsetVectorForVariable( d_pAlgebraicVariable );
-        algebraicComponent->zero(algebraicComponent);
+        algebraicComponent->zero( algebraicComponent );
     }
 
     d_pRhsOperator->apply( u, r );
@@ -65,7 +65,7 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     }
 
     if ( !dpSourceTermNull ) {
-      r->axpby( -1.0, 1.0, d_pSourceTerm, r );
+        r->axpby( -1.0, 1.0, d_pSourceTerm, r );
     }
 
     if ( d_iDebugPrintInfoLevel > 6 ) {

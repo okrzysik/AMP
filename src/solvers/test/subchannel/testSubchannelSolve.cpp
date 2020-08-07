@@ -328,7 +328,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             cladMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
         auto densityVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Density" );
         density_map_vec      = AMP::LinearAlgebra::createVector( nodalScalarDOF, densityVariable );
-        density_map_vec->zero(density_map_vec);
+        density_map_vec->zero( density_map_vec );
     }
     if ( pinMesh.get() != nullptr ) {
         // flow temperature on clad outer surfaces and pellet temperature on clad innner surfaces,
@@ -489,7 +489,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         vecCopyOperatorParams->d_copyVector   = thermalMapVec;
         vecCopyOperatorParams->d_Mesh         = pinMesh;
         thermalCopyOperator.reset( new AMP::Operator::VectorCopyOperator( vecCopyOperatorParams ) );
-        thermalMapVec->zero(thermalMapVec);
+        thermalMapVec->zero( thermalMapVec );
     }
 
     auto CoupledOpParams = std::make_shared<AMP::Operator::CoupledOperatorParameters>( emptyDb );
@@ -625,7 +625,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         if ( cladMesh.get() != nullptr ) {
             AMP::LinearAlgebra::VS_Mesh meshSelector( cladMesh );
             auto cladPower = specificPowerGpVec->select( meshSelector, "cladPower" );
-            cladPower->zero(cladPower);
+            cladPower->zero( cladPower );
         }
         specificPowerGpVec->makeConsistent(
             AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
@@ -654,8 +654,10 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         auto subchannelEnthalpy = flowSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
         auto subchannelPressure = flowSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
 
-        subchannelEnthalpy->setToScalar( AMP::Operator::Subchannel::scaleEnthalpy * hin, subchannelEnthalpy );
-        subchannelPressure->setToScalar( AMP::Operator::Subchannel::scalePressure * Pout, subchannelPressure );
+        subchannelEnthalpy->setToScalar( AMP::Operator::Subchannel::scaleEnthalpy * hin,
+                                         subchannelEnthalpy );
+        subchannelPressure->setToScalar( AMP::Operator::Subchannel::scalePressure * Pout,
+                                         subchannelPressure );
 
         // FIRST APPLY CALL
         auto subchannelLinearParams =
@@ -688,10 +690,10 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
     // Solve
     PROFILE_START( "Solve" );
-    AMP::pout << "Rhs norm: " << std::setprecision( 13 ) << globalRhsMultiVector->L2Norm(globalRhsMultiVector)
-              << std::endl;
+    AMP::pout << "Rhs norm: " << std::setprecision( 13 )
+              << globalRhsMultiVector->L2Norm( globalRhsMultiVector ) << std::endl;
     AMP::pout << "Initial solution norm: " << std::setprecision( 13 )
-              << globalSolMultiVector->L2Norm(globalSolMultiVector) << std::endl;
+              << globalSolMultiVector->L2Norm( globalSolMultiVector ) << std::endl;
     nonlinearCoupledOperator->residual(
         globalRhsMultiVector, globalSolMultiVector, globalResMultiVector );
     NULL_USE( globalThermalResVec );

@@ -334,9 +334,9 @@ public: // Virtual functions dealing with the update status
 
     //! Get the communicator
     virtual AMP_MPI getComm() const;
-  
-    bool hasComm( void ) const { return (d_CommList!=nullptr); }
-    
+
+    bool hasComm( void ) const { return ( d_CommList != nullptr ); }
+
 public: // Non-virtual functions
     /**
      * \brief Return an iterator to the beginning of the data
@@ -538,10 +538,10 @@ public: // Non virtual functions
      */
     void setUpdateStatusPtr( std::shared_ptr<UpdateState> rhs );
 
-    bool hasGhosts( void ) { return (d_Ghosts!=nullptr); }
+    bool hasGhosts( void ) { return ( d_Ghosts != nullptr ); }
 
     std::vector<double> &getGhosts() { return *d_Ghosts; }
-    
+
 protected: // Internal data
     //! The communication list for this vector
     CommunicationList::shared_ptr d_CommList;

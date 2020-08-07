@@ -160,11 +160,11 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         }
     }
     if ( defaults.size() > 0 )
-      tVec->setToScalar( defaults[0], tVec ); // compile error
+        tVec->setToScalar( defaults[0], tVec ); // compile error
     if ( defaults.size() > 1 )
-      cVec->setToScalar( defaults[1], cVec ); // compile error
+        cVec->setToScalar( defaults[1], cVec ); // compile error
     if ( defaults.size() > 2 )
-      bVec->setToScalar( defaults[2], bVec ); // compile error
+        bVec->setToScalar( defaults[2], bVec ); // compile error
     // set up input multivariable and output variable
     std::shared_ptr<AMP::LinearAlgebra::MultiVariable> fsInpVar(
         new AMP::LinearAlgebra::MultiVariable( "fsInput" ) );
@@ -186,11 +186,11 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     auto inConcVec = solVec->subsetVectorForVariable( cVar );
     auto inBurnVec = solVec->subsetVectorForVariable( bVar );
     if ( defaults.size() > 0 )
-      inTempVec->setToScalar( defaults[0], inTempVec ); // compile error
+        inTempVec->setToScalar( defaults[0], inTempVec ); // compile error
     if ( defaults.size() > 1 )
-      inConcVec->setToScalar( defaults[1], inConcVec ); // compile error
+        inConcVec->setToScalar( defaults[1], inConcVec ); // compile error
     if ( defaults.size() > 2 )
-      inBurnVec->setToScalar( defaults[2], inBurnVec ); // compile error
+        inBurnVec->setToScalar( defaults[2], inBurnVec ); // compile error
 
     AMP_INSIST( fsOp->isValidInput( solVec ), "input variable not set up correctly" );
 

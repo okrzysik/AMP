@@ -185,7 +185,7 @@ static void myTest( AMP::UnitTest *ut )
         for ( int i = 0; i < 3; i++ ) {
             // Initial guess for NL solver must satisfy the displacement boundary
             // conditions
-            mechNlSolVec->setRandomValues(mechNlSolVec);
+            mechNlSolVec->setRandomValues( mechNlSolVec );
             dirichletDispInVecOp->apply( nullVec, mechNlSolVec );
             mechNlSolVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
             nonlinBvpOperator->residual( mechNlRhsVec, mechNlSolVec, mechNlResVec );

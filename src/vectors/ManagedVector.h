@@ -135,7 +135,7 @@ public:
     // functions that operate on VectorData
     void copy( const VectorData &src, VectorData &dst ) override;
     void setToScalar( double alpha, VectorData &z ) override;
-    void setRandomValues( VectorData &x ) override;    
+    void setRandomValues( VectorData &x ) override;
     void scale( double alpha, const VectorData &x, VectorData &y ) override;
     void scale( double alpha, VectorData &x ) override;
     void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
@@ -144,10 +144,10 @@ public:
     void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
     void reciprocal( const VectorData &x, VectorData &y ) override;
     void linearSum( double alpha,
-			   const VectorData &x,
-			   double beta,
-			   const VectorData &y,
-			   VectorData &z) override;
+                    const VectorData &x,
+                    double beta,
+                    const VectorData &y,
+                    VectorData &z ) override;
     void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
     void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
     void abs( const VectorData &x, VectorData &z ) override;
@@ -186,7 +186,12 @@ public: // Pull VectorOperations into the current scope
     using VectorOperations::divide;
     using VectorOperations::dot;
     using VectorOperations::equals;
+    using VectorOperations::L1Norm;
+    using VectorOperations::L2Norm;
     using VectorOperations::linearSum;
+    using VectorOperations::max;
+    using VectorOperations::maxNorm;
+    using VectorOperations::min;
     using VectorOperations::minQuotient;
     using VectorOperations::multiply;
     using VectorOperations::reciprocal;
@@ -196,11 +201,6 @@ public: // Pull VectorOperations into the current scope
     using VectorOperations::wrmsNorm;
     using VectorOperations::wrmsNormMask;
     using VectorOperations::zero;
-    using VectorOperations::min;
-    using VectorOperations::max;
-    using VectorOperations::L1Norm;
-    using VectorOperations::L2Norm;
-    using VectorOperations::maxNorm;
 
 private:
     ManagedVector();

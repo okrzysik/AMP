@@ -86,13 +86,17 @@ static void test_with_shape( AMP::UnitTest *ut )
             ut->failure( "error" );
         }
         if ( nMoments == 0 ) {
-            if ( !AMP::Utilities::approx_equal( SpecificPowerShapeVec->max(SpecificPowerShapeVec), 1.0, 1e-9 ) ) {
+            if ( !AMP::Utilities::approx_equal(
+                     SpecificPowerShapeVec->max( SpecificPowerShapeVec ), 1.0, 1e-9 ) ) {
                 ut->failure( "flat solution is not really flat (max)." );
-                printf( "This %.9e is not 1.0. \n", SpecificPowerShapeVec->max(SpecificPowerShapeVec) );
+                printf( "This %.9e is not 1.0. \n",
+                        SpecificPowerShapeVec->max( SpecificPowerShapeVec ) );
             }
-            if ( !AMP::Utilities::approx_equal( SpecificPowerShapeVec->min(SpecificPowerShapeVec), 1.0, 1e-9 ) ) {
+            if ( !AMP::Utilities::approx_equal(
+                     SpecificPowerShapeVec->min( SpecificPowerShapeVec ), 1.0, 1e-9 ) ) {
                 ut->failure( "flat solution is not really flat (min)." );
-                printf( "This %.9e is not 1.0. \n", SpecificPowerShapeVec->min(SpecificPowerShapeVec) );
+                printf( "This %.9e is not 1.0. \n",
+                        SpecificPowerShapeVec->min( SpecificPowerShapeVec ) );
             }
         }
 
@@ -141,13 +145,17 @@ static void test_with_shape( AMP::UnitTest *ut )
                 ut->failure( "PowerShape error" );
             }
             if ( nMoments == 0 ) {
-                if ( !AMP::Utilities::approx_equal( SpecificPowerShapeVec->max(SpecificPowerShapeVec), 1.0, 1e-9 ) ) {
+                if ( !AMP::Utilities::approx_equal(
+                         SpecificPowerShapeVec->max( SpecificPowerShapeVec ), 1.0, 1e-9 ) ) {
                     ut->failure( "flat solution is not flat (max)." );
-                    printf( "This %.9e is not 1.0. \n", SpecificPowerShapeVec->max(SpecificPowerShapeVec) );
+                    printf( "This %.9e is not 1.0. \n",
+                            SpecificPowerShapeVec->max( SpecificPowerShapeVec ) );
                 }
-                if ( !AMP::Utilities::approx_equal( SpecificPowerShapeVec->min(SpecificPowerShapeVec), 1.0, 1e-9 ) ) {
+                if ( !AMP::Utilities::approx_equal(
+                         SpecificPowerShapeVec->min( SpecificPowerShapeVec ), 1.0, 1e-9 ) ) {
                     ut->failure( "flat solution is not flat (min)." );
-                    printf( "This %.9e is not 1.0. \n", SpecificPowerShapeVec->min(SpecificPowerShapeVec) );
+                    printf( "This %.9e is not 1.0. \n",
+                            SpecificPowerShapeVec->min( SpecificPowerShapeVec ) );
                 }
             }
 

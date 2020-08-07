@@ -192,11 +192,11 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         for ( unsigned int i = 0; i < numNonPrincIds; i++ ) {
             nonPrincVecs[i] = AMP::LinearAlgebra::createVector( nodalDofMap, nonPrincVars[i] );
             if ( nonPrincIds[i] == AMP::Operator::Diffusion::TEMPERATURE )
-	      nonPrincVecs[i]->setToScalar( defTemp, nonPrincVecs[i] );
+                nonPrincVecs[i]->setToScalar( defTemp, nonPrincVecs[i] );
             if ( nonPrincIds[i] == AMP::Operator::Diffusion::CONCENTRATION )
-	      nonPrincVecs[i]->setToScalar( defConc, nonPrincVecs[i] );
+                nonPrincVecs[i]->setToScalar( defConc, nonPrincVecs[i] );
             if ( nonPrincIds[i] == AMP::Operator::Diffusion::BURNUP )
-	      nonPrincVecs[i]->setToScalar( defBurn, nonPrincVecs[i] );
+                nonPrincVecs[i]->setToScalar( defBurn, nonPrincVecs[i] );
         }
         diffRhsVec->setToScalar( 0.0, diffRhsVec );
         applyTests(
@@ -205,7 +205,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
 
         // Test getJacobianParameters and linear operator creation
         {
-            diffSolVec->setRandomValues(diffSolVec);
+            diffSolVec->setRandomValues( diffSolVec );
             adjust( diffSolVec, shift, scale );
             auto jacParams = diffOp->getParameters( "Jacobian", diffSolVec );
             linOp->reset(

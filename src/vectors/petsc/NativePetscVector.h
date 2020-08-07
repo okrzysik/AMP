@@ -57,12 +57,9 @@ public:
  * \see PetscVector
  * \see ManagedPetscVector
  */
-class NativePetscVector : public Vector,
-                          public PetscVector,
-                          public VectorOperationsDefault<double>
+class NativePetscVector : public Vector, public PetscVector, public VectorOperationsDefault<double>
 {
 public:
-
     /** \brief Construct a wrapper for a PETSc Vec from a set of parameters
      * \param[in] params The parameters describing the Vec
      */
@@ -72,7 +69,7 @@ public:
     virtual ~NativePetscVector();
 
     std::string type() const override { return "Native PETSc Vector"; }
-    
+
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
 
@@ -82,7 +79,7 @@ public:
     std::string VectorDataName() const override { return "NativePetscVector"; }
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
-    
+
     void setValuesByLocalID( int, size_t *, const double * ) override;
     void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
     void addValuesByLocalID( int, size_t *, const double * ) override;
@@ -129,14 +126,14 @@ protected:
     static Vec getPetscVec( VectorData &x );
     static Vec getPetscVec( const VectorData &x );
     static Vec getConstPetscVec( const VectorData &x );
-    
+
     static NativePetscVector *getNativeVec( VectorData &vx );
     static const NativePetscVector *getNativeVec( const VectorData &vx );
 
- public:
+public:
     void copy( const VectorData &x, VectorData &z ) override;
     void setToScalar( double alpha, VectorData &z ) override;
-    void setRandomValues( VectorData &x ) override;    
+    void setRandomValues( VectorData &x ) override;
     void scale( double alpha, const VectorData &x, VectorData &y ) override;
     void scale( double alpha, VectorData &x ) override;
     void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
@@ -145,10 +142,10 @@ protected:
     void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
     void reciprocal( const VectorData &x, VectorData &y ) override;
     void linearSum( double alpha,
-			   const VectorData &x,
-			   double beta,
-			   const VectorData &y,
-			   VectorData &z) override;
+                    const VectorData &x,
+                    double beta,
+                    const VectorData &y,
+                    VectorData &z ) override;
     void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
     void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
     void abs( const VectorData &x, VectorData &z ) override;
@@ -160,15 +157,15 @@ protected:
     double L2Norm( const VectorData &x ) const override;
     double maxNorm( const VectorData &x ) const override;
     double localL1Norm( const VectorData &x ) const override;
-    double localL2Norm( const VectorData &x  ) const override;
+    double localL2Norm( const VectorData &x ) const override;
     double localMaxNorm( const VectorData &x ) const override;
 
     void axpbypcz( double alpha,
-			  const VectorData &x,
-			  double beta,
-			  const VectorData &y,
-			  double gamma,
-			  VectorData &z);
+                   const VectorData &x,
+                   double beta,
+                   const VectorData &y,
+                   double gamma,
+                   VectorData &z );
     //**********************************************************************
 
 private:
@@ -183,7 +180,12 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::axpy;
     using VectorOperationsDefault::divide;
     using VectorOperationsDefault::dot;
+    using VectorOperationsDefault::L1Norm;
+    using VectorOperationsDefault::L2Norm;
     using VectorOperationsDefault::linearSum;
+    using VectorOperationsDefault::max;
+    using VectorOperationsDefault::maxNorm;
+    using VectorOperationsDefault::min;
     using VectorOperationsDefault::minQuotient;
     using VectorOperationsDefault::multiply;
     using VectorOperationsDefault::reciprocal;
@@ -192,12 +194,6 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::subtract;
     using VectorOperationsDefault::wrmsNorm;
     using VectorOperationsDefault::wrmsNormMask;
-    using VectorOperationsDefault::min;
-    using VectorOperationsDefault::max;
-    using VectorOperationsDefault::L1Norm;
-    using VectorOperationsDefault::L2Norm;
-    using VectorOperationsDefault::maxNorm;
-    
 };
 
 

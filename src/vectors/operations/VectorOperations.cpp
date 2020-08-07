@@ -18,7 +18,7 @@ VectorOperations::VectorOperations() {}
  ****************************************************************/
 bool VectorOperations::equals( const VectorData &a, const VectorData &b, double tol ) const
 {
-  bool equal = localEquals( a, b, tol );
+    bool equal = localEquals( a, b, tol );
     if ( b.hasComm() )
         equal = b.getComm().allReduce( equal );
     return equal;
@@ -26,14 +26,14 @@ bool VectorOperations::equals( const VectorData &a, const VectorData &b, double 
 
 double VectorOperations::min( const VectorData &x ) const
 {
-    double ans = localMin(x);
+    double ans = localMin( x );
     if ( x.hasComm() )
         ans = x.getComm().minReduce( ans );
     return ans;
 }
-double VectorOperations::max( const VectorData &x) const
+double VectorOperations::max( const VectorData &x ) const
 {
-    double ans = localMax(x);
+    double ans = localMax( x );
     if ( x.hasComm() )
         ans = x.getComm().maxReduce( ans );
     return ans;
@@ -45,30 +45,30 @@ double VectorOperations::dot( const VectorData &x, const VectorData &y ) const
         ans = x.getComm().sumReduce( ans );
     return ans;
 }
-double VectorOperations::L1Norm(const VectorData &x) const
+double VectorOperations::L1Norm( const VectorData &x ) const
 {
-    double ans = localL1Norm(x);
+    double ans = localL1Norm( x );
     if ( x.hasComm() )
         ans = x.getComm().sumReduce( ans );
     return ans;
 }
-double VectorOperations::maxNorm(const VectorData &x) const
+double VectorOperations::maxNorm( const VectorData &x ) const
 {
-    double ans = localMaxNorm(x);
+    double ans = localMaxNorm( x );
     if ( x.hasComm() )
         ans = x.getComm().maxReduce( ans );
     return ans;
 }
-double VectorOperations::L2Norm(const VectorData &x) const
+double VectorOperations::L2Norm( const VectorData &x ) const
 {
-    double ans = localL2Norm(x);
+    double ans = localL2Norm( x );
     if ( x.hasComm() )
         ans = sqrt( x.getComm().sumReduce( ans * ans ) );
     return ans;
 }
 double VectorOperations::minQuotient( const VectorData &x, const VectorData &y ) const
 {
-  double ans = localMinQuotient( x, y );
+    double ans = localMinQuotient( x, y );
     if ( y.getCommunicationList() )
         ans = y.getComm().minReduce( ans );
     AMP_INSIST( ans < std::numeric_limits<double>::max(),
@@ -103,25 +103,19 @@ double VectorOperations::wrmsNormMask( const VectorData &x,
  * min, max, norms, etc.                                         *
  * Note: these routines require communication                    *
  ****************************************************************/
-double VectorOperations::min(std::shared_ptr<const VectorData> x) const
+double VectorOperations::min( std::shared_ptr<const VectorData> x ) const { return min( *x ); }
+double VectorOperations::max( std::shared_ptr<const VectorData> x ) const { return max( *x ); }
+double VectorOperations::L1Norm( std::shared_ptr<const VectorData> x ) const
 {
-  return min(*x);
+    return L1Norm( *x );
 }
-double VectorOperations::max(std::shared_ptr<const VectorData> x) const
+double VectorOperations::L2Norm( std::shared_ptr<const VectorData> x ) const
 {
-  return max(*x);
+    return L2Norm( *x );
 }
-double VectorOperations::L1Norm(std::shared_ptr<const VectorData> x) const
+double VectorOperations::maxNorm( std::shared_ptr<const VectorData> x ) const
 {
-  return L1Norm(*x);
-}
-double VectorOperations::L2Norm(std::shared_ptr<const VectorData> x) const
-{
-  return L2Norm(*x);
-}
-double VectorOperations::maxNorm(std::shared_ptr<const VectorData> x) const
-{
-  return maxNorm(*x);
+    return maxNorm( *x );
 }
 
 

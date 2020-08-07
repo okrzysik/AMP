@@ -190,7 +190,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Variable::shared_ptr PowerInWattsVar = sourceOperator->getOutputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr PowerInWattsVec =
         AMP::LinearAlgebra::createVector( nodalDofMap1, PowerInWattsVar );
-    PowerInWattsVec->zero(PowerInWattsVec);
+    PowerInWattsVec->zero( PowerInWattsVec );
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
@@ -412,34 +412,35 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     while ( cnt < maxIt ) {
         cnt++;
 
-        RightHandSideVec1->zero(RightHandSideVec1);
-        RightHandSideVec2->zero(RightHandSideVec2);
+        RightHandSideVec1->zero( RightHandSideVec1 );
+        RightHandSideVec2->zero( RightHandSideVec2 );
 
         RightHandSideVec1->copyVector( PowerInWattsVec );
-        std::cout << "PowerInWattsVec norm  inside loop = " << RightHandSideVec1->L2Norm(RightHandSideVec1) << "\n";
+        std::cout << "PowerInWattsVec norm  inside loop = "
+                  << RightHandSideVec1->L2Norm( RightHandSideVec1 ) << "\n";
 
         map2ToLowDim->apply( TemperatureInKelvinVec2, gapVecPellet );
-        double a = gapVecPellet->L2Norm(gapVecPellet);
+        double a = gapVecPellet->L2Norm( gapVecPellet );
         map2ToHighDim->apply( gapVecPellet, scratchTempVec1 );
-        a = scratchTempVec1->L2Norm(scratchTempVec1);
+        a = scratchTempVec1->L2Norm( scratchTempVec1 );
 
         scratchTempVec1->scale( heff, scratchTempVec1 );
-        a = scratchTempVec1->L2Norm(scratchTempVec1);
+        a = scratchTempVec1->L2Norm( scratchTempVec1 );
         variableFluxVec1->copyVector( scratchTempVec1 );
-        a = variableFluxVec1->L2Norm(variableFluxVec1);
+        a = variableFluxVec1->L2Norm( variableFluxVec1 );
 
         correctionParameters1->d_variableFlux = variableFluxVec1;
         robinBoundaryOp1->reset( correctionParameters1 );
 
-        std::cout << "Variable flux1 norm inside loop : " << variableFluxVec1->L2Norm(variableFluxVec1)
-                  << std::endl;
+        std::cout << "Variable flux1 norm inside loop : "
+                  << variableFluxVec1->L2Norm( variableFluxVec1 ) << std::endl;
 
         nonlinearThermalOperator1->modifyRHSvector( RightHandSideVec1 );
-        a = RightHandSideVec1->L2Norm(RightHandSideVec1);
+        a = RightHandSideVec1->L2Norm( RightHandSideVec1 );
         nonlinearThermalOperator1->modifyInitialSolutionVector( TemperatureInKelvinVec1 );
-        a = TemperatureInKelvinVec1->L2Norm(TemperatureInKelvinVec1);
+        a = TemperatureInKelvinVec1->L2Norm( TemperatureInKelvinVec1 );
         nonlinearSolver1->solve( RightHandSideVec1, TemperatureInKelvinVec1 );
-        a = TemperatureInKelvinVec1->L2Norm(TemperatureInKelvinVec1);
+        a = TemperatureInKelvinVec1->L2Norm( TemperatureInKelvinVec1 );
         nonlinearThermalOperator1->residual(
             RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1 );
 
@@ -448,11 +449,13 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         //------------------------------------------------------------
         map1ToLowDim->apply( TemperatureInKelvinVec1, gapVecClad );
 
-        std::cout << "Norm of solVec after map1toLowDim: " << gapVecClad->L2Norm(gapVecClad) << std::endl;
+        std::cout << "Norm of solVec after map1toLowDim: " << gapVecClad->L2Norm( gapVecClad )
+                  << std::endl;
 
         map1ToHighDim->apply( gapVecClad, scratchTempVec2 );
 
-        std::cout << "Norm of scratch2: " << scratchTempVec2->L2Norm(scratchTempVec2) << std::endl;
+        std::cout << "Norm of scratch2: " << scratchTempVec2->L2Norm( scratchTempVec2 )
+                  << std::endl;
 
         scratchTempVec2->scale( heff, scratchTempVec2 );
         variableFluxVec2->copyVector( scratchTempVec2 );
@@ -460,8 +463,8 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         correctionParameters2->d_variableFlux = variableFluxVec2;
         robinBoundaryOp2->reset( correctionParameters2 );
 
-        std::cout << "Variable flux2 norm inside loop : " << variableFluxVec2->L2Norm(variableFluxVec2)
-                  << std::endl;
+        std::cout << "Variable flux2 norm inside loop : "
+                  << variableFluxVec2->L2Norm( variableFluxVec2 ) << std::endl;
 
         linearThermalOperator2->modifyRHSvector( RightHandSideVec2 );
         linearThermalOperator2->residual(
@@ -469,9 +472,9 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         mlSolver2->solve( RightHandSideVec2, TemperatureInKelvinVec2 );
 
         std::cout << "Residual Norm on Pellet after " << cnt
-                  << " iteration is : " << ResidualVec1->L2Norm(ResidualVec1) << std::endl;
+                  << " iteration is : " << ResidualVec1->L2Norm( ResidualVec1 ) << std::endl;
         std::cout << "Residual Norm on Clad after " << cnt
-                  << " iteration is : " << ResidualVec2->L2Norm(ResidualVec2) << std::endl;
+                  << " iteration is : " << ResidualVec2->L2Norm( ResidualVec2 ) << std::endl;
 
         vecLag2->subtract( TemperatureInKelvinVec2, vecLag2, vecLag2 );
 
@@ -486,12 +489,12 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         siloWriter->writeFile( input_file, 0 );
 #endif
         //          }
-        if ( vecLag2->L2Norm(vecLag2) < 1.e-6 ) {
+        if ( vecLag2->L2Norm( vecLag2 ) < 1.e-6 ) {
             testPassed = true;
             break;
         } else {
-            std::cout << "for iteration cnt = " << cnt << " --> " << vecLag1->L2Norm(vecLag1) << " "
-                      << vecLag2->L2Norm(vecLag2) << std::endl;
+            std::cout << "for iteration cnt = " << cnt << " --> " << vecLag1->L2Norm( vecLag1 )
+                      << " " << vecLag2->L2Norm( vecLag2 ) << std::endl;
         }
         std::cout << std::endl;
 

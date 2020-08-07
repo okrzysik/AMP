@@ -146,11 +146,11 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Test linear reset from getJacobianParameters
     for ( int i = 0; i < 3; i++ ) {
-        inConcVec->setRandomValues(inConcVec);
-        inTempVec->setRandomValues(inTempVec);
+        inConcVec->setRandomValues( inConcVec );
+        inTempVec->setRandomValues( inTempVec );
         adjust( solVec, shift, scale, 2 );
-        rhsVec->setRandomValues(rhsVec);
-        resVec->setRandomValues(resVec);
+        rhsVec->setRandomValues( rhsVec );
+        resVec->setRandomValues( resVec );
         std::shared_ptr<AMP::Operator::OperatorParameters> jacparams =
             nlinBVPOp->getParameters( "Jacobian", solVec );
         linBVPOp->reset( jacparams );

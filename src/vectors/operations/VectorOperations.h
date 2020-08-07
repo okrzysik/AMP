@@ -54,14 +54,14 @@ public:
     /**
      * \brief Set data in this vector to random values on [0,1).
      */
-    virtual void setRandomValues( VectorData &x ) = 0;    
+    virtual void setRandomValues( VectorData &x ) = 0;
 
     /**
      * \brief Set data in this vector to random values using
      *      a particular generator
      * \param[in] rng       The generator to use.
      */
-    virtual void setRandomValues( RNG::shared_ptr rng, VectorData &x ) = 0;    
+    virtual void setRandomValues( RNG::shared_ptr rng, VectorData &x ) = 0;
 
     /**
      * \brief  Set vector equal to scaled input.
@@ -125,11 +125,8 @@ public:
      * \param[in] beta      a scalar
      * \param[in] y         a vector
      */
-    virtual void linearSum( double alpha,
-			   const VectorData &x,
-			   double beta,
-			   const VectorData &y,
-			   VectorData &z) = 0;
+    virtual void linearSum(
+        double alpha, const VectorData &x, double beta, const VectorData &y, VectorData &z ) = 0;
 
     /**
      * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
@@ -183,7 +180,7 @@ public:
      * \brief Return discrete @f$ L_2 @f$ -norm of this vector.
      * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
      */
-    virtual double L2Norm( const VectorData &x  ) const;
+    virtual double L2Norm( const VectorData &x ) const;
 
     /**
      * \brief Return the @f$ L_\infty @f$ -norm of this vector.
@@ -214,9 +211,8 @@ public:
      * \param[in] mask a vector
      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
      */
-    virtual double wrmsNormMask( const VectorData &x,
-				 const VectorData &mask,
-				 const VectorData &y ) const;
+    virtual double
+    wrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const;
 
     /**
      * \brief Return the dot product of this vector with the argument vector.
@@ -224,7 +220,7 @@ public:
      * \param[in] x        a vector
      */
     virtual double dot( const VectorData &x, const VectorData &y ) const;
-    virtual bool   equals( const VectorData &a, const VectorData &b, double tol ) const;
+    virtual bool equals( const VectorData &a, const VectorData &b, double tol ) const;
 
 
     /**
@@ -247,7 +243,7 @@ public:
      * \brief Return local discrete @f$ L_2 @f$ -norm of this vector.
      * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
      */
-    virtual double localL2Norm( const VectorData &x  ) const = 0;
+    virtual double localL2Norm( const VectorData &x ) const = 0;
 
     /**
      * \brief Return the local @f$ L_\infty @f$ -norm of this vector.
@@ -284,7 +280,8 @@ public:
      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0}
      * \mathit{this}^2_iy^2_i}{n}}\f]
      */
-    virtual double localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const = 0;
+    virtual double
+    localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const = 0;
 
     /**
      * \brief  Determine if the local portion of two vectors are equal using an absolute tolerance
@@ -292,17 +289,19 @@ public:
      * \param[in] tol      Tolerance of comparison
      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
      */
-    virtual bool   localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) const = 0;
-    
-public: // shared_ptr wrappers
+    virtual bool
+    localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) const = 0;
 
+public: // shared_ptr wrappers
     /**
      * \brief  Determine if two vectors are equal using an absolute tolerance
      * \param[in] rhs      Vector to compare to
      * \param[in] tol      Tolerance of comparison
      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
      */
-    inline bool equals( std::shared_ptr<const VectorData> rhs, std::shared_ptr<const VectorData> lhs, double tol = 0.000001 ) const;
+    inline bool equals( std::shared_ptr<const VectorData> rhs,
+                        std::shared_ptr<const VectorData> lhs,
+                        double tol = 0.000001 ) const;
 
     inline void zero( std::shared_ptr<VectorData> x );
 
@@ -319,7 +318,8 @@ public: // shared_ptr wrappers
     inline void scale( double alpha, std::shared_ptr<VectorData> x );
 
     /// @copydoc VectorData::scale(double,const VectorData&)
-    inline void scale( double alpha, std::shared_ptr<const VectorData> x, std::shared_ptr<VectorData> y );
+    inline void
+    scale( double alpha, std::shared_ptr<const VectorData> x, std::shared_ptr<VectorData> y );
 
     /// @copydoc VectorData::copy(const VectorData&)
     inline void copy( std::shared_ptr<const VectorData> x, std::shared_ptr<VectorData> y );
@@ -327,25 +327,26 @@ public: // shared_ptr wrappers
     /// @copydoc VectorData::add(const VectorData&,const VectorData&)
     inline void add( std::shared_ptr<const VectorData> x,
                      std::shared_ptr<const VectorData> y,
-		     std::shared_ptr<VectorData> z );
+                     std::shared_ptr<VectorData> z );
 
     /// @copydoc VectorData::addScalar(const VectorData&,double)
-    inline void addScalar( std::shared_ptr<const VectorData> x, double alpha, std::shared_ptr<VectorData> y );
+    inline void
+    addScalar( std::shared_ptr<const VectorData> x, double alpha, std::shared_ptr<VectorData> y );
 
     /// @copydoc VectorData::subtract(const VectorData&,const VectorData&)
     inline void subtract( std::shared_ptr<const VectorData> x,
                           std::shared_ptr<const VectorData> y,
-			  std::shared_ptr<VectorData> z );
+                          std::shared_ptr<VectorData> z );
 
     /// @copydoc VectorData::multiply(const VectorData&,const VectorData&)
     inline void multiply( std::shared_ptr<const VectorData> x,
                           std::shared_ptr<const VectorData> y,
-			  std::shared_ptr<VectorData> z );
+                          std::shared_ptr<VectorData> z );
 
     /// @copydoc VectorData::divide(const VectorData&,const VectorData&)
     inline void divide( std::shared_ptr<const VectorData> x,
                         std::shared_ptr<const VectorData> y,
-			std::shared_ptr<VectorData> z );
+                        std::shared_ptr<VectorData> z );
 
     /**
      * \param x  a vector
@@ -366,7 +367,7 @@ public: // shared_ptr wrappers
                            std::shared_ptr<const VectorData> x,
                            double beta,
                            std::shared_ptr<const VectorData> y,
-			   std::shared_ptr<VectorData> z );
+                           std::shared_ptr<VectorData> z );
 
     /**
      * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
@@ -377,7 +378,7 @@ public: // shared_ptr wrappers
     inline void axpy( double alpha,
                       std::shared_ptr<const VectorData> x,
                       std::shared_ptr<const VectorData> y,
-		      std::shared_ptr<VectorData> z );
+                      std::shared_ptr<VectorData> z );
 
     /**
      * \brief Set this vector alpha * x + this.
@@ -386,7 +387,10 @@ public: // shared_ptr wrappers
      * \param[in] beta     a scalar
      * \param[in] x        a vector
      */
-    inline void axpby( double alpha, double beta, std::shared_ptr<const VectorData> x, std::shared_ptr<VectorData> y );
+    inline void axpby( double alpha,
+                       double beta,
+                       std::shared_ptr<const VectorData> x,
+                       std::shared_ptr<VectorData> y );
 
     /**
      * \brief Set this to the component-wise absolute value of a vector.
@@ -400,7 +404,8 @@ public: // shared_ptr wrappers
      * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
      * \param[in] x        a vector
      */
-    inline double dot( std::shared_ptr<const VectorData> x, std::shared_ptr<const VectorData> y ) const;
+    inline double dot( std::shared_ptr<const VectorData> x,
+                       std::shared_ptr<const VectorData> y ) const;
 
 
     /**
@@ -438,7 +443,7 @@ public: // shared_ptr wrappers
      * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
      */
     inline double minQuotient( std::shared_ptr<const VectorData> x,
-			       std::shared_ptr<const VectorData> y ) const;
+                               std::shared_ptr<const VectorData> y ) const;
 
     /**
      * \brief Return a weighted norm of a vector
@@ -447,8 +452,8 @@ public: // shared_ptr wrappers
      * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
      */
     inline double wrmsNorm( std::shared_ptr<const VectorData> x,
-			    std::shared_ptr<const VectorData> y ) const;
-    
+                            std::shared_ptr<const VectorData> y ) const;
+
     /**
      * \brief Return a weighted norm of a subset of a vector
      * \param[in] x a vector
@@ -457,8 +462,8 @@ public: // shared_ptr wrappers
      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
      */
     inline double wrmsNormMask( std::shared_ptr<const VectorData> x,
-				std::shared_ptr<const VectorData> mask,
-				std::shared_ptr<const VectorData> y ) const;
+                                std::shared_ptr<const VectorData> mask,
+                                std::shared_ptr<const VectorData> y ) const;
 
 
 protected:

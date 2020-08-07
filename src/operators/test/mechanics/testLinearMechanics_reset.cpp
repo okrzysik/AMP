@@ -95,9 +95,9 @@ static void myTest( AMP::UnitTest *ut )
         auto mechResVec = mechSolVec->cloneVector();
 
         for ( int i = 0; i < 3; i++ ) {
-            mechSolVec->setRandomValues(mechSolVec);
-            mechRhsVec->setRandomValues(mechRhsVec);
-            mechResVec->setRandomValues(mechResVec);
+            mechSolVec->setRandomValues( mechSolVec );
+            mechRhsVec->setRandomValues( mechRhsVec );
+            mechResVec->setRandomValues( mechResVec );
             mechOp->residual( mechRhsVec, mechSolVec, mechResVec );
         } // end for i
 

@@ -158,10 +158,10 @@ void linearThermalTest( AMP::UnitTest *ut )
     TemperatureInKelvinVec->setToScalar( 1.0, TemperatureInKelvinVec );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = TemperatureInKelvinVec->L2Norm(TemperatureInKelvinVec);
+    double initSolNorm = TemperatureInKelvinVec->L2Norm( TemperatureInKelvinVec );
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
-    double rhsNorm = RightHandSideVec->L2Norm(RightHandSideVec);
+    double rhsNorm = RightHandSideVec->L2Norm( RightHandSideVec );
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
     // Create the ML Solver
@@ -177,7 +177,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = ResidualVec->L2Norm(ResidualVec);
+    double finalResidualNorm = ResidualVec->L2Norm( ResidualVec );
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {

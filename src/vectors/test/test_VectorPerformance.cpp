@@ -79,10 +79,10 @@ struct test_times {
         auto t2    = std::chrono::steady_clock::now();                                        \
         times.TEST = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count(); \
     } while ( 0 )
-#define runTest1( TEST, X )						\
+#define runTest1( TEST, X )                                                                   \
     do {                                                                                      \
         auto t1 = std::chrono::steady_clock::now();                                           \
-        vec->TEST( X );						\
+        vec->TEST( X );                                                                       \
         auto t2    = std::chrono::steady_clock::now();                                        \
         times.TEST = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count(); \
     } while ( 0 )
@@ -100,10 +100,10 @@ struct test_times {
         auto t2    = std::chrono::steady_clock::now();                                        \
         times.TEST = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count(); \
     } while ( 0 )
-#define runTest4( TEST, X, Y, Z, V )					\
+#define runTest4( TEST, X, Y, Z, V )                                                          \
     do {                                                                                      \
         auto t1 = std::chrono::steady_clock::now();                                           \
-        vec->TEST( X, Y, Z, V );						\
+        vec->TEST( X, Y, Z, V );                                                              \
         auto t2    = std::chrono::steady_clock::now();                                        \
         times.TEST = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count(); \
     } while ( 0 )
@@ -118,8 +118,8 @@ test_times testPerformance( AMP::LinearAlgebra::Vector::shared_ptr vec )
     auto t2     = std::chrono::steady_clock::now();
     times.clone = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
     auto vec3   = vec->cloneVector();
-    vec2->setRandomValues(vec2);
-    vec3->setRandomValues(vec3);
+    vec2->setRandomValues( vec2 );
+    vec3->setRandomValues( vec3 );
     // Run the tests
     runTest1( zero, vec );
     runTest2( setToScalar, 3.14, vec );

@@ -97,11 +97,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         auto rhsVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, dispVar );
         auto resVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, dispVar );
 
-        rhsVec->zero(rhsVec);
+        rhsVec->zero( rhsVec );
         loadOperator->apply( nullVec, rhsVec );
 
-        solVec->zero(solVec);
-        resVec->zero(resVec);
+        solVec->zero( solVec );
+        resVec->zero( resVec );
 
         size_t numDofs = solVec->getGlobalSize();
 
@@ -141,8 +141,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         richSolver.reset();
         luPC.reset();
 
-        solVec->zero(solVec);
-        resVec->zero(resVec);
+        solVec->zero( solVec );
+        resVec->zero( resVec );
 
         if ( globalComm.getRank() == 0 ) {
             std::cout << "Solving using ML" << std::endl;

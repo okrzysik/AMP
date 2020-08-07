@@ -413,8 +413,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
             relErrorVec->setValueByLocalID( i, fabs( val ) );
         }
     }
-    double absErrorNorm = absErrorVec->L2Norm(absErrorVec);
-    double relErrorNorm = relErrorVec->L2Norm(relErrorVec);
+    double absErrorNorm = absErrorVec->L2Norm( absErrorVec );
+    double relErrorNorm = relErrorVec->L2Norm( relErrorVec );
 
     // check that norm of relative error is less than tolerance
     double tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );

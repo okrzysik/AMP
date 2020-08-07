@@ -263,9 +263,9 @@ void PetscKrylovSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         ( uVecView->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
-        std::cout << "PetscKrylovSolver::solve: initial L2Norm of solution vector: " << u->L2Norm(u)
-                  << std::endl;
-        std::cout << "PetscKrylovSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm(f)
+        std::cout << "PetscKrylovSolver::solve: initial L2Norm of solution vector: "
+                  << u->L2Norm( u ) << std::endl;
+        std::cout << "PetscKrylovSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm( f )
                   << std::endl;
     }
     Vec fVec =
@@ -311,7 +311,7 @@ void PetscKrylovSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     KSPSolve( d_KrylovSolver, fVec, uVec );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "L2Norm of solution from KSP: " << u->L2Norm(u) << std::endl;
+        std::cout << "L2Norm of solution from KSP: " << u->L2Norm( u ) << std::endl;
     }
 
 // Reset the solvers
@@ -464,7 +464,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     if ( ( (PetscKrylovSolver *) ctx )->getDebugPrintInfoLevel() > 5 ) {
         double norm = 0.0;
         VecNorm( r, NORM_2, &norm );
-        double sp_r_norm = sp_r->L2Norm(sp_r);
+        double sp_r_norm = sp_r->L2Norm( sp_r );
         AMP_ASSERT( AMP::Utilities::approx_equal( norm, sp_r_norm ) );
     }
 
@@ -479,7 +479,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     }
 
     // Check for nans (no communication necessary)
-    double localNorm = sp_z->localL2Norm(*sp_z);
+    double localNorm = sp_z->localL2Norm( *sp_z );
     AMP_INSIST( localNorm == localNorm, "NaNs detected in preconditioner" );
 
     // not sure why, but the state of sp_z is not updated
@@ -491,10 +491,10 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     // these tests were helpful in finding a bug
     if ( ( (PetscKrylovSolver *) ctx )->getDebugPrintInfoLevel() > 5 ) {
         double norm = 0.0;
-        AMP::pout << "L2 Norm of sp_z " << sp_z->L2Norm(sp_z) << std::endl;
+        AMP::pout << "L2 Norm of sp_z " << sp_z->L2Norm( sp_z ) << std::endl;
         VecNorm( z, NORM_2, &norm );
         AMP::pout << "L2 Norm of z " << norm << std::endl;
-        AMP_ASSERT( norm == sp_z->L2Norm(sp_z) );
+        AMP_ASSERT( norm == sp_z->L2Norm( sp_z ) );
     }
 
     return ( ierr );

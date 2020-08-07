@@ -144,12 +144,12 @@ _AMP_axpbypcz( Vec c, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Ve
     auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
     auto z = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( c->data );
     if ( z->isAnAliasOf( *x ) ) {
-      z->linearSum( alpha + gamma, *x, beta, *y, *z );
+        z->linearSum( alpha + gamma, *x, beta, *y, *z );
     } else if ( z->isAnAliasOf( *y ) ) {
-      z->linearSum( alpha, *x, beta + gamma, *y, *z );
+        z->linearSum( alpha, *x, beta + gamma, *y, *z );
     } else {
-      z->linearSum( alpha, *x, gamma, *z, *z );
-      z->linearSum( beta, *y, 1., *z, *z );
+        z->linearSum( alpha, *x, gamma, *z, *z );
+        z->linearSum( beta, *y, 1., *z, *z );
     }
     PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( c ) );
     return 0;
@@ -161,7 +161,7 @@ PetscErrorCode _AMP_max( Vec a, PetscInt *p, PetscReal *ans )
         AMP_ERROR( "Cannot find position for max" );
     }
     auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
-    *ans   = x->max(*x);
+    *ans   = x->max( *x );
     return 0;
 }
 
@@ -171,7 +171,7 @@ PetscErrorCode _AMP_min( Vec a, PetscInt *p, PetscReal *ans )
         AMP_ERROR( "Cannot find position for min" );
     }
     auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
-    *ans   = x->min(*x);
+    *ans   = x->min( *x );
     return 0;
 }
 
@@ -333,7 +333,7 @@ PetscErrorCode _AMP_sqrt( Vec a )
 PetscErrorCode _AMP_setrandom( Vec a, PetscRandom )
 {
     auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
-    x->setRandomValues(*x);
+    x->setRandomValues( *x );
     return 0;
 } /* set y[j] = random numbers */
 
@@ -480,14 +480,14 @@ PetscErrorCode _AMP_norm_local( Vec in, NormType type, PetscReal *ans )
 {
     auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
     if ( type == NORM_1 )
-        *ans = x->localL1Norm(*x);
+        *ans = x->localL1Norm( *x );
     else if ( type == NORM_2 )
-        *ans = x->localL2Norm(*x);
+        *ans = x->localL2Norm( *x );
     else if ( type == NORM_INFINITY )
-        *ans = x->localMaxNorm(*x);
+        *ans = x->localMaxNorm( *x );
     else if ( type == NORM_1_AND_2 ) {
-        *ans         = x->localL1Norm(*x);
-        *( ans + 1 ) = x->localL2Norm(*x);
+        *ans         = x->localL1Norm( *x );
+        *( ans + 1 ) = x->localL2Norm( *x );
     } else
         AMP_ERROR( "Unknown norm type" );
     if ( type != NORM_1_AND_2 ) {
@@ -502,14 +502,14 @@ PetscErrorCode _AMP_norm( Vec in, NormType type, PetscReal *ans )
 {
     auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
     if ( type == NORM_1 )
-        *ans = x->L1Norm(*x);
+        *ans = x->L1Norm( *x );
     else if ( type == NORM_2 )
-        *ans = x->L2Norm(*x);
+        *ans = x->L2Norm( *x );
     else if ( type == NORM_INFINITY )
-        *ans = x->maxNorm(*x);
+        *ans = x->maxNorm( *x );
     else if ( type == NORM_1_AND_2 ) {
-        *ans         = x->L1Norm(*x);
-        *( ans + 1 ) = x->L2Norm(*x);
+        *ans         = x->L1Norm( *x );
+        *( ans + 1 ) = x->L2Norm( *x );
     } else
         AMP_ERROR( "Unknown norm type" );
     if ( type != NORM_1_AND_2 ) {

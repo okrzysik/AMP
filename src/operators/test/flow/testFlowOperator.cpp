@@ -25,7 +25,7 @@
 static void adjust( const AMP::LinearAlgebra::Vector::shared_ptr vec,
                     AMP::LinearAlgebra::Vector::shared_ptr work )
 {
-  work->setToScalar( 301., work );
+    work->setToScalar( 301., work );
     AMP::LinearAlgebra::Vector &x = *vec;
     AMP::LinearAlgebra::Vector &y = *work;
     vec->add( x, y, *vec );
@@ -42,9 +42,9 @@ static void applyTest( AMP::UnitTest *ut,
     // first test for apply - random values in all three input vectors
     try {
         for ( int j = 0; j < 3; j++ ) {
-            solVec->setRandomValues(solVec);
-            rhsVec->setRandomValues(rhsVec);
-            resVec->setRandomValues(resVec);
+            solVec->setRandomValues( solVec );
+            rhsVec->setRandomValues( rhsVec );
+            resVec->setRandomValues( resVec );
             adjust( solVec, workVec );
             testOperator->residual( rhsVec, solVec, resVec );
         } // end for j
@@ -57,8 +57,8 @@ static void applyTest( AMP::UnitTest *ut,
     try {
         for ( int j = 0; j < 3; j++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr fVec;
-            solVec->setRandomValues(solVec);
-            resVec->setRandomValues(resVec);
+            solVec->setRandomValues( solVec );
+            resVec->setRandomValues( resVec );
             adjust( solVec, workVec );
             testOperator->residual( fVec, solVec, resVec );
         } // end for j
@@ -73,8 +73,8 @@ static void applyTest( AMP::UnitTest *ut,
     try {
         for ( int j = 0; j < 3; j++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr uVec;
-            rhsVec->setRandomValues(rhsVec);
-            resVec->setRandomValues(resVec);
+            rhsVec->setRandomValues( rhsVec );
+            resVec->setRandomValues( resVec );
             testOperator->residual( rhsVec, uVec, resVec );
         } // end for j
         ut->failure( msgPrefix +
@@ -88,8 +88,8 @@ static void applyTest( AMP::UnitTest *ut,
     try {
         for ( int j = 0; j < 3; j++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr rVec;
-            solVec->setRandomValues(solVec);
-            rhsVec->setRandomValues(rhsVec);
+            solVec->setRandomValues( solVec );
+            rhsVec->setRandomValues( rhsVec );
             adjust( solVec, workVec );
             testOperator->residual( rhsVec, solVec, rVec );
         } // end for j
@@ -105,7 +105,7 @@ static void applyTest( AMP::UnitTest *ut,
         for ( int j = 0; j < 3; j++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr fVec;
             AMP::LinearAlgebra::Vector::shared_ptr uVec;
-            resVec->setRandomValues(resVec);
+            resVec->setRandomValues( resVec );
             testOperator->residual( fVec, uVec, resVec );
         } // end for j
         ut->failure( msgPrefix +
@@ -120,7 +120,7 @@ static void applyTest( AMP::UnitTest *ut,
         for ( int j = 0; j < 3; j++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr uVec;
             AMP::LinearAlgebra::Vector::shared_ptr rVec;
-            rhsVec->setRandomValues(rhsVec);
+            rhsVec->setRandomValues( rhsVec );
             testOperator->residual( rhsVec, uVec, rVec );
         } // end for j
         ut->failure( msgPrefix +
@@ -135,7 +135,7 @@ static void applyTest( AMP::UnitTest *ut,
         for ( int j = 0; j < 3; j++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr rVec;
             AMP::LinearAlgebra::Vector::shared_ptr fVec;
-            solVec->setRandomValues(solVec);
+            solVec->setRandomValues( solVec );
             adjust( solVec, workVec );
             testOperator->residual( fVec, solVec, rVec );
         } // end for j

@@ -55,8 +55,8 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto var       = std::make_shared<AMP::LinearAlgebra::Variable>( "var" );
     auto firstVec  = AMP::LinearAlgebra::createVector( firstDofManager, var, true );  // n
     auto secondVec = AMP::LinearAlgebra::createVector( secondDofManager, var, true ); // m
-    firstVec->zero(firstVec);
-    secondVec->zero(secondVec);
+    firstVec->zero( firstVec );
+    secondVec->zero( secondVec );
     // Loop through the valid matrix build types
     std::vector<std::string> types;
     if ( globalComm.getSize() == 1 )

@@ -120,7 +120,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
 
     // Apply the maps
     globalComm.barrier();
-    std::cout << v1->maxNorm(v1) << "  " << v2->maxNorm(v2) << std::endl;
+    std::cout << v1->maxNorm( v1 ) << "  " << v2->maxNorm( v2 ) << std::endl;
     double start_time = AMP::AMP_MPI::time();
     n2nmaps->apply( v1, v2 );
     globalComm.barrier();
@@ -135,14 +135,14 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
 #endif
 
     // Check the results
-    std::cout << v1->maxNorm(v1) << "  " << v2->maxNorm(v2) << std::endl;
+    std::cout << v1->maxNorm( v1 ) << "  " << v2->maxNorm( v2 ) << std::endl;
     v1->subtract( v1, v2, v1 );
-    if ( v1->maxNorm(v1) < 1.e-12 ) {
+    if ( v1->maxNorm( v1 ) < 1.e-12 ) {
         ut->passes( "Node to node map test (" + fname + ")" );
     } else {
         ut->failure( "Node to node map test (" + fname + ")" );
     }
-    std::cout << v1->maxNorm(v1) << std::endl;
+    std::cout << v1->maxNorm( v1 ) << std::endl;
     std::cout << "Time for apply call: " << end_time - start_time << std::endl;
 }
 

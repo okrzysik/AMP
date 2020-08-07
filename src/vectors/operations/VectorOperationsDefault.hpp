@@ -37,7 +37,7 @@ void VectorOperationsDefault<TYPE>::zero( VectorData &x )
         ++curMe;
     }
     if ( x.hasGhosts() ) {
-      auto &ghosts = x.getGhosts();
+        auto &ghosts = x.getGhosts();
         for ( size_t i = 0; i != ghosts.size(); i++ )
             ghosts[i] = 0;
     }
@@ -55,7 +55,7 @@ void VectorOperationsDefault<TYPE>::setToScalar( double alpha, VectorData &x )
         ++curMe;
     }
     if ( x.hasGhosts() ) {
-      auto &ghosts = x.getGhosts();
+        auto &ghosts = x.getGhosts();
         for ( size_t i = 0; i != ghosts.size(); i++ )
             ghosts[i] = alpha;
     }
@@ -144,7 +144,9 @@ void VectorOperationsDefault<TYPE>::add( const VectorData &x, const VectorData &
 }
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::subtract( const VectorData &x, const VectorData &y, VectorData &z  )
+void VectorOperationsDefault<TYPE>::subtract( const VectorData &x,
+                                              const VectorData &y,
+                                              VectorData &z )
 {
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
@@ -161,7 +163,9 @@ void VectorOperationsDefault<TYPE>::subtract( const VectorData &x, const VectorD
 }
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::multiply( const VectorData &x, const VectorData &y, VectorData &z )
+void VectorOperationsDefault<TYPE>::multiply( const VectorData &x,
+                                              const VectorData &y,
+                                              VectorData &z )
 {
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
@@ -178,7 +182,9 @@ void VectorOperationsDefault<TYPE>::multiply( const VectorData &x, const VectorD
 }
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::divide( const VectorData &x, const VectorData &y, VectorData &z )
+void VectorOperationsDefault<TYPE>::divide( const VectorData &x,
+                                            const VectorData &y,
+                                            VectorData &z )
 {
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
@@ -211,11 +217,8 @@ void VectorOperationsDefault<TYPE>::reciprocal( const VectorData &x, VectorData 
 
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::linearSum( double alpha_in,
-                                   const VectorData &x,
-                                   double beta_in,
-                                   const VectorData &y,
-				   VectorData &z)
+void VectorOperationsDefault<TYPE>::linearSum(
+    double alpha_in, const VectorData &x, double beta_in, const VectorData &y, VectorData &z )
 {
     const TYPE alpha = static_cast<TYPE>( alpha_in );
     const TYPE beta  = static_cast<TYPE>( beta_in );
@@ -234,7 +237,10 @@ void VectorOperationsDefault<TYPE>::linearSum( double alpha_in,
 }
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::axpy( double alpha_in, const VectorData &x, const VectorData &y, VectorData &z )
+void VectorOperationsDefault<TYPE>::axpy( double alpha_in,
+                                          const VectorData &x,
+                                          const VectorData &y,
+                                          VectorData &z )
 {
     const TYPE alpha = static_cast<TYPE>( alpha_in );
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
@@ -252,7 +258,10 @@ void VectorOperationsDefault<TYPE>::axpy( double alpha_in, const VectorData &x, 
 }
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::axpby( double alpha_in, double beta_in, const VectorData &x, VectorData &z )
+void VectorOperationsDefault<TYPE>::axpby( double alpha_in,
+                                           double beta_in,
+                                           const VectorData &x,
+                                           VectorData &z )
 {
     const TYPE alpha = static_cast<TYPE>( alpha_in );
     const TYPE beta  = static_cast<TYPE>( beta_in );
@@ -297,7 +306,7 @@ void VectorOperationsDefault<TYPE>::addScalar( const VectorData &x, double alpha
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localMin( const VectorData &x )  const
+double VectorOperationsDefault<TYPE>::localMin( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
     TYPE ans        = std::numeric_limits<TYPE>::max();
@@ -311,7 +320,7 @@ double VectorOperationsDefault<TYPE>::localMin( const VectorData &x )  const
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localMax( const VectorData &x )  const
+double VectorOperationsDefault<TYPE>::localMax( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
     TYPE ans        = std::numeric_limits<TYPE>::lowest();
@@ -325,7 +334,7 @@ double VectorOperationsDefault<TYPE>::localMax( const VectorData &x )  const
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localL1Norm( const VectorData &x )  const
+double VectorOperationsDefault<TYPE>::localL1Norm( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
     double ans      = 0;
@@ -339,7 +348,7 @@ double VectorOperationsDefault<TYPE>::localL1Norm( const VectorData &x )  const
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localL2Norm( const VectorData &x )  const
+double VectorOperationsDefault<TYPE>::localL2Norm( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
     double ans      = 0;
@@ -355,7 +364,7 @@ double VectorOperationsDefault<TYPE>::localL2Norm( const VectorData &x )  const
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localMaxNorm( const VectorData &x )  const
+double VectorOperationsDefault<TYPE>::localMaxNorm( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
     TYPE ans        = 0;
@@ -387,7 +396,8 @@ double VectorOperationsDefault<TYPE>::localDot( const VectorData &x, const Vecto
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localMinQuotient( const VectorData &x, const VectorData &y ) const
+double VectorOperationsDefault<TYPE>::localMinQuotient( const VectorData &x,
+                                                        const VectorData &y ) const
 {
     auto curx  = x.constBegin<TYPE>();
     auto endx  = x.constEnd<TYPE>();
@@ -406,7 +416,8 @@ double VectorOperationsDefault<TYPE>::localMinQuotient( const VectorData &x, con
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorData &x, const VectorData &y ) const
+double VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorData &x,
+                                                     const VectorData &y ) const
 {
     auto curx  = x.constBegin<TYPE>();
     auto endx  = x.constEnd<TYPE>();
@@ -425,7 +436,9 @@ double VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorData &x, const 
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const
+double VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorData &x,
+                                                         const VectorData &mask,
+                                                         const VectorData &y ) const
 {
     auto curx  = x.constBegin<TYPE>();
     auto endx  = x.constEnd<TYPE>();
@@ -448,7 +461,9 @@ double VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorData &x, co
 }
 
 template<typename TYPE>
-bool VectorOperationsDefault<TYPE>::localEquals( const VectorData &x, const VectorData &y, double tol ) const
+bool VectorOperationsDefault<TYPE>::localEquals( const VectorData &x,
+                                                 const VectorData &y,
+                                                 double tol ) const
 {
     if ( ( x.getGlobalSize() != y.getGlobalSize() ) || ( x.getLocalSize() != y.getLocalSize() ) )
         return false;

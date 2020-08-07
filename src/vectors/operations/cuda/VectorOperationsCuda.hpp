@@ -35,7 +35,7 @@ std::shared_ptr<VectorOperations> VectorOperationsCuda<TYPE>::cloneOperations() 
  * Check that all data can be passed to cuda                     *
  ****************************************************************/
 template<typename TYPE>
-bool VectorOperationsCuda<TYPE>::checkData( ) const
+bool VectorOperationsCuda<TYPE>::checkData() const
 {
     return d_VectorData->numberOfDataBlocks() == 1;
 }
@@ -54,23 +54,20 @@ bool VectorOperationsCuda<TYPE>::checkData( const VectorOperations &x,
 template<typename TYPE>
 bool VectorOperationsCuda<TYPE>::checkData( const VectorData &x ) const
 {
-    return x->numberOfDataBlocks() == 1 ;
+    return x->numberOfDataBlocks() == 1;
 }
 template<typename TYPE>
-bool VectorOperationsCuda<TYPE>::checkData( const VectorData &x,
-                                            const VectorData &y ) const
+bool VectorOperationsCuda<TYPE>::checkData( const VectorData &x, const VectorData &y ) const
 {
-    return x.numberOfDataBlocks() == 1 &&
-      y.numberOfDataBlocks() == 1 ;
+    return x.numberOfDataBlocks() == 1 && y.numberOfDataBlocks() == 1;
 }
 template<typename TYPE>
 bool VectorOperationsCuda<TYPE>::checkData( const VectorData &x,
                                             const VectorData &y,
-					    const VectorData &z ) const
+                                            const VectorData &z ) const
 {
-    return x.numberOfDataBlocks() == 1
-        && y.numberOfDataBlocks() == 1 ;
-        && z.numberOfDataBlocks() == 1 ;
+    return x.numberOfDataBlocks() == 1 && y.numberOfDataBlocks() == 1;
+    &&z.numberOfDataBlocks() == 1;
 }
 
 //**********************************************************************
@@ -79,7 +76,7 @@ bool VectorOperationsCuda<TYPE>::checkData( const VectorData &x,
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::zero( VectorData &x )
 {
-  VectorOperationsCuda<TYPE>::setToScalar( 0.0, x );
+    VectorOperationsCuda<TYPE>::setToScalar( 0.0, x );
 }
 
 template<typename TYPE>
@@ -114,21 +111,21 @@ void VectorOperationsCuda<TYPE>::setToScalar( double alpha, VectorData &x )
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::setRandomValues( VectorData &x )
 {
-  // Default to VectorOperationsDefault (on cpu)
-  return VectorOperationsDefault<TYPE>::setRandomValues(x);
+    // Default to VectorOperationsDefault (on cpu)
+    return VectorOperationsDefault<TYPE>::setRandomValues( x );
 }
 
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::setRandomValues( RNG::shared_ptr rng, VectorData &x )
 {
     // Default to VectorOperationsDefault (on cpu)
-  return VectorOperationsDefault<TYPE>::setRandomValues( rng, x );
+    return VectorOperationsDefault<TYPE>::setRandomValues( rng, x );
 }
 
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::copy( const VectorData &x, VectorData &y )
 {
-  if ( checkData( x, y ) ) {
+    if ( checkData( x, y ) ) {
         TYPE *data        = y.getRawDataBlock<TYPE>( 0 );
         const TYPE *xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N          = y.sizeOfDataBlock( 0 );
@@ -136,14 +133,14 @@ void VectorOperationsCuda<TYPE>::copy( const VectorData &x, VectorData &y )
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      return VectorOperationsDefault<TYPE>::copy( x, y );
+        return VectorOperationsDefault<TYPE>::copy( x, y );
     }
 }
 
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::scale( double alpha_in, VectorData &x )
 {
-    if ( checkData(x) ) {
+    if ( checkData( x ) ) {
         TYPE *data  = x.getRawDataBlock<TYPE>( 0 );
         size_t N    = x.sizeOfDataBlock( 0 );
         TYPE alpha  = static_cast<TYPE>( alpha_in );
@@ -152,14 +149,14 @@ void VectorOperationsCuda<TYPE>::scale( double alpha_in, VectorData &x )
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      VectorOperationsDefault<TYPE>::scale( alpha_in, x );
+        VectorOperationsDefault<TYPE>::scale( alpha_in, x );
     }
 }
 
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::scale( double alpha_in, const VectorData &x, VectorData &y )
 {
-  if ( checkData( x, y ) ) {
+    if ( checkData( x, y ) ) {
         TYPE *data        = y.getRawDataBlock<TYPE>( 0 );
         const TYPE *xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N          = y.sizeOfDataBlock( 0 );
@@ -169,7 +166,7 @@ void VectorOperationsCuda<TYPE>::scale( double alpha_in, const VectorData &x, Ve
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      VectorOperationsDefault<TYPE>::scale( alpha_in, x, y );
+        VectorOperationsDefault<TYPE>::scale( alpha_in, x, y );
     }
 }
 
@@ -185,14 +182,14 @@ void VectorOperationsCuda<TYPE>::add( const VectorData &x, const VectorData &y, 
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      VectorOperationsDefault<TYPE>::add( x, y, z );
+        VectorOperationsDefault<TYPE>::add( x, y, z );
     }
 }
 
 template<typename TYPE>
-void VectorOperationsCuda<TYPE>::subtract( const VectorData &x, const VectorData &y, VectorData &z  )
+void VectorOperationsCuda<TYPE>::subtract( const VectorData &x, const VectorData &y, VectorData &z )
 {
-  if ( checkData( x, y, z ) ) {
+    if ( checkData( x, y, z ) ) {
         TYPE *data        = z.getRawDataBlock<TYPE>( 0 );
         const TYPE *xdata = x.getRawDataBlock<TYPE>( 0 );
         const TYPE *ydata = y.getRawDataBlock<TYPE>( 0 );
@@ -201,14 +198,14 @@ void VectorOperationsCuda<TYPE>::subtract( const VectorData &x, const VectorData
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      VectorOperationsDefault<TYPE>::subtract( x, y, z );
+        VectorOperationsDefault<TYPE>::subtract( x, y, z );
     }
 }
 
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::multiply( const VectorData &x, const VectorData &y, VectorData &z )
 {
-  if ( checkData( x, y, z ) ) {
+    if ( checkData( x, y, z ) ) {
         TYPE *data        = z.getRawDataBlock<TYPE>( 0 );
         const TYPE *xdata = x.getRawDataBlock<TYPE>( 0 );
         const TYPE *ydata = y.getRawDataBlock<TYPE>( 0 );
@@ -218,14 +215,14 @@ void VectorOperationsCuda<TYPE>::multiply( const VectorData &x, const VectorData
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      VectorOperationsDefault<TYPE>::multiply( x, y, z );
+        VectorOperationsDefault<TYPE>::multiply( x, y, z );
     }
 }
 
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::divide( const VectorData &x, const VectorData &y, VectorData &z )
 {
-  if ( checkData( x, y, z ) ) {
+    if ( checkData( x, y, z ) ) {
         TYPE *data        = z.getRawDataBlock<TYPE>( 0 );
         const TYPE *xdata = x.getRawDataBlock<TYPE>( 0 );
         const TYPE *ydata = y.getRawDataBlock<TYPE>( 0 );
@@ -234,7 +231,7 @@ void VectorOperationsCuda<TYPE>::divide( const VectorData &x, const VectorData &
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      VectorOperationsDefault<TYPE>::divide( x, y, z );
+        VectorOperationsDefault<TYPE>::divide( x, y, z );
     }
 }
 
@@ -242,7 +239,7 @@ void VectorOperationsCuda<TYPE>::divide( const VectorData &x, const VectorData &
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::reciprocal( const VectorData &x, VectorData &y )
 {
-  if ( checkData( x, y ) ) {
+    if ( checkData( x, y ) ) {
         TYPE *data        = y.getRawDataBlock<TYPE>( 0 );
         const TYPE *xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N          = y.sizeOfDataBlock( 0 );
@@ -251,19 +248,16 @@ void VectorOperationsCuda<TYPE>::reciprocal( const VectorData &x, VectorData &y 
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      VectorOperationsDefault<TYPE>::reciprocal( x, y );
+        VectorOperationsDefault<TYPE>::reciprocal( x, y );
     }
 }
 
 
 template<typename TYPE>
-void VectorOperationsCuda<TYPE>::linearSum( double alpha_in,
-                                   const VectorData &x,
-                                   double beta_in,
-                                   const VectorData &y,
-				   VectorData &z)
+void VectorOperationsCuda<TYPE>::linearSum(
+    double alpha_in, const VectorData &x, double beta_in, const VectorData &y, VectorData &z )
 {
-  if ( checkData( x, y, z ) ) {
+    if ( checkData( x, y, z ) ) {
         TYPE alpha        = alpha_in;
         TYPE beta         = beta_in;
         TYPE *data        = z.getRawDataBlock<TYPE>( 0 );
@@ -275,26 +269,32 @@ void VectorOperationsCuda<TYPE>::linearSum( double alpha_in,
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      VectorOperationsDefault<TYPE>::linearSum( alpha_in, x, beta_in, y, z );
+        VectorOperationsDefault<TYPE>::linearSum( alpha_in, x, beta_in, y, z );
     }
 }
 
 template<typename TYPE>
-void VectorOperationsCuda<TYPE>::axpy( double alpha_in, const VectorData &x, const VectorData &y, VectorData &z )
+void VectorOperationsCuda<TYPE>::axpy( double alpha_in,
+                                       const VectorData &x,
+                                       const VectorData &y,
+                                       VectorData &z )
 {
-  VectorOperationsCuda<TYPE>::linearSum( alpha_in, x, 1.0, y, z );
+    VectorOperationsCuda<TYPE>::linearSum( alpha_in, x, 1.0, y, z );
 }
 
 template<typename TYPE>
-void VectorOperationsCuda<TYPE>::axpby( double alpha_in, double beta_in, const VectorData &x, VectorData &z )
+void VectorOperationsCuda<TYPE>::axpby( double alpha_in,
+                                        double beta_in,
+                                        const VectorData &x,
+                                        VectorData &z )
 {
-  VectorOperationsCuda<TYPE>::linearSum( alpha_in, x, beta_in, z, z );
+    VectorOperationsCuda<TYPE>::linearSum( alpha_in, x, beta_in, z, z );
 }
 
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::abs( const VectorData &x, VectorData &y )
 {
-  if ( checkData( x, y ) ) {
+    if ( checkData( x, y ) ) {
         TYPE *data        = y.getRawDataBlock<TYPE>( 0 );
         const TYPE *xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N          = y.sizeOfDataBlock( 0 );
@@ -303,14 +303,14 @@ void VectorOperationsCuda<TYPE>::abs( const VectorData &x, VectorData &y )
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      VectorOperationsDefault<TYPE>::abs( x, y );
+        VectorOperationsDefault<TYPE>::abs( x, y );
     }
 }
 
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::addScalar( const VectorData &x, double alpha_in, VectorData &y )
 {
-  if ( checkData( x, y ) ) {
+    if ( checkData( x, y ) ) {
         TYPE *data        = y.getRawDataBlock<TYPE>( 0 );
         const TYPE *xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N          = y.sizeOfDataBlock( 0 );
@@ -325,10 +325,10 @@ void VectorOperationsCuda<TYPE>::addScalar( const VectorData &x, double alpha_in
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localMin( const VectorData &x )  const
+double VectorOperationsCuda<TYPE>::localMin( const VectorData &x ) const
 {
     double result = 0;
-    if ( checkData(x) ) {
+    if ( checkData( x ) ) {
         const TYPE *data = x.getRawDataBlock<TYPE>( 0 );
         size_t N         = x.sizeOfDataBlock( 0 );
         result           = thrust::reduce( thrust::device,
@@ -338,16 +338,16 @@ double VectorOperationsCuda<TYPE>::localMin( const VectorData &x )  const
                                  thrust::minimum<TYPE>() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        result = VectorOperationsDefault<TYPE>::localMin(x);
+        result = VectorOperationsDefault<TYPE>::localMin( x );
     }
     return result;
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localMax( const VectorData &x )  const
+double VectorOperationsCuda<TYPE>::localMax( const VectorData &x ) const
 {
     double result = 0;
-    if ( checkData(x) ) {
+    if ( checkData( x ) ) {
         const TYPE *data = x.getRawDataBlock<TYPE>( 0 );
         size_t N         = x.sizeOfDataBlock( 0 );
         result           = thrust::reduce( thrust::device,
@@ -357,16 +357,16 @@ double VectorOperationsCuda<TYPE>::localMax( const VectorData &x )  const
                                  thrust::maximum<TYPE>() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        result = VectorOperationsDefault<TYPE>::localMax(x);
+        result = VectorOperationsDefault<TYPE>::localMax( x );
     }
     return result;
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localL1Norm( const VectorData &x )  const
+double VectorOperationsCuda<TYPE>::localL1Norm( const VectorData &x ) const
 {
     double result = 0;
-    if ( checkData(x) ) {
+    if ( checkData( x ) ) {
         const TYPE *data = x.getRawDataBlock<TYPE>( 0 );
         size_t N         = x.sizeOfDataBlock( 0 );
         auto lambda      = [=] __device__( TYPE x ) { return x < 0 ? -x : x; };
@@ -374,16 +374,16 @@ double VectorOperationsCuda<TYPE>::localL1Norm( const VectorData &x )  const
             thrust::device, data, data + N, lambda, (TYPE) 0, thrust::plus<TYPE>() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        result = VectorOperationsDefault<TYPE>::localL1Norm(x);
+        result = VectorOperationsDefault<TYPE>::localL1Norm( x );
     }
     return result;
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localL2Norm( const VectorData &x )  const
+double VectorOperationsCuda<TYPE>::localL2Norm( const VectorData &x ) const
 {
     double result = 0;
-    if ( checkData(x) ) {
+    if ( checkData( x ) ) {
         const TYPE *data = x.getRawDataBlock<TYPE>( 0 );
         size_t N         = x.sizeOfDataBlock( 0 );
         auto lambda      = [=] __device__( TYPE x ) { return x * x; };
@@ -392,16 +392,16 @@ double VectorOperationsCuda<TYPE>::localL2Norm( const VectorData &x )  const
         result = sqrt( result );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        result = VectorOperationsDefault<TYPE>::localL2Norm(x);
+        result = VectorOperationsDefault<TYPE>::localL2Norm( x );
     }
     return result;
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localMaxNorm( const VectorData &x )  const
+double VectorOperationsCuda<TYPE>::localMaxNorm( const VectorData &x ) const
 {
     double result = 0;
-    if ( checkData(x) ) {
+    if ( checkData( x ) ) {
         const TYPE *data = x.getRawDataBlock<TYPE>( 0 );
         size_t N         = x.sizeOfDataBlock( 0 );
         auto lambda      = [=] __device__( TYPE x ) { return x < 0 ? -x : x; };
@@ -425,16 +425,17 @@ double VectorOperationsCuda<TYPE>::localDot( const VectorData &x, const VectorDa
         result = thrust::inner_product( thrust::device, data1, data1 + N, data2, (TYPE) 0 );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      result = VectorOperationsDefault<TYPE>::localDot( x, y );
+        result = VectorOperationsDefault<TYPE>::localDot( x, y );
     }
     return result;
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localMinQuotient( const VectorData &x, const VectorData &y ) const
+double VectorOperationsCuda<TYPE>::localMinQuotient( const VectorData &x,
+                                                     const VectorData &y ) const
 {
     double result = 0;
-    if ( checkData(x,y) ) {
+    if ( checkData( x, y ) ) {
         const TYPE *data1 = y.getRawDataBlock<TYPE>( 0 );
         const TYPE *data2 = x.getRawDataBlock<TYPE>( 0 );
         size_t N          = y.sizeOfDataBlock( 0 );
@@ -447,7 +448,7 @@ double VectorOperationsCuda<TYPE>::localMinQuotient( const VectorData &x, const 
                                         thrust::divides<TYPE>() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      result = VectorOperationsDefault<TYPE>::localMinQuotient( x, y );
+        result = VectorOperationsDefault<TYPE>::localMinQuotient( x, y );
     }
     return result;
 }
@@ -463,7 +464,7 @@ template<typename TYPE>
 double VectorOperationsCuda<TYPE>::localWrmsNorm( const VectorData &x, const VectorData &y ) const
 {
     double result = 0;
-    if ( checkData(x, y) ) {
+    if ( checkData( x, y ) ) {
         const TYPE *data1 = y.getRawDataBlock<TYPE>( 0 );
         const TYPE *data2 = x.getRawDataBlock<TYPE>( 0 );
         size_t N          = y.sizeOfDataBlock( 0 );
@@ -471,27 +472,31 @@ double VectorOperationsCuda<TYPE>::localWrmsNorm( const VectorData &x, const Vec
             thrust::device, data1, data1 + N, data2, 0, thrust::plus<TYPE>(), thrust_wrs<TYPE>() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      result = VectorOperationsDefault<TYPE>::localWrmsNorm( x, y );
+        result = VectorOperationsDefault<TYPE>::localWrmsNorm( x, y );
     }
     return result;
 }
 
 template<typename TYPE>
-double VectorOperationsCuda<TYPE>::localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const
+double VectorOperationsCuda<TYPE>::localWrmsNormMask( const VectorData &x,
+                                                      const VectorData &mask,
+                                                      const VectorData &y ) const
 {
     // Default to VectorOperationsDefault (on cpu)
-  return VectorOperationsDefault<TYPE>::localWrmsNormMask( x, mask, y );
+    return VectorOperationsDefault<TYPE>::localWrmsNormMask( x, mask, y );
 }
 
 template<typename TYPE>
-bool VectorOperationsCuda<TYPE>::localEquals( const VectorData &x, const VectorData &y, double tol ) const
+bool VectorOperationsCuda<TYPE>::localEquals( const VectorData &x,
+                                              const VectorData &y,
+                                              double tol ) const
 {
-  if ( checkData( x, y ) ) {
+    if ( checkData( x, y ) ) {
         // Call Cuda
-      return VectorOperationsDefault<TYPE>::localEquals( x, y, tol );
+        return VectorOperationsDefault<TYPE>::localEquals( x, y, tol );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-      return VectorOperationsDefault<TYPE>::localEquals( x, y, tol );
+        return VectorOperationsDefault<TYPE>::localEquals( x, y, tol );
     }
 }
 

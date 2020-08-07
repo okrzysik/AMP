@@ -134,7 +134,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Random initial guess
-    solVec->setRandomValues(solVec);
+    solVec->setRandomValues( solVec );
 
     // Initial guess for thermal must satisfy the thermal Dirichlet boundary conditions
     dirichletThermalInVecOp->apply( nullVec, solVec );
@@ -170,7 +170,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     columnSolver->append( linearThermalSolver );
     columnSolver->append( linearFickSolver );
 
-    double initialResidualNorm = resVec->L2Norm(resVec);
+    double initialResidualNorm = resVec->L2Norm( resVec );
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
@@ -178,7 +178,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     linearThermalFickOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm(resVec);
+    double finalResidualNorm = resVec->L2Norm( resVec );
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 

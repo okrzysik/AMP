@@ -9,7 +9,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 class MultiVectorData;
-  
+
 /**
  * \brief  A set of vector operations for multivectors
  * \details MultiVectorOperations impliments a default set of
@@ -28,8 +28,7 @@ public:
     std::shared_ptr<VectorOperations> cloneOperations() const override;
 
 private:
-    
-//  static function that operate on VectorData
+    //  static function that operate on VectorData
     static VectorData *getVectorDataComponent( VectorData &x, size_t i );
     static const VectorData *getVectorDataComponent( const VectorData &x, size_t i );
     static MultiVectorData *getMultiVectorData( VectorData &x );
@@ -38,8 +37,8 @@ private:
 public:
     void zero( VectorData &z ) override;
     void setToScalar( double alpha, VectorData &z ) override;
-    void setRandomValues( VectorData &x ) override;    
-    void setRandomValues( RNG::shared_ptr rng, VectorData &x ) override;    
+    void setRandomValues( VectorData &x ) override;
+    void setRandomValues( RNG::shared_ptr rng, VectorData &x ) override;
     void copy( const VectorData &x, VectorData &z ) override;
     void scale( double alpha, const VectorData &x, VectorData &y ) override;
     void scale( double alpha, VectorData &x ) override;
@@ -49,10 +48,10 @@ public:
     void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
     void reciprocal( const VectorData &x, VectorData &y ) override;
     void linearSum( double alpha,
-			   const VectorData &x,
-			   double beta,
-			   const VectorData &y,
-			   VectorData &z) override;
+                    const VectorData &x,
+                    double beta,
+                    const VectorData &y,
+                    VectorData &z ) override;
     void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
     void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
     void abs( const VectorData &x, VectorData &z ) override;
@@ -61,13 +60,16 @@ public:
     double localMin( const VectorData &x ) const override;
     double localMax( const VectorData &x ) const override;
     double localL1Norm( const VectorData &x ) const override;
-    double localL2Norm( const VectorData &x  ) const override;
+    double localL2Norm( const VectorData &x ) const override;
     double localMaxNorm( const VectorData &x ) const override;
     double localDot( const VectorData &x, const VectorData &y ) const override;
     double localMinQuotient( const VectorData &x, const VectorData &y ) const override;
     double localWrmsNorm( const VectorData &x, const VectorData &y ) const override;
-    double localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const override;
-    bool   localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) const override;
+    double localWrmsNormMask( const VectorData &x,
+                              const VectorData &mask,
+                              const VectorData &y ) const override;
+    bool
+    localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) const override;
 
 protected:
     // Internal data

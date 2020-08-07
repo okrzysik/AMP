@@ -177,8 +177,8 @@ void ManagedSundialsVector::linearSum_AMP(
 
 void ManagedSundialsVector::setToScalar_AMP( realtype c, N_Vector z )
 {
-   Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
-   pz->setToScalar( c, *pz );
+    Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
+    pz->setToScalar( c, *pz );
 }
 
 /**
@@ -278,7 +278,7 @@ realtype ManagedSundialsVector::maxNorm_AMP( N_Vector x )
 
     Vector *px = static_cast<ManagedSundialsVector *>( x->content );
 
-    maxnorm = px->maxNorm(*px);
+    maxnorm = px->maxNorm( *px );
 
     return ( maxnorm );
 }
@@ -291,7 +291,7 @@ realtype ManagedSundialsVector::min_AMP( N_Vector x )
     double min;
 
     Vector *px = static_cast<ManagedSundialsVector *>( x->content );
-    min = px->min(*px);
+    min        = px->min( *px );
 
     return ( min );
 }
@@ -303,7 +303,7 @@ realtype ManagedSundialsVector::L1Norm_AMP( N_Vector x )
 {
     double l1norm;
     Vector *px = static_cast<ManagedSundialsVector *>( x->content );
-    l1norm = px->L1Norm(*px);
+    l1norm     = px->L1Norm( *px );
     return ( l1norm );
 }
 

@@ -30,7 +30,7 @@ std::shared_ptr<VectorOperations> VectorOperationsOpenMP<TYPE>::cloneOperations(
 template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::zero( VectorData &x )
 {
-    const auto last  = x.end<TYPE>();
+    const auto last = x.end<TYPE>();
 #pragma omp parallel for
     for ( auto it = x.begin<TYPE>(); it < last; ++it )
         *it = 0;
@@ -46,13 +46,13 @@ void VectorOperationsOpenMP<TYPE>::zero( VectorData &x )
 template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::setToScalar( double alpha, VectorData &x )
 {
-    const auto last  = x.end<TYPE>();
+    const auto last = x.end<TYPE>();
 #pragma omp parallel for
     for ( auto it = x.begin<TYPE>(); it < last; ++it )
         *it = alpha;
     if ( x.hasGhosts() ) {
-      auto &ghosts = x.getGhosts();
-      for ( size_t i = 0; i != ghosts.size(); i++ )
+        auto &ghosts = x.getGhosts();
+        for ( size_t i = 0; i != ghosts.size(); i++ )
             ghosts[i] = alpha;
     }
     // Override the status state since we set the ghost values
@@ -100,7 +100,7 @@ void VectorOperationsOpenMP<TYPE>::copy( const VectorData &x, VectorData &y )
 template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::scale( double alpha, VectorData &x )
 {
-    const auto last  = x.end<TYPE>();
+    const auto last = x.end<TYPE>();
 #pragma omp parallel for
     for ( auto it = x.begin<TYPE>(); it < last; ++it )
         *it *= alpha;
@@ -138,7 +138,9 @@ void VectorOperationsOpenMP<TYPE>::add( const VectorData &x, const VectorData &y
 }
 
 template<typename TYPE>
-void VectorOperationsOpenMP<TYPE>::subtract( const VectorData &x, const VectorData &y, VectorData &z  )
+void VectorOperationsOpenMP<TYPE>::subtract( const VectorData &x,
+                                             const VectorData &y,
+                                             VectorData &z )
 {
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
@@ -155,7 +157,9 @@ void VectorOperationsOpenMP<TYPE>::subtract( const VectorData &x, const VectorDa
 }
 
 template<typename TYPE>
-void VectorOperationsOpenMP<TYPE>::multiply( const VectorData &x, const VectorData &y, VectorData &z )
+void VectorOperationsOpenMP<TYPE>::multiply( const VectorData &x,
+                                             const VectorData &y,
+                                             VectorData &z )
 {
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
@@ -205,11 +209,8 @@ void VectorOperationsOpenMP<TYPE>::reciprocal( const VectorData &x, VectorData &
 
 
 template<typename TYPE>
-void VectorOperationsOpenMP<TYPE>::linearSum( double alpha_in,
-                                   const VectorData &x,
-                                   double beta_in,
-                                   const VectorData &y,
-				   VectorData &z)
+void VectorOperationsOpenMP<TYPE>::linearSum(
+    double alpha_in, const VectorData &x, double beta_in, const VectorData &y, VectorData &z )
 {
     const TYPE alpha = static_cast<TYPE>( alpha_in );
     const TYPE beta  = static_cast<TYPE>( beta_in );
@@ -228,7 +229,10 @@ void VectorOperationsOpenMP<TYPE>::linearSum( double alpha_in,
 }
 
 template<typename TYPE>
-void VectorOperationsOpenMP<TYPE>::axpy( double alpha_in, const VectorData &x, const VectorData &y, VectorData &z )
+void VectorOperationsOpenMP<TYPE>::axpy( double alpha_in,
+                                         const VectorData &x,
+                                         const VectorData &y,
+                                         VectorData &z )
 {
     const TYPE alpha = static_cast<TYPE>( alpha_in );
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
@@ -246,7 +250,10 @@ void VectorOperationsOpenMP<TYPE>::axpy( double alpha_in, const VectorData &x, c
 }
 
 template<typename TYPE>
-void VectorOperationsOpenMP<TYPE>::axpby( double alpha_in, double beta_in, const VectorData &x, VectorData &z )
+void VectorOperationsOpenMP<TYPE>::axpby( double alpha_in,
+                                          double beta_in,
+                                          const VectorData &x,
+                                          VectorData &z )
 {
     const TYPE alpha = static_cast<TYPE>( alpha_in );
     const TYPE beta  = static_cast<TYPE>( beta_in );
@@ -291,7 +298,7 @@ void VectorOperationsOpenMP<TYPE>::addScalar( const VectorData &x, double alpha_
 }
 
 template<typename TYPE>
-double VectorOperationsOpenMP<TYPE>::localMin( const VectorData &x )  const
+double VectorOperationsOpenMP<TYPE>::localMin( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
     TYPE ans        = std::numeric_limits<TYPE>::max();
@@ -306,7 +313,7 @@ double VectorOperationsOpenMP<TYPE>::localMin( const VectorData &x )  const
 }
 
 template<typename TYPE>
-double VectorOperationsOpenMP<TYPE>::localMax( const VectorData &x )  const
+double VectorOperationsOpenMP<TYPE>::localMax( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
     TYPE ans        = std::numeric_limits<TYPE>::lowest();
@@ -321,10 +328,10 @@ double VectorOperationsOpenMP<TYPE>::localMax( const VectorData &x )  const
 }
 
 template<typename TYPE>
-double VectorOperationsOpenMP<TYPE>::localL1Norm( const VectorData &x )  const
+double VectorOperationsOpenMP<TYPE>::localL1Norm( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
-    TYPE ans      = 0;
+    TYPE ans        = 0;
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size      = x.sizeOfDataBlock( i );
         const TYPE *data = x.getRawDataBlock<TYPE>( i );
@@ -332,14 +339,14 @@ double VectorOperationsOpenMP<TYPE>::localL1Norm( const VectorData &x )  const
         for ( size_t j = 0; j < size; j++ )
             ans += static_cast<double>( std::abs( data[j] ) );
     }
-    return static_cast<double>(ans);
+    return static_cast<double>( ans );
 }
 
 template<typename TYPE>
-double VectorOperationsOpenMP<TYPE>::localL2Norm( const VectorData &x )  const
+double VectorOperationsOpenMP<TYPE>::localL2Norm( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
-    TYPE ans      = 0;
+    TYPE ans        = 0;
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size      = x.sizeOfDataBlock( i );
         const TYPE *data = x.getRawDataBlock<TYPE>( i );
@@ -349,11 +356,11 @@ double VectorOperationsOpenMP<TYPE>::localL2Norm( const VectorData &x )  const
             ans += tmp * tmp;
         }
     }
-    return static_cast<double>(sqrt( ans ));
+    return static_cast<double>( sqrt( ans ) );
 }
 
 template<typename TYPE>
-double VectorOperationsOpenMP<TYPE>::localMaxNorm( const VectorData &x )  const
+double VectorOperationsOpenMP<TYPE>::localMaxNorm( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
     TYPE ans        = 0;
@@ -374,7 +381,7 @@ double VectorOperationsOpenMP<TYPE>::localDot( const VectorData &x, const Vector
     auto curMe   = y.constBegin<TYPE>();
     auto last    = y.constEnd<TYPE>();
     auto curXRhs = x.constBegin<TYPE>();
-    TYPE ans   = 0;
+    TYPE ans     = 0;
     while ( curMe != last ) {
         auto v1 = *curMe;
         auto v2 = *curXRhs;
@@ -386,7 +393,8 @@ double VectorOperationsOpenMP<TYPE>::localDot( const VectorData &x, const Vector
 }
 
 template<typename TYPE>
-double VectorOperationsOpenMP<TYPE>::localMinQuotient( const VectorData &x, const VectorData &y ) const
+double VectorOperationsOpenMP<TYPE>::localMinQuotient( const VectorData &x,
+                                                       const VectorData &y ) const
 {
     auto curx  = x.constBegin<TYPE>();
     auto endx  = x.constEnd<TYPE>();
@@ -424,7 +432,9 @@ double VectorOperationsOpenMP<TYPE>::localWrmsNorm( const VectorData &x, const V
 }
 
 template<typename TYPE>
-double VectorOperationsOpenMP<TYPE>::localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const
+double VectorOperationsOpenMP<TYPE>::localWrmsNormMask( const VectorData &x,
+                                                        const VectorData &mask,
+                                                        const VectorData &y ) const
 {
     auto curx  = x.constBegin<TYPE>();
     auto endx  = x.constEnd<TYPE>();
@@ -447,7 +457,9 @@ double VectorOperationsOpenMP<TYPE>::localWrmsNormMask( const VectorData &x, con
 }
 
 template<typename TYPE>
-bool VectorOperationsOpenMP<TYPE>::localEquals( const VectorData &x, const VectorData &y, double tol ) const
+bool VectorOperationsOpenMP<TYPE>::localEquals( const VectorData &x,
+                                                const VectorData &y,
+                                                double tol ) const
 {
     if ( ( x.getGlobalSize() != y.getGlobalSize() ) || ( x.getLocalSize() != y.getLocalSize() ) )
         return false;

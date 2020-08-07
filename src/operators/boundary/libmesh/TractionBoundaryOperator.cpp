@@ -73,7 +73,7 @@ void TractionBoundaryOperator::computeCorrection()
 
     AMP::Discretization::DOFManager::shared_ptr dofMap = d_correction->getDOFManager();
 
-    d_correction->zero(d_correction);
+    d_correction->zero( d_correction );
     for ( size_t b = 0; b < d_sideNumbers.size(); ++b ) {
         libMesh::Elem *elem = new libMesh::Hex8;
         for ( int j = 0; j < 8; ++j ) {

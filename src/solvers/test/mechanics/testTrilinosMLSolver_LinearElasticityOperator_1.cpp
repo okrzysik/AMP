@@ -73,17 +73,17 @@ static void linearElasticTest( AMP::UnitTest *ut )
 
     dirichletVecOp->apply( nullVec, mechRhsVec );
 
-    double rhsNorm = mechRhsVec->L2Norm(mechRhsVec);
+    double rhsNorm = mechRhsVec->L2Norm( mechRhsVec );
 
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
-    double initSolNorm = mechSolVec->L2Norm(mechSolVec);
+    double initSolNorm = mechSolVec->L2Norm( mechSolVec );
 
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-    double initResidualNorm = mechResVec->L2Norm(mechResVec);
+    double initResidualNorm = mechResVec->L2Norm( mechResVec );
 
     std::cout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
@@ -109,7 +109,7 @@ static void linearElasticTest( AMP::UnitTest *ut )
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-    double finalResidualNorm = mechResVec->L2Norm(mechResVec);
+    double finalResidualNorm = mechResVec->L2Norm( mechResVec );
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 

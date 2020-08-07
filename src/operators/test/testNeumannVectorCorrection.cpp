@@ -50,8 +50,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr vectorVec =
         AMP::LinearAlgebra::createVector( nodalVectorDOF, var, true );
 
-    scalarVec->zero(scalarVec);
-    vectorVec->zero(vectorVec);
+    scalarVec->zero( scalarVec );
+    vectorVec->zero( vectorVec );
 
     std::shared_ptr<AMP::Database> bnd_db = input_db->getDatabase( "NeumannVectorCorrection1" );
     std::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> vectorCorrectionParameters(

@@ -80,8 +80,8 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 #endif
 
     AMP::pout << "SpecificPowerShapeVec->max()"
-              << " : " << SpecificPowerShapeVec->min(SpecificPowerShapeVec) << " : " << SpecificPowerShapeVec->max(SpecificPowerShapeVec)
-              << std::endl;
+              << " : " << SpecificPowerShapeVec->min( SpecificPowerShapeVec ) << " : "
+              << SpecificPowerShapeVec->max( SpecificPowerShapeVec ) << std::endl;
     // Check that the data is non-negative
     bool itpasses  = true;
     auto elem      = meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );

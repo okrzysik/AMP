@@ -189,7 +189,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Variable::shared_ptr PowerInWattsVar = sourceOperator->getOutputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr PowerInWattsVec =
         AMP::LinearAlgebra::createVector( nodalDofMap1, PowerInWattsVar );
-    PowerInWattsVec->zero(PowerInWattsVec);
+    PowerInWattsVec->zero( PowerInWattsVec );
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
@@ -499,11 +499,12 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     while ( cnt < maxIt ) {
         cnt++;
 
-        RightHandSideVec1->zero(RightHandSideVec1);
-        RightHandSideVec2->zero(RightHandSideVec2);
+        RightHandSideVec1->zero( RightHandSideVec1 );
+        RightHandSideVec2->zero( RightHandSideVec2 );
 
         RightHandSideVec1->copyVector( PowerInWattsVec );
-        std::cout << "PowerInWattsVec norm  inside loop = " << RightHandSideVec1->L2Norm(RightHandSideVec1) << "\n";
+        std::cout << "PowerInWattsVec norm  inside loop = "
+                  << RightHandSideVec1->L2Norm( RightHandSideVec1 ) << "\n";
 
         //------------------------------------------------------------
         /*
@@ -532,8 +533,8 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         correctionParameters1->d_variableFlux = variableFluxVec1;
         robinBoundaryOp1->reset( correctionParameters1 );
 
-        std::cout << "Variable flux1 norm inside loop : " << variableFluxVec1->L2Norm(variableFluxVec1)
-                  << std::endl;
+        std::cout << "Variable flux1 norm inside loop : "
+                  << variableFluxVec1->L2Norm( variableFluxVec1 ) << std::endl;
 
         nonlinearThermalOperator1->modifyRHSvector( RightHandSideVec1 );
         nonlinearThermalOperator1->modifyInitialSolutionVector( TemperatureInKelvinVec1 );
@@ -541,19 +542,20 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearThermalOperator1->residual(
             RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1 );
 
-        std::cout << "Norm of TemperatureInKelvinVec1: " << TemperatureInKelvinVec1->L2Norm(TemperatureInKelvinVec1)
-                  << std::endl;
+        std::cout << "Norm of TemperatureInKelvinVec1: "
+                  << TemperatureInKelvinVec1->L2Norm( TemperatureInKelvinVec1 ) << std::endl;
 
         //------------------------------------------------------------
 
         mapCladToFlow->residual( nullVec, TemperatureInKelvinVec2, solVec );
         while ( true ) {
             flowOperator->residual( rhsVec, solVec, resVec );
-            if ( abs( resVec->L2Norm(resVec) - vecLag->L2Norm(vecLag) ) < .000005 * vecLag->L2Norm(vecLag) )
+            if ( abs( resVec->L2Norm( resVec ) - vecLag->L2Norm( vecLag ) ) <
+                 .000005 * vecLag->L2Norm( vecLag ) )
                 break;
             else
-                std::cout << "for iteration cnt = " << cnt << " --> " << vecLag->L2Norm(vecLag) << " "
-                          << resVec->L2Norm(resVec) << std::endl;
+                std::cout << "for iteration cnt = " << cnt << " --> " << vecLag->L2Norm( vecLag )
+                          << " " << resVec->L2Norm( resVec ) << std::endl;
 
             std::cout << "Intermediate Flow Solution " << std::endl;
             for ( unsigned int i = 0; i < flowVecSize; i++ ) {
@@ -573,11 +575,13 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         //-----------------------------------------------
         map1ToLowDim->apply( TemperatureInKelvinVec1, gapVecClad );
 
-        std::cout << "Norm of solVec after map1toLowDim: " << gapVecClad->L2Norm(gapVecClad) << std::endl;
+        std::cout << "Norm of solVec after map1toLowDim: " << gapVecClad->L2Norm( gapVecClad )
+                  << std::endl;
 
         map1ToHighDim->apply( gapVecClad, scratchTempVec2 );
 
-        std::cout << "Norm of scratch2: " << scratchTempVec2->L2Norm(scratchTempVec2) << std::endl;
+        std::cout << "Norm of scratch2: " << scratchTempVec2->L2Norm( scratchTempVec2 )
+                  << std::endl;
 
         scratchTempVec2->scale( heff, scratchTempVec2 );
         variableFluxVec2->copyVector( scratchTempVec2 );
@@ -585,8 +589,8 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         correctionParameters2->d_variableFlux = variableFluxVec2;
         robinBoundaryOp2->reset( correctionParameters2 );
 
-        std::cout << "Variable flux2 norm inside loop : " << variableFluxVec2->L2Norm(variableFluxVec2)
-                  << std::endl;
+        std::cout << "Variable flux2 norm inside loop : "
+                  << variableFluxVec2->L2Norm( variableFluxVec2 ) << std::endl;
 
         linearThermalOperator2->modifyRHSvector( RightHandSideVec2 );
         linearThermalOperator2->residual(
@@ -596,9 +600,9 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         //------------------------------------------------------------
 
         std::cout << "Residual Norm on Pellet after " << cnt
-                  << " iteration is : " << ResidualVec1->L2Norm(ResidualVec1) << std::endl;
+                  << " iteration is : " << ResidualVec1->L2Norm( ResidualVec1 ) << std::endl;
         std::cout << "Residual Norm on Clad after " << cnt
-                  << " iteration is : " << ResidualVec2->L2Norm(ResidualVec2) << std::endl;
+                  << " iteration is : " << ResidualVec2->L2Norm( ResidualVec2 ) << std::endl;
 
         vecLag2->subtract( TemperatureInKelvinVec2, vecLag2, vecLag2 );
 
@@ -613,12 +617,12 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         siloWriter->writeFile( input_file, 0 );
 #endif
         //          }
-        if ( vecLag2->L2Norm(vecLag2) < 1.e-6 ) {
+        if ( vecLag2->L2Norm( vecLag2 ) < 1.e-6 ) {
             testPassed = true;
             break;
         } else {
-            std::cout << "for iteration cnt = " << cnt << " --> " << vecLag1->L2Norm(vecLag1) << " "
-                      << vecLag2->L2Norm(vecLag2) << std::endl;
+            std::cout << "for iteration cnt = " << cnt << " --> " << vecLag1->L2Norm( vecLag1 )
+                      << " " << vecLag2->L2Norm( vecLag2 ) << std::endl;
         }
         std::cout << std::endl;
 

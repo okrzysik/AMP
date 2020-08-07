@@ -173,7 +173,7 @@ void helperBuildPointLoadRHSForPelletMechanics(
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     std::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator =
         std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( coupledOp->getOperator( 3 ) );
-    rhsVec->zero(rhsVec);
+    rhsVec->zero( rhsVec );
     for ( unsigned int id = 0; id < nonlinearColumnOperator->getNumberOfOperators(); id++ ) {
         AMP::Operator::Operator::shared_ptr currOp = nonlinearColumnOperator->getOperator( id );
         AMP::Mesh::Mesh::shared_ptr meshAdapter    = currOp->getMesh();

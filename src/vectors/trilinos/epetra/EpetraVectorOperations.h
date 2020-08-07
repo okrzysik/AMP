@@ -22,10 +22,10 @@ class EpetraVectorOperations : virtual public VectorOperationsDefault<double>
 public:
     // Constructor
     EpetraVectorOperations() {}
-   
- public:
+
+public:
     void setToScalar( double alpha, VectorData &z ) override;
-    void setRandomValues( VectorData &x ) override;    
+    void setRandomValues( VectorData &x ) override;
     void scale( double alpha, const VectorData &x, VectorData &y ) override;
     void scale( double alpha, VectorData &x ) override;
     void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
@@ -34,10 +34,10 @@ public:
     void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
     void reciprocal( const VectorData &x, VectorData &y ) override;
     void linearSum( double alpha,
-			   const VectorData &x,
-			   double beta,
-			   const VectorData &y,
-			   VectorData &z) override;
+                    const VectorData &x,
+                    double beta,
+                    const VectorData &y,
+                    VectorData &z ) override;
     void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
     void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
     void abs( const VectorData &x, VectorData &z ) override;
@@ -76,11 +76,12 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::localMaxNorm;
     using VectorOperationsDefault::localMin;
 
-    using VectorOperationsDefault::min;
-    using VectorOperationsDefault::max;
     using VectorOperationsDefault::L1Norm;
     using VectorOperationsDefault::L2Norm;
+    using VectorOperationsDefault::max;
     using VectorOperationsDefault::maxNorm;
+    using VectorOperationsDefault::min;
+
 protected:
     Epetra_Vector &getEpetra_Vector();
     const Epetra_Vector &getEpetra_Vector() const;

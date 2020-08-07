@@ -200,10 +200,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         mechNlScaledRhsVec->makeConsistent(
             AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         AMP::pout << "L2 Norm of RHS at loading step " << ( step + 1 ) << " is "
-                  << mechNlScaledRhsVec->L2Norm(mechNlScaledRhsVec) << std::endl;
+                  << mechNlScaledRhsVec->L2Norm( mechNlScaledRhsVec ) << std::endl;
 
         nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-        double initialResidualNorm = mechNlResVec->L2Norm(mechNlResVec);
+        double initialResidualNorm = mechNlResVec->L2Norm( mechNlResVec );
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
@@ -211,7 +211,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearSolver->solve( mechNlScaledRhsVec, mechNlSolVec );
 
         nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-        double finalResidualNorm = mechNlResVec->L2Norm(mechNlResVec);
+        double finalResidualNorm = mechNlResVec->L2Norm( mechNlResVec );
         AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                   << finalResidualNorm << std::endl;
 
@@ -228,7 +228,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearSolver->setZeroInitialGuess( false );
     }
 
-    double finalSolNorm = mechNlSolVec->L2Norm(mechNlSolVec);
+    double finalSolNorm = mechNlSolVec->L2Norm( mechNlSolVec );
     AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
 #ifdef USE_EXT_SILO

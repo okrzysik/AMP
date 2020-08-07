@@ -158,12 +158,12 @@ static void myTest( AMP::UnitTest *ut )
         auto dirVec = solVec->cloneVector();
         auto corVec = solVec->cloneVector();
 
-        solVec->zero(solVec);
-        rhsVec->zero(rhsVec);
+        solVec->zero( solVec );
+        rhsVec->zero( rhsVec );
         loadOp->apply( nullVec, rhsVec );
         bvpOp->modifyRHSvector( rhsVec );
         if ( dummy ) {
-            dirVec->zero(dirVec);
+            dirVec->zero( dirVec );
             dirOp->addShiftToSlave( dirVec );
             colOp->apply( dirVec, corVec );
             corVec->scale( -1.0, corVec );
@@ -205,8 +205,8 @@ static void myTest( AMP::UnitTest *ut )
     } // end for
 
     vec1->subtract( vec1, vec2, vec1 );
-    double const solutionL2Norm = vec2->L2Norm(vec2);
-    double const errorL2Norm    = vec1->L2Norm(vec1);
+    double const solutionL2Norm = vec2->L2Norm( vec2 );
+    double const errorL2Norm    = vec1->L2Norm( vec1 );
     std::cout << "solution L2 norm = " << std::setprecision( 15 ) << solutionL2Norm << "\n";
     std::cout << "error L2 norm = " << std::setprecision( 15 ) << errorL2Norm << "\n";
     std::cout << "relative error = " << errorL2Norm / solutionL2Norm << "\n";

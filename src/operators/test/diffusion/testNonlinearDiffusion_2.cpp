@@ -168,11 +168,11 @@ static void nonlinearTest( AMP::UnitTest *ut,
     for ( unsigned int i = 0; i < numNonPrincIds; i++ ) {
         nonPrincVecs[i] = AMP::LinearAlgebra::createVector( nodalDofMap, nonPrincVars[i] );
         if ( nonPrincIds[i] == AMP::Operator::Diffusion::TEMPERATURE )
-	  nonPrincVecs[i]->setToScalar( defTemp, nonPrincVecs[i] );
+            nonPrincVecs[i]->setToScalar( defTemp, nonPrincVecs[i] );
         if ( nonPrincIds[i] == AMP::Operator::Diffusion::CONCENTRATION )
-	  nonPrincVecs[i]->setToScalar( defConc, nonPrincVecs[i] );
+            nonPrincVecs[i]->setToScalar( defConc, nonPrincVecs[i] );
         if ( nonPrincIds[i] == AMP::Operator::Diffusion::BURNUP )
-	  nonPrincVecs[i]->setToScalar( defBurn, nonPrincVecs[i] );
+            nonPrincVecs[i]->setToScalar( defBurn, nonPrincVecs[i] );
     }
     diffRhsVec->setToScalar( 0.0, diffRhsVec );
 

@@ -62,7 +62,7 @@ void Operator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
         auto fInternal = subsetOutputVector( f );
         rInternal->subtract( fInternal, rInternal, rInternal );
     } else {
-      rInternal->scale( -1.0, rInternal );
+        rInternal->scale( -1.0, rInternal );
     }
 
     rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );

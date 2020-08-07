@@ -211,7 +211,7 @@ void TrilinosMLSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
                 "ERROR: TrilinosMLSolver::solve() operator cannot be NULL" );
 
     if ( d_bUseZeroInitialGuess ) {
-        u->zero(u);
+        u->zero( u );
     }
 
     if ( d_bCreationPhase ) {
@@ -238,7 +238,7 @@ void TrilinosMLSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
     if ( computeResidual ) {
         r = f->cloneVector();
         d_pOperator->residual( f, u, r );
-        initialResNorm = r->L2Norm(r);
+        initialResNorm = r->L2Norm( r );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "TrilinosMLSolver::solve(), L2 norm of residual before solve "
@@ -247,7 +247,7 @@ void TrilinosMLSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm(u);
+        double solution_norm = u->L2Norm( u );
         AMP::pout << "TrilinosMLSolver : before solve solution norm: " << std::setprecision( 15 )
                   << solution_norm << std::endl;
     }
@@ -276,7 +276,7 @@ void TrilinosMLSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
     }
 
     // Check for NaNs in the solution (no communication necessary)
-    double localNorm = u->localL2Norm(*u);
+    double localNorm = u->localL2Norm( *u );
     AMP_INSIST( localNorm == localNorm, "NaNs detected in solution" );
 
     // we are forced to update the state of u here
@@ -288,14 +288,14 @@ void TrilinosMLSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
         firer->fireDataChange();
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm(u);
+        double solution_norm = u->L2Norm( u );
         AMP::pout << "TrilinosMLSolver : after solve solution norm: " << std::setprecision( 15 )
                   << solution_norm << std::endl;
     }
 
     if ( computeResidual ) {
         d_pOperator->residual( f, u, r );
-        finalResNorm = r->L2Norm(r);
+        finalResNorm = r->L2Norm( r );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "TrilinosMLSolver::solve(), L2 norm of residual after solve "

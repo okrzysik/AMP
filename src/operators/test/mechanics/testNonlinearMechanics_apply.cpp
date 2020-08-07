@@ -54,17 +54,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     solVec->setToScalar( 5.0, solVec );
 
-    AMP::pout << "Solution Norm: " << ( solVec->L2Norm(solVec) ) << std::endl;
+    AMP::pout << "Solution Norm: " << ( solVec->L2Norm( solVec ) ) << std::endl;
 
     testNonlinOperator->apply( solVec, resVec );
 
-    double resNorm1 = resVec->L2Norm(resVec);
+    double resNorm1 = resVec->L2Norm( resVec );
 
     AMP::pout << "resNorm1 = " << resNorm1 << std::endl;
 
     testNonlinOperator->apply( solVec, resVec );
 
-    double resNorm2 = resVec->L2Norm(resVec);
+    double resNorm2 = resVec->L2Norm( resVec );
 
     AMP::pout << "resNorm2 = " << resNorm2 << std::endl;
 

@@ -28,31 +28,31 @@ void NonlinearBVPOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
 
     if ( d_iDebugPrintInfoLevel > 3 ) {
         AMP::pout << "L2 Norm of u in NonlinearBVPOperator volumeOperator::apply is : "
-                  << u->L2Norm(u) << std::endl;
+                  << u->L2Norm( u ) << std::endl;
     }
 
     d_volumeOperator->apply( u, r );
 
     if ( d_iDebugPrintInfoLevel > 3 ) {
         AMP::pout << "L2 Norm of r in NonlinearBVPOperator volumeOperator::apply is : "
-                  << r->L2Norm(r) << std::endl;
+                  << r->L2Norm( r ) << std::endl;
     }
 
     if ( d_iDebugPrintInfoLevel > 3 ) {
         AMP::pout << "L2 Norm of rInternal in NonlinearBVPOperator volumeOperator::apply is : "
-                  << rInternal->L2Norm(rInternal) << std::endl;
+                  << rInternal->L2Norm( rInternal ) << std::endl;
     }
 
     d_boundaryOperator->apply( u, r );
 
     if ( d_iDebugPrintInfoLevel > 3 ) {
         AMP::pout << "L2 Norm of r in NonlinearBVPOperator boundaryOperator::apply is : "
-                  << r->L2Norm(r) << std::endl;
+                  << r->L2Norm( r ) << std::endl;
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "L2 Norm of output of NonlinearBVPOperator :: apply is : "
-                  << rInternal->L2Norm(rInternal) << std::endl;
+                  << rInternal->L2Norm( rInternal ) << std::endl;
     }
     PROFILE_STOP( "apply" );
 }

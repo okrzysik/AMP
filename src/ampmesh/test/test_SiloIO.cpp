@@ -42,7 +42,7 @@ AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr m
         AMP::Discretization::simpleDOFManager::create( mesh, mesh->getGeomType(), 0, 1, false );
     auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "volume" );
     auto vec = AMP::LinearAlgebra::createVector( DOF, var, true );
-    vec->zero(vec);
+    vec->zero( vec );
     std::vector<size_t> dofs;
     for ( const auto &elem : mesh->getIterator( mesh->getGeomType(), 0 ) ) {
         double volume = elem.volume();

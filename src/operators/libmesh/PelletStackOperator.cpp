@@ -138,7 +138,7 @@ void PelletStackOperator::applyXYZcorrection( AMP::LinearAlgebra::Vector::const_
     // Currently not filling r with zeros as r may contain valid values
     // BP, Nov 3, 2015
     //      r->copyVector(f);
-    d_frozenVectorForMaps->zero(d_frozenVectorForMaps);
+    d_frozenVectorForMaps->zero( d_frozenVectorForMaps );
     d_n2nMaps->apply( u, nullVec );
     AMP::LinearAlgebra::Vector::shared_ptr subU =
         d_frozenVectorForMaps->subsetVectorForVariable( d_var );

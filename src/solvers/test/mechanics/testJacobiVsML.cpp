@@ -70,8 +70,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = mechSolVec->cloneVector();
     AMP::LinearAlgebra::Vector::shared_ptr mechResVec = mechSolVec->cloneVector();
 
-    mechRhsVec->zero(mechRhsVec);
-    mechResVec->zero(mechResVec);
+    mechRhsVec->zero( mechRhsVec );
+    mechResVec->zero( mechResVec );
 
     dirichletVecOp->apply( nullVec, mechRhsVec );
 
@@ -86,7 +86,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             AMP::LinearAlgebra::Vector::shared_ptr matOutVec = mechSolVec->cloneVector();
             AMP::LinearAlgebra::Vector::shared_ptr pVec      = mechSolVec->cloneVector();
 
-            mechSolVec->zero(mechSolVec);
+            mechSolVec->zero( mechSolVec );
 
             bvpOperator->apply( mechSolVec, matOutVec );
 
@@ -95,13 +95,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             pVec->copyVector( mechResVec );
 
             for ( int iter = 0; iter <= maxIters; iter++ ) {
-                double resNorm = mechResVec->L2Norm(mechResVec);
+                double resNorm = mechResVec->L2Norm( mechResVec );
                 std::cout << "Iter = " << iter << " ResNorm2 = " << std::setprecision( 15 )
                           << resNorm << std::endl;
 
                 bvpOperator->apply( pVec, matOutVec );
 
-                double matOutNorm = matOutVec->L2Norm(matOutVec);
+                double matOutNorm = matOutVec->L2Norm( matOutVec );
                 std::cout << "CG-Iter = " << iter << " MatOutNorm2 = " << std::setprecision( 15 )
                           << matOutNorm << std::endl;
 
