@@ -609,7 +609,7 @@ void MultiVectorOperations::axpby( double alpha_in, double beta_in, const Vector
 
 void MultiVectorOperations::abs( const VectorData &x, VectorData &y )
 {
-  std::cout "Entering MultiVectorOperations::abs" <<std::endl; 
+  std::cout << "Entering MultiVectorOperations::abs" <<std::endl; 
     if ( d_operations.empty() ) {
         return;
     }
