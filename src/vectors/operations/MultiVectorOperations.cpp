@@ -619,14 +619,9 @@ void MultiVectorOperations::abs( const VectorData &x, VectorData &y )
       AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
       AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
       for ( size_t i = 0; i != d_operations.size(); i++ ){
-	std::cout << "MultiVector component x " << i <<  std::endl;
-	getVectorDataComponent(x,i)->dumpOwnedData(AMP::pout);
         d_operations[i]->abs( *getVectorDataComponent(x,i),
 			      *getVectorDataComponent(y,i) );
-	std::cout << "MultiVector component y " << i <<  std::endl;
-	getVectorDataComponent(y,i)->dumpOwnedData(AMP::pout);
       }
-      AMP_ERROR("Quit for now");
     } else {
        AMP_ERROR("MultiVectorOperations::abs requires x, y to be MultiVectorData");
     }
@@ -815,7 +810,7 @@ bool MultiVectorOperations::localEquals( const VectorData &x, const VectorData &
     if ( d_operations.empty() ) {
         return false;
     }
-    bool ans = 0.0;
+    bool ans = true;
     auto x2 = getMultiVectorData(x);
     auto y2 = getMultiVectorData(y);
     if ( x2 && y2 ) {      
