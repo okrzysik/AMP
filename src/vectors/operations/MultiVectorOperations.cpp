@@ -618,9 +618,10 @@ void MultiVectorOperations::abs( const VectorData &x, VectorData &y )
       AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
       AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
       for ( size_t i = 0; i != d_operations.size(); i++ ){
-	std::cout << "MultiVector component x" << i << " is " << typeid(getVectorDataComponent(x,i)).name() << std::endl;
-	std::cout << "MultiVector component y" << i << " is " << typeid(getVectorDataComponent(y,i)).name() << std::endl;
-	
+	std::cout << "MultiVector component x " << i <<  std::endl;
+	getVectorDataComponent(x,i)->dumpOwnedData(AMP::pout);
+	std::cout << "MultiVector component y " << i <<  std::endl;
+	getVectorDataComponent(y,i)->dumpOwnedData(AMP::pout);
         d_operations[i]->abs( *getVectorDataComponent(x,i),
 			      *getVectorDataComponent(y,i) );
       }
