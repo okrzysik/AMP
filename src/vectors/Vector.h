@@ -363,6 +363,9 @@ private:
     // Pointer to *this as a VectorData object
     VectorData *d_VectorData;
 
+    // Pointer to *this as a VectorOperations object
+    VectorOperations *d_VectorOps;
+
     // output stream for vector data
     std::ostream *d_output_stream;
 

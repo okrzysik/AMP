@@ -26,6 +26,7 @@ RNG::shared_ptr Vector::d_DefaultRNG;
 Vector::Vector() : VectorData(), VectorOperations()
 {
     d_VectorData = dynamic_cast<VectorData *>( this );
+    d_VectorOps  = dynamic_cast<VectorOperations *>( this );
     d_Ghosts     = std::make_shared<std::vector<double>>();
     d_AddBuffer  = std::make_shared<std::vector<double>>();
     d_UpdateState.reset( new UpdateState );
@@ -37,6 +38,7 @@ Vector::Vector() : VectorData(), VectorOperations()
 Vector::Vector( VectorParameters::shared_ptr parameters )
 {
     d_VectorData = dynamic_cast<VectorData *>( this );
+    d_VectorOps  = dynamic_cast<VectorOperations *>( this );
     // Set default output stream
     d_output_stream = &AMP::plog;
     // Copy the relavent parameters
