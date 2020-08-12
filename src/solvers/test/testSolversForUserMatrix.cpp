@@ -190,7 +190,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
     AMP::pout << "Final Residual Norm  : " << finalResidualNorm << std::endl;
 
-    if ( finalResidualNorm/initialResidualNorm > 1.0e-8 ) {
+    if ( finalResidualNorm/initialResidualNorm > 1.0e-7 ) {
         ut->failure( "solver could NOT solve a linear thermal problem" );
     }
 }
