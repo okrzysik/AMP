@@ -151,6 +151,8 @@ private:
 };
 
 
+#ifdef USE_EXT_TRILINOS
+
 template<typename TYPE>
 class SimpleManagedVectorFactory : public VectorFactory
 {
