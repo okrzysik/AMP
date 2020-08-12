@@ -81,7 +81,6 @@ void ManagedVectorOperations::copy( const VectorData &src, VectorData &dst )
 void ManagedVectorOperations::setToScalar( double alpha, VectorData &x )
 {
     auto xm    = getManagedVector( x );
-    auto xdata = getEngineData( x );
     xm->getVectorEngine()->setToScalar( alpha );
     xm->dataChanged();
     xm->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
@@ -90,7 +89,6 @@ void ManagedVectorOperations::setToScalar( double alpha, VectorData &x )
 void ManagedVectorOperations::setRandomValues( VectorData &x )
 {
     auto xm    = getManagedVector( x );
-    auto xdata = getEngineData( x );
     xm->getVectorEngine()->setRandomValues( );
     xm->dataChanged();
     xm->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
