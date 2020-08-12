@@ -91,11 +91,14 @@ ManagedVector::ManagedVector( shared_ptr alias )
     d_pParameters = vec->d_pParameters;
     setVariable( vec->getVariable() );
     aliasGhostBuffer( vec );
+
     if ( d_vBuffer )
-        d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
-    auto vec2 = std::dynamic_pointer_cast<Vector>( d_Engine );
-    if ( vec2 )
-        vec2->setUpdateStatusPtr( getUpdateStatusPtr() );
+      setUpdateStatusPtr( d_vBuffer->getUpdateStatusPtr() );
+    else {
+      auto vec2 = std::dynamic_pointer_cast<Vector>( d_Engine );
+      if ( vec2 )
+        setUpdateStatusPtr(vec2->getUpdateStatusPtr());
+    }
 }
 
 ManagedVector::~ManagedVector()
