@@ -128,10 +128,10 @@ EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<EpetraVectorEngineParame
           getBufferPtr( buf ),
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->beginDOF(),
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
-          std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() )
+          std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() ),
+      d_Params( alias )
 {
     d_VectorOps = std::make_shared<EpetraVectorOperations>();
-    d_Params    = alias;
     d_buf_scope = buf;
 }
 
