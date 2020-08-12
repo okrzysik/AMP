@@ -329,8 +329,8 @@ inline void Vector::add( std::shared_ptr<const VectorData> x,
     add( *x, *y );
 }
 
-void Vector::addScalar( std::shared_ptr<const VectorData> x,
-			double alpha )
+inline void Vector::addScalar( std::shared_ptr<const VectorData> x,
+			       double alpha )
 {
     addScalar( *x, alpha );
 }
