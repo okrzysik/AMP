@@ -55,6 +55,7 @@ public:
     //! Overloaded functions
     std::string type() const override { return "Native Thyra Vector"; }
     std::string VectorDataName() const override { return "NativeThyraVector"; }
+    using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
     void swapVectors( Vector &other ) override;
     void aliasVector( Vector & ) override;
