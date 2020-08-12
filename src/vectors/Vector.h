@@ -627,10 +627,10 @@ public: // Virtual functions
     inline const VectorData *getVectorData() const { return d_VectorData; }
 
     //! Return the pointer to the VectorOperation
-    inline VectorOperations *getVectorOperations() { return d_VectorOps; }
+    inline std::shared_ptr<VectorOperations> getVectorOperations() { return d_VectorOps; }
 
     //! Return the pointer to the VectorOperation
-    inline const VectorOperations *getVectorOperations() const { return d_VectorOps; }
+    inline std::shared_ptr<const VectorOperations> getVectorOperations() const { return d_VectorOps; }
 
     virtual void initializeVectorOperations();
     
