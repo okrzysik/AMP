@@ -27,7 +27,8 @@ MultiVector::MultiVector( const std::string &name ) : Vector()
 
 void MultiVector::initializeVectorOperations( void )
 {
-    d_VectorOps = new MultiVectorOperations();  
+    d_VectorOps = new MultiVectorOperations();
+    std::cout << "MultiVector::initializeVectorOperations " << typeid(d_VectorOps).name() << std::endl;;
 }
 
 std::shared_ptr<MultiVector> MultiVector::create( Variable::shared_ptr variable,
