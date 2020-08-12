@@ -195,11 +195,8 @@ double NativePetscVectorOperations::dot( const VectorData &x, const VectorData &
 
 double NativePetscVectorOperations::L1Norm( const VectorData &x ) const
 {
-    std::cout << "Entering NativePetscVectorOperations::L1Norm " << std::endl;
     double ans;
     VecNorm( getConstPetscVec( x ), NORM_1, &ans );
-    std::cout << "L1Norm " << ans << std::endl;
-    std::cout << "Exiting NativePetscVectorOperations::L1Norm " << std::endl;
     return ans;
 }
 
