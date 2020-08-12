@@ -1,10 +1,13 @@
 #include "AMP/vectors/ManagedVector.h"
-#include "AMP/utils/Utilities.h"
-#include "AMP/vectors/MultiVector.h"
+
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <typeinfo>
+
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/operations/ManagedVectorOperations.h"
 
 namespace AMP {
 namespace LinearAlgebra {

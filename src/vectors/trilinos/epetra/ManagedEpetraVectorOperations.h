@@ -1,7 +1,7 @@
 #ifndef included_AMP_ManagedEpetraVectorOperations
 #define included_AMP_ManagedEpetraVectorOperations
 
-#include "AMP/vectors/ManagedVectorOperations.h"
+#include "AMP/vectors/operations/ManagedVectorOperations.h"
 
 
 namespace AMP {

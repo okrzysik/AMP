@@ -4,7 +4,6 @@
 
 #include "AMP/vectors/DataChangeFirer.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/ManagedVectorOperations.h"
 
 #include <stdexcept>
 #include <vector>
@@ -43,7 +42,6 @@ public:
    A ManagedVector has two pointers: data and engine.  If the data pointer
    is null, then the engine is assumed to have the data.
 */
-//class ManagedVector : public Vector, public ManagedVectorOperations, public DataChangeFirer
 class ManagedVector : public Vector, public DataChangeFirer
 {
 

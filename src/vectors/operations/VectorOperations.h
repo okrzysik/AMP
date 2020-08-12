@@ -301,6 +301,4 @@ protected:
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "VectorOperations.inline.h"
-
 #endif
