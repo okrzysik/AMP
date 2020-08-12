@@ -76,6 +76,7 @@ void ManagedVectorOperations::copy( const VectorData &src, VectorData &dst )
         VectorOperationsDefault::copy( src, dst );
     }
     dst_managed->dataChanged();
+    dst_managed->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
 }
 
 void ManagedVectorOperations::setToScalar( double alpha, VectorData &x )
