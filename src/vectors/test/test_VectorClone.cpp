@@ -21,10 +21,6 @@ int test_VectorClone( int argc, char **argv )
     testManagedVector( ut, CloneSNPVFactory );
     AMP::pout << std::endl;
 
-    AMP::pout << "Testing NativeEpetraVector" << std::endl;
-    testManagedVector( ut, CloneNEVFactory );
-    AMP::pout << std::endl;
-
     AMP::pout << "Testing simple multivector" << std::endl;
     testManagedVector( ut, CloneMVFactory1 );
     AMP::pout << std::endl;

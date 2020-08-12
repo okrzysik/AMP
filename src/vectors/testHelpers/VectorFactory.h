@@ -15,7 +15,6 @@
 #endif
 #ifdef USE_EXT_TRILINOS
 #include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
-#include "AMP/vectors/trilinos/epetra/NativeEpetraVector.h"
 #endif
 
 
@@ -151,42 +150,6 @@ private:
     bool GLOBAL;
 };
 
-
-#ifdef USE_EXT_TRILINOS
-class NativeEpetraVectorFactory : public VectorFactory
-{
-public:
-    NativeEpetraVectorFactory() {}
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "native epetra" );
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
-    {
-        const int nLocal = 210;
-        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-        const int start   = nLocal * globalComm.getRank();
-        const int nGlobal = nLocal * globalComm.getSize();
-        auto epetraParams = std::make_shared<AMP::LinearAlgebra::NativeEpetraVectorParameters>(
-            nLocal, nGlobal, globalComm );
-        auto buffer =
-            std::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
-        auto retVal =
-            std::make_shared<AMP::LinearAlgebra::NativeEpetraVector>( epetraParams, buffer );
-        retVal->setVariable(
-            std::make_shared<AMP::LinearAlgebra::Variable>( "Test NativeEpetraVector" ) );
-        return retVal;
-    }
-
-    virtual std::string name() const override { return "NativeEpetraVectorFactory"; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return getVector()->getDOFManager();
-    }
-};
 
 template<typename TYPE>
 class SimpleManagedVectorFactory : public VectorFactory
