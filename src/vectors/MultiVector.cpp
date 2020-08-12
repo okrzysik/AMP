@@ -469,7 +469,7 @@ size_t MultiVector::getNumberOfSubvectors() const { return d_vVectors.size(); }
 
 std::string MultiVector::type() const { return "MultiVector"; }
 
-MultiVector::~MultiVector() {}
+MultiVector::~MultiVector() { if (d_VectorOps) delete d_VectorOps; }
 
 AMP_MPI MultiVector::getComm() const { return d_Comm; }
 
