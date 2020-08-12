@@ -19,7 +19,7 @@ class MultiVectorOperations : public VectorOperations
 {
 public:
     // Constructor
-    MultiVectorOperations() {}
+    MultiVectorOperations() :VectorOperations() {}
 
     //! Destructor
     virtual ~MultiVectorOperations() {}
