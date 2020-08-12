@@ -98,7 +98,9 @@ ManagedVector::ManagedVector( shared_ptr alias )
 
 void ManagedVector::initializeVectorOperations( void )
 {
+  std::cout << "Entering ManagedVector::initializeVectorOperations" << std::endl;
     d_VectorOps = new ManagedVectorOperations();
+  std::cout << "Exiting ManagedVector::initializeVectorOperations" << std::endl;
 }
   
 ManagedVector::~ManagedVector()

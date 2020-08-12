@@ -35,7 +35,9 @@ NativePetscVector::~NativePetscVector()
   
 void NativePetscVector::initializeVectorOperations( void )
 {
+  std::cout << "Entering NativePetscVector::initializeVectorOperations" << std::endl;
     d_VectorOps = new NativePetscVectorOperations();  
+  std::cout << "Exiting NativePetscVector::initializeVectorOperations" << std::endl;
 }
 
 
