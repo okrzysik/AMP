@@ -520,7 +520,8 @@ bool MultiVectorOperations::localEquals( const VectorData &x,
 void MultiVectorOperations::updateVectorOperations( std::vector<VectorOperations *> &ops )  
 {
   std::cout << "Number of vectors " << ops.size() <<std::endl;
-  d_operations = ops;
+  if ( !ops.empty() ) d_operations.resize(0);
+  for(auto &op: ops) d_operations.push_back(op);
 }
 } // namespace LinearAlgebra
 } // namespace AMP
