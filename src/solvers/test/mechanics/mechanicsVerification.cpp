@@ -166,7 +166,7 @@ computeExactSolution( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     if ( verbose ) {
         AMP::pout << "--------------------------------------------\n"
                   << "---- exact solution norm = " << std::setprecision( 15 )
-                  << exactSolutionsVec->L2Norm( exactSolutionsVec ) << "\n"
+                  << exactSolutionsVec->L2Norm() << "\n"
                   << "--------------------------------------------\n"
                   << std::endl;
     } // end if verbose
@@ -303,7 +303,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
         meshAdapter, "VolumeIntegral", inputDatabase, dummyModel );
 
     // Compute the forcing terms
-    rhsVec->zero( rhsVec );
+    rhsVec->zero();
     auto volumeIntegralOp =
         std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>( volumeOp );
     computeForcingTerms( meshAdapter, volumeIntegralOp, manufacturedSolution, rhsVec, true );
@@ -413,13 +413,12 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
         ut->passes(exeName);
      } */
 
-    auto diag      = ( bvpOperator->getMatrix() )->extractDiagonal();
-    double epsilon = 1.0e-13 * ( diag->L1Norm( diag ) );
+    double epsilon = 1.0e-13 * ( ( ( bvpOperator->getMatrix() )->extractDiagonal() )->L1Norm() );
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
     AMP::pout << "------------------------------------------------\n"
-              << "---- numerical solution norm = " << std::setprecision( 15 )
-              << solVec->L2Norm( solVec ) << "\n"
+              << "---- numerical solution norm = " << std::setprecision( 15 ) << solVec->L2Norm()
+              << "\n"
               << "------------------------------------------------\n"
               << std::endl;
 
@@ -442,18 +441,18 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
 
     // Compute exact error and check its L2 norm
     auto exactErrVec = exactSolVec->cloneVector();
-    exactErrVec->subtract( exactSolVec, solVec, exactErrVec );
+    exactErrVec->subtract( exactSolVec, solVec );
 
     AMP::pout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n"
-              << "<<<< exact error norm = " << std::setprecision( 15 )
-              << exactErrVec->L2Norm( exactErrVec ) << " >>>>\n"
+              << "<<<< exact error norm = " << std::setprecision( 15 ) << exactErrVec->L2Norm()
+              << " >>>>\n"
               << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
               << "scaled exact error norm = " << std::setprecision( 15 )
-              << scaleFactor * exactErrVec->L2Norm( exactErrVec ) << "\n"
+              << scaleFactor * exactErrVec->L2Norm() << "\n"
               << std::endl;
 
     if ( manufacturedSolution->getName() == "Linear" ) {
-        if ( scaleFactor * exactErrVec->L2Norm( exactErrVec ) < 1.0e-12 ) {
+        if ( scaleFactor * exactErrVec->L2Norm() < 1.0e-12 ) {
             ut->passes( exeName );
         } else {
             ut->failure( exeName );

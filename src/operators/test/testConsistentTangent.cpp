@@ -83,22 +83,21 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     auto tmpNonlinVec = solVec->cloneVector();
     auto tmpLinVec    = solVec->cloneVector();
 
-    solVec->setToScalar( 0.0, solVec );
-    double solNorm = solVec->L2Norm( solVec );
+    solVec->setToScalar( 0.0 );
+    double solNorm = solVec->L2Norm();
     AMP::pout << "sol-Norm-2 = " << solNorm << std::endl;
 
     nonlinOperator->apply( solVec, resVecNonlin );
     linOperator->reset( nonlinOperator->getParameters( "Jacobian", solVec ) );
     linOperator->apply( solVec, resVecLin );
-    resDiffVec->subtract( resVecNonlin, resVecLin, resDiffVec );
+    resDiffVec->subtract( resVecNonlin, resVecLin );
 
-    auto diag      = ( linOperator->getMatrix() )->extractDiagonal();
-    double epsilon = 1.0e-13 * ( diag->L1Norm( diag ) );
+    double epsilon = 1.0e-13 * ( ( ( linOperator->getMatrix() )->extractDiagonal() )->L1Norm() );
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
-    double nonLinNorm = resVecNonlin->L1Norm( resVecNonlin );
-    double linNorm    = resVecLin->L1Norm( resVecLin );
-    double diffNorm   = resDiffVec->L1Norm( resDiffVec );
+    double nonLinNorm = resVecNonlin->L1Norm();
+    double linNorm    = resVecLin->L1Norm();
+    double diffNorm   = resDiffVec->L1Norm();
 
     AMP::pout << "nonLin-Norm-1 = " << nonLinNorm << std::endl;
     AMP::pout << "lin-Norm-1 = " << linNorm << std::endl;
@@ -116,10 +115,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
         ut->failure( msgName );
     }
 
-    solVec->setRandomValues( solVec );
-    solVec->scale( 100.0, solVec );
+    solVec->setRandomValues();
+    solVec->scale( 100.0 );
     solVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
-    solNorm = solVec->L2Norm( solVec );
+    solNorm = solVec->L2Norm();
     AMP::pout << "sol-Norm-2 = " << solNorm << std::endl;
 
     nonlinOperator->apply( solVec, resVecNonlin );
@@ -127,11 +126,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
         linOperator->reset( nonlinOperator->getParameters( "Jacobian", solVec ) );
     }
     linOperator->apply( solVec, resVecLin );
-    resDiffVec->subtract( resVecNonlin, resVecLin, resDiffVec );
+    resDiffVec->subtract( resVecNonlin, resVecLin );
 
-    nonLinNorm = resVecNonlin->L2Norm( resVecNonlin );
-    linNorm    = resVecLin->L2Norm( resVecLin );
-    diffNorm   = resDiffVec->L1Norm( resDiffVec );
+    nonLinNorm = resVecNonlin->L2Norm();
+    linNorm    = resVecLin->L2Norm();
+    diffNorm   = resDiffVec->L1Norm();
 
     AMP::pout << "nonLin-Norm-2 = " << nonLinNorm << std::endl;
     AMP::pout << "lin-Norm-2 = " << linNorm << std::endl;
@@ -142,14 +141,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     }
 
     tmpNonlinVec->copyVector( resVecNonlin );
-    tmpNonlinVec->scale( 10.0, tmpNonlinVec );
+    tmpNonlinVec->scale( 10.0 );
 
     tmpLinVec->copyVector( resVecLin );
-    tmpLinVec->scale( 10.0, tmpLinVec );
+    tmpLinVec->scale( 10.0 );
 
-    solVec->scale( 10.0, solVec );
+    solVec->scale( 10.0 );
     solVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
-    solNorm = solVec->L2Norm( solVec );
+    solNorm = solVec->L2Norm();
     AMP::pout << "sol-Norm-2 = " << solNorm << std::endl;
 
     nonlinOperator->apply( solVec, resVecNonlin );
@@ -158,20 +157,20 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     }
     linOperator->apply( solVec, resVecLin );
 
-    nonLinNorm = resVecNonlin->L2Norm( resVecNonlin );
-    linNorm    = resVecLin->L2Norm( resVecLin );
+    nonLinNorm = resVecNonlin->L2Norm();
+    linNorm    = resVecLin->L2Norm();
     AMP::pout << "nonLin-Norm-2 = " << nonLinNorm << std::endl;
     AMP::pout << "lin-Norm-2 = " << linNorm << std::endl;
 
-    resDiffVec->subtract( resVecNonlin, tmpNonlinVec, resDiffVec );
-    diffNorm = resDiffVec->L1Norm( resDiffVec );
+    resDiffVec->subtract( resVecNonlin, tmpNonlinVec );
+    diffNorm = resDiffVec->L1Norm();
 
     if ( diffNorm > ( 10.0 * epsilon ) ) {
         ut->failure( msgName );
     }
 
-    resDiffVec->subtract( resVecLin, tmpLinVec, resDiffVec );
-    diffNorm = resDiffVec->L1Norm( resDiffVec );
+    resDiffVec->subtract( resVecLin, tmpLinVec );
+    diffNorm = resDiffVec->L1Norm();
 
     if ( diffNorm > ( 10.0 * epsilon ) ) {
         ut->failure( msgName );

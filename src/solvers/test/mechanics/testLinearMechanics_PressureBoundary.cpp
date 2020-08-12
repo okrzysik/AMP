@@ -84,37 +84,37 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     AMP::LinearAlgebra::Vector::shared_ptr mechResVec      = mechSolVec->cloneVector();
     AMP::LinearAlgebra::Vector::shared_ptr mechPressureVec = mechSolVec->cloneVector();
 
-    mechSolVec->setToScalar( 0.0, mechSolVec );
-    mechRhsVec->setToScalar( 0.0, mechRhsVec );
-    mechResVec->setToScalar( 0.0, mechResVec );
-    mechPressureVec->setToScalar( 0.0, mechPressureVec );
+    mechSolVec->setToScalar( 0.0 );
+    mechRhsVec->setToScalar( 0.0 );
+    mechResVec->setToScalar( 0.0 );
+    mechPressureVec->setToScalar( 0.0 );
 
     dirichletVecOp->apply( nullVec, mechRhsVec );
 
-    double rhsNorm = mechRhsVec->L2Norm( mechRhsVec );
+    double rhsNorm = mechRhsVec->L2Norm();
     AMP::pout << "RHS Norm after Dirichlet Apply: " << rhsNorm << std::endl;
 
-    double pressNorm = mechPressureVec->L2Norm( mechPressureVec );
+    double pressNorm = mechPressureVec->L2Norm();
     AMP::pout << "Pressure Norm before Apply: " << pressNorm << std::endl;
 
     // Applying the pressure load
     pressureLoadVecOp->addRHScorrection( mechPressureVec );
 
-    pressNorm = mechPressureVec->L2Norm( mechPressureVec );
+    pressNorm = mechPressureVec->L2Norm();
     AMP::pout << "Pressure Norm after Apply: " << pressNorm << std::endl;
 
-    mechRhsVec->add( mechRhsVec, mechPressureVec, mechRhsVec );
+    mechRhsVec->add( mechRhsVec, mechPressureVec );
 
-    rhsNorm = mechRhsVec->L2Norm( mechRhsVec );
+    rhsNorm = mechRhsVec->L2Norm();
     AMP::pout << "Total RHS Norm: " << rhsNorm << std::endl;
 
-    double initSolNorm = mechSolVec->L2Norm( mechSolVec );
+    double initSolNorm = mechSolVec->L2Norm();
 
     AMP::pout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-    double initResidualNorm = mechResVec->L2Norm( mechResVec );
+    double initResidualNorm = mechResVec->L2Norm();
 
     AMP::pout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
@@ -141,7 +141,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
 
     linearSolver->solve( mechRhsVec, mechSolVec );
 
-    double finalSolNorm = mechSolVec->L2Norm( mechSolVec );
+    double finalSolNorm = mechSolVec->L2Norm();
 
     AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
@@ -158,9 +158,9 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     AMP::LinearAlgebra::Vector::shared_ptr mechWvec =
         mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
 
-    double finalMaxU = mechUvec->maxNorm( mechUvec );
-    double finalMaxV = mechVvec->maxNorm( mechVvec );
-    double finalMaxW = mechWvec->maxNorm( mechWvec );
+    double finalMaxU = mechUvec->maxNorm();
+    double finalMaxV = mechVvec->maxNorm();
+    double finalMaxW = mechWvec->maxNorm();
 
     AMP::pout << "Maximum U displacement: " << finalMaxU << std::endl;
     AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
@@ -168,7 +168,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-    double finalResidualNorm = mechResVec->L2Norm( mechResVec );
+    double finalResidualNorm = mechResVec->L2Norm();
 
     AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
@@ -178,8 +178,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
         ut->passes( exeName );
     }
 
-    auto diag      = ( bvpOperator->getMatrix() )->extractDiagonal();
-    double epsilon = 1.0e-13 * diag->L1Norm( diag );
+    double epsilon = 1.0e-13 * ( ( ( bvpOperator->getMatrix() )->extractDiagonal() )->L1Norm() );
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
 #ifdef USE_EXT_SILO

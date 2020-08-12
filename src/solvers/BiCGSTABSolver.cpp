@@ -77,7 +77,7 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
-    double f_norm = f->L2Norm( f );
+    double f_norm = f->L2Norm();
 
     // if the rhs is zero we try to converge to the relative convergence
     if ( f_norm == 0.0 ) {
@@ -87,7 +87,7 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     const double terminate_tol = d_dRelativeTolerance * f_norm;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "BiCGSTABSolver::solve: initial L2Norm of solution vector: " << u->L2Norm( u )
+        std::cout << "BiCGSTABSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
         std::cout << "BiCGSTABSolver::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
     }
@@ -107,7 +107,7 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     // compute the current residual norm
-    double res_norm     = res->L2Norm( res );
+    double res_norm     = res->L2Norm();
     double r_tilde_norm = res_norm;
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
@@ -140,12 +140,12 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     auto p = res->cloneVector();
     auto v = res->cloneVector();
-    p->zero( p );
-    v->zero( v );
+    p->zero();
+    v->zero();
 
     for ( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
 
-        rho[1] = r_tilde->dot( res, r_tilde );
+        rho[1] = r_tilde->dot( res );
 
         double angle = std::sqrt( std::fabs( rho[1] ) );
         double eps   = std::numeric_limits<double>::epsilon();
@@ -155,7 +155,7 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             // attempt to restart with a new r0
             d_pOperator->residual( f, u, res );
             r_tilde->copyVector( res );
-            res_norm = res->L2Norm( res );
+            res_norm = res->L2Norm();
             rho[1] = r_tilde_norm = res_norm;
             NULL_USE( rho[1] );
             d_restarts++;
@@ -168,8 +168,8 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         } else {
 
             beta = ( rho[1] / rho[0] ) * ( alpha / omega );
-            p->axpy( -omega, v, p, p );
-            p->axpy( beta, p, res, p );
+            p->axpy( -omega, v, p );
+            p->axpy( beta, p, res );
         }
 
         std::shared_ptr<AMP::LinearAlgebra::Vector> p_hat = u->cloneVector();
@@ -183,18 +183,18 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         d_pOperator->apply( p_hat, v );
 
-        alpha = r_tilde->dot( v, r_tilde );
+        alpha = r_tilde->dot( v );
         AMP_ASSERT( alpha != 0.0 );
         alpha = rho[1] / alpha;
 
         std::shared_ptr<AMP::LinearAlgebra::Vector> s = res->cloneVector();
-        s->axpy( -alpha, v, res, s );
+        s->axpy( -alpha, v, res );
 
-        const double s_norm = s->L2Norm( s );
+        const double s_norm = s->L2Norm();
 
         if ( s_norm < d_dRelativeTolerance ) {
             // early convergence
-            u->axpy( alpha, p_hat, u, u );
+            u->axpy( alpha, p_hat, u );
             // add in code for final relative residual
             break;
         }
@@ -211,16 +211,16 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         std::shared_ptr<AMP::LinearAlgebra::Vector> t = res->cloneVector();
         d_pOperator->apply( s_hat, t );
 
-        const double t_sqnorm = t->dot( t, t );
-        omega                 = ( t_sqnorm == 0.0 ) ? 0.0 : t->dot( s, t ) / t_sqnorm;
+        const double t_sqnorm = t->dot( t );
+        omega                 = ( t_sqnorm == 0.0 ) ? 0.0 : t->dot( s ) / t_sqnorm;
 
-        u->axpy( alpha, p_hat, u, u );
-        u->axpy( omega, s_hat, u, u );
+        u->axpy( alpha, p_hat, u );
+        u->axpy( omega, s_hat, u );
 
-        res->axpy( -omega, t, s, res );
+        res->axpy( -omega, t, s );
 
         // compute the current residual norm
-        res_norm = res->L2Norm( res );
+        res_norm = res->L2Norm();
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
             std::cout << "BiCGSTAB: iteration " << ( iter + 1 ) << ", residual " << res_norm
@@ -248,7 +248,7 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "L2Norm of solution: " << u->L2Norm( u ) << std::endl;
+        std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
     }
 
     PROFILE_STOP( "solve" );

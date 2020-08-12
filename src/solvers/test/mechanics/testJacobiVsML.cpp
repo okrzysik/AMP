@@ -70,8 +70,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = mechSolVec->cloneVector();
     AMP::LinearAlgebra::Vector::shared_ptr mechResVec = mechSolVec->cloneVector();
 
-    mechRhsVec->zero( mechRhsVec );
-    mechResVec->zero( mechResVec );
+    mechRhsVec->zero();
+    mechResVec->zero();
 
     dirichletVecOp->apply( nullVec, mechRhsVec );
 
@@ -86,36 +86,36 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             AMP::LinearAlgebra::Vector::shared_ptr matOutVec = mechSolVec->cloneVector();
             AMP::LinearAlgebra::Vector::shared_ptr pVec      = mechSolVec->cloneVector();
 
-            mechSolVec->zero( mechSolVec );
+            mechSolVec->zero();
 
             bvpOperator->apply( mechSolVec, matOutVec );
 
-            mechResVec->subtract( mechRhsVec, matOutVec, mechResVec );
+            mechResVec->subtract( mechRhsVec, matOutVec );
 
             pVec->copyVector( mechResVec );
 
             for ( int iter = 0; iter <= maxIters; iter++ ) {
-                double resNorm = mechResVec->L2Norm( mechResVec );
+                double resNorm = mechResVec->L2Norm();
                 std::cout << "Iter = " << iter << " ResNorm2 = " << std::setprecision( 15 )
                           << resNorm << std::endl;
 
                 bvpOperator->apply( pVec, matOutVec );
 
-                double matOutNorm = matOutVec->L2Norm( matOutVec );
+                double matOutNorm = matOutVec->L2Norm();
                 std::cout << "CG-Iter = " << iter << " MatOutNorm2 = " << std::setprecision( 15 )
                           << matOutNorm << std::endl;
 
-                double resOldDot = mechResVec->dot( mechResVec, mechResVec );
+                double resOldDot = mechResVec->dot( mechResVec );
 
-                double alphaDenom = matOutVec->dot( pVec, matOutVec );
+                double alphaDenom = matOutVec->dot( pVec );
 
                 double alpha = resOldDot / alphaDenom;
 
-                mechSolVec->axpy( alpha, pVec, mechSolVec, mechSolVec );
+                mechSolVec->axpy( alpha, pVec, mechSolVec );
 
-                mechResVec->axpy( -alpha, matOutVec, mechResVec, mechResVec );
+                mechResVec->axpy( -alpha, matOutVec, mechResVec );
 
-                double resNewDot = mechResVec->dot( mechResVec, mechResVec );
+                double resNewDot = mechResVec->dot( mechResVec );
 
                 double beta = resNewDot / resOldDot;
 
@@ -126,7 +126,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                           << " beta = " << std::setprecision( 15 ) << beta << std::endl
                           << std::endl;
 
-                pVec->axpy( beta, pVec, mechResVec, pVec );
+                pVec->axpy( beta, pVec, mechResVec );
             }
 
             std::cout << std::endl << std::endl;

@@ -22,11 +22,11 @@ void MoveMeshOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     if ( d_prevDisp == nullptr ) {
         d_prevDisp = dispVec->cloneVector();
-        d_prevDisp->zero( d_prevDisp );
+        d_prevDisp->zero();
     }
 
     AMP::LinearAlgebra::Vector::shared_ptr deltaDisp = dispVec->cloneVector();
-    deltaDisp->subtract( dispVec, d_prevDisp, deltaDisp );
+    deltaDisp->subtract( dispVec, d_prevDisp );
 
     d_Mesh->displaceMesh( deltaDisp );
 

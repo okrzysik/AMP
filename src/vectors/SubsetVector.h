@@ -44,7 +44,7 @@ namespace LinearAlgebra {
       vec2.copyVector( vec3 );
     \endcode
   */
-class SubsetVector : public Vector, public VectorOperationsDefault<double>
+class SubsetVector : public Vector
 {
 
 public:
@@ -81,7 +81,7 @@ public:
     void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 
 private:
-    SubsetVector() {}
+    SubsetVector() { d_VectorOps = new VectorOperationsDefault<double>(); }
     void computeIDMap();
 
     void *getRawDataBlockAsVoid( size_t i ) override;

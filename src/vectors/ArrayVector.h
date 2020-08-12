@@ -18,7 +18,7 @@ namespace LinearAlgebra {
  * \details This is a Vector that implements the Vector interface for a std::vector<double>.
  */
 template<typename T, typename FUN = FunctionTable, typename Allocator = std::allocator<T>>
-class ArrayVector : public Vector, public VectorOperationsDefault<T>
+class ArrayVector : public Vector
 {
 private:
     AMP::Array<T, FUN, Allocator> d_array;
@@ -61,7 +61,7 @@ public:
 
     /** \brief  Destructor
      */
-    virtual ~ArrayVector() {}
+virtual ~ArrayVector() { delete d_VectorOps; }
 
     std::string type() const override { return "ArrayVector"; }
 

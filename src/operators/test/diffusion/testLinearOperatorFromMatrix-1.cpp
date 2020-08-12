@@ -104,8 +104,8 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
     auto u = ampVector->cloneVector();
     auto v = ampVector->cloneVector();
 
-    u->setRandomValues( u );
-    v->setRandomValues( v );
+    u->setRandomValues();
+    v->setRandomValues();
 
     // form the difference of the matrices
     // COMMENT: simple add, subtract routines would be nice for matrices
@@ -113,7 +113,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
 
     linearOp->apply( u, v );
 
-    auto passed = ( v->maxNorm( v ) <= std::numeric_limits<double>::min() );
+    auto passed = ( v->maxNorm() <= std::numeric_limits<double>::min() );
 
     if ( passed ) {
         ut->passes( exeName );

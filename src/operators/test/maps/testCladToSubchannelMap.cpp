@@ -91,13 +91,13 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
         pin_DOFs = AMP::Discretization::simpleDOFManager::create(
             pin_mesh, AMP::Mesh::GeomType::Vertex, 1, DOFsPerNode );
         T1 = AMP::LinearAlgebra::createVector( pin_DOFs, temperature );
-        T1->setToScalar( 0.0, T1 );
+        T1->setToScalar( 0.0 );
     }
     if ( subchannel_face.get() != nullptr ) {
         subchannel_DOFs = AMP::Discretization::simpleDOFManager::create(
             subchannel_face, AMP::Mesh::GeomType::Face, 1, DOFsPerNode );
         T2 = AMP::LinearAlgebra::createVector( subchannel_DOFs, temperature );
-        T2->setToScalar( 0.0, T2 );
+        T2->setToScalar( 0.0 );
     }
 
     // Initialize the pin temperatures

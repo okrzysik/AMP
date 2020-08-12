@@ -77,9 +77,9 @@ void myTest( AMP::UnitTest *ut )
         AMP::LinearAlgebra::createVector( nodalDofMap, bvpOperator->getOutputVariable() );
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
 
-    solVec->setRandomValues( solVec );
+    solVec->setRandomValues();
     bvpOperator->apply( solVec, rhsVec );
-    solVec->zero( solVec );
+    solVec->zero();
 
     std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
     std::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams(

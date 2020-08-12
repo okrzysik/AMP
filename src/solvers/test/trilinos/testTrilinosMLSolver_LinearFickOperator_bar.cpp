@@ -103,7 +103,7 @@ static void linearFickTest( AMP::UnitTest *ut )
     AMP::LinearAlgebra::Vector::shared_ptr ResidualVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
-    RightHandSideVec->setToScalar( 0., RightHandSideVec );
+    RightHandSideVec->setToScalar( 0. );
 
     std::shared_ptr<AMP::Operator::BoundaryOperator> boundaryOp;
     boundaryOp = diffusionOperator->getBoundaryOperator();
@@ -129,13 +129,13 @@ static void linearFickTest( AMP::UnitTest *ut )
     //////////////////////////
 
     // Set initial guess
-    SolutionVec->setToScalar( 1.0, SolutionVec );
+    SolutionVec->setToScalar( 1.0 );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = SolutionVec->L2Norm( SolutionVec );
+    double initSolNorm = SolutionVec->L2Norm();
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
-    double rhsNorm = RightHandSideVec->L2Norm( RightHandSideVec );
+    double rhsNorm = RightHandSideVec->L2Norm();
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
     // Create the ML Solver
@@ -152,7 +152,7 @@ static void linearFickTest( AMP::UnitTest *ut )
     diffusionOperator->residual( RightHandSideVec, SolutionVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = ResidualVec->L2Norm( ResidualVec );
+    double finalResidualNorm = ResidualVec->L2Norm();
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {

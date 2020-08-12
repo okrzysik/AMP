@@ -101,16 +101,16 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial guess
 
-    solVec->setToScalar( .05, solVec );
-    double initialGuessNorm = solVec->L2Norm( solVec );
+    solVec->setToScalar( .05 );
+    double initialGuessNorm = solVec->L2Norm();
     std::cout << "initial guess norm = " << initialGuessNorm << "\n";
 
     nonlinearFickOperator->modifyInitialSolutionVector( solVec );
 
-    initialGuessNorm = solVec->L2Norm( solVec );
+    initialGuessNorm = solVec->L2Norm();
     std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
 
-    rhsVec->setToScalar( 0.0, rhsVec );
+    rhsVec->setToScalar( 0.0 );
     nonlinearFickOperator->modifyRHSvector( rhsVec );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------/
@@ -144,7 +144,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearSolver->setPreconditioner( linearFickPreconditioner );
 
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm( resVec );
+    double initialResidualNorm = resVec->L2Norm();
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
@@ -154,7 +154,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm( resVec );
+    double finalResidualNorm = resVec->L2Norm();
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 

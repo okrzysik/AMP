@@ -17,7 +17,7 @@ namespace LinearAlgebra {
 template<typename TYPE,
          typename VecOps  = VectorOperationsDefault<TYPE>,
          typename VecData = VectorDataCPU<TYPE>>
-class SimpleVector : public Vector, public VecOps, public VecData
+class SimpleVector : public Vector, public VecData
 {
 protected:
     AMP_MPI d_comm;
@@ -63,7 +63,7 @@ public:
                                       AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
 
     //! Destructor
-    virtual ~SimpleVector() override {}
+    virtual ~SimpleVector() override { delete d_VectorOps; }
 
 
     //! Resize this vector

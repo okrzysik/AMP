@@ -116,7 +116,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     auto referenceTemperatureVec = temperatureVec->cloneVector();
-    referenceTemperatureVec->setToScalar( 300.0, referenceTemperatureVec );
+    referenceTemperatureVec->setToScalar( 300.0 );
     mechanicsVolumeOperator->setReferenceTemperature( referenceTemperatureVec );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
@@ -158,9 +158,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Random initial guess
-    solVec->setToScalar( 0.0, *solVec );
+    solVec->setToScalar( 0.0 );
     const double referenceTemperature = 301.0;
-    temperatureVec->addScalar( temperatureVec, referenceTemperature, temperatureVec );
+    temperatureVec->addScalar( temperatureVec, referenceTemperature );
 
     // Initial guess for mechanics must satisfy the displacement boundary conditions
     dirichletDispInVecOp->apply( nullVec, solVec );
@@ -182,7 +182,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearThermoMechanicsOperator->getParameters( "Jacobian", solVec ) );
     //----------------------------------------------------------------------------------------------------------------------------------------------/
 
-    rhsVec->setToScalar( 0.0, rhsVec );
+    rhsVec->setToScalar( 0.0 );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
@@ -233,7 +233,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearSolver->setPreconditioner( columnPreconditioner );
 
     nonlinearThermoMechanicsOperator->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm( resVec );
+    double initialResidualNorm = resVec->L2Norm();
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
@@ -243,7 +243,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearThermoMechanicsOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm( resVec );
+    double finalResidualNorm = resVec->L2Norm();
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
@@ -251,9 +251,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mechVvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
     auto mechWvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
 
-    double finalMaxU = mechUvec->maxNorm( mechUvec );
-    double finalMaxV = mechVvec->maxNorm( mechVvec );
-    double finalMaxW = mechWvec->maxNorm( mechWvec );
+    double finalMaxU = mechUvec->maxNorm();
+    double finalMaxV = mechVvec->maxNorm();
+    double finalMaxW = mechWvec->maxNorm();
 
     AMP::pout << "Maximum U displacement: " << finalMaxU << std::endl;
     AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;

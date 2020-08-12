@@ -4,7 +4,7 @@
 
 #include "AMP/vectors/DataChangeFirer.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/ManagedVectorOperations.h"
 
 #include <stdexcept>
 #include <vector>
@@ -28,7 +28,7 @@ public:
     ManagedVectorParameters();
 
     //! The VectorEngine to use with the managed vector
-    std::shared_ptr<VectorOperations> d_Engine;
+    std::shared_ptr<Vector> d_Engine;
 
     //! Buffer to use for the managed vector
     std::shared_ptr<VectorData> d_Buffer;
@@ -43,7 +43,8 @@ public:
    A ManagedVector has two pointers: data and engine.  If the data pointer
    is null, then the engine is assumed to have the data.
 */
-class ManagedVector : public Vector, public VectorOperationsDefault<double>, public DataChangeFirer
+//class ManagedVector : public Vector, public ManagedVectorOperations, public DataChangeFirer
+class ManagedVector : public Vector, public DataChangeFirer
 {
 
 public:
@@ -58,7 +59,7 @@ public:
     explicit ManagedVector( const Vector::shared_ptr alias );
 
     //! Destructor
-    virtual ~ManagedVector() {}
+    virtual ~ManagedVector();
 
     /** \brief  If a vector has multiple views to multiple external packages
      * associated with it, this will return the barest version of the vector
@@ -73,8 +74,8 @@ public:
     /** \brief  Return the engine associated with this ManagedVector
      * \return The engine
      */
-    inline std::shared_ptr<VectorOperations> getVectorEngine() { return d_Engine; }
-    inline std::shared_ptr<const VectorOperations> getVectorEngine() const { return d_Engine; }
+    inline std::shared_ptr<Vector> getVectorEngine() { return d_Engine; }
+    inline std::shared_ptr<const Vector> getVectorEngine() const { return d_Engine; }
 
     virtual bool isAnAliasOf( Vector &rhs );
     virtual bool isAnAliasOf( Vector::shared_ptr rhs );
@@ -86,7 +87,7 @@ protected:
     std::shared_ptr<VectorData> d_vBuffer;
 
     //! The engine to act on the buffer
-    std::shared_ptr<VectorOperations> d_Engine;
+    std::shared_ptr<Vector> d_Engine;
 
     //! The parameters used to create this vector
     std::shared_ptr<ManagedVectorParameters> d_pParameters;
@@ -125,39 +126,11 @@ public: // Derived from VectorData
     std::string VectorDataName() const override { return type(); }
     void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 
-protected: // Derived from VectorData
     void dataChanged() override;
+
+ protected: // Derived from VectorData
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
-
-public:
-    //**********************************************************************
-    // functions that operate on VectorData
-    void copy( const VectorData &src, VectorData &dst ) override;
-    void setToScalar( double alpha, VectorData &z ) override;
-    void setRandomValues( VectorData &x ) override;
-    void scale( double alpha, const VectorData &x, VectorData &y ) override;
-    void scale( double alpha, VectorData &x ) override;
-    void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
-    void subtract( const VectorData &x, const VectorData &y, VectorData &z ) override;
-    void multiply( const VectorData &x, const VectorData &y, VectorData &z ) override;
-    void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
-    void reciprocal( const VectorData &x, VectorData &y ) override;
-    void linearSum( double alpha,
-                    const VectorData &x,
-                    double beta,
-                    const VectorData &y,
-                    VectorData &z ) override;
-    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
-    void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
-    void abs( const VectorData &x, VectorData &z ) override;
-
-    double min( const VectorData &x ) const override;
-    double max( const VectorData &x ) const override;
-    double dot( const VectorData &x, const VectorData &y ) const override;
-    double L1Norm( const VectorData &x ) const override;
-    double L2Norm( const VectorData &x ) const override;
-    double maxNorm( const VectorData &x ) const override;
 
 public: // Derived from Vector
     using Vector::cloneVector;
@@ -170,37 +143,10 @@ public: // Derived from Vector
     void swapVectors( Vector &other ) override;
     void aliasVector( Vector &other ) override;
 
-
 protected: // Derived from Vector
     Vector::shared_ptr selectInto( const VectorSelector & ) override;
     Vector::const_shared_ptr selectInto( const VectorSelector & ) const override;
     void addCommunicationListToParameters( CommunicationList::shared_ptr comm ) override;
-
-
-public: // Pull VectorOperations into the current scope
-    using VectorOperations::abs;
-    using VectorOperations::add;
-    using VectorOperations::addScalar;
-    using VectorOperations::axpby;
-    using VectorOperations::axpy;
-    using VectorOperations::divide;
-    using VectorOperations::dot;
-    using VectorOperations::equals;
-    using VectorOperations::L1Norm;
-    using VectorOperations::L2Norm;
-    using VectorOperations::linearSum;
-    using VectorOperations::max;
-    using VectorOperations::maxNorm;
-    using VectorOperations::min;
-    using VectorOperations::minQuotient;
-    using VectorOperations::multiply;
-    using VectorOperations::reciprocal;
-    using VectorOperations::scale;
-    using VectorOperations::setRandomValues;
-    using VectorOperations::subtract;
-    using VectorOperations::wrmsNorm;
-    using VectorOperations::wrmsNormMask;
-    using VectorOperations::zero;
 
 private:
     ManagedVector();

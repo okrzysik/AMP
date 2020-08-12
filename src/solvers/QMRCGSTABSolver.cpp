@@ -84,7 +84,7 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
-    double f_norm = f->L2Norm( f );
+    double f_norm = f->L2Norm();
 
     // if the rhs is zero we try to converge to the relative convergence
     if ( f_norm == 0.0 ) {
@@ -94,7 +94,7 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     const double terminate_tol = d_dRelativeTolerance * f_norm;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "QMRCGSTABSolver::solve: initial L2Norm of solution vector: " << x->L2Norm( x )
+        std::cout << "QMRCGSTABSolver::solve: initial L2Norm of solution vector: " << x->L2Norm()
                   << std::endl;
         std::cout << "QMRCGSTABSolver::solve: initial L2Norm of rhs vector: " << f_norm
                   << std::endl;
@@ -115,7 +115,7 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     }
 
     // compute the current residual norm
-    double res_norm = r0->L2Norm( r0 );
+    double res_norm = r0->L2Norm();
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
         std::cout << "QMRCGSTAB: initial residual " << res_norm << std::endl;
@@ -142,28 +142,28 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     p->copyVector( r0 );
 
     auto v = f->cloneVector();
-    v->zero( v );
+    v->zero();
 
     auto d = f->cloneVector();
-    d->zero( d );
+    d->zero();
 
     auto d2 = f->cloneVector();
-    d2->zero( d2 );
+    d2->zero();
 
     auto r = f->cloneVector();
-    r->zero( r );
+    r->zero();
 
     auto s = f->cloneVector();
-    s->zero( s );
+    s->zero();
 
     auto t = f->cloneVector();
-    t->zero( t );
+    t->zero();
 
     auto z = f->cloneVector();
-    z->zero( z );
+    z->zero();
 
     auto x2 = f->cloneVector();
-    x2->zero( x2 );
+    x2->zero();
 
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
@@ -183,7 +183,7 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     while ( k < d_iMaxIterations ) {
 
         ++k;
-        auto rho2 = r0->dot( v, r0 );
+        auto rho2 = r0->dot( v );
 
         // replace by soft-equal
         if ( rho2 == 0.0 ) {
@@ -199,17 +199,17 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
         auto alpha = rho1 / rho2;
 
-        s->axpy( -alpha, v, r, s );
+        s->axpy( -alpha, v, r );
 
         // first quasi minimization and iterate update as per paper
-        const auto theta2 = s->L2Norm( s ) / tau;
+        const auto theta2 = s->L2Norm() / tau;
         auto c            = 1.0 / ( std::sqrt( 1.0 + theta2 * theta2 ) );
         const auto tau2   = tau * theta2 * c;
         const auto eta2   = c * c * alpha;
 
-        d2->axpy( theta * theta * eta / alpha, d, p, d2 );
+        d2->axpy( theta * theta * eta / alpha, d, p );
 
-        x2->axpy( eta2, d2, x, x2 );
+        x2->axpy( eta2, d2, x );
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
@@ -221,8 +221,8 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
         d_pOperator->apply( z, t );
 
-        const auto uu = s->dot( t, s );
-        const auto vv = t->dot( t, t );
+        const auto uu = s->dot( t );
+        const auto vv = t->dot( t );
 
         if ( vv == 0.0 ) {
             AMP_ERROR( "Matrix is singular" );
@@ -235,17 +235,17 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
             AMP_ERROR( "QMRCGSTAB breakdown, omega==0.0 " );
         }
 
-        r->axpy( omega, t, s, r );
+        r->axpy( omega, t, s );
 
         // second quasi minimization and iterate update as per paper
-        theta = s->L2Norm( s ) / tau2;
+        theta = s->L2Norm() / tau2;
         c     = 1.0 / ( std::sqrt( 1.0 + theta * theta ) );
         tau   = tau2 * theta * c;
         eta   = c * c * omega;
 
-        d->axpy( theta2 * theta2 * eta2 / omega, d2, s, d );
+        d->axpy( theta2 * theta2 * eta2 / omega, d2, s );
 
-        x->axpy( eta, d, x2, x );
+        x->axpy( eta, d, x2 );
 
 
         if ( std::fabs( tau ) * ( std::sqrt( (double) ( k + 1 ) ) ) <= terminate_tol ) {
@@ -259,7 +259,7 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
             break;
         }
 
-        rho2 = r->dot( r0, r );
+        rho2 = r->dot( r0 );
         // replace by soft-equal
         if ( rho2 == 0.0 ) {
             // the method breaks down as rho2==0
@@ -267,8 +267,8 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
         }
 
         const auto beta = ( alpha * rho2 ) / ( omega * rho1 );
-        p->axpy( -omega, v, p, p );
-        p->axpy( beta, p, r, p );
+        p->axpy( -omega, v, p );
+        p->axpy( beta, p, r );
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
             d_pPreconditioner->solve( p, z );
@@ -293,7 +293,7 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "L2Norm of solution: " << x->L2Norm( x ) << std::endl;
+        std::cout << "L2Norm of solution: " << x->L2Norm() << std::endl;
     }
 
     PROFILE_STOP( "solve" );

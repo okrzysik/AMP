@@ -254,7 +254,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         }
     }
     solVec->copyVector( manufacturedVec );
-    solVec->setUpdateStatus( AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
+
     //=============================================================================
     // solve
     //=============================================================================
@@ -404,17 +404,17 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Compute the error
     auto absErrorVec = solVec->cloneVector();
-    absErrorVec->axpy( -1.0, solVec, manufacturedVec, absErrorVec );
+    absErrorVec->axpy( -1.0, solVec, manufacturedVec );
     auto relErrorVec = solVec->cloneVector();
-    relErrorVec->divide( absErrorVec, manufacturedVec, relErrorVec );
+    relErrorVec->divide( absErrorVec, manufacturedVec );
     for ( size_t i = 0; i < solVec->getLocalSize(); i++ ) {
         if ( manufacturedVec->getValueByLocalID( i ) == 0 ) {
             double val = solVec->getValueByLocalID( i );
             relErrorVec->setValueByLocalID( i, fabs( val ) );
         }
     }
-    double absErrorNorm = absErrorVec->L2Norm( absErrorVec );
-    double relErrorNorm = relErrorVec->L2Norm( relErrorVec );
+    double absErrorNorm = absErrorVec->L2Norm();
+    double relErrorNorm = relErrorVec->L2Norm();
 
     // check that norm of relative error is less than tolerance
     double tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );

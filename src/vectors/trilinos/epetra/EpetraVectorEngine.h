@@ -83,7 +83,7 @@ private:
  * libraries, it is very difficult to separate the data from the engine.  For this
  * reason, the EpetraVectorEngine contains the Epetra_Vector to operate on.
  */
-class EpetraVectorEngine : public Vector, public EpetraVectorData, public EpetraVectorOperations
+class EpetraVectorEngine : public Vector, public EpetraVectorData
 {
 
 
@@ -97,7 +97,7 @@ public:
 
     /** \brief Destructor
      */
-    virtual ~EpetraVectorEngine() {}
+    virtual ~EpetraVectorEngine() { delete d_VectorOps; }
 
     /** \brief  Get the raw Epetra_Vector
      * \return  The Epetra_Vector currently used by this engine

@@ -47,7 +47,7 @@ PetscErrorCode _AMP_Mult_add( Mat m, Vec i, Vec a, Vec o )
     AMP::LinearAlgebra::Vector::shared_ptr pvout( pVecOut, []( auto ) {} );
 
     pMatrix->mult( pvin, pvout );
-    pVecOut->add( *pVecOut, *pVecAdd, *pVecOut );
+    pVecOut->add( *pVecOut, *pVecAdd );
     return 0;
 }
 

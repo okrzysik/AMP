@@ -36,16 +36,13 @@ public:
      */
     explicit ManagedEpetraVector( Vector::shared_ptr alias );
 
-
+    virtual ~ManagedEpetraVector();
+    
     // These methods are adequately documented in a base class
     std::string type() const override { return "Managed Epetra Vector" + ManagedVector::type(); }
 
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const override;
-#if 0
-    void copy( const VectorOperations &vec ) override;
-#endif
-    void copy( const VectorData &src, VectorData &dst ) override;
 
     Epetra_Vector &getEpetra_Vector() override;
     const Epetra_Vector &getEpetra_Vector() const override;

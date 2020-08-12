@@ -26,7 +26,7 @@ Vector::shared_ptr SundialsVector::view( Vector::shared_ptr inVector )
         inVector->registerView( retVal );
     } else if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
         auto new_params      = std::make_shared<ManagedSundialsVectorParameters>();
-        new_params->d_Engine = std::dynamic_pointer_cast<VectorOperations>( inVector );
+        new_params->d_Engine = std::dynamic_pointer_cast<Vector>( inVector );
         new_params->d_Buffer = std::dynamic_pointer_cast<VectorData>( inVector );
         if ( inVector->getCommunicationList().get() != nullptr )
             new_params->d_CommList = inVector->getCommunicationList();

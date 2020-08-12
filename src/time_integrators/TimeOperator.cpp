@@ -86,14 +86,14 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP_INSIST( ( rInternal != nullptr ), "NULL Residual/Output Vector" );
 
     d_pScratchVector = rInternal->cloneVector();
-    d_pScratchVector->zero( d_pScratchVector );
+    d_pScratchVector->zero();
 
     d_pMassOperator->apply( u, rInternal );
-    rInternal->scale( 1.0 / d_dCurrentDt, rInternal );
+    rInternal->scale( 1.0 / d_dCurrentDt );
 
     d_pRhsOperator->apply( u, d_pScratchVector );
 
-    rInternal->add( *rInternal, *d_pScratchVector, *rInternal );
+    rInternal->add( *rInternal, *d_pScratchVector );
 
     rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }

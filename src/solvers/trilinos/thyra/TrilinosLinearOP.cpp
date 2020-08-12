@@ -90,7 +90,7 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
             AMP::LinearAlgebra::Vector::shared_ptr f = y[i]->cloneVector();
             d_operator->apply( x[i], f );
             // Compute Y = alpha*OP(M)*X + beta*Y
-            y[i]->axpby( alpha, beta, *f, *y[i] );
+            y[i]->axpby( alpha, beta, *f );
         } else {
             // Apply the AMP::Solver
             d_solver->solve( x[i], y[i] );

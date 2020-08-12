@@ -179,13 +179,13 @@ static void myTest( AMP::UnitTest *ut )
         auto mechNlRhsVec = mechNlSolVec->cloneVector();
         auto mechNlResVec = mechNlSolVec->cloneVector();
 
-        mechNlRhsVec->setToScalar( 0.0, mechNlRhsVec );
+        mechNlRhsVec->setToScalar( 0.0 );
         dirichletLoadVecOp->apply( nullVec, mechNlRhsVec );
 
         for ( int i = 0; i < 3; i++ ) {
             // Initial guess for NL solver must satisfy the displacement boundary
             // conditions
-            mechNlSolVec->setRandomValues( mechNlSolVec );
+            mechNlSolVec->setRandomValues();
             dirichletDispInVecOp->apply( nullVec, mechNlSolVec );
             mechNlSolVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
             nonlinBvpOperator->residual( mechNlRhsVec, mechNlSolVec, mechNlResVec );

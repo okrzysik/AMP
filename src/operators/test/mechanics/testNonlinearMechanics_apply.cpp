@@ -52,19 +52,19 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto solVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
     auto resVec = solVec->cloneVector();
 
-    solVec->setToScalar( 5.0, solVec );
+    solVec->setToScalar( 5.0 );
 
-    AMP::pout << "Solution Norm: " << ( solVec->L2Norm( solVec ) ) << std::endl;
+    AMP::pout << "Solution Norm: " << ( solVec->L2Norm() ) << std::endl;
 
     testNonlinOperator->apply( solVec, resVec );
 
-    double resNorm1 = resVec->L2Norm( resVec );
+    double resNorm1 = resVec->L2Norm();
 
     AMP::pout << "resNorm1 = " << resNorm1 << std::endl;
 
     testNonlinOperator->apply( solVec, resVec );
 
-    double resNorm2 = resVec->L2Norm( resVec );
+    double resNorm2 = resVec->L2Norm();
 
     AMP::pout << "resNorm2 = " << resNorm2 << std::endl;
 

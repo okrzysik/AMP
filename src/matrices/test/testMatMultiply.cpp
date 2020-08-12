@@ -53,7 +53,7 @@ void myTest( AMP::UnitTest *ut, std::string mesh_file )
     // Create the vectors
     auto myVar = std::make_shared<AMP::LinearAlgebra::Variable>( "myVar" );
     auto vec1  = AMP::LinearAlgebra::createVector( DOFs, myVar );
-    vec1->setToScalar( 1.0, vec1 );
+    vec1->setToScalar( 1.0 );
 
     // Create the matrix
     auto mat1 = AMP::LinearAlgebra::createMatrix( vec1, vec1 );

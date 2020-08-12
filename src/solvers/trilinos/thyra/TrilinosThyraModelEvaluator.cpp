@@ -84,7 +84,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
 
     if ( f_out != nullptr ) {
         // Evaluate the residual:  r = A(u) - rhs
-        f_out->zero( f_out );
+        f_out->zero();
         auto eval  = outArgs.get_f();
         bool exact = true;
         if ( eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_EXACT ) {
@@ -98,12 +98,12 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
             d_prePostOperator->runPreApply( x, f_out, exact );
         // Apply the AMP::Operator to compute r = A(u) - rhs
         d_nonlinearOp->apply( x, f_out );
-        f_out->axpby( -1, 1, d_rhs, f_out );
+        f_out->axpby( -1, 1, d_rhs );
         if ( d_prePostOperator != nullptr )
             d_prePostOperator->runPostApply( x, f_out, exact );
     }
 
-    if ( outArgs.supports( ::Thyra::ModelEvaluatorBase::OUT_ARG_W_op ) ) {
+    if ( outArgs.supports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op ) ) {
         Teuchos::RCP<Thyra::LinearOpBase<double>> W_out = outArgs.get_W_op();
         if ( W_out.get() != nullptr ) {
             // Get the jacobian
@@ -156,16 +156,16 @@ TrilinosThyraModelEvaluator::get_W_factory() const
 {
     ::Thyra::ModelEvaluatorBase::InArgsSetup<double> inArgs;
     inArgs.setModelEvalDescription( this->description() );
-    inArgs.setSupports( ::Thyra::ModelEvaluatorBase::IN_ARG_x );
+    inArgs.setSupports(::Thyra::ModelEvaluatorBase::IN_ARG_x );
     return inArgs;
 }
 ::Thyra::ModelEvaluatorBase::OutArgs<double> TrilinosThyraModelEvaluator::createOutArgsImpl() const
 {
     ::Thyra::ModelEvaluatorBase::OutArgsSetup<double> outArgs;
     outArgs.setModelEvalDescription( this->description() );
-    outArgs.setSupports( ::Thyra::ModelEvaluatorBase::OUT_ARG_f );
-    outArgs.setSupports( ::Thyra::ModelEvaluatorBase::OUT_ARG_W_op );
-    outArgs.setSupports( ::Thyra::ModelEvaluatorBase::OUT_ARG_W_prec );
+    outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_f );
+    outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op );
+    outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_prec );
     return outArgs;
 }
 

@@ -194,14 +194,14 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
             // We are performing a series of axpby operations:
             //    y(:,i) = alpha*sum(M(:,j)*X(j,i)) + beta*Y(:,i)
             // First compute tmp = sum(M(:,j)*X(j,i))
-            tmp->zero( tmp );
+            tmp->zero();
             for ( size_t j = 0; j < d_vecs.size(); j++ ) {
                 AMP_ASSERT( j < d_cols.size() );
                 double x = Thyra::get_ele( *( X.col( i ) ), d_cols[j] );
-                tmp->axpby( x, 1.0, d_vecs[j], tmp );
+                tmp->axpby( x, 1.0, d_vecs[j] );
             }
             // Perform the final axpby
-            y->d_vecs[i]->axpby( alpha, beta, tmp, y->d_vecs[i] );
+            y->d_vecs[i]->axpby( alpha, beta, tmp );
         }
     } else if ( M_trans == Thyra::TRANS || M_trans == Thyra::CONJTRANS ) {
         // We are computing: Y = alpha*transpose(M)*X + beta*Y
@@ -217,7 +217,7 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
                 size_t N2 = static_cast<size_t>( Y2->space()->dim() );
                 AMP_ASSERT( d_cols.size() == N2 );
                 for ( size_t j = 0; j < N; j++ ) {
-                    double dot = d_vecs[j]->dot( x->d_vecs[i], d_vecs[j] );
+                    double dot = d_vecs[j]->dot( x->d_vecs[i] );
                     double y   = 0.0;
                     if ( beta != 0.0 )
                         y = beta * Thyra::get_ele( *Y2, d_cols[j] );
@@ -235,7 +235,7 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
 void ThyraVectorWrapper::assignImpl( double alpha )
 {
     for ( auto &vec : d_vecs ) {
-        vec->setToScalar( alpha, vec );
+        vec->setToScalar( alpha );
     }
 }
 

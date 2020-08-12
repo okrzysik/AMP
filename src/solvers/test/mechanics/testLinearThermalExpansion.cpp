@@ -74,11 +74,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::LinearAlgebra::createVector( tempDofMap, tempVar, true );
     AMP::LinearAlgebra::Vector::shared_ptr prevTempVec = currTempVec->cloneVector();
 
-    mechSolVec->setToScalar( 0.0, mechSolVec );
-    mechResVec->setToScalar( 0.0, mechResVec );
+    mechSolVec->setToScalar( 0.0 );
+    mechResVec->setToScalar( 0.0 );
 
-    currTempVec->setToScalar( 500.0, currTempVec );
-    prevTempVec->setToScalar( 300.0, prevTempVec );
+    currTempVec->setToScalar( 500.0 );
+    prevTempVec->setToScalar( 300.0 );
 
     std::shared_ptr<AMP::Database> temperatureRhsDatabase =
         input_db->getDatabase( "TemperatureRHS" );

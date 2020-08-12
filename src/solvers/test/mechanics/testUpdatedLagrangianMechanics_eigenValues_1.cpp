@@ -97,11 +97,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // AMP::LinearAlgebra::Vector::shared_ptr scaledRhsVec = meshAdapter->createVector( dispVar );
 
     // Initial guess
-    solVec->zero( *solVec );
+    solVec->zero();
     nonlinearMechanicsBVPoperator->modifyInitialSolutionVector( solVec );
 
     // RHS
-    rhsVec->zero( *rhsVec );
+    rhsVec->zero();
     dirichletLoadVecOp->apply( nullVec, rhsVec );
     nonlinearMechanicsBVPoperator->modifyRHSvector( rhsVec );
 

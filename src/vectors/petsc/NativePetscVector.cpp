@@ -1,4 +1,5 @@
 #include "AMP/vectors/petsc/NativePetscVector.h"
+#include "AMP/vectors/petsc/NativePetscVectorOperations.h"
 
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
 
@@ -12,6 +13,7 @@ namespace LinearAlgebra {
 NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params )
     : Vector(), PetscVector()
 {
+    d_VectorOps = new NativePetscVectorOperations();
     auto npvParams = std::dynamic_pointer_cast<NativePetscVectorParameters>( in_params );
     d_petscVec     = npvParams->d_InVec;
     d_pArray       = nullptr;
@@ -27,6 +29,7 @@ NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params )
 
 NativePetscVector::~NativePetscVector()
 {
+    if ( d_VectorOps ) delete d_VectorOps;
     resetArray();
     if ( d_bDeleteMe )
         PETSC::vecDestroy( &d_petscVec );
@@ -225,250 +228,6 @@ void NativePetscVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, doub
             ndx2[i] = (PetscInt) ndx[i];
         VecGetValues( d_petscVec, numVals, &ndx2[0], vals );
     }
-}
-
-//**********************************************************************
-// Static functions that operate on VectorData objects
-
-// Helper function
-Vec NativePetscVector::getPetscVec( VectorData &vx )
-{
-    auto nx = dynamic_cast<NativePetscVector *>( &vx );
-    nx->resetArray();
-    return nx->getVec();
-}
-
-Vec NativePetscVector::getPetscVec( const VectorData &vx )
-{
-    auto nx = dynamic_cast<const NativePetscVector *>( &vx );
-    nx->resetArray();
-    return nx->getVec();
-}
-
-Vec NativePetscVector::getConstPetscVec( const VectorData &vx )
-{
-    return dynamic_cast<const NativePetscVector *>( &vx )->getVec();
-}
-
-NativePetscVector *NativePetscVector::getNativeVec( VectorData &vx )
-{
-    return dynamic_cast<NativePetscVector *>( &vx );
-}
-
-const NativePetscVector *NativePetscVector::getNativeVec( const VectorData &vx )
-{
-    return dynamic_cast<const NativePetscVector *>( &vx );
-}
-
-// Function to perform  this = alpha x + beta y + gamma z
-void NativePetscVector::axpbypcz( double alpha,
-                                  const VectorData &vx,
-                                  double beta,
-                                  const VectorData &vy,
-                                  double gamma,
-                                  VectorData &vz )
-{
-    Vec x = getConstPetscVec( vx );
-    Vec y = getConstPetscVec( vy );
-    Vec z = getPetscVec( vz );
-
-    if ( x != y && x != z && y != z ) {
-        // We can safely perform  z = alpha x + beta y + gamma z
-        VecAXPBYPCZ( z, alpha, beta, gamma, x, y );
-    } else if ( x != y && x == z ) {
-        // x==z:  z = (alpha+gamma)*z + beta*y
-        double scale = alpha + gamma;
-        VecAXPBY( z, beta, scale, y );
-    } else if ( x != y && y == z ) {
-        // y==z:  z = (beta+gamma)*z + alpha*x
-        double scale = beta + gamma;
-        VecAXPBY( z, alpha, scale, x );
-    } else if ( x == y && x == z ) {
-        // x==y==z:  z = (alpha+beta+gamma)*z
-        double scale = alpha + beta + gamma;
-        VecScale( z, scale );
-    } else {
-        AMP_ERROR( "Internal error\n" );
-    }
-}
-void NativePetscVector::copy( const VectorData &x, VectorData &y )
-{
-    auto nx = getNativeVec( x );
-    auto ny = getNativeVec( y );
-    ny->resetArray();
-    VecCopy( nx->getVec(), ny->getVec() );
-    y.copyGhostValues( x );
-}
-
-void NativePetscVector::setToScalar( double alpha, VectorData &x )
-{
-    auto vec = getPetscVec( x );
-    VecSet( vec, alpha );
-}
-
-void NativePetscVector::setRandomValues( VectorData &x )
-{
-    auto nx = getNativeVec( x );
-    nx->resetArray();
-    VecSetRandom( nx->getVec(), nx->getPetscRandom( nx->getComm() ) );
-}
-
-void NativePetscVector::scale( double alpha, const VectorData &x, VectorData &y )
-{
-    auto nx = getNativeVec( x );
-    auto ny = getNativeVec( y );
-    ny->resetArray();
-    ny->copyVector( nx->shared_from_this() );
-    VecScale( ny->getVec(), alpha );
-}
-
-
-void NativePetscVector::scale( double alpha, VectorData &x )
-{
-    VecScale( getPetscVec( x ), alpha );
-}
-
-void NativePetscVector::add( const VectorData &x, const VectorData &y, VectorData &z )
-{
-    axpbypcz( 1.0, x, 1.0, y, 0.0, z );
-}
-
-
-void NativePetscVector::subtract( const VectorData &x, const VectorData &y, VectorData &z )
-{
-    axpbypcz( 1.0, x, -1.0, y, 0.0, z );
-}
-
-
-void NativePetscVector::multiply( const VectorData &x, const VectorData &y, VectorData &z )
-{
-    VecPointwiseMult( getPetscVec( z ), getConstPetscVec( x ), getConstPetscVec( y ) );
-}
-
-
-void NativePetscVector::divide( const VectorData &x, const VectorData &y, VectorData &z )
-{
-    VecPointwiseDivide( getPetscVec( z ), getConstPetscVec( x ), getConstPetscVec( y ) );
-}
-
-
-void NativePetscVector::reciprocal( const VectorData &x, VectorData &y )
-{
-    auto nx = getNativeVec( x );
-    auto ny = getNativeVec( y );
-    ny->resetArray();
-    ny->copyVector( nx->shared_from_this() );
-    VecReciprocal( ny->getVec() );
-}
-
-
-void NativePetscVector::linearSum(
-    double alpha, const VectorData &x, double beta, const VectorData &y, VectorData &z )
-{
-    axpbypcz( alpha, x, beta, y, 0.0, z );
-}
-
-
-void NativePetscVector::axpy( double alpha,
-                              const VectorData &x,
-                              const VectorData &y,
-                              VectorData &z )
-{
-    axpbypcz( alpha, x, 1.0, y, 0.0, z );
-}
-
-
-void NativePetscVector::axpby( double alpha, double beta, const VectorData &x, VectorData &vz )
-{
-    auto &z = *getNativeVec( vz );
-    axpbypcz( alpha, x, beta, z, 0.0, z );
-}
-
-
-void NativePetscVector::abs( const VectorData &x, VectorData &y )
-{
-    auto nx = getNativeVec( x );
-    auto ny = getNativeVec( y );
-    ny->resetArray();
-    ny->copyVector( nx->shared_from_this() );
-    VecAbs( ny->getVec() );
-}
-
-double NativePetscVector::min( const VectorData &x ) const
-{
-    double val;
-    VecMin( getConstPetscVec( x ), PETSC_NULL, &val );
-    return val;
-}
-
-double NativePetscVector::max( const VectorData &x ) const
-{
-    double val;
-    VecMax( getConstPetscVec( x ), PETSC_NULL, &val );
-    return val;
-}
-
-double NativePetscVector::dot( const VectorData &x, const VectorData &y ) const
-{
-    double ans;
-    VecDot( getPetscVec( y ), getConstPetscVec( x ), &ans );
-    return ans;
-}
-
-double NativePetscVector::L1Norm( const VectorData &x ) const
-{
-    double ans;
-    VecNorm( getConstPetscVec( x ), NORM_1, &ans );
-    return ans;
-}
-
-double NativePetscVector::L2Norm( const VectorData &x ) const
-{
-    double ans;
-    VecNorm( getConstPetscVec( x ), NORM_2, &ans );
-    return ans;
-}
-
-double NativePetscVector::maxNorm( const VectorData &x ) const
-{
-    double ans;
-    VecNorm( getConstPetscVec( x ), NORM_INFINITY, &ans );
-    return ans;
-}
-
-double NativePetscVector::localL1Norm( const VectorData &vx ) const
-{
-    Vec x = getPetscVec( vx );
-
-    double ans;
-    PetscErrorCode ierr;
-    ierr = ( *x->ops->norm_local )( x, NORM_1, &ans );
-    CHKERRQ( ierr );
-    return ans;
-}
-
-double NativePetscVector::localL2Norm( const VectorData &vx ) const
-{
-    Vec x = getPetscVec( vx );
-
-    double ans;
-    PetscErrorCode ierr;
-
-    ierr = ( *x->ops->norm_local )( x, NORM_2, &ans );
-    CHKERRQ( ierr );
-    return ans;
-}
-
-double NativePetscVector::localMaxNorm( const VectorData &vx ) const
-{
-    Vec x = getPetscVec( vx );
-
-    double ans;
-    PetscErrorCode ierr;
-
-    ierr = ( *x->ops->norm_local )( x, NORM_INFINITY, &ans );
-    CHKERRQ( ierr );
-    return ans;
 }
 
 } // namespace LinearAlgebra

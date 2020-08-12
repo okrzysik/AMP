@@ -17,7 +17,7 @@ namespace LinearAlgebra {
  * work.
  */
 template<class TYPE = double>
-class NullVector : public Vector, public VectorOperationsDefault<TYPE>, public VectorDataNull<TYPE>
+class NullVector : public Vector, public VectorDataNull<TYPE>
 {
 public: // Public constructors
     /**

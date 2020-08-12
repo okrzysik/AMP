@@ -165,7 +165,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     auto initialConditionPrime = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
     auto f                     = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
 
-    f->zero( f );
+    f->zero();
 
     //  create neutronics source
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
@@ -193,7 +193,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     // Create the power (heat source) vector.
     auto powerInWattsVar = sourceOperator->getOutputVariable();
     auto powerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, powerInWattsVar );
-    powerInWattsVec->zero( powerInWattsVec );
+    powerInWattsVec->zero();
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, powerInWattsVec );
@@ -236,7 +236,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     // ** please do not set the time derivative to be non-zero!!
     // ** as this causes trouble with the boundary - BP, 07/16/2010
-    initialConditionPrime->zero( initialConditionPrime );
+    initialConditionPrime->zero();
 
     auto thermalRhs = f->select( vectorSelector1, outputVar->getVariable( 0 )->getName() );
     // create a copy of the rhs which can be modified at each time step (maybe)
@@ -339,11 +339,11 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         auto currentOxygenSolution =
             currentSolution->subsetVectorForVariable( oxygenVolumeOperator->getOutputVariable() );
 
-        double maxT = currentThermalSolution->max( currentThermalSolution );
-        double minT = currentThermalSolution->min( currentThermalSolution );
+        double maxT = currentThermalSolution->max();
+        double minT = currentThermalSolution->min();
 
-        double maxO = currentOxygenSolution->max( currentOxygenSolution );
-        double minO = currentOxygenSolution->min( currentOxygenSolution );
+        double maxO = currentOxygenSolution->max();
+        double minO = currentOxygenSolution->min();
 
         std::cout << "current_time = " << current_time << std::endl;
         std::cout << "max val of the current thermal solution = " << maxT << std::endl;

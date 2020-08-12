@@ -129,7 +129,7 @@ void NeumannVectorCorrection::addRHScorrection(
 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal       = myRhs->cloneVector();
     AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
-    rInternal->zero( rInternal );
+    rInternal->zero();
 
     unsigned int numBndIds = d_boundaryIds.size();
     std::vector<size_t> dofs;
@@ -225,7 +225,7 @@ void NeumannVectorCorrection::addRHScorrection(
     }         // end for j
 
     rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_ADD );
-    myRhs->add( myRhs, rInternal, myRhs );
+    myRhs->add( myRhs, rInternal );
 }
 
 

@@ -70,8 +70,8 @@ void ExplicitEuler::setupVectors()
     /*
      * Set initial value of vectors to 0.
      */
-    d_new_solution->setToScalar( (double) 0.0, d_new_solution );
-    d_f_vec->setToScalar( (double) 0.0, d_f_vec );
+    d_new_solution->setToScalar( (double) 0.0 );
+    d_f_vec->setToScalar( (double) 0.0 );
 }
 
 int ExplicitEuler::advanceSolution( const double dt, const bool first_step )
@@ -88,7 +88,7 @@ int ExplicitEuler::advanceSolution( const double dt, const bool first_step )
         // f_vec = f(tn,un)
         d_operator->apply( d_solution, d_f_vec );
         // u* = un+dt*f
-        d_new_solution->axpy( d_current_dt, *d_f_vec, *d_solution, *d_new_solution );
+        d_new_solution->axpy( d_current_dt, *d_f_vec, *d_solution );
     }
 
     return ( 0 );

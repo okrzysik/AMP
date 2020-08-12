@@ -99,25 +99,5 @@ double VectorOperations::wrmsNormMask( const VectorData &x,
     return ans;
 }
 
-/****************************************************************
- * min, max, norms, etc.                                         *
- * Note: these routines require communication                    *
- ****************************************************************/
-double VectorOperations::min( std::shared_ptr<const VectorData> x ) const { return min( *x ); }
-double VectorOperations::max( std::shared_ptr<const VectorData> x ) const { return max( *x ); }
-double VectorOperations::L1Norm( std::shared_ptr<const VectorData> x ) const
-{
-    return L1Norm( *x );
-}
-double VectorOperations::L2Norm( std::shared_ptr<const VectorData> x ) const
-{
-    return L2Norm( *x );
-}
-double VectorOperations::maxNorm( std::shared_ptr<const VectorData> x ) const
-{
-    return maxNorm( *x );
-}
-
-
 } // namespace LinearAlgebra
 } // namespace AMP

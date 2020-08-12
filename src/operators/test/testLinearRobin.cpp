@@ -60,7 +60,7 @@ static void bcTests( AMP::UnitTest *ut,
         bcParameters->d_variable = feOperator->getOutputVariable();
         bcOperator->reset( bcParameters );
 
-        bcCorrectionVec->setToScalar( 0.0, bcCorrectionVec );
+        bcCorrectionVec->setToScalar( 0.0 );
         ( std::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( bcOperator ) )
             ->addRHScorrection( bcCorrectionVec );
         AMP_INSIST( ( ( bcCorrectionVec.get() ) != nullptr ), "NULL rhs correction vector" );

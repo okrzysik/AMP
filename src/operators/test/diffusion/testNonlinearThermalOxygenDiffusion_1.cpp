@@ -118,8 +118,8 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     // next get vectors
     auto tempVec = solVec->subsetVectorForVariable( inputVariable->getVariable( 0 ) );
     auto concVec = solVec->subsetVectorForVariable( inputVariable->getVariable( 1 ) );
-    tempVec->setToScalar( defTemp, tempVec );
-    concVec->setToScalar( defConc, concVec );
+    tempVec->setToScalar( defTemp );
+    concVec->setToScalar( defConc );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // set up the shift and scale parameters
