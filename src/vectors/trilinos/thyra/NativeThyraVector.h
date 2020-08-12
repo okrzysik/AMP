@@ -2,7 +2,6 @@
 #define included_AMP_NativeThyraVector
 
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 
 namespace AMP {
@@ -94,7 +93,6 @@ protected:
 private:
     size_t d_local;
 
-    static Teuchos::RCP<const Thyra::VectorBase<double>> getThyraVec( const VectorOperations &v );
     static Teuchos::RCP<const Thyra::VectorBase<double>>
     getThyraVec( const Vector::const_shared_ptr &v );
 

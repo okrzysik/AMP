@@ -3,7 +3,6 @@
 
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorDataNull.h"
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include <string>
 
 
