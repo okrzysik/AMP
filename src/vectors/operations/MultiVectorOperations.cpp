@@ -519,7 +519,6 @@ bool MultiVectorOperations::localEquals( const VectorData &x,
 
 void MultiVectorOperations::updateVectorOperations( std::vector<VectorOperations *> &ops )  
 {
-  d_operations.clear();
   d_operations = ops;
 }
 } // namespace LinearAlgebra
