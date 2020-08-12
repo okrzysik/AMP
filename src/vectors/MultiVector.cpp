@@ -19,7 +19,7 @@ namespace LinearAlgebra {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-MultiVector::MultiVector( const std::string &name ) : Vector()
+MultiVector::MultiVector( const std::string &name ) : VectorData()
 {
     d_pVariable.reset( new MultiVariable( name ) );
     d_CommCreated = false;
