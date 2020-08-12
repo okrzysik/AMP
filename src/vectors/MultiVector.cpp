@@ -19,9 +19,9 @@ namespace LinearAlgebra {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-MultiVector::MultiVector( const std::string &name ) : Vector(), MultiVectorData()
+MultiVector::MultiVector( const std::string &name ) : Vector()
 {
-  //    initializeVectorOperations();  // sort out issues with virtual inheritance
+    initializeVectorOperations();  // sort out issues with virtual inheritance
     d_pVariable.reset( new MultiVariable( name ) );
     d_CommCreated = false;
 }
