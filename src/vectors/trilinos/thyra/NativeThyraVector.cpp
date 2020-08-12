@@ -1,4 +1,5 @@
 #include "AMP/vectors/trilinos/thyra/NativeThyraVector.h"
+#include "AMP/vectors/trilinos/thyra/NativeThyraVectorOperations.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
 
