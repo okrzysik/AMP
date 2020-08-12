@@ -33,7 +33,7 @@ NativePetscVector::~NativePetscVector()
         PETSC::vecDestroy( &d_petscVec );
 }
   
-void EpetraVectorEngine::initializeVectorOperations( void )
+void NativePetscVector::initializeVectorOperations( void )
 {
     d_VectorOps = new NativePetscVectorOperations();  
 }

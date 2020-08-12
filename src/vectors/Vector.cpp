@@ -1,4 +1,5 @@
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/Utilities.h"
