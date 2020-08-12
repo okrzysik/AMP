@@ -176,6 +176,7 @@ void MultiVector::updateVectorOperations()
       operations[i] = d_vVectors[i]->getVectorOperations();
 
     AMP_ASSERT(d_VectorOps);
+    std::cout << typeid(d_VectorOps).name() <<std::endl;
     auto mvOps = dynamic_cast<MultiVectorOperations *>(d_VectorOps);
     AMP_ASSERT(mvOps);
     mvOps->updateVectorOperations( operations );
