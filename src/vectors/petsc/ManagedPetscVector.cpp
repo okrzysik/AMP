@@ -740,7 +740,6 @@ void ManagedPetscVector::initPetsc()
 ManagedPetscVector::ManagedPetscVector( VectorParameters::shared_ptr params )
     : ManagedVector( params ), PetscVector()
 {
-    std::cout << "Calling ManagedPetscVector ctor " << std::endl;
     initPetsc();
     registerListener( this );
 }

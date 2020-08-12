@@ -71,7 +71,6 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     : Vector( params_in ),
       d_pParameters( std::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
 {
-    std::cout << "Calling ManagedVector ctor " << std::endl; 
     d_VectorOps = std::make_shared<ManagedVectorOperations>();
     d_vBuffer = d_pParameters->d_Buffer;
     d_Engine  = d_pParameters->d_Engine;
@@ -85,6 +84,7 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
 ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
 {
+    d_VectorOps = std::make_shared<ManagedVectorOperations>();
     auto vec      = getManaged( alias );
     d_vBuffer     = vec->d_vBuffer;
     d_Engine      = vec->d_Engine;
