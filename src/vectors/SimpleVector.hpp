@@ -13,6 +13,8 @@ namespace LinearAlgebra {
 template<typename TYPE, typename OPS, typename DATA>
 SimpleVector<TYPE, OPS, DATA>::SimpleVector() : Vector(), DATA()
 {
+  initializeVectorOperations(); // unsure about virtual inheritance issues
+
 }
 
 template<typename TYPE, typename OPS, typename DATA>

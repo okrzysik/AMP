@@ -130,6 +130,7 @@ EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<EpetraVectorEngineParame
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() )
 {
+    initializeVectorOperations(); // unsure about virtual inheritance issues
     d_Params    = alias;
     d_buf_scope = buf;
 }
