@@ -11,6 +11,7 @@ namespace LinearAlgebra {
 ManagedEpetraVector::ManagedEpetraVector( VectorParameters::shared_ptr params )
     : ManagedVector( params ), EpetraVector()
 {
+  d_VectorOps =  std::make_shared<ManagedEpetraVectorOperations>();  
 }
 
 
@@ -21,11 +22,6 @@ ManagedEpetraVector::ManagedEpetraVector( shared_ptr alias )
 
 ManagedEpetraVector::~ManagedEpetraVector()
 {
-}
-
-void ManagedEpetraVector::initializeVectorOperations( void )
-{
-    d_VectorOps = new ManagedEpetraVectorOperations();  
 }
 
 inline ManagedVector *ManagedEpetraVector::getNewRawPtr() const

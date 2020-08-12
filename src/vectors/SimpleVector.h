@@ -24,7 +24,6 @@ protected:
 
     SimpleVector();
     explicit SimpleVector( const SimpleVector & );
-    void initializeVectorOperations( void ) override;
 
 public:
     /** \brief    Create a SimpleVector

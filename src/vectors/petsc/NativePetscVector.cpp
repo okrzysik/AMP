@@ -13,7 +13,8 @@ namespace LinearAlgebra {
 NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params )
     : Vector(), PetscVector()
 {
-    std::cout << "Calling NativePetscVector ctor " << std::endl; 
+    std::cout << "Calling NativePetscVector ctor " << std::endl;
+    d_VectorOps = std::make_shared<NativePetscVectorOperations>();  
     auto npvParams = std::dynamic_pointer_cast<NativePetscVectorParameters>( in_params );
     d_petscVec     = npvParams->d_InVec;
     d_pArray       = nullptr;
@@ -33,14 +34,6 @@ NativePetscVector::~NativePetscVector()
     if ( d_bDeleteMe )
         PETSC::vecDestroy( &d_petscVec );
 }
-  
-void NativePetscVector::initializeVectorOperations( void )
-{
-  std::cout << "Entering NativePetscVector::initializeVectorOperations" << std::endl;
-    d_VectorOps = new NativePetscVectorOperations();  
-  std::cout << "Exiting NativePetscVector::initializeVectorOperations" << std::endl;
-}
-
 
 Vector::shared_ptr NativePetscVector::cloneVector( const Variable::shared_ptr var ) const
 {

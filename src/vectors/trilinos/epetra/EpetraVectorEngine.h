@@ -124,8 +124,6 @@ public: // Functions derived from Vector
 
 protected:
 
-    void initializeVectorOperations( void ) override;
-    
     std::shared_ptr<EpetraVectorEngineParameters> d_Params;
 };
 

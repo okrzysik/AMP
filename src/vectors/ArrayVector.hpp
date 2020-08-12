@@ -1,6 +1,7 @@
 #include "math.h"
 
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "ArrayVector.h"
 
 namespace AMP {
@@ -13,6 +14,7 @@ namespace LinearAlgebra {
 template<typename T, typename FUN, typename Allocator>
 ArrayVector<T, FUN, Allocator>::ArrayVector() : Vector(), d_globalSize( 0 )
 {
+  d_VectorOps = std::make_shared<VectorOperationsDefault<T>>();
 }
 
 template<typename T, typename FUN, typename Allocator>

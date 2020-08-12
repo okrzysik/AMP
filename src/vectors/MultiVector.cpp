@@ -21,15 +21,9 @@ namespace LinearAlgebra {
  ****************************************************************/
 MultiVector::MultiVector( const std::string &name ) : Vector()
 {
-    initializeVectorOperations();  // sort out issues with virtual inheritance
+    d_VectorOps =  std::make_shared<MultiVectorOperations>();
     d_pVariable.reset( new MultiVariable( name ) );
     d_CommCreated = false;
-}
-
-void MultiVector::initializeVectorOperations( void )
-{
-    d_VectorOps = new MultiVectorOperations();
-    //    std::cout << "MultiVector::initializeVectorOperations " << typeid(d_VectorOps).name() << std::endl;;
 }
 
 std::shared_ptr<MultiVector> MultiVector::create( Variable::shared_ptr variable,

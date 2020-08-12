@@ -118,8 +118,6 @@ protected:
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
 
-    void initializeVectorOperations( void ) override;
-
     void resetArray();
     void resetArray() const;
 

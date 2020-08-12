@@ -750,7 +750,7 @@ protected: // Internal data
     AMP::Discretization::DOFManager::shared_ptr d_DOFManager;
 
     // Pointer to *this as a VectorOperations object
-    VectorOperations *d_VectorOps = nullptr;
+    std::shared_ptr<VectorOperations> d_VectorOps = nullptr;
 
 
 private:

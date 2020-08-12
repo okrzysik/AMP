@@ -143,8 +143,6 @@ public: // Derived from Vector
     void swapVectors( Vector &other ) override;
     void aliasVector( Vector &other ) override;
 
-    void initializeVectorOperations( void ) override;
-
 protected: // Derived from Vector
     Vector::shared_ptr selectInto( const VectorSelector & ) override;
     Vector::const_shared_ptr selectInto( const VectorSelector & ) const override;

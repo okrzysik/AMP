@@ -91,8 +91,6 @@ protected:
     const void *getRawDataBlockAsVoid( size_t i ) const override;
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
 
-    void initializeVectorOperations( void ) override;
-
 private:
     size_t d_local;
 

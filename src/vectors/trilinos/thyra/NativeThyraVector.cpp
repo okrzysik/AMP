@@ -22,6 +22,7 @@ namespace LinearAlgebra {
 NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
     : Vector(), ThyraVector()
 {
+    d_VectorOps = std::make_shared<NativeThyraVectorOperations>();
     auto params = std::dynamic_pointer_cast<NativeThyraVectorParameters>( in_params );
     AMP_ASSERT( params != nullptr );
     AMP_ASSERT( !params->d_comm.isNull() );
@@ -44,11 +45,6 @@ NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
 ************************************************************************/
 NativeThyraVector::~NativeThyraVector()
 {
-}
-  
-void NativeThyraVector::initializeVectorOperations( void )
-{
-    d_VectorOps = new NativeThyraVectorOperations();  
 }
 
 /************************************************************************
