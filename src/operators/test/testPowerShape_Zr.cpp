@@ -74,10 +74,10 @@ static void test_with_shape( AMP::UnitTest *ut )
         auto SpecificPowerShapeVec =
             AMP::LinearAlgebra::createVector( dof_map, SpecificPowerShapeVar, split );
         auto SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector();
-        SpecificPowerMagnitudeVec->setToScalar( 1.0, SpecificPowerMagnitudeVec );
+        SpecificPowerMagnitudeVec->setToScalar( 1.0 );
 
         // Set the initial value for all nodes of SpecificPowerVec to zero.
-        SpecificPowerShapeVec->setToScalar( 0.0, SpecificPowerShapeVec );
+        SpecificPowerShapeVec->setToScalar( 0.0 );
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         try {
             shape->apply( SpecificPowerMagnitudeVec, SpecificPowerShapeVec );
@@ -86,17 +86,13 @@ static void test_with_shape( AMP::UnitTest *ut )
             ut->failure( "error" );
         }
         if ( nMoments == 0 ) {
-            if ( !AMP::Utilities::approx_equal(
-                     SpecificPowerShapeVec->max( SpecificPowerShapeVec ), 1.0, 1e-9 ) ) {
+            if ( !AMP::Utilities::approx_equal( SpecificPowerShapeVec->max(), 1.0, 1e-9 ) ) {
                 ut->failure( "flat solution is not really flat (max)." );
-                printf( "This %.9e is not 1.0. \n",
-                        SpecificPowerShapeVec->max( SpecificPowerShapeVec ) );
+                printf( "This %.9e is not 1.0. \n", SpecificPowerShapeVec->max() );
             }
-            if ( !AMP::Utilities::approx_equal(
-                     SpecificPowerShapeVec->min( SpecificPowerShapeVec ), 1.0, 1e-9 ) ) {
+            if ( !AMP::Utilities::approx_equal( SpecificPowerShapeVec->min(), 1.0, 1e-9 ) ) {
                 ut->failure( "flat solution is not really flat (min)." );
-                printf( "This %.9e is not 1.0. \n",
-                        SpecificPowerShapeVec->min( SpecificPowerShapeVec ) );
+                printf( "This %.9e is not 1.0. \n", SpecificPowerShapeVec->min() );
             }
         }
 
@@ -133,10 +129,10 @@ static void test_with_shape( AMP::UnitTest *ut )
             auto SpecificPowerShapeVec =
                 AMP::LinearAlgebra::createVector( dof_map, SpecificPowerShapeVar, split );
             auto SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector();
-            SpecificPowerMagnitudeVec->setToScalar( 1.0, SpecificPowerMagnitudeVec );
+            SpecificPowerMagnitudeVec->setToScalar( 1.0 );
 
             // Set the initial value for all nodes of SpecificPowerVec to zero.
-            SpecificPowerShapeVec->setToScalar( 0.0, SpecificPowerShapeVec );
+            SpecificPowerShapeVec->setToScalar( 0.0 );
             AMP::LinearAlgebra::Vector::shared_ptr nullVec;
             try {
                 shape->apply( SpecificPowerMagnitudeVec, SpecificPowerShapeVec );
@@ -145,17 +141,13 @@ static void test_with_shape( AMP::UnitTest *ut )
                 ut->failure( "PowerShape error" );
             }
             if ( nMoments == 0 ) {
-                if ( !AMP::Utilities::approx_equal(
-                         SpecificPowerShapeVec->max( SpecificPowerShapeVec ), 1.0, 1e-9 ) ) {
+                if ( !AMP::Utilities::approx_equal( SpecificPowerShapeVec->max(), 1.0, 1e-9 ) ) {
                     ut->failure( "flat solution is not flat (max)." );
-                    printf( "This %.9e is not 1.0. \n",
-                            SpecificPowerShapeVec->max( SpecificPowerShapeVec ) );
+                    printf( "This %.9e is not 1.0. \n", SpecificPowerShapeVec->max() );
                 }
-                if ( !AMP::Utilities::approx_equal(
-                         SpecificPowerShapeVec->min( SpecificPowerShapeVec ), 1.0, 1e-9 ) ) {
+                if ( !AMP::Utilities::approx_equal( SpecificPowerShapeVec->min(), 1.0, 1e-9 ) ) {
                     ut->failure( "flat solution is not flat (min)." );
-                    printf( "This %.9e is not 1.0. \n",
-                            SpecificPowerShapeVec->min( SpecificPowerShapeVec ) );
+                    printf( "This %.9e is not 1.0. \n", SpecificPowerShapeVec->min() );
                 }
             }
 

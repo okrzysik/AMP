@@ -233,7 +233,7 @@ void DirichletMatrixCorrection::initRhsCorrectionAdd( AMP::LinearAlgebra::Vector
                 AMP_ASSERT( ( *( d_dispVals->getVariable() ) ) == ( *d_variable ) );
             }
 
-            d_dispVals->zero( d_dispVals );
+            d_dispVals->zero();
 
             AMP::LinearAlgebra::Vector::shared_ptr emptyVec;
             d_rhsCorrectionSet->apply( emptyVec, d_dispVals );
@@ -244,7 +244,7 @@ void DirichletMatrixCorrection::initRhsCorrectionAdd( AMP::LinearAlgebra::Vector
 
             d_inputMatrix->mult( d_dispVals, d_rhsCorrectionAdd );
 
-            d_rhsCorrectionAdd->scale( -1.0, d_rhsCorrectionAdd );
+            d_rhsCorrectionAdd->scale( -1.0 );
         }
     }
 }
@@ -258,7 +258,7 @@ void DirichletMatrixCorrection::addRHScorrection( AMP::LinearAlgebra::Vector::sh
             applyMatrixCorrection();
         } // end if
         AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetOutputVector( rhs );
-        myRhs->add( myRhs, d_rhsCorrectionAdd, myRhs );
+        myRhs->add( myRhs, d_rhsCorrectionAdd );
     }
 }
 

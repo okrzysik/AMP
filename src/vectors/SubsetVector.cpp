@@ -109,6 +109,9 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
     // For now use one datablock for each value, this needs to be changed
     retVal->d_dataBlockPtr  = data_ptr;
     retVal->d_dataBlockSize = std::vector<size_t>( data_ptr.size(), 1 );
+    // We should decide on a better way to set the vector operations
+    // for efficiency
+    retVal->d_VectorOps = std::make_shared<VectorOperationsDefault<double>>();
     PROFILE_STOP( "view", 2 );
     return retVal;
 }

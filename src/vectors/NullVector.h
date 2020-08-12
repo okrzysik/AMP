@@ -3,7 +3,6 @@
 
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorDataNull.h"
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include <string>
 
 
@@ -17,7 +16,7 @@ namespace LinearAlgebra {
  * work.
  */
 template<class TYPE = double>
-class NullVector : public Vector, public VectorOperationsDefault<TYPE>, public VectorDataNull<TYPE>
+class NullVector : public Vector, public VectorDataNull<TYPE>
 {
 public: // Public constructors
     /**

@@ -178,7 +178,7 @@ void NeutronicsRhsExtras::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // compute power distribution
     if ( d_useFixedValue ) {
         double value = d_fixedValues[this_step];
-        rInternal->setToScalar( value, rInternal );
+        rInternal->setToScalar( value );
     } else {
         AMP::Mesh::MeshIterator elem      = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 1 );
         AMP::Mesh::MeshIterator end_elems = elem.begin();

@@ -81,12 +81,12 @@ void RK23TimeIntegrator::setupVectors()
     /*
      * Set initial value of vectors to 0.
      */
-    d_new_solution->setToScalar( (double) 0.0, d_new_solution );
-    d_k1_vec->setToScalar( (double) 0.0, d_k1_vec );
-    d_k2_vec->setToScalar( (double) 0.0, d_k2_vec );
-    d_k3_vec->setToScalar( (double) 0.0, d_k3_vec );
-    d_k4_vec->setToScalar( (double) 0.0, d_k4_vec );
-    d_z_vec->setToScalar( (double) 0.0, d_z_vec );
+    d_new_solution->setToScalar( (double) 0.0 );
+    d_k1_vec->setToScalar( (double) 0.0 );
+    d_k2_vec->setToScalar( (double) 0.0 );
+    d_k3_vec->setToScalar( (double) 0.0 );
+    d_k4_vec->setToScalar( (double) 0.0 );
+    d_z_vec->setToScalar( (double) 0.0 );
 }
 
 int RK23TimeIntegrator::advanceSolution( const double dt, const bool first_step )
@@ -100,34 +100,34 @@ int RK23TimeIntegrator::advanceSolution( const double dt, const bool first_step 
     }
 
     // u* = un+k1*dt/2
-    d_new_solution->axpy( d_current_dt / 2.0, d_k1_vec, d_solution, d_new_solution );
+    d_new_solution->axpy( d_current_dt / 2.0, *d_k1_vec, *d_solution );
     // k2 = f(t+dt/2, u*)
     d_operator->apply( d_new_solution, d_k2_vec );
     // u* = un+0.75*k2*dt
-    d_new_solution->axpy( 0.75 * d_current_dt, d_k2_vec, d_solution, d_new_solution );
+    d_new_solution->axpy( 0.75 * d_current_dt, *d_k2_vec, *d_solution );
     // k3 = f(t+0.75dt, u*)
     d_operator->apply( d_new_solution, d_k3_vec );
 
     // first we calculate the 3rd order solution in d_new_solution
     // u* = un+k1*2dt/9
-    d_new_solution->axpy( 2.0 * d_current_dt / 9.0, d_k1_vec, d_solution, d_new_solution );
+    d_new_solution->axpy( 2.0 * d_current_dt / 9.0, *d_k1_vec, *d_solution );
     // u* = u*+k2*dt/3
-    d_new_solution->axpy( d_current_dt / 3.0, d_k2_vec, d_new_solution, d_new_solution );
+    d_new_solution->axpy( d_current_dt / 3.0, *d_k2_vec, *d_new_solution );
     // u* = u*+k3*4dt/9
-    d_new_solution->axpy( 4.0 * d_current_dt / 9.0, d_k3_vec, d_new_solution, d_new_solution );
+    d_new_solution->axpy( 4.0 * d_current_dt / 9.0, *d_k3_vec, *d_new_solution );
 
     // k4 = f(t+dt, u*)
     d_operator->apply( d_new_solution, d_k4_vec );
 
     // now we calculate the 2nd order solution in d_z_vec for adapting the timestep
     // z = un+ dt*(7k1/24+k2/4+k3/3+k4/8)
-    d_z_vec->axpy( 7.0 / 24.0 * d_current_dt, d_k1_vec, d_solution, d_z_vec );
-    d_z_vec->axpy( 0.25 * d_current_dt, d_k2_vec, d_z_vec, d_z_vec );
-    d_z_vec->axpy( 1.0 / 3.0 * d_current_dt, d_k3_vec, d_z_vec, d_z_vec );
-    d_z_vec->axpy( 0.125 * d_current_dt, d_k4_vec, d_z_vec, d_z_vec );
+    d_z_vec->axpy( 7.0 / 24.0 * d_current_dt, *d_k1_vec, *d_solution );
+    d_z_vec->axpy( 0.25 * d_current_dt, *d_k2_vec, *d_z_vec );
+    d_z_vec->axpy( 1.0 / 3.0 * d_current_dt, *d_k3_vec, *d_z_vec );
+    d_z_vec->axpy( 0.125 * d_current_dt, *d_k4_vec, *d_z_vec );
 
     // store the difference in d_z_vec
-    d_z_vec->subtract( d_new_solution, d_z_vec, d_z_vec );
+    d_z_vec->subtract( *d_new_solution, *d_z_vec );
 
     return ( 0 );
 }
@@ -143,7 +143,7 @@ bool RK23TimeIntegrator::checkNewSolution() const
 {
     bool retcode = false;
 
-    double l2NormOfEstimatedError = d_z_vec->L2Norm( d_z_vec );
+    double l2NormOfEstimatedError = d_z_vec->L2Norm();
 
     // we flag the solution as being acceptable if the l2 norm of the error
     // is less than the required tolerance or we are at the minimum time step
@@ -193,7 +193,7 @@ double RK23TimeIntegrator::getNextDt( const bool )
 {
     double d_next_dt;
 
-    double l2NormOfEstimatedError = d_z_vec->L2Norm( d_z_vec );
+    double l2NormOfEstimatedError = d_z_vec->L2Norm();
 
     d_next_dt =
         d_safety_factor * d_current_dt * pow( ( d_atol / l2NormOfEstimatedError ), 1.0 / 3.0 );

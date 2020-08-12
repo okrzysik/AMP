@@ -26,7 +26,7 @@ static inline double *getBufferPtr( std::shared_ptr<VectorData> buf )
 }
 
 
-static inline Epetra_Vector &getEpetraVector( VectorOperations &vec )
+static inline Epetra_Vector &getEpetraVector( Vector &vec )
 {
     auto epetra = dynamic_cast<EpetraVectorEngine *>( &vec );
     AMP_INSIST( epetra != nullptr, "Not an EpetraVectorEngine" );
@@ -128,9 +128,10 @@ EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<EpetraVectorEngineParame
           getBufferPtr( buf ),
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->beginDOF(),
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
-          std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() )
+          std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() ),
+      d_Params( alias )
 {
-    d_Params    = alias;
+    d_VectorOps = std::make_shared<EpetraVectorOperations>();
     d_buf_scope = buf;
 }
 

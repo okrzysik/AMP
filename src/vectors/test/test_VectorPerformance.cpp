@@ -100,13 +100,6 @@ struct test_times {
         auto t2    = std::chrono::steady_clock::now();                                        \
         times.TEST = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count(); \
     } while ( 0 )
-#define runTest4( TEST, X, Y, Z, V )                                                          \
-    do {                                                                                      \
-        auto t1 = std::chrono::steady_clock::now();                                           \
-        vec->TEST( X, Y, Z, V );                                                              \
-        auto t2    = std::chrono::steady_clock::now();                                        \
-        times.TEST = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count(); \
-    } while ( 0 )
 
 
 test_times testPerformance( AMP::LinearAlgebra::Vector::shared_ptr vec )
@@ -118,21 +111,21 @@ test_times testPerformance( AMP::LinearAlgebra::Vector::shared_ptr vec )
     auto t2     = std::chrono::steady_clock::now();
     times.clone = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
     auto vec3   = vec->cloneVector();
-    vec2->setRandomValues( vec2 );
-    vec3->setRandomValues( vec3 );
+    vec2->setRandomValues();
+    vec3->setRandomValues();
     // Run the tests
-    runTest1( zero, vec );
-    runTest2( setToScalar, 3.14, vec );
-    runTest1( setRandomValues, vec );
-    runTest1( L1Norm, vec );
-    runTest1( L2Norm, vec );
-    runTest1( maxNorm, vec );
-    runTest1( min, vec );
-    runTest1( max, vec );
-    runTest2( dot, *vec2, *vec );
-    runTest4( axpy, 2.5, *vec2, *vec3, *vec );
-    runTest3( multiply, *vec2, *vec3, *vec );
-    runTest3( multiply, *vec2, *vec3, *vec );
+    runTest0( zero );
+    runTest1( setToScalar, 3.14 );
+    runTest0( setRandomValues );
+    runTest0( L1Norm );
+    runTest0( L2Norm );
+    runTest0( maxNorm );
+    runTest0( min );
+    runTest0( max );
+    runTest1( dot, *vec2 );
+    runTest3( axpy, 2.5, *vec2, *vec3 );
+    runTest2( multiply, *vec2, *vec3 );
+    runTest2( multiply, *vec2, *vec3 );
 
     return times;
 }

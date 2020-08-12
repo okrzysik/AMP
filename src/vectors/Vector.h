@@ -61,7 +61,6 @@ class VectorSelector;
  * \f$\mathbf{\tilde{u}}\f$ and \f$\mathbf{f}\f$ are Vectors.
  */
 class Vector : virtual public VectorData,
-               virtual public VectorOperations,
                public AMP::enable_shared_from_this<Vector>
 {
 
@@ -84,6 +83,396 @@ public: // typedefs
     typedef VectorDataIterator<const double> const_iterator;
 
 
+    // the next set of functions defines the public math. interface for vectors
+public:
+
+    /**
+     * \brief  Set vector equal to x
+     *      For Vectors, \f$\mathit{this}_i = x_i\f$.
+     * \param[in] x         a vector
+     */
+    void copy( const VectorData &x );
+
+    /**
+     *\brief Set vector entries (including ghosts) to zero
+     *\details This is equivalent (but more efficient) to calling setToScalar ( 0.0 ) followed by a
+     *     makeConsistent(SET)
+     */
+    void zero( void );
+
+    /**
+     * \brief  Set all compenents of a vector to a scalar.
+     *      For Vectors, the components of <em>this</em> are set to \f$\alpha\f$.
+     * \param[in] alpha     scalar double value
+     */
+    void setToScalar( double alpha );
+
+    /**
+     * \brief Set data in this vector to random values on [0,1).
+     */
+    void setRandomValues( void );
+
+    /**
+     * \brief Set data in this vector to random values using
+     *      a particular generator
+     * \param[in] rng       The generator to use.
+     */
+    void setRandomValues( RNG::shared_ptr rng );
+
+    /**
+     * \brief  Set vector equal to scaled input.
+     *      For Vectors, \f$\mathit{this}_i = \alpha x_i\f$.
+     * \param[in] alpha     a scalar double
+     * \param[in] x         a vector
+     */
+    void scale( double alpha, const VectorData &x );
+
+    /**
+     * \brief  Scale a vector.
+     *     For Vectors, \f$\mathit{this}_i = \alpha\mathit{this}_i\f$.
+     * \param[in] alpha     a scalar double
+     */
+    void scale( double alpha );
+
+    /**
+     * \brief  Adds two vectors.
+     *      For Vectors, \f$\mathit{this}_i = x_i + y_i\f$.
+     * \param[in] x         Input vector x
+     * \param[in] y         Input vector y
+     */
+    void add( const VectorData &x, const VectorData &y );
+
+    /**
+     * \brief Subtracts one vector from another.
+     *     For Vectors, \f$\mathit{this}_i = x_i - y_i\f$
+     * \param[in] x         Input vector x
+     * \param[in] y         Input vector y
+     */
+    void subtract( const VectorData &x, const VectorData &y );
+
+    /**
+     * \brief Component-wise multiply one vector with another.
+     *    For Vectors, \f$\mathit{this}_i = x_i  y_i\f$
+     * \param[in] x         Input vector x
+     * \param[in] y         Input vector y
+     */
+    void multiply( const VectorData &x, const VectorData &y );
+
+    /**
+     * \brief Component-wise divide one vector by another.
+     *    For Vectors, \f$\mathit{this}_i = x_i / y_i\f$
+     * \param[in] x         Input vector x
+     * \param[in] y         Input vector y
+     */
+    void divide( const VectorData &x, const VectorData &y );
+
+    /**
+     * \param x  a vector
+     * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i =
+     * 1/x_i\f$.
+     */
+    void reciprocal( const VectorData &x );
+
+    /**
+     * \brief Set a vector to be a linear combination of two vectors.
+     *      \f$\mathit{this}_i = \alpha x_i + \beta y_i\f$.
+     * \param[in] alpha     a scalar
+     * \param[in] x         a vector
+     * \param[in] beta      a scalar
+     * \param[in] y         a vector
+     */
+    void linearSum(
+        double alpha, const VectorData &x, double beta, const VectorData &y );
+
+    /**
+     * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
+     * \param[in] alpha    a scalar
+     * \param[in] x        a vector
+     * \param[in] y        a vector
+     */
+    void axpy( double alpha, const VectorData &x, const VectorData &y );
+
+    /**
+     * \brief Set this vector alpha * x + this.
+     *     \f$\mathit{this}_i = \alpha x_i + \beta \mathit{this}_i \f$
+     * \param[in] alpha    a scalar
+     * \param[in] beta     a scalar
+     * \param[in] x        a vector
+     */
+    void axpby( double alpha, double beta, const VectorData &x );
+
+    /**
+     * \brief Set this to the component-wise absolute value of a vector.
+     *     \f$\mathit{this}_i = |x_i|\f$.
+     * \param[in] x        a vector
+     */
+    void abs( const VectorData &x );
+
+    /**
+     * \brief set vector to \f$x + \alpha \bar{1}\f$.
+     * \param[in] x a vector
+     * \param[in] alpha a scalar
+     * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
+     */
+    void addScalar( const VectorData &x, double alpha_in );
+
+    /**
+     * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
+     */
+    double min( void ) const;
+
+    /**
+     * \brief Return the maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
+     */
+    double max( void ) const;
+
+    /**
+     * \brief Return discrete @f$ L_1 @f$ -norm of this vector.
+     * \details Returns \f[\sum_i |\mathit{this}_i|\f]
+     */
+    double L1Norm( void ) const;
+
+    /**
+     * \brief Return discrete @f$ L_2 @f$ -norm of this vector.
+     * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
+     */
+    double L2Norm( void ) const;
+
+    /**
+     * \brief Return the @f$ L_\infty @f$ -norm of this vector.
+     * \details Returns \f[\max_i |\mathit{this}_i|\f]
+     */
+    double maxNorm( void ) const;
+    /**
+     * \brief Returns the minimum of the quotient of two vectors:
+     *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
+     */
+    double minQuotient( const VectorData &x ) const;
+
+    /**
+     * \brief Return a weighted norm of a vector
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
+     */
+    double wrmsNorm( const VectorData &x, const VectorData &y ) const;
+
+    /**
+     * \brief Return a weighted norm of a subset of a vector
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \param[in] mask a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
+     */
+    double
+    wrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const;
+
+    
+    /**
+     * \brief Return the dot product of this vector with the argument vector.
+     * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
+     * \param[in] x        a vector
+     */
+    double dot( const VectorData &x ) const;
+    
+    bool equals( const VectorData &a, double tol ) const;
+
+
+    /**
+     * \brief Return the local minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
+     */
+    double localMin( void ) const;
+
+    /**
+     * \brief Return the local maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
+     */
+    double localMax( void ) const;
+
+    /**
+     * \brief Return local discrete @f$ L_1 @f$ -norm of this vector.
+     * \details Returns \f[\sum_i |\mathit{this}_i|\f]
+     */
+    double localL1Norm( void ) const;
+
+    /**
+     * \brief Return local discrete @f$ L_2 @f$ -norm of this vector.
+     * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
+     */
+    double localL2Norm( void ) const;
+
+    /**
+     * \brief Return the local @f$ L_\infty @f$ -norm of this vector.
+     * \details Returns \f[\max_i |\mathit{this}_i|\f]
+     */
+    double localMaxNorm( void ) const;
+
+    /**
+     * \brief Return the local dot product of this vector with the argument vector.
+     * \details Returns \f[\sum_i x_i \mathit{this}_i\f]
+     * \param[in] x        a vector
+     */
+    double localDot( const VectorData &x ) const;
+
+    /**
+     * \brief Returns the local minimum of the quotient of two vectors:
+     *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
+     * \param[in] x a vector
+     * \return \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
+     */
+    double localMinQuotient( const VectorData &x ) const;
+
+    /**
+     * \brief Return a weighted norm of a vector
+     * \param[in] x a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_i \mathit{this}^2_i}{n}}\f]
+     */
+    double localWrmsNorm( const VectorData &x ) const;
+
+    /**
+     * \brief Return a weighted norm of a subset of a vector
+     * \param[in] x a vector
+     * \param[in] mask a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0}
+     * \mathit{this}^2_iy^2_i}{n}}\f]
+     */
+    double
+    localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const;
+
+    /**
+     * \brief  Determine if the local portion of two vectors are equal using an absolute tolerance
+     * \param[in] rhs      Vector to compare to
+     * \param[in] tol      Tolerance of comparison
+     * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
+     */
+    bool
+      localEquals( const VectorData &x, double tol = 0.000001 ) const;
+    
+
+public: // shared_ptr wrappers
+
+    /**
+     * \brief  Determine if two vectors are equal using an absolute tolerance
+     * \param[in] rhs      Vector to compare to
+     * \param[in] tol      Tolerance of comparison
+     * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
+     */
+    bool equals( std::shared_ptr<const VectorData> rhs,
+                        double tol = 0.000001 ) const;
+
+    /// @copydoc VectorData::scale(double,const VectorData&)
+    void
+    scale( double alpha, std::shared_ptr<const VectorData> x );
+
+    /// @copydoc VectorData::copy(const VectorData&)
+    void copy( std::shared_ptr<const VectorData> x );
+
+    /// @copydoc VectorData::add(const VectorData&,const VectorData&)
+    void add( std::shared_ptr<const VectorData> x,
+                     std::shared_ptr<const VectorData> y );
+
+    /// @copydoc VectorData::addScalar(const VectorData&,double)
+    void
+    addScalar( std::shared_ptr<const VectorData> x, double alpha );
+
+    /// @copydoc VectorData::subtract(const VectorData&,const VectorData&)
+    void subtract( std::shared_ptr<const VectorData> x,
+                          std::shared_ptr<const VectorData> y );
+
+    /// @copydoc VectorData::multiply(const VectorData&,const VectorData&)
+    void multiply( std::shared_ptr<const VectorData> x,
+                          std::shared_ptr<const VectorData> y );
+
+    /// @copydoc VectorData::divide(const VectorData&,const VectorData&)
+    void divide( std::shared_ptr<const VectorData> x,
+                        std::shared_ptr<const VectorData> y );
+
+    /**
+     * \param x  a vector
+     * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i =
+     * 1/x_i\f$.
+     */
+    void reciprocal( std::shared_ptr<const VectorData> x );
+
+    /**
+     * \brief Set a vector to be a linear combination of two vectors.
+     *      \f$\mathit{this}_i = \alpha x_i + \beta y_i\f$.
+     * \param[in] alpha     a scalar
+     * \param[in] x         a vector
+     * \param[in] beta      a scalar
+     * \param[in] y         a vector
+     */
+    void linearSum( double alpha,
+                           std::shared_ptr<const VectorData> x,
+                           double beta,
+                           std::shared_ptr<const VectorData> y );
+
+    /**
+     * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
+     * \param[in] alpha    a scalar
+     * \param[in] x        a vector
+     * \param[in] y        a vector
+     */
+    void axpy( double alpha,
+                      std::shared_ptr<const VectorData> x,
+                      std::shared_ptr<const VectorData> y );
+
+    /**
+     * \brief Set this vector alpha * x + this.
+     *     \f$\mathit{this}_i = \alpha x_i + \beta \mathit{this}_i \f$
+     * \param[in] alpha    a scalar
+     * \param[in] beta     a scalar
+     * \param[in] x        a vector
+     */
+    void axpby( double alpha,
+                       double beta,
+                       std::shared_ptr<const VectorData> x );
+
+    /**
+     * \brief Set this to the component-wise absolute value of a vector.
+     *     \f$\mathit{this}_i = |x_i|\f$.
+     * \param[in] x        a vector
+     */
+    void abs( std::shared_ptr<const VectorData> x );
+
+    /**
+     * \brief Return the dot product of this vector with the argument vector.
+     * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
+     * \param[in] x        a vector
+     */
+    double dot( std::shared_ptr<const VectorData> x ) const;
+
+    /**
+     * \brief Returns the minimum of the quotient of two vectors:
+     *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
+     */
+    double minQuotient( std::shared_ptr<const VectorData> x ) const;
+
+    /**
+     * \brief Return a weighted norm of a vector
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
+     */
+    double wrmsNorm( std::shared_ptr<const VectorData> x,
+                            std::shared_ptr<const VectorData> y ) const;
+
+    /**
+     * \brief Return a weighted norm of a subset of a vector
+     * \param[in] x a vector
+     * \param[in] y a vector
+     * \param[in] mask a vector
+     * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
+     */
+    double wrmsNormMask( std::shared_ptr<const VectorData> x,
+                                std::shared_ptr<const VectorData> mask,
+                                std::shared_ptr<const VectorData> y ) const;
+    
 public: // Virtual functions
     /** \brief Return the name of the vector
      */
@@ -232,12 +621,17 @@ public: // Virtual functions
     virtual void addCommunicationListToParameters( CommunicationList::shared_ptr commList );
 
     //! Return the pointer to the VectorData
-    inline VectorData *getVectorData() { return d_VectorData; }
+    VectorData *getVectorData() { return d_VectorData; }
 
     //! Return the pointer to the VectorData
-    inline const VectorData *getVectorData() const { return d_VectorData; }
+    const VectorData *getVectorData() const { return d_VectorData; }
 
+    //! Return the pointer to the VectorOperation
+    std::shared_ptr<VectorOperations> getVectorOperations() { return d_VectorOps; }
 
+    //! Return the pointer to the VectorOperation
+    std::shared_ptr<const VectorOperations> getVectorOperations() const { return d_VectorOps; }
+   
 public: // Constructor/destructors
     /** \brief Constructor
      * \param[in] parameters  A pointer to a parameters class
@@ -251,8 +645,7 @@ public: // Constructor/destructors
 
 
 public: // Non-virtual functions
-    /// @copydoc VectorOperations::copy(const VectorOperations&)
-    inline void copyVector( std::shared_ptr<const Vector> x ) { copy( *x, *this ); }
+    void copyVector( std::shared_ptr<const Vector> x ) { d_VectorOps->copy( *x, *d_VectorData ); }
 
     /** \brief Change the variable associated with this vector
      * \param[in] name  The new variable
@@ -274,7 +667,7 @@ public: // Non-virtual functions
      * \return  A Vector shared pointer
      * \see MultiVector
      */
-    inline Vector::shared_ptr subsetVectorForVariable( const std::string &name );
+    Vector::shared_ptr subsetVectorForVariable( const std::string &name );
 
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
@@ -282,7 +675,7 @@ public: // Non-virtual functions
      * \return  A Vector shared pointer
      * \see MultiVector
      */
-    inline Vector::const_shared_ptr constSubsetVectorForVariable( const std::string &name ) const;
+    Vector::const_shared_ptr constSubsetVectorForVariable( const std::string &name ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other Vector to swap data with
@@ -354,6 +747,9 @@ protected: // Internal data
     //! The DOF_Manager
     AMP::Discretization::DOFManager::shared_ptr d_DOFManager;
 
+    // Pointer to *this as a VectorOperations object
+    std::shared_ptr<VectorOperations> d_VectorOps = nullptr;
+
 
 private:
     // The following are not implemented
@@ -361,7 +757,7 @@ private:
     void operator=( const Vector & );
 
     // Pointer to *this as a VectorData object
-    VectorData *d_VectorData;
+    VectorData *d_VectorData = nullptr;
 
     // output stream for vector data
     std::ostream *d_output_stream;

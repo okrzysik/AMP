@@ -151,16 +151,16 @@ public:
 
         // Test axpy
         matrix2->axpy( -2., matrix1 ); // matrix2 = -matrix1
-        vector1lhs->setRandomValues( vector1lhs );
+        vector1lhs->setRandomValues();
         vector2lhs->copyVector( vector1lhs );
         matrix1->mult( vector1lhs, vector1rhs );
         matrix2->mult( vector2lhs, vector2rhs ); // vector2rhs = - vector1rhs
-        vectorresult->add( vector1rhs, vector2rhs, vectorresult );
-        if ( vectorresult->L1Norm( vectorresult ) < 0.000001 )
+        vectorresult->add( vector1rhs, vector2rhs );
+        if ( vectorresult->L1Norm() < 0.000001 )
             utils->passes( "matrices are opposite" );
         else
             utils->failure( "matrices are not opposite" );
-        if ( vector1rhs->L1Norm( vector1rhs ) > 0.00001 )
+        if ( vector1rhs->L1Norm() > 0.00001 )
             utils->passes( "non-trivial vector" );
         else
             utils->passes( "trivial vector" );
@@ -208,20 +208,20 @@ public:
 
         matrix2->scale( 1.234567 ); // matrix2 = matrix1
 
-        vector1lhs->setRandomValues( vector1lhs );
+        vector1lhs->setRandomValues();
         vector2lhs->copyVector( vector1lhs );
 
         matrix1->mult( vector1lhs, vector1rhs );
         matrix2->mult( vector2lhs, vector2rhs ); // vector2rhs = 1.234567vector1rhs
 
-        vector1rhs->scale( 1.234567, vector1rhs );
-        vectorresult->subtract( vector1rhs, vector2rhs, vectorresult );
+        vector1rhs->scale( 1.234567 );
+        vectorresult->subtract( vector1rhs, vector2rhs );
 
-        if ( vectorresult->L1Norm( vectorresult ) < 0.000001 )
+        if ( vectorresult->L1Norm() < 0.000001 )
             utils->passes( "matrices are equally scaled" );
         else
             utils->failure( "matrices are equally scaled" );
-        if ( vector1rhs->L1Norm( vector1rhs ) > 0.00001 )
+        if ( vector1rhs->L1Norm() > 0.00001 )
             utils->passes( "non-trivial vector" );
         else
             utils->passes( "trivial vector" );
@@ -250,7 +250,7 @@ public:
             matrix->setValueByGlobalID( row, row, static_cast<double>( row + 1 ) );
         }
         auto diag         = matrix->extractDiagonal();
-        double l1norm     = diag->L1Norm( diag );
+        double l1norm     = diag->L1Norm();
         double numRows    = static_cast<double>( matrix->numGlobalRows() );
         double numCols    = static_cast<double>( matrix->numGlobalColumns() );
         double compareVal = std::min( numRows, numCols );
@@ -286,23 +286,23 @@ public:
 
         // Verify mult with 0 matrix
         matrix->zero();
-        vectorlhs->setRandomValues( vectorlhs );
+        vectorlhs->setRandomValues();
         matrix->mult( vectorlhs, vectorrhs );
-        normlhs = vectorlhs->L2Norm( vectorlhs );
-        normrhs = vectorrhs->L2Norm( vectorrhs );
+        normlhs = vectorlhs->L2Norm();
+        normrhs = vectorrhs->L2Norm();
         if ( ( normlhs > 0 ) && ( normrhs < 0.0000001 ) )
             utils->passes( "mult by 0 matrix" );
         else
             utils->failure( "mult by 0 matrix" );
 
         // Verify mult with identity
-        vectorlhs->setToScalar( 1.0, vectorlhs );
+        vectorlhs->setToScalar( 1.0 );
         matrix->setDiagonal( vectorlhs );
-        vectorlhs->setRandomValues( vectorlhs );
+        vectorlhs->setRandomValues();
         matrix->mult( vectorlhs, vectorrhs );
-        normlhs = vectorlhs->L2Norm( vectorlhs );
-        vectorrhs->subtract( vectorlhs, vectorrhs, vectorrhs );
-        normrhs = vectorrhs->L2Norm( vectorrhs );
+        normlhs = vectorlhs->L2Norm();
+        vectorrhs->subtract( vectorlhs, vectorrhs );
+        normrhs = vectorrhs->L2Norm();
         if ( ( normlhs > 0 ) && ( normrhs < 0.0000001 ) )
             utils->passes( "mult by I matrix" );
         else
@@ -310,10 +310,10 @@ public:
 
         // Try the non-trivial matrix
         fillWithPseudoLaplacian<FACTORY>( matrix );
-        vectorlhs->setRandomValues( vectorlhs );
+        vectorlhs->setRandomValues();
         matrix->mult( vectorlhs, vectorrhs );
-        normlhs = vectorlhs->L2Norm( vectorlhs );
-        normrhs = vectorrhs->L2Norm( vectorrhs );
+        normlhs = vectorlhs->L2Norm();
+        normrhs = vectorrhs->L2Norm();
         if ( ( normlhs > 0 ) && ( normrhs > 0 ) )
             utils->passes( "mult by other matrix" );
         else
@@ -350,10 +350,10 @@ public:
         // Create the matrices and vectors of interest
         matZero->zero();
         matIdent->zero();
-        vector2->setToScalar( 1.0, vector2 );
+        vector2->setToScalar( 1.0 );
         matIdent->setDiagonal( vector2 );
         fillWithPseudoLaplacian<FACTORY>( matLaplac );
-        vector1->setRandomValues( vector1 );
+        vector1->setRandomValues();
         double ans1, ans2, ans3;
 
         // Verify matMultiply with 0 matrix
@@ -365,13 +365,13 @@ public:
 
         // Verify mult with identity
         matLaplac->mult( vector1, vector2 );
-        ans1   = vector2->L2Norm( vector2 );
+        ans1   = vector2->L2Norm();
         matSol = AMP::LinearAlgebra::Matrix::matMultiply( matIdent, matLaplac );
         matSol->mult( vector1, vector2 );
-        ans2   = vector2->L2Norm( vector2 );
+        ans2   = vector2->L2Norm();
         matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matIdent );
         matSol->mult( vector1, vector2 );
-        ans3 = vector2->L2Norm( vector2 );
+        ans3 = vector2->L2Norm();
         if ( AMP::Utilities::approx_equal( ans1, ans2 ) &&
              AMP::Utilities::approx_equal( ans1, ans3 ) && ans1 != 0.0 )
             utils->passes( "matMultiply with identity matrix" );
@@ -381,10 +381,10 @@ public:
         // Verify mult with two trival matrices
         matLaplac->mult( vector1, vector2 );
         matLaplac->mult( vector2, vector3 );
-        ans1   = vector3->L2Norm( vector3 );
+        ans1   = vector3->L2Norm();
         matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matLaplac );
         matSol->mult( vector1, vector2 );
-        ans2 = vector2->L2Norm( vector2 );
+        ans2 = vector2->L2Norm();
         if ( AMP::Utilities::approx_equal( ans1, ans2 ) && ans1 != 0.0 )
             utils->passes( "matMultiply with trival matrix" );
         else

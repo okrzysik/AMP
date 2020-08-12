@@ -76,10 +76,6 @@ int test_Vector( int argc, char **argv )
     VectorIteratorTests( ut, MVFactory1 );
     AMP::pout << std::endl;
 
-    AMP::pout << "Testing NativeEpetraVector" << std::endl;
-    testBasicVector( ut, NEVFactory );
-    AMP::pout << std::endl;
-
     AMP::pout << "Testing ManagedEpetraVector" << std::endl;
     testManagedVector( ut, SMEVFactory );
     AMP::pout << std::endl;

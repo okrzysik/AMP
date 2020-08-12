@@ -168,7 +168,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
     auto fusedRhsVec = fusedSolVec->cloneVector();
     auto fusedResVec = fusedSolVec->cloneVector();
 
-    fusedRhsVec->zero( fusedRhsVec );
+    fusedRhsVec->zero();
     loadOperator->apply( nullVec, fusedRhsVec );
 
     auto mlSolver_db = input_db->getDatabase( "MLoptions" );
@@ -182,7 +182,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
     if ( type == 0 ) {
         ML_set_random_seed( 123456 );
         std::cout << "Matrix-Based ML: " << std::endl;
-        fusedSolVec->zero( fusedSolVec );
+        fusedSolVec->zero();
 
         auto mlSolverParams =
             std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( mlSolver_db );
@@ -207,7 +207,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
     if ( type == 1 ) {
         ML_set_random_seed( 123456 );
         std::cout << "Matrix-Free ML Type-1: " << std::endl;
-        fusedSolVec->zero( fusedSolVec );
+        fusedSolVec->zero();
 
         ML_Comm *comm;
         ML_Comm_Create( &comm );
@@ -240,7 +240,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         fusedOperator->residual( fusedRhsVec, fusedSolVec, fusedResVec );
         std::cout << "MatFree-1: L2 norm of residual before solve " << std::setprecision( 15 )
-                  << fusedResVec->L2Norm( fusedResVec ) << std::endl;
+                  << fusedResVec->L2Norm() << std::endl;
 
         mlSolver->ApplyInverse( fVec, uVec );
 
@@ -248,13 +248,13 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         if ( firer )
             firer->fireDataChange();
 
-        double solution_norm = fusedSolVec->L2Norm( fusedSolVec );
+        double solution_norm = fusedSolVec->L2Norm();
         std::cout << "MatFree-1:  solution norm: " << std::setprecision( 15 ) << solution_norm
                   << std::endl;
 
         fusedOperator->residual( fusedRhsVec, fusedSolVec, fusedResVec );
         std::cout << "MatFree-1: L2 norm of residual after solve " << std::setprecision( 15 )
-                  << fusedResVec->L2Norm( fusedResVec ) << std::endl;
+                  << fusedResVec->L2Norm() << std::endl;
 
         ML_Operator_Destroy( &ml_op );
 
@@ -265,7 +265,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
     if ( type == 2 ) {
         ML_set_random_seed( 123456 );
         std::cout << "Matrix-Free ML Type-2: " << std::endl;
-        fusedSolVec->zero( fusedSolVec );
+        fusedSolVec->zero();
 
         int numGrids = mlSolver_db->getScalar<int>( "max_levels" );
         int numPDEs  = mlSolver_db->getScalar<int>( "PDE_equations" );
@@ -302,7 +302,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         fusedOperator->residual( fusedRhsVec, fusedSolVec, fusedResVec );
         std::cout << "MatFree-2: L2 norm of residual before solve " << std::setprecision( 15 )
-                  << fusedResVec->L2Norm( fusedResVec ) << std::endl;
+                  << fusedResVec->L2Norm() << std::endl;
 
         auto solArr = new double[fusedSolVec->getLocalSize()];
         auto rhsArr = new double[fusedRhsVec->getLocalSize()];
@@ -320,13 +320,13 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         if ( firer )
             firer->fireDataChange();
 
-        double solution_norm = fusedSolVec->L2Norm( fusedSolVec );
+        double solution_norm = fusedSolVec->L2Norm();
         std::cout << "MatFree-2:  solution norm: " << std::setprecision( 15 ) << solution_norm
                   << std::endl;
 
         fusedOperator->residual( fusedRhsVec, fusedSolVec, fusedResVec );
         std::cout << "MatFree-2: L2 norm of residual after solve " << std::setprecision( 15 )
-                  << fusedResVec->L2Norm( fusedResVec ) << std::endl;
+                  << fusedResVec->L2Norm() << std::endl;
 
         ML_Aggregate_Destroy( &agg_object );
         ML_Destroy( &ml_object );
@@ -358,15 +358,15 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         auto mlSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
 
         std::cout << "MatFree-3: L2 norm of residual before solve " << std::setprecision( 15 )
-                  << fusedResVec->L2Norm( fusedResVec ) << std::endl;
+                  << fusedResVec->L2Norm() << std::endl;
 
         mlSolver->solve( fusedRhsVec, fusedSolVec );
 
         std::cout << "MatFree-3:  solution norm: " << std::setprecision( 15 )
-                  << fusedSolVec->L2Norm( fusedSolVec ) << std::endl;
+                  << fusedSolVec->L2Norm() << std::endl;
         fusedOperator->residual( fusedRhsVec, fusedSolVec, fusedResVec );
         std::cout << "MatFree-3: L2 norm of residual after solve " << std::setprecision( 15 )
-                  << fusedResVec->L2Norm( fusedResVec ) << std::endl;
+                  << fusedResVec->L2Norm() << std::endl;
 
         std::cout << std::endl;
     }
@@ -466,7 +466,7 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
     auto fusedColumnRhsVec = fusedColumnSolVec->cloneVector();
     auto fusedColumnResVec = fusedColumnSolVec->cloneVector();
 
-    fusedColumnRhsVec->zero( fusedColumnRhsVec );
+    fusedColumnRhsVec->zero();
     loadColumnOperator->apply( nullVec, fusedColumnRhsVec );
 
     std::cout << std::endl;
@@ -494,15 +494,15 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
     auto mlSolver               = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
 
     std::cout << "MatFree-4: L2 norm of residual before solve " << std::setprecision( 15 )
-              << fusedColumnResVec->L2Norm( fusedColumnResVec ) << std::endl;
+              << fusedColumnResVec->L2Norm() << std::endl;
 
     mlSolver->solve( fusedColumnRhsVec, fusedColumnSolVec );
 
     std::cout << "MatFree-4:  solution norm: " << std::setprecision( 15 )
-              << fusedColumnSolVec->L2Norm( fusedColumnSolVec ) << std::endl;
+              << fusedColumnSolVec->L2Norm() << std::endl;
     fusedColumnOperator->residual( fusedColumnRhsVec, fusedColumnSolVec, fusedColumnResVec );
     std::cout << "MatFree-4: L2 norm of residual after solve " << std::setprecision( 15 )
-              << fusedColumnResVec->L2Norm( fusedColumnResVec ) << std::endl;
+              << fusedColumnResVec->L2Norm() << std::endl;
 
     std::cout << std::endl;
 

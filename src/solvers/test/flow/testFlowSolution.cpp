@@ -101,7 +101,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     }
     std::cout << std::endl;
 
-    std::cout << "Original Norm: " << tmpVec->L2Norm( tmpVec ) << std::endl;
+    std::cout << "Original Norm: " << tmpVec->L2Norm() << std::endl;
 
     cladVec->setValueByLocalID( 0, 300 );
     for ( int i = 1; i < 10; i++ ) {
@@ -198,7 +198,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     //------------------------------------------------------------------------------
 
     flowOperator->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm( resVec );
+    double initialResidualNorm = resVec->L2Norm();
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
@@ -208,7 +208,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     flowOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm( resVec );
+    double finalResidualNorm = resVec->L2Norm();
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
@@ -220,7 +220,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     //------------------------------------
 
     //  if( (tmpVec->L2Norm()-resVec->L2Norm()) > 0.01*tmpVec->L2Norm() )
-    if ( resVec->L2Norm( resVec ) > 0.01 ) {
+    if ( resVec->L2Norm() > 0.01 ) {
         ut->failure( "Manufactured Solution verification test for 1D flow operator." );
     } else {
         ut->passes( "Manufactured Solution verification test for 1D flow operator." );

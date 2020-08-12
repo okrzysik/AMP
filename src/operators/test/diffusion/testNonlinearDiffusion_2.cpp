@@ -116,9 +116,9 @@ static void nonlinearTest( AMP::UnitTest *ut,
     auto tVec = AMP::LinearAlgebra::createVector( nodalDofMap, tVar );
     auto cVec = AMP::LinearAlgebra::createVector( nodalDofMap, cVar );
     auto bVec = AMP::LinearAlgebra::createVector( nodalDofMap, bVar );
-    tVec->setToScalar( defTemp, tVec );
-    cVec->setToScalar( defConc, cVec );
-    bVec->setToScalar( defBurn, bVec );
+    tVec->setToScalar( defTemp );
+    cVec->setToScalar( defConc );
+    bVec->setToScalar( defBurn );
 
     // set principal variable vector
     if ( diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE )
@@ -168,13 +168,13 @@ static void nonlinearTest( AMP::UnitTest *ut,
     for ( unsigned int i = 0; i < numNonPrincIds; i++ ) {
         nonPrincVecs[i] = AMP::LinearAlgebra::createVector( nodalDofMap, nonPrincVars[i] );
         if ( nonPrincIds[i] == AMP::Operator::Diffusion::TEMPERATURE )
-            nonPrincVecs[i]->setToScalar( defTemp, nonPrincVecs[i] );
+            nonPrincVecs[i]->setToScalar( defTemp );
         if ( nonPrincIds[i] == AMP::Operator::Diffusion::CONCENTRATION )
-            nonPrincVecs[i]->setToScalar( defConc, nonPrincVecs[i] );
+            nonPrincVecs[i]->setToScalar( defConc );
         if ( nonPrincIds[i] == AMP::Operator::Diffusion::BURNUP )
-            nonPrincVecs[i]->setToScalar( defBurn, nonPrincVecs[i] );
+            nonPrincVecs[i]->setToScalar( defBurn );
     }
-    diffRhsVec->setToScalar( 0.0, diffRhsVec );
+    diffRhsVec->setToScalar( 0.0 );
 
     int zeroGhostWidth = 0;
     auto curNode       = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );

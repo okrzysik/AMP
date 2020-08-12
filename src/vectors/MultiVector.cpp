@@ -16,15 +16,16 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-MultiVector::MultiVector( const std::string &name )
+MultiVector::MultiVector( const std::string &name ) : Vector()
 {
+    d_VectorOps =  std::make_shared<MultiVectorOperations>();
     d_pVariable.reset( new MultiVariable( name ) );
     d_CommCreated = false;
 }
+
 std::shared_ptr<MultiVector> MultiVector::create( Variable::shared_ptr variable,
                                                   const AMP_MPI &comm,
                                                   const std::vector<Vector::shared_ptr> &vecs )
@@ -165,9 +166,17 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
 }
 void MultiVector::updateVectorOperations()
 {
-    d_operations.resize( d_vVectors.size() );
-    for ( size_t i = 0; i < d_vVectors.size(); i++ )
-        d_operations[i] = d_vVectors[i].get();
+  //  std::cout << "Number of vectors " << d_vVectors.size() <<std::endl;
+  std::vector<std::shared_ptr<VectorOperations>> operations( d_vVectors.size() );
+    for ( size_t i = 0; i < d_vVectors.size(); i++ )      
+      operations[i] = d_vVectors[i]->getVectorOperations();
+
+    AMP_ASSERT(d_VectorOps);
+    //    std::cout << typeid(d_VectorOps).name() <<std::endl;
+    auto mvOps = std::dynamic_pointer_cast<MultiVectorOperations>(d_VectorOps);
+    AMP_ASSERT(mvOps);
+    mvOps->updateVectorOperations( operations );
+    
 }
 void MultiVector::updateVectorData()
 {
@@ -436,12 +445,12 @@ void MultiVector::assemble()
 void MultiVector::swapVectors( Vector &other )
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->swapVectors( getVector( other, i ) );
+      d_vVectors[i]->swapVectors( getVector(other, i ) );
 }
 void MultiVector::aliasVector( Vector &other )
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->aliasVector( getVector( other, i ) );
+      d_vVectors[i]->aliasVector( getVector( other, i ) );
 }
 Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) const
 {
@@ -465,13 +474,13 @@ size_t MultiVector::getNumberOfSubvectors() const { return d_vVectors.size(); }
 
 std::string MultiVector::type() const { return "MultiVector"; }
 
-MultiVector::~MultiVector() {}
+MultiVector::~MultiVector() { }
 
 AMP_MPI MultiVector::getComm() const { return d_Comm; }
 
 void MultiVector::dataChanged() { fireDataChange(); }
 
-const Vector::shared_ptr &MultiVector::getVector( const VectorOperations &rhs, size_t which ) const
+const Vector::shared_ptr &MultiVector::getVector( const VectorData &rhs, size_t which ) const
 {
     auto x = dynamic_cast<const MultiVector *>( &rhs );
     AMP_ASSERT( x != nullptr );
@@ -479,7 +488,7 @@ const Vector::shared_ptr &MultiVector::getVector( const VectorOperations &rhs, s
     return x->d_vVectors[which];
 }
 
-Vector::shared_ptr &MultiVector::getVector( VectorOperations &rhs, size_t which ) const
+Vector::shared_ptr &MultiVector::getVector( VectorData &rhs, size_t which ) const
 {
     auto x = dynamic_cast<MultiVector *>( &rhs );
     AMP_ASSERT( x != nullptr );

@@ -128,7 +128,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr workVec =
         AMP::LinearAlgebra::createVector( DOF, workVar );
 
-    srcVec->setToScalar( 0., srcVec );
+    srcVec->setToScalar( 0. );
 
     // Fill in manufactured solution in mesh interior
     const double Pi                  = 3.1415926535898;
@@ -201,7 +201,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     sourceOp->apply( inpVec, rhsVec );
 
     // Reset solution vector to initial value and print out norm
-    solVec->setToScalar( 0.1, solVec );
+    solVec->setToScalar( 0.1 );
 
     // Set up initial guess
     nlinBVPOp->modifyInitialSolutionVector( solVec );
@@ -234,7 +234,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Get initial residual
     nlinBVPOp->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm( resVec );
+    double initialResidualNorm = resVec->L2Norm();
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
     // Run solver
@@ -243,7 +243,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Get final residual
     nlinBVPOp->residual( rhsVec, solVec, resVec );
-    double finalResidualNorm = resVec->L2Norm( resVec );
+    double finalResidualNorm = resVec->L2Norm();
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     // Final communication

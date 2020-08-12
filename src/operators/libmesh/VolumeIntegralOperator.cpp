@@ -107,7 +107,7 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
 
     // subsetOutputVector is from Operator.h
     d_outVec = this->subsetOutputVector( r );
-    d_outVec->zero( d_outVec );
+    d_outVec->zero();
 
     if ( d_inpVariables->numVariables() > 0 ) {
         d_elementDofMap = d_inVec[0]->getDOFManager();

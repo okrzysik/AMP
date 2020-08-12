@@ -94,14 +94,14 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 #endif
 
     // Initial guess for NL solver must satisfy the displacement boundary conditions
-    mechNlSolVec->setToScalar( 0.0, mechNlSolVec );
+    mechNlSolVec->setToScalar( 0.0 );
     nonlinBvpOperator->modifyInitialSolutionVector( mechNlSolVec );
 
     nonlinBvpOperator->apply( mechNlSolVec, mechNlResVec );
     linBvpOperator->reset( nonlinBvpOperator->getParameters( "Jacobian", mechNlSolVec ) );
 
     // Point forces
-    mechNlRhsVec->setToScalar( 0.0, mechNlRhsVec );
+    mechNlRhsVec->setToScalar( 0.0 );
 
     dirichletLoadVecOp->apply( nullVec, mechNlRhsVec );
 
@@ -140,12 +140,12 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         AMP::pout << "The current loading step is " << ( step + 1 ) << std::endl;
 
         double scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
-        mechNlScaledRhsVec->scale( scaleValue, mechNlRhsVec, mechNlScaledRhsVec );
+        mechNlScaledRhsVec->scale( scaleValue, mechNlRhsVec );
         AMP::pout << "L2 Norm of RHS at loading step " << ( step + 1 ) << " is "
-                  << mechNlScaledRhsVec->L2Norm( mechNlScaledRhsVec ) << std::endl;
+                  << mechNlScaledRhsVec->L2Norm() << std::endl;
 
         nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-        double initialResidualNorm = mechNlResVec->L2Norm( mechNlResVec );
+        double initialResidualNorm = mechNlResVec->L2Norm();
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
@@ -153,7 +153,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         nonlinearSolver->solve( mechNlScaledRhsVec, mechNlSolVec );
 
         nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-        double finalResidualNorm = mechNlResVec->L2Norm( mechNlResVec );
+        double finalResidualNorm = mechNlResVec->L2Norm();
         AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                   << finalResidualNorm << std::endl;
 

@@ -54,7 +54,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     if ( usePointLoad ) {
         helperBuildPointLoadRHSForPelletMechanics( global_input_db, coupledOp, rhsVec );
     } else {
-        rhsVec->zero( rhsVec );
+        rhsVec->zero();
     }
 
     AMP::LinearAlgebra::Vector::shared_ptr initialTemperatureVec, finalTemperatureVec;
@@ -65,11 +65,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     if ( useThermalLoad ) {
         double initialTemp = global_input_db->getScalar<double>( "InitialTemperature" );
-        initialTemperatureVec->setToScalar( initialTemp, initialTemperatureVec );
+        initialTemperatureVec->setToScalar( initialTemp );
         helperSetReferenceTemperatureForPelletMechanics( coupledOp, initialTemperatureVec );
     }
 
-    solVec->zero( solVec );
+    solVec->zero();
     helperApplyBoundaryCorrectionsForPelletMechanics( coupledOp, solVec, rhsVec );
 
     auto nonlinearSolver_db   = global_input_db->getDatabase( "NonlinearSolver" );
@@ -100,7 +100,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         double scaleValue =
             ( static_cast<double>( step + 1 ) ) / ( static_cast<double>( NumberOfLoadingSteps ) );
-        scaledRhsVec->scale( scaleValue, rhsVec, scaledRhsVec );
+        scaledRhsVec->scale( scaleValue, rhsVec );
 
         if ( useThermalLoad ) {
             double initialTemp = global_input_db->getScalar<double>( "InitialTemperature" );
@@ -108,23 +108,23 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             double deltaTemp =
                 initialTemp + ( ( static_cast<double>( step + 1 ) ) * ( finalTemp - initialTemp ) /
                                 ( static_cast<double>( NumberOfLoadingSteps ) ) );
-            finalTemperatureVec->setToScalar( deltaTemp, finalTemperatureVec );
+            finalTemperatureVec->setToScalar( deltaTemp );
             helperSetFinalTemperatureForPelletMechanics( coupledOp, finalTemperatureVec );
         }
 
         auto resVec = solVec->cloneVector();
-        resVec->zero( resVec );
+        resVec->zero();
         coupledOp->residual( scaledRhsVec, solVec, resVec );
-        AMP::pout << "initial, rhsVec: " << scaledRhsVec->L2Norm( scaledRhsVec ) << std::endl;
-        AMP::pout << "initial, solVec: " << solVec->L2Norm( solVec ) << std::endl;
-        AMP::pout << "initial, resVec: " << resVec->L2Norm( resVec ) << std::endl;
+        AMP::pout << "initial, rhsVec: " << scaledRhsVec->L2Norm() << std::endl;
+        AMP::pout << "initial, solVec: " << solVec->L2Norm() << std::endl;
+        AMP::pout << "initial, resVec: " << resVec->L2Norm() << std::endl;
         nonlinearSolver->solve( scaledRhsVec, solVec );
-        AMP::pout << "solved,  rhsVec: " << scaledRhsVec->L2Norm( scaledRhsVec ) << std::endl;
-        AMP::pout << "solved,  solVec: " << solVec->L2Norm( solVec ) << std::endl;
+        AMP::pout << "solved,  rhsVec: " << scaledRhsVec->L2Norm() << std::endl;
+        AMP::pout << "solved,  solVec: " << solVec->L2Norm() << std::endl;
         coupledOp->residual( scaledRhsVec, solVec, resVec );
-        AMP::pout << "final,   rhsVec: " << scaledRhsVec->L2Norm( scaledRhsVec ) << std::endl;
-        AMP::pout << "final,   solVec: " << solVec->L2Norm( solVec ) << std::endl;
-        AMP::pout << "final,   resVec: " << resVec->L2Norm( resVec ) << std::endl;
+        AMP::pout << "final,   rhsVec: " << scaledRhsVec->L2Norm() << std::endl;
+        AMP::pout << "final,   solVec: " << solVec->L2Norm() << std::endl;
+        AMP::pout << "final,   resVec: " << resVec->L2Norm() << std::endl;
 
 #ifdef USE_EXT_SILO
         siloWriter->writeFile( exeName, step );

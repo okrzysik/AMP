@@ -66,7 +66,7 @@ void BackwardEulerTimeIntegrator::setInitialGuess( const bool,
                                                    const double )
 {
     // lousy initial guess - just to get things moving...
-    d_solution->setToScalar( (double) 0.0, d_solution );
+    d_solution->setToScalar( (double) 0.0 );
 }
 
 

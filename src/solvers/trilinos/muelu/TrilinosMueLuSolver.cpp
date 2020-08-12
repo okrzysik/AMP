@@ -106,10 +106,9 @@ TrilinosMueLuSolver::getSmootherFactory( const int level )
 {
     std::string ifpackType;
     Teuchos::RCP<MueLu::SmootherPrototype<SC, LO, GO, NO>> smootherPrototype;
-
-    // const auto &mueLuLevel = d_mueluHierarchy->GetLevel( level );
-    //    const auto A           = mueLuLevel->Get<Teuchos::RCP<Xpetra::Operator<SC, LO, GO, NO>>>(
-    //    "A" );
+   
+    //const auto &mueLuLevel = d_mueluHierarchy->GetLevel( level );
+    //    const auto A           = mueLuLevel->Get<Teuchos::RCP<Xpetra::Operator<SC, LO, GO, NO>>>( "A" );
 
     auto &smootherParams = getSmootherParameters( level );
 
@@ -154,7 +153,7 @@ TrilinosMueLuSolver::getXpetraMatrix( std::shared_ptr<AMP::Operator::LinearOpera
 
 Teuchos::ParameterList &TrilinosMueLuSolver::getSmootherParameters( const int level )
 {
-    NULL_USE( level );
+    NULL_USE(level);
     auto &smootherParams = d_MueLuParameterList.get<Teuchos::ParameterList>( "smoother: params" );
 
 #if 0
@@ -547,7 +546,7 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
                 "ERROR: TrilinosMueLuSolver::solve() operator cannot be NULL" );
 
     if ( d_bUseZeroInitialGuess ) {
-        u->zero( u );
+        u->zero();
     }
 
 
@@ -563,7 +562,7 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     if ( computeResidual ) {
         r = f->cloneVector();
         d_pOperator->residual( f, u, r );
-        initialResNorm = r->L2Norm( r );
+        initialResNorm = r->L2Norm();
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "TrilinosMueLuSolver::solve(), L2 norm of residual before solve "
@@ -572,7 +571,7 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm( u );
+        double solution_norm = u->L2Norm();
         AMP::pout << "TrilinosMueLuSolver : before solve solution norm: " << std::setprecision( 15 )
                   << solution_norm << std::endl;
     }
@@ -610,7 +609,7 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     }
 
     // Check for NaNs in the solution (no communication necessary)
-    double localNorm = u->localL2Norm( *u );
+    double localNorm = u->localL2Norm();
     AMP_INSIST( localNorm == localNorm, "NaNs detected in solution" );
 
     // we are forced to update the state of u here
@@ -622,14 +621,14 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
         firer->fireDataChange();
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm( u );
+        double solution_norm = u->L2Norm();
         AMP::pout << "TrilinosMueLuSolver : after solve solution norm: " << std::setprecision( 15 )
                   << solution_norm << std::endl;
     }
 
     if ( computeResidual ) {
         d_pOperator->residual( f, u, r );
-        finalResNorm = r->L2Norm( r );
+        finalResNorm = r->L2Norm();
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "TrilinosMueLuSolver::solve(), L2 norm of residual after solve "

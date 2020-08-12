@@ -19,7 +19,6 @@ namespace LinearAlgebra {
  */
 class MultiVector : public Vector,
                     public MultiVectorData,
-                    public MultiVectorOperations,
                     public DataChangePassThrough
 {
 public:
@@ -191,14 +190,14 @@ protected:
      * \param[in]  which  Which vector to get
      * \return     The extracted vector
      */
-    const Vector::shared_ptr &getVector( const VectorOperations &vec, size_t which ) const;
+    const Vector::shared_ptr &getVector( const VectorData &vec, size_t which ) const;
 
     /** \brief A convenience method for extracting vectors from a base class
      * \param[in]  vec  The vector to extract a vector from
      * \param[in]  which  Which vector to get
      * \return     The extracted vector
      */
-    Vector::shared_ptr &getVector( VectorOperations &vec, size_t which ) const;
+    Vector::shared_ptr &getVector( VectorData &vec, size_t which ) const;
 
     /** Constructor:  create a MultiVector with a particular variable
      * \param[in]  name  The vector to create the MultiVector from
@@ -217,32 +216,11 @@ private:
     // Helper function to update the vector operations
     inline void updateVectorOperations();
 
-
 public: // Pull Vector into the current scope
     using Vector::cloneVector;
     using Vector::constSubsetVectorForVariable;
     using Vector::subsetVectorForVariable;
 
-
-public: // Pull VectorOperations into the current scope
-    using MultiVectorOperations::abs;
-    using MultiVectorOperations::add;
-    using MultiVectorOperations::addScalar;
-    using MultiVectorOperations::axpby;
-    using MultiVectorOperations::axpy;
-    using MultiVectorOperations::divide;
-    using MultiVectorOperations::dot;
-    using MultiVectorOperations::equals;
-    using MultiVectorOperations::linearSum;
-    using MultiVectorOperations::minQuotient;
-    using MultiVectorOperations::multiply;
-    using MultiVectorOperations::reciprocal;
-    using MultiVectorOperations::scale;
-    using MultiVectorOperations::setRandomValues;
-    using MultiVectorOperations::subtract;
-    using MultiVectorOperations::wrmsNorm;
-    using MultiVectorOperations::wrmsNormMask;
-    using MultiVectorOperations::zero;
 };
 
 

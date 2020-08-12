@@ -73,7 +73,7 @@ void DirichletVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_
 
     if ( d_iDebugPrintInfoLevel > 3 ) {
         AMP::pout << "L2 Norm of rInternal entering DirichletVectorCorrection::apply is : "
-                  << rInternal->L2Norm( rInternal ) << std::endl;
+                  << rInternal->L2Norm() << std::endl;
     }
 
     if ( d_setResidual ) {
@@ -88,7 +88,7 @@ void DirichletVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_
 
     if ( d_iDebugPrintInfoLevel > 3 ) {
         AMP::pout << "L2 Norm of rInternal leaving DirichletVectorCorrection::apply is : "
-                  << rInternal->L2Norm( rInternal ) << std::endl;
+                  << rInternal->L2Norm() << std::endl;
     }
 }
 

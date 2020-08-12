@@ -1,4 +1,5 @@
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/Utilities.h"
@@ -23,7 +24,7 @@ RNG::shared_ptr Vector::d_DefaultRNG;
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-Vector::Vector() : VectorData(), VectorOperations()
+Vector::Vector() : VectorData()
 {
     d_VectorData = dynamic_cast<VectorData *>( this );
     d_Ghosts     = std::make_shared<std::vector<double>>();
@@ -49,11 +50,12 @@ Vector::Vector( VectorParameters::shared_ptr parameters )
     d_Views        = std::make_shared<std::vector<std::weak_ptr<Vector>>>();
 }
 
-
 /****************************************************************
  * De-Constructors                                               *
  ****************************************************************/
-Vector::~Vector() = default;
+Vector::~Vector()
+{
+}
 
 
 /****************************************************************

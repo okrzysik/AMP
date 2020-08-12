@@ -173,8 +173,8 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
         solVec->subsetVectorForVariable( inputVariables[AMP::Operator::Mechanics::TEMPERATURE] );
     auto concVec = solVec->subsetVectorForVariable(
         inputVariables[AMP::Operator::Mechanics::OXYGEN_CONCENTRATION] );
-    tempVec->setToScalar( defTemp, tempVec );
-    concVec->setToScalar( defConc, concVec );
+    tempVec->setToScalar( defTemp );
+    concVec->setToScalar( defConc );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // set up the shift and scale parameters
@@ -213,7 +213,7 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     // IMPORTANT:: call init before proceeding any further on the nonlinear mechanics operator
     auto referenceTemperatureVec = AMP::LinearAlgebra::createVector(
         nodalDofMap, inputMultiVariable->getVariable( AMP::Operator::Mechanics::TEMPERATURE ) );
-    referenceTemperatureVec->setToScalar( 300.0, referenceTemperatureVec );
+    referenceTemperatureVec->setToScalar( 300.0 );
     volumeOperator->setReferenceTemperature( referenceTemperatureVec );
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for mechanics

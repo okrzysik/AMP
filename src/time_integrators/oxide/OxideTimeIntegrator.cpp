@@ -69,7 +69,7 @@ void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> 
     d_solution = AMP::LinearAlgebra::createVector( DOF, multivariable, true );
     d_oxide    = d_solution->subsetVectorForVariable( oxide_var );
     d_alpha    = d_solution->subsetVectorForVariable( alpha_var );
-    d_solution->setToScalar( 0.0, d_solution );
+    d_solution->setToScalar( 0.0 );
 
     // Create the internal vectors for storing the data
     N_layer     = std::vector<int>( 3 );

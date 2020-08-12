@@ -126,8 +126,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr dummyVector;
 
     AMP::pout << "before  "
-              << "foo=" << barFooVector->L2Norm( barFooVector ) << "  "
-              << "bar=" << fooBarVector->L2Norm( fooBarVector ) << "\n";
+              << "foo=" << barFooVector->L2Norm() << "  "
+              << "bar=" << fooBarVector->L2Norm() << "\n";
 
 #ifdef USE_EXT_SILO
     auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
@@ -144,17 +144,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     siloWriter->writeFile( "tmp", 1 );
 #endif
 
-    double const tolerance = 1.0e-14 * otherVector->L2Norm( otherVector );
-    tmpFooVector->subtract( barFooVector, tmpFooVector, tmpFooVector );
-    tmpBarVector->subtract( fooBarVector, tmpBarVector, tmpBarVector );
+    double const tolerance = 1.0e-14 * otherVector->L2Norm();
+    tmpFooVector->subtract( barFooVector, tmpFooVector );
+    tmpBarVector->subtract( fooBarVector, tmpBarVector );
     AMP::pout << "after  "
-              << "foo=" << tmpFooVector->L2Norm( tmpFooVector ) << "  "
-              << "bar=" << tmpBarVector->L2Norm( tmpBarVector ) << "\n";
+              << "foo=" << tmpFooVector->L2Norm() << "  "
+              << "bar=" << tmpBarVector->L2Norm() << "\n";
 
 #ifdef USE_EXT_SILO
     siloWriter->writeFile( "tmp", 2 );
 #endif
-    double const errNorm = otherVector->L2Norm( otherVector );
+    double const errNorm = otherVector->L2Norm();
     AMP::pout << "errNorm  " << errNorm << std::endl;
 
     if ( errNorm < tolerance ) {

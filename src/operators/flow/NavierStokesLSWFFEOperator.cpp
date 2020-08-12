@@ -91,7 +91,7 @@ void NavierStokesLSWFFEOperator::preAssembly( AMP::LinearAlgebra::Vector::const_
           }//end for i
     */
     d_outVec = mySubsetVector( r, d_outVariables );
-    d_outVec->zero( d_outVec );
+    d_outVec->zero();
 }
 
 void NavierStokesLSWFFEOperator::postAssembly()

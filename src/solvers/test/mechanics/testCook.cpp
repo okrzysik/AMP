@@ -101,23 +101,23 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr mechResVec =
         AMP::LinearAlgebra::createVector( DOF_vector, bvpOperator->getOutputVariable(), true );
 
-    mechSolVec->setToScalar( 0.5, mechSolVec );
-    mechRhsVec->setToScalar( 0.0, mechRhsVec );
-    mechResVec->setToScalar( 0.0, mechResVec );
+    mechSolVec->setToScalar( 0.5 );
+    mechRhsVec->setToScalar( 0.0 );
+    mechResVec->setToScalar( 0.0 );
 
     dirichletVecOp->apply( nullVec, mechRhsVec );
 
-    double rhsNorm = mechRhsVec->L2Norm( mechRhsVec );
+    double rhsNorm = mechRhsVec->L2Norm();
 
     AMP::pout << "RHS Norm: " << rhsNorm << std::endl;
 
-    double initSolNorm = mechSolVec->L2Norm( mechSolVec );
+    double initSolNorm = mechSolVec->L2Norm();
 
     AMP::pout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-    double initResidualNorm = mechResVec->L2Norm( mechResVec );
+    double initResidualNorm = mechResVec->L2Norm();
 
     AMP::pout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
@@ -144,7 +144,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
     linearSolver->solve( mechRhsVec, mechSolVec );
 
-    double finalSolNorm = mechSolVec->L2Norm( mechSolVec );
+    double finalSolNorm = mechSolVec->L2Norm();
 
     AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
@@ -155,9 +155,9 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr mechWvec =
         mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
 
-    double finalMaxU = mechUvec->maxNorm( mechUvec );
-    double finalMaxV = mechVvec->maxNorm( mechVvec );
-    double finalMaxW = mechWvec->maxNorm( mechWvec );
+    double finalMaxU = mechUvec->maxNorm();
+    double finalMaxV = mechVvec->maxNorm();
+    double finalMaxW = mechWvec->maxNorm();
 
     AMP::pout << "Maximum U displacement: " << finalMaxU << std::endl;
     AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
@@ -165,7 +165,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-    double finalResidualNorm = mechResVec->L2Norm( mechResVec );
+    double finalResidualNorm = mechResVec->L2Norm();
 
     AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 

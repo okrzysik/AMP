@@ -22,7 +22,7 @@ public:
     {
         AMP::LinearAlgebra::Vector::const_shared_ptr in = u->constSubsetVectorForVariable( d_var );
         AMP::LinearAlgebra::Vector::shared_ptr out      = r->subsetVectorForVariable( d_var );
-        out->scale( d_constant, in, out );
+        out->scale( d_constant, in );
     }
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_var; }

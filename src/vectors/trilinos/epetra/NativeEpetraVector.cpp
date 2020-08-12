@@ -27,7 +27,7 @@ static inline double *getBufferPtr( std::shared_ptr<VectorData> buf )
 }
 
 
-static inline Epetra_Vector &getEpetraVector( VectorOperations &vec )
+static inline Epetra_Vector &getEpetraVector( Vector &vec )
 {
     auto epetra = dynamic_cast<NativeEpetraVector *>( &vec );
     AMP_INSIST( epetra != nullptr, "Not an NativeEpetraVector" );

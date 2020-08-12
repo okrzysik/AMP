@@ -59,11 +59,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto resVec = solVec->cloneVector();
 
     for ( int j = 0; j < 3; j++ ) {
-        solVec->setRandomValues( solVec );
-        rhsVec->setRandomValues( rhsVec );
-        resVec->setRandomValues( resVec );
+        solVec->setRandomValues();
+        rhsVec->setRandomValues();
+        resVec->setRandomValues();
         testNonlinOperator->residual( rhsVec, solVec, resVec );
-        resVec->scale( -1.0, resVec );
+        resVec->scale( -1.0 );
     } // end for j
 
     ut->passes( exeName + " : apply" );

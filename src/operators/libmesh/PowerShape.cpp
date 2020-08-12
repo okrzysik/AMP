@@ -352,8 +352,8 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     double xmax, ymax, zmax, rmax;
 
     // quick exit if the answer is obvious.
-    if ( ( u->max( u ) < 1e-14 ) && ( u->min( u ) > -1e-14 ) ) {
-        r->setToScalar( 0., r );
+    if ( ( u->max() < 1e-14 ) && ( u->min() > -1e-14 ) ) {
+        r->setToScalar( 0. );
         return;
     }
 
@@ -379,7 +379,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // Create a shared pointer to a Variable - Power - Output because it will be used in the
     // "residual" location of
     // apply.
-    r->setToScalar( 1., r );
+    r->setToScalar( 1. );
 
     auto elem      = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
     auto end_elems = elem.end();
@@ -653,10 +653,10 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             volumeIntegralOperator->apply( u, unodalPower );
             volumeIntegralOperator->apply( r, rnodalPower );
 
-            const double denominator = rnodalPower->L1Norm( rnodalPower );
+            const double denominator = rnodalPower->L1Norm();
             AMP_INSIST( !AMP::Utilities::approx_equal( denominator, 0. ),
                         "The denominator is zero - not good." );
-            r->scale( unodalPower->L1Norm( unodalPower ) / rnodalPower->L1Norm( rnodalPower ), r );
+            r->scale( unodalPower->L1Norm() / rnodalPower->L1Norm() );
 
             r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
             if ( d_iDebugPrintInfoLevel > 3 )

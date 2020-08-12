@@ -240,7 +240,7 @@ void BoomerAMGSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
     }
 
     // specify Gaussian elimination on the coarsest level
-    HYPRE_BoomerAMGSetCycleRelaxType( d_solver, 9, 3 );
+    HYPRE_BoomerAMGSetCycleRelaxType( d_solver,  9, 3);
 
     // 6.2.60 in hypre 11.2 manual
     if ( db->keyExists( "relax_order" ) ) {
@@ -533,7 +533,7 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
                 "ERROR: BoomerAMGSolver::solve() operator cannot be NULL" );
 
     if ( d_bUseZeroInitialGuess ) {
-        u->zero( u );
+        u->zero();
     }
 
     if ( d_bCreationPhase ) {
@@ -548,7 +548,7 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     if ( d_bComputeResidual ) {
         r = f->cloneVector();
         d_pOperator->residual( f, u, r );
-        const auto initialResNorm = r->L2Norm( r );
+        const auto initialResNorm = r->L2Norm();
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "BoomerAMGSolver::solve(), L2 norm of residual before solve "
@@ -557,7 +557,7 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm( u );
+        double solution_norm = u->L2Norm();
         AMP::pout << "BoomerAMGSolver : before solve solution norm: " << std::setprecision( 15 )
                   << solution_norm << std::endl;
     }
@@ -578,7 +578,7 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     copyFromHypre( d_hypre_sol, u );
 
     // Check for NaNs in the solution (no communication necessary)
-    double localNorm = u->localL2Norm( *u );
+    double localNorm = u->localL2Norm();
     AMP_INSIST( localNorm == localNorm, "NaNs detected in solution" );
 
     // we are forced to update the state of u here
@@ -590,14 +590,14 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
         firer->fireDataChange();
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm( u );
+        double solution_norm = u->L2Norm();
         AMP::pout << "BoomerAMGSolver : after solve solution norm: " << std::setprecision( 15 )
                   << solution_norm << std::endl;
     }
 
     if ( d_bComputeResidual ) {
         d_pOperator->residual( f, u, r );
-        const auto finalResNorm = r->L2Norm( r );
+        const auto finalResNorm = r->L2Norm();
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "BoomerAMGSolver::solve(), L2 norm of residual after solve "

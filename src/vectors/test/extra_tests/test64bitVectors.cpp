@@ -45,8 +45,8 @@ static void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
         std::cout << "Time for vector create: " << end_time - start_time << std::endl;
     }
     // Initialize the vector and set some random values
-    v1->zero( v1 );
-    AMP_ASSERT( v1->L2Norm( v1 ) == 0.0 );
+    v1->zero();
+    AMP_ASSERT( v1->L2Norm() == 0.0 );
     size_t index = v1->getGlobalSize() - 4;
     auto val     = (double) index;
     if ( v1->containsGlobalElement( index ) )
@@ -61,7 +61,7 @@ static void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
         std::cout << "Time for makeConsistent: " << end_time - start_time << std::endl;
     // Time L2Norm
     start_time   = AMP::AMP_MPI::time();
-    double norm2 = v1->L2Norm( v1 );
+    double norm2 = v1->L2Norm();
     AMP_ASSERT( norm2 == val );
     mesh->getComm().barrier();
     end_time = AMP::AMP_MPI::time();

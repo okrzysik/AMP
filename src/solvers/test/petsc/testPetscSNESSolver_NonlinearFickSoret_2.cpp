@@ -124,8 +124,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
 
     double lenscale = input_db->getScalar<double>( "LengthScale" );
     soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setToScalar(
-        300.,
-        soretFrozen[AMP::Operator::Diffusion::TEMPERATURE] ); // Fill in manufactured solution
+        300. ); // Fill in manufactured solution
     int zeroGhostWidth = 0;
     auto iterator      = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
     for ( ; iterator != iterator.end(); ++iterator ) {
@@ -144,16 +143,16 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     // Initial guess
 
     double initialValue = input_db->getScalar<double>( "InitialValue" );
-    solVec->setToScalar( initialValue, solVec );
-    double initialGuessNorm = solVec->L2Norm( solVec );
+    solVec->setToScalar( initialValue );
+    double initialGuessNorm = solVec->L2Norm();
     std::cout << "initial guess norm = " << initialGuessNorm << "\n";
 
     nlinBVPOp->modifyInitialSolutionVector( solVec );
 
-    initialGuessNorm = solVec->L2Norm( solVec );
+    initialGuessNorm = solVec->L2Norm();
     std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
 
-    rhsVec->setToScalar( 0.0, rhsVec );
+    rhsVec->setToScalar( 0.0 );
     nlinBVPOp->modifyRHSvector( rhsVec );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------/
@@ -188,7 +187,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     linearSolver->setPreconditioner( linearFickPreconditioner );
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm( resVec );
+    double initialResidualNorm = resVec->L2Norm();
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
@@ -198,7 +197,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm( resVec );
+    double finalResidualNorm = resVec->L2Norm();
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 

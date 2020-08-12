@@ -73,9 +73,9 @@ void RK2TimeIntegrator::setupVectors()
     /*
      * Set initial value of vectors to 0.
      */
-    d_new_solution->setToScalar( (double) 0.0, d_new_solution );
-    d_k1_vec->setToScalar( (double) 0.0, d_k1_vec );
-    d_k2_vec->setToScalar( (double) 0.0, d_k2_vec );
+    d_new_solution->setToScalar( (double) 0.0 );
+    d_k1_vec->setToScalar( (double) 0.0 );
+    d_k2_vec->setToScalar( (double) 0.0 );
 }
 
 int RK2TimeIntegrator::advanceSolution( const double dt, const bool )
@@ -83,12 +83,12 @@ int RK2TimeIntegrator::advanceSolution( const double dt, const bool )
     // k1 = f(tn,un)
     d_operator->apply( d_solution, d_k1_vec );
     // u* = un+dt*k1
-    d_new_solution->axpy( dt, *d_k1_vec, *d_solution, *d_new_solution );
+    d_new_solution->axpy( dt, *d_k1_vec, *d_solution );
     // k2 = f(t+dt, u*)
     d_operator->apply( d_new_solution, d_k2_vec );
     // u_new = un+ dt*(k1+k2)/2
-    d_k2_vec->add( *d_k1_vec, *d_k2_vec, *d_k2_vec );
-    d_new_solution->axpy( dt / 2.0, *d_k2_vec, *d_solution, *d_new_solution );
+    d_k2_vec->add( *d_k1_vec, *d_k2_vec );
+    d_new_solution->axpy( dt / 2.0, *d_k2_vec, *d_solution );
 
     return ( 0 );
 }

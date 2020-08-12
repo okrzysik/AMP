@@ -163,7 +163,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     AMP::LinearAlgebra::Variable::shared_ptr PowerInWattsVar = sourceOperator->getOutputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr PowerInWattsVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
-    PowerInWattsVec->zero( PowerInWattsVec );
+    PowerInWattsVec->zero();
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
@@ -185,8 +185,8 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     AMP::LinearAlgebra::Vector::shared_ptr ResidualVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
-    RightHandSideVec->setToScalar( 0.0, RightHandSideVec );
-    double rhsNorm = RightHandSideVec->L2Norm( RightHandSideVec );
+    RightHandSideVec->setToScalar( 0.0 );
+    double rhsNorm = RightHandSideVec->L2Norm();
 
     ///////////////////////////////////////////////
     //   Add the boundary conditions corrections //
@@ -201,34 +201,34 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     ( std::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( boundaryOp ) )
         ->addRHScorrection( boundaryOpCorrectionVec );
 
-    RightHandSideVec->subtract( PowerInWattsVec, boundaryOpCorrectionVec, RightHandSideVec );
+    RightHandSideVec->subtract( PowerInWattsVec, boundaryOpCorrectionVec );
 
-    rhsNorm = RightHandSideVec->L2Norm( RightHandSideVec );
+    rhsNorm = RightHandSideVec->L2Norm();
     std::cout << "RHS Norm after BC Correction " << rhsNorm << std::endl;
 
-    rhsNorm = RightHandSideVec->L2Norm( RightHandSideVec );
+    rhsNorm = RightHandSideVec->L2Norm();
     std::cout << "RHS Norm 1: " << rhsNorm << std::endl;
-    rhsNorm = PowerInWattsVec->L2Norm( PowerInWattsVec );
+    rhsNorm = PowerInWattsVec->L2Norm();
     std::cout << "RHS Norm 2: " << rhsNorm << std::endl;
-    rhsNorm = boundaryOpCorrectionVec->L2Norm( boundaryOpCorrectionVec );
+    rhsNorm = boundaryOpCorrectionVec->L2Norm();
     std::cout << "RHS Norm 3: " << rhsNorm << std::endl;
 
     /////////////////////////////////////////////
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
-    auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
+    auto comm         = AMP::AMP_MPI( AMP_COMM_WORLD );
 
     auto linearSolver = buildSolver( input_db, "LinearSolver", comm, linearOperator );
 
     // Set initial guess
-    TemperatureInKelvinVec->setToScalar( 1.0, TemperatureInKelvinVec );
+    TemperatureInKelvinVec->setToScalar( 1.0 );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = TemperatureInKelvinVec->L2Norm( TemperatureInKelvinVec );
+    double initSolNorm = TemperatureInKelvinVec->L2Norm();
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
-    rhsNorm = RightHandSideVec->L2Norm( RightHandSideVec );
+    rhsNorm = RightHandSideVec->L2Norm();
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
     // Use a random initial guess?
@@ -241,22 +241,21 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = ResidualVec->L2Norm( ResidualVec );
+    double finalResidualNorm = ResidualVec->L2Norm();
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
 
-        auto solver_db          = input_db->getDatabase( "LinearSolver" );
-        auto solver_combo_name  = solver_db->getString( "name" );
-        auto use_preconditioner = solver_db->getWithDefault<bool>( "use_preconditioner", false );
-        if ( use_preconditioner ) {
-            std::string pc_name =
-                solver_db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
-            solver_combo_name = solver_combo_name + "+" + pc_name;
-        }
-
-        ut->failure( solver_combo_name + " does not solve a linear thermal problem with a nuclear "
-                                         "source term." );
+      auto solver_db = input_db->getDatabase( "LinearSolver" );   
+      auto solver_combo_name = solver_db->getString( "name" );
+      auto use_preconditioner = solver_db->getWithDefault<bool>( "use_preconditioner", false );
+      if( use_preconditioner ) {
+	std::string pc_name = solver_db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
+	solver_combo_name = solver_combo_name+"+"+pc_name;
+      }
+      
+      ut->failure( solver_combo_name + " does not solve a linear thermal problem with a nuclear "
+                     "source term." );
     }
 
     // Plot the results

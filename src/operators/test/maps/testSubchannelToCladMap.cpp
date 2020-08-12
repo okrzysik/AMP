@@ -92,13 +92,13 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
         pin_DOFs = AMP::Discretization::simpleDOFManager::create(
             pin_mesh, AMP::Mesh::GeomType::Vertex, 1, DOFsPerNode );
         T_clad = AMP::LinearAlgebra::createVector( pin_DOFs, temperature );
-        T_clad->setToScalar( 500, T_clad );
+        T_clad->setToScalar( 500 );
     }
     if ( subchannel_face.get() != nullptr ) {
         subchannel_DOFs = AMP::Discretization::simpleDOFManager::create(
             subchannel_face, AMP::Mesh::GeomType::Face, 1, DOFsPerNode );
         T_subchannel = AMP::LinearAlgebra::createVector( subchannel_DOFs, temperature );
-        T_subchannel->setToScalar( 0.0, T_subchannel );
+        T_subchannel->setToScalar( 0.0 );
     }
 
     // Initialize the subchannel temperatures
@@ -170,7 +170,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
         gauss_DOFs = AMP::Discretization::simpleDOFManager::create(
             pin_mesh, AMP::Mesh::GeomType::Face, 1, 4 );
         T_gauss = AMP::LinearAlgebra::createVector( gauss_DOFs, temperature );
-        T_gauss->zero( T_gauss );
+        T_gauss->zero();
     }
     map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladGPMap>(
         manager, gauss_map_db );

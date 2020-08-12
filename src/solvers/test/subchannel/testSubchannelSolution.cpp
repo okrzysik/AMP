@@ -189,7 +189,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         ++face;
     }
     solVec->copyVector( manufacturedVec );
-    solVec->setUpdateStatus( AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
 
     // get nonlinear solver database
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
@@ -311,11 +310,11 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Compute the error
     auto absErrorVec = solVec->cloneVector();
-    absErrorVec->axpy( -1.0, solVec, manufacturedVec, absErrorVec );
+    absErrorVec->axpy( -1.0, solVec, manufacturedVec );
     auto relErrorVec = solVec->cloneVector();
-    relErrorVec->divide( absErrorVec, manufacturedVec, relErrorVec );
-    double absErrorNorm = absErrorVec->L2Norm( absErrorVec );
-    double relErrorNorm = relErrorVec->L2Norm( relErrorVec );
+    relErrorVec->divide( absErrorVec, manufacturedVec );
+    double absErrorNorm = absErrorVec->L2Norm();
+    double relErrorNorm = relErrorVec->L2Norm();
 
     // check that norm of relative error is less than tolerance
     double tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );
@@ -356,18 +355,18 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // Rescale the solution to get the correct units
     auto enthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
     auto pressure = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
-    enthalpy->scale( h_scale, enthalpy );
-    pressure->scale( P_scale, pressure );
+    enthalpy->scale( h_scale );
+    pressure->scale( P_scale );
     enthalpy = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
     pressure = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
-    enthalpy->scale( h_scale, enthalpy );
-    pressure->scale( P_scale, pressure );
+    enthalpy->scale( h_scale );
+    pressure->scale( P_scale );
     // Register the quantities to plot
     auto siloWriter         = AMP::Utilities::Writer::buildWriter( "Silo" );
     auto subchannelEnthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
     auto subchannelPressure = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
-    subchannelEnthalpy->scale( h_scale, subchannelEnthalpy );
-    subchannelPressure->scale( P_scale, subchannelPressure );
+    subchannelEnthalpy->scale( h_scale );
+    subchannelPressure->scale( P_scale );
     siloWriter->registerVector(
         manufacturedVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "ManufacturedSolution" );
     siloWriter->registerVector( solVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "ComputedSolution" );
