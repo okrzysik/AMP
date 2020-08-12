@@ -29,7 +29,7 @@ MultiVector::MultiVector( const std::string &name ) : Vector()
 void MultiVector::initializeVectorOperations( void )
 {
     d_VectorOps = new MultiVectorOperations();
-    std::cout << "MultiVector::initializeVectorOperations " << typeid(d_VectorOps).name() << std::endl;;
+    //    std::cout << "MultiVector::initializeVectorOperations " << typeid(d_VectorOps).name() << std::endl;;
 }
 
 std::shared_ptr<MultiVector> MultiVector::create( Variable::shared_ptr variable,
@@ -172,13 +172,13 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
 }
 void MultiVector::updateVectorOperations()
 {
-  std::cout << "Number of vectors " << d_vVectors.size() <<std::endl;
+  //  std::cout << "Number of vectors " << d_vVectors.size() <<std::endl;
     std::vector<VectorOperations *> operations( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ )      
       operations[i] = d_vVectors[i]->getVectorOperations();
 
     AMP_ASSERT(d_VectorOps);
-    std::cout << typeid(d_VectorOps).name() <<std::endl;
+    //    std::cout << typeid(d_VectorOps).name() <<std::endl;
     auto mvOps = dynamic_cast<MultiVectorOperations *>(d_VectorOps);
     AMP_ASSERT(mvOps);
     mvOps->updateVectorOperations( operations );
