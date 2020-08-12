@@ -519,6 +519,7 @@ bool MultiVectorOperations::localEquals( const VectorData &x,
 
 void MultiVectorOperations::updateVectorOperations( std::vector<VectorOperations *> &ops )  
 {
+  std::cout << "Number of vectors " << ops.size() <<std::endl;
   d_operations = ops;
 }
 } // namespace LinearAlgebra
