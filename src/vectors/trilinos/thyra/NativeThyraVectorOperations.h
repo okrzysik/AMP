@@ -1,5 +1,5 @@
-#ifndef included_AMP_NativeThyraVector
-#define included_AMP_NativeThyraVector
+#ifndef included_AMP_NativeThyraVectorOperations
+#define included_AMP_NativeThyraVectorOperations
 
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
