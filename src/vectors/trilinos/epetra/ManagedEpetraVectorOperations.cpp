@@ -24,6 +24,7 @@ void ManagedEpetraVectorOperations::copy( const VectorData &src, VectorData &dst
     } else {
         VectorOperationsDefault<double>::copy( src, dst );
     }
+    dstVec->dataChanged();
 }
 
 } // namespace LinearAlgebra

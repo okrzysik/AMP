@@ -55,11 +55,12 @@ static inline const VectorData *getEngineData( const VectorData &x )
 
 void ManagedVectorOperations::copy( const VectorData &src, VectorData &dst )
 {
-    auto src_managed = getManagedVector( src );
     auto dst_managed = getManagedVector( dst );
+    AMP_ASSERT(dst_managed);
     std::shared_ptr<Vector> vec1;
     std::shared_ptr<const Vector> vec2;
-    if ( src_managed && dst_managed ) {
+    auto src_managed = getManagedVector( src );
+    if ( src_managed ) {
         // We are dealing with two managed vectors, check if they both have data engines
         if ( dst_managed->getVectorEngine() )
             vec1 = std::dynamic_pointer_cast<Vector>( dst_managed->getVectorEngine() );
@@ -70,13 +71,11 @@ void ManagedVectorOperations::copy( const VectorData &src, VectorData &dst )
     if ( vec1 != nullptr && vec2 != nullptr ) {
         // We have two data engines, perform the copy between them
         vec1->copy( vec2 );
-        dst_managed->fireDataChange();
-	//        dst_managed->setUpdateStatusPtr( src.getUpdateStatusPtr() );
-        dst_managed->setUpdateStatus( src.getUpdateStatus() );
     } else {
         // Default, general case
         VectorOperationsDefault::copy( src, dst );
     }
+    dst_managed->dataChanged();
 }
 
 void ManagedVectorOperations::setToScalar( double alpha, VectorData &x )
