@@ -100,7 +100,7 @@ ManagedVector::ManagedVector( shared_ptr alias )
 
 ManagedVector::~ManagedVector()
 {
-  delete d_VectorOps;
+  if (d_VectorOps) delete d_VectorOps;
 }
   
 /********************************************************
