@@ -214,12 +214,7 @@ inline double Vector::max( void ) const
 
 inline double Vector::L1Norm( void ) const
 {
-  std::cout << "Entering Vector::L1Norm " << std::endl;
-  std::cout << "Calling L1Norm on " << typeid(d_VectorData).name() << " with VecOps " << typeid(d_VectorOps).name() << std::endl;
-  auto val = d_VectorOps->L1Norm(*d_VectorData);
-  std::cout << "Vector::L1Norm " << val << std::endl;
-  std::cout << "Exiting Vector::L1Norm " << std::endl;
-  return val;
+  return d_VectorOps->L1Norm(*d_VectorData);
 }
 
 inline double Vector::L2Norm( void ) const

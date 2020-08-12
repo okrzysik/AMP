@@ -241,12 +241,8 @@ double ManagedVectorOperations::dot( const VectorData &x, const VectorData &y ) 
 
 double ManagedVectorOperations::L1Norm( const VectorData &x ) const
 {
-    std::cout << "Entering ManagedVectorOperations::L1Norm " << std::endl;
     auto x2 = getManagedVector( x );
-    auto norm = x2->getVectorEngine()->L1Norm( );
-    std::cout << "ManagedVectorOperations::L1Norm " << norm << std::endl;    
-    std::cout << "Exiting ManagedVectorOperations::L1Norm " << std::endl;
-    return norm;
+    return x2->getVectorEngine()->L1Norm( );
 }
 
 double ManagedVectorOperations::L2Norm( const VectorData &x ) const
