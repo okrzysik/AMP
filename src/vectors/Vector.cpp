@@ -27,7 +27,6 @@ RNG::shared_ptr Vector::d_DefaultRNG;
 Vector::Vector() : VectorData()
 {
     std::cout << "Calling Vector ctor with no args" << std::endl; 
-    initializeVectorOperations();
     d_VectorData = dynamic_cast<VectorData *>( this );
     d_Ghosts     = std::make_shared<std::vector<double>>();
     d_AddBuffer  = std::make_shared<std::vector<double>>();
@@ -40,7 +39,6 @@ Vector::Vector() : VectorData()
 Vector::Vector( VectorParameters::shared_ptr parameters )
 {
     std::cout << "Calling Vector ctor with params" << std::endl; 
-    initializeVectorOperations();
     d_VectorData = dynamic_cast<VectorData *>( this );
     // Set default output stream
     d_output_stream = &AMP::plog;
@@ -54,22 +52,11 @@ Vector::Vector( VectorParameters::shared_ptr parameters )
     d_Views        = std::make_shared<std::vector<std::weak_ptr<Vector>>>();
 }
 
-void Vector::initializeVectorOperations( void )
-{
-  std::cout << "Entering Vector::initializeVectorOperations" << std::endl;
-    d_VectorOps = new VectorOperationsDefault<double>();
-  std::cout << "Exiting Vector::initializeVectorOperations" << std::endl;
-}
-
 /****************************************************************
  * De-Constructors                                               *
  ****************************************************************/
 Vector::~Vector()
 {
-  if (d_VectorOps){
-    delete d_VectorOps;
-    d_VectorOps = nullptr;
-  }
 }
 
 

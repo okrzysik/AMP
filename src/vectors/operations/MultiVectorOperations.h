@@ -71,10 +71,10 @@ public:
     bool
     localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) const override;
 
-    void updateVectorOperations( std::vector<VectorOperations *> &ops );
+    void updateVectorOperations( std::vector<std::shared_ptr<VectorOperations>> &ops );
 protected:
     // Internal data
-    std::vector<VectorOperations *> d_operations;
+    std::vector<std::shared_ptr<VectorOperations>> d_operations;
 
 
 public: // Pull VectorOperations into the current scope

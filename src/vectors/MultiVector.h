@@ -206,8 +206,6 @@ protected:
 
     void dataChanged() override;
 
-    void initializeVectorOperations( void ) override;
-
 private:
     // Helper function to add a vector without updating the DOF manager
     void addVectorHelper( Vector::shared_ptr vec );

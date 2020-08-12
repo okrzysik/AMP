@@ -517,11 +517,9 @@ bool MultiVectorOperations::localEquals( const VectorData &x,
     return ans;
 }
 
-void MultiVectorOperations::updateVectorOperations( std::vector<VectorOperations *> &ops )  
+void MultiVectorOperations::updateVectorOperations( std::vector<std::shared_ptr<VectorOperations>> &ops )  
 {
-  //  std::cout << "Number of vectors " << ops.size() <<std::endl;
-  if ( !ops.empty() ) d_operations.resize(0);
-  for(auto &op: ops) d_operations.push_back(op);
+  d_operations = ops;
 }
 
  
