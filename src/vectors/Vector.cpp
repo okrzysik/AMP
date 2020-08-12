@@ -54,7 +54,7 @@ Vector::Vector( VectorParameters::shared_ptr parameters )
 
 void Vector::initializeVectorOperations( void )
 {
-  d_VectorOps = VectorOperationsDefault<double>();
+  d_VectorOps = new VectorOperationsDefault<double>();
 }
 
 /****************************************************************
