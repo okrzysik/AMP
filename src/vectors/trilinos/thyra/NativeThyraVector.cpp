@@ -161,19 +161,6 @@ void NativeThyraVector::aliasVector( Vector & ) { AMP_ERROR( "not implemented" )
 
 void NativeThyraVector::swapVectors( Vector & ) { AMP_ERROR( "not implemented" ); }
 
-
-Teuchos::RCP<const Thyra::VectorBase<double>>
-NativeThyraVector::getThyraVec( const VectorOperations &v )
-{
-    auto vec = dynamic_cast<const Vector *>( &v );
-    AMP_ASSERT( vec != nullptr );
-    auto vec2 = std::dynamic_pointer_cast<const ThyraVector>(
-        ThyraVector::constView( vec->shared_from_this() ) );
-    AMP_ASSERT( vec2 != nullptr );
-    return vec2->getVec();
-}
-
-
 Teuchos::RCP<const Thyra::VectorBase<double>>
 NativeThyraVector::getThyraVec( const Vector::const_shared_ptr &vec )
 {
