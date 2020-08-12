@@ -523,5 +523,7 @@ void MultiVectorOperations::updateVectorOperations( std::vector<VectorOperations
   if ( !ops.empty() ) d_operations.resize(0);
   for(auto &op: ops) d_operations.push_back(op);
 }
+
+ 
 } // namespace LinearAlgebra
 } // namespace AMP

@@ -15,7 +15,7 @@ class MultiVectorData;
  * \details MultiVectorOperations impliments a default set of
  *    vector operations for multivectors.
  */
-class MultiVectorOperations : virtual public VectorOperations
+class MultiVectorOperations : public VectorOperations
 {
 public:
     // Constructor

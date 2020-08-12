@@ -175,7 +175,9 @@ void MultiVector::updateVectorOperations()
     for ( size_t i = 0; i < d_vVectors.size(); i++ )      
       operations[i] = d_vVectors[i]->getVectorOperations();
 
+    AMP_ASSERT(d_VectorOps);
     auto mvOps = dynamic_cast<MultiVectorOperations *>(d_VectorOps);
+    AMP_ASSERT(mvOps);
     mvOps->updateVectorOperations( operations );
     
 }
