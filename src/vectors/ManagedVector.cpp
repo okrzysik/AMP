@@ -71,7 +71,6 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     : Vector( params_in ),
       d_pParameters( std::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
 {
-    d_VectorOps = new ManagedVectorOperations();
     d_vBuffer = d_pParameters->d_Buffer;
     d_Engine  = d_pParameters->d_Engine;
     AMP_ASSERT( d_vBuffer );
@@ -84,7 +83,6 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
 ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
 {
-    d_VectorOps   = new ManagedVectorOperations();
     auto vec      = getManaged( alias );
     d_vBuffer     = vec->d_vBuffer;
     d_Engine      = vec->d_Engine;
@@ -98,9 +96,13 @@ ManagedVector::ManagedVector( shared_ptr alias )
         vec2->setUpdateStatusPtr( getUpdateStatusPtr() );
 }
 
+void ManagedVector::initializeVectorOperations( void )
+{
+    d_VectorOps = new ManagedVectorOperations();
+}
+  
 ManagedVector::~ManagedVector()
 {
-  if (d_VectorOps) delete d_VectorOps;
 }
   
 /********************************************************

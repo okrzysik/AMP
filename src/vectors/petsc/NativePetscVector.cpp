@@ -13,7 +13,6 @@ namespace LinearAlgebra {
 NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params )
     : Vector(), PetscVector()
 {
-    d_VectorOps = new NativePetscVectorOperations();
     auto npvParams = std::dynamic_pointer_cast<NativePetscVectorParameters>( in_params );
     d_petscVec     = npvParams->d_InVec;
     d_pArray       = nullptr;
@@ -29,10 +28,14 @@ NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params )
 
 NativePetscVector::~NativePetscVector()
 {
-    if ( d_VectorOps ) delete d_VectorOps;
     resetArray();
     if ( d_bDeleteMe )
         PETSC::vecDestroy( &d_petscVec );
+}
+  
+void EpetraVectorEngine::initializeVectorOperations( void )
+{
+    d_VectorOps = new NativePetscVectorOperations();  
 }
 
 

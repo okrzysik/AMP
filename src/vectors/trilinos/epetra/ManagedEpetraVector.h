@@ -49,6 +49,7 @@ public:
     void assemble() override;
 
 protected:
+    void initializeVectorOperations( void ) override;
     ManagedVector *getNewRawPtr() const override;
 };
 

@@ -97,7 +97,7 @@ public:
 
     /** \brief Destructor
      */
-    virtual ~EpetraVectorEngine() { delete d_VectorOps; }
+    virtual ~EpetraVectorEngine() { }
 
     /** \brief  Get the raw Epetra_Vector
      * \return  The Epetra_Vector currently used by this engine
@@ -123,6 +123,9 @@ public: // Functions derived from Vector
     void assemble() override;
 
 protected:
+
+    void initializeVectorOperations( void ) override;
+    
     std::shared_ptr<EpetraVectorEngineParameters> d_Params;
 };
 

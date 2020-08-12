@@ -19,12 +19,17 @@ namespace LinearAlgebra {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-MultiVector::MultiVector( const std::string &name )
+MultiVector::MultiVector( const std::string &name ) : Vector()
 {
-    d_VectorOps = new MultiVectorOperations();
     d_pVariable.reset( new MultiVariable( name ) );
     d_CommCreated = false;
 }
+
+void MultiVector::initializeVectorOperations( void )
+{
+    d_VectorOps = new MultiVectorOperations();  
+}
+
 std::shared_ptr<MultiVector> MultiVector::create( Variable::shared_ptr variable,
                                                   const AMP_MPI &comm,
                                                   const std::vector<Vector::shared_ptr> &vecs )
@@ -469,7 +474,7 @@ size_t MultiVector::getNumberOfSubvectors() const { return d_vVectors.size(); }
 
 std::string MultiVector::type() const { return "MultiVector"; }
 
-MultiVector::~MultiVector() { if (d_VectorOps) delete d_VectorOps; }
+MultiVector::~MultiVector() { }
 
 AMP_MPI MultiVector::getComm() const { return d_Comm; }
 

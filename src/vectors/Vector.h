@@ -632,7 +632,8 @@ public: // Virtual functions
     //! Return the pointer to the VectorOperation
     inline const VectorOperations *getVectorOperations() const { return d_VectorOps; }
 
-
+    virtual void initializeVectorOperations();
+    
 public: // Constructor/destructors
     /** \brief Constructor
      * \param[in] parameters  A pointer to a parameters class

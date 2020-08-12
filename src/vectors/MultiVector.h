@@ -206,6 +206,8 @@ protected:
 
     void dataChanged() override;
 
+    void initializeVectorOperations( void ) override;
+
 private:
     // Helper function to add a vector without updating the DOF manager
     void addVectorHelper( Vector::shared_ptr vec );
@@ -215,7 +217,6 @@ private:
 
     // Helper function to update the vector operations
     inline void updateVectorOperations();
-
 
 public: // Pull Vector into the current scope
     using Vector::cloneVector;

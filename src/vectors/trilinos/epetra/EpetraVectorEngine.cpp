@@ -130,11 +130,15 @@ EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<EpetraVectorEngineParame
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() )
 {
-    d_VectorOps = new EpetraVectorOperations();
     d_Params    = alias;
     d_buf_scope = buf;
 }
 
+void EpetraVectorEngine::initializeVectorOperations( void )
+{
+    d_VectorOps = new EpetraVectorOperations();  
+}
+  
 Vector::shared_ptr EpetraVectorEngine::cloneVector( const Variable::shared_ptr name ) const
 {
     auto params = std::dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params );

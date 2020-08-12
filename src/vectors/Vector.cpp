@@ -25,6 +25,7 @@ RNG::shared_ptr Vector::d_DefaultRNG;
  ****************************************************************/
 Vector::Vector() : VectorData()
 {
+    initializeVectorOperations();
     d_VectorData = dynamic_cast<VectorData *>( this );
     d_Ghosts     = std::make_shared<std::vector<double>>();
     d_AddBuffer  = std::make_shared<std::vector<double>>();
@@ -36,6 +37,7 @@ Vector::Vector() : VectorData()
 }
 Vector::Vector( VectorParameters::shared_ptr parameters )
 {
+    initializeVectorOperations();
     d_VectorData = dynamic_cast<VectorData *>( this );
     // Set default output stream
     d_output_stream = &AMP::plog;
@@ -49,11 +51,21 @@ Vector::Vector( VectorParameters::shared_ptr parameters )
     d_Views        = std::make_shared<std::vector<std::weak_ptr<Vector>>>();
 }
 
+void Vector::initializeVectorOperations( void )
+{
+  d_VectorOps = VectorOperationsDefault<double>();
+}
 
 /****************************************************************
  * De-Constructors                                               *
  ****************************************************************/
-Vector::~Vector() = default;
+Vector::~Vector()
+{
+  if (d_VectorOps){
+    delete d_VectorOps;
+    d_VectorOps = nullptr;
+  }
+}
 
 
 /****************************************************************

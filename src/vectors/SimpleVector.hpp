@@ -13,7 +13,12 @@ namespace LinearAlgebra {
 template<typename TYPE, typename OPS, typename DATA>
 SimpleVector<TYPE, OPS, DATA>::SimpleVector() : Vector(), DATA()
 {
-  d_VectorOps = new OPS();
+}
+
+template<typename TYPE, typename OPS, typename DATA>
+void SimpleVector<TYPE, OPS, DATA>::initializeVectorOperations( void )
+{
+    d_VectorOps = new OPS();  
 }
 
 template<typename TYPE, typename OPS, typename DATA>
