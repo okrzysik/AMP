@@ -447,17 +447,23 @@ void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
     infnorm_a2 = vectora->maxNorm();
     if ( l1norm_a1 == l1norm_a2 ) // These should be identical, since same method called
         utils->passes( "l1 norm: native norm equals interface norm for native vector" );
-    else
-        utils->failure( "l1 norm: native norm does not equal interface norm for native vector" );
+    else {
+      std::cout << "Native l1norm (petsc) " << l1norm_a1 << "l1norm (amp) " << l1norm_a2 << std::endl;
+      utils->failure( "l1 norm: native norm does not equal interface norm for native vector" );
+    }
     if ( l2norm_a1 == l2norm_a2 ) // These should be identical, since same method called
         utils->passes( "l2 norm: native norm equals interface norm for native vector" );
-    else
-        utils->failure( "l2 norm: native norm does not equal interface norm for native vector" );
+    else {
+      std::cout << "Native l2norm (petsc) " << l2norm_a1 << "l2norm (amp) " << l2norm_a2 << std::endl;
+      utils->failure( "l2 norm: native norm does not equal interface norm for native vector" );
+    }
     if ( infnorm_a1 == infnorm_a2 ) // These should be identical, since same method called
         utils->passes( "inf norm: native norm equals interface norm for native vector" );
-    else
-        utils->failure( "inf norm: native norm does not equal interface norm for native vector" );
-
+    else {
+      std::cout << "Native inf norm (petsc) " << infnorm_a1 << "inf norm (amp) " << infnorm_a2 << std::endl;
+      utils->failure( "inf norm: native norm does not equal interface norm for native vector" );
+    }
+    
     auto vectorc = d_factory->getManagedVector();
     vectorc->copyVector( vectora );
 
