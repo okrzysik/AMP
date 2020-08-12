@@ -71,7 +71,8 @@ void ManagedVectorOperations::copy( const VectorData &src, VectorData &dst )
         // We have two data engines, perform the copy between them
         vec1->copy( vec2 );
         dst_managed->fireDataChange();
-        dst_managed->setUpdateStatusPtr( src.getUpdateStatusPtr() );
+	//        dst_managed->setUpdateStatusPtr( src.getUpdateStatusPtr() );
+        dst_managed->setUpdateStatus( src.getUpdateStatus() );
     } else {
         // Default, general case
         VectorOperationsDefault::copy( src, dst );

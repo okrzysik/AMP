@@ -71,6 +71,7 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     : Vector( params_in ),
       d_pParameters( std::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
 {
+    std::cout << "Calling ManagedVector ctor " << std::endl; 
     d_vBuffer = d_pParameters->d_Buffer;
     d_Engine  = d_pParameters->d_Engine;
     AMP_ASSERT( d_vBuffer );

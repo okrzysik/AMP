@@ -26,6 +26,7 @@ RNG::shared_ptr Vector::d_DefaultRNG;
  ****************************************************************/
 Vector::Vector() : VectorData()
 {
+    std::cout << "Calling Vector ctor with no args" << std::endl; 
     initializeVectorOperations();
     d_VectorData = dynamic_cast<VectorData *>( this );
     d_Ghosts     = std::make_shared<std::vector<double>>();
@@ -38,6 +39,7 @@ Vector::Vector() : VectorData()
 }
 Vector::Vector( VectorParameters::shared_ptr parameters )
 {
+    std::cout << "Calling Vector ctor with params" << std::endl; 
     initializeVectorOperations();
     d_VectorData = dynamic_cast<VectorData *>( this );
     // Set default output stream
