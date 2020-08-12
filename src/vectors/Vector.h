@@ -359,34 +359,34 @@ public: // shared_ptr wrappers
      * \param[in] tol      Tolerance of comparison
      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
      */
-    inline bool equals( std::shared_ptr<const VectorData> rhs,
+    bool equals( std::shared_ptr<const VectorData> rhs,
                         double tol = 0.000001 ) const;
 
     /// @copydoc VectorData::scale(double,const VectorData&)
-    inline void
+    void
     scale( double alpha, std::shared_ptr<const VectorData> x );
 
     /// @copydoc VectorData::copy(const VectorData&)
-    inline void copy( std::shared_ptr<const VectorData> x );
+    void copy( std::shared_ptr<const VectorData> x );
 
     /// @copydoc VectorData::add(const VectorData&,const VectorData&)
-    inline void add( std::shared_ptr<const VectorData> x,
+    void add( std::shared_ptr<const VectorData> x,
                      std::shared_ptr<const VectorData> y );
 
     /// @copydoc VectorData::addScalar(const VectorData&,double)
-    inline void
+    void
     addScalar( std::shared_ptr<const VectorData> x, double alpha );
 
     /// @copydoc VectorData::subtract(const VectorData&,const VectorData&)
-    inline void subtract( std::shared_ptr<const VectorData> x,
+    void subtract( std::shared_ptr<const VectorData> x,
                           std::shared_ptr<const VectorData> y );
 
     /// @copydoc VectorData::multiply(const VectorData&,const VectorData&)
-    inline void multiply( std::shared_ptr<const VectorData> x,
+    void multiply( std::shared_ptr<const VectorData> x,
                           std::shared_ptr<const VectorData> y );
 
     /// @copydoc VectorData::divide(const VectorData&,const VectorData&)
-    inline void divide( std::shared_ptr<const VectorData> x,
+    void divide( std::shared_ptr<const VectorData> x,
                         std::shared_ptr<const VectorData> y );
 
     /**
@@ -394,7 +394,7 @@ public: // shared_ptr wrappers
      * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i =
      * 1/x_i\f$.
      */
-    inline void reciprocal( std::shared_ptr<const VectorData> x );
+    void reciprocal( std::shared_ptr<const VectorData> x );
 
     /**
      * \brief Set a vector to be a linear combination of two vectors.
@@ -404,7 +404,7 @@ public: // shared_ptr wrappers
      * \param[in] beta      a scalar
      * \param[in] y         a vector
      */
-    inline void linearSum( double alpha,
+    void linearSum( double alpha,
                            std::shared_ptr<const VectorData> x,
                            double beta,
                            std::shared_ptr<const VectorData> y );
@@ -415,7 +415,7 @@ public: // shared_ptr wrappers
      * \param[in] x        a vector
      * \param[in] y        a vector
      */
-    inline void axpy( double alpha,
+    void axpy( double alpha,
                       std::shared_ptr<const VectorData> x,
                       std::shared_ptr<const VectorData> y );
 
@@ -426,7 +426,7 @@ public: // shared_ptr wrappers
      * \param[in] beta     a scalar
      * \param[in] x        a vector
      */
-    inline void axpby( double alpha,
+    void axpby( double alpha,
                        double beta,
                        std::shared_ptr<const VectorData> x );
 
@@ -435,14 +435,14 @@ public: // shared_ptr wrappers
      *     \f$\mathit{this}_i = |x_i|\f$.
      * \param[in] x        a vector
      */
-    inline void abs( std::shared_ptr<const VectorData> x );
+    void abs( std::shared_ptr<const VectorData> x );
 
     /**
      * \brief Return the dot product of this vector with the argument vector.
      * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
      * \param[in] x        a vector
      */
-    inline double dot( std::shared_ptr<const VectorData> x ) const;
+    double dot( std::shared_ptr<const VectorData> x ) const;
 
     /**
      * \brief Returns the minimum of the quotient of two vectors:
@@ -451,7 +451,7 @@ public: // shared_ptr wrappers
      * \param[in] y a vector
      * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
      */
-    inline double minQuotient( std::shared_ptr<const VectorData> x ) const;
+    double minQuotient( std::shared_ptr<const VectorData> x ) const;
 
     /**
      * \brief Return a weighted norm of a vector
@@ -459,7 +459,7 @@ public: // shared_ptr wrappers
      * \param[in] y a vector
      * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
      */
-    inline double wrmsNorm( std::shared_ptr<const VectorData> x,
+    double wrmsNorm( std::shared_ptr<const VectorData> x,
                             std::shared_ptr<const VectorData> y ) const;
 
     /**
@@ -469,7 +469,7 @@ public: // shared_ptr wrappers
      * \param[in] mask a vector
      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
      */
-    inline double wrmsNormMask( std::shared_ptr<const VectorData> x,
+    double wrmsNormMask( std::shared_ptr<const VectorData> x,
                                 std::shared_ptr<const VectorData> mask,
                                 std::shared_ptr<const VectorData> y ) const;
     
@@ -621,16 +621,16 @@ public: // Virtual functions
     virtual void addCommunicationListToParameters( CommunicationList::shared_ptr commList );
 
     //! Return the pointer to the VectorData
-    inline VectorData *getVectorData() { return d_VectorData; }
+    VectorData *getVectorData() { return d_VectorData; }
 
     //! Return the pointer to the VectorData
-    inline const VectorData *getVectorData() const { return d_VectorData; }
+    const VectorData *getVectorData() const { return d_VectorData; }
 
     //! Return the pointer to the VectorOperation
-    inline std::shared_ptr<VectorOperations> getVectorOperations() { return d_VectorOps; }
+    std::shared_ptr<VectorOperations> getVectorOperations() { return d_VectorOps; }
 
     //! Return the pointer to the VectorOperation
-    inline std::shared_ptr<const VectorOperations> getVectorOperations() const { return d_VectorOps; }
+    std::shared_ptr<const VectorOperations> getVectorOperations() const { return d_VectorOps; }
    
 public: // Constructor/destructors
     /** \brief Constructor
@@ -645,7 +645,7 @@ public: // Constructor/destructors
 
 
 public: // Non-virtual functions
-    inline void copyVector( std::shared_ptr<const Vector> x ) { d_VectorOps->copy( *x, *d_VectorData ); }
+    void copyVector( std::shared_ptr<const Vector> x ) { d_VectorOps->copy( *x, *d_VectorData ); }
 
     /** \brief Change the variable associated with this vector
      * \param[in] name  The new variable
@@ -667,7 +667,7 @@ public: // Non-virtual functions
      * \return  A Vector shared pointer
      * \see MultiVector
      */
-    inline Vector::shared_ptr subsetVectorForVariable( const std::string &name );
+    Vector::shared_ptr subsetVectorForVariable( const std::string &name );
 
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
@@ -675,7 +675,7 @@ public: // Non-virtual functions
      * \return  A Vector shared pointer
      * \see MultiVector
      */
-    inline Vector::const_shared_ptr constSubsetVectorForVariable( const std::string &name ) const;
+    Vector::const_shared_ptr constSubsetVectorForVariable( const std::string &name ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other Vector to swap data with
