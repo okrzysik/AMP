@@ -4,7 +4,10 @@
 // AMP includes
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolverParameters.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #include "AMP/solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
+#pragma GCC diagnostic pop
 
 
 // Trilinos includes
