@@ -517,11 +517,12 @@ bool MultiVectorOperations::localEquals( const VectorData &x,
     return ans;
 }
 
-void MultiVectorOperations::updateVectorOperations( std::vector<std::shared_ptr<VectorOperations>> &ops )  
+void MultiVectorOperations::updateVectorOperations(
+    std::vector<std::shared_ptr<VectorOperations>> &ops )
 {
-  d_operations = ops;
+    d_operations = ops;
 }
 
- 
+
 } // namespace LinearAlgebra
 } // namespace AMP

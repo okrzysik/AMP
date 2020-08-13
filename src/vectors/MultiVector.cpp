@@ -21,7 +21,7 @@ namespace LinearAlgebra {
  ****************************************************************/
 MultiVector::MultiVector( const std::string &name ) : Vector()
 {
-    d_VectorOps =  std::make_shared<MultiVectorOperations>();
+    d_VectorOps = std::make_shared<MultiVectorOperations>();
     d_pVariable.reset( new MultiVariable( name ) );
     d_CommCreated = false;
 }
@@ -166,17 +166,16 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
 }
 void MultiVector::updateVectorOperations()
 {
-  //  std::cout << "Number of vectors " << d_vVectors.size() <<std::endl;
-  std::vector<std::shared_ptr<VectorOperations>> operations( d_vVectors.size() );
-    for ( size_t i = 0; i < d_vVectors.size(); i++ )      
-      operations[i] = d_vVectors[i]->getVectorOperations();
+    //  std::cout << "Number of vectors " << d_vVectors.size() <<std::endl;
+    std::vector<std::shared_ptr<VectorOperations>> operations( d_vVectors.size() );
+    for ( size_t i = 0; i < d_vVectors.size(); i++ )
+        operations[i] = d_vVectors[i]->getVectorOperations();
 
-    AMP_ASSERT(d_VectorOps);
+    AMP_ASSERT( d_VectorOps );
     //    std::cout << typeid(d_VectorOps).name() <<std::endl;
-    auto mvOps = std::dynamic_pointer_cast<MultiVectorOperations>(d_VectorOps);
-    AMP_ASSERT(mvOps);
+    auto mvOps = std::dynamic_pointer_cast<MultiVectorOperations>( d_VectorOps );
+    AMP_ASSERT( mvOps );
     mvOps->updateVectorOperations( operations );
-    
 }
 void MultiVector::updateVectorData()
 {
@@ -445,12 +444,12 @@ void MultiVector::assemble()
 void MultiVector::swapVectors( Vector &other )
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
-      d_vVectors[i]->swapVectors( getVector(other, i ) );
+        d_vVectors[i]->swapVectors( getVector( other, i ) );
 }
 void MultiVector::aliasVector( Vector &other )
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
-      d_vVectors[i]->aliasVector( getVector( other, i ) );
+        d_vVectors[i]->aliasVector( getVector( other, i ) );
 }
 Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) const
 {
@@ -474,7 +473,7 @@ size_t MultiVector::getNumberOfSubvectors() const { return d_vVectors.size(); }
 
 std::string MultiVector::type() const { return "MultiVector"; }
 
-MultiVector::~MultiVector() { }
+MultiVector::~MultiVector() {}
 
 AMP_MPI MultiVector::getComm() const { return d_Comm; }
 

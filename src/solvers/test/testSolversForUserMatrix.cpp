@@ -158,8 +158,8 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     // concludes demonstrating how to initialize an AMP linear operator from a user matrix
     // ************************************************************************************************
 
-    auto f = ampVector->cloneVector();
-    auto u = ampVector->cloneVector();
+    auto f  = ampVector->cloneVector();
+    auto u  = ampVector->cloneVector();
     auto ri = ampVector->cloneVector();
     auto rf = ampVector->cloneVector();
 
@@ -190,7 +190,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
     AMP::pout << "Final Residual Norm  : " << finalResidualNorm << std::endl;
 
-    if ( finalResidualNorm/initialResidualNorm > 1.0e-7 ) {
+    if ( finalResidualNorm / initialResidualNorm > 1.0e-7 ) {
         ut->failure( "solver could NOT solve a linear thermal problem" );
     }
 }

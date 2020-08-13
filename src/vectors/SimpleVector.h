@@ -63,7 +63,7 @@ public:
                                       AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
 
     //! Destructor
-    virtual ~SimpleVector() override { }
+    virtual ~SimpleVector() override {}
 
 
     //! Resize this vector

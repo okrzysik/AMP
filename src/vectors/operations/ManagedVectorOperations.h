@@ -19,7 +19,7 @@ class ManagedVectorOperations : virtual public VectorOperationsDefault<double>
 {
 
 public:
-    ManagedVectorOperations( ){};
+    ManagedVectorOperations(){};
 
 public:
     //**********************************************************************

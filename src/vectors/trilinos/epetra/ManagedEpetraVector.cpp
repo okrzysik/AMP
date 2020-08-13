@@ -1,6 +1,6 @@
 #include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
-#include "AMP/vectors/trilinos/epetra/ManagedEpetraVectorOperations.h"
 #include "AMP/vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/trilinos/epetra/ManagedEpetraVectorOperations.h"
 #include "EpetraVectorEngine.h"
 
 
@@ -11,7 +11,7 @@ namespace LinearAlgebra {
 ManagedEpetraVector::ManagedEpetraVector( VectorParameters::shared_ptr params )
     : ManagedVector( params ), EpetraVector()
 {
-  d_VectorOps =  std::make_shared<ManagedEpetraVectorOperations>();  
+    d_VectorOps = std::make_shared<ManagedEpetraVectorOperations>();
 }
 
 
@@ -20,9 +20,7 @@ ManagedEpetraVector::ManagedEpetraVector( shared_ptr alias )
 {
 }
 
-ManagedEpetraVector::~ManagedEpetraVector()
-{
-}
+ManagedEpetraVector::~ManagedEpetraVector() {}
 
 inline ManagedVector *ManagedEpetraVector::getNewRawPtr() const
 {

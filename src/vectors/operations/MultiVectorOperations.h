@@ -19,7 +19,7 @@ class MultiVectorOperations : public VectorOperations
 {
 public:
     // Constructor
-    MultiVectorOperations() :VectorOperations() {}
+    MultiVectorOperations() : VectorOperations() {}
 
     //! Destructor
     virtual ~MultiVectorOperations() {}
@@ -72,6 +72,7 @@ public:
     localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) const override;
 
     void updateVectorOperations( std::vector<std::shared_ptr<VectorOperations>> &ops );
+
 protected:
     // Internal data
     std::vector<std::shared_ptr<VectorOperations>> d_operations;

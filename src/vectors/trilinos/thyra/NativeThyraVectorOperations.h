@@ -23,7 +23,7 @@ namespace LinearAlgebra {
 class NativeThyraVectorOperations : public VectorOperationsDefault<double>
 {
 public:
-    NativeThyraVectorOperations(): VectorOperationsDefault<double>() {};
+    NativeThyraVectorOperations() : VectorOperationsDefault<double>(){};
     virtual ~NativeThyraVectorOperations();
     //  function that operate on VectorData
     void setToScalar( double alpha, VectorData &z ) override;
@@ -55,7 +55,6 @@ public:
     double dot( const VectorData &x, const VectorData &y ) const override;
 
 private:
-
     static Teuchos::RCP<const Thyra::VectorBase<double>>
     getThyraVec( const Vector::const_shared_ptr &v );
 

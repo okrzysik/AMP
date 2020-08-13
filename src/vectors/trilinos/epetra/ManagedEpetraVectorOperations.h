@@ -19,7 +19,7 @@ class ManagedEpetraVectorOperations : public ManagedVectorOperations
 {
 
 public:
-    ManagedEpetraVectorOperations( ): ManagedVectorOperations() {};
+    ManagedEpetraVectorOperations() : ManagedVectorOperations(){};
 
 public:
     //**********************************************************************

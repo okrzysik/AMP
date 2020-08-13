@@ -37,7 +37,7 @@ public:
     explicit ManagedEpetraVector( Vector::shared_ptr alias );
 
     virtual ~ManagedEpetraVector();
-    
+
     // These methods are adequately documented in a base class
     std::string type() const override { return "Managed Epetra Vector" + ManagedVector::type(); }
 

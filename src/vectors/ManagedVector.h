@@ -126,7 +126,7 @@ public: // Derived from VectorData
 
     void dataChanged() override;
 
- protected: // Derived from VectorData
+protected: // Derived from VectorData
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
 

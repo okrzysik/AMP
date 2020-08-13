@@ -75,8 +75,8 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
       d_pParameters( std::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
 {
     d_VectorOps = std::make_shared<ManagedVectorOperations>();
-    d_vBuffer = d_pParameters->d_Buffer;
-    d_Engine  = d_pParameters->d_Engine;
+    d_vBuffer   = d_pParameters->d_Buffer;
+    d_Engine    = d_pParameters->d_Engine;
     AMP_ASSERT( d_vBuffer );
     AMP_ASSERT( d_Engine );
     d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
@@ -87,7 +87,7 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
 ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
 {
-    d_VectorOps = std::make_shared<ManagedVectorOperations>();
+    d_VectorOps   = std::make_shared<ManagedVectorOperations>();
     auto vec      = getManaged( alias );
     d_vBuffer     = vec->d_vBuffer;
     d_Engine      = vec->d_Engine;
@@ -96,18 +96,16 @@ ManagedVector::ManagedVector( shared_ptr alias )
     aliasGhostBuffer( vec );
 
     if ( d_vBuffer )
-      setUpdateStatusPtr( d_vBuffer->getUpdateStatusPtr() );
+        setUpdateStatusPtr( d_vBuffer->getUpdateStatusPtr() );
     else {
-      auto vec2 = std::dynamic_pointer_cast<Vector>( d_Engine );
-      if ( vec2 )
-        setUpdateStatusPtr(vec2->getUpdateStatusPtr());
+        auto vec2 = std::dynamic_pointer_cast<Vector>( d_Engine );
+        if ( vec2 )
+            setUpdateStatusPtr( vec2->getUpdateStatusPtr() );
     }
 }
 
-ManagedVector::~ManagedVector()
-{
-}
-  
+ManagedVector::~ManagedVector() {}
+
 /********************************************************
  * Subset                                                *
  ********************************************************/

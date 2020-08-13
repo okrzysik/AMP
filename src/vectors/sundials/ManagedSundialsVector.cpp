@@ -278,7 +278,7 @@ realtype ManagedSundialsVector::maxNorm_AMP( N_Vector x )
 
     Vector *px = static_cast<ManagedSundialsVector *>( x->content );
 
-    maxnorm = px->maxNorm( );
+    maxnorm = px->maxNorm();
 
     return ( maxnorm );
 }
@@ -291,7 +291,7 @@ realtype ManagedSundialsVector::min_AMP( N_Vector x )
     double min;
 
     Vector *px = static_cast<ManagedSundialsVector *>( x->content );
-    min        = px->min( );
+    min        = px->min();
 
     return ( min );
 }
@@ -303,7 +303,7 @@ realtype ManagedSundialsVector::L1Norm_AMP( N_Vector x )
 {
     double l1norm;
     Vector *px = static_cast<ManagedSundialsVector *>( x->content );
-    l1norm     = px->L1Norm( );
+    l1norm     = px->L1Norm();
     return ( l1norm );
 }
 

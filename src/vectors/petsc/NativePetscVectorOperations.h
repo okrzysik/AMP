@@ -81,7 +81,6 @@ public:
     //**********************************************************************
 
 private:
-
 public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::abs;
     using VectorOperationsDefault::add;

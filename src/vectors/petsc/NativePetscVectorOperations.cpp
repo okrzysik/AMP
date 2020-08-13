@@ -40,11 +40,11 @@ const NativePetscVector *NativePetscVectorOperations::getNativeVec( const Vector
 
 // Function to perform  this = alpha x + beta y + gamma z
 void NativePetscVectorOperations::axpbypcz( double alpha,
-                                  const VectorData &vx,
-                                  double beta,
-                                  const VectorData &vy,
-                                  double gamma,
-                                  VectorData &vz )
+                                            const VectorData &vx,
+                                            double beta,
+                                            const VectorData &vy,
+                                            double gamma,
+                                            VectorData &vz )
 {
     Vec x = getConstPetscVec( vx );
     Vec y = getConstPetscVec( vy );
@@ -112,13 +112,17 @@ void NativePetscVectorOperations::add( const VectorData &x, const VectorData &y,
 }
 
 
-void NativePetscVectorOperations::subtract( const VectorData &x, const VectorData &y, VectorData &z )
+void NativePetscVectorOperations::subtract( const VectorData &x,
+                                            const VectorData &y,
+                                            VectorData &z )
 {
     axpbypcz( 1.0, x, -1.0, y, 0.0, z );
 }
 
 
-void NativePetscVectorOperations::multiply( const VectorData &x, const VectorData &y, VectorData &z )
+void NativePetscVectorOperations::multiply( const VectorData &x,
+                                            const VectorData &y,
+                                            VectorData &z )
 {
     VecPointwiseMult( getPetscVec( z ), getConstPetscVec( x ), getConstPetscVec( y ) );
 }
@@ -148,15 +152,18 @@ void NativePetscVectorOperations::linearSum(
 
 
 void NativePetscVectorOperations::axpy( double alpha,
-                              const VectorData &x,
-                              const VectorData &y,
-                              VectorData &z )
+                                        const VectorData &x,
+                                        const VectorData &y,
+                                        VectorData &z )
 {
     axpbypcz( alpha, x, 1.0, y, 0.0, z );
 }
 
 
-void NativePetscVectorOperations::axpby( double alpha, double beta, const VectorData &x, VectorData &vz )
+void NativePetscVectorOperations::axpby( double alpha,
+                                         double beta,
+                                         const VectorData &x,
+                                         VectorData &vz )
 {
     auto &z = *getNativeVec( vz );
     axpbypcz( alpha, x, beta, z, 0.0, z );

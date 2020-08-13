@@ -13,7 +13,7 @@ namespace LinearAlgebra {
 NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params )
     : Vector(), PetscVector()
 {
-    d_VectorOps = std::make_shared<NativePetscVectorOperations>();  
+    d_VectorOps    = std::make_shared<NativePetscVectorOperations>();
     auto npvParams = std::dynamic_pointer_cast<NativePetscVectorParameters>( in_params );
     d_petscVec     = npvParams->d_InVec;
     d_pArray       = nullptr;

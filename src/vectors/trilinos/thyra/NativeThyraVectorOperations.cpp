@@ -27,7 +27,8 @@ NativeThyraVectorOperations::getThyraVec( const Vector::const_shared_ptr &vec )
     return vec2->getVec();
 }
 
-Teuchos::RCP<const Thyra::VectorBase<double>> NativeThyraVectorOperations::getThyraVec( const VectorData &v )
+Teuchos::RCP<const Thyra::VectorBase<double>>
+NativeThyraVectorOperations::getThyraVec( const VectorData &v )
 {
     auto vec = dynamic_cast<const Vector *>( &v );
     AMP_ASSERT( vec != nullptr );
@@ -88,12 +89,16 @@ void NativeThyraVectorOperations::add( const VectorData &x, const VectorData &y,
     linearSum( 1.0, x, 1.0, y, z );
 }
 
-void NativeThyraVectorOperations::subtract( const VectorData &x, const VectorData &y, VectorData &z )
+void NativeThyraVectorOperations::subtract( const VectorData &x,
+                                            const VectorData &y,
+                                            VectorData &z )
 {
     linearSum( 1.0, x, -1.0, y, z );
 }
 
-void NativeThyraVectorOperations::multiply( const VectorData &x, const VectorData &y, VectorData &z )
+void NativeThyraVectorOperations::multiply( const VectorData &x,
+                                            const VectorData &y,
+                                            VectorData &z )
 {
     auto xv = getThyraVec( x );
     auto yv = getThyraVec( y );
@@ -135,14 +140,17 @@ void NativeThyraVectorOperations::linearSum(
 }
 
 void NativeThyraVectorOperations::axpy( double alpha,
-                              const VectorData &x,
-                              const VectorData &y,
-                              VectorData &z )
+                                        const VectorData &x,
+                                        const VectorData &y,
+                                        VectorData &z )
 {
     linearSum( alpha, x, 1.0, y, z );
 }
 
-void NativeThyraVectorOperations::axpby( double alpha, double beta, const VectorData &x, VectorData &z )
+void NativeThyraVectorOperations::axpby( double alpha,
+                                         double beta,
+                                         const VectorData &x,
+                                         VectorData &z )
 {
     linearSum( alpha, x, beta, z, z );
 }

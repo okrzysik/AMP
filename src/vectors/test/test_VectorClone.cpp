@@ -11,8 +11,8 @@ int test_VectorClone( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    
-#if defined( USE_EXT_TRILINOS ) &&  defined( USE_EXT_PETSC )
+
+#if defined( USE_EXT_TRILINOS ) && defined( USE_EXT_PETSC )
     AMP::pout << "Testing Iterator" << std::endl;
     VectorIteratorTests( ut, CloneMVFactory1 );
     AMP::pout << std::endl;

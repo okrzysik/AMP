@@ -13,8 +13,7 @@ namespace LinearAlgebra {
 template<typename TYPE, typename OPS, typename DATA>
 SimpleVector<TYPE, OPS, DATA>::SimpleVector() : Vector(), DATA()
 {
-  d_VectorOps = std::make_shared<OPS>();
-
+    d_VectorOps = std::make_shared<OPS>();
 }
 
 template<typename TYPE, typename OPS, typename DATA>

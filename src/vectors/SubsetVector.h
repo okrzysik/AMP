@@ -81,7 +81,7 @@ public:
     void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 
 private:
-    SubsetVector() { }
+    SubsetVector() {}
     void computeIDMap();
 
     void *getRawDataBlockAsVoid( size_t i ) override;

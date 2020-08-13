@@ -61,7 +61,7 @@ public:
 
     /** \brief  Destructor
      */
-    virtual ~ArrayVector() { }
+    virtual ~ArrayVector() {}
 
     std::string type() const override { return "ArrayVector"; }
 

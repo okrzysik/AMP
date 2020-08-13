@@ -38,14 +38,12 @@ NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
     d_thyraVec   = params->d_InVec;
     d_pVariable  = params->d_var;
 }
-  
-  
+
+
 /************************************************************************
-* Destructor                                                            *
-************************************************************************/
-NativeThyraVector::~NativeThyraVector()
-{
-}
+ * Destructor                                                            *
+ ************************************************************************/
+NativeThyraVector::~NativeThyraVector() {}
 
 /************************************************************************
  * Vector functions                                                      *
