@@ -492,6 +492,31 @@ public: // Virtual functions
      */
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const = 0;
 
+    /** \brief  Swap the data in this Vector for another
+      * \param[in]  other  Vector to swap data with
+      * \details Effectively, this is
+      * \code
+      Vector *a;
+      Vector *b;
+      std::swap ( a, b );
+        \endcode
+      * without a and b exchanging pointers.
+     */
+    virtual void swapVectors( Vector &other ) = 0;
+
+    /**  \brief  Make <i>this</i> be an alias of another vector
+     *  \param[in]  other  Vector to be aliased
+     *  \details  This will make <i>this</i> "point" to other.
+     */
+    virtual void aliasVector( Vector &other ) = 0;
+
+    /**
+     * \brief This method is used to implement the assemble interface
+     * of PETSc.
+     * \details  This method is empty except for instantiations of NativePetscVector
+     */
+    virtual void assemble() = 0;
+
     /** \brief Allocate space in the same fashion as <i>this</i>
      * \details  This will allocate new space with identical layout as <i>this</i>.
      * \return  A Vector shared pointer
@@ -525,19 +550,6 @@ public: // Virtual functions
      */
     virtual Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const;
-
-    /** \brief  Swap the data in this Vector for another
-      * \param[in]  other  Vector to swap data with
-      * \details Effectively, this is
-      * \code
-      Vector *a;
-      Vector *b;
-      std::swap ( a, b );
-        \endcode
-      * without a and b exchanging pointers.
-     */
-    virtual void swapVectors( Vector &other ) = 0;
-
 
     /** \brief Return a parameters description of this vector
      * \return Parameters
@@ -578,19 +590,6 @@ public: // Virtual functions
       */
     virtual const_shared_ptr constSelect( const VectorSelector &criterion,
                                           const std::string &variable_name ) const;
-
-    /**  \brief  Make <i>this</i> be an alias of another vector
-     *  \param[in]  other  Vector to be aliased
-     *  \details  This will make <i>this</i> "point" to other.
-     */
-    virtual void aliasVector( Vector &other ) = 0;
-
-    /**
-     * \brief This method is used to implement the assemble interface
-     * of PETSc.
-     * \details  This method is empty except for instantiations of NativePetscVector
-     */
-    virtual void assemble() = 0;
 
     //! Get the DOFManager for this Vector
     virtual AMP::Discretization::DOFManager::shared_ptr getDOFManager() const;
