@@ -124,11 +124,11 @@ public: // Derived from VectorData
     std::string VectorDataName() const override { return type(); }
     void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 
+    void dataChanged() override;
+
 protected: // Derived from VectorData
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
-    void registerListener( std::shared_ptr<DataChangeListener> listener ) override;
-    void fireDataChange() override;
 
 public: // Derived from Vector
     using Vector::cloneVector;

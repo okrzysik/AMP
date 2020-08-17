@@ -154,6 +154,7 @@
         _Pragma( "GCC diagnostic ignored \"-Wunused-local-typedefs\"" )     \
         _Pragma( "GCC diagnostic ignored \"-Woverloaded-virtual\"" )        \
         _Pragma( "GCC diagnostic ignored \"-Wunused-parameter\"" )          \
+        _Pragma( "GCC diagnostic ignored \"-Wdeprecated-copy\"" )           \
         _Pragma( "GCC diagnostic ignored \"-Wdeprecated-declarations\"" )   \
         _Pragma( "GCC diagnostic ignored \"-Wvirtual-move-assign\"" )       \
         _Pragma( "GCC diagnostic ignored \"-Wunused-function\"" )           \
@@ -161,6 +162,7 @@
         _Pragma( "GCC diagnostic ignored \"-Wunused-variable\"" )           \
         _Pragma( "GCC diagnostic ignored \"-Wignored-qualifiers\"" )        \
         _Pragma( "GCC diagnostic ignored \"-Wenum-compare\"" )              \
+        _Pragma( "GCC diagnostic ignored \"-Wsign-compare\"" )              \
         _Pragma( "GCC diagnostic ignored \"-Wterminate\"" )                 \
         _Pragma( "GCC diagnostic ignored \"-Wimplicit-fallthrough\"" )
     #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )

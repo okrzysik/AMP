@@ -32,6 +32,12 @@ public:
     //! Destructor
     virtual ~ThyraVectorWrapper();
 
+    //! Copy constructor
+    ThyraVectorWrapper( const ThyraVectorWrapper & ) = delete;
+
+    //! Assignment operator
+    ThyraVectorWrapper &operator=( const ThyraVectorWrapper & ) = delete;
+
     //! Get the underlying AMP vector
     Vector::shared_ptr getVec( int i ) { return d_vecs[i]; }
 
@@ -149,7 +155,7 @@ protected:
 
 private:
     // Private constructor
-    ThyraVectorWrapper() {}
+    ThyraVectorWrapper() = default;
 
     // Comm
     Teuchos::Comm<RTOpPack::index_type> *d_comm;

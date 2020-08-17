@@ -202,7 +202,7 @@ protected:
      */
     explicit MultiVector( const std::string &name );
 
-    void setDataChanged() override;
+    void recieveDataChanged() override;
 
 private:
     // Helper function to add a vector without updating the DOF manager

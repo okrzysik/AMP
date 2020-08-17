@@ -32,6 +32,12 @@ public:
     //! Destructor
     virtual ~TrilinosThyraModelEvaluator();
 
+    //! Copy constructor
+    TrilinosThyraModelEvaluator( const TrilinosThyraModelEvaluator & ) = delete;
+
+    //! Assignment operator
+    TrilinosThyraModelEvaluator &operator=( const TrilinosThyraModelEvaluator & ) = delete;
+
     //! Function to set the rhs vector
     void setRhs( AMP::LinearAlgebra::Vector::const_shared_ptr rhs );
 
@@ -60,7 +66,7 @@ protected:
 
 private:
     //! Empty constructor
-    TrilinosThyraModelEvaluator() {}
+    TrilinosThyraModelEvaluator() = default;
 
     // Data members
     Teuchos::RCP<const ::Thyra::LinearOpWithSolveFactoryBase<double>> d_W_factory;

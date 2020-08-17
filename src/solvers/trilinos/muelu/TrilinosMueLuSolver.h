@@ -8,19 +8,12 @@
 
 // Trilinos includes
 DISABLE_WARNINGS
-// warnings still appear to be active so trying explicitly
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-copy"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-compare"
 #include "MueLu_FactoryManager.hpp"
 #include "MueLu_HierarchyManager_fwd.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Xpetra_Matrix.hpp"
 #include "Xpetra_Operator_fwd.hpp"
 #include "Xpetra_Parameters.hpp"
-#pragma GCC diagnostic pop
-#pragma GCC diagnostic pop
 ENABLE_WARNINGS
 
 #include <vector>

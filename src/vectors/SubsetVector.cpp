@@ -77,7 +77,7 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
         commList              = std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
     }
     // Create the new subset vector
-    auto retVal = std::make_shared<SubsetVector>();
+    std::shared_ptr<SubsetVector> retVal( new SubsetVector() );
     retVal->setVariable( var );
     retVal->d_ViewVector = std::const_pointer_cast<Vector>( v );
     retVal->d_DOFManager = subsetDOF;

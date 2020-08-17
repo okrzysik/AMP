@@ -7,14 +7,10 @@
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/trilinos/ml/MLoptions.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wextra"
+DISABLE_WARNINGS
 #include "ml_MultiLevelPreconditioner.h"
 #include "ml_include.h"
-#pragma GCC diagnostic pop
-#pragma GCC diagnostic pop
+ENABLE_WARNINGS
 
 
 namespace AMP {

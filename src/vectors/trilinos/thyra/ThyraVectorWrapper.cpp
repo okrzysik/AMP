@@ -1,7 +1,4 @@
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
-#pragma GCC diagnostic pop
 #include "AMP/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
 
 

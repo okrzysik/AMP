@@ -3,10 +3,7 @@
 
 // AMP includes
 #include "AMP/utils/Utilities.h"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
-#pragma GCC diagnostic pop
 
 
 // Trilinos includes

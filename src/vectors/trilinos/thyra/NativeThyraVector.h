@@ -82,8 +82,6 @@ public:
     }
     void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 
-    void setDataChanged() override { dataChanged(); }
-
 protected:
     //! Empty constructor.
     NativeThyraVector();

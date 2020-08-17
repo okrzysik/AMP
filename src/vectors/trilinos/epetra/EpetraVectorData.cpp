@@ -87,7 +87,8 @@ void EpetraVectorData::getLocalValuesByGlobalID( int num, size_t *indices, doubl
     double *data;
     d_epetraVector.ExtractView( &data );
     for ( int i = 0; i < num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_iLocalStart && indices[i] < d_iLocalStart + d_iLocalSize );
+        AMP_ASSERT( (int64_t) indices[i] >= d_iLocalStart &&
+                    (int64_t) indices[i] < d_iLocalStart + d_iLocalSize );
         vals[i] = static_cast<double>( data[indices[i] - d_iLocalStart] );
     }
 }

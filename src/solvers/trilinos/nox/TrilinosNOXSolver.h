@@ -4,17 +4,16 @@
 // AMP includes
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolverParameters.h"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #include "AMP/solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
-#pragma GCC diagnostic pop
 
 
 // Trilinos includes
+DISABLE_WARNINGS
 #include "NOX_Solver_Factory.H"
 #include "NOX_StatusTest_Combo.H"
 #include "NOX_Thyra.H"
 #include <NOX_Solver_Generic.H>
+ENABLE_WARNINGS
 
 
 namespace AMP {

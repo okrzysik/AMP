@@ -26,9 +26,9 @@ class DataChangeListener;
  * implement a callback mechansim in an environment of reference counted pointers.
  *
  * The DataChangeFirer provides a mechanism to register and de-register itself with a
- * DataChangeFirer.  It is a list of DataChangeFirers with which it is registered.  It
- * implements a dataChanged() method used by the DataChangeFirer to indicate managed data
- * has changed.
+ * DataChangeFirer.  It is a list of DataChangeFirers with which it is registered.
+ * It implements a recieveDataChanged() method used by the DataChangeFirer to indicate
+ * managed data has changed.
  */
 class DataChangeFirer
 {
@@ -37,7 +37,7 @@ public:
      * \brief  Notify all listeners of a data change event
      *
      * \details Iterates through the list of DataChangeListeners and
-     * invokes the dataChanged() method.
+     * invokes the recieveDataChanged() method.
      */
     virtual void fireDataChange();
 
