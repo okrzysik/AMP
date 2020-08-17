@@ -150,13 +150,14 @@ bool ManagedVector::isAnAliasOf( Vector &rhs )
 
 Vector::UpdateState ManagedVector::getUpdateStatus() const
 {
-    Vector::UpdateState state = *d_UpdateState;
+    auto data = getVectorData();
+    Vector::UpdateState state = data->getUpdateStatus();
     std::shared_ptr<const Vector> vec = getVectorEngine();
     if ( vec.get() != nullptr ) {
         Vector::UpdateState sub_state = vec->getUpdateStatus();
         if ( sub_state == UpdateState::UNCHANGED ) {
             // No change in state
-        } else if ( sub_state == UpdateState::LOCAL_CHANGED && state == UpdateState::UNCHANGED ) {
+        } else if ( sub_state == UpdateState::LOCAL_CHANGED && state == VectorData::UpdateState::UNCHANGED ) {
             state = UpdateState::LOCAL_CHANGED;
         } else if ( sub_state == UpdateState::LOCAL_CHANGED ) {
             // No change in state
@@ -178,7 +179,8 @@ Vector::UpdateState ManagedVector::getUpdateStatus() const
 
 void ManagedVector::setUpdateStatus( UpdateState state )
 {
-    *d_UpdateState = state;
+    auto data = getVectorData();
+    data->setUpdateStatus(state);
     auto vec = getVectorEngine();
     if ( vec.get() != nullptr )
         vec->setUpdateStatus( state );
@@ -355,17 +357,19 @@ Vector::shared_ptr ManagedVector::getRootVector()
 {
     if ( d_vBuffer )
         return shared_from_this();
-    auto vec = std::dynamic_pointer_cast<ManagedVector>( getVectorEngine() );
+    auto engine = getVectorEngine();
+    auto vec = std::dynamic_pointer_cast<ManagedVector>( engine );
     if ( vec != nullptr )
         return vec->getRootVector();
-    return d_Engine->shared_from_this();
+    return engine->shared_from_this();
 }
 
 
 void ManagedVector::dataChanged()
 {
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
+    auto data = getVectorData();
+    if ( data->getUpdateStatus() == VectorData::UpdateState::UNCHANGED )
+      data->setUpdateStatus( VectorData::UpdateState::LOCAL_CHANGED );
 }
 
 
