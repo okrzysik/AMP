@@ -582,7 +582,7 @@ protected: // Internal data
 
     // Ghost data
     std::shared_ptr<std::vector<double>> d_Ghosts = nullptr;
-    std::shared_ptr<std::vector<double>> d_AddBuffer = nulppre;
+    std::shared_ptr<std::vector<double>> d_AddBuffer = nullptr;
 
     // Friends
     friend class VectorOperations;
