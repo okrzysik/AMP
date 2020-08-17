@@ -9,7 +9,10 @@
 DISABLE_WARNINGS
 #include "NOX_Solver_Generic.H"
 #include "NOX_StatusTest_Generic.H"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #include "NOX_Thyra.H"
+#pragma GCC diagnostic pop
 ENABLE_WARNINGS
 
 
