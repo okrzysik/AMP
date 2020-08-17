@@ -80,7 +80,7 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     AMP_ASSERT( d_vBuffer );
     AMP_ASSERT( d_Engine );
     d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
-    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    auto vec = d_Engine;
     if ( vec )
         vec->setUpdateStatusPtr( getUpdateStatusPtr() );
 }
@@ -98,7 +98,7 @@ ManagedVector::ManagedVector( shared_ptr alias )
     if ( d_vBuffer )
         setUpdateStatusPtr( d_vBuffer->getUpdateStatusPtr() );
     else {
-        auto vec2 = std::dynamic_pointer_cast<Vector>( d_Engine );
+        auto vec2 = d_Engine;
         if ( vec2 )
             setUpdateStatusPtr( vec2->getUpdateStatusPtr() );
     }
@@ -115,7 +115,7 @@ Vector::shared_ptr ManagedVector::subsetVectorForVariable( Variable::const_share
     if ( !retVal )
         retVal = Vector::subsetVectorForVariable( name );
     if ( !retVal ) {
-        auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+        auto vec = d_Engine;
         if ( vec )
             retVal = vec->subsetVectorForVariable( name );
     }
@@ -184,7 +184,7 @@ void ManagedVector::setUpdateStatus( UpdateState state )
     *d_UpdateState = state;
     std::shared_ptr<Vector> vec;
     if ( d_Engine.get() != nullptr )
-        vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+        vec = d_Engine;
     if ( vec.get() != nullptr )
         vec->setUpdateStatus( state );
 }
@@ -198,7 +198,7 @@ void ManagedVector::swapVectors( Vector &other )
     std::swap( d_pParameters, in->d_pParameters );
 
     d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
-    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    auto vec = d_Engine;
     if ( vec )
         vec->setUpdateStatusPtr( getUpdateStatusPtr() );
 
@@ -218,7 +218,7 @@ void ManagedVector::aliasVector( Vector &other )
 
 void ManagedVector::getValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
-    Vector::shared_ptr vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    Vector::shared_ptr vec = d_Engine;
     if ( vec.get() == nullptr ) {
         Vector::getValuesByGlobalID( numVals, ndx, vals );
     } else {
@@ -233,7 +233,7 @@ void ManagedVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *
 
 void ManagedVector::getGhostValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
-    Vector::shared_ptr vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    Vector::shared_ptr vec = d_Engine;
     if ( vec.get() == nullptr ) {
         Vector::getGhostValuesByGlobalID( numVals, ndx, vals );
     } else {
@@ -261,7 +261,7 @@ void ManagedVector::setLocalValuesByGlobalID( int numVals, size_t *ndx, const do
 
 void ManagedVector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
-    Vector::shared_ptr vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    Vector::shared_ptr vec = d_Engine;
     if ( vec.get() == nullptr ) {
         Vector::setGhostValuesByGlobalID( numVals, ndx, vals );
     } else {
@@ -271,7 +271,7 @@ void ManagedVector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const do
 
 void ManagedVector::setValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
-    Vector::shared_ptr vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    Vector::shared_ptr vec = d_Engine;
     if ( vec.get() != nullptr ) {
         AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
         *d_UpdateState = UpdateState::SETTING;
@@ -332,7 +332,7 @@ void ManagedVector::copyOutRawData( double *in ) const
 std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
 {
     std::shared_ptr<Vector> retVal( getNewRawPtr() );
-    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    auto vec = d_Engine;
     if ( vec ) {
         auto vec2                       = vec->cloneVector( "ManagedVectorClone" );
         getManaged( retVal )->d_vBuffer = std::dynamic_pointer_cast<VectorData>( vec2 );
@@ -349,7 +349,7 @@ std::string ManagedVector::type() const
     if ( d_vBuffer )
         return " ( managed data )";
     std::string retVal = " ( managed view of ";
-    auto vec           = std::dynamic_pointer_cast<Vector>( d_Engine );
+    auto vec           = d_Engine;
     retVal += vec->type();
     retVal += " )";
     return retVal;
@@ -363,7 +363,7 @@ Vector::shared_ptr ManagedVector::getRootVector()
     auto vec = std::dynamic_pointer_cast<ManagedVector>( d_Engine );
     if ( vec != nullptr )
         return vec->getRootVector();
-    return std::dynamic_pointer_cast<Vector>( d_Engine )->shared_from_this();
+    return d_Engine->shared_from_this();
 }
 
 
@@ -380,7 +380,7 @@ Vector::shared_ptr ManagedVector::selectInto( const VectorSelector &s )
     if ( d_vBuffer ) {
         result = Vector::selectInto( s );
     } else {
-        result = std::dynamic_pointer_cast<Vector>( d_Engine )->selectInto( s );
+        result = d_Engine->selectInto( s );
     }
     return result;
 }
@@ -392,7 +392,7 @@ Vector::const_shared_ptr ManagedVector::selectInto( const VectorSelector &s ) co
     if ( d_vBuffer ) {
         result = Vector::selectInto( s );
     } else {
-        result = std::dynamic_pointer_cast<Vector>( d_Engine )->selectInto( s );
+        result = d_Engine->selectInto( s );
     }
     return result;
 }
