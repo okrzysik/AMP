@@ -200,13 +200,13 @@ public: // non-virtual functions
     inline MeshElement &operator*( void );
 
     //! Dereference the iterator
-    inline const MeshElement &operator*( void ) const;
+    inline const MeshElement &operator*(void) const;
 
     //! Dereference the iterator
     inline MeshElement *operator->( void );
 
     //! Dereference the iterator
-    inline const MeshElement *operator->( void ) const;
+    inline const MeshElement *operator->(void) const;
 
 protected:
     // Clone the iterator

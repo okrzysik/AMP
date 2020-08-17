@@ -151,8 +151,8 @@ TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( TriangleMeshElement &&rh
     element = nullptr;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-TriangleMeshElement<NG, NP, TYPE> &
-TriangleMeshElement<NG, NP, TYPE>::operator=( const TriangleMeshElement &rhs )
+TriangleMeshElement<NG, NP, TYPE> &TriangleMeshElement<NG, NP, TYPE>::
+operator=( const TriangleMeshElement &rhs )
 {
     if ( &rhs == this )
         return *this;
@@ -163,8 +163,8 @@ TriangleMeshElement<NG, NP, TYPE>::operator=( const TriangleMeshElement &rhs )
     return *this;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-TriangleMeshElement<NG, NP, TYPE> &
-TriangleMeshElement<NG, NP, TYPE>::operator=( TriangleMeshElement &&rhs )
+TriangleMeshElement<NG, NP, TYPE> &TriangleMeshElement<NG, NP, TYPE>::
+operator=( TriangleMeshElement &&rhs )
 {
     if ( &rhs == this )
         return *this;

@@ -1218,16 +1218,16 @@ void Array<TYPE, FUN, Allocator>::rand()
     FUN::rand( *this );
 }
 template<class TYPE, class FUN, class Allocator>
-Array<TYPE, FUN, Allocator> &
-Array<TYPE, FUN, Allocator>::operator+=( const Array<TYPE, FUN, Allocator> &rhs )
+Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::
+operator+=( const Array<TYPE, FUN, Allocator> &rhs )
 {
     auto op = []( const TYPE &a, const TYPE &b ) { return a + b; };
     FUN::transform( op, *this, rhs, *this );
     return *this;
 }
 template<class TYPE, class FUN, class Allocator>
-Array<TYPE, FUN, Allocator> &
-Array<TYPE, FUN, Allocator>::operator-=( const Array<TYPE, FUN, Allocator> &rhs )
+Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::
+operator-=( const Array<TYPE, FUN, Allocator> &rhs )
 {
     auto op = []( const TYPE &a, const TYPE &b ) { return a - b; };
     FUN::transform( op, *this, rhs, *this );

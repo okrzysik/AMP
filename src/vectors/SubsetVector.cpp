@@ -70,7 +70,7 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
                                                                        subsetDOF->getComm() );
     } else {
         // Construct the communication list
-        auto params = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
+        auto params           = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
         params->d_comm        = subsetDOF->getComm();
         params->d_localsize   = subsetDOF->numLocalDOF();
         params->d_remote_DOFs = remote_DOFs;
@@ -82,8 +82,7 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
     retVal->d_ViewVector = std::const_pointer_cast<Vector>( v );
     retVal->d_DOFManager = subsetDOF;
     retVal->setCommunicationList( commList );
-    auto tmp =
-        std::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( subsetDOF );
+    auto tmp = std::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( subsetDOF );
     if ( tmp != nullptr ) {
         retVal->d_SubsetLocalIDToViewGlobalID = tmp->getLocalParentDOFs();
     } else if ( subsetDOF->numLocalDOF() == parentDOF->numLocalDOF() ) {
