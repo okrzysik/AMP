@@ -150,14 +150,13 @@ bool ManagedVector::isAnAliasOf( Vector &rhs )
 
 Vector::UpdateState ManagedVector::getUpdateStatus() const
 {
-    auto data = getVectorData();
-    Vector::UpdateState state = data->getUpdateStatus();
+    Vector::UpdateState state = *d_UpdateState;
     std::shared_ptr<const Vector> vec = getVectorEngine();
     if ( vec.get() != nullptr ) {
         Vector::UpdateState sub_state = vec->getUpdateStatus();
         if ( sub_state == UpdateState::UNCHANGED ) {
             // No change in state
-        } else if ( sub_state == UpdateState::LOCAL_CHANGED && state == VectorData::UpdateState::UNCHANGED ) {
+        } else if ( sub_state == UpdateState::LOCAL_CHANGED && state == UpdateState::UNCHANGED ) {
             state = UpdateState::LOCAL_CHANGED;
         } else if ( sub_state == UpdateState::LOCAL_CHANGED ) {
             // No change in state
@@ -179,8 +178,7 @@ Vector::UpdateState ManagedVector::getUpdateStatus() const
 
 void ManagedVector::setUpdateStatus( UpdateState state )
 {
-    auto data = getVectorData();
-    data->setUpdateStatus(state);
+    *d_UpdateState = state;
     auto vec = getVectorEngine();
     if ( vec.get() != nullptr )
         vec->setUpdateStatus( state );
@@ -367,9 +365,8 @@ Vector::shared_ptr ManagedVector::getRootVector()
 
 void ManagedVector::dataChanged()
 {
-    auto data = getVectorData();
-    if ( data->getUpdateStatus() == VectorData::UpdateState::UNCHANGED )
-      data->setUpdateStatus( VectorData::UpdateState::LOCAL_CHANGED );
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 
