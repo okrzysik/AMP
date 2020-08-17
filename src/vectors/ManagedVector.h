@@ -1,8 +1,6 @@
 #ifndef included_AMP_ManagedVector
 #define included_AMP_ManagedVector
 
-
-#include "AMP/vectors/DataChangeListener.h"
 #include "AMP/vectors/Vector.h"
 
 #include <stdexcept>

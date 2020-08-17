@@ -16,8 +16,6 @@
 #include "AMP/vectors/VectorSelector.h"
 #endif
 
-#include "../../ampmesh/test/meshGenerators.h"
-
 
 // Function to test getting the DOFs for a mesh iterator
 void testGetDOFIterator( AMP::UnitTest *ut,

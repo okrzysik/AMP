@@ -9,6 +9,8 @@
 
 #include "DOFManager_tests.h"
 
+#include "../../ampmesh/test/meshGenerators.h"
+
 
 using namespace AMP::unit_test;
 

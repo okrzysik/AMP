@@ -2,6 +2,7 @@
 #define included_AMP_MultiVectorData
 
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/vectors/DataChangeListener.h"
 #include "AMP/vectors/data/VectorData.h"
 
 
@@ -18,7 +19,7 @@ namespace LinearAlgebra {
   the local values as a single block of data on the CPU.
 
   */
-class MultiVectorData : virtual public VectorData
+class MultiVectorData : virtual public VectorData, public DataChangeListener
 {
 
 public: // Virtual functions
@@ -175,6 +176,11 @@ public: // Advanced virtual functions
     const VectorData *getVectorData( size_t i ) const;
 
     size_t numberOfComponents( void ) const { return d_data.size(); }
+
+
+public:
+    void recieveDataChanged() override { fireDataChange(); }
+
 
 protected:
     MultiVectorData() : d_globalDOFManager( nullptr ) {}
