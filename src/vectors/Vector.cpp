@@ -26,10 +26,6 @@ RNG::shared_ptr Vector::d_DefaultRNG;
 Vector::Vector() : VectorData()
 {
     d_VectorData = dynamic_cast<VectorData *>( this );
-    d_Ghosts     = std::make_shared<std::vector<double>>();
-    d_AddBuffer  = std::make_shared<std::vector<double>>();
-    d_UpdateState.reset( new UpdateState );
-    *d_UpdateState = UpdateState::UNCHANGED;
     d_Views        = std::make_shared<std::vector<std::weak_ptr<Vector>>>();
     // Set default output stream
     d_output_stream = &AMP::plog;
@@ -167,7 +163,7 @@ void Vector::setCommunicationList( CommunicationList::shared_ptr comm )
     AMP_ASSERT( comm );
     d_CommList = comm;
     if ( comm ) {
-        addCommunicationListToParameters( comm );
+      //        addCommunicationListToParameters( comm );
         d_Ghosts =
             std::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
         d_AddBuffer =
