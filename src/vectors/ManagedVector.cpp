@@ -213,7 +213,7 @@ void ManagedVector::aliasVector( Vector &other )
 
 void ManagedVector::getValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
-    Vector::shared_ptr vec = getVectorEngine();
+    auto const vec = getVectorEngine();
     if ( vec.get() == nullptr ) {
         Vector::getValuesByGlobalID( numVals, ndx, vals );
     } else {
@@ -451,7 +451,7 @@ size_t ManagedVector::getGlobalSize() const { return getEngineData( *this )->get
 // these routines will have to be modified once ManagedVectorData is introduced
 Vector::shared_ptr ManagedVector::getVectorEngine( void ) { return d_Engine; }
 
-Vector::const_shared_ptr ManagedVector::getVectorEngine( void ) { return d_Engine; } const
+Vector::const_shared_ptr ManagedVector::getVectorEngine( void ) const { return d_Engine; }
 
 } // namespace LinearAlgebra
 } // namespace AMP
