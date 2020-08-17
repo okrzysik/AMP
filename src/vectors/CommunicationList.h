@@ -31,7 +31,7 @@ public:
     //! The number of local entities in the vector
     size_t d_localsize;
 
-    //! The remote DOFs that we need to recieve
+    //! The remote DOFs that we need to receive
     std::vector<size_t> d_remote_DOFs;
 
     //! Default constructor

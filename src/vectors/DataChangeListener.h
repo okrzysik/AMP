@@ -28,7 +28,7 @@ class DataChangeFirer;
  *
  * The DataChangeListener provides a mechanism to register and de-register itself with a
  * DataChangeFirer.  It is a list of DataChangeFirers with which it is registered.  It
- * implements a recieveDataChanged() method used by the DataChangeFirer to indicate managed data
+ * implements a receiveDataChanged() method used by the DataChangeFirer to indicate managed data
  * has changed.
  */
 
@@ -75,7 +75,7 @@ public:
      *
      * \details  The method called when a data change event occurs
      */
-    virtual void recieveDataChanged() = 0;
+    virtual void receiveDataChanged() = 0;
 
 private:
     std::vector<DataChangeFirer *> d_firers;

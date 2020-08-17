@@ -566,7 +566,7 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
         ut->passes( message );
     else
         ut->failure( message );
-    // Test allToAll with a unknown recieve length
+    // Test allToAll with a unknown receive length
     send_data        = new type[comm.getSize() * comm.getSize()];
     auto *recv_data1 = new type[comm.getSize() * comm.getSize()];
     auto *recv_data2 = new type[comm.getSize() * comm.getSize()];
@@ -643,7 +643,7 @@ int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
             int tag = i + j * comm.getSize();
             sprintf( message, "send-recv %i-%i known length (%s)", i, j, typeid( type ).name() );
             if ( i == j ) {
-                // We are not allowed to send/recieve from the same processor
+                // We are not allowed to send/receive from the same processor
                 continue;
             } else if ( i == comm.getRank() ) {
                 // We are sending
@@ -667,7 +667,7 @@ int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
             int tag = i + j * comm.getSize();
             sprintf( message, "send-recv %i-%i unknown length (%s)", i, j, typeid( type ).name() );
             if ( i == j ) {
-                // We are not allowed to send/recieve from the same processor
+                // We are not allowed to send/receive from the same processor
                 continue;
             } else if ( i == comm.getRank() ) {
                 // We are sending
@@ -691,7 +691,7 @@ int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
             int tag = i + j * comm.getSize();
             sprintf( message, "send-recv %i-%i empty length (%s)", i, j, typeid( type ).name() );
             if ( i == j ) {
-                // We are not allowed to send/recieve from the same processor
+                // We are not allowed to send/receive from the same processor
                 continue;
             } else if ( i == comm.getRank() ) {
                 // We are sending
@@ -765,7 +765,7 @@ int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
     if ( !recvRequest.empty() )
         MPI_CLASS::waitAll( recvRequest.size(), &( recvRequest[0] ) );
     AMP::Utilities::unique( finished );
-    // Check the recieved values
+    // Check the received values
     bool pass = true;
     for ( int i = 0; i < comm.getSize(); i++ ) {
         if ( recv_buffer[i] != v1 )

@@ -711,7 +711,7 @@ int MPI_CLASS::allGather( const TYPE *send_data,
         if ( send_data == nullptr && send_cnt > 0 ) {
             MPI_CLASS_ERROR( "send_data is null" );
         } else if ( !known_recv ) {
-            // We do not know the recieved sizes
+            // We do not know the received sizes
             for ( int i = 0; i < send_cnt; i++ )
                 recv_data[i] = send_data[i];
             if ( recv_cnt != nullptr )
@@ -719,13 +719,13 @@ int MPI_CLASS::allGather( const TYPE *send_data,
             if ( recv_disp != nullptr )
                 recv_disp[0] = 0;
         } else {
-            // We know the recieved sizes
+            // We know the received sizes
             for ( int i = 0; i < send_cnt; i++ )
                 recv_data[i + recv_disp[0]] = send_data[i];
         }
         return send_cnt;
     }
-    // Get the sizes of the recieved data (if necessary)
+    // Get the sizes of the received data (if necessary)
     int *recv_cnt2  = recv_cnt;
     int *recv_disp2 = recv_disp;
     if ( !known_recv ) {
@@ -1081,7 +1081,7 @@ int MPI_CLASS::allToAll( const TYPE *send_data,
                          int *recv_disp,
                          bool known_recv ) const
 {
-    int N_recieved = 0;
+    int N_received = 0;
     if ( comm_size == 1 ) {
         // Special case for single-processor communicators
         if ( known_recv ) {
@@ -1095,15 +1095,15 @@ int MPI_CLASS::allToAll( const TYPE *send_data,
         }
         for ( int i = 0; i < send_cnt[0]; i++ )
             recv_data[i + recv_disp[0]] = send_data[i + send_disp[0]];
-        N_recieved = send_cnt[0];
+        N_received = send_cnt[0];
     } else if ( known_recv ) {
-        // The recieve sizes are known
+        // The receive sizes are known
         MPI_CLASS_ASSERT( recv_cnt != nullptr && recv_disp != nullptr );
         call_allToAll( send_data, send_cnt, send_disp, recv_data, recv_cnt, recv_disp );
         for ( int i = 0; i < comm_size; i++ )
-            N_recieved += recv_cnt[i];
+            N_received += recv_cnt[i];
     } else {
-        // The recieve sizes are not known, we need to communicate that information first
+        // The receive sizes are not known, we need to communicate that information first
         int *recv_cnt2  = recv_cnt;
         int *recv_disp2 = recv_disp;
         if ( recv_cnt == nullptr )
@@ -1118,13 +1118,13 @@ int MPI_CLASS::allToAll( const TYPE *send_data,
         // Send the data
         call_allToAll( send_data, send_cnt, send_disp, recv_data, recv_cnt2, recv_disp2 );
         for ( int i = 0; i < comm_size; i++ )
-            N_recieved += recv_cnt2[i];
+            N_received += recv_cnt2[i];
         if ( recv_cnt == nullptr )
             delete[] recv_cnt2;
         if ( recv_disp == nullptr )
             delete[] recv_disp2;
     }
-    return N_recieved;
+    return N_received;
 }
 // Define specializations of call_allToAll
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )

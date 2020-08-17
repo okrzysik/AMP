@@ -234,7 +234,7 @@ void CommunicationList::buildCommunicationArrays( std::vector<size_t> &DOFs,
     d_ReceiveDOFList = DOFs;
     AMP::Utilities::quicksort( d_ReceiveDOFList );
 
-    // Determine the number of DOFs recieved from each processor (this requires the DOFs to be
+    // Determine the number of DOFs received from each processor (this requires the DOFs to be
     // sorted)
     d_ReceiveSizes.resize( commSize, 0 );
     d_ReceiveDisplacements.resize( commSize, 0 );

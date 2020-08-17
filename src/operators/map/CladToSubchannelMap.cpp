@@ -56,7 +56,7 @@ CladToSubchannelMap::CladToSubchannelMap(
         }
     }
 
-    // Get the list of processors that we will recieve from for each subchannel
+    // Get the list of processors that we will receive from for each subchannel
     d_subchannelSend = std::vector<std::vector<int>>( N_subchannels );
     std::vector<char> tmp( d_MapComm.getSize() );
     for ( size_t i = 0; i < N_subchannels; i++ ) {

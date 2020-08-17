@@ -373,23 +373,23 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
         send_buffer = &remote_ids2[0];
     size_t N = d_comm.allToAll<AMP::Mesh::MeshElementID>(
         send_buffer, &send_cnt[0], &send_disp[0], &recv_id[0], &recv_cnt[0], &recv_disp[0], true );
-    AMP_INSIST( N == tot_size, "Unexpected recieve size" );
+    AMP_INSIST( N == tot_size, "Unexpected receive size" );
     recv_id.resize( tot_size );
-    // Determine the DOF for each recieved id
-    std::vector<size_t> recieved_DOF( tot_size ), dofs;
+    // Determine the DOF for each received id
+    std::vector<size_t> received_DOF( tot_size ), dofs;
     for ( size_t i = 0; i < tot_size; i++ ) {
         getDOFs( recv_id[i], dofs );
         AMP_ASSERT( dofs.size() > 0 );
         for ( size_t j = 1; j < dofs.size(); j++ )
             AMP_ASSERT( dofs[j] == dofs[j - 1] + 1 );
-        recieved_DOF[i] = dofs[0];
+        received_DOF[i] = dofs[0];
     }
     // Send the DOFs back to the original processor
     std::vector<size_t> remote_dof;
     remote_dof.resize( remote_ids2.size() + 1, static_cast<size_t>( -1 ) );
     size_t *send_buffer_DOFs = nullptr;
     if ( tot_size > 0 )
-        send_buffer_DOFs = &recieved_DOF[0];
+        send_buffer_DOFs = &received_DOF[0];
     N = d_comm.allToAll<size_t>( send_buffer_DOFs,
                                  &recv_cnt[0],
                                  &recv_disp[0],
@@ -397,7 +397,7 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
                                  &send_cnt[0],
                                  &send_disp[0],
                                  true );
-    AMP_INSIST( N == remote_ids2.size(), "Unexpected recieve size" );
+    AMP_INSIST( N == remote_ids2.size(), "Unexpected receive size" );
     remote_dof.resize( remote_ids2.size() );
     // Sort the dofs back to the original order for the remote_ids
     AMP::Utilities::quicksort( remote_ids2, remote_dof );

@@ -179,7 +179,7 @@ public: // Advanced virtual functions
 
 
 public:
-    void recieveDataChanged() override { fireDataChange(); }
+    void receiveDataChanged() override { fireDataChange(); }
 
 
 protected:

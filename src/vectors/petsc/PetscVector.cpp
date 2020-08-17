@@ -9,7 +9,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-void PetscVector::recieveDataChanged()
+void PetscVector::receiveDataChanged()
 {
     PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( getVec() ) );
 }

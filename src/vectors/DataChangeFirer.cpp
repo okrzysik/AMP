@@ -35,7 +35,7 @@ void DataChangeFirer::deregisterListener( DataChangeListener *listener )
 void DataChangeFirer::fireDataChange()
 {
     for ( auto &x : d_listeners )
-        x->recieveDataChanged();
+        x->receiveDataChanged();
 }
 } // namespace LinearAlgebra
 } // namespace AMP

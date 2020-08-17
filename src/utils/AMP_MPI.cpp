@@ -2752,7 +2752,7 @@ void MPI_CLASS::recv<char>(
     tag = ( tag >= 0 ) ? tag : 0;
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     PROFILE_START( "recv<char>", profile_level );
-    // Get the recieve length if necessary
+    // Get the receive length if necessary
     if ( get_length ) {
         int bytes       = this->probe( send_proc_number, tag );
         int recv_length = bytes / sizeof( char );
@@ -2773,7 +2773,7 @@ void MPI_CLASS::recv<int>(
     tag = ( tag >= 0 ) ? tag : 0;
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     PROFILE_START( "recv<int>", profile_level );
-    // Get the recieve length if necessary
+    // Get the receive length if necessary
     if ( get_length ) {
         int bytes       = this->probe( send_proc_number, tag );
         int recv_length = bytes / sizeof( int );
@@ -2794,7 +2794,7 @@ void MPI_CLASS::recv<float>(
     tag = ( tag >= 0 ) ? tag : 0;
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     PROFILE_START( "recv<float>", profile_level );
-    // Get the recieve length if necessary
+    // Get the receive length if necessary
     if ( get_length ) {
         int bytes       = this->probe( send_proc_number, tag );
         int recv_length = bytes / sizeof( float );
@@ -2815,7 +2815,7 @@ void MPI_CLASS::recv<double>(
     tag = ( tag >= 0 ) ? tag : 0;
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     PROFILE_START( "recv<double>", profile_level );
-    // Get the recieve length if necessary
+    // Get the receive length if necessary
     if ( get_length ) {
         int bytes       = this->probe( send_proc_number, tag );
         int recv_length = bytes / sizeof( double );
@@ -2848,7 +2848,7 @@ void MPI_CLASS::recv<char>( char *buf, int &length, const int, const bool, int t
 
 
 /************************************************************************
- *  Non-blocking recieve data array to another processor.                *
+ *  Non-blocking receive data array to another processor.                *
  *  Note: these specializations are only called when using MPI.          *
  ************************************************************************/
 #ifdef USE_MPI

@@ -177,7 +177,7 @@ void NodeToNodeMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
             dofs[j + i * DofsPerObj] = local_dofs[j];
     }
 
-    // Wait to recieve all data
+    // Wait to receive all data
     waitForAllRequests();
 
     // Store the DOFs
@@ -193,7 +193,7 @@ void NodeToNodeMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
 
 /****************************************************************
  * Function to compute the send/recv lists                       *
- * We need to group the DOFs to send/recieve by processor and    *
+ * We need to group the DOFs to send/receive by processor and    *
  * ensure that both processors will agree on the order.          *
  ****************************************************************/
 void NodeToNodeMap::buildSendRecvList()

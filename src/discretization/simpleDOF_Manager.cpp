@@ -462,21 +462,21 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
         send_buffer = &remote_ids2[0];
     N = comm.allToAll<AMP::Mesh::MeshElementID>(
         send_buffer, &send_cnt[0], &send_disp[0], &recv_id[0], &recv_cnt[0], &recv_disp[0], true );
-    AMP_INSIST( N == (int) tot_size, "Unexpected recieve size" );
+    AMP_INSIST( N == (int) tot_size, "Unexpected receive size" );
     recv_id.resize( tot_size );
-    // Determine the DOF for each recieved id
-    std::vector<size_t> recieved_DOF( tot_size );
+    // Determine the DOF for each received id
+    std::vector<size_t> received_DOF( tot_size );
     for ( size_t i = 0; i < tot_size; i++ ) {
         int j = AMP::Utilities::findfirst( d_local_id, recv_id[i] );
         AMP_ASSERT( d_local_id[j] == recv_id[i] );
-        recieved_DOF[i] = d_begin / DOFsPerElement + j;
+        received_DOF[i] = d_begin / DOFsPerElement + j;
     }
     // Send the DOFs back to the original processor
     std::vector<size_t> remote_dof;
     remote_dof.resize( remote_ids2.size() + 1, static_cast<size_t>( -1 ) );
     size_t *send_buffer_DOFs = nullptr;
     if ( tot_size > 0 )
-        send_buffer_DOFs = &recieved_DOF[0];
+        send_buffer_DOFs = &received_DOF[0];
     N = comm.allToAll<size_t>( send_buffer_DOFs,
                                &recv_cnt[0],
                                &recv_disp[0],
@@ -484,7 +484,7 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
                                &send_cnt[0],
                                &send_disp[0],
                                true );
-    AMP_INSIST( N == (int) remote_ids2.size(), "Unexpected recieve size" );
+    AMP_INSIST( N == (int) remote_ids2.size(), "Unexpected receive size" );
     remote_dof.resize( remote_ids2.size() );
     // Sort the dofs back to the original order for the remote_ids
     AMP::Utilities::quicksort( remote_ids2, remote_dof );

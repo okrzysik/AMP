@@ -27,7 +27,7 @@ class DataChangeListener;
  *
  * The DataChangeFirer provides a mechanism to register and de-register itself with a
  * DataChangeFirer.  It is a list of DataChangeFirers with which it is registered.
- * It implements a recieveDataChanged() method used by the DataChangeFirer to indicate
+ * It implements a receiveDataChanged() method used by the DataChangeFirer to indicate
  * managed data has changed.
  */
 class DataChangeFirer
@@ -37,7 +37,7 @@ public:
      * \brief  Notify all listeners of a data change event
      *
      * \details Iterates through the list of DataChangeListeners and
-     * invokes the recieveDataChanged() method.
+     * invokes the receiveDataChanged() method.
      */
     virtual void fireDataChange();
 

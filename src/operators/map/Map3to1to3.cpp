@@ -222,7 +222,7 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
             if ( i == myRank )
                 continue; // We already copied the local data
             if ( d_own_mesh2[i] ) {
-                // Get the recieved data
+                // Get the received data
                 int inSize = d_MapComm.probe( i, d_commTag + 1 ) / sizeof( comm_data );
                 recvBuf.resize( inSize );
                 d_MapComm.recv( getPtr( recvBuf ), inSize, i, false, d_commTag + 1 );
@@ -240,7 +240,7 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
             if ( i == myRank )
                 continue; // We already copied the local data
             if ( d_own_mesh1[i] ) {
-                // Get the recieved data
+                // Get the received data
                 int inSize = d_MapComm.probe( i, d_commTag + 0 ) / sizeof( comm_data );
                 recvBuf.resize( inSize );
                 d_MapComm.recv( getPtr( recvBuf ), inSize, i, false, d_commTag + 0 );
