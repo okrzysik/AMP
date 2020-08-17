@@ -2,7 +2,6 @@
 #define included_AMP_ThyraVector
 
 // AMP includes
-#include "AMP/vectors/DataChangeListener.h"
 #include "AMP/vectors/Vector.h"
 
 // Thyra includes
@@ -27,7 +26,7 @@ namespace LinearAlgebra {
  *  -# Provides an interface for accessing this Thyra Vector independent of derived classes
  *  -# Provides a static method for creating a Thyra view of an AMP Vector.
  */
-class ThyraVector : public DataChangeFirer, public DataChangeListener
+class ThyraVector
 {
 public:
     //!  Destructor
@@ -75,10 +74,6 @@ public:
     static AMP::LinearAlgebra::Vector::const_shared_ptr
     constView( const Thyra::VectorBase<double> *vec );
 
-    /** \brief Invoke the dataChange method on all registered listeners.
-     * \details  This simply calls the fireDataChange() method of the DataChangeFirer class
-     */
-    void receiveDataChanged() override { fireDataChange(); }
 
 protected:
     /**
