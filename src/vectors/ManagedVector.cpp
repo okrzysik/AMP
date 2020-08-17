@@ -6,7 +6,7 @@
 #include <typeinfo>
 
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/Vector.h"
 #include "AMP/vectors/operations/ManagedVectorOperations.h"
 
 namespace AMP {
@@ -198,7 +198,7 @@ void ManagedVector::swapVectors( Vector &other )
         vec->setUpdateStatusPtr( getUpdateStatusPtr() );
 
     in->d_vBuffer->setUpdateStatusPtr( in->getUpdateStatusPtr() );
-    vec = std::dynamic_pointer_cast<Vector>( in->getVectorEngine() );
+    vec = in->getVectorEngine();
     if ( vec )
         vec->setUpdateStatusPtr( in->getUpdateStatusPtr() );
 }
@@ -215,7 +215,7 @@ void ManagedVector::getValuesByGlobalID( int numVals, size_t *ndx, double *vals 
 {
     auto const vec = getVectorEngine();
     if ( vec.get() == nullptr ) {
-        Vector::getValuesByGlobalID( numVals, ndx, vals );
+        VectorData::getValuesByGlobalID( numVals, ndx, vals );
     } else {
         vec->getValuesByGlobalID( numVals, ndx, vals );
     }
@@ -230,7 +230,7 @@ void ManagedVector::getGhostValuesByGlobalID( int numVals, size_t *ndx, double *
 {
     auto vec = getVectorEngine();
     if ( vec.get() == nullptr ) {
-        Vector::getGhostValuesByGlobalID( numVals, ndx, vals );
+        VectorData::getGhostValuesByGlobalID( numVals, ndx, vals );
     } else {
         vec->getGhostValuesByGlobalID( numVals, ndx, vals );
     }
@@ -258,7 +258,7 @@ void ManagedVector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const do
 {
     auto vec = getVectorEngine();
     if ( vec.get() == nullptr ) {
-        Vector::setGhostValuesByGlobalID( numVals, ndx, vals );
+        VectorData::setGhostValuesByGlobalID( numVals, ndx, vals );
     } else {
         vec->setGhostValuesByGlobalID( numVals, ndx, vals );
     }
