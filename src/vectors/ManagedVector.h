@@ -70,8 +70,8 @@ public:
     /** \brief  Return the engine associated with this ManagedVector
      * \return The engine
      */
-    inline std::shared_ptr<Vector> getVectorEngine() { return d_Engine; }
-    inline std::shared_ptr<const Vector> getVectorEngine() const { return d_Engine; }
+    std::shared_ptr<Vector> getVectorEngine();
+    std::shared_ptr<const Vector> getVectorEngine() const;
 
     virtual bool isAnAliasOf( Vector &rhs );
     virtual bool isAnAliasOf( Vector::shared_ptr rhs );

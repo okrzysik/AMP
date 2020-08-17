@@ -98,7 +98,7 @@ ManagedVector::ManagedVector( shared_ptr alias )
     if ( d_vBuffer )
         setUpdateStatusPtr( d_vBuffer->getUpdateStatusPtr() );
     else {
-        auto vec2 = d_Engine;
+      auto vec2 = getVectorEngine();
         if ( vec2 )
             setUpdateStatusPtr( vec2->getUpdateStatusPtr() );
     }
@@ -115,7 +115,7 @@ Vector::shared_ptr ManagedVector::subsetVectorForVariable( Variable::const_share
     if ( !retVal )
         retVal = Vector::subsetVectorForVariable( name );
     if ( !retVal ) {
-        auto vec = d_Engine;
+        auto vec = getVectorEngine();
         if ( vec )
             retVal = vec->subsetVectorForVariable( name );
     }
@@ -128,7 +128,7 @@ ManagedVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) c
     if ( !retVal )
         retVal = Vector::constSubsetVectorForVariable( name );
     if ( !retVal ) {
-        auto vec = std::dynamic_pointer_cast<const Vector>( d_Engine );
+        auto const vec = getVectorEngine();
         if ( vec )
             retVal = vec->constSubsetVectorForVariable( name );
     }
@@ -151,10 +151,7 @@ bool ManagedVector::isAnAliasOf( Vector &rhs )
 Vector::UpdateState ManagedVector::getUpdateStatus() const
 {
     Vector::UpdateState state = *d_UpdateState;
-    std::shared_ptr<const Vector> vec;
-    if ( d_Engine.get() != nullptr ) {
-        vec = std::dynamic_pointer_cast<const Vector>( d_Engine );
-    }
+    std::shared_ptr<const Vector> vec = getVectorEngine();
     if ( vec.get() != nullptr ) {
         Vector::UpdateState sub_state = vec->getUpdateStatus();
         if ( sub_state == UpdateState::UNCHANGED ) {
@@ -182,9 +179,7 @@ Vector::UpdateState ManagedVector::getUpdateStatus() const
 void ManagedVector::setUpdateStatus( UpdateState state )
 {
     *d_UpdateState = state;
-    std::shared_ptr<Vector> vec;
-    if ( d_Engine.get() != nullptr )
-        vec = d_Engine;
+    auto vec = getVectorEngine();
     if ( vec.get() != nullptr )
         vec->setUpdateStatus( state );
 }
@@ -198,12 +193,12 @@ void ManagedVector::swapVectors( Vector &other )
     std::swap( d_pParameters, in->d_pParameters );
 
     d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
-    auto vec = d_Engine;
+    auto vec = getVectorEngine();
     if ( vec )
         vec->setUpdateStatusPtr( getUpdateStatusPtr() );
 
     in->d_vBuffer->setUpdateStatusPtr( in->getUpdateStatusPtr() );
-    vec = std::dynamic_pointer_cast<Vector>( in->d_Engine );
+    vec = std::dynamic_pointer_cast<Vector>( in->getVectorEngine() );
     if ( vec )
         vec->setUpdateStatusPtr( in->getUpdateStatusPtr() );
 }
@@ -218,7 +213,7 @@ void ManagedVector::aliasVector( Vector &other )
 
 void ManagedVector::getValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
-    Vector::shared_ptr vec = d_Engine;
+    Vector::shared_ptr vec = getVectorEngine();
     if ( vec.get() == nullptr ) {
         Vector::getValuesByGlobalID( numVals, ndx, vals );
     } else {
@@ -233,7 +228,7 @@ void ManagedVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *
 
 void ManagedVector::getGhostValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
-    Vector::shared_ptr vec = d_Engine;
+    auto vec = getVectorEngine();
     if ( vec.get() == nullptr ) {
         Vector::getGhostValuesByGlobalID( numVals, ndx, vals );
     } else {
@@ -261,7 +256,7 @@ void ManagedVector::setLocalValuesByGlobalID( int numVals, size_t *ndx, const do
 
 void ManagedVector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
-    Vector::shared_ptr vec = d_Engine;
+    auto vec = getVectorEngine();
     if ( vec.get() == nullptr ) {
         Vector::setGhostValuesByGlobalID( numVals, ndx, vals );
     } else {
@@ -271,7 +266,7 @@ void ManagedVector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const do
 
 void ManagedVector::setValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
-    Vector::shared_ptr vec = d_Engine;
+    auto vec = getVectorEngine();
     if ( vec.get() != nullptr ) {
         AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
         *d_UpdateState = UpdateState::SETTING;
@@ -332,7 +327,7 @@ void ManagedVector::copyOutRawData( double *in ) const
 std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
 {
     std::shared_ptr<Vector> retVal( getNewRawPtr() );
-    auto vec = d_Engine;
+    auto vec = getVectorEngine();
     if ( vec ) {
         auto vec2                       = vec->cloneVector( "ManagedVectorClone" );
         getManaged( retVal )->d_vBuffer = std::dynamic_pointer_cast<VectorData>( vec2 );
@@ -349,7 +344,7 @@ std::string ManagedVector::type() const
     if ( d_vBuffer )
         return " ( managed data )";
     std::string retVal = " ( managed view of ";
-    auto vec           = d_Engine;
+    auto vec = getVectorEngine();
     retVal += vec->type();
     retVal += " )";
     return retVal;
@@ -360,7 +355,7 @@ Vector::shared_ptr ManagedVector::getRootVector()
 {
     if ( d_vBuffer )
         return shared_from_this();
-    auto vec = std::dynamic_pointer_cast<ManagedVector>( d_Engine );
+    auto vec = std::dynamic_pointer_cast<ManagedVector>( getVectorEngine() );
     if ( vec != nullptr )
         return vec->getRootVector();
     return d_Engine->shared_from_this();
@@ -380,7 +375,8 @@ Vector::shared_ptr ManagedVector::selectInto( const VectorSelector &s )
     if ( d_vBuffer ) {
         result = Vector::selectInto( s );
     } else {
-        result = d_Engine->selectInto( s );
+        auto vec = getVectorEngine();
+        result = vec->selectInto( s );
     }
     return result;
 }
@@ -392,7 +388,8 @@ Vector::const_shared_ptr ManagedVector::selectInto( const VectorSelector &s ) co
     if ( d_vBuffer ) {
         result = Vector::selectInto( s );
     } else {
-        result = d_Engine->selectInto( s );
+        auto const vec = getVectorEngine();
+        result = vec->selectInto( s );
     }
     return result;
 }
@@ -450,6 +447,11 @@ size_t ManagedVector::getLocalSize() const { return getEngineData( *this )->getL
 
 
 size_t ManagedVector::getGlobalSize() const { return getEngineData( *this )->getGlobalSize(); }
+
+// these routines will have to be modified once ManagedVectorData is introduced
+Vector::shared_ptr ManagedVector::getVectorEngine( void ) { return d_Engine; }
+
+Vector::const_shared_ptr ManagedVector::getVectorEngine( void ) { return d_Engine; } const
 
 } // namespace LinearAlgebra
 } // namespace AMP
