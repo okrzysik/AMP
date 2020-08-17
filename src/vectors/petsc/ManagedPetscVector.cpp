@@ -741,7 +741,8 @@ ManagedPetscVector::ManagedPetscVector( VectorParameters::shared_ptr params )
     : ManagedVector( params ), PetscVector()
 {
     initPetsc();
-    registerListener( this );
+    auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
+    registerListener( listener );
 }
 
 
@@ -749,9 +750,8 @@ ManagedPetscVector::ManagedPetscVector( Vector::shared_ptr alias )
     : ManagedVector( alias ), PetscVector()
 {
     initPetsc();
-    auto firer = std::dynamic_pointer_cast<DataChangeFirer>( alias );
-    if ( firer )
-        firer->registerListener( this );
+    auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
+    alias->registerListener( listener );
 }
 
 

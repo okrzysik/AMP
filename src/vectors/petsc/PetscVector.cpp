@@ -9,7 +9,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-void PetscVector::dataChanged()
+void PetscVector::setDataChanged()
 {
     PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( getVec() ) );
 }
@@ -42,7 +42,8 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
         AMP_INSIST( inVector->getDOFManager(), "All vectors must have a DOFManager list" );
         newParams->d_DOFManager = inVector->getDOFManager();
         auto newVector          = std::make_shared<ManagedPetscVector>( newParams );
-        std::dynamic_pointer_cast<DataChangeFirer>( inVector )->registerListener( newVector.get() );
+        auto listener           = std::dynamic_pointer_cast<DataChangeListener>( newVector );
+        inVector->registerListener( listener );
         newVector->setVariable( inVector->getVariable() );
         newVector->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
         inVector->registerView( newVector );

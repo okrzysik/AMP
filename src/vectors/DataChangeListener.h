@@ -1,9 +1,9 @@
 #ifndef included_AMP_DataChangeListener_h
 #define included_AMP_DataChangeListener_h
 
-#include <algorithm>
-#include <deque>
 #include <memory>
+#include <vector>
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -32,24 +32,24 @@ class DataChangeFirer;
  * has changed.
  */
 
-class DataChangeListener : private std::deque<DataChangeFirer *>
+class DataChangeListener
 {
 private:
     /**
      * \brief  Register this DataChangeListener with a DataChangeFirer
      * \param  firer  the data change firer this object will listen for
-     * \details  This method will push firer onto the deque.  This method
+     * \details  This method will push firer onto the list.  This method
      * is only used by the DataChangeFirer
      */
-    virtual void registerWithFirer( DataChangeFirer *firer );
+    void registerWithFirer( DataChangeFirer *firer );
 
     /**
      * \brief  Deregister this DataChangeListener with a DataChangeFirer
      * \param  firer  the data change firer this object will no longer listen for
-     * \details  This method will erase firer from the deque.  This method
+     * \details  This method will erase firer from the list.  This method
      * is only used by the DataChangeFirer
      */
-    virtual void deregisterFromFirer( DataChangeFirer *firer );
+    void deregisterFromFirer( DataChangeFirer *firer );
 
     friend class DataChangeFirer;
 
@@ -76,9 +76,11 @@ public:
      * \details  The method called when a data change event occurs
      */
     virtual void dataChanged() = 0;
+
+private:
+    std::vector<DataChangeFirer *> d_firers;
 };
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "DataChangeListener.inline.h"
 #endif

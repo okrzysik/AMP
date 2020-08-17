@@ -18,7 +18,6 @@
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/DataChangeFirer.h"
 #include "AMP/vectors/Vector.h"
 
 #include "AMP/operators/moab/MoabBasedOperator.h"

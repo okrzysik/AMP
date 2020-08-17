@@ -155,7 +155,7 @@ public:
     virtual bool petscHoldsView() const = 0;
 
 
-    void dataChanged() override;
+    void setDataChanged() override;
 
 
 public:

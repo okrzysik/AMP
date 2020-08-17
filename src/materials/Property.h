@@ -2,15 +2,21 @@
 #define included_AMP_Property
 
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/MultiVector.h"
-#include <memory>
 
 #include <algorithm>
 #include <limits>
 #include <map>
+#include <memory>
 #include <string>
 #include <valarray>
 #include <vector>
+
+
+// Foward declare classes
+namespace AMP::LinearAlgebra {
+class Vector;
+class MultiVector;
+} // namespace AMP::LinearAlgebra
 
 
 namespace AMP {

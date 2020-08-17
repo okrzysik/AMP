@@ -3,7 +3,6 @@
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/DataChangeFirer.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 
 #include "ProfilerApp.h"
@@ -617,9 +616,7 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     // as Epetra is not going to change the state of a managed vector
     // an example where this will and has caused problems is when the
     // vector is a petsc managed vector being passed back to PETSc
-    auto firer = std::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( u );
-    if ( firer )
-        firer->fireDataChange();
+    u->fireDataChange();
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         double solution_norm = u->L2Norm();

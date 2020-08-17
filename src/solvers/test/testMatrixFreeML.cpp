@@ -244,9 +244,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         mlSolver->ApplyInverse( fVec, uVec );
 
-        auto firer = std::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( fusedSolVec );
-        if ( firer )
-            firer->fireDataChange();
+        fusedSolVec->fireDataChange();
 
         double solution_norm = fusedSolVec->L2Norm();
         std::cout << "MatFree-1:  solution norm: " << std::setprecision( 15 ) << solution_norm
@@ -316,9 +314,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         delete[] rhsArr;
         rhsArr = nullptr;
 
-        auto firer = std::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( fusedSolVec );
-        if ( firer )
-            firer->fireDataChange();
+        fusedSolVec->fireDataChange();
 
         double solution_norm = fusedSolVec->L2Norm();
         std::cout << "MatFree-2:  solution norm: " << std::setprecision( 15 ) << solution_norm

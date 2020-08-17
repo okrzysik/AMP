@@ -3,7 +3,6 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/DataChangeFirer.h"
 
 #include "ProfilerApp.h"
 
@@ -585,9 +584,7 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     // as Hypre is not going to change the state of a managed vector
     // an example where this will and has caused problems is when the
     // vector is a petsc managed vector being passed back to PETSc
-    auto firer = std::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( u );
-    if ( firer )
-        firer->fireDataChange();
+    u->fireDataChange();
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         double solution_norm = u->L2Norm();

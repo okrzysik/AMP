@@ -2,7 +2,7 @@
 #define included_AMP_ThyraVector
 
 // AMP includes
-#include "AMP/vectors/DataChangePassThrough.h"
+#include "AMP/vectors/DataChangeListener.h"
 #include "AMP/vectors/Vector.h"
 
 // Thyra includes
@@ -27,7 +27,7 @@ namespace LinearAlgebra {
  *  -# Provides an interface for accessing this Thyra Vector independent of derived classes
  *  -# Provides a static method for creating a Thyra view of an AMP Vector.
  */
-class ThyraVector : public DataChangePassThrough
+class ThyraVector : public DataChangeListener
 {
 public:
     //!  Destructor

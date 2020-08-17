@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <sstream>
 
+#include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorDataIterator.h"
 
 namespace AMP {

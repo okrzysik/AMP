@@ -75,10 +75,9 @@ std::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec,
     }
     if ( comm.isNull() )
         comm = vec->getComm();
-    multivec   = create( vec->getVariable()->getName(), comm, { vec } );
-    auto firer = std::dynamic_pointer_cast<DataChangeFirer>( vec );
-    if ( firer )
-        firer->registerListener( multivec.get() );
+    multivec      = create( vec->getVariable()->getName(), comm, { vec } );
+    auto listener = std::dynamic_pointer_cast<DataChangeListener>( multivec );
+    vec->registerListener( listener );
     return multivec;
 }
 std::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr vec, const AMP_MPI &comm_in )
@@ -212,9 +211,8 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
         } else {
             AMP_ERROR( "Not finished" );
             d_vVectors.push_back( vec );
-            auto firer = std::dynamic_pointer_cast<DataChangeFirer>( vec );
-            if ( firer )
-                firer->registerListener( this );
+            auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
+            vec->registerListener( listener );
         }
     } else {
         // We are dealing with a single vector, check if it is already added in some form
@@ -226,9 +224,8 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
         if ( index == -1 ) {
             // Add the vector
             d_vVectors.push_back( vec );
-            auto firer = std::dynamic_pointer_cast<DataChangeFirer>( vec );
-            if ( firer )
-                firer->registerListener( this );
+            auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
+            vec->registerListener( listener );
         } else {
             // the vector exists, which vector (or both) do we keep?
             auto dof1 = vec->getDOFManager();
@@ -477,7 +474,7 @@ MultiVector::~MultiVector() {}
 
 AMP_MPI MultiVector::getComm() const { return d_Comm; }
 
-void MultiVector::dataChanged() { fireDataChange(); }
+void MultiVector::setDataChanged() { MultiVectorData::fireDataChange(); }
 
 const Vector::shared_ptr &MultiVector::getVector( const VectorData &rhs, size_t which ) const
 {

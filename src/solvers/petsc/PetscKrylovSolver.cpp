@@ -482,11 +482,8 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     double localNorm = sp_z->localL2Norm();
     AMP_INSIST( localNorm == localNorm, "NaNs detected in preconditioner" );
 
-    // not sure why, but the state of sp_z is not updated
-    // and petsc uses the cached norm
-    auto firer = std::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( sp_z );
-    if ( firer )
-        firer->fireDataChange();
+    // not sure why, but the state of sp_z is not updated and petsc uses the cached norm
+    sp_z->fireDataChange();
 
     // these tests were helpful in finding a bug
     if ( ( (PetscKrylovSolver *) ctx )->getDebugPrintInfoLevel() > 5 ) {

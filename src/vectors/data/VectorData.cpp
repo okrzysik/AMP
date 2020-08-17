@@ -1,4 +1,5 @@
 #include "AMP/vectors/data/VectorData.h"
+#include "AMP/vectors/DataChangeListener.h"
 
 
 namespace AMP {
@@ -122,6 +123,17 @@ void VectorData::makeConsistent( ScatterType t )
     d_CommList->unpackReceiveBufferSet( recv_vec, *this );
     *d_UpdateState = UpdateState::UNCHANGED;
     this->setUpdateStatus( UpdateState::UNCHANGED );
+}
+
+
+/****************************************************************
+ * dataChanged                                                   *
+ ****************************************************************/
+void VectorData::dataChanged()
+{
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
+    fireDataChange();
 }
 
 

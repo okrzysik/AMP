@@ -2,6 +2,8 @@
 #define included_AMP_VectorData
 
 #include "AMP/vectors/CommunicationList.h"
+#include "AMP/vectors/DataChangeFirer.h"
+
 #include <memory>
 #include <vector>
 
@@ -19,7 +21,7 @@ class VectorDataIterator;
  * \details  VectorData is a class to helping disassociate data storage
  *    and vector operations such as dot product, norms, etc.
  */
-class VectorData
+class VectorData : public DataChangeFirer
 {
 public: // enums
     /**\brief Flag to choose algorithm for makeConsistent

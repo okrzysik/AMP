@@ -1,7 +1,6 @@
 #ifndef included_AMP_VectorData_inline
 #define included_AMP_VectorData_inline
 
-#include "AMP/vectors/DataChangeFirer.h"
 #include "AMP/vectors/data/VectorDataIterator.h"
 
 #include <algorithm>
@@ -99,14 +98,6 @@ inline void VectorData::setUpdateStatusPtr( std::shared_ptr<UpdateState> rhs )
 inline std::shared_ptr<VectorData::UpdateState> VectorData::getUpdateStatusPtr() const
 {
     return d_UpdateState;
-}
-inline void VectorData::dataChanged()
-{
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
-    auto firer = dynamic_cast<DataChangeFirer *>( this );
-    if ( firer != nullptr )
-        firer->fireDataChange();
 }
 
 

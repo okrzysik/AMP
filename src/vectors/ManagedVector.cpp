@@ -179,6 +179,21 @@ Vector::UpdateState ManagedVector::getUpdateStatus() const
 }
 
 
+/****************************************************************
+ * data change                                                   *
+ ****************************************************************/
+void ManagedVector::registerListener( std::shared_ptr<DataChangeListener> listener )
+{
+    d_Engine->registerListener( listener );
+    d_vBuffer->registerListener( listener );
+}
+void ManagedVector::fireDataChange()
+{
+    d_Engine->fireDataChange();
+    d_vBuffer->fireDataChange();
+}
+
+
 void ManagedVector::setUpdateStatus( UpdateState state )
 {
     *d_UpdateState = state;
@@ -364,13 +379,6 @@ Vector::shared_ptr ManagedVector::getRootVector()
     if ( vec != nullptr )
         return vec->getRootVector();
     return std::dynamic_pointer_cast<Vector>( d_Engine )->shared_from_this();
-}
-
-
-void ManagedVector::dataChanged()
-{
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 

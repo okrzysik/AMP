@@ -53,6 +53,8 @@ public:
     virtual void assemble() override {}
     virtual ManagedVector *getNewRawPtr() const override;
 
+    void setDataChanged() override { dataChanged(); }
+
 protected:
 };
 } // namespace LinearAlgebra

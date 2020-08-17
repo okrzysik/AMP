@@ -2,7 +2,7 @@
 #define included_AMP_MultiVector
 
 
-#include "AMP/vectors/DataChangePassThrough.h"
+#include "AMP/vectors/DataChangeListener.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/MultiVectorData.h"
 #include "AMP/vectors/operations/MultiVectorOperations.h"
@@ -17,7 +17,7 @@ namespace LinearAlgebra {
  *    Given a set of vectors, they can be collected into a singlevector.  This class
  *    accomplishes this task.
  */
-class MultiVector : public Vector, public MultiVectorData, public DataChangePassThrough
+class MultiVector : public Vector, public MultiVectorData, public DataChangeListener
 {
 public:
     /** \brief Return the first vector in the MultiVector
@@ -202,7 +202,7 @@ protected:
      */
     explicit MultiVector( const std::string &name );
 
-    void dataChanged() override;
+    void setDataChanged() override;
 
 private:
     // Helper function to add a vector without updating the DOF manager

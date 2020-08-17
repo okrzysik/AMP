@@ -2,7 +2,7 @@
 #define included_AMP_ManagedVector
 
 
-#include "AMP/vectors/DataChangeFirer.h"
+#include "AMP/vectors/DataChangeListener.h"
 #include "AMP/vectors/Vector.h"
 
 #include <stdexcept>
@@ -42,7 +42,7 @@ public:
    A ManagedVector has two pointers: data and engine.  If the data pointer
    is null, then the engine is assumed to have the data.
 */
-class ManagedVector : public Vector, public DataChangeFirer
+class ManagedVector : public Vector
 {
 
 public:
@@ -124,11 +124,11 @@ public: // Derived from VectorData
     std::string VectorDataName() const override { return type(); }
     void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 
-    void dataChanged() override;
-
 protected: // Derived from VectorData
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
+    void registerListener( std::shared_ptr<DataChangeListener> listener ) override;
+    void fireDataChange() override;
 
 public: // Derived from Vector
     using Vector::cloneVector;

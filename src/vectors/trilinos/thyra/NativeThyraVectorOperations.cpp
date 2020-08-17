@@ -58,7 +58,7 @@ void NativeThyraVectorOperations::setRandomValues( VectorData &x )
     Thyra::randomize<double>( 0.0, 1.0, getThyraVec( x ).ptr() );
 }
 
-void NativeThyraVectorOperations::setRandomValues( RNG::shared_ptr rng, VectorData &x )
+void NativeThyraVectorOperations::setRandomValues( RNG::shared_ptr, VectorData &x )
 {
     AMP_WARNING( "NativeThyraVectorOperations::setRandomValue : Not using provided RNG" );
     Thyra::randomize<double>( 0.0, 1.0, getThyraVec( x ).ptr() );
