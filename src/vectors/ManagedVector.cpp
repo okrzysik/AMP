@@ -411,12 +411,6 @@ const void *ManagedVector::getRawDataBlockAsVoid( size_t i ) const
 }
 
 
-void ManagedVector::addCommunicationListToParameters( CommunicationList::shared_ptr comm )
-{
-    d_pParameters->d_CommList = comm;
-}
-
-
 size_t ManagedVector::numberOfDataBlocks() const
 {
     return getEngineData( *this )->numberOfDataBlocks();

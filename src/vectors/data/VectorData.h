@@ -290,6 +290,10 @@ public: // Advanced functions
      */
     virtual std::shared_ptr<VectorData> cloneData() const;
 
+    /** \brief Associate the ghost buffer of a Vector with this Vector
+     * \param in  The Vector to share a ghost buffer with
+     */
+    void aliasGhostBuffer( std::shared_ptr<VectorData> in );
 
 public:
     /** \brief Write owned data to an std::ostream
@@ -539,6 +543,11 @@ public: // Non virtual functions
     //! Get the CommunicationList for this Vector
     CommunicationList::shared_ptr getCommunicationList() const;
 
+    /**\brief Set the CommunicationList for this Vector
+     *\details  Setting the CommunicationList for a Vector may involve
+     * reallocating ghost storage.
+     */
+    virtual void setCommunicationList( CommunicationList::shared_ptr comm );
 
     /** \brief  Return the current update state of this Vector
      * \details  This returns the pointer to the update state
@@ -561,7 +570,7 @@ public: // Non virtual functions
 
 protected: // Internal data
     //! The communication list for this vector
-    CommunicationList::shared_ptr d_CommList;
+    CommunicationList::shared_ptr d_CommList = nullptr;
 
     /** \brief  The current update state for a vector
      * \details A Vector can be in one of three states.
@@ -569,11 +578,11 @@ protected: // Internal data
      *  Because a vector can be composed of vectors,
      *  the update state needs to be shared between them.
      */
-    std::shared_ptr<UpdateState> d_UpdateState;
+    std::shared_ptr<UpdateState> d_UpdateState = nullptr;
 
     // Ghost data
-    std::shared_ptr<std::vector<double>> d_Ghosts;
-    std::shared_ptr<std::vector<double>> d_AddBuffer;
+    std::shared_ptr<std::vector<double>> d_Ghosts = nullptr;
+    std::shared_ptr<std::vector<double>> d_AddBuffer = nulppre;
 
     // Friends
     friend class VectorOperations;

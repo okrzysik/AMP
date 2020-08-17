@@ -108,7 +108,6 @@ inline void Vector::setVariable( const Variable::shared_ptr name )
 // clang-format off
 inline void Vector::swapVectors( shared_ptr other ) { swapVectors( *other ); }
 inline void Vector::aliasVector( shared_ptr other ) { aliasVector( *other ); }
-inline void Vector::addCommunicationListToParameters( CommunicationList::shared_ptr ) {}
 inline void Vector::aliasGhostBuffer( shared_ptr in ) { d_Ghosts = in->d_Ghosts; }
 inline std::ostream &operator<<( std::ostream &out, const Vector::shared_ptr p ) { return operator<<( out, *p ); }
 // clang-format on

@@ -158,19 +158,6 @@ Vector::shared_ptr Vector::cloneVector( const std::string &name ) const
 /****************************************************************
  * Misc                                                          *
  ****************************************************************/
-void Vector::setCommunicationList( CommunicationList::shared_ptr comm )
-{
-    AMP_ASSERT( comm );
-    d_CommList = comm;
-    if ( comm ) {
-      //        addCommunicationListToParameters( comm );
-        d_Ghosts =
-            std::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
-        d_AddBuffer =
-            std::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
-    }
-}
-
 
 std::ostream &operator<<( std::ostream &out, const Vector &v )
 {

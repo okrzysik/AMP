@@ -17,6 +17,7 @@ inline size_t VectorData::getGlobalMaxID() const { return getGlobalSize(); }
 inline size_t VectorData::getLocalMaxID() const { return getLocalSize(); }
 inline size_t VectorData::getLocalStartID() const { return d_CommList->getStartGID(); }
 inline CommunicationList::shared_ptr VectorData::getCommunicationList() const { return d_CommList; }
+inline void VectorData::aliasGhostBuffer( std::shared_ptr<VectorData> in ) { d_Ghosts = in->d_Ghosts; }
 inline bool VectorData::containsGlobalElement( size_t i )
 {
     if ( ( i >= d_CommList->getStartGID() ) &&

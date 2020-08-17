@@ -5,12 +5,23 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-VectorData::VectorData()
+VectorData::VectorData() : d_UpdateState { std::make_shared<UpdateState>() },
+                           d_Ghosts{ std::make_shared<std::vector<double>>() },
+			   d_AddBuffer { std::make_shared<std::vector<double>>() }
 {
-    d_Ghosts     = std::make_shared<std::vector<double>>();
-    d_AddBuffer  = std::make_shared<std::vector<double>>();
-    d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UpdateState::UNCHANGED;
+}
+
+void VectorData::setCommunicationList( CommunicationList::shared_ptr comm )
+{
+    AMP_ASSERT( comm );
+    d_CommList = comm;
+    if ( comm ) {
+        d_Ghosts =
+            std::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
+        d_AddBuffer =
+            std::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
+    }
 }
   
 /****************************************************************

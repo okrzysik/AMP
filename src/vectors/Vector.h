@@ -563,12 +563,6 @@ public: // Virtual functions
     //! Get the DOFManager for this Vector
     virtual AMP::Discretization::DOFManager::shared_ptr getDOFManager() const;
 
-    /**\brief Set the CommunicationList for this Vector
-     *\details  Setting the CommunicationList for a Vector may involve
-     * reallocating ghost storage.
-     */
-    virtual void setCommunicationList( CommunicationList::shared_ptr comm );
-
     /** \brief  Return the communicator this Vector spans
      */
     virtual AMP_MPI getComm() const override;
@@ -581,12 +575,6 @@ public: // Virtual functions
 
     // This is the const version of selectInto.
     virtual Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const;
-
-    /** \brief Helper function that probably doesn't need to exist anymore
-     * \param  commList  The CommunicationList to add to the parameters
-     * \details For internal use only
-     */
-    virtual void addCommunicationListToParameters( CommunicationList::shared_ptr commList );
 
     //! Return the pointer to the VectorData
     VectorData *getVectorData() { return d_VectorData; }

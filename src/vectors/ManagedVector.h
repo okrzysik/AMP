@@ -142,7 +142,6 @@ public: // Derived from Vector
 protected: // Derived from Vector
     Vector::shared_ptr selectInto( const VectorSelector & ) override;
     Vector::const_shared_ptr selectInto( const VectorSelector & ) const override;
-    void addCommunicationListToParameters( CommunicationList::shared_ptr comm ) override;
 
 private:
     ManagedVector();
