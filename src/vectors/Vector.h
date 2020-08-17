@@ -19,21 +19,6 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-//! Parameters used to instantiate a Vector
-class VectorParameters : public ParameterBase
-{
-public:
-    //! Convenience typedef
-    typedef std::shared_ptr<VectorParameters> shared_ptr;
-
-    //! The CommunicationList for a vector
-    CommunicationList::shared_ptr d_CommList = nullptr;
-
-    //! The DOF_Manager for a vector
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManager = nullptr;
-};
-
-
 class VectorSelector;
 
 
@@ -728,7 +713,7 @@ protected: // Internal data
     Vector();
 
     //! The DOF_Manager
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManager;
+    AMP::Discretization::DOFManager::shared_ptr d_DOFManager = nullptr;
 
     // Pointer to a VectorOperations object
     std::shared_ptr<VectorOperations> d_VectorOps = nullptr;

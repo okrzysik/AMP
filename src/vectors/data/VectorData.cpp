@@ -5,7 +5,14 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-
+VectorData::VectorData()
+{
+    d_Ghosts     = std::make_shared<std::vector<double>>();
+    d_AddBuffer  = std::make_shared<std::vector<double>>();
+    d_UpdateState.reset( new UpdateState );
+    *d_UpdateState = UpdateState::UNCHANGED;
+}
+  
 /****************************************************************
  * Set/Get individual values                                     *
  ****************************************************************/

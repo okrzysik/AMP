@@ -15,6 +15,20 @@ namespace LinearAlgebra {
 template<typename TYPE>
 class VectorDataIterator;
 
+ 
+//! Parameters used to instantiate a Vector
+class VectorParameters : public ParameterBase
+{
+public:
+    //! Convenience typedef
+    typedef std::shared_ptr<VectorParameters> shared_ptr;
+
+    //! The CommunicationList for a vector
+    CommunicationList::shared_ptr d_CommList = nullptr;
+
+    //! The DOF_Manager for a vector
+    AMP::Discretization::DOFManager::shared_ptr d_DOFManager = nullptr;
+};
 
 /**
  * \brief  A class used to hold vector data
@@ -564,9 +578,9 @@ protected: // Internal data
     friend class VectorOperations;
 
 
-protected: // Protected functions
+public:
     //! Default constructor
-    VectorData() = default;
+    VectorData();
 };
 
 
