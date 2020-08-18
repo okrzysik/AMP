@@ -78,6 +78,32 @@ public: // Functions derived from Vector
     void swapVectors( Vector &other ) override;
     void aliasVector( Vector &other ) override;
     void assemble() override;
+
+public:
+/****************************************************************
+ * VectorData operations -- will move to Vector eventually      *
+ ****************************************************************/
+    std::string VectorDataName() const override;
+    size_t numberOfDataBlocks() const override;
+    size_t sizeOfDataBlock( size_t i = 0 ) const override;
+    void putRawData( const double *buf ) override;
+    void copyOutRawData( double *buf ) const override;
+    size_t getLocalSize() const override;
+    size_t getGlobalSize() const override;
+    size_t getLocalStartID() const override;
+    void setValuesByLocalID( int num, size_t *indices, const double *vals ) override;
+    void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
+    void addValuesByLocalID( int num, size_t *indices, const double *vals ) override;
+    void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
+    void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override;
+    uint64_t getDataID() const override;
+    void *getRawDataBlockAsVoid( size_t i ) override;
+    const void *getRawDataBlockAsVoid( size_t i ) const override;
+    size_t sizeofDataBlockType( size_t i ) const override;
+    bool isTypeId( size_t hash, size_t block ) const override;
+    void swapData( VectorData &rhs ) override;
+    std::shared_ptr<VectorData> cloneData() const override;
+
 };
 
 

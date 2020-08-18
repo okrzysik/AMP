@@ -706,14 +706,14 @@ protected: // Internal data
     // Pointer to a VectorOperations object
     std::shared_ptr<VectorOperations> d_VectorOps = nullptr;
 
-
+protected:
+    // Pointer to *this as a VectorData object
+    VectorData *d_VectorData = nullptr;
+    
 private:
     // The following are not implemented
     explicit Vector( const Vector & );
     void operator=( const Vector & );
-
-    // Pointer to *this as a VectorData object
-    VectorData *d_VectorData = nullptr;
 
     // output stream for vector data
     std::ostream *d_output_stream;

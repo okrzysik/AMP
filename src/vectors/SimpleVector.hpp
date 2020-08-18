@@ -101,5 +101,150 @@ void SimpleVector<TYPE, OPS, DATA>::assemble()
 {
     AMP_ERROR( "Not implemented" );
 }
+
+/****************************************************************
+ * VectorData operations -- will move to Vector eventually      *
+ ****************************************************************/
+  
+template<typename TYPE, typename OPS, typename DATA>
+std::string SimpleVector<TYPE, OPS, DATA>::VectorDataName() const
+{
+  AMP_ASSERT(d_VectorData!=this);
+  return d_VectorData->VectorDataName();
+}
+
+template<typename TYPE, typename OPS, typename DATA>
+size_t SimpleVector<TYPE, OPS, DATA>::numberOfDataBlocks() const
+{
+  AMP_ASSERT(d_VectorData!=this);
+  return d_VectorData->numberOfDataBlocks();
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+size_t SimpleVector<TYPE, OPS, DATA>::sizeOfDataBlock( size_t i ) const
+{
+  AMP_ASSERT(d_VectorData!=this);
+  return d_VectorData->sizeOfDataBlock(i);
+}
+ 
+template<typename TYPE, typename OPS, typename DATA>
+void SimpleVector<TYPE, OPS, DATA>::putRawData( const double *buf )
+{
+  AMP_ASSERT(d_VectorData!=this);
+  d_VectorData->putRawData(buf);
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+void SimpleVector<TYPE, OPS, DATA>::copyOutRawData( double *buf ) const
+{
+  AMP_ASSERT(d_VectorData!=this);
+  d_VectorData->copyOutRawData(buf);
+}
+ 
+template<typename TYPE, typename OPS, typename DATA>
+size_t SimpleVector<TYPE, OPS, DATA>::getLocalSize() const
+{
+  AMP_ASSERT(d_VectorData!=this);
+  return d_VectorData->getLocalSize();
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+size_t SimpleVector<TYPE, OPS, DATA>::getGlobalSize() const
+{
+  AMP_ASSERT(d_VectorData!=this);
+  return d_VectorData->getGlobalSize();
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+size_t SimpleVector<TYPE, OPS, DATA>::getLocalStartID() const
+{
+  AMP_ASSERT(d_VectorData!=this);
+  return d_VectorData->getLocalStartID();
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+void SimpleVector<TYPE, OPS, DATA>::setValuesByLocalID( int num, size_t *indices, const double *vals )
+{
+  AMP_ASSERT(d_VectorData!=this);
+  d_VectorData->setValuesByLocalID( num, indices, vals );
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+void SimpleVector<TYPE, OPS, DATA>::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+{
+  AMP_ASSERT(d_VectorData!=this);
+  d_VectorData->setLocalValuesByGlobalID( num, indices, vals );
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+void SimpleVector<TYPE, OPS, DATA>::addValuesByLocalID( int num, size_t *indices, const double *vals )
+{
+  AMP_ASSERT(d_VectorData!=this);
+  d_VectorData->addValuesByLocalID( num, indices, vals );
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+void SimpleVector<TYPE, OPS, DATA>::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+{
+  AMP_ASSERT(d_VectorData!=this);
+  d_VectorData->addLocalValuesByGlobalID( num, indices, vals );
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+void SimpleVector<TYPE, OPS, DATA>::getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
+{
+  AMP_ASSERT(d_VectorData!=this);
+  d_VectorData->getLocalValuesByGlobalID( num, indices, vals );
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+uint64_t SimpleVector<TYPE, OPS, DATA>::getDataID() const
+{
+  AMP_ASSERT(d_VectorData!=this);
+  return d_VectorData->getDataID();
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+void *SimpleVector<TYPE, OPS, DATA>::getRawDataBlockAsVoid( size_t i )
+{
+  AMP_ASSERT(d_VectorData!=this);
+  return d_VectorData->getRawDataBlockAsVoid(i);
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+const void *SimpleVector<TYPE, OPS, DATA>::getRawDataBlockAsVoid( size_t i ) const
+{
+  AMP_ASSERT(d_VectorData!=this);
+  return d_VectorData->getRawDataBlockAsVoid(i);
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+size_t SimpleVector<TYPE, OPS, DATA>::sizeofDataBlockType( size_t i ) const
+{
+  AMP_ASSERT(d_VectorData!=this);
+  return d_VectorData->sizeofDataBlockType(i);
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+bool SimpleVector<TYPE, OPS, DATA>::isTypeId( size_t hash, size_t block ) const
+{
+  AMP_ASSERT(d_VectorData!=this);
+  return d_VectorData->isTypeId(hash, block);
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+void SimpleVector<TYPE, OPS, DATA>::swapData( VectorData &rhs )
+{
+  AMP_ASSERT(d_VectorData!=this);
+  d_VectorData->swapData(rhs);
+}
+  
+template<typename TYPE, typename OPS, typename DATA>
+std::shared_ptr<VectorData> SimpleVector<TYPE, OPS, DATA>::cloneData() const
+{
+  AMP_ASSERT(d_VectorData!=this);
+  return d_VectorData->cloneData();
+}
+  
 } // namespace LinearAlgebra
 } // namespace AMP
