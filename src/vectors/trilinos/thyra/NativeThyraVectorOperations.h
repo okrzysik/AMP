@@ -55,8 +55,6 @@ public:
     double dot( const VectorData &x, const VectorData &y ) const override;
 
 private:
-    static Teuchos::RCP<const Thyra::VectorBase<double>>
-    getThyraVec( const Vector::const_shared_ptr &v );
 
     static Teuchos::RCP<const Thyra::VectorBase<double>> getThyraVec( const VectorData &v );
     static Teuchos::RCP<Thyra::VectorBase<double>> getThyraVec( VectorData &v );

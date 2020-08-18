@@ -1,4 +1,5 @@
 #include "AMP/vectors/trilinos/thyra/NativeThyraVectorOperations.h"
+#include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
 
@@ -20,32 +21,18 @@ namespace LinearAlgebra {
 NativeThyraVectorOperations::~NativeThyraVectorOperations() = default;
 
 Teuchos::RCP<const Thyra::VectorBase<double>>
-NativeThyraVectorOperations::getThyraVec( const Vector::const_shared_ptr &vec )
-{
-    auto vec2 = std::dynamic_pointer_cast<const ThyraVector>( ThyraVector::constView( vec ) );
-    AMP_ASSERT( vec2 != nullptr );
-    return vec2->getVec();
-}
-
-Teuchos::RCP<const Thyra::VectorBase<double>>
 NativeThyraVectorOperations::getThyraVec( const VectorData &v )
 {
-    auto vec = dynamic_cast<const Vector *>( &v );
-    AMP_ASSERT( vec != nullptr );
-    auto vec2 = std::dynamic_pointer_cast<const ThyraVector>(
-        ThyraVector::constView( vec->shared_from_this() ) );
-    AMP_ASSERT( vec2 != nullptr );
-    return vec2->getVec();
+    auto data = dynamic_cast<const NativeThyraVectorData *>( &v );
+    AMP_ASSERT( data != nullptr );
+    return data->getVec();
 }
 
 Teuchos::RCP<Thyra::VectorBase<double>> NativeThyraVectorOperations::getThyraVec( VectorData &v )
 {
-    auto vec = dynamic_cast<Vector *>( &v );
-    AMP_ASSERT( vec != nullptr );
-    auto vec2 =
-        std::dynamic_pointer_cast<ThyraVector>( ThyraVector::view( vec->shared_from_this() ) );
-    AMP_ASSERT( vec2 != nullptr );
-    return vec2->getVec();
+    auto data = dynamic_cast<NativeThyraVectorData *>( &v );
+    AMP_ASSERT( data != nullptr );
+    return data->getVec();
 }
 
 void NativeThyraVectorOperations::setToScalar( double alpha, VectorData &x )
