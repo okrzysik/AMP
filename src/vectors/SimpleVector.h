@@ -103,17 +103,18 @@ public:
     bool isTypeId( size_t hash, size_t block ) const override;
     void swapData( VectorData &rhs ) override;
     std::shared_ptr<VectorData> cloneData() const override;
-// temporary functions
+    // temporary functions
     void setComm( AMP_MPI comm) { d_comm = comm; }
     void allocateVectorData( size_t localSize, size_t numLocal, size_t numGlobal );
-void setDOFManager( std::shared_ptr<AMP::Discretization::DOFManager> dofManager);
+    void setDOFManager( std::shared_ptr<AMP::Discretization::DOFManager> dofManager);
     void setCommunicationList( CommunicationList::shared_ptr comm ) override;
     AMP_MPI getComm() const override{ return d_VectorData->getComm(); }
 
     //! Get the CommunicationList for this Vector
-CommunicationList::shared_ptr getCommunicationList() const override { return d_VectorData->getCommunicationList(); }
+    CommunicationList::shared_ptr getCommunicationList() const override { return d_VectorData->getCommunicationList(); }
 
-void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent(t); }
+    void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent(t); }
+    void setUpdateStatus( UpdateState state ) override { d_VectorData->setUpdateStatus(state); }
 };
 
 
