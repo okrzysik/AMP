@@ -30,9 +30,15 @@ Vector::shared_ptr SimpleVector<TYPE, OPS, DATA>::create( size_t localSize,
     auto DOFs = std::make_shared<AMP::Discretization::DOFManager>( localSize, comm );
     auto ptr  = new SimpleVector<TYPE, OPS, DATA>();
     ptr->setVariable( var );
+#if 1
+    ptr->allocateVectorData( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
+    ptr->setComm( comm );
+    ptr->setDOFManager(DOFs);
+#else
     ptr->allocate( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
     ptr->d_comm       = comm;
     ptr->d_DOFManager = DOFs;
+#endif   
     ptr->setCommunicationList(
         AMP::LinearAlgebra::CommunicationList::createEmpty( localSize, comm ) );
     return Vector::shared_ptr( ptr );
@@ -44,9 +50,15 @@ SimpleVector<TYPE, OPS, DATA>::create( size_t localSize, Variable::shared_ptr va
     auto DOFs = std::make_shared<AMP::Discretization::DOFManager>( localSize, comm );
     auto ptr  = new SimpleVector<TYPE, OPS, DATA>();
     ptr->setVariable( var );
+#if 1
+    ptr->allocateVectorData( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
+    ptr->setComm( comm );
+    ptr->setDOFManager(DOFs);
+#else
     ptr->allocate( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
     ptr->d_DOFManager = DOFs;
     ptr->d_comm       = comm;
+#endif
     ptr->setCommunicationList(
         AMP::LinearAlgebra::CommunicationList::createEmpty( localSize, comm ) );
     return Vector::shared_ptr( ptr );
@@ -59,18 +71,29 @@ SimpleVector<TYPE, OPS, DATA>::create( Variable::shared_ptr var,
 {
     auto ptr = new SimpleVector<TYPE, OPS, DATA>();
     ptr->setVariable( var );
+#if 1
+    ptr->allocateVectorData( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
+    ptr->setDOFManager(DOFs);
+    ptr->setComm( DOFs->getComm() );
+#else
     ptr->allocate( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
     ptr->d_DOFManager = DOFs;
-    ptr->setCommunicationList( commlist );
     ptr->d_comm = DOFs->getComm();
+#endif
+    ptr->setCommunicationList( commlist );
     return Vector::shared_ptr( ptr );
 }
 template<typename TYPE, typename OPS, typename DATA>
 void SimpleVector<TYPE, OPS, DATA>::resize( size_t N )
 {
     d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>( N, d_comm );
+#if 1
+    this->allocateVectorData(
+        d_DOFManager->beginDOF(), d_DOFManager->numLocalDOF(), d_DOFManager->numGlobalDOF() );
+#else
     this->allocate(
         d_DOFManager->beginDOF(), d_DOFManager->numLocalDOF(), d_DOFManager->numGlobalDOF() );
+#endif
 }
 
 
