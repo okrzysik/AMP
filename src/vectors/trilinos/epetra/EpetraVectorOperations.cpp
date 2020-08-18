@@ -1,5 +1,5 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
-#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -9,14 +9,14 @@ static inline const Epetra_Vector &getEpetraVector( const VectorData &vec )
     auto epetraData = dynamic_cast<const EpetraVectorData *>( &vec );
     if ( epetraData )
         return epetraData->getEpetra_Vector();
-    AMP_ERROR( "Not an EpetraVectorData" );
+    AMP_ERROR( "Not EpetraVectorData" );
 }
 static inline Epetra_Vector &getEpetraVector( VectorData &vec )
 {
     auto epetraData = dynamic_cast<EpetraVectorData *>( &vec );
     if ( epetraData )
         return epetraData->getEpetra_Vector();
-    AMP_ERROR( "Not an EpetraVectorData" );
+    AMP_ERROR( "Not EpetraVectorData" );
 }
 //**********************************************************************
 // Functions that operate on VectorData objects

@@ -28,7 +28,8 @@ public:
 
     virtual void destroyNativeVector( AMP::LinearAlgebra::NativePetscVector &rhs ) const
     {
-        PETSC::vecDestroy( &rhs.getVec() );
+      auto nvData = dynamic_cast<NativePetscVectorData*>(rhs.getVectorData());
+      PETSC::vecDestroy( &(nvData->getVec()) );
     }
 
     virtual void destroyNativeVector( AMP::LinearAlgebra::Vector::shared_ptr rhs ) const
@@ -151,7 +152,8 @@ public:
 
     virtual void destroyNativeVector( AMP::LinearAlgebra::NativePetscVector &rhs ) const override
     {
-        PETSC::vecDestroy( &rhs.getVec() );
+      auto nvData = dynamic_cast<NativePetscVectorData*>(rhs.getVectorData());
+      PETSC::vecDestroy( &(nvData->getVec()) );
     }
 
     virtual void destroyNativeVector( AMP::LinearAlgebra::Vector::shared_ptr rhs ) const override

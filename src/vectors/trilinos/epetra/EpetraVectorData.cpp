@@ -28,7 +28,6 @@ EpetraVectorData::EpetraVectorData( Epetra_DataAccess method,
       d_iGlobalSize( globalSize )
 {
   d_buf_scope = bufData;
-  AMP::pout << "EpetraVectorData::EpetraVectorData non default ctor" << std::endl;
 }
 
 EpetraVectorData *EpetraVectorData::create( Epetra_DataAccess access,

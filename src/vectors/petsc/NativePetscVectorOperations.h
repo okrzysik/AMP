@@ -39,8 +39,8 @@ private:
     static Vec getPetscVec( const VectorData &x );
     static Vec getConstPetscVec( const VectorData &x );
 
-    static NativePetscVector *getNativeVec( VectorData &vx );
-    static const NativePetscVector *getNativeVec( const VectorData &vx );
+    static NativePetscVectorData *getNativeVec( VectorData &vx );
+    static const NativePetscVectorData *getNativeVec( const VectorData &vx );
 
 public:
     void copy( const VectorData &x, VectorData &z ) override;
