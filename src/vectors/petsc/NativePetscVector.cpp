@@ -46,6 +46,10 @@ void NativePetscVector::swapVectors( Vector &other )
 {
   d_VectorData->swapData(*other.getVectorData());
 }
+void NativePetscVector::assemble( )
+{
+  dynamic_cast<NativePetscVector*>(d_VectorData)->assemble();
+}
 
 } // namespace LinearAlgebra
 } // namespace AMP

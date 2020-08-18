@@ -189,6 +189,12 @@ void NativePetscVectorData::getLocalValuesByGlobalID( int numVals, size_t *ndx, 
     }
 }
 
+void NativePetscVectorData::assemble()
+{
+    VecAssemblyBegin( d_petscVec );
+    VecAssemblyEnd( d_petscVec );
+}
+
 NativePetscVectorParameters::NativePetscVectorParameters( Vec v, bool deleteable )
 {
     // Get the communicator from the PETSc vector
