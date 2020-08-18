@@ -103,18 +103,23 @@ public:
     bool isTypeId( size_t hash, size_t block ) const override;
     void swapData( VectorData &rhs ) override;
     std::shared_ptr<VectorData> cloneData() const override;
+
     // temporary functions
     void setComm( AMP_MPI comm) { d_comm = comm; }
     void allocateVectorData( size_t localSize, size_t numLocal, size_t numGlobal );
     void setDOFManager( std::shared_ptr<AMP::Discretization::DOFManager> dofManager);
-    void setCommunicationList( CommunicationList::shared_ptr comm ) override;
-    AMP_MPI getComm() const override{ return d_VectorData->getComm(); }
 
+
+    UpdateState getUpdateStatus() const override { return d_VectorData->getUpdateStatus(); }
+    void setUpdateStatus( UpdateState state ) override { d_VectorData->setUpdateStatus(state); }
+    void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent(t); }
+    AMP_MPI getComm() const override{ return d_VectorData->getComm(); }
+    bool hasComm() const override { return d_VectorData->hasComm(); }
     //! Get the CommunicationList for this Vector
     CommunicationList::shared_ptr getCommunicationList() const override { return d_VectorData->getCommunicationList(); }
+    void setCommunicationList( CommunicationList::shared_ptr comm ) override;
+    void dataChanged() override { return d_VectorData->dataChanged(); }
 
-    void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent(t); }
-    void setUpdateStatus( UpdateState state ) override { d_VectorData->setUpdateStatus(state); }
 };
 
 
