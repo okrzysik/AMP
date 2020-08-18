@@ -11,7 +11,7 @@ namespace LinearAlgebra {
  * Constructors                                                  *
  ****************************************************************/
 template<typename TYPE, typename OPS, typename DATA>
-SimpleVector<TYPE, OPS, DATA>::SimpleVector() : Vector(), DATA()
+SimpleVector<TYPE, OPS, DATA>::SimpleVector() : Vector()
 {
     d_VectorOps = std::make_shared<OPS>();
 }
