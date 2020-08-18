@@ -706,7 +706,7 @@ public: // Non-virtual functions
      * be used to make consistent.  When setting entries in a vector
      * the BROADCAST should be used.
      */
-    void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent(); }
+    void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent(t); }
 
 protected: // Internal data
     // A default RNG to use when one is not specified
