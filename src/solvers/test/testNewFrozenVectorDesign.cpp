@@ -95,8 +95,8 @@ int main( int argc, char *argv[] )
 
     auto firstSolData = firstSol->getVectorData();
     auto secondSolData = secondSol->getVectorData();
-    std::cout << "First Solution = " << ( ( *firstSolData )[0] ) << std::endl;
-    std::cout << "Second Solution = " << ( ( *secondSolData )[0] ) << std::endl;
+    //    std::cout << "First Solution = " << ( ( *firstSolData )[0] ) << std::endl;
+    //   std::cout << "Second Solution = " << ( ( *secondSolData )[0] ) << std::endl;
 
     ut.passes( exeName );
 
