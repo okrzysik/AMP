@@ -603,7 +603,7 @@ public: // Constructor/destructors
 
 
 public: // Non-virtual functions
-    void copyVector( std::shared_ptr<const Vector> x ) { d_VectorOps->copy( x->getVectorData(), *d_VectorData ); }
+    void copyVector( std::shared_ptr<const Vector> x ) { d_VectorOps->copy( *(x->getVectorData()), *d_VectorData ); }
 
     /** \brief Change the variable associated with this vector
      * \param[in] name  The new variable
