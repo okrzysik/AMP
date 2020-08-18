@@ -93,8 +93,10 @@ int main( int argc, char *argv[] )
     auto secondSol = std::dynamic_pointer_cast<AMP::LinearAlgebra::SimpleVector<double>>(
         solVec->subsetVectorForVariable( secondVar ) );
 
-    std::cout << "First Solution = " << ( ( *firstSol )[0] ) << std::endl;
-    std::cout << "Second Solution = " << ( ( *secondSol )[0] ) << std::endl;
+    auto firstSolData = firstSol->getVectorData();
+    auto secondSolData = secondSol->getVectorData();
+    std::cout << "First Solution = " << ( ( *firstSolData )[0] ) << std::endl;
+    std::cout << "Second Solution = " << ( ( *secondSolData )[0] ) << std::endl;
 
     ut.passes( exeName );
 
