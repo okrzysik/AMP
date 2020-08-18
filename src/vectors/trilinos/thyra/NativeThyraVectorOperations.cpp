@@ -63,11 +63,7 @@ void NativeThyraVectorOperations::scale( double alpha, VectorData &x )
 
 void NativeThyraVectorOperations::scale( double alpha, const VectorData &x, VectorData &y )
 {
-    auto src = dynamic_cast<const Vector *>( &x );
-    AMP_ASSERT( src != nullptr );
-    auto dst = dynamic_cast<Vector *>( &y );
-    AMP_ASSERT( dst != nullptr );
-    dst->copyVector( src->shared_from_this() );
+    Thyra::copy<double>( *( getThyraVec( x ) ), getThyraVec( y ).ptr() );
     Thyra::scale<double>( alpha, getThyraVec( y ).ptr() );
 }
 
