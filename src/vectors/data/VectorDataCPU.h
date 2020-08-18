@@ -22,7 +22,7 @@ class VectorDataIterator;
 
   */
 template<typename TYPE = double>
-class VectorDataCPU : virtual public VectorData
+class VectorDataCPU : public VectorData
 {
 public: // Constructors
     VectorDataCPU( size_t data, size_t startIndex, size_t globalSize );
