@@ -183,8 +183,10 @@ void VectorTests::DotProductVector( AMP::UnitTest *utils )
         utils->failure( "dot product 3 " + d_factory->name() );
     if ( d11 == vector1->getGlobalSize() )
         utils->passes( "dot product 4 " + d_factory->name() );
-    else
+    else {
+      AMP::pout << " d11: " << d11 << ", getGlobalSize(): " << vector1->getGlobalSize() << std::endl;
         utils->failure( "dot product 4 " + d_factory->name() );
+    }
     if ( d21 == d12 )
         utils->passes( "dot product 5 " + d_factory->name() );
     else
