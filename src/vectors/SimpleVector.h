@@ -108,7 +108,7 @@ public:
     void allocateVectorData( size_t localSize, size_t numLocal, size_t numGlobal );
 void setDOFManager( std::shared_ptr<AMP::Discretization::DOFManager> dofManager);
     void setCommunicationList( CommunicationList::shared_ptr comm ) override;
-    AMP_MPI Vector::getComm() const override{ return d_VectorData->getComm(); }
+    AMP_MPI getComm() const override{ return d_VectorData->getComm(); }
 };
 
 
