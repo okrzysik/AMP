@@ -17,7 +17,7 @@ namespace LinearAlgebra {
 template<typename TYPE,
          typename VecOps  = VectorOperationsDefault<TYPE>,
          typename VecData = VectorDataCPU<TYPE>>
-class SimpleVector : public Vector, public VecData
+class SimpleVector : public Vector
 {
 protected:
     AMP_MPI d_comm;
