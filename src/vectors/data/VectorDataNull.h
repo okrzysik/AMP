@@ -22,8 +22,10 @@ class VectorDataIterator;
 
   */
 template<typename TYPE = double>
-class VectorDataNull : virtual public VectorData
+class VectorDataNull : public VectorData
 {
+public:
+    VectorDataNull() {}
 
 public: // Virtual functions
     //! Virtual destructor
@@ -161,9 +163,6 @@ public: // Advanced virtual functions
     }
 
     inline void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
-
-protected:
-    VectorDataNull() {}
 };
 
 
