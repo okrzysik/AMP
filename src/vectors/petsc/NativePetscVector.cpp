@@ -14,7 +14,8 @@ NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params )
     : Vector()
 {
     d_VectorOps    = std::make_shared<NativePetscVectorOperations>();
-    d_VectorData   = new NativePetscVectorData(in_params);
+    d_VectorDataSP = std::make_shared<NativePetscVectorData>(in_params);
+    d_VectorData   = d_VectorDataSP.get();
     
     auto npvParams = std::dynamic_pointer_cast<NativePetscVectorParameters>( in_params );   
     d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>( npvParams->d_localsize,
@@ -30,7 +31,6 @@ NativePetscVector::NativePetscVector( std::shared_ptr<VectorData> data )
 
 NativePetscVector::~NativePetscVector()
 {
-  if (d_VectorData) delete d_VectorData;
 }
 
 Vector::shared_ptr NativePetscVector::cloneVector( const Variable::shared_ptr var ) const
