@@ -74,7 +74,7 @@ SimpleVector<TYPE, OPS, DATA>::create( Variable::shared_ptr var,
 #if 1
     ptr->allocateVectorData( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
     ptr->setDOFManager(DOFs);
-    const auto comm = DOFs->getComm();
+    auto comm = DOFs->getComm();
     ptr->setComm( comm );
 #else
     ptr->allocate( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
