@@ -189,7 +189,7 @@ double NativePetscVectorOperations::max( const VectorData &x ) const
 double NativePetscVectorOperations::dot( const VectorData &x, const VectorData &y ) const
 {
     double ans;
-    VecDot( getConstPetscVec( y ), getConstPetscVec( x ), &ans );
+    VecDot( getConstPetscVec( x ), getConstPetscVec( y ), &ans );
     return ans;
 }
 
