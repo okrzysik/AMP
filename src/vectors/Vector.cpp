@@ -39,8 +39,6 @@ Vector::Vector( VectorParameters::shared_ptr parameters )
     AMP_INSIST( parameters->d_CommList, "d_CommList must be set in VectorParameters" );
     AMP_INSIST( parameters->d_DOFManager, "d_DOFManager must be set in VectorParameters" );
     setCommunicationList( parameters->d_CommList );
-    //    d_UpdateState.reset( new UpdateState );
-    //    *d_UpdateState = UpdateState::UNCHANGED;
     d_DOFManager   = parameters->d_DOFManager;
     d_Views        = std::make_shared<std::vector<std::weak_ptr<Vector>>>();
 }

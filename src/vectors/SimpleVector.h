@@ -109,6 +109,9 @@ public:
 void setDOFManager( std::shared_ptr<AMP::Discretization::DOFManager> dofManager);
     void setCommunicationList( CommunicationList::shared_ptr comm ) override;
     AMP_MPI getComm() const override{ return d_VectorData->getComm(); }
+
+    //! Get the CommunicationList for this Vector
+CommunicationList::shared_ptr getCommunicationList() const override { return d_VectorData->getCommunicationList(); }
 };
 
 

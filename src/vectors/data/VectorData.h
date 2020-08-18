@@ -358,6 +358,15 @@ public: // Virtual functions dealing with the update status
 
     bool hasComm( void ) const { return ( d_CommList != nullptr ); }
 
+    //! Get the CommunicationList for this Vector
+    virtual CommunicationList::shared_ptr getCommunicationList() const;
+
+    /**\brief Set the CommunicationList for this Vector
+     *\details  Setting the CommunicationList for a Vector may involve
+     * reallocating ghost storage.
+     */
+    virtual void setCommunicationList( CommunicationList::shared_ptr comm );
+
 public: // Non-virtual functions
     /**
      * \brief Return an iterator to the beginning of the data
@@ -538,16 +547,6 @@ public: // Non virtual functions
      * \details This uses getValuesByGlobalID to get the value
      */
     double getValueByLocalID( size_t i ) const;
-
-
-    //! Get the CommunicationList for this Vector
-    CommunicationList::shared_ptr getCommunicationList() const;
-
-    /**\brief Set the CommunicationList for this Vector
-     *\details  Setting the CommunicationList for a Vector may involve
-     * reallocating ghost storage.
-     */
-    virtual void setCommunicationList( CommunicationList::shared_ptr comm );
 
     /** \brief  Return the current update state of this Vector
      * \details  This returns the pointer to the update state
