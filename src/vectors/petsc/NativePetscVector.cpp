@@ -48,7 +48,7 @@ void NativePetscVector::swapVectors( Vector &other )
 }
 void NativePetscVector::assemble( )
 {
-  dynamic_cast<NativePetscVector*>(d_VectorData)->assemble();
+  dynamic_cast<NativePetscVectorData*>(d_VectorData)->assemble();
 }
 
 } // namespace LinearAlgebra
