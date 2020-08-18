@@ -134,17 +134,30 @@ AMP::Discretization::DOFManager::shared_ptr ManagedNativeThyraFactory::getDOFMap
 
 #ifdef USE_TRILINOS_BELOS
 
+Teuchos::RCP<Thyra::VectorBase<double>> getThyraVec( AMP::LinearAlgebra::Vector::shared_ptr v )
+{
+  auto mv = std::dynamic_pointer_cast<ManagedThyraVector>(v);
+  if ( mv ) return std::dynamic_pointer_cast<ThyraVector>(v)->getVec();
+
+  auto nv = std::dynamic_pointer_cast<NativeThyraVector>(v);
+  if(nv) {
+    return  std::dynamic_pointer_cast<ThyraVector>(nv)->getVec();
+  } else {
+    AMP_ERROR("Not a Thyra Vector");
+  }
+}
+
 /****************************************************************
  * testBelosThyraVector                                          *
  ****************************************************************/
 void testBelosThyraVector( AMP::UnitTest &ut, const VectorFactory &factory )
 {
-    std::shared_ptr<AMP::LinearAlgebra::ThyraVector> vector =
-        std::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>( factory.getVector() );
+    auto vector = factory.getVector();
     using TMVB = Thyra::MultiVectorBase<double>;
     Teuchos::RCP<Belos::OutputManager<double>> outputmgr =
         Teuchos::rcp( new Belos::OutputManager<double>() );
-    bool pass = Belos::TestMultiVecTraits<double, TMVB>( outputmgr, vector->getVec() );
+    
+    bool pass = Belos::TestMultiVecTraits<double, TMVB>( outputmgr, getThyraVec(vector) );
     if ( pass )
         ut.passes( "Belos::TestMultiVecTraits of thyra vector" );
     else
