@@ -44,10 +44,10 @@ public:
 
     // These are adequately documented in a base class or there is little need for the documentation
     ManagedSundialsVector *rawClone() const;
-    virtual std::string type() const override;
+    std::string type() const override;
     using Vector::cloneVector;
-    Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const;
-    virtual void assemble() override;
+    Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const override;
+    void assemble() override;
 
 protected:
     virtual ManagedVector *getNewRawPtr() const override;
