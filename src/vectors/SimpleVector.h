@@ -112,6 +112,8 @@ void setDOFManager( std::shared_ptr<AMP::Discretization::DOFManager> dofManager)
 
     //! Get the CommunicationList for this Vector
 CommunicationList::shared_ptr getCommunicationList() const override { return d_VectorData->getCommunicationList(); }
+
+    void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent() };
 };
 
 
