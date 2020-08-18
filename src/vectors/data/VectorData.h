@@ -356,7 +356,7 @@ public: // Virtual functions dealing with the update status
     //! Get the communicator
     virtual AMP_MPI getComm() const;
 
-    bool hasComm( void ) const { return ( d_CommList != nullptr ); }
+    virtual bool hasComm( void ) const { return ( d_CommList != nullptr ); }
 
     //! Get the CommunicationList for this Vector
     virtual CommunicationList::shared_ptr getCommunicationList() const;

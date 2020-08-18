@@ -588,6 +588,8 @@ public: // Virtual functions
     //! Return the pointer to the VectorOperation
     std::shared_ptr<const VectorOperations> getVectorOperations() const { return d_VectorOps; }
 
+    bool hasComm( void ) const override { return ( getVectorData()->getCommunicationList() != nullptr ); }
+
 public: // Constructor/destructors
     /** \brief Constructor
      * \param[in] parameters  A pointer to a parameters class
