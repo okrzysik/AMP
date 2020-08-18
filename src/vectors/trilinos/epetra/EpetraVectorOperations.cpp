@@ -4,14 +4,6 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-
-static inline const Epetra_Vector &getEpetraVector( const VectorOperations &vec )
-{
-    auto epetraEngine = dynamic_cast<const EpetraVectorEngine *>( &vec );
-    if ( epetraEngine )
-        return epetraEngine->getEpetra_Vector();
-    AMP_ERROR( "Not an EpetraVectorEngine" );
-}
 static inline const Epetra_Vector &getEpetraVector( const VectorData &vec )
 {
     auto epetraEngine = dynamic_cast<const EpetraVectorEngine *>( &vec );
@@ -26,22 +18,6 @@ static inline Epetra_Vector &getEpetraVector( VectorData &vec )
         return epetraEngine->getEpetra_Vector();
     AMP_ERROR( "Not an EpetraVectorEngine" );
 }
-
-Epetra_Vector &EpetraVectorOperations::getEpetra_Vector()
-{
-    auto epetraEngine = dynamic_cast<EpetraVectorEngine *>( this );
-    if ( epetraEngine )
-        return epetraEngine->getEpetra_Vector();
-    AMP_ERROR( "Not an EpetraVectorEngine" );
-}
-const Epetra_Vector &EpetraVectorOperations::getEpetra_Vector() const
-{
-    auto epetraEngine = dynamic_cast<const EpetraVectorEngine *>( this );
-    if ( epetraEngine )
-        return epetraEngine->getEpetra_Vector();
-    AMP_ERROR( "Not an EpetraVectorEngine" );
-}
-
 //**********************************************************************
 // Functions that operate on VectorData objects
 

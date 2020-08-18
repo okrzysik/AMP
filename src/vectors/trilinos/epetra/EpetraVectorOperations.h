@@ -83,8 +83,6 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::min;
 
 protected:
-    Epetra_Vector &getEpetra_Vector();
-    const Epetra_Vector &getEpetra_Vector() const;
 };
 
 
