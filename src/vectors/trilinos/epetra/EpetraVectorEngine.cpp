@@ -122,6 +122,8 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
 EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<EpetraVectorEngineParameters> alias,
                                         std::shared_ptr<VectorData> buf )
     : Vector( alias ),
+#if 0
+      // clean up later and dont forget to delete in dtor!!!!!!!!
       EpetraVectorData(
           View,
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
@@ -129,10 +131,19 @@ EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<EpetraVectorEngineParame
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->beginDOF(),
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
           std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() ),
+#endif
       d_Params( alias )
 {
     d_VectorOps = std::make_shared<EpetraVectorOperations>();
+    d_VectorData = EpetraVectorData::create( View,
+					     std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
+					     buf,
+					     std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->beginDOF(),
+					     std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
+					     std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() );
+#if 0
     d_buf_scope = buf;
+#endif
 }
 
 Vector::shared_ptr EpetraVectorEngine::cloneVector( const Variable::shared_ptr name ) const

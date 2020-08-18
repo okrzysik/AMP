@@ -78,11 +78,10 @@ public: // Functions derived from Vector
     void swapVectors( Vector &other ) override;
     void aliasVector( Vector &other ) override;
     void assemble() override;
-
-public:
 /****************************************************************
  * VectorData operations -- will move to Vector eventually      *
  ****************************************************************/
+public:
     std::string VectorDataName() const override;
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i = 0 ) const override;
@@ -104,12 +103,6 @@ public:
     void swapData( VectorData &rhs ) override;
     std::shared_ptr<VectorData> cloneData() const override;
 
-    // temporary functions
-    void setComm( AMP_MPI comm) { d_comm = comm; }
-    void allocateVectorData( size_t localSize, size_t numLocal, size_t numGlobal );
-    void setDOFManager( std::shared_ptr<AMP::Discretization::DOFManager> dofManager);
-
-
     UpdateState getUpdateStatus() const override { return d_VectorData->getUpdateStatus(); }
     void setUpdateStatus( UpdateState state ) override { d_VectorData->setUpdateStatus(state); }
     void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent(t); }
@@ -119,6 +112,14 @@ public:
     CommunicationList::shared_ptr getCommunicationList() const override { return d_VectorData->getCommunicationList(); }
     void setCommunicationList( CommunicationList::shared_ptr comm ) override;
     void dataChanged() override { return d_VectorData->dataChanged(); }
+/****************************************************************
+ ****************************************************************/
+
+    // temporary functions
+    void setComm( AMP_MPI comm) { d_comm = comm; }
+    void allocateVectorData( size_t localSize, size_t numLocal, size_t numGlobal );
+    void setDOFManager( std::shared_ptr<AMP::Discretization::DOFManager> dofManager);
+
 
 };
 

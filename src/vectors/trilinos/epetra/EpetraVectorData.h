@@ -21,7 +21,13 @@ class EpetraVectorData : virtual public VectorData
 
 public: // Virtual functions
     //! Virtual destructor
-    virtual ~EpetraVectorData() {}
+  virtual ~EpetraVectorData();
+  static EpetraVectorData *create( Epetra_DataAccess access,
+				   const Epetra_BlockMap &map,
+				   std::shared_ptr<VectorData> bufData,
+				   int startIndex,
+				   int localSize,
+				   int globalSize);
 
     std::string VectorDataName() const override { return "EpetraVectorData"; }
     size_t getLocalSize() const override { return d_iLocalSize; }
@@ -51,9 +57,18 @@ public: // Virtual functions
     void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
     std::shared_ptr<VectorData> cloneData() const override;
 
+    /** \brief  Get the raw Epetra_Vector
+     * \return  The Epetra_Vector currently used by this engine
+     */
+    inline Epetra_Vector &getEpetra_Vector() { return d_epetraVector; }
 
-protected:
-    EpetraVectorData( Epetra_DataAccess, const Epetra_BlockMap &, double *, int, int, int );
+    /** \brief  Get the raw Epetra_Vector
+     * \return  The Epetra_Vector currently used by this engine
+     */
+    inline const Epetra_Vector &getEpetra_Vector() const { return d_epetraVector; }
+ 
+ protected:
+   EpetraVectorData( Epetra_DataAccess, const Epetra_BlockMap &, std::shared_ptr<VectorData>, int, int, int );
 
     //! The Epetra_Vector to perform work on
     Epetra_Vector d_epetraVector;

@@ -5,20 +5,45 @@
 namespace AMP {
 namespace LinearAlgebra {
 
+static inline double *getBufferPtr( std::shared_ptr<VectorData> buf )
+{
+    size_t N_blocks = buf->numberOfDataBlocks();
+    if ( N_blocks == 0 )
+        return nullptr;
+    if ( N_blocks > 1 )
+        AMP_ERROR( "More than 1 data block detected" );
+    return buf->getRawDataBlock<double>( 0 );
+}
+
 
 EpetraVectorData::EpetraVectorData( Epetra_DataAccess method,
                                     const Epetra_BlockMap &map,
-                                    double *data,
+                                    std::shared_ptr<VectorData> bufData,
                                     int localStart,
                                     int localSize,
                                     int globalSize )
-    : d_epetraVector( method, map, data ),
+    : d_epetraVector( method, map, getBufferPtr(bufData) ),
       d_iLocalStart( localStart ),
       d_iLocalSize( localSize ),
       d_iGlobalSize( globalSize )
 {
+  d_buf_scope = bufData;
 }
 
+EpetraVectorData *EpetraVectorData::create( Epetra_DataAccess access,
+					    const Epetra_BlockMap &map,
+					    std::shared_ptr<VectorData> bufData,
+					    int startIndex,
+					    int localSize,
+					    int globalSize)
+{
+  return new EpetraVectorData(access,
+			      map,
+			      bufData,
+			      startIndex,
+			      localSize,
+			      globalSize);
+}
 
 void *EpetraVectorData::getRawDataBlockAsVoid( size_t i )
 {
