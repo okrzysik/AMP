@@ -255,7 +255,7 @@ void SimpleVector<TYPE, OPS, DATA>::allocateVectorData( size_t localSize, size_t
 }
 
 template<typename TYPE, typename OPS, typename DATA>
-void SimpleVector<TYPE, OPS, DATA>::setDOFManager( shared_ptr<AMP::Discretization::DOFManager> dofManager)
+void SimpleVector<TYPE, OPS, DATA>::setDOFManager( std::shared_ptr<AMP::Discretization::DOFManager> dofManager)
 {
   AMP_ASSERT(d_VectorData!=this);
   d_DOFManager = dofManager;
