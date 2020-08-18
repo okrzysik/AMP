@@ -25,7 +25,9 @@ Vec NativePetscVectorOperations::getPetscVec( const VectorData &vx )
 
 Vec NativePetscVectorOperations::getConstPetscVec( const VectorData &vx )
 {
-    return dynamic_cast<const NativePetscVectorData *>( &vx )->getVec();
+    auto nx = dynamic_cast<const NativePetscVectorData *>( &vx );
+    AMP_ASSERT(nx);
+    return nx->getVec();
 }
   
 NativePetscVectorData *NativePetscVectorOperations::getNativeVec( VectorData &vx )
