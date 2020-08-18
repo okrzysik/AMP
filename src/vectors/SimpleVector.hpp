@@ -245,6 +245,28 @@ std::shared_ptr<VectorData> SimpleVector<TYPE, OPS, DATA>::cloneData() const
   AMP_ASSERT(d_VectorData!=this);
   return d_VectorData->cloneData();
 }
-  
+
+// temporary functions
+template<typename TYPE, typename OPS, typename DATA>
+void SimpleVector<TYPE, OPS, DATA>::allocateVectorData( size_t localSize, size_t numLocal, size_t numGlobal )
+{
+  d_VectorData = new DATA(localSize, numLocal, numGlobal);
+  AMP_ASSERT(d_VectorData!=this);
+}
+
+template<typename TYPE, typename OPS, typename DATA>
+void SimpleVector<TYPE, OPS, DATA>::setDOFManager( shared_ptr<AMP::Discretization::DOFManager> dofManager)
+{
+  AMP_ASSERT(d_VectorData!=this);
+  d_DOFManager = dofManager;
+}
+
+template<typename TYPE, typename OPS, typename DATA>
+void SimpleVector<TYPE, OPS, DATA>::setCommunicationList( CommunicationList::shared_ptr comm )
+{
+  AMP_ASSERT(d_VectorData!=this);
+  d_VectorData->setCommunicationList(comm);
+}
+ 
 } // namespace LinearAlgebra
 } // namespace AMP

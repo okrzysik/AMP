@@ -103,7 +103,11 @@ public:
     bool isTypeId( size_t hash, size_t block ) const override;
     void swapData( VectorData &rhs ) override;
     std::shared_ptr<VectorData> cloneData() const override;
-
+// temporary functions
+    void setComm( AMP_MPI &comm) { d_Comm = comm; }
+    void allocateVectorData( size_t localSize, size_t numLocal, size_t numGlobal );
+    void setDOFManager( shared_ptr<AMP::Discretization::DOFManager> dofManager);
+    void setCommunicationList( CommunicationList::shared_ptr comm ) override;
 };
 
 
