@@ -21,7 +21,7 @@ class EpetraVectorData : virtual public VectorData
 
 public: // Virtual functions
     //! Virtual destructor
-  virtual ~EpetraVectorData();
+  virtual ~EpetraVectorData() {}
   static EpetraVectorData *create( Epetra_DataAccess access,
 				   const Epetra_BlockMap &map,
 				   std::shared_ptr<VectorData> bufData,
