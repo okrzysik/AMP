@@ -288,9 +288,15 @@ void MultiVectorData::copyOutRawData( double *out ) const
  ****************************************************************/
 void MultiVectorData::makeConsistent( ScatterType t )
 {
-    for ( const auto &data : d_data )
-        data->makeConsistent( t );
-    *d_UpdateState = VectorData::UpdateState::UNCHANGED;
+  for ( const auto &data : d_data ) {
+    auto vec = dynamic_cast<Vector *>(data);
+    if (vec) {
+      vec->getVectorData()->makeConsistent( t );
+    } else {
+      data->makeConsistent( t );
+    }
+  }
+  *d_UpdateState = VectorData::UpdateState::UNCHANGED;
 }
 VectorData::UpdateState MultiVectorData::getUpdateStatus() const
 {

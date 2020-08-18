@@ -691,23 +691,6 @@ public: // Non-virtual functions
      */
     void aliasGhostBuffer( Vector::shared_ptr in );
 
-    /**
-     * \brief Update shared values on entire communicator
-     * \param t The type of scatter used to compute values
-     * \details  There are two algorithms used by makeConsistent
-     * - If t = CONSISTENT_SET, then owned values are
-     *   sent to processors that share the value.  Shared values are
-     *   overwritten
-     * - If t = CONSISTENT_ADD, then shared values are accumulated
-     *   on the core that owns it and applied as determined, either
-     *   add or set.  Then, the values are broadcast out.
-     *
-     * Generally, when adding to a vector, the GATHER_SCATTER should
-     * be used to make consistent.  When setting entries in a vector
-     * the BROADCAST should be used.
-     */
-    void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent(t); }
-
 protected: // Internal data
     // A default RNG to use when one is not specified
     static RNG::shared_ptr d_DefaultRNG;
