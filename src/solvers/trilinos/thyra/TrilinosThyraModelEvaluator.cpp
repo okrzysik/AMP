@@ -71,7 +71,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
         const_cast<AMP::LinearAlgebra::Vector *>( d_rhs.get() )
             ->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     }
-    AMP::pout << "x update status " << x->getUpdateStatus() << std::endl;
+    AMP::pout << "x update status " << (int) x->getUpdateStatus() << std::endl;
     AMP_ASSERT( x->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
     AMP_ASSERT( d_rhs->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
 
