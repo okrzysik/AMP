@@ -6,6 +6,7 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/trilinos/thyra/ManagedThyraVector.h"
+#include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
 #include "AMP/vectors/trilinos/thyra/NativeThyraVector.h"
 
 
