@@ -130,6 +130,7 @@ public: // Virtual functions
     void getGhostValuesByGlobalID( int num, size_t *indices, double *out_vals ) const override;
     void getValuesByLocalID( int num, size_t *indices, double *out_vals ) const override;
     size_t getGhostSize() const override;
+    using VectorData::makeConsistent;
     void makeConsistent( ScatterType t ) override;
     UpdateState getUpdateStatus() const override;
     void setUpdateStatus( UpdateState state ) override;
