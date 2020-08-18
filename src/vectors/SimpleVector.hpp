@@ -105,7 +105,7 @@ template<typename TYPE, typename OPS, typename DATA>
 Vector::shared_ptr
 SimpleVector<TYPE, OPS, DATA>::cloneVector( const Variable::shared_ptr name ) const
 {
-    return create( name, d_DOFManager, getCommunicationList() );
+    return create( name, d_DOFManager, d_VectorData->getCommunicationList() );
 }
 template<typename TYPE, typename OPS, typename DATA>
 void SimpleVector<TYPE, OPS, DATA>::swapVectors( Vector &rhs )
