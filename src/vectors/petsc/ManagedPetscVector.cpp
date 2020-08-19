@@ -850,7 +850,7 @@ bool ManagedPetscVector::constructedWithPetscDuplicate() { return d_bMadeWithPet
 ManagedPetscVector *ManagedPetscVector::rawClone() const
 {
     auto p   = std::make_shared<ManagedPetscVectorParameters>();
-    auto vec = getVectorEngine();
+    const auto vec = getVectorEngine();
     if ( vec ) {
         auto vec2   = vec->cloneVector( "ManagedPetscVectorClone" );
         p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
