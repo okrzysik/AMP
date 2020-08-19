@@ -740,22 +740,18 @@ void ManagedPetscVector::initPetsc()
 ManagedPetscVector::ManagedPetscVector( VectorParameters::shared_ptr params )
     : ManagedVector( params ), PetscVector()
 {
-     AMP::pout << "Calling ManagedPetscVector::ManagedPetscVector ctor" <<std::endl;
     initPetsc();
     auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
     registerListener( listener );
-    AMP::pout << "ManagedPetscVector::ManagedPetscVector: created " << type() << std::endl;
 }
 
 
 ManagedPetscVector::ManagedPetscVector( Vector::shared_ptr alias )
     : ManagedVector( alias ), PetscVector()
 {
-    AMP::pout << "Calling ManagedPetscVector::ManagedPetscVector alias ctor" <<std::endl;
     initPetsc();
     auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
     alias->registerListener( listener );
-    AMP::pout << "ManagedPetscVector::ManagedPetscVector alias ctor: created " << type() << std::endl;
 }
 
 

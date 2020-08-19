@@ -35,15 +35,12 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     : Vector( params_in ),
       d_pParameters( std::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
 {
-    AMP::pout << "Calling ManagedVector::ManagedVector ctor" <<std::endl;
     d_VectorOps = std::make_shared<ManagedVectorOperations>();
     setVectorData( std::make_shared<ManagedVectorData>(params_in) );
-    AMP::pout << "ManagedVector::ManagedVector: created " << type() << std::endl;
 }
 ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
 {
-    AMP::pout << "Calling ManagedVector::ManagedVector alias ctor" <<std::endl;
     auto vec      = getManaged( alias );
     setVectorData( vec->d_VectorDataSP );
     d_VectorOps   = vec->d_VectorOps;
