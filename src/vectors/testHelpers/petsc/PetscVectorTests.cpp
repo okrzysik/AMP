@@ -1129,9 +1129,9 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     if ( dot3 == dot4 ) // These should be identical, since same method called
         utils->passes( "native dot equals interface dot for managed vector" );
     else {
-        AMP::pout << "native dot does not equal interface dot for managed vector" <<std::endl; 
-       AMP::pout << "Vector types " << vectorc->type() << ",  " << vectord->type() <<std::endl;
-       utils->failure( "native dot does not equal interface dot for managed vector" );
+      AMP::pout << "native dot does not equal interface dot for managed vector " << dot3 << ", " << dot4  <<std::endl; 
+      AMP::pout << "Vector types " << vectorc->type() << ",  " << vectord->type() <<std::endl;
+      utils->failure( "native dot does not equal interface dot for managed vector" );
     }
     if ( fabs( dot3 - dot1 ) < 0.00000001 ) // This may test two different implementations
         utils->passes( "native dot equals managed dot" );
@@ -1150,6 +1150,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     if ( dot5 == dot6 ) // These should be identical, since same method called
         utils->passes( "native dot equals interface dot for managed alloc vector" );
     else {
+        AMP::pout << "native dot does not equal interface dot for managed alloc vector " << dot5 << ", " << dot6  <<std::endl; 
         AMP::pout << "native dot does not equal interface dot for managed alloc vector" <<std::endl; 
         AMP::pout << "Vector types " << vectore->type() << ",  " << vectorf->type() <<std::endl;      
         utils->failure( "native dot does not equal interface dot for managed alloc vector" );
