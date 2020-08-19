@@ -10,28 +10,6 @@
 
 namespace AMP {
 namespace LinearAlgebra {
-#if 0
-
-/**
-  \brief Data necessary to create a managed vector
-*/
-class ManagedVectorParameters : public VectorParameters
-{
-protected:
-    //!  Copy constructor is protected to prevent unintended copies
-    ManagedVectorParameters( const ManagedVectorParameters & );
-
-public:
-    //! Constructor
-    ManagedVectorParameters();
-
-    //! The VectorEngine to use with the managed vector
-    std::shared_ptr<Vector> d_Engine;
-
-    //! Buffer to use for the managed vector
-    std::shared_ptr<VectorData> d_Buffer;
-};
-#endif
 
 /**
    \brief Class used to control data and kernels of various vector libraries
@@ -80,11 +58,6 @@ public:
     virtual std::shared_ptr<ManagedVectorParameters> getManagedVectorParameters();
 
 protected:
-    //! The buffer used to store data
-    std::shared_ptr<VectorData> d_vBuffer;
-
-    //! The engine to act on the buffer
-    std::shared_ptr<Vector> d_Engine;
 
     //! The parameters used to create this vector
     std::shared_ptr<ManagedVectorParameters> d_pParameters;
@@ -92,42 +65,42 @@ protected:
     //! Function that returns a pointer to a managed vector
     virtual ManagedVector *getNewRawPtr() const = 0;
 
-
-public: // Derived from VectorData
-    size_t numberOfDataBlocks() const override;
-    size_t sizeOfDataBlock( size_t i ) const override;
-    size_t getLocalSize() const override;
-    size_t getGlobalSize() const override;
-    void getValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    void getGhostValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    void setValuesByGlobalID( int i, size_t *, const double *val ) override;
-    void setLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
-    void setGhostValuesByGlobalID( int i, size_t *, const double *val ) override;
-    void setValuesByLocalID( int i, size_t *, const double *val ) override;
-    void addValuesByLocalID( int i, size_t *, const double *val ) override;
-    void addLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
-    void putRawData( const double *in ) override;
-    void copyOutRawData( double *in ) const override;
-    UpdateState getUpdateStatus() const override;
-    void setUpdateStatus( UpdateState state ) override;
-    uint64_t getDataID() const override
-    {
-        return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
-    }
-    bool isTypeId( size_t hash, size_t ) const override
-    {
-        return hash == typeid( double ).hash_code();
-    }
-    size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
-    std::string VectorDataName() const override { return type(); }
-    void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
-
-    void dataChanged() override;
-
-protected: // Derived from VectorData
-    void *getRawDataBlockAsVoid( size_t i ) override;
-    const void *getRawDataBlockAsVoid( size_t i ) const override;
+ /****************************************************************
+ * VectorData operations -- will move to Vector eventually      *
+ ****************************************************************/
+public:
+    std::string VectorDataName() const override { return d_VectorData->VectorDataName(); }
+    size_t numberOfDataBlocks() const override { return d_VectorData->numberOfDataBlocks(); }
+    size_t sizeOfDataBlock( size_t i = 0 ) const override { return d_VectorData->sizeOfDataBlock(i); }
+    void putRawData( const double *buf ) override { d_VectorData->putRawData(buf); }
+    void copyOutRawData( double *buf ) const override { d_VectorData->copyOutRawData(buf); } 
+    size_t getLocalSize() const override { return d_VectorData->getLocalSize(); } 
+    size_t getGlobalSize() const override { return d_VectorData->getGlobalSize(); } 
+    size_t getLocalStartID() const override { return d_VectorData->getLocalStartID(); } 
+    void setValuesByLocalID( int num, size_t *indices, const double *vals ) override { d_VectorData->setValuesByLocalID(num, indices, vals); }
+    void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override { d_VectorData->setLocalValuesByGlobalID(num, indices, vals); }
+    void addValuesByLocalID( int num, size_t *indices, const double *vals ) override { d_VectorData->addValuesByLocalID(num, indices, vals); }
+    void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override { d_VectorData->addLocalValuesByGlobalID(num, indices, vals); }
+    void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override { d_VectorData->getLocalValuesByGlobalID(num, indices, vals); }
+    uint64_t getDataID() const override { return d_VectorData->getDataID(); }
+    void *getRawDataBlockAsVoid( size_t i ) override { return d_VectorData->getRawDataBlockAsVoid(i); }
+    const void *getRawDataBlockAsVoid( size_t i ) const override { return d_VectorData->getRawDataBlockAsVoid(i); }
+    size_t sizeofDataBlockType( size_t i ) const override { return d_VectorData->sizeofDataBlockType(i); }
+    bool isTypeId( size_t hash, size_t block ) const override { return d_VectorData->isTypeId(hash, block); }
+    void swapData( VectorData &rhs ) override { d_VectorData->swapData(rhs); }
+    std::shared_ptr<VectorData> cloneData() const override { return d_VectorData->cloneData(); }
+    UpdateState getUpdateStatus() const override { return d_VectorData->getUpdateStatus(); }
+    void setUpdateStatus( UpdateState state ) override { d_VectorData->setUpdateStatus(state); }
+    void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent(t); }
+    //    AMP_MPI getComm() const override{ return d_VectorData->getComm(); }
+    bool hasComm() const override { return d_VectorData->hasComm(); }
+    AMP_MPI getComm() const override { return d_VectorData->getComm(); }
+    //! Get the CommunicationList for this Vector
+    CommunicationList::shared_ptr getCommunicationList() const override { return d_VectorData->getCommunicationList(); }
+    void setCommunicationList( CommunicationList::shared_ptr comm ) override { d_VectorData->setCommunicationList(comm); }
+    void dataChanged() override { return d_VectorData->dataChanged(); }
+/****************************************************************
+ ****************************************************************/
 
 public: // Derived from Vector
     using Vector::cloneVector;

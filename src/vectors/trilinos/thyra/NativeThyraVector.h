@@ -78,9 +78,6 @@ public:
 protected:
     //! Empty constructor.
     NativeThyraVector();
-
-private:
-    std::shared_ptr<VectorData> d_VectorDataSP; // shared pointer to maintain scope, will go away hopefully
 };
 
 

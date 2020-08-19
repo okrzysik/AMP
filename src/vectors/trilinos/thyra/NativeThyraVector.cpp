@@ -24,8 +24,8 @@ NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
     : Vector()
 {
     d_VectorOps = std::make_shared<NativeThyraVectorOperations>();
-    d_VectorDataSP = std::make_shared<NativeThyraVectorData>(in_params);
-    d_VectorData   = d_VectorDataSP.get();
+    
+    setVectorData( std::make_shared<NativeThyraVectorData>(in_params) );
 
     auto params = std::dynamic_pointer_cast<NativeThyraVectorParameters>( in_params );
     AMP_ASSERT( params != nullptr );
@@ -36,10 +36,10 @@ NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
 }
 
 NativeThyraVector::NativeThyraVector( std::shared_ptr<VectorData> data )
-  : Vector(), d_VectorDataSP{data}
+  : Vector()
 {
+    setVectorData(data);
     d_VectorOps    = std::make_shared<NativeThyraVectorOperations>();
-    d_VectorData   = data.get();
     d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>( data->getLocalSize(),
                                                                       data->getComm() );
 }

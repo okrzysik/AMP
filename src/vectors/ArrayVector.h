@@ -115,8 +115,6 @@ public:
     void dataChanged() override { return d_VectorData->dataChanged(); }
 /****************************************************************
  ****************************************************************/
- protected:
-   std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> d_VectorDataSP;
 };
 
 } // namespace LinearAlgebra

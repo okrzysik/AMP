@@ -18,9 +18,9 @@ ArrayVector<T, FUN, Allocator>::ArrayVector() : Vector()
 }
 
 template<typename T, typename FUN, typename Allocator>
-ArrayVector<T, FUN, Allocator>::ArrayVector( std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> data ) : Vector(), d_VectorDataSP{ data }
+ArrayVector<T, FUN, Allocator>::ArrayVector( std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> data ) : Vector()
 {
-    d_VectorData = d_VectorDataSP.get();
+    setVectorData(data);
     d_VectorOps = std::make_shared<VectorOperationsDefault<T>>();
 }
 

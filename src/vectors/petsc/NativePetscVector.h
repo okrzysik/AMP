@@ -85,9 +85,6 @@ public:
 
     std::shared_ptr<ParameterBase> getParameters() override;
 
-private:
-    std::shared_ptr<VectorData> d_VectorDataSP; // shared pointer to maintain scope, will go away hopefully
-
 };
 
 

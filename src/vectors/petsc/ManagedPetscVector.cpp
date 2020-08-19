@@ -696,7 +696,7 @@ namespace LinearAlgebra {
 void ManagedPetscVector::initPetsc()
 {
     auto params  = std::dynamic_pointer_cast<ManagedVectorParameters>( getParameters() );
-    AMP_MPI comm = std::dynamic_pointer_cast<VectorData>( params->d_Engine )->getComm();
+    AMP_MPI comm = getVectorEngine()->getComm();
     VecCreate( comm.getCommunicator(), &d_petscVec );
 
     d_petscVec->data        = this;
@@ -850,7 +850,7 @@ bool ManagedPetscVector::constructedWithPetscDuplicate() { return d_bMadeWithPet
 ManagedPetscVector *ManagedPetscVector::rawClone() const
 {
     auto p   = std::make_shared<ManagedPetscVectorParameters>();
-    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    auto vec = getVectorEngine();
     if ( vec ) {
         auto vec2   = vec->cloneVector( "ManagedPetscVectorClone" );
         p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );

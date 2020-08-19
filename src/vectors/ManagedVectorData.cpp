@@ -312,17 +312,6 @@ std::string ManagedVectorData::VectorDataName() const
     return retVal;
 }
 
-
-Vector::shared_ptr ManagedVectorData::getRootVector()
-{
-    auto engine = getVectorEngine();
-    auto vec = std::dynamic_pointer_cast<ManagedVector>( engine );
-    if ( vec != nullptr )
-        return vec->getRootVector();
-    return engine->shared_from_this();
-}
-
-
 void ManagedVectorData::dataChanged()
 {
     if ( *d_UpdateState == UpdateState::UNCHANGED )

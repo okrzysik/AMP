@@ -710,6 +710,14 @@ protected: // Internal data
 protected:
     // Pointer to *this as a VectorData object
     VectorData *d_VectorData = nullptr;
+    // shared pointer that should eventually take over
+    std::shared_ptr<VectorData> d_VectorDataSP = nullptr;
+
+    void setVectorData( std::shared_ptr<VectorData> data)
+    {
+      d_VectorDataSP = data;
+      d_VectorData = data.get();
+    }
     
 private:
     // The following are not implemented

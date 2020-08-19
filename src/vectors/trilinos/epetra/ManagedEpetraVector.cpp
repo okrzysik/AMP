@@ -31,13 +31,13 @@ inline ManagedVector *ManagedEpetraVector::getNewRawPtr() const
 inline Vector::shared_ptr ManagedEpetraVector::cloneVector( const Variable::shared_ptr var ) const
 {
     auto p   = std::make_shared<ManagedVectorParameters>();
-    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    auto vec = getVectorEngine();
     if ( vec ) {
         auto vec2   = vec->cloneVector( "ManagedPetscVectorClone" );
         p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
         p->d_Engine = std::dynamic_pointer_cast<Vector>( vec2 );
     } else {
-        AMP_ERROR( "ManagedPetscVector::rawClone() should not have reached here!" );
+        AMP_ERROR( "ManagedEpetraVector::rawClone() should not have reached here!" );
     }
     p->d_CommList   = getCommunicationList();
     p->d_DOFManager = getDOFManager();
@@ -48,14 +48,14 @@ inline Vector::shared_ptr ManagedEpetraVector::cloneVector( const Variable::shar
 
 inline Epetra_Vector &ManagedEpetraVector::getEpetra_Vector()
 {
-    auto engine = std::dynamic_pointer_cast<EpetraVectorEngine>( d_Engine );
+    auto engine = std::dynamic_pointer_cast<EpetraVectorEngine>( getVectorEngine() );
     AMP_ASSERT( engine != nullptr );
     return engine->getEpetra_Vector();
 }
 
 inline const Epetra_Vector &ManagedEpetraVector::getEpetra_Vector() const
 {
-    auto engine = std::dynamic_pointer_cast<const EpetraVectorEngine>( d_Engine );
+    auto engine = std::dynamic_pointer_cast<const EpetraVectorEngine>( getVectorEngine() );
     AMP_ASSERT( engine != nullptr );
     return engine->getEpetra_Vector();
 }

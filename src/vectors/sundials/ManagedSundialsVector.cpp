@@ -69,7 +69,7 @@ Vector::shared_ptr ManagedSundialsVector::cloneVector( const Variable::shared_pt
 ManagedSundialsVector *ManagedSundialsVector::rawClone() const
 {
     auto p   = std::make_shared<ManagedSundialsVectorParameters>();
-    auto vec = std::dynamic_pointer_cast<Vector>( d_Engine );
+    auto vec = getVectorEngine();
     if ( vec ) {
         auto vec2   = vec->cloneVector( "ManagedSundialsVectorClone" );
         p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );

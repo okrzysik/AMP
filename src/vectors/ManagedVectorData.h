@@ -58,16 +58,6 @@ public:
     //! Destructor
     virtual ~ManagedVectorData();
 
-    /** \brief  If a vector has multiple views to multiple external packages
-     * associated with it, this will return the barest version of the vector
-     * \return A vector with the fewest views associated with it.
-     * \details  A ManagedVector must have an engine and it may have data.
-     * If it has an engine with no data, then the engine has must have data.
-     * If the engine can be cast to a ManagedVector, it is and getRootVector
-     * is called recursively.
-     */
-    Vector::shared_ptr getRootVector();
-
     /** \brief  Return the engine associated with this ManagedVector
      * \return The engine
      */
@@ -121,11 +111,12 @@ public: // Derived from VectorData
 
     void dataChanged() override;
 
-protected: // Derived from VectorData
-    void *getRawDataBlockAsVoid( size_t i ) override;
-    const void *getRawDataBlockAsVoid( size_t i ) const override;
     std::shared_ptr<VectorData> cloneData( ) const override;
     void aliasData( VectorData &other );
+
+ protected: // Derived from VectorData
+    void *getRawDataBlockAsVoid( size_t i ) override;
+    const void *getRawDataBlockAsVoid( size_t i ) const override;
 private:
     ManagedVectorData();
 };
