@@ -396,6 +396,7 @@ double MultiVectorOperations::localMaxNorm( const VectorData &x ) const
 
 double MultiVectorOperations::localDot( const VectorData &x, const VectorData &y ) const
 {
+    AMP::pout << "Calling  MultiVectorOperations::localDot" <<std::endl;
     if ( d_operations.empty() ) {
         return 0;
     }
@@ -410,7 +411,7 @@ double MultiVectorOperations::localDot( const VectorData &x, const VectorData &y
             ans += d_operations[i]->localDot( *getVectorDataComponent( x, i ),
                                               *getVectorDataComponent( y, i ) );
     } else {
-        AMP_ERROR( "MultiVectorOperations::localMinQuotient requires x, y to be MultiVectorData" );
+        AMP_ERROR( "MultiVectorOperations::localDot requires x, y to be MultiVectorData" );
     }
     return ans;
 }

@@ -214,7 +214,7 @@ Vector::wrmsNormMask( const VectorData &x, const VectorData &mask, const VectorD
 
 inline double Vector::dot( const VectorData &x ) const
 {
-    return d_VectorOps->dot( x, *d_VectorData );
+  return d_VectorOps->dot( *d_VectorData, x );
 }
 
 inline bool Vector::equals( const VectorData &a, double tol ) const
