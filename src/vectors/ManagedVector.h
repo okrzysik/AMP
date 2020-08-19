@@ -55,8 +55,6 @@ public:
     virtual bool isAnAliasOf( Vector &rhs );
     virtual bool isAnAliasOf( Vector::shared_ptr rhs );
 
-    virtual std::shared_ptr<ManagedVectorParameters> getManagedVectorParameters();
-
 protected:
 
     //! The parameters used to create this vector
