@@ -234,8 +234,8 @@ double ManagedVectorOperations::dot( const VectorData &x, const VectorData &y ) 
 {
     AMP::pout << "Calling  ManagedVectorOperations::dot" <<std::endl;
     auto x2 = getManagedVector( x );
-    if ( x2 != nullptr ) {
-        auto y2 = getManagedVector( y );
+    auto y2 = getManagedVector( y );
+    if ( x2 && y2 ) {
         return y2->getVectorEngine()->dot( x2->getVectorEngine() );
     }
     return VectorOperationsDefault::dot( x, y );
