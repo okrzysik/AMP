@@ -211,7 +211,7 @@ void ManagedVectorOperations::abs( const VectorData &x, VectorData &y )
     auto x2 = getManagedVector( x );
     auto y2 = getManagedVector( y );
     if ( x2 != nullptr ) {
-        y2->getVectorEngine()->abs( *getEngineData( x ) );
+      y2->getVectorEngine()->abs( x2->getVectorEngine() );
     } else {
         VectorOperationsDefault::abs( x, y );
     }
@@ -235,7 +235,7 @@ double ManagedVectorOperations::dot( const VectorData &x, const VectorData &y ) 
     auto x2 = getManagedVector( x );
     if ( x2 != nullptr ) {
         auto y2 = getManagedVector( y );
-        return y2->getVectorEngine()->dot( *getEngineData( x ) );
+        return y2->getVectorEngine()->dot( x2->getVectorEngine() );
     }
     return VectorOperationsDefault::dot( x, y );
 }
