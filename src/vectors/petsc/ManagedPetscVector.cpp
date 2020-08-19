@@ -755,6 +755,7 @@ ManagedPetscVector::ManagedPetscVector( Vector::shared_ptr alias )
     initPetsc();
     auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
     alias->registerListener( listener );
+    AMP::pout << "ManagedPetscVector::ManagedPetscVector alias ctor: created " << type() << std::endl;
 }
 
 
