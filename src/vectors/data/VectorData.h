@@ -590,6 +590,8 @@ protected: // Internal data
 public:
     //! Default constructor
     VectorData();
+
+    VectorData(std::shared_ptr<VectorParameters> params);
 };
 
 

@@ -12,6 +12,13 @@ VectorData::VectorData() : d_UpdateState { std::make_shared<UpdateState>() },
     *d_UpdateState = UpdateState::UNCHANGED;
 }
 
+VectorData::VectorData(std::shared_ptr<VectorParameters> params) : d_UpdateState { std::make_shared<UpdateState>() }
+{
+  auto comm = params->d_CommList;
+  setCommunicationList(comm);
+  *d_UpdateState = UpdateState::UNCHANGED;
+}
+
 void VectorData::setCommunicationList( CommunicationList::shared_ptr comm )
 {
     AMP_ASSERT( comm );
