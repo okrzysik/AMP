@@ -410,7 +410,7 @@ double MultiVectorOperations::localDot( const VectorData &x, const VectorData &y
         for ( size_t i = 0; i != d_operations.size(); i++ ) {
 	  auto xi = getVectorDataComponent( x, i );
 	  auto yi = getVectorDataComponent( y, i );
-	  AMP::pout << "MultiVectorOperations::localDot VectorData types " << i << " " <<
+	  AMP::pout << "MultiVectorOperations::localDot VectorData types " << i << " "
 		    << xi->VectorDataName() << ", "
 		    << yi->VectorDataName() << std::endl;
             ans += d_operations[i]->localDot( *xi,*yi );
