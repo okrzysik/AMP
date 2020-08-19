@@ -93,25 +93,5 @@ void ArrayVector<T, FUN, Allocator>::aliasVector( Vector & )
     AMP_ERROR( "Not implemented" );
 }
 
-template<typename T, typename FUN, typename Allocator>
-void ArrayVector<T, FUN, Allocator>::resize( const std::vector<size_t> &localDims )
-{
-    d_array.resize( localDims );
-}
-
-
-template<typename T, typename FUN, typename Allocator>
-void ArrayVector<T, FUN, Allocator>::putRawData( const double *buf )
-{
-    auto &array = this->getArray();
-    array.copy( buf );
-}
-
-template<typename T, typename FUN, typename Allocator>
-void ArrayVector<T, FUN, Allocator>::copyOutRawData( double *buf ) const
-{
-    auto &array = this->getArray();
-    array.copyTo( buf );
-}
 } // namespace LinearAlgebra
 } // namespace AMP
