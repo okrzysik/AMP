@@ -1124,6 +1124,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     auto vecc = getVec( vectorc );
     auto vecd = getVec( vectord );
     double dot3, dot4;
+    AMP::pout << "Begin test **********************************************" << std::endl;
     checkPetscError( utils, VecDot( vecc, vecd, &dot3 ) );
     dot4 = vectorc->dot( vectord );
     if ( dot3 == dot4 ) // These should be identical, since same method called
@@ -1137,6 +1138,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
         utils->passes( "native dot equals managed dot" );
     else
         utils->failure( "native dot does not equal managed dot" );
+    AMP::pout << "End test *************************************************" << std::endl;
 
     auto vectore = d_factory->getManagedVector();
     auto vectorf = d_factory->getManagedVector();
@@ -1145,6 +1147,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     auto vece = getVec( vectore );
     auto vecf = getVec( vectorf );
     double dot5, dot6;
+    AMP::pout << "Begin test **********************************************" << std::endl;
     checkPetscError( utils, VecDot( vece, vecf, &dot5 ) );
     dot6 = vectore->dot( vectorf );
     if ( dot5 == dot6 ) // These should be identical, since same method called
@@ -1158,6 +1161,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
         utils->passes( "native alloc dot equals managed alloc dot" );
     else
         utils->failure( "native alloc dot does not equal managed alloc dot" );
+    AMP::pout << "End test *************************************************" << std::endl;
 
     /**** Need to test for failures at some point...
     try {
