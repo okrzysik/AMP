@@ -45,7 +45,7 @@ ManagedVector::ManagedVector( shared_ptr alias )
 {
     AMP::pout << "Calling ManagedVector::ManagedVector alias ctor" <<std::endl;
     auto vec      = getManaged( alias );
-    d_VectorData  = vec->d_VectorData;
+    setVectorData( vec->d_VectorDataSP );
     d_VectorOps   = vec->d_VectorOps;
     d_pParameters = vec->d_pParameters;
     setVariable( vec->getVariable() );
