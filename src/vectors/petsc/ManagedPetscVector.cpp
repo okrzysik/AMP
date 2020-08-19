@@ -751,6 +751,7 @@ ManagedPetscVector::ManagedPetscVector( VectorParameters::shared_ptr params )
 ManagedPetscVector::ManagedPetscVector( Vector::shared_ptr alias )
     : ManagedVector( alias ), PetscVector()
 {
+    AMP::pout << "Calling ManagedPetscVector::ManagedPetscVector alias ctor" <<std::endl;
     initPetsc();
     auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
     alias->registerListener( listener );
