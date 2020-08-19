@@ -1,6 +1,5 @@
 #include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
 #include "AMP/vectors/data/VectorDataCPU.h"
-#include "AMP/vectors/trilinos/epetra/ManagedEpetraVectorOperations.h"
 #include "EpetraVectorEngine.h"
 
 
@@ -11,7 +10,6 @@ namespace LinearAlgebra {
 ManagedEpetraVector::ManagedEpetraVector( VectorParameters::shared_ptr params )
     : ManagedVector( params ), EpetraVector()
 {
-    d_VectorOps = std::make_shared<ManagedEpetraVectorOperations>();
 }
 
 
@@ -33,7 +31,7 @@ inline Vector::shared_ptr ManagedEpetraVector::cloneVector( const Variable::shar
     auto p   = std::make_shared<ManagedVectorParameters>();
     auto vec = getVectorEngine();
     if ( vec ) {
-        auto vec2   = vec->cloneVector( "ManagedPetscVectorClone" );
+        auto vec2   = vec->cloneVector( "ManagedEeptraVectorClone" );
         p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
         p->d_Engine = std::dynamic_pointer_cast<Vector>( vec2 );
     } else {
@@ -46,6 +44,12 @@ inline Vector::shared_ptr ManagedEpetraVector::cloneVector( const Variable::shar
     return retVal;
 }
 
+void ManagedEpetraVector::copyVector( Vector::const_shared_ptr vec )
+{
+  auto engineVec = getVectorEngine();
+  engineVec->copyVector( vec );
+}
+  
 inline Epetra_Vector &ManagedEpetraVector::getEpetra_Vector()
 {
     auto engine = std::dynamic_pointer_cast<EpetraVectorEngine>( getVectorEngine() );

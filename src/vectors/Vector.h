@@ -576,21 +576,11 @@ public: // Virtual functions
     // This is the const version of selectInto.
     virtual Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const;
 
-    //! Return the pointer to the VectorData
-    VectorData *getVectorData() { return d_VectorData; }
-
-    //! Return the pointer to the VectorData
-    const VectorData *getVectorData() const { return d_VectorData; }
-
-    //! Return the pointer to the VectorOperation
-    std::shared_ptr<VectorOperations> getVectorOperations() { return d_VectorOps; }
-
-    //! Return the pointer to the VectorOperation
-    std::shared_ptr<const VectorOperations> getVectorOperations() const { return d_VectorOps; }
-
     bool hasComm( void ) const override { return ( getVectorData()->getCommunicationList() != nullptr ); }
 
-public: // Constructor/destructors
+    virtual void copyVector( std::shared_ptr<const Vector> x ) { d_VectorOps->copy( *(x->getVectorData()), *d_VectorData ); }
+
+ public: // Constructor/destructors
     /** \brief Constructor
      * \param[in] parameters  A pointer to a parameters class
      * \see VectorParameters
@@ -603,7 +593,18 @@ public: // Constructor/destructors
 
 
 public: // Non-virtual functions
-    void copyVector( std::shared_ptr<const Vector> x ) { d_VectorOps->copy( *(x->getVectorData()), *d_VectorData ); }
+
+    //! Return the pointer to the VectorData
+    VectorData *getVectorData() { return d_VectorData; }
+
+    //! Return the pointer to the VectorData
+    const VectorData *getVectorData() const { return d_VectorData; }
+
+    //! Return the pointer to the VectorOperation
+    std::shared_ptr<VectorOperations> getVectorOperations() { return d_VectorOps; }
+
+    //! Return the pointer to the VectorOperation
+    std::shared_ptr<const VectorOperations> getVectorOperations() const { return d_VectorOps; }
 
     /** \brief Change the variable associated with this vector
      * \param[in] name  The new variable
