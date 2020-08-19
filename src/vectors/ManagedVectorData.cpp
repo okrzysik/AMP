@@ -303,8 +303,6 @@ std::shared_ptr<VectorData> ManagedVectorData::cloneData( void ) const
 
 std::string ManagedVectorData::VectorDataName() const
 {
-    if ( d_vBuffer )
-        return " ( managed data )";
     std::string retVal = " ( managed view of ";
     auto vec = getVectorEngine();
     retVal += vec->type();

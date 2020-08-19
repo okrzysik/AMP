@@ -42,6 +42,7 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
 ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
 {
+    AMP::pout << "Calling ManagedVector::ManagedVector alias ctor" <<std::endl;
     auto vec      = getManaged( alias );
     d_VectorData  = vec->d_VectorData;
     d_VectorOps   = vec->d_VectorOps;
@@ -119,7 +120,7 @@ std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr n
 
 std::string ManagedVector::type() const
 {
-  AMP_ASSERT(d_VectorData);
+  AMP_ASSERT(d_VectorData);  
   return d_VectorData->VectorDataName();
 }
 
@@ -167,6 +168,7 @@ Vector::const_shared_ptr ManagedVector::getVectorEngine( void ) const
 {
   AMP_ASSERT(d_VectorData);
   AMP::pout << "Vector type: " << type() << std::endl;
+  AMP::pout << "VectorData name " << d_VectorData->VectorDataName() << std::endl;
   const auto data = dynamic_cast<const ManagedVectorData *>(d_VectorData);
   AMP_ASSERT(data);
   return data->getVectorEngine();
