@@ -4,6 +4,7 @@
 #include "AMP/vectors/testHelpers/VectorTests.h"
 #include "AMP/vectors/testHelpers/generateVectorFactories.h"
 
+#include "AMP/vectors/ArrayVector.h"
 #include "test_ArrayVector.h"
 
 #ifdef USE_TRILINOS_THYRA
