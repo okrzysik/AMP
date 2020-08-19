@@ -2,6 +2,7 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/ArrayVectorData.h"
 
 #include "test_VectorHelpers.h"
 
