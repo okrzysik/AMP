@@ -6,6 +6,7 @@
 #include "AMP/utils/Array.h"
 #include "AMP/utils/FunctionTable.h"
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/ArrayVectorData.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.hpp"
 
@@ -26,6 +27,8 @@ private:
     ArrayVector( const ArrayVector & );
 
 public:
+    ArrayVector( std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> data );
+
     /** \brief    Create a ArrayVector
      * \details  This is the factory method for the ArrayVector.  It returns the shared pointer
      * to be used in the code
@@ -112,7 +115,8 @@ public:
     void dataChanged() override { return d_VectorData->dataChanged(); }
 /****************************************************************
  ****************************************************************/
-
+ protected:
+   std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> d_VectorDataSP;
 };
 
 } // namespace LinearAlgebra

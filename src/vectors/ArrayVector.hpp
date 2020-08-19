@@ -12,8 +12,15 @@ namespace LinearAlgebra {
  * Constructors                                                  *
  ****************************************************************/
 template<typename T, typename FUN, typename Allocator>
-ArrayVector<T, FUN, Allocator>::ArrayVector() : Vector(), d_globalSize( 0 )
+ArrayVector<T, FUN, Allocator>::ArrayVector() : Vector()
 {
+    d_VectorOps = std::make_shared<VectorOperationsDefault<T>>();
+}
+
+template<typename T, typename FUN, typename Allocator>
+ArrayVector<T, FUN, Allocator>::ArrayVector( std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> data ) : Vector(), d_VectorDataSP{ data }
+{
+    d_VectorData = d_VectorDataSP.get();
     d_VectorOps = std::make_shared<VectorOperationsDefault<T>>();
 }
 
@@ -21,17 +28,14 @@ template<typename T, typename FUN, typename Allocator>
 Vector::shared_ptr ArrayVector<T, FUN, Allocator>::create( const std::vector<size_t> &localSize,
                                                            Variable::shared_ptr var )
 {
-    std::shared_ptr<ArrayVector<T, FUN, Allocator>> retVal( new ArrayVector<T, FUN, Allocator>() );
+    auto data = ArrayVectorData<T, FUN, Allocator>::create(localSize);
+    auto vdata = std::dynamic_pointer_cast<ArrayVectorData<T, FUN, Allocator>>(data);
+    auto retVal = std::make_shared<ArrayVector<T, FUN, Allocator>>(vdata);
     retVal->setVariable( var );
-    retVal->resize( localSize );
-    const auto N = retVal->getArray().length();
+    const auto N         = vdata->getArray().length();
     AMP_MPI comm( AMP_COMM_SELF );
-    auto DOFs            = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
+    auto DOFs            = std::make_shared<AMP::Discretization::DOFManager>( N, data->getComm() );
     retVal->d_DOFManager = DOFs;
-    retVal->setCommunicationList(
-        AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
-    retVal->d_globalSize = N;
-    retVal->d_comm       = comm;
     return retVal;
 }
 
@@ -40,16 +44,13 @@ Vector::shared_ptr ArrayVector<T, FUN, Allocator>::create( const std::vector<siz
                                                            Variable::shared_ptr var,
                                                            AMP_MPI comm )
 {
-    std::shared_ptr<ArrayVector<T, FUN, Allocator>> retVal( new ArrayVector<T, FUN, Allocator>() );
+    auto data = ArrayVectorData<T, FUN, Allocator>::create(localSize,  comm);
+    auto vdata = std::dynamic_pointer_cast<ArrayVectorData<T, FUN, Allocator>>(data);
+    auto retVal = std::make_shared<ArrayVector<T, FUN, Allocator>>(vdata);
     retVal->setVariable( var );
-    retVal->resize( localSize );
-    const auto N         = retVal->getArray().length();
+    const auto N         = vdata->getArray().length();
     auto DOFs            = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
     retVal->d_DOFManager = DOFs;
-    retVal->setCommunicationList(
-        AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
-    retVal->d_comm       = comm;
-    retVal->d_globalSize = comm.sumReduce( N );
     return retVal;
 }
 
@@ -59,11 +60,11 @@ ArrayVector<T, FUN, Allocator>::create( Variable::shared_ptr var,
                                         AMP::Discretization::DOFManager::shared_ptr DOFs,
                                         AMP::LinearAlgebra::CommunicationList::shared_ptr commlist )
 {
-    std::shared_ptr<ArrayVector<T, FUN, Allocator>> retVal( new ArrayVector<T, FUN, Allocator>() );
+    auto data = ArrayVectorData<T, FUN, Allocator>::create(commlist);
+    auto vdata = std::dynamic_pointer_cast<ArrayVectorData<T, FUN, Allocator>>(data);
+    auto retVal = std::make_shared<ArrayVector<T, FUN, Allocator>>(vdata);
     retVal->setVariable( var );
     retVal->d_DOFManager = DOFs;
-    retVal->setCommunicationList( commlist );
-    retVal->d_comm = DOFs->getComm();
     AMP_ERROR( "This routine is not complete" );
     return retVal;
 }
@@ -72,7 +73,8 @@ template<typename T, typename FUN, typename Allocator>
 inline Vector::shared_ptr
 ArrayVector<T, FUN, Allocator>::cloneVector( const Variable::shared_ptr name ) const
 {
-    const auto &array = this->getArray();
+    auto vdata = std::dynamic_pointer_cast<ArrayVectorData<T, FUN, Allocator>>(d_VectorDataSP);
+    const auto &array = vdata->getArray();
     std::vector<size_t> size( array.size().begin(), array.size().end() );
     return create( size, name, this->getComm() );
 }
@@ -81,8 +83,10 @@ template<typename T, typename FUN, typename Allocator>
 void ArrayVector<T, FUN, Allocator>::swapVectors( Vector &rhs )
 {
     // get internal arrays
-    auto &internalArray = this->getArray();
-    auto &otherArray    = dynamic_cast<ArrayVector<T, FUN, Allocator> &>( rhs ).getArray();
+    auto vdata = std::dynamic_pointer_cast<ArrayVectorData<T, FUN, Allocator>>(d_VectorDataSP);
+    auto &internalArray = vdata->getArray();
+
+    auto &otherArray    = dynamic_cast<ArrayVectorData<T, FUN, Allocator>*>( rhs.getVectorData() )->getArray();
     // reset views
     internalArray.swap( otherArray );
 }
