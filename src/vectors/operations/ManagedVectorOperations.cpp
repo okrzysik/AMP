@@ -12,19 +12,19 @@ namespace LinearAlgebra {
 
 static inline const ManagedVector *getManagedVector( const VectorData &x )
 {
-    auto y = dynamic_cast<const ManagedVector *>( &x );
+    auto y = dynamic_cast<const ManagedVectorData *>( &x );
     return y;
 }
 static inline ManagedVector *getManagedVector( VectorData &x )
 {
-    auto y = dynamic_cast<ManagedVector *>( &x );
-    AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
+    auto y = dynamic_cast<ManagedVectorData *>( &x );
+    AMP_INSIST( y != nullptr, "x is not a ManagedVectorData" );
     return y;
 }
 static inline VectorData *getEngineData( VectorData &x )
 {
-    auto y = dynamic_cast<ManagedVector *>( &x );
-    AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
+    auto y = dynamic_cast<ManagedVectorData *>( &x );
+    AMP_INSIST( y != nullptr, "x is not a ManagedVectorData" );
     auto engine = y->getVectorEngine();
     AMP_INSIST( engine, "ManagedVector Engine is Null" );
     auto vecEngine = std::dynamic_pointer_cast<Vector>( engine );
@@ -37,8 +37,8 @@ static inline VectorData *getEngineData( VectorData &x )
 }
 static inline const VectorData *getEngineData( const VectorData &x )
 {
-    auto y = dynamic_cast<const ManagedVector *>( &x );
-    AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
+    auto y = dynamic_cast<const ManagedVectorData *>( &x );
+    AMP_INSIST( y != nullptr, "x is not a ManagedVectorData" );
     auto engine = y->getVectorEngine();
     AMP_INSIST( engine, "ManagedVector Engine is Null" );
     auto vecEngine = std::dynamic_pointer_cast<const Vector>( engine );
