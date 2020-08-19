@@ -12,7 +12,7 @@ static void testArrayVectorDimensions( std::vector<size_t> &dims, AMP::UnitTest 
     auto vec      = AMP::LinearAlgebra::ArrayVector<T>::create( dims, var );
     auto arrayVec = std::dynamic_pointer_cast<AMP::LinearAlgebra::ArrayVector<T>>( vec );
     AMP_ASSERT( arrayVec.get() != NULL );
-    auto array = dynamic_cast<ArrayVectorData<T>*>(arrayVec->getVectorData())->getArray();
+    auto array = dynamic_cast<AMP::LinearAlgebra::ArrayVectorData<T>*>(arrayVec->getVectorData())->getArray();
     if ( ( array.size() == dims ) &&
          ( array.ndim() == (int) dims.size() ) )
         ut.passes( "ArrayVector correctly returns dimensions" );
