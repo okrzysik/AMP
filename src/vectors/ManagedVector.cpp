@@ -152,16 +152,17 @@ std::shared_ptr<ParameterBase> ManagedVector::getParameters()
     return std::dynamic_pointer_cast<ParameterBase>( d_pParameters );
 }
 
-// these routines will have to be modified once ManagedVectorData is introduced
 Vector::shared_ptr ManagedVector::getVectorEngine( void )
 {
   auto data = dynamic_cast<ManagedVectorData*>(d_VectorData);
+  AMP_ASSERT(data);
   return data->getVectorEngine();
 }
 
 Vector::const_shared_ptr ManagedVector::getVectorEngine( void ) const
 {
   auto data = dynamic_cast<const ManagedVectorData *>(d_VectorData);
+  AMP_ASSERT(data);
   return data->getVectorEngine();
 }
 

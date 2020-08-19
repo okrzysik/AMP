@@ -347,7 +347,6 @@ size_t ManagedVectorData::getLocalSize() const { return getEngineData( *this )->
 
 size_t ManagedVectorData::getGlobalSize() const { return getEngineData( *this )->getGlobalSize(); }
 
-// these routines will have to be modified once ManagedVectorData is introduced
 Vector::shared_ptr ManagedVectorData::getVectorEngine( void ) { return d_Engine; }
 
 Vector::const_shared_ptr ManagedVectorData::getVectorEngine( void ) const { return d_Engine; }
