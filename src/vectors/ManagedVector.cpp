@@ -107,7 +107,8 @@ void ManagedVector::aliasVector( Vector &other )
 {
     auto in       = getManaged( &other );
     d_pParameters = in->d_pParameters;
-    dynamic_cast<ManagedVectorData*>(d_VectorData)->aliasData(*(other.getVectorData()));
+    setVectorData( in->d_VectorDataSP );
+    d_VectorOps   = in->d_VectorOps; 
 }
 
 std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
