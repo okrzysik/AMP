@@ -156,6 +156,7 @@ std::shared_ptr<ParameterBase> ManagedVector::getParameters()
 Vector::shared_ptr ManagedVector::getVectorEngine( void )
 {
   AMP_ASSERT(d_VectorData);
+  AMP::pout << "Vector type: " << type() << std::endl;
   auto data = dynamic_cast<ManagedVectorData*>(d_VectorData);
   AMP_ASSERT(data);
   return data->getVectorEngine();
@@ -164,6 +165,7 @@ Vector::shared_ptr ManagedVector::getVectorEngine( void )
 Vector::const_shared_ptr ManagedVector::getVectorEngine( void ) const
 {
   AMP_ASSERT(d_VectorData);
+  AMP::pout << "Vector type: " << type() << std::endl;
   const auto data = dynamic_cast<const ManagedVectorData *>(d_VectorData);
   AMP_ASSERT(data);
   return data->getVectorEngine();
