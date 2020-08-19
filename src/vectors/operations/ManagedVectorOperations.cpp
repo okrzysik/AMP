@@ -236,6 +236,9 @@ double ManagedVectorOperations::dot( const VectorData &x, const VectorData &y ) 
     auto x2 = getManagedVector( x );
     auto y2 = getManagedVector( y );
     if ( x2 && y2 ) {
+      AMP::pout << "Vector Engine types : "
+		<< x2->getVectorEngine()->type() << " " 
+		<< y2->getVectorEngine()->type() << std::endl;
         return y2->getVectorEngine()->dot( x2->getVectorEngine() );
     }
     return VectorOperationsDefault::dot( x, y );

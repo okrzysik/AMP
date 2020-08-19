@@ -214,6 +214,7 @@ Vector::wrmsNormMask( const VectorData &x, const VectorData &mask, const VectorD
 
 inline double Vector::dot( const VectorData &x ) const
 {
+  AMP::pout << "Calling Vector::dot" << std::endl;
   return d_VectorOps->dot( *d_VectorData, x );
 }
 
