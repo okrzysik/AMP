@@ -744,6 +744,7 @@ ManagedPetscVector::ManagedPetscVector( VectorParameters::shared_ptr params )
     initPetsc();
     auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
     registerListener( listener );
+    AMP::pout << "ManagedPetscVector::ManagedPetscVector: created " << type() << std::endl;
 }
 
 
