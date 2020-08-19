@@ -1,6 +1,7 @@
 #include "AMP/vectors/operations/ManagedVectorOperations.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/ManagedVector.h"
+#include "AMP/vectors/ManagedVectorData.h"
 #include "AMP/vectors/data/VectorData.h"
 #include <iostream>
 #include <stdexcept>
@@ -10,12 +11,12 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-static inline const ManagedVector *getManagedVector( const VectorData &x )
+static inline const ManagedVectorData *getManagedVector( const VectorData &x )
 {
     auto y = dynamic_cast<const ManagedVectorData *>( &x );
     return y;
 }
-static inline ManagedVector *getManagedVector( VectorData &x )
+static inline ManagedVectorData *getManagedVector( VectorData &x )
 {
     auto y = dynamic_cast<ManagedVectorData *>( &x );
     AMP_INSIST( y != nullptr, "x is not a ManagedVectorData" );
