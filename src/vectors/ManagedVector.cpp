@@ -35,6 +35,7 @@ ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
     : Vector( params_in ),
       d_pParameters( std::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
 {
+    AMP::pout << "Calling ManagedVector::ManagedVector ctor" <<std::endl;
     d_VectorOps = std::make_shared<ManagedVectorOperations>();
     setVectorData( std::make_shared<ManagedVectorData>(params_in) );
 }

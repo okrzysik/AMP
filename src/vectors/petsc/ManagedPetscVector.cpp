@@ -740,6 +740,7 @@ void ManagedPetscVector::initPetsc()
 ManagedPetscVector::ManagedPetscVector( VectorParameters::shared_ptr params )
     : ManagedVector( params ), PetscVector()
 {
+     AMP::pout << "Calling ManagedPetscVector::ManagedPetscVector ctor" <<std::endl;
     initPetsc();
     auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
     registerListener( listener );
