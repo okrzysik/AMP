@@ -161,7 +161,7 @@ Vector::shared_ptr ManagedVector::getVectorEngine( void )
 
 Vector::const_shared_ptr ManagedVector::getVectorEngine( void ) const
 {
-  auto data = dynamic_cast<const ManagedVectorData *>(d_VectorData);
+  const auto data = dynamic_cast<const ManagedVectorData *>(d_VectorData);
   AMP_ASSERT(data);
   return data->getVectorEngine();
 }
