@@ -119,6 +119,7 @@ std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr n
 
 std::string ManagedVector::type() const
 {
+  AMP_ASSERT(d_VectorData);
   return d_VectorData->VectorDataName();
 }
 
