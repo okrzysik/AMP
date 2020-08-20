@@ -5,6 +5,7 @@
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/SubsetVariable.h"
 #include "AMP/vectors/SubsetVector.h"
+#include "AMP/vectors/SubsetVectorData.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/data/VectorDataIterator.h"
 
@@ -62,6 +63,15 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
         PROFILE_STOP2( "view", 2 );
         return v;
     }
+#if 1
+    // Create the new subset vector
+    std::shared_ptr<SubsetVector> retVal( new SubsetVector() );
+    retVal->setVariable( var );
+    auto params = std::make_shared<SubsetVectorParameters>();
+    params->d_ViewVector = std::const_pointer_cast<Vector>( v );
+    params->d_DOFManager = subsetDOF;
+    retVal->setVectorData( std::make_shared<SubsetVectorData>(params) );
+#else
     auto remote_DOFs = subsetDOF->getRemoteDOFs();
     bool ghosts      = subsetDOF->getComm().anyReduce( !remote_DOFs.empty() );
     AMP::LinearAlgebra::CommunicationList::shared_ptr commList;
@@ -107,6 +117,7 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
     // For now use one datablock for each value, this needs to be changed
     retVal->d_dataBlockPtr  = data_ptr;
     retVal->d_dataBlockSize = std::vector<size_t>( data_ptr.size(), 1 );
+#endif
     // We should decide on a better way to set the vector operations
     // for efficiency
     retVal->d_VectorOps = std::make_shared<VectorOperationsDefault<double>>();
@@ -121,7 +132,7 @@ Vector::shared_ptr SubsetVector::cloneVector( Variable::shared_ptr var ) const
     return vec;
 }
 
-
+#if 0
 /****************************************************************
  * Functions to access the raw data blocks                       *
  ****************************************************************/
@@ -251,7 +262,7 @@ void SubsetVector::getValuesByLocalID( int cnt, size_t *ndx, double *vals ) cons
 
 size_t SubsetVector::getLocalSize() const { return getCommunicationList()->numLocalRows(); }
 size_t SubsetVector::getGlobalSize() const { return getCommunicationList()->getTotalSize(); }
-
+#endif
 
 void SubsetVector::aliasVector( Vector & ) { AMP_ERROR( "cannot alias a subset vector.....yet" ); }
 
@@ -270,12 +281,16 @@ std::string SubsetVector::type() const
 
 void SubsetVector::swapVectors( Vector &rhs )
 {
+#if 1
+  d_VectorData->swapData(*(rhs.getVectorData()));
+#else
     auto s = dynamic_cast<SubsetVector *>( &rhs );
     AMP_ASSERT( s != nullptr );
     std::swap( d_ViewVector, s->d_ViewVector );
     std::swap( d_SubsetLocalIDToViewGlobalID, s->d_SubsetLocalIDToViewGlobalID );
     std::swap( d_dataBlockSize, s->d_dataBlockSize );
     std::swap( d_dataBlockPtr, s->d_dataBlockPtr );
+#endif
 }
 
 
