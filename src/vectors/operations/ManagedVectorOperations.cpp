@@ -101,7 +101,7 @@ void ManagedVectorOperations::scale( double alpha, const VectorData &x, VectorDa
     auto x2 = getManagedVector( x );
     auto y2 = getManagedVector( y );
     if ( x2 != nullptr ) {
-        y2->getVectorEngine()->scale( alpha, *getEngineData( x ) );
+        y2->getVectorEngine()->scale( alpha, x2->getVectorEngine() );
     } else {
         VectorOperationsDefault::scale( alpha, x, y );
     }
@@ -121,7 +121,7 @@ void ManagedVectorOperations::add( const VectorData &x, const VectorData &y, Vec
     auto y2 = getManagedVector( y );
     auto z2 = getManagedVector( z );
     if ( x2 != nullptr && y2 != nullptr ) {
-        z2->getVectorEngine()->add( *getEngineData( x ), *getEngineData( y ) );
+        z2->getVectorEngine()->add( x2->getVectorEngine(), y2->getVectorEngine() );
     } else {
         VectorOperationsDefault::add( x, y, z );
     }
@@ -134,7 +134,7 @@ void ManagedVectorOperations::subtract( const VectorData &x, const VectorData &y
     auto y2 = getManagedVector( y );
     auto z2 = getManagedVector( z );
     if ( x2 != nullptr && y2 != nullptr ) {
-        z2->getVectorEngine()->subtract( *getEngineData( x ), *getEngineData( y ) );
+        z2->getVectorEngine()->subtract( x2->getVectorEngine(), y2->getVectorEngine() );
     } else {
         VectorOperationsDefault::subtract( x, y, z );
     }
@@ -147,7 +147,7 @@ void ManagedVectorOperations::multiply( const VectorData &x, const VectorData &y
     auto y2 = getManagedVector( y );
     auto z2 = getManagedVector( z );
     if ( x2 != nullptr && y2 != nullptr ) {
-        z2->getVectorEngine()->multiply( *getEngineData( x ), *getEngineData( y ) );
+        z2->getVectorEngine()->multiply( x2->getVectorEngine(), y2->getVectorEngine() );
     } else {
         VectorOperationsDefault::multiply( x, y, z );
     }
@@ -160,7 +160,7 @@ void ManagedVectorOperations::divide( const VectorData &x, const VectorData &y, 
     auto y2 = getManagedVector( y );
     auto z2 = getManagedVector( z );
     if ( x2 != nullptr && y2 != nullptr ) {
-        z2->getVectorEngine()->divide( *getEngineData( x ), *getEngineData( y ) );
+        z2->getVectorEngine()->divide( x2->getVectorEngine(), y2->getVectorEngine() );
     } else {
         VectorOperationsDefault::divide( x, y, z );
     }
@@ -172,7 +172,7 @@ void ManagedVectorOperations::reciprocal( const VectorData &x, VectorData &y )
     auto x2 = getManagedVector( x );
     auto y2 = getManagedVector( y );
     if ( x2 != nullptr ) {
-        y2->getVectorEngine()->reciprocal( *getEngineData( x ) );
+        y2->getVectorEngine()->reciprocal( x2->getVectorEngine() );
     } else {
         VectorOperationsDefault::reciprocal( x, y );
     }
@@ -186,7 +186,7 @@ void ManagedVectorOperations::linearSum(
     auto y2 = getManagedVector( y );
     auto z2 = getManagedVector( z );
     if ( x2 != nullptr && y2 != nullptr ) {
-        z2->getVectorEngine()->linearSum( alpha, *getEngineData( x ), beta, *getEngineData( y ) );
+        z2->getVectorEngine()->linearSum( alpha, x2->getVectorEngine(), beta, y2->getVectorEngine() );
     } else {
         VectorOperationsDefault::linearSum( alpha, x, beta, y, z );
     }
