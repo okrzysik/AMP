@@ -168,6 +168,15 @@ void MultiVector::resetVectorData()
                     "All vectors must have a DOFManager for MultiVector to work properly" );
     }
     d_DOFManager = std::make_shared<AMP::Discretization::multiDOFManager>( d_Comm, managers );
+#if 1
+    auto data = Vector::getVectorData();
+    auto mvData = dynamic_cast<MultiVectorData*>(data);
+    AMP_ASSERT(mvData);
+    std::vector<VectorData *> dataComponents( d_vVectors.size() );
+    for ( size_t i = 0; i < d_vVectors.size(); i++ )
+      dataComponents[i] = d_vVectors[i]->Vector::getVectorData();
+    mvData->resetMultiVectorData( d_DOFManager.get(), dataComponents);
+#else
     // Create a new communication list
     auto remote_DOFs = d_DOFManager->getRemoteDOFs();
     bool ghosts      = d_Comm.anyReduce( !remote_DOFs.empty() );
@@ -194,6 +203,7 @@ void MultiVector::resetVectorData()
     d_subDOFManager.resize( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ )
         d_subDOFManager[i] = subManagers[i].get();
+#endif
 }
 void MultiVector::addVectorHelper( Vector::shared_ptr vec )
 {

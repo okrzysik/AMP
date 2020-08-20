@@ -12,6 +12,34 @@
 namespace AMP {
 namespace LinearAlgebra {
 
+void MultiVectorData::resetMultiVectorData( AMP::Discretization::DOFManager *manager,
+					    std::vector<VectorData *> data )
+{
+    d_data = data;
+    AMP_ASSERT( manager );
+    d_globalDOFManager = manager;
+    auto globalMgr = dynamic_cast<AMP::Discretization::multiDOFManager *>( d_globalDOFManager );
+    AMP_ASSERT( globalMgr );
+    auto subManagers   = globalMgr->getDOFManagers();
+    d_subDOFManager.resize( subManagers.size() );
+    for ( size_t i = 0; i < subManagers.size(); i++ )
+        d_subDOFManager[i] = subManagers[i].get();
+
+    // Create a new communication list
+    auto remote_DOFs = globalMgr->getRemoteDOFs();
+    bool ghosts      = globalMgr->getComm().anyReduce( !remote_DOFs.empty() );
+    if ( !ghosts ) {
+        d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( globalMgr->numLocalDOF(),
+									 globalMgr->getComm() );
+    } else {
+        auto params           = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
+        params->d_comm        = globalMgr->getComm();
+        params->d_localsize   = globalMgr->numLocalDOF();
+        params->d_remote_DOFs = remote_DOFs;
+        d_CommList            = std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
+    }
+    
+}
 
 /****************************************************************
  * Return basic properties                                       *

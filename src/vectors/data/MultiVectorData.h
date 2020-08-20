@@ -184,6 +184,9 @@ public:
 
     MultiVectorData() : d_globalDOFManager( nullptr ) {}
 
+    void resetMultiVectorData( AMP::Discretization::DOFManager *manager,
+			       std::vector<VectorData *> data );
+    
 protected:
 
     // Internal data
