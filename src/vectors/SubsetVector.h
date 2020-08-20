@@ -101,6 +101,7 @@ public:
     void
       dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const override { d_VectorData->dumpOwnedData(out, GIDoffset, LIDoffset);};
     void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const override { d_VectorData->dumpGhostedData(out, offset); }
+    uint64_t getDataID() const override { return d_VectorData->getDataID(); }
 /****************************************************************
  ****************************************************************/
     std::string type() const override;
@@ -109,7 +110,6 @@ public:
     void swapVectors( Vector &rhs ) override;
     void aliasVector( Vector &rhs ) override;
     void assemble() override {}
-    uint64_t getDataID() const override { return d_ViewVector->getDataID(); }
 
 #else
     std::string VectorDataName() const override { return "SubsetVector"; }
