@@ -464,6 +464,36 @@ const VectorData *MultiVectorData::getVectorData( size_t i ) const
   return d_data[i];
 }
 
+/****************************************************************
+ * Functions to print the data                                   *
+ ****************************************************************/
+void MultiVectorData::dumpOwnedData( std::ostream &out, size_t GIDoffset, size_t LIDoffset ) const
+{
+    size_t localOffset = 0;
+    auto *manager      = (AMP::Discretization::multiDOFManager *) d_globalDOFManager;
+    AMP_ASSERT( manager->getDOFManagers().size() == d_subDOFManager.size() );
+    for ( size_t i = 0; i != d_subDOFManager.size(); i++ ) {
+        auto subManager = d_subDOFManager[i];
+        std::vector<size_t> subStartDOF( 1, subManager->beginDOF() );
+        auto globalStartDOF = manager->getGlobalDOF( i, subStartDOF );
+        size_t globalOffset = globalStartDOF[0] - subStartDOF[0];
+        d_data[i]->dumpOwnedData( out, GIDoffset + globalOffset, LIDoffset + localOffset );
+        localOffset += d_data[i]->getLocalSize();
+    }
+}
+void MultiVectorData::dumpGhostedData( std::ostream &out, size_t offset ) const
+{
+    auto manager = (AMP::Discretization::multiDOFManager *) d_globalDOFManager;
+    AMP_ASSERT( manager->getDOFManagers().size() == d_subDOFManager.size() );
+    for ( size_t i = 0; i != d_data.size(); i++ ) {
+        auto subManager = d_subDOFManager[i];
+        std::vector<size_t> subStartDOF( 1, subManager->beginDOF() );
+        auto globalStartDOF = manager->getGlobalDOF( i, subStartDOF );
+        size_t globalOffset = globalStartDOF[0] - subStartDOF[0];
+        d_data[i]->dumpGhostedData( out, offset + globalOffset );
+    }
+}
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

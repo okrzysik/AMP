@@ -318,42 +318,6 @@ bool MultiVector::containsPointer( const Vector::shared_ptr p ) const
     return false;
 }
 
-
-/****************************************************************
- * Functions to print the data                                   *
- ****************************************************************/
-void MultiVector::dumpOwnedData( std::ostream &out, size_t GIDoffset, size_t LIDoffset ) const
-{
-    size_t localOffset = 0;
-    auto *manager      = (AMP::Discretization::multiDOFManager *) d_DOFManager.get();
-    AMP_ASSERT( manager->getDOFManagers().size() == d_vVectors.size() );
-    for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
-        if ( d_vVectors[i]->getVariable() )
-            out << "[ " << d_vVectors[i]->getVariable()->getName() << " ]\n";
-        auto subManager = d_vVectors[i]->getDOFManager();
-        std::vector<size_t> subStartDOF( 1, subManager->beginDOF() );
-        auto globalStartDOF = manager->getGlobalDOF( i, subStartDOF );
-        size_t globalOffset = globalStartDOF[0] - subStartDOF[0];
-        d_vVectors[i]->dumpOwnedData( out, GIDoffset + globalOffset, LIDoffset + localOffset );
-        localOffset += d_vVectors[i]->getLocalSize();
-    }
-}
-void MultiVector::dumpGhostedData( std::ostream &out, size_t offset ) const
-{
-    auto manager = (AMP::Discretization::multiDOFManager *) d_DOFManager.get();
-    AMP_ASSERT( manager->getDOFManagers().size() == d_vVectors.size() );
-    for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
-        if ( d_vVectors[i]->getVariable() )
-            out << "[ " << d_vVectors[i]->getVariable()->getName() << " ]\n";
-        auto subManager = d_vVectors[i]->getDOFManager();
-        std::vector<size_t> subStartDOF( 1, subManager->beginDOF() );
-        auto globalStartDOF = manager->getGlobalDOF( i, subStartDOF );
-        size_t globalOffset = globalStartDOF[0] - subStartDOF[0];
-        d_vVectors[i]->dumpGhostedData( out, offset + globalOffset );
-    }
-}
-
-
 /****************************************************************
  * Subset                                                        *
  ****************************************************************/

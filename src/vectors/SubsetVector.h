@@ -98,6 +98,9 @@ public:
     void getGhostValuesByGlobalID( int num, size_t *indices, double *vals ) const override { d_VectorData->getGhostValuesByGlobalID(num, indices, vals); }
     void getValuesByLocalID( int num, size_t *indices, double *vals ) const override { d_VectorData->getValuesByLocalID(num, indices, vals); }
     bool containsGlobalElement( size_t GID ) override { return d_VectorData->containsGlobalElement(GID); }
+    void
+      dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const override { d_VectorData->dumpOwnedData(out, GIDoffset, LIDoffset);};
+    void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const override { d_VectorData->dumpGhostedData(out, offset); }
 /****************************************************************
  ****************************************************************/
     std::string type() const override;

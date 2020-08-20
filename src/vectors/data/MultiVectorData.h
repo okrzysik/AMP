@@ -173,6 +173,9 @@ public: // Advanced virtual functions
      */
     void swapData( VectorData &rhs ) override;
 
+    void dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const override;
+    void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const override;
+
     VectorData *getVectorData( size_t i );
     const VectorData *getVectorData( size_t i ) const;
 
