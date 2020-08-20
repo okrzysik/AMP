@@ -76,7 +76,10 @@ std::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec,
     if ( comm.isNull() )
         comm = vec->getComm();
     multivec      = create( vec->getVariable()->getName(), comm, { vec } );
-    auto listener = std::dynamic_pointer_cast<DataChangeListener>( multivec );
+    auto data     = multivec->Vector::getVectorData();
+    AMP_ASSERT( data );
+    //    auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
+    auto listener = dynamic_cast<DataChangeListener*>( data );
     vec->registerListener( listener );
     return multivec;
 }
@@ -212,7 +215,10 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
         } else {
             AMP_ERROR( "Not finished" );
             d_vVectors.push_back( vec );
-            auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
+	    auto data = Vector::getVectorData();
+	    AMP_ASSERT(data);
+	    //            auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
+            auto listener = dynamic_cast<DataChangeListener*>( data );
             vec->registerListener( listener );
         }
     } else {
@@ -225,7 +231,10 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
         if ( index == -1 ) {
             // Add the vector
             d_vVectors.push_back( vec );
-            auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
+	    auto data = Vector::getVectorData();
+	    AMP_ASSERT(data);
+	    //            auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
+            auto listener = dynamic_cast<DataChangeListener*>( data );
             vec->registerListener( listener );
         } else {
             // the vector exists, which vector (or both) do we keep?

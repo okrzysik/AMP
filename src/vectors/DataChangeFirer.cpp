@@ -25,6 +25,15 @@ void DataChangeFirer::registerListener( std::shared_ptr<DataChangeListener> list
     d_listeners.push_back( listener.get() );
 }
 
+void DataChangeFirer::registerListener( DataChangeListener *listener )
+{
+    AMP_ASSERT( listener );
+    AMP_ASSERT( std::find( d_listeners.begin(), d_listeners.end(), listener ) ==
+                d_listeners.end() );
+    listener->registerWithFirer( this );
+    d_listeners.push_back( listener );
+}
+
 void DataChangeFirer::deregisterListener( DataChangeListener *listener )
 {
     AMP_ASSERT( listener );

@@ -65,6 +65,13 @@ public:
     virtual void registerListener( std::shared_ptr<DataChangeListener> listener );
 
     /**
+     * \brief  Register a listener with this DataChangeFirer
+     * \param[in]  listener The listener to be alerted to data change events
+     * \details Adds a listener to itself.
+     */
+    virtual void registerListener( DataChangeListener *listener );
+
+    /**
      * \brief  Deregister a listener with this DataChangeFirer
      * \param[in]  listener  The listener to remove from the list
      * \details Removes a listener from itself.
