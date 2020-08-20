@@ -506,6 +506,9 @@ bool MultiVectorOperations::localEquals( const VectorData &x,
     auto x2  = getMultiVectorData( x );
     auto y2  = getMultiVectorData( y );
     if ( x2 && y2 ) {
+      AMP::pout << "d_operations.size() " << d_operations.size()
+		<< ", x2->numberOfComponents() " << x2->numberOfComponents()
+		<< std::endl;
         AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
         AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
         for ( size_t i = 0; i < d_operations.size(); i++ ) {
