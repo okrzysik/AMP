@@ -167,7 +167,7 @@ void MultiVector::resetVectorData()
         AMP_INSIST( managers[i].get() != nullptr,
                     "All vectors must have a DOFManager for MultiVector to work properly" );
     }
-    d_DOFManager = std::make_shared<AMP::Discretization::multiDOFManager>( d_Comm, managers );
+    d_DOFManager = std::make_shared<AMP::Discretization::multiDOFManager>( getComm(), managers );
 
     auto data = Vector::getVectorData();
     auto mvData = dynamic_cast<MultiVectorData*>(data);
@@ -445,7 +445,7 @@ void MultiVector::aliasVector( Vector &other )
 Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) const
 {
     std::shared_ptr<MultiVector> retVec( new MultiVector( name->getName() ) );
-    retVec->d_Comm       = d_Comm;
+    retVec->d_Comm       = getComm();
     retVec->d_DOFManager = d_DOFManager;
     retVec-> setCommunicationList( d_CommList );
     retVec->d_vVectors.resize( d_vVectors.size() );
@@ -466,7 +466,7 @@ std::string MultiVector::type() const { return "MultiVector"; }
 
 MultiVector::~MultiVector() {}
 
-AMP_MPI MultiVector::getComm() const { return d_Comm; }
+AMP_MPI MultiVector::getComm() const { return d_VectorData->getComm(); }
 
 const Vector::shared_ptr &MultiVector::getVector( const VectorData &rhs, size_t which ) const
 {
