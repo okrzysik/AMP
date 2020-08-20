@@ -136,8 +136,14 @@ Vector::shared_ptr ManagedVector::selectInto( const VectorSelector &s )
 {
   // we are going to ignore the buffer for now and assume the vec
   // is non null
-    auto vec = getVectorEngine();
-    return vec->selectInto( s );
+    Vector::shared_ptr result;
+    if ( d_vBuffer ) {
+        result = Vector::selectInto( s );
+    } else {
+      auto vec = getVectorEngine();
+      result vec->selectInto( s );
+    }
+    return result
 }
 
 
@@ -145,8 +151,14 @@ Vector::const_shared_ptr ManagedVector::selectInto( const VectorSelector &s ) co
 {
   // we are going to ignore the buffer for now and assume the vec
   // is non null
-  auto const vec = getVectorEngine();
-  return vec->selectInto( s );
+    Vector::shared_ptr result;
+    if ( d_vBuffer ) {
+        result = Vector::selectInto( s );
+    } else {
+      auto vec = getVectorEngine();
+      result vec->selectInto( s );
+    }
+    return result
 }
 
 std::shared_ptr<ParameterBase> ManagedVector::getParameters()
