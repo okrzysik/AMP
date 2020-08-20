@@ -63,7 +63,7 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
         PROFILE_STOP2( "view", 2 );
         return v;
     }
-#if 1
+
     auto remote_DOFs = subsetDOF->getRemoteDOFs();
     bool ghosts      = subsetDOF->getComm().anyReduce( !remote_DOFs.empty() );
     AMP::LinearAlgebra::CommunicationList::shared_ptr commList;
@@ -88,53 +88,6 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
     retVal->setVectorData( std::make_shared<SubsetVectorData>(params) );
     retVal->d_DOFManager = subsetDOF; // at present all vectors need to have a dof manager
     
-#else
-    auto remote_DOFs = subsetDOF->getRemoteDOFs();
-    bool ghosts      = subsetDOF->getComm().anyReduce( !remote_DOFs.empty() );
-    AMP::LinearAlgebra::CommunicationList::shared_ptr commList;
-    if ( !ghosts ) {
-        commList = AMP::LinearAlgebra::CommunicationList::createEmpty( subsetDOF->numLocalDOF(),
-                                                                       subsetDOF->getComm() );
-    } else {
-        // Construct the communication list
-        auto params           = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
-        params->d_comm        = subsetDOF->getComm();
-        params->d_localsize   = subsetDOF->numLocalDOF();
-        params->d_remote_DOFs = remote_DOFs;
-        commList              = std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
-    }
-    // Create the new subset vector
-    std::shared_ptr<SubsetVector> retVal( new SubsetVector() );
-    retVal->setVariable( var );
-    retVal->d_ViewVector = std::const_pointer_cast<Vector>( v );
-    retVal->d_DOFManager = subsetDOF;
-    retVal->setCommunicationList( commList );
-    auto tmp = std::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( subsetDOF );
-    if ( tmp != nullptr ) {
-        retVal->d_SubsetLocalIDToViewGlobalID = tmp->getLocalParentDOFs();
-    } else if ( subsetDOF->numLocalDOF() == parentDOF->numLocalDOF() ) {
-        retVal->d_SubsetLocalIDToViewGlobalID.resize( parentDOF->numLocalDOF() );
-        size_t beginDOF = parentDOF->beginDOF();
-        size_t endDOF   = parentDOF->endDOF();
-        for ( size_t i = beginDOF; i < endDOF; i++ )
-            retVal->d_SubsetLocalIDToViewGlobalID[i - beginDOF] = i;
-    } else {
-        AMP_ERROR( "Internal error with SubsetVector" );
-    }
-    // Get a pointer to every value in the subset
-    std::vector<double *> data_ptr( retVal->d_SubsetLocalIDToViewGlobalID.size(), nullptr );
-    auto iterator   = retVal->d_ViewVector->constBegin();
-    size_t last_pos = retVal->d_ViewVector->getCommunicationList()->getStartGID();
-    for ( size_t i = 0; i < data_ptr.size(); i++ ) {
-        iterator += (int) ( retVal->d_SubsetLocalIDToViewGlobalID[i] - last_pos );
-        last_pos    = retVal->d_SubsetLocalIDToViewGlobalID[i];
-        data_ptr[i] = const_cast<double *>( &( *iterator ) );
-    }
-    // Create the data blocks
-    // For now use one datablock for each value, this needs to be changed
-    retVal->d_dataBlockPtr  = data_ptr;
-    retVal->d_dataBlockSize = std::vector<size_t>( data_ptr.size(), 1 );
-#endif
     // We should decide on a better way to set the vector operations
     // for efficiency
     retVal->d_VectorOps = std::make_shared<VectorOperationsDefault<double>>();
@@ -287,11 +240,9 @@ void SubsetVector::aliasVector( Vector & ) { AMP_ERROR( "cannot alias a subset v
 std::string SubsetVector::type() const
 {
     std::string retVal = "Subset Vector";
-    if ( d_ViewVector ) {
-        retVal += " ( view of ";
-        retVal += d_ViewVector->type();
-        retVal += " )";
-    }
+    retVal += " ( view of ";
+    retVal += d_VectorData->VectorDataName();
+    retVal += " )";
     return retVal;
 }
 

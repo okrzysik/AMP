@@ -59,7 +59,7 @@ class SubsetVectorData : public VectorData
 
 public:
 
-    std::string VectorDataName() const override { return "SubsetVectorData"; }
+    std::string VectorDataName() const override { return "SubsetVectorData of " + d_ViewVector->type(); }
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
     size_t getLocalSize() const override;
@@ -86,7 +86,6 @@ public:
     SubsetVectorData( std::shared_ptr<VectorParameters> params );
 
 private:
-    void computeIDMap();
 
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
