@@ -184,7 +184,8 @@ void MultiVector::resetVectorData()
 
     d_data.resize( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ )
-        d_data[i] = d_vVectors[i].get();
+      d_data[i] = d_vVectors[i]->Vector::getVectorData();
+    //        d_data[i] = d_vVectors[i].get();
     auto *manager = dynamic_cast<AMP::Discretization::multiDOFManager *>( d_DOFManager.get() );
     AMP_ASSERT( manager != nullptr );
     d_globalDOFManager = manager;
