@@ -238,7 +238,7 @@ double ManagedVectorOperations::dot( const VectorData &x, const VectorData &y ) 
 	      << y.VectorDataName()  <<std::endl;
     auto x2 = getManagedVector( x );
     auto y2 = getManagedVector( y );
-    if ( x2 && y2 ) {
+    if ( (x2!=nullptr) && (y2!=nullptr) ) {
       AMP::pout << "Vector Engine types : "
 		<< x2->getVectorEngine()->type() << " " 
 		<< y2->getVectorEngine()->type() << std::endl;
