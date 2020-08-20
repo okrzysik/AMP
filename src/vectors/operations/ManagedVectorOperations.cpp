@@ -233,6 +233,9 @@ double ManagedVectorOperations::max( const VectorData &x ) const
 double ManagedVectorOperations::dot( const VectorData &x, const VectorData &y ) const
 {
     AMP::pout << "Calling  ManagedVectorOperations::dot" <<std::endl;
+    AMP::pout << "VectorData types "
+	      << x.VectorDataName() << " "
+	      << y.VectorDataName()  <<std::endl;
     auto x2 = getManagedVector( x );
     auto y2 = getManagedVector( y );
     if ( x2 && y2 ) {
