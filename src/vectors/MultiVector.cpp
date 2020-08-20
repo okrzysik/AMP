@@ -168,7 +168,7 @@ void MultiVector::resetVectorData()
                     "All vectors must have a DOFManager for MultiVector to work properly" );
     }
     d_DOFManager = std::make_shared<AMP::Discretization::multiDOFManager>( d_Comm, managers );
-#if 1
+
     auto data = Vector::getVectorData();
     auto mvData = dynamic_cast<MultiVectorData*>(data);
     AMP_ASSERT(mvData);
@@ -176,35 +176,8 @@ void MultiVector::resetVectorData()
     for ( size_t i = 0; i < d_vVectors.size(); i++ )
       dataComponents[i] = d_vVectors[i]->Vector::getVectorData();
     mvData->resetMultiVectorData( d_DOFManager.get(), dataComponents);
-#else
-    // Create a new communication list
-    auto remote_DOFs = d_DOFManager->getRemoteDOFs();
-    bool ghosts      = d_Comm.anyReduce( !remote_DOFs.empty() );
-    if ( !ghosts ) {
-        d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty(
-            d_DOFManager->numLocalDOF(), d_Comm );
-    } else {
-        auto params           = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
-        params->d_comm        = d_Comm;
-        params->d_localsize   = d_DOFManager->numLocalDOF();
-        params->d_remote_DOFs = remote_DOFs;
-        d_CommList            = std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
-    }
-
-    d_data.resize( d_vVectors.size() );
-    for ( size_t i = 0; i < d_vVectors.size(); i++ )
-      d_data[i] = d_vVectors[i]->Vector::getVectorData();
-    //        d_data[i] = d_vVectors[i].get();
-    auto *manager = dynamic_cast<AMP::Discretization::multiDOFManager *>( d_DOFManager.get() );
-    AMP_ASSERT( manager != nullptr );
-    d_globalDOFManager = manager;
-    auto subManagers   = manager->getDOFManagers();
-    AMP_ASSERT( subManagers.size() == d_vVectors.size() );
-    d_subDOFManager.resize( d_vVectors.size() );
-    for ( size_t i = 0; i < d_vVectors.size(); i++ )
-        d_subDOFManager[i] = subManagers[i].get();
-#endif
 }
+
 void MultiVector::addVectorHelper( Vector::shared_ptr vec )
 {
     if ( vec.get() == nullptr )
@@ -474,7 +447,7 @@ Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) c
     std::shared_ptr<MultiVector> retVec( new MultiVector( name->getName() ) );
     retVec->d_Comm       = d_Comm;
     retVec->d_DOFManager = d_DOFManager;
-    retVec->d_CommList   = d_CommList;
+    retVec-> setCommunicationList( d_CommList );
     retVec->d_vVectors.resize( d_vVectors.size() );
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         retVec->d_vVectors[i] = d_vVectors[i]->cloneVector();
