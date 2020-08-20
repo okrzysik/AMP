@@ -232,16 +232,9 @@ double ManagedVectorOperations::max( const VectorData &x ) const
 
 double ManagedVectorOperations::dot( const VectorData &x, const VectorData &y ) const
 {
-    AMP::pout << "Calling  ManagedVectorOperations::dot" <<std::endl;
-    AMP::pout << "VectorData types "
-	      << x.VectorDataName() << " "
-	      << y.VectorDataName()  <<std::endl;
     auto x2 = getManagedVector( x );
     auto y2 = getManagedVector( y );
     if ( (x2!=nullptr) && (y2!=nullptr) ) {
-      AMP::pout << "Vector Engine types : "
-		<< x2->getVectorEngine()->type() << " " 
-		<< y2->getVectorEngine()->type() << std::endl;
         return y2->getVectorEngine()->dot( x2->getVectorEngine() );
     }
     return VectorOperationsDefault::dot( x, y );

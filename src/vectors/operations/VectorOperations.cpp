@@ -40,7 +40,6 @@ double VectorOperations::max( const VectorData &x ) const
 }
 double VectorOperations::dot( const VectorData &x, const VectorData &y ) const
 {
-    AMP::pout << "Calling VectorOperations::dot" << std::endl;
     double ans = localDot( x, y );
     if ( x.hasComm() )
         ans = x.getComm().sumReduce( ans );

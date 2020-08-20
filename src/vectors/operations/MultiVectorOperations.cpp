@@ -396,7 +396,6 @@ double MultiVectorOperations::localMaxNorm( const VectorData &x ) const
 
 double MultiVectorOperations::localDot( const VectorData &x, const VectorData &y ) const
 {
-    AMP::pout << "Calling  MultiVectorOperations::localDot" <<std::endl;
     if ( d_operations.empty() ) {
         return 0;
     }
@@ -410,10 +409,7 @@ double MultiVectorOperations::localDot( const VectorData &x, const VectorData &y
         for ( size_t i = 0; i != d_operations.size(); i++ ) {
 	  auto xi = getVectorDataComponent( x, i );
 	  auto yi = getVectorDataComponent( y, i );
-	  AMP::pout << "MultiVectorOperations::localDot VectorData types " << i << " "
-		    << xi->VectorDataName() << ", "
-		    << yi->VectorDataName() << std::endl;
-            ans += d_operations[i]->localDot( *xi,*yi );
+	  ans += d_operations[i]->localDot( *xi,*yi );
 	}
     } else {
         AMP_ERROR( "MultiVectorOperations::localDot requires x, y to be MultiVectorData" );
