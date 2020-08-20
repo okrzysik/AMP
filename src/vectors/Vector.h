@@ -74,7 +74,7 @@ public:
      *      For Vectors, \f$\mathit{this}_i = x_i\f$.
      * \param[in] x         a vector
      */
-    void copy( const VectorData &x );
+    void copy( const Vector &x );
 
     /**
      *\brief Set vector entries (including ghosts) to zero
@@ -108,7 +108,7 @@ public:
      * \param[in] alpha     a scalar double
      * \param[in] x         a vector
      */
-    void scale( double alpha, const VectorData &x );
+    void scale( double alpha, const Vector &x );
 
     /**
      * \brief  Scale a vector.
@@ -123,7 +123,7 @@ public:
      * \param[in] x         Input vector x
      * \param[in] y         Input vector y
      */
-    void add( const VectorData &x, const VectorData &y );
+    void add( const Vector &x, const Vector &y );
 
     /**
      * \brief Subtracts one vector from another.
@@ -131,7 +131,7 @@ public:
      * \param[in] x         Input vector x
      * \param[in] y         Input vector y
      */
-    void subtract( const VectorData &x, const VectorData &y );
+    void subtract( const Vector &x, const Vector &y );
 
     /**
      * \brief Component-wise multiply one vector with another.
@@ -139,7 +139,7 @@ public:
      * \param[in] x         Input vector x
      * \param[in] y         Input vector y
      */
-    void multiply( const VectorData &x, const VectorData &y );
+    void multiply( const Vector &x, const Vector &y );
 
     /**
      * \brief Component-wise divide one vector by another.
@@ -147,14 +147,14 @@ public:
      * \param[in] x         Input vector x
      * \param[in] y         Input vector y
      */
-    void divide( const VectorData &x, const VectorData &y );
+    void divide( const Vector &x, const Vector &y );
 
     /**
      * \param x  a vector
      * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i =
      * 1/x_i\f$.
      */
-    void reciprocal( const VectorData &x );
+    void reciprocal( const Vector &x );
 
     /**
      * \brief Set a vector to be a linear combination of two vectors.
@@ -164,7 +164,7 @@ public:
      * \param[in] beta      a scalar
      * \param[in] y         a vector
      */
-    void linearSum( double alpha, const VectorData &x, double beta, const VectorData &y );
+    void linearSum( double alpha, const Vector &x, double beta, const Vector &y );
 
     /**
      * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
@@ -172,7 +172,7 @@ public:
      * \param[in] x        a vector
      * \param[in] y        a vector
      */
-    void axpy( double alpha, const VectorData &x, const VectorData &y );
+    void axpy( double alpha, const Vector &x, const Vector &y );
 
     /**
      * \brief Set this vector alpha * x + this.
@@ -181,14 +181,14 @@ public:
      * \param[in] beta     a scalar
      * \param[in] x        a vector
      */
-    void axpby( double alpha, double beta, const VectorData &x );
+    void axpby( double alpha, double beta, const Vector &x );
 
     /**
      * \brief Set this to the component-wise absolute value of a vector.
      *     \f$\mathit{this}_i = |x_i|\f$.
      * \param[in] x        a vector
      */
-    void abs( const VectorData &x );
+    void abs( const Vector &x );
 
     /**
      * \brief set vector to \f$x + \alpha \bar{1}\f$.
@@ -196,7 +196,7 @@ public:
      * \param[in] alpha a scalar
      * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
      */
-    void addScalar( const VectorData &x, double alpha_in );
+    void addScalar( const Vector &x, double alpha_in );
 
     /**
      * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
@@ -232,7 +232,7 @@ public:
      * \param[in] y a vector
      * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
      */
-    double minQuotient( const VectorData &x ) const;
+    double minQuotient( const Vector &x ) const;
 
     /**
      * \brief Return a weighted norm of a vector
@@ -240,7 +240,7 @@ public:
      * \param[in] y a vector
      * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
      */
-    double wrmsNorm( const VectorData &x, const VectorData &y ) const;
+    double wrmsNorm( const Vector &x, const Vector &y ) const;
 
     /**
      * \brief Return a weighted norm of a subset of a vector
@@ -249,7 +249,7 @@ public:
      * \param[in] mask a vector
      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
      */
-    double wrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const;
+    double wrmsNormMask( const Vector &x, const Vector &mask, const Vector &y ) const;
 
 
     /**
@@ -257,9 +257,9 @@ public:
      * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
      * \param[in] x        a vector
      */
-    double dot( const VectorData &x ) const;
+    double dot( const Vector &x ) const;
 
-    bool equals( const VectorData &a, double tol ) const;
+    bool equals( const Vector &a, double tol ) const;
 
 
     /**
@@ -295,7 +295,7 @@ public:
      * \details Returns \f[\sum_i x_i \mathit{this}_i\f]
      * \param[in] x        a vector
      */
-    double localDot( const VectorData &x ) const;
+    double localDot( const Vector &x ) const;
 
     /**
      * \brief Returns the local minimum of the quotient of two vectors:
@@ -303,14 +303,14 @@ public:
      * \param[in] x a vector
      * \return \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
      */
-    double localMinQuotient( const VectorData &x ) const;
+    double localMinQuotient( const Vector &x ) const;
 
     /**
      * \brief Return a weighted norm of a vector
      * \param[in] x a vector
      * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_i \mathit{this}^2_i}{n}}\f]
      */
-    double localWrmsNorm( const VectorData &x ) const;
+    double localWrmsNorm( const Vector &x ) const;
 
     /**
      * \brief Return a weighted norm of a subset of a vector
@@ -320,7 +320,7 @@ public:
      * \mathit{this}^2_iy^2_i}{n}}\f]
      */
     double
-    localWrmsNormMask( const VectorData &x, const VectorData &mask, const VectorData &y ) const;
+    localWrmsNormMask( const Vector &x, const Vector &mask, const Vector &y ) const;
 
     /**
      * \brief  Determine if the local portion of two vectors are equal using an absolute tolerance
@@ -328,7 +328,7 @@ public:
      * \param[in] tol      Tolerance of comparison
      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
      */
-    bool localEquals( const VectorData &x, double tol = 0.000001 ) const;
+    bool localEquals( const Vector &x, double tol = 0.000001 ) const;
 
 
 public: // shared_ptr wrappers
