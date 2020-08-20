@@ -455,7 +455,7 @@ public:
     /* \brief  Returns true if this vector has this element
      * \param[in]  GID  The global ID of the element
      */
-    bool containsGlobalElement( size_t GID );
+    virtual bool containsGlobalElement( size_t GID );
 
 
 public: // Non virtual functions

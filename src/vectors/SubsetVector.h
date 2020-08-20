@@ -52,16 +52,17 @@ public:
     static Vector::const_shared_ptr view( Vector::const_shared_ptr, Variable::shared_ptr );
 
     std::string type() const override;
-    std::string VectorDataName() const override { return "SubsetVector"; }
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( Variable::shared_ptr ) const override;
-    size_t numberOfDataBlocks() const override;
-    size_t sizeOfDataBlock( size_t i ) const override;
     void swapVectors( Vector &rhs ) override;
     void aliasVector( Vector &rhs ) override;
+    void assemble() override {}
+
+    std::string VectorDataName() const override { return "SubsetVector"; }
+    size_t numberOfDataBlocks() const override;
+    size_t sizeOfDataBlock( size_t i ) const override;
     size_t getLocalSize() const override;
     size_t getGlobalSize() const override;
-    void assemble() override {}
 
     void addValuesByLocalID( int, size_t *, const double * ) override;
     void setValuesByLocalID( int, size_t *, const double * ) override;
