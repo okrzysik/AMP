@@ -1137,7 +1137,6 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
         utils->passes( "native dot equals managed dot" );
     else
         utils->failure( "native dot does not equal managed dot" );
-    AMP::pout << "End test *************************************************" << std::endl;
 
     auto vectore = d_factory->getManagedVector();
     auto vectorf = d_factory->getManagedVector();
@@ -1159,7 +1158,6 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
         utils->passes( "native alloc dot equals managed alloc dot" );
     else
         utils->failure( "native alloc dot does not equal managed alloc dot" );
-    AMP::pout << "End test *************************************************" << std::endl;
 
     /**** Need to test for failures at some point...
     try {
