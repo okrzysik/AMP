@@ -64,12 +64,27 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
         return v;
     }
 #if 1
+    auto remote_DOFs = subsetDOF->getRemoteDOFs();
+    bool ghosts      = subsetDOF->getComm().anyReduce( !remote_DOFs.empty() );
+    AMP::LinearAlgebra::CommunicationList::shared_ptr commList;
+    if ( !ghosts ) {
+        commList = AMP::LinearAlgebra::CommunicationList::createEmpty( subsetDOF->numLocalDOF(),
+                                                                       subsetDOF->getComm() );
+    } else {
+        // Construct the communication list
+        auto params           = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
+        params->d_comm        = subsetDOF->getComm();
+        params->d_localsize   = subsetDOF->numLocalDOF();
+        params->d_remote_DOFs = remote_DOFs;
+        commList              = std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
+    }
     // Create the new subset vector
     std::shared_ptr<SubsetVector> retVal( new SubsetVector() );
     retVal->setVariable( var );
     auto params = std::make_shared<SubsetVectorParameters>();
     params->d_ViewVector = std::const_pointer_cast<Vector>( v );
     params->d_DOFManager = subsetDOF;
+    params->d_CommList   = commList;
     retVal->setVectorData( std::make_shared<SubsetVectorData>(params) );
 #else
     auto remote_DOFs = subsetDOF->getRemoteDOFs();

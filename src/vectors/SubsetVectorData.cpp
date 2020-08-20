@@ -19,6 +19,7 @@ SubsetVectorData::SubsetVectorData( std::shared_ptr<VectorParameters> params ): 
 {
   auto sParams = std::dynamic_pointer_cast<SubsetVectorParameters>(params);
   d_ViewVector = sParams->d_ViewVector;
+#if 0
   auto remote_DOFs = d_DOFManager->getRemoteDOFs();
   bool ghosts      = d_DOFManager->getComm().anyReduce( !remote_DOFs.empty() );
   AMP::LinearAlgebra::CommunicationList::shared_ptr commList;
@@ -33,6 +34,7 @@ SubsetVectorData::SubsetVectorData( std::shared_ptr<VectorParameters> params ): 
     params->d_remote_DOFs = remote_DOFs;
     d_CommList              = std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
   }
+#endif
   auto parentDOF = d_ViewVector->getDOFManager();
   auto tmp = std::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( d_DOFManager );
   if ( tmp != nullptr ) {
