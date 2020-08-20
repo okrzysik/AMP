@@ -216,7 +216,7 @@ public:
     void getValuesByGlobalID( int num, size_t *indices, double *vals ) const override { d_VectorData->getValuesByGlobalID(num, indices, vals); }
     void getGhostValuesByGlobalID( int num, size_t *indices, double *vals ) const override { d_VectorData->getGhostValuesByGlobalID(num, indices, vals); }
     void getValuesByLocalID( int num, size_t *indices, double *vals ) const override { d_VectorData->getValuesByLocalID(num, indices, vals); }
-    bool containsGlobalElement( size_t GID ) override { d_VectorData->containsGlobalElement(GID); }
+    bool containsGlobalElement( size_t GID ) override { return d_VectorData->containsGlobalElement(GID); }
 /****************************************************************
  ****************************************************************/
 
