@@ -16,33 +16,32 @@ static inline double *getBufferPtr( std::shared_ptr<VectorData> buf )
 }
 
 
-EpetraVectorData::EpetraVectorData( Epetra_DataAccess method,
+EpetraVectorData::EpetraVectorData( std::shared_ptr<EpetraVectorEngineParameters> alias,
+				    Epetra_DataAccess method,
                                     const Epetra_BlockMap &map,
                                     std::shared_ptr<VectorData> bufData,
                                     int localStart,
                                     int localSize,
                                     int globalSize )
-    : d_epetraVector( method, map, getBufferPtr(bufData) ),
-      d_iLocalStart( localStart ),
-      d_iLocalSize( localSize ),
-      d_iGlobalSize( globalSize )
+  : VectorData(alias),
+    d_epetraVector( method, map, getBufferPtr(bufData) ),
+    d_iLocalStart( localStart ),
+    d_iLocalSize( localSize ),
+    d_iGlobalSize( globalSize )
 {
   d_buf_scope = bufData;
 }
 
-EpetraVectorData *EpetraVectorData::create( Epetra_DataAccess access,
-					    const Epetra_BlockMap &map,
-					    std::shared_ptr<VectorData> bufData,
-					    int startIndex,
-					    int localSize,
-					    int globalSize)
+EpetraVectorData *EpetraVectorData::create( std::shared_ptr<EpetraVectorEngineParameters> alias,
+					    std::shared_ptr<VectorData> buf)
 {
-  return new EpetraVectorData(access,
-			      map,
-			      bufData,
-			      startIndex,
-			      localSize,
-			      globalSize);
+  return new EpetraVectorData(alias,
+			      View,
+			      std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
+			      buf,
+			      std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->beginDOF(),
+			      std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
+			      std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize());
 }
 
 void *EpetraVectorData::getRawDataBlockAsVoid( size_t i )

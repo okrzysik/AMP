@@ -121,17 +121,11 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
  ********************************************************/
 EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<EpetraVectorEngineParameters> alias,
                                         std::shared_ptr<VectorData> buf )
-    : VectorData( alias ),
-      Vector( alias ),
+    : Vector( alias ),
       d_Params( alias )
 {
     d_VectorOps = std::make_shared<EpetraVectorOperations>();
-    d_VectorData = EpetraVectorData::create( View,
-					     std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
-					     buf,
-					     std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->beginDOF(),
-					     std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
-					     std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() );
+    d_VectorData = EpetraVectorData::create( alias, buf );
 }
 
 Vector::shared_ptr EpetraVectorEngine::cloneVector( const Variable::shared_ptr name ) const
