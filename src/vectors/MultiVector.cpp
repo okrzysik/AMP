@@ -449,7 +449,7 @@ Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) c
     std::shared_ptr<MultiVector> retVec( new MultiVector( name->getName() ) );
     retVec->d_Comm       = getComm();
     retVec->d_DOFManager = d_DOFManager;
-    retVec-> setCommunicationList( d_CommList );
+    retVec-> setCommunicationList(  getCommunicationList() );
     retVec->d_vVectors.resize( d_vVectors.size() );
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         retVec->d_vVectors[i] = d_vVectors[i]->cloneVector();
