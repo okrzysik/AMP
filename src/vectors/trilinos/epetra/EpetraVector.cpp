@@ -36,6 +36,7 @@ createManagedEpetraVector( Vector::shared_ptr inVector, std::shared_ptr<EpetraVe
 }
 Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
 {
+    AMP_INSIST( inVector->getCommunicationList(), "All vectors must have a communication list" );
     AMP_INSIST( inVector->numberOfDataBlocks() == 1,
                 "Epetra does not support more than 1 data block" );
     Vector::shared_ptr retVal;
