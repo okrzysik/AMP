@@ -40,6 +40,7 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
     // Check if we are dealing with a multiVariable
     auto multiVariable = std::dynamic_pointer_cast<MultiVariable>( variable );
     if ( multiVariable.get() != nullptr ) {
+        AMP::pout << "Creating a Multivector " << std::endl;
         // We are dealing with a MultiVariable, first check that there are no duplicate or null
         // variables
         for ( size_t i = 0; i < multiVariable->numVariables(); i++ ) {
@@ -71,6 +72,7 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
         multiVector->addVector( vectors );
         return multiVector;
     } else if ( multiDOF.get() != nullptr ) {
+        AMP::pout << "Creating a Multivector " << std::endl;
         // We are dealing with a multiDOFManager and want to split the vector based on the DOF
         // managers
         auto subDOFs = multiDOF->getDOFManagers();
@@ -108,6 +110,7 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
         comm.barrier();
         // Create the vector parameters
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+        AMP::pout << "Creating a ManagedPetscVector " << std::endl;
         auto mvparams  = std::make_shared<ManagedPetscVectorParameters>();
         auto eveparams = std::make_shared<EpetraVectorEngineParameters>( comm_list, DOFs );
         comm.barrier();
@@ -126,6 +129,7 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
         comm.barrier();
         return vector;
 #elif defined( USE_EXT_TRILINOS )
+        AMP::pout << "Creating a ManagedEpetraVector " << std::endl;
         auto mvparams  = std::make_shared<ManagedVectorParameters>();
         auto eveparams = std::make_shared<EpetraVectorEngineParameters>(
             DOFs->numLocalDOF(), DOFs->numGlobalDOF(), DOFs->getComm() );
@@ -145,6 +149,7 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
         comm.barrier();
         return vector;
 #else
+        AMP::pout << "Creating a SimpleVector " << std::endl;
         auto vector = SimpleVector<double>::create( variable, DOFs, comm_list );
         return vector;
 #endif
