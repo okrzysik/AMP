@@ -69,7 +69,6 @@ public:
     void addValuesByLocalID( int num, size_t *indices, const double *vals ) override { d_VectorData->addValuesByLocalID(num, indices, vals); }
     void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override { d_VectorData->addLocalValuesByGlobalID(num, indices, vals); }
     void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override { d_VectorData->getLocalValuesByGlobalID(num, indices, vals); }
-    uint64_t getDataID() const override { return d_VectorData->getDataID(); }
     void *getRawDataBlockAsVoid( size_t i ) override { return d_VectorData->getRawDataBlockAsVoid(i); }
     const void *getRawDataBlockAsVoid( size_t i ) const override { return d_VectorData->getRawDataBlockAsVoid(i); }
     size_t sizeofDataBlockType( size_t i ) const override { return d_VectorData->sizeofDataBlockType(i); }
@@ -107,6 +106,7 @@ public:
     void swapVectors( Vector &rhs ) override;
     void aliasVector( Vector &rhs ) override;
     void assemble() override {}
+    uint64_t getDataID() const override { return d_ViewVector->getDataID(); }
 
 #else
     std::string VectorDataName() const override { return "SubsetVector"; }
@@ -123,12 +123,11 @@ public:
     void getLocalValuesByGlobalID( int, size_t *, double * ) const override;
     void putRawData( const double *in ) override;
     void copyOutRawData( double *out ) const override;
-
-    uint64_t getDataID() const override { return d_ViewVector->getDataID(); }
     bool isTypeId( size_t hash, size_t ) const override
     {
         return hash == typeid( double ).hash_code();
     }
+
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
     void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
 #endif
