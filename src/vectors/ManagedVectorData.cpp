@@ -349,32 +349,6 @@ Vector::shared_ptr ManagedVectorData::getVectorEngine( void ) { return d_Engine;
 
 Vector::const_shared_ptr ManagedVectorData::getVectorEngine( void ) const { return d_Engine; }
 
-Vector::shared_ptr ManagedVectorData::selectInto( const VectorSelector &s )
-{
-  Vector::shared_ptr result;
-  if ( d_vBuffer ) {
-    result = Vector::selectInto( s );
-  } else {
-    auto vec = getVectorEngine();
-    result = vec->selectInto( s );
-  }
-  return result;
-}
-
-Vector::const_shared_ptr ManagedVectorData::selectInto( const VectorSelector &s ) const
-{
-  // we are going to ignore the buffer for now and assume the vec
-  // is non null
-    Vector::shared_ptr result;
-    if ( d_vBuffer ) {
-        result = Vector::selectInto( s );
-    } else {
-      auto vec = getVectorEngine();
-      result = vec->selectInto( s );
-    }
-    return result;
-}
-
 ManagedVectorParameters::ManagedVectorParameters() : d_Buffer( nullptr ) {}
 
 } // namespace LinearAlgebra

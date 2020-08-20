@@ -113,8 +113,6 @@ public: // Derived from VectorData
 
     std::shared_ptr<VectorData> cloneData( ) const override;
     void aliasData( VectorData &other );
-    Vector::shared_ptr selectInto( const VectorSelector &s );
-    Vector::const_shared_ptr selectInto( const VectorSelector &s ) const;
     
  protected: // Derived from VectorData
     void *getRawDataBlockAsVoid( size_t i ) override;
