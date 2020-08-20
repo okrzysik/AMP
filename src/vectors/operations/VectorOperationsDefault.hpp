@@ -380,6 +380,7 @@ double VectorOperationsDefault<TYPE>::localMaxNorm( const VectorData &x ) const
 template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localDot( const VectorData &x, const VectorData &y ) const
 {
+    AMP::pout << "Calling VectorOperationsDefault<TYPE>::localDot " << std::endl;
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
     auto curMe   = y.constBegin<TYPE>();
     auto last    = y.constEnd<TYPE>();
