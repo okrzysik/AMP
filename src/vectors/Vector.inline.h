@@ -274,76 +274,76 @@ inline bool Vector::localEquals( const Vector &x, double tol ) const
 
 inline bool Vector::equals( std::shared_ptr<const Vector> x, double tol ) const
 {
-    return equals( *(x->getVectorData()), tol );
+    return equals( *x, tol );
 }
 
-inline void Vector::copy( std::shared_ptr<const Vector> x ) { copy( *(x->getVectorData()) ); }
+inline void Vector::copy( std::shared_ptr<const Vector> x ) { copy( *x ); }
 
 inline void Vector::scale( double alpha, std::shared_ptr<const Vector> x )
 {
-    scale( alpha, *(x->getVectorData()) );
+    scale( alpha, *x );
 }
 
 inline void Vector::add( std::shared_ptr<const Vector> x, std::shared_ptr<const Vector> y )
 {
-    add( *(x->getVectorData()), *(y->getVectorData()) );
+    add( *x, *y );
 }
 
 inline void Vector::addScalar( std::shared_ptr<const Vector> x, double alpha )
 {
-    addScalar( *(x->getVectorData()), alpha );
+    addScalar( *x, alpha );
 }
 
 inline void Vector::subtract( std::shared_ptr<const Vector> x,
                               std::shared_ptr<const Vector> y )
 {
-    subtract( *(x->getVectorData()), *(y->getVectorData()) );
+    subtract( *x, *y );
 }
 inline void Vector::multiply( std::shared_ptr<const Vector> x,
                               std::shared_ptr<const Vector> y )
 {
-    multiply( *(x->getVectorData()), *(y->getVectorData()) );
+    multiply( *x, *y );
 }
 inline void Vector::divide( std::shared_ptr<const Vector> x,
                             std::shared_ptr<const Vector> y )
 {
-    divide( *(x->getVectorData()), *(y->getVectorData()) );
+    divide( *x, *y );
 }
-inline void Vector::reciprocal( std::shared_ptr<const Vector> x ) { reciprocal( *(x->getVectorData()) ); }
+inline void Vector::reciprocal( std::shared_ptr<const Vector> x ) { reciprocal( *x ); }
 inline void Vector::linearSum( double alpha,
                                std::shared_ptr<const Vector> x,
                                double beta,
                                std::shared_ptr<const Vector> y )
 {
-    linearSum( alpha, *(x->getVectorData()), beta, *(y->getVectorData()) );
+    linearSum( alpha, *x, beta, *y );
 }
 inline void Vector::axpy( double alpha,
                           std::shared_ptr<const Vector> x,
                           std::shared_ptr<const Vector> y )
 {
-    axpy( alpha, *(x->getVectorData()), *(y->getVectorData()) );
+    axpy( alpha, *x, *y );
 }
 inline void Vector::axpby( double alpha, double beta, std::shared_ptr<const Vector> x )
 {
-    axpby( alpha, beta, *(x->getVectorData()) );
+    axpby( alpha, beta, *x );
 }
-inline void Vector::abs( std::shared_ptr<const Vector> x ) { return abs( *(x->getVectorData()) ); }
-inline double Vector::dot( std::shared_ptr<const Vector> x ) const { return dot( *(x->getVectorData()) ); }
+inline void Vector::abs( std::shared_ptr<const Vector> x ) { return abs( *x ); }
+inline double Vector::dot( std::shared_ptr<const Vector> x ) const { return dot( *x ); }
 
 inline double Vector::minQuotient( std::shared_ptr<const Vector> x ) const
 {
-    return minQuotient( *(x->getVectorData()) );
+    return minQuotient( *x );
 }
 inline double Vector::wrmsNorm( std::shared_ptr<const Vector> x,
                                 std::shared_ptr<const Vector> y ) const
 {
-    return d_VectorOps->wrmsNorm( *(x->getVectorData()), *(y->getVectorData()) );
+    return d_VectorOps->wrmsNorm( *x, *y );
 }
 inline double Vector::wrmsNormMask( std::shared_ptr<const Vector> x,
                                     std::shared_ptr<const Vector> mask,
                                     std::shared_ptr<const Vector> y ) const
 {
-  return d_VectorOps->wrmsNormMask( *(x->getVectorData()), *(mask->getVectorData()), *(y->getVectorData()) );
+  return d_VectorOps->wrmsNormMask( *x, *mask, *y );
 }
 
 } // namespace LinearAlgebra
