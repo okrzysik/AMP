@@ -71,7 +71,7 @@ public:
     bool
     localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) const override;
 
-    void updateVectorOperations( std::vector<std::shared_ptr<VectorOperations>> &ops );
+    void resetVectorOperations( std::vector<std::shared_ptr<VectorOperations>> &ops );
 
 protected:
     // Internal data

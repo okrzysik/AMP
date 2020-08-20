@@ -206,11 +206,11 @@ private:
     // Helper function to add a vector without updating the DOF manager
     void addVectorHelper( Vector::shared_ptr vec );
 
-    // Helper function to update the vector data
-    inline void updateVectorData();
+    // Helper function to reset the vector data
+    inline void resetVectorData();
 
-    // Helper function to update the vector operations
-    inline void updateVectorOperations();
+    // Helper function to reset the vector operations
+    inline void resetVectorOperations();
 
 public: // Pull Vector into the current scope
     using Vector::cloneVector;

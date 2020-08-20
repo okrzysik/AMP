@@ -182,9 +182,9 @@ public: // Advanced virtual functions
 public:
     void receiveDataChanged() override { fireDataChange(); }
 
+    MultiVectorData() : d_globalDOFManager( nullptr ) {}
 
 protected:
-    MultiVectorData() : d_globalDOFManager( nullptr ) {}
 
     // Internal data
     std::vector<VectorData *> d_data;
