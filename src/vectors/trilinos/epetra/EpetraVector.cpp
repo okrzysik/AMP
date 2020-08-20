@@ -41,8 +41,10 @@ Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
                 "Epetra does not support more than 1 data block" );
     Vector::shared_ptr retVal;
     if ( std::dynamic_pointer_cast<EpetraVector>( inVector ) ) {
+        AMP::pout << "Path 1" << std::endl;
         retVal = inVector;
     } else if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
+        AMP::pout << "Path 2" << std::endl;
         auto multivec = std::dynamic_pointer_cast<MultiVector>( inVector );
         if ( multivec->getNumberOfSubvectors() == 1 ) {
             retVal = view( multivec->getVector( 0 ) );
@@ -53,14 +55,18 @@ Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
         auto managed = std::dynamic_pointer_cast<ManagedVector>( inVector );
         auto root    = managed->getRootVector();
         if ( root == inVector ) {
+            AMP::pout << "Path 3" << std::endl;
             retVal = std::make_shared<ManagedEpetraVector>( root );
         } else {
+            AMP::pout << "Path 4" << std::endl;
             retVal = view( root );
         }
     } else if ( std::dynamic_pointer_cast<EpetraVectorEngine>( inVector ) ) {
+        AMP::pout << "Path 5" << std::endl;
         auto engine = std::dynamic_pointer_cast<EpetraVectorEngine>( inVector );
         retVal      = createManagedEpetraVector( inVector, engine );
     } else {
+      AMP::pout << "Path 6" << std::endl;
         // Create a multivector to wrap the given vector and create a view
         auto engineParams = std::make_shared<EpetraVectorEngineParameters>(
             inVector->getCommunicationList(), inVector->getDOFManager() );
