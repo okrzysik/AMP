@@ -68,12 +68,14 @@ public:
 
     std::shared_ptr<ParameterBase> getParameters();
 
+    bool hasBuffer( void ) const { return (d_vBuffer!=nullptr); }
+    
 protected:
     //! The buffer used to store data
-    std::shared_ptr<VectorData> d_vBuffer;
+    std::shared_ptr<VectorData> d_vBuffer = nullptr;
 
     //! The engine to act on the buffer
-    std::shared_ptr<Vector> d_Engine;
+    std::shared_ptr<Vector> d_Engine = nullptr;
 
     //! The parameters used to create this vector
     std::shared_ptr<ManagedVectorParameters> d_pParameters;
