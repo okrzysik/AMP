@@ -1124,10 +1124,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     auto vecc = getVec( vectorc );
     auto vecd = getVec( vectord );
     double dot3, dot4;
-    AMP::pout << "Begin test **********************************************" << std::endl;
-    AMP::pout << "Petsc VecDot:"  << std::endl;
     checkPetscError( utils, VecDot( vecc, vecd, &dot3 ) );
-    AMP::pout << "AMP dot:"  << std::endl;    
     dot4 = vectorc->dot( vectord );
     if ( dot3 == dot4 ) // These should be identical, since same method called
         utils->passes( "native dot equals interface dot for managed vector" );
@@ -1149,10 +1146,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     auto vece = getVec( vectore );
     auto vecf = getVec( vectorf );
     double dot5, dot6;
-    AMP::pout << "Begin test **********************************************" << std::endl;
-    AMP::pout << "Petsc VecDot:"  << std::endl;
     checkPetscError( utils, VecDot( vece, vecf, &dot5 ) );
-    AMP::pout << "AMP dot:"  << std::endl;    
     dot6 = vectore->dot( vectorf );
     if ( dot5 == dot6 ) // These should be identical, since same method called
         utils->passes( "native dot equals interface dot for managed alloc vector" );
