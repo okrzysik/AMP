@@ -219,7 +219,7 @@ inline double Vector::dot( const Vector &x ) const
 
 inline bool Vector::equals( const Vector &a, double tol ) const
 {
-    return d_VectorOps->equals( a, *(getVectorData()), tol );
+  return d_VectorOps->equals( *(a.getVectorData()), *(getVectorData()), tol );
 }
 
 inline double Vector::localMin( void ) const { return d_VectorOps->localMin( *(getVectorData()) ); }

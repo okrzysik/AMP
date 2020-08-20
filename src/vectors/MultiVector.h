@@ -16,7 +16,7 @@ namespace LinearAlgebra {
  *    Given a set of vectors, they can be collected into a singlevector.  This class
  *    accomplishes this task.
  */
-class MultiVector final : public Vector, public MultiVectorData
+class MultiVector final : public Vector
 {
 public:
     /** \brief Return the first vector in the MultiVector
