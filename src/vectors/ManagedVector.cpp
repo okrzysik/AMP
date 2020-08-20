@@ -134,31 +134,12 @@ Vector::shared_ptr ManagedVector::getRootVector()
 
 Vector::shared_ptr ManagedVector::selectInto( const VectorSelector &s )
 {
-  // we are going to ignore the buffer for now and assume the vec
-  // is non null
-    Vector::shared_ptr result;
-    if ( d_vBuffer ) {
-        result = Vector::selectInto( s );
-    } else {
-      auto vec = getVectorEngine();
-      result = vec->selectInto( s );
-    }
-    return result;
+  return dynamic_cast<ManagedVectorData*>(d_VectorData)->selectInto(s);
 }
-
 
 Vector::const_shared_ptr ManagedVector::selectInto( const VectorSelector &s ) const
 {
-  // we are going to ignore the buffer for now and assume the vec
-  // is non null
-    Vector::shared_ptr result;
-    if ( d_vBuffer ) {
-        result = Vector::selectInto( s );
-    } else {
-      auto vec = getVectorEngine();
-      result = vec->selectInto( s );
-    }
-    return result;
+  return dynamic_cast<ManagedVectorData*>(d_VectorData)->selectInto(s);
 }
 
 std::shared_ptr<ParameterBase> ManagedVector::getParameters()
