@@ -468,7 +468,7 @@ std::string MultiVector::type() const { return "MultiVector"; }
 
 MultiVector::~MultiVector() {}
 
-//AMP_MPI MultiVector::getComm() const { return d_Comm; }
+AMP_MPI MultiVector::getComm() const { return d_Comm; }
 
 const Vector::shared_ptr &MultiVector::getVector( const VectorData &rhs, size_t which ) const
 {

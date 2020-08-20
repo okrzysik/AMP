@@ -159,7 +159,7 @@ public:
     void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const override;
     std::string type() const override;
 
-    //   AMP_MPI getComm() const override;
+    AMP_MPI getComm() const override;
 
     Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     Vector::const_shared_ptr
@@ -199,7 +199,7 @@ public:
     void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent(t); }
     //    AMP_MPI getComm() const override{ return d_VectorData->getComm(); }
     bool hasComm() const override { return d_VectorData->hasComm(); }
-    AMP_MPI getComm() const override { return d_VectorData->getComm(); }
+    //    AMP_MPI getComm() const override { return d_VectorData->getComm(); }
     //! Get the CommunicationList for this Vector
     CommunicationList::shared_ptr getCommunicationList() const override { return d_VectorData->getCommunicationList(); }
     void setCommunicationList( CommunicationList::shared_ptr comm ) override { d_VectorData->setCommunicationList(comm); }
