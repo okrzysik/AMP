@@ -77,6 +77,18 @@ public:
     CommunicationList::shared_ptr getCommunicationList() const override { return d_VectorData->getCommunicationList(); }
     void setCommunicationList( CommunicationList::shared_ptr comm ) override { d_VectorData->setCommunicationList(comm); }
     void dataChanged() override { return d_VectorData->dataChanged(); }
+
+    // missed on first round
+    size_t getGlobalMaxID() const override { return d_VectorData->getGlobalMaxID(); }
+    size_t getLocalMaxID() const override { return d_VectorData->getLocalMaxID(); }
+    size_t getGhostSize() const override { return d_VectorData->getGhostSize(); }
+    void setGhostValuesByGlobalID( int num, size_t *indices, const double *vals ) override { d_VectorData->setGhostValuesByGlobalID(num, indices, vals); }
+    void setValuesByGlobalID( int num, size_t *indices, const double *vals ) override { d_VectorData->setValuesByGlobalID(num, indices, vals); }
+    void addValuesByGlobalID( int num, size_t *indices, const double *vals ) override { d_VectorData->addValuesByGlobalID(num, indices, vals); }
+    void getGhostAddValuesByGlobalID( int num, size_t *indices, double *vals ) const override { d_VectorData->getGhostAddValuesByGlobalID(num, indices, vals); }
+    void getValuesByGlobalID( int num, size_t *indices, double *vals ) const override { d_VectorData->getValuesByGlobalID(num, indices, vals); }
+    void getGhostValuesByGlobalID( int num, size_t *indices, double *vals ) const override { d_VectorData->getGhostValuesByGlobalID(num, indices, vals); }
+    void getValuesByLocalID( int num, size_t *indices, double *vals ) const override { d_VectorData->getValuesByLocalID(num, indices, vals); }
 /****************************************************************
  ****************************************************************/
 
