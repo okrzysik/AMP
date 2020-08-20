@@ -141,9 +141,9 @@ Vector::shared_ptr ManagedVector::selectInto( const VectorSelector &s )
         result = Vector::selectInto( s );
     } else {
       auto vec = getVectorEngine();
-      result vec->selectInto( s );
+      result = vec->selectInto( s );
     }
-    return result
+    return result;
 }
 
 
@@ -156,9 +156,9 @@ Vector::const_shared_ptr ManagedVector::selectInto( const VectorSelector &s ) co
         result = Vector::selectInto( s );
     } else {
       auto vec = getVectorEngine();
-      result vec->selectInto( s );
+      result = vec->selectInto( s );
     }
-    return result
+    return result;
 }
 
 std::shared_ptr<ParameterBase> ManagedVector::getParameters()
