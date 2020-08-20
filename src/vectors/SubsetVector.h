@@ -81,7 +81,7 @@ public:
     void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent(t); }
     //    AMP_MPI getComm() const override{ return d_VectorData->getComm(); }
     bool hasComm() const override { return d_VectorData->hasComm(); }
-    //    AMP_MPI getComm() const override { return d_VectorData->getComm(); }
+    AMP_MPI getComm() const override { return d_VectorData->getComm(); }
     //! Get the CommunicationList for this Vector
     CommunicationList::shared_ptr getCommunicationList() const override { return d_VectorData->getCommunicationList(); }
     void setCommunicationList( CommunicationList::shared_ptr comm ) override { d_VectorData->setCommunicationList(comm); }
