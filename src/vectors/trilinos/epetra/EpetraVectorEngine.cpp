@@ -121,7 +121,8 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
  ********************************************************/
 EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<EpetraVectorEngineParameters> alias,
                                         std::shared_ptr<VectorData> buf )
-    : Vector( alias ),
+    : VectorData( alias ),
+      Vector( alias ),
       d_Params( alias )
 {
     d_VectorOps = std::make_shared<EpetraVectorOperations>();
