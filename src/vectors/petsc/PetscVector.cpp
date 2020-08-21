@@ -45,7 +45,7 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
         auto listener           = std::dynamic_pointer_cast<DataChangeListener>( newVector );
         inVector->registerListener( listener );
         newVector->setVariable( inVector->getVariable() );
-        newVector->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
+        newVector->getVectorData()->setUpdateStatusPtr( inVector->getVectorData()->getUpdateStatusPtr() );
         inVector->registerView( newVector );
         retVal = newVector;
     } else {

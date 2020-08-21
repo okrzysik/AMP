@@ -40,7 +40,7 @@ Vector::shared_ptr SundialsVector::view( Vector::shared_ptr inVector )
                 inVector->getLocalSize(), inVector->getComm() );
         auto t = std::make_shared<ManagedSundialsVector>( new_params );
         t->setVariable( inVector->getVariable() );
-        t->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
+        t->getVectorData()->setUpdateStatusPtr( inVector->getVectorData()->getUpdateStatusPtr() );
         retVal = t;
         inVector->registerView( retVal );
     } else {

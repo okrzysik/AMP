@@ -30,7 +30,7 @@ createManagedEpetraVector( Vector::shared_ptr inVector, std::shared_ptr<EpetraVe
     newParams->d_DOFManager = inVector->getDOFManager();
     auto retVal             = std::make_shared<ManagedEpetraVector>( newParams );
     retVal->setVariable( inVector->getVariable() );
-    retVal->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
+    retVal->getVectorData()->setUpdateStatusPtr( inVector->getVectorData()->getUpdateStatusPtr() );
     inVector->registerView( retVal );
     return retVal;
 }
