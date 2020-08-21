@@ -25,14 +25,12 @@ RNG::shared_ptr Vector::d_DefaultRNG;
  ****************************************************************/
 Vector::Vector() : VectorData()
 {
-    d_VectorData = dynamic_cast<VectorData *>( this );
     d_Views        = std::make_shared<std::vector<std::weak_ptr<Vector>>>();
     // Set default output stream
     d_output_stream = &AMP::plog;
 }
 Vector::Vector( VectorParameters::shared_ptr parameters )
 {
-    d_VectorData = dynamic_cast<VectorData *>( this );
     // Set default output stream
     d_output_stream = &AMP::plog;
     // Copy the relavent parameters

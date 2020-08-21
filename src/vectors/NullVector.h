@@ -126,7 +126,6 @@ private:
         d_VectorData = new VectorDataNull<TYPE>();
 	d_VectorOps = std::make_shared<VectorOperationsDefault<TYPE>>();
         setVariable( var );
-        d_CommList = CommunicationList::createEmpty( 0, AMP_MPI( AMP_COMM_SELF ) );
         d_DOFManager.reset( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) );
     }
 };
