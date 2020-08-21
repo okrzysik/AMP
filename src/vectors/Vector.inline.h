@@ -20,7 +20,7 @@ inline AMP::Discretization::DOFManager::shared_ptr Vector::getDOFManager() const
 {
     return d_DOFManager;
 }
-inline AMP_MPI Vector::getComm() const { return d_CommList->getComm(); }
+inline AMP_MPI Vector::getComm() const { return d_VectorData->getComm(); }
 
 
 /****************************************************************
@@ -108,7 +108,7 @@ inline void Vector::setVariable( const Variable::shared_ptr name )
 // clang-format off
 inline void Vector::swapVectors( shared_ptr other ) { swapVectors( *other ); }
 inline void Vector::aliasVector( shared_ptr other ) { aliasVector( *other ); }
-inline void Vector::aliasGhostBuffer( shared_ptr in ) { d_Ghosts = in->d_Ghosts; }
+ inline void Vector::aliasGhostBuffer( shared_ptr in ) { d_VectorData->aliasGhostBuffer(in->d_VectorData); }
 inline std::ostream &operator<<( std::ostream &out, const Vector::shared_ptr p ) { return operator<<( out, *p ); }
 // clang-format on
 
