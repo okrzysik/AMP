@@ -54,7 +54,7 @@ Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
         newParams->d_DOFManager = inVector->getDOFManager();
         auto newVector          = std::make_shared<ManagedThyraVector>( newParams );
         newVector->setVariable( inVector->getVariable() );
-        newVector->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
+        newVector->getVectorData()->setUpdateStatusPtr( inVector->getVectorData()->getUpdateStatusPtr() );
         retVal = newVector;
         inVector->registerView( retVal );
     } else {
