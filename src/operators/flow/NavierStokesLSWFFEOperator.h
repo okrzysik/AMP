@@ -40,7 +40,7 @@ public:
             void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {
               AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(id);
               d_inVec[id] = mySubsetVector(frozenVec, var);
-              (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET
+              (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET
        );
             }
     */

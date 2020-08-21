@@ -142,7 +142,7 @@ void NeumannVectorCorrection::addRHScorrection(
 
             if ( !d_isConstantFlux ) {
                 d_variableFlux->makeConsistent(
-                    AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+                    AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
             }
 
             for ( unsigned int k = 0; k < numDofIds; k++ ) {
@@ -224,7 +224,7 @@ void NeumannVectorCorrection::addRHScorrection(
         }     // coupled
     }         // end for j
 
-    rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_ADD );
+    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
     myRhs->add( myRhs, rInternal );
 }
 

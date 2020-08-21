@@ -226,7 +226,7 @@ void testMultiDOFVector( AMP::UnitTest *ut, AMP::Discretization::DOFManager::sha
     auto multiDOF = multiVector->getDOFManager();
     // Check that we can set each value correctly
     multiVector->zero();
-    multiVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    multiVector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     AMP::Mesh::MeshIterator it = DOF->getIterator();
     std::vector<size_t> dof1, dof2;
     bool uniqueMultiDOFs = true;
@@ -245,7 +245,7 @@ void testMultiDOFVector( AMP::UnitTest *ut, AMP::Discretization::DOFManager::sha
         ut->passes( "MultiDOFManger with duplicate subDOFManagers returns unique DOFs" );
     else
         ut->failure( "MultiDOFManger with duplicate subDOFManagers returns unique DOFs" );
-    multiVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    multiVector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     double vec1norm        = vec1->L1Norm();
     double vec2norm        = vec2->L1Norm();
     double multiVectorNorm = multiVector->L1Norm();

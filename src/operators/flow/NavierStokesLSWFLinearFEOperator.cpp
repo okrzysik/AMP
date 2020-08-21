@@ -85,7 +85,7 @@ void NavierStokesLSWFLinearFEOperator::preAssembly(
             if(d_inVec[i].get() != NULL) {
               if(params->d_frozenVec[i].get() != NULL) {
                 d_inVec[i]->copyVector(vector);
-                d_inVec[i]->makeConsistent(AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET);
+                d_inVec[i]->makeConsistent(AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET);
               } else {
                 d_inVec[i].reset();
               }

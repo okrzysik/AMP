@@ -94,7 +94,7 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
         displacement->setValuesByGlobalID( PhysicalDim, &dofs2[0], &data[0] );
         ++cur;
     }
-    displacement->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    displacement->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     // Move all nodes (including the ghost nodes)
     std::vector<size_t> dofs( PhysicalDim );
     std::vector<double> disp( PhysicalDim );

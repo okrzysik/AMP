@@ -28,7 +28,7 @@ inline void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,
             subvec->addScalar( subvec, shift[i] );
         }
     }
-    vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
 inline void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,

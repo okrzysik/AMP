@@ -92,11 +92,11 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // Check input vector states
     AMP_ASSERT(
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
     AMP_ASSERT(
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
+        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
@@ -188,7 +188,7 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // check for happy breakdown
         if ( v_norm != 0.0 ) {
             v->scale( 1.0 / v_norm );
-            v->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+            v->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         }
 
         // update basis with new orthonormal vector
@@ -253,7 +253,7 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             u->axpy( d_dy[i], d_vBasis[i], u );
         }
     }
-    u->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         d_pOperator->residual( f, u, res );
@@ -284,7 +284,7 @@ void GMRESSolver::orthogonalize( std::shared_ptr<AMP::LinearAlgebra::Vector> v )
         AMP_ERROR( "Unknown orthogonalization method in GMRES" );
     }
 
-    v->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    v->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     // h_{k+1, k}
     const auto v_norm         = v->L2Norm();

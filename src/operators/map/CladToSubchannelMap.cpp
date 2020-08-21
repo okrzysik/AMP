@@ -294,7 +294,7 @@ void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
         AMP::AMP_MPI::waitAll( (int) d_currRequests.size(), &d_currRequests[0] );
     d_currRequests.resize( 0 );
     // Call makeConsistent
-    d_OutputVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    d_OutputVector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
 

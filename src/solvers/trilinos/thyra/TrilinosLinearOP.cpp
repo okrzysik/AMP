@@ -57,9 +57,9 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
         dynamic_cast<Thyra::VectorBase<double> *>( Y.get() ) );
     if ( x0 != nullptr )
         const_cast<AMP::LinearAlgebra::Vector *>( x0.get() )
-            ->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+            ->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     if ( y0 != nullptr )
-        y0->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+        y0->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> x;
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> y;
     if ( x0->getVariable()->getName() == "ThyraMultiVec" ||

@@ -308,7 +308,7 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::pout << inputVec << std::endl;
     }
 
-    outputVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    outputVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 5 ) {
         AMP::pout << "The output to Map1Dto3D " << std::endl;
@@ -382,7 +382,7 @@ void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::pout << inputVec << std::endl;
     }
 
-    outputVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    outputVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 5 ) {
         AMP::pout << "The output to Map1Dto3D " << std::endl;

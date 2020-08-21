@@ -190,7 +190,7 @@ static void nonlinearTest( AMP::UnitTest *ut,
         double fval = function( x, y, z );
         diffSolVec->setValueByGlobalID( dofs[0], fval );
     }
-    diffSolVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    diffSolVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     // Compute finite element operator
     diffOp->apply( diffSolVec, diffResVec );

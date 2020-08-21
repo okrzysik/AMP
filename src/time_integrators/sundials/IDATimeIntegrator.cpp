@@ -386,8 +386,8 @@ int IDATimeIntegrator::IDAResTrial(
         static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( yp->content );
     std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy( pyy, []( auto ) {} );
     std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yp( pyp, []( auto ) {} );
-    amp_yy->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
-    amp_yp->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    amp_yy->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    amp_yp->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     user_data->getIDATimeOperator()->registerIDATimeDerivative( amp_yp );
 

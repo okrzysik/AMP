@@ -120,7 +120,7 @@ static void getConcentratedLoadAtNodes( double loadParameter,
     loadVector->zero();
     loadVector->setLocalValuesByGlobalID(
         loadValues.size(), &( dofIndices[0] ), &( loadValues[0] ) );
-    loadVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    loadVector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )

@@ -158,8 +158,8 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-    solVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
 #ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 0 );
@@ -327,8 +327,8 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-    solVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
 #ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 0 );

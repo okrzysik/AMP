@@ -159,7 +159,7 @@ static void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshNa
         }
     }
 
-    solVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     // Evaluate manufactured solution as an FE source
     sourceOp->apply( solVec, sourceVec );

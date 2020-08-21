@@ -825,7 +825,7 @@ void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
         displacement->setValuesByGlobalID( PhysicalDim, &dofs2[0], &data[0] );
         ++cur;
     }
-    displacement->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    displacement->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     // Move all nodes (including the ghost nodes)
     const unsigned rank = d_comm.getRank();
     std::vector<stk::mesh::Entity *> nodes;

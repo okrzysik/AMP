@@ -876,7 +876,7 @@ void libmeshMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_p
         displacement->setValuesByGlobalID( PhysicalDim, &dofs2[0], &data[0] );
         ++cur;
     }
-    displacement->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    displacement->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     // Move all nodes (including the ghost nodes)
     auto node_cur = d_libMesh->nodes_begin();
     auto node_end = d_libMesh->nodes_end();

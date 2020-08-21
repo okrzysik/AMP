@@ -64,7 +64,7 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
             destroyCurrentLibMeshElement();
         } // end of el
 
-        d_refXYZ->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+        d_refXYZ->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     } // end of UpdatedLagrangian condition.
 
     bool isAttachedToNonlinearOperator =
@@ -101,7 +101,7 @@ void MechanicsLinearFEOperator::preAssembly( const std::shared_ptr<OperatorParam
             if ( params->d_dispVec != nullptr ) {
                 d_dispVec->copyVector( params->d_dispVec );
                 d_dispVec->makeConsistent(
-                    AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+                    AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
             } else {
                 d_dispVec.reset();
             }
@@ -187,7 +187,7 @@ void MechanicsLinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vector
     fprintf( fp,
              "x, y, z, Stresses(11, 22, 33, 23, 13, 12), Strains(11, 22, 33, 23, 13, 12) \n\n" );
 
-    disp->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    disp->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     d_materialModel->preLinearAssembly();
 
     AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );

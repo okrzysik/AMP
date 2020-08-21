@@ -65,7 +65,7 @@ void Operator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
         rInternal->scale( -1.0 );
     }
 
-    rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
 void Operator::getFromInput( std::shared_ptr<AMP::Database> db )

@@ -75,7 +75,7 @@ static void myTest( AMP::UnitTest *ut )
     initTempVec->abs( initTempVec );
     double initTempConst = input_db->getWithDefault<double>( "INIT_TEMP_CONST", 10.0 );
     initTempVec->scale( initTempConst );
-    initTempVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    initTempVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     bool setFinalTempEqualsInitialTemp =
         input_db->getWithDefault( "SET_FINAL_TEMP_EQUALS_INIT_TEMP", false );
@@ -87,7 +87,7 @@ static void myTest( AMP::UnitTest *ut )
         double finalTempConst = input_db->getWithDefault<double>( "FINAL_TEMP_CONST", 12.0 );
         finalTempVec->scale( finalTempConst );
     }
-    finalTempVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    finalTempVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     ( std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
           nonlinBvpOperator->getVolumeOperator() ) )
@@ -127,7 +127,7 @@ static void myTest( AMP::UnitTest *ut )
     // Initial guess for NL solver must satisfy the displacement boundary conditions
     mechNlSolVec->setToScalar( 0.0 );
     dirichletDispInVecOp->apply( nullVec, mechNlSolVec );
-    mechNlSolVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    mechNlSolVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     nonlinBvpOperator->apply( mechNlSolVec, mechNlResVec );
     linBvpOperator->reset( nonlinBvpOperator->getParameters( "Jacobian", mechNlSolVec ) );
@@ -183,7 +183,7 @@ static void myTest( AMP::UnitTest *ut )
         double scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
         mechNlScaledRhsVec->scale( scaleValue, mechNlRhsVec );
         mechNlScaledRhsVec->makeConsistent(
-            AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         AMP::pout << "L2 Norm at loading step " << ( step + 1 ) << " is "
                   << mechNlScaledRhsVec->L2Norm() << std::endl;
 

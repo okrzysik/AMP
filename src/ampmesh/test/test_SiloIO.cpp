@@ -188,14 +188,14 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
 // Initialize the data
 #ifdef USE_AMP_VECTORS
     rank_vec->setToScalar( globalComm.getRank() );
-    rank_vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    rank_vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     std::vector<size_t> dofs;
     for ( auto elem : DOF_vector->getIterator() ) {
         DOF_vector->getDOFs( elem.globalID(), dofs );
         auto pos = elem.coord();
         position->setValuesByGlobalID( dofs.size(), dofs.data(), pos.data() );
     }
-    position->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    position->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     block_vec->setToScalar( -1 );
     for ( auto &id : mesh->getBlockIDs() ) {
         for ( auto elem : mesh->getBlockIDIterator( volumeType, id, 0 ) ) {
@@ -203,7 +203,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
             block_vec->setValueByGlobalID( dofs[0], id );
         }
     }
-    block_vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    block_vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     globalComm.barrier();
 #endif
     double t5 = AMP::AMP_MPI::time();

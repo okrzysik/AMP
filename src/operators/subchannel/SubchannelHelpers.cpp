@@ -419,7 +419,7 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
         diameter->setValueByGlobalID( dofs[0], hydraulic_diam[ix + iy * Nx] );
         ++it;
     }
-    diameter->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    diameter->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     return diameter;
 }
 } // namespace Subchannel

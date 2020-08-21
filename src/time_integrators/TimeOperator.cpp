@@ -79,7 +79,7 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 "apply, the rhs operator is NULL!" );
 
     if ( u.get() != nullptr )
-        AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
+        AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 
     AMP_INSIST( ( r != nullptr ), "NULL Residual/Output Vector" );
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector( r );
@@ -95,7 +95,7 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     rInternal->add( *rInternal, *d_pScratchVector );
 
-    rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
 std::shared_ptr<AMP::Operator::OperatorParameters>

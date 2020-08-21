@@ -168,7 +168,7 @@ static void applySlaveLoadOperator( double loadParameterX,
         loadValuesX.size(), &( dofIndicesX[0] ), &( loadValuesX[0] ) );
     loadVector->setLocalValuesByGlobalID(
         loadValuesZ.size(), &( dofIndicesZ[0] ), &( loadValuesZ[0] ) );
-    loadVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    loadVector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
 static void applyMasterLoadOperator( double loadParameterX,
@@ -232,7 +232,7 @@ static void applyMasterLoadOperator( double loadParameterX,
         loadValuesX.size(), &( dofIndicesX[0] ), &( loadValuesX[0] ) );
     loadVector->setLocalValuesByGlobalID(
         loadValuesZ.size(), &( dofIndicesZ[0] ), &( loadValuesZ[0] ) );
-    loadVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    loadVector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )

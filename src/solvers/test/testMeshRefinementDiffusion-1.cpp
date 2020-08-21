@@ -94,7 +94,7 @@ void calculateManufacturedSolution(
         }
     }
 
-    manufacturedSolution->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    manufacturedSolution->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
 
@@ -133,7 +133,7 @@ void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
         }
     }
 
-    manufacturedRHS->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    manufacturedRHS->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
 
@@ -431,7 +431,7 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
 
     volumeIntegralColumnOperator->apply( manufacturedRHS, integratedRHSVec );
 
-    integratedRHSVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    integratedRHSVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
 #ifdef USE_EXT_SILO
     siloWriter->registerVector( integratedRHSVec, manager, AMP::Mesh::GeomType::Vertex, "Source" );
@@ -465,7 +465,7 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
      -1.0);
      */
     nonlinearThermalColumnOperator->residual( integratedRHSVec, TemperatureVec, ResidualVec );
-    ResidualVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    ResidualVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     double initialResidualNorm = ResidualVec->L2Norm();
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
@@ -496,7 +496,7 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
     std::cout << "Max of ||U-Uh|| : " << solutionError->max()
               << " Min of ||U-Uh|| : " << solutionError->min() << std::endl;
 
-    TemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    TemperatureVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     double discretizationErrorNorm2;
     double TotalNorm2 = 0;

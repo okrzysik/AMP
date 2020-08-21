@@ -145,7 +145,7 @@ namespace Operator {
 
     void NavierStokesGalWFFEOperator :: postAssembly()
     {
-      d_outVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_ADD );
+      d_outVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
     }
 
     // preelement operation for this operator assumes that the pressure and
@@ -270,7 +270,7 @@ namespace Operator {
             AMP::LinearAlgebra::Vector::shared_ptr temperature = u->subsetVectorForVariable(tvar);
             outParams->d_frozenVec[NavierStokes::TEMPERATURE] = temperature;
             outParams->d_frozenVec[NavierStokes::TEMPERATURE]->makeConsistent(
-   AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+   AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
           }
         }
 
@@ -309,7 +309,7 @@ namespace Operator {
             d_inVec[id] = frozenVec->subsetVectorForVariable(var);
           }
 
-          (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+          (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         }
 */
 }

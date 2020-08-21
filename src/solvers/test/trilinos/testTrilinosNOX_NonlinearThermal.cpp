@@ -127,7 +127,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Set the SpecificPowerVec to the residual of the neutronicsOperator
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
     SpecificPowerVec->scale( -1.0 );
-    SpecificPowerVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    SpecificPowerVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     /////////////////////////////////////////////////////
     //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
@@ -194,8 +194,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearSolver->solve( rhsVec, solVec );
 
-    solVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
 

@@ -48,7 +48,7 @@ void DiffusionLinearFEOperator::preAssembly( const std::shared_ptr<OperatorParam
         if ( params->d_temperature.get() != nullptr ) {
             d_temperature->copyVector( params->d_temperature );
             d_temperature->makeConsistent(
-                AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+                AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         } else {
             d_temperature.reset();
         }
@@ -62,7 +62,7 @@ void DiffusionLinearFEOperator::preAssembly( const std::shared_ptr<OperatorParam
         if ( params->d_concentration.get() != nullptr ) {
             d_concentration->copyVector( params->d_concentration );
             d_concentration->makeConsistent(
-                AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+                AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         } else {
             d_concentration.reset();
         }
@@ -74,7 +74,7 @@ void DiffusionLinearFEOperator::preAssembly( const std::shared_ptr<OperatorParam
     if ( d_burnup.get() != nullptr ) {
         if ( params->d_burnup.get() != nullptr ) {
             d_burnup->copyVector( params->d_burnup );
-            d_burnup->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+            d_burnup->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         } else {
             d_burnup.reset();
         }
