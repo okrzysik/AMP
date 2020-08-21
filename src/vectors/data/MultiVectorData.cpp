@@ -13,7 +13,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 void MultiVectorData::resetMultiVectorData( AMP::Discretization::DOFManager *manager,
-					    std::vector<VectorData *> data )
+					    const std::vector<VectorData *> &data )
 {
     d_data = data;
     AMP_ASSERT( manager );

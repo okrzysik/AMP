@@ -83,7 +83,7 @@ public:
     void swapData( VectorData & ) override;
 
     SubsetVectorData() {}
-    SubsetVectorData( std::shared_ptr<VectorParameters> params );
+    explicit SubsetVectorData( std::shared_ptr<VectorParameters> params );
 
 private:
 

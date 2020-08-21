@@ -24,7 +24,7 @@ class ArrayVector : public Vector
 private:
 
     ArrayVector();
-    ArrayVector( const ArrayVector & );
+    explicit ArrayVector( const ArrayVector & );
 
 public:
     ArrayVector( std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> data );

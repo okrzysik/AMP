@@ -25,15 +25,16 @@ EpetraVectorData::EpetraVectorData( std::shared_ptr<EpetraVectorEngineParameters
                                     int globalSize )
   : VectorData(alias),
     d_epetraVector( method, map, getBufferPtr(bufData) ),
-    d_iLocalStart( localStart ),
-    d_iLocalSize( localSize ),
-    d_iGlobalSize( globalSize )
+    d_buf_scope{ bufData },
+    d_iLocalStart{ localStart },
+    d_iLocalSize{ localSize },
+    d_iGlobalSize{ globalSize }
 {
-  d_buf_scope = bufData;
+  
 }
 
-  std::shared_ptr<EpetraVectorData> EpetraVectorData::create( std::shared_ptr<EpetraVectorEngineParameters> alias,
-					    std::shared_ptr<VectorData> buf)
+std::shared_ptr<EpetraVectorData> EpetraVectorData::create( std::shared_ptr<EpetraVectorEngineParameters> alias,
+							    std::shared_ptr<VectorData> buf)
 {
   return std::make_shared<EpetraVectorData>(alias,
 					    View,
