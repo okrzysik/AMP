@@ -345,6 +345,62 @@ inline double Vector::wrmsNormMask( std::shared_ptr<const Vector> x,
   return d_VectorOps->wrmsNormMask( *x, *mask, *y );
 }
 
+/****************************************************************
+ * Set/Get individual values                                     *
+ ****************************************************************/
+inline void Vector::setValueByLocalID( size_t i, const double val )
+{
+    setValuesByLocalID( 1, &i, &val );
+}
+inline void Vector::setLocalValueByGlobalID( size_t i, const double val )
+{
+    setLocalValuesByGlobalID( 1, &i, &val );
+}
+inline void Vector::setGhostValueByGlobalID( size_t i, const double val )
+{
+    setGhostValuesByGlobalID( 1, &i, &val );
+}
+inline void Vector::setValueByGlobalID( size_t i, const double val )
+{
+    setValuesByGlobalID( 1, &i, &val );
+}
+inline void Vector::addValueByLocalID( size_t i, const double val )
+{
+    addValuesByLocalID( 1, &i, &val );
+}
+inline void Vector::addLocalValueByGlobalID( size_t i, const double val )
+{
+    addLocalValuesByGlobalID( 1, &i, &val );
+}
+inline void Vector::addValueByGlobalID( size_t i, const double val )
+{
+    addValuesByGlobalID( 1, &i, &val );
+}
+inline double Vector::getValueByGlobalID( size_t i ) const
+{
+    double ans;
+    getValuesByGlobalID( 1, &i, &ans );
+    return ans;
+}
+inline double Vector::getLocalValueByGlobalID( size_t i ) const
+{
+    double ans;
+    getLocalValuesByGlobalID( 1, &i, &ans );
+    return ans;
+}
+inline double Vector::getGhostValueByGlobalID( size_t i ) const
+{
+    double ans;
+    getGhostValuesByGlobalID( 1, &i, &ans );
+    return ans;
+}
+inline double Vector::getValueByLocalID( size_t ndx ) const
+{
+    double ans;
+    getValuesByLocalID( 1, &ndx, &ans );
+    return ans;
+}
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

@@ -116,64 +116,6 @@ const TYPE *VectorData::getRawDataBlock( size_t i ) const
     return static_cast<const TYPE *>( this->getRawDataBlockAsVoid( i ) );
 }
 
-
-/****************************************************************
- * Set/Get individual values                                     *
- ****************************************************************/
-inline void VectorData::setValueByLocalID( size_t i, const double val )
-{
-    setValuesByLocalID( 1, &i, &val );
-}
-inline void VectorData::setLocalValueByGlobalID( size_t i, const double val )
-{
-    setLocalValuesByGlobalID( 1, &i, &val );
-}
-inline void VectorData::setGhostValueByGlobalID( size_t i, const double val )
-{
-    setGhostValuesByGlobalID( 1, &i, &val );
-}
-inline void VectorData::setValueByGlobalID( size_t i, const double val )
-{
-    setValuesByGlobalID( 1, &i, &val );
-}
-inline void VectorData::addValueByLocalID( size_t i, const double val )
-{
-    addValuesByLocalID( 1, &i, &val );
-}
-inline void VectorData::addLocalValueByGlobalID( size_t i, const double val )
-{
-    addLocalValuesByGlobalID( 1, &i, &val );
-}
-inline void VectorData::addValueByGlobalID( size_t i, const double val )
-{
-    addValuesByGlobalID( 1, &i, &val );
-}
-inline double VectorData::getValueByGlobalID( size_t i ) const
-{
-    double ans;
-    getValuesByGlobalID( 1, &i, &ans );
-    return ans;
-}
-inline double VectorData::getLocalValueByGlobalID( size_t i ) const
-{
-    double ans;
-    getLocalValuesByGlobalID( 1, &i, &ans );
-    return ans;
-}
-inline double VectorData::getGhostValueByGlobalID( size_t i ) const
-{
-    double ans;
-    getGhostValuesByGlobalID( 1, &i, &ans );
-    return ans;
-}
-inline double VectorData::getValueByLocalID( size_t ndx ) const
-{
-    double ans;
-    getValuesByLocalID( 1, &ndx, &ans );
-    return ans;
-}
-
-
 } // namespace LinearAlgebra
 } // namespace AMP
 
