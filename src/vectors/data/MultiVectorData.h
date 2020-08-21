@@ -19,7 +19,7 @@ namespace LinearAlgebra {
   the local values as a single block of data on the CPU.
 
   */
-class MultiVectorData : virtual public VectorData, public DataChangeListener
+  class MultiVectorData : public VectorData, public DataChangeListener
 {
 
 public: // Virtual functions

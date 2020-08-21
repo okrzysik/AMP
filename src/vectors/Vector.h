@@ -45,7 +45,7 @@ class VectorSelector;
  * \f$\mathbf{L}\mathbf{\tilde{u}}=\mathbf{f}\f$.  In this case
  * \f$\mathbf{\tilde{u}}\f$ and \f$\mathbf{f}\f$ are Vectors.
  */
-class Vector : virtual public VectorData, public AMP::enable_shared_from_this<Vector>
+class Vector : public VectorData, public AMP::enable_shared_from_this<Vector>
 {
 
 public: // typedefs

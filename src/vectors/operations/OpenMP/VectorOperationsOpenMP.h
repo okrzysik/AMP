@@ -15,7 +15,7 @@ namespace LinearAlgebra {
  *    vector operations on the CPU.
  */
 template<typename TYPE = double>
-class VectorOperationsOpenMP : virtual public VectorOperations
+class VectorOperationsOpenMP : public VectorOperations
 {
 public:
     // Constructor

@@ -22,7 +22,7 @@ class VectorDataIterator;
 
   */
 template<typename TYPE = double>
-class VectorDataGPU : virtual public VectorData
+class VectorDataGPU : public VectorData
 {
 
 public: // Virtual functions
