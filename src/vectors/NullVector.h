@@ -123,7 +123,7 @@ protected:
 private:
     explicit inline NullVector( Variable::shared_ptr var )
     {
-        d_VectorData = new VectorDataNull<TYPE>();
+        d_VectorData = std::make_shared<VectorDataNull<TYPE>>();
 	d_VectorOps = std::make_shared<VectorOperationsDefault<TYPE>>();
         setVariable( var );
         d_DOFManager.reset( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) );

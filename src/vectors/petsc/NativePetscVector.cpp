@@ -43,7 +43,7 @@ Vector::shared_ptr NativePetscVector::cloneVector( const Variable::shared_ptr va
 }
 
 std::shared_ptr<ParameterBase> NativePetscVector::getParameters()
-{ return dynamic_cast<NativePetscVector*>(d_VectorData)->getParameters(); }
+{ return std::dynamic_pointer_cast<NativePetscVectorData>(d_VectorData)->getParameters(); }
 
 void NativePetscVector::aliasVector( Vector & ) { AMP_ERROR( "not implemented" ); }
 
@@ -53,7 +53,7 @@ void NativePetscVector::swapVectors( Vector &other )
 }
 void NativePetscVector::assemble( )
 {
-  dynamic_cast<NativePetscVectorData*>(d_VectorData)->assemble();
+  std::dynamic_pointer_cast<NativePetscVectorData>(d_VectorData)->assemble();
 }
 
 } // namespace LinearAlgebra

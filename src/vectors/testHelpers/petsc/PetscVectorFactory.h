@@ -28,7 +28,7 @@ public:
 
     virtual void destroyNativeVector( AMP::LinearAlgebra::NativePetscVector &rhs ) const
     {
-      auto nvData = dynamic_cast<NativePetscVectorData*>(rhs.getVectorData());
+      auto nvData = std::dynamic_pointer_cast<NativePetscVectorData>(rhs.getVectorData());
       PETSC::vecDestroy( &(nvData->getVec()) );
     }
 
@@ -152,7 +152,7 @@ public:
 
     virtual void destroyNativeVector( AMP::LinearAlgebra::NativePetscVector &rhs ) const override
     {
-      auto nvData = dynamic_cast<NativePetscVectorData*>(rhs.getVectorData());
+      auto nvData = std::dynamic_pointer_cast<NativePetscVectorData>(rhs.getVectorData());
       PETSC::vecDestroy( &(nvData->getVec()) );
     }
 

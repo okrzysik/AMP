@@ -26,7 +26,7 @@ static inline std::shared_ptr<ManagedVectorData> getManaged( std::shared_ptr<Vec
     AMP_INSIST( y != nullptr, "x is not a ManagedVectorData" );
     return y;
 }
-static inline VectorData *getEngineData( VectorData &x )
+  static inline std::shared_ptr<VectorData> getEngineData( VectorData &x )
 {
     auto y = dynamic_cast<ManagedVectorData *>( &x );
     AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
@@ -40,7 +40,7 @@ static inline VectorData *getEngineData( VectorData &x )
     }
     return nullptr;
 }
-static inline const VectorData *getEngineData( const VectorData &x )
+static inline std::shared_ptr<const VectorData> getEngineData( const VectorData &x )
 {
     auto y = dynamic_cast<const ManagedVectorData *>( &x );
     AMP_INSIST( y != nullptr, "x is not a ManagedVector" );

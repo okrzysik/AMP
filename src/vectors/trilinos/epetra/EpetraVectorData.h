@@ -88,8 +88,8 @@ class EpetraVectorData : public VectorData
 public: // Virtual functions
     //! Virtual destructor
     virtual ~EpetraVectorData() {}
-    static EpetraVectorData *create( std::shared_ptr<EpetraVectorEngineParameters> alias,
-				     std::shared_ptr<VectorData> buf );
+    static std::shared_ptr<EpetraVectorData>create( std::shared_ptr<EpetraVectorEngineParameters> alias,
+						    std::shared_ptr<VectorData> buf );
 
     std::string VectorDataName() const override { return "EpetraVectorData"; }
     size_t getLocalSize() const override { return d_iLocalSize; }
@@ -129,12 +129,12 @@ public: // Virtual functions
      */
     inline const Epetra_Vector &getEpetra_Vector() const { return d_epetraVector; }
  
- protected:
    EpetraVectorData( std::shared_ptr<EpetraVectorEngineParameters> alias,
 		     Epetra_DataAccess,
 		     const Epetra_BlockMap &,
 		     std::shared_ptr<VectorData>,
 		     int, int, int );
+ protected:
 
     //! The Epetra_Vector to perform work on
     Epetra_Vector d_epetraVector;

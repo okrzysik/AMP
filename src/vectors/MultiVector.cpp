@@ -81,7 +81,7 @@ std::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec,
     auto data     = multivec->Vector::getVectorData();
     AMP_ASSERT( data );
     //    auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
-    auto listener = dynamic_cast<DataChangeListener*>( data );
+    auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
     vec->registerListener( listener );
     return multivec;
 }
@@ -172,11 +172,11 @@ void MultiVector::resetVectorData()
     d_DOFManager = std::make_shared<AMP::Discretization::multiDOFManager>( getComm(), managers );
 
     auto data = Vector::getVectorData();
-    auto mvData = dynamic_cast<MultiVectorData*>(data);
+    auto mvData = std::dynamic_pointer_cast<MultiVectorData>(data);
     AMP_ASSERT(mvData);
     std::vector<VectorData *> dataComponents( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ )
-      dataComponents[i] = d_vVectors[i]->Vector::getVectorData();
+      dataComponents[i] = d_vVectors[i]->Vector::getVectorData().get();
     mvData->resetMultiVectorData( d_DOFManager.get(), dataComponents);
 }
 
@@ -204,7 +204,7 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
 	    auto data = Vector::getVectorData();
 	    AMP_ASSERT(data);
 	    //            auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
-            auto listener = dynamic_cast<DataChangeListener*>( data );
+            auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
             vec->registerListener( listener );
         }
     } else {
@@ -220,7 +220,7 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
 	    auto data = Vector::getVectorData();
 	    AMP_ASSERT(data);
 	    //            auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
-            auto listener = dynamic_cast<DataChangeListener*>( data );
+            auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
             vec->registerListener( listener );
         } else {
             // the vector exists, which vector (or both) do we keep?

@@ -27,7 +27,7 @@ static inline Vec getVecFromNative( AMP::LinearAlgebra::Vector::shared_ptr vecto
 {
     auto v = std::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVector>( vector );
     AMP_ASSERT( v != nullptr );
-    auto nvData = dynamic_cast<NativePetscVectorData*>(v->getVectorData());
+    auto nvData = std::dynamic_pointer_cast<NativePetscVectorData>(v->getVectorData());
     AMP_ASSERT(nvData);
     return nvData->getVec();
 }

@@ -595,10 +595,10 @@ public: // Virtual functions
 public: // Non-virtual functions
 
     //! Return the pointer to the VectorData
-    VectorData *getVectorData() { return d_VectorData; }
+    std::shared_ptr<VectorData> getVectorData() { return d_VectorData; }
 
     //! Return the pointer to the VectorData
-    const VectorData *getVectorData() const { return d_VectorData; }
+    std::shared_ptr<const VectorData> getVectorData() const { return d_VectorData; }
 
     //! Return the pointer to the VectorOperation
     std::shared_ptr<VectorOperations> getVectorOperations() { return d_VectorOps; }
@@ -709,15 +709,12 @@ protected: // Internal data
     std::shared_ptr<VectorOperations> d_VectorOps = nullptr;
 
 protected:
-    // Pointer to *this as a VectorData object
-    VectorData *d_VectorData = nullptr;
-    // shared pointer that should eventually take over
-    std::shared_ptr<VectorData> d_VectorDataSP = nullptr;
+    // shared pointer to data
+    std::shared_ptr<VectorData> d_VectorData = nullptr;
 
     void setVectorData( std::shared_ptr<VectorData> data)
     {
-      d_VectorDataSP = data;
-      d_VectorData = data.get();
+      d_VectorData = data;
     }
     
 private:

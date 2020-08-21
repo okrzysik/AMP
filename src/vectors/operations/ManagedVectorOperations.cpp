@@ -22,34 +22,6 @@ static inline ManagedVectorData *getManagedVector( VectorData &x )
     AMP_INSIST( y != nullptr, "x is not a ManagedVectorData" );
     return y;
 }
-static inline VectorData *getEngineData( VectorData &x )
-{
-    auto y = dynamic_cast<ManagedVectorData *>( &x );
-    AMP_INSIST( y != nullptr, "x is not a ManagedVectorData" );
-    auto engine = y->getVectorEngine();
-    AMP_INSIST( engine, "ManagedVector Engine is Null" );
-    auto vecEngine = std::dynamic_pointer_cast<Vector>( engine );
-    if ( vecEngine )
-        return vecEngine->getVectorData();
-    else {
-        AMP_ERROR( "Not programmed for as yet" );
-    }
-    return nullptr;
-}
-static inline const VectorData *getEngineData( const VectorData &x )
-{
-    auto y = dynamic_cast<const ManagedVectorData *>( &x );
-    AMP_INSIST( y != nullptr, "x is not a ManagedVectorData" );
-    auto engine = y->getVectorEngine();
-    AMP_INSIST( engine, "ManagedVector Engine is Null" );
-    auto vecEngine = std::dynamic_pointer_cast<const Vector>( engine );
-    if ( vecEngine )
-        return vecEngine->getVectorData();
-    else {
-        AMP_ERROR( "Not programmed for as yet" );
-    }
-    return nullptr;
-}
 
 //**********************************************************************
 // Functions that operate on VectorData objects

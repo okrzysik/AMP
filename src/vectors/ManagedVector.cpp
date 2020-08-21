@@ -42,7 +42,7 @@ ManagedVector::ManagedVector( shared_ptr alias )
     : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
 {
     auto vec      = getManaged( alias );
-    setVectorData( vec->d_VectorDataSP );
+    setVectorData( vec->d_VectorData );
     d_VectorOps   = vec->d_VectorOps;
     d_pParameters = vec->d_pParameters;
     setVariable( vec->getVariable() );
@@ -86,7 +86,7 @@ bool ManagedVector::isAnAliasOf( Vector &rhs )
 
     auto other  = getManaged( &rhs );
     if ( other != nullptr ) {
-      retVal = dynamic_cast<ManagedVectorData*>(d_VectorData)->isAnAliasOf(*(rhs.getVectorData()));
+      retVal = std::dynamic_pointer_cast<ManagedVectorData>(d_VectorData)->isAnAliasOf(*(rhs.getVectorData()));
     }
     return retVal;
 }
@@ -104,7 +104,7 @@ void ManagedVector::aliasVector( Vector &other )
 {
     auto in       = getManaged( &other );
     d_pParameters = in->d_pParameters;
-    setVectorData( in->d_VectorDataSP );
+    setVectorData( in->d_VectorData );
     d_VectorOps   = in->d_VectorOps; 
 }
 
@@ -125,7 +125,7 @@ std::string ManagedVector::type() const
 
 Vector::shared_ptr ManagedVector::getRootVector()
 {
-  if ( dynamic_cast<ManagedVectorData*>(d_VectorData)->hasBuffer() )
+  if ( std::dynamic_pointer_cast<ManagedVectorData>(d_VectorData)->hasBuffer() )
     return shared_from_this();
   
   auto engine = getVectorEngine();
@@ -157,7 +157,7 @@ std::shared_ptr<ParameterBase> ManagedVector::getParameters()
 Vector::shared_ptr ManagedVector::getVectorEngine( void )
 {
   AMP_ASSERT(d_VectorData);
-  auto data = dynamic_cast<ManagedVectorData*>(d_VectorData);
+  auto data = std::dynamic_pointer_cast<ManagedVectorData>(d_VectorData);
   AMP_ASSERT(data);
   return data->getVectorEngine();
 }
@@ -165,7 +165,7 @@ Vector::shared_ptr ManagedVector::getVectorEngine( void )
 Vector::const_shared_ptr ManagedVector::getVectorEngine( void ) const
 {
   AMP_ASSERT(d_VectorData);
-  const auto data = dynamic_cast<const ManagedVectorData *>(d_VectorData);
+  const auto data = std::dynamic_pointer_cast<const ManagedVectorData>(d_VectorData);
   AMP_ASSERT(data);
   return data->getVectorEngine();
 }

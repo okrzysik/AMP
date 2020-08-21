@@ -32,16 +32,16 @@ EpetraVectorData::EpetraVectorData( std::shared_ptr<EpetraVectorEngineParameters
   d_buf_scope = bufData;
 }
 
-EpetraVectorData *EpetraVectorData::create( std::shared_ptr<EpetraVectorEngineParameters> alias,
+  std::shared_ptr<EpetraVectorData> EpetraVectorData::create( std::shared_ptr<EpetraVectorEngineParameters> alias,
 					    std::shared_ptr<VectorData> buf)
 {
-  return new EpetraVectorData(alias,
-			      View,
-			      std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
-			      buf,
-			      std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->beginDOF(),
-			      std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
-			      std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize());
+  return std::make_shared<EpetraVectorData>(alias,
+					    View,
+					    std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
+					    buf,
+					    std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->beginDOF(),
+					    std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
+					    std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize());
 }
 
 void *EpetraVectorData::getRawDataBlockAsVoid( size_t i )

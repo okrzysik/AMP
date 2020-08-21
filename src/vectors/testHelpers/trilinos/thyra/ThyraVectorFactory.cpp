@@ -141,7 +141,7 @@ Teuchos::RCP<Thyra::VectorBase<double>> getThyraVec( AMP::LinearAlgebra::Vector:
 
   auto nv = std::dynamic_pointer_cast<NativeThyraVector>(v);
   if(nv) {
-    return  dynamic_cast<ThyraVector*>(nv->getVectorData())->getVec();
+    return  std::dynamic_pointer_cast<ThyraVector>(nv->getVectorData())->getVec();
   } else {
     AMP_ERROR("Not a Thyra Vector");
   }

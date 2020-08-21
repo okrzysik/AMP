@@ -9,7 +9,7 @@ static Vec getVec( Vector::shared_ptr v )
   AMP_ASSERT(npv);
   auto vdata = npv->getVectorData();
   AMP_ASSERT(vdata);
-  return dynamic_cast<NativePetscVectorData*>(vdata)->getVec();
+  return std::dynamic_pointer_cast<NativePetscVectorData>(vdata)->getVec();
 }
  
 static const Vec getVec( Vector::const_shared_ptr v )
@@ -18,7 +18,7 @@ static const Vec getVec( Vector::const_shared_ptr v )
   AMP_ASSERT(npv);
   auto vdata = npv->getVectorData();
   AMP_ASSERT(vdata);
-  return dynamic_cast<const NativePetscVectorData*>(vdata)->getVec();
+  return std::dynamic_pointer_cast<const NativePetscVectorData>(vdata)->getVec();
 }
  
 inline Matrix::shared_ptr NativePetscMatrix::cloneMatrix() const

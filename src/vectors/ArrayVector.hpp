@@ -73,7 +73,7 @@ template<typename T, typename FUN, typename Allocator>
 inline Vector::shared_ptr
 ArrayVector<T, FUN, Allocator>::cloneVector( const Variable::shared_ptr name ) const
 {
-    auto vdata = std::dynamic_pointer_cast<ArrayVectorData<T, FUN, Allocator>>(d_VectorDataSP);
+    auto vdata = std::dynamic_pointer_cast<ArrayVectorData<T, FUN, Allocator>>(d_VectorData);
     const auto &array = vdata->getArray();
     std::vector<size_t> size( array.size().begin(), array.size().end() );
     return create( size, name, this->getComm() );
@@ -83,10 +83,10 @@ template<typename T, typename FUN, typename Allocator>
 void ArrayVector<T, FUN, Allocator>::swapVectors( Vector &rhs )
 {
     // get internal arrays
-    auto vdata = std::dynamic_pointer_cast<ArrayVectorData<T, FUN, Allocator>>(d_VectorDataSP);
+    auto vdata = std::dynamic_pointer_cast<ArrayVectorData<T, FUN, Allocator>>(d_VectorData);
     auto &internalArray = vdata->getArray();
 
-    auto &otherArray    = dynamic_cast<ArrayVectorData<T, FUN, Allocator>*>( rhs.getVectorData() )->getArray();
+    auto otherArray    = std::dynamic_pointer_cast<ArrayVectorData<T, FUN, Allocator>>( rhs.getVectorData() )->getArray();
     // reset views
     internalArray.swap( otherArray );
 }

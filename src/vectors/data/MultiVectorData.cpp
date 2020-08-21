@@ -453,14 +453,14 @@ void MultiVectorData::partitionLocalValues( const int num,
 VectorData *MultiVectorData::getVectorData( size_t i )
 {
   auto vec = dynamic_cast<Vector *>(d_data[i]);
-  if (vec) return vec->getVectorData();
+  if (vec) return vec->getVectorData().get();
   return d_data[i];
 }
 
 const VectorData *MultiVectorData::getVectorData( size_t i ) const
 {
   auto vec = dynamic_cast<Vector const *>(d_data[i]);
-  if (vec) return vec->getVectorData();
+  if (vec) return vec->getVectorData().get();
   return d_data[i];
 }
 

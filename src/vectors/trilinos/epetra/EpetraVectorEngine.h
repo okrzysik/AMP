@@ -34,27 +34,17 @@ public:
     /** \brief Destructor
      */
     virtual ~EpetraVectorEngine() {}
-#if 1
-    /** \brief  Get the raw Epetra_Vector
-     * \return  The Epetra_Vector currently used by this engine
-     */
-    inline Epetra_Vector &getEpetra_Vector() { return dynamic_cast<EpetraVectorData *>(d_VectorData)->getEpetra_Vector(); }
 
     /** \brief  Get the raw Epetra_Vector
      * \return  The Epetra_Vector currently used by this engine
      */
-    inline const Epetra_Vector &getEpetra_Vector() const { return dynamic_cast<EpetraVectorData *>(d_VectorData)->getEpetra_Vector(); }
-#else
-    /** \brief  Get the raw Epetra_Vector
-     * \return  The Epetra_Vector currently used by this engine
-     */
-    inline Epetra_Vector &getEpetra_Vector() { return d_epetraVector; }
+    inline Epetra_Vector &getEpetra_Vector() { return std::dynamic_pointer_cast<EpetraVectorData >(d_VectorData)->getEpetra_Vector(); }
 
     /** \brief  Get the raw Epetra_Vector
      * \return  The Epetra_Vector currently used by this engine
      */
-    inline const Epetra_Vector &getEpetra_Vector() const { return d_epetraVector; }
-#endif
+    inline const Epetra_Vector &getEpetra_Vector() const { return std::dynamic_pointer_cast<EpetraVectorData>(d_VectorData)->getEpetra_Vector(); }
+
 public: // Functions derived from VectorData
     using VectorData::getComm;
     AMP_MPI getComm() const override { return d_Params->getComm(); }
