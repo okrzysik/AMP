@@ -37,7 +37,7 @@ class PetscVectorParameters
  *
  */
 
-class PetscVector : public DataChangeListener
+class PetscVector 
 {
 private:
     PetscRandom *d_PetscRandom;
@@ -154,8 +154,6 @@ public:
      */
     virtual bool petscHoldsView() const = 0;
 
-
-    void receiveDataChanged() override;
 
 
 public:

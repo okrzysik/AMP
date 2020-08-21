@@ -875,5 +875,10 @@ Vector::shared_ptr ManagedPetscVector::cloneVector( const Variable::shared_ptr p
 void ManagedPetscVector::assemble() {}
 
 
+void ManagedPetscVector::receiveDataChanged()
+{
+    PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( getVec() ) );
+}
+
 } // namespace LinearAlgebra
 } // namespace AMP

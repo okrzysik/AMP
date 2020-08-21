@@ -1,4 +1,4 @@
-#ifndef included_AMP_ManagedPetscVector
+ #ifndef included_AMP_ManagedPetscVector
 #define included_AMP_ManagedPetscVector
 
 #include "AMP/vectors/ManagedVector.h"
@@ -25,7 +25,7 @@ typedef ManagedVectorParameters ManagedPetscVectorParameters;
  *
  * \see PetscVector
  */
-class ManagedPetscVector : public ManagedVector, public PetscVector
+ class ManagedPetscVector : public ManagedVector, public PetscVector, public DataChangeListener
 {
 private:
     bool d_bMadeWithPetscDuplicate;
@@ -102,6 +102,8 @@ public:
     void assemble() override;
 
     virtual bool petscHoldsView() const override;
+
+    void receiveDataChanged() override;
 
 protected:
     virtual ManagedVector *getNewRawPtr() const override;
