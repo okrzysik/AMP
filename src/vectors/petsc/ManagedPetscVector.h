@@ -3,6 +3,7 @@
 
 #include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/petsc/PetscVector.h"
+#include "AMP/vectors/DataChangeListener.h"
 
 
 namespace AMP {

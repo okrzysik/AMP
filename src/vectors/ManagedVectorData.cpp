@@ -70,6 +70,13 @@ ManagedVectorData::ManagedVectorData( VectorParameters::shared_ptr params_in )
     d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
     if ( d_Engine )
         d_Engine->setUpdateStatusPtr( getUpdateStatusPtr() );
+
+    // this object will listen for changes from the d_Engine
+    // and will fire off a change to any objects that are listening
+    auto listener = dynamic_cast<DataChangeListener*>( this );
+    d_Engine->getVectorData()->registerListener( listener );
+
+    
 }
 
 ManagedVectorData::ManagedVectorData( const std::shared_ptr<VectorData> alias )
@@ -81,13 +88,21 @@ ManagedVectorData::ManagedVectorData( const std::shared_ptr<VectorData> alias )
     d_pParameters = vec->d_pParameters;
     aliasGhostBuffer( vec );
 
+    auto vec2 = getVectorEngine();
+    AMP_ASSERT(vec2);
+    
     if ( d_vBuffer )
         setUpdateStatusPtr( d_vBuffer->getUpdateStatusPtr() );
     else {
-      auto vec2 = getVectorEngine();
         if ( vec2 )
             setUpdateStatusPtr( vec2->getUpdateStatusPtr() );
     }
+
+    // this object will listen for changes from the d_Engine
+    // and will fire off a change to any objects that are listening
+    auto listener = dynamic_cast<DataChangeListener*>( this );
+    vec2->getVectorData()->registerListener( listener );
+
 }
 
 ManagedVectorData::~ManagedVectorData() {}

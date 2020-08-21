@@ -3,6 +3,7 @@
 
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/DataChangeListener.h"
 
 #include <stdexcept>
 #include <vector>
@@ -41,7 +42,7 @@ public:
    A ManagedVector has two pointers: data and engine.  If the data pointer
    is null, then the engine is assumed to have the data.
 */
-class ManagedVectorData : public VectorData
+class ManagedVectorData : public VectorData, public DataChangeListener
 {
 
 public:
@@ -69,6 +70,8 @@ public:
     std::shared_ptr<ParameterBase> getParameters();
 
     bool hasBuffer( void ) const { return (d_vBuffer!=nullptr); }
+
+    void receiveDataChanged() override { fireDataChange(); }
     
 protected:
     //! The buffer used to store data
