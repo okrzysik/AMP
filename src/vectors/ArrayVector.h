@@ -27,7 +27,7 @@ private:
     explicit ArrayVector( const ArrayVector & );
 
 public:
-    ArrayVector( std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> data );
+    explicit ArrayVector( std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> data );
 
     /** \brief    Create a ArrayVector
      * \details  This is the factory method for the ArrayVector.  It returns the shared pointer
