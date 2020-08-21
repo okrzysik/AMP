@@ -37,9 +37,6 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
         AMP_INSIST( inVector->getDOFManager(), "All vectors must have a DOFManager list" );
         newParams->d_DOFManager = inVector->getDOFManager();
         auto newVector          = std::make_shared<ManagedPetscVector>( newParams );
-	// the ManagedPetscVector will handle the register of the listener
-	//        auto listener           = std::dynamic_pointer_cast<DataChangeListener>( newVector );
-	//        inVector->getVectorData()->registerListener( listener );
         newVector->setVariable( inVector->getVariable() );
         newVector->getVectorData()->setUpdateStatusPtr( inVector->getVectorData()->getUpdateStatusPtr() );
         inVector->registerView( newVector );

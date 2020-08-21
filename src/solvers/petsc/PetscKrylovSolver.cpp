@@ -483,7 +483,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     AMP_INSIST( localNorm == localNorm, "NaNs detected in preconditioner" );
 
     // not sure why, but the state of sp_z is not updated and petsc uses the cached norm
-    sp_z->fireDataChange();
+    sp_z->getVectorData()->fireDataChange();
 
     // these tests were helpful in finding a bug
     if ( ( (PetscKrylovSolver *) ctx )->getDebugPrintInfoLevel() > 5 ) {

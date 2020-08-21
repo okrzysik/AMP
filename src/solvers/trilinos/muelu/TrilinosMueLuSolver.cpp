@@ -616,7 +616,7 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     // as Epetra is not going to change the state of a managed vector
     // an example where this will and has caused problems is when the
     // vector is a petsc managed vector being passed back to PETSc
-    u->fireDataChange();
+    u->getVectorData()->fireDataChange();
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         double solution_norm = u->L2Norm();
