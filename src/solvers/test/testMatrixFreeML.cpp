@@ -244,7 +244,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         mlSolver->ApplyInverse( fVec, uVec );
 
-        fusedSolVec->fireDataChange();
+        fusedSolVec->getVectorData()->fireDataChange();
 
         double solution_norm = fusedSolVec->L2Norm();
         std::cout << "MatFree-1:  solution norm: " << std::setprecision( 15 ) << solution_norm
@@ -314,7 +314,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         delete[] rhsArr;
         rhsArr = nullptr;
 
-        fusedSolVec->fireDataChange();
+        fusedSolVec->getVectorData()->fireDataChange();
 
         double solution_norm = fusedSolVec->L2Norm();
         std::cout << "MatFree-2:  solution norm: " << std::setprecision( 15 ) << solution_norm
