@@ -743,62 +743,60 @@ public: // Non-virtual functions
     template<typename RETURN_TYPE>
     inline const RETURN_TYPE *getRawDataBlock( size_t i = 0 ) const { return d_VectorData->getRawDataBlock<RETURN_TYPE>(i); }
 
- /****************************************************************
- * VectorData operations -- will move to Vector eventually      *
- ****************************************************************/
 public:
-    virtual std::string VectorDataName() const { return d_VectorData->VectorDataName(); }
-    virtual size_t numberOfDataBlocks() const { return d_VectorData->numberOfDataBlocks(); }
-    virtual size_t sizeOfDataBlock( size_t i = 0 ) const { return d_VectorData->sizeOfDataBlock(i); }
-    virtual void putRawData( const double *buf ) { d_VectorData->putRawData(buf); }
-    virtual void copyOutRawData( double *buf ) const { d_VectorData->copyOutRawData(buf); } 
-    virtual size_t getLocalSize() const { return d_VectorData->getLocalSize(); } 
-    virtual size_t getGlobalSize() const { return d_VectorData->getGlobalSize(); } 
-    virtual size_t getLocalStartID() const { return d_VectorData->getLocalStartID(); } 
-    virtual void setValuesByLocalID( int num, size_t *indices, const double *vals ) { d_VectorData->setValuesByLocalID(num, indices, vals); }
-    virtual void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->setLocalValuesByGlobalID(num, indices, vals); }
-    virtual void addValuesByLocalID( int num, size_t *indices, const double *vals ) { d_VectorData->addValuesByLocalID(num, indices, vals); }
-    virtual void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->addLocalValuesByGlobalID(num, indices, vals); }
-    virtual void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getLocalValuesByGlobalID(num, indices, vals); }
-    virtual uint64_t getDataID() const { return d_VectorData->getDataID(); }
-    virtual void *getRawDataBlockAsVoid( size_t i ) { return d_VectorData->getRawDataBlockAsVoid(i); }
-    virtual const void *getRawDataBlockAsVoid( size_t i ) const { return d_VectorData->getRawDataBlockAsVoid(i); }
-    virtual size_t sizeofDataBlockType( size_t i ) const { return d_VectorData->sizeofDataBlockType(i); }
-    virtual bool isTypeId( size_t hash, size_t block ) const { return d_VectorData->isTypeId(hash, block); }
-    virtual void swapData( VectorData &rhs ) { d_VectorData->swapData(rhs); }
-    virtual std::shared_ptr<VectorData> cloneData() const { return d_VectorData->cloneData(); }
-    virtual AMP::LinearAlgebra::VectorData::UpdateState getUpdateStatus() const { return d_VectorData->getUpdateStatus(); }
-    virtual void setUpdateStatus( AMP::LinearAlgebra::VectorData::UpdateState state ) { d_VectorData->setUpdateStatus(state); }
-    virtual void makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType t ) { d_VectorData->makeConsistent(t); }
-    virtual bool hasComm() const { return d_VectorData->hasComm(); }
+ /****************************************************************
+ *  VectorData operations                                       */
+    inline bool hasComm() const { return d_VectorData->hasComm(); }
     virtual AMP_MPI getComm() const { return d_VectorData->getComm(); }
+    inline std::string VectorDataName() const { return d_VectorData->VectorDataName(); }
+    inline size_t numberOfDataBlocks() const { return d_VectorData->numberOfDataBlocks(); }
+    inline size_t sizeOfDataBlock( size_t i = 0 ) const { return d_VectorData->sizeOfDataBlock(i); }
+    inline void putRawData( const double *buf ) { d_VectorData->putRawData(buf); }
+    inline void copyOutRawData( double *buf ) const { d_VectorData->copyOutRawData(buf); } 
+    inline size_t getLocalSize() const { return d_VectorData->getLocalSize(); } 
+    inline size_t getGlobalSize() const { return d_VectorData->getGlobalSize(); } 
+    inline size_t getLocalStartID() const { return d_VectorData->getLocalStartID(); } 
+    inline void setValuesByLocalID( int num, size_t *indices, const double *vals ) { d_VectorData->setValuesByLocalID(num, indices, vals); }
+    inline void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->setLocalValuesByGlobalID(num, indices, vals); }
+    inline void addValuesByLocalID( int num, size_t *indices, const double *vals ) { d_VectorData->addValuesByLocalID(num, indices, vals); }
+    inline void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->addLocalValuesByGlobalID(num, indices, vals); }
+    inline void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getLocalValuesByGlobalID(num, indices, vals); }
+    inline uint64_t getDataID() const { return d_VectorData->getDataID(); }
+    inline void *getRawDataBlockAsVoid( size_t i ) { return d_VectorData->getRawDataBlockAsVoid(i); }
+    inline const void *getRawDataBlockAsVoid( size_t i ) const { return d_VectorData->getRawDataBlockAsVoid(i); }
+    inline size_t sizeofDataBlockType( size_t i ) const { return d_VectorData->sizeofDataBlockType(i); }
+    inline bool isTypeId( size_t hash, size_t block ) const { return d_VectorData->isTypeId(hash, block); }
+    inline void swapData( VectorData &rhs ) { d_VectorData->swapData(rhs); }
+    inline std::shared_ptr<VectorData> cloneData() const { return d_VectorData->cloneData(); }
+    inline AMP::LinearAlgebra::VectorData::UpdateState getUpdateStatus() const { return d_VectorData->getUpdateStatus(); }
+    inline void setUpdateStatus( AMP::LinearAlgebra::VectorData::UpdateState state ) { d_VectorData->setUpdateStatus(state); }
+    inline void makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType t ) { d_VectorData->makeConsistent(t); }
     //! Get the CommunicationList for this Vector
-    virtual CommunicationList::shared_ptr getCommunicationList() const { return d_VectorData->getCommunicationList(); }
-    virtual void setCommunicationList( CommunicationList::shared_ptr comm ) { d_VectorData->setCommunicationList(comm); }
-    virtual void dataChanged() { return d_VectorData->dataChanged(); }
+    inline CommunicationList::shared_ptr getCommunicationList() const { return d_VectorData->getCommunicationList(); }
+    inline void setCommunicationList( CommunicationList::shared_ptr comm ) { d_VectorData->setCommunicationList(comm); }
+    inline void dataChanged() { return d_VectorData->dataChanged(); }
 
     // missed on first round
-    virtual size_t getGlobalMaxID() const { return d_VectorData->getGlobalMaxID(); }
-    virtual size_t getLocalMaxID() const { return d_VectorData->getLocalMaxID(); }
-    virtual size_t getGhostSize() const { return d_VectorData->getGhostSize(); }
-    virtual void setGhostValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->setGhostValuesByGlobalID(num, indices, vals); }
-    virtual void setValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->setValuesByGlobalID(num, indices, vals); }
-    virtual void addValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->addValuesByGlobalID(num, indices, vals); }
-    virtual void getGhostAddValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getGhostAddValuesByGlobalID(num, indices, vals); }
-    virtual void getValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getValuesByGlobalID(num, indices, vals); }
-    virtual void getGhostValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getGhostValuesByGlobalID(num, indices, vals); }
-    virtual void getValuesByLocalID( int num, size_t *indices, double *vals ) const { d_VectorData->getValuesByLocalID(num, indices, vals); }
+    inline size_t getGlobalMaxID() const { return d_VectorData->getGlobalMaxID(); }
+    inline size_t getLocalMaxID() const { return d_VectorData->getLocalMaxID(); }
+    inline size_t getGhostSize() const { return d_VectorData->getGhostSize(); }
+    inline void setGhostValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->setGhostValuesByGlobalID(num, indices, vals); }
+    inline void setValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->setValuesByGlobalID(num, indices, vals); }
+    inline void addValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->addValuesByGlobalID(num, indices, vals); }
+    inline void getGhostAddValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getGhostAddValuesByGlobalID(num, indices, vals); }
+    inline void getValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getValuesByGlobalID(num, indices, vals); }
+    inline void getGhostValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getGhostValuesByGlobalID(num, indices, vals); }
+    inline void getValuesByLocalID( int num, size_t *indices, double *vals ) const { d_VectorData->getValuesByLocalID(num, indices, vals); }
 
-    virtual bool containsGlobalElement(size_t id) { return d_VectorData->containsGlobalElement(id); }
+    inline bool containsGlobalElement(size_t id) { return d_VectorData->containsGlobalElement(id); }
 
-    virtual void dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const
+    inline void dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const
     {
       d_VectorData->dumpOwnedData(out, GIDoffset, LIDoffset);
     }
-    virtual void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const { d_VectorData->dumpGhostedData(out, offset); }
+    inline void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const { d_VectorData->dumpGhostedData(out, offset); }
     
-/****************************************************************
- ****************************************************************/
+/*******************************************************************/
 
     // These should probably be removed as they add to the interface bloat
 public: // Non virtual functions
