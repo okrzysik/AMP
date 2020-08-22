@@ -45,12 +45,10 @@ class VectorSelector;
  * \f$\mathbf{L}\mathbf{\tilde{u}}=\mathbf{f}\f$.  In this case
  * \f$\mathbf{\tilde{u}}\f$ and \f$\mathbf{f}\f$ are Vectors.
  */
-class Vector : public VectorData, public AMP::enable_shared_from_this<Vector>
+class Vector : public AMP::enable_shared_from_this<Vector>
 {
 
 public: // typedefs
-    using VectorData::ScatterType;
-    using VectorData::UpdateState;
 
     /** \typedef shared_ptr
      * \brief Shorthand for shared pointer to Vector
@@ -563,10 +561,6 @@ public: // Virtual functions
     //! Get the DOFManager for this Vector
     virtual AMP::Discretization::DOFManager::shared_ptr getDOFManager() const;
 
-    /** \brief  Return the communicator this Vector spans
-     */
-    virtual AMP_MPI getComm() const override;
-
 
     /** \brief  Selects a portion of this vector and puts a view into a vector
      * \param[in]  criterion  The method for deciding inclusion in the view
@@ -575,8 +569,6 @@ public: // Virtual functions
 
     // This is the const version of selectInto.
     virtual Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const;
-
-    bool hasComm( void ) const override { return ( getVectorData()->getCommunicationList() != nullptr ); }
 
     virtual void copyVector( std::shared_ptr<const Vector> x ) { d_VectorOps->copy( *(x->getVectorData()), *d_VectorData ); }
 
@@ -691,6 +683,122 @@ public: // Non-virtual functions
      * \param in  The Vector to share a ghost buffer with
      */
     void aliasGhostBuffer( Vector::shared_ptr in );
+
+public: // Non-virtual functions
+    /**
+     * \brief Return an iterator to the beginning of the data
+     * \returns A VectorDataIterator
+     * \details Since the Vector presents an interface to a contiguous
+     *     block of data, it is natural for it to provide a random
+     *     access iterator.
+     * \warning The non-const version of the iterators will automatically
+     *     leave the vector in a non-consistent state.  The user may
+     *     be required to call makeConsistent.
+     */
+    template<class TYPE = double>
+      inline VectorDataIterator<TYPE> begin() { return d_VectorData->begin<TYPE>(); }
+
+    /// @copydoc VectorData::begin()
+    template<class TYPE = double>
+    inline VectorDataIterator<const TYPE> begin() const { return d_VectorData->begin<const TYPE>(); }
+
+    /// @copydoc VectorData::begin()
+    template<class TYPE = double>
+    inline VectorDataIterator<const TYPE> constBegin() const { return d_VectorData->constBegin<const TYPE>(); }
+
+    /**
+     * \brief Return an iterator to the end of the data
+     * \returns A VectorDataIterator
+     * \details Since the Vector presents an interface to a contiguous
+     *     block of data, it is natural for it to provide a random
+     *     access iterator.
+     * \warning The non-const version of the iterators will automatically
+     *     leave the vector in a non-consistent state.  The user may
+     *     be required to call makeConsistent.
+     */
+    template<class TYPE = double>
+      inline VectorDataIterator<TYPE> end() { return d_VectorData->end<TYPE>(); }
+
+    /// @copydoc VectorData::end()
+    template<class TYPE = double>
+    inline VectorDataIterator<const TYPE> end() const  { return d_VectorData->end<const TYPE>(); }
+
+    /// @copydoc VectorData::end()
+    template<class TYPE = double>
+    inline VectorDataIterator<const TYPE> constEnd() const  { return d_VectorData->constEnd<const TYPE>(); }
+
+    /** \brief Obtain a particular contiguous block of data cast to RETURN_TYPE
+     * \tparam RETURN_TYPE  The pointer type of the return
+     * \param[in] i  Which block
+     * \return A contiguous array of type RETURN_TYPE
+     */
+    template<typename RETURN_TYPE>
+    inline RETURN_TYPE *getRawDataBlock( size_t i = 0 ) { return d_VectorData->getRawDataBlock<RETURN_TYPE>(i); }
+
+    /** \brief Obtain a particular contiguous block of data cast to RETURN_TYPE
+     * \tparam RETURN_TYPE  The pointer type of the return
+     * \param[in] i  Which block
+     * \return A const contiguous array of type RETURN_TYPE
+     */
+    template<typename RETURN_TYPE>
+    inline const RETURN_TYPE *getRawDataBlock( size_t i = 0 ) const { return d_VectorData->getRawDataBlock<RETURN_TYPE>(i); }
+
+ /****************************************************************
+ * VectorData operations -- will move to Vector eventually      *
+ ****************************************************************/
+public:
+    virtual std::string VectorDataName() const { return d_VectorData->VectorDataName(); }
+    virtual size_t numberOfDataBlocks() const { return d_VectorData->numberOfDataBlocks(); }
+    virtual size_t sizeOfDataBlock( size_t i = 0 ) const { return d_VectorData->sizeOfDataBlock(i); }
+    virtual void putRawData( const double *buf ) { d_VectorData->putRawData(buf); }
+    virtual void copyOutRawData( double *buf ) const { d_VectorData->copyOutRawData(buf); } 
+    virtual size_t getLocalSize() const { return d_VectorData->getLocalSize(); } 
+    virtual size_t getGlobalSize() const { return d_VectorData->getGlobalSize(); } 
+    virtual size_t getLocalStartID() const { return d_VectorData->getLocalStartID(); } 
+    virtual void setValuesByLocalID( int num, size_t *indices, const double *vals ) { d_VectorData->setValuesByLocalID(num, indices, vals); }
+    virtual void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->setLocalValuesByGlobalID(num, indices, vals); }
+    virtual void addValuesByLocalID( int num, size_t *indices, const double *vals ) { d_VectorData->addValuesByLocalID(num, indices, vals); }
+    virtual void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->addLocalValuesByGlobalID(num, indices, vals); }
+    virtual void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getLocalValuesByGlobalID(num, indices, vals); }
+    virtual uint64_t getDataID() const { return d_VectorData->getDataID(); }
+    virtual void *getRawDataBlockAsVoid( size_t i ) { return d_VectorData->getRawDataBlockAsVoid(i); }
+    virtual const void *getRawDataBlockAsVoid( size_t i ) const { return d_VectorData->getRawDataBlockAsVoid(i); }
+    virtual size_t sizeofDataBlockType( size_t i ) const { return d_VectorData->sizeofDataBlockType(i); }
+    virtual bool isTypeId( size_t hash, size_t block ) const { return d_VectorData->isTypeId(hash, block); }
+    virtual void swapData( VectorData &rhs ) { d_VectorData->swapData(rhs); }
+    virtual std::shared_ptr<VectorData> cloneData() const { return d_VectorData->cloneData(); }
+    virtual AMP::LinearAlgebra::VectorData::UpdateState getUpdateStatus() const { return d_VectorData->getUpdateStatus(); }
+    virtual void setUpdateStatus( AMP::LinearAlgebra::VectorData::UpdateState state ) { d_VectorData->setUpdateStatus(state); }
+    virtual void makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType t ) { d_VectorData->makeConsistent(t); }
+    virtual bool hasComm() const { return d_VectorData->hasComm(); }
+    virtual AMP_MPI getComm() const { return d_VectorData->getComm(); }
+    //! Get the CommunicationList for this Vector
+    virtual CommunicationList::shared_ptr getCommunicationList() const { return d_VectorData->getCommunicationList(); }
+    virtual void setCommunicationList( CommunicationList::shared_ptr comm ) { d_VectorData->setCommunicationList(comm); }
+    virtual void dataChanged() { return d_VectorData->dataChanged(); }
+
+    // missed on first round
+    virtual size_t getGlobalMaxID() const { return d_VectorData->getGlobalMaxID(); }
+    virtual size_t getLocalMaxID() const { return d_VectorData->getLocalMaxID(); }
+    virtual size_t getGhostSize() const { return d_VectorData->getGhostSize(); }
+    virtual void setGhostValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->setGhostValuesByGlobalID(num, indices, vals); }
+    virtual void setValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->setValuesByGlobalID(num, indices, vals); }
+    virtual void addValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->addValuesByGlobalID(num, indices, vals); }
+    virtual void getGhostAddValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getGhostAddValuesByGlobalID(num, indices, vals); }
+    virtual void getValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getValuesByGlobalID(num, indices, vals); }
+    virtual void getGhostValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getGhostValuesByGlobalID(num, indices, vals); }
+    virtual void getValuesByLocalID( int num, size_t *indices, double *vals ) const { d_VectorData->getValuesByLocalID(num, indices, vals); }
+
+    virtual bool containsGlobalElement(size_t id) { return d_VectorData->containsGlobalElement(id); }
+
+    virtual void dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const
+    {
+      d_VectorData->dumpOwnedData(out, GIDoffset, LIDoffset);
+    }
+    virtual void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const { d_VectorData->dumpGhostedData(out, offset); }
+    
+/****************************************************************
+ ****************************************************************/
 
     // These should probably be removed as they add to the interface bloat
 public: // Non virtual functions

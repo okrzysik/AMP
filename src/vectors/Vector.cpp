@@ -23,8 +23,7 @@ RNG::shared_ptr Vector::d_DefaultRNG;
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-Vector::Vector() : VectorData(),
-		   d_output_stream{ &AMP::plog },
+Vector::Vector() : d_output_stream{ &AMP::plog },
 		   d_Views {std::make_shared<std::vector<std::weak_ptr<Vector>>>() }
 {
 }

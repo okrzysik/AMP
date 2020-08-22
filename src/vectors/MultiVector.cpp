@@ -82,7 +82,7 @@ std::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec,
     AMP_ASSERT( data );
     //    auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
     auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
-    vec->registerListener( listener );
+    vec->getVectorData()->registerListener( listener );
     return multivec;
 }
 std::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr vec, const AMP_MPI &comm_in )
@@ -205,7 +205,7 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
 	    AMP_ASSERT(data);
 	    //            auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
             auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
-            vec->registerListener( listener );
+            vec->getVectorData()->registerListener( listener );
         }
     } else {
         // We are dealing with a single vector, check if it is already added in some form
@@ -221,7 +221,7 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
 	    AMP_ASSERT(data);
 	    //            auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
             auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
-            vec->registerListener( listener );
+            vec->getVectorData()->registerListener( listener );
         } else {
             // the vector exists, which vector (or both) do we keep?
             auto dof1 = vec->getDOFManager();
@@ -401,12 +401,12 @@ void MultiVector::assemble()
 void MultiVector::swapVectors( Vector &other )
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->swapVectors( getVector( other, i ) );
+      d_vVectors[i]->swapVectors( getVector(other, i) );
 }
 void MultiVector::aliasVector( Vector &other )
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->aliasVector( getVector( other, i ) );
+      d_vVectors[i]->aliasVector( getVector(other, i) );
 }
 Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) const
 {
@@ -434,7 +434,7 @@ MultiVector::~MultiVector() {}
 
 AMP_MPI MultiVector::getComm() const { return d_Comm; }
 
-const Vector::shared_ptr &MultiVector::getVector( const VectorData &rhs, size_t which ) const
+const Vector::shared_ptr &MultiVector::getVector( const Vector &rhs, size_t which ) const
 {
     auto x = dynamic_cast<const MultiVector *>( &rhs );
     AMP_ASSERT( x != nullptr );
@@ -442,7 +442,7 @@ const Vector::shared_ptr &MultiVector::getVector( const VectorData &rhs, size_t 
     return x->d_vVectors[which];
 }
 
-Vector::shared_ptr &MultiVector::getVector( VectorData &rhs, size_t which ) const
+Vector::shared_ptr &MultiVector::getVector( Vector &rhs, size_t which ) const
 {
     auto x = dynamic_cast<MultiVector *>( &rhs );
     AMP_ASSERT( x != nullptr );

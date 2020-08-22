@@ -118,8 +118,8 @@ _AMP_setvalues( Vec px, PetscInt ni, const PetscInt ix[], const PetscScalar y[],
 PetscErrorCode _AMP_shift( Vec px, PetscScalar s )
 {
     auto x   = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( px->data );
-    auto cur = x->VectorData::begin();
-    auto end = x->VectorData::end();
+    auto cur = x->begin();
+    auto end = x->end();
     while ( cur != end ) {
         *cur = s + ( *cur );
         cur++;
@@ -213,8 +213,8 @@ PetscErrorCode _AMP_mtdot_local( Vec a, PetscInt num, const Vec array[], PetscSc
 PetscErrorCode _AMP_exp( Vec a )
 {
     auto x   = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
-    auto cur = x->VectorData::begin();
-    auto end = x->VectorData::end();
+    auto cur = x->begin();
+    auto end = x->end();
     while ( cur != end ) {
         *cur = exp( *cur );
         cur++;
@@ -225,8 +225,8 @@ PetscErrorCode _AMP_exp( Vec a )
 PetscErrorCode _AMP_log( Vec a )
 {
     auto x   = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
-    auto cur = x->VectorData::begin();
-    auto end = x->VectorData::end();
+    auto cur = x->begin();
+    auto end = x->end();
     while ( cur != end ) {
         *cur = log( *cur );
         cur++;
@@ -243,10 +243,10 @@ PetscErrorCode _AMP_pointwisemin( Vec a, Vec b, Vec c )
     AMP_INSIST( x->getLocalSize() == y->getLocalSize(), "Incompatible vectors" );
     AMP_INSIST( x->getLocalSize() == z->getLocalSize(), "Incompatible vectors" );
 
-    auto xi = x->VectorData::begin();
-    auto xe = x->VectorData::end();
-    auto yi = y->VectorData::constBegin();
-    auto zi = z->VectorData::constBegin();
+    auto xi = x->begin();
+    auto xe = x->end();
+    auto yi = y->constBegin();
+    auto zi = z->constBegin();
     while ( xi != xe ) {
         *xi = std::min( *yi, *zi );
         xi++;
@@ -265,10 +265,10 @@ PetscErrorCode _AMP_pointwisemax( Vec a, Vec b, Vec c )
     AMP_INSIST( x->getLocalSize() == y->getLocalSize(), "Incompatible vectors" );
     AMP_INSIST( x->getLocalSize() == z->getLocalSize(), "Incompatible vectors" );
 
-    auto xi = x->VectorData::begin();
-    auto xe = x->VectorData::end();
-    auto yi = y->VectorData::constBegin();
-    auto zi = z->VectorData::constBegin();
+    auto xi = x->begin();
+    auto xe = x->end();
+    auto yi = y->constBegin();
+    auto zi = z->constBegin();
     while ( xi != xe ) {
         *xi = std::max( *yi, *zi );
         xi++;
@@ -287,10 +287,10 @@ PetscErrorCode _AMP_pointwisemaxabs( Vec a, Vec b, Vec c )
     AMP_INSIST( x->getLocalSize() == y->getLocalSize(), "Incompatible vectors" );
     AMP_INSIST( x->getLocalSize() == z->getLocalSize(), "Incompatible vectors" );
 
-    auto xi = x->VectorData::begin();
-    auto yi = y->VectorData::begin();
-    auto zi = z->VectorData::begin();
-    auto xe = x->VectorData::end();
+    auto xi = x->begin();
+    auto yi = y->begin();
+    auto zi = z->begin();
+    auto xe = x->end();
     while ( xi != xe ) {
         *xi = std::max( fabs( *yi ), fabs( *zi ) );
         xi++;
@@ -321,8 +321,8 @@ PetscErrorCode _AMP_pointwisedivide( Vec a, Vec b, Vec c )
 PetscErrorCode _AMP_sqrt( Vec a )
 {
     auto x   = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
-    auto cur = x->VectorData::begin();
-    auto end = x->VectorData::end();
+    auto cur = x->begin();
+    auto end = x->end();
     while ( cur != end ) {
         *cur = sqrt( fabs( *cur ) );
         cur++;
@@ -373,9 +373,9 @@ PetscErrorCode _AMP_maxpointwisedivide( Vec a, Vec b, PetscReal *res )
 {
     auto x           = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
     auto y           = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
-    auto cur_x       = x->VectorData::constBegin();
-    auto cur_y       = y->VectorData::constBegin();
-    auto end_x       = x->VectorData::constEnd();
+    auto cur_x       = x->constBegin();
+    auto cur_y       = y->constBegin();
+    auto end_x       = x->constEnd();
     double local_res = 0.0;
     while ( cur_x != end_x ) {
         if ( *cur_y == 0.0 ) {

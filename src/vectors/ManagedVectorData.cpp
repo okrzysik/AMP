@@ -69,7 +69,7 @@ ManagedVectorData::ManagedVectorData( VectorParameters::shared_ptr params_in )
     AMP_ASSERT( d_Engine );
     d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
     if ( d_Engine )
-        d_Engine->setUpdateStatusPtr( getUpdateStatusPtr() );
+      d_Engine->getVectorData()->setUpdateStatusPtr( getUpdateStatusPtr() );
 
     // this object will listen for changes from the d_Engine
     // and will fire off a change to any objects that are listening
@@ -95,7 +95,7 @@ ManagedVectorData::ManagedVectorData( const std::shared_ptr<VectorData> alias )
         setUpdateStatusPtr( d_vBuffer->getUpdateStatusPtr() );
     else {
         if ( vec2 )
-            setUpdateStatusPtr( vec2->getUpdateStatusPtr() );
+	  setUpdateStatusPtr( vec2->getVectorData()->getUpdateStatusPtr() );
     }
 
     // this object will listen for changes from the d_Engine
@@ -123,12 +123,12 @@ bool ManagedVectorData::isAnAliasOf( VectorData &rhs )
     return retVal;
 }
 
-Vector::UpdateState ManagedVectorData::getUpdateStatus() const
+VectorData::UpdateState ManagedVectorData::getUpdateStatus() const
 {
-    Vector::UpdateState state = *d_UpdateState;
+    VectorData::UpdateState state = *d_UpdateState;
     std::shared_ptr<const Vector> vec = getVectorEngine();
     if ( vec.get() != nullptr ) {
-        Vector::UpdateState sub_state = vec->getUpdateStatus();
+        VectorData::UpdateState sub_state = vec->getUpdateStatus();
         if ( sub_state == UpdateState::UNCHANGED ) {
             // No change in state
         } else if ( sub_state == UpdateState::LOCAL_CHANGED && state == UpdateState::UNCHANGED ) {
@@ -169,12 +169,12 @@ void ManagedVectorData::swapData( VectorData &other )
     d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
     auto vec = getVectorEngine();
     if ( vec )
-        vec->setUpdateStatusPtr( getUpdateStatusPtr() );
+      vec->getVectorData()->setUpdateStatusPtr( getUpdateStatusPtr() );
 
     in->d_vBuffer->setUpdateStatusPtr( in->getUpdateStatusPtr() );
     vec = in->getVectorEngine();
     if ( vec )
-        vec->setUpdateStatusPtr( in->getUpdateStatusPtr() );
+        vec->getVectorData()->setUpdateStatusPtr( in->getUpdateStatusPtr() );
 }
 
 void ManagedVectorData::aliasData( VectorData &other )

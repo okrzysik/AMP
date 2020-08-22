@@ -46,7 +46,6 @@ public:
     inline const Epetra_Vector &getEpetra_Vector() const { return std::dynamic_pointer_cast<EpetraVectorData>(d_VectorData)->getEpetra_Vector(); }
 
 public: // Functions derived from VectorData
-    using VectorData::getComm;
     AMP_MPI getComm() const override { return d_Params->getComm(); }
 
 public: // Functions derived from Vector
@@ -82,9 +81,9 @@ public:
     bool isTypeId( size_t hash, size_t block ) const override { return d_VectorData->isTypeId(hash, block); }
     void swapData( VectorData &rhs ) override { d_VectorData->swapData(rhs); }
     std::shared_ptr<VectorData> cloneData() const override { return d_VectorData->cloneData(); }
-    UpdateState getUpdateStatus() const override { return d_VectorData->getUpdateStatus(); }
-    void setUpdateStatus( UpdateState state ) override { d_VectorData->setUpdateStatus(state); }
-    void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent(t); }
+    AMP::LinearAlgebra::VectorData::UpdateState getUpdateStatus() const override { return d_VectorData->getUpdateStatus(); }
+    void setUpdateStatus( AMP::LinearAlgebra::VectorData::UpdateState state ) override { d_VectorData->setUpdateStatus(state); }
+    void makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType t ) override { d_VectorData->makeConsistent(t); }
     //    AMP_MPI getComm() const override{ return d_VectorData->getComm(); }
     bool hasComm() const override { return d_VectorData->hasComm(); }
     //! Get the CommunicationList for this Vector

@@ -190,9 +190,9 @@ public:
     bool isTypeId( size_t hash, size_t block ) const override { return d_VectorData->isTypeId(hash, block); }
     void swapData( VectorData &rhs ) override { d_VectorData->swapData(rhs); }
     std::shared_ptr<VectorData> cloneData() const override { return d_VectorData->cloneData(); }
-    UpdateState getUpdateStatus() const override { return d_VectorData->getUpdateStatus(); }
-    void setUpdateStatus( UpdateState state ) override { d_VectorData->setUpdateStatus(state); }
-    void makeConsistent( ScatterType t ) override { d_VectorData->makeConsistent(t); }
+    AMP::LinearAlgebra::VectorData::UpdateState getUpdateStatus() const override { return d_VectorData->getUpdateStatus(); }
+    void setUpdateStatus( AMP::LinearAlgebra::VectorData::UpdateState state ) override { d_VectorData->setUpdateStatus(state); }
+    void makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType t ) override { d_VectorData->makeConsistent(t); }
     //    AMP_MPI getComm() const override{ return d_VectorData->getComm(); }
     bool hasComm() const override { return d_VectorData->hasComm(); }
     //    AMP_MPI getComm() const override { return d_VectorData->getComm(); }
@@ -239,14 +239,14 @@ protected:
      * \param[in]  which  Which vector to get
      * \return     The extracted vector
      */
-    const Vector::shared_ptr &getVector( const VectorData &vec, size_t which ) const;
+    const Vector::shared_ptr &getVector( const Vector &vec, size_t which ) const;
 
     /** \brief A convenience method for extracting vectors from a base class
      * \param[in]  vec  The vector to extract a vector from
      * \param[in]  which  Which vector to get
      * \return     The extracted vector
      */
-    Vector::shared_ptr &getVector( VectorData &vec, size_t which ) const;
+    Vector::shared_ptr &getVector( Vector &vec, size_t which ) const;
 
     /** Constructor:  create a MultiVector with a particular variable
      * \param[in]  name  The vector to create the MultiVector from

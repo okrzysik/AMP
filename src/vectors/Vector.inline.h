@@ -20,8 +20,6 @@ inline AMP::Discretization::DOFManager::shared_ptr Vector::getDOFManager() const
 {
     return d_DOFManager;
 }
-inline AMP_MPI Vector::getComm() const { return d_VectorData->getComm(); }
-
 
 /****************************************************************
  * Subset for variable name                                      *
@@ -209,7 +207,7 @@ inline double Vector::wrmsNorm( const Vector &x, const Vector &y ) const
 inline double
 Vector::wrmsNormMask( const Vector &x, const Vector &mask, const Vector &y ) const
 {
-    return d_VectorOps->wrmsNormMask( *(x.getVectorData()), mask, *(y.getVectorData()) );
+  return d_VectorOps->wrmsNormMask( *(x.getVectorData()), *(mask.getVectorData()), *(y.getVectorData()) );
 }
 
 inline double Vector::dot( const Vector &x ) const
@@ -336,13 +334,13 @@ inline double Vector::minQuotient( std::shared_ptr<const Vector> x ) const
 inline double Vector::wrmsNorm( std::shared_ptr<const Vector> x,
                                 std::shared_ptr<const Vector> y ) const
 {
-    return d_VectorOps->wrmsNorm( *x, *y );
+    return wrmsNorm( *x, *y );
 }
 inline double Vector::wrmsNormMask( std::shared_ptr<const Vector> x,
                                     std::shared_ptr<const Vector> mask,
                                     std::shared_ptr<const Vector> y ) const
 {
-  return d_VectorOps->wrmsNormMask( *x, *mask, *y );
+  return wrmsNormMask( *x, *mask, *y );
 }
 
 /****************************************************************
