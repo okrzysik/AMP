@@ -65,9 +65,9 @@ ManagedVectorData::ManagedVectorData( VectorParameters::shared_ptr params_in )
 {
     d_vBuffer   = d_pParameters->d_Buffer;
     d_Engine    = d_pParameters->d_Engine;
-    AMP_ASSERT( d_vBuffer );
     AMP_ASSERT( d_Engine );
-    d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
+    if ( d_vBuffer )
+      d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
     if ( d_Engine )
       d_Engine->getVectorData()->setUpdateStatusPtr( getUpdateStatusPtr() );
 
@@ -166,12 +166,14 @@ void ManagedVectorData::swapData( VectorData &other )
     std::swap( d_Engine, in->d_Engine );
     std::swap( d_pParameters, in->d_pParameters );
 
-    d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
+    if ( d_vBuffer )
+      d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
     auto vec = getVectorEngine();
     if ( vec )
       vec->getVectorData()->setUpdateStatusPtr( getUpdateStatusPtr() );
 
-    in->d_vBuffer->setUpdateStatusPtr( in->getUpdateStatusPtr() );
+    if ( in->d_vBuffer )
+      in->d_vBuffer->setUpdateStatusPtr( in->getUpdateStatusPtr() );
     vec = in->getVectorEngine();
     if ( vec )
         vec->getVectorData()->setUpdateStatusPtr( in->getUpdateStatusPtr() );
@@ -196,7 +198,7 @@ void ManagedVectorData::getValuesByGlobalID( int numVals, size_t *ndx, double *v
 
 void ManagedVectorData::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
-    d_vBuffer->getLocalValuesByGlobalID( numVals, ndx, vals );
+    d_Engine->getLocalValuesByGlobalID( numVals, ndx, vals );
 }
 
 void ManagedVectorData::getGhostValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
