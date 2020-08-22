@@ -127,11 +127,5 @@ void SimpleVector<TYPE, OPS, DATA>::setDOFManager( std::shared_ptr<AMP::Discreti
   d_DOFManager = dofManager;
 }
 
-template<typename TYPE, typename OPS, typename DATA>
-void SimpleVector<TYPE, OPS, DATA>::setCommunicationList( CommunicationList::shared_ptr comm )
-{
-  d_VectorData->setCommunicationList(comm);
-}
- 
 } // namespace LinearAlgebra
 } // namespace AMP
