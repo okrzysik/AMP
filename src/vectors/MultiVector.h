@@ -155,7 +155,7 @@ public:
     virtual ~MultiVector();
     std::string type() const override;
 
-    AMP_MPI getComm() const override;
+    inline AMP_MPI getComm() const override final;
 
     Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     Vector::const_shared_ptr
