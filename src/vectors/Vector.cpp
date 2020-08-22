@@ -32,7 +32,6 @@ Vector::Vector( VectorParameters::shared_ptr parameters ) : d_output_stream{ &AM
     // Copy the relavent parameters
     AMP_INSIST( parameters->d_CommList, "d_CommList must be set in VectorParameters" );
     AMP_INSIST( parameters->d_DOFManager, "d_DOFManager must be set in VectorParameters" );
-    setCommunicationList( parameters->d_CommList );
     d_DOFManager   = parameters->d_DOFManager;
 }
 
