@@ -14,6 +14,7 @@ ADD_TB_TEST_1_2_4( test_VectorSelector )
 ADD_TB_TEST_1_2_4( testMultiVector )
 
 ADD_AMP_TEST( test_VectorPerformance )
+ADD_AMP_TEST( test_Scalar )
 
 FINALIZE_TESTBUILDER()
 
