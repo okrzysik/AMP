@@ -26,7 +26,7 @@ void RowOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     }
 
     for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-        rOriginal->add( rOriginal, ( rInternal[i] ) );
+        rOriginal->add( *rOriginal, *( rInternal[i] ) );
     }
 }
 } // namespace Operator

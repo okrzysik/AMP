@@ -60,7 +60,7 @@ void Operator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     // the rhs can be NULL
     if ( f.get() != nullptr ) {
         auto fInternal = subsetOutputVector( f );
-        rInternal->subtract( fInternal, rInternal );
+        rInternal->subtract( *fInternal, *rInternal );
     } else {
         rInternal->scale( -1.0 );
     }

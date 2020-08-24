@@ -26,7 +26,7 @@ void MoveMeshOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     }
 
     AMP::LinearAlgebra::Vector::shared_ptr deltaDisp = dispVec->cloneVector();
-    deltaDisp->subtract( dispVec, d_prevDisp );
+    deltaDisp->subtract( *dispVec, *d_prevDisp );
 
     d_Mesh->displaceMesh( deltaDisp );
 

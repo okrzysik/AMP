@@ -118,7 +118,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     ( std::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( boundaryOp ) )
         ->addRHScorrection( boundaryOpCorrectionVec );
 
-    RightHandSideVec->subtract( PowerInWattsVec, boundaryOpCorrectionVec );
+    RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
 
     auto rhsNorm = RightHandSideVec->L2Norm();
     std::cout << "RHS Norm after BC Correction " << rhsNorm << std::endl;

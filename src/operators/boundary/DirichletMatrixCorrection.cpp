@@ -258,7 +258,7 @@ void DirichletMatrixCorrection::addRHScorrection( AMP::LinearAlgebra::Vector::sh
             applyMatrixCorrection();
         } // end if
         AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetOutputVector( rhs );
-        myRhs->add( myRhs, d_rhsCorrectionAdd );
+        myRhs->add( *myRhs, *d_rhsCorrectionAdd );
     }
 }
 

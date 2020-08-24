@@ -165,10 +165,10 @@ void VectorTests::DotProductVector( AMP::UnitTest *utils )
     auto vector2( d_factory->getVector() );
     vector1->setToScalar( 1. );
     vector2->setToScalar( 2. );
-    auto d11 = vector1->dot( vector1 );
-    auto d12 = vector1->dot( vector2 );
-    auto d21 = vector2->dot( vector1 );
-    auto d22 = vector2->dot( vector2 );
+    auto d11 = vector1->dot( *vector1 );
+    auto d12 = vector1->dot( *vector2 );
+    auto d21 = vector2->dot( *vector1 );
+    auto d22 = vector2->dot( *vector2 );
     if ( 2. * d11 == d12 )
         utils->passes( "dot product 1 " + d_factory->name() );
     else
@@ -199,14 +199,14 @@ void VectorTests::L2NormVector( AMP::UnitTest *utils )
     auto vector = d_factory->getVector();
     vector->setToScalar( 1. );
     auto norm  = vector->L2Norm();
-    auto norm2 = vector->dot( vector );
+    auto norm2 = vector->dot( *vector );
     if ( fabs( norm * norm - norm2 ) < 0.000001 )
         utils->passes( "L2 norm 1 " + d_factory->name() );
     else
         utils->failure( "L2 norm 1 " + d_factory->name() );
     vector->setRandomValues();
     norm  = vector->L2Norm();
-    norm2 = vector->dot( vector );
+    norm2 = vector->dot( *vector );
     if ( fabs( norm * norm - norm2 ) < 0.000001 )
         utils->passes( "L2 norm 2 " + d_factory->name() );
     else
@@ -221,8 +221,8 @@ void VectorTests::AbsVector( AMP::UnitTest *utils )
     vec1->setRandomValues();
     vec2->copyVector( vec1 );
     vec2->scale( -1.0 );
-    vec2->abs( vec2 );
-    if ( vec1->equals( vec2 ) )
+    vec2->abs( *vec2 );
+    if ( vec1->equals( *vec2 ) )
         utils->passes( "Abs passes " + d_factory->name() );
     else
         utils->failure( "Abs fails " + d_factory->name() );
@@ -236,8 +236,8 @@ void VectorTests::L1NormVector( AMP::UnitTest *utils )
     vector->setRandomValues();
     vector_1->setToScalar( 1. );
     auto norm = vector->L1Norm();
-    vector->abs( vector );
-    auto norm2 = vector->dot( vector_1 );
+    vector->abs( *vector );
+    auto norm2 = vector->dot( *vector_1 );
     if ( fabs( norm - norm2 ) < 0.000001 )
         utils->passes( "L1 norm " + d_factory->name() );
     else
@@ -250,7 +250,7 @@ void VectorTests::MaxNormVector( AMP::UnitTest *utils )
     auto vector = d_factory->getVector();
     vector->setRandomValues();
     auto infNorm = vector->maxNorm();
-    vector->abs( vector );
+    vector->abs( *vector );
     auto curData     = vector->begin();
     auto endData     = vector->end();
     double local_ans = *curData;
@@ -272,7 +272,7 @@ void VectorTests::ScaleVector( AMP::UnitTest *utils )
     auto vector2( d_factory->getVector() );
     double beta = 1.2345;
     vector2->setRandomValues();
-    vector1->scale( beta, vector2 );
+    vector1->scale( beta, *vector2 );
     bool pass     = true;
     auto curData1 = vector1->begin();
     auto endData1 = vector1->end();
@@ -288,7 +288,7 @@ void VectorTests::ScaleVector( AMP::UnitTest *utils )
     else
         utils->failure( "scale vector 1 " + d_factory->name() );
     vector2->scale( beta );
-    vector1->subtract( vector2, vector1 );
+    vector1->subtract( *vector2, *vector1 );
     if ( vector1->maxNorm() < 0.0000001 )
         utils->passes( "scale vector 2 " + d_factory->name() );
     else
@@ -372,7 +372,7 @@ void VectorTests::AddVector( AMP::UnitTest *utils )
     auto vector3( d_factory->getVector() );
     vector1->setRandomValues();
     vector2->setRandomValues();
-    vector3->add( vector1, vector2 );
+    vector3->add( *vector1, *vector2 );
     bool pass     = true;
     auto curData1 = vector1->begin();
     auto endData1 = vector1->end();
@@ -401,7 +401,7 @@ void VectorTests::SubtractVector( AMP::UnitTest *utils )
     auto vector4( d_factory->getVector() );
     vector1->setRandomValues();
     vector2->setRandomValues();
-    vector3->subtract( vector1, vector2 );
+    vector3->subtract( *vector1, *vector2 );
     bool pass     = true;
     auto curData1 = vector1->begin();
     auto endData1 = vector1->end();
@@ -419,8 +419,8 @@ void VectorTests::SubtractVector( AMP::UnitTest *utils )
     else
         utils->failure( "vector subtract 1 " + d_factory->name() );
     vector2->scale( -1. );
-    vector4->add( vector1, vector2 );
-    vector4->subtract( vector3, vector4 );
+    vector4->add( *vector1, *vector2 );
+    vector4->subtract( *vector3, *vector4 );
     if ( vector4->maxNorm() < 0.0000001 )
         utils->passes( "vector subtract 2 " + d_factory->name() );
     else
@@ -435,7 +435,7 @@ void VectorTests::MultiplyVector( AMP::UnitTest *utils )
     auto vector3( d_factory->getVector() );
     vector1->setRandomValues();
     vector2->setToScalar( 3. );
-    vector3->multiply( vector1, vector2 );
+    vector3->multiply( *vector1, *vector2 );
     bool pass     = true;
     auto curData1 = vector1->begin();
     auto endData1 = vector1->end();
@@ -462,7 +462,7 @@ void VectorTests::DivideVector( AMP::UnitTest *utils )
     auto vector3( d_factory->getVector() );
     vector1->setRandomValues();
     vector2->setRandomValues();
-    vector3->divide( vector1, vector2 );
+    vector3->divide( *vector1, *vector2 );
     bool pass    = true;
     auto curVal1 = vector1->begin();
     auto curVal2 = vector2->begin();
@@ -533,7 +533,7 @@ void VectorTests::VerifyVectorMaxMin( AMP::UnitTest *utils )
     bool passes = true;
     for ( size_t i = 0; i != 10; i++ ) {
         vec->setRandomValues();
-        vec->addScalar( vec, -0.5 );
+        vec->addScalar( *vec, -0.5 );
         vec->scale( 2.0 ); // vec i.i.d [-1,1);
         auto max = vec->max();
         auto min = vec->min();
@@ -589,10 +589,10 @@ void VectorTests::ReciprocalVector( AMP::UnitTest *utils )
     auto vectord = d_factory->getVector();
     auto vector1 = d_factory->getVector();
     vectora->setRandomValues();
-    vectorb->reciprocal( vectora );
+    vectorb->reciprocal( *vectora );
     vector1->setToScalar( 1. );
-    vectorc->divide( vector1, vectora );
-    vectord->subtract( vectorb, vectorc );
+    vectorc->divide( *vector1, *vectora );
+    vectord->subtract( *vectorb, *vectorc );
     if ( vectord->maxNorm() < 0.0000001 ) {
         utils->passes( "vector::reciprocal " + d_factory->name() );
     } else {
@@ -613,11 +613,11 @@ static void LinearSumVectorRun( std::shared_ptr<const VectorFactory> factory,
     auto vectord = factory->getVector();
     vectora->setRandomValues();
     vectorb->setRandomValues();
-    vectorc->linearSum( alpha, vectora, beta, vectorb );
+    vectorc->linearSum( alpha, *vectora, beta, *vectorb );
     vectora->scale( alpha );
     vectorb->scale( beta );
-    vectord->add( vectora, vectorb );
-    vectord->subtract( vectorc, vectord );
+    vectord->add( *vectora, *vectorb );
+    vectord->subtract( *vectorc, *vectord );
     if ( vectord->maxNorm() < 0.0000001 )
         utils->passes( msg );
     else
@@ -643,9 +643,9 @@ static void AxpyVectorRun( std::shared_ptr<const VectorFactory> factory,
     auto vectord = factory->getVector();
     vectora->setRandomValues();
     vectorb->setRandomValues();
-    vectorc->linearSum( alpha, vectora, 1., vectorb );
-    vectord->axpy( alpha, vectora, vectorb );
-    vectorc->subtract( vectorc, vectord );
+    vectorc->linearSum( alpha, *vectora, 1., *vectorb );
+    vectord->axpy( alpha, *vectora, *vectorb );
+    vectorc->subtract( *vectorc, *vectord );
     if ( vectorc->maxNorm() < 0.0000001 )
         utils->passes( msg );
     else
@@ -672,16 +672,16 @@ static void AxpbyVectorRun( std::shared_ptr<const VectorFactory> factory,
     vectora->setRandomValues();
     vectorb->setRandomValues();
     vectorc->copyVector( vectorb );
-    vectorb1->linearSum( alpha, vectora, beta, vectorb );
-    vectorb->linearSum( alpha, vectora, beta, vectorb );
-    vectorc->axpby( alpha, beta, vectora );
-    vectord->subtract( vectorc, vectorb1 );
+    vectorb1->linearSum( alpha, *vectora, beta, *vectorb );
+    vectorb->linearSum( alpha, *vectora, beta, *vectorb );
+    vectorc->axpby( alpha, beta, *vectora );
+    vectord->subtract( *vectorc, *vectorb1 );
     auto maxNorm = vectord->maxNorm();
     if ( maxNorm < 0.0000001 )
         utils->passes( msg );
     else
         utils->failure( msg );
-    vectord->subtract( vectorc, vectorb );
+    vectord->subtract( *vectorc, *vectorb );
     maxNorm = vectord->maxNorm();
     if ( maxNorm < 0.0000001 )
         utils->passes( msg );
@@ -705,14 +705,14 @@ void VectorTests::CopyVector( AMP::UnitTest *utils )
 
     vectora->setRandomValues();
     vectorb->copyVector( vectora );
-    vectorc->subtract( vectora, vectorb );
+    vectorc->subtract( *vectora, *vectorb );
     if ( vectorc->maxNorm() == 0 )
         utils->passes( "copy vector 1" );
     else
         utils->failure( "copy vector 1" );
 
     vectora->scale( 100. );
-    vectorc->subtract( vectora, vectorb );
+    vectorc->subtract( *vectora, *vectorb );
     auto c_maxNorm = vectorc->maxNorm();
     auto b_maxNorm = vectorb->maxNorm();
     if ( fabs( c_maxNorm - 99 * b_maxNorm ) < 1e-12 * b_maxNorm )
@@ -733,7 +733,7 @@ void VectorTests::CopyRawDataBlockVector( AMP::UnitTest *utils )
     vectora->copyOutRawData( buf );
     vectorb->putRawData( buf );
     delete[] buf;
-    vectorc->subtract( vectora, vectorb );
+    vectorc->subtract( *vectora, *vectorb );
     if ( vectorc->maxNorm() == 0 )
         utils->passes( "copy raw data block" );
     else

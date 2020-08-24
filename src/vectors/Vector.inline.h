@@ -106,7 +106,7 @@ inline void Vector::setVariable( const Variable::shared_ptr name )
 // clang-format off
 inline void Vector::swapVectors( shared_ptr other ) { swapVectors( *other ); }
 inline void Vector::aliasVector( shared_ptr other ) { aliasVector( *other ); }
- inline void Vector::aliasGhostBuffer( shared_ptr in ) { d_VectorData->aliasGhostBuffer(in->d_VectorData); }
+inline void Vector::aliasGhostBuffer( shared_ptr in ) { d_VectorData->aliasGhostBuffer(in->d_VectorData); }
 inline std::ostream &operator<<( std::ostream &out, const Vector::shared_ptr p ) { return operator<<( out, *p ); }
 // clang-format on
 
@@ -264,7 +264,7 @@ inline bool Vector::localEquals( const Vector &x, double tol ) const
 {
     return d_VectorOps->localEquals( *(x.getVectorData()), *(getVectorData()), tol );
 }
-
+#if 0
 /****************************************************************
  * Wrappers for shared_ptr                                       *
  ****************************************************************/
@@ -342,7 +342,7 @@ inline double Vector::wrmsNormMask( std::shared_ptr<const Vector> x,
 {
   return wrmsNormMask( *x, *mask, *y );
 }
-
+#endif
 /****************************************************************
  * Set/Get individual values                                     *
  ****************************************************************/

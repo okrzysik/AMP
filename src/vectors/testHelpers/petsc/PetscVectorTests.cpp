@@ -222,7 +222,7 @@ void PetscVectorTests::CopyPetscVector( AMP::UnitTest *utils )
     auto vectorc = d_factory->getNativeVector();
     vectora->setRandomValues();
     vectorb->copyVector( vectora );
-    vectorc->subtract( vectora, vectorb );
+    vectorc->subtract( *vectora, *vectorb );
     if ( vectorc->maxNorm() < 0.0000001 )
         utils->passes( "native petsc copy" );
     else
@@ -256,7 +256,7 @@ void PetscVectorTests::VerifyPointwiseMaxAbsPetscVector( AMP::UnitTest *utils )
     checkPetscError( utils, VecPointwiseMaxAbs( vecc, veca, vecb ) );
     checkPetscError( utils, VecPointwiseMaxAbs( vecf, vecd, vece ) );
 
-    if ( vectorc->equals( vectorf ) )
+    if ( vectorc->equals( *vectorf ) )
         utils->passes( "VecPointwiseMaxAbs test" );
     else
         utils->failure( "VecPointwiseMaxAbs test" );
@@ -289,7 +289,7 @@ void PetscVectorTests::VerifyPointwiseMaxPetscVector( AMP::UnitTest *utils )
     checkPetscError( utils, VecPointwiseMax( vecc, veca, vecb ) );
     checkPetscError( utils, VecPointwiseMax( vecf, vecd, vece ) );
 
-    if ( vectorc->equals( vectorf ) )
+    if ( vectorc->equals( *vectorf ) )
         utils->passes( "VecPointwiseMax test" );
     else
         utils->failure( "VecPointwiseMax test" );
@@ -322,7 +322,7 @@ void PetscVectorTests::VerifyPointwiseMinPetscVector( AMP::UnitTest *utils )
     checkPetscError( utils, VecPointwiseMin( vecc, veca, vecb ) );
     checkPetscError( utils, VecPointwiseMin( vecf, vecd, vece ) );
 
-    if ( vectorc->equals( vectorf ) )
+    if ( vectorc->equals( *vectorf ) )
         utils->passes( "VecPointwiseMin test" );
     else
         utils->failure( "VecPointwiseMin test" );
@@ -357,7 +357,7 @@ void PetscVectorTests::VerifyAXPBYPCZPetscVector( AMP::UnitTest *utils )
     checkPetscError( utils, VecAXPBYPCZ( veca, 3.14159, 1.414, 2.1727, vecb, vecc ) );
     checkPetscError( utils, VecAXPBYPCZ( vecd, 3.14159, 1.414, 2.1727, vece, vecf ) );
 
-    if ( vectora->equals( vectord ) )
+    if ( vectora->equals( *vectord ) )
         utils->passes( "VecAXPBYPCZ test" );
     else
         utils->failure( "VecAXPBYPCZ test" );
@@ -386,7 +386,7 @@ void PetscVectorTests::VerifyAYPXPetscVector( AMP::UnitTest *utils )
     checkPetscError( utils, VecAYPX( veca, 2, vecb ) );
     checkPetscError( utils, VecAYPX( vecc, 2, vecd ) );
 
-    if ( vectora->equals( vectorc ) )
+    if ( vectora->equals( *vectorc ) )
         utils->passes( "VecAYPX test" );
     else
         utils->failure( "VecAYPX test" );
@@ -398,7 +398,7 @@ void PetscVectorTests::VerifyExpPetscVector( AMP::UnitTest *utils )
     auto vectora = d_factory->getNativeVector();
 
     vectora->setRandomValues();
-    vectora->abs( vectora );
+    vectora->abs( *vectora );
 
     auto vectorb = d_factory->getManagedVector();
     vectorb->copyVector( vectora );
@@ -409,7 +409,7 @@ void PetscVectorTests::VerifyExpPetscVector( AMP::UnitTest *utils )
     checkPetscError( utils, VecExp( veca ) );
     checkPetscError( utils, VecExp( vecb ) );
 
-    if ( vectora->equals( vectorb ) )
+    if ( vectora->equals( *vectorb ) )
         utils->passes( "VecExp test" );
     else
         utils->failure( "VecExp test" );
@@ -421,7 +421,7 @@ void PetscVectorTests::VerifyLogPetscVector( AMP::UnitTest *utils )
     auto vectora = d_factory->getNativeVector();
 
     vectora->setRandomValues();
-    vectora->abs( vectora );
+    vectora->abs( *vectora );
 
     auto vectorb = d_factory->getManagedVector();
     vectorb->copyVector( vectora );
@@ -432,7 +432,7 @@ void PetscVectorTests::VerifyLogPetscVector( AMP::UnitTest *utils )
     checkPetscError( utils, VecLog( veca ) );
     checkPetscError( utils, VecLog( vecb ) );
 
-    if ( vectora->equals( vectorb ) )
+    if ( vectora->equals( *vectorb ) )
         utils->passes( "VecLog test" );
     else
         utils->failure( "VecLog test" );
@@ -578,19 +578,19 @@ void PetscVectorTests::VerifyAXPBYPetscVector( AMP::UnitTest *utils )
         utils->passes( "Non-trivial axpby computed" );
     else
         utils->failure( "Trivial axpby computed" );
-    if ( vectora->equals( vectorc ) )
+    if ( vectora->equals( *vectorc ) )
         utils->passes( "Native axpby matches managed axpby" );
     else
         utils->failure( "Native axpby does not match managed axpby" );
 
-    vectora->axpby( 1.234, 2.345, vectorb );
-    vectorc->axpby( 1.234, 2.345, vectord );
+    vectora->axpby( 1.234, 2.345, *vectorb );
+    vectorc->axpby( 1.234, 2.345, *vectord );
 
     if ( vectora->L2Norm() != 0 )
         utils->passes( "Non-trivial axpby computed" );
     else
         utils->failure( "Trivial axpby computed" );
-    if ( vectora->equals( vectorc ) )
+    if ( vectora->equals( *vectorc ) )
         utils->passes( "Native axpby matches managed axpby" );
     else
         utils->failure( "Native axpby does not match managed axpby" );
@@ -612,8 +612,8 @@ void PetscVectorTests::VerifySwapPetscVector( AMP::UnitTest *utils )
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
     checkPetscError( utils, VecSwap( veca, vecb ) );
-    vectorc->subtract( vectorc, vectorb );
-    vectord->subtract( vectord, vectora );
+    vectorc->subtract( *vectorc, *vectorb );
+    vectord->subtract( *vectord, *vectora );
     if ( ( vectorc->L1Norm() < 0.0000001 ) && ( vectord->L1Norm() < 0.000001 ) )
         utils->passes( "Swap vectors native interface works with native vectors" );
     else
@@ -621,8 +621,8 @@ void PetscVectorTests::VerifySwapPetscVector( AMP::UnitTest *utils )
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
     vectora->swapVectors( vectorb );
-    vectorc->subtract( vectorc, vectorb );
-    vectord->subtract( vectord, vectora );
+    vectorc->subtract( *vectorc, *vectorb );
+    vectord->subtract( *vectord, *vectora );
     if ( ( vectorc->L1Norm() < 0.0000001 ) && ( vectord->L1Norm() < 0.000001 ) )
         utils->passes( "Swap vectors AMP interface works with native vectors" );
     else
@@ -640,19 +640,19 @@ void PetscVectorTests::VerifySwapPetscVector( AMP::UnitTest *utils )
     vectorg->copyVector( vectore );
     vectorh->copyVector( vectorf );
     checkPetscError( utils, VecSwap( vece, vecf ) );
-    vectorg->subtract( vectorg, vectorf );
-    vectorh->subtract( vectorh, vectore );
+    vectorg->subtract( *vectorg, *vectorf );
+    vectorh->subtract( *vectorh, *vectore );
     if ( ( vectorg->L1Norm() < 0.0000001 ) && ( vectorh->L1Norm() < 0.000001 ) )
         utils->passes( "Swap vectors native interface works with managed vectors" );
     else
         utils->failure( "Swap vectors native interface fails with managed vectors" );
 
     vectorg->copyVector( vectore );
-    vectorh->subtract( vectore, vectorg );
+    vectorh->subtract( *vectore, *vectorg );
     vectorh->copyVector( vectorf );
     vectore->swapVectors( vectorf );
-    vectorg->subtract( vectorg, vectorf );
-    vectorh->subtract( vectorh, vectore );
+    vectorg->subtract( *vectorg, *vectorf );
+    vectorh->subtract( *vectorh, *vectore );
     if ( ( vectorg->L1Norm() < 0.0000001 ) && ( vectorh->L1Norm() < 0.000001 ) )
         utils->passes( "Swap vectors managed interface works with managed vectors" );
     else
@@ -727,11 +727,11 @@ void PetscVectorTests::VerifyAbsPetscVector( AMP::UnitTest *utils )
         utils->failure( "PETSC abs create" );
 
     vectora->setRandomValues();
-    vectora->addScalar( vectora, 1. );
+    vectora->addScalar( *vectora, 1. );
     vectorb->copyVector( vectora );
     vectora->scale( -1. );
     checkPetscError( utils, VecAbs( veca ) );
-    vectorb->subtract( vectora, vectorb );
+    vectorb->subtract( *vectora, *vectorb );
     if ( vectorb->L1Norm() < 0.000001 )
         utils->passes( "native interface on native petsc abs works" );
     else
@@ -746,11 +746,11 @@ void PetscVectorTests::VerifyAbsPetscVector( AMP::UnitTest *utils )
         utils->failure( "PETSC abs create" );
 
     vectorc->setRandomValues();
-    vectorc->addScalar( vectorc, 1. );
+    vectorc->addScalar( *vectorc, 1. );
     vectord->copyVector( vectorc );
     vectorc->scale( -1. );
     checkPetscError( utils, VecAbs( vecc ) );
-    vectord->subtract( vectorc, vectord );
+    vectord->subtract( *vectorc, *vectord );
     if ( vectord->L1Norm() < 0.000001 )
         utils->passes( "managed interface on native petsc abs works" );
     else
@@ -776,8 +776,8 @@ void PetscVectorTests::VerifyPointwiseMultPetscVector( AMP::UnitTest *utils )
     auto vecb = getVecFromNative( vectorb );
 
     checkPetscError( utils, VecPointwiseMult( veca, veca, vecb ) );
-    vectorc->multiply( vectorc, vectord );
-    vectorc->subtract( vectorc, vectora );
+    vectorc->multiply( *vectorc, *vectord );
+    vectorc->subtract( *vectorc, *vectora );
     if ( vectorc->L1Norm() < 0.000001 )
         utils->passes( "managed interface for native vector" );
     else
@@ -798,8 +798,8 @@ void PetscVectorTests::VerifyPointwiseMultPetscVector( AMP::UnitTest *utils )
     auto vecf = getVec( vectorf );
 
     checkPetscError( utils, VecPointwiseMult( vece, vece, vecf ) );
-    vectorg->multiply( vectorg, vectorh );
-    vectorg->subtract( vectorg, vectore );
+    vectorg->multiply( *vectorg, *vectorh );
+    vectorg->subtract( *vectorg, *vectore );
 
     if ( vectorg->L1Norm() < 0.000001 )
         utils->passes( "native interface for managed vector" );
@@ -823,8 +823,8 @@ void PetscVectorTests::VerifyPointwiseDividePetscVector( AMP::UnitTest *utils )
     auto vecb = getVecFromNative( vectorb );
 
     checkPetscError( utils, VecPointwiseDivide( veca, veca, vecb ) );
-    vectorc->divide( vectorc, vectord );
-    vectorc->subtract( vectorc, vectora );
+    vectorc->divide( *vectorc, *vectord );
+    vectorc->subtract( *vectorc, *vectora );
     if ( vectorc->L1Norm() < 0.000001 )
         utils->passes( "managed interface for native vector" );
     else
@@ -844,8 +844,8 @@ void PetscVectorTests::VerifyPointwiseDividePetscVector( AMP::UnitTest *utils )
     auto vecf = getVec( vectorf );
 
     checkPetscError( utils, VecPointwiseDivide( vece, vece, vecf ) );
-    vectorg->divide( vectorg, vectorh );
-    vectorg->subtract( vectorg, vectore );
+    vectorg->divide( *vectorg, *vectorh );
+    vectorg->subtract( *vectorg, *vectore );
 
     if ( vectorg->L1Norm() < 0.000001 )
         utils->passes( "native interface for managed vector" );
@@ -874,7 +874,7 @@ void PetscVectorTests::VerifySqrtPetscVector( AMP::UnitTest *utils )
 #else
 #error Not programmed for this version yet
 #endif
-    bool equal = vectora->equals( vectorb );
+    bool equal = vectora->equals( *vectorb );
     if ( equal )
         utils->passes( "Vector square root passes" );
     else
@@ -978,7 +978,7 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
     vectora2->copyVector( vectora );
     vectorb2->copyVector( vectorb );
     checkPetscError( utils, VecAXPY( veca, 1.23456, vecb ) );
-    vectora2->axpy( 1.23456, vectorb2, vectora2 );
+    vectora2->axpy( 1.23456, *vectorb2, *vectora2 );
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     PetscTruth ans;
 #elif PETSC_VERSION_GE( 3, 2, 0 )
@@ -1007,7 +1007,7 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
     auto vecc2 = getVec( vectorc2 );
     auto vecd2 = getVec( vectord2 );
     checkPetscError( utils, VecAXPY( vecc, 1.23456, vecd ) );
-    vectorc2->axpy( 1.23456, vectord2, vectorc2 );
+    vectorc2->axpy( 1.23456, *vectord2, *vectorc2 );
     if ( !vecc || !vecd || !vecc2 || !vecd2 )
         utils->failure( "PETSC AXPY create" );
 
@@ -1107,7 +1107,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     double dot1, dot2, dot12;
     checkPetscError( utils, VecDot( veca, vecb, &dot1 ) );
     checkPetscError( utils, VecDot( veca, vecb, &dot12 ) );
-    dot2 = vectora->dot( vectorb );
+    dot2 = vectora->dot( *vectorb );
     if ( dot1 == dot2 ) // These should be identical, since same method called
         utils->passes( "native dot equals interface dot for native vector" );
     else
@@ -1125,7 +1125,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     auto vecd = getVec( vectord );
     double dot3, dot4;
     checkPetscError( utils, VecDot( vecc, vecd, &dot3 ) );
-    dot4 = vectorc->dot( vectord );
+    dot4 = vectorc->dot( *vectord );
     if ( dot3 == dot4 ) // These should be identical, since same method called
         utils->passes( "native dot equals interface dot for managed vector" );
     else {
@@ -1146,7 +1146,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     auto vecf = getVec( vectorf );
     double dot5, dot6;
     checkPetscError( utils, VecDot( vece, vecf, &dot5 ) );
-    dot6 = vectore->dot( vectorf );
+    dot6 = vectore->dot( *vectorf );
     if ( dot5 == dot6 ) // These should be identical, since same method called
         utils->passes( "native dot equals interface dot for managed alloc vector" );
     else {

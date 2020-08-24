@@ -404,9 +404,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Compute the error
     auto absErrorVec = solVec->cloneVector();
-    absErrorVec->axpy( -1.0, solVec, manufacturedVec );
+    absErrorVec->axpy( -1.0, *solVec, *manufacturedVec );
     auto relErrorVec = solVec->cloneVector();
-    relErrorVec->divide( absErrorVec, manufacturedVec );
+    relErrorVec->divide( *absErrorVec, *manufacturedVec );
     for ( size_t i = 0; i < solVec->getLocalSize(); i++ ) {
         if ( manufacturedVec->getValueByLocalID( i ) == 0 ) {
             double val = solVec->getValueByLocalID( i );

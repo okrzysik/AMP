@@ -55,7 +55,7 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     }
 
     d_pRhsOperator->apply( u, r );
-    r->axpby( 1.0, 1.0, d_pScratchVector );
+    r->axpby( 1.0, 1.0, *d_pScratchVector );
 
     bool dpSourceTermNull = ( d_pSourceTerm.get() == nullptr );
 
@@ -65,7 +65,7 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     }
 
     if ( !dpSourceTermNull ) {
-        r->axpby( -1.0, 1.0, d_pSourceTerm );
+        r->axpby( -1.0, 1.0, *d_pSourceTerm );
     }
 
     if ( d_iDebugPrintInfoLevel > 6 ) {

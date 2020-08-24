@@ -145,8 +145,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #endif
 
     double const tolerance = 1.0e-14 * otherVector->L2Norm();
-    tmpFooVector->subtract( barFooVector, tmpFooVector );
-    tmpBarVector->subtract( fooBarVector, tmpBarVector );
+    tmpFooVector->subtract(* barFooVector, *tmpFooVector );
+    tmpBarVector->subtract( *fooBarVector, *tmpBarVector );
     AMP::pout << "after  "
               << "foo=" << tmpFooVector->L2Norm() << "  "
               << "bar=" << tmpBarVector->L2Norm() << "\n";

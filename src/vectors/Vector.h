@@ -257,7 +257,7 @@ public:
      */
     double dot( const Vector &x ) const;
 
-    bool equals( const Vector &a, double tol ) const;
+    bool equals( const Vector &a, double tol = 0.000001 ) const;
 
 
     /**
@@ -328,8 +328,8 @@ public:
      */
     bool localEquals( const Vector &x, double tol = 0.000001 ) const;
 
-
 public: // shared_ptr wrappers
+#if 0
     /**
      * \brief  Determine if two vectors are equal using an absolute tolerance
      * \param[in] rhs      Vector to compare to
@@ -439,7 +439,7 @@ public: // shared_ptr wrappers
     double wrmsNormMask( std::shared_ptr<const Vector> x,
                          std::shared_ptr<const Vector> mask,
                          std::shared_ptr<const Vector> y ) const;
-
+#endif
 public: // Virtual functions
     /** \brief Return the name of the vector
      */

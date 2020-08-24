@@ -184,7 +184,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     // Apply the maps
     globalComm.barrier();
     gapmaps->apply( v1, v2 );
-    v2->subtract( v2, v3 );
+    v2->subtract( *v2, *v3 );
     if ( v2->maxNorm() < 1.e-12 )
         ut->passes( "Node to node map test" );
     else

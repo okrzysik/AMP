@@ -289,9 +289,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Compute the error
     auto absErrorVec = solVec->cloneVector();
-    absErrorVec->axpy( -1.0, solVec, manufacturedVec );
+    absErrorVec->axpy( -1.0, *solVec, *manufacturedVec );
     auto relErrorVec = solVec->cloneVector();
-    relErrorVec->divide( absErrorVec, manufacturedVec );
+    relErrorVec->divide( *absErrorVec, *manufacturedVec );
     double absErrorNorm = absErrorVec->L2Norm();
     double relErrorNorm = relErrorVec->L2Norm();
 

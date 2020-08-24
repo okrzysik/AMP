@@ -67,7 +67,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolver->solve( f, u );
     ut->passes( "TrilinosNOXSolver solve called with simple vector" );
     AMP::LinearAlgebra::Vector::shared_ptr x = u->cloneVector();
-    x->subtract( u, f );
+    x->subtract( *u, *f );
     double error = x->L2Norm() / std::max( f->L2Norm(), 1.0 );
     if ( fabs( error ) < 1e-8 )
         ut->passes( "Solve with simple vector passed" );

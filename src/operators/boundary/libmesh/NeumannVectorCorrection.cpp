@@ -225,7 +225,7 @@ void NeumannVectorCorrection::addRHScorrection(
     }         // end for j
 
     rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
-    myRhs->add( myRhs, rInternal );
+    myRhs->add( *myRhs, *rInternal );
 }
 
 

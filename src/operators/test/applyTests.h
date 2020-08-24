@@ -18,14 +18,14 @@ inline void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,
     auto mvec = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vec );
     if ( !mvec ) {
         vec->scale( scale[0] );
-        vec->addScalar( vec, shift[0] );
+        vec->addScalar( *vec, shift[0] );
     } else {
         size_t nvecs = mvec->getNumberOfSubvectors();
         AMP_INSIST( nshift <= nvecs, "not enough subvectors" );
         for ( size_t i = 0; i < nshift; i++ ) {
             AMP::LinearAlgebra::Vector::shared_ptr subvec = mvec->getVector( i );
             subvec->scale( scale[i] );
-            subvec->addScalar( subvec, shift[i] );
+            subvec->addScalar( *subvec, shift[i] );
         }
     }
     vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );

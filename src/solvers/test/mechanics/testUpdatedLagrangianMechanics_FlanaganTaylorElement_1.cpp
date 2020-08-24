@@ -215,7 +215,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         // double N = NumberOfLoadingSteps;
 
         scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
-        scaledRhsVec->scale( scaleValue, rhsVec );
+        scaledRhsVec->scale( scaleValue, *rhsVec );
         AMP::pout << "L2 Norm of RHS at loading step " << ( step + 1 ) << " is "
                   << scaledRhsVec->L2Norm() << std::endl;
 

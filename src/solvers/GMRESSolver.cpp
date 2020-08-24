@@ -241,16 +241,16 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         z->setToScalar( 0.0 );
 
         for ( int i = 0; i <= d_nr; ++i ) {
-            z->axpy( d_dy[i], d_vBasis[i], z );
+            z->axpy( d_dy[i], *d_vBasis[i], *z );
         }
 
         AMP::LinearAlgebra::Vector::shared_ptr v = f->cloneVector();
         d_pPreconditioner->solve( z, v );
-        u->axpy( 1.0, v, u );
+        u->axpy( 1.0, *v, *u );
 
     } else {
         for ( int i = 0; i <= d_nr; ++i ) {
-            u->axpy( d_dy[i], d_vBasis[i], u );
+            u->axpy( d_dy[i], *d_vBasis[i], *u );
         }
     }
     u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
@@ -275,8 +275,8 @@ void GMRESSolver::orthogonalize( std::shared_ptr<AMP::LinearAlgebra::Vector> v )
 
         for ( int j = 0; j < k; ++j ) {
 
-            const double h_jk = v->dot( d_vBasis[j] );
-            v->axpy( -h_jk, d_vBasis[j], v );
+            const double h_jk = v->dot( *d_vBasis[j] );
+            v->axpy( -h_jk, *d_vBasis[j], *v );
             d_dHessenberg( j, k - 1 ) = h_jk;
         }
     } else {

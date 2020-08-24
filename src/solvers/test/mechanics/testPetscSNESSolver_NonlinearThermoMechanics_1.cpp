@@ -161,7 +161,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Random initial guess
     solVec->setToScalar( 0.0 );
     const double referenceTemperature = 301.0;
-    temperatureVec->addScalar( temperatureVec, referenceTemperature );
+    temperatureVec->addScalar( *temperatureVec, referenceTemperature );
 
     // Initial guess for mechanics must satisfy the displacement boundary conditions
     dirichletDispInVecOp->apply( nullVec, solVec );

@@ -129,7 +129,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     std::vector<double> rho( 2, 0.0 );
-    rho[1] = z->dot( r );
+    rho[1] = z->dot( *r );
     rho[0] = rho[1];
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> p = z->cloneVector();
@@ -145,7 +145,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         d_pOperator->apply( p, w );
 
         // alpha = p'Ap
-        double alpha = w->dot( p );
+        double alpha = w->dot( *p );
 
         // sanity check, the curvature should be positive
         if ( alpha <= 0.0 ) {
@@ -155,8 +155,8 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         alpha = rho[1] / alpha;
 
-        u->axpy( alpha, p, u );
-        r->axpy( -alpha, w, r );
+        u->axpy( alpha, *p, *u );
+        r->axpy( -alpha, *w, *r );
 
         // compute the current residual norm
         current_res = r->L2Norm();
@@ -174,10 +174,10 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         }
 
         rho[0] = rho[1];
-        rho[1] = r->dot( z );
+        rho[1] = r->dot( *z );
 
         beta = rho[1] / rho[0];
-        p->axpy( beta, p, z );
+        p->axpy( beta, *p, *z );
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {

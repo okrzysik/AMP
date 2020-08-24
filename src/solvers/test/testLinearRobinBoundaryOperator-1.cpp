@@ -263,7 +263,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
         exactVec->setValueByGlobalID( gid[0], exact );
     }
 
-    diffVec->subtract( exactVec, TemperatureInKelvinVec );
+    diffVec->subtract( *exactVec, *TemperatureInKelvinVec );
 
     double exactNorm = exactVec->L1Norm();
     std::cout << "L2norm of exactVec " << exactNorm << std::endl;

@@ -865,8 +865,8 @@ void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
     // Get the new positions
     auto posVec2 = mesh->getPositionVector( "pos_after" );
     auto diff    = dispVec->cloneVector( "diff" );
-    diff->subtract( posVec2, posVec1 );
-    if ( diff->equals( dispVec ) )
+    diff->subtract( *posVec2, *posVec1 );
+    if ( diff->equals( *dispVec ) )
         utils->passes( "displacement successfully applied" );
     else
         utils->failure( "displacement failed: " + mesh->getName() );
