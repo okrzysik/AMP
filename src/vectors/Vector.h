@@ -259,76 +259,6 @@ public:
 
     bool equals( const Vector &a, double tol = 0.000001 ) const;
 
-#if 0
-    /**
-     * \brief Return the local minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
-     */
-    double localMin( void ) const;
-
-    /**
-     * \brief Return the local maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
-     */
-    double localMax( void ) const;
-
-    /**
-     * \brief Return local discrete @f$ L_1 @f$ -norm of this vector.
-     * \details Returns \f[\sum_i |\mathit{this}_i|\f]
-     */
-    double localL1Norm( void ) const;
-
-    /**
-     * \brief Return local discrete @f$ L_2 @f$ -norm of this vector.
-     * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
-     */
-    double localL2Norm( void ) const;
-
-    /**
-     * \brief Return the local @f$ L_\infty @f$ -norm of this vector.
-     * \details Returns \f[\max_i |\mathit{this}_i|\f]
-     */
-    double localMaxNorm( void ) const;
-
-    /**
-     * \brief Return the local dot product of this vector with the argument vector.
-     * \details Returns \f[\sum_i x_i \mathit{this}_i\f]
-     * \param[in] x        a vector
-     */
-    double localDot( const Vector &x ) const;
-
-    /**
-     * \brief Returns the local minimum of the quotient of two vectors:
-     *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
-     * \param[in] x a vector
-     * \return \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
-     */
-    double localMinQuotient( const Vector &x ) const;
-
-    /**
-     * \brief Return a weighted norm of a vector
-     * \param[in] x a vector
-     * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_i \mathit{this}^2_i}{n}}\f]
-     */
-    double localWrmsNorm( const Vector &x ) const;
-
-    /**
-     * \brief Return a weighted norm of a subset of a vector
-     * \param[in] x a vector
-     * \param[in] mask a vector
-     * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0}
-     * \mathit{this}^2_iy^2_i}{n}}\f]
-     */
-    double
-    localWrmsNormMask( const Vector &x, const Vector &mask, const Vector &y ) const;
-
-    /**
-     * \brief  Determine if the local portion of two vectors are equal using an absolute tolerance
-     * \param[in] rhs      Vector to compare to
-     * \param[in] tol      Tolerance of comparison
-     * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
-     */
-    bool localEquals( const Vector &x, double tol = 0.000001 ) const;
-#endif
-    
 public: // Virtual functions
     /** \brief Return the name of the vector
      */
@@ -689,6 +619,7 @@ public:
 
     // These should probably be removed as they add to the interface bloat
 public: // Non virtual functions
+#if 0
     /**
      * \brief Set a single value in the vector by local ID
      * \param[in] i  offset of value to set
@@ -745,7 +676,7 @@ public: // Non virtual functions
      * \details  An alias for setValuesByGlobalID ( 1, &i, &val )
      */
     void addValueByGlobalID( size_t i, const double val );
-
+#endif
     /**
      * \brief Return a value from the vector.
      * \param[in] i The global index into the vector

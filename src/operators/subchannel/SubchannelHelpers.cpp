@@ -416,7 +416,7 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
         if ( iy == Nx ) {
             iy = Ny - 1;
         }
-        diameter->setValueByGlobalID( dofs[0], hydraulic_diam[ix + iy * Nx] );
+        diameter->setValuesByGlobalID( 1, &dofs[0], &hydraulic_diam[ix + iy * Nx] );
         ++it;
     }
     diameter->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );

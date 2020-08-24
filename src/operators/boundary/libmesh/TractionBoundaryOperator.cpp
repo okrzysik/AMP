@@ -107,7 +107,7 @@ void TractionBoundaryOperator::computeCorrection()
                     double val = d_traction[( 12 * b ) + ( 3 * qp ) + d];
                     res += djxw[qp] * phi[i][qp] * val;
                 } // end qp
-                d_correction->addValueByGlobalID( dofIndices[i][d], res );
+                d_correction->addValuesByGlobalID( 1, &dofIndices[i][d], &res );
             } // end d
         }     // end i
 

@@ -219,56 +219,11 @@ inline bool Vector::equals( const Vector &a, double tol ) const
 {
   return d_VectorOps->equals( *(a.getVectorData()), *(getVectorData()), tol );
 }
-#if 0
-inline double Vector::localMin( void ) const { return d_VectorOps->localMin( *(getVectorData()) ); }
-
-inline double Vector::localMax( void ) const { return d_VectorOps->localMax( *(getVectorData()) ); }
-
-inline double Vector::localL1Norm( void ) const
-{
-    return d_VectorOps->localL1Norm( *(getVectorData()) );
-}
-
-inline double Vector::localL2Norm( void ) const
-{
-    return d_VectorOps->localL2Norm( *(getVectorData()) );
-}
-
-inline double Vector::localMaxNorm( void ) const
-{
-    return d_VectorOps->localMaxNorm( *(getVectorData()) );
-}
-
-inline double Vector::localDot( const Vector &x ) const
-{
-    return d_VectorOps->localDot( *(x.getVectorData()), *(getVectorData()) );
-}
-
-inline double Vector::localMinQuotient( const Vector &x ) const
-{
-    return d_VectorOps->localMinQuotient( *(x.getVectorData()), *(getVectorData()) );
-}
-
-inline double Vector::localWrmsNorm( const Vector &x ) const
-{
-    return d_VectorOps->localWrmsNorm( *(x.getVectorData()), *(getVectorData()) );
-}
-
-inline double
-Vector::localWrmsNormMask( const Vector &x, const Vector &mask, const Vector &y ) const
-{
-  return d_VectorOps->localWrmsNormMask( *(x.getVectorData()), *(mask.getVectorData()), *(y.getVectorData()) );
-}
-
-inline bool Vector::localEquals( const Vector &x, double tol ) const
-{
-    return d_VectorOps->localEquals( *(x.getVectorData()), *(getVectorData()), tol );
-}
-#endif
 
 /****************************************************************
  * Set/Get individual values                                     *
  ****************************************************************/
+#if 0
 inline void Vector::setValueByLocalID( size_t i, const double val )
 {
     setValuesByLocalID( 1, &i, &val );
@@ -297,6 +252,7 @@ inline void Vector::addValueByGlobalID( size_t i, const double val )
 {
     addValuesByGlobalID( 1, &i, &val );
 }
+#endif
 inline double Vector::getValueByGlobalID( size_t i ) const
 {
     double ans;

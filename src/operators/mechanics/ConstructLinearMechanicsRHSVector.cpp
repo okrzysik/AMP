@@ -257,8 +257,8 @@ void computeTemperatureRhsVector(
 
         for ( unsigned int r = 0; r < numNodesInCurrElem; r++ ) {
             for ( unsigned int d = 0; d < 3; d++ ) {
-                rInternal->addValueByGlobalID( type0DofIndices[r][d],
-                                               elementForceVector[( 3 * r ) + d] );
+	      rInternal->addValuesByGlobalID( 1, &type0DofIndices[r][d],
+					      &elementForceVector[( 3 * r ) + d] );
             } // end d
         }     // end r
 

@@ -79,9 +79,9 @@ void GaussPointToGaussPointMap::correctLocalOrdering()
         int DofsPerGaussPt = DofsPerObj / ( d_idxMap[i].size() );
         for ( size_t j = 0; j < d_idxMap[i].size(); ++j ) {
             for ( int k = 0; k < DofsPerGaussPt; ++k ) {
-                d_OutputVector->setLocalValueByGlobalID(
-                    localDofs[( j * DofsPerGaussPt ) + k],
-                    vals[( ( d_idxMap[i][j] ) * DofsPerGaussPt ) + k] );
+	       d_OutputVector->setLocalValuesByGlobalID( 1,
+                    &localDofs[( j * DofsPerGaussPt ) + k],
+                    &vals[( ( d_idxMap[i][j] ) * DofsPerGaussPt ) + k] );
             } // end k
         }     // end j
     }         // end i
@@ -172,7 +172,7 @@ void GaussPointToGaussPointMap::createIdxMap(
 
         for ( unsigned int j = 0; j < numGaussPtsPerElem; ++j ) {
             for ( int k = 0; k < dim; ++k ) {
-                inVec->setLocalValueByGlobalID( localDofs[( j * dim ) + k], xyz[j]( k ) );
+	      inVec->setLocalValuesByGlobalID( 1, &localDofs[( j * dim ) + k], &xyz[j]( k ) );
             } // end for k
         }     // end for j
 

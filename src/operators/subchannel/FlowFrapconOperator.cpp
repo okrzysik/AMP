@@ -85,7 +85,9 @@ void FlowFrapconOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     // set the inlet flow temperature value
     double T1 = flowInputVec->getValueByLocalID( 0 );
-    outputVec->setValueByLocalID( 0, T1 - d_Tin );
+    size_t idx = 0;
+    const double val = T1 - d_Tin;
+    outputVec->setValuesByLocalID( 1, &idx, &val );
 
     zPoints[0] = min_z;
     for ( int j = 1; j < d_numpoints; j++ ) {
@@ -93,7 +95,7 @@ void FlowFrapconOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     }
 
     // Iterate through the flow boundary
-    for ( int i = 1; i < d_numpoints; i++ ) {
+    for ( size_t i = 1; i < (size_t) d_numpoints; i++ ) {
 
         double cur_node, next_node;
 
@@ -113,7 +115,7 @@ void FlowFrapconOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
         R_b = T_b_i - T_b_im1 - ( ( 4 * Heff * ( T_c_i - T_b_i ) ) / ( Cp * d_G * d_De ) ) * he_z;
 
-        outputVec->setValueByLocalID( i, R_b );
+        outputVec->setValuesByLocalID( 1, &i, &R_b );
 
     } // end for i
 }

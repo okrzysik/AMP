@@ -105,8 +105,9 @@ void DirichletVectorCorrection::applyZeroValues( AMP::LinearAlgebra::Vector::sha
         for ( ; bnd != end_bnd; ++bnd ) {
             std::vector<size_t> bndGlobalIds;
             dof_map->getDOFs( bnd->globalID(), bndGlobalIds );
+	    const double val = 0.0;
             for ( auto &elem : d_dofIds[j] ) {
-                rInternal->setLocalValueByGlobalID( bndGlobalIds[elem], 0.0 );
+	      rInternal->setLocalValuesByGlobalID( 1, &bndGlobalIds[elem], &val );
             } // end for i
         }     // end for bnd
     }         // end for j
@@ -128,15 +129,12 @@ void DirichletVectorCorrection::applyNonZeroValues( AMP::LinearAlgebra::Vector::
             dof_map->getDOFs( bnd->globalID(), bndGlobalIds );
 
             for ( size_t i = 0; i < d_dofIds[j].size(); ++i ) {
-                double dVal;
-                if ( d_valuesType == 1 ) {
-                    dVal = d_dirichletValues1[j][i];
-                } else {
-                    dVal =
-                        d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
-                }
-                rInternal->setLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]],
-                                                    d_scalingFactor * dVal );
+                double dVal = (d_valuesType == 1)?
+		              d_dirichletValues1[j][i]
+		            : d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
+		dVal *= d_scalingFactor;
+                rInternal->setLocalValuesByGlobalID( 1, &bndGlobalIds[d_dofIds[j][i]],
+                                                     &dVal );
             } // end for i
         }     // end for bnd
     }         // end for j
@@ -159,15 +157,11 @@ void DirichletVectorCorrection::applyResidual( AMP::LinearAlgebra::Vector::const
             dof_map->getDOFs( bnd->globalID(), bndGlobalIds );
             for ( size_t i = 0; i < d_dofIds[j].size(); i++ ) {
                 double uVal = uInternal->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
-                double dVal;
-                if ( d_valuesType == 1 ) {
-                    dVal = d_dirichletValues1[j][i];
-                } else {
-                    dVal =
-                        d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
-                }
-                r->setLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]],
-                                            d_scalingFactor * ( uVal - dVal ) );
+                double dVal = ( d_valuesType == 1 )?
+		              d_dirichletValues1[j][i]
+		            : d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
+		dVal = d_scalingFactor * ( uVal - dVal );
+                r->setLocalValuesByGlobalID( 1, &bndGlobalIds[d_dofIds[j][i]], &dVal );
             } // end for i
         }     // end for bnd
     }         // end for j

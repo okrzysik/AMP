@@ -268,8 +268,8 @@ void MechanicsNonlinearFEOperator::postElementOperation()
     for ( unsigned int r = 0; r < d_dofIndices.size(); r++ ) {
         AMP_ASSERT( d_dofIndices[r].size() == 3 );
         for ( unsigned int d = 0; d < 3; d++ ) {
-            d_outVec->addValueByGlobalID( d_dofIndices[r][d],
-                                          d_elementOutputVector[( 3 * r ) + d] );
+	  d_outVec->addValuesByGlobalID( 1, &d_dofIndices[r][d],
+                                         &d_elementOutputVector[( 3 * r ) + d] );
         } // end for d
     }     // end for r
 }
@@ -327,8 +327,8 @@ void MechanicsNonlinearFEOperator::init()
         if ( d_useUpdatedLagrangian ) {
             for ( unsigned int j = 0; j < numNodesInCurrElem; j++ ) {
                 for ( unsigned int i = 0; i < 3; i++ ) {
-                    d_refXYZ->setValueByGlobalID( d_dofIndices[j][i],
-                                                  elementRefXYZ[( 3 * j ) + i] );
+		  d_refXYZ->setValuesByGlobalID( 1, &d_dofIndices[j][i],
+                                                  &elementRefXYZ[( 3 * j ) + i] );
                 } // end for i
             }     // end for j
         }

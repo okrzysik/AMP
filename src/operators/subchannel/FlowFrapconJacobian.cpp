@@ -129,7 +129,9 @@ void FlowFrapconJacobian::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     // set the inlet flow temperature value
     // flowInputVec->setValueByLocalID(0, 0.0);
-    outputVec->setValueByLocalID( 0, flowInputVec->getValueByLocalID( 0 ) );
+    size_t idx = 0;
+    const double val = flowInputVec->getValueByLocalID( idx ); 
+    outputVec->setValuesByLocalID( 1, &idx, &val );
 
     zPoints[0] = min_z;
     for ( int j = 1; j < d_numpoints; j++ ) {
@@ -137,7 +139,7 @@ void FlowFrapconJacobian::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     }
 
     // Iterate through the flow boundary
-    for ( int i = 1; i < d_numpoints; i++ ) {
+    for ( size_t i = 1; i < (size_t) d_numpoints; i++ ) {
 
         double cur_node, next_node;
 
@@ -164,7 +166,7 @@ void FlowFrapconJacobian::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             ( ( 4 * Heff * ( T_c_i - T_b_i ) ) / ( Cp * Cp * d_G * d_De ) ) * he_z * dCp * dT_b_i +
             ( ( 4 * Heff ) / ( Cp * d_G * d_De ) ) * he_z * dT_b_i;
 
-        outputVec->setValueByLocalID( i, JT_b );
+        outputVec->setValuesByLocalID( 1, &i, &JT_b );
 
     } // end for i
 }

@@ -435,9 +435,9 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                     // Set newval to this gauss point on this element of the vector r.
                     std::vector<size_t> ndx;
                     dof_map->getDOFs( elem->globalID(), ndx );
-                    int offset = ndx[i];
+                    size_t offset = ndx[i];
                     val *= u->getValueByGlobalID( offset );
-                    r->setValueByGlobalID( offset, val );
+                    r->setValuesByGlobalID( 1, &offset, &val );
                     AMP_ASSERT(
                         AMP::Utilities::approx_equal( r->getValueByGlobalID( offset ), val ) );
                 } // end for gauss-points
@@ -492,9 +492,9 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                     // Set newval to this gauss point on this element of the vector r.
                     std::vector<size_t> ndx;
                     dof_map->getDOFs( elem->globalID(), ndx );
-                    int offset = ndx[i];
+                    size_t offset = ndx[i];
                     val *= u->getValueByGlobalID( offset );
-                    r->setValueByGlobalID( offset, val );
+                    r->setValuesByGlobalID( 1, &offset, &val );
                     AMP_ASSERT(
                         AMP::Utilities::approx_equal( r->getValueByGlobalID( offset ), val ) );
                 } // end for gauss-points
@@ -556,9 +556,9 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                     // Set newval to this gauss point on this element of the vector r.
                     std::vector<size_t> ndx;
                     dof_map->getDOFs( elem->globalID(), ndx );
-                    int offset = ndx[i];
+                    size_t offset = ndx[i];
                     val *= u->getValueByGlobalID( offset );
-                    r->setValueByGlobalID( offset, val );
+                    r->setValuesByGlobalID( 1, &offset, &val );
                     AMP_ASSERT(
                         AMP::Utilities::approx_equal( r->getValueByGlobalID( offset ), val ) );
                 } // end for gauss-points
@@ -597,9 +597,9 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                     // Set newval to this gauss point on this element of the vector r.
                     std::vector<size_t> ndx;
                     dof_map->getDOFs( elem->globalID(), ndx );
-                    int offset = ndx[i];
+                    size_t offset = ndx[i];
                     val *= u->getValueByGlobalID( offset );
-                    r->setValueByGlobalID( offset, val );
+                    r->setValuesByGlobalID( 1, &offset, &val );
                     AMP_ASSERT(
                         AMP::Utilities::approx_equal( r->getValueByGlobalID( offset ), val ) );
                 } // end for gauss-points
@@ -704,9 +704,9 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                     // Set newval to this gauss point on this element of the vector r.
                     std::vector<size_t> ndx;
                     dof_map->getDOFs( elem->globalID(), ndx );
-                    int offset = ndx[i];
+                    size_t offset = ndx[i];
                     val *= u->getValueByGlobalID( offset );
-                    r->setValueByGlobalID( offset, val );
+                    r->setValuesByGlobalID( 1, &offset, &val );
                     AMP_INSIST(
                         AMP::Utilities::approx_equal( r->getValueByGlobalID( offset ), val ),
                         "getting what was just put" );
@@ -754,9 +754,9 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                     // Set newval to this gauss point on this element of the vector r.
                     std::vector<size_t> ndx;
                     dof_map->getDOFs( elem->globalID(), ndx );
-                    int offset = ndx[i];
+                    size_t offset = ndx[i];
                     val *= u->getValueByGlobalID( offset );
-                    r->setValueByGlobalID( offset, val );
+                    r->setValuesByGlobalID( 1, &offset, &val );
                     AMP_ASSERT(
                         AMP::Utilities::approx_equal( r->getValueByGlobalID( offset ), val ) );
                 } // end for gauss-points

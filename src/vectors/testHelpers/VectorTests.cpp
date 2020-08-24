@@ -770,17 +770,20 @@ void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
         utils->failure( "zero leaves vector in UpdateState::UNCHANGED state " + d_factory->name() );
 
     // Set and add local values by global id (this should not interfer with the add)
+    const double val = 0.0;
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-        vector->setLocalValueByGlobalID( i, 0.0 );
-        vector->addLocalValueByGlobalID( i, 0.0 );
+      vector->setLocalValuesByGlobalID(1, &i, &val );
+      vector->addLocalValuesByGlobalID( 1, &i, &val );
     }
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED )
         utils->failure( "local set/add leaves vector in UpdateState::LOCAL_CHANGED state " +
                         d_factory->name() );
 
     // Add values by global id
-    for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ )
-        vector->addValueByGlobalID( i, (double) i );
+    for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
+      const double val = double(i);
+      vector->addValuesByGlobalID( 1, &i, &val );
+    }
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::ADDING )
         utils->failure( "addValueByGlobalID leaves vector in UpdateState::ADDING state " +
                         d_factory->name() );
@@ -788,7 +791,7 @@ void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
     auto offset = (double) ( 1 << globalComm.getRank() );
     for ( size_t i = 0; i != vector->getGhostSize(); i++ ) {
         size_t ndx = vector->getCommunicationList()->getGhostIDList()[i];
-        vector->addValueByGlobalID( ndx, offset );
+        vector->addValuesByGlobalID( 1, &ndx, &offset );
     }
 
     // Perform a makeConsistent ADD and check the result
@@ -849,17 +852,20 @@ void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
         utils->failure( "zero leaves vector in UpdateState::UNCHANGED state " + d_factory->name() );
 
     // Set and add local values by global id (this should not interfere with the add)
+    const double val = 0.0;
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-        vector->setLocalValueByGlobalID( i, 0.0 );
-        vector->addLocalValueByGlobalID( i, 0.0 );
+      vector->setLocalValuesByGlobalID( 1, &i, &val );
+      vector->addLocalValuesByGlobalID( 1, &i, &val );
     }
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED )
         utils->failure( "local set/add leaves vector in UpdateState::LOCAL_CHANGED state " +
                         d_factory->name() );
 
     // Set values by global id
-    for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ )
-        vector->setValueByGlobalID( i, (double) i );
+    for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
+      const double val = double(i);
+      vector->setValuesByGlobalID( 1, &i, &val );
+    }
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED &&
          vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::SETTING )
         utils->failure( "setValueByGlobalID leaves vector in UpdateState::SETTING or "

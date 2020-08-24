@@ -151,8 +151,8 @@ ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator &iterator )
         const auto &coordinates = d_fe->get_xyz();
         GpDofMap->getDOFs( cur->globalID(), ids );
         for ( unsigned int qp = 0; qp < ids.size(); qp++ ) {
-            double pos = coordinates[qp]( 2 );
-            z_pos->setLocalValueByGlobalID( ids[qp], pos );
+            const double pos = coordinates[qp]( 2 );
+            z_pos->setLocalValuesByGlobalID( 1, &ids[qp], &pos );
         }
         ++cur;
     }

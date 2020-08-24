@@ -129,12 +129,12 @@ void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr v
         // Check the endpoints
         if ( fabs( zi - z0 ) <= TOL ) {
             // We are within TOL of the first point
-            vec->setValueByGlobalID( dof, v0 );
+	    vec->setValuesByGlobalID( 1, &dof, &v0 );
             ++cur;
             continue;
         } else if ( fabs( zi - z1 ) <= TOL ) {
             // We are within TOL of the last point
-            vec->setValueByGlobalID( dof, v1 );
+	    vec->setValuesByGlobalID( 1, &dof, &v1 );
             ++cur;
             continue;
         } else if ( zi < z0 || zi > z1 ) {
@@ -155,7 +155,7 @@ void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr v
         // Perform linear interpolation
         double wt = ( zi - z[k - 1] ) / ( z[k] - z[k - 1] );
         double fi = ( 1.0 - wt ) * f[k - 1] + wt * f[k];
-        vec->setValueByGlobalID( dof, fi );
+        vec->setValuesByGlobalID( 1, &dof, &fi );
 
         ++cur;
     }

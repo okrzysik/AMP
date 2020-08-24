@@ -202,8 +202,8 @@ void NavierStokesLSWFFEOperator::postElementOperation()
     for ( unsigned int r = 0; r < d_type0DofIndices.size(); r++ ) {
         AMP_ASSERT( d_type0DofIndices[r].size() == 10 );
         for ( unsigned int d = 0; d < 10; d++ ) {
-            d_outVec->addValueByGlobalID( d_type0DofIndices[r][d],
-                                          d_elementOutputVector[( 10 * r ) + d] );
+	  d_outVec->addValuesByGlobalID( 1, &d_type0DofIndices[r][d],
+                                          &d_elementOutputVector[( 10 * r ) + d] );
         } // end for d
     }     // end for r
 }

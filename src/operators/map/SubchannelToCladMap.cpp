@@ -311,7 +311,7 @@ void SubchannelToCladMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_p
         AMP_ASSERT( dofs.size() == 1 );
         auto pos   = mesh->getElement( id ).coord();
         double val = interp_linear( z, f, pos[2] );
-        vec->setLocalValueByGlobalID( dofs[0], val );
+        vec->setLocalValuesByGlobalID( 1, &dofs[0], &val );
     }
     PROFILE_STOP( "fillReturnVector" );
 }

@@ -195,7 +195,7 @@ void NeutronicsRhsExtras::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             std::vector<size_t> gid;
             dof_map->getDOFs( elem->globalID(), gid );
             for ( unsigned int i = 0; i < gid.size(); gp++, i++ ) {
-                rInternal->setValueByGlobalID( gid[i], d_values[this_extrasId][this_step][gp] );
+	      rInternal->setValuesByGlobalID( 1, &gid[i], &d_values[this_extrasId][this_step][gp] );
             } // end for gauss-points
         }     // end for elements
     }

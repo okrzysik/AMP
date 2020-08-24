@@ -927,29 +927,31 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                          d_turbulenceCoef * dz * axial_turbulence_sum * force_factor_turbulence;
 
             // put residuals into global residual vector
-            outputVec->setValueByGlobalID( plusDofs[0], Subchannel::scaleAxialMassFlowRate * R_m );
-            outputVec->setValueByGlobalID( plusDofs[1], Subchannel::scaleEnthalpy * R_h );
-            outputVec->setValueByGlobalID( minusDofs[2], Subchannel::scalePressure * R_p );
+	    double val = Subchannel::scaleAxialMassFlowRate * R_m;
+            outputVec->setValuesByGlobalID( 1, &plusDofs[0], &val );
+	    val = Subchannel::scaleEnthalpy * R_h;
+            outputVec->setValuesByGlobalID( 1, &plusDofs[1], &val );
+	    val = Subchannel::scalePressure * R_p;
+            outputVec->setValuesByGlobalID( 1, &minusDofs[2], &val );
 
             // impose boundary conditions
             // --------------------------
             // if face is exit face,
             if ( AMP::Utilities::approx_equal( plusFaceCentroid[2], height ) ) {
                 // impose fixed exit pressure boundary condition
-                outputVec->setValueByGlobalID( plusDofs[2],
-                                               Subchannel::scalePressure * ( p_plus - d_Pout ) );
+	      val =  Subchannel::scalePressure * ( p_plus - d_Pout );
+	      outputVec->setValuesByGlobalID( 1, &plusDofs[2], &val );
             }
             if ( AMP::Utilities::approx_equal( minusFaceCentroid[2], 0.0 ) ) {
                 // impose fixed inlet axial mass flow rate boundary condition
-                outputVec->setValueByGlobalID( minusDofs[0],
-                                               Subchannel::scaleAxialMassFlowRate *
-                                                   ( m_minus - d_channelMass[isub] ) );
-
-                // evaluate enthalpy at inlet
-                double h_eval = Enthalpy( d_Tin, p_minus );
-                // impose fixed inlet temperature boundary condition
-                outputVec->setValueByGlobalID( minusDofs[1],
-                                               Subchannel::scaleEnthalpy * ( h_minus - h_eval ) );
+	      val = Subchannel::scaleAxialMassFlowRate * ( m_minus - d_channelMass[isub] );
+	      outputVec->setValuesByGlobalID( 1, &minusDofs[0], &val );
+	      
+	      // evaluate enthalpy at inlet
+	      double h_eval = Enthalpy( d_Tin, p_minus );
+	      // impose fixed inlet temperature boundary condition
+	      val = Subchannel::scaleEnthalpy * ( h_minus - h_eval );
+	      outputVec->setValuesByGlobalID( 1, &minusDofs[1], &val );
             }
         } // end loop over cells of current subchannel
     }     // end loop over subchannels
@@ -992,8 +994,8 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
             // if bottom face is at z = 0,
             if ( AMP::Utilities::approx_equal( cell1MinusFaceCentroid[2], 0.0 ) ) {
                 // implement fixed lateral mass flow rates inlet boundary condition
-                outputVec->setValueByGlobalID( gapDofs[0],
-                                               Subchannel::scaleLateralMassFlowRate * w_mid );
+	      const double val = Subchannel::scaleLateralMassFlowRate * w_mid;
+	      outputVec->setValuesByGlobalID( 1, &gapDofs[0], &val );
             } else {
                 // get cells below bottom faces
                 // get adjacent cells
@@ -1205,8 +1207,8 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                              dz * d_KG / ( 2.0 * gapWidth * pitch ) * std::abs( w_mid ) * w_mid *
                                  vol_gap_avg +
                              gapWidth * pitch * dz * gravity * std::sin( d_theta ) / vol_gap_avg;
-                outputVec->setValueByGlobalID( gapDofs[0],
-                                               Subchannel::scaleLateralMassFlowRate * R_w );
+		const double val = Subchannel::scaleLateralMassFlowRate * R_w;
+                outputVec->setValuesByGlobalID( 1, &gapDofs[0], &val );
             }
         } else {
             // determine if face is an external gap face; in this case, a zero must by set
@@ -1218,7 +1220,8 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                 auto lateralFace = lateralFaceIterator->second;
                 std::vector<size_t> gapDofs;
                 dof_manager->getDOFs( lateralFace.globalID(), gapDofs );
-                outputVec->setValueByGlobalID( gapDofs[0], 0.0 );
+		const double val = 0.0;
+                outputVec->setValuesByGlobalID( 1, &gapDofs[0], &val );
             }
         }
     } // end loop over lateral faces

@@ -298,7 +298,7 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             double f2  = inputVec->getValueByLocalID( index );
             double dz2 = 1.0 - dz;
             double f   = dz2 * f1 + dz * f2;
-            outputVec->setValueByGlobalID( ids[i], f );
+            outputVec->setValuesByGlobalID( 1, &ids[i], &f );
         }
         ++bnd;
     }
@@ -373,7 +373,7 @@ void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         double f2  = inputVec->getValueByLocalID( index );
         double dz2 = 1.0 - dz;
         double f   = dz2 * f1 + dz * f2;
-        outputVec->setValueByGlobalID( dofs[0], f );
+        outputVec->setValuesByGlobalID( 1, &dofs[0], &f );
         ++bnd;
     }
 

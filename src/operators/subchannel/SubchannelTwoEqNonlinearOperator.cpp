@@ -479,8 +479,10 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
 
             // put residual value in residual vector
             dof_manager->getDOFs( face->globalID(), dofs );
-            outputVec->setValueByGlobalID( dofs[0], Subchannel::scaleEnthalpy * R_h );
-            outputVec->setValueByGlobalID( dofs[1], Subchannel::scalePressure * R_p );
+	    const double v1 = Subchannel::scaleEnthalpy * R_h;
+	    const double v2 = Subchannel::scalePressure * R_p;
+            outputVec->setValuesByGlobalID( 1, &dofs[0], &v1 );
+            outputVec->setValuesByGlobalID( 1, &dofs[1], &v2 );
             ++face;
         }
         PROFILE_STOP( "apply-subchannel" );
