@@ -577,7 +577,7 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     copyFromHypre( d_hypre_sol, u );
 
     // Check for NaNs in the solution (no communication necessary)
-    double localNorm = u->localL2Norm();
+    double localNorm = u->getVectorOperations()->localL2Norm(*u->getVectorData());
     AMP_INSIST( localNorm == localNorm, "NaNs detected in solution" );
 
     // we are forced to update the state of u here

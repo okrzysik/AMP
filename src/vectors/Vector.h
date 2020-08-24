@@ -259,7 +259,7 @@ public:
 
     bool equals( const Vector &a, double tol = 0.000001 ) const;
 
-
+#if 0
     /**
      * \brief Return the local minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
      */
@@ -327,7 +327,8 @@ public:
      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
      */
     bool localEquals( const Vector &x, double tol = 0.000001 ) const;
-
+#endif
+    
 public: // Virtual functions
     /** \brief Return the name of the vector
      */

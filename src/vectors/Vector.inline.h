@@ -219,7 +219,7 @@ inline bool Vector::equals( const Vector &a, double tol ) const
 {
   return d_VectorOps->equals( *(a.getVectorData()), *(getVectorData()), tol );
 }
-
+#if 0
 inline double Vector::localMin( void ) const { return d_VectorOps->localMin( *(getVectorData()) ); }
 
 inline double Vector::localMax( void ) const { return d_VectorOps->localMax( *(getVectorData()) ); }
@@ -264,6 +264,7 @@ inline bool Vector::localEquals( const Vector &x, double tol ) const
 {
     return d_VectorOps->localEquals( *(x.getVectorData()), *(getVectorData()), tol );
 }
+#endif
 
 /****************************************************************
  * Set/Get individual values                                     *
