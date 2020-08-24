@@ -619,7 +619,7 @@ public:
 
     // These should probably be removed as they add to the interface bloat
 public: // Non virtual functions
-#if 0
+#if 1
     /**
      * \brief Set a single value in the vector by local ID
      * \param[in] i  offset of value to set
