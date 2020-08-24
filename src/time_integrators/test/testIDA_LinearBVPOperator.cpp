@@ -145,7 +145,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             // cout << "val = " << val << endl;
             // cout << "counter = " << counter << "gid.size() = " << gid.size() << endl;
             for ( auto &elem : gid ) {
-                initialCondition->setValueByGlobalID( elem, val );
+	      initialCondition->setValuesByGlobalID( 1, &elem, &val );
             } // end for i
         }     // end for node
         initialConditionPrime->zero();

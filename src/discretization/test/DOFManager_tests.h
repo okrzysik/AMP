@@ -237,8 +237,10 @@ void testMultiDOFVector( AMP::UnitTest *ut, AMP::Discretization::DOFManager::sha
         AMP_ASSERT( dof2.size() == 2 );
         if ( dof2[0] == dof2[1] )
             uniqueMultiDOFs = false;
-        multiVector->setValueByGlobalID( dof2[0], dof1[0] );
-        multiVector->setValueByGlobalID( dof2[1], 2 * dof1[0] );
+	double val = dof1[0];
+        multiVector->setValuesByGlobalID( 1, &dof2[0], &val );
+	val = 2 * dof1[0];
+        multiVector->setValuesByGlobalID( 1, &dof2[1], &val );
         ++it;
     }
     if ( uniqueMultiDOFs )

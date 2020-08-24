@@ -46,7 +46,8 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         auto coord = iterator->coord();
         DOF->getDOFs( iterator->globalID(), dofs );
-        temp_vec->setValueByGlobalID( dofs[0], T0 + 100 * coord[2] );
+	const double val = T0 + 100 * coord[2];
+        temp_vec->setValuesByGlobalID( 1, &dofs[0], &val );
         ++iterator;
     }
     temp_vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );

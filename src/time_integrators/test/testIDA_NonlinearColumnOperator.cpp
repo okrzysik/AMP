@@ -180,11 +180,12 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         // std::cout << "val = " << val << std::endl;
 
         // std::cout << "counter = " << counter << "gid.size() = " << gid.size() << std::endl;
+	const double zero = 0.0;
         for ( auto &elem : gid ) {
-            thermalIC->setValueByGlobalID( elem, val );
+	    thermalIC->setValuesByGlobalID( 1, &elem, &val );
             // ** please do not set the time derivative to be non-zero!!
             // ** as this causes trouble with the boundary - BP, 07/16/2010
-            initialConditionPrime->setValueByGlobalID( elem, 0.0 );
+            initialConditionPrime->setValuesByGlobalID( 1, &elem, &zero );
         } // end for i
     }     // end for node
 

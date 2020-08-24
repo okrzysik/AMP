@@ -131,7 +131,7 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
 
         double val = fun( px, py, pz );
         for ( auto &elem : gid ) {
-            initialCondition->setValueByGlobalID( elem, val );
+	  initialCondition->setValuesByGlobalID( 1, &elem, &val );
         } // end for i
     }     // end for node
 
