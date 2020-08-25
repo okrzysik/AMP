@@ -27,7 +27,7 @@ public:
      * \return              Returns the scalar value
      */
     template<class TYPE>
-    TYPE get( double tol = 0 ) const;
+    TYPE get( double tol = getTol<TYPE>() ) const;
 
     //! Return true if the type is a floating point type
     inline bool is_floating_point() const { return d_type == 'f'; }
@@ -41,7 +41,18 @@ public:
     //! Return the storage type
     inline const auto &type() const { return d_data.type(); }
 
-private:
+    //! Get default tolerance
+    template<class TYPE>
+    static constexpr double getTol();
+
+private: // Helper functions
+    template<class T1, class T2>
+    static std::tuple<T1, double> convert( const std::any &x0 );
+
+    template<class TYPE>
+    static constexpr char get_type();
+
+private: // Internal data
     char d_type;
     std::any d_data;
 };

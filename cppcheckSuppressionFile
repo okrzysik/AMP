@@ -111,6 +111,7 @@ knownConditionTrueFalse:*/src/operators/libmesh/PowerShape.cpp
 // Suppress warnings for vectors
 uninitMemberVar:*/src/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.cpp
 uninitMemberVar:*/src/vectors/trilinos/thyra/NativeThyraVector.cpp
+multiCondition:*/AMP/include/AMP/vectors/Scalar.hpp
 
 
 // Suppress warnings for solvers
