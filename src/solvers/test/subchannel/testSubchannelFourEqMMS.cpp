@@ -195,15 +195,19 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     const double m_scale = 1.0 / AMP::Operator::Subchannel::scaleAxialMassFlowRate;
     const double w_scale = 1.0 / AMP::Operator::Subchannel::scaleLateralMassFlowRate;
     // loop over axial faces
+    double val;
     for ( int i = 0; i < (int) face.size(); i++ ) {
         subchannelDOFManager->getDOFs( face->globalID(), axialDofs );
         auto coord = face->centroid();
         double z   = coord[2];
         double h   = getSolutionEnthalpy( Q, H, m_in, hin, z );
         double P   = getSolutionPressure( input_db, H, Pout, rho_in, z );
-        manufacturedVec->setValueByGlobalID( axialDofs[0], m_in / m_scale );
-        manufacturedVec->setValueByGlobalID( axialDofs[1], h / h_scale );
-        manufacturedVec->setValueByGlobalID( axialDofs[2], P / P_scale );
+        val =  m_in / m_scale;
+        manufacturedVec->setValuesByGlobalID( 1, &axialDofs[0], &val);
+	val =  h / h_scale;	
+        manufacturedVec->setValuesByGlobalID( 1, &axialDofs[1], &val );
+	val = P / P_scale;
+        manufacturedVec->setValuesByGlobalID( 1, &axialDofs[2], &val );
         ++face;
     }
     // get lateral face map
@@ -222,7 +226,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
             std::vector<size_t> gapDofs;
             subchannelDOFManager->getDOFs( lateralFace.globalID(), gapDofs );
             double w = 0.0;
-            manufacturedVec->setValueByGlobalID( gapDofs[0], w / w_scale );
+	    val =  w / w_scale;
+	    manufacturedVec->setValuesByGlobalID( 1, &gapDofs[0], &val );
         }
     }
 
@@ -235,9 +240,12 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // loop over axial faces
     for ( int i = 0; i < (int) face.size(); i++ ) {
         subchannelDOFManager->getDOFs( face->globalID(), axialDofs );
-        solVec->setValueByGlobalID( axialDofs[0], m_in / m_scale );
-        solVec->setValueByGlobalID( axialDofs[1], hin / h_scale );
-        solVec->setValueByGlobalID( axialDofs[2], Pout / P_scale );
+	val = m_in / m_scale;
+        solVec->setValuesByGlobalID( 1, &axialDofs[0], &val );
+	val = hin / h_scale;
+        solVec->setValuesByGlobalID( 1, &axialDofs[1], &val );
+	val = Pout / P_scale;
+        solVec->setValuesByGlobalID( 1, &axialDofs[2], &val );
         ++face;
     }
     // loop over lateral faces
@@ -250,7 +258,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
             // get crossflow from solution vector
             std::vector<size_t> gapDofs;
             subchannelDOFManager->getDOFs( lateralFace.globalID(), gapDofs );
-            solVec->setValueByGlobalID( gapDofs[0], w_in / w_scale );
+	    val = w_in / w_scale;
+            solVec->setValuesByGlobalID( 1, &gapDofs[0], &val );
         }
     }
     solVec->copyVector( manufacturedVec );
@@ -359,7 +368,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
             std::make_pair( "pressure", std::make_shared<std::vector<double>>( 1, P ) ) );
         std::vector<double> temperatureResult( 1 );
         subchannelPhysicsModel->getProperty( "Temperature", temperatureResult, temperatureArgMap );
-        tempVec->setValueByGlobalID( tdofs[0], temperatureResult[0] );
+        tempVec->setValuesByGlobalID( 1, &tdofs[0], &temperatureResult[0] );
         // Check that we recover the enthalpy from the temperature
         std::map<std::string, std::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert( std::make_pair(
@@ -409,8 +418,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     relErrorVec->divide( *absErrorVec, *manufacturedVec );
     for ( size_t i = 0; i < solVec->getLocalSize(); i++ ) {
         if ( manufacturedVec->getValueByLocalID( i ) == 0 ) {
-            double val = solVec->getValueByLocalID( i );
-            relErrorVec->setValueByLocalID( i, fabs( val ) );
+	    val = fabs(solVec->getValueByLocalID( i ));
+            relErrorVec->setValuesByLocalID( 1, &i, &val );
         }
     }
     double absErrorNorm = absErrorVec->L2Norm();

@@ -223,7 +223,7 @@ inline bool Vector::equals( const Vector &a, double tol ) const
 /****************************************************************
  * Set/Get individual values                                     *
  ****************************************************************/
-#if 1
+#if 0
 inline void Vector::setValueByLocalID( size_t i, const double val )
 {
     setValuesByLocalID( 1, &i, &val );

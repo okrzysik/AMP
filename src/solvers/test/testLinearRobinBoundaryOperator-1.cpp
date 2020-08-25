@@ -143,32 +143,32 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
         double val, rhs;
 
         rhs = fun_rhs( px, py, pz, -1.0 );
-        RightHandSideVec->setValueByGlobalID( gid[0], rhs );
+        RightHandSideVec->setValuesByGlobalID( 1, &gid[0], &rhs );
 
         if ( fabs( pz - 1.0 ) <= 1.0e-12 ) {
             val = fun_dTdz( px, py, pz, 1.0 );
             val = val + fun_T0( px, py, pz, 1.0 );
-            variableFluxVec->setValueByGlobalID( gid[0], val );
+            variableFluxVec->setValuesByGlobalID( 1, &gid[0], &val );
         } else if ( fabs( pz + 1.0 ) <= 1.0e-12 ) {
             val = fun_dTdz( px, py, pz, -1.0 );
             val = val + fun_T0( px, py, pz, 1.0 );
-            variableFluxVec->setValueByGlobalID( gid[0], val );
+            variableFluxVec->setValuesByGlobalID( 1, &gid[0], &val );
         } else if ( fabs( px - 1.0 ) <= 1.0e-12 ) {
             val = fun_dTdx( px, py, pz, 1.0 );
             val = val + fun_T0( px, py, pz, 1.0 );
-            variableFluxVec->setValueByGlobalID( gid[0], val );
+            variableFluxVec->setValuesByGlobalID( 1, &gid[0], &val );
         } else if ( fabs( px + 1.0 ) <= 1.0e-12 ) {
             val = fun_dTdx( px, py, pz, -1.0 );
             val = val + fun_T0( px, py, pz, 1.0 );
-            variableFluxVec->setValueByGlobalID( gid[0], val );
+            variableFluxVec->setValuesByGlobalID( 1, &gid[0], &val );
         } else if ( fabs( py - 1.0 ) <= 1.0e-12 ) {
             val = fun_dTdy( px, py, pz, 1.0 );
             val = val + fun_T0( px, py, pz, 1.0 );
-            variableFluxVec->setValueByGlobalID( gid[0], val );
+            variableFluxVec->setValuesByGlobalID( 1, &gid[0], &val );
         } else if ( fabs( py + 1.0 ) <= 1.0e-12 ) {
             val = fun_dTdy( px, py, pz, -1.0 );
             val = val + fun_T0( px, py, pz, 1.0 );
-            variableFluxVec->setValueByGlobalID( gid[0], val );
+            variableFluxVec->setValuesByGlobalID( 1, &gid[0], &val );
         }
     } // end for node
     RightHandSideVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
@@ -260,7 +260,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 
         double exact;
         exact = fun_T0( px, py, pz, 1.0 );
-        exactVec->setValueByGlobalID( gid[0], exact );
+        exactVec->setValuesByGlobalID( 1, &gid[0], &exact );
     }
 
     diffVec->subtract( *exactVec, *TemperatureInKelvinVec );
