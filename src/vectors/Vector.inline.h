@@ -221,38 +221,8 @@ inline bool Vector::equals( const Vector &a, double tol ) const
 }
 
 /****************************************************************
- * Set/Get individual values                                     *
+ * Get individual values                                     *
  ****************************************************************/
-#if 0
-inline void Vector::setValueByLocalID( size_t i, const double val )
-{
-    setValuesByLocalID( 1, &i, &val );
-}
-inline void Vector::setLocalValueByGlobalID( size_t i, const double val )
-{
-    setLocalValuesByGlobalID( 1, &i, &val );
-}
-inline void Vector::setGhostValueByGlobalID( size_t i, const double val )
-{
-    setGhostValuesByGlobalID( 1, &i, &val );
-}
-inline void Vector::setValueByGlobalID( size_t i, const double val )
-{
-    setValuesByGlobalID( 1, &i, &val );
-}
-inline void Vector::addValueByLocalID( size_t i, const double val )
-{
-    addValuesByLocalID( 1, &i, &val );
-}
-inline void Vector::addLocalValueByGlobalID( size_t i, const double val )
-{
-    addLocalValuesByGlobalID( 1, &i, &val );
-}
-inline void Vector::addValueByGlobalID( size_t i, const double val )
-{
-    addValuesByGlobalID( 1, &i, &val );
-}
-#endif
 inline double Vector::getValueByGlobalID( size_t i ) const
 {
     double ans;

@@ -619,64 +619,6 @@ public:
 
     // These should probably be removed as they add to the interface bloat
 public: // Non virtual functions
-#if 0
-    /**
-     * \brief Set a single value in the vector by local ID
-     * \param[in] i  offset of value to set
-     * \param[in] val the value to place in the vector
-     * \details An alias for setValuesByLocalID ( 1, &num, &val );
-     */
-    void setValueByLocalID( size_t i, const double val );
-
-    /**
-     * \brief Set a single owned value using global identifier
-     * \param[in] i  offset of value to set
-     * \param[in] val the value to place in the vector
-     * \details An alias for setLocalValuesByGlobalID ( 1, &i, &val );
-     */
-    void setLocalValueByGlobalID( size_t i, const double val );
-
-    /**
-     * \brief Set a ghost owned value using global identifier
-     * \param[in] i  offset of value to set
-     * \param[in] val the value to place in the vector
-     * \details An alias for setLocalValuesByGlobalID ( 1, &i, &val );
-     */
-    void setGhostValueByGlobalID( size_t i, const double val );
-
-    /**
-     * \brief Set an owned or shared value using global identifier
-     * \param[in] i  offset of value to set
-     * \param[in] val the value to place in the vector
-     * \details  An alias for setValuesByGlobalID ( 1, &i, &val )
-     */
-    void setValueByGlobalID( size_t i, const double val );
-
-    /**
-     * \brief Add a single value in the vector by local ID
-     * \param[in] i  offset of value to set
-     * \param[in] val the value to place in the vector
-     * \details An alias for addValuesByLocalID ( 1, &num, &val );
-     */
-    void addValueByLocalID( size_t i, const double val );
-
-
-    /**
-     * \brief Add a single owned value using global identifier
-     * \param[in] i  offset of value to set
-     * \param[in] val the value to place in the vector
-     * \details An alias for addLocalValuesByGlobalID ( 1, &i, &val );
-     */
-    void addLocalValueByGlobalID( size_t i, const double val );
-
-    /**
-     * \brief Add an owned or shared value using global identifier
-     * \param[in] i  offset of value to set
-     * \param[in] val the value to place in the vector
-     * \details  An alias for setValuesByGlobalID ( 1, &i, &val )
-     */
-    void addValueByGlobalID( size_t i, const double val );
-#endif
     /**
      * \brief Return a value from the vector.
      * \param[in] i The global index into the vector
