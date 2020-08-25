@@ -120,7 +120,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
         mfgSolution->evaluate( poly, x, y, z );
         std::vector<size_t> i;
         nodalDofMap->getDOFs( iterator->globalID(), i );
-        solVec->setValueByGlobalID( i[0], poly[0] );
+        solVec->setValuesByGlobalID( 1, &i[0], &poly[0] );
     }
     solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
@@ -165,7 +165,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
                 std::valarray<double> poly( 10 );
                 mfgSolution->evaluate( poly, x, y, z );
                 val = poly[0];
-                workVec->setValueByGlobalID( gid[0], err );
+                workVec->setValuesByGlobalID( 1, &gid[0], &err );
 
                 file << "{" << x << "," << y << "," << z << "," << val << "," << sol << "," << src
                      << "," << res + src << "," << err << "}";

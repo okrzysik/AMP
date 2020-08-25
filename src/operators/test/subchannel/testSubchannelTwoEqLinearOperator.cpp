@@ -131,10 +131,14 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     // evaluations
     for ( ; face != face.end(); ++face ) {
         faceDOFManager->getDOFs( face->globalID(), dofs );
-        FrozenVec->setValueByGlobalID( dofs[0], h_scale * 900.0e3 );
-        FrozenVec->setValueByGlobalID( dofs[1], P_scale * 15.0e6 );
-        SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
-        SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
+	double val = h_scale * 900.0e3;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 15.0e6;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[1], &val  );
+	val = h_scale * 1.0;
+	SolVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[1], &val );
     }
 
     // create subchannel physics model
@@ -174,73 +178,113 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
         std::vector<size_t> dofs;
         auto face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
         faceDOFManager->getDOFs( face->globalID(), dofs );
-        FrozenVec->setValueByGlobalID( dofs[0], h_scale * 700.0e3 );
-        FrozenVec->setValueByGlobalID( dofs[1], P_scale * 12.4e6 );
+	double val = h_scale * 700.0e3;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 12.4e6;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[1], &val );
 
-        SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
-        SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
+	val = h_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[1], &val );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
-        FrozenVec->setValueByGlobalID( dofs[0], h_scale * 900.0e3 );
-        FrozenVec->setValueByGlobalID( dofs[1], P_scale * 12.3e6 );
+	val = h_scale * 900.0e3;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 12.3e6;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[1], &val );
 
-        SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
-        SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
+	val = h_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[1], &val );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
-        FrozenVec->setValueByGlobalID( dofs[0], h_scale * 800.0e3 );
-        FrozenVec->setValueByGlobalID( dofs[1], P_scale * 16.2e6 );
+	val = h_scale * 800.0e3;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 16.2e6;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[1], &val );
 
-        SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
-        SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
+	val = h_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[1], &val );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
-        FrozenVec->setValueByGlobalID( dofs[0], h_scale * 650.0e3 );
-        FrozenVec->setValueByGlobalID( dofs[1], P_scale * 14.1e5 );
+	val = h_scale * 650.0e3;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 14.1e5;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[1], &val );
 
-        SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
-        SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
+	val = h_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[1], &val );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
-        FrozenVec->setValueByGlobalID( dofs[0], h_scale * 367.4e3 );
-        FrozenVec->setValueByGlobalID( dofs[1], P_scale * 31.5e5 );
+	val = h_scale * 367.4e3;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 31.5e5;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[1], &val );
 
-        SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
-        SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
+	val = h_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[1], &val );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
-        FrozenVec->setValueByGlobalID( dofs[0], h_scale * 657.2e3 );
-        FrozenVec->setValueByGlobalID( dofs[1], P_scale * 12.5e6 );
+	val = h_scale * 657.2e3;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 12.5e6;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[1], &val );
 
-        SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
-        SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
+	val = h_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[1], &val );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
-        FrozenVec->setValueByGlobalID( dofs[0], h_scale * 788.5e3 );
-        FrozenVec->setValueByGlobalID( dofs[1], P_scale * 12.7e6 );
+	val = h_scale * 788.5e3;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 12.7e6;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[1], &val );
 
-        SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
-        SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
+	val = h_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[0], &val  );
+	val = P_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[1], &val );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
-        FrozenVec->setValueByGlobalID( dofs[0], h_scale * 235.7e2 );
-        FrozenVec->setValueByGlobalID( dofs[1], P_scale * 17.8e6 );
+	val = h_scale * 235.7e2;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 17.8e6;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[1], &val );
 
-        SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
-        SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
+	val = h_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[1], &val );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
-        FrozenVec->setValueByGlobalID( dofs[0], h_scale * 673.1e3 );
-        FrozenVec->setValueByGlobalID( dofs[1], P_scale * 13.6e6 );
+	val = h_scale * 673.1e3;
+	FrozenVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 13.6e6;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[1], &val );
 
-        SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
-        SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
+	val = h_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[1], &val );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
-        FrozenVec->setValueByGlobalID( dofs[0], h_scale * 385.2e3 );
-        FrozenVec->setValueByGlobalID( dofs[1], P_scale * 16.3e6 );
-        SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
-        SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
+	val = h_scale * 385.2e3;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 16.3e6;
+        FrozenVec->setValuesByGlobalID( 1, &dofs[1], &val );
+	val = h_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = P_scale * 1.0;
+        SolVec->setValuesByGlobalID( 1, &dofs[1], &val );
 
         subchannelOperator->setFrozenVector( FrozenVec );
         subchannelOpParams->d_initialize = true;

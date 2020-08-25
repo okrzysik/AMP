@@ -133,7 +133,7 @@ static void linearTest( AMP::UnitTest *ut,
         NodalScalarDOF->getDOFs( curNode->globalID(), dofs );
         size_t i    = dofs[0];
         double fval = function( x, y, z );
-        diffSolVec->setValueByGlobalID( i, fval );
+        diffSolVec->setValuesByGlobalID( 1, &i, &fval );
         ++curNode;
     }
 

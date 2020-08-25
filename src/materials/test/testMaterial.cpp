@@ -31,10 +31,10 @@
 
 
 // Test getting a value out of range
-static inline void set( std::vector<double> &vec, int index, double value ) { vec[index] = value; }
-static inline void set( AMP::LinearAlgebra::Vector &vec, int index, double value )
+static inline void set( std::vector<double> &vec, size_t index, double value ) { vec[index] = value; }
+static inline void set( AMP::LinearAlgebra::Vector &vec, size_t index, double value )
 {
-    vec.setValueByLocalID( index, value );
+  vec.setValuesByLocalID( 1, &index, &value );
 }
 template<class VEC>
 static inline VEC &find( std::map<std::string, VEC> &args, const std::string &var )
@@ -183,9 +183,9 @@ MatTestResult testMaterial( std::string &name )
                 AMP::LinearAlgebra::SimpleVector<double>::create( npoints, justrightVar );
             toobigVec[i] = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, toobigVar );
             for ( size_t j = 0; j < npoints; j++ ) {
-                toosmallVec[i]->setValueByLocalID( j, toosmall[i][j] );
-                justrightVec[i]->setValueByLocalID( j, justright[i][j] );
-                toobigVec[i]->setValueByLocalID( j, toobig[i][j] );
+	      toosmallVec[i]->setValuesByLocalID( 1, &j, &toosmall[i][j] );
+	      justrightVec[i]->setValuesByLocalID( 1, &j, &justright[i][j] );
+	      toobigVec[i]->setValuesByLocalID( 1, &j, &toobig[i][j] );
             }
         }
 

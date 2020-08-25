@@ -67,7 +67,7 @@ void Flow1DSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     d_numpoints = zPoints.size();
 
-    for ( size_t i = 1; i < d_numpoints; i++ ) {
+    for ( size_t i = 1; i < (size_t) d_numpoints; i++ ) {
 
         double cur_node, next_node;
 

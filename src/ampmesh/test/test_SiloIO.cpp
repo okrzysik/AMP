@@ -48,7 +48,7 @@ AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr m
         double volume = elem.volume();
         DOF->getDOFs( elem.globalID(), dofs );
         AMP_ASSERT( dofs.size() == 1 );
-        vec->addLocalValueByGlobalID( dofs[0], volume );
+        vec->addLocalValuesByGlobalID( 1, &dofs[0], &volume );
     }
     return vec;
 }
@@ -178,7 +178,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
                     for ( auto elem : surfaceMesh->getBoundaryIDIterator( surfaceType, id, 0 ) ) {
                         DOF_surface->getDOFs( elem.globalID(), dofs );
                         AMP_ASSERT( dofs.size() == 1 );
-                        id_vec->setValueByGlobalID( dofs[0], id );
+                        id_vec->setValuesByGlobalID( 1, &dofs[0], &id );
                     }
                 }
             }
@@ -200,7 +200,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     for ( auto &id : mesh->getBlockIDs() ) {
         for ( auto elem : mesh->getBlockIDIterator( volumeType, id, 0 ) ) {
             DOF_volume->getDOFs( elem.globalID(), dofs );
-            block_vec->setValueByGlobalID( dofs[0], id );
+            block_vec->setValuesByGlobalID( 1, &dofs[0], &id );
         }
     }
     block_vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );

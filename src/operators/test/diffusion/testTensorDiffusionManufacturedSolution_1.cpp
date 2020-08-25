@@ -143,7 +143,7 @@ static void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshNa
             mfgSolution->evaluate( poly, r, th, z );
             std::vector<size_t> gid;
             nodalDofMap->getDOFs( iterator->globalID(), gid );
-            solVec->setValueByGlobalID( gid[0], poly[0] );
+            solVec->setValuesByGlobalID( 1, &gid[0], &poly[0] );
         }
     } else {
         for ( ; iterator != iterator.end(); ++iterator ) {
@@ -155,7 +155,7 @@ static void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshNa
             mfgSolution->evaluate( poly, x, y, z );
             std::vector<size_t> gid;
             nodalDofMap->getDOFs( iterator->globalID(), gid );
-            solVec->setValueByGlobalID( gid[0], poly[0] );
+            solVec->setValuesByGlobalID( 1, &gid[0], &poly[0] );
         }
     }
 
@@ -214,7 +214,7 @@ static void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshNa
                     mfgSolution->evaluate( poly, x, y, z );
                 }
                 val = poly[0];
-                workVec->setValueByGlobalID( gid[0], err );
+                workVec->setValuesByGlobalID( 1, &gid[0], &err );
 
                 file << "{" << x << "," << y << "," << z << "," << val << "," << sol << "," << src
                      << "," << res + src << "," << err << "}";

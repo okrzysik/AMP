@@ -188,7 +188,7 @@ static void nonlinearTest( AMP::UnitTest *ut,
         std::vector<size_t> dofs;
         nodalDofMap->getDOFs( curNode->globalID(), dofs );
         double fval = function( x, y, z );
-        diffSolVec->setValueByGlobalID( dofs[0], fval );
+        diffSolVec->setValuesByGlobalID( 1, &dofs[0], &fval );
     }
     diffSolVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 

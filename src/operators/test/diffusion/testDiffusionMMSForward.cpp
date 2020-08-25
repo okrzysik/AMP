@@ -103,7 +103,7 @@ static void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
         mfgSolution->evaluate( poly, x, y, z );
         std::vector<size_t> gid;
         nodalDofMap->getDOFs( iterator->globalID(), gid );
-        solVec->setValueByGlobalID( gid[0], poly[0] );
+        solVec->setValuesByGlobalID( 1, &gid[0], &poly[0] );
     }
 
     // Evaluate manufactured solution as an FE source
@@ -151,7 +151,7 @@ static void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
                 std::valarray<double> poly( 10 );
                 mfgSolution->evaluate( poly, x, y, z );
                 val = poly[0];
-                workVec->setValueByGlobalID( gid[0], err );
+                workVec->setValuesByGlobalID( 1, &gid[0], &err );
 
                 file << "{" << x << "," << y << "," << z << "," << val << "," << sol << "," << src
                      << "," << res + src << "," << err << "}";

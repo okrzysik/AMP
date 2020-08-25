@@ -41,7 +41,7 @@ static void project( AMP::Mesh::MeshIterator const &meshIterator,
         AMP_ASSERT( dofIndices.size() == dofsPerNode );
         auto coord   = iterator->coord();
         double value = functionOfSpace( coord );
-        vector->setValueByGlobalID( dofIndices[dof], value );
+        vector->setValuesByGlobalID( 1, &dofIndices[dof], &value );
     } // end for iterator
 }
 

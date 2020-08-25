@@ -88,7 +88,7 @@ static void setGpBoundary( int id,
         d1->getDOFs( curBnd->globalID(), ids );
         for ( unsigned int qp = 0; qp < ids.size(); qp++ ) {
             double pos = coordinates[qp]( 2 );
-            v1->setValueByGlobalID( ids[qp], pos );
+            v1->setValuesByGlobalID( 1, &ids[qp], &pos );
         }
         ++curBnd;
     }

@@ -106,7 +106,8 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
             pin_DOFs->getDOFs( it->globalID(), dofs );
-            T1->setValueByGlobalID( dofs[0], getTemp( it->coord() ) );
+	    double val = getTemp( it->coord() );
+            T1->setValuesByGlobalID( 1, &dofs[0], &val );
             ++it;
         }
     }
