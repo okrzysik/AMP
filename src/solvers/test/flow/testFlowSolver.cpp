@@ -96,9 +96,11 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     heff = ( 0.023 * K / De ) * pow( Re, 0.8 ) * pow( Pr, 0.4 );
     dz   = 2. / nP;
 
+    double val;
     std::cout << "Original Flow Solution  " << std::endl;
-    for ( int i = 0; i < 10; i++ ) {
-        tmpVec->setValueByLocalID( i, Tin + i * 30 );
+    for ( size_t i = 0; i < 10; i++ ) {
+      val = Tin + i * 30;
+      tmpVec->setValuesByLocalID( 1, &i, &val  );
         //	  solVec->setValueByLocalID(i, Tin + i*30);
         std::cout << " @i : " << i << " is " << tmpVec->getValueByLocalID( i );
     }
@@ -106,12 +108,14 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     std::cout << "Original Norm: " << tmpVec->L2Norm() << std::endl;
 
-    cladVec->setValueByLocalID( 0, 300 );
-    for ( int i = 1; i < 10; i++ ) {
+    size_t idx = 0;
+    val = 300.0;
+    cladVec->setValuesByLocalID( 1, &idx, &val );
+    for ( size_t i = 1; i < 10; i++ ) {
         double Tc = tmpVec->getValueByLocalID( i ) +
                     ( tmpVec->getValueByLocalID( i ) - tmpVec->getValueByLocalID( i - 1 ) ) *
                         ( ( Cp * G * De ) / ( 4. * heff * dz ) );
-        cladVec->setValueByLocalID( i, Tc );
+        cladVec->setValuesByLocalID( 1, &i, &Tc );
     }
 
     std::cout << "Imposed Clad Solution  " << std::endl;
@@ -120,7 +124,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     }
     std::cout << std::endl;
 
-    solVec->setValueByLocalID( 0, 300 );
+    solVec->setValuesByLocalID( 1, &idx, &val );
 
     //  resVec->setToScalar(300.);
     //  vecLag->copyVector(resVec);

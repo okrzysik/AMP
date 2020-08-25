@@ -88,8 +88,8 @@ void calculateManufacturedSolution(
                 // double val2 = fun(pt[0],pt[1],pt[2]-20); // not used.
                 double val3 = __dTdn__( pt[0], pt[1], pt[2], 1 );
 
-                manufacturedSolution->setLocalValueByGlobalID( d_dofIndices[j], val1 );
-                manufacturedNormalGradient->setLocalValueByGlobalID( d_dofIndices[j], val3 );
+                manufacturedSolution->setLocalValuesByGlobalID( 1, &d_dofIndices[j], &val1 );
+                manufacturedNormalGradient->setLocalValuesByGlobalID( 1, &d_dofIndices[j], &val3 );
             } // end for node
         }
     }
@@ -129,7 +129,7 @@ void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
             double manufacturedAtGauss1;
             manufacturedAtGauss1 = __FsnK__();
 
-            manufacturedRHS->setValueByGlobalID( d_gaussPtIndice, manufacturedAtGauss1 );
+            manufacturedRHS->setValuesByGlobalID( 1, &d_gaussPtIndice, &manufacturedAtGauss1 );
         }
     }
 

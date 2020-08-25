@@ -135,8 +135,8 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
         nodalDofMap->getDOFs( iterator->globalID(), gid );
         double value =
             300. + 450 * ( 1. - ( x * x / lenscale / lenscale + y * y / lenscale / lenscale ) );
-        fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValueByGlobalID( gid[0], value );
-        soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValueByGlobalID( gid[0], value );
+        fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValuesByGlobalID( 1, &gid[0], &value );
+        soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValuesByGlobalID( 1, &gid[0], &value );
     }
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//

@@ -160,7 +160,7 @@ computeExactSolution( AMP::Mesh::Mesh::shared_ptr meshAdapter,
             manufacturedSolution->getExactSolutions( coord[0], coord[1], coord[2] );
         // Distribute values in the vector object
         for ( unsigned int xyz = 0; xyz < 3; ++xyz ) {
-            exactSolutionsVec->setLocalValueByGlobalID( globalIDs[xyz], displacementXYZ[xyz] );
+	  exactSolutionsVec->setLocalValuesByGlobalID( 1, &globalIDs[xyz], &displacementXYZ[xyz] );
         } // end loop over the coordinates
     }     // end soop over all nodes
     if ( verbose ) {

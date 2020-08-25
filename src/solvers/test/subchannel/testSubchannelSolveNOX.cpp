@@ -617,8 +617,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         for ( size_t i = 0; i < it.size(); i++ ) {
             gaussPtDOFManager->getDOFs( it->globalID(), dofs );
             for ( size_t dof : dofs ) {
-                specificPowerGpVec->setValueByGlobalID( dof,
-                                                        getPower( range, P, V, it->centroid() ) );
+	          double val = getPower( range, P, V, it->centroid() );
+		  specificPowerGpVec->setValuesByGlobalID( 1, &dof, &val );
             }
             ++it;
         }

@@ -172,8 +172,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         double P   = getSolutionPressure( input_db, H, Pout, rho, z );
         h *= AMP::Operator::Subchannel::scaleEnthalpy;
         P *= AMP::Operator::Subchannel::scalePressure;
-        manufacturedVec->setValueByGlobalID( dofs[0], h );
-        manufacturedVec->setValueByGlobalID( dofs[1], P );
+        manufacturedVec->setValuesByGlobalID( 1, &dofs[0], &h );
+        manufacturedVec->setValuesByGlobalID( 1, &dofs[1], &P );
         ++face;
     }
 
@@ -181,8 +181,10 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     for ( int i = 0; i < (int) face.size(); i++ ) {
         faceDOFManager->getDOFs( face->globalID(), dofs );
-        solVec->setValueByGlobalID( dofs[0], AMP::Operator::Subchannel::scaleEnthalpy * hin );
-        solVec->setValueByGlobalID( dofs[1], AMP::Operator::Subchannel::scalePressure * Pout );
+	double val = AMP::Operator::Subchannel::scaleEnthalpy * hin;
+        solVec->setValuesByGlobalID( 1, &dofs[0], &val );
+	val = AMP::Operator::Subchannel::scalePressure * Pout;
+        solVec->setValuesByGlobalID( 1, &dofs[1], &val );
         ++face;
     }
     solVec->copyVector( manufacturedVec );
@@ -248,7 +250,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
             std::make_pair( "pressure", std::make_shared<std::vector<double>>( 1, P ) ) );
         std::vector<double> temperatureResult( 1 );
         subchannelPhysicsModel->getProperty( "Temperature", temperatureResult, temperatureArgMap );
-        tempVec->setValueByGlobalID( tdofs[0], temperatureResult[0] );
+        tempVec->setValuesByGlobalID( 1, &tdofs[0], &temperatureResult[0] );
         // Check that we recover the enthalapy from the temperature
         std::map<std::string, std::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert( std::make_pair(
