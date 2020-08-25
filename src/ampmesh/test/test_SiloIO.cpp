@@ -175,10 +175,11 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
                 id_vec->setToScalar( -1 );
                 std::vector<size_t> dofs;
                 for ( auto &id : surfaceMesh->getBoundaryIDs() ) {
+		    double val = double(id);
                     for ( auto elem : surfaceMesh->getBoundaryIDIterator( surfaceType, id, 0 ) ) {
                         DOF_surface->getDOFs( elem.globalID(), dofs );
                         AMP_ASSERT( dofs.size() == 1 );
-                        id_vec->setValuesByGlobalID( 1, &dofs[0], &id );
+                        id_vec->setValuesByGlobalID( 1, &dofs[0], &val );
                     }
                 }
             }
@@ -198,9 +199,10 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     position->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     block_vec->setToScalar( -1 );
     for ( auto &id : mesh->getBlockIDs() ) {
+        double val = double(id);
         for ( auto elem : mesh->getBlockIDIterator( volumeType, id, 0 ) ) {
             DOF_volume->getDOFs( elem.globalID(), dofs );
-            block_vec->setValuesByGlobalID( 1, &dofs[0], &id );
+            block_vec->setValuesByGlobalID( 1, &dofs[0], &val );
         }
     }
     block_vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
