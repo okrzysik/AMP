@@ -2,6 +2,7 @@
 #define included_AMP_Scalar
 
 #include <any>
+#include <cstdint>
 
 
 namespace AMP {
@@ -14,6 +15,9 @@ namespace AMP {
 class Scalar
 {
 public:
+    //! Empty constructor
+    Scalar();
+
     /**
      * \brief Construct a sclar value
      * \param[in] x         Input scalar
@@ -50,10 +54,17 @@ private: // Helper functions
     static std::tuple<T1, double> convert( const std::any &x0 );
 
     template<class TYPE>
-    static constexpr char get_type();
+    static inline size_t get_hash();
+
+    template<class TYPE>
+    inline void store( const TYPE &x );
+
+    template<class TYPE>
+    constexpr char get_type();
 
 private: // Internal data
     char d_type;
+    size_t d_hash;
     std::any d_data;
 };
 

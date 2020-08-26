@@ -1,8 +1,12 @@
 #include "AMP/vectors/Scalar.h"
 
+#include <chrono>
+#include <string_view>
+
 
 // Test auto creation of a Scalar
 bool fun( const AMP::Scalar &x ) { return x.get<double>() != 0.0; }
+bool fun2( const std::any &x ) { return std::any_cast<size_t>( x ) != 0; }
 
 
 // Test storing and getting a value (integer)
@@ -22,6 +26,28 @@ bool testGet( TYPE x )
     pass   = pass && y.get<std::complex<float>>() == std::complex<float>( z, 0.0 );
     pass   = pass && y.get<std::complex<double>>() == std::complex<double>( z, 0.0 );
     return pass;
+}
+
+
+// Test the performance
+void testPerformance()
+{
+    size_t N = 1000000;
+
+    auto start = std::chrono::system_clock::now();
+    for ( size_t i = 1; i <= N; i++ ) {
+        fun2( i );
+    }
+    auto stop  = std::chrono::system_clock::now();
+    int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( stop - start ).count();
+    printf( "Time to create std::any: %i ns\n", static_cast<int>( ns / N ) );
+
+    start = std::chrono::system_clock::now();
+    for ( size_t i = 1; i <= N; i++ )
+        fun( i );
+    stop = std::chrono::system_clock::now();
+    ns   = std::chrono::duration_cast<std::chrono::nanoseconds>( stop - start ).count();
+    printf( "Time to store/get value: %i ns\n", static_cast<int>( ns / N ) );
 }
 
 
@@ -54,6 +80,9 @@ int main( int, char ** )
     // Test copy
     auto c2 = c1;
     pass    = pass && c1.get<std::complex<float>>() == c2.get<std::complex<float>>();
+
+    // Test the performance
+    testPerformance();
 
     if ( pass )
         std::cout << "All tests passed\n";
