@@ -80,6 +80,11 @@ void NativePetscVectorOperations::copy( const VectorData &x, VectorData &y )
     y.copyGhostValues( x );
 }
 
+void NativePetscVectorOperations::zero( VectorData &x )
+{
+    VecZeroEntries( getPetscVec( x ) );
+}
+
 void NativePetscVectorOperations::setToScalar( double alpha, VectorData &x )
 {
     auto vec = getPetscVec( x );
@@ -172,6 +177,14 @@ void NativePetscVectorOperations::abs( const VectorData &x, VectorData &y )
     VecAbs( getPetscVec(y) );
 }
 
+void NativePetscVectorOperations::addScalar( const VectorData &x, double alpha, VectorData &y )
+{
+  auto py = getPetscVec(y);
+  VecCopy(getConstPetscVec(x), py);
+  VecShift( py, alpha);
+  
+}
+  
 double NativePetscVectorOperations::min( const VectorData &x ) const
 {
     double val;
@@ -184,13 +197,6 @@ double NativePetscVectorOperations::max( const VectorData &x ) const
     double val;
     VecMax( getConstPetscVec( x ), PETSC_NULL, &val );
     return val;
-}
-
-double NativePetscVectorOperations::dot( const VectorData &x, const VectorData &y ) const
-{
-    double ans;
-    VecDot( getConstPetscVec( x ), getConstPetscVec( y ), &ans );
-    return ans;
 }
 
 double NativePetscVectorOperations::L1Norm( const VectorData &x ) const
@@ -211,6 +217,13 @@ double NativePetscVectorOperations::maxNorm( const VectorData &x ) const
 {
     double ans;
     VecNorm( getConstPetscVec( x ), NORM_INFINITY, &ans );
+    return ans;
+}
+
+double NativePetscVectorOperations::dot( const VectorData &x, const VectorData &y ) const
+{
+    double ans;
+    VecDot( getConstPetscVec( x ), getConstPetscVec( y ), &ans );
     return ans;
 }
 
@@ -247,6 +260,18 @@ double NativePetscVectorOperations::localMaxNorm( const VectorData &vx ) const
     ierr = ( *x->ops->norm_local )( x, NORM_INFINITY, &ans );
     CHKERRQ( ierr );
     return ans;
+}
+
+double NativePetscVectorOperations::localDot( const VectorData &vx, const VectorData &vy ) const
+{
+    Vec x = getPetscVec( vx );
+
+    PetscScalar ans;
+    PetscErrorCode ierr;
+
+    ierr = ( *x->ops->dot_local )( getConstPetscVec( vx ), getConstPetscVec( vy ), &ans );
+    CHKERRQ( ierr );
+    return static_cast<double>(ans);
 }
 
 } // namespace LinearAlgebra
