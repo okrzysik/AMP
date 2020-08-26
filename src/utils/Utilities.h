@@ -307,6 +307,16 @@ double trilinear( const std::vector<double> &x,
 //! Create a hash key from a char array
 constexpr unsigned int hash_char( const char * );
 
+
+//! Get the type name (does not match typeid, does not work for all compilers)
+template<typename T>
+constexpr std::string_view type_name();
+
+//! Get the type hash (does not match typeid, does not work for all compilers)
+template<typename T>
+constexpr unsigned int type_hash();
+
+
 //! Get the prime factors for a number
 std::vector<int> factor( uint64_t );
 

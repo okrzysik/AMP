@@ -59,40 +59,53 @@ std::tuple<T1, double> Scalar::convert( const std::any &x0 )
     double e = std::abs<double>( x - static_cast<T2>( std::real( y ) ) );
     return std::tie( y, e );
 }
+template<class TYPE>
+inline size_t Scalar::get_hash()
+{
+    static auto hash = typeid( TYPE ).hash_code();
+    return hash;
+}
+template<class TYPE>
+inline void Scalar::store( const TYPE &x )
+{
+    d_hash = get_hash<TYPE>();
+    d_data = std::make_any<TYPE>( x );
+}
 
 
 /********************************************************************
  * Contructor                                                        *
  ********************************************************************/
+Scalar::Scalar() : d_type( 0 ), d_hash( 0 ) {}
 template<class TYPE>
-Scalar::Scalar( TYPE x ) : d_type( get_type<TYPE>() ), d_data( nullptr )
+Scalar::Scalar( TYPE x ) : d_type( get_type<TYPE>() ), d_hash( 0 )
 {
     // Store the scalar
     if constexpr ( std::is_integral<TYPE>::value ) {
         if constexpr ( std::is_signed<TYPE>::value ) {
             if ( x >= std::numeric_limits<int64_t>::min() &&
                  x <= std::numeric_limits<int64_t>::max() ) {
-                d_data = std::any( static_cast<int64_t>( x ) );
+                store( static_cast<int64_t>( x ) );
             } else {
-                d_data = std::any( x );
+                store( x );
             }
         } else {
             if ( x <= std::numeric_limits<int64_t>::max() ) {
-                d_data = std::any( static_cast<int64_t>( x ) );
+                store( static_cast<int64_t>( x ) );
             } else {
-                d_data = std::any( x );
+                store( x );
             }
         }
     } else if constexpr ( std::is_same<TYPE, float>::value ) {
-        d_data = std::any( static_cast<double>( x ) );
+        store( static_cast<double>( x ) );
     } else if constexpr ( std::is_same<TYPE, double>::value ) {
-        d_data = std::any( x );
+        store( x );
     } else if constexpr ( std::is_same<TYPE, long double>::value ) {
-        d_data = std::any( static_cast<long double>( x ) );
+        store( static_cast<long double>( x ) );
     } else if constexpr ( AMP::is_complex<TYPE>::value ) {
-        d_data = std::any( std::complex<double>( x.real(), x.imag() ) );
+        store( std::complex<double>( x.real(), x.imag() ) );
     } else {
-        d_data = std::any( x );
+        store( x );
     }
     // Check that we can get the data back
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
@@ -113,20 +126,22 @@ Scalar::Scalar( TYPE x ) : d_type( get_type<TYPE>() ), d_data( nullptr )
 template<class TYPE>
 TYPE Scalar::get( double tol ) const
 {
+    // Special cases for performance
+    if ( d_hash == get_hash<TYPE>() )
+        return std::any_cast<TYPE>( d_data );
+    // Check that the data exists
     if ( !d_data.has_value() )
         AMP_ERROR( "Scalar has no data" );
-    auto type = d_data.type().hash_code();
-    TYPE y;
-    double e;
-    if ( type == typeid( TYPE ).hash_code() ) {
-        return std::any_cast<TYPE>( d_data );
-    } else if ( type == typeid( double ).hash_code() ) {
+    // Convert the data
+    TYPE y   = 0;
+    double e = 0;
+    if ( d_hash == get_hash<double>() ) {
         std::tie( y, e ) = convert<TYPE, double>( d_data );
-    } else if ( type == typeid( long double ).hash_code() ) {
+    } else if ( d_hash == get_hash<long double>() ) {
         std::tie( y, e ) = convert<TYPE, long double>( d_data );
-    } else if ( type == typeid( int64_t ).hash_code() ) {
+    } else if ( d_hash == get_hash<int64_t>() ) {
         std::tie( y, e ) = convert<TYPE, int64_t>( d_data );
-    } else if ( type == typeid( std::complex<double> ).hash_code() ) {
+    } else if ( d_hash == get_hash<std::complex<double>>() ) {
         auto x = std::any_cast<std::complex<double>>( d_data );
         if constexpr ( AMP::is_complex<TYPE>::value ) {
             return TYPE( x.real(), x.imag() );
