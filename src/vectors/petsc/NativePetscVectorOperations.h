@@ -65,10 +65,11 @@ public:
     void addScalar( const VectorData &x, double alpha_in, VectorData &y ) override;
     double min( const VectorData &x ) const override;
     double max( const VectorData &x ) const override;
-    double dot( const VectorData &x, const VectorData &y ) const override;
     double L1Norm( const VectorData &x ) const override;
     double L2Norm( const VectorData &x ) const override;
     double maxNorm( const VectorData &x ) const override;
+    double dot( const VectorData &x, const VectorData &y ) const override;
+    bool equals( const VectorData &a, const VectorData &b, double tol ) const override;
     double localL1Norm( const VectorData &x ) const override;
     double localL2Norm( const VectorData &x ) const override;
     double localMaxNorm( const VectorData &x ) const override;

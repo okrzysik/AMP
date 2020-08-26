@@ -227,6 +227,15 @@ double NativePetscVectorOperations::dot( const VectorData &x, const VectorData &
     return ans;
 }
 
+bool NativePetscVectorOperations::equals( const VectorData &x, const VectorData &y, double tol ) const
+{
+  PetscErrorCode ierr;
+  PetscBool ans;
+  ierr = VecEqual( getConstPetscVec( x ), getConstPetscVec( y ), &ans);
+  CHKERRQ( ierr );
+  return ans;
+}
+
 double NativePetscVectorOperations::localL1Norm( const VectorData &vx ) const
 {
     Vec x = getPetscVec( vx );

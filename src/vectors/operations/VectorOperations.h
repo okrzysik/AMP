@@ -220,8 +220,8 @@ public:
      * \param[in] x        a vector
      */
     virtual double dot( const VectorData &x, const VectorData &y ) const;
-    virtual bool equals( const VectorData &a, const VectorData &b, double tol ) const;
 
+    virtual bool equals( const VectorData &a, const VectorData &b, double tol ) const;
 
     /**
      * \brief Return the local minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
