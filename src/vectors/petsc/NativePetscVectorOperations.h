@@ -69,7 +69,6 @@ public:
     double L2Norm( const VectorData &x ) const override;
     double maxNorm( const VectorData &x ) const override;
     double dot( const VectorData &x, const VectorData &y ) const override;
-    bool equals( const VectorData &a, const VectorData &b, double tol ) const override;
     double localL1Norm( const VectorData &x ) const override;
     double localL2Norm( const VectorData &x ) const override;
     double localMaxNorm( const VectorData &x ) const override;
