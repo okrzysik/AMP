@@ -17,7 +17,7 @@ namespace LinearAlgebra {
  * libraries, it is very difficult to separate the data from the engine.  For this
  * reason, the EpetraVectorEngine contains the Epetra_Vector to operate on.
  */
-class EpetraVectorOperations : virtual public VectorOperationsDefault<double>
+class EpetraVectorOperations : public VectorOperationsDefault<double>
 {
 public:
     // Constructor

@@ -15,15 +15,14 @@ namespace LinearAlgebra {
  *    vector operations on the CPU.
  */
 template<typename TYPE = double>
-class VectorOperationsCuda : virtual public VectorOperations,
-                             virtual public VectorOperationsDefault<TYPE>
+class VectorOperationsCuda : public VectorOperations
 {
 public:
     // Constructor
     VectorOperationsCuda() {}
 
     //! Destructor
-    virtual ~VectorOperationsCuda() {}
+    virtual ~VectorOperationsCuda();
 
     //! Clone the operations
     virtual std::shared_ptr<VectorOperations> cloneOperations() const override;
@@ -89,6 +88,10 @@ private:
     bool checkData() const;
     bool checkData( const VectorOperations &x ) const;
     bool checkData( const VectorOperations &x, const VectorOperations &y ) const;
+
+    VectorOperationsDefault<TYPE> *getDefaultOps( void );
+    VectorOperationsDefault<TYPE> *d_default_ops = nullptr;
+
 };
 
 
