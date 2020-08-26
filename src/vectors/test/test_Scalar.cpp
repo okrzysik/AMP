@@ -1,9 +1,13 @@
 #include "AMP/vectors/Scalar.h"
 
 
+// Test auto creation of a Scalar
+bool fun( const AMP::Scalar &x ) { return x.get<double>() != 0.0; }
+
+
 // Test storing and getting a value (integer)
 template<class TYPE>
-bool test( TYPE x )
+bool testGet( TYPE x )
 {
     // Store the scalar
     auto y    = AMP::Scalar( x );
@@ -26,16 +30,22 @@ int main( int, char ** )
     bool pass = true;
 
     // Test some basic types
-    pass = pass && test<char>( 'x' );
-    pass = pass && test<int>( 1 );
-    pass = pass && test<int64_t>( 2 );
-    pass = pass && test<uint64_t>( 3 );
-    pass = pass && test<float>( 4 );
-    pass = pass && test<double>( 5 );
-    pass = pass && test<long double>( 6 );
-    pass = pass && test( std::complex<int>( 7.0, 0.0 ) );
-    pass = pass && test( std::complex<float>( 8.0, 0.0 ) );
-    pass = pass && test( std::complex<double>( 9.0, 0.0 ) );
+    pass = pass && testGet<char>( 'x' );
+    pass = pass && testGet<int>( 1 );
+    pass = pass && testGet<int64_t>( 2 );
+    pass = pass && testGet<uint64_t>( 3 );
+    pass = pass && testGet<float>( 4 );
+    pass = pass && testGet<double>( 5 );
+    pass = pass && testGet<long double>( 6 );
+    pass = pass && testGet( std::complex<int>( 7.0, 0.0 ) );
+    pass = pass && testGet( std::complex<float>( 8.0, 0.0 ) );
+    pass = pass && testGet( std::complex<double>( 9.0, 0.0 ) );
+
+    // Test passing values
+    pass = pass && fun( 1 );
+    pass = pass && fun( 2u );
+    pass = pass && fun( 3.0f );
+    pass = pass && fun( 4.0 );
 
     // Test complex
     auto c1 = AMP::Scalar( std::complex<float>( 3.0, 1.0 ) );

@@ -19,7 +19,7 @@ public:
      * \param[in] x         Input scalar
      */
     template<class TYPE>
-    explicit Scalar( TYPE x );
+    Scalar( TYPE x );
 
     /**
      * \brief Construct a sclar value
