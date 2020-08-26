@@ -233,7 +233,7 @@ bool NativePetscVectorOperations::equals( const VectorData &x, const VectorData 
   PetscBool ans;
   ierr = VecEqual( getConstPetscVec( x ), getConstPetscVec( y ), &ans);
   CHKERRQ( ierr );
-  return ans;
+  return (ans==PETSC_TRUE);
 }
 
 double NativePetscVectorOperations::localL1Norm( const VectorData &vx ) const
