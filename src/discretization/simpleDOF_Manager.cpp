@@ -214,18 +214,20 @@ inline void simpleDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
                                           std::vector<size_t> &dofs ) const
 {
     // Search for the dof locally
-    size_t index = AMP::Utilities::findfirst( d_local_id, id );
-    if ( index == d_local_id.size() )
-        index--;
-    if ( id == d_local_id[index] ) {
-        // The id was found
-        for ( int j = 0; j < DOFsPerElement; j++ )
-            dofs.emplace_back( index * DOFsPerElement + d_begin + j );
-        return;
+    if ( !d_local_id.empty() ) {
+        size_t index = AMP::Utilities::findfirst( d_local_id, id );
+        if ( index == d_local_id.size() )
+            index--;
+        if ( id == d_local_id[index] ) {
+            // The id was found
+            for ( int j = 0; j < DOFsPerElement; j++ )
+                dofs.emplace_back( index * DOFsPerElement + d_begin + j );
+            return;
+        }
     }
     // Search for the dof in the remote list
     if ( !d_remote_id.empty() ) {
-        index = AMP::Utilities::findfirst( d_remote_id, id );
+        size_t index = AMP::Utilities::findfirst( d_remote_id, id );
         if ( index == d_remote_id.size() )
             index--;
         if ( id == d_remote_id[index] ) {

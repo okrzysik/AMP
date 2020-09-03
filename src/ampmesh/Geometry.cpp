@@ -7,6 +7,7 @@
 #include "AMP/ampmesh/shapes/Circle.h"
 #include "AMP/ampmesh/shapes/CircleFrustum.h"
 #include "AMP/ampmesh/shapes/Cylinder.h"
+#include "AMP/ampmesh/shapes/Parallelepiped.h"
 #include "AMP/ampmesh/shapes/Shell.h"
 #include "AMP/ampmesh/shapes/Sphere.h"
 #include "AMP/ampmesh/shapes/SphereSurface.h"
@@ -26,6 +27,7 @@ std::shared_ptr<AMP::Geometry::Geometry>
 Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
 {
     auto generator = db->getString( "Generator" );
+    std::for_each( generator.begin(), generator.end(), []( char &c ) { c = ::tolower( c ); } );
     std::shared_ptr<AMP::Geometry::Geometry> geom;
     if ( generator.compare( "cube" ) == 0 ) {
         int dim = db->getScalar<int>( "dim" );
@@ -66,6 +68,8 @@ Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
         geom.reset( new SquareFrustum( db ) );
     } else if ( generator.compare( "circle_frustrum" ) == 0 ) {
         geom.reset( new CircleFrustum( db ) );
+    } else if ( generator.compare( "parallelepiped" ) == 0 ) {
+        geom.reset( new Parallelepiped( db ) );
     } else if ( generator.compare( "Mesh" ) == 0 ) {
         // Generate a mesh geometry
         auto mesh_db = db->getDatabase( "Mesh" );

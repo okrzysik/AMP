@@ -5,7 +5,7 @@ Mesh{
 	MeshArrayDatabasePrefix = "MeshArray_"
     LoadBalanceMethod = 2
 
-	Mesh_1 {
+	/*Mesh_1 {
 		MeshName = "cube_3d"
 		MeshType = "AMP"
 		dim = 3
@@ -42,45 +42,21 @@ Mesh{
 		z_offset = 0
         static = TRUE
 	}
-	Mesh_4 {
-		MeshName = "cylinder_2"
-		MeshType = "AMP"
-		dim = 3
-		Generator = "cylinder"
-		Size = 8, 6
-		Range = 1, -0.5, 0.5
-		x_offset = 2
-		y_offset = 6
-		z_offset = 0
-        static = FALSE
-	}
 	
-	Mesh_5 {
+	Mesh_4 {
 		MeshName = "tube"
 		MeshType = "AMP"
 		dim = 3
 		Generator = "tube"
 		Size = 5, 20, 5
 		Range = 0.8, 1, -0.5, 0.5
-		x_offset = -2
-		y_offset = 10
+		x_offset = 2
+		y_offset = 6
 		z_offset = 0
         static = TRUE
 	}
-	Mesh_6 {
-		MeshName = "tube_2"
-		MeshType = "AMP"
-		dim = 3
-		Generator = "tube"
-		Size = 5, 20, 5
-		Range = 0.8, 1, -0.5, 0.5
-		x_offset = 2
-		y_offset = 10
-        z_offset = 0
-        static = FALSE
-	}
 	
-	Mesh_7 {
+	Mesh_5 {
 		MeshName = "sphere"
 		MeshType = "AMP"
 		dim = 3
@@ -92,45 +68,21 @@ Mesh{
 		z_offset = 3
         static = TRUE
 	}
-	Mesh_8 {
-		MeshName = "sphere_2"
-		MeshType = "AMP"
-		dim = 3
-		Generator = "sphere"
-		Size = 6
-		Range = 1
-		x_offset = 2
-		y_offset = 2
-		z_offset = 3
-        static = FALSE
-	}
 
-	Mesh_9 {
+	Mesh_6 {
 		MeshName = "shell"
 		MeshType = "AMP"
 		dim = 3
 		Generator = "shell"
 		Size = 10, 20
 		Range = 0.8, 1
-		x_offset = -2
-		y_offset = 6
+		x_offset = 2
+		y_offset = 2
 		z_offset = 3
         static = TRUE
 	}
-	Mesh_10 {
-		MeshName = "shell_2"
-		MeshType = "AMP"
-		dim = 3
-		Generator = "shell"
-		Size = 10, 20
-		Range = 0.8, 1
-		x_offset = 2
-		y_offset = 6
-		z_offset = 3
-        static = FALSE
-	}
 
-	Mesh_11 {
+	Mesh_7 {
 		MeshName = "sphere_surface"
 		MeshType = "AMP"
 		dim = 3
@@ -138,24 +90,12 @@ Mesh{
 		Size = 40
 		Range = 1
 		x_offset = -2
-		y_offset = 10
+		y_offset = 6
 		z_offset = 3
         static = TRUE
 	}
-	Mesh_12 {
-		MeshName = "sphere_surface_2"
-		MeshType = "AMP"
-		dim = 3
-		Generator = "sphere_surface"
-		Size = 40
-		Range = 1
-		x_offset = 2
-		y_offset = 10
-		z_offset = 3
-        static = FALSE
-	}
 
-	Mesh_13 {
+	Mesh_8 {
 		MeshName = "square_frustrum"
 		MeshType = "AMP"
 		Generator = "square_frustrum"
@@ -163,26 +103,13 @@ Mesh{
 		Range = -1, 1, -0.9, 0.9, -0.5, 0.5
 		Dir = "+z"
 		Height = 3
-		x_offset = -2
-		y_offset = 2
-		z_offset = 5.4
+		x_offset = 2
+		y_offset = 6
+		z_offset = 3
         static = TRUE
 	}
-	Mesh_14 {
-		MeshName = "square_frustrum_2"
-		MeshType = "AMP"
-		Generator = "square_frustrum"
-		Size = 12, 10, 8
-		Range = -1, 1, -0.9, 0.9, -0.5, 0.5
-		Dir = "-z"
-		Height = 3
-		x_offset = 2
-		y_offset = 2
-		z_offset = 5.4
-        static = FALSE
-	}
 
-	Mesh_15 {
+	Mesh_9 {
 		MeshName = "circle_frustrum"
 		MeshType = "AMP"
 		Generator = "circle_frustrum"
@@ -195,20 +122,21 @@ Mesh{
 		y_offset = 6
 		z_offset = 5
         static = TRUE
-	}
-	Mesh_16 {
-		MeshName = "circle_frustrum_2"
+	}*/
+
+	Mesh_1 {
+		MeshName = "Parallelepiped"
 		MeshType = "AMP"
-		Generator = "circle_frustrum"
-		Size = 8, 6
-		BaseRadius = 0.8
-		TopRadius = 0.6
-		Height = 1
-		Dir = "-z"
-		x_offset = 2
-		y_offset = 6
-		z_offset = 6
-        static = FALSE
+		Generator = "Parallelepiped"
+		Size = 10, 8, 6
+        a = 1, 0, 0
+        b = 0, 1, 0
+        c = 0.2, 0, 1
+		Dir = "+z"
+		//x_offset = 2
+		//y_offset = 6
+		//z_offset = 5
+        static = TRUE
 	}
 
 	/*Mesh_17 {

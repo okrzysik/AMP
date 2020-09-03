@@ -45,6 +45,7 @@ ADD_AMP_TEST( test_LoadBalance 512 inputMultiPellet348 )
 ADD_AMP_TEST( test_LoadBalance 64000 inputMultiPellet348 )
 
 # Add tests
+ADD_AMP_TEST( view_STL CRYSTAL_FINAL_2mm.STL )
 ADD_AMP_TEST( test_GeometryHelpers )
 ADD_AMP_TEST_PARALLEL( test_Mesh 4 input_AMP_mesh_zoo_2D )
 ADD_AMP_TEST_PARALLEL( test_Mesh 4 input_AMP_mesh_zoo_3D )
