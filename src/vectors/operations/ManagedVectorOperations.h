@@ -15,7 +15,7 @@ namespace LinearAlgebra {
    A ManagedVector has two pointers: data and engine.  If the data pointer
    is null, then the engine is assumed to have the data.
 */
-class ManagedVectorOperations : virtual public VectorOperationsDefault<double>
+class ManagedVectorOperations : public VectorOperationsDefault<double>
 {
 
 public:

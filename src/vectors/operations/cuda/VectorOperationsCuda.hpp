@@ -30,6 +30,12 @@ std::shared_ptr<VectorOperations> VectorOperationsCuda<TYPE>::cloneOperations() 
     return ptr;
 }
 
+template<typename TYPE>
+VectorOperationsCuda<TYPE>::~VectorOperationsCuda<TYPE>()
+{
+  if (d_default_ops) delete d_default_ops;
+}
+
 
 /****************************************************************
  * Check that all data can be passed to cuda                     *
@@ -70,6 +76,13 @@ bool VectorOperationsCuda<TYPE>::checkData( const VectorData &x,
     &&z.numberOfDataBlocks() == 1;
 }
 
+template<typename TYPE>
+inline VectorOperationsDefault<TYPE> *VectorOperationsCuda<TYPE>::getDefaultOps( void )
+{
+  if (!d_default_ops) d_default_ops = new VectorOperationsDefault<TYPE>();
+  return d_default_ops;
+}
+  
 //**********************************************************************
 // Static functions that operate on VectorData objects
 
@@ -112,14 +125,14 @@ template<typename TYPE>
 void VectorOperationsCuda<TYPE>::setRandomValues( VectorData &x )
 {
     // Default to VectorOperationsDefault (on cpu)
-    return VectorOperationsDefault<TYPE>::setRandomValues( x );
+  return getDefaultOps()->setRandomValues( x );
 }
 
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::setRandomValues( RNG::shared_ptr rng, VectorData &x )
 {
     // Default to VectorOperationsDefault (on cpu)
-    return VectorOperationsDefault<TYPE>::setRandomValues( rng, x );
+    return getDefaultOps()->setRandomValues( rng, x );
 }
 
 template<typename TYPE>
@@ -133,7 +146,7 @@ void VectorOperationsCuda<TYPE>::copy( const VectorData &x, VectorData &y )
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        return VectorOperationsDefault<TYPE>::copy( x, y );
+        getDefaultOps()->copy( x, y );
     }
 }
 
@@ -149,7 +162,7 @@ void VectorOperationsCuda<TYPE>::scale( double alpha_in, VectorData &x )
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        VectorOperationsDefault<TYPE>::scale( alpha_in, x );
+        getDefaultOps()->scale( alpha_in, x );
     }
 }
 
@@ -166,7 +179,7 @@ void VectorOperationsCuda<TYPE>::scale( double alpha_in, const VectorData &x, Ve
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        VectorOperationsDefault<TYPE>::scale( alpha_in, x, y );
+        getDefaultOps()->scale( alpha_in, x, y );
     }
 }
 
@@ -182,7 +195,7 @@ void VectorOperationsCuda<TYPE>::add( const VectorData &x, const VectorData &y, 
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        VectorOperationsDefault<TYPE>::add( x, y, z );
+        getDefaultOps()->add( x, y, z );
     }
 }
 
@@ -198,7 +211,7 @@ void VectorOperationsCuda<TYPE>::subtract( const VectorData &x, const VectorData
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        VectorOperationsDefault<TYPE>::subtract( x, y, z );
+        getDefaultOps()->subtract( x, y, z );
     }
 }
 
@@ -215,7 +228,7 @@ void VectorOperationsCuda<TYPE>::multiply( const VectorData &x, const VectorData
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        VectorOperationsDefault<TYPE>::multiply( x, y, z );
+        getDefaultOps()->multiply( x, y, z );
     }
 }
 
@@ -231,7 +244,7 @@ void VectorOperationsCuda<TYPE>::divide( const VectorData &x, const VectorData &
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        VectorOperationsDefault<TYPE>::divide( x, y, z );
+        getDefaultOps()->divide( x, y, z );
     }
 }
 
@@ -248,7 +261,7 @@ void VectorOperationsCuda<TYPE>::reciprocal( const VectorData &x, VectorData &y 
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        VectorOperationsDefault<TYPE>::reciprocal( x, y );
+        getDefaultOps()->reciprocal( x, y );
     }
 }
 
@@ -269,7 +282,7 @@ void VectorOperationsCuda<TYPE>::linearSum(
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        VectorOperationsDefault<TYPE>::linearSum( alpha_in, x, beta_in, y, z );
+        getDefaultOps()->linearSum( alpha_in, x, beta_in, y, z );
     }
 }
 
@@ -303,7 +316,7 @@ void VectorOperationsCuda<TYPE>::abs( const VectorData &x, VectorData &y )
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        VectorOperationsDefault<TYPE>::abs( x, y );
+        getDefaultOps()->abs( x, y );
     }
 }
 
@@ -320,7 +333,7 @@ void VectorOperationsCuda<TYPE>::addScalar( const VectorData &x, double alpha_in
         cudaDeviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        VectorOperationsDefault<TYPE>::addScalar( x, alpha_in );
+        getDefaultOps()->addScalar( x, alpha_in );
     }
 }
 
@@ -338,7 +351,7 @@ double VectorOperationsCuda<TYPE>::localMin( const VectorData &x ) const
                                  thrust::minimum<TYPE>() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        result = VectorOperationsDefault<TYPE>::localMin( x );
+        result = getDefaultOps()->localMin( x );
     }
     return result;
 }
@@ -357,7 +370,7 @@ double VectorOperationsCuda<TYPE>::localMax( const VectorData &x ) const
                                  thrust::maximum<TYPE>() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        result = VectorOperationsDefault<TYPE>::localMax( x );
+        result = getDefaultOps()->localMax( x );
     }
     return result;
 }
@@ -374,7 +387,7 @@ double VectorOperationsCuda<TYPE>::localL1Norm( const VectorData &x ) const
             thrust::device, data, data + N, lambda, (TYPE) 0, thrust::plus<TYPE>() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        result = VectorOperationsDefault<TYPE>::localL1Norm( x );
+        result = getDefaultOps()->localL1Norm( x );
     }
     return result;
 }
@@ -392,7 +405,7 @@ double VectorOperationsCuda<TYPE>::localL2Norm( const VectorData &x ) const
         result = sqrt( result );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        result = VectorOperationsDefault<TYPE>::localL2Norm( x );
+        result = getDefaultOps()->localL2Norm( x );
     }
     return result;
 }
@@ -409,7 +422,7 @@ double VectorOperationsCuda<TYPE>::localMaxNorm( const VectorData &x ) const
             thrust::device, data, data + N, lambda, (TYPE) 0, thrust::maximum<TYPE>() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        result = VectorOperationsDefault<TYPE>::localMaxNorm();
+        result = getDefaultOps()->localMaxNorm();
     }
     return result;
 }
@@ -425,7 +438,7 @@ double VectorOperationsCuda<TYPE>::localDot( const VectorData &x, const VectorDa
         result = thrust::inner_product( thrust::device, data1, data1 + N, data2, (TYPE) 0 );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        result = VectorOperationsDefault<TYPE>::localDot( x, y );
+        result = getDefaultOps()->localDot( x, y );
     }
     return result;
 }
@@ -448,7 +461,7 @@ double VectorOperationsCuda<TYPE>::localMinQuotient( const VectorData &x,
                                         thrust::divides<TYPE>() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        result = VectorOperationsDefault<TYPE>::localMinQuotient( x, y );
+        result = getDefaultOps()->ocalMinQuotient( x, y );
     }
     return result;
 }
@@ -472,7 +485,7 @@ double VectorOperationsCuda<TYPE>::localWrmsNorm( const VectorData &x, const Vec
             thrust::device, data1, data1 + N, data2, 0, thrust::plus<TYPE>(), thrust_wrs<TYPE>() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        result = VectorOperationsDefault<TYPE>::localWrmsNorm( x, y );
+        result = getDefaultOps()->localWrmsNorm( x, y );
     }
     return result;
 }
@@ -483,7 +496,7 @@ double VectorOperationsCuda<TYPE>::localWrmsNormMask( const VectorData &x,
                                                       const VectorData &y ) const
 {
     // Default to VectorOperationsDefault (on cpu)
-    return VectorOperationsDefault<TYPE>::localWrmsNormMask( x, mask, y );
+    return getDefaultOps()->localWrmsNormMask( x, mask, y );
 }
 
 template<typename TYPE>
@@ -493,10 +506,10 @@ bool VectorOperationsCuda<TYPE>::localEquals( const VectorData &x,
 {
     if ( checkData( x, y ) ) {
         // Call Cuda
-        return VectorOperationsDefault<TYPE>::localEquals( x, y, tol );
+        return getDefaultOps()->localEquals( x, y, tol );
     } else {
         // Default to VectorOperationsDefault (on cpu)
-        return VectorOperationsDefault<TYPE>::localEquals( x, y, tol );
+        return getDefaultOps()->localEquals( x, y, tol );
     }
 }
 
