@@ -30,9 +30,11 @@ class NativePetscVector : public Vector
 {
 public:
     /** \brief Construct a wrapper for a PETSc Vec from a set of parameters
-     * \param[in] params The parameters describing the Vec
+     * \param[in] v             The Vec to wrap
+     * \param[in] deleteable    If true, ~NativePetscVector() will call VecDestroy()
+     * \param[in] comm          The communicator associated with the Vec
      */
-    explicit NativePetscVector( VectorParameters::shared_ptr params );
+    explicit NativePetscVector( Vec v, bool deleteable, AMP_MPI comm = AMP_MPI() );
     explicit NativePetscVector( std::shared_ptr<VectorData> data );
 
     //! Destructor

@@ -28,8 +28,8 @@ public:
 
     virtual void destroyNativeVector( AMP::LinearAlgebra::NativePetscVector &rhs ) const
     {
-      auto nvData = std::dynamic_pointer_cast<NativePetscVectorData>(rhs.getVectorData());
-      PETSC::vecDestroy( &(nvData->getVec()) );
+        auto nvData = std::dynamic_pointer_cast<NativePetscVectorData>( rhs.getVectorData() );
+        PETSC::vecDestroy( &( nvData->getVec() ) );
     }
 
     virtual void destroyNativeVector( AMP::LinearAlgebra::Vector::shared_ptr rhs ) const
@@ -127,8 +127,8 @@ public:
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
     {
-        AMP::LinearAlgebra::Vector::shared_ptr t = getManagedVector();
-        size_t localSize                         = t->getLocalSize();
+        auto t           = getManagedVector();
+        size_t localSize = t->getLocalSize();
         Vec ans;
         AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
         VecCreate( globalComm.getCommunicator(), &ans );
@@ -140,20 +140,15 @@ public:
         int a, b;
         VecGetOwnershipRange( ans, &a, &b );
         AMP_ASSERT( b - a == (int) localSize );
-        std::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams(
-            new AMP::LinearAlgebra::NativePetscVectorParameters( ans, true ) );
-
-        std::shared_ptr<AMP::LinearAlgebra::NativePetscVector> retVal(
-            new AMP::LinearAlgebra::NativePetscVector( npvParams ) );
-        retVal->setVariable( AMP::LinearAlgebra::Variable::shared_ptr(
-            new AMP::LinearAlgebra::Variable( "petsc vector" ) ) );
+        auto retVal = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( ans, true );
+        retVal->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "petsc vector" ) );
         return retVal;
     }
 
     virtual void destroyNativeVector( AMP::LinearAlgebra::NativePetscVector &rhs ) const override
     {
-      auto nvData = std::dynamic_pointer_cast<NativePetscVectorData>(rhs.getVectorData());
-      PETSC::vecDestroy( &(nvData->getVec()) );
+        auto nvData = std::dynamic_pointer_cast<NativePetscVectorData>( rhs.getVectorData() );
+        PETSC::vecDestroy( &( nvData->getVec() ) );
     }
 
     virtual void destroyNativeVector( AMP::LinearAlgebra::Vector::shared_ptr rhs ) const override
@@ -185,8 +180,7 @@ public:
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
-        return AMP::LinearAlgebra::Variable::shared_ptr(
-            new AMP::LinearAlgebra::Variable( "dummy" ) ); // No associated variable
+        return std::make_shared<AMP::LinearAlgebra::Variable>( "dummy" ); // No associated variable
     }
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override

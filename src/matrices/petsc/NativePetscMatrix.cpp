@@ -52,9 +52,7 @@ Vector::shared_ptr NativePetscMatrix::getRightVector() const
 #else
     MatCreateVecs( d_Mat, &a, PETSC_NULL );
 #endif
-    std::shared_ptr<NativePetscVectorParameters> npvParam(
-        new NativePetscVectorParameters( a, true ) );
-    return Vector::shared_ptr( new NativePetscVector( npvParam ) );
+    return std::make_shared<NativePetscVector>( a, true );
 }
 Vector::shared_ptr NativePetscMatrix::getLeftVector() const
 {
@@ -64,9 +62,7 @@ Vector::shared_ptr NativePetscMatrix::getLeftVector() const
 #else
     MatCreateVecs( d_Mat, PETSC_NULL, &a );
 #endif
-    std::shared_ptr<NativePetscVectorParameters> npvParam(
-        new NativePetscVectorParameters( a, true ) );
-    return Vector::shared_ptr( new NativePetscVector( npvParam ) );
+    return std::make_shared<NativePetscVector>( a, true );
 }
 Discretization::DOFManager::shared_ptr NativePetscMatrix::getRightDOFManager() const
 {

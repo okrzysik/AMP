@@ -215,9 +215,7 @@ public:
         PetscInt local_size = 15;
         VecSetSizes( v, local_size, PETSC_DECIDE );
         VecSetType( v, VECMPI ); // this line will have to be modified for the no mpi and cuda cases
-        auto npvParams =
-            std::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
-        auto newVec = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( npvParams );
+        auto newVec = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( v, true );
         VecSetFromOptions( v );
         newVec->getVectorData()->assemble();
         newVec->setVariable(
@@ -250,9 +248,7 @@ public:
         AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
         VecCreate( globalComm.getCommunicator(), &v );
         VecSetSizes( v, 15, PETSC_DECIDE );
-        auto npvParams =
-            std::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
-        auto newVec = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( npvParams );
+        auto newVec = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( v, true );
         VecSetFromOptions( v );
         newVec->getVectorData()->assemble();
         auto p1        = std::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();

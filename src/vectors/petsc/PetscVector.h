@@ -10,17 +10,6 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-/**  \class  PetscVectorParameters
- *  \brief  Parameters class to construct a PETSc Vector
- *
- *  Since the constructor of PetscVector is protected, this class is of little
- *  use to any but Backplane developers.  Also, since PetscVector
- *  is almost trivial, so is the parameters class.
- */
-class PetscVectorParameters
-{
-};
-
 
 /**
  *  \class  PetscVector
@@ -35,7 +24,6 @@ class PetscVectorParameters
  *  -# Provides a static method for creating a PETSc view of an AMP Vector.
  *
  */
-
 class PetscVector
 {
 private:

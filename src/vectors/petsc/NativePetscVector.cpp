@@ -10,14 +10,12 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params ) : Vector()
+NativePetscVector::NativePetscVector( Vec v, bool deleteable, AMP_MPI comm ) : Vector()
 {
     d_VectorOps  = std::make_shared<NativePetscVectorOperations>();
-    d_VectorData = std::make_shared<NativePetscVectorData>( in_params );
-
-    auto npvParams = std::dynamic_pointer_cast<NativePetscVectorParameters>( in_params );
-    d_DOFManager   = std::make_shared<AMP::Discretization::DOFManager>( npvParams->d_localsize,
-                                                                      npvParams->d_Comm );
+    d_VectorData = std::make_shared<NativePetscVectorData>( v, deleteable, comm );
+    d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>( d_VectorData->getLocalSize(),
+                                                                      d_VectorData->getComm() );
 }
 
 NativePetscVector::NativePetscVector( std::shared_ptr<VectorData> data ) : Vector()
