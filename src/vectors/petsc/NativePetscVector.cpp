@@ -12,8 +12,8 @@ namespace LinearAlgebra {
 
 NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params ) : Vector()
 {
-    d_VectorOps = std::make_shared<NativePetscVectorOperations>();
-    setVectorData( std::make_shared<NativePetscVectorData>( in_params ) );
+    d_VectorOps  = std::make_shared<NativePetscVectorOperations>();
+    d_VectorData = std::make_shared<NativePetscVectorData>( in_params );
 
     auto npvParams = std::dynamic_pointer_cast<NativePetscVectorParameters>( in_params );
     d_DOFManager   = std::make_shared<AMP::Discretization::DOFManager>( npvParams->d_localsize,
@@ -22,8 +22,8 @@ NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params ) :
 
 NativePetscVector::NativePetscVector( std::shared_ptr<VectorData> data ) : Vector()
 {
-    setVectorData( data );
-    d_VectorOps = std::make_shared<NativePetscVectorOperations>();
+    d_VectorData = data;
+    d_VectorOps  = std::make_shared<NativePetscVectorOperations>();
     d_DOFManager =
         std::make_shared<AMP::Discretization::DOFManager>( data->getLocalSize(), data->getComm() );
 }
@@ -36,11 +36,6 @@ Vector::shared_ptr NativePetscVector::cloneVector( const Variable::shared_ptr va
     auto retVal = std::make_shared<NativePetscVector>( data );
     retVal->setVariable( var );
     return retVal;
-}
-
-std::shared_ptr<ParameterBase> NativePetscVector::getParameters()
-{
-    return std::dynamic_pointer_cast<NativePetscVectorData>( d_VectorData )->getParameters();
 }
 
 void NativePetscVector::swapVectors( Vector &other )

@@ -9,7 +9,6 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-
 /****************************************************************
  * view                                                          *
  ****************************************************************/
@@ -38,7 +37,8 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
         newParams->d_DOFManager = inVector->getDOFManager();
         auto newVector          = std::make_shared<ManagedPetscVector>( newParams );
         newVector->setVariable( inVector->getVariable() );
-        newVector->getVectorData()->setUpdateStatusPtr( inVector->getVectorData()->getUpdateStatusPtr() );
+        newVector->getVectorData()->setUpdateStatusPtr(
+            inVector->getVectorData()->getUpdateStatusPtr() );
         inVector->registerView( newVector );
         retVal = newVector;
     } else {
@@ -49,18 +49,13 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
     return retVal;
 }
 
-PetscVector::PetscVector() : d_PetscRandom( 0 ), d_petscVec( nullptr ) {}
+PetscVector::PetscVector() : d_petscVec( nullptr ) {}
 
 
 PetscRandom &PetscVector::getPetscRandom( const AMP_MPI &comm )
 {
-    if ( d_PetscRandom == 0 ) {
-        d_PetscRandom = new PetscRandom;
-        PetscRandomCreate( comm.getCommunicator(), d_PetscRandom );
-        PetscRandomSetType( *d_PetscRandom, PETSCRAND48 ); // This is a horrible RNG for
-                                                           // stochastic simulation.  Do not
-                                                           // use.
-    }
+    if ( !d_PetscRandom )
+        d_PetscRandom = PETSC::genPetscRandom( comm );
     return *d_PetscRandom;
 }
 
@@ -71,13 +66,7 @@ Vec &PetscVector::getVec() { return d_petscVec; }
 const Vec &PetscVector::getVec() const { return d_petscVec; }
 
 
-PetscVector::~PetscVector()
-{
-    if ( d_PetscRandom ) {
-        PETSC::randomDestroy( d_PetscRandom );
-        delete d_PetscRandom;
-    }
-}
+PetscVector::~PetscVector() {}
 
 
 } // namespace LinearAlgebra

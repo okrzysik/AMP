@@ -65,7 +65,7 @@ protected:
 public: // Derived from Vector
     std::string type() const override;
     std::shared_ptr<Vector> cloneVector( const Variable::shared_ptr name ) const override;
-    std::shared_ptr<ParameterBase> getParameters() override;
+    virtual std::shared_ptr<ManagedVectorParameters> getParameters() { return d_pParameters; }
     Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;

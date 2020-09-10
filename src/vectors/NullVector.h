@@ -44,10 +44,6 @@ public: // Public constructors
 
 public: // Functions inherited from Vector
     inline std::string type() const override { return "Null Vector"; }
-    inline std::shared_ptr<ParameterBase> getParameters() override
-    {
-        return std::shared_ptr<ParameterBase>();
-    }
     inline shared_ptr cloneVector( const Variable::shared_ptr name ) const override
     {
         return create( name );

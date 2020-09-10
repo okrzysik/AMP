@@ -23,9 +23,8 @@ namespace LinearAlgebra {
  ****************************************************************/
 MultiVector::MultiVector( const std::string &name, const AMP_MPI &comm ) : Vector()
 {
-    d_VectorOps     = std::make_shared<MultiVectorOperations>();
-    auto vectorData = std::make_shared<MultiVectorData>( comm );
-    setVectorData( vectorData );
+    d_VectorOps  = std::make_shared<MultiVectorOperations>();
+    d_VectorData = std::make_shared<MultiVectorData>( comm );
     d_pVariable.reset( new MultiVariable( name ) );
 }
 

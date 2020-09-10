@@ -85,7 +85,7 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
     params->d_ViewVector = std::const_pointer_cast<Vector>( v );
     params->d_DOFManager = subsetDOF;
     params->d_CommList   = commList;
-    retVal->setVectorData( std::make_shared<SubsetVectorData>( params ) );
+    retVal->d_VectorData = std::make_shared<SubsetVectorData>( params );
     retVal->d_DOFManager = subsetDOF; // at present all vectors need to have a dof manager
 
     // We should decide on a better way to set the vector operations

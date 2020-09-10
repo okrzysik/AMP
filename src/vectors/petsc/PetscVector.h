@@ -36,10 +36,10 @@ class PetscVectorParameters
  *
  */
 
-class PetscVector 
+class PetscVector
 {
 private:
-    PetscRandom *d_PetscRandom;
+    std::shared_ptr<PetscRandom> d_PetscRandom;
 
 protected:
     /**
@@ -152,7 +152,6 @@ public:
      *    if we can safely delete the vector.
      */
     virtual bool petscHoldsView() const = 0;
-
 
 
 public:

@@ -33,17 +33,17 @@ static inline std::shared_ptr<ManagedVector> getManaged( std::shared_ptr<Vector>
  * Constructors                                          *
  ********************************************************/
 ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
-    : Vector( params_in ),
-      d_pParameters( std::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
+    : d_pParameters( std::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
 {
-    d_VectorOps = std::make_shared<ManagedVectorOperations>();
-    setVectorData( std::make_shared<ManagedVectorData>( params_in ) );
+    d_DOFManager = d_pParameters->d_DOFManager;
+    d_VectorOps  = std::make_shared<ManagedVectorOperations>();
+    d_VectorData = std::make_shared<ManagedVectorData>( params_in );
 }
 ManagedVector::ManagedVector( shared_ptr alias )
-    : Vector( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
 {
-    auto vec = getManaged( alias );
-    setVectorData( vec->d_VectorData );
+    auto vec      = getManaged( alias );
+    d_DOFManager  = vec->d_DOFManager;
+    d_VectorData  = vec->d_VectorData;
     d_VectorOps   = vec->d_VectorOps;
     d_pParameters = vec->d_pParameters;
     setVariable( vec->getVariable() );
@@ -105,7 +105,7 @@ void ManagedVector::swapVectors( Vector &other )
 std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
 {
     std::shared_ptr<ManagedVector> retVal( getNewRawPtr() );
-    retVal->setVectorData( d_VectorData->cloneData() );
+    retVal->d_VectorData = d_VectorData->cloneData();
     retVal->d_DOFManager = getDOFManager();
     retVal->setVariable( name );
     return retVal;
@@ -143,11 +143,6 @@ Vector::shared_ptr ManagedVector::selectInto( const VectorSelector &s )
 Vector::const_shared_ptr ManagedVector::selectInto( const VectorSelector &s ) const
 {
     return Vector::selectInto( s );
-}
-
-std::shared_ptr<ParameterBase> ManagedVector::getParameters()
-{
-    return std::dynamic_pointer_cast<ParameterBase>( d_pParameters );
 }
 
 Vector::shared_ptr ManagedVector::getVectorEngine( void )

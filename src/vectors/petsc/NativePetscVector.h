@@ -43,8 +43,6 @@ public:
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
     void swapVectors( Vector &other ) override;
-
-    std::shared_ptr<ParameterBase> getParameters() override;
 };
 
 

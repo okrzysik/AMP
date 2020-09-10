@@ -28,15 +28,7 @@ Vector::Vector()
       d_output_stream{ &AMP::plog }
 {
 }
-Vector::Vector( VectorParameters::shared_ptr parameters )
-    : d_Views{ std::make_shared<std::vector<std::weak_ptr<Vector>>>() },
-      d_output_stream{ &AMP::plog }
-{
-    // Copy the relavent parameters
-    AMP_INSIST( parameters->d_CommList, "d_CommList must be set in VectorParameters" );
-    AMP_INSIST( parameters->d_DOFManager, "d_DOFManager must be set in VectorParameters" );
-    d_DOFManager = parameters->d_DOFManager;
-}
+
 
 /****************************************************************
  * Destructor                                                    *

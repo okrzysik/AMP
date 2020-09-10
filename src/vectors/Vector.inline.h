@@ -12,10 +12,6 @@ namespace LinearAlgebra {
 /****************************************************************
  * Get basic info                                                *
  ****************************************************************/
-inline std::shared_ptr<ParameterBase> Vector::getParameters()
-{
-    return std::shared_ptr<ParameterBase>();
-}
 inline AMP::Discretization::DOFManager::shared_ptr Vector::getDOFManager() const
 {
     return d_DOFManager;

@@ -65,12 +65,6 @@ public: // typedefs
 
 
 public: // Constructor/destructors
-    /** \brief Constructor
-     * \param[in] parameters  A pointer to a parameters class
-     * \see VectorParameters
-     */
-    explicit Vector( VectorParameters::shared_ptr parameters );
-
     /** \brief Destructor
      */
     virtual ~Vector();
@@ -334,11 +328,6 @@ public: // Virtual functions
      */
     virtual Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const;
-
-    /** \brief Return a parameters description of this vector
-     * \return Parameters
-     */
-    virtual std::shared_ptr<ParameterBase> getParameters();
 
     /** \brief  Selects a portion of this vector and creates a view.
       * \param[in]  criterion  The method for deciding inclusion in the view
@@ -734,8 +723,6 @@ public: // Non virtual functions
 protected:
     // Constructor
     Vector();
-
-    void setVectorData( std::shared_ptr<VectorData> data ) { d_VectorData = data; }
 
 
 private:
