@@ -49,7 +49,6 @@ public:
 
     Epetra_Vector &getEpetra_Vector() override;
     const Epetra_Vector &getEpetra_Vector() const override;
-    void assemble() override;
 
 protected:
     ManagedVector *getNewRawPtr() const override;

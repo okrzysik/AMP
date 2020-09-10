@@ -121,10 +121,9 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
  ********************************************************/
 EpetraVectorEngine::EpetraVectorEngine( std::shared_ptr<EpetraVectorEngineParameters> alias,
                                         std::shared_ptr<VectorData> buf )
-    : Vector( alias ),
-      d_Params( alias )
+    : Vector( alias ), d_Params( alias )
 {
-    d_VectorOps = std::make_shared<EpetraVectorOperations>();
+    d_VectorOps  = std::make_shared<EpetraVectorOperations>();
     d_VectorData = EpetraVectorData::create( alias, buf );
 }
 
@@ -148,13 +147,6 @@ void EpetraVectorEngine::swapVectors( Vector &other )
     getEpetraVector( other ).ResetView( my_pointer );
     getEpetra_Vector().ResetView( oth_pointer );
 }
-
-void EpetraVectorEngine::aliasVector( Vector & )
-{
-    AMP_ERROR( "EpetraVectorEngine::aliasVector not implemented" );
-}
-
-void EpetraVectorEngine::assemble() {}
 
 } // namespace LinearAlgebra
 } // namespace AMP

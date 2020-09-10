@@ -53,8 +53,6 @@ public: // Functions inherited from Vector
         return create( name );
     }
     inline void swapVectors( Vector & ) override {}
-    inline void aliasVector( Vector & ) override {}
-    inline void assemble() override {}
     using Vector::cloneVector;
     using Vector::dot;
 
@@ -74,7 +72,7 @@ private:
     explicit inline NullVector( Variable::shared_ptr var )
     {
         d_VectorData = std::make_shared<VectorDataNull<TYPE>>();
-	d_VectorOps = std::make_shared<VectorOperationsDefault<TYPE>>();
+        d_VectorOps  = std::make_shared<VectorOperationsDefault<TYPE>>();
         setVariable( var );
         d_DOFManager.reset( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) );
     }

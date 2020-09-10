@@ -71,20 +71,14 @@ public:
 
 
 public: // Functions derived from Vector
-    using Vector::cloneVector;
-
     std::string type() const override { return "Simple Vector"; }
     Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
     void swapVectors( Vector &other ) override;
-    void aliasVector( Vector &other ) override;
-    void assemble() override;
 
     // temporary functions
-    void setComm( const AMP_MPI &comm) { d_comm = comm; }
+    void setComm( const AMP_MPI &comm ) { d_comm = comm; }
     void allocateVectorData( size_t localSize, size_t numLocal, size_t numGlobal );
-    void setDOFManager( std::shared_ptr<AMP::Discretization::DOFManager> dofManager);
-
-
+    void setDOFManager( std::shared_ptr<AMP::Discretization::DOFManager> dofManager );
 };
 
 

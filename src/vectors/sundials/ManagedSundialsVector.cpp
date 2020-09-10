@@ -378,7 +378,6 @@ std::string ManagedSundialsVector::type() const
     return retVal;
 }
 
-void ManagedSundialsVector::assemble() {}
 
 } // namespace LinearAlgebra
 } // namespace AMP

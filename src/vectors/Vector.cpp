@@ -23,20 +23,23 @@ RNG::shared_ptr Vector::d_DefaultRNG;
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-Vector::Vector() : d_output_stream{ &AMP::plog },
-		   d_Views {std::make_shared<std::vector<std::weak_ptr<Vector>>>() }
+Vector::Vector()
+    : d_Views{ std::make_shared<std::vector<std::weak_ptr<Vector>>>() },
+      d_output_stream{ &AMP::plog }
 {
 }
-Vector::Vector( VectorParameters::shared_ptr parameters ) : d_output_stream{ &AMP::plog },
-							    d_Views {std::make_shared<std::vector<std::weak_ptr<Vector>>>() }{
+Vector::Vector( VectorParameters::shared_ptr parameters )
+    : d_Views{ std::make_shared<std::vector<std::weak_ptr<Vector>>>() },
+      d_output_stream{ &AMP::plog }
+{
     // Copy the relavent parameters
     AMP_INSIST( parameters->d_CommList, "d_CommList must be set in VectorParameters" );
     AMP_INSIST( parameters->d_DOFManager, "d_DOFManager must be set in VectorParameters" );
-    d_DOFManager   = parameters->d_DOFManager;
+    d_DOFManager = parameters->d_DOFManager;
 }
 
 /****************************************************************
- * De-Constructors                                               *
+ * Destructor                                                    *
  ****************************************************************/
 Vector::~Vector() {}
 
@@ -133,6 +136,7 @@ Vector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
     }
     return retVal;
 }
+Vector::shared_ptr Vector::cloneVector() const { return cloneVector( getVariable() ); }
 Vector::shared_ptr Vector::cloneVector( const std::string &name ) const
 {
     Vector::shared_ptr retVal;

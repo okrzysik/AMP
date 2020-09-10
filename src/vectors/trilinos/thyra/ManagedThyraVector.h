@@ -50,7 +50,6 @@ public:
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const override;
     void copyVector( Vector::const_shared_ptr vec );
-    void assemble() override {}
     ManagedVector *getNewRawPtr() const override;
 
 protected:

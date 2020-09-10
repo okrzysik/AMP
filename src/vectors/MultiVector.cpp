@@ -5,6 +5,8 @@
 #include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/VectorSelector.h"
+#include "AMP/vectors/data/MultiVectorData.h"
+#include "AMP/vectors/operations/MultiVectorOperations.h"
 
 #include "ProfilerApp.h"
 
@@ -19,21 +21,19 @@ namespace LinearAlgebra {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-MultiVector::MultiVector( const std::string &name ) : Vector()
+MultiVector::MultiVector( const std::string &name, const AMP_MPI &comm ) : Vector()
 {
-    d_VectorOps = std::make_shared<MultiVectorOperations>();
-    auto vectorData = std::make_shared<MultiVectorData>();
+    d_VectorOps     = std::make_shared<MultiVectorOperations>();
+    auto vectorData = std::make_shared<MultiVectorData>( comm );
     setVectorData( vectorData );
     d_pVariable.reset( new MultiVariable( name ) );
-    d_CommCreated = false;
 }
 
 std::shared_ptr<MultiVector> MultiVector::create( Variable::shared_ptr variable,
                                                   const AMP_MPI &comm,
                                                   const std::vector<Vector::shared_ptr> &vecs )
 {
-    std::shared_ptr<MultiVector> retval( new MultiVector( variable->getName() ) );
-    retval->d_Comm = comm;
+    std::shared_ptr<MultiVector> retval( new MultiVector( variable->getName(), comm ) );
     retval->addVector( vecs );
     return retval;
 }
@@ -77,8 +77,8 @@ std::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec,
     }
     if ( comm.isNull() )
         comm = vec->getComm();
-    multivec      = create( vec->getVariable()->getName(), comm, { vec } );
-    auto data     = multivec->Vector::getVectorData();
+    multivec  = create( vec->getVariable()->getName(), comm, { vec } );
+    auto data = multivec->Vector::getVectorData();
     AMP_ASSERT( data );
     //    auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
     auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
@@ -171,13 +171,13 @@ void MultiVector::resetVectorData()
     }
     d_DOFManager = std::make_shared<AMP::Discretization::multiDOFManager>( getComm(), managers );
 
-    auto data = Vector::getVectorData();
-    auto mvData = std::dynamic_pointer_cast<MultiVectorData>(data);
-    AMP_ASSERT(mvData);
+    auto data   = Vector::getVectorData();
+    auto mvData = std::dynamic_pointer_cast<MultiVectorData>( data );
+    AMP_ASSERT( mvData );
     std::vector<VectorData *> dataComponents( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ )
-      dataComponents[i] = d_vVectors[i]->Vector::getVectorData().get();
-    mvData->resetMultiVectorData( d_DOFManager.get(), dataComponents);
+        dataComponents[i] = d_vVectors[i]->Vector::getVectorData().get();
+    mvData->resetMultiVectorData( d_DOFManager.get(), dataComponents );
 }
 
 void MultiVector::addVectorHelper( Vector::shared_ptr vec )
@@ -201,9 +201,10 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
         } else {
             AMP_ERROR( "Not finished" );
             d_vVectors.push_back( vec );
-	    auto data = Vector::getVectorData();
-	    AMP_ASSERT(data);
-	    //            auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
+            auto data = Vector::getVectorData();
+            AMP_ASSERT( data );
+            //            auto listener = std::dynamic_pointer_cast<DataChangeListener>(
+            //            shared_from_this() );
             auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
             vec->getVectorData()->registerListener( listener );
         }
@@ -217,9 +218,10 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
         if ( index == -1 ) {
             // Add the vector
             d_vVectors.push_back( vec );
-	    auto data = Vector::getVectorData();
-	    AMP_ASSERT(data);
-	    //            auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
+            auto data = Vector::getVectorData();
+            AMP_ASSERT( data );
+            //            auto listener = std::dynamic_pointer_cast<DataChangeListener>(
+            //            shared_from_this() );
             auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
             vec->getVectorData()->registerListener( listener );
         } else {
@@ -393,27 +395,16 @@ MultiVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) con
 /****************************************************************
  * Misc functions                                                *
  ****************************************************************/
-void MultiVector::assemble()
-{
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->assemble();
-}
 void MultiVector::swapVectors( Vector &other )
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
-      d_vVectors[i]->swapVectors( getVector(other, i) );
-}
-void MultiVector::aliasVector( Vector &other )
-{
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-      d_vVectors[i]->aliasVector( getVector(other, i) );
+        d_vVectors[i]->swapVectors( getVector( other, i ) );
 }
 Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) const
 {
-    std::shared_ptr<MultiVector> retVec( new MultiVector( name->getName() ) );
-    retVec->d_Comm       = getComm();
+    std::shared_ptr<MultiVector> retVec( new MultiVector( name->getName(), getComm() ) );
     retVec->d_DOFManager = d_DOFManager;
-    retVec-> setCommunicationList(  getCommunicationList() );
+    retVec->setCommunicationList( getCommunicationList() );
     retVec->d_vVectors.resize( d_vVectors.size() );
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         retVec->d_vVectors[i] = d_vVectors[i]->cloneVector();
@@ -431,8 +422,6 @@ size_t MultiVector::getNumberOfSubvectors() const { return d_vVectors.size(); }
 std::string MultiVector::type() const { return "MultiVector"; }
 
 MultiVector::~MultiVector() {}
-
-AMP_MPI MultiVector::getComm() const { return d_Comm; }
 
 const Vector::shared_ptr &MultiVector::getVector( const Vector &rhs, size_t which ) const
 {

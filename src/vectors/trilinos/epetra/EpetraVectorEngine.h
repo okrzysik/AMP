@@ -38,15 +38,18 @@ public:
     /** \brief  Get the raw Epetra_Vector
      * \return  The Epetra_Vector currently used by this engine
      */
-    inline Epetra_Vector &getEpetra_Vector() { return std::dynamic_pointer_cast<EpetraVectorData >(d_VectorData)->getEpetra_Vector(); }
+    inline Epetra_Vector &getEpetra_Vector()
+    {
+        return std::dynamic_pointer_cast<EpetraVectorData>( d_VectorData )->getEpetra_Vector();
+    }
 
     /** \brief  Get the raw Epetra_Vector
      * \return  The Epetra_Vector currently used by this engine
      */
-    inline const Epetra_Vector &getEpetra_Vector() const { return std::dynamic_pointer_cast<EpetraVectorData>(d_VectorData)->getEpetra_Vector(); }
-
-public: // Functions derived from VectorData
-    AMP_MPI getComm() const override { return d_Params->getComm(); }
+    inline const Epetra_Vector &getEpetra_Vector() const
+    {
+        return std::dynamic_pointer_cast<EpetraVectorData>( d_VectorData )->getEpetra_Vector();
+    }
 
 public: // Functions derived from Vector
     using Vector::cloneVector;
@@ -54,8 +57,6 @@ public: // Functions derived from Vector
     std::string type() const override { return "EpetraVectorEngine"; }
     Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
     void swapVectors( Vector &other ) override;
-    void aliasVector( Vector &other ) override;
-    void assemble() override;
 
 protected:
     std::shared_ptr<EpetraVectorEngineParameters> d_Params;

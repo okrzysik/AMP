@@ -1,8 +1,8 @@
 #ifndef included_AMP_ManagedVector
 #define included_AMP_ManagedVector
 
-#include "AMP/vectors/Vector.h"
 #include "AMP/vectors/ManagedVectorData.h"
+#include "AMP/vectors/Vector.h"
 
 #include <stdexcept>
 #include <vector>
@@ -56,7 +56,6 @@ public:
     virtual bool isAnAliasOf( Vector::shared_ptr rhs );
 
 protected:
-
     //! The parameters used to create this vector
     std::shared_ptr<ManagedVectorParameters> d_pParameters;
 
@@ -64,7 +63,6 @@ protected:
     virtual ManagedVector *getNewRawPtr() const = 0;
 
 public: // Derived from Vector
-    using Vector::cloneVector;
     std::string type() const override;
     std::shared_ptr<Vector> cloneVector( const Variable::shared_ptr name ) const override;
     std::shared_ptr<ParameterBase> getParameters() override;
@@ -72,7 +70,6 @@ public: // Derived from Vector
     Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
     void swapVectors( Vector &other ) override;
-    void aliasVector( Vector &other ) override;
 
 protected: // Derived from Vector
     Vector::shared_ptr selectInto( const VectorSelector & ) override;

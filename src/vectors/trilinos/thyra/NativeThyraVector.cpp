@@ -20,12 +20,11 @@ namespace LinearAlgebra {
 /************************************************************************
  * Constructors                                                          *
  ************************************************************************/
-NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
-    : Vector()
+NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params ) : Vector()
 {
     d_VectorOps = std::make_shared<NativeThyraVectorOperations>();
-    
-    setVectorData( std::make_shared<NativeThyraVectorData>(in_params) );
+
+    setVectorData( std::make_shared<NativeThyraVectorData>( in_params ) );
 
     auto params = std::dynamic_pointer_cast<NativeThyraVectorParameters>( in_params );
     AMP_ASSERT( params != nullptr );
@@ -35,13 +34,12 @@ NativeThyraVector::NativeThyraVector( VectorParameters::shared_ptr in_params )
     d_pVariable  = params->d_var;
 }
 
-NativeThyraVector::NativeThyraVector( std::shared_ptr<VectorData> data )
-  : Vector()
+NativeThyraVector::NativeThyraVector( std::shared_ptr<VectorData> data ) : Vector()
 {
-    setVectorData(data);
-    d_VectorOps    = std::make_shared<NativeThyraVectorOperations>();
-    d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>( data->getLocalSize(),
-                                                                      data->getComm() );
+    setVectorData( data );
+    d_VectorOps = std::make_shared<NativeThyraVectorOperations>();
+    d_DOFManager =
+        std::make_shared<AMP::Discretization::DOFManager>( data->getLocalSize(), data->getComm() );
 }
 
 /************************************************************************
@@ -54,17 +52,13 @@ NativeThyraVector::~NativeThyraVector() {}
  ************************************************************************/
 Vector::shared_ptr NativeThyraVector::cloneVector( const Variable::shared_ptr var ) const
 {
-    auto data = d_VectorData->cloneData();
+    auto data   = d_VectorData->cloneData();
     auto retVal = std::make_shared<NativeThyraVector>( data );
     retVal->setVariable( var );
     return retVal;
 }
 
-void NativeThyraVector::aliasVector( Vector & ) { AMP_ERROR( "not implemented" ); }
-
 void NativeThyraVector::swapVectors( Vector & ) { AMP_ERROR( "not implemented" ); }
-
-void NativeThyraVector::assemble() {}
 
 } // namespace LinearAlgebra
 } // namespace AMP

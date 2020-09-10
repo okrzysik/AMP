@@ -3,8 +3,8 @@
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/petsc/PetscVector.h"
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
+#include "AMP/vectors/petsc/PetscVector.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -43,11 +43,8 @@ public:
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
     void swapVectors( Vector &other ) override;
-    void aliasVector( Vector & ) override;
-    void assemble() override;
 
     std::shared_ptr<ParameterBase> getParameters() override;
-
 };
 
 

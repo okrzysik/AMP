@@ -54,9 +54,7 @@ public:
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( Variable::shared_ptr ) const override;
     void swapVectors( Vector &rhs ) override;
-    void aliasVector( Vector &rhs ) override;
-    void assemble() override {}
-    
+
 private:
     SubsetVector() {}
 };

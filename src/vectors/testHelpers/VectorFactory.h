@@ -219,7 +219,7 @@ public:
             std::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
         auto newVec = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( npvParams );
         VecSetFromOptions( v );
-        newVec->assemble();
+        newVec->getVectorData()->assemble();
         newVec->setVariable(
             std::make_shared<AMP::LinearAlgebra::Variable>( "Test NativePetscVector" ) );
         return newVec;
@@ -254,7 +254,7 @@ public:
             std::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
         auto newVec = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( npvParams );
         VecSetFromOptions( v );
-        newVec->assemble();
+        newVec->getVectorData()->assemble();
         auto p1        = std::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
         p1->d_Engine   = newVec;
         p1->d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( 210, globalComm );

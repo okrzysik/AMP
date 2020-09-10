@@ -6,8 +6,8 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/trilinos/thyra/ManagedThyraVector.h"
-#include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
 #include "AMP/vectors/trilinos/thyra/NativeThyraVector.h"
+#include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
 
 
 // Trilinos includes
@@ -57,18 +57,15 @@ AMP::LinearAlgebra::Vector::shared_ptr NativeThyraFactory::getVector() const
     Teuchos::RCP<Epetra_Map> epetra_map( new Epetra_Map( global_size, local_size, 0, comm ) );
     Teuchos::RCP<Epetra_Vector> epetra_v( new Epetra_Vector( *epetra_map, true ) );
     // Create a thyra vector from the epetra vector
-    Teuchos::RCP<const Thyra::VectorSpaceBase<double>> space =
-        Thyra::create_VectorSpace( epetra_map );
-    Teuchos::RCP<Thyra::VectorBase<double>> thyra_v = Thyra::create_Vector( epetra_v, space );
+    auto space   = Thyra::create_VectorSpace( epetra_map );
+    auto thyra_v = Thyra::create_Vector( epetra_v, space );
     // Create the NativeThyraVector
-    std::shared_ptr<AMP::LinearAlgebra::NativeThyraVectorParameters> params(
-        new AMP::LinearAlgebra::NativeThyraVectorParameters() );
+    auto params     = std::make_shared<AMP::LinearAlgebra::NativeThyraVectorParameters>();
     params->d_InVec = thyra_v;
     params->d_local = local_size;
     params->d_comm  = global_comm;
     params->d_var   = getVariable();
-    std::shared_ptr<AMP::LinearAlgebra::NativeThyraVector> vec(
-        new AMP::LinearAlgebra::NativeThyraVector( params ) );
+    auto vec        = std::make_shared<AMP::LinearAlgebra::NativeThyraVector>( params );
     return vec;
 }
 AMP::Discretization::DOFManager::shared_ptr NativeThyraFactory::getDOFMap() const
@@ -88,10 +85,10 @@ AMP::LinearAlgebra::Variable::shared_ptr ManagedThyraFactory::getVariable() cons
 AMP::LinearAlgebra::Vector::shared_ptr ManagedThyraFactory::getVector() const
 {
     // Create an arbitrary vector
-    AMP::LinearAlgebra::Vector::shared_ptr vec1 = d_factory->getVector();
+    auto vec1 = d_factory->getVector();
     vec1->setVariable( getVariable() );
     // Create the managed vector
-    AMP::LinearAlgebra::Vector::shared_ptr vec2 = AMP::LinearAlgebra::ThyraVector::view( vec1 );
+    auto vec2 = AMP::LinearAlgebra::ThyraVector::view( vec1 );
     vec2->setVariable( getVariable() );
     return vec2;
 }
@@ -111,20 +108,17 @@ AMP::LinearAlgebra::Variable::shared_ptr ManagedNativeThyraFactory::getVariable(
 AMP::LinearAlgebra::Vector::shared_ptr ManagedNativeThyraFactory::getVector() const
 {
     // Create an arbitrary vector
-    AMP::LinearAlgebra::Vector::shared_ptr vec1 = d_factory->getVector();
+    auto vec1 = d_factory->getVector();
     // Create the managed vector
-    std::shared_ptr<AMP::LinearAlgebra::ManagedThyraVector> vec2 =
-        std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedThyraVector>(
-            AMP::LinearAlgebra::ThyraVector::view( vec1 ) );
+    auto vec2 = std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedThyraVector>(
+        AMP::LinearAlgebra::ThyraVector::view( vec1 ) );
     // Create a native ThyraVector from the managed vector
-    std::shared_ptr<AMP::LinearAlgebra::NativeThyraVectorParameters> params(
-        new AMP::LinearAlgebra::NativeThyraVectorParameters() );
+    auto params     = std::make_shared<AMP::LinearAlgebra::NativeThyraVectorParameters>();
     params->d_InVec = vec2->getVec();
     params->d_local = vec2->getLocalSize();
     params->d_comm  = vec2->getComm();
     params->d_var   = getVariable();
-    std::shared_ptr<AMP::LinearAlgebra::NativeThyraVector> vec3(
-        new AMP::LinearAlgebra::NativeThyraVector( params ) );
+    auto vec3       = std::make_shared<AMP::LinearAlgebra::NativeThyraVector>( params );
     return vec3;
 }
 AMP::Discretization::DOFManager::shared_ptr ManagedNativeThyraFactory::getDOFMap() const
@@ -136,15 +130,17 @@ AMP::Discretization::DOFManager::shared_ptr ManagedNativeThyraFactory::getDOFMap
 
 Teuchos::RCP<Thyra::VectorBase<double>> getThyraVec( AMP::LinearAlgebra::Vector::shared_ptr v )
 {
-  auto mv = std::dynamic_pointer_cast<ManagedThyraVector>(v);
-  if ( mv ) return std::dynamic_pointer_cast<ThyraVector>(v)->getVec();
+    auto mv = std::dynamic_pointer_cast<ManagedThyraVector>( v );
+    if ( mv )
+        return std::dynamic_pointer_cast<ThyraVector>( v )->getVec();
 
-  auto nv = std::dynamic_pointer_cast<NativeThyraVector>(v);
-  if(nv) {
-    return  std::dynamic_pointer_cast<ThyraVector>(nv->getVectorData())->getVec();
-  } else {
-    AMP_ERROR("Not a Thyra Vector");
-  }
+    auto nv = std::dynamic_pointer_cast<NativeThyraVector>( v );
+    if ( nv ) {
+        return std::dynamic_pointer_cast<ThyraVector>( nv->getVectorData() )->getVec();
+    } else {
+        AMP_ERROR( "Not a Thyra Vector" );
+    }
+    return Teuchos::RCP<Thyra::VectorBase<double>>();
 }
 
 /****************************************************************
@@ -152,12 +148,11 @@ Teuchos::RCP<Thyra::VectorBase<double>> getThyraVec( AMP::LinearAlgebra::Vector:
  ****************************************************************/
 void testBelosThyraVector( AMP::UnitTest &ut, const VectorFactory &factory )
 {
-    auto vector = factory.getVector();
-    using TMVB = Thyra::MultiVectorBase<double>;
-    Teuchos::RCP<Belos::OutputManager<double>> outputmgr =
-        Teuchos::rcp( new Belos::OutputManager<double>() );
-    
-    bool pass = Belos::TestMultiVecTraits<double, TMVB>( outputmgr, getThyraVec(vector) );
+    auto vector    = factory.getVector();
+    using TMVB     = Thyra::MultiVectorBase<double>;
+    auto outputmgr = Teuchos::rcp( new Belos::OutputManager<double>() );
+
+    bool pass = Belos::TestMultiVecTraits<double, TMVB>( outputmgr, getThyraVec( vector ) );
     if ( pass )
         ut.passes( "Belos::TestMultiVecTraits of thyra vector" );
     else

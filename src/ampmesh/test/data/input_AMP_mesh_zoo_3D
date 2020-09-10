@@ -5,7 +5,7 @@ Mesh{
 	MeshArrayDatabasePrefix = "MeshArray_"
     LoadBalanceMethod = 2
 
-	/*Mesh_1 {
+	Mesh_1 {
 		MeshName = "cube_3d"
 		MeshType = "AMP"
 		dim = 3
@@ -122,9 +122,9 @@ Mesh{
 		y_offset = 6
 		z_offset = 5
         static = TRUE
-	}*/
+	}
 
-	Mesh_1 {
+	Mesh_10 {
 		MeshName = "Parallelepiped"
 		MeshType = "AMP"
 		Generator = "Parallelepiped"
@@ -132,10 +132,9 @@ Mesh{
         a = 1, 0, 0
         b = 0, 1, 0
         c = 0.2, 0, 1
-		Dir = "+z"
-		//x_offset = 2
-		//y_offset = 6
-		//z_offset = 5
+		x_offset = 2
+		y_offset = 6
+		z_offset = 5
         static = TRUE
 	}
 

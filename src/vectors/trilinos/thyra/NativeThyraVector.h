@@ -26,7 +26,7 @@ public:
      */
     explicit NativeThyraVector( VectorParameters::shared_ptr params );
     explicit NativeThyraVector( std::shared_ptr<VectorData> data );
-    
+
     //! Destructor
     virtual ~NativeThyraVector();
 
@@ -35,8 +35,6 @@ public:
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
     void swapVectors( Vector &other ) override;
-    void aliasVector( Vector & ) override;
-    void assemble() override;
 
 protected:
     //! Empty constructor.

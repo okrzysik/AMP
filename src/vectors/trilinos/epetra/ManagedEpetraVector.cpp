@@ -46,10 +46,10 @@ inline Vector::shared_ptr ManagedEpetraVector::cloneVector( const Variable::shar
 
 void ManagedEpetraVector::copyVector( Vector::const_shared_ptr vec )
 {
-  auto engineVec = getVectorEngine();
-  engineVec->copyVector( vec );
+    auto engineVec = getVectorEngine();
+    engineVec->copyVector( vec );
 }
-  
+
 inline Epetra_Vector &ManagedEpetraVector::getEpetra_Vector()
 {
     auto engine = std::dynamic_pointer_cast<EpetraVectorEngine>( getVectorEngine() );
@@ -63,8 +63,6 @@ inline const Epetra_Vector &ManagedEpetraVector::getEpetra_Vector() const
     AMP_ASSERT( engine != nullptr );
     return engine->getEpetra_Vector();
 }
-
-inline void ManagedEpetraVector::assemble() {}
 
 
 } // namespace LinearAlgebra

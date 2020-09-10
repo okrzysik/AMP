@@ -16,7 +16,7 @@ namespace LinearAlgebra {
 template<typename TYPE>
 class VectorDataIterator;
 
- 
+
 //! Parameters used to instantiate a Vector
 class VectorParameters : public ParameterBase
 {
@@ -457,9 +457,14 @@ public:
      */
     virtual bool containsGlobalElement( size_t GID );
 
+    /**
+     * \brief This method is used to implement the assemble interface
+     * of PETSc.
+     * \details  This method is empty except for instantiations of NativePetscVectorData
+     */
+    virtual void assemble() {}
 
 public: // Non virtual functions
-
     /** \brief  Return the current update state of this Vector
      * \details  This returns the pointer to the update state
      *  of the current vector only (not vectors it contains).
@@ -492,7 +497,7 @@ protected: // Internal data
     std::shared_ptr<UpdateState> d_UpdateState = nullptr;
 
     // Ghost data
-    std::shared_ptr<std::vector<double>> d_Ghosts = nullptr;
+    std::shared_ptr<std::vector<double>> d_Ghosts    = nullptr;
     std::shared_ptr<std::vector<double>> d_AddBuffer = nullptr;
 
     // Friends
@@ -503,7 +508,7 @@ public:
     //! Default constructor
     VectorData();
 
-    VectorData(std::shared_ptr<VectorParameters> params);
+    VectorData( std::shared_ptr<VectorParameters> params );
 };
 
 

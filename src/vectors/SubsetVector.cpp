@@ -81,13 +81,13 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
     // Create the new subset vector
     std::shared_ptr<SubsetVector> retVal( new SubsetVector() );
     retVal->setVariable( var );
-    auto params = std::make_shared<SubsetVectorParameters>();
+    auto params          = std::make_shared<SubsetVectorParameters>();
     params->d_ViewVector = std::const_pointer_cast<Vector>( v );
     params->d_DOFManager = subsetDOF;
     params->d_CommList   = commList;
-    retVal->setVectorData( std::make_shared<SubsetVectorData>(params) );
+    retVal->setVectorData( std::make_shared<SubsetVectorData>( params ) );
     retVal->d_DOFManager = subsetDOF; // at present all vectors need to have a dof manager
-    
+
     // We should decide on a better way to set the vector operations
     // for efficiency
     retVal->d_VectorOps = std::make_shared<VectorOperationsDefault<double>>();
@@ -101,140 +101,6 @@ Vector::shared_ptr SubsetVector::cloneVector( Variable::shared_ptr var ) const
     Vector::shared_ptr vec = AMP::LinearAlgebra::createVector( d_DOFManager, var );
     return vec;
 }
-
-#if 0
-/****************************************************************
- * Functions to access the raw data blocks                       *
- ****************************************************************/
-size_t SubsetVector::numberOfDataBlocks() const { return d_dataBlockSize.size(); }
-size_t SubsetVector::sizeOfDataBlock( size_t i ) const { return d_dataBlockSize[i]; }
-void *SubsetVector::getRawDataBlockAsVoid( size_t i )
-{
-    double *ptr = d_dataBlockPtr[i];
-    return (void *) ptr;
-}
-const void *SubsetVector::getRawDataBlockAsVoid( size_t i ) const
-{
-    double *ptr = d_dataBlockPtr[i];
-    return (const void *) ptr;
-}
-void SubsetVector::putRawData( const double *in )
-{
-    size_t k = 0;
-    for ( size_t i = 0; i < d_dataBlockPtr.size(); i++ ) {
-        for ( size_t j = 0; j < d_dataBlockSize[i]; j++, k++ )
-            d_dataBlockPtr[i][j] = in[k];
-    }
-}
-void SubsetVector::copyOutRawData( double *out ) const
-{
-    size_t k = 0;
-    for ( size_t i = 0; i < d_dataBlockPtr.size(); i++ ) {
-        for ( size_t j = 0; j < d_dataBlockSize[i]; j++, k++ )
-            out[k] = d_dataBlockPtr[i][j];
-    }
-}
-
-
-/****************************************************************
- * Functions add/set values by ID                                *
- ****************************************************************/
-void SubsetVector::addLocalValuesByGlobalID( int cnt, size_t *ndx, const double *vals )
-{
-    AMP_ASSERT( d_ViewVector.get() != nullptr );
-    if ( cnt == 0 )
-        return;
-    std::vector<size_t> parentDOFs;
-    if ( d_SubsetLocalIDToViewGlobalID.size() == d_ViewVector->getLocalSize() ) {
-        parentDOFs.resize( cnt );
-        int offset = d_ViewVector->getDOFManager()->beginDOF() - d_DOFManager->beginDOF();
-        for ( int i = 0; i < cnt; i++ )
-            parentDOFs[i] = ndx[i] + offset;
-    } else {
-        auto DOFManager =
-            std::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( d_DOFManager );
-        std::vector<size_t> subsetDOFs( cnt );
-        for ( int i = 0; i < cnt; i++ )
-            subsetDOFs[i] = ndx[i];
-        parentDOFs = DOFManager->getParentDOF( subsetDOFs );
-    }
-    d_ViewVector->addLocalValuesByGlobalID( cnt, &parentDOFs[0], vals );
-}
-void SubsetVector::getLocalValuesByGlobalID( int cnt, size_t *ndx, double *vals ) const
-{
-    AMP_ASSERT( d_ViewVector.get() != nullptr );
-    if ( cnt == 0 )
-        return;
-    std::vector<size_t> parentDOFs;
-    if ( d_SubsetLocalIDToViewGlobalID.size() == d_ViewVector->getLocalSize() ) {
-        parentDOFs.resize( cnt );
-        int offset = d_ViewVector->getDOFManager()->beginDOF() - d_DOFManager->beginDOF();
-        for ( int i = 0; i < cnt; i++ )
-            parentDOFs[i] = ndx[i] + offset;
-    } else {
-        auto DOFManager =
-            std::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( d_DOFManager );
-        std::vector<size_t> subsetDOFs( cnt );
-        for ( int i = 0; i < cnt; i++ )
-            subsetDOFs[i] = ndx[i];
-        parentDOFs = DOFManager->getParentDOF( subsetDOFs );
-    }
-    d_ViewVector->getLocalValuesByGlobalID( cnt, &parentDOFs[0], vals );
-}
-void SubsetVector::setLocalValuesByGlobalID( int cnt, size_t *ndx, const double *vals )
-{
-    AMP_ASSERT( d_ViewVector.get() != nullptr );
-    if ( cnt == 0 )
-        return;
-    std::vector<size_t> parentDOFs;
-    if ( d_SubsetLocalIDToViewGlobalID.size() == d_ViewVector->getLocalSize() ) {
-        parentDOFs.resize( cnt );
-        int offset = d_ViewVector->getDOFManager()->beginDOF() - d_DOFManager->beginDOF();
-        for ( int i = 0; i < cnt; i++ )
-            parentDOFs[i] = ndx[i] + offset;
-    } else {
-        auto DOFManager =
-            std::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( d_DOFManager );
-        std::vector<size_t> subsetDOFs( cnt );
-        for ( int i = 0; i < cnt; i++ )
-            subsetDOFs[i] = ndx[i];
-        parentDOFs = DOFManager->getParentDOF( subsetDOFs );
-    }
-    d_ViewVector->setLocalValuesByGlobalID( cnt, &parentDOFs[0], vals );
-}
-void SubsetVector::addValuesByLocalID( int cnt, size_t *ndx, const double *vals )
-{
-    AMP_ASSERT( d_ViewVector.get() != nullptr );
-    auto t = new size_t[cnt];
-    for ( int i = 0; i != cnt; i++ )
-        t[i] = d_SubsetLocalIDToViewGlobalID[ndx[i]];
-    d_ViewVector->addValuesByLocalID( cnt, t, vals );
-    delete[] t;
-}
-void SubsetVector::setValuesByLocalID( int cnt, size_t *ndx, const double *vals )
-{
-    AMP_ASSERT( d_ViewVector.get() != nullptr );
-    auto t = new size_t[cnt];
-    for ( int i = 0; i != cnt; i++ )
-        t[i] = d_SubsetLocalIDToViewGlobalID[ndx[i]];
-    d_ViewVector->setValuesByLocalID( cnt, t, vals );
-    delete[] t;
-}
-void SubsetVector::getValuesByLocalID( int cnt, size_t *ndx, double *vals ) const
-{
-    AMP_ASSERT( d_ViewVector.get() != nullptr );
-    auto t = new size_t[cnt];
-    for ( int i = 0; i != cnt; i++ )
-        t[i] = d_SubsetLocalIDToViewGlobalID[ndx[i]];
-    d_ViewVector->getValuesByLocalID( cnt, t, vals );
-    delete[] t;
-}
-
-size_t SubsetVector::getLocalSize() const { return getCommunicationList()->numLocalRows(); }
-size_t SubsetVector::getGlobalSize() const { return getCommunicationList()->getTotalSize(); }
-#endif
-
-void SubsetVector::aliasVector( Vector & ) { AMP_ERROR( "cannot alias a subset vector.....yet" ); }
 
 
 std::string SubsetVector::type() const
@@ -250,7 +116,7 @@ std::string SubsetVector::type() const
 void SubsetVector::swapVectors( Vector &rhs )
 {
 #if 1
-  d_VectorData->swapData(*(rhs.getVectorData()));
+    d_VectorData->swapData( *( rhs.getVectorData() ) );
 #else
     auto s = dynamic_cast<SubsetVector *>( &rhs );
     AMP_ASSERT( s != nullptr );

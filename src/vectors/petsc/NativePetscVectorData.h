@@ -104,10 +104,9 @@ public:
 
     // We can always delete a NativePetscVector
     bool petscHoldsView() const override { return false; }
-    void assemble();
+    void assemble() override;
 
 protected:
-
     void resetArray();
     void resetArray() const;
 

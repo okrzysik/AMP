@@ -478,17 +478,17 @@ PetscErrorCode _AMP_waxpy( Vec w, PetscScalar alpha, Vec x, Vec y )
 
 PetscErrorCode _AMP_norm_local( Vec in, NormType type, PetscReal *ans )
 {
-    auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
+    auto x   = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
     auto ops = x->getVectorOperations();
     if ( type == NORM_1 )
-      *ans = ops->localL1Norm(*x->getVectorData());
+        *ans = ops->localL1Norm( *x->getVectorData() );
     else if ( type == NORM_2 )
-        *ans = ops->localL2Norm(*x->getVectorData());
+        *ans = ops->localL2Norm( *x->getVectorData() );
     else if ( type == NORM_INFINITY )
-        *ans = ops->localMaxNorm(*x->getVectorData());
+        *ans = ops->localMaxNorm( *x->getVectorData() );
     else if ( type == NORM_1_AND_2 ) {
-        *ans         = ops->localL1Norm(*x->getVectorData());
-        *( ans + 1 ) = ops->localL2Norm(*x->getVectorData());
+        *ans         = ops->localL1Norm( *x->getVectorData() );
+        *( ans + 1 ) = ops->localL2Norm( *x->getVectorData() );
     } else
         AMP_ERROR( "Unknown norm type" );
     if ( type != NORM_1_AND_2 ) {
@@ -696,7 +696,6 @@ namespace LinearAlgebra {
 
 void ManagedPetscVector::initPetsc()
 {
-    auto params  = std::dynamic_pointer_cast<ManagedVectorParameters>( getParameters() );
     AMP_MPI comm = getVectorEngine()->getComm();
     VecCreate( comm.getCommunicator(), &d_petscVec );
 
@@ -788,11 +787,6 @@ ManagedPetscVector *ManagedPetscVector::petscDuplicate()
 
 void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
 {
-    auto params = std::dynamic_pointer_cast<ManagedVectorParameters>(
-        dynamic_cast<ManagedVector *>( &dest )->getParameters() );
-    if ( !params )
-        throw( "Incompatible vector types" );
-
     if ( sizeof( PetscInt ) < 8 )
         AMP_INSIST( dest.getGlobalSize() < 0x80000000,
                     "PETsc is compiled with 32-bit integers and "
@@ -851,7 +845,7 @@ bool ManagedPetscVector::constructedWithPetscDuplicate() { return d_bMadeWithPet
 
 ManagedPetscVector *ManagedPetscVector::rawClone() const
 {
-    auto p   = std::make_shared<ManagedPetscVectorParameters>();
+    auto p         = std::make_shared<ManagedPetscVectorParameters>();
     const auto vec = getVectorEngine();
     if ( vec ) {
         auto vec2   = vec->cloneVector( "ManagedPetscVectorClone" );
@@ -872,9 +866,6 @@ Vector::shared_ptr ManagedPetscVector::cloneVector( const Variable::shared_ptr p
     retVal->setVariable( p );
     return retVal;
 }
-
-
-void ManagedPetscVector::assemble() {}
 
 
 void ManagedPetscVector::receiveDataChanged()

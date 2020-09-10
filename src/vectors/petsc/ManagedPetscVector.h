@@ -1,9 +1,9 @@
- #ifndef included_AMP_ManagedPetscVector
+#ifndef included_AMP_ManagedPetscVector
 #define included_AMP_ManagedPetscVector
 
+#include "AMP/vectors/DataChangeListener.h"
 #include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/petsc/PetscVector.h"
-#include "AMP/vectors/DataChangeListener.h"
 
 
 namespace AMP {
@@ -26,7 +26,7 @@ typedef ManagedVectorParameters ManagedPetscVectorParameters;
  *
  * \see PetscVector
  */
- class ManagedPetscVector : public ManagedVector, public PetscVector, public DataChangeListener
+class ManagedPetscVector : public ManagedVector, public PetscVector, public DataChangeListener
 {
 private:
     bool d_bMadeWithPetscDuplicate;
@@ -99,8 +99,6 @@ public:
     {
         return "Managed PETSc Vector" + ManagedVector::type();
     }
-
-    void assemble() override;
 
     virtual bool petscHoldsView() const override;
 

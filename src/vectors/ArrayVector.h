@@ -5,8 +5,8 @@
 
 #include "AMP/utils/Array.h"
 #include "AMP/utils/FunctionTable.h"
-#include "AMP/vectors/Vector.h"
 #include "AMP/vectors/ArrayVectorData.h"
+#include "AMP/vectors/Vector.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.hpp"
 
@@ -22,7 +22,6 @@ template<typename T, typename FUN = FunctionTable, typename Allocator = std::all
 class ArrayVector : public Vector
 {
 private:
-
     ArrayVector();
     explicit ArrayVector( const ArrayVector & );
 
@@ -68,17 +67,9 @@ public:
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
     void swapVectors( Vector &other ) override;
-    void aliasVector( Vector &other ) override;
-    /**
-     * \brief This method is used to implement the assemble interface
-     * of PETSc.
-     * \details  This method is empty except for instantiations of NativePetscVector
-     */
-    void assemble() override { AMP_ERROR( "Not implemented" ); }
 
     //! resize the ArrayVector and reset the internal data structures
     void resize( const std::vector<size_t> &localDims );
-
 };
 
 } // namespace LinearAlgebra
