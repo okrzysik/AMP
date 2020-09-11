@@ -1,5 +1,6 @@
 #include "MapSurface.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 
 namespace AMP {
@@ -37,8 +38,8 @@ MapSurface::MapSurface( const std::shared_ptr<OperatorParameters> &params ) : Ma
 
     std::string gapVar = mapMaster_db->getString( "OutputVariable" );
     gapVariable.reset( new AMP::LinearAlgebra::Variable( gapVar ) );
-    gap1DVec = AMP::LinearAlgebra::SimpleVector<double>::create( mapTarget->getNumZlocations(),
-                                                                 gapVariable );
+    gap1DVec = AMP::LinearAlgebra::createSimpleVector<double>( mapTarget->getNumZlocations(),
+                                                               gapVariable );
 
     mapMaster->setVector( gap1DVec );
 }

@@ -3,7 +3,7 @@
 
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/vectors/SimpleVector.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 
 using namespace AMP::LinearAlgebra;
@@ -40,8 +40,8 @@ void test_petsc_matrix_loop( AMP::UnitTest &ut )
 void testBasics( AMP::UnitTest &ut, const std::string &type )
 {
     // Test creating a non-square matrix and ensure it is the proper size
-    auto left  = AMP::LinearAlgebra::SimpleVector<double>::create( 5, "left" );
-    auto right = AMP::LinearAlgebra::SimpleVector<double>::create( 10, "right" );
+    auto left  = AMP::LinearAlgebra::createSimpleVector<double>( 5, "left" );
+    auto right = AMP::LinearAlgebra::createSimpleVector<double>( 10, "right" );
     auto mat   = AMP::LinearAlgebra::createMatrix(
         right, left, type, []( size_t row ) { return std::vector<size_t>( 1, row ); } );
     int rows = mat->numGlobalRows();

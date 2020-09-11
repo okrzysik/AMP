@@ -4,11 +4,16 @@
 
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
+
 #include <string>
+
 
 extern "C" {
 typedef struct _p_Vec *Vec;
 }
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -40,8 +45,60 @@ std::shared_ptr<Vector> createVector( Vec v, bool deleteable, AMP_MPI comm = AMP
 #endif
 
 
+/** \brief   Create a simple AMP vector
+ * \details  This is a factory method to create a simple AMP vector.
+ * \param    localSize  The number of elements in the vector on this processor
+ * \param    var The variable associated with the new vector
+ */
+template<typename TYPE,
+         typename VecOps  = VectorOperationsDefault<TYPE>,
+         typename VecData = VectorDataCPU<TYPE>>
+Vector::shared_ptr createSimpleVector( size_t localSize, const std::string &var );
+
+
+/** \brief   Create a simple AMP vector
+ * \details  This is a factory method to create a simple AMP vector.
+ * \param    localSize  The number of elements in the vector on this processor
+ * \param    var The variable associated with the new vector
+ */
+template<typename TYPE,
+         typename VecOps  = VectorOperationsDefault<TYPE>,
+         typename VecData = VectorDataCPU<TYPE>>
+Vector::shared_ptr createSimpleVector( size_t localSize, Variable::shared_ptr var );
+
+
+/** \brief   Create a simple AMP vector
+ * \details  This is a factory method to create a simple AMP vector.
+ * \param    localSize  The number of elements in the vector on this processor
+ * \param    var The variable associated with the new vector
+ * \param    comm The variable associated with the new vector
+ */
+template<typename TYPE,
+         typename VecOps  = VectorOperationsDefault<TYPE>,
+         typename VecData = VectorDataCPU<TYPE>>
+Vector::shared_ptr createSimpleVector( size_t localSize, Variable::shared_ptr var, AMP_MPI comm );
+
+
+/** \brief   Create a simple AMP vector
+ * \details  This is a factory method to create a simple AMP vector.
+ *           It spans a comm and contains ghost values.
+ * \param    var The variable associated with the new vector
+ * \param    DOFs The DOFManager
+ * \param    commlist The communication list
+ */
+template<typename TYPE,
+         typename VecOps  = VectorOperationsDefault<TYPE>,
+         typename VecData = VectorDataCPU<TYPE>>
+Vector::shared_ptr createSimpleVector( Variable::shared_ptr var,
+                                       AMP::Discretization::DOFManager::shared_ptr DOFs,
+                                       AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 
 #endif
 #endif
+
+
+#include "VectorBuilder.hpp"

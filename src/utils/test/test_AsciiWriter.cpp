@@ -19,7 +19,6 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #endif
 #ifdef USE_AMP_VECTORS
-#include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #endif
 #ifdef USE_AMP_MATRICES
@@ -82,8 +81,8 @@ void test_AsciiWriter( AMP::UnitTest *ut )
     auto vec1 = createVector<2, 3, 4>( var1, globalComm );
     auto vec2 = createVector<3, 2, 1>( var2, selfComm );
 #else
-    auto vec1 = AMP::LinearAlgebra::SimpleVector<double>::create( 20, var1, globalComm );
-    auto vec2 = AMP::LinearAlgebra::SimpleVector<double>::create( 50, var2, selfComm );
+    auto vec1 = AMP::LinearAlgebra::createSimpleVector<double>( 20, var1, globalComm );
+    auto vec2 = AMP::LinearAlgebra::createSimpleVector<double>( 50, var2, selfComm );
 #endif
     writer->registerVector( vec1 );
     writer->registerVector( vec2 );

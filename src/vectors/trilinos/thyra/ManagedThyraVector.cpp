@@ -1,6 +1,5 @@
 #include "AMP/vectors/trilinos/thyra/ManagedThyraVector.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
 
@@ -14,8 +13,8 @@ namespace LinearAlgebra {
 ManagedThyraVector::ManagedThyraVector( VectorParameters::shared_ptr params )
     : ManagedVector( params )
 {
-    auto vec = getVectorEngine();
-    d_thyraVec             = Teuchos::RCP<Thyra::VectorBase<double>>(
+    auto vec   = getVectorEngine();
+    d_thyraVec = Teuchos::RCP<Thyra::VectorBase<double>>(
         new ThyraVectorWrapper( std::vector<Vector::shared_ptr>( 1, vec ) ) );
 }
 ManagedThyraVector::ManagedThyraVector( Vector::shared_ptr alias ) : ManagedVector( alias )
@@ -73,9 +72,9 @@ Vector::shared_ptr ManagedThyraVector::cloneVector( const Variable::shared_ptr v
  ****************************************************************/
 void ManagedThyraVector::copyVector( Vector::const_shared_ptr vec )
 {
-  Vector::shared_ptr engineVec = std::dynamic_pointer_cast<Vector>( getVectorEngine() );
-  engineVec->copyVector( vec );
+    Vector::shared_ptr engineVec = std::dynamic_pointer_cast<Vector>( getVectorEngine() );
+    engineVec->copyVector( vec );
 }
-  
+
 } // namespace LinearAlgebra
 } // namespace AMP

@@ -20,9 +20,9 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
 #include <iostream>
+#include <memory>
 #include <string>
 
 #define ITFAILS ut.failure( __LINE__ );

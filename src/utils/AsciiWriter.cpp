@@ -2,7 +2,7 @@
 #include "ProfilerApp.h"
 
 #ifdef USE_AMP_VECTORS
-#include "AMP/vectors/SimpleVector.h"
+#include "AMP/vectors/VectorBuilder.h"
 #endif
 
 
@@ -221,7 +221,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
     AMP::LinearAlgebra::Vector::shared_ptr dst_vec;
     if ( rank == 0 ) {
         auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
-        dst_vec  = AMP::LinearAlgebra::SimpleVector<double>::create(
+        dst_vec  = AMP::LinearAlgebra::createSimpleVector<double>(
             global_size, var, AMP_MPI( AMP_COMM_SELF ) );
         AMP_ASSERT( dst_vec->numberOfDataBlocks() == 1 );
         auto *ptr = dst_vec->getRawDataBlock<double>( 0 );

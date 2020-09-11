@@ -19,7 +19,6 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -202,11 +201,11 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         double z   = coord[2];
         double h   = getSolutionEnthalpy( Q, H, m_in, hin, z );
         double P   = getSolutionPressure( input_db, H, Pout, rho_in, z );
-        val =  m_in / m_scale;
-        manufacturedVec->setValuesByGlobalID( 1, &axialDofs[0], &val);
-	val =  h / h_scale;	
+        val        = m_in / m_scale;
+        manufacturedVec->setValuesByGlobalID( 1, &axialDofs[0], &val );
+        val = h / h_scale;
         manufacturedVec->setValuesByGlobalID( 1, &axialDofs[1], &val );
-	val = P / P_scale;
+        val = P / P_scale;
         manufacturedVec->setValuesByGlobalID( 1, &axialDofs[2], &val );
         ++face;
     }
@@ -226,8 +225,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
             std::vector<size_t> gapDofs;
             subchannelDOFManager->getDOFs( lateralFace.globalID(), gapDofs );
             double w = 0.0;
-	    val =  w / w_scale;
-	    manufacturedVec->setValuesByGlobalID( 1, &gapDofs[0], &val );
+            val      = w / w_scale;
+            manufacturedVec->setValuesByGlobalID( 1, &gapDofs[0], &val );
         }
     }
 
@@ -240,11 +239,11 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // loop over axial faces
     for ( int i = 0; i < (int) face.size(); i++ ) {
         subchannelDOFManager->getDOFs( face->globalID(), axialDofs );
-	val = m_in / m_scale;
+        val = m_in / m_scale;
         solVec->setValuesByGlobalID( 1, &axialDofs[0], &val );
-	val = hin / h_scale;
+        val = hin / h_scale;
         solVec->setValuesByGlobalID( 1, &axialDofs[1], &val );
-	val = Pout / P_scale;
+        val = Pout / P_scale;
         solVec->setValuesByGlobalID( 1, &axialDofs[2], &val );
         ++face;
     }
@@ -258,7 +257,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
             // get crossflow from solution vector
             std::vector<size_t> gapDofs;
             subchannelDOFManager->getDOFs( lateralFace.globalID(), gapDofs );
-	    val = w_in / w_scale;
+            val = w_in / w_scale;
             solVec->setValuesByGlobalID( 1, &gapDofs[0], &val );
         }
     }
@@ -418,7 +417,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     relErrorVec->divide( *absErrorVec, *manufacturedVec );
     for ( size_t i = 0; i < solVec->getLocalSize(); i++ ) {
         if ( manufacturedVec->getValueByLocalID( i ) == 0 ) {
-	    val = fabs(solVec->getValueByLocalID( i ));
+            val = fabs( solVec->getValueByLocalID( i ) );
             relErrorVec->setValuesByLocalID( 1, &i, &val );
         }
     }

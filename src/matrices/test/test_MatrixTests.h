@@ -3,9 +3,9 @@
 
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/vectors/SimpleVector.h"
-
+#include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
+
 #include "test_MatrixVectorFactory.h"
 
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
@@ -170,7 +170,7 @@ public:
         for ( size_t i = 0; i < row.size(); i++ )
             row[i] = i;
         auto smallVec =
-            AMP::LinearAlgebra::SimpleVector<double>::create( 7, vector1lhs->getVariable() );
+            AMP::LinearAlgebra::createSimpleVector<double>( 7, vector1lhs->getVariable() );
         auto smallMat = AMP::LinearAlgebra::createMatrix(
             smallVec, smallVec, FACTORY::type(), [row]( size_t ) { return row; } );
         try {

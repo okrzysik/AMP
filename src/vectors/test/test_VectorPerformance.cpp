@@ -1,7 +1,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/PIO.h"
-#include "AMP/vectors/SimpleVector.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #ifdef USE_OPENMP
 #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
@@ -144,7 +144,7 @@ int main( int argc, char **argv )
         size_t N = 4e6;
         auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "vec" );
 
-        auto vec   = AMP::LinearAlgebra::SimpleVector<double>::create( N, var, globalComm );
+        auto vec   = AMP::LinearAlgebra::createSimpleVector<double>( N, var, globalComm );
         auto time0 = testPerformance( vec );
         if ( rank == 0 ) {
             AMP::pout << "SimpleVector:" << std::endl;
@@ -154,7 +154,7 @@ int main( int argc, char **argv )
 
 #ifdef USE_OPENMP
         vec = AMP::LinearAlgebra::
-            SimpleVector<double, AMP::LinearAlgebra::VectorOperationsOpenMP<double>>::create(
+            createSimpleVector<double, AMP::LinearAlgebra::VectorOperationsOpenMP<double>>(
                 N, var, globalComm );
         auto time_openmp = testPerformance( vec );
         if ( rank == 0 ) {
@@ -166,10 +166,11 @@ int main( int argc, char **argv )
 #endif
 
 #ifdef USE_CUDA
-        vec = AMP::LinearAlgebra::SimpleVector<
-            double,
-            AMP::LinearAlgebra::VectorOperationsCuda<double>,
-            AMP::LinearAlgebra::VectorDataGPU<double>>::create( N, var, globalComm );
+        vec =
+            AMP::LinearAlgebra::createSimpleVector<double,
+                                                   AMP::LinearAlgebra::VectorOperationsCuda<double>,
+                                                   AMP::LinearAlgebra::VectorDataGPU<double>>(
+                N, var, globalComm );
         auto time_cuda = testPerformance( vec );
         if ( rank == 0 ) {
             AMP::pout << "SimpleVector<CUDA>:" << std::endl;

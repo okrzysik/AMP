@@ -19,6 +19,8 @@
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
+
 #include <memory>
 #include <string>
 
@@ -63,12 +65,12 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto inputVariable  = flowOperator->getInputVariable();
     auto outputVariable = flowOperator->getOutputVariable();
 
-    auto solVec  = AMP::LinearAlgebra::SimpleVector<double>::create( 10, outputVariable );
-    auto cladVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, inputVariable );
+    auto solVec  = AMP::LinearAlgebra::createSimpleVector<double>( 10, outputVariable );
+    auto cladVec = AMP::LinearAlgebra::createSimpleVector<double>( 10, inputVariable );
 
-    auto rhsVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, outputVariable );
-    auto resVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, outputVariable );
-    auto tmpVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, inputVariable );
+    auto rhsVec = AMP::LinearAlgebra::createSimpleVector<double>( 10, outputVariable );
+    auto resVec = AMP::LinearAlgebra::createSimpleVector<double>( 10, outputVariable );
+    auto tmpVec = AMP::LinearAlgebra::createSimpleVector<double>( 10, inputVariable );
 
     auto flowJacobian = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>(
         AMP::Operator::OperatorBuilder::createOperator(
@@ -95,8 +97,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     std::cout << "Original Flow Solution  " << std::endl;
     for ( size_t i = 0; i < 10; i++ ) {
-      double val = Tin + i * 30;
-      tmpVec->setValuesByLocalID( 1, &i, &val );
+        double val = Tin + i * 30;
+        tmpVec->setValuesByLocalID( 1, &i, &val );
         //	  solVec->setValueByLocalID(i, Tin + i*30);
         std::cout << " @i : " << i << " is " << tmpVec->getValueByLocalID( i );
     }

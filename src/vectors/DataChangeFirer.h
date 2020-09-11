@@ -78,6 +78,14 @@ public:
      */
     virtual void deregisterListener( DataChangeListener *listener );
 
+
+protected:
+    //! Overload copy constructor (will not copy)
+    DataChangeFirer( const DataChangeFirer & ) {}
+
+    //! Overload assignment operator (will not copy)
+    DataChangeFirer &operator=( const DataChangeFirer & ) { return *this; }
+
 private:
     std::vector<DataChangeListener *> d_listeners;
 };

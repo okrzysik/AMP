@@ -4,7 +4,6 @@
 
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/subchannel/FlowFrapconOperatorParameters.h"
-#include "AMP/vectors/SimpleVector.h"
 
 
 namespace AMP {

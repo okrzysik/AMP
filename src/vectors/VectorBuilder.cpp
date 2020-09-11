@@ -5,7 +5,6 @@
 #include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/SimpleVector.h"
 #ifdef USE_EXT_PETSC
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
@@ -148,7 +147,7 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
         comm.barrier();
         return vector;
 #else
-        auto vector = SimpleVector<double>::create( variable, DOFs, comm_list );
+        auto vector = createSimpleVector<double>( variable, DOFs, comm_list );
         return vector;
 #endif
     }

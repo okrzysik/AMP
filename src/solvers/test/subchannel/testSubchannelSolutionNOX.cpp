@@ -18,12 +18,11 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
+#include <memory>
 #include <string>
 
 
@@ -181,9 +180,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     for ( int i = 0; i < (int) face.size(); i++ ) {
         faceDOFManager->getDOFs( face->globalID(), dofs );
-	double val = AMP::Operator::Subchannel::scaleEnthalpy * hin;
+        double val = AMP::Operator::Subchannel::scaleEnthalpy * hin;
         solVec->setValuesByGlobalID( 1, &dofs[0], &val );
-	val = AMP::Operator::Subchannel::scalePressure * Pout;
+        val = AMP::Operator::Subchannel::scalePressure * Pout;
         solVec->setValuesByGlobalID( 1, &dofs[1], &val );
         ++face;
     }

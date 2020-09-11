@@ -6,7 +6,6 @@
 #include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
@@ -93,11 +92,10 @@ public:
     {
         AMP::LinearAlgebra::Vector::shared_ptr vec;
         if ( GLOBAL )
-            vec = AMP::LinearAlgebra::SimpleVector<TYPE, VecOps, VecData>::create(
+            vec = AMP::LinearAlgebra::createSimpleVector<TYPE, VecOps, VecData>(
                 I, getVariable(), AMP_MPI( AMP_COMM_WORLD ) );
         else
-            vec =
-                AMP::LinearAlgebra::SimpleVector<TYPE, VecOps, VecData>::create( I, getVariable() );
+            vec = AMP::LinearAlgebra::createSimpleVector<TYPE, VecOps, VecData>( I, getVariable() );
         return vec;
     }
 
