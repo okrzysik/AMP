@@ -1,24 +1,20 @@
-#include "AMP/vectors/petsc/NativePetscVector.h"
+#include "AMP/vectors/petsc/NativePetscVectorData.h"
 
 namespace AMP {
 namespace LinearAlgebra {
 
 inline Vec getVec( Vector::shared_ptr v )
 {
-    auto npv = std::dynamic_pointer_cast<NativePetscVector>( v );
-    AMP_ASSERT( npv );
-    auto vdata = npv->getVectorData();
-    AMP_ASSERT( vdata );
-    return std::dynamic_pointer_cast<NativePetscVectorData>( vdata )->getVec();
+    auto data = std::dynamic_pointer_cast<NativePetscVectorData>( v->getVectorData() );
+    AMP_ASSERT( data );
+    return data->getVec();
 }
 
 inline Vec getVec( Vector::const_shared_ptr v )
 {
-    auto npv = std::dynamic_pointer_cast<const NativePetscVector>( v );
-    AMP_ASSERT( npv );
-    auto vdata = npv->getVectorData();
-    AMP_ASSERT( vdata );
-    return std::dynamic_pointer_cast<const NativePetscVectorData>( vdata )->getVec();
+    auto data = std::dynamic_pointer_cast<const NativePetscVectorData>( v->getVectorData() );
+    AMP_ASSERT( data );
+    return data->getVec();
 }
 
 inline Matrix::shared_ptr NativePetscMatrix::cloneMatrix() const

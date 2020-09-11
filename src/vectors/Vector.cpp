@@ -28,6 +28,7 @@ Vector::Vector()
       d_DOFManager( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) ),
       d_VectorData( new VectorDataNull<double>() ),
       d_VectorOps( new VectorOperationsDefault<double>() ),
+      d_Views( new std::vector<std::weak_ptr<Vector>>() ),
       d_output_stream( &AMP::plog )
 {
 }
@@ -36,8 +37,25 @@ Vector::Vector( const std::string &name )
       d_DOFManager( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) ),
       d_VectorData( new VectorDataNull<double>() ),
       d_VectorOps( new VectorOperationsDefault<double>() ),
+      d_Views( new std::vector<std::weak_ptr<Vector>>() ),
       d_output_stream( &AMP::plog )
 {
+}
+Vector::Vector( std::shared_ptr<VectorData> data,
+                std::shared_ptr<VectorOperations> ops,
+                Variable::shared_ptr var,
+                AMP::Discretization::DOFManager::shared_ptr DOFManager )
+    : d_pVariable( var ),
+      d_DOFManager( DOFManager ),
+      d_VectorData( data ),
+      d_VectorOps( ops ),
+      d_Views( new std::vector<std::weak_ptr<Vector>>() ),
+      d_output_stream( &AMP::plog )
+{
+    AMP_ASSERT( data && ops && var );
+    if ( !d_DOFManager )
+        d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>(
+            d_VectorData->getLocalSize(), d_VectorData->getComm() );
 }
 Vector::~Vector() {}
 

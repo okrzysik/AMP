@@ -8,9 +8,11 @@
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
+#include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
-#ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/NativePetscVector.h"
+#ifdef USE_PETSC
+#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
+#include "petscvec.h"
 #endif
 #ifdef USE_EXT_TRILINOS
 #include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
@@ -214,7 +216,7 @@ public:
         PetscInt local_size = 15;
         VecSetSizes( v, local_size, PETSC_DECIDE );
         VecSetType( v, VECMPI ); // this line will have to be modified for the no mpi and cuda cases
-        auto newVec = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( v, true );
+        auto newVec = createVector( v, true );
         VecSetFromOptions( v );
         newVec->getVectorData()->assemble();
         newVec->setVariable(
@@ -247,7 +249,7 @@ public:
         AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
         VecCreate( globalComm.getCommunicator(), &v );
         VecSetSizes( v, 15, PETSC_DECIDE );
-        auto newVec = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( v, true );
+        auto newVec = createVector( v, true );
         VecSetFromOptions( v );
         newVec->getVectorData()->assemble();
         auto p1        = std::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();

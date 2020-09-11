@@ -8,7 +8,10 @@
 #include "AMP/vectors/SimpleVector.h"
 #ifdef USE_EXT_PETSC
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/NativePetscVectorData.h"
+#include "AMP/vectors/petsc/NativePetscVectorOperations.h"
 #include "AMP/vectors/petsc/PetscVector.h"
+#include "petscvec.h"
 #endif
 #ifdef USE_EXT_TRILINOS
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
@@ -151,6 +154,21 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
     }
     return Vector::shared_ptr();
 }
+
+
+/********************************************************
+ * create vector from PETSc Vec                          *
+ ********************************************************/
+#if defined( USE_EXT_PETSC )
+std::shared_ptr<Vector> createVector( Vec v, bool deleteable, AMP_MPI comm )
+{
+    auto var  = std::make_shared<Variable>( "vec" );
+    auto ops  = std::make_shared<NativePetscVectorOperations>();
+    auto data = std::make_shared<NativePetscVectorData>( v, deleteable, comm );
+    return std::make_shared<Vector>(
+        data, ops, var, AMP::Discretization::DOFManager::shared_ptr() );
+}
+#endif
 
 
 } // namespace LinearAlgebra

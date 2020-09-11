@@ -4,7 +4,8 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/petsc/NativePetscMatrix.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/petsc/NativePetscVector.h"
+#include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/petsc/NativePetscVectorData.h"
 
 
 namespace AMP {
@@ -31,12 +32,14 @@ void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 Vector::shared_ptr NativePetscMatrix::extractDiagonal( Vector::shared_ptr v ) const
 {
     Vector::shared_ptr retVal;
-    if ( std::dynamic_pointer_cast<NativePetscVector>( v ) ) {
+    if ( std::dynamic_pointer_cast<NativePetscVectorData>( v->getVectorData() ) ) {
         retVal = v;
     } else {
         retVal = getRightVector();
+        retVal->setVariable( v->getVariable() );
     }
-    MatGetDiagonal( getMat(), std::dynamic_pointer_cast<PetscVector>( retVal )->getVec() );
+    auto data = std::dynamic_pointer_cast<NativePetscVectorData>( v->getVectorData() );
+    MatGetDiagonal( getMat(), data->getVec() );
     return retVal;
 }
 
@@ -52,7 +55,7 @@ Vector::shared_ptr NativePetscMatrix::getRightVector() const
 #else
     MatCreateVecs( d_Mat, &a, PETSC_NULL );
 #endif
-    return std::make_shared<NativePetscVector>( a, true );
+    return createVector( a, true );
 }
 Vector::shared_ptr NativePetscMatrix::getLeftVector() const
 {
@@ -62,7 +65,7 @@ Vector::shared_ptr NativePetscMatrix::getLeftVector() const
 #else
     MatCreateVecs( d_Mat, PETSC_NULL, &a );
 #endif
-    return std::make_shared<NativePetscVector>( a, true );
+    return createVector( a, true );
 }
 Discretization::DOFManager::shared_ptr NativePetscMatrix::getRightDOFManager() const
 {

@@ -72,6 +72,18 @@ public: // Constructor/destructors
      */
     Vector( const std::string &name );
 
+    /**
+     * \brief  Create an vector
+     * \param[in] data          Vector data
+     * \param[in] ops           Vector operations
+     * \param[in] var           Variable
+     * \param[in] DOFManager    DOF manager (may be null)
+     */
+    Vector( std::shared_ptr<VectorData> data,
+            std::shared_ptr<VectorOperations> ops,
+            Variable::shared_ptr var,
+            AMP::Discretization::DOFManager::shared_ptr DOFManager );
+
     /** \brief Destructor
      */
     virtual ~Vector();
