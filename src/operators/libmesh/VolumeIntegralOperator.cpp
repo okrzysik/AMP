@@ -237,35 +237,6 @@ VolumeIntegralOperator::getJacobianParameters( AMP::LinearAlgebra::Vector::const
 }
 
 
-/*
-std::shared_ptr<AMP::LinearAlgebra::Matrix>
-VolumeIntegralOperator::getLinearizedVolumeIntegralOperator(
-   const std::shared_ptr<OperatorParameters>& params)
-{
-   std::shared_ptr<VolumeIntegralOperatorParameters> inParams =
-std::dynamic_pointer_cast<VolumeIntegralOperatorParameters>(params);
-   const std::shared_ptr<AMP::LinearAlgebra::Vector> u = inParams->d_pVector;
-
-   if (!d_bMatrixAndVectorsCloned)
-   {
-   d_pDiagonalMatrix =
-d_MeshAdapter->createMatrix(this->getInputVariable(0),this->getOutputVariable());
-   d_pDiagonalVector = d_MeshAdapter->createVector(this->getOutputVariable());
-   d_pNullVector     = d_MeshAdapter->createVector(this->getOutputVariable());
-
-   AMP::pout << "in the loop" << std::endl;
-   d_bMatrixAndVectorsCloned=true;
-   }
-
-   AMP::pout << "d_pDiagonalVector.get() = " << d_pDiagonalVector.get() << std::endl;
-   this->apply(d_pNullVector,u,d_pDiagonalVector,1.0,0.0);
-   d_pDiagonalMatrix->setDiagonal(d_pDiagonalVector);
-
-   return d_pDiagonalMatrix;
-}
-*/
-
-
 void VolumeIntegralOperator::getNodeDofIndicesForCurrentElement()
 {
     d_dofIndices.resize( d_currNodes.size() );

@@ -6,7 +6,6 @@
 #include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/NullVector.h"
 #include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
@@ -54,7 +53,7 @@ private:
 class NullVectorFactory : public VectorFactory
 {
 public:
-    typedef AMP::LinearAlgebra::NullVector<double> vector;
+    typedef AMP::LinearAlgebra::Vector vector;
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
@@ -63,7 +62,7 @@ public:
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        return AMP::LinearAlgebra::NullVector<double>::create( "null" );
+        return std::make_shared<AMP::LinearAlgebra::Vector>( "null" );
     }
 
     virtual std::string name() const override { return "NullVectorFactory"; }

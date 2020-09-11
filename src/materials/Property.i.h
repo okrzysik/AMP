@@ -15,7 +15,7 @@ namespace Materials {
 template<class Number>
 void Property<Number>::setAuxiliaryData( const std::string &key, const double val )
 {
-    std::map<std::string, double>::iterator loc = d_AuxiliaryDataDouble.find( key );
+    auto loc = d_AuxiliaryDataDouble.find( key );
 
     // this guarantees that the host code can not set just any old data value.
     // the property constructor must set up the database for legitimate use.
@@ -28,7 +28,7 @@ void Property<Number>::setAuxiliaryData( const std::string &key, const double va
 template<class Number>
 void Property<Number>::setAuxiliaryData( const std::string &key, const int val )
 {
-    std::map<std::string, int>::iterator loc = d_AuxiliaryDataInteger.find( key );
+    auto loc = d_AuxiliaryDataInteger.find( key );
 
     // this guarantees that the host code can not set just any old data value.
     // the property constructor must set up the database for legitimate use.
@@ -41,7 +41,7 @@ void Property<Number>::setAuxiliaryData( const std::string &key, const int val )
 template<class Number>
 void Property<Number>::setAuxiliaryData( const std::string &key, const std::string &val )
 {
-    std::map<std::string, std::string>::iterator loc = d_AuxiliaryDataString.find( key );
+    auto loc = d_AuxiliaryDataString.find( key );
 
     // this guarantees that the host code can not set just any old data value.
     // the property constructor must set up the database for legitimate use.
@@ -80,7 +80,7 @@ bool Property<Number>::in_range( const std::string &argname, const Number value 
 {
     if ( !is_argument( argname ) )
         return true;
-    std::vector<Number> range = get_arg_range( argname );
+    auto range = get_arg_range( argname );
     return value >= range[0] && value <= range[1];
 }
 template<class Number>
@@ -89,10 +89,10 @@ bool Property<Number>::in_range( const std::string &argname, const INPUT_VTYPE &
 {
     if ( !is_argument( argname ) )
         return true;
-    std::vector<Number> range                = get_arg_range( argname );
-    bool result                              = true;
-    typename INPUT_VTYPE::const_iterator pos = values.begin();
-    typename INPUT_VTYPE::const_iterator end = values.end();
+    auto range  = get_arg_range( argname );
+    bool result = true;
+    auto pos    = values.begin();
+    auto end    = values.end();
     while ( pos != end ) {
         result = result && *pos >= range[0] && *pos <= range[1];
         ++pos;
@@ -146,8 +146,7 @@ void Property<Number>::evalvActual(
     // Walk through d_arguments and set the iterator at the beginning of the map vector to which it
     // corresponds
     for ( size_t i = 0; i < d_arguments.size(); ++i ) {
-        typename std::map<std::string, std::shared_ptr<INPUT_VTYPE>>::const_iterator mapIter;
-        mapIter = args.find( d_arguments[i] );
+        auto mapIter = args.find( d_arguments[i] );
         if ( mapIter == args.end() ) {
             eval_args[i] = d_defaults[i];
         } else {
@@ -160,8 +159,7 @@ void Property<Number>::evalvActual(
 
     for ( auto r_iter = r.begin(); r_iter != r.end(); ++r_iter ) {
         // Loop through the list of actually present parameter iterators and assign their values to
-        // the vector being
-        // sent to eval
+        // the vector being sent to eval
         // Check that parameter iterators have not gone off the end - meaning result and input sizes
         // do not match
         if ( d_n_arguments > 0 ) {

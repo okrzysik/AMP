@@ -13,7 +13,6 @@
 #include "AMP/operators/NullOperator.h"
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolver.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/NullVector.h"
 #include "AMP/vectors/SimpleVector.h"
 
 

@@ -1,18 +1,16 @@
 #ifndef included_AMP_Vector
 #define included_AMP_Vector
 
-
-#include <iosfwd>
-#include <string>
-
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/utils/ParameterBase.h"
 #include "AMP/utils/RNG.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/operations/VectorOperations.h"
+
+#include <iosfwd>
 #include <memory>
+#include <string>
 
 
 namespace AMP {
@@ -65,6 +63,15 @@ public: // typedefs
 
 
 public: // Constructor/destructors
+    //! Empty Constructor
+    Vector();
+
+    /**
+     * \brief  Create an empty vector with the given name
+     * \param[in] name          Name of the vector
+     */
+    Vector( const std::string &name );
+
     /** \brief Destructor
      */
     virtual ~Vector();
@@ -267,7 +274,7 @@ public: // the next set of functions defines the public math. interface for vect
 public: // Virtual functions
     /** \brief Return the name of the vector
      */
-    virtual std::string type() const = 0;
+    virtual std::string type() const;
 
     /** \brief Allocate space in the same fashion as <i>this</i>
      * \details  This will allocate new space with identical layout as <i>this</i>.
@@ -300,7 +307,7 @@ public: // Virtual functions
      * It will have the same number of blocks, each with the same engines and same number of
      * entries.
      */
-    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const = 0;
+    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other  Vector to swap data with
@@ -312,7 +319,7 @@ public: // Virtual functions
         \endcode
       * without a and b exchanging pointers.
      */
-    virtual void swapVectors( Vector &other ) = 0;
+    virtual void swapVectors( Vector &other );
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] name  Variable by which to retrieve a subvector
@@ -718,11 +725,6 @@ public: // Non virtual functions
      * \details This uses getValuesByGlobalID to get the value
      */
     double getValueByLocalID( size_t i ) const;
-
-
-protected:
-    // Constructor
-    Vector();
 
 
 private:

@@ -146,8 +146,7 @@ public:
         DISABLE_WARNINGS
         MatGetVecs( m, &v, nullptr );
         ENABLE_WARNINGS
-        auto p      = std::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
-        auto vector = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( p );
+        auto vector = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( v, true );
         vector->setVariable( getVariable() );
         PROFILE_STOP( "PETScInterfaceRightVectorFactory::getVector" );
         return vector;

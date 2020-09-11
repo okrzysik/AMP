@@ -16,7 +16,6 @@
 #include "AMP/operators/NullOperator.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/NullVector.h"
 #include "AMP/vectors/SimpleVector.h"
 
 
@@ -35,7 +34,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     input_db->print( AMP::plog );
 
     // Create a null vector for the initial guess
-    auto nullVec = AMP::LinearAlgebra::NullVector<double>::create( "null" );
+    auto nullVec = std::make_shared<AMP::LinearAlgebra::Vector>( "null" );
 
     // Create the solution and function variables
     auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "x" );
