@@ -2,7 +2,6 @@
 #define included_AMP_test_VectorFactory
 
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/vectors/ArrayVector.h"
 #include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
@@ -117,7 +116,7 @@ template<class TYPE = double>
 class ArrayVectorFactory : public VectorFactory
 {
 public:
-    ArrayVectorFactory( int d, int i, bool global ) : D( d ), I( i ), GLOBAL( global ) {}
+    ArrayVectorFactory( size_t d, size_t i, bool global ) : D( d ), I( i ), GLOBAL( global ) {}
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
@@ -128,11 +127,10 @@ public:
     {
         AMP::LinearAlgebra::Vector::shared_ptr vec;
         if ( GLOBAL )
-            vec = AMP::LinearAlgebra::ArrayVector<TYPE>::create(
-                std::vector<size_t>( D, I ), getVariable(), AMP_MPI( AMP_COMM_WORLD ) );
+            vec = AMP::LinearAlgebra::createArrayVector<TYPE>(
+                { D, I }, getVariable(), AMP_MPI( AMP_COMM_WORLD ) );
         else
-            vec = AMP::LinearAlgebra::ArrayVector<TYPE>::create( std::vector<size_t>( D, I ),
-                                                                 getVariable() );
+            vec = AMP::LinearAlgebra::createArrayVector<TYPE>( { D, I }, getVariable() );
         return vec;
     }
 
@@ -145,7 +143,7 @@ public:
 
 private:
     ArrayVectorFactory();
-    int D, I;
+    size_t D, I;
     bool GLOBAL;
 };
 

@@ -1,5 +1,6 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
 #include "AMP/vectors/testHelpers/generateVectorFactories.h"

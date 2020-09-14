@@ -3,6 +3,7 @@
 #define included_AMP_VectorBuider
 
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/FunctionTable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorDataCPU.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
@@ -92,6 +93,39 @@ template<typename TYPE,
 Vector::shared_ptr createSimpleVector( Variable::shared_ptr var,
                                        AMP::Discretization::DOFManager::shared_ptr DOFs,
                                        AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
+
+
+/** \brief    Create a ArrayVector
+ * \details  This is the factory method for the ArrayVector.  It returns the shared pointer
+ * to be used in the code
+ * \param    localSize  The number of elements in the vector on this processor
+ * \param    var The variable associated with the new vector
+ */
+template<typename T, typename FUN = FunctionTable, typename Allocator = std::allocator<T>>
+Vector::shared_ptr createArrayVector( const ArraySize &localSize, Variable::shared_ptr var );
+
+/** \brief    Create a ArrayVector
+ * \details  This is the factory method for the ArrayVector.  It returns the shared pointer
+ * to be used in the code
+ * \param    localSize  The number of elements in the vector on this processor
+ * \param    var The variable associated with the new vector
+ * \param    comm The variable associated with the new vector
+ */
+template<typename T, typename FUN = FunctionTable, typename Allocator = std::allocator<T>>
+Vector::shared_ptr
+createArrayVector( const ArraySize &localSize, Variable::shared_ptr var, AMP_MPI comm );
+
+/** \brief    Create a ArrayVector
+ * \details  This is the factory method for the ArrayVector.  It returns the shared pointer
+ * to be used in the code that spans a comm and contains ghost values.
+ * \param    var The variable associated with the new vector
+ * \param    DOFs The DOFManager
+ * \param    commlist The communication list
+ */
+template<typename T, typename FUN = FunctionTable, typename Allocator = std::allocator<T>>
+Vector::shared_ptr createArrayVector( Variable::shared_ptr var,
+                                      AMP::Discretization::DOFManager::shared_ptr DOFs,
+                                      AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
 
 
 } // namespace LinearAlgebra

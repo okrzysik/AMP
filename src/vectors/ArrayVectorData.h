@@ -33,7 +33,7 @@ public:
      * \param    localSize  The number of elements in the vector on this processor
      * \param    var The variable associated with the new vector
      */
-     static std::shared_ptr<VectorData> create( const std::vector<size_t> &localSize );
+    static std::shared_ptr<ArrayVectorData> create( const ArraySize &localSize );
 
     /** \brief    Create a ArrayVector
      * \details  This is the factory method for the ArrayVector.  It returns the shared pointer
@@ -42,8 +42,7 @@ public:
      * \param    var The variable associated with the new vector
      * \param    comm The variable associated with the new vector
      */
-    static std::shared_ptr<VectorData>
-    create( const std::vector<size_t> &localSize, AMP_MPI comm );
+    static std::shared_ptr<ArrayVectorData> create( const ArraySize &localSize, AMP_MPI comm );
 
     /** \brief    Create a ArrayVector
      * \details  This is the factory method for the ArrayVector.  It returns the shared pointer
@@ -52,7 +51,8 @@ public:
      * \param    DOFs The DOFManager
      * \param    commlist The communication list
      */
-    static std::shared_ptr<VectorData> create( AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
+    static std::shared_ptr<ArrayVectorData>
+    create( AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
 
     /** \brief  Destructor
      */
@@ -64,7 +64,7 @@ public:
     AMP_MPI getComm() const override { return d_comm; }
 
     //! resize the ArrayVector and reset the internal data structures
-    void resize( const std::vector<size_t> &localDims );
+    void resize( const ArraySize &localDims );
 
     //! return a non-const reference to the internal data container
     Array<T, FUN, Allocator> &getArray( void ) { return d_array; }
