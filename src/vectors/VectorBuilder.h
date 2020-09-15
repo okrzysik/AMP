@@ -15,6 +15,12 @@ extern "C" {
 typedef struct _p_Vec *Vec;
 }
 
+#if defined( USE_EXT_TRILINOS )
+DISABLE_WARNINGS
+#include "Thyra_VectorDefaultBase_decl.hpp"
+ENABLE_WARNINGS
+#endif
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -41,8 +47,28 @@ createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
  * \param[in] v             PETSc Vec
  * \param[in] deleteable    If true, ~Vector() will call VecDestroy()
  * \param[in] comm          The communicator associated with the Vec (optional)
+ * \param[in] var           The variable to use with the vector (optional)
  */
-std::shared_ptr<Vector> createVector( Vec v, bool deleteable, AMP_MPI comm = AMP_MPI() );
+std::shared_ptr<Vector> createVector( Vec v,
+                                      bool deleteable,
+                                      AMP_MPI comm             = AMP_MPI(),
+                                      Variable::shared_ptr var = nullptr );
+#endif
+
+
+#if defined( USE_EXT_TRILINOS )
+/**
+ * \brief  Create a vector from an arbitrary Thyra Vector
+ * \details  This function creates a vector from an arbitrary Thyra Vector
+ * \param[in] vec           PETSc Vec
+ * \param[in] local         The local size of the vector
+ * \param[in] comm          The communicator associated with the Vec
+ * \param[in] var           The variable to use with the vector (optional)
+ */
+std::shared_ptr<Vector> createVector( Teuchos::RCP<Thyra::VectorBase<double>> vec,
+                                      size_t local,
+                                      AMP_MPI comm,
+                                      Variable::shared_ptr var = nullptr );
 #endif
 
 

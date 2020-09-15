@@ -6,7 +6,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/trilinos/thyra/ManagedThyraVector.h"
-#include "AMP/vectors/trilinos/thyra/NativeThyraVector.h"
 #include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
 
 
@@ -60,12 +59,7 @@ AMP::LinearAlgebra::Vector::shared_ptr NativeThyraFactory::getVector() const
     auto space   = Thyra::create_VectorSpace( epetra_map );
     auto thyra_v = Thyra::create_Vector( epetra_v, space );
     // Create the NativeThyraVector
-    auto params     = std::make_shared<AMP::LinearAlgebra::NativeThyraVectorParameters>();
-    params->d_InVec = thyra_v;
-    params->d_local = local_size;
-    params->d_comm  = global_comm;
-    params->d_var   = getVariable();
-    auto vec        = std::make_shared<AMP::LinearAlgebra::NativeThyraVector>( params );
+    auto vec = AMP::LinearAlgebra::createVector( thyra_v, local_size, global_comm, getVariable() );
     return vec;
 }
 AMP::Discretization::DOFManager::shared_ptr NativeThyraFactory::getDOFMap() const
@@ -113,12 +107,8 @@ AMP::LinearAlgebra::Vector::shared_ptr ManagedNativeThyraFactory::getVector() co
     auto vec2 = std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedThyraVector>(
         AMP::LinearAlgebra::ThyraVector::view( vec1 ) );
     // Create a native ThyraVector from the managed vector
-    auto params     = std::make_shared<AMP::LinearAlgebra::NativeThyraVectorParameters>();
-    params->d_InVec = vec2->getVec();
-    params->d_local = vec2->getLocalSize();
-    params->d_comm  = vec2->getComm();
-    params->d_var   = getVariable();
-    auto vec3       = std::make_shared<AMP::LinearAlgebra::NativeThyraVector>( params );
+    auto vec3 = AMP::LinearAlgebra::createVector(
+        vec2->getVec(), vec2->getLocalSize(), vec2->getComm(), getVariable() );
     return vec3;
 }
 AMP::Discretization::DOFManager::shared_ptr ManagedNativeThyraFactory::getDOFMap() const
@@ -134,9 +124,9 @@ Teuchos::RCP<Thyra::VectorBase<double>> getThyraVec( AMP::LinearAlgebra::Vector:
     if ( mv )
         return std::dynamic_pointer_cast<ThyraVector>( v )->getVec();
 
-    auto nv = std::dynamic_pointer_cast<NativeThyraVector>( v );
-    if ( nv ) {
-        return std::dynamic_pointer_cast<ThyraVector>( nv->getVectorData() )->getVec();
+    auto nv_data = std::dynamic_pointer_cast<NativeThyraVectorData>( v->getVectorData() );
+    if ( nv_data ) {
+        return nv_data->getVec();
     } else {
         AMP_ERROR( "Not a Thyra Vector" );
     }

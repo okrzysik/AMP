@@ -5,7 +5,6 @@
 
 // Trilinos includes
 DISABLE_WARNINGS
-//#include "Thyra_SpmdVectorBase_def.hpp"
 #include "Thyra_DefaultSpmdVector_def.hpp"
 #include "Thyra_VectorStdOps_def.hpp"
 #include "Trilinos_version.h"
@@ -19,21 +18,19 @@ namespace LinearAlgebra {
 /************************************************************************
  * Constructors                                                          *
  ************************************************************************/
-NativeThyraVectorData::NativeThyraVectorData( VectorParameters::shared_ptr in_params )
+NativeThyraVectorData::NativeThyraVectorData( Teuchos::RCP<Thyra::VectorBase<double>> vec,
+                                              size_t localsize,
+                                              AMP_MPI comm )
     : VectorData(), ThyraVector()
 {
-    auto params = std::dynamic_pointer_cast<NativeThyraVectorParameters>( in_params );
-    AMP_ASSERT( params != nullptr );
-    AMP_ASSERT( !params->d_comm.isNull() );
-    AMP_ASSERT( params->d_InVec.get() != nullptr );
-    Thyra::Ordinal dim = params->d_InVec->space()->dim();
-    AMP_ASSERT( params->d_comm.sumReduce( params->d_local ) == static_cast<size_t>( dim ) );
+    size_t dim = vec->space()->dim();
+    AMP_ASSERT( comm.sumReduce( localsize ) == dim );
     auto communicationListParams         = std::make_shared<CommunicationListParameters>();
-    communicationListParams->d_comm      = params->d_comm;
-    communicationListParams->d_localsize = params->d_local;
-    d_CommList   = std::make_shared<CommunicationList>( communicationListParams );
-    d_local      = params->d_local;
-    d_thyraVec   = params->d_InVec;
+    communicationListParams->d_comm      = comm;
+    communicationListParams->d_localsize = localsize;
+    d_CommList = std::make_shared<CommunicationList>( communicationListParams );
+    d_local    = localsize;
+    d_thyraVec = vec;
 }
 
 
@@ -47,11 +44,7 @@ NativeThyraVectorData::~NativeThyraVectorData() {}
  ************************************************************************/
 std::shared_ptr<VectorData> NativeThyraVectorData::cloneData( void ) const
 {
-    auto params = std::make_shared<NativeThyraVectorParameters>();
-    params->d_InVec = d_thyraVec->clone_v();
-    params->d_local = d_local;
-    params->d_comm  = getComm();
-    return std::make_shared<NativeThyraVectorData>( params );
+    return std::make_shared<NativeThyraVectorData>( d_thyraVec->clone_v(), d_local, getComm() );
 }
 
 void NativeThyraVectorData::putRawData( const double *in )
@@ -152,18 +145,19 @@ NativeThyraVectorData::getThyraVec( const std::shared_ptr<const VectorData> &vec
     return vec2->getVec();
 }
 
-Teuchos::RCP<const Thyra::VectorBase<double>> NativeThyraVectorData::getThyraVec( const VectorData &v )
+Teuchos::RCP<const Thyra::VectorBase<double>>
+NativeThyraVectorData::getThyraVec( const VectorData &v )
 {
-  auto vec2 = dynamic_cast<const ThyraVector *>( &v );
-  AMP_ASSERT( vec2 != nullptr );
-  return vec2->getVec();
+    auto vec2 = dynamic_cast<const ThyraVector *>( &v );
+    AMP_ASSERT( vec2 != nullptr );
+    return vec2->getVec();
 }
 
 Teuchos::RCP<Thyra::VectorBase<double>> NativeThyraVectorData::getThyraVec( VectorData &v )
 {
-  auto vec2 = dynamic_cast<ThyraVector *>( &v );
-  AMP_ASSERT( vec2 != nullptr );
-  return vec2->getVec();
+    auto vec2 = dynamic_cast<ThyraVector *>( &v );
+    AMP_ASSERT( vec2 != nullptr );
+    return vec2->getVec();
 }
 
 void NativeThyraVectorData::setValuesByLocalID( int num, size_t *indices, const double *vals )

@@ -16,6 +16,8 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
 #include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
+#include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
+#include "AMP/vectors/trilinos/thyra/NativeThyraVectorOperations.h"
 #endif
 
 #include <iostream>
@@ -159,13 +161,32 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
  * create vector from PETSc Vec                          *
  ********************************************************/
 #if defined( USE_EXT_PETSC )
-std::shared_ptr<Vector> createVector( Vec v, bool deleteable, AMP_MPI comm )
+std::shared_ptr<Vector>
+createVector( Vec v, bool deleteable, AMP_MPI comm, Variable::shared_ptr var )
 {
-    auto var  = std::make_shared<Variable>( "vec" );
+    if ( !var )
+        var = std::make_shared<Variable>( "vec" );
     auto ops  = std::make_shared<NativePetscVectorOperations>();
     auto data = std::make_shared<NativePetscVectorData>( v, deleteable, comm );
-    return std::make_shared<Vector>(
-        data, ops, var, AMP::Discretization::DOFManager::shared_ptr() );
+    return std::make_shared<Vector>( data, ops, var, nullptr );
+}
+#endif
+
+
+/********************************************************
+ * create vector from Trilinos vector                    *
+ ********************************************************/
+#if defined( USE_EXT_PETSC )
+std::shared_ptr<Vector> createVector( Teuchos::RCP<Thyra::VectorBase<double>> vec,
+                                      size_t local,
+                                      AMP_MPI comm,
+                                      Variable::shared_ptr var )
+{
+    if ( !var )
+        var = std::make_shared<Variable>( "vec" );
+    auto ops  = std::make_shared<NativeThyraVectorOperations>();
+    auto data = std::make_shared<NativeThyraVectorData>( vec, local, comm );
+    return std::make_shared<Vector>( data, ops, var, nullptr );
 }
 #endif
 
