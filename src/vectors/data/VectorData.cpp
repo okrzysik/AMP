@@ -1,5 +1,5 @@
 #include "AMP/vectors/data/VectorData.h"
-#include "AMP/vectors/DataChangeListener.h"
+#include "AMP/vectors/data/DataChangeListener.h"
 
 
 namespace AMP {

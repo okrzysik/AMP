@@ -62,8 +62,9 @@ Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
     } else {
         auto engineParams = std::make_shared<EpetraVectorEngineParameters>(
             inVector->getCommunicationList(), inVector->getDOFManager() );
-        auto engine = std::make_shared<EpetraVectorEngine>( engineParams, inVector->getVectorData() );
-        retVal      = createManagedEpetraVector( inVector, engine );
+        auto engine =
+            std::make_shared<EpetraVectorEngine>( engineParams, inVector->getVectorData() );
+        retVal = createManagedEpetraVector( inVector, engine );
     }
     if ( !retVal )
         AMP_ERROR( "Cannot create view!" );

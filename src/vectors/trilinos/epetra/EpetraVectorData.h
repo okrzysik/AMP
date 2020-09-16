@@ -161,7 +161,6 @@ protected:
 
     //! The input parameters
     std::shared_ptr<EpetraVectorEngineParameters> d_params;
-    
 };
 
 

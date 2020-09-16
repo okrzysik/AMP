@@ -1,5 +1,4 @@
-#include "AMP/vectors/SubsetVectorData.h"
-
+#include "AMP/vectors/data/SubsetVectorData.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -7,6 +6,7 @@
 #include "ProfilerApp.h"
 
 #include <algorithm>
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -16,9 +16,10 @@ namespace LinearAlgebra {
  * Constructors                                                   *
  ****************************************************************/
 SubsetVectorData::SubsetVectorData( std::shared_ptr<SubsetVectorParameters> params )
-    : VectorData( params->d_CommList ), d_DOFManager{ params->d_DOFManager }
+    : VectorData( params->d_CommList ),
+      d_ViewVector( params->d_ViewVector ),
+      d_DOFManager{ params->d_DOFManager }
 {
-    d_ViewVector   = params->d_ViewVector;
     auto parentDOF = d_ViewVector->getDOFManager();
     auto tmp = std::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( d_DOFManager );
     if ( tmp != nullptr ) {

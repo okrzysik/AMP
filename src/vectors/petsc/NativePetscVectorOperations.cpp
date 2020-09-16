@@ -26,10 +26,10 @@ Vec NativePetscVectorOperations::getPetscVec( const VectorData &vx )
 Vec NativePetscVectorOperations::getConstPetscVec( const VectorData &vx )
 {
     auto nx = dynamic_cast<const NativePetscVectorData *>( &vx );
-    AMP_ASSERT(nx);
+    AMP_ASSERT( nx );
     return nx->getVec();
 }
-  
+
 NativePetscVectorData *NativePetscVectorOperations::getNativeVec( VectorData &vx )
 {
     return dynamic_cast<NativePetscVectorData *>( &vx );
@@ -80,10 +80,7 @@ void NativePetscVectorOperations::copy( const VectorData &x, VectorData &y )
     y.copyGhostValues( x );
 }
 
-void NativePetscVectorOperations::zero( VectorData &x )
-{
-    VecZeroEntries( getPetscVec( x ) );
-}
+void NativePetscVectorOperations::zero( VectorData &x ) { VecZeroEntries( getPetscVec( x ) ); }
 
 void NativePetscVectorOperations::setToScalar( double alpha, VectorData &x )
 {
@@ -100,8 +97,8 @@ void NativePetscVectorOperations::setRandomValues( VectorData &x )
 
 void NativePetscVectorOperations::scale( double alpha, const VectorData &x, VectorData &y )
 {
-    VecCopy(getConstPetscVec(x),getPetscVec(y));
-    VecScale( getPetscVec(y), alpha );
+    VecCopy( getConstPetscVec( x ), getPetscVec( y ) );
+    VecScale( getPetscVec( y ), alpha );
 }
 
 
@@ -140,8 +137,8 @@ void NativePetscVectorOperations::divide( const VectorData &x, const VectorData 
 
 void NativePetscVectorOperations::reciprocal( const VectorData &x, VectorData &y )
 {
-    VecCopy(getConstPetscVec(x), getPetscVec(y));
-    VecReciprocal( getPetscVec(y) );
+    VecCopy( getConstPetscVec( x ), getPetscVec( y ) );
+    VecReciprocal( getPetscVec( y ) );
 }
 
 
@@ -173,18 +170,17 @@ void NativePetscVectorOperations::axpby( double alpha,
 
 void NativePetscVectorOperations::abs( const VectorData &x, VectorData &y )
 {
-    VecCopy(getConstPetscVec(x), getPetscVec(y));
-    VecAbs( getPetscVec(y) );
+    VecCopy( getConstPetscVec( x ), getPetscVec( y ) );
+    VecAbs( getPetscVec( y ) );
 }
 
 void NativePetscVectorOperations::addScalar( const VectorData &x, double alpha, VectorData &y )
 {
-  auto py = getPetscVec(y);
-  VecCopy(getConstPetscVec(x), py);
-  VecShift( py, alpha);
-  
+    auto py = getPetscVec( y );
+    VecCopy( getConstPetscVec( x ), py );
+    VecShift( py, alpha );
 }
-  
+
 double NativePetscVectorOperations::min( const VectorData &x ) const
 {
     double val;
@@ -271,7 +267,7 @@ double NativePetscVectorOperations::localDot( const VectorData &vx, const Vector
 
     ierr = ( *x->ops->dot_local )( getConstPetscVec( vx ), getConstPetscVec( vy ), &ans );
     CHKERRQ( ierr );
-    return static_cast<double>(ans);
+    return static_cast<double>( ans );
 }
 
 } // namespace LinearAlgebra

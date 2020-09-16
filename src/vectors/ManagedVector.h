@@ -1,8 +1,8 @@
 #ifndef included_AMP_ManagedVector
 #define included_AMP_ManagedVector
 
-#include "AMP/vectors/ManagedVectorData.h"
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/data/ManagedVectorData.h"
 
 #include <stdexcept>
 #include <vector>

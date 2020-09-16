@@ -202,7 +202,7 @@ std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<EpetraVectorEnginePa
     auto DOFs = params->d_DOFManager;
     auto ops  = std::make_shared<EpetraVectorOperations>();
     auto data = EpetraVectorData::create( params, buf );
-    return std::make_shared<Vector>( data, ops, var, nullptr );
+    return std::make_shared<Vector>( data, ops, var, DOFs );
 }
 #endif
 

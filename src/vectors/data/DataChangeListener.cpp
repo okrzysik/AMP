@@ -1,6 +1,6 @@
-#include "DataChangeListener.h"
+#include "AMP/vectors/data/DataChangeListener.h"
 #include "AMP/utils/Utilities.h"
-#include "DataChangeFirer.h"
+#include "AMP/vectors/data/DataChangeFirer.h"
 
 #include <algorithm>
 

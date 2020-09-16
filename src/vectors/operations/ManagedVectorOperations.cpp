@@ -1,12 +1,14 @@
 #include "AMP/vectors/operations/ManagedVectorOperations.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/ManagedVector.h"
-#include "AMP/vectors/ManagedVectorData.h"
+#include "AMP/vectors/data/ManagedVectorData.h"
 #include "AMP/vectors/data/VectorData.h"
+
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <typeinfo>
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -158,7 +160,8 @@ void ManagedVectorOperations::linearSum(
     auto y2 = getManagedVector( y );
     auto z2 = getManagedVector( z );
     if ( x2 != nullptr && y2 != nullptr ) {
-        z2->getVectorEngine()->linearSum( alpha, *x2->getVectorEngine(), beta, *y2->getVectorEngine() );
+        z2->getVectorEngine()->linearSum(
+            alpha, *x2->getVectorEngine(), beta, *y2->getVectorEngine() );
     } else {
         VectorOperationsDefault::linearSum( alpha, x, beta, y, z );
     }
@@ -183,7 +186,7 @@ void ManagedVectorOperations::abs( const VectorData &x, VectorData &y )
     auto x2 = getManagedVector( x );
     auto y2 = getManagedVector( y );
     if ( x2 != nullptr ) {
-      y2->getVectorEngine()->abs( *x2->getVectorEngine() );
+        y2->getVectorEngine()->abs( *x2->getVectorEngine() );
     } else {
         VectorOperationsDefault::abs( x, y );
     }
@@ -206,7 +209,7 @@ double ManagedVectorOperations::dot( const VectorData &x, const VectorData &y ) 
 {
     auto x2 = getManagedVector( x );
     auto y2 = getManagedVector( y );
-    if ( (x2!=nullptr) && (y2!=nullptr) ) {
+    if ( ( x2 != nullptr ) && ( y2 != nullptr ) ) {
         return y2->getVectorEngine()->dot( *x2->getVectorEngine() );
     }
     return VectorOperationsDefault::dot( x, y );

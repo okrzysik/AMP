@@ -1,4 +1,4 @@
-#include "AMP/vectors/ArrayVectorData.h"
+#include "AMP/vectors/data/ArrayVectorData.h"
 
 
 /// \cond UNDOCUMENTED

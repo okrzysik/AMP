@@ -91,7 +91,6 @@ private:
 
     VectorOperationsDefault<TYPE> *getDefaultOps( void );
     VectorOperationsDefault<TYPE> *d_default_ops = nullptr;
-
 };
 
 

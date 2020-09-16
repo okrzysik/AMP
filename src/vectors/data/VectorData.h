@@ -3,7 +3,7 @@
 
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/CommunicationList.h"
-#include "AMP/vectors/DataChangeFirer.h"
+#include "AMP/vectors/data/DataChangeFirer.h"
 
 #include <memory>
 #include <vector>

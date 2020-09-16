@@ -1,8 +1,8 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/data/ArrayVectorData.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
-#include "AMP/vectors/ArrayVectorData.h"
 
 #include "test_VectorHelpers.h"
 

@@ -3,7 +3,7 @@
 #define included_AMP_VectorBuider_hpp
 
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/vectors/ArrayVectorData.h"
+#include "AMP/vectors/data/ArrayVectorData.h"
 
 #include "math.h"
 

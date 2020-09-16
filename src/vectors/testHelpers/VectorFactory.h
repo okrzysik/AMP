@@ -9,7 +9,6 @@
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
 #ifdef USE_PETSC
-#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
 #include "petscvec.h"
 #endif
 #ifdef USE_EXT_TRILINOS

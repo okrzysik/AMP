@@ -2,7 +2,7 @@
 #define included_AMP_MultiVectorData
 
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/vectors/DataChangeListener.h"
+#include "AMP/vectors/data/DataChangeListener.h"
 #include "AMP/vectors/data/VectorData.h"
 
 

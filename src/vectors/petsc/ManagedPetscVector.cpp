@@ -4,9 +4,6 @@
 #include "AMP/vectors/data/VectorDataIterator.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/petsc/PetscVector.h"
-#ifdef USE_EXT_TRILINOS
-#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
-#endif
 
 
 #include "petsc/private/vecimpl.h"
@@ -105,49 +102,6 @@ ManagedPetscVector *ManagedPetscVector::petscDuplicate()
     pAns->setVariable( getVariable() );
     pAns->d_bMadeWithPetscDuplicate = true;
     return pAns;
-}
-
-
-void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
-{
-    if ( sizeof( PetscInt ) < 8 )
-        AMP_INSIST( dest.getGlobalSize() < 0x80000000,
-                    "PETsc is compiled with 32-bit integers and "
-                    "we are trying to use a vector with more "
-                    "than 2^31 elements" );
-
-    auto ids       = new PetscInt[dest.getLocalSize()];
-    PetscInt begin = dest.getLocalStartID();
-    PetscInt end   = begin + dest.getLocalSize() - 1;
-
-    for ( PetscInt i = begin; i < end; i++ )
-        ids[i - begin] = i;
-    VecGetValues( source, dest.getLocalSize(), ids, dest.getRawDataBlock<double>() );
-    delete[] ids;
-}
-
-
-std::shared_ptr<AMP::LinearAlgebra::Vector> ManagedPetscVector::createFromPetscVec( Vec source,
-                                                                                    AMP_MPI &comm )
-{
-#ifdef USE_EXT_TRILINOS
-    PetscInt local_size, global_size, local_start, local_end;
-    VecGetLocalSize( source, &local_size );
-    VecGetSize( source, &global_size );
-    VecGetOwnershipRange( source, &local_start, &local_end );
-    auto buffer = std::make_shared<VectorDataCPU<double>>( local_start, local_size, global_size );
-    auto t      = std::make_shared<ManagedPetscVectorParameters>();
-    auto ve_params =
-        std::make_shared<EpetraVectorEngineParameters>( local_size, global_size, comm );
-    t->d_Engine  = std::make_shared<EpetraVectorEngine>( ve_params, buffer );
-    auto pRetVal = std::make_shared<ManagedPetscVector>( t );
-    return pRetVal;
-#else
-    AMP_ERROR( "General case not programmed yet" );
-    NULL_USE( source );
-    NULL_USE( comm );
-    return std::shared_ptr<AMP::LinearAlgebra::Vector>();
-#endif
 }
 
 

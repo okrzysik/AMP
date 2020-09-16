@@ -6,8 +6,8 @@
 #include <typeinfo>
 
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/ManagedVectorData.h"
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/data/ManagedVectorData.h"
 #include "AMP/vectors/operations/ManagedVectorOperations.h"
 
 namespace AMP {
@@ -101,7 +101,6 @@ void ManagedVector::swapVectors( Vector &other )
     auto in = getManaged( &other );
     std::swap( d_pParameters, in->d_pParameters );
 }
-
 std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
 {
     std::shared_ptr<ManagedVector> retVal( getNewRawPtr() );

@@ -238,6 +238,6 @@ protected:
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "ArrayVectorData.hpp"
+#include "AMP/vectors/data/ArrayVectorData.hpp"
 
 #endif

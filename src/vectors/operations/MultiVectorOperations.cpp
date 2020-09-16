@@ -407,10 +407,10 @@ double MultiVectorOperations::localDot( const VectorData &x, const VectorData &y
         AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
         AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
         for ( size_t i = 0; i != d_operations.size(); i++ ) {
-	  auto xi = getVectorDataComponent( x, i );
-	  auto yi = getVectorDataComponent( y, i );
-	  ans += d_operations[i]->localDot( *xi,*yi );
-	}
+            auto xi = getVectorDataComponent( x, i );
+            auto yi = getVectorDataComponent( y, i );
+            ans += d_operations[i]->localDot( *xi, *yi );
+        }
     } else {
         AMP_ERROR( "MultiVectorOperations::localDot requires x, y to be MultiVectorData" );
     }

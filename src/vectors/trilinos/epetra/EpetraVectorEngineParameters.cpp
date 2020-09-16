@@ -20,9 +20,8 @@ namespace AMP::LinearAlgebra {
 EpetraVectorEngineParameters::EpetraVectorEngineParameters(
     std::shared_ptr<CommunicationList> commList,
     std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
+    : d_CommList( commList ), d_DOFManager( dofManager )
 {
-    d_CommList   = commList;
-    d_DOFManager = dofManager;
     AMP_INSIST( d_DOFManager, "Requires a non null DOFManager" );
     auto local_size = d_DOFManager->numLocalDOF();
     d_global        = d_DOFManager->numGlobalDOF();

@@ -5,7 +5,6 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "AMP/vectors/petsc/PetscVector.h"
-#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
 
 #include "AMP/matrices/petsc/ManagedPetscMatrix.h"
 #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
