@@ -81,8 +81,6 @@ size_t NativePetscVectorData::sizeOfDataBlock( size_t i ) const
     return getLocalSize();
 }
 
-std::shared_ptr<ParameterBase> NativePetscVectorData::getParameters() { return d_pParameters; }
-
 void NativePetscVectorData::resetArray()
 {
     if ( d_pArray ) {

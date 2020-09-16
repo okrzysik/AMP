@@ -17,20 +17,6 @@ template<typename TYPE>
 class VectorDataIterator;
 
 
-//! Parameters used to instantiate a Vector
-class VectorParameters : public ParameterBase
-{
-public:
-    //! Convenience typedef
-    typedef std::shared_ptr<VectorParameters> shared_ptr;
-
-    //! The CommunicationList for a vector
-    CommunicationList::shared_ptr d_CommList = nullptr;
-
-    //! The DOF_Manager for a vector
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManager = nullptr;
-};
-
 /**
  * \brief  A class used to hold vector data
  * \details  VectorData is a class to helping disassociate data storage
@@ -508,7 +494,7 @@ public:
     //! Default constructor
     VectorData();
 
-    VectorData( std::shared_ptr<VectorParameters> params );
+    VectorData( std::shared_ptr<CommunicationList> commList );
 };
 
 

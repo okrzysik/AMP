@@ -10,7 +10,7 @@ namespace LinearAlgebra {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-ManagedThyraVector::ManagedThyraVector( VectorParameters::shared_ptr params )
+ManagedThyraVector::ManagedThyraVector( std::shared_ptr<ManagedVectorParameters> params )
     : ManagedVector( params )
 {
     auto vec   = getVectorEngine();
@@ -24,7 +24,7 @@ ManagedThyraVector::ManagedThyraVector( Vector::shared_ptr alias ) : ManagedVect
 }
 ManagedVector *ManagedThyraVector::getNewRawPtr() const
 {
-    return new ManagedThyraVector( std::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
+    return new ManagedThyraVector( d_pParameters );
 }
 
 

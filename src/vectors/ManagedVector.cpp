@@ -32,12 +32,12 @@ static inline std::shared_ptr<ManagedVector> getManaged( std::shared_ptr<Vector>
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in )
-    : d_pParameters( std::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
+ManagedVector::ManagedVector( std::shared_ptr<ManagedVectorParameters> params )
+    : d_pParameters( params )
 {
     d_DOFManager = d_pParameters->d_DOFManager;
     d_VectorOps  = std::make_shared<ManagedVectorOperations>();
-    d_VectorData = std::make_shared<ManagedVectorData>( params_in );
+    d_VectorData = std::make_shared<ManagedVectorData>( params );
 }
 ManagedVector::ManagedVector( shared_ptr alias )
 {

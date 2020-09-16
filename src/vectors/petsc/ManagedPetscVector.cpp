@@ -60,7 +60,7 @@ void ManagedPetscVector::initPetsc()
 }
 
 
-ManagedPetscVector::ManagedPetscVector( VectorParameters::shared_ptr params )
+ManagedPetscVector::ManagedPetscVector( std::shared_ptr<ManagedVectorParameters> params )
     : ManagedVector( params ), PetscVector()
 {
     initPetsc();
@@ -139,9 +139,8 @@ std::shared_ptr<AMP::LinearAlgebra::Vector> ManagedPetscVector::createFromPetscV
     auto t      = std::make_shared<ManagedPetscVectorParameters>();
     auto ve_params =
         std::make_shared<EpetraVectorEngineParameters>( local_size, global_size, comm );
-    t->d_Engine = std::make_shared<EpetraVectorEngine>( ve_params, buffer );
-    auto pRetVal =
-        std::make_shared<ManagedPetscVector>( std::dynamic_pointer_cast<VectorParameters>( t ) );
+    t->d_Engine  = std::make_shared<EpetraVectorEngine>( ve_params, buffer );
+    auto pRetVal = std::make_shared<ManagedPetscVector>( t );
     return pRetVal;
 #else
     AMP_ERROR( "General case not programmed yet" );
@@ -161,7 +160,7 @@ void ManagedPetscVector::swapVectors( Vector &other )
 
 ManagedVector *ManagedPetscVector::getNewRawPtr() const
 {
-    return new ManagedPetscVector( std::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
+    return new ManagedPetscVector( d_pParameters );
 }
 
 bool ManagedPetscVector::constructedWithPetscDuplicate() { return d_bMadeWithPetscDuplicate; }

@@ -1,21 +1,27 @@
 #ifndef included_AMP_SubsetVectorData
 #define included_AMP_SubsetVectorData
 
-#include "AMP/vectors/data/VectorData.h"
-#include "AMP/vectors/Vector.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/data/VectorData.h"
 
 #include <vector>
 
 namespace AMP {
 namespace LinearAlgebra {
 
- 
+
 //! Parameters used to instantiate a Vector
-class SubsetVectorParameters : public VectorParameters
+class SubsetVectorParameters
 {
 public:
-  Vector::shared_ptr d_ViewVector; // Vector we subsetted for the view
+    //! The CommunicationList for a vector
+    CommunicationList::shared_ptr d_CommList = nullptr;
+
+    //! The DOF_Manager for a vector
+    AMP::Discretization::DOFManager::shared_ptr d_DOFManager = nullptr;
+
+    Vector::shared_ptr d_ViewVector; // Vector we subsetted for the view
 };
 
 /** \class SubsetVector
@@ -58,8 +64,10 @@ class SubsetVectorData : public VectorData
 {
 
 public:
-
-    std::string VectorDataName() const override { return "SubsetVectorData of " + d_ViewVector->type(); }
+    std::string VectorDataName() const override
+    {
+        return "SubsetVectorData of " + d_ViewVector->type();
+    }
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
     size_t getLocalSize() const override;
@@ -83,10 +91,9 @@ public:
     void swapData( VectorData & ) override;
 
     SubsetVectorData() {}
-    explicit SubsetVectorData( std::shared_ptr<VectorParameters> params );
+    explicit SubsetVectorData( std::shared_ptr<SubsetVectorParameters> params );
 
 private:
-
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
 
@@ -95,8 +102,9 @@ private:
     std::vector<size_t> d_SubsetLocalIDToViewGlobalID; // The list of global ID in the parent vector
     std::vector<size_t> d_dataBlockSize;               // The size of the data blocks
     std::vector<double *> d_dataBlockPtr;              // The pointers to the data blocks
-    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager; // this will contain the subset DOF
-  };
+    std::shared_ptr<AMP::Discretization::DOFManager>
+        d_DOFManager; // this will contain the subset DOF
+};
 
 
 } // namespace LinearAlgebra

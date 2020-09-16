@@ -26,6 +26,10 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
+// Forward declerations
+class EpetraVectorEngineParameters;
+
+
 /**
  * \brief  This function will create a vector from an arbitrary DOFManager
  * \details  This function is responsible for creating vectors from a DOFManager and variable.
@@ -56,7 +60,18 @@ std::shared_ptr<Vector> createVector( Vec v,
 #endif
 
 
-#if defined( USE_EXT_TRILINOS )
+#if defined( USE_EXT_TRILINOS ) && defined( USE_TRILINOS_EPETRA )
+/**
+ * \brief  Create an epetra vector
+ * \param[in] params        Epetra vector parameters
+ * \param[in] var           Optional
+ */
+std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<EpetraVectorEngineParameters> params,
+                                            std::shared_ptr<VectorData> p = nullptr );
+#endif
+
+
+#if defined( USE_EXT_TRILINOS ) && defined( USE_TRILINOS_THYRA )
 /**
  * \brief  Create a vector from an arbitrary Thyra Vector
  * \details  This function creates a vector from an arbitrary Thyra Vector

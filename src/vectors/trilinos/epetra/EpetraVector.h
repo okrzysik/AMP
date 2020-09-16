@@ -8,13 +8,6 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-/**  \class  EpetraVectorParameters
- *  \brief  Parameters class to construct an EpetraVector
- */
-class EpetraVectorParameters : public VectorParameters
-{
-};
-
 
 /**  \class EpetraVector
   *  \brief A class that manages an Epetra_Vector

@@ -34,7 +34,7 @@ public:
     /** \brief Create a ManagedThyraVector from a set of parameters
      * \param[in] params  A VectorParameters class used to construct this vector
      */
-    explicit ManagedThyraVector( VectorParameters::shared_ptr params );
+    explicit ManagedThyraVector( std::shared_ptr<ManagedVectorParameters> params );
 
     /** \brief Create a view of a vector
      * \param[in] alias  Vector to view

@@ -60,11 +60,8 @@ Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
         auto engine = std::dynamic_pointer_cast<EpetraVectorEngine>( inVector );
         retVal      = createManagedEpetraVector( inVector, engine );
     } else {
-        // Create a multivector to wrap the given vector and create a view
         auto engineParams = std::make_shared<EpetraVectorEngineParameters>(
             inVector->getCommunicationList(), inVector->getDOFManager() );
-	// this doesn't make sense to me nor do we appear to be creating a Multivector
-	// should revisit
         auto engine = std::make_shared<EpetraVectorEngine>( engineParams, inVector->getVectorData() );
         retVal      = createManagedEpetraVector( inVector, engine );
     }

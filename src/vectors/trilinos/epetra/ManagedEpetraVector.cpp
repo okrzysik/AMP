@@ -7,7 +7,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-ManagedEpetraVector::ManagedEpetraVector( VectorParameters::shared_ptr params )
+ManagedEpetraVector::ManagedEpetraVector( std::shared_ptr<ManagedVectorParameters> params )
     : ManagedVector( params ), EpetraVector()
 {
 }
@@ -22,7 +22,7 @@ ManagedEpetraVector::~ManagedEpetraVector() {}
 
 inline ManagedVector *ManagedEpetraVector::getNewRawPtr() const
 {
-    return new ManagedEpetraVector( std::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
+    return new ManagedEpetraVector( d_pParameters );
 }
 
 

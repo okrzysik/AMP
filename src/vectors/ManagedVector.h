@@ -26,7 +26,7 @@ public:
     /** \brief Construct a ManagedVector from a set of parameters
      * \param[in] params  The description of the ManagedVector
      */
-    explicit ManagedVector( VectorParameters::shared_ptr params );
+    explicit ManagedVector( std::shared_ptr<ManagedVectorParameters> params );
 
     /** \brief Construct a view of an AMP vector
      * \param[in] alias  Vector to view

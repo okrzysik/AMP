@@ -71,8 +71,6 @@ public:
      */
     std::shared_ptr<VectorData> cloneData() const override;
 
-    std::shared_ptr<ParameterBase> getParameters();
-
     // We can always delete a NativePetscVector
     bool petscHoldsView() const override { return false; }
     void assemble() override;
@@ -83,7 +81,6 @@ protected:
 
 private:
     friend class NativePetscVectorOperations;
-    std::shared_ptr<VectorParameters> d_pParameters;
     bool d_bDeleteMe;
     mutable double *d_pArray; // mutable so that we can cache the value
 };

@@ -15,7 +15,7 @@ namespace LinearAlgebra {
 /** \class EpetraVectorEngineParameters
  * \brief Class that details how to construct an EpetraVectorEngine
  */
-class EpetraVectorEngineParameters : public VectorParameters
+class EpetraVectorEngineParameters
 {
 public:
     /** \brief Constructor
@@ -68,6 +68,12 @@ public:
      */
     inline AMP_MPI getComm() const { return d_comm; }
 
+    //! The CommunicationList for a vector
+    CommunicationList::shared_ptr d_CommList = nullptr;
+
+    //! The DOF_Manager for a vector
+    AMP::Discretization::DOFManager::shared_ptr d_DOFManager = nullptr;
+
 private:
     size_t d_begin  = 0;                          // Starting DOF
     size_t d_end    = 0;                          // Ending DOF
@@ -88,8 +94,8 @@ class EpetraVectorData : public VectorData
 public: // Virtual functions
     //! Virtual destructor
     virtual ~EpetraVectorData() {}
-    static std::shared_ptr<EpetraVectorData>create( std::shared_ptr<EpetraVectorEngineParameters> alias,
-						    std::shared_ptr<VectorData> buf );
+    static std::shared_ptr<EpetraVectorData>
+    create( std::shared_ptr<EpetraVectorEngineParameters> alias, std::shared_ptr<VectorData> buf );
 
     std::string VectorDataName() const override { return "EpetraVectorData"; }
     size_t getLocalSize() const override { return d_iLocalSize; }
@@ -128,14 +134,16 @@ public: // Virtual functions
      * \return  The Epetra_Vector currently used by this engine
      */
     inline const Epetra_Vector &getEpetra_Vector() const { return d_epetraVector; }
- 
-   EpetraVectorData( std::shared_ptr<EpetraVectorEngineParameters> alias,
-		     Epetra_DataAccess,
-		     const Epetra_BlockMap &,
-		     std::shared_ptr<VectorData>,
-		     int, int, int );
- protected:
 
+    EpetraVectorData( std::shared_ptr<EpetraVectorEngineParameters> alias,
+                      Epetra_DataAccess,
+                      const Epetra_BlockMap &,
+                      std::shared_ptr<VectorData>,
+                      int,
+                      int,
+                      int );
+
+protected:
     //! The Epetra_Vector to perform work on
     Epetra_Vector d_epetraVector;
 
@@ -150,6 +158,10 @@ public: // Virtual functions
 
     //! The number of elements in the entire vector
     int d_iGlobalSize;
+
+    //! The input parameters
+    std::shared_ptr<EpetraVectorEngineParameters> d_params;
+    
 };
 
 
