@@ -1,8 +1,8 @@
 #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/data/VectorDataCPU.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
-#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
 #include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
 #include "ProfilerApp.h"
 #include <algorithm>
@@ -67,12 +67,11 @@ Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
     int globalSize = memp->getGlobalNumberOfColumns();
     int localStart = memp->getRightDOFManager()->beginDOF();
 
-    auto p_eng    = std::make_shared<EpetraVectorEngineParameters>( memp->d_CommListRight,
-                                                                 memp->getRightDOFManager() );
     auto p_params = std::make_shared<ManagedVectorParameters>();
     p_params->d_Buffer =
         std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    p_params->d_Engine     = std::make_shared<EpetraVectorEngine>( p_eng, p_params->d_Buffer );
+    p_params->d_Engine =
+        createEpetraVector( memp->d_CommListRight, memp->getRightDOFManager(), p_params->d_Buffer );
     p_params->d_CommList   = memp->d_CommListRight;
     p_params->d_DOFManager = memp->getRightDOFManager();
     auto rtn               = std::make_shared<ManagedEpetraVector>( p_params );
@@ -89,12 +88,11 @@ Vector::shared_ptr ManagedEpetraMatrix::getLeftVector() const
     int localStart = memp->getRightDOFManager()->beginDOF();
 
     // need to verify the comm list and dof manager are right for non square
-    auto p_eng    = std::make_shared<EpetraVectorEngineParameters>( memp->d_CommListRight,
-                                                                 memp->getRightDOFManager() );
     auto p_params = std::make_shared<ManagedVectorParameters>();
     p_params->d_Buffer =
         std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    p_params->d_Engine     = std::make_shared<EpetraVectorEngine>( p_eng, p_params->d_Buffer );
+    p_params->d_Engine =
+        createEpetraVector( memp->d_CommListRight, memp->getRightDOFManager(), p_params->d_Buffer );
     p_params->d_CommList   = memp->d_CommListLeft;
     p_params->d_DOFManager = memp->getLeftDOFManager();
     auto rtn               = std::make_shared<ManagedEpetraVector>( p_params );

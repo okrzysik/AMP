@@ -1,7 +1,8 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 #include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
 #include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
-#include "EpetraVectorEngine.h"
 
 
 namespace AMP {
@@ -19,7 +20,7 @@ EpetraVector::~EpetraVector() = default;
  * View                                                  *
  ********************************************************/
 static std::shared_ptr<ManagedEpetraVector>
-createManagedEpetraVector( Vector::shared_ptr inVector, std::shared_ptr<EpetraVectorEngine> engine )
+createManagedEpetraVector( Vector::shared_ptr inVector, std::shared_ptr<Vector> engine )
 {
     auto newParams      = std::make_shared<ManagedVectorParameters>();
     newParams->d_Engine = engine;
@@ -56,15 +57,13 @@ Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
         } else {
             retVal = view( root );
         }
-    } else if ( std::dynamic_pointer_cast<EpetraVectorEngine>( inVector ) ) {
-        auto engine = std::dynamic_pointer_cast<EpetraVectorEngine>( inVector );
-        retVal      = createManagedEpetraVector( inVector, engine );
+    } else if ( std::dynamic_pointer_cast<EpetraVectorData>( inVector->getVectorData() ) ) {
+        retVal = createManagedEpetraVector( inVector, inVector );
     } else {
-        auto engineParams = std::make_shared<EpetraVectorEngineParameters>(
-            inVector->getCommunicationList(), inVector->getDOFManager() );
-        auto engine =
-            std::make_shared<EpetraVectorEngine>( engineParams, inVector->getVectorData() );
-        retVal = createManagedEpetraVector( inVector, engine );
+        auto engine = createEpetraVector( inVector->getCommunicationList(),
+                                          inVector->getDOFManager(),
+                                          inVector->getVectorData() );
+        retVal      = createManagedEpetraVector( inVector, engine );
     }
     if ( !retVal )
         AMP_ERROR( "Cannot create view!" );

@@ -28,8 +28,7 @@ EpetraVectorData::EpetraVectorData( std::shared_ptr<EpetraVectorEngineParameters
       d_buf_scope{ bufData },
       d_iLocalStart{ localStart },
       d_iLocalSize{ localSize },
-      d_iGlobalSize{ globalSize },
-      d_params( alias )
+      d_iGlobalSize{ globalSize }
 {
 }
 
@@ -134,7 +133,10 @@ std::shared_ptr<VectorData> EpetraVectorData::cloneData() const
 {
     auto buffer = std::make_shared<VectorDataCPU<double>>(
         getLocalStartID(), getLocalSize(), getGlobalSize() );
-    return buffer;
+    auto params = std::make_shared<EpetraVectorEngineParameters>(
+        getLocalSize(), getComm(), getCommunicationList() );
+    auto data = EpetraVectorData::create( params, buffer );
+    return data;
 }
 
 

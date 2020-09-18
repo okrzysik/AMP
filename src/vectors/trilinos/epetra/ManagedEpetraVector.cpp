@@ -1,6 +1,6 @@
 #include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
 #include "AMP/vectors/data/VectorDataCPU.h"
-#include "EpetraVectorEngine.h"
+#include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
 
 
 namespace AMP {
@@ -52,16 +52,17 @@ void ManagedEpetraVector::copyVector( Vector::const_shared_ptr vec )
 
 inline Epetra_Vector &ManagedEpetraVector::getEpetra_Vector()
 {
-    auto engine = std::dynamic_pointer_cast<EpetraVectorEngine>( getVectorEngine() );
-    AMP_ASSERT( engine != nullptr );
-    return engine->getEpetra_Vector();
+    auto data = std::dynamic_pointer_cast<EpetraVectorData>( getVectorEngine()->getVectorData() );
+    AMP_ASSERT( data != nullptr );
+    return data->getEpetra_Vector();
 }
 
 inline const Epetra_Vector &ManagedEpetraVector::getEpetra_Vector() const
 {
-    auto engine = std::dynamic_pointer_cast<const EpetraVectorEngine>( getVectorEngine() );
-    AMP_ASSERT( engine != nullptr );
-    return engine->getEpetra_Vector();
+    auto data =
+        std::dynamic_pointer_cast<const EpetraVectorData>( getVectorEngine()->getVectorData() );
+    AMP_ASSERT( data != nullptr );
+    return data->getEpetra_Vector();
 }
 
 

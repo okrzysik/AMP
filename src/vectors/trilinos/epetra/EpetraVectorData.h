@@ -19,32 +19,13 @@ class EpetraVectorEngineParameters
 {
 public:
     /** \brief Constructor
-     * \param[in] commList: communication list
-     * \param[in] dofManager: DOFManager
+     * \param[in] N_local   Number of local entries
+     * \param[in] comm      Communicator to use
+     * \param[in] commList  communication list
      */
-    EpetraVectorEngineParameters( std::shared_ptr<CommunicationList> commList,
-                                  std::shared_ptr<AMP::Discretization::DOFManager> dofManager );
-    /** \brief Constructor
-        \param[in] local_size     The number of elements on this core
-        \param[in] global_size    The number of elements in total
-        \param[in] comm         Communicator to create the vector on
-        \details  This assumes a contiguous allocation of data.  Core 0 has global ids
-       \f$(0,1,\ldots,n-1)\f$, core 1
-       has global ids \f$(n,n+1,n+2,\ldots,m)\f$, etc.
-        */
-    EpetraVectorEngineParameters( size_t local_size, size_t global_size, const AMP_MPI &comm );
-
-    /** \brief Constructor
-     * \param[in]  local_size    The number of elements on this core
-     * \param[in]  global_size   The number of elements in total
-     * \param[in]  emap        An Epetra_Map for the data
-     * \param[in]  ecomm       An Epetra_MpiComm for constructing the vector on
-     * \details  This allows construction of an EpetraVectorEngine from handy Epetra objects
-     */
-    EpetraVectorEngineParameters( size_t local_size,
-                                  size_t global_size,
-                                  std::shared_ptr<Epetra_Map> emap,
-                                  const AMP_MPI &ecomm );
+    EpetraVectorEngineParameters( size_t N_local,
+                                  const AMP_MPI &comm,
+                                  std::shared_ptr<CommunicationList> commList );
 
     //! Destructor
     virtual ~EpetraVectorEngineParameters();
@@ -70,9 +51,6 @@ public:
 
     //! The CommunicationList for a vector
     CommunicationList::shared_ptr d_CommList = nullptr;
-
-    //! The DOF_Manager for a vector
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManager = nullptr;
 
 private:
     size_t d_begin  = 0;                          // Starting DOF
@@ -158,9 +136,6 @@ protected:
 
     //! The number of elements in the entire vector
     int d_iGlobalSize;
-
-    //! The input parameters
-    std::shared_ptr<EpetraVectorEngineParameters> d_params;
 };
 
 

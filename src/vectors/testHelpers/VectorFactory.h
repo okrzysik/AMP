@@ -11,9 +11,6 @@
 #ifdef USE_PETSC
 #include "petscvec.h"
 #endif
-#ifdef USE_EXT_TRILINOS
-#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
-#endif
 
 
 namespace AMP {
@@ -168,13 +165,11 @@ public:
         const int nGlobal = nLocal * globalComm.getSize();
         auto commList   = AMP::LinearAlgebra::CommunicationList::createEmpty( nLocal, globalComm );
         auto dofManager = std::make_shared<AMP::Discretization::DOFManager>( nLocal, globalComm );
-        auto epetraParams = std::make_shared<AMP::LinearAlgebra::EpetraVectorEngineParameters>(
-            commList, dofManager );
         auto managedParams = std::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
         managedParams->d_Buffer =
             std::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
-        managedParams->d_Engine = std::make_shared<AMP::LinearAlgebra::EpetraVectorEngine>(
-            epetraParams, managedParams->d_Buffer );
+        managedParams->d_Engine =
+            createEpetraVector( commList, dofManager, managedParams->d_Buffer );
         managedParams->d_CommList = commList;
 
         managedParams->d_DOFManager = dofManager;
