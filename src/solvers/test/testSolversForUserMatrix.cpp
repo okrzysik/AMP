@@ -1,6 +1,3 @@
-#include <iostream>
-#include <string>
-
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
@@ -17,12 +14,13 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
+#include <iostream>
+#include <memory>
+#include <string>
 
 std::shared_ptr<AMP::Solver::SolverStrategy>
 buildSolver( const std::shared_ptr<AMP::Database> &input_db,

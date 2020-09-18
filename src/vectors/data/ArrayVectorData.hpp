@@ -18,13 +18,15 @@ ArrayVectorData<T, FUN, Allocator>::ArrayVectorData() : VectorData(), d_globalSi
 }
 
 template<typename T, typename FUN, typename Allocator>
-std::shared_ptr<VectorData> ArrayVectorData<T, FUN, Allocator>::create( const std::vector<size_t> &localSize )
+std::shared_ptr<ArrayVectorData<T, FUN, Allocator>>
+ArrayVectorData<T, FUN, Allocator>::create( const ArraySize &localSize )
 {
-    std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> retVal( new ArrayVectorData<T, FUN, Allocator>() );
-    retVal->resize( localSize );
-    const auto N = retVal->getArray().length();
+    size_t N = localSize.length();
     AMP_MPI comm( AMP_COMM_SELF );
-    auto DOFs            = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
+    std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> retVal(
+        new ArrayVectorData<T, FUN, Allocator>() );
+    retVal->resize( localSize );
+    auto DOFs = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
     retVal->setCommunicationList(
         AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
     retVal->d_globalSize = N;
@@ -33,13 +35,14 @@ std::shared_ptr<VectorData> ArrayVectorData<T, FUN, Allocator>::create( const st
 }
 
 template<typename T, typename FUN, typename Allocator>
-std::shared_ptr<VectorData> ArrayVectorData<T, FUN, Allocator>::create( const std::vector<size_t> &localSize,
-									AMP_MPI comm )
+std::shared_ptr<ArrayVectorData<T, FUN, Allocator>>
+ArrayVectorData<T, FUN, Allocator>::create( const ArraySize &localSize, AMP_MPI comm )
 {
-    std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> retVal( new ArrayVectorData<T, FUN, Allocator>() );
+    size_t N = localSize.length();
+    std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> retVal(
+        new ArrayVectorData<T, FUN, Allocator>() );
     retVal->resize( localSize );
-    const auto N         = retVal->getArray().length();
-    auto DOFs            = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
+    auto DOFs = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
     retVal->setCommunicationList(
         AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
     retVal->d_comm       = comm;
@@ -48,10 +51,11 @@ std::shared_ptr<VectorData> ArrayVectorData<T, FUN, Allocator>::create( const st
 }
 
 template<typename T, typename FUN, typename Allocator>
-std::shared_ptr<VectorData>
-ArrayVectorData<T, FUN, Allocator>::create( AMP::LinearAlgebra::CommunicationList::shared_ptr commlist )
+std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> ArrayVectorData<T, FUN, Allocator>::create(
+    AMP::LinearAlgebra::CommunicationList::shared_ptr commlist )
 {
-    std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> retVal( new ArrayVectorData<T, FUN, Allocator>() );
+    std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> retVal(
+        new ArrayVectorData<T, FUN, Allocator>() );
     retVal->setCommunicationList( commlist );
     retVal->d_comm = commlist->getComm();
     AMP_ERROR( "This routine is not complete" );
@@ -59,12 +63,13 @@ ArrayVectorData<T, FUN, Allocator>::create( AMP::LinearAlgebra::CommunicationLis
 }
 
 template<typename T, typename FUN, typename Allocator>
-inline std::shared_ptr<VectorData>
-ArrayVectorData<T, FUN, Allocator>::cloneData( void ) const
+inline std::shared_ptr<VectorData> ArrayVectorData<T, FUN, Allocator>::cloneData( void ) const
 {
     const auto &array = this->getArray();
     std::vector<size_t> size( array.size().begin(), array.size().end() );
-    return create( size, this->getComm() );
+    auto retVal = create( size, this->getComm() );
+    retVal->setCommunicationList( getCommunicationList() );
+    return retVal;
 }
 
 template<typename T, typename FUN, typename Allocator>
@@ -78,7 +83,7 @@ void ArrayVectorData<T, FUN, Allocator>::swapData( VectorData &rhs )
 }
 
 template<typename T, typename FUN, typename Allocator>
-void ArrayVectorData<T, FUN, Allocator>::resize( const std::vector<size_t> &localDims )
+void ArrayVectorData<T, FUN, Allocator>::resize( const ArraySize &localDims )
 {
     d_array.resize( localDims );
 }

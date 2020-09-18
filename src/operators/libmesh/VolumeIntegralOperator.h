@@ -125,18 +125,9 @@ protected:
     std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
 private:
-    std::shared_ptr<AMP::LinearAlgebra::MultiVariable>
-        d_inpVariables; /**< Input Active variables. */
-
-    std::shared_ptr<AMP::LinearAlgebra::MultiVariable>
-        d_auxVariables; /**< Input Auxillary variables. */
-
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output variables. */
-
-    // std::shared_ptr<AMP::LinearAlgebra::Matrix> d_pDiagonalMatrix;
-    // std::shared_ptr<AMP::LinearAlgebra::Vector> d_pDiagonalVector;
-    // std::shared_ptr<AMP::LinearAlgebra::Vector> d_pNullVector;
-    // bool d_bMatrixAndVectorsCloned;
+    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; // Input Active variable
+    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_auxVariables; // Input Auxillary variable
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;       // Output variable
 };
 
 

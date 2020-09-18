@@ -1,26 +1,22 @@
-#include "AMP/vectors/petsc/NativePetscVector.h"
+#include "AMP/vectors/petsc/NativePetscVectorData.h"
 
 namespace AMP {
 namespace LinearAlgebra {
 
-static Vec getVec( Vector::shared_ptr v )
+inline Vec getVec( Vector::shared_ptr v )
 {
-  auto npv = std::dynamic_pointer_cast<NativePetscVector>(v);
-  AMP_ASSERT(npv);
-  auto vdata = npv->getVectorData();
-  AMP_ASSERT(vdata);
-  return std::dynamic_pointer_cast<NativePetscVectorData>(vdata)->getVec();
+    auto data = std::dynamic_pointer_cast<NativePetscVectorData>( v->getVectorData() );
+    AMP_ASSERT( data );
+    return data->getVec();
 }
- 
-static const Vec getVec( Vector::const_shared_ptr v )
+
+inline Vec getVec( Vector::const_shared_ptr v )
 {
-  auto npv = std::dynamic_pointer_cast<const NativePetscVector>(v);
-  AMP_ASSERT(npv);
-  auto vdata = npv->getVectorData();
-  AMP_ASSERT(vdata);
-  return std::dynamic_pointer_cast<const NativePetscVectorData>(vdata)->getVec();
+    auto data = std::dynamic_pointer_cast<const NativePetscVectorData>( v->getVectorData() );
+    AMP_ASSERT( data );
+    return data->getVec();
 }
- 
+
 inline Matrix::shared_ptr NativePetscMatrix::cloneMatrix() const
 {
     Mat new_mat;
@@ -76,17 +72,13 @@ inline void NativePetscMatrix::copyFromMat( Mat m ) { MatCopy( m, d_Mat, SAME_NO
 
 inline void NativePetscMatrix::mult( Vector::const_shared_ptr in, Vector::shared_ptr out )
 {
-    MatMult( d_Mat,
-             getVec(in),
-             getVec(out) );
+    MatMult( d_Mat, getVec( in ), getVec( out ) );
 }
 
 
 inline void NativePetscMatrix::multTranspose( Vector::const_shared_ptr in, Vector::shared_ptr out )
 {
-    MatMultTranspose( d_Mat,
-                      getVec(in),
-                      getVec(out) );
+    MatMultTranspose( d_Mat, getVec( in ), getVec( out ) );
 }
 
 
@@ -140,7 +132,7 @@ inline void NativePetscMatrix::zero() { MatZeroEntries( d_Mat ); }
 
 inline void NativePetscMatrix::setDiagonal( Vector::const_shared_ptr in )
 {
-    MatDiagonalSet( d_Mat, getVec(in), INSERT_VALUES );
+    MatDiagonalSet( d_Mat, getVec( in ), INSERT_VALUES );
 }
 
 inline void NativePetscMatrix::setIdentity()

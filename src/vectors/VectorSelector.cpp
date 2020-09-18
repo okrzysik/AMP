@@ -3,7 +3,7 @@
 #include "AMP/vectors/CommVariable.h"
 #include "AMP/vectors/MeshVariable.h"
 #include "AMP/vectors/StridedVariable.h"
-#include "AMP/vectors/SubsetVector.h"
+#include "AMP/vectors/SubsetVariable.h"
 #include <utility>
 
 
@@ -39,14 +39,14 @@ Vector::shared_ptr VS_Stride::subset( Vector::shared_ptr p ) const
 {
     auto variable =
         std::make_shared<StridedVariable>( p->getVariable()->getName(), d_Offset, d_Stride );
-    auto vector = SubsetVector::view( p, variable );
+    auto vector = SubsetVariable::view( p, variable );
     return vector;
 }
 Vector::const_shared_ptr VS_Stride::subset( Vector::const_shared_ptr p ) const
 {
     auto variable =
         std::make_shared<StridedVariable>( p->getVariable()->getName(), d_Offset, d_Stride );
-    auto vector = SubsetVector::view( p, variable );
+    auto vector = SubsetVariable::view( p, variable );
     return vector;
 }
 
@@ -67,14 +67,14 @@ Vector::shared_ptr VS_Comm::subset( Vector::shared_ptr p ) const
 {
     auto variable =
         std::make_shared<CommVariable>( p->getVariable()->getName(), communicator( p ) );
-    auto vector = SubsetVector::view( p, variable );
+    auto vector = SubsetVariable::view( p, variable );
     return vector;
 }
 Vector::const_shared_ptr VS_Comm::subset( Vector::const_shared_ptr p ) const
 {
     auto variable =
         std::make_shared<CommVariable>( p->getVariable()->getName(), communicator( p ) );
-    auto vector = SubsetVector::view( p, variable );
+    auto vector = SubsetVariable::view( p, variable );
     return vector;
 }
 
@@ -102,7 +102,7 @@ Vector::shared_ptr VS_Mesh::subset( Vector::shared_ptr p ) const
         return Vector::shared_ptr();
     auto variable =
         std::make_shared<MeshVariable>( p->getVariable()->getName(), d_mesh, d_useMeshComm );
-    auto vector = SubsetVector::view( p, variable );
+    auto vector = SubsetVariable::view( p, variable );
     return vector;
 }
 Vector::const_shared_ptr VS_Mesh::subset( Vector::const_shared_ptr p ) const
@@ -111,7 +111,7 @@ Vector::const_shared_ptr VS_Mesh::subset( Vector::const_shared_ptr p ) const
         return Vector::shared_ptr();
     auto variable =
         std::make_shared<MeshVariable>( p->getVariable()->getName(), d_mesh, d_useMeshComm );
-    auto vector = SubsetVector::view( p, variable );
+    auto vector = SubsetVariable::view( p, variable );
     return vector;
 }
 #endif
@@ -130,14 +130,14 @@ Vector::shared_ptr VS_MeshIterator::subset( Vector::shared_ptr p ) const
 {
     auto variable =
         std::make_shared<MeshIteratorVariable>( p->getVariable()->getName(), d_iterator, d_comm );
-    auto vector = SubsetVector::view( p, variable );
+    auto vector = SubsetVariable::view( p, variable );
     return vector;
 }
 Vector::const_shared_ptr VS_MeshIterator::subset( Vector::const_shared_ptr p ) const
 {
     auto variable =
         std::make_shared<MeshIteratorVariable>( p->getVariable()->getName(), d_iterator, d_comm );
-    auto vector = SubsetVector::view( p, variable );
+    auto vector = SubsetVariable::view( p, variable );
     return vector;
 }
 #endif

@@ -1,12 +1,3 @@
-#include <cmath>
-#include <iostream>
-#include <map>
-#include <sstream>
-#include <string>
-#include <valarray>
-#include <vector>
-
-
 #include "AMP/materials/Material.h"
 #include "AMP/materials/Property.h"
 #include "AMP/materials/TensorProperty.h"
@@ -17,9 +8,17 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/SimpleVector.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #include "testMaterialHelpers.h"
+
+#include <cmath>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <valarray>
+#include <vector>
 
 
 // Allow external materials to include additional headers in the test
@@ -31,10 +30,13 @@
 
 
 // Test getting a value out of range
-static inline void set( std::vector<double> &vec, size_t index, double value ) { vec[index] = value; }
+static inline void set( std::vector<double> &vec, size_t index, double value )
+{
+    vec[index] = value;
+}
 static inline void set( AMP::LinearAlgebra::Vector &vec, size_t index, double value )
 {
-  vec.setValuesByLocalID( 1, &index, &value );
+    vec.setValuesByLocalID( 1, &index, &value );
 }
 template<class VEC>
 static inline VEC &find( std::map<std::string, VEC> &args, const std::string &var )
@@ -177,15 +179,14 @@ MatTestResult testMaterial( std::string &name )
             auto toosmallVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "toosmall" + istr );
             auto justrightVar = std::make_shared<AMP::LinearAlgebra::Variable>( justrightname[i] );
             auto toobigVar = std::make_shared<AMP::LinearAlgebra::Variable>( "toobigVar" + istr );
-            toosmallVec[i] =
-                AMP::LinearAlgebra::SimpleVector<double>::create( npoints, toosmallVar );
+            toosmallVec[i] = AMP::LinearAlgebra::createSimpleVector<double>( npoints, toosmallVar );
             justrightVec[i] =
-                AMP::LinearAlgebra::SimpleVector<double>::create( npoints, justrightVar );
-            toobigVec[i] = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, toobigVar );
+                AMP::LinearAlgebra::createSimpleVector<double>( npoints, justrightVar );
+            toobigVec[i] = AMP::LinearAlgebra::createSimpleVector<double>( npoints, toobigVar );
             for ( size_t j = 0; j < npoints; j++ ) {
-	      toosmallVec[i]->setValuesByLocalID( 1, &j, &toosmall[i][j] );
-	      justrightVec[i]->setValuesByLocalID( 1, &j, &justright[i][j] );
-	      toobigVec[i]->setValuesByLocalID( 1, &j, &toobig[i][j] );
+                toosmallVec[i]->setValuesByLocalID( 1, &j, &toosmall[i][j] );
+                justrightVec[i]->setValuesByLocalID( 1, &j, &justright[i][j] );
+                toobigVec[i]->setValuesByLocalID( 1, &j, &toobig[i][j] );
             }
         }
 
@@ -199,9 +200,9 @@ MatTestResult testMaterial( std::string &name )
 
         // set up AMP::Vector arguments to evalv
         auto valueVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "value" );
-        auto valueVec   = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, valueVar );
+        auto valueVec   = AMP::LinearAlgebra::createSimpleVector<double>( npoints, valueVar );
         auto nominalVar = std::make_shared<AMP::LinearAlgebra::Variable>( "nominal" );
-        auto nominalVec = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nominalVar );
+        auto nominalVec = AMP::LinearAlgebra::createSimpleVector<double>( npoints, nominalVar );
         std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> argsVec;
         for ( size_t i = 0; i < nargs; i++ ) {
             argsVec.insert( std::make_pair( argnames[i], justrightVec[i] ) );
@@ -224,7 +225,7 @@ MatTestResult testMaterial( std::string &name )
         }
         auto nominalMultiVar = std::make_shared<AMP::LinearAlgebra::Variable>( "nominalMulti" );
         auto nominalMultiVec =
-            AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nominalMultiVar );
+            AMP::LinearAlgebra::createSimpleVector<double>( npoints, nominalMultiVar );
 
         // test material range functions
         std::vector<double> range( 2 );
@@ -643,11 +644,11 @@ MatTestResult testMaterial( std::string &name )
                 auto evalVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "amp" + istr );
                 auto nomVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "nominal" + istr );
                 auto multiVar = std::make_shared<AMP::LinearAlgebra::Variable>( "multivec" + istr );
-                ampEval[i] = AMP::LinearAlgebra::SimpleVector<double>::create( npoints, evalVar );
+                ampEval[i]    = AMP::LinearAlgebra::createSimpleVector<double>( npoints, evalVar );
                 nominalAmpEval[i] =
-                    AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nomVar );
+                    AMP::LinearAlgebra::createSimpleVector<double>( npoints, nomVar );
                 nominalMultiEval[i] =
-                    AMP::LinearAlgebra::SimpleVector<double>::create( npoints, multiVar );
+                    AMP::LinearAlgebra::createSimpleVector<double>( npoints, multiVar );
             }
 
             // all in range, AMP::Vector
@@ -945,11 +946,11 @@ MatTestResult testMaterial( std::string &name )
                     auto multiVar =
                         std::make_shared<AMP::LinearAlgebra::Variable>( "multivec" + istr );
                     ampEval[i][j] =
-                        AMP::LinearAlgebra::SimpleVector<double>::create( npoints, evalVar );
+                        AMP::LinearAlgebra::createSimpleVector<double>( npoints, evalVar );
                     nominalAmpEval[i][j] =
-                        AMP::LinearAlgebra::SimpleVector<double>::create( npoints, nomVar );
+                        AMP::LinearAlgebra::createSimpleVector<double>( npoints, nomVar );
                     nominalMultiEval[i][j] =
-                        AMP::LinearAlgebra::SimpleVector<double>::create( npoints, multiVar );
+                        AMP::LinearAlgebra::createSimpleVector<double>( npoints, multiVar );
                 }
             }
 

@@ -1,5 +1,4 @@
-#include "AMP/vectors/SubsetVectorData.h"
-
+#include "AMP/vectors/data/SubsetVectorData.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -8,6 +7,7 @@
 
 #include <algorithm>
 
+
 namespace AMP {
 namespace LinearAlgebra {
 
@@ -15,53 +15,37 @@ namespace LinearAlgebra {
 /****************************************************************
  * Constructors                                                   *
  ****************************************************************/
-SubsetVectorData::SubsetVectorData( std::shared_ptr<VectorParameters> params ): VectorData(params), d_DOFManager{params->d_DOFManager}
+SubsetVectorData::SubsetVectorData( std::shared_ptr<SubsetVectorParameters> params )
+    : VectorData( params->d_CommList ),
+      d_ViewVector( params->d_ViewVector ),
+      d_DOFManager{ params->d_DOFManager }
 {
-  auto sParams = std::dynamic_pointer_cast<SubsetVectorParameters>(params);
-  d_ViewVector = sParams->d_ViewVector;
-#if 0
-  auto remote_DOFs = d_DOFManager->getRemoteDOFs();
-  bool ghosts      = d_DOFManager->getComm().anyReduce( !remote_DOFs.empty() );
-  AMP::LinearAlgebra::CommunicationList::shared_ptr commList;
-  if ( !ghosts ) {
-    d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( d_DOFManager->numLocalDOF(),
-								     d_DOFManager->getComm() );
-  } else {
-    // Construct the communication list
-    auto params           = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
-    params->d_comm        = d_DOFManager->getComm();
-    params->d_localsize   = d_DOFManager->numLocalDOF();
-    params->d_remote_DOFs = remote_DOFs;
-    d_CommList              = std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
-  }
-#endif
-  auto parentDOF = d_ViewVector->getDOFManager();
-  auto tmp = std::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( d_DOFManager );
-  if ( tmp != nullptr ) {
-    d_SubsetLocalIDToViewGlobalID = tmp->getLocalParentDOFs();
-  } else if ( d_DOFManager->numLocalDOF() == parentDOF->numLocalDOF() ) {
-    d_SubsetLocalIDToViewGlobalID.resize( parentDOF->numLocalDOF() );
-    size_t beginDOF = parentDOF->beginDOF();
-    size_t endDOF   = parentDOF->endDOF();
-    for ( size_t i = beginDOF; i < endDOF; i++ )
+    auto parentDOF = d_ViewVector->getDOFManager();
+    auto tmp = std::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( d_DOFManager );
+    if ( tmp != nullptr ) {
+        d_SubsetLocalIDToViewGlobalID = tmp->getLocalParentDOFs();
+    } else if ( d_DOFManager->numLocalDOF() == parentDOF->numLocalDOF() ) {
+        d_SubsetLocalIDToViewGlobalID.resize( parentDOF->numLocalDOF() );
+        size_t beginDOF = parentDOF->beginDOF();
+        size_t endDOF   = parentDOF->endDOF();
+        for ( size_t i = beginDOF; i < endDOF; i++ )
             d_SubsetLocalIDToViewGlobalID[i - beginDOF] = i;
-  } else {
-    AMP_ERROR( "Internal error with SubsetVector" );
-  }
-  // Get a pointer to every value in the subset
-  std::vector<double *> data_ptr( d_SubsetLocalIDToViewGlobalID.size(), nullptr );
-  auto iterator   = d_ViewVector->constBegin();
-  size_t last_pos = d_ViewVector->getCommunicationList()->getStartGID();
-  for ( size_t i = 0; i < data_ptr.size(); i++ ) {
-    iterator += (int) ( d_SubsetLocalIDToViewGlobalID[i] - last_pos );
-    last_pos    = d_SubsetLocalIDToViewGlobalID[i];
-    data_ptr[i] = const_cast<double *>( &( *iterator ) );
-  }
-  // Create the data blocks
-  // For now use one datablock for each value, this needs to be changed
-  d_dataBlockPtr  = data_ptr;
-  d_dataBlockSize = std::vector<size_t>( data_ptr.size(), 1 );
-    
+    } else {
+        AMP_ERROR( "Internal error with SubsetVector" );
+    }
+    // Get a pointer to every value in the subset
+    std::vector<double *> data_ptr( d_SubsetLocalIDToViewGlobalID.size(), nullptr );
+    auto iterator   = d_ViewVector->constBegin();
+    size_t last_pos = d_ViewVector->getCommunicationList()->getStartGID();
+    for ( size_t i = 0; i < data_ptr.size(); i++ ) {
+        iterator += (int) ( d_SubsetLocalIDToViewGlobalID[i] - last_pos );
+        last_pos    = d_SubsetLocalIDToViewGlobalID[i];
+        data_ptr[i] = const_cast<double *>( &( *iterator ) );
+    }
+    // Create the data blocks
+    // For now use one datablock for each value, this needs to be changed
+    d_dataBlockPtr  = data_ptr;
+    d_dataBlockSize = std::vector<size_t>( data_ptr.size(), 1 );
 }
 
 /****************************************************************

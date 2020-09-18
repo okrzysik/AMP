@@ -162,33 +162,6 @@ static void applyTest( AMP::UnitTest *ut,
     } catch ( const std::exception & ) {
         ut->passes( msgPrefix + " : apply with f, u, r NULL, a=1, b=-1.0" );
     }
-#if 0
-    // ninth test for apply - random values in all three input vectors, a=0, b=1
-    rhsVec->setRandomValues();
-    resVec->setRandomValues();
-    solVec->setRandomValues();
-    adjust(solVec, workVec);
-    testOperator->apply(rhsVec, solVec, resVec, 0.0, 1.0);
-    rhsVec->subtract(rhsVec, resVec);
-    if (AMP::Utilities::approx_equal(rhsVec->L2Norm(), 0.0)) {
-        ut->passes(msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=1.0");
-    } else {
-        ut->failure(msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=1.0");
-    }
-
-    // tenth test for apply - random values in all three input vectors, a=0, b=-1, to test scaling
-    rhsVec->setRandomValues();
-    resVec->setRandomValues();
-    solVec->setRandomValues();
-    adjust(solVec, workVec);
-    testOperator->apply(rhsVec, solVec, resVec, 0.0, -1.0);
-    rhsVec->add(rhsVec, resVec);
-    if (AMP::Utilities::approx_equal(rhsVec->L2Norm(), 0.0)) {
-        ut->passes(msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=-1.0 (test scaling of f)");
-    } else {
-        ut->failure(msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=-1.0 (test scaling of f)");
-    }
-#endif
 }
 
 

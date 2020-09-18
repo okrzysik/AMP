@@ -10,17 +10,23 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-NativePetscVectorData::NativePetscVectorData( VectorParameters::shared_ptr in_params )
+NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI comm )
     : VectorData(), PetscVector()
 {
-    auto npvParams = std::dynamic_pointer_cast<NativePetscVectorParameters>( in_params );
-    d_petscVec     = npvParams->d_InVec;
-    d_pArray       = nullptr;
-    CommunicationListParameters::shared_ptr params( new CommunicationListParameters() );
-    params->d_comm      = npvParams->d_Comm;
-    params->d_localsize = npvParams->d_localsize;
+    // Set the vector
+    d_petscVec  = v;
+    d_pArray    = nullptr;
+    d_bDeleteMe = deleteable;
+    // Get the correct communicator if it is not set
+    MPI_Comm comm2 = comm.getCommunicator(); // Get a MPI_comm object from AMP_MPI to pass to PETSc
+    PetscObjectGetComm( reinterpret_cast<PetscObject>( v ), &comm2 );
+    if ( comm2 != comm.getCommunicator() )
+        comm = AMP_MPI( comm2 );
+    // Create the communication list
+    auto params         = std::make_shared<CommunicationListParameters>();
+    params->d_comm      = comm;
+    params->d_localsize = getLocalSize();
     setCommunicationList( std::make_shared<CommunicationList>( params ) );
-    d_bDeleteMe  = npvParams->d_Deleteable;
 }
 
 
@@ -52,7 +58,7 @@ void NativePetscVectorData::copyOutRawData( double *out ) const
 void NativePetscVectorData::swapData( VectorData &other )
 {
     resetArray();
-    auto otherData = dynamic_cast<NativePetscVectorData*>(&other);
+    auto otherData = dynamic_cast<NativePetscVectorData *>( &other );
     otherData->resetArray();
     VecSwap( d_petscVec, otherData->getVec() );
 }
@@ -62,11 +68,9 @@ std::shared_ptr<VectorData> NativePetscVectorData::cloneData() const
     resetArray();
     Vec new_petscVec;
     VecDuplicate( d_petscVec, &new_petscVec );
-    auto npvParams            = std::make_shared<NativePetscVectorParameters>( new_petscVec, true );
-    npvParams->d_Comm         = getComm();
-    return std::make_shared<NativePetscVectorData>(npvParams);
+    return std::make_shared<NativePetscVectorData>( new_petscVec, true, getComm() );
 }
-   
+
 size_t NativePetscVectorData::numberOfDataBlocks() const { return 1; }
 
 
@@ -76,8 +80,6 @@ size_t NativePetscVectorData::sizeOfDataBlock( size_t i ) const
         return 0;
     return getLocalSize();
 }
-
-std::shared_ptr<ParameterBase> NativePetscVectorData::getParameters() { return d_pParameters; }
 
 void NativePetscVectorData::resetArray()
 {
@@ -193,20 +195,6 @@ void NativePetscVectorData::assemble()
 {
     VecAssemblyBegin( d_petscVec );
     VecAssemblyEnd( d_petscVec );
-}
-
-NativePetscVectorParameters::NativePetscVectorParameters( Vec v, bool deleteable )
-{
-    // Get the communicator from the PETSc vector
-    d_InVec       = v;
-    MPI_Comm comm = d_Comm.getCommunicator(); // Get a MPI_comm object from AMP_MPI to pass to PETSc
-    PetscObjectGetComm( reinterpret_cast<PetscObject>( v ), &comm );
-    if ( comm != d_Comm.getCommunicator() )
-        d_Comm = AMP_MPI( comm );
-    d_Deleteable = deleteable;
-    int lsize;
-    VecGetLocalSize( v, &lsize );
-    d_localsize = (size_t) lsize;
 }
 
 

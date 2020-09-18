@@ -360,6 +360,11 @@ constexpr AMP::Mesh::MeshPoint<TYPE> normalize( const AMP::Mesh::MeshPoint<TYPE>
     y.z() *= t;
     return y;
 }
-
+template<class TYPE>
+std::ostream &operator<<( std::ostream &out, const AMP::Mesh::MeshPoint<TYPE> &x )
+{
+    x.print( out );
+    return out;
+}
 
 #endif

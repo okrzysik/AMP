@@ -8,7 +8,7 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/SimpleVector.h"
+#include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/newFrozenVectorDesign/newFrozenVectorDesignHelpers.h"
 
 #include <cstdio>
@@ -65,8 +65,8 @@ int main( int argc, char *argv[] )
     auto firstVar  = firstOp->getOutputVariable();
     auto secondVar = secondOp->getOutputVariable();
 
-    auto firstVec  = AMP::LinearAlgebra::SimpleVector<double>::create( 1, firstVar );
-    auto secondVec = AMP::LinearAlgebra::SimpleVector<double>::create( 1, secondVar );
+    auto firstVec  = AMP::LinearAlgebra::createSimpleVector<double>( 1, firstVar );
+    auto secondVec = AMP::LinearAlgebra::createSimpleVector<double>( 1, secondVar );
 
     auto commList = AMP::LinearAlgebra::CommunicationList::createEmpty( 1, AMP_COMM_SELF );
 
@@ -87,13 +87,11 @@ int main( int argc, char *argv[] )
 
     std::cout << "Completed Solve." << std::endl;
 
-    auto firstSol = std::dynamic_pointer_cast<AMP::LinearAlgebra::SimpleVector<double>>(
-        solVec->subsetVectorForVariable( firstVar ) );
+    auto firstSol = solVec->subsetVectorForVariable( firstVar );
 
-    auto secondSol = std::dynamic_pointer_cast<AMP::LinearAlgebra::SimpleVector<double>>(
-        solVec->subsetVectorForVariable( secondVar ) );
+    auto secondSol = solVec->subsetVectorForVariable( secondVar );
 
-    auto firstSolData = firstSol->getVectorData();
+    auto firstSolData  = firstSol->getVectorData();
     auto secondSolData = secondSol->getVectorData();
     //    std::cout << "First Solution = " << ( ( *firstSolData )[0] ) << std::endl;
     //   std::cout << "Second Solution = " << ( ( *secondSolData )[0] ) << std::endl;

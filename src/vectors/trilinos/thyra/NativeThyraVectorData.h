@@ -8,26 +8,6 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-/** \class NativeThyraVectorParameters
- * \brief Parameters to set when creating a NativeThyraVector
- */
-class NativeThyraVectorParameters : public VectorParameters
-{
-public:
-    //! The vector to wrap
-    Teuchos::RCP<Thyra::VectorBase<double>> d_InVec;
-
-    //! The local size of the vector
-    size_t d_local;
-
-    //! The comm of the vector
-    AMP_MPI d_comm;
-
-    //! The variable to use with the vector
-    Variable::shared_ptr d_var;
-};
-
-
 /** \class NativeThyraVector
  * \brief An AMP Vector that uses Thyra for parallel data management, linear algebra,
  * etc.
@@ -43,9 +23,13 @@ class NativeThyraVectorData : public VectorData, public ThyraVector
 {
 public:
     /** \brief Construct a wrapper for a Thyra Vec from a set of parameters
-     * \param[in] params The parameters describing the Vec
+     * \param[in] vec           The Thyra vector
+     * \param[in] localsize     The local vector size
+     * \param[in] comm          The communicator
      */
-    explicit NativeThyraVectorData( VectorParameters::shared_ptr params );
+    explicit NativeThyraVectorData( Teuchos::RCP<Thyra::VectorBase<double>> vec,
+                                    size_t localsize,
+                                    AMP_MPI comm );
 
     //! Destructor
     virtual ~NativeThyraVectorData();
@@ -76,6 +60,7 @@ public:
     }
     void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
     std::shared_ptr<VectorData> cloneData() const override;
+
 protected:
     //! Empty constructor.
     NativeThyraVectorData();

@@ -29,7 +29,7 @@ public:
     /** \brief Create a ManagedEpetraVector from a set of parameters
      * \param[in] params  A VectorParameters class used to construct this vector
      */
-    explicit ManagedEpetraVector( VectorParameters::shared_ptr params );
+    explicit ManagedEpetraVector( std::shared_ptr<ManagedVectorParameters> params );
 
     /** \brief Create a view of a vector
      * \param[in] alias  Vector to view
@@ -49,7 +49,6 @@ public:
 
     Epetra_Vector &getEpetra_Vector() override;
     const Epetra_Vector &getEpetra_Vector() const override;
-    void assemble() override;
 
 protected:
     ManagedVector *getNewRawPtr() const override;

@@ -5,8 +5,6 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
-#include "AMP/vectors/trilinos/thyra/ManagedThyraVector.h"
-#include "AMP/vectors/trilinos/thyra/NativeThyraVector.h"
 
 
 /// \cond UNDOCUMENTED

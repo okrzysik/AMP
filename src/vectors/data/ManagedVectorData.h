@@ -1,9 +1,9 @@
 #ifndef included_AMP_ManagedVectorData
 #define included_AMP_ManagedVectorData
 
-#include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/DataChangeListener.h"
+#include "AMP/vectors/data/DataChangeListener.h"
+#include "AMP/vectors/data/VectorData.h"
 
 #include <stdexcept>
 #include <vector>
@@ -16,7 +16,7 @@ namespace LinearAlgebra {
 /**
   \brief Data necessary to create a managed vector
 */
-class ManagedVectorParameters : public VectorParameters
+class ManagedVectorParameters
 {
 protected:
     //!  Copy constructor is protected to prevent unintended copies
@@ -31,6 +31,12 @@ public:
 
     //! Buffer to use for the managed vector
     std::shared_ptr<VectorData> d_Buffer;
+
+    //! The CommunicationList for a vector
+    CommunicationList::shared_ptr d_CommList = nullptr;
+
+    //! The DOF_Manager for a vector
+    AMP::Discretization::DOFManager::shared_ptr d_DOFManager = nullptr;
 };
 
 
@@ -49,7 +55,7 @@ public:
     /** \brief Construct a ManagedVector from a set of parameters
      * \param[in] params  The description of the ManagedVector
      */
-    explicit ManagedVectorData( VectorParameters::shared_ptr params );
+    explicit ManagedVectorData( std::shared_ptr<ManagedVectorParameters> params );
 
     /** \brief Construct a view of an AMP vector
      * \param[in] alias  Vector to view
@@ -67,12 +73,12 @@ public:
 
     virtual bool isAnAliasOf( VectorData &rhs );
 
-    std::shared_ptr<ParameterBase> getParameters();
+    std::shared_ptr<ManagedVectorParameters> getParameters();
 
-    bool hasBuffer( void ) const { return (d_vBuffer!=nullptr); }
+    bool hasBuffer( void ) const { return ( d_vBuffer != nullptr ); }
 
     void receiveDataChanged() override { fireDataChange(); }
-    
+
 protected:
     //! The buffer used to store data
     std::shared_ptr<VectorData> d_vBuffer = nullptr;
@@ -116,12 +122,13 @@ public: // Derived from VectorData
 
     void dataChanged() override;
 
-    std::shared_ptr<VectorData> cloneData( ) const override;
+    std::shared_ptr<VectorData> cloneData() const override;
     void aliasData( VectorData &other );
-    
- protected: // Derived from VectorData
+
+protected: // Derived from VectorData
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
+
 private:
     ManagedVectorData();
 };

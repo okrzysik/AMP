@@ -1,9 +1,9 @@
- #ifndef included_AMP_ManagedPetscVector
+#ifndef included_AMP_ManagedPetscVector
 #define included_AMP_ManagedPetscVector
 
 #include "AMP/vectors/ManagedVector.h"
+#include "AMP/vectors/data/DataChangeListener.h"
 #include "AMP/vectors/petsc/PetscVector.h"
-#include "AMP/vectors/DataChangeListener.h"
 
 
 namespace AMP {
@@ -16,7 +16,8 @@ namespace LinearAlgebra {
 typedef ManagedVectorParameters ManagedPetscVectorParameters;
 
 
-/** \class ManagedPetscVector
+/** \class
+ * ManagedPetscVector/projects/AMP/build/debug/AMP/include/AMP/vectors/petsc/ManagedPetscVector.h
  * \brief A class that provides a PETSc vector interfaced to a ManagedVector.
  * \details  This class provides a PETSc Vec specially configured to call
  * through ManagedVector.
@@ -26,7 +27,7 @@ typedef ManagedVectorParameters ManagedPetscVectorParameters;
  *
  * \see PetscVector
  */
- class ManagedPetscVector : public ManagedVector, public PetscVector, public DataChangeListener
+class ManagedPetscVector : public ManagedVector, public PetscVector, public DataChangeListener
 {
 private:
     bool d_bMadeWithPetscDuplicate;
@@ -46,7 +47,7 @@ public:
     /** \brief Construct a new ManagedPetscVector given a set of parameters
      * \param[in] params  The parameters describing the new vector
      */
-    explicit ManagedPetscVector( VectorParameters::shared_ptr params );
+    explicit ManagedPetscVector( std::shared_ptr<ManagedVectorParameters> params );
 
     /** \brief Construct a view of another vector
      * \param[in] alias The vector to view
@@ -74,21 +75,6 @@ public:
     ManagedPetscVector *rawClone() const;
 
 
-    /** \brief Copy data from a PETSc Vec to an AMP Vector
-     * \param[out] dest  Vector to copy to
-     * \param[in]  src   Vec to copy from
-     */
-    static void copyFromPetscVec( Vector &dest, Vec src );
-
-    /** \brief Create data from a PETSc Vec, but do not copy data
-     * \param[in]  src   Vec to copy from
-     * \param[in]  comm  The AMP_MPI to create the AMP Vector on.
-     * \return A new AMP vector with identical data distribution to the
-     * PETSc Vec.
-     */
-    static Vector::shared_ptr createFromPetscVec( Vec src, AMP_MPI &comm );
-
-
     // These are adequately documented in a base class.
 public:
     virtual void swapVectors( Vector &other ) override;
@@ -99,8 +85,6 @@ public:
     {
         return "Managed PETSc Vector" + ManagedVector::type();
     }
-
-    void assemble() override;
 
     virtual bool petscHoldsView() const override;
 

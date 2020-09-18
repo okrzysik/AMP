@@ -6,7 +6,7 @@
 #include <algorithm>
 
 #include "AMP/utils/UnitTest.h"
-#include "AMP/vectors/petsc/NativePetscVector.h"
+#include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/petsc/PetscVector.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
 

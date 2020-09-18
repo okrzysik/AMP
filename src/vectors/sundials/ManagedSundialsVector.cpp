@@ -18,7 +18,7 @@ namespace LinearAlgebra {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-ManagedSundialsVector::ManagedSundialsVector( VectorParameters::shared_ptr params )
+ManagedSundialsVector::ManagedSundialsVector( std::shared_ptr<ManagedVectorParameters> params )
     : ManagedVector( params ), SundialsVector()
 {
     // Create N_Vector
@@ -367,8 +367,7 @@ realtype ManagedSundialsVector::minquotient_AMP( N_Vector x, N_Vector w )
 
 ManagedVector *ManagedSundialsVector::getNewRawPtr() const
 {
-    return new ManagedSundialsVector(
-        std::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
+    return new ManagedSundialsVector( d_pParameters );
 }
 
 std::string ManagedSundialsVector::type() const
@@ -378,7 +377,6 @@ std::string ManagedSundialsVector::type() const
     return retVal;
 }
 
-void ManagedSundialsVector::assemble() {}
 
 } // namespace LinearAlgebra
 } // namespace AMP

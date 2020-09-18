@@ -6,7 +6,7 @@
 #include "petscvec.h"
 
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
-#include "AMP/vectors/petsc/NativePetscVector.h"
+#include "AMP/vectors/petsc/NativePetscVectorData.h"
 
 namespace AMP {
 namespace LinearAlgebra {

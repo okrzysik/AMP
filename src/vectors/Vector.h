@@ -1,18 +1,16 @@
 #ifndef included_AMP_Vector
 #define included_AMP_Vector
 
-
-#include <iosfwd>
-#include <string>
-
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/utils/ParameterBase.h"
 #include "AMP/utils/RNG.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/operations/VectorOperations.h"
+
+#include <iosfwd>
 #include <memory>
+#include <string>
 
 
 namespace AMP {
@@ -49,7 +47,6 @@ class Vector : public AMP::enable_shared_from_this<Vector>
 {
 
 public: // typedefs
-
     /** \typedef shared_ptr
      * \brief Shorthand for shared pointer to Vector
      */
@@ -65,8 +62,34 @@ public: // typedefs
     typedef VectorDataIterator<const double> const_iterator;
 
 
-    // the next set of functions defines the public math. interface for vectors
-public:
+public: // Constructor/destructors
+    //! Empty Constructor
+    Vector();
+
+    /**
+     * \brief  Create an empty vector with the given name
+     * \param[in] name          Name of the vector
+     */
+    Vector( const std::string &name );
+
+    /**
+     * \brief  Create an vector
+     * \param[in] data          Vector data
+     * \param[in] ops           Vector operations
+     * \param[in] var           Variable
+     * \param[in] DOFManager    DOF manager (may be null)
+     */
+    Vector( std::shared_ptr<VectorData> data,
+            std::shared_ptr<VectorOperations> ops,
+            Variable::shared_ptr var,
+            AMP::Discretization::DOFManager::shared_ptr DOFManager );
+
+    /** \brief Destructor
+     */
+    virtual ~Vector();
+
+
+public: // the next set of functions defines the public math. interface for vectors
     /**
      * \brief  Set vector equal to x
      *      For Vectors, \f$\mathit{this}_i = x_i\f$.
@@ -259,10 +282,30 @@ public:
 
     bool equals( const Vector &a, double tol = 0.000001 ) const;
 
+
 public: // Virtual functions
     /** \brief Return the name of the vector
      */
-    virtual std::string type() const = 0;
+    virtual std::string type() const;
+
+    /** \brief Allocate space in the same fashion as <i>this</i>
+     * \details  This will allocate new space with identical layout as <i>this</i>.
+     * \return  A Vector shared pointer
+     * It will have the same number of blocks, each with the same engines and same number of
+     * entries.  The vector will
+     * be associated with the same Variable.
+     */
+    Vector::shared_ptr cloneVector() const;
+
+    /** \brief Allocate space in the same fashion as <i>this</i>
+     * \param[in] name  Name to give the variable associated with this vector
+     * \details  This will allocate new space with identical layout as <i>this</i>.
+     * \return  A Vector shared pointer
+     * It will have the same number of blocks, each with the same engines and same
+     * number of entries.  The vector will be associated with a clone of the same Variable with the
+     * given name
+     */
+    Vector::shared_ptr cloneVector( const std::string &name ) const;
 
     //! \name Vector memory manipulation
     //! \brief These methods control memory allocation, copying data, aliasing data, and swapping
@@ -276,7 +319,7 @@ public: // Virtual functions
      * It will have the same number of blocks, each with the same engines and same number of
      * entries.
      */
-    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const = 0;
+    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other  Vector to swap data with
@@ -288,39 +331,7 @@ public: // Virtual functions
         \endcode
       * without a and b exchanging pointers.
      */
-    virtual void swapVectors( Vector &other ) = 0;
-
-    /**  \brief  Make <i>this</i> be an alias of another vector
-     *  \param[in]  other  Vector to be aliased
-     *  \details  This will make <i>this</i> "point" to other.
-     */
-    virtual void aliasVector( Vector &other ) = 0;
-
-    /**
-     * \brief This method is used to implement the assemble interface
-     * of PETSc.
-     * \details  This method is empty except for instantiations of NativePetscVector
-     */
-    virtual void assemble() = 0;
-
-    /** \brief Allocate space in the same fashion as <i>this</i>
-     * \details  This will allocate new space with identical layout as <i>this</i>.
-     * \return  A Vector shared pointer
-     * It will have the same number of blocks, each with the same engines and same number of
-     * entries.  The vector will
-     * be associated with the same Variable.
-     */
-    virtual Vector::shared_ptr cloneVector() const;
-
-    /** \brief Allocate space in the same fashion as <i>this</i>
-     * \param[in] name  Name to give the variable associated with this vector
-     * \details  This will allocate new space with identical layout as <i>this</i>.
-     * \return  A Vector shared pointer
-     * It will have the same number of blocks, each with the same engines and same
-     * number of entries.  The vector will be associated with a clone of the same Variable with the
-     * given name
-     */
-    virtual Vector::shared_ptr cloneVector( const std::string &name ) const;
+    virtual void swapVectors( Vector &other );
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] name  Variable by which to retrieve a subvector
@@ -337,10 +348,22 @@ public: // Virtual functions
     virtual Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const;
 
-    /** \brief Return a parameters description of this vector
-     * \return Parameters
-     */
-    virtual std::shared_ptr<ParameterBase> getParameters();
+    /** \brief  Selects a portion of this vector and creates a view.
+      * \param[in]  criterion  The method for deciding inclusion in the view
+      * \param[in]  variable_name  The name of the vector to be created
+      * \details To use, we recommend the following pattern
+      \code
+      // Vector to be "view"ed
+      Vector::shared_ptr   data;
+
+      // .. set up all the data storage in data
+
+      // Get a view on the data tagged displacement
+      Vector::shared_ptr  displacement = data->select ( VS_ByVariableName ( "displacement" ),
+      "displacement view" );
+      \endcode
+      */
+    shared_ptr select( const VectorSelector &criterion, const std::string &variable_name );
 
     /** \brief  Selects a portion of this vector and creates a view.
       * \param[in]  criterion  The method for deciding inclusion in the view
@@ -357,28 +380,11 @@ public: // Virtual functions
       "displacement view" );
       \endcode
       */
-    virtual shared_ptr select( const VectorSelector &criterion, const std::string &variable_name );
-
-    /** \brief  Selects a portion of this vector and creates a view.
-      * \param[in]  criterion  The method for deciding inclusion in the view
-      * \param[in]  variable_name  The name of the vector to be created
-      * \details To use, we recommend the following pattern
-      \code
-      // Vector to be "view"ed
-      Vector::shared_ptr   data;
-
-      // .. set up all the data storage in data
-
-      // Get a view on the data tagged displacement
-      Vector::shared_ptr  displacement = data->select ( VS_ByVariableName ( "displacement" ),
-      "displacement view" );
-      \endcode
-      */
-    virtual const_shared_ptr constSelect( const VectorSelector &criterion,
-                                          const std::string &variable_name ) const;
+    const_shared_ptr constSelect( const VectorSelector &criterion,
+                                  const std::string &variable_name ) const;
 
     //! Get the DOFManager for this Vector
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFManager() const;
+    AMP::Discretization::DOFManager::shared_ptr getDOFManager() const;
 
 
     /** \brief  Selects a portion of this vector and puts a view into a vector
@@ -389,22 +395,13 @@ public: // Virtual functions
     // This is the const version of selectInto.
     virtual Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const;
 
-    virtual void copyVector( std::shared_ptr<const Vector> x ) { d_VectorOps->copy( *(x->getVectorData()), *d_VectorData ); }
-
- public: // Constructor/destructors
-    /** \brief Constructor
-     * \param[in] parameters  A pointer to a parameters class
-     * \see VectorParameters
-     */
-    explicit Vector( VectorParameters::shared_ptr parameters );
-
-    /** \brief Destructor
-     */
-    virtual ~Vector();
+    virtual void copyVector( std::shared_ptr<const Vector> x )
+    {
+        d_VectorOps->copy( *( x->getVectorData() ), *d_VectorData );
+    }
 
 
 public: // Non-virtual functions
-
     //! Return the pointer to the VectorData
     std::shared_ptr<VectorData> getVectorData() { return d_VectorData; }
 
@@ -459,12 +456,6 @@ public: // Non-virtual functions
      */
     void swapVectors( Vector::shared_ptr other );
 
-    /**  \brief  Make <i>this</i> be an alias of another vector
-     *  \param[in]  other  Vector to be aliased
-     *  \details  This will make <i>this</i> "point" to other.
-     */
-    void aliasVector( Vector::shared_ptr other );
-
     /** \brief  If a particular type of view of this Vector has been created,
      * return it.
      * \tparam VIEW_TYPE The type of view to look for
@@ -515,15 +506,24 @@ public: // Non-virtual functions
      *     be required to call makeConsistent.
      */
     template<class TYPE = double>
-      inline VectorDataIterator<TYPE> begin() { return d_VectorData->begin<TYPE>(); }
+    inline VectorDataIterator<TYPE> begin()
+    {
+        return d_VectorData->begin<TYPE>();
+    }
 
     /// @copydoc VectorData::begin()
     template<class TYPE = double>
-    inline VectorDataIterator<const TYPE> begin() const { return d_VectorData->begin<const TYPE>(); }
+    inline VectorDataIterator<const TYPE> begin() const
+    {
+        return d_VectorData->begin<const TYPE>();
+    }
 
     /// @copydoc VectorData::begin()
     template<class TYPE = double>
-    inline VectorDataIterator<const TYPE> constBegin() const { return d_VectorData->constBegin<const TYPE>(); }
+    inline VectorDataIterator<const TYPE> constBegin() const
+    {
+        return d_VectorData->constBegin<const TYPE>();
+    }
 
     /**
      * \brief Return an iterator to the end of the data
@@ -536,15 +536,24 @@ public: // Non-virtual functions
      *     be required to call makeConsistent.
      */
     template<class TYPE = double>
-      inline VectorDataIterator<TYPE> end() { return d_VectorData->end<TYPE>(); }
+    inline VectorDataIterator<TYPE> end()
+    {
+        return d_VectorData->end<TYPE>();
+    }
 
     /// @copydoc VectorData::end()
     template<class TYPE = double>
-    inline VectorDataIterator<const TYPE> end() const  { return d_VectorData->end<const TYPE>(); }
+    inline VectorDataIterator<const TYPE> end() const
+    {
+        return d_VectorData->end<const TYPE>();
+    }
 
     /// @copydoc VectorData::end()
     template<class TYPE = double>
-    inline VectorDataIterator<const TYPE> constEnd() const  { return d_VectorData->constEnd<const TYPE>(); }
+    inline VectorDataIterator<const TYPE> constEnd() const
+    {
+        return d_VectorData->constEnd<const TYPE>();
+    }
 
     /** \brief Obtain a particular contiguous block of data cast to RETURN_TYPE
      * \tparam RETURN_TYPE  The pointer type of the return
@@ -552,7 +561,10 @@ public: // Non-virtual functions
      * \return A contiguous array of type RETURN_TYPE
      */
     template<typename RETURN_TYPE>
-    inline RETURN_TYPE *getRawDataBlock( size_t i = 0 ) { return d_VectorData->getRawDataBlock<RETURN_TYPE>(i); }
+    inline RETURN_TYPE *getRawDataBlock( size_t i = 0 )
+    {
+        return d_VectorData->getRawDataBlock<RETURN_TYPE>( i );
+    }
 
     /** \brief Obtain a particular contiguous block of data cast to RETURN_TYPE
      * \tparam RETURN_TYPE  The pointer type of the return
@@ -560,62 +572,137 @@ public: // Non-virtual functions
      * \return A const contiguous array of type RETURN_TYPE
      */
     template<typename RETURN_TYPE>
-    inline const RETURN_TYPE *getRawDataBlock( size_t i = 0 ) const { return d_VectorData->getRawDataBlock<RETURN_TYPE>(i); }
+    inline const RETURN_TYPE *getRawDataBlock( size_t i = 0 ) const
+    {
+        return d_VectorData->getRawDataBlock<RETURN_TYPE>( i );
+    }
 
 public:
- /****************************************************************
- *  VectorData operations                                       */
+    /****************************************************************
+     *  VectorData operations                                       */
     inline bool hasComm() const { return d_VectorData->hasComm(); }
-    virtual AMP_MPI getComm() const { return d_VectorData->getComm(); }
+    inline AMP_MPI getComm() const { return d_VectorData->getComm(); }
     inline std::string VectorDataName() const { return d_VectorData->VectorDataName(); }
     inline size_t numberOfDataBlocks() const { return d_VectorData->numberOfDataBlocks(); }
-    inline size_t sizeOfDataBlock( size_t i = 0 ) const { return d_VectorData->sizeOfDataBlock(i); }
-    inline void putRawData( const double *buf ) { d_VectorData->putRawData(buf); }
-    inline void copyOutRawData( double *buf ) const { d_VectorData->copyOutRawData(buf); } 
-    inline size_t getLocalSize() const { return d_VectorData->getLocalSize(); } 
-    inline size_t getGlobalSize() const { return d_VectorData->getGlobalSize(); } 
-    inline size_t getLocalStartID() const { return d_VectorData->getLocalStartID(); } 
-    inline void setValuesByLocalID( int num, size_t *indices, const double *vals ) { d_VectorData->setValuesByLocalID(num, indices, vals); }
-    inline void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->setLocalValuesByGlobalID(num, indices, vals); }
-    inline void addValuesByLocalID( int num, size_t *indices, const double *vals ) { d_VectorData->addValuesByLocalID(num, indices, vals); }
-    inline void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->addLocalValuesByGlobalID(num, indices, vals); }
-    inline void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getLocalValuesByGlobalID(num, indices, vals); }
+    inline size_t sizeOfDataBlock( size_t i = 0 ) const
+    {
+        return d_VectorData->sizeOfDataBlock( i );
+    }
+    inline void putRawData( const double *buf ) { d_VectorData->putRawData( buf ); }
+    inline void copyOutRawData( double *buf ) const { d_VectorData->copyOutRawData( buf ); }
+    inline size_t getLocalSize() const { return d_VectorData->getLocalSize(); }
+    inline size_t getGlobalSize() const { return d_VectorData->getGlobalSize(); }
+    inline size_t getLocalStartID() const { return d_VectorData->getLocalStartID(); }
+    inline void setValuesByLocalID( int num, size_t *indices, const double *vals )
+    {
+        d_VectorData->setValuesByLocalID( num, indices, vals );
+    }
+    inline void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+    {
+        d_VectorData->setLocalValuesByGlobalID( num, indices, vals );
+    }
+    inline void addValuesByLocalID( int num, size_t *indices, const double *vals )
+    {
+        d_VectorData->addValuesByLocalID( num, indices, vals );
+    }
+    inline void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+    {
+        d_VectorData->addLocalValuesByGlobalID( num, indices, vals );
+    }
+    inline void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
+    {
+        d_VectorData->getLocalValuesByGlobalID( num, indices, vals );
+    }
     inline uint64_t getDataID() const { return d_VectorData->getDataID(); }
-    inline void *getRawDataBlockAsVoid( size_t i ) { return d_VectorData->getRawDataBlockAsVoid(i); }
-    inline const void *getRawDataBlockAsVoid( size_t i ) const { return d_VectorData->getRawDataBlockAsVoid(i); }
-    inline size_t sizeofDataBlockType( size_t i ) const { return d_VectorData->sizeofDataBlockType(i); }
-    inline bool isTypeId( size_t hash, size_t block ) const { return d_VectorData->isTypeId(hash, block); }
-    inline void swapData( VectorData &rhs ) { d_VectorData->swapData(rhs); }
+    inline void *getRawDataBlockAsVoid( size_t i )
+    {
+        return d_VectorData->getRawDataBlockAsVoid( i );
+    }
+    inline const void *getRawDataBlockAsVoid( size_t i ) const
+    {
+        return d_VectorData->getRawDataBlockAsVoid( i );
+    }
+    inline size_t sizeofDataBlockType( size_t i ) const
+    {
+        return d_VectorData->sizeofDataBlockType( i );
+    }
+    inline bool isTypeId( size_t hash, size_t block ) const
+    {
+        return d_VectorData->isTypeId( hash, block );
+    }
+    inline void swapData( VectorData &rhs ) { d_VectorData->swapData( rhs ); }
     inline std::shared_ptr<VectorData> cloneData() const { return d_VectorData->cloneData(); }
-    inline AMP::LinearAlgebra::VectorData::UpdateState getUpdateStatus() const { return d_VectorData->getUpdateStatus(); }
-    inline void setUpdateStatus( AMP::LinearAlgebra::VectorData::UpdateState state ) { d_VectorData->setUpdateStatus(state); }
-    inline void makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType t ) { d_VectorData->makeConsistent(t); }
+    inline AMP::LinearAlgebra::VectorData::UpdateState getUpdateStatus() const
+    {
+        return d_VectorData->getUpdateStatus();
+    }
+    inline void setUpdateStatus( AMP::LinearAlgebra::VectorData::UpdateState state )
+    {
+        d_VectorData->setUpdateStatus( state );
+    }
+    inline void makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType t )
+    {
+        d_VectorData->makeConsistent( t );
+    }
     //! Get the CommunicationList for this Vector
-    inline CommunicationList::shared_ptr getCommunicationList() const { return d_VectorData->getCommunicationList(); }
-    inline void setCommunicationList( CommunicationList::shared_ptr comm ) { d_VectorData->setCommunicationList(comm); }
+    inline CommunicationList::shared_ptr getCommunicationList() const
+    {
+        return d_VectorData->getCommunicationList();
+    }
+    inline void setCommunicationList( CommunicationList::shared_ptr comm )
+    {
+        d_VectorData->setCommunicationList( comm );
+    }
     inline void dataChanged() { return d_VectorData->dataChanged(); }
 
     // missed on first round
     inline size_t getGlobalMaxID() const { return d_VectorData->getGlobalMaxID(); }
     inline size_t getLocalMaxID() const { return d_VectorData->getLocalMaxID(); }
     inline size_t getGhostSize() const { return d_VectorData->getGhostSize(); }
-    inline void setGhostValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->setGhostValuesByGlobalID(num, indices, vals); }
-    inline void setValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->setValuesByGlobalID(num, indices, vals); }
-    inline void addValuesByGlobalID( int num, size_t *indices, const double *vals ) { d_VectorData->addValuesByGlobalID(num, indices, vals); }
-    inline void getGhostAddValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getGhostAddValuesByGlobalID(num, indices, vals); }
-    inline void getValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getValuesByGlobalID(num, indices, vals); }
-    inline void getGhostValuesByGlobalID( int num, size_t *indices, double *vals ) const { d_VectorData->getGhostValuesByGlobalID(num, indices, vals); }
-    inline void getValuesByLocalID( int num, size_t *indices, double *vals ) const { d_VectorData->getValuesByLocalID(num, indices, vals); }
+    inline void setGhostValuesByGlobalID( int num, size_t *indices, const double *vals )
+    {
+        d_VectorData->setGhostValuesByGlobalID( num, indices, vals );
+    }
+    inline void setValuesByGlobalID( int num, size_t *indices, const double *vals )
+    {
+        d_VectorData->setValuesByGlobalID( num, indices, vals );
+    }
+    inline void addValuesByGlobalID( int num, size_t *indices, const double *vals )
+    {
+        d_VectorData->addValuesByGlobalID( num, indices, vals );
+    }
+    inline void getGhostAddValuesByGlobalID( int num, size_t *indices, double *vals ) const
+    {
+        d_VectorData->getGhostAddValuesByGlobalID( num, indices, vals );
+    }
+    inline void getValuesByGlobalID( int num, size_t *indices, double *vals ) const
+    {
+        d_VectorData->getValuesByGlobalID( num, indices, vals );
+    }
+    inline void getGhostValuesByGlobalID( int num, size_t *indices, double *vals ) const
+    {
+        d_VectorData->getGhostValuesByGlobalID( num, indices, vals );
+    }
+    inline void getValuesByLocalID( int num, size_t *indices, double *vals ) const
+    {
+        d_VectorData->getValuesByLocalID( num, indices, vals );
+    }
 
-    inline bool containsGlobalElement(size_t id) { return d_VectorData->containsGlobalElement(id); }
+    inline bool containsGlobalElement( size_t id )
+    {
+        return d_VectorData->containsGlobalElement( id );
+    }
 
     inline void dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const
     {
-      d_VectorData->dumpOwnedData(out, GIDoffset, LIDoffset);
+        d_VectorData->dumpOwnedData( out, GIDoffset, LIDoffset );
     }
-    inline void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const { d_VectorData->dumpGhostedData(out, offset); }
-    
-/*******************************************************************/
+    inline void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const
+    {
+        d_VectorData->dumpGhostedData( out, offset );
+    }
+
+    /*******************************************************************/
 
     // These should probably be removed as they add to the interface bloat
 public: // Non virtual functions
@@ -651,40 +738,21 @@ public: // Non virtual functions
      */
     double getValueByLocalID( size_t i ) const;
 
-protected: // Internal data
-    // A default RNG to use when one is not specified
-    static RNG::shared_ptr d_DefaultRNG;
 
-    // The Variable associated with this Vector
-    Variable::shared_ptr d_pVariable;
-
-    // Constructor
-    Vector();
-
-    //! The DOF_Manager
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManager = nullptr;
-
-    // Pointer to a VectorOperations object
-    std::shared_ptr<VectorOperations> d_VectorOps = nullptr;
-
-protected:
-    // shared pointer to data
-    std::shared_ptr<VectorData> d_VectorData = nullptr;
-
-    void setVectorData( std::shared_ptr<VectorData> data)
-    {
-      d_VectorData = data;
-    }
-    
 private:
     // The following are not implemented
     explicit Vector( const Vector & );
     void operator=( const Vector & );
 
-    // output stream for vector data
-    std::ostream *d_output_stream;
 
-    std::shared_ptr<std::vector<std::weak_ptr<Vector>>> d_Views;
+protected:                                                       // Internal data
+    static RNG::shared_ptr d_DefaultRNG;                         // default RNG
+    Variable::shared_ptr d_pVariable;                            // Variable
+    AMP::Discretization::DOFManager::shared_ptr d_DOFManager;    // The DOF_Manager
+    std::shared_ptr<VectorData> d_VectorData;                    // Pointer to data
+    std::shared_ptr<VectorOperations> d_VectorOps;               // Pointer to a VectorOperations
+    std::shared_ptr<std::vector<std::weak_ptr<Vector>>> d_Views; // Views of the vector
+    std::ostream *d_output_stream;                               // output stream for vector data
 };
 
 

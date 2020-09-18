@@ -5,13 +5,12 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/Vector.h"
-
+#include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
 #include "AMP/matrices/petsc/PetscMatrix.h"
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
-#include "AMP/vectors/petsc/NativePetscVector.h"
 #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #endif
 
@@ -100,8 +99,7 @@ public:
         DISABLE_WARNINGS
         MatGetVecs( m, &v, nullptr );
         ENABLE_WARNINGS
-        auto p      = std::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
-        auto vector = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( p );
+        auto vector = createVector( v, true );
         vector->setVariable( getVariable() );
         PROFILE_STOP( "PETScInterfaceLeftVectorFactory::getVector" );
         return vector;
@@ -147,8 +145,7 @@ public:
         DISABLE_WARNINGS
         MatGetVecs( m, &v, nullptr );
         ENABLE_WARNINGS
-        auto p      = std::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
-        auto vector = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( p );
+        auto vector = createVector( v, true );
         vector->setVariable( getVariable() );
         PROFILE_STOP( "PETScInterfaceRightVectorFactory::getVector" );
         return vector;

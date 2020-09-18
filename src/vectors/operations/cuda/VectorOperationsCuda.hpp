@@ -33,7 +33,8 @@ std::shared_ptr<VectorOperations> VectorOperationsCuda<TYPE>::cloneOperations() 
 template<typename TYPE>
 VectorOperationsCuda<TYPE>::~VectorOperationsCuda<TYPE>()
 {
-  if (d_default_ops) delete d_default_ops;
+    if ( d_default_ops )
+        delete d_default_ops;
 }
 
 
@@ -79,10 +80,11 @@ bool VectorOperationsCuda<TYPE>::checkData( const VectorData &x,
 template<typename TYPE>
 inline VectorOperationsDefault<TYPE> *VectorOperationsCuda<TYPE>::getDefaultOps( void )
 {
-  if (!d_default_ops) d_default_ops = new VectorOperationsDefault<TYPE>();
-  return d_default_ops;
+    if ( !d_default_ops )
+        d_default_ops = new VectorOperationsDefault<TYPE>();
+    return d_default_ops;
 }
-  
+
 //**********************************************************************
 // Static functions that operate on VectorData objects
 
@@ -125,7 +127,7 @@ template<typename TYPE>
 void VectorOperationsCuda<TYPE>::setRandomValues( VectorData &x )
 {
     // Default to VectorOperationsDefault (on cpu)
-  return getDefaultOps()->setRandomValues( x );
+    return getDefaultOps()->setRandomValues( x );
 }
 
 template<typename TYPE>

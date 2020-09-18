@@ -31,7 +31,7 @@ public:
     /** \brief Construct a ManagedSundialsVector from a set of parameters
      * \param[in] params Description of the new vector
      */
-    explicit ManagedSundialsVector( VectorParameters::shared_ptr params );
+    explicit ManagedSundialsVector( std::shared_ptr<ManagedVectorParameters> params );
 
     /** \brief Create a view to an AMP vector
      * \param[in] alias  Vector to view
@@ -47,7 +47,6 @@ public:
     std::string type() const override;
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const override;
-    void assemble() override;
 
 protected:
     virtual ManagedVector *getNewRawPtr() const override;

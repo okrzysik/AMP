@@ -2,19 +2,14 @@
 #define included_AMP_test_VectorFactory
 
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/vectors/ArrayVector.h"
 #include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/NullVector.h"
-#include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
+#include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
-#ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/NativePetscVector.h"
-#endif
-#ifdef USE_EXT_TRILINOS
-#include "AMP/vectors/trilinos/epetra/EpetraVectorEngine.h"
+#ifdef USE_PETSC
+#include "petscvec.h"
 #endif
 
 
@@ -54,7 +49,7 @@ private:
 class NullVectorFactory : public VectorFactory
 {
 public:
-    typedef AMP::LinearAlgebra::NullVector<double> vector;
+    typedef AMP::LinearAlgebra::Vector vector;
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
@@ -63,7 +58,7 @@ public:
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        return AMP::LinearAlgebra::NullVector<double>::create( "null" );
+        return std::make_shared<AMP::LinearAlgebra::Vector>( "null" );
     }
 
     virtual std::string name() const override { return "NullVectorFactory"; }
@@ -92,11 +87,10 @@ public:
     {
         AMP::LinearAlgebra::Vector::shared_ptr vec;
         if ( GLOBAL )
-            vec = AMP::LinearAlgebra::SimpleVector<TYPE, VecOps, VecData>::create(
+            vec = AMP::LinearAlgebra::createSimpleVector<TYPE, VecOps, VecData>(
                 I, getVariable(), AMP_MPI( AMP_COMM_WORLD ) );
         else
-            vec =
-                AMP::LinearAlgebra::SimpleVector<TYPE, VecOps, VecData>::create( I, getVariable() );
+            vec = AMP::LinearAlgebra::createSimpleVector<TYPE, VecOps, VecData>( I, getVariable() );
         return vec;
     }
 
@@ -118,7 +112,7 @@ template<class TYPE = double>
 class ArrayVectorFactory : public VectorFactory
 {
 public:
-    ArrayVectorFactory( int d, int i, bool global ) : D( d ), I( i ), GLOBAL( global ) {}
+    ArrayVectorFactory( size_t d, size_t i, bool global ) : D( d ), I( i ), GLOBAL( global ) {}
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
@@ -129,11 +123,10 @@ public:
     {
         AMP::LinearAlgebra::Vector::shared_ptr vec;
         if ( GLOBAL )
-            vec = AMP::LinearAlgebra::ArrayVector<TYPE>::create(
-                std::vector<size_t>( D, I ), getVariable(), AMP_MPI( AMP_COMM_WORLD ) );
+            vec = AMP::LinearAlgebra::createArrayVector<TYPE>(
+                { D, I }, getVariable(), AMP_MPI( AMP_COMM_WORLD ) );
         else
-            vec = AMP::LinearAlgebra::ArrayVector<TYPE>::create( std::vector<size_t>( D, I ),
-                                                                 getVariable() );
+            vec = AMP::LinearAlgebra::createArrayVector<TYPE>( { D, I }, getVariable() );
         return vec;
     }
 
@@ -146,7 +139,7 @@ public:
 
 private:
     ArrayVectorFactory();
-    int D, I;
+    size_t D, I;
     bool GLOBAL;
 };
 
@@ -172,13 +165,11 @@ public:
         const int nGlobal = nLocal * globalComm.getSize();
         auto commList   = AMP::LinearAlgebra::CommunicationList::createEmpty( nLocal, globalComm );
         auto dofManager = std::make_shared<AMP::Discretization::DOFManager>( nLocal, globalComm );
-        auto epetraParams = std::make_shared<AMP::LinearAlgebra::EpetraVectorEngineParameters>(
-            commList, dofManager );
         auto managedParams = std::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
         managedParams->d_Buffer =
             std::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
-        managedParams->d_Engine = std::make_shared<AMP::LinearAlgebra::EpetraVectorEngine>(
-            epetraParams, managedParams->d_Buffer );
+        managedParams->d_Engine =
+            createEpetraVector( commList, dofManager, managedParams->d_Buffer );
         managedParams->d_CommList = commList;
 
         managedParams->d_DOFManager = dofManager;
@@ -215,11 +206,9 @@ public:
         PetscInt local_size = 15;
         VecSetSizes( v, local_size, PETSC_DECIDE );
         VecSetType( v, VECMPI ); // this line will have to be modified for the no mpi and cuda cases
-        auto npvParams =
-            std::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
-        auto newVec = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( npvParams );
+        auto newVec = createVector( v, true );
         VecSetFromOptions( v );
-        newVec->assemble();
+        newVec->getVectorData()->assemble();
         newVec->setVariable(
             std::make_shared<AMP::LinearAlgebra::Variable>( "Test NativePetscVector" ) );
         return newVec;
@@ -250,11 +239,9 @@ public:
         AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
         VecCreate( globalComm.getCommunicator(), &v );
         VecSetSizes( v, 15, PETSC_DECIDE );
-        auto npvParams =
-            std::make_shared<AMP::LinearAlgebra::NativePetscVectorParameters>( v, true );
-        auto newVec = std::make_shared<AMP::LinearAlgebra::NativePetscVector>( npvParams );
+        auto newVec = createVector( v, true );
         VecSetFromOptions( v );
-        newVec->assemble();
+        newVec->getVectorData()->assemble();
         auto p1        = std::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
         p1->d_Engine   = newVec;
         p1->d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( 210, globalComm );

@@ -4,6 +4,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorSelector.h"
+#include "AMP/vectors/data/VectorDataNull.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 
 #include <cfloat>
@@ -17,28 +18,52 @@ namespace LinearAlgebra {
 
 
 RNG::shared_ptr Vector::d_DefaultRNG;
-#define DESCRIPTOR_ID_ARRAY_SCRATCH_SPACE ( 10 )
 
 
 /****************************************************************
- * Constructors                                                  *
+ * Constructors/Destructor                                       *
  ****************************************************************/
-Vector::Vector() : d_output_stream{ &AMP::plog },
-		   d_Views {std::make_shared<std::vector<std::weak_ptr<Vector>>>() }
+Vector::Vector()
+    : d_pVariable( new Variable( "null" ) ),
+      d_DOFManager( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) ),
+      d_VectorData( new VectorDataNull<double>() ),
+      d_VectorOps( new VectorOperationsDefault<double>() ),
+      d_Views( new std::vector<std::weak_ptr<Vector>>() ),
+      d_output_stream( &AMP::plog )
 {
 }
-Vector::Vector( VectorParameters::shared_ptr parameters ) : d_output_stream{ &AMP::plog },
-							    d_Views {std::make_shared<std::vector<std::weak_ptr<Vector>>>() }{
-    // Copy the relavent parameters
-    AMP_INSIST( parameters->d_CommList, "d_CommList must be set in VectorParameters" );
-    AMP_INSIST( parameters->d_DOFManager, "d_DOFManager must be set in VectorParameters" );
-    d_DOFManager   = parameters->d_DOFManager;
+Vector::Vector( const std::string &name )
+    : d_pVariable( new Variable( name ) ),
+      d_DOFManager( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) ),
+      d_VectorData( new VectorDataNull<double>() ),
+      d_VectorOps( new VectorOperationsDefault<double>() ),
+      d_Views( new std::vector<std::weak_ptr<Vector>>() ),
+      d_output_stream( &AMP::plog )
+{
 }
+Vector::Vector( std::shared_ptr<VectorData> data,
+                std::shared_ptr<VectorOperations> ops,
+                Variable::shared_ptr var,
+                AMP::Discretization::DOFManager::shared_ptr DOFManager )
+    : d_pVariable( var ),
+      d_DOFManager( DOFManager ),
+      d_VectorData( data ),
+      d_VectorOps( ops ),
+      d_Views( new std::vector<std::weak_ptr<Vector>>() ),
+      d_output_stream( &AMP::plog )
+{
+    AMP_ASSERT( data && ops && var );
+    if ( !d_DOFManager )
+        d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>(
+            d_VectorData->getLocalSize(), d_VectorData->getComm() );
+}
+Vector::~Vector() {}
+
 
 /****************************************************************
- * De-Constructors                                               *
+ * Get the default name                                          *
  ****************************************************************/
-Vector::~Vector() {}
+std::string Vector::type() const { return "Vector<" + d_VectorData->VectorDataName() + ">"; }
 
 
 /****************************************************************
@@ -133,6 +158,12 @@ Vector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
     }
     return retVal;
 }
+
+
+/****************************************************************
+ * clone, swap                                                   *
+ ****************************************************************/
+Vector::shared_ptr Vector::cloneVector() const { return cloneVector( getVariable() ); }
 Vector::shared_ptr Vector::cloneVector( const std::string &name ) const
 {
     Vector::shared_ptr retVal;
@@ -143,12 +174,22 @@ Vector::shared_ptr Vector::cloneVector( const std::string &name ) const
     }
     return retVal;
 }
+Vector::shared_ptr Vector::cloneVector( const Variable::shared_ptr name ) const
+{
+    auto vec             = std::make_shared<Vector>();
+    vec->d_pVariable     = name;
+    vec->d_DOFManager    = d_DOFManager;
+    vec->d_VectorData    = d_VectorData->cloneData();
+    vec->d_VectorOps     = d_VectorOps->cloneOperations();
+    vec->d_output_stream = d_output_stream;
+    return vec;
+}
+void Vector::swapVectors( Vector &other ) { d_VectorData->swapData( *other.getVectorData() ); }
 
 
 /****************************************************************
  * Misc                                                          *
  ****************************************************************/
-
 std::ostream &operator<<( std::ostream &out, const Vector &v )
 {
     out << "Vector type: " << v.type() << "\n";

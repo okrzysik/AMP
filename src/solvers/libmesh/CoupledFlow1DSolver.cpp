@@ -6,6 +6,7 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 
 namespace AMP {
@@ -56,9 +57,8 @@ CoupledFlow1DSolver::CoupledFlow1DSolver( std::shared_ptr<SolverStrategyParamete
                           ->getNumZlocations();
     d_SimpleVariable.reset( new AMP::LinearAlgebra::Variable( flowInpVar ) );
 
-    d_flowInput = AMP::LinearAlgebra::SimpleVector<double>::create( d_numpoints, d_SimpleVariable );
-    d_flowOutput =
-        AMP::LinearAlgebra::SimpleVector<double>::create( d_numpoints, d_SimpleVariable );
+    d_flowInput  = AMP::LinearAlgebra::createSimpleVector<double>( d_numpoints, d_SimpleVariable );
+    d_flowOutput = AMP::LinearAlgebra::createSimpleVector<double>( d_numpoints, d_SimpleVariable );
 }
 
 CoupledFlow1DSolver::~CoupledFlow1DSolver() = default;
@@ -89,7 +89,8 @@ void CoupledFlow1DSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
 
     d_Sol = u->subsetVectorForVariable( d_outVariable );
     d_Rhs = f->constSubsetVectorForVariable( d_outVariable );
-    AMP_ASSERT( d_Rhs->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+    AMP_ASSERT( d_Rhs->getUpdateStatus() ==
+                AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 
     ( std::dynamic_pointer_cast<AMP::Operator::Map3Dto1D>( d_flowInternal3to1 ) )
         ->setVector( d_flowInput );

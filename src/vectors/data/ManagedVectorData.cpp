@@ -1,13 +1,13 @@
-#include "AMP/vectors/ManagedVectorData.h"
+#include "AMP/vectors/data/ManagedVectorData.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/ManagedVector.h"
+#include "AMP/vectors/Vector.h"
 
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <typeinfo>
 
-#include "AMP/utils/Utilities.h"
-#include "AMP/vectors/Vector.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -26,7 +26,7 @@ static inline std::shared_ptr<ManagedVectorData> getManaged( std::shared_ptr<Vec
     AMP_INSIST( y != nullptr, "x is not a ManagedVectorData" );
     return y;
 }
-  static inline std::shared_ptr<VectorData> getEngineData( VectorData &x )
+static inline std::shared_ptr<VectorData> getEngineData( VectorData &x )
 {
     auto y = dynamic_cast<ManagedVectorData *>( &x );
     AMP_INSIST( y != nullptr, "x is not a ManagedVector" );
@@ -59,28 +59,25 @@ static inline std::shared_ptr<const VectorData> getEngineData( const VectorData 
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-ManagedVectorData::ManagedVectorData( VectorParameters::shared_ptr params_in )
-    : VectorData( params_in ),
-      d_pParameters( std::dynamic_pointer_cast<ManagedVectorParameters>( params_in ) )
+ManagedVectorData::ManagedVectorData( std::shared_ptr<ManagedVectorParameters> params )
+    : VectorData( params->d_CommList ), d_pParameters( params )
 {
-    d_vBuffer   = d_pParameters->d_Buffer;
-    d_Engine    = d_pParameters->d_Engine;
+    d_vBuffer = d_pParameters->d_Buffer;
+    d_Engine  = d_pParameters->d_Engine;
     AMP_ASSERT( d_Engine );
     if ( d_vBuffer )
-      d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
+        d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
     if ( d_Engine )
-      d_Engine->getVectorData()->setUpdateStatusPtr( getUpdateStatusPtr() );
+        d_Engine->getVectorData()->setUpdateStatusPtr( getUpdateStatusPtr() );
 
     // this object will listen for changes from the d_Engine
     // and will fire off a change to any objects that are listening
-    auto listener = dynamic_cast<DataChangeListener*>( this );
+    auto listener = dynamic_cast<DataChangeListener *>( this );
     d_Engine->getVectorData()->registerListener( listener );
-
-    
 }
 
 ManagedVectorData::ManagedVectorData( const std::shared_ptr<VectorData> alias )
-    : VectorData( std::dynamic_pointer_cast<VectorParameters>( getManaged( alias )->getParameters() ) )
+    : VectorData( getManaged( alias )->getParameters()->d_CommList )
 {
     auto vec      = getManaged( alias );
     d_vBuffer     = vec->d_vBuffer;
@@ -89,20 +86,19 @@ ManagedVectorData::ManagedVectorData( const std::shared_ptr<VectorData> alias )
     aliasGhostBuffer( vec );
 
     auto vec2 = getVectorEngine();
-    AMP_ASSERT(vec2);
-    
+    AMP_ASSERT( vec2 );
+
     if ( d_vBuffer )
         setUpdateStatusPtr( d_vBuffer->getUpdateStatusPtr() );
     else {
         if ( vec2 )
-	  setUpdateStatusPtr( vec2->getVectorData()->getUpdateStatusPtr() );
+            setUpdateStatusPtr( vec2->getVectorData()->getUpdateStatusPtr() );
     }
 
     // this object will listen for changes from the d_Engine
     // and will fire off a change to any objects that are listening
-    auto listener = dynamic_cast<DataChangeListener*>( this );
+    auto listener = dynamic_cast<DataChangeListener *>( this );
     vec2->getVectorData()->registerListener( listener );
-
 }
 
 ManagedVectorData::~ManagedVectorData() {}
@@ -125,7 +121,7 @@ bool ManagedVectorData::isAnAliasOf( VectorData &rhs )
 
 VectorData::UpdateState ManagedVectorData::getUpdateStatus() const
 {
-    VectorData::UpdateState state = *d_UpdateState;
+    VectorData::UpdateState state     = *d_UpdateState;
     std::shared_ptr<const Vector> vec = getVectorEngine();
     if ( vec.get() != nullptr ) {
         VectorData::UpdateState sub_state = vec->getUpdateStatus();
@@ -154,7 +150,7 @@ VectorData::UpdateState ManagedVectorData::getUpdateStatus() const
 void ManagedVectorData::setUpdateStatus( UpdateState state )
 {
     *d_UpdateState = state;
-    auto vec = getVectorEngine();
+    auto vec       = getVectorEngine();
     if ( vec.get() != nullptr )
         vec->setUpdateStatus( state );
 }
@@ -164,16 +160,15 @@ void ManagedVectorData::swapData( VectorData &other )
     auto in = getManaged( &other );
     std::swap( d_vBuffer, in->d_vBuffer );
     std::swap( d_Engine, in->d_Engine );
-    std::swap( d_pParameters, in->d_pParameters );
 
     if ( d_vBuffer )
-      d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
+        d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
     auto vec = getVectorEngine();
     if ( vec )
-      vec->getVectorData()->setUpdateStatusPtr( getUpdateStatusPtr() );
+        vec->getVectorData()->setUpdateStatusPtr( getUpdateStatusPtr() );
 
     if ( in->d_vBuffer )
-      in->d_vBuffer->setUpdateStatusPtr( in->getUpdateStatusPtr() );
+        in->d_vBuffer->setUpdateStatusPtr( in->getUpdateStatusPtr() );
     vec = in->getVectorEngine();
     if ( vec )
         vec->getVectorData()->setUpdateStatusPtr( in->getUpdateStatusPtr() );
@@ -301,27 +296,26 @@ void ManagedVectorData::copyOutRawData( double *in ) const
 
 std::shared_ptr<VectorData> ManagedVectorData::cloneData( void ) const
 {
-    auto params = std::make_shared<ManagedVectorParameters>();
-    params->d_name = d_pParameters->d_name+"cloned";
+    auto params        = std::make_shared<ManagedVectorParameters>();
     params->d_CommList = d_pParameters->d_CommList;
 
     auto vec = getVectorEngine();
     if ( vec ) {
-        auto vec2                       = vec->cloneVector( "ManagedVectorClone" );
-        params->d_Engine  = std::dynamic_pointer_cast<Vector>( vec2 );
+        auto vec2        = vec->cloneVector( "ManagedVectorClone" );
+        params->d_Engine = std::dynamic_pointer_cast<Vector>( vec2 );
         params->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
     } else {
         AMP_ERROR( "ManagedVectorData::cloneVector() should not have reached here!" );
     }
 
-    auto retVal = std::make_shared<ManagedVectorData>(params);
+    auto retVal = std::make_shared<ManagedVectorData>( params );
     return retVal;
 }
 
 std::string ManagedVectorData::VectorDataName() const
 {
     std::string retVal = " ( managed view of ";
-    auto vec = getVectorEngine();
+    auto vec           = getVectorEngine();
     retVal += vec->type();
     retVal += " )";
     return retVal;
@@ -353,9 +347,9 @@ size_t ManagedVectorData::sizeOfDataBlock( size_t i ) const
     return getEngineData( *this )->sizeOfDataBlock( i );
 }
 
-std::shared_ptr<ParameterBase> ManagedVectorData::getParameters()
+std::shared_ptr<ManagedVectorParameters> ManagedVectorData::getParameters()
 {
-    return std::dynamic_pointer_cast<ParameterBase>( d_pParameters );
+    return d_pParameters;
 }
 
 size_t ManagedVectorData::getLocalSize() const { return getEngineData( *this )->getLocalSize(); }

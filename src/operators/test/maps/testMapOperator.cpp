@@ -12,7 +12,6 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -34,81 +33,67 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db = input_db->getDatabase( "Mesh" );
+    auto params  = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    std::shared_ptr<AMP::Mesh::Mesh> mesh    = AMP::Mesh::Mesh::buildMesh( params );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter1 = mesh->Subset( "pellet" );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter2 = mesh->Subset( "clad" );
+    auto mesh         = AMP::Mesh::Mesh::buildMesh( params );
+    auto meshAdapter1 = mesh->Subset( "pellet" );
+    auto meshAdapter2 = mesh->Subset( "clad" );
 
     // Create a simple DOFManager and the vectors
-    AMP::Discretization::DOFManager::shared_ptr DOFs =
+    auto DOFs =
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    AMP::LinearAlgebra::Variable::shared_ptr testVariable(
-        new AMP::LinearAlgebra::Variable( "MapSolution" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr gapVariable(
-        new AMP::LinearAlgebra::Variable( "Gap" ) );
+    auto testVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "MapSolution" );
+    auto gapVariable  = std::make_shared<AMP::LinearAlgebra::Variable>( "Gap" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr mapSolution =
-        AMP::LinearAlgebra::createVector( DOFs, testVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr mapSolutionMaster =
-        AMP::LinearAlgebra::createVector( DOFs, testVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr mapSolutionSlave =
-        AMP::LinearAlgebra::createVector( DOFs, testVariable );
+    auto mapSolution       = AMP::LinearAlgebra::createVector( DOFs, testVariable );
+    auto mapSolutionMaster = AMP::LinearAlgebra::createVector( DOFs, testVariable );
+    auto mapSolutionSlave  = AMP::LinearAlgebra::createVector( DOFs, testVariable );
 
     mapSolution->setToScalar( 0.0 );
 
     // Create the map operators
-    std::shared_ptr<AMP::Database> map3dto1d_db1 =
+    auto map3dto1d_db1 =
         std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "MapPelletto1D" ) );
-    std::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams1(
-        new AMP::Operator::MapOperatorParameters( map3dto1d_db1 ) );
+    auto map3dto1dParams1 = std::make_shared<AMP::Operator::MapOperatorParameters>( map3dto1d_db1 );
     map3dto1dParams1->d_MapComm = globalComm;
     map3dto1dParams1->d_MapMesh = meshAdapter1;
-    std::shared_ptr<AMP::Operator::Map3Dto1D> map1ToLowDim(
-        new AMP::Operator::Map3Dto1D( map3dto1dParams1 ) );
+    auto map1ToLowDim           = std::make_shared<AMP::Operator::Map3Dto1D>( map3dto1dParams1 );
 
-    std::shared_ptr<AMP::Database> map1dto3d_db1 =
+    auto map1dto3d_db1 =
         std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "Map1DtoClad" ) );
-    std::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams1(
-        new AMP::Operator::MapOperatorParameters( map1dto3d_db1 ) );
+    auto map1dto3dParams1 = std::make_shared<AMP::Operator::MapOperatorParameters>( map1dto3d_db1 );
     map1dto3dParams1->d_MapComm = globalComm;
     map1dto3dParams1->d_MapMesh = meshAdapter2;
-    std::shared_ptr<AMP::Operator::Map1Dto3D> map1ToHighDim(
-        new AMP::Operator::Map1Dto3D( map1dto3dParams1 ) );
+    auto map1ToHighDim          = std::make_shared<AMP::Operator::Map1Dto3D>( map1dto3dParams1 );
 
     map1ToLowDim->setZLocations( map1ToHighDim->getZLocations() );
 
-    std::shared_ptr<AMP::Database> map3dto1d_db2 =
+    auto map3dto1d_db2 =
         std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "MapCladto1D" ) );
-    std::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams2(
-        new AMP::Operator::MapOperatorParameters( map3dto1d_db2 ) );
+    auto map3dto1dParams2 = std::make_shared<AMP::Operator::MapOperatorParameters>( map3dto1d_db2 );
     map3dto1dParams2->d_MapComm = globalComm;
     map3dto1dParams2->d_MapMesh = meshAdapter2;
-    std::shared_ptr<AMP::Operator::Map3Dto1D> map2ToLowDim(
-        new AMP::Operator::Map3Dto1D( map3dto1dParams2 ) );
+    auto map2ToLowDim           = std::make_shared<AMP::Operator::Map3Dto1D>( map3dto1dParams2 );
 
-    std::shared_ptr<AMP::Database> map1dto3d_db2 =
+    auto map1dto3d_db2 =
         std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "Map1DtoPellet" ) );
-    std::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams2(
-        new AMP::Operator::MapOperatorParameters( map1dto3d_db2 ) );
+    auto map1dto3dParams2 = std::make_shared<AMP::Operator::MapOperatorParameters>( map1dto3d_db2 );
     map1dto3dParams2->d_MapComm = globalComm;
     map1dto3dParams2->d_MapMesh = meshAdapter1;
-    std::shared_ptr<AMP::Operator::Map1Dto3D> map2ToHighDim(
-        new AMP::Operator::Map1Dto3D( map1dto3dParams2 ) );
+    auto map2ToHighDim          = std::make_shared<AMP::Operator::Map1Dto3D>( map1dto3dParams2 );
 
     map2ToLowDim->setZLocations( map2ToHighDim->getZLocations() );
     //-------------------------------------
     size_t gapVecCladSize = map1ToHighDim->getNumZlocations();
-    AMP::LinearAlgebra::Vector::shared_ptr gapVecClad =
-        AMP::LinearAlgebra::SimpleVector<double>::create( gapVecCladSize, gapVariable );
+    auto gapVecClad = AMP::LinearAlgebra::createSimpleVector<double>( gapVecCladSize, gapVariable );
 
     size_t gapVecPelletSize = map2ToHighDim->getNumZlocations();
-    AMP::LinearAlgebra::Vector::shared_ptr gapVecPellet =
-        AMP::LinearAlgebra::SimpleVector<double>::create( gapVecPelletSize, gapVariable );
+    auto gapVecPellet =
+        AMP::LinearAlgebra::createSimpleVector<double>( gapVecPelletSize, gapVariable );
 
     // Set the boundary for the source vector
     unsigned int d_boundaryId = map3dto1d_db1->getScalar<int>( "BoundaryId" );
@@ -122,7 +107,8 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
         AMP_ASSERT( ids.size() == 1 );
         mapSolutionMaster->setValuesByGlobalID( 1, &ids[0], &x[2] );
     }
-    mapSolutionMaster->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    mapSolutionMaster->makeConsistent(
+        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     //-------------------------------------
 

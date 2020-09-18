@@ -1,22 +1,23 @@
 #include "AMP/vectors/data/VectorData.h"
-#include "AMP/vectors/DataChangeListener.h"
+#include "AMP/vectors/data/DataChangeListener.h"
 
 
 namespace AMP {
 namespace LinearAlgebra {
 
-VectorData::VectorData() : d_UpdateState { std::make_shared<UpdateState>() },
-                           d_Ghosts{ std::make_shared<std::vector<double>>() },
-			   d_AddBuffer { std::make_shared<std::vector<double>>() }
+VectorData::VectorData()
+    : d_UpdateState{ std::make_shared<UpdateState>() },
+      d_Ghosts{ std::make_shared<std::vector<double>>() },
+      d_AddBuffer{ std::make_shared<std::vector<double>>() }
 {
     *d_UpdateState = UpdateState::UNCHANGED;
 }
 
-VectorData::VectorData(std::shared_ptr<VectorParameters> params) : d_UpdateState { std::make_shared<UpdateState>() }
+VectorData::VectorData( CommunicationList::shared_ptr comm )
+    : d_UpdateState{ std::make_shared<UpdateState>() }
 {
-  auto comm = params->d_CommList;
-  setCommunicationList(comm);
-  *d_UpdateState = UpdateState::UNCHANGED;
+    setCommunicationList( comm );
+    *d_UpdateState = UpdateState::UNCHANGED;
 }
 
 void VectorData::setCommunicationList( CommunicationList::shared_ptr comm )
@@ -30,7 +31,7 @@ void VectorData::setCommunicationList( CommunicationList::shared_ptr comm )
             std::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
     }
 }
-  
+
 /****************************************************************
  * Set/Get individual values                                     *
  ****************************************************************/

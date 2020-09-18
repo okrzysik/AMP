@@ -2,7 +2,6 @@
 
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/trilinos/thyra/ManagedThyraVector.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
@@ -54,7 +53,8 @@ Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
         newParams->d_DOFManager = inVector->getDOFManager();
         auto newVector          = std::make_shared<ManagedThyraVector>( newParams );
         newVector->setVariable( inVector->getVariable() );
-        newVector->getVectorData()->setUpdateStatusPtr( inVector->getVectorData()->getUpdateStatusPtr() );
+        newVector->getVectorData()->setUpdateStatusPtr(
+            inVector->getVectorData()->getUpdateStatusPtr() );
         retVal = newVector;
         inVector->registerView( retVal );
     } else {

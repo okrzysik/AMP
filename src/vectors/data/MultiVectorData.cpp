@@ -3,8 +3,8 @@
 
 #include "AMP/vectors/data/MultiVectorData.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
-#include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/data/VectorData.h"
 
 #include "ProfilerApp.h"
 
@@ -13,14 +13,14 @@ namespace AMP {
 namespace LinearAlgebra {
 
 void MultiVectorData::resetMultiVectorData( AMP::Discretization::DOFManager *manager,
-					    const std::vector<VectorData *> &data )
+                                            const std::vector<VectorData *> &data )
 {
     d_data = data;
     AMP_ASSERT( manager );
     d_globalDOFManager = manager;
-    auto globalMgr = dynamic_cast<AMP::Discretization::multiDOFManager *>( d_globalDOFManager );
+    auto globalMgr     = dynamic_cast<AMP::Discretization::multiDOFManager *>( d_globalDOFManager );
     AMP_ASSERT( globalMgr );
-    auto subManagers   = globalMgr->getDOFManagers();
+    auto subManagers = globalMgr->getDOFManagers();
     d_subDOFManager.resize( subManagers.size() );
     for ( size_t i = 0; i < subManagers.size(); i++ )
         d_subDOFManager[i] = subManagers[i].get();
@@ -30,7 +30,7 @@ void MultiVectorData::resetMultiVectorData( AMP::Discretization::DOFManager *man
     bool ghosts      = globalMgr->getComm().anyReduce( !remote_DOFs.empty() );
     if ( !ghosts ) {
         d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( globalMgr->numLocalDOF(),
-									 globalMgr->getComm() );
+                                                                         globalMgr->getComm() );
     } else {
         auto params           = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
         params->d_comm        = globalMgr->getComm();
@@ -38,7 +38,6 @@ void MultiVectorData::resetMultiVectorData( AMP::Discretization::DOFManager *man
         params->d_remote_DOFs = remote_DOFs;
         d_CommList            = std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
     }
-    
 }
 
 /****************************************************************
@@ -316,15 +315,15 @@ void MultiVectorData::copyOutRawData( double *out ) const
  ****************************************************************/
 void MultiVectorData::makeConsistent( ScatterType t )
 {
-  for ( const auto &data : d_data ) {
-    auto vec = dynamic_cast<Vector *>(data);
-    if (vec) {
-      vec->getVectorData()->makeConsistent( t );
-    } else {
-      data->makeConsistent( t );
+    for ( const auto &data : d_data ) {
+        auto vec = dynamic_cast<Vector *>( data );
+        if ( vec ) {
+            vec->getVectorData()->makeConsistent( t );
+        } else {
+            data->makeConsistent( t );
+        }
     }
-  }
-  *d_UpdateState = VectorData::UpdateState::UNCHANGED;
+    *d_UpdateState = VectorData::UpdateState::UNCHANGED;
 }
 VectorData::UpdateState MultiVectorData::getUpdateStatus() const
 {
@@ -452,17 +451,29 @@ void MultiVectorData::partitionLocalValues( const int num,
 
 VectorData *MultiVectorData::getVectorData( size_t i )
 {
-  auto vec = dynamic_cast<Vector *>(d_data[i]);
-  if (vec) return vec->getVectorData().get();
-  return d_data[i];
+    auto vec = dynamic_cast<Vector *>( d_data[i] );
+    if ( vec )
+        return vec->getVectorData().get();
+    return d_data[i];
 }
 
 const VectorData *MultiVectorData::getVectorData( size_t i ) const
 {
-  auto vec = dynamic_cast<Vector const *>(d_data[i]);
-  if (vec) return vec->getVectorData().get();
-  return d_data[i];
+    auto vec = dynamic_cast<Vector const *>( d_data[i] );
+    if ( vec )
+        return vec->getVectorData().get();
+    return d_data[i];
 }
+
+/****************************************************************
+ * Functions to print the data                                   *
+ ****************************************************************/
+void MultiVectorData::assemble()
+{
+    for ( auto vec : d_data )
+        vec->assemble();
+}
+
 
 /****************************************************************
  * Functions to print the data                                   *
@@ -493,6 +504,7 @@ void MultiVectorData::dumpGhostedData( std::ostream &out, size_t offset ) const
         d_data[i]->dumpGhostedData( out, offset + globalOffset );
     }
 }
+
 
 } // namespace LinearAlgebra
 } // namespace AMP

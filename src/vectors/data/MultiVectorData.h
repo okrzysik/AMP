@@ -2,7 +2,7 @@
 #define included_AMP_MultiVectorData
 
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/vectors/DataChangeListener.h"
+#include "AMP/vectors/data/DataChangeListener.h"
 #include "AMP/vectors/data/VectorData.h"
 
 
@@ -19,7 +19,7 @@ namespace LinearAlgebra {
   the local values as a single block of data on the CPU.
 
   */
-  class MultiVectorData : public VectorData, public DataChangeListener
+class MultiVectorData : public VectorData, public DataChangeListener
 {
 
 public: // Virtual functions
@@ -173,7 +173,8 @@ public: // Advanced virtual functions
      */
     void swapData( VectorData &rhs ) override;
 
-    void dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const override;
+    void
+    dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const override;
     void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const override;
 
     VectorData *getVectorData( size_t i );
@@ -181,18 +182,25 @@ public: // Advanced virtual functions
 
     size_t numberOfComponents( void ) const { return d_data.size(); }
 
+    AMP_MPI getComm() const override { return d_comm; }
+    bool hasComm( void ) const override { return true; }
+
+    void assemble() override;
 
 public:
     void receiveDataChanged() override { fireDataChange(); }
 
-    MultiVectorData() : d_globalDOFManager( nullptr ) {}
+    explicit MultiVectorData( const AMP::AMP_MPI &comm )
+        : d_comm( comm ), d_globalDOFManager( nullptr )
+    {
+    }
 
     void resetMultiVectorData( AMP::Discretization::DOFManager *manager,
-			       const std::vector<VectorData *> &data );
-    
-protected:
+                               const std::vector<VectorData *> &data );
 
+protected:
     // Internal data
+    AMP::AMP_MPI d_comm;
     std::vector<VectorData *> d_data;
     AMP::Discretization::DOFManager *d_globalDOFManager;
     std::vector<AMP::Discretization::DOFManager *> d_subDOFManager;

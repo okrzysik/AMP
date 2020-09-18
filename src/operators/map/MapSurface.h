@@ -1,21 +1,15 @@
 #ifndef included_AMP_MapSurface
 #define included_AMP_MapSurface
 
-#include <memory>
-
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/operators/map/Map1Dto3D.h"
 #include "AMP/operators/map/Map3Dto1D.h"
-#include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 
+#include <memory>
 #include <string>
-
-#ifdef DEBUG_CHECK_ASSERTIONS
-
-#endif
 
 
 namespace AMP {

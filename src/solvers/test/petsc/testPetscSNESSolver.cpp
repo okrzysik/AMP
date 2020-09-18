@@ -2,22 +2,21 @@
 // Note: the comm used should NOT be comm_world as there are cleanup issues for other comms when
 // using the monitor
 // option
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/operators/IdentityOperator.h"
+#include "AMP/operators/NullOperator.h"
+#include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/VectorBuilder.h"
+
 #include <iostream>
 #include <string>
-
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/operators/IdentityOperator.h"
-#include "AMP/operators/NullOperator.h"
-#include "AMP/solvers/petsc/PetscSNESSolver.h"
-#include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/NullVector.h"
-#include "AMP/vectors/SimpleVector.h"
 
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )
@@ -35,11 +34,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     input_db->print( AMP::plog );
 
     // Create a null vector for the initial guess
-    auto nullVec = AMP::LinearAlgebra::NullVector<double>::create( "null" );
+    auto nullVec = std::make_shared<AMP::LinearAlgebra::Vector>( "null" );
 
     // Create the solution and function variables
     auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "x" );
-    auto u   = AMP::LinearAlgebra::SimpleVector<double>::create( 10, var, solverComm );
+    auto u   = AMP::LinearAlgebra::createSimpleVector<double>( 10, var, solverComm );
     auto f   = u->cloneVector();
 
     // Create the operator

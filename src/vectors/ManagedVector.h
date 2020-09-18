@@ -2,7 +2,7 @@
 #define included_AMP_ManagedVector
 
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/ManagedVectorData.h"
+#include "AMP/vectors/data/ManagedVectorData.h"
 
 #include <stdexcept>
 #include <vector>
@@ -26,7 +26,7 @@ public:
     /** \brief Construct a ManagedVector from a set of parameters
      * \param[in] params  The description of the ManagedVector
      */
-    explicit ManagedVector( VectorParameters::shared_ptr params );
+    explicit ManagedVector( std::shared_ptr<ManagedVectorParameters> params );
 
     /** \brief Construct a view of an AMP vector
      * \param[in] alias  Vector to view
@@ -56,7 +56,6 @@ public:
     virtual bool isAnAliasOf( Vector::shared_ptr rhs );
 
 protected:
-
     //! The parameters used to create this vector
     std::shared_ptr<ManagedVectorParameters> d_pParameters;
 
@@ -64,15 +63,13 @@ protected:
     virtual ManagedVector *getNewRawPtr() const = 0;
 
 public: // Derived from Vector
-    using Vector::cloneVector;
     std::string type() const override;
     std::shared_ptr<Vector> cloneVector( const Variable::shared_ptr name ) const override;
-    std::shared_ptr<ParameterBase> getParameters() override;
+    virtual std::shared_ptr<ManagedVectorParameters> getParameters() { return d_pParameters; }
     Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
     void swapVectors( Vector &other ) override;
-    void aliasVector( Vector &other ) override;
 
 protected: // Derived from Vector
     Vector::shared_ptr selectInto( const VectorSelector & ) override;

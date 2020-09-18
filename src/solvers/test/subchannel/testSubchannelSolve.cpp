@@ -50,7 +50,6 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/SimpleVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -618,8 +617,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         for ( size_t i = 0; i < it.size(); i++ ) {
             gaussPtDOFManager->getDOFs( it->globalID(), dofs );
             for ( size_t dof : dofs ) {
-	      double val = getPower( range, P, V, it->centroid() );
-	      specificPowerGpVec->setValuesByGlobalID( 1, &dof, &val );
+                double val = getPower( range, P, V, it->centroid() );
+                specificPowerGpVec->setValuesByGlobalID( 1, &dof, &val );
             }
             ++it;
         }
@@ -683,7 +682,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearThermalOperator->modifyInitialSolutionVector( globalThermalSolVec );
         nonlinearThermalOperator->modifyRHSvector( globalThermalRhsVec );
     }
-    globalThermalRhsVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    globalThermalRhsVec->makeConsistent(
+        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     PROFILE_STOP( "Initialize" );
 
 

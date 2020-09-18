@@ -12,10 +12,6 @@ namespace LinearAlgebra {
 /****************************************************************
  * Get basic info                                                *
  ****************************************************************/
-inline std::shared_ptr<ParameterBase> Vector::getParameters()
-{
-    return std::shared_ptr<ParameterBase>();
-}
 inline AMP::Discretization::DOFManager::shared_ptr Vector::getDOFManager() const
 {
     return d_DOFManager;
@@ -47,9 +43,8 @@ Vector::shared_ptr Vector::getView() const
         auto vec = ( *d_Views )[i].lock();
         if ( vec ) {
             auto vec2 = std::dynamic_pointer_cast<VIEW_TYPE>( vec );
-            if ( vec2 ) {
-                return Vector::shared_ptr( ( *d_Views )[i] );
-            }
+            if ( vec2 )
+                return vec;
         }
     }
     return Vector::shared_ptr();
@@ -61,9 +56,8 @@ bool Vector::hasView() const
         auto vec = ( *d_Views )[i].lock();
         if ( vec ) {
             auto vec2 = std::dynamic_pointer_cast<VIEW_TYPE>( vec );
-            if ( vec2 ) {
+            if ( vec2 )
                 return true;
-            }
         }
     }
     return false;
@@ -92,7 +86,6 @@ inline RNG::shared_ptr Vector::getDefaultRNG()
  ****************************************************************/
 inline const Variable::shared_ptr Vector::getVariable() const { return d_pVariable; }
 inline Variable::shared_ptr Vector::getVariable() { return d_pVariable; }
-inline Vector::shared_ptr Vector::cloneVector() const { return cloneVector( getVariable() ); }
 inline void Vector::setVariable( const Variable::shared_ptr name )
 {
     AMP_ASSERT( name.get() != nullptr );
@@ -105,7 +98,6 @@ inline void Vector::setVariable( const Variable::shared_ptr name )
  ****************************************************************/
 // clang-format off
 inline void Vector::swapVectors( shared_ptr other ) { swapVectors( *other ); }
-inline void Vector::aliasVector( shared_ptr other ) { aliasVector( *other ); }
 inline void Vector::aliasGhostBuffer( shared_ptr in ) { d_VectorData->aliasGhostBuffer(in->d_VectorData); }
 inline std::ostream &operator<<( std::ostream &out, const Vector::shared_ptr p ) { return operator<<( out, *p ); }
 // clang-format on
@@ -114,110 +106,121 @@ inline std::ostream &operator<<( std::ostream &out, const Vector::shared_ptr p )
  * Math API for Vector                                          *
  ****************************************************************/
 
-inline void Vector::copy( const Vector &x ) { d_VectorOps->copy( *(x.getVectorData()), *(getVectorData()) ); }
+inline void Vector::copy( const Vector &x )
+{
+    d_VectorOps->copy( *( x.getVectorData() ), *( getVectorData() ) );
+}
 
-inline void Vector::zero( void ) { d_VectorOps->zero( *(getVectorData()) ); }
+inline void Vector::zero( void ) { d_VectorOps->zero( *( getVectorData() ) ); }
 
 inline void Vector::setToScalar( double alpha )
 {
-    d_VectorOps->setToScalar( alpha, *(getVectorData()) );
+    d_VectorOps->setToScalar( alpha, *( getVectorData() ) );
 }
 
-inline void Vector::setRandomValues( void ) { d_VectorOps->setRandomValues( *(getVectorData()) ); }
+inline void Vector::setRandomValues( void )
+{
+    d_VectorOps->setRandomValues( *( getVectorData() ) );
+}
 
 inline void Vector::setRandomValues( RNG::shared_ptr rng )
 {
-    d_VectorOps->setRandomValues( rng, *(getVectorData()) );
+    d_VectorOps->setRandomValues( rng, *( getVectorData() ) );
 }
 
 inline void Vector::scale( double alpha, const Vector &x )
 {
-    d_VectorOps->scale( alpha, *(x.getVectorData()), *(getVectorData()) );
+    d_VectorOps->scale( alpha, *( x.getVectorData() ), *( getVectorData() ) );
 }
 
-inline void Vector::scale( double alpha ) { d_VectorOps->scale( alpha, *(getVectorData()) ); }
+inline void Vector::scale( double alpha ) { d_VectorOps->scale( alpha, *( getVectorData() ) ); }
 
 inline void Vector::add( const Vector &x, const Vector &y )
 {
-    d_VectorOps->add( *(x.getVectorData()), *(y.getVectorData()), *(getVectorData()) );
+    d_VectorOps->add( *( x.getVectorData() ), *( y.getVectorData() ), *( getVectorData() ) );
 }
 
 inline void Vector::subtract( const Vector &x, const Vector &y )
 {
-    d_VectorOps->subtract( *(x.getVectorData()), *(y.getVectorData()), *(getVectorData()) );
+    d_VectorOps->subtract( *( x.getVectorData() ), *( y.getVectorData() ), *( getVectorData() ) );
 }
 
 inline void Vector::multiply( const Vector &x, const Vector &y )
 {
-    d_VectorOps->multiply( *(x.getVectorData()), *(y.getVectorData()), *(getVectorData()) );
+    d_VectorOps->multiply( *( x.getVectorData() ), *( y.getVectorData() ), *( getVectorData() ) );
 }
 
 inline void Vector::divide( const Vector &x, const Vector &y )
 {
-    d_VectorOps->divide( *(x.getVectorData()), *(y.getVectorData()), *(getVectorData()) );
+    d_VectorOps->divide( *( x.getVectorData() ), *( y.getVectorData() ), *( getVectorData() ) );
 }
 
 inline void Vector::reciprocal( const Vector &x )
 {
-    d_VectorOps->reciprocal( *(x.getVectorData()), *(getVectorData()) );
+    d_VectorOps->reciprocal( *( x.getVectorData() ), *( getVectorData() ) );
 }
 
 inline void Vector::linearSum( double alpha, const Vector &x, double beta, const Vector &y )
 {
-    d_VectorOps->linearSum( alpha, *(x.getVectorData()), beta, *(y.getVectorData()), *(getVectorData()) );
+    d_VectorOps->linearSum(
+        alpha, *( x.getVectorData() ), beta, *( y.getVectorData() ), *( getVectorData() ) );
 }
 
 inline void Vector::axpy( double alpha, const Vector &x, const Vector &y )
 {
-    d_VectorOps->axpy( alpha, *(x.getVectorData()), *(y.getVectorData()), *(getVectorData()) );
+    d_VectorOps->axpy(
+        alpha, *( x.getVectorData() ), *( y.getVectorData() ), *( getVectorData() ) );
 }
 
 inline void Vector::axpby( double alpha, double beta, const Vector &x )
 {
-    d_VectorOps->axpby( alpha, beta, *(x.getVectorData()), *(getVectorData()) );
+    d_VectorOps->axpby( alpha, beta, *( x.getVectorData() ), *( getVectorData() ) );
 }
 
-inline void Vector::abs( const Vector &x ) { d_VectorOps->abs( *(x.getVectorData()), *(getVectorData()) ); }
+inline void Vector::abs( const Vector &x )
+{
+    d_VectorOps->abs( *( x.getVectorData() ), *( getVectorData() ) );
+}
 
 inline void Vector::addScalar( const Vector &x, double alpha_in )
 {
-    d_VectorOps->addScalar( *(x.getVectorData()), alpha_in, *(getVectorData()) );
+    d_VectorOps->addScalar( *( x.getVectorData() ), alpha_in, *( getVectorData() ) );
 }
 
-inline double Vector::min( void ) const { return d_VectorOps->min( *(getVectorData()) ); }
+inline double Vector::min( void ) const { return d_VectorOps->min( *( getVectorData() ) ); }
 
-inline double Vector::max( void ) const { return d_VectorOps->max( *(getVectorData()) ); }
+inline double Vector::max( void ) const { return d_VectorOps->max( *( getVectorData() ) ); }
 
-inline double Vector::L1Norm( void ) const { return d_VectorOps->L1Norm( *(getVectorData()) ); }
+inline double Vector::L1Norm( void ) const { return d_VectorOps->L1Norm( *( getVectorData() ) ); }
 
-inline double Vector::L2Norm( void ) const { return d_VectorOps->L2Norm( *(getVectorData()) ); }
+inline double Vector::L2Norm( void ) const { return d_VectorOps->L2Norm( *( getVectorData() ) ); }
 
-inline double Vector::maxNorm( void ) const { return d_VectorOps->maxNorm( *(getVectorData()) ); }
+inline double Vector::maxNorm( void ) const { return d_VectorOps->maxNorm( *( getVectorData() ) ); }
 
 inline double Vector::minQuotient( const Vector &x ) const
 {
-    return d_VectorOps->minQuotient( *(x.getVectorData()), *(getVectorData()) );
+    return d_VectorOps->minQuotient( *( x.getVectorData() ), *( getVectorData() ) );
 }
 
 inline double Vector::wrmsNorm( const Vector &x, const Vector &y ) const
 {
-    return d_VectorOps->wrmsNorm( *(x.getVectorData()), *(y.getVectorData()) );
+    return d_VectorOps->wrmsNorm( *( x.getVectorData() ), *( y.getVectorData() ) );
 }
 
-inline double
-Vector::wrmsNormMask( const Vector &x, const Vector &mask, const Vector &y ) const
+inline double Vector::wrmsNormMask( const Vector &x, const Vector &mask, const Vector &y ) const
 {
-  return d_VectorOps->wrmsNormMask( *(x.getVectorData()), *(mask.getVectorData()), *(y.getVectorData()) );
+    return d_VectorOps->wrmsNormMask(
+        *( x.getVectorData() ), *( mask.getVectorData() ), *( y.getVectorData() ) );
 }
 
 inline double Vector::dot( const Vector &x ) const
 {
-  return d_VectorOps->dot( *(getVectorData()), *(x.getVectorData()) );
+    return d_VectorOps->dot( *( getVectorData() ), *( x.getVectorData() ) );
 }
 
 inline bool Vector::equals( const Vector &a, double tol ) const
 {
-  return d_VectorOps->equals( *(a.getVectorData()), *(getVectorData()), tol );
+    return d_VectorOps->equals( *( a.getVectorData() ), *( getVectorData() ), tol );
 }
 
 /****************************************************************

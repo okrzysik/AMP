@@ -3,8 +3,6 @@
 
 
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/data/MultiVectorData.h"
-#include "AMP/vectors/operations/MultiVectorOperations.h"
 
 
 namespace AMP {
@@ -155,24 +153,15 @@ public:
     virtual ~MultiVector();
     std::string type() const override;
 
-    inline AMP_MPI getComm() const override final;
-
     Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
     void swapVectors( Vector &other ) override;
-    void aliasVector( Vector &other ) override;
-    void assemble() override;
 
 protected:
     Vector::shared_ptr selectInto( const VectorSelector & ) override;
     Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const override;
-
-    //! The communicator this multivector is on
-    AMP_MPI d_Comm;
-    //! Indicates if the multivector created the communicator
-    bool d_CommCreated;
 
     //! The list of AMP Vectors that comprise this Vector
     std::vector<Vector::shared_ptr> d_vVectors;
@@ -194,7 +183,7 @@ protected:
     /** Constructor:  create a MultiVector with a particular variable
      * \param[in]  name  The vector to create the MultiVector from
      */
-    explicit MultiVector( const std::string &name );
+    explicit MultiVector( const std::string &name, const AMP_MPI &comm );
 
 
 private:

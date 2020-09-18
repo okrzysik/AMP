@@ -10,17 +10,6 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-/**  \class  PetscVectorParameters
- *  \brief  Parameters class to construct a PETSc Vector
- *
- *  Since the constructor of PetscVector is protected, this class is of little
- *  use to any but Backplane developers.  Also, since PetscVector
- *  is almost trivial, so is the parameters class.
- */
-class PetscVectorParameters
-{
-};
-
 
 /**
  *  \class  PetscVector
@@ -35,11 +24,10 @@ class PetscVectorParameters
  *  -# Provides a static method for creating a PETSc view of an AMP Vector.
  *
  */
-
-class PetscVector 
+class PetscVector
 {
 private:
-    PetscRandom *d_PetscRandom;
+    std::shared_ptr<PetscRandom> d_PetscRandom;
 
 protected:
     /**
@@ -152,7 +140,6 @@ public:
      *    if we can safely delete the vector.
      */
     virtual bool petscHoldsView() const = 0;
-
 
 
 public:
