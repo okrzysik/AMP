@@ -1041,6 +1041,8 @@ bool MPI_CLASS::operator>( const MPI_CLASS &comm ) const
     MPI_Group_free( &group1 );
     MPI_Group_free( &group2 );
     MPI_Group_free( &group12 );
+#else
+    NULL_USE( comm );
 #endif
     // Perform a global reduce of the flag (equivalent to all operation)
     return allReduce( flag );
@@ -1196,6 +1198,7 @@ bool MPI_CLASS::allReduce( const bool value ) const
         MPI_Allreduce(
             (void *) &value, (void *) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MIN, communicator );
 #else
+        NULL_USE( value );
         MPI_ERROR( "This shouldn't be possible" );
 #endif
     }
@@ -1221,6 +1224,7 @@ void MPI_CLASS::allReduce( std::vector<bool> &x ) const
     delete[] send;
     delete[] recv;
 #else
+    NULL_USE( x );
     MPI_ERROR( "This shouldn't be possible" );
 #endif
 }
@@ -1237,6 +1241,7 @@ bool MPI_CLASS::anyReduce( const bool value ) const
         MPI_Allreduce(
             (void *) &value, (void *) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MAX, communicator );
 #else
+        NULL_USE( value );
         MPI_ERROR( "This shouldn't be possible" );
 #endif
     }
@@ -1262,6 +1267,7 @@ void MPI_CLASS::anyReduce( std::vector<bool> &x ) const
     delete[] send;
     delete[] recv;
 #else
+    NULL_USE( x );
     MPI_ERROR( "This shouldn't be possible" );
 #endif
 }
@@ -4040,7 +4046,7 @@ void MPI_CLASS::start_MPI( int argc, char *argv[], int profile_level )
         AMPManager::comm_world = AMP_MPI( MPI_COMM_WORLD );
     }
 #else
-    AMPManager::comm_world = AMP_MPI( MPI_COMM_WORLD );
+    AMPManager::comm_world = AMP_MPI( MPI_COMM_SELF );
 #endif
 }
 void MPI_CLASS::stop_MPI()
