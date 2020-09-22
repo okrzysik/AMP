@@ -158,8 +158,6 @@ protected:
 
     int d_iMaxIterations;
 
-    double d_dMaxRhs;
-
     double d_dMaxError;
 
     int d_iDebugPrintInfoLevel;

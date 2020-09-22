@@ -19,7 +19,6 @@ SolverStrategy::SolverStrategy()
     d_bUseZeroInitialGuess = true;
     d_iDebugPrintInfoLevel = 0;
     d_iMaxIterations       = 0;
-    d_dMaxRhs              = 0;
     d_dMaxError            = 0;
     d_iObjectId            = 0;
 }
@@ -30,7 +29,6 @@ SolverStrategy::SolverStrategy( std::shared_ptr<SolverStrategyParameters> parame
     d_iObjectId            = SolverStrategy::d_iInstanceId;
     d_iNumberIterations    = -1;
     d_dResidualNorm        = -1;
-    d_dMaxRhs              = 1.0;
     d_bUseZeroInitialGuess = true;
 
     d_pOperator = parameters->d_pOperator;
