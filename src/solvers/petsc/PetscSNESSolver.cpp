@@ -209,9 +209,6 @@ void PetscSNESSolver::getFromInput( const std::shared_ptr<AMP::Database> db )
     if ( db->keyExists( "maximumFunctionEvals" ) )
         d_iMaximumFunctionEvals = db->getScalar<int>( "maximumFunctionEvals" );
 
-    if ( db->keyExists( "absolute_tolerance" ) )
-        d_dAbsoluteTolerance = db->getScalar<double>( "absolute_tolerance" );
-
     if ( db->keyExists( "relativeTolerance" ) )
         d_dRelativeTolerance = db->getScalar<double>( "relativeTolerance" );
 

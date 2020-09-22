@@ -54,6 +54,7 @@ void SolverStrategy::getFromInput( std::shared_ptr<AMP::Database> db )
     d_dMaxError            = db->getWithDefault<double>( "max_error", 1.0e-12 );
     d_iDebugPrintInfoLevel = db->getWithDefault( "print_info_level", 0 );
     d_bUseZeroInitialGuess = db->getWithDefault( "zero_initial_guess", true );
+    d_dAbsoluteTolerance   = db->getWithDefault<double>( "absolute_tolerance", 1.0e-14 );
 }
 void SolverStrategy::initialize( std::shared_ptr<SolverStrategyParameters> const parameters )
 {

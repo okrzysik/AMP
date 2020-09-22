@@ -104,7 +104,6 @@ private:
     AMP_MPI d_comm;
 
     double d_dRelativeTolerance;
-    double d_dAbsoluteTolerance;
     double d_dDivergenceTolerance;
 
     bool d_bUsesPreconditioner;

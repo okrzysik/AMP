@@ -89,16 +89,6 @@ public:
     void relax( void );
 
     /*!
-     *  Get absolute tolerance for nonlinear solver.
-     */
-    double getAbsoluteTolerance() const;
-
-    /*!
-     *  Set absolute tolerance for nonlinear solver.
-     */
-    void setAbsoluteTolerance( double abs_tol );
-
-    /*!
      *  Get relative tolerance for nonlinear solver.
      */
     double getRelativeTolerance() const;
@@ -192,7 +182,6 @@ private:
     int d_iMaximumFunctionEvals;
     int d_iNonlinearIterationCount;
 
-    double d_dAbsoluteTolerance;
     double d_dRelativeTolerance;
 
     bool d_bPrintResiduals;

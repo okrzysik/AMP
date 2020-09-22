@@ -143,6 +143,19 @@ public:
      */
     virtual std::shared_ptr<AMP::Operator::Operator> getOperator( void ) { return d_pOperator; }
 
+    /*!
+     *  Get absolute tolerance for solver.
+     */
+    double getAbsoluteTolerance() const { return ( d_dAbsoluteTolerance ); }
+    
+    /*!
+     *  Set absolute tolerance for nonlinear solver.
+     */
+    void setAbsoluteTolerance( double abs_tol )
+    {
+      d_dAbsoluteTolerance = abs_tol;
+    }
+
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
@@ -153,6 +166,7 @@ protected:
     int d_iMaxIterations;
 
     double d_dMaxError;
+    double d_dAbsoluteTolerance = 1.0e-14;
 
     int d_iDebugPrintInfoLevel;
 
