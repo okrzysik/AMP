@@ -154,7 +154,7 @@ NonlinearSolver{
   print_info_level = 7 
     max_iterations = 100
     max_error = 1e-16
-    absoluteTolerance = 1.0e-16
+    absolute_tolerance = 1.0e-16
     relativeTolerance = 1.0e-10
     stepTolerance = 1.0e-15
     maximumFunctionEvals = 10000

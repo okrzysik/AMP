@@ -280,7 +280,7 @@ NonlinearSolver{
     angle_tolerance = 0.2
     freeze_pc = FALSE
 
-    absoluteTolerance = 1.0e-16
+    absolute_tolerance = 1.0e-16
     relativeTolerance = 1.0e-16
     stepTolerance = 1.0e-16
     maximumFunctionEvals = 100

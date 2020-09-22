@@ -701,7 +701,7 @@ NonlinearThermalSolver {
       max_iterations = 500
       max_error = 1e-5
 
-      absoluteTolerance = 1.0e-12
+      absolute_tolerance = 1.0e-12
       relativeTolerance = 1.0e-10
       stepTolerance = 1.0e-15
       maximumFunctionEvals = 10000
