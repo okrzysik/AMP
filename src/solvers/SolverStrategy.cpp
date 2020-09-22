@@ -74,18 +74,6 @@ void SolverStrategy::resetOperator(
 
 void SolverStrategy::reset( std::shared_ptr<SolverStrategyParameters> ) {}
 
-
-/****************************************************************
- * Set properties                                                *
- ****************************************************************/
-void SolverStrategy::setConvergenceTolerance( const int max_iterations, const double max_error )
-{
-    AMP_INSIST( max_iterations >= 0, "max_iterations must be non-negative" );
-    AMP_INSIST( max_error >= 0.0, "max_eror must be non-negative" );
-    d_iMaxIterations = max_iterations;
-    d_dMaxError      = max_error;
-}
-
 void SolverStrategy::setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> ) {}
 
 } // namespace Solver

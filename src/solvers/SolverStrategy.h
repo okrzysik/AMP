@@ -74,12 +74,6 @@ public:
     virtual void setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
 
     /**
-     * Specify stopping criteria.
-     * @param[in] max_iterations    maximum number of iterations
-     * @param[in] max_error         error tolerance (l2 error)
-     */
-    virtual void setConvergenceTolerance( const int max_iterations, const double max_error );
-    /**
      * Specify level of diagnostic information printed during iterations.
      * @param[in] print_level    integer level value with permissible values 0 and higher. Setting
      *                           to zero should provide minimial debugging information with higher
