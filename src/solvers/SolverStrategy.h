@@ -172,7 +172,6 @@ protected:
 
     double d_dResidualNorm = 0.0;
 
-    double d_dMaxError;
     double d_dAbsoluteTolerance = 1.0e-14;
     double d_dRelativeTolerance = 1.0e-09;
     
