@@ -166,17 +166,17 @@ public:
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
-    int d_iNumberIterations; // iterations in solver
+    int d_iNumberIterations = 0; // iterations in solver
 
-    double d_dResidualNorm;
+    int d_iMaxIterations    = 0;
 
-    int d_iMaxIterations;
+    double d_dResidualNorm = 0.0;
 
     double d_dMaxError;
     double d_dAbsoluteTolerance = 1.0e-14;
     double d_dRelativeTolerance = 1.0e-09;
     
-    int d_iDebugPrintInfoLevel;
+    int d_iDebugPrintInfoLevel = 0;
 
     bool d_bUseZeroInitialGuess;
 
@@ -184,9 +184,9 @@ protected:
 
     static int d_iInstanceId; // used to differentiate between different instances of the class
 
-    std::shared_ptr<AMP::Operator::Operator> d_pOperator;
+    std::shared_ptr<AMP::Operator::Operator> d_pOperator = nullptr;
 
-    std::shared_ptr<AMP::Utilities::Writer> d_writer;
+    std::shared_ptr<AMP::Utilities::Writer> d_writer     = nullptr;
 
 
 private:

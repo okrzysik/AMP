@@ -52,7 +52,7 @@ NonlinearSolver{
     max_error = 1e-10
 
     absolute_tolerance = 1.0e-9
-    relativeTolerance = 1.0e-6
+    relative_tolerance = 1.0e-6
     stepTolerance = 1.0e-10
     maximumFunctionEvals = 100
     usesJacobian=FALSE
@@ -88,7 +88,7 @@ JacobianSolver{
     max_error = 1e-10
 
     absolute_tolerance = 1.0e-9
-    relativeTolerance = 1.0e-6
+    relative_tolerance = 1.0e-6
     stepTolerance = 1.0e-10
     maximumFunctionEvals = 100
     usesJacobian=FALSE

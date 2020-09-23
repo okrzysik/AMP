@@ -758,7 +758,7 @@ NonlinearSolver {
     max_error = 1e-5
 
     absolute_tolerance = 1.0e-10
-    relativeTolerance = 1.0e-8
+    relative_tolerance = 1.0e-8
     stepTolerance = 1.0e-15
     maximumFunctionEvals = 10000
     usesJacobian=FALSE

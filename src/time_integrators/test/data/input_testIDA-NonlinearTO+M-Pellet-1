@@ -681,7 +681,7 @@ MechanicsNonlinearSolver{
     max_iterations = 500
     max_error = 1e-10
     absolute_tolerance = 1.0e-16
-    relativeTolerance = 1.0e-16
+    relative_tolerance = 1.0e-16
     stepTolerance = 1.0e-16
     maximumFunctionEvals = 10000
     usesJacobian=FALSE
