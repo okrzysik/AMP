@@ -156,6 +156,13 @@ public:
       d_dAbsoluteTolerance = abs_tol;
     }
 
+    double getRelativeTolerance() const { return ( d_dRelativeTolerance ); }
+
+    void setRelativeTolerance( double rel_tol )
+    {
+      d_dRelativeTolerance = rel_tol;
+    }
+
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
@@ -167,7 +174,8 @@ protected:
 
     double d_dMaxError;
     double d_dAbsoluteTolerance = 1.0e-14;
-
+    double d_dRelativeTolerance = 1.0e-09;
+    
     int d_iDebugPrintInfoLevel;
 
     bool d_bUseZeroInitialGuess;

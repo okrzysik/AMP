@@ -134,8 +134,6 @@ protected:
 private:
     AMP_MPI d_comm;
 
-    double d_dRelativeTolerance = 1.0e-10; //! relative tolerance to converge to
-
     bool d_bRestart = false; //! whether to restart
 
     int d_iMaxKrylovDimension = 50; //! maximum dimension of the Krylov subspace before a restart or

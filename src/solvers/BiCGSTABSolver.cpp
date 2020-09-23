@@ -53,7 +53,6 @@ void BiCGSTABSolver::initialize( std::shared_ptr<SolverStrategyParameters> const
 void BiCGSTABSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 {
 
-    d_dRelativeTolerance  = db->getWithDefault<double>( "relative_tolerance", 1.0e-9 );
     d_iMaxIterations      = db->getWithDefault<double>( "max_iterations", 1000 );
     d_bUsesPreconditioner = db->getWithDefault( "uses_preconditioner", false );
 }
