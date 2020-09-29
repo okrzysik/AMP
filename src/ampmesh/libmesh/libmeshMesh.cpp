@@ -295,7 +295,7 @@ void libmeshMesh::initialize()
         }
     }
     // Construct the list of elements of type side or edge
-    for ( i = 0; i <= GeomDim; i++ ) {
+    for ( i = 0; i <= (size_t) GeomDim; i++ ) {
         auto type = (GeomType) i;
         if ( type == GeomType::Vertex || type == GeomDim )
             continue;
