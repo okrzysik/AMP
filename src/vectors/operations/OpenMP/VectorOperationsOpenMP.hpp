@@ -32,6 +32,7 @@ void VectorOperationsOpenMP<TYPE>::zero( VectorData &x )
 {
     const auto last = x.end<TYPE>();
     const auto begin = x.begin<TYPE>();
+    auto it = begin;
 #pragma omp parallel for default(none) private(it) shared(begin, last)
     for ( auto it = begin; it < last; ++it )
         *it = 0;
