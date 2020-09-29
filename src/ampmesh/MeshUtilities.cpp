@@ -56,7 +56,7 @@ sample( const Mesh &mesh, const CONTAINER &elements, double dx )
     const auto type = elements.begin()->elementType();
     // Start by adding all the nodes to preserve the geometry
     auto node_list = getElements( mesh, elements, AMP::Mesh::GeomType::Vertex );
-    for ( auto node : node_list ) {
+    for ( auto &node : node_list ) {
         points.push_back( node.coord() );
         ids.push_back( node.globalID() );
     }
@@ -67,7 +67,7 @@ sample( const Mesh &mesh, const CONTAINER &elements, double dx )
     // Create a kdtree to quickly calculate distances
     kdtree tree( points );
     // Function to add points
-    auto addPoints = [&points, &ids, &tree, &mesh, dx]( const auto &it ) {
+    auto addPoints = [&points, &ids, &tree, dx]( const auto &it ) {
         for ( const auto &elem : it ) {
             auto points2 = sample( elem, dx );
             for ( const auto &p : points2 ) {

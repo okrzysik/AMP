@@ -41,13 +41,6 @@ static inline std::array<double, N> operator-( const std::array<double, N> &x,
     else if constexpr ( N == 3 )
         return { x[0] - y[0], x[1] - y[1], x[2] - y[2] };
 }
-static constexpr double inv_factorial( int N )
-{
-    double x = 1;
-    for ( int i = 2; i <= N; i++ )
-        x *= i;
-    return 1.0 / x;
-}
 template<size_t N>
 static inline double abs( const std::array<double, N> &x )
 {
