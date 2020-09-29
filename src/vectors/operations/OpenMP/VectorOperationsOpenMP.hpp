@@ -33,9 +33,16 @@ void VectorOperationsOpenMP<TYPE>::zero( VectorData &x )
     const auto last = x.end<TYPE>();
     const auto begin = x.begin<TYPE>();
     auto it = begin;
-#pragma omp parallel for default(none) private(it) shared(begin, last)
-    for ( ; it < last; ++it )
-        *it = 0;
+
+    size_t N_blocks = x.numberOfDataBlocks();
+    for ( size_t i = 0; i < N_blocks; i++ ) {
+        size_t size      = x.sizeOfDataBlock( i );
+        const TYPE *data = x.getRawDataBlock<TYPE>( i );
+#pragma omp parallel for
+        for ( size_t j = 0; j < size; j++ )
+	  data[j] = 0.0;
+    }
+
     if ( x.hasGhosts() ) {
         auto &ghosts = x.getGhosts();
         for ( size_t i = 0; i != ghosts.size(); i++ )
