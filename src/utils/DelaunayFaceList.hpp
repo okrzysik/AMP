@@ -800,6 +800,7 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::update_face( const int N
 template<class ETYPE>
 inline void calc_surface_normal( const ETYPE x[1][1], ETYPE norm[1] )
 {
+    NULL_USE(x);
     norm[0] = ETYPE( 1 );
 }
 template<class ETYPE>
