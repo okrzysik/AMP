@@ -247,7 +247,7 @@ template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 inline void TriangleMeshElement<NG, NP, TYPE>::getVertexCoord( std::array<double, NP> *x ) const
 {
     if constexpr ( TYPE == 0 ) {
-        x[0] == d_mesh->getPos( d_globalID.elemID() );
+        x[0] = d_mesh->getPos( d_globalID.elemID() );
     } else {
         ElementID ids[TYPE + 1];
         d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
