@@ -14,7 +14,7 @@ namespace Solver {
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-QMRCGSTABSolver::QMRCGSTABSolver() : {}
+QMRCGSTABSolver::QMRCGSTABSolver() {}
 
 QMRCGSTABSolver::QMRCGSTABSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )

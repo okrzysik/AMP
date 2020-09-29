@@ -14,7 +14,7 @@ namespace Solver {
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-TFQMRSolver::TFQMRSolver() : {}
+TFQMRSolver::TFQMRSolver() {}
 
 TFQMRSolver::TFQMRSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
