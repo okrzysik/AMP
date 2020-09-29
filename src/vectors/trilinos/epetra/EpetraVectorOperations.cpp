@@ -7,16 +7,13 @@ namespace LinearAlgebra {
 static inline const Epetra_Vector &getEpetraVector( const VectorData &vec )
 {
     auto epetraData = dynamic_cast<const EpetraVectorData *>( &vec );
-    if ( epetraData )
-        return epetraData->getEpetra_Vector();
-    AMP_ERROR( "Not EpetraVectorData" );
+    return epetraData->getEpetra_Vector();
+
 }
 static inline Epetra_Vector &getEpetraVector( VectorData &vec )
 {
     auto epetraData = dynamic_cast<EpetraVectorData *>( &vec );
-    if ( epetraData )
-        return epetraData->getEpetra_Vector();
-    AMP_ERROR( "Not EpetraVectorData" );
+    return epetraData->getEpetra_Vector();
 }
 //**********************************************************************
 // Functions that operate on VectorData objects
