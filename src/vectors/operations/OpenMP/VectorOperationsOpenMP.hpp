@@ -30,14 +30,10 @@ std::shared_ptr<VectorOperations> VectorOperationsOpenMP<TYPE>::cloneOperations(
 template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::zero( VectorData &x )
 {
-    const auto last = x.end<TYPE>();
-    const auto begin = x.begin<TYPE>();
-    auto it = begin;
-
     size_t N_blocks = x.numberOfDataBlocks();
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size      = x.sizeOfDataBlock( i );
-        const TYPE *data = x.getRawDataBlock<TYPE>( i );
+        TYPE *data = x.getRawDataBlock<TYPE>( i );
 #pragma omp parallel for
         for ( size_t j = 0; j < size; j++ )
 	  data[j] = 0.0;
