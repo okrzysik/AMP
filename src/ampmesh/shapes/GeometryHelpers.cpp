@@ -370,7 +370,7 @@ double distanceToBox( const AMP::Mesh::Point &pos,
     auto p4     = pos + d4 * ang;
     auto p5     = pos + d5 * ang;
     auto p6     = pos + d6 * ang;
-    auto inside = [tol, range]( const Point &p ) {
+    auto inside = [range]( const Point &p ) {
         return ( ( p.x() >= range[0] - tol ) && ( p.x() <= range[1] + tol ) ) &&
                ( ( p.y() >= range[2] - tol ) && ( p.y() <= range[3] + tol ) ) &&
                ( ( p.z() >= range[4] - tol ) && ( p.z() <= range[5] + tol ) );
