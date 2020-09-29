@@ -109,10 +109,14 @@ void VectorOperationsOpenMP<TYPE>::copy( const VectorData &x, VectorData &y )
 template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::scale( double alpha, VectorData &x )
 {
-    const auto last = x.end<TYPE>();
+    size_t N_blocks = x.numberOfDataBlocks();
+    for ( size_t i = 0; i < N_blocks; i++ ) {
+        size_t size      = x.sizeOfDataBlock( i );
+        TYPE *data = x.getRawDataBlock<TYPE>( i );
 #pragma omp parallel for
-    for ( auto it = x.begin<TYPE>(); it < last; ++it )
-        *it *= alpha;
+        for ( size_t j = 0; j < size; j++ )
+	  data[j] *= alpha;
+    }
 }
 
 template<typename TYPE>
