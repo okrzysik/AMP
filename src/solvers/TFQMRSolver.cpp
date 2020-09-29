@@ -14,10 +14,10 @@ namespace Solver {
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-TFQMRSolver::TFQMRSolver() : d_restarts( 0 ) {}
+TFQMRSolver::TFQMRSolver() : {}
 
 TFQMRSolver::TFQMRSolver( std::shared_ptr<SolverStrategyParameters> parameters )
-    : SolverStrategy( parameters ), d_restarts( 0 )
+    : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
 

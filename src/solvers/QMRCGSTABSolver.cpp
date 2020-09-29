@@ -14,10 +14,10 @@ namespace Solver {
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-QMRCGSTABSolver::QMRCGSTABSolver() : d_restarts( 0 ) {}
+QMRCGSTABSolver::QMRCGSTABSolver() : {}
 
 QMRCGSTABSolver::QMRCGSTABSolver( std::shared_ptr<SolverStrategyParameters> parameters )
-    : SolverStrategy( parameters ), d_restarts( 0 )
+    : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
 
