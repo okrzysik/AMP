@@ -54,21 +54,27 @@ void Property<Number>::setAuxiliaryData( const std::string &key, const std::stri
 template<class Number>
 void Property<Number>::getAuxiliaryData( const std::string &key, double &val )
 {
-    val = *d_AuxiliaryDataDouble.find( key );
+    auto p = d_AuxiliaryDataDouble.find( key );
+    AMP_ASSERT( p != d_AuxiliaryDataDouble.end() );
+    val = p->second;
 }
 
 /// get auxiliary data
 template<class Number>
 void Property<Number>::getAuxiliaryData( const std::string &key, int &val )
 {
-    val = *d_AuxiliaryDataInteger.find( key );
+    auto p = d_AuxiliaryDataInteger.find( key );
+    AMP_ASSERT ( p != d_AuxiliaryDataInteger.end() );
+    val = p->second;
 }
 
 /// get auxiliary data
 template<class Number>
 void Property<Number>::getAuxiliaryData( const std::string &key, std::string &val )
 {
-    val = *d_AuxiliaryDataString.find( key );
+    auto p = d_AuxiliaryDataString.find( key );
+    AMP_ASSERT ( p != d_AuxiliaryDataString.end() );
+    val = p->second;
 }
 
 
