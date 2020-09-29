@@ -135,7 +135,7 @@ MeshIterator TriangleMeshIterator<NG, NP, TYPE>::operator++( int )
     // Postfix increment (increment and return temporary object)
     TriangleMeshIterator tmp( *this ); // Create a temporary variable
     this->operator++();                // apply operator
-    return tmp;                        // return temporary result
+    return std::move(tmp);             // return temporary result
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 MeshIterator &TriangleMeshIterator<NG, NP, TYPE>::operator--()
@@ -152,7 +152,7 @@ MeshIterator TriangleMeshIterator<NG, NP, TYPE>::operator--( int )
     // Postfix decrement (increment and return temporary object)
     TriangleMeshIterator tmp( *this ); // Create a temporary variable
     --( *this );                       // apply operator
-    return tmp;                        // return temporary result
+    return std::move(tmp);             // return temporary result
 }
 
 
