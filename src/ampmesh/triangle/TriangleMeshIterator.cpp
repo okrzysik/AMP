@@ -164,7 +164,7 @@ MeshIterator TriangleMeshIterator<NG, NP, TYPE>::operator+( int n ) const
 {
     TriangleMeshIterator tmp( *this ); // Create a temporary iterator
     tmp.operator+=( n );               // Increment temporary iterator
-    return tmp;
+    return std::move(tmp);
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 MeshIterator &TriangleMeshIterator<NG, NP, TYPE>::operator+=( int n )
