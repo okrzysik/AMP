@@ -326,7 +326,7 @@ MeshElement BoxMesh::getElement( const MeshElementID &id ) const
     // Create the element
     structuredMeshElement elem( index, this );
     AMP_ASSERT( elem.globalID() == id );
-    return elem;
+    return std::move(elem);
 }
 MeshElement BoxMesh::getElement( const MeshElementIndex &index ) const
 {
@@ -583,8 +583,8 @@ BoxMesh::ElementBlocks BoxMesh::intersect( const ElementBlocks &set1, const Elem
 {
     ElementBlocks set;
     set.reserve( set1.size() * set2.size() );
-    for ( const auto v1 : set1 ) {
-        for ( const auto v2 : set2 ) {
+    for ( const auto &v1 : set1 ) {
+        for ( const auto &v2 : set2 ) {
             if ( v1.first.type() != v2.first.type() || v1.first.side() != v2.first.side() )
                 continue;
             auto v              = v1;
@@ -609,7 +609,7 @@ inline MeshIterator BoxMesh::createIterator( const ElementBlocks &list ) const
     } else {
         std::vector<MeshIterator> iterator_list;
         iterator_list.reserve( list.size() );
-        for ( const auto item : list ) {
+        for ( const auto &item : list ) {
             if ( MeshElementIndex::numElements( item.first, item.second ) ) {
                 structuredMeshIterator it( item.first, item.second, this, 0 );
                 iterator_list.push_back( it );
