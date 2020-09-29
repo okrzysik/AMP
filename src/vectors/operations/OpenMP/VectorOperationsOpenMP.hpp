@@ -31,8 +31,9 @@ template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::zero( VectorData &x )
 {
     const auto last = x.end<TYPE>();
-#pragma omp parallel for
-    for ( auto it = x.begin<TYPE>(); it < last; ++it )
+    const auto begin = x.begin<TYPE>();
+#pragma omp parallel for default(none) private(it) shared(begin, last)
+    for ( auto it = begin; it < last; ++it )
         *it = 0;
     if ( x.hasGhosts() ) {
         auto &ghosts = x.getGhosts();
