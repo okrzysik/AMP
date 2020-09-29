@@ -32,7 +32,7 @@ public:
     // Constructors
     constexpr MeshPoint( std::initializer_list<TYPE> x ) : d_ndim( x.size() )
     {
-        AMP_CHECK_ASSERT( d_ndim <= 3 );
+        if ( d_ndim > 3 ) throw std::logic_error("Invalid Dimension");
         auto it   = x.begin();
         d_data[0] = *it;
         for ( size_t d = 1; d < d_ndim; d++ )
@@ -73,7 +73,7 @@ public:
     }
     constexpr MeshPoint( const size_t ndim, std::initializer_list<TYPE> x ) : d_ndim( ndim )
     {
-        AMP_CHECK_ASSERT( d_ndim <= 3 );
+        if ( d_ndim > 3 ) throw std::logic_error("Invalid Dimension");
         auto it   = x.begin();
         d_data[0] = *it;
         d_data[1] = 0;
@@ -122,12 +122,12 @@ public:
     constexpr const TYPE &z() const { return d_data[2]; }
     constexpr TYPE &operator[]( std::size_t i )
     {
-        AMP_CHECK_ASSERT( i < d_ndim );
+        if ( i >= d_ndim  ) throw std::logic_error("Invalid index");
         return d_data[i];
     }
     constexpr const TYPE &operator[]( std::size_t i ) const
     {
-        AMP_CHECK_ASSERT( i < d_ndim );
+        if ( i >= d_ndim  ) throw std::logic_error("Invalid index");
         return d_data[i];
     }
 
