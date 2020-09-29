@@ -10,7 +10,9 @@
 #include "AMP/utils/AMP_MPI.h"
 
 #include <EpetraExt_MatrixMatrix.h>
+DISABLE_WARNINGS
 #include <EpetraExt_Transpose_RowMatrix.h>
+ENABLE_WARNINGS
 
 #ifdef USE_EXT_MPI
 #include <Epetra_MpiComm.h>
