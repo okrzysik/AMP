@@ -37,11 +37,11 @@ public:
     //!  Returns the frozen vector
     virtual AMP::LinearAlgebra::Vector::shared_ptr getFrozenVector() { return d_OutputVector; }
 
-    virtual void append( std::shared_ptr<Operator> op ) override;
+    void append( std::shared_ptr<Operator> op ) override;
 
     // Overload the apply operator to include makeConsistent
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     /** \brief  A factory method.
      * \return  A column of map operators of type MAP_TYPE

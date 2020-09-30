@@ -24,7 +24,7 @@ public:
 
     virtual ~FickSoretNonlinearFEOperator() {}
 
-    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override
     {
         std::shared_ptr<FickSoretNonlinearFEOperatorParameters> fsParams =
             std::dynamic_pointer_cast<FickSoretNonlinearFEOperatorParameters>( params );
@@ -33,10 +33,10 @@ public:
         d_SoretOperator->reset( fsParams->d_SoretParameters );
     }
 
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    virtual std::shared_ptr<OperatorParameters>
+    std::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                    std::shared_ptr<OperatorParameters> params = nullptr ) override
@@ -44,7 +44,7 @@ public:
         return d_FickOperator->getParameters( type, u, params );
     }
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {
         return d_OutputVariable;
     }

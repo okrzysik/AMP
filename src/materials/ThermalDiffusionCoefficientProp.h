@@ -50,7 +50,7 @@ public:
         d_SoretProp.set_parameters( &soretParams[0], nsoret );
     }
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 
 protected:
     virtual void getExtraParameters( std::vector<double> &args )
@@ -99,7 +99,7 @@ public:
         d_SoretProp.set_parameters( &soretParams[0], nsoret );
     }
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 
 protected:
     virtual void getExtraParameters( std::vector<double> &args )
@@ -148,7 +148,7 @@ public:
         d_SoretProp.set_parameters( &soretParams[0], nsoret );
     }
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 
 protected:
     virtual void getExtraParameters( std::vector<double> &args )

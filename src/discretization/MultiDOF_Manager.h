@@ -34,7 +34,7 @@ public:
     multiDOFManager( const AMP_MPI &comm, std::vector<DOFManager::shared_ptr> managers );
 
     //! Deconstructor
-    virtual ~multiDOFManager() override;
+    ~multiDOFManager() override;
 
     /** \brief Get the entry indices of DOFs given a mesh element ID
      * \details  This will return a vector of pointers into a Vector that are associated with which.
@@ -47,8 +47,8 @@ public:
      * (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
-    virtual void getDOFs( const AMP::Mesh::MeshElementID &id,
-                          std::vector<size_t> &dofs ) const override;
+    void getDOFs( const AMP::Mesh::MeshElementID &id,
+		  std::vector<size_t> &dofs ) const override;
 
 
     /** \brief Get the entry indices of DOFs given a mesh element ID
@@ -57,37 +57,37 @@ public:
      *                      Note: the mesh element may be any type (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
-    virtual void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
-                          std::vector<size_t> &dofs ) const override;
+    void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
+		  std::vector<size_t> &dofs ) const override;
 
     /** \brief Get the mesh element for a DOF
      * \details  This will return the mesh element associated with a given DOF.
      * \param[in] dof       The entry in the vector associated with DOF
      * @return              The element for the given DOF.
      */
-    virtual AMP::Mesh::MeshElement getElement( size_t dof ) const override;
+    AMP::Mesh::MeshElement getElement( size_t dof ) const override;
 
 
     /** \brief   Get an entry over the mesh elements associated with the DOFs
      * \details  This will return an iterator over the mesh elements associated with the DOFs.
      * Note: if any sub-DOFManagers are the same, then this will iterate over repeated elements.
      */
-    virtual AMP::Mesh::MeshIterator getIterator() const override;
+    AMP::Mesh::MeshIterator getIterator() const override;
 
 
     //! Get the remote DOFs for a vector
-    virtual std::vector<size_t> getRemoteDOFs() const override;
+    std::vector<size_t> getRemoteDOFs() const override;
 
 
     //! Get the row DOFs given a mesh element
-    virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const override;
+    std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const override;
 
 
     /** \brief Subset the DOF Manager for a AMP_MPI communicator
      * \details  This will subset a DOF manager for a given communicator.
      * \param[in]  comm         The communicator to use to subset
      */
-    virtual DOFManager::shared_ptr subset( const AMP_MPI &comm ) override;
+    DOFManager::shared_ptr subset( const AMP_MPI &comm ) override;
 
 
     /** \brief Subset the DOF Manager for a mesh
@@ -98,8 +98,8 @@ public:
      *                          Note: if this is true, any processors that do not contain the mesh
      * will return NULL.
      */
-    virtual DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh,
-                                           bool useMeshComm = true ) override;
+    DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh,
+				   bool useMeshComm = true ) override;
 
 
     /** \brief Subset the DOF Manager for a mesh element iterator
@@ -108,8 +108,8 @@ public:
      * \param[in]  iterator     The mesh iterator for the subset
      * \param[in]  comm         The desired comm
      */
-    virtual DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator,
-                                           const AMP_MPI &comm ) override;
+    DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator,
+				   const AMP_MPI &comm ) override;
 
 public:
     //! Get the DOFManagers that compose the multiDOFManager

@@ -14,9 +14,9 @@ public:
     explicit CustomConstraintsEliminationOperator(
         const std::shared_ptr<OperatorParameters> &params );
 
-    virtual void addSlaveToMaster( AMP::LinearAlgebra::Vector::shared_ptr u ) override;
+    void addSlaveToMaster( AMP::LinearAlgebra::Vector::shared_ptr u ) override;
 
-    virtual void copyMasterToSlave( AMP::LinearAlgebra::Vector::shared_ptr u ) override;
+    void copyMasterToSlave( AMP::LinearAlgebra::Vector::shared_ptr u ) override;
 
     void initialize(
         std::vector<size_t> const &slaveIndices,

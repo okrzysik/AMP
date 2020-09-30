@@ -32,15 +32,15 @@ public:
 
     virtual ~ColumnBoundaryOperator() {}
 
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
     std::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                    std::shared_ptr<OperatorParameters> params = nullptr ) override;
 
-    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /**
      * \param op

@@ -105,7 +105,7 @@ public:
      */
     virtual void fillComplete();
 
-    virtual Matrix::shared_ptr transpose() const override;
+    Matrix::shared_ptr transpose() const override;
 };
 
 

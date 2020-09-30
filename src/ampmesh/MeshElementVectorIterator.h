@@ -52,10 +52,10 @@ public:
     MeshIterator operator--( int ) override;
 
     // Arithmetic operator+
-    virtual MeshIterator operator+( int ) const override;
+    MeshIterator operator+( int ) const override;
 
     // Arithmetic operator+=
-    virtual MeshIterator &operator+=( int N ) override;
+    MeshIterator &operator+=( int N ) override;
 
     //! Check if two iterators are equal
     bool operator==( const MeshIterator &rhs ) const override;
@@ -74,7 +74,7 @@ public:
 
 protected:
     //! Clone the iterator
-    virtual MeshIterator *clone() const override;
+    MeshIterator *clone() const override;
 
     // A pointer to a std::vector containing the desired mesh elements
     std::shared_ptr<std::vector<MeshElement>> d_elements;

@@ -41,7 +41,7 @@ protected:
     //!  Update data off-core
     void setOtherData();
 
-    virtual void multiply( shared_ptr other_op, shared_ptr &result ) override;
+    void multiply( shared_ptr other_op, shared_ptr &result ) override;
 
 public:
     /** \brief Constructor
@@ -58,25 +58,25 @@ public:
     //! Destructor
     virtual ~ManagedEpetraMatrix() {}
 
-    virtual void createValuesByGlobalID( size_t, const std::vector<size_t> & ) override;
+    void createValuesByGlobalID( size_t, const std::vector<size_t> & ) override;
 
 
-    virtual void mult( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
-    virtual void multTranspose( const Vector::const_shared_ptr in,
-                                Vector::shared_ptr out ) override;
-    virtual Vector::shared_ptr
+    void mult( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
+    void multTranspose( const Vector::const_shared_ptr in,
+			Vector::shared_ptr out ) override;
+    Vector::shared_ptr
     extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const override;
-    virtual void scale( double alpha ) override;
-    virtual void axpy( double alpha, const Matrix &rhs ) override;
-    virtual size_t numGlobalRows() const override { return d_epetraMatrix->NumGlobalRows(); }
-    virtual size_t numGlobalColumns() const override { return d_epetraMatrix->NumGlobalCols(); }
-    virtual void addValuesByGlobalID(
+    void scale( double alpha ) override;
+    void axpy( double alpha, const Matrix &rhs ) override;
+    size_t numGlobalRows() const override { return d_epetraMatrix->NumGlobalRows(); }
+    size_t numGlobalColumns() const override { return d_epetraMatrix->NumGlobalCols(); }
+    void addValuesByGlobalID(
+			     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
+    void setValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
-    virtual void setValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
-    virtual void getRowByGlobalID( size_t row,
-                                   std::vector<size_t> &cols,
-                                   std::vector<double> &values ) const override;
+    void getRowByGlobalID( size_t row,
+			   std::vector<size_t> &cols,
+			   std::vector<double> &values ) const override;
 
 
     /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
@@ -84,25 +84,25 @@ public:
      */
     std::vector<size_t> getColumnIDs( size_t row ) const override;
 
-    virtual void getValuesByGlobalID( size_t num_rows,
-                                      size_t num_cols,
-                                      size_t *rows,
-                                      size_t *cols,
-                                      double *values ) const override;
+    void getValuesByGlobalID( size_t num_rows,
+			      size_t num_cols,
+			      size_t *rows,
+			      size_t *cols,
+			      double *values ) const override;
 
-    virtual void setScalar( double ) override;
-    virtual void setDiagonal( Vector::const_shared_ptr in ) override;
+    void setScalar( double ) override;
+    void setDiagonal( Vector::const_shared_ptr in ) override;
 
-    virtual void makeConsistent() override;
-    virtual double L1Norm() const override;
-    virtual Matrix::shared_ptr cloneMatrix() const override;
-    virtual Vector::shared_ptr getRightVector() const override;
-    virtual Vector::shared_ptr getLeftVector() const override;
-    virtual Discretization::DOFManager::shared_ptr getRightDOFManager() const override;
-    virtual Discretization::DOFManager::shared_ptr getLeftDOFManager() const override;
-    virtual void fillComplete() override;
-    virtual void setIdentity() override;
-    virtual void zero() override;
+    void makeConsistent() override;
+    double L1Norm() const override;
+    Matrix::shared_ptr cloneMatrix() const override;
+    Vector::shared_ptr getRightVector() const override;
+    Vector::shared_ptr getLeftVector() const override;
+    Discretization::DOFManager::shared_ptr getRightDOFManager() const override;
+    Discretization::DOFManager::shared_ptr getLeftDOFManager() const override;
+    void fillComplete() override;
+    void setIdentity() override;
+    void zero() override;
 };
 } // namespace LinearAlgebra
 } // namespace AMP

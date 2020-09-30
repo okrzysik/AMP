@@ -43,7 +43,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /**
       Calls first addSlaveToMaster(...) and second setSlaveToZero(...) on the residual vector:
@@ -56,18 +56,18 @@ public:
       @param [in] u input vector.
       @param [out] f residual/output vector.
       */
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     /**
       @return The variable for the input vector.
       */
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
     /**
       @return The variable for the output vector.
       */
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
     /**
       u^m = u^m + C^T u^s

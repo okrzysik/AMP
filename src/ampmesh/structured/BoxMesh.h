@@ -155,7 +155,7 @@ public:
 
 
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
-    virtual std::unique_ptr<Mesh> clone() const override = 0;
+    std::unique_ptr<Mesh> clone() const override = 0;
 
 
     /**
@@ -195,20 +195,20 @@ public:
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
-    virtual size_t numLocalElements( const GeomType type ) const override final;
+    size_t numLocalElements( const GeomType type ) const override final;
 
 
     /* Return the global number of elements of the given type
      * Note: depending on the mesh this routine may require global communication across the mesh.
      * \param type   Geometric type
      */
-    virtual size_t numGlobalElements( const GeomType type ) const override final;
+    size_t numGlobalElements( const GeomType type ) const override final;
 
 
     /* Return the number of ghost elements of the given type on the current processor
      * \param type   Geometric type
      */
-    virtual size_t numGhostElements( const GeomType type, const int gcw ) const override final;
+    size_t numGhostElements( const GeomType type, const int gcw ) const override final;
 
 
     /**
@@ -217,7 +217,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const override final;
+    MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const override final;
 
 
     /**
@@ -235,7 +235,7 @@ public:
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBoundaryIDs() const override final;
+    std::vector<int> getBoundaryIDs() const override final;
 
 
     /**
@@ -256,7 +256,7 @@ public:
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBlockIDs() const override final;
+    std::vector<int> getBlockIDs() const override final;
 
 
     /**
@@ -294,7 +294,7 @@ public:
      *    uses mesh iterators and requires O(N) time on the number of elements in the mesh.
      * \param id    Mesh element id we are requesting.
      */
-    virtual MeshElement getElement( const MeshElementID &id ) const override final;
+    MeshElement getElement( const MeshElementID &id ) const override final;
 
 
     /**

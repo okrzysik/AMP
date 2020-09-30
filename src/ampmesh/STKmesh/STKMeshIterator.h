@@ -27,46 +27,46 @@ public:
     STKMeshIterator &operator=( const STKMeshIterator & );
 
     //! Increment
-    virtual MeshIterator &operator++() override;
+    MeshIterator &operator++() override;
 
     //! Increment
-    virtual MeshIterator operator++( int ) override;
+    MeshIterator operator++( int ) override;
 
     //! Decrement
-    virtual MeshIterator &operator--() override;
+    MeshIterator &operator--() override;
 
     //! Decrement
-    virtual MeshIterator operator--( int ) override;
+    MeshIterator operator--( int ) override;
 
     //! Check if two iterators are equal
-    virtual bool operator==( const MeshIterator &rhs ) const override;
+    bool operator==( const MeshIterator &rhs ) const override;
 
     //! Check if two iterators are not equal
-    virtual bool operator!=( const MeshIterator &rhs ) const override;
+    bool operator!=( const MeshIterator &rhs ) const override;
 
     //! Dereference the iterator
-    virtual MeshElement &operator*(void) override;
+    MeshElement &operator*(void) override;
 
     //! Dereference the iterator
-    virtual MeshElement *operator->(void) override;
+    MeshElement *operator->(void) override;
 
     //! Dereference the iterator
-    virtual const MeshElement &operator*(void) const override;
+    const MeshElement &operator*(void) const override;
 
     //! Dereference the iterator
-    virtual const MeshElement *operator->(void) const override;
+    const MeshElement *operator->(void) const override;
 
     //! Return an iterator to the begining
-    virtual MeshIterator begin() const override;
+    MeshIterator begin() const override;
 
     //! Return an iterator to the begining
-    virtual MeshIterator end() const override;
+    MeshIterator end() const override;
 
     //! Return the number of elements in the iterator
-    virtual size_t size() const override;
+    size_t size() const override;
 
     //! Return the current position (from the beginning) in the iterator
-    virtual size_t position() const override;
+    size_t position() const override;
 
 protected:
     /** Default constructor
@@ -85,7 +85,7 @@ protected:
     STKMeshIterator( const AMP::Mesh::STKMesh *mesh, int gcw, MeshPtr entities );
 
     //! Clone the iterator
-    virtual MeshIterator *clone() const override;
+    MeshIterator *clone() const override;
 
     friend class AMP::Mesh::STKMesh;
 

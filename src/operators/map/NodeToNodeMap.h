@@ -43,18 +43,18 @@ public:
     //! Destructor
     virtual ~NodeToNodeMap();
 
-    virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                             AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		     AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    virtual void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                              AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		      AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    virtual void setVector( AMP::LinearAlgebra::Vector::shared_ptr p ) override;
+    void setVector( AMP::LinearAlgebra::Vector::shared_ptr p ) override;
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector();
 
     // Function to determine if a makeConsistentSet is required
-    virtual bool requiresMakeConsistentSet() override;
+    bool requiresMakeConsistentSet() override;
 
 
 private:

@@ -84,7 +84,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    virtual void reset( const std::shared_ptr<AMP::Operator::OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<AMP::Operator::OperatorParameters> &params ) override;
 
     /**
      * This function registers a rhs operator with the TimeOperator class

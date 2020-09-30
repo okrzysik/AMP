@@ -21,8 +21,8 @@ class CoupledOperator : public ColumnOperator
 public:
     explicit CoupledOperator( const std::shared_ptr<OperatorParameters> &params );
 
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
 
     /**
@@ -31,9 +31,9 @@ public:
      * \param u: shared pointer to const vector u
      * \param r: shared pointer to vector residual
      */
-    virtual void residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
-                           AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                           AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+    void residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
+		   AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		   AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
 
     std::shared_ptr<AMP::Operator::Operator> getMapOperator() { return d_Operators[2]; }
@@ -44,12 +44,12 @@ public:
 
     void setBVPOperator( std::shared_ptr<AMP::Operator::Operator> op ) { d_Operators[3] = op; }
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {
         return d_Operators[3]->getOutputVariable();
     }
 
-    virtual void append( std::shared_ptr<Operator> op ) override
+    void append( std::shared_ptr<Operator> op ) override
     {
         AMP_ASSERT( d_Operators.size() < 4 );
         AMP_ASSERT( op.get() != nullptr );

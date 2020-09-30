@@ -45,19 +45,19 @@ public:
      * \details  Set a frozen vector for results of the apply operation.
      * \param result    The results vector
      */
-    virtual void setVector( AMP::LinearAlgebra::Vector::shared_ptr result ) override;
+    void setVector( AMP::LinearAlgebra::Vector::shared_ptr result ) override;
 
     /** \brief   Start a communicative apply operation.
      * \details  Start a communicative apply operation.
      */
-    virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                             AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+    void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		     AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
     /** \brief   Finish a communicative apply operation.
      * \details  Finish a communicative apply operation.
      */
-    virtual void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                              AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+    void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		      AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
 protected:
 private:

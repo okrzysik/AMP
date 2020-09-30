@@ -34,8 +34,8 @@ public:
     /**
      * The apply routine for the column operator calls apply on each of the component operators
      */
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
     /**
      * Column specific implementation of the residual: f-L(u)
@@ -43,11 +43,11 @@ public:
      * \param u: shared pointer to const vector u
      * \param r: shared pointer to vector residual
      */
-    virtual void residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
-                           AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                           AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+    void residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
+		   AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		   AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
-    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /**
       A function for computing the information necessary to construct the jacobian.
@@ -58,7 +58,7 @@ public:
      *      to construct the return parameters
       @return The parameters required to construct the jacobian.
       */
-    virtual std::shared_ptr<OperatorParameters>
+    std::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                    std::shared_ptr<OperatorParameters> params = nullptr ) override;
@@ -74,9 +74,9 @@ public:
      * should be called only after all column operators have been appended.
      * no checks to do this right now.
      */
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
     bool isValidInput( std::shared_ptr<AMP::LinearAlgebra::Vector> &u ) override;
 

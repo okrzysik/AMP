@@ -37,19 +37,19 @@ public:
     virtual inline std::string elementClass() const { return "STKMeshElement"; }
 
     //! Return the elements composing the current element
-    virtual std::vector<MeshElement> getElements( const GeomType type ) const override;
+    std::vector<MeshElement> getElements( const GeomType type ) const override;
 
     //! Return the elements neighboring the current element
-    virtual std::vector<MeshElement::shared_ptr> getNeighbors() const override;
+    std::vector<MeshElement::shared_ptr> getNeighbors() const override;
 
     //! Return the volume of the current element (does not apply to verticies)
-    virtual double volume() const override;
+    double volume() const override;
 
     //! Return the normal to the current element (does not apply to all elements)
-    virtual Point norm() const override;
+    Point norm() const override;
 
     //! Return the coordinates of all verticies composing the element
-    virtual std::vector<double> coord() const override;
+    std::vector<double> coord() const override;
 
     /**
      * \brief     Return the centroid of the element
@@ -57,7 +57,7 @@ public:
      *   centroid is defined as the average of the coordinates of the verticies.
      *   The centroid of a vertex is the vertex and will return the same result as coord().
      */
-    virtual std::vector<double> centroid() const override;
+    std::vector<double> centroid() const override;
 
     /**
      * \brief     Return true if the element contains the point
@@ -67,24 +67,24 @@ public:
      * \param pos   The coordinates of the point to check.
      * \param TOL   The tolerance to use for the computation.
      */
-    virtual bool containsPoint( const Point &pos, double TOL = 1e-12 ) const override;
+    bool containsPoint( const Point &pos, double TOL = 1e-12 ) const override;
 
     //! Check if the element is on the surface
-    virtual bool isOnSurface() const override;
+    bool isOnSurface() const override;
 
     /**
      * \brief     Check if the current element is on the given boundary
      * \details   Check if the current element is on the boundary specified by the given id
      * \param id  The boundary id to check
      */
-    virtual bool isOnBoundary( int id ) const override;
+    bool isOnBoundary( int id ) const override;
 
     /**
      * \brief     Check if the current element is in the given block
      * \details   Check if the current element is in the block specified by the given id
      * \param id  The block id to check
      */
-    virtual bool isInBlock( int id ) const override;
+    bool isInBlock( int id ) const override;
 
 
 protected:
@@ -108,7 +108,7 @@ protected:
                     const STKMesh *mesh );
 
     //! Clone the iterator
-    virtual MeshElement *clone() const override;
+    MeshElement *clone() const override;
 
     // Internal data
     int d_dim;                      // The dimension of the mesh

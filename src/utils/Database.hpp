@@ -62,20 +62,20 @@ class EmptyKeyData final : public KeyData
 public:
     EmptyKeyData() {}
     virtual ~EmptyKeyData() {}
-    virtual std::unique_ptr<KeyData> clone() const override
+    std::unique_ptr<KeyData> clone() const override
     {
         return std::make_unique<EmptyKeyData>();
     }
-    virtual void print( std::ostream &os, const AMP::string_view & = "" ) const override
+    void print( std::ostream &os, const AMP::string_view & = "" ) const override
     {
         os << std::endl;
     }
-    virtual AMP::string_view type() const override { return ""; }
-    virtual bool is_floating_point() const override { return true; }
-    virtual bool is_integral() const override { return true; }
-    virtual std::vector<double> convertToDouble() const override { return std::vector<double>(); }
-    virtual std::vector<int64_t> convertToInt64() const override { return std::vector<int64_t>(); }
-    virtual bool operator==( const KeyData &rhs ) const override
+    AMP::string_view type() const override { return ""; }
+    bool is_floating_point() const override { return true; }
+    bool is_integral() const override { return true; }
+    std::vector<double> convertToDouble() const override { return std::vector<double>(); }
+    std::vector<int64_t> convertToInt64() const override { return std::vector<int64_t>(); }
+    bool operator==( const KeyData &rhs ) const override
     {
         return rhs.convertToDouble().empty();
     }
@@ -90,11 +90,11 @@ public:
     {
     }
     virtual ~KeyDataScalar() {}
-    virtual std::unique_ptr<KeyData> clone() const override
+    std::unique_ptr<KeyData> clone() const override
     {
         return std::make_unique<KeyDataScalar>( d_data, d_unit );
     }
-    virtual void print( std::ostream &os, const AMP::string_view &indent = "" ) const override
+    void print( std::ostream &os, const AMP::string_view &indent = "" ) const override
     {
         os << indent;
         printValue( os, d_data );
@@ -102,12 +102,12 @@ public:
             os << " " << d_unit.str();
         os << std::endl;
     }
-    virtual AMP::string_view type() const override { return typeid( TYPE ).name(); }
-    virtual bool is_floating_point() const override { return std::is_floating_point<TYPE>(); }
-    virtual bool is_integral() const override { return std::is_integral<TYPE>(); }
-    virtual std::vector<double> convertToDouble() const override;
-    virtual std::vector<int64_t> convertToInt64() const override;
-    virtual bool operator==( const KeyData &rhs ) const override;
+    AMP::string_view type() const override { return typeid( TYPE ).name(); }
+    bool is_floating_point() const override { return std::is_floating_point<TYPE>(); }
+    bool is_integral() const override { return std::is_integral<TYPE>(); }
+    std::vector<double> convertToDouble() const override;
+    std::vector<int64_t> convertToInt64() const override;
+    bool operator==( const KeyData &rhs ) const override;
     const TYPE &get() const { return d_data; }
 
 private:
@@ -124,11 +124,11 @@ public:
         data.clear(); // Suppress cppclean warning
     }
     virtual ~KeyDataVector() {}
-    virtual std::unique_ptr<KeyData> clone() const override
+    std::unique_ptr<KeyData> clone() const override
     {
         return std::make_unique<KeyDataVector>( d_data, d_unit );
     }
-    virtual void print( std::ostream &os, const AMP::string_view &indent = "" ) const override
+    void print( std::ostream &os, const AMP::string_view &indent = "" ) const override
     {
         os << indent;
         for ( size_t i = 0; i < d_data.size(); i++ ) {
@@ -140,12 +140,12 @@ public:
             os << " " << d_unit.str();
         os << std::endl;
     }
-    virtual AMP::string_view type() const override { return typeid( TYPE ).name(); }
-    virtual bool is_floating_point() const override { return std::is_floating_point<TYPE>(); }
-    virtual bool is_integral() const override { return std::is_integral<TYPE>(); }
-    virtual std::vector<double> convertToDouble() const override;
-    virtual std::vector<int64_t> convertToInt64() const override;
-    virtual bool operator==( const KeyData &rhs ) const override;
+    AMP::string_view type() const override { return typeid( TYPE ).name(); }
+    bool is_floating_point() const override { return std::is_floating_point<TYPE>(); }
+    bool is_integral() const override { return std::is_integral<TYPE>(); }
+    std::vector<double> convertToDouble() const override;
+    std::vector<int64_t> convertToInt64() const override;
+    bool operator==( const KeyData &rhs ) const override;
     const std::vector<TYPE> &get() const { return d_data; }
 
 private:
@@ -169,32 +169,32 @@ public:
         return *this;
     }
     virtual ~DatabaseVector() {}
-    virtual std::unique_ptr<KeyData> clone() const override
+    std::unique_ptr<KeyData> clone() const override
     {
         return std::make_unique<DatabaseVector>( d_data );
     }
-    virtual void print( std::ostream &os, const AMP::string_view &indent = "" ) const override
+    void print( std::ostream &os, const AMP::string_view &indent = "" ) const override
     {
         std::string indent2 = std::string( indent ) + "   ";
         for ( const auto &data : d_data ) {
             data.print( os, indent2 );
         }
     }
-    virtual AMP::string_view type() const override
+    AMP::string_view type() const override
     {
         return typeid( std::vector<Database> ).name();
     }
-    virtual bool is_floating_point() const override { return false; }
-    virtual bool is_integral() const override { return false; }
-    virtual std::vector<double> convertToDouble() const override
+    bool is_floating_point() const override { return false; }
+    bool is_integral() const override { return false; }
+    std::vector<double> convertToDouble() const override
     {
         throw std::logic_error( "Cannot convert DatabaseVector to double" );
     }
-    virtual std::vector<int64_t> convertToInt64() const override
+    std::vector<int64_t> convertToInt64() const override
     {
         throw std::logic_error( "Cannot convert DatabaseVector to int64" );
     }
-    virtual bool operator==( const KeyData &rhs ) const override
+    bool operator==( const KeyData &rhs ) const override
     {
         auto rhs2 = dynamic_cast<const DatabaseVector *>( &rhs );
         if ( rhs2 == nullptr )

@@ -33,7 +33,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    virtual void reset( const std::shared_ptr<AMP::Operator::OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<AMP::Operator::OperatorParameters> &params ) override;
 
     void registerRhsOperator( std::shared_ptr<AMP::Operator::LinearOperator> op )
     {

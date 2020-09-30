@@ -60,10 +60,10 @@ public:
     }
 
     /// indicator for scalar evaluator
-    virtual bool isScalar() override { return false; }
+    bool isScalar() override { return false; }
 
     /// indicator for tensor evaluator
-    virtual bool isTensor() override { return true; }
+    bool isTensor() override { return true; }
 
 protected:
     std::vector<size_t> d_dimensions; ///< dimensions of return value tensor
@@ -135,14 +135,14 @@ public:
                         const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
     // disable scalar evaluator
-    virtual Number eval( std::vector<Number> & ) override
+    Number eval( std::vector<Number> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from tensor property" );
         return 0;
     }
 
     // disable scalar evaluator
-    virtual void
+    void
     evalv( std::vector<Number> &,
            const std::map<std::string, std::shared_ptr<std::vector<Number>>> & ) override
     {
@@ -150,7 +150,7 @@ public:
     }
 
     // disable scalar evaluator
-    virtual void
+    void
     evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &,
            const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> & ) override
     {
@@ -158,8 +158,8 @@ public:
     }
 
     // disable scalar evaluator
-    virtual void evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &,
-                        const std::shared_ptr<AMP::LinearAlgebra::MultiVector> & ) override
+    void evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &,
+		const std::shared_ptr<AMP::LinearAlgebra::MultiVector> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from tensor property" );
     }

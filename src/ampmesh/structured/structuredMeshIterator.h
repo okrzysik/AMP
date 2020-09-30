@@ -46,41 +46,41 @@ public:
     structuredMeshIterator &operator=( const structuredMeshIterator & );
 
     //! Increment
-    virtual MeshIterator &operator++() override;
+    MeshIterator &operator++() override;
 
     //! Increment
-    virtual MeshIterator operator++( int ) override;
+    MeshIterator operator++( int ) override;
 
     //! Decrement
-    virtual MeshIterator &operator--() override;
+    MeshIterator &operator--() override;
 
     //! Decrement
-    virtual MeshIterator operator--( int ) override;
+    MeshIterator operator--( int ) override;
 
     // Arithmetic operator+
-    virtual MeshIterator operator+( int ) const override;
+    MeshIterator operator+( int ) const override;
 
     // Arithmetic operator+=
-    virtual MeshIterator &operator+=( int N ) override;
+    MeshIterator &operator+=( int N ) override;
 
     //! Check if two iterators are equal
-    virtual bool operator==( const MeshIterator &rhs ) const override;
+    bool operator==( const MeshIterator &rhs ) const override;
 
     //! Check if two iterators are not equal
-    virtual bool operator!=( const MeshIterator &rhs ) const override;
+    bool operator!=( const MeshIterator &rhs ) const override;
 
     //! Return an iterator to the begining
-    virtual MeshIterator begin() const override;
+    MeshIterator begin() const override;
 
     //! Return an iterator to the begining
-    virtual MeshIterator end() const override;
+    MeshIterator end() const override;
 
     using MeshIterator::operator+;
     using MeshIterator::operator+=;
 
 protected:
     //! Clone the iterator
-    virtual MeshIterator *clone() const override;
+    MeshIterator *clone() const override;
 
     // Get the index given the position
     inline BoxMesh::MeshElementIndex getIndex( int pos ) const;

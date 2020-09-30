@@ -40,8 +40,8 @@ public:
       */
     virtual ~NeumannVectorCorrection() {}
 
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     /**
       This function computes the surface integral for either constant or varrying flux values
@@ -52,7 +52,7 @@ public:
     /**
       This function reads parameters related to boundary Ids
       */
-    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /**
       Adds a vector to the RHS vector.

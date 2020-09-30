@@ -119,7 +119,7 @@ public:
     virtual ~Database() = default;
 
     //! Copy the data
-    virtual std::unique_ptr<KeyData> clone() const override;
+    std::unique_ptr<KeyData> clone() const override;
 
     //! Copy the data
     void copy( const Database &rhs );
@@ -340,11 +340,11 @@ public:
      * @param os        Output stream
      * @param indent    Indenting to use before each line
      */
-    virtual void print( std::ostream &os, const AMP::string_view &indent = "" ) const override;
+    void print( std::ostream &os, const AMP::string_view &indent = "" ) const override;
 
 
     //! Print the type
-    virtual AMP::string_view type() const override { return "database"; }
+    AMP::string_view type() const override { return "database"; }
 
 
     /**
@@ -397,10 +397,10 @@ protected: // Internal data and functions
     }
 
     // Functions inherited from KeyData that really aren't valid
-    virtual std::vector<double> convertToDouble() const override;
-    virtual std::vector<int64_t> convertToInt64() const override;
-    virtual bool is_floating_point() const override;
-    virtual bool is_integral() const override;
+    std::vector<double> convertToDouble() const override;
+    std::vector<int64_t> convertToInt64() const override;
+    bool is_floating_point() const override;
+    bool is_integral() const override;
 };
 
 

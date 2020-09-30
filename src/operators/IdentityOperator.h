@@ -34,21 +34,21 @@ public:
      * @param [in] u input vector.
      * @param [out] f output vector.
      */
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     /**
      * This function is useful for re-initializing/updating an operator
      * \param params
      *    parameter object containing parameters to change
      */
-    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     /**
      * Copies the shared pointer for the matrix representation of this linear operator.
      *  @param [in] in_mat The matrix representation of this linear operator.
      */
-    virtual void setMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> in_mat ) override;
+    void setMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> in_mat ) override;
 
     //! Set the input variable
     virtual void setInputVariable( AMP::LinearAlgebra::Variable::shared_ptr var )

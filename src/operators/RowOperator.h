@@ -27,7 +27,7 @@ public:
 
     virtual ~RowOperator() {}
 
-    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override
     {
         std::shared_ptr<ColumnOperatorParameters> fParams =
             std::dynamic_pointer_cast<ColumnOperatorParameters>( params );
@@ -56,10 +56,10 @@ public:
     void setJacobianFlag() { getAllJacobian = true; }
 
     void setJacobianParametersSize( const int paramSz ) { d_paramsize = paramSz; }
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {
         d_OutputVariable = d_Operators[0]->getOutputVariable();
         return d_OutputVariable;
