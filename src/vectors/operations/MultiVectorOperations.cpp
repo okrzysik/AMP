@@ -51,7 +51,7 @@ void MultiVectorOperations::zero( VectorData &x )
     }
 }
 
-void MultiVectorOperations::setToScalar( double alpha, VectorData &x )
+void MultiVectorOperations::setToScalar( const Scalar &alpha, VectorData &x )
 {
     for ( size_t i = 0; i != d_operations.size(); i++ ) {
         d_operations[i]->setToScalar( alpha, *getVectorDataComponent( x, i ) );
@@ -96,7 +96,7 @@ void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
     }
 }
 
-void MultiVectorOperations::scale( double alpha, VectorData &x )
+void MultiVectorOperations::scale( const Scalar &alpha, VectorData &x )
 {
     AMP_ASSERT( getMultiVectorData( x ) );
     if ( d_operations.empty() ) {
@@ -106,7 +106,7 @@ void MultiVectorOperations::scale( double alpha, VectorData &x )
         d_operations[i]->scale( alpha, *getVectorDataComponent( x, i ) );
 }
 
-void MultiVectorOperations::scale( double alpha, const VectorData &x, VectorData &y )
+void MultiVectorOperations::scale( const Scalar &alpha, const VectorData &x, VectorData &y )
 {
     if ( d_operations.empty() ) {
         return;
@@ -227,8 +227,11 @@ void MultiVectorOperations::reciprocal( const VectorData &x, VectorData &y )
     }
 }
 
-void MultiVectorOperations::linearSum(
-    double alpha_in, const VectorData &x, double beta_in, const VectorData &y, VectorData &z )
+void MultiVectorOperations::linearSum( const Scalar &alpha_in,
+                                       const VectorData &x,
+                                       const Scalar &beta_in,
+                                       const VectorData &y,
+                                       VectorData &z )
 {
     if ( d_operations.empty() ) {
         return;
@@ -252,23 +255,27 @@ void MultiVectorOperations::linearSum(
         AMP_ASSERT( x.getLocalSize() == y.getLocalSize() );
         AMP_ASSERT( x.getLocalSize() == z.getLocalSize() );
         if ( x.isType<double>() && y.isType<double>() ) {
-            auto xit  = x.begin<double>();
-            auto yit  = y.begin<double>();
-            auto zit  = z.begin<double>();
-            auto xend = x.end<double>();
+            auto xit     = x.begin<double>();
+            auto yit     = y.begin<double>();
+            auto zit     = z.begin<double>();
+            auto xend    = x.end<double>();
+            double alpha = alpha_in.get<double>();
+            double beta  = beta_in.get<double>();
             while ( xit != xend ) {
-                *zit = alpha_in * ( *xit ) + beta_in * ( *yit );
+                *zit = alpha * ( *xit ) + beta * ( *yit );
                 ++xit;
                 ++yit;
                 ++zit;
             }
         } else if ( x.isType<float>() && y.isType<float>() ) {
-            auto xit  = x.begin<float>();
-            auto yit  = y.begin<float>();
-            auto zit  = z.begin<float>();
-            auto xend = x.end<float>();
+            auto xit    = x.begin<float>();
+            auto yit    = y.begin<float>();
+            auto zit    = z.begin<float>();
+            auto xend   = x.end<float>();
+            float alpha = alpha_in.get<float>();
+            float beta  = beta_in.get<float>();
             while ( xit != xend ) {
-                *zit = alpha_in * ( *xit ) + beta_in * ( *yit );
+                *zit = alpha * ( *xit ) + beta * ( *yit );
                 ++xit;
                 ++yit;
                 ++zit;
@@ -279,7 +286,7 @@ void MultiVectorOperations::linearSum(
     }
 }
 
-void MultiVectorOperations::axpy( double alpha_in,
+void MultiVectorOperations::axpy( const Scalar &alpha_in,
                                   const VectorData &x,
                                   const VectorData &y,
                                   VectorData &z )
@@ -287,8 +294,8 @@ void MultiVectorOperations::axpy( double alpha_in,
     linearSum( alpha_in, x, 1.0, y, z );
 }
 
-void MultiVectorOperations::axpby( double alpha_in,
-                                   double beta_in,
+void MultiVectorOperations::axpby( const Scalar &alpha_in,
+                                   const Scalar &beta_in,
                                    const VectorData &x,
                                    VectorData &z )
 {
@@ -314,7 +321,7 @@ void MultiVectorOperations::abs( const VectorData &x, VectorData &y )
     }
 }
 
-void MultiVectorOperations::addScalar( const VectorData &x, double alpha_in, VectorData &y )
+void MultiVectorOperations::addScalar( const VectorData &x, const Scalar &alpha_in, VectorData &y )
 {
     if ( d_operations.empty() ) {
         return;
@@ -497,7 +504,7 @@ double MultiVectorOperations::localWrmsNormMask( const VectorData &x,
 
 bool MultiVectorOperations::localEquals( const VectorData &x,
                                          const VectorData &y,
-                                         double tol ) const
+                                         const Scalar &tol ) const
 {
     if ( d_operations.empty() ) {
         return false;

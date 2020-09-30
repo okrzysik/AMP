@@ -54,7 +54,7 @@ void ManagedVectorOperations::copy( const VectorData &src, VectorData &dst )
     dst_managed->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
 }
 
-void ManagedVectorOperations::setToScalar( double alpha, VectorData &x )
+void ManagedVectorOperations::setToScalar( const Scalar &alpha, VectorData &x )
 {
     auto xm = getManagedVector( x );
     xm->getVectorEngine()->setToScalar( alpha );
@@ -70,7 +70,7 @@ void ManagedVectorOperations::setRandomValues( VectorData &x )
     xm->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
 }
 
-void ManagedVectorOperations::scale( double alpha, const VectorData &x, VectorData &y )
+void ManagedVectorOperations::scale( const Scalar &alpha, const VectorData &x, VectorData &y )
 {
     auto x2 = getManagedVector( x );
     auto y2 = getManagedVector( y );
@@ -82,7 +82,7 @@ void ManagedVectorOperations::scale( double alpha, const VectorData &x, VectorDa
     y2->dataChanged();
 }
 
-void ManagedVectorOperations::scale( double alpha, VectorData &x )
+void ManagedVectorOperations::scale( const Scalar &alpha, VectorData &x )
 {
     auto y = getManagedVector( x );
     y->getVectorEngine()->scale( alpha );
@@ -153,8 +153,11 @@ void ManagedVectorOperations::reciprocal( const VectorData &x, VectorData &y )
     y2->dataChanged();
 }
 
-void ManagedVectorOperations::linearSum(
-    double alpha, const VectorData &x, double beta, const VectorData &y, VectorData &z )
+void ManagedVectorOperations::linearSum( const Scalar &alpha,
+                                         const VectorData &x,
+                                         const Scalar &beta,
+                                         const VectorData &y,
+                                         VectorData &z )
 {
     auto x2 = getManagedVector( x );
     auto y2 = getManagedVector( y );
@@ -168,7 +171,7 @@ void ManagedVectorOperations::linearSum(
     z2->dataChanged();
 }
 
-void ManagedVectorOperations::axpy( double alpha,
+void ManagedVectorOperations::axpy( const Scalar &alpha,
                                     const VectorData &x,
                                     const VectorData &y,
                                     VectorData &z )
@@ -176,7 +179,10 @@ void ManagedVectorOperations::axpy( double alpha,
     linearSum( alpha, x, 1.0, y, z );
 }
 
-void ManagedVectorOperations::axpby( double alpha, double beta, const VectorData &x, VectorData &z )
+void ManagedVectorOperations::axpby( const Scalar &alpha,
+                                     const Scalar &beta,
+                                     const VectorData &x,
+                                     VectorData &z )
 {
     linearSum( alpha, x, beta, z, z );
 }

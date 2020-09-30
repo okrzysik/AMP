@@ -73,7 +73,8 @@ public:
     }
     constexpr MeshPoint( const size_t ndim, std::initializer_list<TYPE> x ) : d_ndim( ndim )
     {
-        AMP_CHECK_ASSERT( d_ndim <= 3 );
+        if ( d_ndim > 3 )
+            throw std::logic_error( "Invalid Dimension" );
         auto it   = x.begin();
         d_data[0] = *it;
         d_data[1] = 0;

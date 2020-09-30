@@ -113,7 +113,7 @@ inline void Vector::copy( const Vector &x )
 
 inline void Vector::zero( void ) { d_VectorOps->zero( *( getVectorData() ) ); }
 
-inline void Vector::setToScalar( double alpha )
+inline void Vector::setToScalar( const Scalar &alpha )
 {
     d_VectorOps->setToScalar( alpha, *( getVectorData() ) );
 }
@@ -128,12 +128,15 @@ inline void Vector::setRandomValues( RNG::shared_ptr rng )
     d_VectorOps->setRandomValues( rng, *( getVectorData() ) );
 }
 
-inline void Vector::scale( double alpha, const Vector &x )
+inline void Vector::scale( const Scalar &alpha, const Vector &x )
 {
     d_VectorOps->scale( alpha, *( x.getVectorData() ), *( getVectorData() ) );
 }
 
-inline void Vector::scale( double alpha ) { d_VectorOps->scale( alpha, *( getVectorData() ) ); }
+inline void Vector::scale( const Scalar &alpha )
+{
+    d_VectorOps->scale( alpha, *( getVectorData() ) );
+}
 
 inline void Vector::add( const Vector &x, const Vector &y )
 {
@@ -160,19 +163,20 @@ inline void Vector::reciprocal( const Vector &x )
     d_VectorOps->reciprocal( *( x.getVectorData() ), *( getVectorData() ) );
 }
 
-inline void Vector::linearSum( double alpha, const Vector &x, double beta, const Vector &y )
+inline void
+Vector::linearSum( const Scalar &alpha, const Vector &x, const Scalar &beta, const Vector &y )
 {
     d_VectorOps->linearSum(
         alpha, *( x.getVectorData() ), beta, *( y.getVectorData() ), *( getVectorData() ) );
 }
 
-inline void Vector::axpy( double alpha, const Vector &x, const Vector &y )
+inline void Vector::axpy( const Scalar &alpha, const Vector &x, const Vector &y )
 {
     d_VectorOps->axpy(
         alpha, *( x.getVectorData() ), *( y.getVectorData() ), *( getVectorData() ) );
 }
 
-inline void Vector::axpby( double alpha, double beta, const Vector &x )
+inline void Vector::axpby( const Scalar &alpha, const Scalar &beta, const Vector &x )
 {
     d_VectorOps->axpby( alpha, beta, *( x.getVectorData() ), *( getVectorData() ) );
 }
@@ -182,7 +186,7 @@ inline void Vector::abs( const Vector &x )
     d_VectorOps->abs( *( x.getVectorData() ), *( getVectorData() ) );
 }
 
-inline void Vector::addScalar( const Vector &x, double alpha_in )
+inline void Vector::addScalar( const Vector &x, const Scalar &alpha_in )
 {
     d_VectorOps->addScalar( *( x.getVectorData() ), alpha_in, *( getVectorData() ) );
 }
@@ -218,7 +222,7 @@ inline double Vector::dot( const Vector &x ) const
     return d_VectorOps->dot( *( getVectorData() ), *( x.getVectorData() ) );
 }
 
-inline bool Vector::equals( const Vector &a, double tol ) const
+inline bool Vector::equals( const Vector &a, const Scalar &tol ) const
 {
     return d_VectorOps->equals( *( a.getVectorData() ), *( getVectorData() ), tol );
 }

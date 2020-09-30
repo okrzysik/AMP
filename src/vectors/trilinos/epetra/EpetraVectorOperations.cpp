@@ -7,23 +7,22 @@ namespace LinearAlgebra {
 static inline const Epetra_Vector &getEpetraVector( const VectorData &vec )
 {
     auto epetraData = dynamic_cast<const EpetraVectorData *>( &vec );
-    if ( epetraData )
-        return epetraData->getEpetra_Vector();
-    AMP_ERROR( "Not EpetraVectorData" );
+    AMP_INSIST( epetraData, "Not EpetraVectorData" );
+    return epetraData->getEpetra_Vector();
 }
 static inline Epetra_Vector &getEpetraVector( VectorData &vec )
 {
     auto epetraData = dynamic_cast<EpetraVectorData *>( &vec );
-    if ( epetraData )
-        return epetraData->getEpetra_Vector();
-    AMP_ERROR( "Not EpetraVectorData" );
+    AMP_INSIST( epetraData, "Not EpetraVectorData" );
+    return epetraData->getEpetra_Vector();
 }
+
 //**********************************************************************
 // Functions that operate on VectorData objects
 
-void EpetraVectorOperations::setToScalar( double alpha, VectorData &x )
+void EpetraVectorOperations::setToScalar( const Scalar &alpha, VectorData &x )
 {
-    getEpetraVector( x ).PutScalar( alpha );
+    getEpetraVector( x ).PutScalar( alpha.get<double>() );
 }
 
 void EpetraVectorOperations::setRandomValues( VectorData &x )
@@ -32,14 +31,14 @@ void EpetraVectorOperations::setRandomValues( VectorData &x )
     abs( x, x );
 }
 
-void EpetraVectorOperations::scale( double alpha, const VectorData &x, VectorData &y )
+void EpetraVectorOperations::scale( const Scalar &alpha, const VectorData &x, VectorData &y )
 {
-    getEpetraVector( y ).Scale( alpha, getEpetraVector( x ) );
+    getEpetraVector( y ).Scale( alpha.get<double>(), getEpetraVector( x ) );
 }
 
-void EpetraVectorOperations::scale( double alpha, VectorData &x )
+void EpetraVectorOperations::scale( const Scalar &alpha, VectorData &x )
 {
-    getEpetraVector( x ).Scale( alpha );
+    getEpetraVector( x ).Scale( alpha.get<double>() );
 }
 
 void EpetraVectorOperations::add( const VectorData &x, const VectorData &y, VectorData &z )
@@ -67,23 +66,30 @@ void EpetraVectorOperations::reciprocal( const VectorData &x, VectorData &y )
     getEpetraVector( y ).Reciprocal( getEpetraVector( x ) );
 }
 
-void EpetraVectorOperations::linearSum(
-    double alpha, const VectorData &x, double beta, const VectorData &y, VectorData &z )
+void EpetraVectorOperations::linearSum( const Scalar &alpha,
+                                        const VectorData &x,
+                                        const Scalar &beta,
+                                        const VectorData &y,
+                                        VectorData &z )
 {
-    getEpetraVector( z ).Update( alpha, getEpetraVector( x ), beta, getEpetraVector( y ), 0. );
+    getEpetraVector( z ).Update(
+        alpha.get<double>(), getEpetraVector( x ), beta.get<double>(), getEpetraVector( y ), 0. );
 }
 
-void EpetraVectorOperations::axpy( double alpha,
+void EpetraVectorOperations::axpy( const Scalar &alpha,
                                    const VectorData &x,
                                    const VectorData &y,
                                    VectorData &z )
 {
-    linearSum( alpha, x, 1.0, y, z );
+    linearSum( alpha.get<double>(), x, 1.0, y, z );
 }
 
-void EpetraVectorOperations::axpby( double alpha, double beta, const VectorData &x, VectorData &z )
+void EpetraVectorOperations::axpby( const Scalar &alpha,
+                                    const Scalar &beta,
+                                    const VectorData &x,
+                                    VectorData &z )
 {
-    linearSum( alpha, x, beta, z, z );
+    linearSum( alpha.get<double>(), x, beta.get<double>(), z, z );
 }
 
 void EpetraVectorOperations::abs( const VectorData &x, VectorData &y )

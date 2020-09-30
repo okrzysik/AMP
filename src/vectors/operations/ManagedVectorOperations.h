@@ -25,22 +25,24 @@ public:
     //**********************************************************************
     // functions that operate on VectorData
     void copy( const VectorData &src, VectorData &dst ) override;
-    void setToScalar( double alpha, VectorData &z ) override;
+    void setToScalar( const Scalar &alpha, VectorData &z ) override;
     void setRandomValues( VectorData &x ) override;
-    void scale( double alpha, const VectorData &x, VectorData &y ) override;
-    void scale( double alpha, VectorData &x ) override;
+    void scale( const Scalar &alpha, const VectorData &x, VectorData &y ) override;
+    void scale( const Scalar &alpha, VectorData &x ) override;
     void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
     void subtract( const VectorData &x, const VectorData &y, VectorData &z ) override;
     void multiply( const VectorData &x, const VectorData &y, VectorData &z ) override;
     void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
     void reciprocal( const VectorData &x, VectorData &y ) override;
-    void linearSum( double alpha,
+    void linearSum( const Scalar &alpha,
                     const VectorData &x,
-                    double beta,
+                    const Scalar &beta,
                     const VectorData &y,
                     VectorData &z ) override;
-    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
-    void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
+    void
+    axpy( const Scalar &alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void
+    axpby( const Scalar &alpha, const Scalar &beta, const VectorData &x, VectorData &y ) override;
     void abs( const VectorData &x, VectorData &z ) override;
 
     double min( const VectorData &x ) const override;

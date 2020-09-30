@@ -3,7 +3,6 @@
 
 
 #include "AMP/utils/UtilityMacros.h"
-#include "AMP/vectors/Scalar.h"
 
 #include <complex>
 #include <limits>
@@ -52,7 +51,7 @@ constexpr double Scalar::getTol()
     }
 }
 template<class T1, class T2>
-std::tuple<T1, double> Scalar::convert( const std::any &x0 )
+inline std::tuple<T1, double> Scalar::convert( const std::any &x0 )
 {
     T2 x     = std::any_cast<T2>( x0 );
     T1 y     = static_cast<T1>( x );
@@ -76,7 +75,7 @@ inline void Scalar::store( const TYPE &x )
 /********************************************************************
  * Contructor                                                        *
  ********************************************************************/
-Scalar::Scalar() : d_type( 0 ), d_hash( 0 ) {}
+inline Scalar::Scalar() : d_type( 0 ), d_hash( 0 ) {}
 template<class TYPE>
 Scalar::Scalar( TYPE x ) : d_type( get_type<TYPE>() ), d_hash( 0 )
 {
@@ -124,7 +123,7 @@ Scalar::Scalar( TYPE x ) : d_type( get_type<TYPE>() ), d_hash( 0 )
  * Get                                                               *
  ********************************************************************/
 template<class TYPE>
-TYPE Scalar::get( double tol ) const
+inline TYPE Scalar::get( double tol ) const
 {
     // Special cases for performance
     if ( d_hash == get_hash<TYPE>() )

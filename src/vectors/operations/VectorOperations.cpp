@@ -16,7 +16,7 @@ VectorOperations::VectorOperations() {}
  * equals                                                        *
  * Note: these routines require communication                    *
  ****************************************************************/
-bool VectorOperations::equals( const VectorData &a, const VectorData &b, double tol ) const
+bool VectorOperations::equals( const VectorData &a, const VectorData &b, const Scalar &tol ) const
 {
     bool equal = localEquals( a, b, tol );
     if ( b.hasComm() )

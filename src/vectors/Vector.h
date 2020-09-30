@@ -107,9 +107,9 @@ public: // the next set of functions defines the public math. interface for vect
     /**
      * \brief  Set all compenents of a vector to a scalar.
      *      For Vectors, the components of <em>this</em> are set to \f$\alpha\f$.
-     * \param[in] alpha     scalar double value
+     * \param[in] alpha     scalar value
      */
-    void setToScalar( double alpha );
+    void setToScalar( const Scalar &alpha );
 
     /**
      * \brief Set data in this vector to random values on [0,1).
@@ -126,17 +126,17 @@ public: // the next set of functions defines the public math. interface for vect
     /**
      * \brief  Set vector equal to scaled input.
      *      For Vectors, \f$\mathit{this}_i = \alpha x_i\f$.
-     * \param[in] alpha     a scalar double
+     * \param[in] alpha     a scalar
      * \param[in] x         a vector
      */
-    void scale( double alpha, const Vector &x );
+    void scale( const Scalar &alpha, const Vector &x );
 
     /**
      * \brief  Scale a vector.
      *     For Vectors, \f$\mathit{this}_i = \alpha\mathit{this}_i\f$.
-     * \param[in] alpha     a scalar double
+     * \param[in] alpha     a scalar
      */
-    void scale( double alpha );
+    void scale( const Scalar &alpha );
 
     /**
      * \brief  Adds two vectors.
@@ -185,7 +185,7 @@ public: // the next set of functions defines the public math. interface for vect
      * \param[in] beta      a scalar
      * \param[in] y         a vector
      */
-    void linearSum( double alpha, const Vector &x, double beta, const Vector &y );
+    void linearSum( const Scalar &alpha, const Vector &x, const Scalar &beta, const Vector &y );
 
     /**
      * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
@@ -193,7 +193,7 @@ public: // the next set of functions defines the public math. interface for vect
      * \param[in] x        a vector
      * \param[in] y        a vector
      */
-    void axpy( double alpha, const Vector &x, const Vector &y );
+    void axpy( const Scalar &alpha, const Vector &x, const Vector &y );
 
     /**
      * \brief Set this vector alpha * x + this.
@@ -202,7 +202,7 @@ public: // the next set of functions defines the public math. interface for vect
      * \param[in] beta     a scalar
      * \param[in] x        a vector
      */
-    void axpby( double alpha, double beta, const Vector &x );
+    void axpby( const Scalar &alpha, const Scalar &beta, const Vector &x );
 
     /**
      * \brief Set this to the component-wise absolute value of a vector.
@@ -217,7 +217,7 @@ public: // the next set of functions defines the public math. interface for vect
      * \param[in] alpha a scalar
      * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
      */
-    void addScalar( const Vector &x, double alpha_in );
+    void addScalar( const Vector &x, const Scalar &alpha_in );
 
     /**
      * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
@@ -280,7 +280,7 @@ public: // the next set of functions defines the public math. interface for vect
      */
     double dot( const Vector &x ) const;
 
-    bool equals( const Vector &a, double tol = 0.000001 ) const;
+    bool equals( const Vector &a, const Scalar &tol = 0.000001 ) const;
 
 
 public: // Virtual functions

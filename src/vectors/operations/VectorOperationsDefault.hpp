@@ -46,10 +46,11 @@ void VectorOperationsDefault<TYPE>::zero( VectorData &x )
 }
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::setToScalar( double alpha, VectorData &x )
+void VectorOperationsDefault<TYPE>::setToScalar( const Scalar &alpha_in, VectorData &x )
 {
     auto curMe = x.begin<TYPE>();
     auto last  = x.end<TYPE>();
+    auto alpha = alpha_in.get<TYPE>();
     while ( curMe != last ) {
         *curMe = alpha;
         ++curMe;
@@ -102,10 +103,11 @@ void VectorOperationsDefault<TYPE>::copy( const VectorData &x, VectorData &y )
 }
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::scale( double alpha, VectorData &x )
+void VectorOperationsDefault<TYPE>::scale( const Scalar &alpha_in, VectorData &x )
 {
     auto curMe = x.begin<TYPE>();
     auto last  = x.end<TYPE>();
+    auto alpha = alpha_in.get<TYPE>();
     while ( curMe != last ) {
         *curMe *= alpha;
         ++curMe;
@@ -113,12 +115,15 @@ void VectorOperationsDefault<TYPE>::scale( double alpha, VectorData &x )
 }
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::scale( double alpha, const VectorData &x, VectorData &y )
+void VectorOperationsDefault<TYPE>::scale( const Scalar &alpha_in,
+                                           const VectorData &x,
+                                           VectorData &y )
 {
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
     auto curMe  = y.begin<TYPE>();
     auto last   = y.end<TYPE>();
     auto curRhs = x.begin<TYPE>();
+    auto alpha  = alpha_in.get<TYPE>();
     while ( curMe != last ) {
         *curMe = alpha * *curRhs;
         ++curRhs;
@@ -217,11 +222,14 @@ void VectorOperationsDefault<TYPE>::reciprocal( const VectorData &x, VectorData 
 
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::linearSum(
-    double alpha_in, const VectorData &x, double beta_in, const VectorData &y, VectorData &z )
+void VectorOperationsDefault<TYPE>::linearSum( const Scalar &alpha_in,
+                                               const VectorData &x,
+                                               const Scalar &beta_in,
+                                               const VectorData &y,
+                                               VectorData &z )
 {
-    const TYPE alpha = static_cast<TYPE>( alpha_in );
-    const TYPE beta  = static_cast<TYPE>( beta_in );
+    auto alpha = alpha_in.get<TYPE>();
+    auto beta  = beta_in.get<TYPE>();
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
     auto curMe   = z.begin<TYPE>();
@@ -237,12 +245,12 @@ void VectorOperationsDefault<TYPE>::linearSum(
 }
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::axpy( double alpha_in,
+void VectorOperationsDefault<TYPE>::axpy( const Scalar &alpha_in,
                                           const VectorData &x,
                                           const VectorData &y,
                                           VectorData &z )
 {
-    const TYPE alpha = static_cast<TYPE>( alpha_in );
+    auto alpha = alpha_in.get<TYPE>();
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
     auto curMe   = z.begin<TYPE>();
@@ -258,13 +266,13 @@ void VectorOperationsDefault<TYPE>::axpy( double alpha_in,
 }
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::axpby( double alpha_in,
-                                           double beta_in,
+void VectorOperationsDefault<TYPE>::axpby( const Scalar &alpha_in,
+                                           const Scalar &beta_in,
                                            const VectorData &x,
                                            VectorData &z )
 {
-    const TYPE alpha = static_cast<TYPE>( alpha_in );
-    const TYPE beta  = static_cast<TYPE>( beta_in );
+    auto alpha = alpha_in.get<TYPE>();
+    auto beta  = beta_in.get<TYPE>();
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     auto curMe   = z.begin<TYPE>();
     auto last    = z.end<TYPE>();
@@ -291,9 +299,11 @@ void VectorOperationsDefault<TYPE>::abs( const VectorData &x, VectorData &y )
 }
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::addScalar( const VectorData &x, double alpha_in, VectorData &y )
+void VectorOperationsDefault<TYPE>::addScalar( const VectorData &x,
+                                               const Scalar &alpha_in,
+                                               VectorData &y )
 {
-    const TYPE alpha = static_cast<TYPE>( alpha_in );
+    auto alpha = alpha_in.get<TYPE>();
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
     auto curMe   = y.begin<TYPE>();
     auto last    = y.end<TYPE>();
@@ -463,7 +473,7 @@ double VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorData &x,
 template<typename TYPE>
 bool VectorOperationsDefault<TYPE>::localEquals( const VectorData &x,
                                                  const VectorData &y,
-                                                 double tol ) const
+                                                 const Scalar &tol_in ) const
 {
     if ( ( x.getGlobalSize() != y.getGlobalSize() ) || ( x.getLocalSize() != y.getLocalSize() ) )
         return false;
@@ -471,6 +481,7 @@ bool VectorOperationsDefault<TYPE>::localEquals( const VectorData &x,
     auto cur1  = x.constBegin<TYPE>();
     auto cur2  = y.constBegin<TYPE>();
     auto last  = x.constEnd<TYPE>();
+    auto tol   = tol_in.get<double>();
     while ( cur1 != last ) {
         if ( fabs( *cur1 - *cur2 ) > tol ) {
             equal = false;

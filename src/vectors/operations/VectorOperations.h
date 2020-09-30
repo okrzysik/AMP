@@ -4,6 +4,8 @@
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/RNG.h"
+#include "AMP/vectors/Scalar.h"
+
 #include <memory>
 #include <vector>
 
@@ -47,9 +49,9 @@ public:
     /**
      * \brief  Set all compenents of a vector to a scalar.
      *      For Vectors, the components of <em>this</em> are set to \f$\alpha\f$.
-     * \param[in] alpha     scalar double value
+     * \param[in] alpha     scalar value
      */
-    virtual void setToScalar( double alpha, VectorData &z ) = 0;
+    virtual void setToScalar( const Scalar &alpha, VectorData &z ) = 0;
 
     /**
      * \brief Set data in this vector to random values on [0,1).
@@ -66,17 +68,17 @@ public:
     /**
      * \brief  Set vector equal to scaled input.
      *      For Vectors, \f$\mathit{this}_i = \alpha x_i\f$.
-     * \param[in] alpha     a scalar double
+     * \param[in] alpha     a scalar
      * \param[in] x         a vector
      */
-    virtual void scale( double alpha, const VectorData &x, VectorData &y ) = 0;
+    virtual void scale( const Scalar &alpha, const VectorData &x, VectorData &y ) = 0;
 
     /**
      * \brief  Scale a vector.
      *     For Vectors, \f$\mathit{this}_i = \alpha\mathit{this}_i\f$.
-     * \param[in] alpha     a scalar double
+     * \param[in] alpha     a scalar
      */
-    virtual void scale( double alpha, VectorData &x ) = 0;
+    virtual void scale( const Scalar &alpha, VectorData &x ) = 0;
 
     /**
      * \brief  Adds two vectors.
@@ -125,8 +127,11 @@ public:
      * \param[in] beta      a scalar
      * \param[in] y         a vector
      */
-    virtual void linearSum(
-        double alpha, const VectorData &x, double beta, const VectorData &y, VectorData &z ) = 0;
+    virtual void linearSum( const Scalar &alpha,
+                            const VectorData &x,
+                            const Scalar &beta,
+                            const VectorData &y,
+                            VectorData &z ) = 0;
 
     /**
      * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
@@ -134,7 +139,8 @@ public:
      * \param[in] x        a vector
      * \param[in] y        a vector
      */
-    virtual void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) = 0;
+    virtual void
+    axpy( const Scalar &alpha, const VectorData &x, const VectorData &y, VectorData &z ) = 0;
 
     /**
      * \brief Set this vector alpha * x + this.
@@ -143,7 +149,8 @@ public:
      * \param[in] beta     a scalar
      * \param[in] x        a vector
      */
-    virtual void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) = 0;
+    virtual void
+    axpby( const Scalar &alpha, const Scalar &beta, const VectorData &x, VectorData &y ) = 0;
 
     /**
      * \brief Set this to the component-wise absolute value of a vector.
@@ -158,7 +165,7 @@ public:
      * \param[in] alpha a scalar
      * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
      */
-    virtual void addScalar( const VectorData &x, double alpha_in, VectorData &y ) = 0;
+    virtual void addScalar( const VectorData &x, const Scalar &alpha_in, VectorData &y ) = 0;
 
     /**
      * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
@@ -221,7 +228,12 @@ public:
      */
     virtual double dot( const VectorData &x, const VectorData &y ) const;
 
-    virtual bool equals( const VectorData &a, const VectorData &b, double tol ) const;
+    /**
+     * \brief Check if two vectors are equal
+     * \details Returns true if all values are equal within tolerance
+     * \param[in] x        a vector
+     */
+    virtual bool equals( const VectorData &a, const VectorData &b, const Scalar &tol ) const;
 
     /**
      * \brief Return the local minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
@@ -290,7 +302,7 @@ public:
      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
      */
     virtual bool
-    localEquals( const VectorData &x, const VectorData &y, double tol = 0.000001 ) const = 0;
+    localEquals( const VectorData &x, const VectorData &y, const Scalar &tol = 1e-6 ) const = 0;
 
 
 protected:
