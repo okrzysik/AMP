@@ -18,25 +18,25 @@ class CoupledFlowFrapconOperator : public ColumnOperator
 public:
     explicit CoupledFlowFrapconOperator( const std::shared_ptr<OperatorParameters> &params );
 
-    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) override
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override
     {
         d_Operators[2]->reset( params );
     }
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
     {
         return d_Operators[4]->getOutputVariable();
     }
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {
         return d_Operators[4]->getOutputVariable();
     }
 
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    virtual void append( std::shared_ptr<Operator> op ) override
+    void append( std::shared_ptr<Operator> op ) override
     {
         AMP_ASSERT( d_Operators.size() < 3 );
         AMP_ASSERT( op.get() != NULL );

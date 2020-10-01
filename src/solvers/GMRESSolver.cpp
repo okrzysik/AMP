@@ -67,8 +67,6 @@ void GMRESSolver::getFromInput( std::shared_ptr<AMP::Database> db )
     d_iMaxKrylovDimension = db->getWithDefault<double>( "max_dimension", 100 );
     d_iMaxIterations      = db->getWithDefault<double>( "max_iterations", d_iMaxKrylovDimension );
 
-    d_dRelativeTolerance = db->getWithDefault<double>( "relative_tolerance", 1.0e-9 );
-
     d_sOrthogonalizationMethod = db->getWithDefault<std::string>( "ortho_method", "MGS" );
 
     // default is right preconditioning, options are right, left, both

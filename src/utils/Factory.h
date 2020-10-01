@@ -113,7 +113,7 @@ struct Registration<BaseClass, Derived, Key, 0> : public RegistrationBase<BaseCl
     virtual ~Registration() {}
 
 private:
-    virtual std::shared_ptr<BaseClass> create() const override
+    std::shared_ptr<BaseClass> create() const override
     {
         return std::shared_ptr<BaseClass>( new Derived() );
     }

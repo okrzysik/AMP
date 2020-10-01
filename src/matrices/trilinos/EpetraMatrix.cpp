@@ -1,7 +1,9 @@
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
 #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 
+DISABLE_WARNINGS
 #include <EpetraExt_Transpose_RowMatrix.h>
+ENABLE_WARNINGS
 
 #ifdef USE_EXT_MPI
 #include <Epetra_MpiComm.h>

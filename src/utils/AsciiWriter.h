@@ -41,10 +41,10 @@ public:
     virtual ~AsciiWriter();
 
     //!  Function to return the file extension
-    virtual std::string getExtension() override;
+    std::string getExtension() override;
 
     //!  Function to read a file
-    virtual void readFile( const std::string &fname ) override;
+    void readFile( const std::string &fname ) override;
 
     //!  Function to write a file
     virtual void
@@ -101,7 +101,7 @@ public:
      * mesh.
      * \param vec   The vector we want to write
      */
-    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
+    void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
 #endif
 
 #ifdef USE_AMP_MATRICES
@@ -112,7 +112,7 @@ public:
      * mesh.
      * \param mat   The matrix we want to write
      */
-    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat ) override;
+    void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat ) override;
 #endif
 
 

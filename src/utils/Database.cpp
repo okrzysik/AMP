@@ -869,7 +869,7 @@ std::unique_ptr<KeyData> Database::readYAML( const AMP::string_view &filename )
     DATABASE_INSIST( fid, "Error opening file %s", filename.data() );
     auto data = loadYAMLDatabase( fid );
     fclose( fid );
-    return std::move( data );
+    return data;
 }
 
 

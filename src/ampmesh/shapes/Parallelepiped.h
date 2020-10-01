@@ -26,26 +26,26 @@ public:
     explicit Parallelepiped( std::shared_ptr<AMP::Database> db );
 
     // Functions inherited from Geometry
-    virtual std::string getName() const override final { return "Parallelepiped"; }
-    virtual bool isConvex() const override final { return true; }
-    virtual Point nearest( const Point &pos ) const override final;
-    virtual double distance( const Point &pos, const Point &dir ) const override final;
-    virtual bool inside( const Point &pos ) const override final;
-    virtual int NSurface() const override final { return 6; }
-    virtual int surface( const Point & ) const override final;
-    virtual Point surfaceNorm( const Point & ) const override final;
-    virtual Point logical( const Point &x ) const override final;
-    virtual Point physical( const Point &x ) const override final;
-    virtual Point centroid() const override final;
-    virtual std::pair<Point, Point> box() const override final;
-    virtual double volume() const override final;
-    virtual void displace( const double *x ) override final;
-    virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
+    std::string getName() const override final { return "Parallelepiped"; }
+    bool isConvex() const override final { return true; }
+    Point nearest( const Point &pos ) const override final;
+    double distance( const Point &pos, const Point &dir ) const override final;
+    bool inside( const Point &pos ) const override final;
+    int NSurface() const override final { return 6; }
+    int surface( const Point & ) const override final;
+    Point surfaceNorm( const Point & ) const override final;
+    Point logical( const Point &x ) const override final;
+    Point physical( const Point &x ) const override final;
+    Point centroid() const override final;
+    std::pair<Point, Point> box() const override final;
+    double volume() const override final;
+    void displace( const double *x ) override final;
+    std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<int>
     getLogicalGridSize( const std::vector<double> &res ) const override final;
-    virtual std::vector<bool> getPeriodicDim() const override final;
-    virtual std::vector<int> getLogicalSurfaceIds() const override final;
-    virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
+    std::vector<bool> getPeriodicDim() const override final;
+    std::vector<int> getLogicalSurfaceIds() const override final;
+    std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
 
 protected:
     // Internal data

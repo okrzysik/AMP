@@ -58,24 +58,24 @@ public:
     AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable( const std::string &name,
                                                                    int varId = -1 );
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
     void setInputVariableName( const std::string &name, int varId = -1 );
 
     void setOutputVariableName( const std::string &name, int varId = -1 );
 
-    virtual AMP::LinearAlgebra::Vector::shared_ptr
+    AMP::LinearAlgebra::Vector::shared_ptr
     subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
 
-    virtual AMP::LinearAlgebra::Vector::shared_ptr
+    AMP::LinearAlgebra::Vector::shared_ptr
     subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
 
-    virtual AMP::LinearAlgebra::Vector::const_shared_ptr
+    AMP::LinearAlgebra::Vector::const_shared_ptr
     subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec ) override;
 
-    virtual AMP::LinearAlgebra::Vector::const_shared_ptr
+    AMP::LinearAlgebra::Vector::const_shared_ptr
     subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec ) override;
 
     /**

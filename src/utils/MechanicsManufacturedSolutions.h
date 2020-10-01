@@ -244,13 +244,13 @@ class MMSLinear : public MMS
 {
 public:
     MMSLinear( double E = 0.0, double nu = 0.0 ) : MMS( E, nu ) { name = "Linear"; }
-    virtual double getExactSolutionX( double x, double y, double z ) const override;
-    virtual double getExactSolutionY( double x, double y, double z ) const override;
-    virtual double getExactSolutionZ( double x, double y, double z ) const override;
-    virtual double getForcingTermX( double /* x */, double y, double z ) const override;
-    virtual double getForcingTermY( double x, double /* y */, double z ) const override;
-    virtual double getForcingTermZ( double x, double y, double /* z */ ) const override;
-    virtual std::vector<double> getStressTensor( double x, double y, double z ) const override;
+    double getExactSolutionX( double x, double y, double z ) const override;
+    double getExactSolutionY( double x, double y, double z ) const override;
+    double getExactSolutionZ( double x, double y, double z ) const override;
+    double getForcingTermX( double /* x */, double y, double z ) const override;
+    double getForcingTermY( double x, double /* y */, double z ) const override;
+    double getForcingTermZ( double x, double y, double /* z */ ) const override;
+    std::vector<double> getStressTensor( double x, double y, double z ) const override;
 }; // end class MMSLinear
 
 
@@ -271,13 +271,13 @@ class MMSTrigonometric : public MMS
 {
 public:
     MMSTrigonometric( double E = 0.0, double nu = 0.0 ) : MMS( E, nu ) { name = "Trigonometric"; }
-    virtual double getExactSolutionX( double x, double y, double z ) const override;
-    virtual double getExactSolutionY( double /* x */, double y, double z ) const override;
-    virtual double getExactSolutionZ( double /* x */, double y, double z ) const override;
-    virtual double getForcingTermX( double x, double y, double z ) const override;
-    virtual double getForcingTermY( double x, double y, double z ) const override;
-    virtual double getForcingTermZ( double x, double y, double z ) const override;
-    virtual std::vector<double> getStressTensor( double x, double y, double z ) const override;
+    double getExactSolutionX( double x, double y, double z ) const override;
+    double getExactSolutionY( double /* x */, double y, double z ) const override;
+    double getExactSolutionZ( double /* x */, double y, double z ) const override;
+    double getForcingTermX( double x, double y, double z ) const override;
+    double getForcingTermY( double x, double y, double z ) const override;
+    double getForcingTermZ( double x, double y, double z ) const override;
+    std::vector<double> getStressTensor( double x, double y, double z ) const override;
 }; // end class MMSTrigonometric
 
 

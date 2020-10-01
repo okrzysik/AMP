@@ -60,11 +60,6 @@ static inline double dot( const std::array<double, N> &x, const std::array<doubl
     else if constexpr ( N == 3 )
         return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
 }
-static inline std::array<double, 3> cross( const std::array<double, 3> &x,
-                                           const std::array<double, 3> &y )
-{
-    return { x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0] };
-}
 template<size_t N>
 static inline std::array<double, N> normalize( const std::array<double, N> &x )
 {
@@ -252,7 +247,7 @@ template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 inline void TriangleMeshElement<NG, NP, TYPE>::getVertexCoord( std::array<double, NP> *x ) const
 {
     if constexpr ( TYPE == 0 ) {
-        x[0] == d_mesh->getPos( d_globalID.elemID() );
+        x[0] = d_mesh->getPos( d_globalID.elemID() );
     } else {
         ElementID ids[TYPE + 1];
         d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );

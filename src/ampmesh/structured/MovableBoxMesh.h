@@ -33,7 +33,7 @@ public:
      *    and 2 if the individual nodes can be moved.
      * @return  The if
      */
-    virtual Mesh::Movable isMeshMovable() const override;
+    Mesh::Movable isMeshMovable() const override;
 
 
     /**
@@ -45,7 +45,7 @@ public:
      *    will return the original hash.
      * @return   hash value with current position id
      */
-    virtual uint64_t positionHash() const override;
+    uint64_t positionHash() const override;
 
 
     /**
@@ -56,7 +56,7 @@ public:
      *   size of the physical dimension.
      * \param x  Displacement vector
      */
-    virtual void displaceMesh( const std::vector<double> &x ) override;
+    void displaceMesh( const std::vector<double> &x ) override;
 
 #ifdef USE_AMP_VECTORS
     /**
@@ -67,11 +67,11 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
+    void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 #endif
 
     //! Virtual function to copy the mesh (allows us to properly copy the derived class)
-    virtual std::unique_ptr<Mesh> clone() const override;
+    std::unique_ptr<Mesh> clone() const override;
 
     /**
      * \brief    Return a mesh element's coordinates given it's id.
@@ -81,7 +81,7 @@ public:
      * \param[in] index     Mesh element index we are requesting.
      * \param[out] pos      Mesh element coordinates
      */
-    virtual void coord( const MeshElementIndex &index, double *pos ) const override;
+    void coord( const MeshElementIndex &index, double *pos ) const override;
 
 
 public: // BoxMesh specific functionality
@@ -92,7 +92,7 @@ public: // BoxMesh specific functionality
      * \param[in] x         Physical coordinates
      * @return              Returns the logical coordinates
      */
-    virtual AMP::Geometry::Point physicalToLogical( const AMP::Geometry::Point &x ) const override;
+    AMP::Geometry::Point physicalToLogical( const AMP::Geometry::Point &x ) const override;
 
 
 private:

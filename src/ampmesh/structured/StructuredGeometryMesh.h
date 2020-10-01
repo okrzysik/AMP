@@ -32,15 +32,15 @@ public:
     StructuredGeometryMesh &operator=( const StructuredGeometryMesh & ) = delete;
 
 public: // Functions derived from BoxMesh
-    virtual Mesh::Movable isMeshMovable() const override;
-    virtual uint64_t positionHash() const override;
-    virtual void displaceMesh( const std::vector<double> &x ) override;
+    Mesh::Movable isMeshMovable() const override;
+    uint64_t positionHash() const override;
+    void displaceMesh( const std::vector<double> &x ) override;
 #ifdef USE_AMP_VECTORS
-    virtual void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> ) override;
+    void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> ) override;
 #endif
-    virtual AMP::Geometry::Point physicalToLogical( const AMP::Geometry::Point &x ) const override;
-    virtual void coord( const MeshElementIndex &index, double *pos ) const override;
-    virtual std::unique_ptr<Mesh> clone() const override;
+    AMP::Geometry::Point physicalToLogical( const AMP::Geometry::Point &x ) const override;
+    void coord( const MeshElementIndex &index, double *pos ) const override;
+    std::unique_ptr<Mesh> clone() const override;
 
 private:
     uint32_t d_pos_hash;

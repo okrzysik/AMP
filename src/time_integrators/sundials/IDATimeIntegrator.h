@@ -132,14 +132,14 @@ public:
     /**
      * Initialize from parameter list.
      */
-    virtual void initialize( std::shared_ptr<TimeIntegratorParameters> parameters ) override;
+    void initialize( std::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
      * Resets the internal state of the time integrator as needed.
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset Typically used after a regrid.
      */
-    virtual void reset( std::shared_ptr<TimeIntegratorParameters> parameters ) override;
+    void reset( std::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
      * Specify initial time step.
@@ -149,7 +149,7 @@ public:
     /**
      * Specify next time step to use.
      */
-    virtual double getNextDt( const bool good_solution ) override;
+    double getNextDt( const bool good_solution ) override;
 
     /**
      * Set an initial guess for the time advanced solution.
@@ -159,12 +159,12 @@ public:
                           const double current_dt,
                           const double old_dt );
 
-    virtual int advanceSolution( const double dt, const bool first_step ) override;
+    int advanceSolution( const double dt, const bool first_step ) override;
 
     /**
      * Update state of the solution.
      */
-    virtual void updateSolution( void ) override;
+    void updateSolution( void ) override;
 
     void updateSourceTerm( void );
 
@@ -176,7 +176,7 @@ public:
      * on the particular nonlinear solver in use and must be intepreted
      * properly by the user-supplied solution checking routine.
      */
-    virtual bool checkNewSolution( void ) const override;
+    bool checkNewSolution( void ) const override;
 
     /**
      * return a pointer to the IDA time operator, deprecated

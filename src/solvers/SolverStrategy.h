@@ -74,12 +74,6 @@ public:
     virtual void setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
 
     /**
-     * Specify stopping criteria.
-     * @param[in] max_iterations    maximum number of iterations
-     * @param[in] max_error         error tolerance (l2 error)
-     */
-    virtual void setConvergenceTolerance( const int max_iterations, const double max_error );
-    /**
      * Specify level of diagnostic information printed during iterations.
      * @param[in] print_level    integer level value with permissible values 0 and higher. Setting
      *                           to zero should provide minimial debugging information with higher
@@ -149,20 +143,39 @@ public:
      */
     virtual std::shared_ptr<AMP::Operator::Operator> getOperator( void ) { return d_pOperator; }
 
+    /*!
+     *  Get absolute tolerance for solver.
+     */
+    double getAbsoluteTolerance() const { return ( d_dAbsoluteTolerance ); }
+    
+    /*!
+     *  Set absolute tolerance for nonlinear solver.
+     */
+    void setAbsoluteTolerance( double abs_tol )
+    {
+      d_dAbsoluteTolerance = abs_tol;
+    }
+
+    double getRelativeTolerance() const { return ( d_dRelativeTolerance ); }
+
+    void setRelativeTolerance( double rel_tol )
+    {
+      d_dRelativeTolerance = rel_tol;
+    }
+
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
-    int d_iNumberIterations; // iterations in solver
+    int d_iNumberIterations = 0; // iterations in solver
 
-    double d_dResidualNorm;
+    int d_iMaxIterations    = 0;
 
-    int d_iMaxIterations;
+    double d_dResidualNorm = 0.0;
 
-    double d_dMaxRhs;
-
-    double d_dMaxError;
-
-    int d_iDebugPrintInfoLevel;
+    double d_dAbsoluteTolerance = 1.0e-14;
+    double d_dRelativeTolerance = 1.0e-09;
+    
+    int d_iDebugPrintInfoLevel = 0;
 
     bool d_bUseZeroInitialGuess;
 
@@ -170,9 +183,9 @@ protected:
 
     static int d_iInstanceId; // used to differentiate between different instances of the class
 
-    std::shared_ptr<AMP::Operator::Operator> d_pOperator;
+    std::shared_ptr<AMP::Operator::Operator> d_pOperator = nullptr;
 
-    std::shared_ptr<AMP::Utilities::Writer> d_writer;
+    std::shared_ptr<AMP::Utilities::Writer> d_writer     = nullptr;
 
 
 private:

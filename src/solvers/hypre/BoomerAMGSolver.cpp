@@ -341,7 +341,7 @@ void BoomerAMGSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
         HYPRE_BoomerAMGSetKeepTranspose( d_solver, d_keep_transpose );
     }
 
-    HYPRE_BoomerAMGSetTol( d_solver, d_dMaxError );
+    HYPRE_BoomerAMGSetTol( d_solver, d_dRelativeTolerance );
     HYPRE_BoomerAMGSetMaxIter( d_solver, d_iMaxIterations );
     HYPRE_BoomerAMGSetPrintLevel( d_solver, d_iDebugPrintInfoLevel );
 }

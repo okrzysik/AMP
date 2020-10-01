@@ -136,13 +136,15 @@
     #define DISABLE_WARNINGS __pragma( warning( push, 0 ) )
     #define ENABLE_WARNINGS __pragma( warning( pop ) )
 #elif defined( USING_CLANG )
-    #define DISABLE_WARNINGS                                                \
-        _Pragma( "clang diagnostic push" )                                  \
-        _Pragma( "clang diagnostic ignored \"-Wall\"" )                     \
-        _Pragma( "clang diagnostic ignored \"-Wextra\"" )                   \
-        _Pragma( "clang diagnostic ignored \"-Wunused-private-field\"" )    \
-        _Pragma( "clang diagnostic ignored \"-Wdeprecated-declarations\"" ) \
-        _Pragma( "clang diagnostic ignored \"-Winteger-overflow\"" )
+    #define DISABLE_WARNINGS                                                      \
+        _Pragma( "clang diagnostic push" )                                        \
+        _Pragma( "clang diagnostic ignored \"-Wall\"" )                           \
+        _Pragma( "clang diagnostic ignored \"-Wextra\"" )                         \
+        _Pragma( "clang diagnostic ignored \"-Wunused-private-field\"" )          \
+        _Pragma( "clang diagnostic ignored \"-Wdeprecated-declarations\"" )       \
+        _Pragma( "clang diagnostic ignored \"-Winteger-overflow\"" )              \
+	_Pragma( "clang diagnostic ignored \"-Winconsistent-missing-override\"" ) \
+	_Pragma( "clang diagnostic ignored \"-Wimplicit-int-float-conversion\"" )
     #define ENABLE_WARNINGS _Pragma( "clang diagnostic pop" )
 #elif defined( USING_GCC )
     #define DISABLE_WARNINGS                                                \

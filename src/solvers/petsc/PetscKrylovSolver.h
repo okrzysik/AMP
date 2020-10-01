@@ -175,8 +175,6 @@ private:
 
     std::string d_sKspType;
 
-    double d_dRelativeTolerance;
-    double d_dAbsoluteTolerance;
     double d_dDivergenceTolerance;
 
     bool d_bKSPCreatedInternally;

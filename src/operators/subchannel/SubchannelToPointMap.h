@@ -39,14 +39,14 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
     {
         return AMP::LinearAlgebra::Variable::shared_ptr(
             new AMP::LinearAlgebra::Variable( "Flow" ) );
     }
 
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {
         return d_outputVar;
     }

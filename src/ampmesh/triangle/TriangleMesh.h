@@ -129,7 +129,7 @@ public:
 
 
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
-    virtual std::unique_ptr<Mesh> clone() const override final;
+    std::unique_ptr<Mesh> clone() const override final;
 
 
     /**
@@ -175,20 +175,20 @@ public:
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
-    virtual size_t numLocalElements( const GeomType type ) const override final;
+    size_t numLocalElements( const GeomType type ) const override final;
 
 
     /* Return the global number of elements of the given type
      * Note: depending on the mesh this routine may require global communication across the mesh.
      * \param type   Geometric type
      */
-    virtual size_t numGlobalElements( const GeomType type ) const override final;
+    size_t numGlobalElements( const GeomType type ) const override final;
 
 
     /* Return the number of ghost elements of the given type on the current processor
      * \param type   Geometric type
      */
-    virtual size_t numGhostElements( const GeomType type, const int gcw ) const override final;
+    size_t numGhostElements( const GeomType type, const int gcw ) const override final;
 
 
     /**
@@ -197,7 +197,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const override final;
+    MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const override final;
 
 
     /**
@@ -215,7 +215,7 @@ public:
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBoundaryIDs() const override final;
+    std::vector<int> getBoundaryIDs() const override final;
 
 
     /**
@@ -236,7 +236,7 @@ public:
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBlockIDs() const override final;
+    std::vector<int> getBlockIDs() const override final;
 
 
     /**
@@ -274,7 +274,7 @@ public:
      *    uses mesh iterators and requires O(N) time on the number of elements in the mesh.
      * \param id    Mesh element id we are requesting.
      */
-    virtual MeshElement getElement( const MeshElementID &id ) const override final;
+    MeshElement getElement( const MeshElementID &id ) const override final;
 
 
     /**
@@ -292,7 +292,7 @@ public:
      * \details  This function will check if the mesh can be displaced.
      * @return   enum indicating the extent the mesh can be moved
      */
-    virtual Movable isMeshMovable() const override { return Movable::Deform; };
+    Movable isMeshMovable() const override { return Movable::Deform; };
 
 
     /**
@@ -304,7 +304,7 @@ public:
      *    will return the original hash.
      * @return   hash value with current position id
      */
-    virtual uint64_t positionHash() const override;
+    uint64_t positionHash() const override;
 
 
     /**
@@ -315,7 +315,7 @@ public:
      *   size of the physical dimension.
      * \param x  Displacement vector
      */
-    virtual void displaceMesh( const std::vector<double> &x ) override;
+    void displaceMesh( const std::vector<double> &x ) override;
 
 
 #ifdef USE_AMP_VECTORS
@@ -327,7 +327,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
+    void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 #endif
 
 

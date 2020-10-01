@@ -41,13 +41,6 @@ static inline std::array<double, N> operator-( const std::array<double, N> &x,
     else if constexpr ( N == 3 )
         return { x[0] - y[0], x[1] - y[1], x[2] - y[2] };
 }
-static constexpr double inv_factorial( int N )
-{
-    double x = 1;
-    for ( int i = 2; i <= N; i++ )
-        x *= i;
-    return 1.0 / x;
-}
 template<size_t N>
 static inline double abs( const std::array<double, N> &x )
 {
@@ -377,7 +370,7 @@ double distanceToBox( const AMP::Mesh::Point &pos,
     auto p4     = pos + d4 * ang;
     auto p5     = pos + d5 * ang;
     auto p6     = pos + d6 * ang;
-    auto inside = [tol, range]( const Point &p ) {
+    auto inside = [range]( const Point &p ) {
         return ( ( p.x() >= range[0] - tol ) && ( p.x() <= range[1] + tol ) ) &&
                ( ( p.y() >= range[2] - tol ) && ( p.y() <= range[3] + tol ) ) &&
                ( ( p.z() >= range[4] - tol ) && ( p.z() <= range[5] + tol ) );

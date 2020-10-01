@@ -37,10 +37,10 @@ public:
     static bool validMapType( const std::string &s );
 
     // Overload the apply
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    virtual void setVector( AMP::LinearAlgebra::Vector::shared_ptr p ) override;
+    void setVector( AMP::LinearAlgebra::Vector::shared_ptr p ) override;
 
 protected:
     int d_inpDofs, d_inpStride, d_outDofs, d_outStride;

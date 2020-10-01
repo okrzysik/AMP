@@ -16,10 +16,10 @@ public:
 
     void setVariable( AMP::LinearAlgebra::Variable::shared_ptr var );
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
 protected:
     AMP::LinearAlgebra::Variable::shared_ptr d_var;

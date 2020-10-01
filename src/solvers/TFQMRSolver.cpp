@@ -14,10 +14,10 @@ namespace Solver {
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-TFQMRSolver::TFQMRSolver() : d_restarts( 0 ) {}
+TFQMRSolver::TFQMRSolver() {}
 
 TFQMRSolver::TFQMRSolver( std::shared_ptr<SolverStrategyParameters> parameters )
-    : SolverStrategy( parameters ), d_restarts( 0 )
+    : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
 
@@ -54,7 +54,6 @@ void TFQMRSolver::initialize( std::shared_ptr<SolverStrategyParameters> const pa
 void TFQMRSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
 {
 
-    d_dRelativeTolerance = db->getWithDefault<double>( "relative_tolerance", 1.0e-9 );
     d_iMaxIterations     = db->getWithDefault<double>( "max_iterations", 1000 );
 
     d_bUsesPreconditioner = db->getWithDefault<bool>( "use_preconditioner", false );

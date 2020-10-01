@@ -205,8 +205,6 @@ private:
     int d_iNumberOfLineSearchPreCheckAttempts;
     int d_operatorComponentToEnableBoundsCheck;
 
-    double d_dAbsoluteTolerance;
-    double d_dRelativeTolerance;
     double d_dStepTolerance;
 
     // strategy to use for MFFD differencing (DS or WP)

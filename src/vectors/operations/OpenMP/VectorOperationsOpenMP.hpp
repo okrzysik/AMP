@@ -30,10 +30,15 @@ std::shared_ptr<VectorOperations> VectorOperationsOpenMP<TYPE>::cloneOperations(
 template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::zero( VectorData &x )
 {
-    const auto last = x.end<TYPE>();
+    size_t N_blocks = x.numberOfDataBlocks();
+    for ( size_t i = 0; i < N_blocks; i++ ) {
+        size_t size      = x.sizeOfDataBlock( i );
+        TYPE *data = x.getRawDataBlock<TYPE>( i );
 #pragma omp parallel for
-    for ( auto it = x.begin<TYPE>(); it < last; ++it )
-        *it = 0;
+        for ( size_t j = 0; j < size; j++ )
+	  data[j] = 0.0;
+    }
+
     if ( x.hasGhosts() ) {
         auto &ghosts = x.getGhosts();
         for ( size_t i = 0; i != ghosts.size(); i++ )
@@ -46,10 +51,14 @@ void VectorOperationsOpenMP<TYPE>::zero( VectorData &x )
 template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::setToScalar( double alpha, VectorData &x )
 {
-    const auto last = x.end<TYPE>();
+    size_t N_blocks = x.numberOfDataBlocks();
+    for ( size_t i = 0; i < N_blocks; i++ ) {
+        size_t size      = x.sizeOfDataBlock( i );
+        TYPE *data = x.getRawDataBlock<TYPE>( i );
 #pragma omp parallel for
-    for ( auto it = x.begin<TYPE>(); it < last; ++it )
-        *it = alpha;
+        for ( size_t j = 0; j < size; j++ )
+	  data[j] = alpha;
+    }
     if ( x.hasGhosts() ) {
         auto &ghosts = x.getGhosts();
         for ( size_t i = 0; i != ghosts.size(); i++ )
@@ -100,10 +109,14 @@ void VectorOperationsOpenMP<TYPE>::copy( const VectorData &x, VectorData &y )
 template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::scale( double alpha, VectorData &x )
 {
-    const auto last = x.end<TYPE>();
+    size_t N_blocks = x.numberOfDataBlocks();
+    for ( size_t i = 0; i < N_blocks; i++ ) {
+        size_t size      = x.sizeOfDataBlock( i );
+        TYPE *data = x.getRawDataBlock<TYPE>( i );
 #pragma omp parallel for
-    for ( auto it = x.begin<TYPE>(); it < last; ++it )
-        *it *= alpha;
+        for ( size_t j = 0; j < size; j++ )
+	  data[j] *= alpha;
+    }
 }
 
 template<typename TYPE>

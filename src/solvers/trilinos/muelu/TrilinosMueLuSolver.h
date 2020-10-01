@@ -177,7 +177,10 @@ private:
     bool d_build_hierarchy = false; //! whether to explicitly build the hierarchy
     bool d_build_hierarchy_from_defaults =
         true; //! build the hierarchy using the defaults constructed by MueLu
+#if 0
+    // ifpack related -- could be used in future
     bool d_construct_partition = false; //! whether to construct user defined partitions
+#endif
     bool d_bCreationPhase      = false; //! set to true if the solver is yet to be initialized
     bool d_bRobustMode         = false; //! use a direct solver if the MG solve fails to converge
 

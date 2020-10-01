@@ -17,8 +17,6 @@ NonlinearKrylovAccelerator::NonlinearKrylovAccelerator(
     d_pFunctionDifferenceVectors = nullptr;
     d_iNonlinearIterationCount   = 0;
     d_iMaximumFunctionEvals      = 50;
-    d_dAbsoluteTolerance         = 1.0e-12;
-    d_dRelativeTolerance         = 1.0e-8;
 
     d_bPrintResiduals    = false;
     d_bSolverInitialized = false;
@@ -97,14 +95,6 @@ void NonlinearKrylovAccelerator::getFromInput( std::shared_ptr<AMP::Database> db
 
     if ( db->keyExists( "maximum_function_evals" ) ) {
         d_iMaximumFunctionEvals = db->getScalar<int>( "maximum_function_evals" );
-    }
-
-    if ( db->keyExists( "absolute_tolerance" ) ) {
-        d_dAbsoluteTolerance = db->getScalar<double>( "absolute_tolerance" );
-    }
-
-    if ( db->keyExists( "relative_tolerance" ) ) {
-        d_dRelativeTolerance = db->getScalar<double>( "relative_tolerance" );
     }
 
     if ( db->keyExists( "freeze_pc" ) ) {
@@ -466,20 +456,6 @@ void NonlinearKrylovAccelerator::relax()
 *                                                                       *
 *************************************************************************
 */
-double NonlinearKrylovAccelerator::getAbsoluteTolerance() const { return ( d_dAbsoluteTolerance ); }
-
-void NonlinearKrylovAccelerator::setAbsoluteTolerance( double abs_tol )
-{
-    d_dAbsoluteTolerance = abs_tol;
-}
-
-double NonlinearKrylovAccelerator::getRelativeTolerance() const { return ( d_dRelativeTolerance ); }
-
-void NonlinearKrylovAccelerator::setRelativeTolerance( double rel_tol )
-{
-    d_dRelativeTolerance = rel_tol;
-}
-
 
 int NonlinearKrylovAccelerator::getMaxNonlinearIterations() const { return ( d_iMaxIterations ); }
 

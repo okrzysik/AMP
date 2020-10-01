@@ -21,7 +21,7 @@ template<int SIZE>
 class LibMeshCubeGenerator : public MeshGenerator
 {
 public:
-    virtual void build_mesh() override
+    void build_mesh() override
     {
         // Create the parameter object
         auto database = std::make_shared<AMP::Database>( "Mesh" );
@@ -46,7 +46,7 @@ template<int FILE = 1>
 class ExodusReaderGenerator : public MeshGenerator
 {
 public:
-    virtual void build_mesh() override
+    void build_mesh() override
     {
         // Create the parameter object
         auto database = std::make_shared<AMP::Database>( "Mesh" );
@@ -75,7 +75,7 @@ public:
 class MultiMeshGenerator : public MeshGenerator
 {
 public:
-    virtual void build_mesh() override
+    void build_mesh() override
     {
         int N_meshes = 4;
         // Create the multimesh database
@@ -179,7 +179,7 @@ public:
         return elemNodeMap;
     }
 
-    virtual void build_mesh() override
+    void build_mesh() override
     {
 
         // Initialize libmesh

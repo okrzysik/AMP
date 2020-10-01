@@ -47,10 +47,10 @@ public:
     virtual ~TriangleMeshElement() = default;
 
     //! Return the unique global ID of the element
-    virtual MeshElementID globalID() const override { return d_globalID; }
+    MeshElementID globalID() const override { return d_globalID; }
 
     //! Return the element class
-    virtual inline std::string elementClass() const override { return "TriangleMeshElement"; }
+    inline std::string elementClass() const override { return "TriangleMeshElement"; }
 
     //! Return the elements composing the current element
     virtual void getElements( const GeomType type,
@@ -61,16 +61,16 @@ public:
                                 std::vector<MeshElementID> &ID ) const override;
 
     //! Return the elements neighboring the current element
-    virtual void getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const override;
+    void getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const override;
 
     //! Return the volume of the current element (does not apply to verticies)
-    virtual double volume() const override;
+    double volume() const override;
 
     //! Return the normal to the current element (does not apply to all elements)
-    virtual MeshPoint<double> norm() const override;
+    MeshPoint<double> norm() const override;
 
     //! Return the coordinates of all verticies composing the element
-    virtual MeshPoint<double> coord() const override;
+    MeshPoint<double> coord() const override;
 
     /**
      * \brief     Return the centroid of the element
@@ -78,7 +78,7 @@ public:
      *   centroid is defined as the average of the coordinates of the verticies.
      *   The centroid of a vertex is the vertex and will return the same result as coord().
      */
-    virtual MeshPoint<double> centroid() const override;
+    MeshPoint<double> centroid() const override;
 
     /**
      * \brief     Return true if the element contains the point
@@ -88,14 +88,14 @@ public:
      * \param pos   The coordinates of the point to check.
      * \param TOL   The tolerance to use for the computation.
      */
-    virtual bool containsPoint( const MeshPoint<double> &pos, double TOL = 1e-12 ) const override;
+    bool containsPoint( const MeshPoint<double> &pos, double TOL = 1e-12 ) const override;
 
     /**
      * \brief    Calculate the nearest point on the element
      * \details  This function computes nearest point on/in the element to the given point
      * \param[in] pos   Current position of the point
      */
-    virtual MeshPoint<double> nearest( const MeshPoint<double> &pos ) const override;
+    MeshPoint<double> nearest( const MeshPoint<double> &pos ) const override;
 
     /**
      * \brief    Calculate the distance to the element given a ray
@@ -109,24 +109,24 @@ public:
                              const MeshPoint<double> &dir ) const override;
 
     //! Check if the element is on the surface
-    virtual bool isOnSurface() const override;
+    bool isOnSurface() const override;
 
     /**
      * \brief     Check if the current element is on the given boundary
      * \details   Check if the current element is on the boundary specified by the given id
      * \param id  The boundary id to check
      */
-    virtual bool isOnBoundary( int id ) const override;
+    bool isOnBoundary( int id ) const override;
 
     /**
      * \brief     Check if the current element is in the given block
      * \details   Check if the current element is in the block specified by the given id
      * \param id  The block id to check
      */
-    virtual bool isInBlock( int id ) const override;
+    bool isInBlock( int id ) const override;
 
     //! Return the owner rank according to AMP_COMM_WORLD
-    virtual unsigned int globalOwnerRank() const override;
+    unsigned int globalOwnerRank() const override;
 
 
 protected:
@@ -137,7 +137,7 @@ protected:
     inline void resetElemId( const ElementID &id ) { d_globalID.resetElemID( id ); }
 
     //! Clone the iterator
-    virtual MeshElement *clone() const override;
+    MeshElement *clone() const override;
 
     //! Get the verticies composing the element
     inline void getVertexCoord( std::array<double, NP> *x ) const;

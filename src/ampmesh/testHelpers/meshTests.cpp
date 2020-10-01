@@ -1007,7 +1007,7 @@ void meshTests::VerifyBoundaryIteratorTest( AMP::UnitTest *utils, AMP::Mesh::Mes
 {
     auto isBoundaryElement = []( const AMP::Mesh::MeshElement &elem ) {
         auto neighbors = elem.getNeighbors();
-        for ( const auto neighbor : neighbors )
+        for ( const auto &neighbor : neighbors )
             if ( !neighbor )
                 return true;
         return false;
@@ -1190,7 +1190,7 @@ void meshTests::MeshPerformance( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr 
     auto t10 = runAndTime( getElements2, mesh, 10 );
     auto t11 = runAndTime( volume, mesh, 10 );
     // Print the results
-    auto to_ns = [N_nodes]( double time, size_t N ) {
+    auto to_ns = []( double time, size_t N ) {
         return static_cast<int>( 1e9 * std::max( time, 0.0 ) / N );
     };
     printf( "   getIterator: %i us\n", static_cast<int>( 1e6 * t1 ) );

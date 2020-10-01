@@ -33,14 +33,14 @@ public:
     MeshGeometry &operator=( const MeshGeometry & ) = delete;
 
     //! Get the name of the geometry
-    virtual std::string getName() const override { return "MeshGeometry"; }
+    std::string getName() const override { return "MeshGeometry"; }
 
     /**
      * \brief    Is the object convex
      * \details  Check if the geometric object is convex
      * @return      Returns true if the object is convex
      */
-    virtual bool isConvex() const override;
+    bool isConvex() const override;
 
     /**
      * \brief    Calculate the nearest point on the surface
@@ -48,7 +48,7 @@ public:
      * \param[in] pos   Current position of ray
      * @return          Returns the nearest surface point
      */
-    virtual Point nearest( const Point &pos ) const override;
+    Point nearest( const Point &pos ) const override;
 
     /**
      * \brief    Calculate the distance to the object given a ray
@@ -60,7 +60,7 @@ public:
      * @return          Returns the distance to the nearest surface
      *                  (intersection = pos + dir*distance)
      */
-    virtual double distance( const Point &pos, const Point &dir ) const override;
+    double distance( const Point &pos, const Point &dir ) const override;
 
     /**
      * \brief    Is the point in the geometry
@@ -69,14 +69,14 @@ public:
      * \param[in] pos   Current position
      * @return          Returns true if the point is inside the geometry (or on the surface)
      */
-    virtual bool inside( const Point &pos ) const override;
+    bool inside( const Point &pos ) const override;
 
     /**
      * \brief    Get the number of surfaces
      * \details     This function will return the number of unique surfaces
      * @return          Returns the number of unique surfaces
      */
-    virtual int NSurface() const override;
+    int NSurface() const override;
 
     /**
      * \brief    Get the surface id
@@ -84,7 +84,7 @@ public:
      * \param[in] x     Current position
      * @return          Returns the surface id (0:NSurface-1)
      */
-    virtual int surface( const Point &x ) const override;
+    int surface( const Point &x ) const override;
 
     /**
      * \brief    Return the outward normal to a surface
@@ -94,28 +94,28 @@ public:
      * @return          Returns the surface normal
 
      */
-    virtual Point surfaceNorm( const Point &x ) const override;
+    Point surfaceNorm( const Point &x ) const override;
 
     /**
      * \brief    Return the centroid
      * \details  This function will return centroid of the object
      * @return          Returns the physical coordinates
      */
-    virtual Point centroid() const override;
+    Point centroid() const override;
 
     /**
      * \brief    Return the bounding box
      * \details  This function will return the bounding box of the object
      * @return          Returns the bounding box [lb,ub]
      */
-    virtual std::pair<Point, Point> box() const override;
+    std::pair<Point, Point> box() const override;
 
     /**
      * \brief    Return the volume
      * \details  This function will return the interior volume of the object
      * @return          Returns the volume
      */
-    virtual double volume() const override;
+    double volume() const override;
 
     /**
      * \brief    Displace the entire geometry
@@ -123,10 +123,10 @@ public:
      *   The displacement vector should be the size of the physical dimension.
      * \param[in] x     Displacement vector
      */
-    virtual void displace( const double *x ) override;
+    void displace( const double *x ) override;
 
     //! Clone the object
-    virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const override;
+    std::unique_ptr<AMP::Geometry::Geometry> clone() const override;
 
     //! Get the mesh
     const AMP::Mesh::Mesh &getMesh() const { return *d_mesh; }

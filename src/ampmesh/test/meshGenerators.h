@@ -35,7 +35,7 @@ template<int SIZE_X, int SIZE_Y, int SIZE_Z>
 class AMPCubeGenerator3 : public MeshGenerator
 {
 public:
-    virtual void build_mesh() override
+    void build_mesh() override
     {
         // Create a generic MeshParameters object
         auto database = std::make_shared<AMP::Database>( "Mesh" );
@@ -54,7 +54,7 @@ template<int SIZE>
 class AMPCubeGenerator : public MeshGenerator
 {
 public:
-    virtual void build_mesh() override
+    void build_mesh() override
     {
         AMPCubeGenerator3<SIZE, SIZE, SIZE> gen;
         gen.build_mesh();
@@ -73,7 +73,7 @@ public:
 class AMPCylinderGenerator : public MeshGenerator
 {
 public:
-    virtual void build_mesh() override
+    void build_mesh() override
     {
         // Create a generic MeshParameters object
         auto database = std::make_shared<AMP::Database>( "Mesh" );
@@ -95,7 +95,7 @@ public:
 class AMPTubeGenerator : public MeshGenerator
 {
 public:
-    virtual void build_mesh() override
+    void build_mesh() override
     {
         // Create a generic MeshParameters object
         auto database = std::make_shared<AMP::Database>( "Mesh" );
@@ -117,7 +117,7 @@ public:
 class AMPMultiMeshGenerator : public MeshGenerator
 {
 public:
-    virtual void build_mesh() override
+    void build_mesh() override
     {
         // Create the multimesh database
         auto meshDatabase = std::make_shared<AMP::Database>( "Mesh" );
@@ -187,7 +187,7 @@ template<class GENERATOR, int GCW>
 class SurfaceSubsetGenerator : public MeshGenerator
 {
 public:
-    virtual void build_mesh() override
+    void build_mesh() override
     {
         GENERATOR generator;
         generator.build_mesh();

@@ -20,7 +20,7 @@ protected:
      */
     NativePetscMatrix();
 
-    virtual void multiply( shared_ptr other_op, shared_ptr &result ) override;
+    void multiply( shared_ptr other_op, shared_ptr &result ) override;
 
 public:
     /** \brief  Construct a matrix from a PETSc Mat.
@@ -46,47 +46,47 @@ public:
      */
     void copyFromMat( Mat m );
 
-    virtual void mult( Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
-    virtual void multTranspose( Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
+    void mult( Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
+    void multTranspose( Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
 
-    virtual shared_ptr cloneMatrix() const override;
+    shared_ptr cloneMatrix() const override;
 
 
-    virtual Vector::shared_ptr getRightVector() const override;
-    virtual Vector::shared_ptr getLeftVector() const override;
-    virtual Discretization::DOFManager::shared_ptr getRightDOFManager() const override;
-    virtual Discretization::DOFManager::shared_ptr getLeftDOFManager() const override;
+    Vector::shared_ptr getRightVector() const override;
+    Vector::shared_ptr getLeftVector() const override;
+    Discretization::DOFManager::shared_ptr getRightDOFManager() const override;
+    Discretization::DOFManager::shared_ptr getLeftDOFManager() const override;
 
-    virtual size_t numGlobalRows() const override;
-    virtual size_t numGlobalColumns() const override;
+    size_t numGlobalRows() const override;
+    size_t numGlobalColumns() const override;
 
-    virtual void scale( double alpha ) override;
-    virtual void axpy( double alpha, const Matrix &x ) override;
+    void scale( double alpha ) override;
+    void axpy( double alpha, const Matrix &x ) override;
 
-    virtual void addValuesByGlobalID(
+    void addValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
-    virtual void setValuesByGlobalID(
+    void setValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
-    virtual void getValuesByGlobalID( size_t num_rows,
-                                      size_t num_cols,
-                                      size_t *rows,
-                                      size_t *cols,
-                                      double *values ) const override;
-    virtual void getRowByGlobalID( size_t row,
-                                   std::vector<size_t> &cols,
-                                   std::vector<double> &values ) const override;
-
+    void getValuesByGlobalID( size_t num_rows,
+			      size_t num_cols,
+			      size_t *rows,
+			      size_t *cols,
+			      double *values ) const override;
+    void getRowByGlobalID( size_t row,
+			   std::vector<size_t> &cols,
+			   std::vector<double> &values ) const override;
+    
     std::vector<size_t> getColumnIDs( size_t row ) const override;
 
-    virtual void setScalar( double ) override;
-    virtual void setDiagonal( Vector::const_shared_ptr in ) override;
+    void setScalar( double ) override;
+    void setDiagonal( Vector::const_shared_ptr in ) override;
 
-    virtual void makeConsistent() override;
-    virtual Vector::shared_ptr
+    void makeConsistent() override;
+    Vector::shared_ptr
     extractDiagonal( Vector::shared_ptr p = Vector::shared_ptr() ) const override;
-    virtual double L1Norm() const override;
-    virtual void setIdentity() override;
-    virtual void zero() override;
+    double L1Norm() const override;
+    void setIdentity() override;
+    void zero() override;
 
 private:
 };
