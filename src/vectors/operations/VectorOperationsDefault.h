@@ -53,15 +53,15 @@ public:
     void abs( const VectorData &x, VectorData &z ) override;
     void addScalar( const VectorData &x, const Scalar &alpha_in, VectorData &y ) override;
 
-    double localMin( const VectorData &x ) const override;
-    double localMax( const VectorData &x ) const override;
-    double localL1Norm( const VectorData &x ) const override;
-    double localL2Norm( const VectorData &x ) const override;
-    double localMaxNorm( const VectorData &x ) const override;
-    double localDot( const VectorData &x, const VectorData &y ) const override;
-    double localMinQuotient( const VectorData &x, const VectorData &y ) const override;
-    double localWrmsNorm( const VectorData &x, const VectorData &y ) const override;
-    double localWrmsNormMask( const VectorData &x,
+    Scalar localMin( const VectorData &x ) const override;
+    Scalar localMax( const VectorData &x ) const override;
+    Scalar localL1Norm( const VectorData &x ) const override;
+    Scalar localL2Norm( const VectorData &x ) const override;
+    Scalar localMaxNorm( const VectorData &x ) const override;
+    Scalar localDot( const VectorData &x, const VectorData &y ) const override;
+    Scalar localMinQuotient( const VectorData &x, const VectorData &y ) const override;
+    Scalar localWrmsNorm( const VectorData &x, const VectorData &y ) const override;
+    Scalar localWrmsNormMask( const VectorData &x,
                               const VectorData &mask,
                               const VectorData &y ) const override;
     bool localEquals( const VectorData &x,

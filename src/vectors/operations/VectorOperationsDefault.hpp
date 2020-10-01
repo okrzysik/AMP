@@ -316,7 +316,7 @@ void VectorOperationsDefault<TYPE>::addScalar( const VectorData &x,
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localMin( const VectorData &x ) const
+Scalar VectorOperationsDefault<TYPE>::localMin( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
     TYPE ans        = std::numeric_limits<TYPE>::max();
@@ -326,11 +326,11 @@ double VectorOperationsDefault<TYPE>::localMin( const VectorData &x ) const
         for ( size_t j = 0; j < size; j++ )
             ans = std::min( data[j], ans );
     }
-    return static_cast<double>( ans );
+    return ans;
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localMax( const VectorData &x ) const
+Scalar VectorOperationsDefault<TYPE>::localMax( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
     TYPE ans        = std::numeric_limits<TYPE>::lowest();
@@ -340,41 +340,39 @@ double VectorOperationsDefault<TYPE>::localMax( const VectorData &x ) const
         for ( size_t j = 0; j < size; j++ )
             ans = std::max( data[j], ans );
     }
-    return static_cast<double>( ans );
+    return ans;
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localL1Norm( const VectorData &x ) const
+Scalar VectorOperationsDefault<TYPE>::localL1Norm( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
-    double ans      = 0;
+    TYPE ans        = 0;
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size      = x.sizeOfDataBlock( i );
         const TYPE *data = x.getRawDataBlock<TYPE>( i );
         for ( size_t j = 0; j < size; j++ )
-            ans += static_cast<double>( std::abs( data[j] ) );
+            ans += std::abs( data[j] );
     }
     return ans;
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localL2Norm( const VectorData &x ) const
+Scalar VectorOperationsDefault<TYPE>::localL2Norm( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
-    double ans      = 0;
+    TYPE ans        = 0;
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size      = x.sizeOfDataBlock( i );
         const TYPE *data = x.getRawDataBlock<TYPE>( i );
-        for ( size_t j = 0; j < size; j++ ) {
-            double tmp = static_cast<double>( data[j] );
-            ans += tmp * tmp;
-        }
+        for ( size_t j = 0; j < size; j++ )
+            ans += data[j] * data[j];
     }
     return sqrt( ans );
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localMaxNorm( const VectorData &x ) const
+Scalar VectorOperationsDefault<TYPE>::localMaxNorm( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
     TYPE ans        = 0;
@@ -384,20 +382,20 @@ double VectorOperationsDefault<TYPE>::localMaxNorm( const VectorData &x ) const
         for ( size_t j = 0; j < size; j++ )
             ans = std::max( std::abs( data[j] ), ans );
     }
-    return static_cast<double>( ans );
+    return ans;
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localDot( const VectorData &x, const VectorData &y ) const
+Scalar VectorOperationsDefault<TYPE>::localDot( const VectorData &x, const VectorData &y ) const
 {
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
     auto curMe   = y.constBegin<TYPE>();
     auto last    = y.constEnd<TYPE>();
     auto curXRhs = x.constBegin<TYPE>();
-    double ans   = 0;
+    TYPE ans     = 0;
     while ( curMe != last ) {
-        double v1 = static_cast<double>( *curMe );
-        double v2 = static_cast<double>( *curXRhs );
+        TYPE v1 = *curMe;
+        TYPE v2 = *curXRhs;
         ans += v1 * v2;
         ++curXRhs;
         ++curMe;
@@ -406,18 +404,18 @@ double VectorOperationsDefault<TYPE>::localDot( const VectorData &x, const Vecto
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localMinQuotient( const VectorData &x,
+Scalar VectorOperationsDefault<TYPE>::localMinQuotient( const VectorData &x,
                                                         const VectorData &y ) const
 {
-    auto curx  = x.constBegin<TYPE>();
-    auto endx  = x.constEnd<TYPE>();
-    auto cury  = y.constBegin<TYPE>();
-    double ans = std::numeric_limits<double>::max();
+    auto curx = x.constBegin<TYPE>();
+    auto endx = x.constEnd<TYPE>();
+    auto cury = y.constBegin<TYPE>();
+    TYPE ans  = std::numeric_limits<TYPE>::max();
     while ( curx != endx ) {
         if ( *cury != 0 ) {
-            double v1 = static_cast<double>( *curx );
-            double v2 = static_cast<double>( *cury );
-            ans       = std::min( ans, v1 / v2 );
+            TYPE v1 = *curx;
+            TYPE v2 = *cury;
+            ans     = std::min( ans, v1 / v2 );
         }
         ++curx;
         ++cury;
@@ -426,17 +424,17 @@ double VectorOperationsDefault<TYPE>::localMinQuotient( const VectorData &x,
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorData &x,
+Scalar VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorData &x,
                                                      const VectorData &y ) const
 {
-    auto curx  = x.constBegin<TYPE>();
-    auto endx  = x.constEnd<TYPE>();
-    auto cury  = y.constBegin<TYPE>();
-    double ans = 0;
-    size_t N   = 0;
+    auto curx = x.constBegin<TYPE>();
+    auto endx = x.constEnd<TYPE>();
+    auto cury = y.constBegin<TYPE>();
+    TYPE ans  = 0;
+    size_t N  = 0;
     while ( curx != endx ) {
-        double v1 = static_cast<double>( *curx );
-        double v2 = static_cast<double>( *cury );
+        TYPE v1 = *curx;
+        TYPE v2 = *cury;
         ans += v1 * v1 * v2 * v2;
         ++curx;
         ++cury;
@@ -446,20 +444,20 @@ double VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorData &x,
 }
 
 template<typename TYPE>
-double VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorData &x,
+Scalar VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorData &x,
                                                          const VectorData &mask,
                                                          const VectorData &y ) const
 {
-    auto curx  = x.constBegin<TYPE>();
-    auto endx  = x.constEnd<TYPE>();
-    auto cury  = y.constBegin<TYPE>();
-    auto curm  = mask.constBegin<TYPE>();
-    double ans = 0;
-    size_t N   = 0;
+    auto curx = x.constBegin<TYPE>();
+    auto endx = x.constEnd<TYPE>();
+    auto cury = y.constBegin<TYPE>();
+    auto curm = mask.constBegin<TYPE>();
+    TYPE ans  = 0;
+    size_t N  = 0;
     while ( curx != endx ) {
         if ( *curm > 0 ) {
-            double v1 = static_cast<double>( *curx );
-            double v2 = static_cast<double>( *cury );
+            TYPE v1 = *curx;
+            TYPE v2 = *cury;
             ans += v1 * v1 * v2 * v2;
         }
         ++curx;

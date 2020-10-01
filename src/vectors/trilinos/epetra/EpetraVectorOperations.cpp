@@ -97,42 +97,42 @@ void EpetraVectorOperations::abs( const VectorData &x, VectorData &y )
     getEpetraVector( y ).Abs( getEpetraVector( x ) );
 }
 
-double EpetraVectorOperations::min( const VectorData &x ) const
+Scalar EpetraVectorOperations::min( const VectorData &x ) const
 {
     double retVal;
     getEpetraVector( x ).MinValue( &retVal );
     return retVal;
 }
 
-double EpetraVectorOperations::max( const VectorData &x ) const
+Scalar EpetraVectorOperations::max( const VectorData &x ) const
 {
     double retVal;
     getEpetraVector( x ).MaxValue( &retVal );
     return retVal;
 }
 
-double EpetraVectorOperations::dot( const VectorData &x, const VectorData &y ) const
+Scalar EpetraVectorOperations::dot( const VectorData &x, const VectorData &y ) const
 {
     double retVal;
     getEpetraVector( y ).Dot( getEpetraVector( x ), &retVal );
     return retVal;
 }
 
-double EpetraVectorOperations::L1Norm( const VectorData &x ) const
+Scalar EpetraVectorOperations::L1Norm( const VectorData &x ) const
 {
     double retVal;
     getEpetraVector( x ).Norm1( &retVal );
     return retVal;
 }
 
-double EpetraVectorOperations::L2Norm( const VectorData &x ) const
+Scalar EpetraVectorOperations::L2Norm( const VectorData &x ) const
 {
     double retVal;
     getEpetraVector( x ).Norm2( &retVal );
     return retVal;
 }
 
-double EpetraVectorOperations::maxNorm( const VectorData &x ) const
+Scalar EpetraVectorOperations::maxNorm( const VectorData &x ) const
 {
     double retVal;
     getEpetraVector( x ).NormInf( &retVal );

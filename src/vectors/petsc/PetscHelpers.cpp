@@ -234,7 +234,9 @@ PetscErrorCode _AMP_dot_local( Vec a, Vec b, PetscScalar *ans )
 {
     auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
     auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
-    *ans   = x->getVectorOperations()->localDot( *y->getVectorData(), *x->getVectorData() );
+    *ans   = x->getVectorOperations()
+               ->localDot( *y->getVectorData(), *x->getVectorData() )
+               .get<double>();
     return 0;
 }
 PetscErrorCode _AMP_tdot_local( Vec a, Vec b, PetscScalar *ans )
@@ -497,14 +499,14 @@ PetscErrorCode _AMP_norm_local( Vec in, NormType type, PetscReal *ans )
     auto x   = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
     auto ops = x->getVectorOperations();
     if ( type == NORM_1 )
-        *ans = ops->localL1Norm( *x->getVectorData() );
+        *ans = ops->localL1Norm( *x->getVectorData() ).get<double>();
     else if ( type == NORM_2 )
-        *ans = ops->localL2Norm( *x->getVectorData() );
+        *ans = ops->localL2Norm( *x->getVectorData() ).get<double>();
     else if ( type == NORM_INFINITY )
-        *ans = ops->localMaxNorm( *x->getVectorData() );
+        *ans = ops->localMaxNorm( *x->getVectorData() ).get<double>();
     else if ( type == NORM_1_AND_2 ) {
-        *ans         = ops->localL1Norm( *x->getVectorData() );
-        *( ans + 1 ) = ops->localL2Norm( *x->getVectorData() );
+        *ans         = ops->localL1Norm( *x->getVectorData() ).get<double>();
+        *( ans + 1 ) = ops->localL2Norm( *x->getVectorData() ).get<double>();
     } else
         AMP_ERROR( "Unknown norm type" );
     if ( type != NORM_1_AND_2 ) {

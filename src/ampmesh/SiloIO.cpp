@@ -165,7 +165,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
 /************************************************************
  * Function to register a mesh with silo                     *
  ************************************************************/
-void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::string path )
+void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, const std::string &path )
 {
     if ( mesh == nullptr )
         return;

@@ -2,6 +2,7 @@
 #define included_AMP_Scalar_hpp
 
 
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UtilityMacros.h"
 
 #include <complex>
@@ -160,5 +161,23 @@ inline TYPE Scalar::get( double tol ) const
 
 
 } // namespace AMP
+
+
+/********************************************************************
+ * Operator overloading                                              *
+ ********************************************************************/
+AMP::Scalar operator+( const AMP::Scalar &x, const AMP::Scalar &y );
+AMP::Scalar operator-( const AMP::Scalar &x, const AMP::Scalar &y );
+AMP::Scalar operator*( const AMP::Scalar &x, const AMP::Scalar &y );
+
+
+/********************************************************************
+ * Special functions                                                 *
+ ********************************************************************/
+AMP::Scalar minReduce( const AMP::AMP_MPI &comm, const AMP::Scalar &x );
+AMP::Scalar maxReduce( const AMP::AMP_MPI &comm, const AMP::Scalar &x );
+AMP::Scalar sumReduce( const AMP::AMP_MPI &comm, const AMP::Scalar &x );
+AMP::Scalar sqrt( const AMP::Scalar &x );
+
 
 #endif

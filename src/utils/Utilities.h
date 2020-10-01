@@ -3,6 +3,8 @@
 
 
 #include "AMP/utils/UtilityMacros.h"
+#include "AMP/utils/string_view.h"
+
 #include "StackTrace/Utilities.h"
 
 #include <chrono>
@@ -310,7 +312,7 @@ constexpr unsigned int hash_char( const char * );
 
 //! Get the type name (does not match typeid, does not work for all compilers)
 template<typename T>
-constexpr std::string_view type_name();
+constexpr AMP::string_view type_name();
 
 //! Get the type hash (does not match typeid, does not work for all compilers)
 template<typename T>

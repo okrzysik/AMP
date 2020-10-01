@@ -1,18 +1,14 @@
 #include "AMP/vectors/data/cuda/VectorDataGPU.h"
+#include "AMP/vectors/data/cuda/VectorDataGPU.hpp"
 
 
 namespace AMP {
 namespace LinearAlgebra {
 
 
-template<typename TYPE>
-std::string VectorDataGPU<TYPE>::VectorDataName() const
-{
-    std::string type = typeid( TYPE ).name();
-    return "VectorDataGPU<" + type + ">";
-}
-template std::string VectorDataGPU<double>::VectorDataName() const;
-template std::string VectorDataGPU<float>::VectorDataName() const;
+// Explicit instantiations
+template class AMP::LinearAlgebra::VectorDataGPU<double>;
+template class AMP::LinearAlgebra::VectorDataGPU<float>;
 
 
 } // namespace LinearAlgebra

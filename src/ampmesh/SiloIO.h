@@ -71,8 +71,8 @@ public:
      * \param path      The directory path for the mesh.  Default is an empty string.
      */
     virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh,
-                               int level        = 1,
-                               std::string path = std::string() ) override;
+                               int level               = 1,
+                               const std::string &path = std::string() ) override;
 
 #ifdef USE_AMP_VECTORS
     /**

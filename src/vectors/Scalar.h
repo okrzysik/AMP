@@ -45,9 +45,20 @@ public:
     //! Return the storage type
     inline const auto &type() const { return d_data.type(); }
 
+    //! Check if we are storing a value
+    inline bool has_value() const noexcept { return d_data.has_value(); }
+
     //! Get default tolerance
     template<class TYPE>
     static constexpr double getTol();
+
+public: // Comparison operators
+    bool operator==( const Scalar &rhs ) const;
+    bool operator!=( const Scalar &rhs ) const;
+    bool operator>( const Scalar &rhs ) const;
+    bool operator>=( const Scalar &rhs ) const;
+    bool operator<( const Scalar &rhs ) const;
+    bool operator<=( const Scalar &rhs ) const;
 
 private: // Helper functions
     template<class T1, class T2>

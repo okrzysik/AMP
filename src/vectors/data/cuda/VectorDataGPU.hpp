@@ -28,6 +28,11 @@ std::string VectorDataGPU<TYPE>::VectorDataName() const
  * Allocate the data                                             *
  ****************************************************************/
 template<typename TYPE>
+VectorDataGPU<TYPE>::VectorDataGPU( size_t start, size_t localSize, size_t globalSize )
+{
+    allocate( start, localSize, globalSize );
+}
+template<typename TYPE>
 void VectorDataGPU<TYPE>::allocate( size_t start, size_t localSize, size_t globalSize )
 {
     cudaMallocManaged( (void **) &d_Data, localSize * sizeof( TYPE ), cudaMemAttachGlobal );

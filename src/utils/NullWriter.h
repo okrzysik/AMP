@@ -28,20 +28,17 @@ public:
     void writeFile( const std::string &, size_t, double = 0 ) override {}
 #ifdef USE_AMP_MESH
     void registerMesh( AMP::Mesh::Mesh::shared_ptr,
-		       int level        = 1,
-		       std::string path = std::string() ) override
+                       int                 = 1,
+                       const std::string & = std::string() ) override
     {
-        NULL_USE( level );
-        NULL_USE( path );
     }
 #endif
 #ifdef USE_AMP_VECTORS
     void registerVector( AMP::LinearAlgebra::Vector::shared_ptr,
-			 AMP::Mesh::Mesh::shared_ptr,
-			 AMP::Mesh::GeomType,
-			 const std::string &name = "" ) override
+                         AMP::Mesh::Mesh::shared_ptr,
+                         AMP::Mesh::GeomType,
+                         const std::string & = "" ) override
     {
-        NULL_USE( name );
     }
     void registerVector( AMP::LinearAlgebra::Vector::shared_ptr ) override {}
 #endif

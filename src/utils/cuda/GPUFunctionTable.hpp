@@ -2,6 +2,8 @@
 #define included_AMP_GPUFunctionTable_HPP_
 
 #include "AMP/utils/Array.h"
+#include "AMP/utils/UtilityMacros.h"
+
 #include <cublas_v2.h>
 #include <curand.h>
 

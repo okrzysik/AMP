@@ -199,19 +199,19 @@ void ManagedVectorOperations::abs( const VectorData &x, VectorData &y )
     y2->dataChanged();
 }
 
-double ManagedVectorOperations::min( const VectorData &x ) const
+Scalar ManagedVectorOperations::min( const VectorData &x ) const
 {
     auto x2 = getManagedVector( x );
     return x2->getVectorEngine()->min();
 }
 
-double ManagedVectorOperations::max( const VectorData &x ) const
+Scalar ManagedVectorOperations::max( const VectorData &x ) const
 {
     auto x2 = getManagedVector( x );
     return x2->getVectorEngine()->max();
 }
 
-double ManagedVectorOperations::dot( const VectorData &x, const VectorData &y ) const
+Scalar ManagedVectorOperations::dot( const VectorData &x, const VectorData &y ) const
 {
     auto x2 = getManagedVector( x );
     auto y2 = getManagedVector( y );
@@ -221,19 +221,19 @@ double ManagedVectorOperations::dot( const VectorData &x, const VectorData &y ) 
     return VectorOperationsDefault::dot( x, y );
 }
 
-double ManagedVectorOperations::L1Norm( const VectorData &x ) const
+Scalar ManagedVectorOperations::L1Norm( const VectorData &x ) const
 {
     auto x2 = getManagedVector( x );
     return x2->getVectorEngine()->L1Norm();
 }
 
-double ManagedVectorOperations::L2Norm( const VectorData &x ) const
+Scalar ManagedVectorOperations::L2Norm( const VectorData &x ) const
 {
     auto x2 = getManagedVector( x );
     return x2->getVectorEngine()->L2Norm();
 }
 
-double ManagedVectorOperations::maxNorm( const VectorData &x ) const
+Scalar ManagedVectorOperations::maxNorm( const VectorData &x ) const
 {
     auto x2 = getManagedVector( x );
     return x2->getVectorEngine()->maxNorm();

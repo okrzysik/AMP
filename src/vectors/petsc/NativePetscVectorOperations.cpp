@@ -190,49 +190,49 @@ void NativePetscVectorOperations::addScalar( const VectorData &x,
     VecShift( py, alpha.get<double>() );
 }
 
-double NativePetscVectorOperations::min( const VectorData &x ) const
+Scalar NativePetscVectorOperations::min( const VectorData &x ) const
 {
     double val;
     VecMin( getConstPetscVec( x ), PETSC_NULL, &val );
     return val;
 }
 
-double NativePetscVectorOperations::max( const VectorData &x ) const
+Scalar NativePetscVectorOperations::max( const VectorData &x ) const
 {
     double val;
     VecMax( getConstPetscVec( x ), PETSC_NULL, &val );
     return val;
 }
 
-double NativePetscVectorOperations::L1Norm( const VectorData &x ) const
+Scalar NativePetscVectorOperations::L1Norm( const VectorData &x ) const
 {
     double ans;
     VecNorm( getConstPetscVec( x ), NORM_1, &ans );
     return ans;
 }
 
-double NativePetscVectorOperations::L2Norm( const VectorData &x ) const
+Scalar NativePetscVectorOperations::L2Norm( const VectorData &x ) const
 {
     double ans;
     VecNorm( getConstPetscVec( x ), NORM_2, &ans );
     return ans;
 }
 
-double NativePetscVectorOperations::maxNorm( const VectorData &x ) const
+Scalar NativePetscVectorOperations::maxNorm( const VectorData &x ) const
 {
     double ans;
     VecNorm( getConstPetscVec( x ), NORM_INFINITY, &ans );
     return ans;
 }
 
-double NativePetscVectorOperations::dot( const VectorData &x, const VectorData &y ) const
+Scalar NativePetscVectorOperations::dot( const VectorData &x, const VectorData &y ) const
 {
     double ans;
     VecDot( getConstPetscVec( x ), getConstPetscVec( y ), &ans );
     return ans;
 }
 
-double NativePetscVectorOperations::localL1Norm( const VectorData &vx ) const
+Scalar NativePetscVectorOperations::localL1Norm( const VectorData &vx ) const
 {
     Vec x = getPetscVec( vx );
 
@@ -243,7 +243,7 @@ double NativePetscVectorOperations::localL1Norm( const VectorData &vx ) const
     return ans;
 }
 
-double NativePetscVectorOperations::localL2Norm( const VectorData &vx ) const
+Scalar NativePetscVectorOperations::localL2Norm( const VectorData &vx ) const
 {
     Vec x = getPetscVec( vx );
 
@@ -255,7 +255,7 @@ double NativePetscVectorOperations::localL2Norm( const VectorData &vx ) const
     return ans;
 }
 
-double NativePetscVectorOperations::localMaxNorm( const VectorData &vx ) const
+Scalar NativePetscVectorOperations::localMaxNorm( const VectorData &vx ) const
 {
     Vec x = getPetscVec( vx );
 
@@ -267,7 +267,7 @@ double NativePetscVectorOperations::localMaxNorm( const VectorData &vx ) const
     return ans;
 }
 
-double NativePetscVectorOperations::localDot( const VectorData &vx, const VectorData &vy ) const
+Scalar NativePetscVectorOperations::localDot( const VectorData &vx, const VectorData &vy ) const
 {
     Vec x = getPetscVec( vx );
 

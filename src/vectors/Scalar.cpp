@@ -6,7 +6,7 @@
  ********************************************************************/
 bool AMP::Scalar::operator<( const AMP::Scalar &rhs ) const
 {
-    if ( has_value() || rhs.has_value() )
+    if ( !has_value() || !rhs.has_value() )
         AMP_ERROR( "Comparing empty scalar" );
     if ( is_floating_point() ) {
         return get<double>() < rhs.get<double>();
@@ -21,16 +21,19 @@ bool AMP::Scalar::operator<( const AMP::Scalar &rhs ) const
 }
 bool AMP::Scalar::operator==( const AMP::Scalar &rhs ) const
 {
-    if ( has_value() != rhs.has_value() )
-        return false;
-    if ( is_floating_point() ) {
-        return get<double>() == rhs.get<double>();
-    } else if ( is_integral() ) {
-        return get<int64_t>() == rhs.get<int64_t>();
-    } else if ( is_complex() ) {
-        return get<std::complex<double>>() == rhs.get<std::complex<double>>();
-    } else {
-        AMP_ERROR( "Unable to get types for Scalar" );
+    try {
+        if ( has_value() != rhs.has_value() )
+            return false;
+        if ( is_floating_point() ) {
+            return get<double>() == rhs.get<double>();
+        } else if ( is_integral() ) {
+            return get<int64_t>() == rhs.get<int64_t>();
+        } else if ( is_complex() ) {
+            return get<std::complex<double>>() == rhs.get<std::complex<double>>();
+        } else {
+            AMP_ERROR( "Unable to get types for Scalar" );
+        }
+    } catch ( ... ) {
     }
     return false;
 }

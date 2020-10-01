@@ -48,12 +48,12 @@ public:
     axpby( const Scalar &alpha, const Scalar &beta, const VectorData &x, VectorData &y ) override;
     void abs( const VectorData &x, VectorData &z ) override;
 
-    double min( const VectorData &x ) const override;
-    double max( const VectorData &x ) const override;
-    double L1Norm( const VectorData &x ) const override;
-    double L2Norm( const VectorData &x ) const override;
-    double maxNorm( const VectorData &x ) const override;
-    double dot( const VectorData &x, const VectorData &y ) const override;
+    Scalar min( const VectorData &x ) const override;
+    Scalar max( const VectorData &x ) const override;
+    Scalar L1Norm( const VectorData &x ) const override;
+    Scalar L2Norm( const VectorData &x ) const override;
+    Scalar maxNorm( const VectorData &x ) const override;
+    Scalar dot( const VectorData &x, const VectorData &y ) const override;
 
 private:
     static Teuchos::RCP<const Thyra::VectorBase<double>> getThyraVec( const VectorData &v );
