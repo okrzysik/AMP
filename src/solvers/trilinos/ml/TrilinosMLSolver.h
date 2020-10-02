@@ -8,7 +8,6 @@
 #include "AMP/solvers/trilinos/ml/MLoptions.h"
 
 DISABLE_WARNINGS
-#include "Trilinos_version.h"
 #include "ml_MultiLevelPreconditioner.h"
 #include "ml_include.h"
 ENABLE_WARNINGS
