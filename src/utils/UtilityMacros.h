@@ -168,6 +168,11 @@
         _Pragma( "GCC diagnostic ignored \"-Wterminate\"" )                 \
         _Pragma( "GCC diagnostic ignored \"-Wimplicit-fallthrough\"" )
     #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
+#elif defined( USING_ICC )
+    #define DISABLE_WARNINGS                  \
+        _Pragma( "warning (push)" )	      \
+        _Pragma( "warning disable 1478" )   
+    #define ENABLE_WARNINGS _Pragma( "warning(pop)" )
 #else
     #define DISABLE_WARNINGS
     #define ENABLE_WARNINGS
