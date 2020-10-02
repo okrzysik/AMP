@@ -94,7 +94,11 @@ void TrilinosMLSolver::convertMLoptionsToTeuchosParameterList()
 
     d_MLParameterList.set( "coarse: type", d_mlOptions->d_coarseType );
     d_MLParameterList.set( "coarse: max size", d_mlOptions->d_coarseMaxSize );
-
+    
+#if TRILINOS_MAJOR_MINOR_VERSION >= 130000
+    d_MLParameterList.set("coarse: split communicator",false);
+#endif
+    
     d_MLParameterList.set( "aggregation: aux: enable", d_mlOptions->d_aggregationAuxEnable );
     d_MLParameterList.set( "aggregation: aux: threshold", d_mlOptions->d_aggregationAuxThreshold );
 
@@ -405,7 +409,11 @@ void TrilinosMLSolver::buildML()
     }
 
     if ( ( d_mlOptions->d_coarseType ) == "Amesos-KLU" ) {
+#if TRILINOS_MAJOR_MINOR_VERSION >= 130000
+      ML_Gen_Smoother_Amesos( d_ml, ( nlevels - 1 ), ML_AMESOS_KLU, -1, 0.0, 1 );
+#else
         ML_Gen_Smoother_Amesos( d_ml, ( nlevels - 1 ), ML_AMESOS_KLU, -1, 0.0 );
+#endif
     } else {
         AMP_ERROR( "The option, coarse_type = \"" << ( d_mlOptions->d_coarseType )
                                                   << "\" , is not supported." );
