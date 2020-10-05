@@ -155,7 +155,7 @@ protected:
         return emptyPointer;
     }
 
-    int d_iDebugPrintInfoLevel;
+    int d_iDebugPrintInfoLevel = 0;
 
     int d_iObject_id;
 
