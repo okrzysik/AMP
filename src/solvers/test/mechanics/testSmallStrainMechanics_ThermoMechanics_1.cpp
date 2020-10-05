@@ -38,21 +38,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-#ifdef USE_EXT_SILO
-    // Create the silo writer and register the data
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-#endif
-
     // Read the input file
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db    = input_db->getDatabase( "Mesh" );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
@@ -62,53 +56,43 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Create a nonlinear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "NonlinearMechanicsOperator" ), "key missing!" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
-    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsBVPoperator =
+    auto nonlinearMechanicsBVPoperator =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "NonlinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
 
     // Create the variables
-    std::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsNonlinearVolumeOperator =
+    auto mechanicsNonlinearVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
-    AMP::LinearAlgebra::Variable::shared_ptr dispVar =
-        nonlinearMechanicsBVPoperator->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr tempVar(
-        new AMP::LinearAlgebra::Variable( "Temperature" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr burnVar(
-        new AMP::LinearAlgebra::Variable( "Burnup" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr lhgrVar( new AMP::LinearAlgebra::Variable( "LHGR" ) );
+    auto dispVar = nonlinearMechanicsBVPoperator->getOutputVariable();
+    auto tempVar = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
+    auto burnVar = std::make_shared<AMP::LinearAlgebra::Variable>( "Burnup" );
+    auto lhgrVar = std::make_shared<AMP::LinearAlgebra::Variable>( "LHGR" );
 
     // For RHS (Point Forces)
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-    std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
-        std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "Load_Boundary", input_db, dummyModel ) );
+    auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "Load_Boundary", input_db, dummyModel ) );
     dirichletLoadVecOp->setVariable( dispVar );
 
-    AMP::Discretization::DOFManager::shared_ptr vectorDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto vectorDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
-    AMP::Discretization::DOFManager::shared_ptr scalarDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto scalarDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    AMP::LinearAlgebra::Vector::shared_ptr solVec =
-        AMP::LinearAlgebra::createVector( vectorDofMap, dispVar, true );
-    AMP::LinearAlgebra::Vector::shared_ptr tempVec =
-        AMP::LinearAlgebra::createVector( scalarDofMap, tempVar, true );
-    AMP::LinearAlgebra::Vector::shared_ptr burnVec =
-        AMP::LinearAlgebra::createVector( scalarDofMap, burnVar, true );
-    AMP::LinearAlgebra::Vector::shared_ptr lhgrVec =
-        AMP::LinearAlgebra::createVector( scalarDofMap, lhgrVar, true );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec       = solVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr resVec       = solVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr scaledRhsVec = solVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr tempVecRef   = tempVec->cloneVector();
+    auto solVec       = AMP::LinearAlgebra::createVector( vectorDofMap, dispVar, true );
+    auto tempVec      = AMP::LinearAlgebra::createVector( scalarDofMap, tempVar, true );
+    auto burnVec      = AMP::LinearAlgebra::createVector( scalarDofMap, burnVar, true );
+    auto lhgrVec      = AMP::LinearAlgebra::createVector( scalarDofMap, lhgrVar, true );
+    auto rhsVec       = solVec->cloneVector();
+    auto resVec       = solVec->cloneVector();
+    auto scaledRhsVec = solVec->cloneVector();
+    auto tempVecRef   = tempVec->cloneVector();
 
     // Initial guess
     solVec->zero();
@@ -124,14 +108,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     burnVec->setRandomValues();
     burnVec->abs( *burnVec );
-    double maxBurnVec        = burnVec->max();
+    double maxBurnVec        = static_cast<double>( burnVec->max() );
     double oneOverMaxBurnVec = 1.0 / maxBurnVec;
     burnVec->scale( oneOverMaxBurnVec );
     burnVec->scale( 0.2 );
 
     lhgrVec->setRandomValues();
     lhgrVec->abs( *lhgrVec );
-    double maxLHGRVec        = lhgrVec->max();
+    double maxLHGRVec        = static_cast<double>( lhgrVec->max() );
     double oneOverMaxLHGRVec = 1.0 / maxLHGRVec;
     lhgrVec->scale( oneOverMaxLHGRVec );
     lhgrVec->scale( 0.2 );
@@ -145,10 +129,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Create a Linear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsBVPoperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
+    auto linearMechanicsBVPoperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
 
     AMP::pout << "Created the linearMechanicsOperator." << std::endl;
 
@@ -162,35 +145,35 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearMechanicsBVPoperator->getParameters( "Jacobian", solVec ) );
 
     double epsilon =
-        1.0e-13 * ( ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
+        1.0e-13 *
+        static_cast<double>(
+            ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
 
-    std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    std::shared_ptr<AMP::Database> linearSolver_db =
-        nonlinearSolver_db->getDatabase( "LinearSolver" );
+    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
+    auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
     // ---- first initialize the preconditioner
     std::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase( "Preconditioner" );
-    std::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams(
-        new AMP::Solver::TrilinosMLSolverParameters( pcSolver_db ) );
+    std::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams =
+        std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( pcSolver_db );
     pcSolverParams->d_pOperator = linearMechanicsBVPoperator;
-    std::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
-        new AMP::Solver::TrilinosMLSolver( pcSolverParams ) );
+    std::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver =
+        std::make_shared<AMP::Solver::TrilinosMLSolver>( pcSolverParams );
 
     // HACK to prevent a double delete on Petsc Vec
     std::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver;
 
     // initialize the linear solver
-    std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
-        new AMP::Solver::PetscKrylovSolverParameters( linearSolver_db ) );
+    auto linearSolverParams =
+        std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
     linearSolverParams->d_pOperator       = linearMechanicsBVPoperator;
     linearSolverParams->d_comm            = globalComm;
     linearSolverParams->d_pPreconditioner = pcSolver;
-    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
-        new AMP::Solver::PetscKrylovSolver( linearSolverParams ) );
+    auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
     // initialize the nonlinear solver
-    std::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
-        new AMP::Solver::PetscSNESSolverParameters( nonlinearSolver_db ) );
+    auto nonlinearSolverParams =
+        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = nonlinearMechanicsBVPoperator;
@@ -213,14 +196,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                   << scaledRhsVec->L2Norm() << std::endl;
 
         nonlinearMechanicsBVPoperator->residual( scaledRhsVec, solVec, resVec );
-        double initialResidualNorm = resVec->L2Norm();
+        double initialResidualNorm = static_cast<double>( resVec->L2Norm() );
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
         nonlinearSolver->solve( scaledRhsVec, solVec );
 
         nonlinearMechanicsBVPoperator->residual( scaledRhsVec, solVec, resVec );
-        double finalResidualNorm = resVec->L2Norm();
+        double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
         AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                   << finalResidualNorm << std::endl;
 
@@ -230,35 +213,29 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             ut->passes( "Nonlinear solve for current loading step" );
         }
 
-        double finalSolNorm = solVec->L2Norm();
+        double finalSolNorm = static_cast<double>( solVec->L2Norm() );
 
         AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
-        AMP::LinearAlgebra::Vector::shared_ptr mechUvec =
-            solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
-        AMP::LinearAlgebra::Vector::shared_ptr mechVvec =
-            solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
-        AMP::LinearAlgebra::Vector::shared_ptr mechWvec =
-            solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
+        auto mechUvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
+        auto mechVvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
+        auto mechWvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
 
-        double finalMaxU = mechUvec->maxNorm();
-        double finalMaxV = mechVvec->maxNorm();
-        double finalMaxW = mechWvec->maxNorm();
+        AMP::pout << "Maximum U displacement: " << mechUvec->maxNorm() << std::endl;
+        AMP::pout << "Maximum V displacement: " << mechVvec->maxNorm() << std::endl;
+        AMP::pout << "Maximum W displacement: " << mechWvec->maxNorm() << std::endl;
 
-        AMP::pout << "Maximum U displacement: " << finalMaxU << std::endl;
-        AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
-        AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
-
-        std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
-        std::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperatorParameters> tmpParams(
-            new AMP::Operator::MechanicsNonlinearFEOperatorParameters( tmp_db ) );
-        ( nonlinearMechanicsBVPoperator->getVolumeOperator() )->reset( tmpParams );
+        auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
+        auto tmpParams =
+            std::make_shared<AMP::Operator::MechanicsNonlinearFEOperatorParameters>( tmp_db );
+        nonlinearMechanicsBVPoperator->getVolumeOperator()->reset( tmpParams );
         nonlinearSolver->setZeroInitialGuess( false );
     }
 
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
 #ifdef USE_EXT_SILO
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector(
         burnVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "InitialDamageThreshold" );

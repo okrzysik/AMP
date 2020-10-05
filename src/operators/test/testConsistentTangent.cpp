@@ -84,7 +84,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     auto tmpLinVec    = solVec->cloneVector();
 
     solVec->setToScalar( 0.0 );
-    double solNorm = solVec->L2Norm();
+    double solNorm = static_cast<double>( solVec->L2Norm() );
     AMP::pout << "sol-Norm-2 = " << solNorm << std::endl;
 
     nonlinOperator->apply( solVec, resVecNonlin );
@@ -92,12 +92,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     linOperator->apply( solVec, resVecLin );
     resDiffVec->subtract( *resVecNonlin, *resVecLin );
 
-    double epsilon = 1.0e-13 * ( ( ( linOperator->getMatrix() )->extractDiagonal() )->L1Norm() );
+    double epsilon = 1.0e-13 * static_cast<double>(
+                                   ( ( linOperator->getMatrix() )->extractDiagonal() )->L1Norm() );
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
-    double nonLinNorm = resVecNonlin->L1Norm();
-    double linNorm    = resVecLin->L1Norm();
-    double diffNorm   = resDiffVec->L1Norm();
+    double nonLinNorm = static_cast<double>( resVecNonlin->L1Norm() );
+    double linNorm    = static_cast<double>( resVecLin->L1Norm() );
+    double diffNorm   = static_cast<double>( resDiffVec->L1Norm() );
 
     AMP::pout << "nonLin-Norm-1 = " << nonLinNorm << std::endl;
     AMP::pout << "lin-Norm-1 = " << linNorm << std::endl;
@@ -118,7 +119,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     solVec->setRandomValues();
     solVec->scale( 100.0 );
     solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    solNorm = solVec->L2Norm();
+    solNorm = static_cast<double>( solVec->L2Norm() );
     AMP::pout << "sol-Norm-2 = " << solNorm << std::endl;
 
     nonlinOperator->apply( solVec, resVecNonlin );
@@ -128,9 +129,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     linOperator->apply( solVec, resVecLin );
     resDiffVec->subtract( *resVecNonlin, *resVecLin );
 
-    nonLinNorm = resVecNonlin->L2Norm();
-    linNorm    = resVecLin->L2Norm();
-    diffNorm   = resDiffVec->L1Norm();
+    nonLinNorm = static_cast<double>( resVecNonlin->L2Norm() );
+    linNorm    = static_cast<double>( resVecLin->L2Norm() );
+    diffNorm   = static_cast<double>( resDiffVec->L1Norm() );
 
     AMP::pout << "nonLin-Norm-2 = " << nonLinNorm << std::endl;
     AMP::pout << "lin-Norm-2 = " << linNorm << std::endl;
@@ -148,7 +149,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
 
     solVec->scale( 10.0 );
     solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    solNorm = solVec->L2Norm();
+    solNorm = static_cast<double>( solVec->L2Norm() );
     AMP::pout << "sol-Norm-2 = " << solNorm << std::endl;
 
     nonlinOperator->apply( solVec, resVecNonlin );
@@ -157,20 +158,20 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     }
     linOperator->apply( solVec, resVecLin );
 
-    nonLinNorm = resVecNonlin->L2Norm();
-    linNorm    = resVecLin->L2Norm();
+    nonLinNorm = static_cast<double>( resVecNonlin->L2Norm() );
+    linNorm    = static_cast<double>( resVecLin->L2Norm() );
     AMP::pout << "nonLin-Norm-2 = " << nonLinNorm << std::endl;
     AMP::pout << "lin-Norm-2 = " << linNorm << std::endl;
 
     resDiffVec->subtract( *resVecNonlin, *tmpNonlinVec );
-    diffNorm = resDiffVec->L1Norm();
+    diffNorm = static_cast<double>( resDiffVec->L1Norm() );
 
     if ( diffNorm > ( 10.0 * epsilon ) ) {
         ut->failure( msgName );
     }
 
     resDiffVec->subtract( *resVecLin, *tmpLinVec );
-    diffNorm = resDiffVec->L1Norm();
+    diffNorm = static_cast<double>( resDiffVec->L1Norm() );
 
     if ( diffNorm > ( 10.0 * epsilon ) ) {
         ut->failure( msgName );

@@ -118,7 +118,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearMechanicsBVPoperator->getParameters( "Jacobian", solVec ) );
 
     double epsilon =
-        1.0e-13 * ( ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
+        1.0e-13 *
+        static_cast<double>(
+            ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
 
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
@@ -164,58 +166,20 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         nonlinearMechanicsBVPoperator->modifyInitialSolutionVector( solVec );
 
-        double scaleValue;
-        /*    double No5 = NumberOfLoadingSteps / 5;
-              double N2o5 = (2 * NumberOfLoadingSteps) / 5;
-              double N3o5 = (3 * NumberOfLoadingSteps) / 5;
-              double N4o5 = (4 * NumberOfLoadingSteps) / 5;
-              double N = NumberOfLoadingSteps;
-              if(step < No5) {
-              scaleValue = ((double)step+1.0) / ((double)No5);
-              }
-              if((step >= No5) && (step < N2o5)) {
-              scaleValue = 1.0 - (((double)step + 1.0 - (double)No5) / ((double)No5));
-              }
-              if((step >= N2o5) && (step < N3o5)) {
-              scaleValue = - (((double)step + 1.0 - (double)N2o5) / ((double)No5));
-              }
-              if((step >= N3o5) && (step < N4o5)) {
-              scaleValue = -1.0 + (((double)step + 1.0 - (double)N3o5) / ((double)No5));
-              }
-              if((step >= N4o5) && (step < N)) {
-              scaleValue = (((double)step + 1.0 - (double)N4o5) / ((double)No5));
-              }
-              fprintf(fout1,"%lf %lf\n",((double)step + 1.0),scaleValue);
-              */
-        /*    double No2 = NumberOfLoadingSteps / 2;
-              double N = NumberOfLoadingSteps;
-              if(step < No2) {
-              scaleValue = ((double)step+1.0) / ((double)No2);
-              }
-              if((step >= No2) && (step < N)) {
-              scaleValue = 1.0 - (((double)step + 1.0 - (double)No2) / ((double)No2));
-              }
-              fprintf(fout1,"%lf %lf\n",((double)step + 1.0),scaleValue);
-              */
-        // double No4 = NumberOfLoadingSteps / 4;
-        // double No2 = NumberOfLoadingSteps / 2;
-        // double N3o4 = (3 * NumberOfLoadingSteps) / 4;
-        // double N = NumberOfLoadingSteps;
-
-        scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
+        double scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
         scaledRhsVec->scale( scaleValue, *rhsVec );
         AMP::pout << "L2 Norm of RHS at loading step " << ( step + 1 ) << " is "
                   << scaledRhsVec->L2Norm() << std::endl;
 
         nonlinearMechanicsBVPoperator->residual( scaledRhsVec, solVec, resVec );
-        double initialResidualNorm = resVec->L2Norm();
+        double initialResidualNorm = static_cast<double>( resVec->L2Norm() );
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
         nonlinearSolver->solve( scaledRhsVec, solVec );
 
         nonlinearMechanicsBVPoperator->residual( scaledRhsVec, solVec, resVec );
-        double finalResidualNorm = resVec->L2Norm();
+        double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
         AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                   << finalResidualNorm << std::endl;
 
@@ -225,7 +189,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             ut->passes( "Nonlinear solve for current loading step" );
         }
 
-        double finalSolNorm = solVec->L2Norm();
+        double finalSolNorm = static_cast<double>( solVec->L2Norm() );
 
         AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
@@ -233,89 +197,16 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         auto mechVvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
         auto mechWvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
 
-        double finalMaxU = mechUvec->maxNorm();
-        double finalMaxV = mechVvec->maxNorm();
-        double finalMaxW = mechWvec->maxNorm();
-
-        AMP::pout << "Maximum U displacement: " << finalMaxU << std::endl;
-        AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
-        AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
+        AMP::pout << "Maximum U displacement: " << mechUvec->maxNorm() << std::endl;
+        AMP::pout << "Maximum V displacement: " << mechVvec->maxNorm() << std::endl;
+        AMP::pout << "Maximum W displacement: " << mechWvec->maxNorm() << std::endl;
 
         auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
         auto tmpParams =
             std::make_shared<AMP::Operator::MechanicsNonlinearFEOperatorParameters>( tmp_db );
-        ( nonlinearMechanicsBVPoperator->getVolumeOperator() )->reset( tmpParams );
+        nonlinearMechanicsBVPoperator->getVolumeOperator()->reset( tmpParams );
 
-        /*    if(step < (No4 - 1)) {
-              dirichletVectorCorrectionDatabase->putScalar("value_1_0", (((double)(step +
-           2))*delta_displacement_axial));
-              dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.0);
-              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
-              AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-              (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-              fprintf(fout1,"%d %le %le\n",step,(((double)(step +
-           2))*delta_displacement_axial),0.0);
-              }
-              if((step >= (No4 - 1)) && (step < (No2 - 1))) {
-              dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.6);
-              dirichletVectorCorrectionDatabase->putScalar("value_2_0", (((double)(step + 2 -
-           No4))*delta_displacement_shear));
-              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
-              AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-              (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-              fprintf(fout1,"%d %le %le\n",step,0.3,(((double)(step + 2 -
-           No4))*delta_displacement_shear));
-              }
-              if((step >= (No2 - 1)) && (step < (N3o4 - 1))) {
-              dirichletVectorCorrectionDatabase->putScalar("value_1_0", (0.6 - (((double)(step + 2 -
-           No2))*delta_displacement_axial)));
-              dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.6);
-              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
-              AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-              (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-              fprintf(fout1,"%d %le %le\n",step,(0.3 - (((double)(step + 2 -
-           No2))*delta_displacement_axial)),0.3);
-              }
-              if((step >= (N3o4 - 1)) && (step < N)) {
-              dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.0);
-              dirichletVectorCorrectionDatabase->putScalar("value_2_0", (0.6 - (((double)(step + 2 -
-           N3o4))*delta_displacement_shear)));
-              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
-              AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-              (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-              fprintf(fout1,"%d %le %le\n",step,0.0,(0.3 - (((double)(step + 2 -
-           N3o4))*delta_displacement_shear)));
-              }
-              */
-
-        /*    if(step == 0) {
-              dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.3);
-              dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.3);
-              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
-              AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-              (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-              fprintf(fout1,"%d %le %le\n",step,(((double)(step + 2))*0.003),0.0);
-              }
-              if(step == 1) {
-              dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.0);
-              dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.3);
-              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
-              AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-              (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-              fprintf(fout1,"%d %le %le\n",step,0.3,(((double)(step + 2 - No4))*0.003));
-              }
-              if((step == 2) || (step == 3)) {
-              dirichletVectorCorrectionDatabase->putScalar("value_1_0", 0.0);
-              dirichletVectorCorrectionDatabase->putScalar("value_2_0", 0.0);
-              std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new
-              AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-              (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-              fprintf(fout1,"%d %le %le\n",step,(0.3 - (((double)(step + 2 - No2))*0.003)),0.3);
-              }
-              */
         nonlinearSolver->setZeroInitialGuess( false );
-
-        // std::cout<<solVec<<std::endl;
 
         auto mechMat = linearMechanicsBVPoperator->getMatrix();
 
@@ -326,26 +217,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             for ( unsigned int j = 0; j < matCols.size(); j++ ) {
                 fprintf(
                     fp, "A(%d, %d) = %.15f ; \n", ( i + 1 ), (int) ( matCols[j] + 1 ), matVals[j] );
-            } // end for j
+            }
             fprintf( fp, "\n" );
-        } // end for i
-
-        /*char num1[256];
-          sprintf(num1,"%d",step);
-          auto number1 = num1;
-          auto fname = exeName + "_Stress_Strain_" + number1 + ".txt";
-          std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator())->printStressAndStrain(solVec,
-          fname);
-          */
+        }
     }
 
-    // fclose(fout1);
-
-    // AMP::pout<<solVec<<std::endl;
-
     AMP::pout << "epsilon = " << epsilon << std::endl;
-
-    // mechanicsNonlinearVolumeOperator->printStressAndStrain(solVec, output_file);
 
     ut->passes( exeName );
 }

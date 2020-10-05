@@ -246,7 +246,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         fusedSolVec->getVectorData()->fireDataChange();
 
-        double solution_norm = fusedSolVec->L2Norm();
+        double solution_norm = static_cast<double>( fusedSolVec->L2Norm() );
         std::cout << "MatFree-1:  solution norm: " << std::setprecision( 15 ) << solution_norm
                   << std::endl;
 
@@ -316,7 +316,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         fusedSolVec->getVectorData()->fireDataChange();
 
-        double solution_norm = fusedSolVec->L2Norm();
+        double solution_norm = static_cast<double>( fusedSolVec->L2Norm() );
         std::cout << "MatFree-2:  solution norm: " << std::setprecision( 15 ) << solution_norm
                   << std::endl;
 

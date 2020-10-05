@@ -128,7 +128,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                   << mechNlScaledRhsVec->L2Norm() << std::endl;
 
         nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-        double initialResidualNorm = mechNlResVec->L2Norm();
+        double initialResidualNorm = static_cast<double>( mechNlResVec->L2Norm() );
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
@@ -136,7 +136,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearSolver->solve( mechNlScaledRhsVec, mechNlSolVec );
 
         nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-        double finalResidualNorm = mechNlResVec->L2Norm();
+        double finalResidualNorm = static_cast<double>( mechNlResVec->L2Norm() );
         AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                   << finalResidualNorm << std::endl;
 

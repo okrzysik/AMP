@@ -556,7 +556,7 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm();
+        double solution_norm( u->L2Norm() );
         AMP::pout << "BoomerAMGSolver : before solve solution norm: " << std::setprecision( 15 )
                   << solution_norm << std::endl;
     }
@@ -577,7 +577,7 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     copyFromHypre( d_hypre_sol, u );
 
     // Check for NaNs in the solution (no communication necessary)
-    double localNorm = u->getVectorOperations()->localL2Norm(*u->getVectorData());
+    double localNorm = u->getVectorOperations()->localL2Norm( *u->getVectorData() ).get<double>();
     AMP_INSIST( localNorm == localNorm, "NaNs detected in solution" );
 
     // we are forced to update the state of u here
@@ -587,18 +587,15 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     u->getVectorData()->fireDataChange();
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm();
         AMP::pout << "BoomerAMGSolver : after solve solution norm: " << std::setprecision( 15 )
-                  << solution_norm << std::endl;
+                  << u->L2Norm() << std::endl;
     }
 
     if ( d_bComputeResidual ) {
         d_pOperator->residual( f, u, r );
-        const auto finalResNorm = r->L2Norm();
-
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "BoomerAMGSolver::solve(), L2 norm of residual after solve "
-                      << std::setprecision( 15 ) << finalResNorm << std::endl;
+                      << std::setprecision( 15 ) << r->L2Norm() << std::endl;
         }
     }
 

@@ -187,7 +187,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
 
-    double initialResidualNorm = resVec->L2Norm();
+    double initialResidualNorm = static_cast<double>( resVec->L2Norm() );
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
 #ifdef USE_EXT_SILO

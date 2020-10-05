@@ -229,8 +229,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
         std::cout << "counter = " << counter << "bndGlobalIds.size() = " << gid.size() << std::endl;
         for ( auto &elem : gid ) {
-	  thermalIC->setValuesByGlobalID( 1, &elem, &tval );
-	  oxygenIC->setValuesByGlobalID( 1, &elem, &oval );
+            thermalIC->setValuesByGlobalID( 1, &elem, &tval );
+            oxygenIC->setValuesByGlobalID( 1, &elem, &oval );
         } // end for i
     }     // end for node
 
@@ -339,11 +339,10 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         auto currentOxygenSolution =
             currentSolution->subsetVectorForVariable( oxygenVolumeOperator->getOutputVariable() );
 
-        double maxT = currentThermalSolution->max();
-        double minT = currentThermalSolution->min();
-
-        double maxO = currentOxygenSolution->max();
-        double minO = currentOxygenSolution->min();
+        auto maxT = currentThermalSolution->max();
+        auto minT = currentThermalSolution->min();
+        auto maxO = currentOxygenSolution->max();
+        auto minO = currentOxygenSolution->min();
 
         std::cout << "current_time = " << current_time << std::endl;
         std::cout << "max val of the current thermal solution = " << maxT << std::endl;

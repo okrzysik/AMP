@@ -203,7 +203,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 
     diffusionOperator->modifyRHSvector( SourceVec );
 
-    auto rhsNorm = SourceVec->L2Norm();
+    auto rhsNorm = static_cast<double>( SourceVec->L2Norm() );
     std::cout << "RHS Norm after BC Correction " << rhsNorm << std::endl;
 
     //------------------------------------------
@@ -224,7 +224,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     TemperatureInKelvinVec->setToScalar( 1.0 );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = TemperatureInKelvinVec->L2Norm();
+    double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
     // Create the ML Solver
@@ -240,7 +240,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     diffusionOperator->residual( SourceVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = ResidualVec->L2Norm();
+    double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     node          = node.begin();
@@ -265,13 +265,13 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 
     diffVec->subtract( *exactVec, *TemperatureInKelvinVec );
 
-    double exactNorm = exactVec->L1Norm();
+    double exactNorm = static_cast<double>( exactVec->L1Norm() );
     std::cout << "L2norm of exactVec " << exactNorm << std::endl;
 
-    double solutionNorm = TemperatureInKelvinVec->L1Norm();
+    double solutionNorm = static_cast<double>( TemperatureInKelvinVec->L1Norm() );
     std::cout << "L2norm of solutionVec " << solutionNorm << std::endl;
 
-    double errorNorm = diffVec->L1Norm();
+    double errorNorm = static_cast<double>( diffVec->L1Norm() );
     std::cout << "L1norm of DiffVec " << errorNorm << std::endl;
 
     if ( errorNorm > 1.0 ) {

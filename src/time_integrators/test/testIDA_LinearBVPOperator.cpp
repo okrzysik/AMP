@@ -145,7 +145,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             // cout << "val = " << val << endl;
             // cout << "counter = " << counter << "gid.size() = " << gid.size() << endl;
             for ( auto &elem : gid ) {
-	      initialCondition->setValuesByGlobalID( 1, &elem, &val );
+                initialCondition->setValuesByGlobalID( 1, &elem, &val );
             } // end for i
         }     // end for node
         initialConditionPrime->zero();
@@ -215,11 +215,6 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         // ---------------------------------------------------------------------------------------
         // step in time
         double current_time = 0;
-        double max          = 0;
-        // double abs_error=0.0;
-        double min = 0;
-        // double rel_error=0.0;
-        // double exact_sol=0.0;
 
         int j = 1;
         while ( pIDATimeIntegrator->getCurrentTime() < pIDATimeIntegrator->getFinalTime() ) {
@@ -235,8 +230,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
                 ut->failure( "Tested IDATimeIntegrator's advanceSolution. FAIL!!" );
             }
 
-            max = pIDATimeIntegrator->getCurrentSolution()->max();
-            min = pIDATimeIntegrator->getCurrentSolution()->min();
+            auto max = pIDATimeIntegrator->getCurrentSolution()->max();
+            auto min = pIDATimeIntegrator->getCurrentSolution()->min();
 
             std::cout << "current_time = " << current_time << std::endl;
             std::cout << "max val of the current solution = " << max << std::endl;

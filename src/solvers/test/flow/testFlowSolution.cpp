@@ -48,10 +48,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-    //--------------------------------------
-    //     CREATE THE FLOW OPERATOR   ------
-    //--------------------------------------
-
+    // CREATE THE FLOW OPERATOR
     AMP_INSIST( input_db->keyExists( "FlowFrapconOperator" ),
                 "Key ''FlowFrapconOperator'' is missing!" );
 
@@ -76,7 +73,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "FlowFrapconJacobian", input_db, flowtransportModel ) );
 
-    //-------------------------------------
     //    MANUFACTURE THE INPUT SOLUTION
     //     FROM PRESCRIBED FLOW SOLUTION
 
@@ -124,45 +120,17 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     flowOperator->setVector( cladVec );
     flowJacobian->setVector( cladVec );
-    //  resVec->setToScalar(300.);
-    //  vecLag->copyVector(resVec);
-    //------------------------------------
 
-    /*
-      while ( 1 )
-      {
-          cnt++;
-          flowOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
-    //	  if ( abs(resVec->L2Norm()-tmpVec->L2Norm()) < .000005*tmpVec->L2Norm() )
-          if ( abs(resVec->L2Norm()-vecLag->L2Norm()) < .000005*vecLag->L2Norm() )
-              break;
-          else
-              std::cout << "for iteration cnt = "<<cnt <<" --> " << vecLag->L2Norm() << " " <<
-    resVec->L2Norm() <<
-    std::endl;
-
-          std::cout<<"Intermediate Flow Solution " <<std::endl;
-          for( int i=0; i<10; i++) {
-              std::cout<<" @i : "<< i<<" is "<<resVec->getValueByLocalID(i) ;
-          }
-          std::cout<<std::endl;
-          vecLag->copyVector(resVec);
-      }
-    */
     auto jacobianSolver_db  = input_db->getDatabase( "JacobianSolver" );
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    // std::shared_ptr<AMP::Database> linearSolver_db =
-    // nonlinearSolver_db->getDatabase("LinearSolver");
 
     auto mv_view_solVec = AMP::LinearAlgebra::MultiVector::view( solVec, globalComm );
     auto mv_view_rhsVec = AMP::LinearAlgebra::MultiVector::view( rhsVec, globalComm );
     auto mv_view_tmpVec = AMP::LinearAlgebra::MultiVector::view( tmpVec, globalComm );
-    // auto mv_view_cladVec = AMP::LinearAlgebra::MultiVector::view( cladVec , globalComm );
 
     flowOperator->residual( rhsVec, solVec, resVec );
     flowJacobian->reset( flowOperator->getParameters( "Jacobian", mv_view_solVec ) );
     flowJacobian->residual( rhsVec, solVec, resVec );
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
 
     auto jacobianSolverParams =
         std::make_shared<AMP::Solver::PetscSNESSolverParameters>( jacobianSolver_db );
@@ -174,7 +142,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto JacobianSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( jacobianSolverParams );
 
-    //----------------------------------------------------------------------------------------------------------------------
     // initialize the nonlinear solver
     std::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams =
         std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
@@ -186,26 +153,14 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
-    //  std::shared_ptr<AMP::Database> flowPreconditioner_db =
-    //  linearSolver_db->getDatabase("Preconditioner");
-    //  std::shared_ptr<AMP::Solver::SolverStrategyParameters> flowPreconditionerParams(new
-    //  AMP::Solver::SolverStrategyParameters(flowPreconditioner_db));
-    //  flowPreconditionerParams->d_pOperator = flowJacobian;
-    //  std::shared_ptr<AMP::Solver::Flow1DSolver> linearFlowPreconditioner(new
-    //  AMP::Solver::Flow1DSolver(flowPreconditionerParams));
-
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
 
     linearSolver->setPreconditioner( JacobianSolver );
-    //------------------------------------------------------------------------------
 
     flowOperator->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm();
 
-    AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
+    AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;
 
     nonlinearSolver->setZeroInitialGuess( true );
 
@@ -213,18 +168,14 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     flowOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm();
-
-    std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
+    std::cout << "Final Residual Norm: " << resVec->L2Norm() << std::endl;
 
     std::cout << "Final Flow Solution " << std::endl;
     for ( int i = 0; i < 10; i++ ) {
         std::cout << " @i : " << i << " is " << solVec->getValueByLocalID( i );
     }
     std::cout << std::endl;
-    //------------------------------------
 
-    //  if( (tmpVec->L2Norm()-resVec->L2Norm()) > 0.01*tmpVec->L2Norm() )
     if ( resVec->L2Norm() > 0.01 ) {
         ut->failure( "Manufactured Solution verification test for 1D flow operator." );
     } else {

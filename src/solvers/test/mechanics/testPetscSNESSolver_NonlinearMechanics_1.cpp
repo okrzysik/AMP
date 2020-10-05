@@ -140,7 +140,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                   << mechNlScaledRhsVec->L2Norm() << std::endl;
 
         nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-        double initialResidualNorm = mechNlResVec->L2Norm();
+        double initialResidualNorm = static_cast<double>( mechNlResVec->L2Norm() );
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
@@ -148,7 +148,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearSolver->solve( mechNlScaledRhsVec, mechNlSolVec );
 
         nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-        double finalResidualNorm = mechNlResVec->L2Norm();
+        double finalResidualNorm = static_cast<double>( mechNlResVec->L2Norm() );
         AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                   << finalResidualNorm << std::endl;
 
@@ -158,7 +158,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             ut->passes( "Nonlinear solve for current loading step" );
         }
 
-        double finalSolNorm = mechNlSolVec->L2Norm();
+        double finalSolNorm = static_cast<double>( mechNlSolVec->L2Norm() );
 
         AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
@@ -166,9 +166,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         auto mechVvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
         auto mechWvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
 
-        double finalMaxU = mechUvec->maxNorm();
-        double finalMaxV = mechVvec->maxNorm();
-        double finalMaxW = mechWvec->maxNorm();
+        double finalMaxU = static_cast<double>( mechUvec->maxNorm() );
+        double finalMaxV = static_cast<double>( mechVvec->maxNorm() );
+        double finalMaxW = static_cast<double>( mechWvec->maxNorm() );
 
         AMP::pout << "Maximum U displacement: " << finalMaxU << std::endl;
         AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
@@ -191,7 +191,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #endif
     }
 
-    double finalSolNorm = mechNlSolVec->L2Norm();
+    double finalSolNorm = static_cast<double>( mechNlSolVec->L2Norm() );
     AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
     ut->passes( exeName );

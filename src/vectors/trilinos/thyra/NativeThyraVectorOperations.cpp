@@ -35,9 +35,9 @@ Teuchos::RCP<Thyra::VectorBase<double>> NativeThyraVectorOperations::getThyraVec
     return data->getVec();
 }
 
-void NativeThyraVectorOperations::setToScalar( double alpha, VectorData &x )
+void NativeThyraVectorOperations::setToScalar( const Scalar &alpha, VectorData &x )
 {
-    Thyra::put_scalar<double>( alpha, getThyraVec( x ).ptr() );
+    Thyra::put_scalar<double>( alpha.get<double>(), getThyraVec( x ).ptr() );
 }
 
 void NativeThyraVectorOperations::setRandomValues( VectorData &x )
@@ -56,15 +56,15 @@ void NativeThyraVectorOperations::copy( const VectorData &x, VectorData &y )
     Thyra::copy<double>( *( getThyraVec( x ) ), getThyraVec( y ).ptr() );
 }
 
-void NativeThyraVectorOperations::scale( double alpha, VectorData &x )
+void NativeThyraVectorOperations::scale( const Scalar &alpha, VectorData &x )
 {
-    Thyra::scale<double>( alpha, getThyraVec( x ).ptr() );
+    Thyra::scale<double>( alpha.get<double>(), getThyraVec( x ).ptr() );
 }
 
-void NativeThyraVectorOperations::scale( double alpha, const VectorData &x, VectorData &y )
+void NativeThyraVectorOperations::scale( const Scalar &alpha, const VectorData &x, VectorData &y )
 {
     Thyra::copy<double>( *( getThyraVec( x ) ), getThyraVec( y ).ptr() );
-    Thyra::scale<double>( alpha, getThyraVec( y ).ptr() );
+    Thyra::scale<double>( alpha.get<double>(), getThyraVec( y ).ptr() );
 }
 
 void NativeThyraVectorOperations::add( const VectorData &x, const VectorData &y, VectorData &z )
@@ -108,12 +108,15 @@ void NativeThyraVectorOperations::reciprocal( const VectorData &x, VectorData &y
 #endif
 }
 
-void NativeThyraVectorOperations::linearSum(
-    double alpha_in, const VectorData &x, double beta_in, const VectorData &y, VectorData &z )
+void NativeThyraVectorOperations::linearSum( const Scalar &alpha_in,
+                                             const VectorData &x,
+                                             const Scalar &beta_in,
+                                             const VectorData &y,
+                                             VectorData &z )
 {
     std::vector<double> alpha_vec( 2, 1.0 );
-    alpha_vec[0] = alpha_in;
-    alpha_vec[1] = beta_in;
+    alpha_vec[0] = alpha_in.get<double>();
+    alpha_vec[1] = beta_in.get<double>();
     std::vector<Teuchos::Ptr<const Thyra::VectorBase<double>>> vecs( 2 );
     vecs[0] = getThyraVec( x ).ptr();
     vecs[1] = getThyraVec( y ).ptr();
@@ -122,20 +125,20 @@ void NativeThyraVectorOperations::linearSum(
     Thyra::linear_combination<double>( alpha_view, vecs_view, 0.0, getThyraVec( z ).ptr() );
 }
 
-void NativeThyraVectorOperations::axpy( double alpha,
+void NativeThyraVectorOperations::axpy( const Scalar &alpha,
                                         const VectorData &x,
                                         const VectorData &y,
                                         VectorData &z )
 {
-    linearSum( alpha, x, 1.0, y, z );
+    linearSum( alpha.get<double>(), x, 1.0, y, z );
 }
 
-void NativeThyraVectorOperations::axpby( double alpha,
-                                         double beta,
+void NativeThyraVectorOperations::axpby( const Scalar &alpha,
+                                         const Scalar &beta,
                                          const VectorData &x,
                                          VectorData &z )
 {
-    linearSum( alpha, x, beta, z, z );
+    linearSum( alpha.get<double>(), x, beta, z, z );
 }
 
 void NativeThyraVectorOperations::abs( const VectorData &x, VectorData &y )
@@ -147,32 +150,32 @@ void NativeThyraVectorOperations::abs( const VectorData &x, VectorData &y )
 #endif
 }
 
-double NativeThyraVectorOperations::min( const VectorData &x ) const
+Scalar NativeThyraVectorOperations::min( const VectorData &x ) const
 {
     return Thyra::min<double>( *getThyraVec( x ) );
 }
 
-double NativeThyraVectorOperations::max( const VectorData &x ) const
+Scalar NativeThyraVectorOperations::max( const VectorData &x ) const
 {
     return Thyra::max<double>( *getThyraVec( x ) );
 }
 
-double NativeThyraVectorOperations::L1Norm( const VectorData &x ) const
+Scalar NativeThyraVectorOperations::L1Norm( const VectorData &x ) const
 {
     return Thyra::norm_1<double>( *getThyraVec( x ) );
 }
 
-double NativeThyraVectorOperations::L2Norm( const VectorData &x ) const
+Scalar NativeThyraVectorOperations::L2Norm( const VectorData &x ) const
 {
     return Thyra::norm_2<double>( *getThyraVec( x ) );
 }
 
-double NativeThyraVectorOperations::maxNorm( const VectorData &x ) const
+Scalar NativeThyraVectorOperations::maxNorm( const VectorData &x ) const
 {
     return Thyra::norm_inf<double>( *getThyraVec( x ) );
 }
 
-double NativeThyraVectorOperations::dot( const VectorData &x, const VectorData &y ) const
+Scalar NativeThyraVectorOperations::dot( const VectorData &x, const VectorData &y ) const
 {
     return Thyra::dot<double>( *getThyraVec( x ), *getThyraVec( y ) );
 }

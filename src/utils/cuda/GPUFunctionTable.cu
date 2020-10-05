@@ -1,6 +1,8 @@
 #ifndef included_GPUFunctionTable_cu
 #define included_GPUFunctionTable_cu
 
+#define included_AMP_GPUFunctionTable_HPP_
+
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include "AMP/utils/cuda/GPUFunctionTable.h"

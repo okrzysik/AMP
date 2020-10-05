@@ -150,7 +150,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
  * Function to register a mesh                               *
  ************************************************************/
 #ifdef USE_AMP_MESH
-void AsciiWriter::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, std::string )
+void AsciiWriter::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, const std::string & )
 {
     AMP_ERROR( "registerMesh is not implimented yet" );
 }

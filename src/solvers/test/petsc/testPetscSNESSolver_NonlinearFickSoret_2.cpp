@@ -51,27 +51,20 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    //--------------------------------------------------
-    //   Create the Mesh.
-    //--------------------------------------------------
+    // Create the Mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
-    //--------------------------------------------------
 
-    //--------------------------------------------------
     // Create a DOF manager for a nodal vector
-    //--------------------------------------------------
     int DOFsPerNode     = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-    //--------------------------------------------------
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear Fick-Soret diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearFickSoretBVPOperator" ), "key missing!" );
 
@@ -88,30 +81,24 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto soretOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
         nlinOp->getSoretOperator() );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // use the linear BVP operator to create a Fick linear operator with bc's
     AMP_INSIST( input_db->keyExists( "testLinearFickBVPOperator" ), "key missing!" );
 
     auto linBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
         meshAdapter, "testLinearFickBVPOperator", input_db, elementPhysicsModel );
     auto linBVPOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
-    // auto linOp =
-    // std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(linBVPOp->getVolumeOperator());
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Set up input and output variables
     auto tVar = std::make_shared<AMP::LinearAlgebra::Variable>( "temp" );
     auto cVar = std::make_shared<AMP::LinearAlgebra::Variable>( *fickOp->getOutputVariable() );
     auto fsOutVar =
         std::make_shared<AMP::LinearAlgebra::Variable>( *nlinBVPOp->getOutputVariable() );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create solution, rhs, and residual vectors
     auto solVec = AMP::LinearAlgebra::createVector( nodalDofMap, cVar );
     auto rhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
     auto resVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create parameters for reset test and reset fick and soret operators
 
     auto tVec = AMP::LinearAlgebra::createVector( nodalDofMap, tVar );
@@ -135,33 +122,26 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
         nodalDofMap->getDOFs( iterator->globalID(), gid );
         double value =
             300. + 450 * ( 1. - ( x * x / lenscale / lenscale + y * y / lenscale / lenscale ) );
-        fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValuesByGlobalID( 1, &gid[0], &value );
-        soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValuesByGlobalID( 1, &gid[0], &value );
+        fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValuesByGlobalID(
+            1, &gid[0], &value );
+        soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValuesByGlobalID(
+            1, &gid[0], &value );
     }
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial guess
-
     double initialValue = input_db->getScalar<double>( "InitialValue" );
     solVec->setToScalar( initialValue );
-    double initialGuessNorm = solVec->L2Norm();
-    std::cout << "initial guess norm = " << initialGuessNorm << "\n";
+    std::cout << "initial guess norm = " << solVec->L2Norm() << "\n";
 
     nlinBVPOp->modifyInitialSolutionVector( solVec );
-
-    initialGuessNorm = solVec->L2Norm();
-    std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
+    std::cout << "initial guess norm  after apply = " << solVec->L2Norm() << "\n";
 
     rhsVec->setToScalar( 0.0 );
     nlinBVPOp->modifyRHSvector( rhsVec );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------/
+    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
+    auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
-    std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    std::shared_ptr<AMP::Database> linearSolver_db =
-        nonlinearSolver_db->getDatabase( "LinearSolver" );
-
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
         std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
@@ -172,8 +152,6 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     nonlinearSolverParams->d_pInitialGuess = solVec;
 
     auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
-
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     auto fickPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
     auto fickPreconditionerParams =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( fickPreconditioner_db );
@@ -181,15 +159,13 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto linearFickPreconditioner =
         std::make_shared<AMP::Solver::TrilinosMLSolver>( fickPreconditionerParams );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
     linearSolver->setPreconditioner( linearFickPreconditioner );
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm();
 
-    AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
+    AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;
 
     nonlinearSolver->setZeroInitialGuess( false );
 
@@ -197,16 +173,13 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm();
-
+    double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // evaluate and register material coefficients for graphical output
-
     auto fickCoeffVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "FickCoefficient" );
     auto soretCoeffVar = std::make_shared<AMP::LinearAlgebra::Variable>( "SoretCoefficient" );
     auto fickCoeffVec  = AMP::LinearAlgebra::createVector( nodalDofMap, fickCoeffVar );
@@ -248,13 +221,10 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
         soretCoeffVec->setValuesByGlobalID( nnodes, &gids[0], &soretCoeff[0] );
     }
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // write graphical output
-
 #ifdef USE_EXT_SILO
     auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
-
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
     siloWriter->registerVector( fickFrozen[AMP::Operator::Diffusion::TEMPERATURE],
@@ -269,7 +239,6 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     siloWriter->writeFile( exeName, 0 );
 #endif
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // store result
     {
         int zeroGhostWidth = 0;

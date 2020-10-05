@@ -131,7 +131,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
     RightHandSideVec->setToScalar( 0.0 );
-    double rhsNorm = RightHandSideVec->L2Norm();
+    double rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
 
     ///////////////////////////////////////////////
     //   Add the boundary conditions corrections //
@@ -148,14 +148,14 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
 
-    rhsNorm = RightHandSideVec->L2Norm();
+    rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
     std::cout << "RHS Norm after BC Correction " << rhsNorm << std::endl;
 
-    rhsNorm = RightHandSideVec->L2Norm();
+    rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
     std::cout << "RHS Norm 1: " << rhsNorm << std::endl;
-    rhsNorm = PowerInWattsVec->L2Norm();
+    rhsNorm = static_cast<double>( PowerInWattsVec->L2Norm() );
     std::cout << "RHS Norm 2: " << rhsNorm << std::endl;
-    rhsNorm = boundaryOpCorrectionVec->L2Norm();
+    rhsNorm = static_cast<double>( boundaryOpCorrectionVec->L2Norm() );
     std::cout << "RHS Norm 3: " << rhsNorm << std::endl;
 
     /////////////////////////////////////////////
@@ -176,10 +176,10 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     TemperatureInKelvinVec->setToScalar( 1.0 );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = TemperatureInKelvinVec->L2Norm();
+    double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
-    rhsNorm = RightHandSideVec->L2Norm();
+    rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
     // Create the ML Solver
@@ -196,7 +196,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = ResidualVec->L2Norm();
+    double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {

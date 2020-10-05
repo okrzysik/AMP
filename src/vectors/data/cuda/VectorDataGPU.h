@@ -24,6 +24,9 @@ class VectorDataIterator;
 template<typename TYPE = double>
 class VectorDataGPU : public VectorData
 {
+public: // Constructors
+    VectorDataGPU( size_t start, size_t localSize, size_t globalSize );
+
 
 public: // Virtual functions
     //! Virtual destructor

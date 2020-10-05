@@ -86,13 +86,15 @@ static void test_with_shape( AMP::UnitTest *ut )
             ut->failure( "error" );
         }
         if ( nMoments == 0 ) {
-            if ( !AMP::Utilities::approx_equal( SpecificPowerShapeVec->max(), 1.0, 1e-9 ) ) {
+            double max( SpecificPowerShapeVec->max() );
+            double min( SpecificPowerShapeVec->min() );
+            if ( !AMP::Utilities::approx_equal( max, 1.0, 1e-9 ) ) {
                 ut->failure( "flat solution is not really flat (max)." );
-                printf( "This %.9e is not 1.0. \n", SpecificPowerShapeVec->max() );
+                printf( "This %.9e is not 1.0. \n", max );
             }
-            if ( !AMP::Utilities::approx_equal( SpecificPowerShapeVec->min(), 1.0, 1e-9 ) ) {
+            if ( !AMP::Utilities::approx_equal( min, 1.0, 1e-9 ) ) {
                 ut->failure( "flat solution is not really flat (min)." );
-                printf( "This %.9e is not 1.0. \n", SpecificPowerShapeVec->min() );
+                printf( "This %.9e is not 1.0. \n", min );
             }
         }
 
@@ -141,13 +143,15 @@ static void test_with_shape( AMP::UnitTest *ut )
                 ut->failure( "PowerShape error" );
             }
             if ( nMoments == 0 ) {
-                if ( !AMP::Utilities::approx_equal( SpecificPowerShapeVec->max(), 1.0, 1e-9 ) ) {
+                double max( SpecificPowerShapeVec->max() );
+                double min( SpecificPowerShapeVec->min() );
+                if ( !AMP::Utilities::approx_equal( max, 1.0, 1e-9 ) ) {
                     ut->failure( "flat solution is not flat (max)." );
-                    printf( "This %.9e is not 1.0. \n", SpecificPowerShapeVec->max() );
+                    printf( "This %.9e is not 1.0. \n", max );
                 }
-                if ( !AMP::Utilities::approx_equal( SpecificPowerShapeVec->min(), 1.0, 1e-9 ) ) {
+                if ( !AMP::Utilities::approx_equal( min, 1.0, 1e-9 ) ) {
                     ut->failure( "flat solution is not flat (min)." );
-                    printf( "This %.9e is not 1.0. \n", SpecificPowerShapeVec->min() );
+                    printf( "This %.9e is not 1.0. \n", min );
                 }
             }
 

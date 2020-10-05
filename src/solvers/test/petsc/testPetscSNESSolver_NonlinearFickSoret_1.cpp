@@ -57,7 +57,6 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
     auto manager     = AMP::Mesh::Mesh::buildMesh( params );
     auto meshAdapter = manager->Subset( "cylinder" );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear fick diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearFickOperator" ), "key missing!" );
 
@@ -66,7 +65,6 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "testNonlinearFickOperator", input_db, fickTransportModel ) );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the input variable
     auto fickVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
@@ -82,14 +80,12 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
     auto resVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
 
 #ifdef USE_EXT_SILO
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // register some variables for plotting
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
 #endif
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for fick
     AMP_INSIST( input_db->keyExists( "testLinearFickOperator" ), "key missing!" );
     std::shared_ptr<AMP::Operator::LinearBVPOperator> linearFickOperator =
@@ -97,27 +93,17 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "testLinearFickOperator", input_db, fickTransportModel ) );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial guess
-
     solVec->setToScalar( .05 );
-    double initialGuessNorm = solVec->L2Norm();
-    std::cout << "initial guess norm = " << initialGuessNorm << "\n";
-
+    std::cout << "initial guess norm = " << solVec->L2Norm() << "\n";
     nonlinearFickOperator->modifyInitialSolutionVector( solVec );
-
-    initialGuessNorm = solVec->L2Norm();
-    std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
-
+    std::cout << "initial guess norm  after apply = " << solVec->L2Norm() << "\n";
     rhsVec->setToScalar( 0.0 );
     nonlinearFickOperator->modifyRHSvector( rhsVec );
-
-    //----------------------------------------------------------------------------------------------------------------------------------------------/
 
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
         std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
@@ -129,7 +115,6 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
 
     auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     auto fickPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
     auto fickPreconditionerParams =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( fickPreconditioner_db );
@@ -137,26 +122,18 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
     auto linearFickPreconditioner =
         std::make_shared<AMP::Solver::TrilinosMLSolver>( fickPreconditionerParams );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
 
     linearSolver->setPreconditioner( linearFickPreconditioner );
 
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm();
-
-    AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
+    AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;
 
     nonlinearSolver->setZeroInitialGuess( false );
-
     nonlinearSolver->solve( rhsVec, solVec );
-
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
-
-    double finalResidualNorm = resVec->L2Norm();
-
-    std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
+    std::cout << "Final Residual Norm: " << resVec->L2Norm() << std::endl;
 
     solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
@@ -204,7 +181,6 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto manager     = AMP::Mesh::Mesh::buildMesh( params );
     auto meshAdapter = manager->Subset( "cylinder" );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear Fick-Soret diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearFickSoretBVPOperator" ), "key missing!" );
 
@@ -221,28 +197,18 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto soretOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
         nlinOp->getSoretOperator() );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // use the linear BVP operator to create a Fick linear operator with bc's
     AMP_INSIST( input_db->keyExists( "testLinearFickBVPOperator" ), "key missing!" );
 
     auto linBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
         meshAdapter, "testLinearFickBVPOperator", input_db, elementPhysicsModel );
     auto linBVPOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
-    // std::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> linOp =
-    //		 std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(linBVPOp->getVolumeOperator());
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
-    // Set up input and output variables
-    // AMP::LinearAlgebra::Variable::shared_ptr
-    // tVar(fickOp->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
-    // AMP::LinearAlgebra::Variable::shared_ptr
-    // cVar(fickOp->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
     auto tVar = std::make_shared<AMP::LinearAlgebra::Variable>( "temp" );
     auto cVar = std::make_shared<AMP::LinearAlgebra::Variable>( *fickOp->getOutputVariable() );
     auto fsOutVar =
         std::make_shared<AMP::LinearAlgebra::Variable>( *nlinBVPOp->getOutputVariable() );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create solution, rhs, and residual vectors
     auto nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
@@ -250,7 +216,6 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto rhsVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fsOutVar, true );
     auto resVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fsOutVar, true );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create parameters for reset test and reset fick and soret operators
     auto tVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, tVar, true );
     tVec->setToScalar( 300. );
@@ -259,34 +224,25 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     soretOp->setVector( 0, tVec );
 
 #ifdef USE_EXT_SILO
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // register some variables for plotting
     auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
 #endif
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial guess
 
     solVec->setToScalar( .05 );
-    double initialGuessNorm = solVec->L2Norm();
-    std::cout << "initial guess norm = " << initialGuessNorm << "\n";
-
+    std::cout << "initial guess norm = " << solVec->L2Norm() << "\n";
     nlinBVPOp->modifyInitialSolutionVector( solVec );
-
-    initialGuessNorm = solVec->L2Norm();
-    std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
+    std::cout << "initial guess norm  after apply = " << solVec->L2Norm() << "\n";
 
     rhsVec->setToScalar( 0.0 );
     nlinBVPOp->modifyRHSvector( rhsVec );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------/
-
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
         std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
@@ -298,7 +254,6 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
 
     auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     auto fickPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
     auto fickPreconditionerParams =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( fickPreconditioner_db );
@@ -306,26 +261,18 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto linearFickPreconditioner =
         std::make_shared<AMP::Solver::TrilinosMLSolver>( fickPreconditionerParams );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
 
     linearSolver->setPreconditioner( linearFickPreconditioner );
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm();
-
-    AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
+    AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;
 
     nonlinearSolver->setZeroInitialGuess( false );
-
     nonlinearSolver->solve( rhsVec, solVec );
-
     nlinBVPOp->residual( rhsVec, solVec, resVec );
-
-    double finalResidualNorm = resVec->L2Norm();
-
-    std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
+    std::cout << "Final Residual Norm: " << resVec->L2Norm() << std::endl;
 
     solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );

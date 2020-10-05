@@ -107,9 +107,9 @@ public: // the next set of functions defines the public math. interface for vect
     /**
      * \brief  Set all compenents of a vector to a scalar.
      *      For Vectors, the components of <em>this</em> are set to \f$\alpha\f$.
-     * \param[in] alpha     scalar double value
+     * \param[in] alpha     scalar value
      */
-    void setToScalar( double alpha );
+    void setToScalar( const Scalar &alpha );
 
     /**
      * \brief Set data in this vector to random values on [0,1).
@@ -126,17 +126,17 @@ public: // the next set of functions defines the public math. interface for vect
     /**
      * \brief  Set vector equal to scaled input.
      *      For Vectors, \f$\mathit{this}_i = \alpha x_i\f$.
-     * \param[in] alpha     a scalar double
+     * \param[in] alpha     a scalar
      * \param[in] x         a vector
      */
-    void scale( double alpha, const Vector &x );
+    void scale( const Scalar &alpha, const Vector &x );
 
     /**
      * \brief  Scale a vector.
      *     For Vectors, \f$\mathit{this}_i = \alpha\mathit{this}_i\f$.
-     * \param[in] alpha     a scalar double
+     * \param[in] alpha     a scalar
      */
-    void scale( double alpha );
+    void scale( const Scalar &alpha );
 
     /**
      * \brief  Adds two vectors.
@@ -185,7 +185,7 @@ public: // the next set of functions defines the public math. interface for vect
      * \param[in] beta      a scalar
      * \param[in] y         a vector
      */
-    void linearSum( double alpha, const Vector &x, double beta, const Vector &y );
+    void linearSum( const Scalar &alpha, const Vector &x, const Scalar &beta, const Vector &y );
 
     /**
      * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
@@ -193,7 +193,7 @@ public: // the next set of functions defines the public math. interface for vect
      * \param[in] x        a vector
      * \param[in] y        a vector
      */
-    void axpy( double alpha, const Vector &x, const Vector &y );
+    void axpy( const Scalar &alpha, const Vector &x, const Vector &y );
 
     /**
      * \brief Set this vector alpha * x + this.
@@ -202,7 +202,7 @@ public: // the next set of functions defines the public math. interface for vect
      * \param[in] beta     a scalar
      * \param[in] x        a vector
      */
-    void axpby( double alpha, double beta, const Vector &x );
+    void axpby( const Scalar &alpha, const Scalar &beta, const Vector &x );
 
     /**
      * \brief Set this to the component-wise absolute value of a vector.
@@ -217,35 +217,35 @@ public: // the next set of functions defines the public math. interface for vect
      * \param[in] alpha a scalar
      * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
      */
-    void addScalar( const Vector &x, double alpha_in );
+    void addScalar( const Vector &x, const Scalar &alpha_in );
 
     /**
      * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
      */
-    double min( void ) const;
+    Scalar min( void ) const;
 
     /**
      * \brief Return the maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
      */
-    double max( void ) const;
+    Scalar max( void ) const;
 
     /**
      * \brief Return discrete @f$ L_1 @f$ -norm of this vector.
      * \details Returns \f[\sum_i |\mathit{this}_i|\f]
      */
-    double L1Norm( void ) const;
+    Scalar L1Norm( void ) const;
 
     /**
      * \brief Return discrete @f$ L_2 @f$ -norm of this vector.
      * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
      */
-    double L2Norm( void ) const;
+    Scalar L2Norm( void ) const;
 
     /**
      * \brief Return the @f$ L_\infty @f$ -norm of this vector.
      * \details Returns \f[\max_i |\mathit{this}_i|\f]
      */
-    double maxNorm( void ) const;
+    Scalar maxNorm( void ) const;
     /**
      * \brief Returns the minimum of the quotient of two vectors:
      *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
@@ -253,7 +253,7 @@ public: // the next set of functions defines the public math. interface for vect
      * \param[in] y a vector
      * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
      */
-    double minQuotient( const Vector &x ) const;
+    Scalar minQuotient( const Vector &x ) const;
 
     /**
      * \brief Return a weighted norm of a vector
@@ -261,7 +261,7 @@ public: // the next set of functions defines the public math. interface for vect
      * \param[in] y a vector
      * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
      */
-    double wrmsNorm( const Vector &x, const Vector &y ) const;
+    Scalar wrmsNorm( const Vector &x, const Vector &y ) const;
 
     /**
      * \brief Return a weighted norm of a subset of a vector
@@ -270,17 +270,23 @@ public: // the next set of functions defines the public math. interface for vect
      * \param[in] mask a vector
      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
      */
-    double wrmsNormMask( const Vector &x, const Vector &mask, const Vector &y ) const;
-
+    Scalar wrmsNormMask( const Vector &x, const Vector &mask, const Vector &y ) const;
 
     /**
      * \brief Return the dot product of this vector with the argument vector.
      * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
      * \param[in] x        a vector
      */
-    double dot( const Vector &x ) const;
+    Scalar dot( const Vector &x ) const;
 
-    bool equals( const Vector &a, double tol = 0.000001 ) const;
+    /**
+     * \brief Check if two vectors are equal
+     * \details Returns true if each vaue is within tol of the corresponding
+     *    vaue in the other vector
+     * \param[in] x        a vector
+     * \param[in] tol      tolerance to use
+     */
+    bool equals( const Vector &a, const Scalar &tol = 1e-6 ) const;
 
 
 public: // Virtual functions

@@ -1,7 +1,6 @@
 #ifndef included_AMP_VectorData
 #define included_AMP_VectorData
 
-#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/CommunicationList.h"
 #include "AMP/vectors/data/DataChangeFirer.h"
 

@@ -98,27 +98,18 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "testLinearFickOperator", input_db, fickTransportModel ) );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial guess
-
     solVec->setToScalar( .05 );
-    double initialGuessNorm = solVec->L2Norm();
-    std::cout << "initial guess norm = " << initialGuessNorm << "\n";
-
+    std::cout << "initial guess norm = " << solVec->L2Norm() << "\n";
     nonlinearFickOperator->modifyInitialSolutionVector( solVec );
-
-    initialGuessNorm = solVec->L2Norm();
-    std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
+    std::cout << "initial guess norm  after apply = " << solVec->L2Norm() << "\n";
 
     rhsVec->setToScalar( 0.0 );
     nonlinearFickOperator->modifyRHSvector( rhsVec );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------/
-
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
         std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
@@ -144,9 +135,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearSolver->setPreconditioner( linearFickPreconditioner );
 
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm();
 
-    AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
+    AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;
 
     nonlinearSolver->setZeroInitialGuess( false );
 
@@ -154,7 +144,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm();
+    double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 

@@ -562,7 +562,7 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     if ( computeResidual ) {
         r = f->cloneVector();
         d_pOperator->residual( f, u, r );
-        initialResNorm = r->L2Norm();
+        initialResNorm = static_cast<double>( r->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "TrilinosMueLuSolver::solve(), L2 norm of residual before solve "
@@ -571,7 +571,7 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm();
+        double solution_norm = static_cast<double>( u->L2Norm() );
         AMP::pout << "TrilinosMueLuSolver : before solve solution norm: " << std::setprecision( 15 )
                   << solution_norm << std::endl;
     }
@@ -585,8 +585,7 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
         if ( d_bCreationPhase ) {
             if ( d_bUseEpetra ) {
                 // MueLu expects a Teuchos ref pointer
-                Teuchos::RCP<Epetra_CrsMatrix> fineLevelMatrixPtr =
-                    Teuchos::rcpFromRef( d_matrix->getEpetra_CrsMatrix() );
+                auto fineLevelMatrixPtr = Teuchos::rcpFromRef( d_matrix->getEpetra_CrsMatrix() );
                 auto mueluRCP =
                     MueLu::CreateEpetraPreconditioner( fineLevelMatrixPtr, d_MueLuParameterList );
                 d_mueluSolver.reset( mueluRCP.get() );
@@ -609,7 +608,7 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     }
 
     // Check for NaNs in the solution (no communication necessary)
-    double localNorm = u->getVectorOperations()->localL2Norm(*u->getVectorData());
+    double localNorm = u->getVectorOperations()->localL2Norm( *u->getVectorData() ).get<double>();
     AMP_INSIST( localNorm == localNorm, "NaNs detected in solution" );
 
     // we are forced to update the state of u here
@@ -619,14 +618,14 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     u->getVectorData()->fireDataChange();
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm();
+        double solution_norm = static_cast<double>( u->L2Norm() );
         AMP::pout << "TrilinosMueLuSolver : after solve solution norm: " << std::setprecision( 15 )
                   << solution_norm << std::endl;
     }
 
     if ( computeResidual ) {
         d_pOperator->residual( f, u, r );
-        finalResNorm = r->L2Norm();
+        finalResNorm = static_cast<double>( r->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "TrilinosMueLuSolver::solve(), L2 norm of residual after solve "
@@ -668,8 +667,7 @@ void TrilinosMueLuSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebr
     tmpMueLuParameterList.set( "coarse: type", "SuperLU" );
 
     // MueLu expects a Teuchos ref pointer
-    Teuchos::RCP<Epetra_CrsMatrix> fineLevelMatrixPtr =
-        Teuchos::rcpFromRef( d_matrix->getEpetra_CrsMatrix() );
+    auto fineLevelMatrixPtr = Teuchos::rcpFromRef( d_matrix->getEpetra_CrsMatrix() );
     auto mueluRCP = MueLu::CreateEpetraPreconditioner( fineLevelMatrixPtr, tmpMueLuParameterList );
 
     d_mueluSolver.reset( mueluRCP.get() );

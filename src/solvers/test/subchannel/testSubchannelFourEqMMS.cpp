@@ -22,8 +22,8 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
+#include <memory>
 #include <string>
 
 
@@ -307,42 +307,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolver->setZeroInitialGuess( false );
 
     // solve
-    /*
-        std::cout<<" the initial matrix entries are: "<<std::endl;
-        std::cout<< *linearOperator->getMatrix() <<std::endl;
-        std::cout<<" those were the initial matrix entries. "<<std::endl;
-        std::cout<<" the source is... "<<rhsVec->getGlobalSize() <<std::endl;
-        std::cout<< *rhsVec <<std::endl;
-        std::cout<<" ... was the source "<<std::endl;
-    */
     nonlinearOperator->residual( rhsVec, solVec, resVec );
-    /*
-        std::cout<<" the initial residual is... "<<rhsVec->getGlobalSize() <<std::endl;
-        std::cout<< *resVec <<std::endl;
-        std::cout<<" ... was the initial residual "<<std::endl;
-        std::cout<<" the initial solution is... "<<rhsVec->getGlobalSize() <<std::endl;
-        std::cout<< *solVec <<std::endl;
-        std::cout<<" ... was the initial solution "<<std::endl;
-    */
     nonlinearSolver->solve( rhsVec, solVec );
-    /*
-        std::cout<<" the solution is... "<<rhsVec->getGlobalSize() <<std::endl;
-        std::cout<< *solVec <<std::endl;
-        std::cout<<" ... was the solution "<<std::endl;
-    */
     nonlinearOperator->residual( rhsVec, solVec, resVec );
-    /*
-        std::cout<<" the residual is... "<<rhsVec->getGlobalSize() <<std::endl;
-        std::cout<< *resVec <<std::endl;
-        std::cout<<" ... was the residual "<<std::endl;
-        std::cout<<" the final matrix entries are: "<<std::endl;
-        std::cout<< *linearOperator->getMatrix() <<std::endl;
-        std::cout<<" those were the final matrix entries. "<<std::endl;
-    */
-
-    //=============================================================================
-    // examine solution
-    //=============================================================================
 
     // Compute the flow temperature
     auto tempDOFManager = AMP::Discretization::simpleDOFManager::create(
@@ -421,8 +388,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
             relErrorVec->setValuesByLocalID( 1, &i, &val );
         }
     }
-    double absErrorNorm = absErrorVec->L2Norm();
-    double relErrorNorm = relErrorVec->L2Norm();
+    double absErrorNorm = static_cast<double>( absErrorVec->L2Norm() );
+    double relErrorNorm = static_cast<double>( relErrorVec->L2Norm() );
 
     // check that norm of relative error is less than tolerance
     double tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );

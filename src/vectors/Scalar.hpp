@@ -2,11 +2,12 @@
 #define included_AMP_Scalar_hpp
 
 
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UtilityMacros.h"
-#include "AMP/vectors/Scalar.h"
 
 #include <complex>
 #include <limits>
+#include <math.h>
 
 
 // is_complex
@@ -52,7 +53,7 @@ constexpr double Scalar::getTol()
     }
 }
 template<class T1, class T2>
-std::tuple<T1, double> Scalar::convert( const std::any &x0 )
+inline std::tuple<T1, double> Scalar::convert( const std::any &x0 )
 {
     T2 x     = std::any_cast<T2>( x0 );
     T1 y     = static_cast<T1>( x );
@@ -76,7 +77,7 @@ inline void Scalar::store( const TYPE &x )
 /********************************************************************
  * Contructor                                                        *
  ********************************************************************/
-Scalar::Scalar() : d_type( 0 ), d_hash( 0 ) {}
+inline Scalar::Scalar() : d_type( 0 ), d_hash( 0 ) {}
 template<class TYPE>
 Scalar::Scalar( TYPE x ) : d_type( get_type<TYPE>() ), d_hash( 0 )
 {
@@ -124,7 +125,7 @@ Scalar::Scalar( TYPE x ) : d_type( get_type<TYPE>() ), d_hash( 0 )
  * Get                                                               *
  ********************************************************************/
 template<class TYPE>
-TYPE Scalar::get( double tol ) const
+inline TYPE Scalar::get( double tol ) const
 {
     // Special cases for performance
     if ( d_hash == get_hash<TYPE>() )
@@ -158,6 +159,31 @@ TYPE Scalar::get( double tol ) const
         AMP_ERROR( "Error exceeds tolerance converting data" );
     return y;
 }
+
+
+/********************************************************************
+ * Operator overloading                                              *
+ ********************************************************************/
+Scalar operator+( const Scalar &x, const Scalar &y );
+Scalar operator-( const Scalar &x, const Scalar &y );
+Scalar operator*( const Scalar &x, const Scalar &y );
+inline bool operator==( double x, const Scalar &y ) { return y.operator==( x ); }
+
+
+/********************************************************************
+ * Special functions                                                 *
+ ********************************************************************/
+Scalar minReduce( const AMP::AMP_MPI &comm, const Scalar &x );
+Scalar maxReduce( const AMP::AMP_MPI &comm, const Scalar &x );
+Scalar sumReduce( const AMP::AMP_MPI &comm, const Scalar &x );
+
+
+/********************************************************
+ *  ostream operator                                     *
+ ********************************************************/
+template<class TYPE>
+typename std::enable_if<std::is_same<TYPE, Scalar>::value, std::ostream &>::type
+operator<<( std::ostream &out, const TYPE &x );
 
 
 } // namespace AMP

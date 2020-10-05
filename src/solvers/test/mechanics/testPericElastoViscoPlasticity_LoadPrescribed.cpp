@@ -28,9 +28,9 @@
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "libmesh/mesh_communication.h"
-#include <memory>
 
 #include <iostream>
+#include <memory>
 #include <string>
 
 
@@ -126,7 +126,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearMechanicsBVPoperator->getParameters( "Jacobian", solVec ) );
 
     double epsilon =
-        1.0e-13 * ( ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
+        1.0e-13 *
+        static_cast<double>(
+            ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
 
     std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     std::shared_ptr<AMP::Database> linearSolver_db =
@@ -179,14 +181,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                   << scaledRhsVec->L2Norm() << std::endl;
 
         nonlinearMechanicsBVPoperator->residual( scaledRhsVec, solVec, resVec );
-        double initialResidualNorm = resVec->L2Norm();
+        double initialResidualNorm = static_cast<double>( resVec->L2Norm() );
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
         nonlinearSolver->solve( scaledRhsVec, solVec );
 
         nonlinearMechanicsBVPoperator->residual( scaledRhsVec, solVec, resVec );
-        double finalResidualNorm = resVec->L2Norm();
+        double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
         AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                   << finalResidualNorm << std::endl;
 
@@ -196,7 +198,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             ut->passes( "Nonlinear solve for current loading step" );
         }
 
-        double finalSolNorm = solVec->L2Norm();
+        double finalSolNorm = static_cast<double>( solVec->L2Norm() );
 
         AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
@@ -204,13 +206,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         auto mechVvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
         auto mechWvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
 
-        double finalMaxU = mechUvec->maxNorm();
-        double finalMaxV = mechVvec->maxNorm();
-        double finalMaxW = mechWvec->maxNorm();
-
-        AMP::pout << "Maximum U displacement: " << finalMaxU << std::endl;
-        AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
-        AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
+        AMP::pout << "Maximum U displacement: " << mechUvec->maxNorm() << std::endl;
+        AMP::pout << "Maximum V displacement: " << mechVvec->maxNorm() << std::endl;
+        AMP::pout << "Maximum W displacement: " << mechWvec->maxNorm() << std::endl;
 
         auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
         auto tmpParams =
@@ -220,11 +218,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         current_time = delta_time * ( (double) step + 2.0 );
 
-        /* dirichletVectorCorrectionDatabase->putScalar("value_3_0", (epsilon_dot * current_time));
-            auto bndParams =
-           std::make_shared<AMP::Operator::DirichletVectorCorrectionParameters>(dirichletVectorCorrectionDatabase);
-            (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-        */
         char num1[256];
         sprintf( num1, "%d", step );
         std::string number1 = num1;

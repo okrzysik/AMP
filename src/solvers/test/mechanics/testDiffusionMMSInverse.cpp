@@ -52,89 +52,69 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
-    std::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto database = input_db->getDatabase( "Mesh" );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
 
     // Create nonlinear diffusion BVP operator and access volume nonlinear Diffusion operator
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;
-    std::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "FickNonlinearBVPOperator", input_db, nonlinearPhysicsModel );
-    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
+    auto nlinBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
+        meshAdapter, "FickNonlinearBVPOperator", input_db, nonlinearPhysicsModel );
+    auto nlinBVPOp =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
-    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nlinOp =
-        std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
-            nlinBVPOp->getVolumeOperator() );
+    auto nlinOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
+        nlinBVPOp->getVolumeOperator() );
 
     // Acquire Dirichlet boundary operator and parameters
-    std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletOp =
-        std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-            nlinBVPOp->getBoundaryOperator() );
-    // std::shared_ptr<AMP::Database> dirichlet_db =
-    // input_db->getDatabase("FickDirichletVectorCorrection");
-    // AMP_INSIST(dirichlet_db->getScalar<int>("valuesType")==2,
-    // "DirichletVectorCorrection::valuesType must be 2");
-    // dirichlet_db->putScalar("isAttachedToVolumeOperator",false); // OperatorBuilder forces this
-    // to be true for some reason.
-    // std::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> dirichletParams(
-    //      new AMP::Operator::DirichletVectorCorrectionParameters(dirichlet_db));
-    // std::shared_ptr<AMP::Operator::OperatorParameters> dirichletOpParams =
-    // std::dynamic_pointer_cast<AMP::Operator::OperatorParameters>(
-    //      dirichletParams);
-    // dirichletOp->reset(dirichletOpParams);
+    auto dirichletOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+        nlinBVPOp->getBoundaryOperator() );
 
     // Create linear diffusion BVP operator with bc's
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> linearPhysicsModel;
-    std::shared_ptr<AMP::Operator::Operator> linBVPOperator =
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "FickLinearBVPOperator", input_db, linearPhysicsModel );
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> linBVPOp =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
+    auto linBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
+        meshAdapter, "FickLinearBVPOperator", input_db, linearPhysicsModel );
+    auto linBVPOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
 
     // Get source mass operator
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
-    std::shared_ptr<AMP::Operator::Operator> sourceOperator =
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "ManufacturedSourceOperator", input_db, sourcePhysicsModel );
-    std::shared_ptr<AMP::Operator::MassLinearFEOperator> sourceOp =
+    auto sourceOperator = AMP::Operator::OperatorBuilder::createOperator(
+        meshAdapter, "ManufacturedSourceOperator", input_db, sourcePhysicsModel );
+    auto sourceOp =
         std::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>( sourceOperator );
 
-    std::shared_ptr<AMP::Operator::MassDensityModel> densityModel = sourceOp->getDensityModel();
-    std::shared_ptr<AMP::ManufacturedSolution> mfgSolution =
-        densityModel->getManufacturedSolution();
+    auto densityModel = sourceOp->getDensityModel();
+    auto mfgSolution  = densityModel->getManufacturedSolution();
 
     // Set up input and output vectors
-    AMP::LinearAlgebra::Variable::shared_ptr solVar = nlinOp->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr rhsVar = nlinOp->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr resVar = nlinOp->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr bndVar = nlinOp->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr inpVar = sourceOp->getInputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr srcVar = sourceOp->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr workVar( new AMP::LinearAlgebra::Variable( "work" ) );
+    auto solVar  = nlinOp->getOutputVariable();
+    auto rhsVar  = nlinOp->getOutputVariable();
+    auto resVar  = nlinOp->getOutputVariable();
+    auto bndVar  = nlinOp->getOutputVariable();
+    auto inpVar  = sourceOp->getInputVariable();
+    auto srcVar  = sourceOp->getOutputVariable();
+    auto workVar = std::make_shared<AMP::LinearAlgebra::Variable>( "work" );
 
-    AMP::Discretization::DOFManager::shared_ptr DOF = AMP::Discretization::simpleDOFManager::create(
+    auto DOF = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
-    AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( DOF, solVar );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( DOF, rhsVar );
-    AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( DOF, resVar );
-    AMP::LinearAlgebra::Vector::shared_ptr bndVec = AMP::LinearAlgebra::createVector( DOF, bndVar );
-    AMP::LinearAlgebra::Vector::shared_ptr inpVec = AMP::LinearAlgebra::createVector( DOF, inpVar );
-    AMP::LinearAlgebra::Vector::shared_ptr srcVec = AMP::LinearAlgebra::createVector( DOF, srcVar );
-    AMP::LinearAlgebra::Vector::shared_ptr workVec =
-        AMP::LinearAlgebra::createVector( DOF, workVar );
+    auto solVec  = AMP::LinearAlgebra::createVector( DOF, solVar );
+    auto rhsVec  = AMP::LinearAlgebra::createVector( DOF, rhsVar );
+    auto resVec  = AMP::LinearAlgebra::createVector( DOF, resVar );
+    auto bndVec  = AMP::LinearAlgebra::createVector( DOF, bndVar );
+    auto inpVec  = AMP::LinearAlgebra::createVector( DOF, inpVar );
+    auto srcVec  = AMP::LinearAlgebra::createVector( DOF, srcVar );
+    auto workVec = AMP::LinearAlgebra::createVector( DOF, workVar );
 
     srcVec->setToScalar( 0. );
 
     // Fill in manufactured solution in mesh interior
-    const double Pi                  = 3.1415926535898;
-    AMP::Mesh::MeshIterator iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-    std::string mfgName              = mfgSolution->get_name();
-    bool isCylindrical               = mfgName.find( "Cylindrical" ) < mfgName.size();
+    const double Pi     = 3.1415926535898;
+    auto iterator       = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    std::string mfgName = mfgSolution->get_name();
+    bool isCylindrical  = mfgName.find( "Cylindrical" ) < mfgName.size();
     for ( ; iterator != iterator.end(); ++iterator ) {
         double x, y, z;
         std::valarray<double> poly( 10 );
@@ -164,11 +144,9 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Fill in manufactured solution on mesh boundary
     for ( int j = 0; j <= 8; j++ ) {
-        AMP::Mesh::MeshIterator beg_bnd =
-            meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, j, 0 );
-        AMP::Mesh::MeshIterator end_bnd = beg_bnd.end();
-        AMP::Mesh::MeshIterator iter;
-        for ( iter = beg_bnd; iter != end_bnd; ++iter ) {
+        auto beg_bnd = meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, j, 0 );
+        auto end_bnd = beg_bnd.end();
+        for ( auto iter = beg_bnd; iter != end_bnd; ++iter ) {
             std::valarray<double> poly( 10 );
             double x, y, z;
             auto coord = iterator->coord();
@@ -207,25 +185,21 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     nlinBVPOp->modifyInitialSolutionVector( solVec );
 
     // Set up solver
-    std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    std::shared_ptr<AMP::Database> linearSolver_db =
-        nonlinearSolver_db->getDatabase( "LinearSolver" );
-    std::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
-        new AMP::Solver::PetscSNESSolverParameters( nonlinearSolver_db ) );
+    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
+    auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
+    auto nonlinearSolverParams =
+        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = nlinBVPOp;
     nonlinearSolverParams->d_pInitialGuess = solVec;
-    std::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(
-        new AMP::Solver::PetscSNESSolver( nonlinearSolverParams ) );
+    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
     // Set up preconditioner
-    std::shared_ptr<AMP::Database> preconditioner_db =
-        linearSolver_db->getDatabase( "Preconditioner" );
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> preconditionerParams(
-        new AMP::Solver::SolverStrategyParameters( preconditioner_db ) );
+    auto preconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
+    auto preconditionerParams =
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( preconditioner_db );
     preconditionerParams->d_pOperator = linBVPOp;
-    std::shared_ptr<AMP::Solver::TrilinosMLSolver> preconditioner(
-        new AMP::Solver::TrilinosMLSolver( preconditionerParams ) );
+    auto preconditioner = std::make_shared<AMP::Solver::TrilinosMLSolver>( preconditionerParams );
 
     // Register the preconditioner with the Jacobian free Krylov solver
     std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
@@ -234,8 +208,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Get initial residual
     nlinBVPOp->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm();
-    AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
+    AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;
 
     // Run solver
     nonlinearSolver->setZeroInitialGuess( false );
@@ -243,8 +216,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Get final residual
     nlinBVPOp->residual( rhsVec, solVec, resVec );
-    double finalResidualNorm = resVec->L2Norm();
-    std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
+    std::cout << "Final Residual Norm: " << resVec->L2Norm() << std::endl;
 
     // Final communication
     solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
@@ -253,10 +225,10 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     // Output Mathematica form (requires serial execution)
     for ( int i = 0; i < globalComm.getSize(); i++ ) {
         if ( globalComm.getRank() == i ) {
-            std::string filename          = "data_" + exeName;
-            int rank                      = globalComm.getRank();
-            int nranks                    = globalComm.getSize();
-            std::ios_base::openmode omode = std::ios_base::out;
+            auto filename = "data_" + exeName;
+            int rank      = globalComm.getRank();
+            int nranks    = globalComm.getSize();
+            auto omode    = std::ios_base::out;
             if ( rank > 0 )
                 omode |= std::ios_base::app;
             std::ofstream file( filename.c_str(), omode );
@@ -313,8 +285,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     // Plot the results
     if ( globalComm.getSize() == 1 ) {
 #ifdef USE_EXT_SILO
-        AMP::Utilities::Writer::shared_ptr siloWriter =
-            AMP::Utilities::Writer::buildWriter( "Silo" );
+        auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
         siloWriter->registerVector(
             workVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "RelativeError" );
         siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );

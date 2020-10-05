@@ -35,36 +35,26 @@
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
-    // std::string log_file = "output_" + exeName;
 
-    //  AMP::PIO::logOnlyNodeZero(log_file);
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-
     size_t N_error0 = ut->NumFailLocal();
-
-    auto input_db = AMP::Database::parseInputFile( input_file );
+    auto input_db   = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    //--------------------------------------------------
     //   Create the Mesh.
-    //--------------------------------------------------
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
-    //--------------------------------------------------
 
-    //--------------------------------------------------
     // Create a DOF manager for a nodal vector
-    //--------------------------------------------------
     int DOFsPerNode     = 10;
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear flow
     AMP_INSIST( input_db->keyExists( "NonlinearFlowOperator" ), "key missing!" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> flowTransportModel;
@@ -72,7 +62,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "NonlinearFlowOperator", input_db, flowTransportModel ) );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the input variable
     auto flowVolumeOperator = std::dynamic_pointer_cast<AMP::Operator::NavierStokesLSWFFEOperator>(
         nonlinearFlowOperator->getVolumeOperator() );
@@ -87,30 +76,23 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // create the following shared pointers for ease of use
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for flow
     AMP_INSIST( input_db->keyExists( "LinearFlowOperator" ), "key missing!" );
     auto linearFlowOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "LinearFlowOperator", input_db, flowTransportModel ) );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial guess
-
     solVec->setToScalar( 0. );
-    double initialGuessNorm = solVec->L2Norm();
-    std::cout << "initial guess norm = " << initialGuessNorm << "\n";
-
+    std::cout << "initial guess norm = " << solVec->L2Norm() << "\n";
     nonlinearFlowOperator->modifyInitialSolutionVector( solVec );
-
-    initialGuessNorm = solVec->L2Norm();
-    std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
+    std::cout << "initial guess norm  after apply = " << solVec->L2Norm() << "\n";
 
     rhsVec->zero();
 
     nonlinearFlowOperator->modifyRHSvector( rhsVec );
 
-    double initialRhsNorm = rhsVec->L2Norm();
+    double initialRhsNorm = static_cast<double>( rhsVec->L2Norm() );
     std::cout << "rhs norm  after modifyRHSvector = " << initialRhsNorm << "\n";
     double expectedVal = 0.;
     if ( !AMP::Utilities::approx_equal( expectedVal, initialRhsNorm, 1e-5 ) )
@@ -150,7 +132,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearSolver->setPreconditioner( linearFlowPreconditioner );
 
     nonlinearFlowOperator->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm();
+    double initialResidualNorm = static_cast<double>( resVec->L2Norm() );
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
     expectedVal = 3625.84;
@@ -167,9 +149,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearFlowOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm();
-    double finalSolutionNorm = solVec->L2Norm();
-    double finalRhsNorm      = rhsVec->L2Norm();
+    double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
+    double finalSolutionNorm = static_cast<double>( solVec->L2Norm() );
+    double finalRhsNorm      = static_cast<double>( rhsVec->L2Norm() );
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
     std::cout << "Final Solution Norm: " << finalSolutionNorm << std::endl;
@@ -177,7 +159,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     if ( fabs( finalResidualNorm ) > 1e-9 )
         ut->failure( "the Final Residual is larger than the tolerance" );
-    if ( !AMP::Utilities::approx_equal( 45431.3, solVec->L2Norm(), 1e-5 ) )
+    if ( !AMP::Utilities::approx_equal( 45431.3, finalSolutionNorm, 1e-5 ) )
         ut->failure( "the Final Solution Norm has changed." );
     if ( !AMP::Utilities::approx_equal( initialRhsNorm, finalRhsNorm, 1e-12 ) )
         ut->failure( "the Final Rhs Norm has changed." );

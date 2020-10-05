@@ -45,39 +45,41 @@ private:
 public:
     void copy( const VectorData &x, VectorData &z ) override;
     void zero( VectorData &x ) override;
-    void setToScalar( double alpha, VectorData &z ) override;
+    void setToScalar( const Scalar &alpha, VectorData &z ) override;
     void setRandomValues( VectorData &x ) override;
-    void scale( double alpha, const VectorData &x, VectorData &y ) override;
-    void scale( double alpha, VectorData &x ) override;
+    void scale( const Scalar &alpha, const VectorData &x, VectorData &y ) override;
+    void scale( const Scalar &alpha, VectorData &x ) override;
     void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
     void subtract( const VectorData &x, const VectorData &y, VectorData &z ) override;
     void multiply( const VectorData &x, const VectorData &y, VectorData &z ) override;
     void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
     void reciprocal( const VectorData &x, VectorData &y ) override;
-    void linearSum( double alpha,
+    void linearSum( const Scalar &alpha,
                     const VectorData &x,
-                    double beta,
+                    const Scalar &beta,
                     const VectorData &y,
                     VectorData &z ) override;
-    void axpy( double alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
-    void axpby( double alpha, double beta, const VectorData &x, VectorData &y ) override;
+    void
+    axpy( const Scalar &alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
+    void
+    axpby( const Scalar &alpha, const Scalar &beta, const VectorData &x, VectorData &y ) override;
     void abs( const VectorData &x, VectorData &z ) override;
-    void addScalar( const VectorData &x, double alpha_in, VectorData &y ) override;
-    double min( const VectorData &x ) const override;
-    double max( const VectorData &x ) const override;
-    double L1Norm( const VectorData &x ) const override;
-    double L2Norm( const VectorData &x ) const override;
-    double maxNorm( const VectorData &x ) const override;
-    double dot( const VectorData &x, const VectorData &y ) const override;
-    double localL1Norm( const VectorData &x ) const override;
-    double localL2Norm( const VectorData &x ) const override;
-    double localMaxNorm( const VectorData &x ) const override;
-    double localDot( const VectorData &x, const VectorData &y ) const override;
-    void axpbypcz( double alpha,
+    void addScalar( const VectorData &x, const Scalar &alpha_in, VectorData &y ) override;
+    Scalar min( const VectorData &x ) const override;
+    Scalar max( const VectorData &x ) const override;
+    Scalar L1Norm( const VectorData &x ) const override;
+    Scalar L2Norm( const VectorData &x ) const override;
+    Scalar maxNorm( const VectorData &x ) const override;
+    Scalar dot( const VectorData &x, const VectorData &y ) const override;
+    Scalar localL1Norm( const VectorData &x ) const override;
+    Scalar localL2Norm( const VectorData &x ) const override;
+    Scalar localMaxNorm( const VectorData &x ) const override;
+    Scalar localDot( const VectorData &x, const VectorData &y ) const override;
+    void axpbypcz( const Scalar &alpha,
                    const VectorData &x,
-                   double beta,
+                   const Scalar &beta,
                    const VectorData &y,
-                   double gamma,
+                   const Scalar &gamma,
                    VectorData &z );
     //**********************************************************************
 

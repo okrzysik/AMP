@@ -293,8 +293,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     absErrorVec->axpy( -1.0, *solVec, *manufacturedVec );
     auto relErrorVec = solVec->cloneVector();
     relErrorVec->divide( *absErrorVec, *manufacturedVec );
-    double absErrorNorm = absErrorVec->L2Norm();
-    double relErrorNorm = relErrorVec->L2Norm();
+    double absErrorNorm = static_cast<double>( absErrorVec->L2Norm() );
+    double relErrorNorm = static_cast<double>( relErrorVec->L2Norm() );
 
     // check that norm of relative error is less than tolerance
     double tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );

@@ -141,7 +141,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearMechanicsBVPoperator->getParameters( "Jacobian", solVec ) );
 
     double epsilon =
-        1.0e-13 * ( ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
+        1.0e-13 *
+        static_cast<double>(
+            ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
 
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
@@ -195,14 +197,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                   << scaledRhsVec->L2Norm() << std::endl;
 
         nonlinearMechanicsBVPoperator->residual( scaledRhsVec, solVec, resVec );
-        double initialResidualNorm = resVec->L2Norm();
+        double initialResidualNorm = static_cast<double>( resVec->L2Norm() );
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
         nonlinearSolver->solve( scaledRhsVec, solVec );
 
         nonlinearMechanicsBVPoperator->residual( scaledRhsVec, solVec, resVec );
-        double finalResidualNorm = resVec->L2Norm();
+        double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
         AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                   << finalResidualNorm << std::endl;
 
@@ -212,21 +214,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             ut->passes( "Nonlinear solve for current loading step" );
         }
 
-        double finalSolNorm = solVec->L2Norm();
-
-        AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
+        AMP::pout << "Final Solution Norm: " << solVec->L2Norm() << std::endl;
 
         auto mechUvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
         auto mechVvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
         auto mechWvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
 
-        double finalMaxU = mechUvec->maxNorm();
-        double finalMaxV = mechVvec->maxNorm();
-        double finalMaxW = mechWvec->maxNorm();
-
-        AMP::pout << "Maximum U displacement: " << finalMaxU << std::endl;
-        AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
-        AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
+        AMP::pout << "Maximum U displacement: " << mechUvec->maxNorm() << std::endl;
+        AMP::pout << "Maximum V displacement: " << mechVvec->maxNorm() << std::endl;
+        AMP::pout << "Maximum W displacement: " << mechWvec->maxNorm() << std::endl;
 
         auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
         auto tmpParams =

@@ -17,6 +17,12 @@
 #include <string>
 
 
+inline bool approx_equal( const AMP::Scalar &x, const AMP::Scalar &y, double tol )
+{
+    return AMP::Utilities::approx_equal( static_cast<double>( x ), static_cast<double>( y ), tol );
+}
+
+
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
@@ -77,13 +83,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Try to copy data between the single vector and multivector
     singleVector->setRandomValues();
     multiVector->copyVector( singleVector );
-    if ( AMP::Utilities::approx_equal( singleVector->L2Norm(), multiVector->L2Norm(), 1e-12 ) )
+    if ( approx_equal( singleVector->L2Norm(), multiVector->L2Norm(), 1e-12 ) )
         ut->passes( "Data copied from single vector to multivector" );
     else
         ut->failure( "Data copied from single vector to multivector" );
     singleVector->zero();
     singleVector->copyVector( multiVector );
-    if ( AMP::Utilities::approx_equal( singleVector->L2Norm(), multiVector->L2Norm(), 1e-12 ) )
+    if ( approx_equal( singleVector->L2Norm(), multiVector->L2Norm(), 1e-12 ) )
         ut->passes( "Data copied from multivector to single vector" );
     else
         ut->failure( "Data copied from multivector to single vector" );

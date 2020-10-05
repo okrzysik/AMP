@@ -111,7 +111,7 @@ double Parallelepiped::distance( const Point &pos0, const Point &ang ) const
     d = fun( d, d_n_ac, p1 );
     d = fun( d, d_n_bc, p0 );
     d = fun( d, d_n_bc, p1 );
-    if ( inside( pos0 ) )
+    if ( inside( pos0 ) && d < 1e100 )
         d = -d;
     return d;
 }

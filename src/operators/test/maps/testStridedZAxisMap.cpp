@@ -144,8 +144,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     siloWriter->writeFile( "tmp", 1 );
 #endif
 
-    double const tolerance = 1.0e-14 * otherVector->L2Norm();
-    tmpFooVector->subtract(* barFooVector, *tmpFooVector );
+    double tolerance = 1.0e-14 * static_cast<double>( otherVector->L2Norm() );
+    tmpFooVector->subtract( *barFooVector, *tmpFooVector );
     tmpBarVector->subtract( *fooBarVector, *tmpBarVector );
     AMP::pout << "after  "
               << "foo=" << tmpFooVector->L2Norm() << "  "
@@ -154,7 +154,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #ifdef USE_EXT_SILO
     siloWriter->writeFile( "tmp", 2 );
 #endif
-    double const errNorm = otherVector->L2Norm();
+    double errNorm = static_cast<double>( otherVector->L2Norm() );
     AMP::pout << "errNorm  " << errNorm << std::endl;
 
     if ( errNorm < tolerance ) {

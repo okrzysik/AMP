@@ -135,9 +135,7 @@ static void myTest( AMP::UnitTest *ut )
     mechNlRhsVec->setToScalar( 0.0 );
     dirichletLoadVecOp->apply( nullVec, mechNlRhsVec );
 
-    double initSolNorm = mechNlSolVec->L2Norm();
-
-    std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
+    std::cout << "Initial Solution Norm: " << mechNlSolVec->L2Norm() << std::endl;
 
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
@@ -188,7 +186,7 @@ static void myTest( AMP::UnitTest *ut )
                   << mechNlScaledRhsVec->L2Norm() << std::endl;
 
         nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-        double initialResidualNorm = mechNlResVec->L2Norm();
+        double initialResidualNorm = static_cast<double>( mechNlResVec->L2Norm() );
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
@@ -199,7 +197,7 @@ static void myTest( AMP::UnitTest *ut )
             nonlinearSolver->solve( mechNlScaledRhsVec, mechNlSolVec );
 
             nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-            double finalResidualNorm = mechNlResVec->L2Norm();
+            double finalResidualNorm = static_cast<double>( mechNlResVec->L2Norm() );
             AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                       << finalResidualNorm << std::endl;
 
@@ -213,7 +211,7 @@ static void myTest( AMP::UnitTest *ut )
         auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
         auto tmpParams =
             std::make_shared<AMP::Operator::MechanicsNonlinearFEOperatorParameters>( tmp_db );
-        ( nonlinBvpOperator->getVolumeOperator() )->reset( tmpParams );
+        nonlinBvpOperator->getVolumeOperator()->reset( tmpParams );
         nonlinearSolver->setZeroInitialGuess( false );
 
 #ifdef USE_EXT_SILO
@@ -221,8 +219,7 @@ static void myTest( AMP::UnitTest *ut )
 #endif
     }
 
-    double finalSolNorm = mechNlSolVec->L2Norm();
-    AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
+    AMP::pout << "Final Solution Norm: " << mechNlSolVec->L2Norm() << std::endl;
 
     ut->passes( exeName );
 }

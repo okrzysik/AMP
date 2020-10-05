@@ -1,9 +1,19 @@
 #ifndef included_AMP_GPUFunctionTable_H_
 #define included_AMP_GPUFunctionTable_H_
 
-#include "AMP/utils/Array.h"
+
+#include <memory>
+
 
 namespace AMP {
+
+
+// Forward declerations
+class ArraySize;
+class FunctionTable;
+template<class TYPE, class FUN = FunctionTable, class Allocator = std::allocator<TYPE>>
+class Array;
+
 
 /*!
  * Class GPUFunctionTable is an accelerated function table class that defines

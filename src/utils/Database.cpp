@@ -333,7 +333,7 @@ bool Database::isType( const AMP::string_view &key ) const
     auto data = getData( key );
     DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
     auto type = data->type();
-    if ( type == typeid( bool ).name() )
+    if ( type == typeid( TYPE ).name() )
         return true;
     if ( data->is_integral() ) {
         auto data2 = data->convertToInt64();
@@ -361,6 +361,7 @@ template bool Database::isType<int16_t>( const AMP::string_view & ) const;
 template bool Database::isType<int32_t>( const AMP::string_view & ) const;
 template bool Database::isType<int64_t>( const AMP::string_view & ) const;
 template bool Database::isType<float>( const AMP::string_view & ) const;
+template bool Database::isType<long double>( const AMP::string_view & ) const;
 
 
 /********************************************************************

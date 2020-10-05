@@ -248,9 +248,9 @@ void testMultiDOFVector( AMP::UnitTest *ut, AMP::Discretization::DOFManager::sha
     else
         ut->failure( "MultiDOFManger with duplicate subDOFManagers returns unique DOFs" );
     multiVector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    double vec1norm        = vec1->L1Norm();
-    double vec2norm        = vec2->L1Norm();
-    double multiVectorNorm = multiVector->L1Norm();
+    double vec1norm        = static_cast<double>( vec1->L1Norm() );
+    double vec2norm        = static_cast<double>( vec2->L1Norm() );
+    double multiVectorNorm = static_cast<double>( multiVector->L1Norm() );
     double N_tot           = ( DOF->numGlobalDOF() * ( DOF->numGlobalDOF() - 1 ) ) / 2;
     if ( vec1norm == N_tot && vec2norm == 2 * N_tot && multiVectorNorm == 3 * N_tot )
         ut->passes( "MultiVector with repeated DOFs sets values correctly" );

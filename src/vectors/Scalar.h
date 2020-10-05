@@ -16,14 +16,14 @@ class Scalar
 {
 public:
     //! Empty constructor
-    Scalar();
+    inline Scalar();
 
     /**
      * \brief Construct a sclar value
      * \param[in] x         Input scalar
      */
     template<class TYPE>
-    Scalar( TYPE x );
+    inline Scalar( TYPE x );
 
     /**
      * \brief Construct a sclar value
@@ -31,7 +31,7 @@ public:
      * \return              Returns the scalar value
      */
     template<class TYPE>
-    TYPE get( double tol = getTol<TYPE>() ) const;
+    inline TYPE get( double tol = getTol<TYPE>() ) const;
 
     //! Return true if the type is a floating point type
     inline bool is_floating_point() const { return d_type == 'f'; }
@@ -45,13 +45,35 @@ public:
     //! Return the storage type
     inline const auto &type() const { return d_data.type(); }
 
+    //! Check if we are storing a value
+    inline bool has_value() const noexcept { return d_data.has_value(); }
+
     //! Get default tolerance
     template<class TYPE>
     static constexpr double getTol();
 
+public: // Comparison operators
+    bool operator==( const Scalar &rhs ) const;
+    bool operator!=( const Scalar &rhs ) const;
+    bool operator>( const Scalar &rhs ) const;
+    bool operator>=( const Scalar &rhs ) const;
+    bool operator<( const Scalar &rhs ) const;
+    bool operator<=( const Scalar &rhs ) const;
+
+public: // Overload some typecast operators
+    template<class TYPE>
+    inline explicit operator TYPE() const
+    {
+        return get<TYPE>();
+    }
+
+public: // Math functions
+    Scalar abs() const;
+    Scalar sqrt() const;
+
 private: // Helper functions
     template<class T1, class T2>
-    static std::tuple<T1, double> convert( const std::any &x0 );
+    static inline std::tuple<T1, double> convert( const std::any &x0 );
 
     template<class TYPE>
     static inline size_t get_hash();

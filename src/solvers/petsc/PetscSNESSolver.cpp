@@ -296,10 +296,12 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
         ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
     AMP_ASSERT(
         ( spRhs->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( spRhs->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+        ( spRhs->getUpdateStatus() ==
+          AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
     AMP_ASSERT(
         ( spSol->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( spSol->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+        ( spSol->getUpdateStatus() ==
+          AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
 
     if ( d_iDebugPrintInfoLevel > 2 )
         AMP::pout << "L2 Norm of u in PetscSNESSolver::solve after view " << spSol->L2Norm()
@@ -551,7 +553,7 @@ PetscErrorCode PetscSNESSolver::mffdCheckBounds( void *checkctx, Vec U, Vec a, P
         double minVal = PetscAbsScalar( ( *h ) * 1.01 );
         scv->divide( *uv, *av );
         scv->abs( *scv );
-        minVal = std::min( scv->min(), minVal );
+        minVal = std::min( static_cast<double>( scv->min() ), minVal );
         if ( minVal <= PetscAbsScalar( *h ) ) {
             AMP::pout << "Scaling h back from  " << ( *h ) << " to " << 0.99 * minVal << std::endl;
             if ( PetscRealPart( *h ) > 0.0 )

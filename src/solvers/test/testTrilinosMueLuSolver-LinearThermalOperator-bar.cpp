@@ -48,96 +48,72 @@ void linearThermalTest( AMP::UnitTest *ut )
     // Print from all cores into the output files
     AMP::PIO::logAllNodes( log_file );
 
-    //--------------------------------------------------
     //   Create the Mesh.
-    //--------------------------------------------------
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db   = input_db->getDatabase( "Mesh" );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
-    //--------------------------------------------------
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
-    //--------------------------------------------------
     // Create a DOF manager for a nodal vector
-    //--------------------------------------------------
     int DOFsPerNode          = 1;
     int DOFsPerElement       = 8;
     int nodalGhostWidth      = 1;
     int gaussPointGhostWidth = 1;
     bool split               = true;
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-    AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
-    //--------------------------------------------------
+    auto nodalDofMap         = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+    auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    ////////////////////////////////////
     //  CREATE THE NEUTRONICS SOURCE  //
-    ////////////////////////////////////
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> unusedModel;
-    std::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator =
-        std::dynamic_pointer_cast<AMP::Operator::NeutronicsRhs>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "NeutronicsOperator", input_db, unusedModel ) );
+    auto neutronicsOperator = std::dynamic_pointer_cast<AMP::Operator::NeutronicsRhs>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "NeutronicsOperator", input_db, unusedModel ) );
 
     neutronicsOperator->setTimeStep( 0. );
 
-    AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar =
-        neutronicsOperator->getOutputVariable();
-    AMP::LinearAlgebra::Vector::shared_ptr SpecificPowerVec =
-        AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
+    auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
+    auto SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
 
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    /////////////////////////////////////////////////////
     //  Integrate Nuclear Source over Desnity * Volume //
-    /////////////////////////////////////////////////////
-
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
-    std::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
-        std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
+    auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
 
     // Create the power (heat source) vector.
-    AMP::LinearAlgebra::Variable::shared_ptr PowerInWattsVar = sourceOperator->getOutputVariable();
-    AMP::LinearAlgebra::Vector::shared_ptr PowerInWattsVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
+    auto PowerInWattsVar = sourceOperator->getOutputVariable();
+    auto PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
 
-    ////////////////////////////////////
-    //   CREATE THE THERMAL OPERATOR  //
-    ////////////////////////////////////
+    // CREATE THE THERMAL OPERATOR
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
+    auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
 
 
-    AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvinVec =
+    auto TemperatureInKelvinVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable() );
-    AMP::LinearAlgebra::Vector::shared_ptr RightHandSideVec =
+    auto RightHandSideVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
-    AMP::LinearAlgebra::Vector::shared_ptr ResidualVec =
+    auto ResidualVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
     RightHandSideVec->copyVector( PowerInWattsVec );
 
-    std::shared_ptr<AMP::Operator::BoundaryOperator> boundaryOp;
-    boundaryOp = diffusionOperator->getBoundaryOperator();
-
+    auto boundaryOp = diffusionOperator->getBoundaryOperator();
     boundaryOp->addRHScorrection( RightHandSideVec );
     boundaryOp->setRHScorrection( RightHandSideVec );
 
@@ -148,8 +124,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
     // Fill in the parameters fo the class with the info on the database.
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams(
-        new AMP::Solver::SolverStrategyParameters( mlSolver_db ) );
+    auto mlSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
 
     // Define the operature to be used by the Solver.
     mlSolverParams->d_pOperator = diffusionOperator;
@@ -158,15 +133,14 @@ void linearThermalTest( AMP::UnitTest *ut )
     TemperatureInKelvinVec->setToScalar( 1.0 );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = TemperatureInKelvinVec->L2Norm();
+    double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
-    double rhsNorm = RightHandSideVec->L2Norm();
+    double rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
     // Create the ML Solver
-    std::shared_ptr<AMP::Solver::TrilinosMueLuSolver> mlSolver(
-        new AMP::Solver::TrilinosMueLuSolver( mlSolverParams ) );
+    auto mlSolver = std::make_shared<AMP::Solver::TrilinosMueLuSolver>( mlSolverParams );
 
     // Use a random initial guess?
     mlSolver->setZeroInitialGuess( false );
@@ -178,7 +152,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = ResidualVec->L2Norm();
+    double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
@@ -193,8 +167,7 @@ void linearThermalTest( AMP::UnitTest *ut )
 
     // check the solution
     int zeroGhostWidth = 0;
-    AMP::Mesh::MeshIterator iterator =
-        meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+    auto iterator      = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
 
     // The analytical solution is:  T = a + b*z + c*z*z
     //   c = -power/2
@@ -212,10 +185,10 @@ void linearThermalTest( AMP::UnitTest *ut )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     for ( int i = 0; i < globalComm.getSize(); i++ ) {
         if ( globalComm.getRank() == i ) {
-            std::string filename          = "data_" + exeName;
-            int rank                      = globalComm.getRank();
-            int nranks                    = globalComm.getSize();
-            std::ios_base::openmode omode = std::ios_base::out;
+            std::string filename = "data_" + exeName;
+            int rank             = globalComm.getRank();
+            int nranks           = globalComm.getSize();
+            auto omode           = std::ios_base::out;
             if ( rank > 0 )
                 omode |= std::ios_base::app;
             std::ofstream file( filename.c_str(), omode );
@@ -272,9 +245,8 @@ void linearThermalTest( AMP::UnitTest *ut )
 
 // Plot the results
 #ifdef USE_EXT_SILO
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
-
     siloWriter->registerVector(
         PowerInWattsVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "PowerInWatts" );
     siloWriter->registerVector(

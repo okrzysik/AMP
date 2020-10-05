@@ -15,7 +15,7 @@ union id_mask {
     char id_c[sizeof( uint64_t[2] )];
 };
 
-auto hash_id( const AMP::Mesh::MeshElementID &id ) -> std::hash<std::string>::result_type
+size_t hash_id( const AMP::Mesh::MeshElementID &id )
 {
     id_mask m;
 
@@ -116,7 +116,7 @@ void testMultiMeshOwnerRank( AMP::UnitTest &ut )
     }
 
     // Do a reduction to make sure we only get one instance of locally owned elements.
-    std::vector<unsigned long long> local_ids( 0 );
+    std::vector<size_t> local_ids( 0 );
     if ( arrayBoundaryMesh ) {
         auto it         = arrayMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Volume, 0 );
         auto volBndMesh = arrayMesh->Subset( it );
@@ -127,14 +127,8 @@ void testMultiMeshOwnerRank( AMP::UnitTest &ut )
             local_ids.push_back( hash_id( it->globalID() ) );
         }
     }
-    std::vector<int> num_ids( globalComm.getSize(), -1 );
-    globalComm.allGather( static_cast<int>( local_ids.size() ), num_ids.data() );
-    int num_global = 0;
-    for ( auto i : num_ids )
-        num_global += i;
-    std::vector<unsigned long long> global_ids( num_global );
-    globalComm.allGather( local_ids.data(), local_ids.size(), global_ids.data() );
-    failure = false;
+    auto global_ids = globalComm.allGather( local_ids );
+    failure         = false;
     for ( auto i : global_ids ) {
         auto count = std::count( global_ids.begin(), global_ids.end(), i );
         if ( count > 1 ) {

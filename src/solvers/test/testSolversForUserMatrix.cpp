@@ -183,8 +183,8 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     linearOp->residual( f, u, rf );
 
     // Check the L2 norm of the residuals.
-    const double finalResidualNorm   = rf->L2Norm();
-    const double initialResidualNorm = ri->L2Norm();
+    const double finalResidualNorm   = static_cast<double>( rf->L2Norm() );
+    const double initialResidualNorm = static_cast<double>( ri->L2Norm() );
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
     AMP::pout << "Final Residual Norm  : " << finalResidualNorm << std::endl;
 

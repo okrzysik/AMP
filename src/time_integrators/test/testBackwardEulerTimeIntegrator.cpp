@@ -131,7 +131,7 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
 
         double val = fun( px, py, pz );
         for ( auto &elem : gid ) {
-	  initialCondition->setValuesByGlobalID( 1, &elem, &val );
+            initialCondition->setValuesByGlobalID( 1, &elem, &val );
         } // end for i
     }     // end for node
 
@@ -163,7 +163,7 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
         ut->passes( "Tested BDFTimeIntegrator's constructor" );
     }
 
-    double current_time = 0, max, min;
+    double current_time = 0;
     int j               = 0;
     while ( BDFTimeIntegrator->getCurrentTime() < BDFTimeIntegrator->getFinalTime() ) {
         BDFTimeIntegrator->advanceSolution( BDFTimeIntegrator->getCurrentDt(), false );
@@ -171,8 +171,8 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
 
         std::cout << j++ << "-th timestep" << std::endl;
 
-        max = BDFTimeIntegrator->getCurrentSolution()->max();
-        min = BDFTimeIntegrator->getCurrentSolution()->min();
+        auto max = BDFTimeIntegrator->getCurrentSolution()->max();
+        auto min = BDFTimeIntegrator->getCurrentSolution()->min();
 
         std::cout << "current_time = " << current_time << std::endl;
         std::cout << "max val of the current solution = " << max << std::endl;

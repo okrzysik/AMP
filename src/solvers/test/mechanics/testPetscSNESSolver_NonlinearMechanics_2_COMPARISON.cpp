@@ -104,11 +104,11 @@ static void myTest( AMP::UnitTest *ut )
     }
     finalTempVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
-    ( std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
-          nonlinBvpOperator->getVolumeOperator() ) )
+    std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+        nonlinBvpOperator->getVolumeOperator() )
         ->setReferenceTemperature( initTempVec );
-    ( std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
-          nonlinBvpOperator->getVolumeOperator() ) )
+    std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+        nonlinBvpOperator->getVolumeOperator() )
         ->setVector( AMP::Operator::Mechanics::TEMPERATURE, finalTempVec );
 
 
@@ -134,7 +134,7 @@ static void myTest( AMP::UnitTest *ut )
 
 // Create the silo writer and register the data
 #ifdef USE_EXT_SILO
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector(
         mechNlSolVec, mesh, AMP::Mesh::GeomType::Vertex, "MechanicsSolution" );
 #endif
@@ -147,14 +147,11 @@ static void myTest( AMP::UnitTest *ut )
     mechNlRhsVec->setToScalar( 0.0 );
     dirichletLoadVecOp->apply( nullVec, mechNlRhsVec );
 
-    double initSolNorm = mechNlSolVec->L2Norm();
+    std::cout << "Initial Solution Norm: " << mechNlSolVec->L2Norm() << std::endl;
 
-    std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
+    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
 
-    std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-
-    std::shared_ptr<AMP::Database> linearSolver_db =
-        nonlinearSolver_db->getDatabase( "LinearSolver" );
+    auto linearSolver_db = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
     // ---- first initialize the preconditioner
     auto pcSolver_db    = linearSolver_db->getDatabase( "Preconditioner" );
@@ -204,7 +201,7 @@ static void myTest( AMP::UnitTest *ut )
                   << mechNlScaledRhsVec->L2Norm() << std::endl;
 
         nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-        double initialResidualNorm = mechNlResVec->L2Norm();
+        double initialResidualNorm = static_cast<double>( mechNlResVec->L2Norm() );
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
@@ -215,7 +212,7 @@ static void myTest( AMP::UnitTest *ut )
             nonlinearSolver->solve( mechNlScaledRhsVec, mechNlSolVec );
 
             nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
-            double finalResidualNorm = mechNlResVec->L2Norm();
+            double finalResidualNorm = static_cast<double>( mechNlResVec->L2Norm() );
             AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                       << finalResidualNorm << std::endl;
             AMP::pout << "Maxx value in the final sol for step " << ( step + 1 ) << ": "
@@ -232,13 +229,9 @@ static void myTest( AMP::UnitTest *ut )
         auto mechVvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
         auto mechWvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
 
-        double finalMaxU = mechUvec->maxNorm();
-        double finalMaxV = mechVvec->maxNorm();
-        double finalMaxW = mechWvec->maxNorm();
-
-        AMP::pout << "Maximum U displacement: " << finalMaxU << std::endl;
-        AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
-        AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
+        AMP::pout << "Maximum U displacement: " << mechUvec->maxNorm() << std::endl;
+        AMP::pout << "Maximum V displacement: " << mechVvec->maxNorm() << std::endl;
+        AMP::pout << "Maximum W displacement: " << mechWvec->maxNorm() << std::endl;
 
         auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
         auto tmpParams =
@@ -247,7 +240,7 @@ static void myTest( AMP::UnitTest *ut )
         nonlinearSolver->setZeroInitialGuess( false );
     }
 
-    double finalSolNorm = mechNlSolVec->L2Norm();
+    double finalSolNorm = static_cast<double>( mechNlSolVec->L2Norm() );
     AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
     AMP::pout << "Maxx value in the final sol: " << mechNlSolVec->max() << std::endl;
 

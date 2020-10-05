@@ -30,16 +30,10 @@
 
 static void linearThermalTest( AMP::UnitTest *ut )
 {
-    double t1;
     // Input and output file names
-    //  #include <string>
     std::string exeName( "testTrilinosMLSolver-LinearThermalOperator-2_HALDEN" );
     std::string input_file = "input_" + exeName;
-    // std::string input_file = "input_" + exeName + "_HALDEN";
-    std::string log_file = "output_" + exeName;
-    ////////////////////////////////////
-    //    INITIALIZE THE PROBLEM      //
-    ////////////////////////////////////
+    std::string log_file   = "output_" + exeName;
 
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -49,19 +43,14 @@ static void linearThermalTest( AMP::UnitTest *ut )
     // Print from all cores into the output files
     AMP::PIO::logAllNodes( log_file );
 
-    //--------------------------------------------------
-    //   Create the Mesh.
-    //--------------------------------------------------
+    // Create the Mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
-    //--------------------------------------------------
 
-    //--------------------------------------------------
     // Create a DOF manager for a nodal vector
-    //--------------------------------------------------
     int DOFsPerNode          = 1;
     int DOFsPerElement       = 8;
     int nodalGhostWidth      = 1;
@@ -71,12 +60,9 @@ static void linearThermalTest( AMP::UnitTest *ut )
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
-    //--------------------------------------------------
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    ////////////////////////////////////
-    //  CREATE THE NEUTRONICS SOURCE  //
-    ////////////////////////////////////
+    //  CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
@@ -89,12 +75,8 @@ static void linearThermalTest( AMP::UnitTest *ut )
 
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    /////////////////////////////////////////////////////
-    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
-    /////////////////////////////////////////////////////
-
+    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
@@ -107,15 +89,10 @@ static void linearThermalTest( AMP::UnitTest *ut )
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
+    std::cout << "n1 = " << SpecificPowerVec->L2Norm() << std::endl;
+    std::cout << "n1 = " << PowerInWattsVec->L2Norm() << std::endl;
 
-    t1 = SpecificPowerVec->L2Norm();
-    std::cout << "n1 = " << t1 << std::endl;
-    t1 = PowerInWattsVec->L2Norm();
-    std::cout << "n1 = " << t1 << std::endl;
-
-    ////////////////////////////////////
-    //   CREATE THE THERMAL OPERATOR  //
-    ////////////////////////////////////
+    //   CREATE THE THERMAL OPERATOR
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
@@ -130,21 +107,15 @@ static void linearThermalTest( AMP::UnitTest *ut )
 
     RightHandSideVec->setToScalar( 0.0 );
 
-    ///////////////////////////////////////////////
-    //   Add the boundary conditions corrections //
-    ///////////////////////////////////////////////
+    //   Add the boundary conditions corrections
 
     RightHandSideVec->copyVector( PowerInWattsVec );
 
     diffusionOperator->modifyRHSvector( RightHandSideVec );
 
-    auto rhsNorm = RightHandSideVec->L2Norm();
-    std::cout << "RHS Norm 1: " << rhsNorm << std::endl;
-    rhsNorm = PowerInWattsVec->L2Norm();
-    std::cout << "RHS Norm 2: " << rhsNorm << std::endl;
+    std::cout << "RHS Norm 1: " << RightHandSideVec->L2Norm() << std::endl;
+    std::cout << "RHS Norm 2: " << PowerInWattsVec->L2Norm() << std::endl;
 
-
-    /////////////////////////////////////////////
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
@@ -161,11 +132,8 @@ static void linearThermalTest( AMP::UnitTest *ut )
     TemperatureInKelvinVec->setToScalar( 1.0 );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = TemperatureInKelvinVec->L2Norm();
-    std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
-
-    rhsNorm = RightHandSideVec->L2Norm();
-    std::cout << "RHS Norm: " << rhsNorm << std::endl;
+    std::cout << "Initial Solution Norm: " << TemperatureInKelvinVec->L2Norm() << std::endl;
+    std::cout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
 
     // Create the ML Solver
     auto mlSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
@@ -190,7 +158,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = ResidualVec->L2Norm();
+    double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
     AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {

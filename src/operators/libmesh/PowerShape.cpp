@@ -120,14 +120,14 @@ void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
     d_coordinateSystem = db->getWithDefault<std::string>( "coordinateSystem", "cartesian" );
 
     // Create the cylindrical bounding box
-    std::vector<double> min_max_pos = d_Mesh->getBoundingBox();
-    double centerx                  = 0.5 * ( min_max_pos[0] + min_max_pos[1] );
-    double centery                  = 0.5 * ( min_max_pos[2] + min_max_pos[3] );
+    auto min_max_pos = d_Mesh->getBoundingBox();
+    double centerx   = 0.5 * ( min_max_pos[0] + min_max_pos[1] );
+    double centery   = 0.5 * ( min_max_pos[2] + min_max_pos[3] );
     double minR = 1e100, maxR = -1e100;
 
     // Create the cylindrical bounding box
-    d_radialBoundingBox              = min_max_pos;
-    AMP::Mesh::MeshIterator iterator = d_Mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    d_radialBoundingBox = min_max_pos;
+    auto iterator       = d_Mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         auto coord = iterator->coord();
         double rx  = ( coord[0] - centerx );
@@ -640,23 +640,21 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
             int DOFsPerNode     = 1;
             int nodalGhostWidth = 1;
-            AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-                AMP::Discretization::simpleDOFManager::create(
-                    d_Mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-            AMP::LinearAlgebra::Variable::shared_ptr nodalVariable(
-                new AMP::LinearAlgebra::Variable( "Temperature" ) );
-            AMP::LinearAlgebra::Vector::shared_ptr nodalVector =
+            auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
+                d_Mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            auto nodalVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
+            auto nodalVector =
                 AMP::LinearAlgebra::createVector( nodalDofMap, nodalVariable, split );
-            AMP::LinearAlgebra::Vector::shared_ptr unodalPower = nodalVector->cloneVector();
-            AMP::LinearAlgebra::Vector::shared_ptr rnodalPower = nodalVector->cloneVector();
+            auto unodalPower = nodalVector->cloneVector();
+            auto rnodalPower = nodalVector->cloneVector();
 
             volumeIntegralOperator->apply( u, unodalPower );
             volumeIntegralOperator->apply( r, rnodalPower );
 
-            const double denominator = rnodalPower->L1Norm();
+            double denominator( rnodalPower->L1Norm() );
             AMP_INSIST( !AMP::Utilities::approx_equal( denominator, 0. ),
                         "The denominator is zero - not good." );
-            r->scale( unodalPower->L1Norm() / rnodalPower->L1Norm() );
+            r->scale( double( unodalPower->L1Norm() ) / double( rnodalPower->L1Norm() ) );
 
             r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
             if ( d_iDebugPrintInfoLevel > 3 )

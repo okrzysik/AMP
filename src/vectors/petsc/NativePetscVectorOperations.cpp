@@ -41,16 +41,20 @@ const NativePetscVectorData *NativePetscVectorOperations::getNativeVec( const Ve
 }
 
 // Function to perform  this = alpha x + beta y + gamma z
-void NativePetscVectorOperations::axpbypcz( double alpha,
+void NativePetscVectorOperations::axpbypcz( const Scalar &alpha_in,
                                             const VectorData &vx,
-                                            double beta,
+                                            const Scalar &beta_in,
                                             const VectorData &vy,
-                                            double gamma,
+                                            const Scalar &gamma_in,
                                             VectorData &vz )
 {
     Vec x = getConstPetscVec( vx );
     Vec y = getConstPetscVec( vy );
     Vec z = getPetscVec( vz );
+
+    double alpha = alpha_in.get<double>();
+    double beta  = beta_in.get<double>();
+    double gamma = gamma_in.get<double>();
 
     if ( x != y && x != z && y != z ) {
         // We can safely perform  z = alpha x + beta y + gamma z
@@ -82,10 +86,11 @@ void NativePetscVectorOperations::copy( const VectorData &x, VectorData &y )
 
 void NativePetscVectorOperations::zero( VectorData &x ) { VecZeroEntries( getPetscVec( x ) ); }
 
-void NativePetscVectorOperations::setToScalar( double alpha, VectorData &x )
+void NativePetscVectorOperations::setToScalar( const Scalar &alpha, VectorData &x )
 {
+    auto val = alpha.get<double>();
     auto vec = getPetscVec( x );
-    VecSet( vec, alpha );
+    VecSet( vec, val );
 }
 
 void NativePetscVectorOperations::setRandomValues( VectorData &x )
@@ -95,16 +100,16 @@ void NativePetscVectorOperations::setRandomValues( VectorData &x )
     VecSetRandom( nx->getVec(), nx->getPetscRandom( nx->getComm() ) );
 }
 
-void NativePetscVectorOperations::scale( double alpha, const VectorData &x, VectorData &y )
+void NativePetscVectorOperations::scale( const Scalar &alpha, const VectorData &x, VectorData &y )
 {
     VecCopy( getConstPetscVec( x ), getPetscVec( y ) );
-    VecScale( getPetscVec( y ), alpha );
+    VecScale( getPetscVec( y ), alpha.get<double>() );
 }
 
 
-void NativePetscVectorOperations::scale( double alpha, VectorData &x )
+void NativePetscVectorOperations::scale( const Scalar &alpha, VectorData &x )
 {
-    VecScale( getPetscVec( x ), alpha );
+    VecScale( getPetscVec( x ), alpha.get<double>() );
 }
 
 void NativePetscVectorOperations::add( const VectorData &x, const VectorData &y, VectorData &z )
@@ -142,14 +147,17 @@ void NativePetscVectorOperations::reciprocal( const VectorData &x, VectorData &y
 }
 
 
-void NativePetscVectorOperations::linearSum(
-    double alpha, const VectorData &x, double beta, const VectorData &y, VectorData &z )
+void NativePetscVectorOperations::linearSum( const Scalar &alpha,
+                                             const VectorData &x,
+                                             const Scalar &beta,
+                                             const VectorData &y,
+                                             VectorData &z )
 {
     axpbypcz( alpha, x, beta, y, 0.0, z );
 }
 
 
-void NativePetscVectorOperations::axpy( double alpha,
+void NativePetscVectorOperations::axpy( const Scalar &alpha,
                                         const VectorData &x,
                                         const VectorData &y,
                                         VectorData &z )
@@ -158,8 +166,8 @@ void NativePetscVectorOperations::axpy( double alpha,
 }
 
 
-void NativePetscVectorOperations::axpby( double alpha,
-                                         double beta,
+void NativePetscVectorOperations::axpby( const Scalar &alpha,
+                                         const Scalar &beta,
                                          const VectorData &x,
                                          VectorData &vz )
 {
@@ -174,56 +182,58 @@ void NativePetscVectorOperations::abs( const VectorData &x, VectorData &y )
     VecAbs( getPetscVec( y ) );
 }
 
-void NativePetscVectorOperations::addScalar( const VectorData &x, double alpha, VectorData &y )
+void NativePetscVectorOperations::addScalar( const VectorData &x,
+                                             const Scalar &alpha,
+                                             VectorData &y )
 {
     auto py = getPetscVec( y );
     VecCopy( getConstPetscVec( x ), py );
-    VecShift( py, alpha );
+    VecShift( py, alpha.get<double>() );
 }
 
-double NativePetscVectorOperations::min( const VectorData &x ) const
+Scalar NativePetscVectorOperations::min( const VectorData &x ) const
 {
     double val;
     VecMin( getConstPetscVec( x ), PETSC_NULL, &val );
     return val;
 }
 
-double NativePetscVectorOperations::max( const VectorData &x ) const
+Scalar NativePetscVectorOperations::max( const VectorData &x ) const
 {
     double val;
     VecMax( getConstPetscVec( x ), PETSC_NULL, &val );
     return val;
 }
 
-double NativePetscVectorOperations::L1Norm( const VectorData &x ) const
+Scalar NativePetscVectorOperations::L1Norm( const VectorData &x ) const
 {
     double ans;
     VecNorm( getConstPetscVec( x ), NORM_1, &ans );
     return ans;
 }
 
-double NativePetscVectorOperations::L2Norm( const VectorData &x ) const
+Scalar NativePetscVectorOperations::L2Norm( const VectorData &x ) const
 {
     double ans;
     VecNorm( getConstPetscVec( x ), NORM_2, &ans );
     return ans;
 }
 
-double NativePetscVectorOperations::maxNorm( const VectorData &x ) const
+Scalar NativePetscVectorOperations::maxNorm( const VectorData &x ) const
 {
     double ans;
     VecNorm( getConstPetscVec( x ), NORM_INFINITY, &ans );
     return ans;
 }
 
-double NativePetscVectorOperations::dot( const VectorData &x, const VectorData &y ) const
+Scalar NativePetscVectorOperations::dot( const VectorData &x, const VectorData &y ) const
 {
     double ans;
     VecDot( getConstPetscVec( x ), getConstPetscVec( y ), &ans );
     return ans;
 }
 
-double NativePetscVectorOperations::localL1Norm( const VectorData &vx ) const
+Scalar NativePetscVectorOperations::localL1Norm( const VectorData &vx ) const
 {
     Vec x = getPetscVec( vx );
 
@@ -234,7 +244,7 @@ double NativePetscVectorOperations::localL1Norm( const VectorData &vx ) const
     return ans;
 }
 
-double NativePetscVectorOperations::localL2Norm( const VectorData &vx ) const
+Scalar NativePetscVectorOperations::localL2Norm( const VectorData &vx ) const
 {
     Vec x = getPetscVec( vx );
 
@@ -246,7 +256,7 @@ double NativePetscVectorOperations::localL2Norm( const VectorData &vx ) const
     return ans;
 }
 
-double NativePetscVectorOperations::localMaxNorm( const VectorData &vx ) const
+Scalar NativePetscVectorOperations::localMaxNorm( const VectorData &vx ) const
 {
     Vec x = getPetscVec( vx );
 
@@ -258,7 +268,7 @@ double NativePetscVectorOperations::localMaxNorm( const VectorData &vx ) const
     return ans;
 }
 
-double NativePetscVectorOperations::localDot( const VectorData &vx, const VectorData &vy ) const
+Scalar NativePetscVectorOperations::localDot( const VectorData &vx, const VectorData &vy ) const
 {
     Vec x = getPetscVec( vx );
 

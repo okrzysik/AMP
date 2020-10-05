@@ -33,38 +33,33 @@ void linearElasticTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db    = input_db->getDatabase( "Mesh" );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
+    auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
-    AMP::LinearAlgebra::Variable::shared_ptr var = bvpOperator->getOutputVariable();
+    auto var = bvpOperator->getOutputVariable();
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-    std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletVecOp =
-        std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "Load_Boundary", input_db, dummyModel ) );
+    auto dirichletVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "Load_Boundary", input_db, dummyModel ) );
     // This has an in-place apply. So, it has an empty input variable and
     // the output variable is the same as what it is operating on.
     dirichletVecOp->setVariable( var );
 
-    AMP::Discretization::DOFManager::shared_ptr dofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto dofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    AMP::LinearAlgebra::Vector::shared_ptr mechSolVec =
-        AMP::LinearAlgebra::createVector( dofMap, var, true );
-    AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = mechSolVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr mechResVec = mechSolVec->cloneVector();
+    auto mechSolVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
+    auto mechRhsVec = mechSolVec->cloneVector();
+    auto mechResVec = mechSolVec->cloneVector();
 
     mechSolVec->setToScalar( 0.5 );
     mechRhsVec->setToScalar( 0.0 );
@@ -72,30 +67,28 @@ void linearElasticTest( AMP::UnitTest *ut )
 
     dirichletVecOp->apply( nullVec, mechRhsVec );
 
-    double rhsNorm = mechRhsVec->L2Norm();
+    double rhsNorm = static_cast<double>( mechRhsVec->L2Norm() );
 
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
-    double initSolNorm = mechSolVec->L2Norm();
+    double initSolNorm = static_cast<double>( mechSolVec->L2Norm() );
 
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-    double initResidualNorm = mechResVec->L2Norm();
+    double initResidualNorm = static_cast<double>( mechResVec->L2Norm() );
 
     std::cout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
-    std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
+    auto mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams(
-        new AMP::Solver::SolverStrategyParameters( mlSolver_db ) );
+    auto mlSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
 
     mlSolverParams->d_pOperator = bvpOperator;
 
     // create the ML solver interface
-    std::shared_ptr<AMP::Solver::TrilinosMueLuSolver> mlSolver(
-        new AMP::Solver::TrilinosMueLuSolver( mlSolverParams ) );
+    auto mlSolver = std::make_shared<AMP::Solver::TrilinosMueLuSolver>( mlSolverParams );
 
     mlSolver->setZeroInitialGuess( false );
 
@@ -108,7 +101,7 @@ void linearElasticTest( AMP::UnitTest *ut )
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-    double finalResidualNorm = mechResVec->L2Norm();
+    double finalResidualNorm = static_cast<double>( mechResVec->L2Norm() );
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 

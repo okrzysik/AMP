@@ -255,10 +255,12 @@ void PetscKrylovSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
     AMP_ASSERT(
         ( fVecView->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( fVecView->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+        ( fVecView->getUpdateStatus() ==
+          AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
     AMP_ASSERT(
         ( uVecView->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( uVecView->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+        ( uVecView->getUpdateStatus() ==
+          AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         std::cout << "PetscKrylovSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
@@ -462,10 +464,9 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     if ( ( (PetscKrylovSolver *) ctx )->getDebugPrintInfoLevel() > 5 ) {
         double norm = 0.0;
         VecNorm( r, NORM_2, &norm );
-        double sp_r_norm = sp_r->L2Norm();
+        double sp_r_norm = static_cast<double>( sp_r->L2Norm() );
         AMP_ASSERT( AMP::Utilities::approx_equal( norm, sp_r_norm ) );
     }
-
 
     // Call the preconditioner
     auto preconditioner = ( (PetscKrylovSolver *) ctx )->getPreconditioner();
@@ -477,7 +478,8 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     }
 
     // Check for nans (no communication necessary)
-    double localNorm = sp_z->getVectorOperations()->localL2Norm(*sp_z->getVectorData());
+    double localNorm =
+        static_cast<double>( sp_z->getVectorOperations()->localL2Norm( *sp_z->getVectorData() ) );
     AMP_INSIST( localNorm == localNorm, "NaNs detected in preconditioner" );
 
     // not sure why, but the state of sp_z is not updated and petsc uses the cached norm

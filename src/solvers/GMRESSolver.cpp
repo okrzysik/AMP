@@ -98,7 +98,7 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
-    double f_norm = f->L2Norm();
+    double f_norm = static_cast<double>( f->L2Norm() );
 
     // if the rhs is zero we try to converge to the relative convergence
     // NOTE:: update this test for a better 'almost equal'
@@ -132,7 +132,7 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     d_nr = -1;
 
     // compute the current residual norm
-    const double beta = res->L2Norm();
+    const double beta = static_cast<double>( res->L2Norm() );
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
         std::cout << "GMRES: initial residual " << beta << std::endl;
@@ -273,7 +273,7 @@ void GMRESSolver::orthogonalize( std::shared_ptr<AMP::LinearAlgebra::Vector> v )
 
         for ( int j = 0; j < k; ++j ) {
 
-            const double h_jk = v->dot( *d_vBasis[j] );
+            const double h_jk = static_cast<double>( v->dot( *d_vBasis[j] ) );
             v->axpy( -h_jk, *d_vBasis[j], *v );
             d_dHessenberg( j, k - 1 ) = h_jk;
         }
@@ -285,7 +285,7 @@ void GMRESSolver::orthogonalize( std::shared_ptr<AMP::LinearAlgebra::Vector> v )
     v->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     // h_{k+1, k}
-    const auto v_norm         = v->L2Norm();
+    const auto v_norm         = static_cast<double>( v->L2Norm() );
     d_dHessenberg( k, k - 1 ) = v_norm; // adjusting for zero starting index
 }
 

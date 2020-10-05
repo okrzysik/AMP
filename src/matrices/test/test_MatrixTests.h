@@ -288,8 +288,8 @@ public:
         matrix->zero();
         vectorlhs->setRandomValues();
         matrix->mult( vectorlhs, vectorrhs );
-        normlhs = vectorlhs->L2Norm();
-        normrhs = vectorrhs->L2Norm();
+        normlhs = static_cast<double>( vectorlhs->L2Norm() );
+        normrhs = static_cast<double>( vectorrhs->L2Norm() );
         if ( ( normlhs > 0 ) && ( normrhs < 0.0000001 ) )
             utils->passes( "mult by 0 matrix" );
         else
@@ -300,9 +300,9 @@ public:
         matrix->setDiagonal( vectorlhs );
         vectorlhs->setRandomValues();
         matrix->mult( vectorlhs, vectorrhs );
-        normlhs = vectorlhs->L2Norm();
+        normlhs = static_cast<double>( vectorlhs->L2Norm() );
         vectorrhs->subtract( *vectorlhs, *vectorrhs );
-        normrhs = vectorrhs->L2Norm();
+        normrhs = static_cast<double>( vectorrhs->L2Norm() );
         if ( ( normlhs > 0 ) && ( normrhs < 0.0000001 ) )
             utils->passes( "mult by I matrix" );
         else
@@ -312,8 +312,8 @@ public:
         fillWithPseudoLaplacian<FACTORY>( matrix );
         vectorlhs->setRandomValues();
         matrix->mult( vectorlhs, vectorrhs );
-        normlhs = vectorlhs->L2Norm();
-        normrhs = vectorrhs->L2Norm();
+        normlhs = static_cast<double>( vectorlhs->L2Norm() );
+        normrhs = static_cast<double>( vectorrhs->L2Norm() );
         if ( ( normlhs > 0 ) && ( normrhs > 0 ) )
             utils->passes( "mult by other matrix" );
         else
@@ -365,13 +365,13 @@ public:
 
         // Verify mult with identity
         matLaplac->mult( vector1, vector2 );
-        ans1   = vector2->L2Norm();
+        ans1   = static_cast<double>( vector2->L2Norm() );
         matSol = AMP::LinearAlgebra::Matrix::matMultiply( matIdent, matLaplac );
         matSol->mult( vector1, vector2 );
-        ans2   = vector2->L2Norm();
+        ans2   = static_cast<double>( vector2->L2Norm() );
         matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matIdent );
         matSol->mult( vector1, vector2 );
-        ans3 = vector2->L2Norm();
+        ans3 = static_cast<double>( vector2->L2Norm() );
         if ( AMP::Utilities::approx_equal( ans1, ans2 ) &&
              AMP::Utilities::approx_equal( ans1, ans3 ) && ans1 != 0.0 )
             utils->passes( "matMultiply with identity matrix" );
@@ -381,10 +381,10 @@ public:
         // Verify mult with two trival matrices
         matLaplac->mult( vector1, vector2 );
         matLaplac->mult( vector2, vector3 );
-        ans1   = vector3->L2Norm();
+        ans1   = static_cast<double>( vector3->L2Norm() );
         matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matLaplac );
         matSol->mult( vector1, vector2 );
-        ans2 = vector2->L2Norm();
+        ans2 = static_cast<double>( vector2->L2Norm() );
         if ( AMP::Utilities::approx_equal( ans1, ans2 ) && ans1 != 0.0 )
             utils->passes( "matMultiply with trival matrix" );
         else

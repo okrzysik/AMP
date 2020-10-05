@@ -67,17 +67,13 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
         bvpOperator->modifyRHSvector( mechRhsVec );
 
-        double rhsNorm = mechRhsVec->L2Norm();
 
-        AMP::pout << "RHS Norm: " << rhsNorm << std::endl;
-
-        double initSolNorm = mechSolVec->L2Norm();
-
-        AMP::pout << "Initial Solution Norm: " << initSolNorm << std::endl;
+        AMP::pout << "RHS Norm: " << mechRhsVec->L2Norm() << std::endl;
+        AMP::pout << "Initial Solution Norm: " << mechSolVec->L2Norm() << std::endl;
 
         bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-        double initResidualNorm = mechResVec->L2Norm();
+        double initResidualNorm = static_cast<double>( mechResVec->L2Norm() );
 
         AMP::pout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
@@ -95,7 +91,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
         mlSolver->solve( mechRhsVec, mechSolVec );
 
-        double finalSolNorm = mechSolVec->L2Norm();
+        double finalSolNorm = static_cast<double>( mechSolVec->L2Norm() );
 
         AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
@@ -107,7 +103,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
         bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-        double finalResidualNorm = mechResVec->L2Norm();
+        double finalResidualNorm = static_cast<double>( mechResVec->L2Norm() );
 
         AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 

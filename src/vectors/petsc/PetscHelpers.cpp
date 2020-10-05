@@ -211,7 +211,7 @@ PetscErrorCode _AMP_max( Vec a, PetscInt *p, PetscReal *ans )
         AMP_ERROR( "Cannot find position for max" );
     }
     auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
-    *ans   = x->max();
+    *ans   = static_cast<double>( x->max() );
     return 0;
 }
 PetscErrorCode _AMP_min( Vec a, PetscInt *p, PetscReal *ans )
@@ -220,7 +220,7 @@ PetscErrorCode _AMP_min( Vec a, PetscInt *p, PetscReal *ans )
         AMP_ERROR( "Cannot find position for max" );
     }
     auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
-    *ans   = x->min();
+    *ans   = static_cast<double>( x->min() );
     return 0;
 }
 PetscErrorCode _AMP_aypx( Vec b, PetscScalar alpha, Vec a )
@@ -234,7 +234,9 @@ PetscErrorCode _AMP_dot_local( Vec a, Vec b, PetscScalar *ans )
 {
     auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
     auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
-    *ans   = x->getVectorOperations()->localDot( *y->getVectorData(), *x->getVectorData() );
+    *ans   = x->getVectorOperations()
+               ->localDot( *y->getVectorData(), *x->getVectorData() )
+               .get<double>();
     return 0;
 }
 PetscErrorCode _AMP_tdot_local( Vec a, Vec b, PetscScalar *ans )
@@ -444,7 +446,7 @@ PetscErrorCode _AMP_dot( Vec a, Vec b, PetscScalar *ans )
 {
     auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
     auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
-    *ans   = x->dot( *y );
+    *ans   = static_cast<double>( x->dot( *y ) );
     return 0;
 }
 PetscErrorCode _AMP_mdot( Vec v, PetscInt num, const Vec vec[], PetscScalar *ans )
@@ -457,7 +459,7 @@ PetscErrorCode _AMP_tdot( Vec a, Vec b, PetscScalar *ans )
 {
     auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
     auto y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( b->data );
-    *ans   = x->dot( *y );
+    *ans   = static_cast<double>( x->dot( *y ) );
     return 0;
 }
 PetscErrorCode _AMP_mtdot( Vec v, PetscInt num, const Vec vec[], PetscScalar *ans )
@@ -497,14 +499,14 @@ PetscErrorCode _AMP_norm_local( Vec in, NormType type, PetscReal *ans )
     auto x   = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
     auto ops = x->getVectorOperations();
     if ( type == NORM_1 )
-        *ans = ops->localL1Norm( *x->getVectorData() );
+        *ans = ops->localL1Norm( *x->getVectorData() ).get<double>();
     else if ( type == NORM_2 )
-        *ans = ops->localL2Norm( *x->getVectorData() );
+        *ans = ops->localL2Norm( *x->getVectorData() ).get<double>();
     else if ( type == NORM_INFINITY )
-        *ans = ops->localMaxNorm( *x->getVectorData() );
+        *ans = ops->localMaxNorm( *x->getVectorData() ).get<double>();
     else if ( type == NORM_1_AND_2 ) {
-        *ans         = ops->localL1Norm( *x->getVectorData() );
-        *( ans + 1 ) = ops->localL2Norm( *x->getVectorData() );
+        *ans         = ops->localL1Norm( *x->getVectorData() ).get<double>();
+        *( ans + 1 ) = ops->localL2Norm( *x->getVectorData() ).get<double>();
     } else
         AMP_ERROR( "Unknown norm type" );
     if ( type != NORM_1_AND_2 ) {
@@ -518,14 +520,14 @@ PetscErrorCode _AMP_norm( Vec in, NormType type, PetscReal *ans )
 {
     auto x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
     if ( type == NORM_1 )
-        *ans = x->L1Norm();
+        *ans = static_cast<double>( x->L1Norm() );
     else if ( type == NORM_2 )
-        *ans = x->L2Norm();
+        *ans = static_cast<double>( x->L2Norm() );
     else if ( type == NORM_INFINITY )
-        *ans = x->maxNorm();
+        *ans = static_cast<double>( x->maxNorm() );
     else if ( type == NORM_1_AND_2 ) {
-        *ans         = x->L1Norm();
-        *( ans + 1 ) = x->L2Norm();
+        *ans         = static_cast<double>( x->L1Norm() );
+        *( ans + 1 ) = static_cast<double>( x->L2Norm() );
     } else
         AMP_ERROR( "Unknown norm type" );
     if ( type != NORM_1_AND_2 ) {
