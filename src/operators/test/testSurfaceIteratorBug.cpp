@@ -156,7 +156,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
 
-    double l2Norm = vec->L2Norm();
+    double l2Norm = static_cast<double>( vec->L2Norm() );
     std::cout << "size = " << vec->getGlobalSize() << std::endl;
     std::cout << "L2 Norm = " << std::setprecision( 15 ) << l2Norm << std::endl;
 

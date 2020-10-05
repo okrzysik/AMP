@@ -150,11 +150,11 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         double val = fun( px, py, pz );
 
         for ( auto &bndGlobalId : bndGlobalIds ) {
-	  initialCondition->setValuesByGlobalID( 1, &bndGlobalId, &val );
+            initialCondition->setValuesByGlobalID( 1, &bndGlobalId, &val );
             // ** please do not set the time derivative to be non-zero!!
             // ** as this causes trouble with the boundary - BP, 07/16/2010
-	  const double zero = 0.0;
-	  initialConditionPrime->setValuesByGlobalID( 1, &bndGlobalId, &zero );
+            const double zero = 0.0;
+            initialConditionPrime->setValuesByGlobalID( 1, &bndGlobalId, &zero );
 
         } // end for i
     }     // end for node
@@ -270,8 +270,6 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     // ---------------------------------------------------------------------------------------
     // step in time
     double current_time = 0;
-    double max          = 0;
-    double min          = 0;
     int j               = 1;
     while ( pIDATimeIntegrator->getCurrentTime() < pIDATimeIntegrator->getFinalTime() ) {
         int retval =
@@ -286,8 +284,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             ut->failure( "Tested IDATimeIntegrator's advanceSolution. FAIL!!" );
         }
 
-        max = pIDATimeIntegrator->getCurrentSolution()->max();
-        min = pIDATimeIntegrator->getCurrentSolution()->min();
+        auto max = pIDATimeIntegrator->getCurrentSolution()->max();
+        auto min = pIDATimeIntegrator->getCurrentSolution()->min();
 
         std::cout << "current_time = " << current_time << std::endl;
         std::cout << "max val of the current solution = " << max << std::endl;

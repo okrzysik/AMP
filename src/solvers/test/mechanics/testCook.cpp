@@ -54,12 +54,11 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logOnlyNodeZero( log_file );
 
 
-    AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
-    auto input_db           = AMP::Database::parseInputFile( input_file );
+    auto globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
+    auto input_db   = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
-        new AMP::Mesh::initializeLibMesh( globalComm ) );
+    auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
 
     const unsigned int mesh_dim = 3;
     libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
@@ -72,33 +71,30 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
     libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
     mesh->prepare_for_use( false );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter( new AMP::Mesh::libmeshMesh( mesh, "cook" ) );
+    auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "cook" );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
+    auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-    std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletVecOp =
-        std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "Load_Boundary", input_db, dummyModel ) );
+    auto dirichletVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "Load_Boundary", input_db, dummyModel ) );
     // This has an in-place apply. So, it has an empty input variable and
     // the output variable is the same as what it is operating on.
     dirichletVecOp->setVariable( bvpOperator->getOutputVariable() );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-    AMP::Discretization::DOFManager::shared_ptr DOF_vector =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
-    AMP::LinearAlgebra::Vector::shared_ptr mechSolVec =
+    auto DOF_vector = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto mechSolVec =
         AMP::LinearAlgebra::createVector( DOF_vector, bvpOperator->getOutputVariable(), true );
-    AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec =
+    auto mechRhsVec =
         AMP::LinearAlgebra::createVector( DOF_vector, bvpOperator->getOutputVariable(), true );
-    AMP::LinearAlgebra::Vector::shared_ptr mechResVec =
+    auto mechResVec =
         AMP::LinearAlgebra::createVector( DOF_vector, bvpOperator->getOutputVariable(), true );
 
     mechSolVec->setToScalar( 0.5 );
@@ -107,65 +103,49 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
     dirichletVecOp->apply( nullVec, mechRhsVec );
 
-    double rhsNorm = mechRhsVec->L2Norm();
 
-    AMP::pout << "RHS Norm: " << rhsNorm << std::endl;
-
-    double initSolNorm = mechSolVec->L2Norm();
-
-    AMP::pout << "Initial Solution Norm: " << initSolNorm << std::endl;
+    AMP::pout << "RHS Norm: " << mechRhsVec->L2Norm() << std::endl;
+    AMP::pout << "Initial Solution Norm: " << mechSolVec->L2Norm() << std::endl;
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-    double initResidualNorm = mechResVec->L2Norm();
+    double initResidualNorm = static_cast<double>( mechResVec->L2Norm() );
 
     AMP::pout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
-    std::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "LinearSolver" );
+    auto linearSolver_db = input_db->getDatabase( "LinearSolver" );
 
     // ---- first initialize the preconditioner
-    std::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase( "Preconditioner" );
-    std::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams(
-        new AMP::Solver::TrilinosMLSolverParameters( pcSolver_db ) );
+    auto pcSolver_db    = linearSolver_db->getDatabase( "Preconditioner" );
+    auto pcSolverParams = std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( pcSolver_db );
     pcSolverParams->d_pOperator = bvpOperator;
-    std::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
-        new AMP::Solver::TrilinosMLSolver( pcSolverParams ) );
+    auto pcSolver               = std::make_shared<AMP::Solver::TrilinosMLSolver>( pcSolverParams );
 
     // initialize the linear solver
-    std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
-        new AMP::Solver::PetscKrylovSolverParameters( linearSolver_db ) );
+    auto linearSolverParams =
+        std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
     linearSolverParams->d_pOperator       = bvpOperator;
     linearSolverParams->d_comm            = globalComm;
     linearSolverParams->d_pPreconditioner = pcSolver;
-    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
-        new AMP::Solver::PetscKrylovSolver( linearSolverParams ) );
+    auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
     linearSolver->setZeroInitialGuess( false );
 
     linearSolver->solve( mechRhsVec, mechSolVec );
 
-    double finalSolNorm = mechSolVec->L2Norm();
+    AMP::pout << "Final Solution Norm: " << mechSolVec->L2Norm() << std::endl;
 
-    AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
+    auto mechUvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
+    auto mechVvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
+    auto mechWvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr mechUvec =
-        mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
-    AMP::LinearAlgebra::Vector::shared_ptr mechVvec =
-        mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
-    AMP::LinearAlgebra::Vector::shared_ptr mechWvec =
-        mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
-
-    double finalMaxU = mechUvec->maxNorm();
-    double finalMaxV = mechVvec->maxNorm();
-    double finalMaxW = mechWvec->maxNorm();
-
-    AMP::pout << "Maximum U displacement: " << finalMaxU << std::endl;
-    AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
-    AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
+    AMP::pout << "Maximum U displacement: " << mechUvec->maxNorm() << std::endl;
+    AMP::pout << "Maximum V displacement: " << mechVvec->maxNorm() << std::endl;
+    AMP::pout << "Maximum W displacement: " << mechWvec->maxNorm() << std::endl;
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
-    double finalResidualNorm = mechResVec->L2Norm();
+    double finalResidualNorm = static_cast<double>( mechResVec->L2Norm() );
 
     AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 

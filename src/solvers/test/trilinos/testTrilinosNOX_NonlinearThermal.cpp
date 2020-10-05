@@ -90,30 +90,20 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // create the following shared pointers for ease of use
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "testLinearThermalOperator", input_db, thermalTransportModel ) );
+    auto linearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "testLinearThermalOperator", input_db, thermalTransportModel ) );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Initial guess
-
     solVec->setToScalar( 400. );
     // solVec->setToScalar(557.2);
-    double initialGuessNorm = solVec->L2Norm();
-    std::cout << "initial guess norm = " << initialGuessNorm << "\n";
-
+    std::cout << "initial guess norm = " << solVec->L2Norm() << "\n";
     nonlinearThermalOperator->modifyInitialSolutionVector( solVec );
+    std::cout << "initial guess norm  after apply = " << solVec->L2Norm() << "\n";
 
-    initialGuessNorm = solVec->L2Norm();
-    std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
-
-    ////////////////////////////////////
     //  CREATE THE NEUTRONICS SOURCE  //
-    ////////////////////////////////////
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
@@ -129,12 +119,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     SpecificPowerVec->scale( -1.0 );
     SpecificPowerVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
-    /////////////////////////////////////////////////////
-    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
-    /////////////////////////////////////////////////////
-
+    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
@@ -152,7 +138,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearThermalOperator->modifyRHSvector( rhsVec );
 
-    double initialRhsNorm = rhsVec->L2Norm();
+    double initialRhsNorm = static_cast<double>( rhsVec->L2Norm() );
     std::cout << "rhs norm  after modifyRHSvector = " << initialRhsNorm << "\n";
     double expectedVal = 0.688628;
     if ( !AMP::Utilities::approx_equal( expectedVal, initialRhsNorm, 1e-5 ) )
@@ -182,7 +168,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         std::make_shared<AMP::Solver::TrilinosNOXSolver>( nonlinearSolverParams );
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm();
+    double initialResidualNorm = static_cast<double>( resVec->L2Norm() );
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
     expectedVal = 3625.84;
@@ -199,9 +185,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm();
-    double finalSolutionNorm = solVec->L2Norm();
-    double finalRhsNorm      = rhsVec->L2Norm();
+    double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
+    double finalSolutionNorm = static_cast<double>( solVec->L2Norm() );
+    double finalRhsNorm      = static_cast<double>( rhsVec->L2Norm() );
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
     std::cout << "Final Solution Norm: " << finalSolutionNorm << std::endl;

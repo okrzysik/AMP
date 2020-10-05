@@ -33,42 +33,36 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Read the mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db    = input_db->getDatabase( "Mesh" );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
-    std::cout << "Mesh has " << ( meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex ) )
+    std::cout << "Mesh has " << meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex )
               << " nodes." << std::endl;
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
+    auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
-    AMP::LinearAlgebra::Variable::shared_ptr displacementVariable =
-        bvpOperator->getOutputVariable();
+    auto displacementVariable = bvpOperator->getOutputVariable();
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-    std::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletVecOp =
-        std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "Load_Boundary", input_db, dummyModel ) );
+    auto dirichletVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "Load_Boundary", input_db, dummyModel ) );
     // This has an in-place apply. So, it has an empty input variable and
     // the output variable is the same as what it is operating on.
     dirichletVecOp->setVariable( displacementVariable );
 
-    AMP::Discretization::DOFManager::shared_ptr dofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto dofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    AMP::LinearAlgebra::Vector::shared_ptr mechSolVec =
-        AMP::LinearAlgebra::createVector( dofMap, displacementVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = mechSolVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr mechResVec = mechSolVec->cloneVector();
+    auto mechSolVec = AMP::LinearAlgebra::createVector( dofMap, displacementVariable, true );
+    auto mechRhsVec = mechSolVec->cloneVector();
+    auto mechResVec = mechSolVec->cloneVector();
 
     mechRhsVec->zero();
     mechResVec->zero();
@@ -79,12 +73,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         if ( type == 0 ) {
             std::cout << "Solving using CG algorithm (Own Implementation)..." << std::endl;
 
-            std::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "CGsolver" );
+            auto linearSolver_db = input_db->getDatabase( "CGsolver" );
 
             int maxIters = linearSolver_db->getScalar<int>( "max_iterations" );
 
-            AMP::LinearAlgebra::Vector::shared_ptr matOutVec = mechSolVec->cloneVector();
-            AMP::LinearAlgebra::Vector::shared_ptr pVec      = mechSolVec->cloneVector();
+            auto matOutVec = mechSolVec->cloneVector();
+            auto pVec      = mechSolVec->cloneVector();
 
             mechSolVec->zero();
 
@@ -95,19 +89,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             pVec->copyVector( mechResVec );
 
             for ( int iter = 0; iter <= maxIters; iter++ ) {
-                double resNorm = mechResVec->L2Norm();
                 std::cout << "Iter = " << iter << " ResNorm2 = " << std::setprecision( 15 )
-                          << resNorm << std::endl;
+                          << mechResVec->L2Norm() << std::endl;
 
                 bvpOperator->apply( pVec, matOutVec );
 
-                double matOutNorm = matOutVec->L2Norm();
                 std::cout << "CG-Iter = " << iter << " MatOutNorm2 = " << std::setprecision( 15 )
-                          << matOutNorm << std::endl;
+                          << matOutVec->L2Norm() << std::endl;
 
-                double resOldDot = mechResVec->dot( *mechResVec );
+                double resOldDot = static_cast<double>( mechResVec->dot( *mechResVec ) );
 
-                double alphaDenom = matOutVec->dot( *pVec );
+                double alphaDenom = static_cast<double>( matOutVec->dot( *pVec ) );
 
                 double alpha = resOldDot / alphaDenom;
 
@@ -115,7 +107,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
                 mechResVec->axpy( -alpha, *matOutVec, *mechResVec );
 
-                double resNewDot = mechResVec->dot( *mechResVec );
+                double resNewDot = static_cast<double>( mechResVec->dot( *mechResVec ) );
 
                 double beta = resNewDot / resOldDot;
 
@@ -133,15 +125,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         } else if ( type == 1 ) {
             std::cout << "Solving using CG algorithm (Petsc Implementation)..." << std::endl;
 
-            std::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "CGsolver" );
+            auto linearSolver_db = input_db->getDatabase( "CGsolver" );
 
             // initialize the linear solver
-            std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
-                new AMP::Solver::PetscKrylovSolverParameters( linearSolver_db ) );
+            auto linearSolverParams =
+                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
             linearSolverParams->d_pOperator = bvpOperator;
             linearSolverParams->d_comm      = globalComm;
-            std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
-                new AMP::Solver::PetscKrylovSolver( linearSolverParams ) );
+            auto linearSolver =
+                std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
             linearSolver->solve( mechRhsVec, mechSolVec );
 
@@ -153,12 +145,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 input_db->getDatabase( "JacobiCGsolver" );
 
             // initialize the linear solver
-            std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
-                new AMP::Solver::PetscKrylovSolverParameters( linearSolver_db ) );
+            auto linearSolverParams =
+                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
             linearSolverParams->d_pOperator = bvpOperator;
             linearSolverParams->d_comm      = globalComm;
-            std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
-                new AMP::Solver::PetscKrylovSolver( linearSolverParams ) );
+            auto linearSolver =
+                std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
             linearSolver->solve( mechRhsVec, mechSolVec );
 
@@ -166,24 +158,23 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         } else {
             std::cout << "Solving using ML preconditioned CG algorithm..." << std::endl;
 
-            std::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "MLCGsolver" );
+            auto linearSolver_db = input_db->getDatabase( "MLCGsolver" );
 
             // ---- first initialize the preconditioner
-            std::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase( "MLsolver" );
-            std::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams(
-                new AMP::Solver::TrilinosMLSolverParameters( pcSolver_db ) );
+            auto pcSolver_db = linearSolver_db->getDatabase( "MLsolver" );
+            auto pcSolverParams =
+                std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( pcSolver_db );
             pcSolverParams->d_pOperator = bvpOperator;
-            std::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
-                new AMP::Solver::TrilinosMLSolver( pcSolverParams ) );
+            auto pcSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( pcSolverParams );
 
             // initialize the linear solver
-            std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
-                new AMP::Solver::PetscKrylovSolverParameters( linearSolver_db ) );
+            auto linearSolverParams =
+                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
             linearSolverParams->d_pOperator       = bvpOperator;
             linearSolverParams->d_comm            = globalComm;
             linearSolverParams->d_pPreconditioner = pcSolver;
-            std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
-                new AMP::Solver::PetscKrylovSolver( linearSolverParams ) );
+            auto linearSolver =
+                std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
             linearSolver->solve( mechRhsVec, mechSolVec );
 

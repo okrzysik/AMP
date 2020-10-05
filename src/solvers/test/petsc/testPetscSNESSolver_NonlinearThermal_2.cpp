@@ -174,7 +174,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearSolver->setPreconditioner( linearThermalPreconditioner );
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
 
-    double initialResidualNorm = resVec->L2Norm();
+    double initialResidualNorm = static_cast<double>( resVec->L2Norm() );
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
     double expectedVal = 20.7018;
@@ -186,8 +186,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolver->solve( rhsVec, solVec );
 
     std::cout << "Final Solution Norm: " << solVec->L2Norm() << std::endl;
-    expectedVal = 45612;
-    if ( !AMP::Utilities::approx_equal( expectedVal, solVec->L2Norm(), 1e-5 ) ) {
+    expectedVal    = 45612;
+    double solNorm = static_cast<double>( solVec->L2Norm() );
+    if ( !AMP::Utilities::approx_equal( expectedVal, solNorm, 1e-5 ) ) {
         ut->failure( "the Final Solution Norm has changed." );
     }
 
@@ -198,8 +199,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm();
-    double finalSolutionNorm = solVec->L2Norm();
+    double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
+    double finalSolutionNorm = static_cast<double>( solVec->L2Norm() );
     AMP::pout << "Final Residual Norm: " << precision << finalResidualNorm << std::endl;
     AMP::pout << "Final Solution Norm: " << precision << finalSolutionNorm << std::endl;
 

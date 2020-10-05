@@ -172,11 +172,7 @@ static void myTest( AMP::UnitTest *ut )
             dirOp->addSlaveToMaster( rhsVec );
             dirOp->setSlaveToZero( rhsVec );
             dirOp->copyMasterToSlave( solVec );
-        } // end if
-
-        //  shellOp->apply(rhsVec, solVec, resVec, -1.0, 1.0);
-        //  double const initialResidualNorm = resVec->L2Norm();
-        //  std::cout<<"initial residual norm = "<<std::setprecision(15)<<initialResidualNorm<<"\n";
+        }
 
         auto linearSolverParams =
             std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
@@ -191,22 +187,18 @@ static void myTest( AMP::UnitTest *ut )
         if ( dummy ) {
             dirOp->copyMasterToSlave( solVec );
             dirOp->addShiftToSlave( solVec );
-        } // end if
+        }
 
-        //  shellOp->apply(rhsVec, solVec, resVec, -1.0, 1.0);
-        //  double const finalResidualNorm = resVec->L2Norm();
-        //  std::cout<<"final residual norm = "<<std::setprecision(15)<<finalResidualNorm<<"\n";
         if ( dummy ) {
             vec1 = solVec;
         } else {
             vec2 = solVec;
-        } // end i
-
-    } // end for
+        }
+    }
 
     vec1->subtract( *vec1, *vec2 );
-    double const solutionL2Norm = vec2->L2Norm();
-    double const errorL2Norm    = vec1->L2Norm();
+    double solutionL2Norm = static_cast<double>( vec2->L2Norm() );
+    double errorL2Norm    = static_cast<double>( vec1->L2Norm() );
     std::cout << "solution L2 norm = " << std::setprecision( 15 ) << solutionL2Norm << "\n";
     std::cout << "error L2 norm = " << std::setprecision( 15 ) << errorL2Norm << "\n";
     std::cout << "relative error = " << errorL2Norm / solutionL2Norm << "\n";

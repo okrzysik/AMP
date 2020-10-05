@@ -237,7 +237,7 @@ void TrilinosMLSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
     if ( computeResidual ) {
         r = f->cloneVector();
         d_pOperator->residual( f, u, r );
-        initialResNorm = r->L2Norm();
+        initialResNorm = static_cast<double>( r->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "TrilinosMLSolver::solve(), L2 norm of residual before solve "
@@ -246,9 +246,8 @@ void TrilinosMLSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm();
         AMP::pout << "TrilinosMLSolver : before solve solution norm: " << std::setprecision( 15 )
-                  << solution_norm << std::endl;
+                  << u->L2Norm() << std::endl;
     }
 
     if ( d_bUseEpetra ) {
@@ -285,14 +284,13 @@ void TrilinosMLSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
     u->getVectorData()->fireDataChange();
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm();
         AMP::pout << "TrilinosMLSolver : after solve solution norm: " << std::setprecision( 15 )
-                  << solution_norm << std::endl;
+                  << u->L2Norm() << std::endl;
     }
 
     if ( computeResidual ) {
         d_pOperator->residual( f, u, r );
-        finalResNorm = r->L2Norm();
+        finalResNorm = static_cast<double>( r->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "TrilinosMLSolver::solve(), L2 norm of residual after solve "

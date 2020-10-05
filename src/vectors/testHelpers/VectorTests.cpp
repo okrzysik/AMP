@@ -1,12 +1,10 @@
 #include "AMP/vectors/testHelpers/VectorTests.h"
-
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
-#include <algorithm>
 #ifdef USE_EXT_SUNDIALS
 #include "AMP/vectors/sundials/ManagedSundialsVector.h"
 #include "AMP/vectors/sundials/SundialsVector.h"
@@ -15,6 +13,8 @@
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "AMP/vectors/petsc/PetscVector.h"
 #endif
+
+#include <algorithm>
 
 
 namespace AMP {
@@ -199,15 +199,15 @@ void VectorTests::L2NormVector( AMP::UnitTest *utils )
 {
     auto vector = d_factory->getVector();
     vector->setToScalar( 1. );
-    auto norm  = vector->L2Norm();
-    auto norm2 = vector->dot( *vector );
+    auto norm  = static_cast<double>( vector->L2Norm() );
+    auto norm2 = static_cast<double>( vector->dot( *vector ) );
     if ( fabs( norm * norm - norm2 ) < 0.000001 )
         utils->passes( "L2 norm 1 " + d_factory->name() );
     else
         utils->failure( "L2 norm 1 " + d_factory->name() );
     vector->setRandomValues();
-    norm  = vector->L2Norm();
-    norm2 = vector->dot( *vector );
+    norm  = static_cast<double>( vector->L2Norm() );
+    norm2 = static_cast<double>( vector->dot( *vector ) );
     if ( fabs( norm * norm - norm2 ) < 0.000001 )
         utils->passes( "L2 norm 2 " + d_factory->name() );
     else
@@ -236,9 +236,9 @@ void VectorTests::L1NormVector( AMP::UnitTest *utils )
     auto vector_1( d_factory->getVector() );
     vector->setRandomValues();
     vector_1->setToScalar( 1. );
-    auto norm = vector->L1Norm();
+    auto norm = static_cast<double>( vector->L1Norm() );
     vector->abs( *vector );
-    auto norm2 = vector->dot( *vector_1 );
+    auto norm2 = static_cast<double>( vector->dot( *vector_1 ) );
     if ( fabs( norm - norm2 ) < 0.000001 )
         utils->passes( "L1 norm " + d_factory->name() );
     else
@@ -321,9 +321,9 @@ void VectorTests::Bug_491( AMP::UnitTest *utils )
 
     // Now, we perform some math on vector1
     vector1->scale( 100000 );
-    double sp_n1  = vector1->L1Norm();
-    double sp_n2  = vector1->L2Norm();
-    double sp_inf = vector1->maxNorm();
+    double sp_n1  = static_cast<double>( vector1->L1Norm().get<double>() );
+    double sp_n2  = static_cast<double>( vector1->L2Norm().get<double>() );
+    double sp_inf = static_cast<double>( vector1->maxNorm().get<double>() );
 
     // Check to see if petsc cache has been invalidated
     VecNormBegin( managed_vec, NORM_1, &n1 );
@@ -350,15 +350,18 @@ void VectorTests::Bug_491( AMP::UnitTest *utils )
     VecNorm( managed_vec, NORM_2, &n2 );
     VecNorm( managed_vec, NORM_INFINITY, &ninf );
 
-    if ( fabs( n1 - vector1->L1Norm() ) < 0.00000001 * n1 )
+    double L1Norm( vector1->L1Norm() );
+    double L2Norm( vector1->L2Norm() );
+    double maxNorm( vector1->maxNorm() );
+    if ( fabs( n1 - L1Norm ) < 0.00000001 * n1 )
         utils->passes( "L1 norm -- Petsc interface begin/end " + d_factory->name() );
     else
         utils->failure( "l1 norm -- Petsc interface begin/end " + d_factory->name() );
-    if ( fabs( n2 - vector1->L2Norm() ) < 0.00000001 * n1 )
+    if ( fabs( n2 - L2Norm ) < 0.00000001 * n1 )
         utils->passes( "L2 norm -- Petsc interface begin/end " + d_factory->name() );
     else
         utils->failure( "l2 norm -- Petsc interface begin/end " + d_factory->name() );
-    if ( fabs( ninf - vector1->maxNorm() ) < 0.00000001 * n1 )
+    if ( fabs( ninf - maxNorm ) < 0.00000001 * n1 )
         utils->passes( "inf norm -- Petsc interface begin/end " + d_factory->name() );
     else
         utils->failure( "inf norm -- Petsc interface begin/end " + d_factory->name() );
@@ -511,7 +514,7 @@ void VectorTests::VerifyVectorMin( AMP::UnitTest *utils )
     auto vec = d_factory->getVector();
     vec->setRandomValues();
     vec->scale( -1.0 ); // make negative
-    if ( fabs( vec->min() + vec->maxNorm() ) < 1.e-10 )
+    if ( ( vec->min() + vec->maxNorm() ).abs() < 1.e-10 )
         utils->passes( "minimum of negative vector == ||.||_infty " + d_factory->name() );
     else
         utils->failure( "minimum of negative vector != ||.||_infty " + d_factory->name() );
@@ -522,7 +525,7 @@ void VectorTests::VerifyVectorMax( AMP::UnitTest *utils )
 {
     auto vec = d_factory->getVector();
     vec->setRandomValues();
-    if ( fabs( vec->max() - vec->maxNorm() ) < 1.e-10 )
+    if ( ( vec->max() - vec->maxNorm().abs() ) < 1.e-10 )
         utils->passes( "maximum of positive vector == ||.||_infty " + d_factory->name() );
     else
         utils->failure( "maximum of positive vector != ||.||_infty " + d_factory->name() );
@@ -537,10 +540,11 @@ void VectorTests::VerifyVectorMaxMin( AMP::UnitTest *utils )
         vec->setRandomValues();
         vec->addScalar( *vec, -0.5 );
         vec->scale( 2.0 ); // vec i.i.d [-1,1);
-        auto max = vec->max();
-        auto min = vec->min();
+        double max( vec->max() );
+        double min( vec->min() );
         auto ans = std::max( fabs( max ), fabs( min ) );
-        if ( fabs( ans - vec->maxNorm() ) >= 1.e-20 )
+        double norm( vec->maxNorm() );
+        if ( fabs( ans - norm ) >= 1.e-20 )
             passes = false;
     }
     if ( passes )
@@ -572,7 +576,7 @@ void VectorTests::SetRandomValuesVector( AMP::UnitTest *utils )
     auto l2norm1 = -1;
     for ( size_t i = 0; i < 5; i++ ) {
         vector->setRandomValues();
-        auto l2norm2 = vector->L2Norm();
+        auto l2norm2 = static_cast<double>( vector->L2Norm() );
         if ( fabs( l2norm1 - l2norm2 ) > 0.000001 )
             utils->passes( "Distinct vector created " + d_factory->name() );
         else
@@ -715,8 +719,8 @@ void VectorTests::CopyVector( AMP::UnitTest *utils )
 
     vectora->scale( 100. );
     vectorc->subtract( *vectora, *vectorb );
-    auto c_maxNorm = vectorc->maxNorm();
-    auto b_maxNorm = vectorb->maxNorm();
+    auto c_maxNorm = vectorc->maxNorm().get<double>();
+    auto b_maxNorm = vectorb->maxNorm().get<double>();
     if ( fabs( c_maxNorm - 99 * b_maxNorm ) < 1e-12 * b_maxNorm )
         utils->passes( "copy vector 2" );
     else

@@ -180,9 +180,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         // std::cout << "val = " << val << std::endl;
 
         // std::cout << "counter = " << counter << "gid.size() = " << gid.size() << std::endl;
-	const double zero = 0.0;
+        const double zero = 0.0;
         for ( auto &elem : gid ) {
-	    thermalIC->setValuesByGlobalID( 1, &elem, &val );
+            thermalIC->setValuesByGlobalID( 1, &elem, &val );
             // ** please do not set the time derivative to be non-zero!!
             // ** as this causes trouble with the boundary - BP, 07/16/2010
             initialConditionPrime->setValuesByGlobalID( 1, &elem, &zero );
@@ -267,11 +267,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     // ---------------------------------------------------------------------------------------
     // step in time
     double current_time = 0;
-    double max          = 0;
-    // double abs_error=0.0;
-    double min = 0;
-    // double rel_error=0.0;
-    // double exact_sol=0.0;
+    double max = 0, min = 0;
     int j = 1;
     while ( pIDATimeIntegrator->getCurrentTime() < pIDATimeIntegrator->getFinalTime() ) {
         int retval =
@@ -286,8 +282,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             ut->failure( "Tested IDATimeIntegrator's advanceSolution. FAIL!!" );
         }
 
-        max = pIDATimeIntegrator->getCurrentSolution()->max();
-        min = pIDATimeIntegrator->getCurrentSolution()->min();
+        max = static_cast<double>( pIDATimeIntegrator->getCurrentSolution()->max() );
+        min = static_cast<double>( pIDATimeIntegrator->getCurrentSolution()->min() );
 
         std::cout << "current_time = " << current_time << std::endl;
         std::cout << "max val of the current solution = " << max << std::endl;

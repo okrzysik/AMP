@@ -427,7 +427,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         mapCladToFlow->residual( nullVec, TemperatureInKelvinVec2, solVec );
         while ( true ) {
             flowOperator->residual( rhsVec, solVec, resVec );
-            if ( abs( resVec->L2Norm() - vecLag->L2Norm() ) < .000005 * vecLag->L2Norm() )
+            if ( ( resVec->L2Norm() - vecLag->L2Norm() ).abs() < .000005 * vecLag->L2Norm() )
                 break;
             else
                 std::cout << "for iteration cnt = " << cnt << " --> " << vecLag->L2Norm() << " "

@@ -38,11 +38,11 @@ void SundialsVectorTests::testSundialsVector( AMP::UnitTest *ut )
 
 void SundialsVectorTests::CloneSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    N_Vector vec_a                                     = getVec( vectora );
-    N_Vector vec_b                                     = N_VClone( vec_a );
-    AMP::LinearAlgebra::ManagedSundialsVector *vectorb = getVector( vec_b );
-    bool pass                                          = true;
+    auto vectora   = d_factory->getVector();
+    N_Vector vec_a = getVec( vectora );
+    N_Vector vec_b = N_VClone( vec_a );
+    auto vectorb   = getVector( vec_b );
+    bool pass      = true;
     for ( size_t i = 0; i != vectorb->numberOfDataBlocks(); i++ ) {
         if ( vectorb->getRawDataBlock<double>( i ) == vectora->getRawDataBlock<double>( i ) )
             pass = false;
@@ -58,10 +58,10 @@ void SundialsVectorTests::CloneSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::LinearSumSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectord( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
 
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
@@ -81,18 +81,18 @@ void SundialsVectorTests::LinearSumSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::ConstSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
+    auto vectora   = d_factory->getVector();
     N_Vector vec_a = getVec( vectora );
     N_VConst( 0., vec_a );
-    double maxNorm = vectora->maxNorm();
+    double maxNorm = static_cast<double>( vectora->maxNorm() );
     if ( maxNorm > 0 )
         utils->failure( "Nonzero inf norm" );
     else
         utils->passes( "Set vector to 0" );
 
     N_VConst( 1., vec_a );
-    maxNorm       = vectora->maxNorm();
-    double L1Norm = vectora->L1Norm();
+    maxNorm       = static_cast<double>( vectora->maxNorm() );
+    double L1Norm = static_cast<double>( vectora->L1Norm() );
     if ( ( maxNorm == 1. ) && ( L1Norm == (double) vectora->getGlobalSize() ) )
         utils->passes( "Set vector to 1" );
     else
@@ -102,10 +102,10 @@ void SundialsVectorTests::ConstSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::ProdSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectord( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
 
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
@@ -116,7 +116,7 @@ void SundialsVectorTests::ProdSundialsVector( AMP::UnitTest *utils )
     N_VProd( vec_a, vec_b, vec_c );
     vectord->multiply( *vectora, *vectorb );
     vectord->subtract( *vectorc, *vectord );
-    double norm = vectord->maxNorm();
+    double norm = static_cast<double>( vectord->maxNorm() );
     if ( norm < 0.000001 )
         utils->passes( "Products match" );
     else
@@ -126,10 +126,10 @@ void SundialsVectorTests::ProdSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::DivSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectord( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
 
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
@@ -149,9 +149,9 @@ void SundialsVectorTests::DivSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::ScaleSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
 
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
@@ -169,9 +169,9 @@ void SundialsVectorTests::ScaleSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::AbsSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
 
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
@@ -191,9 +191,9 @@ void SundialsVectorTests::AbsSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::InvSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
 
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
@@ -211,9 +211,9 @@ void SundialsVectorTests::InvSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::AddConstSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
 
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
@@ -222,7 +222,7 @@ void SundialsVectorTests::AddConstSundialsVector( AMP::UnitTest *utils )
     N_VAddConst( vec_a, .3, vec_b );
     vectorc->addScalar( *vectora, .3 );
     vectorc->subtract( *vectorb, *vectorc );
-    double norm = vectorc->maxNorm();
+    double norm = static_cast<double>( vectorc->maxNorm() );
     if ( norm < 0.00000001 )
         utils->passes( "N_VAddConst" );
     else
@@ -232,8 +232,8 @@ void SundialsVectorTests::AddConstSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::DotProdSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
 
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
@@ -241,7 +241,7 @@ void SundialsVectorTests::DotProdSundialsVector( AMP::UnitTest *utils )
     vectora->setRandomValues();
     vectorb->setRandomValues();
     double d1 = N_VDotProd( vec_a, vec_b );
-    double d2 = vectora->dot( *vectorb );
+    double d2 = static_cast<double>( vectora->dot( *vectorb ) );
     if ( fabs( d1 - d2 ) < 0.00000001 )
         utils->passes( "N_VDotProd" );
     else
@@ -251,14 +251,14 @@ void SundialsVectorTests::DotProdSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::MaxNormSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
 
     N_Vector vec_a = getVec( vectora );
 
     vectora->setRandomValues();
 
     double d1 = N_VMaxNorm( vec_a );
-    double d2 = vectora->maxNorm();
+    double d2 = static_cast<double>( vectora->maxNorm() );
     if ( fabs( d1 - d2 ) < 0.00000001 )
         utils->passes( "N_VMaxNorm" );
     else
@@ -268,9 +268,9 @@ void SundialsVectorTests::MaxNormSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::WRMSNormSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
     if ( !vectorc )
         utils->failure( "N_VWrmsNorm" );
 
@@ -281,7 +281,7 @@ void SundialsVectorTests::WRMSNormSundialsVector( AMP::UnitTest *utils )
     vectorb->setRandomValues();
 
     double d1 = N_VWrmsNorm( vec_a, vec_b );
-    double d2 = vectorb->wrmsNorm( *vectora, *vectorb );
+    double d2 = static_cast<double>( vectorb->wrmsNorm( *vectora, *vectorb ) );
     if ( fabs( d1 - d2 ) < 0.00000001 )
         utils->passes( "N_VWrmsNorm" );
     else
@@ -291,14 +291,14 @@ void SundialsVectorTests::WRMSNormSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::MinSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
 
     N_Vector vec_a = getVec( vectora );
 
     vectora->setRandomValues();
 
     double d1 = N_VMin( vec_a );
-    double d2 = vectora->min();
+    double d2 = static_cast<double>( vectora->min() );
     if ( fabs( d1 - d2 ) < 0.00000001 )
         utils->passes( "N_VMin" );
     else
@@ -308,14 +308,14 @@ void SundialsVectorTests::MinSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::L1NormSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
 
     N_Vector vec_a = getVec( vectora );
 
     vectora->setRandomValues();
 
     double d1 = N_VL1Norm( vec_a );
-    double d2 = vectora->L1Norm();
+    double d2 = static_cast<double>( vectora->L1Norm() );
     if ( fabs( d1 - d2 ) < 0.00000001 )
         utils->passes( "N_VL1Norm" );
     else
@@ -325,8 +325,8 @@ void SundialsVectorTests::L1NormSundialsVector( AMP::UnitTest *utils )
 
 void SundialsVectorTests::MinQuotientSundialsVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
 
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
@@ -335,7 +335,7 @@ void SundialsVectorTests::MinQuotientSundialsVector( AMP::UnitTest *utils )
     vectorb->setRandomValues();
 
     double d1 = N_VMinQuotient( vec_a, vec_b );
-    double d2 = vectorb->minQuotient( *vectora );
+    double d2 = static_cast<double>( vectorb->minQuotient( *vectora ) );
     if ( fabs( d1 - d2 ) < 0.00000001 )
         utils->passes( "N_VMinQuotient" );
     else

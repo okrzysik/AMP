@@ -120,17 +120,11 @@ static void linearThermalTest( AMP::UnitTest *ut )
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
 
-    auto rhsNorm = RightHandSideVec->L2Norm();
-    std::cout << "RHS Norm after BC Correction " << rhsNorm << std::endl;
+    std::cout << "RHS Norm after BC Correction " << RightHandSideVec->L2Norm() << std::endl;
+    std::cout << "RHS Norm 1: " << RightHandSideVec->L2Norm() << std::endl;
+    std::cout << "RHS Norm 2: " << PowerInWattsVec->L2Norm() << std::endl;
+    std::cout << "RHS Norm 3: " << boundaryOpCorrectionVec->L2Norm() << std::endl;
 
-    rhsNorm = RightHandSideVec->L2Norm();
-    std::cout << "RHS Norm 1: " << rhsNorm << std::endl;
-    rhsNorm = PowerInWattsVec->L2Norm();
-    std::cout << "RHS Norm 2: " << rhsNorm << std::endl;
-    rhsNorm = boundaryOpCorrectionVec->L2Norm();
-    std::cout << "RHS Norm 3: " << rhsNorm << std::endl;
-
-    /////////////////////////////////////////////
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
@@ -147,11 +141,8 @@ static void linearThermalTest( AMP::UnitTest *ut )
     TemperatureInKelvinVec->setToScalar( 1.0 );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = TemperatureInKelvinVec->L2Norm();
-    std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
-
-    rhsNorm = RightHandSideVec->L2Norm();
-    std::cout << "RHS Norm: " << rhsNorm << std::endl;
+    std::cout << "Initial Solution Norm: " << TemperatureInKelvinVec->L2Norm() << std::endl;
+    std::cout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
 
     // Create the ML Solver
     auto mlSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
@@ -166,7 +157,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = ResidualVec->L2Norm();
+    double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {

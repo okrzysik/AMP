@@ -74,7 +74,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
-    const double f_norm = f->L2Norm();
+    const double f_norm = static_cast<double>( f->L2Norm() );
 
     // enhance with convergence reason, number of iterations etc
     if ( f_norm == 0.0 )
@@ -107,7 +107,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         d_pOperator->residual( f, u, r );
     }
     // compute the current residual norm
-    double current_res = r->L2Norm();
+    double current_res = static_cast<double>( r->L2Norm() );
 
     // return if the residual is already low enough
     if ( current_res < terminate_tol ) {
@@ -126,10 +126,10 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     std::vector<double> rho( 2, 0.0 );
-    rho[1] = z->dot( *r );
+    rho[1] = static_cast<double>( z->dot( *r ) );
     rho[0] = rho[1];
 
-    std::shared_ptr<AMP::LinearAlgebra::Vector> p = z->cloneVector();
+    auto p = z->cloneVector();
     p->copyVector( z );
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> w;
@@ -142,7 +142,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         d_pOperator->apply( p, w );
 
         // alpha = p'Ap
-        double alpha = w->dot( *p );
+        double alpha = static_cast<double>( w->dot( *p ) );
 
         // sanity check, the curvature should be positive
         if ( alpha <= 0.0 ) {
@@ -156,7 +156,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         r->axpy( -alpha, *w, *r );
 
         // compute the current residual norm
-        current_res = r->L2Norm();
+        current_res = static_cast<double>( r->L2Norm() );
         // check if converged
         if ( current_res < terminate_tol ) {
             // set a convergence reason
@@ -171,7 +171,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         }
 
         rho[0] = rho[1];
-        rho[1] = r->dot( *z );
+        rho[1] = static_cast<double>( r->dot( *z ) );
 
         beta = rho[1] / rho[0];
         p->axpy( beta, *p, *z );

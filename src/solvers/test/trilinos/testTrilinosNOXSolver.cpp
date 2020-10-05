@@ -23,8 +23,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::AMP_MPI solverComm =
-        globalComm.dup(); // Create a unique solver comm to test proper cleanup
+    auto solverComm = globalComm.dup(); // Create a unique solver comm to test proper cleanup
 
 
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -63,9 +62,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     f->setRandomValues();
     nonlinearSolver->solve( f, u );
     ut->passes( "TrilinosNOXSolver solve called with simple vector" );
-    AMP::LinearAlgebra::Vector::shared_ptr x = u->cloneVector();
+    auto x = u->cloneVector();
     x->subtract( *u, *f );
-    double error = x->L2Norm() / std::max( f->L2Norm(), 1.0 );
+    auto x_norm  = static_cast<double>( x->L2Norm() );
+    auto f_norm  = static_cast<double>( f->L2Norm() );
+    double error = x_norm / std::max( f_norm, 1.0 );
     if ( fabs( error ) < 1e-8 )
         ut->passes( "Solve with simple vector passed" );
     else

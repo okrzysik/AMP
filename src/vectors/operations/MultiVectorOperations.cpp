@@ -392,7 +392,7 @@ Scalar MultiVectorOperations::localL2Norm( const VectorData &x ) const
     }
     if ( !ans.has_value() )
         return 0.0;
-    return sqrt( ans );
+    return ans.sqrt();
 }
 
 Scalar MultiVectorOperations::localMaxNorm( const VectorData &x ) const
@@ -471,7 +471,7 @@ Scalar MultiVectorOperations::localWrmsNorm( const VectorData &x, const VectorDa
             ans       = ans + tmp * tmp * N1;
         }
         size_t N = y.getLocalSize();
-        return sqrt( ans * ( 1.0 / N ) );
+        return ( ans * ( 1.0 / N ) ).sqrt();
     } else {
         AMP_ERROR( "MultiVectorOperations::localWrmsNorm requires x, y to be MultiVectorData" );
     }
@@ -500,7 +500,7 @@ Scalar MultiVectorOperations::localWrmsNormMask( const VectorData &x,
             ans       = ans + tmp * tmp * N1;
         }
         size_t N = y.getLocalSize();
-        return sqrt( ans * ( 1.0 / N ) );
+        return ( ans * ( 1.0 / N ) ).sqrt();
     } else {
         AMP_ERROR(
             "MultiVectorOperations::localWrmsNormMask requires x, mask, y to be MultiVectorData" );

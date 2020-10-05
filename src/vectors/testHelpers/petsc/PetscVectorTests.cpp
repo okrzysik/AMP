@@ -172,7 +172,7 @@ void PetscVectorTests::StaticDuplicatePetscVector( AMP::UnitTest *utils )
     auto vectora    = d_factory->getNativeVector();
     auto vector_dup = d_factory->getManagedVector();
     vector_dup->setToScalar( 1. );
-    double t = vector_dup->L1Norm();
+    double t = static_cast<double>( vector_dup->L1Norm() );
     if ( vector_dup->getGlobalSize() == vectora->getGlobalSize() )
         utils->passes( "global size equality" );
     else
@@ -196,7 +196,7 @@ void PetscVectorTests::StaticCopyPetscVector( AMP::UnitTest *utils )
     vectora->setToScalar( 1. );
     auto vector_dup = d_factory->getManagedVector();
     vector_dup->copyVector( vectora );
-    double t = vector_dup->L1Norm();
+    double t = static_cast<double>( vector_dup->L1Norm() );
     if ( vector_dup->getGlobalSize() == vectora->getGlobalSize() )
         utils->passes( "global size equality" );
     else
@@ -450,9 +450,9 @@ void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
     checkPetscError( utils, VecNorm( veca, NORM_1, &l1norm_a1 ) );
     checkPetscError( utils, VecNorm( veca, NORM_2, &l2norm_a1 ) );
     checkPetscError( utils, VecNorm( veca, NORM_INFINITY, &infnorm_a1 ) );
-    l1norm_a2  = vectora->L1Norm();
-    l2norm_a2  = vectora->L2Norm();
-    infnorm_a2 = vectora->maxNorm();
+    l1norm_a2  = static_cast<double>( vectora->L1Norm() );
+    l2norm_a2  = static_cast<double>( vectora->L2Norm() );
+    infnorm_a2 = static_cast<double>( vectora->maxNorm() );
     if ( l1norm_a1 == l1norm_a2 ) // These should be identical, since same method called
         utils->passes( "l1 norm: native norm equals interface norm for native vector" );
     else {
@@ -486,9 +486,9 @@ void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
     checkPetscError( utils, VecNorm( vecc, NORM_1, &l1norm_c1 ) );
     checkPetscError( utils, VecNorm( vecc, NORM_2, &l2norm_c1 ) );
     checkPetscError( utils, VecNorm( vecc, NORM_INFINITY, &infnorm_c1 ) );
-    l1norm_c2  = vectorc->L1Norm();
-    l2norm_c2  = vectorc->L2Norm();
-    infnorm_c2 = vectorc->maxNorm();
+    l1norm_c2  = static_cast<double>( vectorc->L1Norm() );
+    l2norm_c2  = static_cast<double>( vectorc->L2Norm() );
+    infnorm_c2 = static_cast<double>( vectorc->maxNorm() );
     if ( l1norm_c1 == l1norm_c2 ) // These should be identical, since same method called
         utils->passes( "l1 norm: native norm equals interface norm for managed vector" );
     else
@@ -519,9 +519,9 @@ void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
     checkPetscError( utils, VecNormEnd( vecc, NORM_1, &l1norm_c1 ) );
     checkPetscError( utils, VecNormEnd( vecc, NORM_2, &l2norm_c1 ) );
     checkPetscError( utils, VecNormEnd( vecc, NORM_INFINITY, &infnorm_c1 ) );
-    l1norm_c2  = vectorc->L1Norm();
-    l2norm_c2  = vectorc->L2Norm();
-    infnorm_c2 = vectorc->maxNorm();
+    l1norm_c2  = static_cast<double>( vectorc->L1Norm() );
+    l2norm_c2  = static_cast<double>( vectorc->L2Norm() );
+    infnorm_c2 = static_cast<double>( vectorc->maxNorm() );
     if ( fabs( l1norm_c1 - l1norm_c2 ) <
          0.00001 ) // These should be identical, since same method called
         utils->passes( "l1 norm: native norm equals interface norm for managed vector" );
@@ -932,25 +932,31 @@ void PetscVectorTests::VerifySetPetscVector( AMP::UnitTest *utils )
     checkPetscError( utils, VecSet( veca, 2.0 ) );
     checkPetscError( utils, VecSet( vecb, 3.0 ) );
 
-    if ( ( fabs( vectora->L1Norm() - vectora->getGlobalSize() * 2.0 ) < 0.000001 ) &&
-         ( fabs( vectora->maxNorm() - 2.0 ) < 0.000001 ) )
+    double aL1   = static_cast<double>( vectora->L1Norm() );
+    double bL1   = static_cast<double>( vectorb->L1Norm() );
+    double amax  = static_cast<double>( vectora->maxNorm() );
+    double bmax  = static_cast<double>( vectorb->maxNorm() );
+    double asize = vectora->getGlobalSize();
+    double bsize = vectorb->getGlobalSize();
+    if ( ( fabs( aL1 - asize * 2.0 ) < 0.000001 ) && ( fabs( amax - 2.0 ) < 0.000001 ) )
         utils->passes( "VecSet passes for native petsc" );
     else
         utils->failure( "VecSet fails for native petsc" );
-    if ( ( fabs( vectorb->L1Norm() - vectorb->getGlobalSize() * 3.0 ) < 0.000001 ) &&
-         ( fabs( vectorb->maxNorm() - 3.0 ) < 0.000001 ) )
+    if ( ( fabs( bL1 - bsize * 3.0 ) < 0.000001 ) && ( fabs( bmax - 3.0 ) < 0.000001 ) )
         utils->passes( "VecSet passes for managed petsc" );
     else
         utils->failure( "VecSet fails for managed petsc" );
     vectora->setToScalar( 5.0 );
     vectorb->setToScalar( 6.0 );
-    if ( ( fabs( vectora->L1Norm() - vectora->getGlobalSize() * 5.0 ) < 0.000001 ) &&
-         ( fabs( vectora->maxNorm() - 5.0 ) < 0.000001 ) )
+    aL1  = static_cast<double>( vectora->L1Norm() );
+    bL1  = static_cast<double>( vectorb->L1Norm() );
+    amax = static_cast<double>( vectora->maxNorm() );
+    bmax = static_cast<double>( vectorb->maxNorm() );
+    if ( ( fabs( aL1 - asize * 5.0 ) < 0.000001 ) && ( fabs( amax - 5.0 ) < 0.000001 ) )
         utils->passes( "setToScalar passes for native petsc" );
     else
         utils->failure( "setToScalar fails for native petsc" );
-    if ( ( fabs( vectorb->L1Norm() - vectorb->getGlobalSize() * 6.0 ) < 0.000001 ) &&
-         ( fabs( vectorb->maxNorm() - 6.0 ) < 0.000001 ) )
+    if ( ( fabs( bL1 - bsize * 6.0 ) < 0.000001 ) && ( fabs( bmax - 6.0 ) < 0.000001 ) )
         utils->passes( "setToScalar passes for managed petsc" );
     else
         utils->failure( "setToScalar fails for managed petsc" );
@@ -1010,7 +1016,7 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
     if ( !vecc || !vecd || !vecc2 || !vecd2 )
         utils->failure( "PETSC AXPY create" );
 
-    if ( fabs( vectorc->L1Norm() - vectorc2->L1Norm() ) < 0.000001 )
+    if ( ( vectorc->L1Norm() - vectorc2->L1Norm() ).abs() < 0.000001 )
         utils->passes( "managed interface passes l1 norm test of axpy" );
     else
         utils->failure( "managed interface fails l1 norm test of axpy" );
@@ -1023,15 +1029,15 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
     else
         utils->failure( "managed interface fails inf norm test of axpy" );
 
-    if ( fabs( vectorc->L1Norm() - vectora->L1Norm() ) < 0.000001 )
+    if ( ( vectorc->L1Norm() - vectora->L1Norm() ).abs() < 0.000001 )
         utils->passes( "managed and native L1 norms the same" );
     else
         utils->failure( "managed and native L1 norms different" );
-    if ( fabs( vectorc->L2Norm() - vectora->L2Norm() ) < 0.000001 )
+    if ( ( vectorc->L2Norm() - vectora->L2Norm() ).abs() < 0.000001 )
         utils->passes( "managed and native L2 norms the same" );
     else
         utils->failure( "managed and native L2 norms different" );
-    if ( fabs( vectorc->maxNorm() - vectora->maxNorm() ) < 0.000001 )
+    if ( ( vectorc->maxNorm() - vectora->maxNorm() ).abs() < 0.000001 )
         utils->passes( "managed and native inf norms the same" );
     else
         utils->failure( "managed and native inf norms different" );
@@ -1052,22 +1058,25 @@ void PetscVectorTests::VerifyScalePetscVector( AMP::UnitTest *utils )
     vectora->setRandomValues();
     vectorb->copyVector( vectora );
     vectora2->copyVector( vectora );
-    double norm1, norm2;
     checkPetscError( utils, VecScale( veca, 1.23456 ) );
-    norm1 = vectora->L2Norm();
-    norm2 = 1.23456 * vectorb->L2Norm();
+    double norm1 = static_cast<double>( vectora->L2Norm() );
+    double norm2 = 1.23456 * static_cast<double>( vectorb->L2Norm() );
     if ( fabs( norm1 - norm2 ) < 0.000001 )
         utils->passes( "native interface on native petsc scaling works" );
     else
         utils->failure( "native interface on native petsc scaling doesn't work" );
     vectora->scale( 1. / 1.23456 );
-    if ( fabs( vectora->L2Norm() - vectorb->L2Norm() ) < 0.000001 )
+    double norma( vectora->L2Norm() );
+    double normb( vectorb->L2Norm() );
+    if ( fabs( norma - normb ) < 0.000001 )
         utils->passes( "AMP interface on native petsc scaling works" );
     else
         utils->failure( "AMP interface on native petsc scaling doesn't work" );
     checkPetscError( utils, VecScale( veca2, 1.234567 ) );
     checkPetscError( utils, VecScale( veca2, 99.99 ) );
-    if ( fabs( vectora2->L2Norm() - 99.99 * 1.234567 * vectorb->L2Norm() ) < 0.000001 )
+    double norma2( vectora2->L2Norm() );
+    double normb2( vectorb->L2Norm() );
+    if ( fabs( norma2 - 99.99 * 1.234567 * normb2 ) < 0.000001 )
         utils->passes( "Multiple scales working in native petsc" );
     else
         utils->failure( "Multiple scales failing in native petsc" );
@@ -1080,14 +1089,16 @@ void PetscVectorTests::VerifyScalePetscVector( AMP::UnitTest *utils )
     auto vecc = getVec( vectorc );
     double norm3, norm4;
     checkPetscError( utils, VecScale( vecc, 1.23456 ) );
-    norm3 = vectorc->L2Norm();
-    norm4 = 1.23456 * vectord->L2Norm();
+    norm3 = static_cast<double>( vectorc->L2Norm() );
+    norm4 = 1.23456 * static_cast<double>( vectord->L2Norm() );
     if ( fabs( norm3 - norm4 ) < 0.000001 )
         utils->passes( "native interface on managed petsc scaling works" );
     else
         utils->failure( "native interface on managed petsc scaling doesn't work" );
     vectorc->scale( 1. / 1.23456 );
-    if ( fabs( vectorc->L2Norm() - vectord->L2Norm() ) < 0.000001 )
+    double normc( vectorc->L2Norm() );
+    double normd( vectord->L2Norm() );
+    if ( fabs( normc - normd ) < 0.000001 )
         utils->passes( "AMP interface on managed petsc scaling works" );
     else
         utils->failure( "AMP interface on managed petsc scaling doesn't work" );
@@ -1106,7 +1117,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     double dot1, dot2, dot12;
     checkPetscError( utils, VecDot( veca, vecb, &dot1 ) );
     checkPetscError( utils, VecDot( veca, vecb, &dot12 ) );
-    dot2 = vectora->dot( *vectorb );
+    dot2 = static_cast<double>( vectora->dot( *vectorb ) );
     if ( dot1 == dot2 ) // These should be identical, since same method called
         utils->passes( "native dot equals interface dot for native vector" );
     else
@@ -1124,7 +1135,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     auto vecd = getVec( vectord );
     double dot3, dot4;
     checkPetscError( utils, VecDot( vecc, vecd, &dot3 ) );
-    dot4 = vectorc->dot( *vectord );
+    dot4 = static_cast<double>( vectorc->dot( *vectord ) );
     if ( dot3 == dot4 ) // These should be identical, since same method called
         utils->passes( "native dot equals interface dot for managed vector" );
     else {
@@ -1146,7 +1157,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     auto vecf = getVec( vectorf );
     double dot5, dot6;
     checkPetscError( utils, VecDot( vece, vecf, &dot5 ) );
-    dot6 = vectore->dot( *vectorf );
+    dot6 = static_cast<double>( vectore->dot( *vectorf ) );
     if ( dot5 == dot6 ) // These should be identical, since same method called
         utils->passes( "native dot equals interface dot for managed alloc vector" );
     else {

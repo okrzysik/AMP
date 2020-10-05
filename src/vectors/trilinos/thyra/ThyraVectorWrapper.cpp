@@ -217,8 +217,8 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
                 size_t N2 = static_cast<size_t>( Y2->space()->dim() );
                 AMP_ASSERT( d_cols.size() == N2 );
                 for ( size_t j = 0; j < N; j++ ) {
-                    double dot = d_vecs[j]->dot( *x->d_vecs[i] );
-                    double y   = 0.0;
+                    double dot( d_vecs[j]->dot( *x->d_vecs[i] ) );
+                    double y = 0.0;
                     if ( beta != 0.0 )
                         y = beta * Thyra::get_ele( *Y2, d_cols[j] );
                     Thyra::set_ele( d_cols[j], alpha * dot + y, Y2.ptr() );

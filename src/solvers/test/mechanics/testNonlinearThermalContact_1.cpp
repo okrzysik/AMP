@@ -334,14 +334,10 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         std::cout << "PowerInWattsVec norm  inside loop = " << RightHandSideVec1->L2Norm() << "\n";
 
         map2ToLowDim->apply( TemperatureInKelvinVec2, gapVecPellet );
-        double a = gapVecPellet->L2Norm();
         map2ToHighDim->apply( gapVecPellet, scratchTempVec1 );
-        a = scratchTempVec1->L2Norm();
 
         scratchTempVec1->scale( heff );
-        a = scratchTempVec1->L2Norm();
         variableFluxVec1->copyVector( scratchTempVec1 );
-        a = variableFluxVec1->L2Norm();
 
         correctionParameters1->d_variableFlux = variableFluxVec1;
         robinBoundaryOp1->reset( correctionParameters1 );
@@ -350,17 +346,14 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
                   << std::endl;
 
         nonlinearThermalOperator1->modifyRHSvector( RightHandSideVec1 );
-        a = RightHandSideVec1->L2Norm();
         nonlinearThermalOperator1->modifyInitialSolutionVector( TemperatureInKelvinVec1 );
-        a = TemperatureInKelvinVec1->L2Norm();
         nonlinearSolver1->solve( RightHandSideVec1, TemperatureInKelvinVec1 );
-        a = TemperatureInKelvinVec1->L2Norm();
         nonlinearThermalOperator1->residual(
             RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1 );
 
-        std::cout << "Norm of TemperatureInKelvinVec1: " << a << std::endl;
+        std::cout << "Norm of TemperatureInKelvinVec1: " << TemperatureInKelvinVec1->L2Norm()
+                  << std::endl;
 
-        //------------------------------------------------------------
         map1ToLowDim->apply( TemperatureInKelvinVec1, gapVecClad );
 
         std::cout << "Norm of solVec after map1toLowDim: " << gapVecClad->L2Norm() << std::endl;

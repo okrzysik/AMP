@@ -94,7 +94,8 @@ void calculateManufacturedSolution(
         }
     }
 
-    manufacturedSolution->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    manufacturedSolution->makeConsistent(
+        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
 
@@ -452,21 +453,9 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
               nonlinearThermalOperator ) )
             ->modifyRHSvector( integratedRHSVec );
     }
-    /*
-     std::shared_ptr<AMP::Database> emptyDb;
-     auto thermalCoupledOpParams =
-     std::make_shared<AMP::Operator::CoupledOperatorParameters>(emptyDb);
-     thermalCoupledOpParams->d_MapOperator = mapsColumn;
-     thermalCoupledOpParams->d_BVPOperator = nonlinearThermalColumnOperator;
-     std::shared_ptr<AMP::Operator::Operator> nonlinearThermalCoupledOperator(new
-     AMP::Operator::CoupledOperator(thermalCoupledOpParams));
-
-     nonlinearThermalCoupledOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0,
-     -1.0);
-     */
     nonlinearThermalColumnOperator->residual( integratedRHSVec, TemperatureVec, ResidualVec );
     ResidualVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    double initialResidualNorm = ResidualVec->L2Norm();
+    double initialResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 

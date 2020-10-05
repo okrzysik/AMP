@@ -143,7 +143,7 @@ bool RK23TimeIntegrator::checkNewSolution() const
 {
     bool retcode = false;
 
-    double l2NormOfEstimatedError = d_z_vec->L2Norm();
+    double l2NormOfEstimatedError = d_z_vec->L2Norm().get<double>();
 
     // we flag the solution as being acceptable if the l2 norm of the error
     // is less than the required tolerance or we are at the minimum time step
@@ -193,7 +193,7 @@ double RK23TimeIntegrator::getNextDt( const bool )
 {
     double d_next_dt;
 
-    double l2NormOfEstimatedError = d_z_vec->L2Norm();
+    double l2NormOfEstimatedError( d_z_vec->L2Norm() );
 
     d_next_dt =
         d_safety_factor * d_current_dt * pow( ( d_atol / l2NormOfEstimatedError ), 1.0 / 3.0 );

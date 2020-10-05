@@ -53,13 +53,13 @@ void meshTests::simpleNodalVectorTests( AMP::UnitTest *utils,
     vectora->setRandomValues();
     double t1 = vectora->L2Norm();
     vectora->abs( *vectora );
-    if ( fabs( vectora->L2Norm() - t1 ) < 0.0000001 )
+    if ( fabs( double( vectora->L2Norm() ) - t1 ) < 0.0000001 )
         utils->passes( "non-trivial random vector" );
     else
         utils->failure( "non-trivial random vector: + " + mesh->getName() );
     vectorb->setToScalar( 3. );
     vectora->multiply( *vectora, *vectorb );
-    if ( fabs( vectora->L2Norm() - 3. * t1 ) < 0.00000001 )
+    if ( fabs( double( vectora->L2Norm() ) - 3. * t1 ) < 0.00000001 )
         utils->passes( "trivial usage" );
     else
         utils->failure( "trivial usage: " + mesh->getName() );

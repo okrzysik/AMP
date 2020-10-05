@@ -54,7 +54,7 @@ void TFQMRSolver::initialize( std::shared_ptr<SolverStrategyParameters> const pa
 void TFQMRSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
 {
 
-    d_iMaxIterations     = db->getWithDefault<double>( "max_iterations", 1000 );
+    d_iMaxIterations = db->getWithDefault<double>( "max_iterations", 1000 );
 
     d_bUsesPreconditioner = db->getWithDefault<bool>( "use_preconditioner", false );
 
@@ -83,7 +83,7 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
-    double f_norm = f->L2Norm();
+    double f_norm = static_cast<double>( f->L2Norm() );
 
     // if the rhs is zero we try to converge to the relative convergence
     if ( f_norm == 0.0 ) {
@@ -103,7 +103,7 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     // residual vector
-    AMP::LinearAlgebra::Vector::shared_ptr res = f->cloneVector();
+    auto res = f->cloneVector();
 
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
@@ -113,7 +113,7 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     // compute the current residual norm
-    double res_norm = res->L2Norm();
+    double res_norm = static_cast<double>( res->L2Norm() );
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
         std::cout << "TFQMR: initial residual " << res_norm << std::endl;
@@ -188,7 +188,7 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     while ( k < d_iMaxIterations ) {
 
         ++k;
-        auto sigma = res->dot( *v );
+        auto sigma = static_cast<double>( res->dot( *v ) );
 
         // replace by soft-equal
         if ( sigma == 0.0 ) {
@@ -219,7 +219,7 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             w->axpy( -alpha, *u[j], *w );
             d->axpy( ( theta * theta * eta / alpha ), *d, *y[j] );
 
-            theta        = w->L2Norm() / tau;
+            theta        = static_cast<double>( w->L2Norm() ) / tau;
             const auto c = 1.0 / std::sqrt( 1 + theta * theta );
             tau          = tau * theta * c;
             eta          = c * c * alpha;
@@ -257,9 +257,9 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             AMP_ERROR( "TFQMR breakdown, rho == 0 " );
         }
 
-        const auto rho_n = res->dot( *w );
-        const auto beta  = rho_n / rho;
-        rho              = rho_n;
+        double rho_n = static_cast<double>( res->dot( *w ) );
+        double beta  = rho_n / rho;
+        rho          = rho_n;
 
         y[0]->axpy( beta, *y[1], *w );
 

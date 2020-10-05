@@ -63,7 +63,7 @@ Scalar VectorOperations::L2Norm( const VectorData &x ) const
 {
     auto ans = localL2Norm( x );
     if ( x.hasComm() )
-        ans = sqrt( sumReduce( x.getComm(), ans * ans ) );
+        ans = sumReduce( x.getComm(), ans * ans ).sqrt();
     return ans;
 }
 Scalar VectorOperations::minQuotient( const VectorData &x, const VectorData &y ) const
@@ -82,7 +82,8 @@ Scalar VectorOperations::wrmsNorm( const VectorData &x, const VectorData &y ) co
         double N1 = y.getCommunicationList()->numLocalRows();
         double N2 = y.getCommunicationList()->getTotalSize();
         auto tmp  = ans * ans * ( N1 / N2 );
-        ans       = sqrt( sumReduce( x.getComm(), tmp ) );
+        ans       = sumReduce( x.getComm(), tmp );
+        ans       = ans.sqrt();
     }
     return ans;
 }
@@ -95,7 +96,8 @@ Scalar VectorOperations::wrmsNormMask( const VectorData &x,
         double N1 = y.getCommunicationList()->numLocalRows();
         double N2 = y.getCommunicationList()->getTotalSize();
         auto tmp  = ans * ans * ( N1 / N2 );
-        ans       = sqrt( sumReduce( x.getComm(), tmp ) );
+        ans       = sumReduce( x.getComm(), tmp );
+        ans       = ans.sqrt();
     }
     return ans;
 }

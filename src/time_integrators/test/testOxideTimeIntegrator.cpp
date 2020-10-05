@@ -46,12 +46,12 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         auto coord = iterator->coord();
         DOF->getDOFs( iterator->globalID(), dofs );
-	const double val = T0 + 100 * coord[2];
+        const double val = T0 + 100 * coord[2];
         temp_vec->setValuesByGlobalID( 1, &dofs[0], &val );
         ++iterator;
     }
     temp_vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    AMP_ASSERT( fabs( temp_vec->min() - T0 ) / T0 < 1e-9 );
+    AMP_ASSERT( fabs( double( temp_vec->min() ) - T0 ) / T0 < 1e-9 );
 
     // Create the oxide time integrator
     auto parameters = std::make_shared<AMP::TimeIntegrator::OxideTimeIntegratorParameters>(
@@ -94,8 +94,8 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
                 continue;
             auto oxide_solution = input_db->getVector<double>( "oxide" );
             auto alpha_solution = input_db->getVector<double>( "alpha" );
-            double err_oxide    = oxide->min() - oxide_solution[i];
-            double err_alpha    = alpha->min() - alpha_solution[i];
+            double err_oxide    = double( oxide->min() ) - oxide_solution[i];
+            double err_alpha    = double( alpha->min() ) - alpha_solution[i];
             if ( fabs( err_oxide / oxide_solution[i] ) < 1e-3 )
                 ut->passes( "oxide solution matches" );
             else

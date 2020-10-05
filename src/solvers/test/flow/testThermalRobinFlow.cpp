@@ -45,8 +45,8 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
+#include <memory>
 #include <string>
 
 
@@ -60,19 +60,14 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::PIO::logAllNodes( log_file );
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
 
-    //--------------------------------------------------
-    //   Create the Mesh.
-    //--------------------------------------------------
+    // Create the Mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
-    //--------------------------------------------------
 
-    //--------------------------------------------------
     // Create a DOF manager for a nodal vector
-    //--------------------------------------------------
     int DOFsPerNode          = 1;
     int DOFsPerElement       = 8;
     int nodalGhostWidth      = 1;
@@ -82,15 +77,12 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
-    //--------------------------------------------------
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
     double intguess = input_db->getWithDefault<double>( "InitialGuess", 400 );
 
-    //-----------------------------------------------
-    //   CREATE THE NONLINEAR THERMAL OPERATOR 1 ----
-    //-----------------------------------------------
+    // CREATE THE NONLINEAR THERMAL OPERATOR 1
     AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator" ), "key missing!" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
     auto thermalNonlinearOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
@@ -102,7 +94,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             thermalNonlinearOperator->getVolumeOperator() );
 
-
     auto globalSolVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
     auto globalRhsVec =
@@ -112,18 +103,14 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     globalSolVec->setToScalar( intguess );
 
-    //-------------------------------------
-    //   CREATE THE LINEAR THERMAL OPERATOR ----
-    //-------------------------------------
+    // CREATE THE LINEAR THERMAL OPERATOR
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto thermalLinearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "LinearThermalOperator", input_db, transportModel ) );
 
-    //-------------------------------------
-    //  CREATE THE NEUTRONICS SOURCE  //
-    //-------------------------------------
+    // CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
@@ -136,12 +123,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    //----------------------------------------------------------
-    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
-    //----------------------------------------------------------
-
+    // Integrate Nuclear Rhs over Desnity * GeomType::Volume
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
@@ -155,30 +138,14 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
 
-    //--------------------------------------
     AMP_INSIST( input_db->keyExists( "NonlinearSolver" ), "Key ''NonlinearSolver'' is missing!" );
-
-    // std::shared_ptr<AMP::Database> nonlinearSolver_db1 =
-    // input_db->getDatabase("NonlinearSolver");
-    // std::shared_ptr<AMP::Database>    linearSolver_db1 =
-    // nonlinearSolver_db1->getDatabase("LinearSolver");
 
     ut->passes( "set up to the iterations passes." );
 
 
-    //-------------------------------------
-    //  std::shared_ptr<AMP::Operator::RobinVectorCorrection> robinBoundaryOp =
-    //  std::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
-    //  thermalNonlinearOperator->getBoundaryOperator() );
-    //  auto correctionParameters =
-    //  std::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp->getParameters());
-    //  robinBoundaryOp->setVariableFlux( robinRHSVec );
-
-    //------------------------------------------------------------------
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
-    //----------------------------------------------------------------//
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
         std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
@@ -188,7 +155,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolverParams->d_pOperator     = thermalNonlinearOperator;
     nonlinearSolverParams->d_pInitialGuess = globalSolVec;
     auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
-    //-------------------------------------------------------------------------//
+
     // initialize the column preconditioner which is a diagonal block preconditioner
     auto columnPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
 
@@ -200,12 +167,10 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto thermalPreconditioner =
         std::make_shared<AMP::Solver::TrilinosMLSolver>( thermalPreconditionerParams );
 
-    //--------------------------------------------------------------------//
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
     linearSolver->setPreconditioner( thermalPreconditioner );
 
-    //-------------------------------------
     nonlinearSolver->setZeroInitialGuess( false );
 
 
@@ -213,8 +178,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     globalRhsVec->copyVector( PowerInWattsVec );
     std::cout << "PowerInWattsVec norm  inside loop = " << globalRhsVec->L2Norm() << "\n";
-    double expectedVal = 0.175811;
-    if ( !AMP::Utilities::approx_equal( expectedVal, globalRhsVec->L2Norm(), 1e-5 ) ) {
+    double expectedVal   = 0.175811;
+    double globalRhsNorm = static_cast<double>( globalRhsVec->L2Norm() );
+    if ( !AMP::Utilities::approx_equal( expectedVal, globalRhsNorm, 1e-5 ) ) {
         ut->failure( "the PowerInWattsVec norm has changed." );
     }
 
@@ -225,8 +191,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     thermalNonlinearOperator->residual( globalRhsVec, globalSolVec, globalResVec );
     AMP::pout << "Initial Residual Norm for Step is: " << globalResVec->L2Norm() << std::endl;
-    expectedVal = 4.84311;
-    if ( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 1e-5 ) ) {
+    expectedVal          = 4.84311;
+    double globalResNorm = static_cast<double>( globalResVec->L2Norm() );
+    if ( !AMP::Utilities::approx_equal( expectedVal, globalResNorm, 1e-5 ) ) {
         ut->failure( "the Initial Residual Norm has changed." );
     }
 
@@ -234,19 +201,19 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolver->solve( globalRhsVec, globalSolVec );
 
     std::cout << "Final Solution Norm: " << globalSolVec->L2Norm() << std::endl;
-    expectedVal = 51541;
-    if ( !AMP::Utilities::approx_equal( expectedVal, globalSolVec->L2Norm(), 1e-5 ) ) {
+    expectedVal        = 51541;
+    auto globalSolNorm = static_cast<double>( globalSolVec->L2Norm() );
+    if ( !AMP::Utilities::approx_equal( expectedVal, globalSolNorm, 1e-5 ) ) {
         ut->failure( "the Final Solution Norm has changed." );
     }
 
     thermalNonlinearOperator->residual( globalRhsVec, globalSolVec, globalResVec );
-    AMP::pout << "Final   Residual Norm for Step is: " << globalResVec->L2Norm() << std::endl;
+    globalResNorm = static_cast<double>( globalResVec->L2Norm() );
+    AMP::pout << "Final   Residual Norm for Step is: " << globalResNorm << std::endl;
     expectedVal = 1. - 10;
-    if ( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 10.0 ) ) {
+    if ( !AMP::Utilities::approx_equal( expectedVal, globalResNorm, 10.0 ) ) {
         ut->failure( "the Final Residual Norm has changed." );
     }
-
-    //---------------------------------------------------------------------------
 
 #ifdef USE_EXT_SILO
     auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
@@ -258,7 +225,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     siloWriter->writeFile( input_file, 0 );
 #endif
 
-    if ( globalResVec->L2Norm() < 10e-6 ) {
+    if ( globalResNorm < 10e-6 ) {
         ut->passes( "Seggregated solve of Composite Operator using control loop of "
                     "Thermal+Robin->Map->Flow->Map ." );
     } else {
@@ -266,13 +233,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
                      "Thermal+Robin->Map->Flow->Map ." );
     }
 
-
-    //-------------------------------------
-    // The 3D-to-1D map is not working in parallel.
-    //   -- See Bug 1219 and 1209.
-    //} else {
-    //  ut.expected_failure("parallel map3D-1D and map1D-3D fail in parallel, see bug #1219.");
-    //}
     input_db.reset();
 
     ut->passes( exeName );

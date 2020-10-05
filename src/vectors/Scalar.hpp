@@ -7,6 +7,7 @@
 
 #include <complex>
 #include <limits>
+#include <math.h>
 
 
 // is_complex
@@ -160,24 +161,31 @@ inline TYPE Scalar::get( double tol ) const
 }
 
 
-} // namespace AMP
-
-
 /********************************************************************
  * Operator overloading                                              *
  ********************************************************************/
-AMP::Scalar operator+( const AMP::Scalar &x, const AMP::Scalar &y );
-AMP::Scalar operator-( const AMP::Scalar &x, const AMP::Scalar &y );
-AMP::Scalar operator*( const AMP::Scalar &x, const AMP::Scalar &y );
+Scalar operator+( const Scalar &x, const Scalar &y );
+Scalar operator-( const Scalar &x, const Scalar &y );
+Scalar operator*( const Scalar &x, const Scalar &y );
+inline bool operator==( double x, const Scalar &y ) { return y.operator==( x ); }
 
 
 /********************************************************************
  * Special functions                                                 *
  ********************************************************************/
-AMP::Scalar minReduce( const AMP::AMP_MPI &comm, const AMP::Scalar &x );
-AMP::Scalar maxReduce( const AMP::AMP_MPI &comm, const AMP::Scalar &x );
-AMP::Scalar sumReduce( const AMP::AMP_MPI &comm, const AMP::Scalar &x );
-AMP::Scalar sqrt( const AMP::Scalar &x );
+Scalar minReduce( const AMP::AMP_MPI &comm, const Scalar &x );
+Scalar maxReduce( const AMP::AMP_MPI &comm, const Scalar &x );
+Scalar sumReduce( const AMP::AMP_MPI &comm, const Scalar &x );
 
+
+/********************************************************
+ *  ostream operator                                     *
+ ********************************************************/
+template<class TYPE>
+typename std::enable_if<std::is_same<TYPE, Scalar>::value, std::ostream &>::type
+operator<<( std::ostream &out, const TYPE &x );
+
+
+} // namespace AMP
 
 #endif

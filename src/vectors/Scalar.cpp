@@ -1,25 +1,30 @@
 #include "AMP/vectors/Scalar.h"
 
+#include <math.h>
+
+
+namespace AMP {
+
 
 /********************************************************************
  * boolean operator overloading                                      *
  ********************************************************************/
-bool AMP::Scalar::operator<( const AMP::Scalar &rhs ) const
+bool Scalar::operator<( const Scalar &rhs ) const
 {
     if ( !has_value() || !rhs.has_value() )
         AMP_ERROR( "Comparing empty scalar" );
-    if ( is_floating_point() ) {
-        return get<double>() < rhs.get<double>();
-    } else if ( is_integral() ) {
-        return get<int64_t>() < rhs.get<int64_t>();
-    } else if ( is_complex() ) {
+    if ( is_complex() || rhs.is_complex() ) {
         AMP_ERROR( "No operator < for std::complex" );
+    } else if ( is_floating_point() || rhs.is_floating_point() ) {
+        return get<double>() < rhs.get<double>();
+    } else if ( is_integral() && rhs.is_integral() ) {
+        return get<int64_t>() < rhs.get<int64_t>();
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
     return false;
 }
-bool AMP::Scalar::operator==( const AMP::Scalar &rhs ) const
+bool Scalar::operator==( const Scalar &rhs ) const
 {
     try {
         if ( has_value() != rhs.has_value() )
@@ -37,16 +42,16 @@ bool AMP::Scalar::operator==( const AMP::Scalar &rhs ) const
     }
     return false;
 }
-bool AMP::Scalar::operator>( const AMP::Scalar &rhs ) const { return rhs < *this; }
-bool AMP::Scalar::operator<=( const AMP::Scalar &rhs ) const { return !( *this > rhs ); }
-bool AMP::Scalar::operator>=( const AMP::Scalar &rhs ) const { return !( *this < rhs ); }
-bool AMP::Scalar::operator!=( const AMP::Scalar &rhs ) const { return !( *this == rhs ); }
+bool Scalar::operator>( const Scalar &rhs ) const { return rhs < *this; }
+bool Scalar::operator<=( const Scalar &rhs ) const { return !( *this > rhs ); }
+bool Scalar::operator>=( const Scalar &rhs ) const { return !( *this < rhs ); }
+bool Scalar::operator!=( const Scalar &rhs ) const { return !( *this == rhs ); }
 
 
 /********************************************************************
  * arithmetic operator overloading                                   *
  ********************************************************************/
-AMP::Scalar operator+( const AMP::Scalar &x, const AMP::Scalar &y )
+Scalar operator+( const Scalar &x, const Scalar &y )
 {
     if ( !x.has_value() )
         return y;
@@ -61,9 +66,9 @@ AMP::Scalar operator+( const AMP::Scalar &x, const AMP::Scalar &y )
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
-    return AMP::Scalar();
+    return Scalar();
 }
-AMP::Scalar operator-( const AMP::Scalar &x, const AMP::Scalar &y )
+Scalar operator-( const Scalar &x, const Scalar &y )
 {
     if ( !x.has_value() )
         return y;
@@ -78,9 +83,9 @@ AMP::Scalar operator-( const AMP::Scalar &x, const AMP::Scalar &y )
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
-    return AMP::Scalar();
+    return Scalar();
 }
-AMP::Scalar operator*( const AMP::Scalar &x, const AMP::Scalar &y )
+Scalar operator*( const Scalar &x, const Scalar &y )
 {
     if ( !x.has_value() || !y.has_value() )
         return 0.0;
@@ -93,14 +98,14 @@ AMP::Scalar operator*( const AMP::Scalar &x, const AMP::Scalar &y )
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
-    return AMP::Scalar();
+    return Scalar();
 }
 
 
 /********************************************************************
  * Special functions                                                 *
  ********************************************************************/
-AMP::Scalar minReduce( const AMP::AMP_MPI &comm, const AMP::Scalar &x )
+Scalar minReduce( const AMP::AMP_MPI &comm, const Scalar &x )
 {
     if ( comm.getSize() <= 1 )
         return x;
@@ -113,9 +118,9 @@ AMP::Scalar minReduce( const AMP::AMP_MPI &comm, const AMP::Scalar &x )
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
-    return AMP::Scalar();
+    return Scalar();
 }
-AMP::Scalar maxReduce( const AMP::AMP_MPI &comm, const AMP::Scalar &x )
+Scalar maxReduce( const AMP::AMP_MPI &comm, const Scalar &x )
 {
     if ( comm.getSize() <= 1 )
         return x;
@@ -128,9 +133,9 @@ AMP::Scalar maxReduce( const AMP::AMP_MPI &comm, const AMP::Scalar &x )
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
-    return AMP::Scalar();
+    return Scalar();
 }
-AMP::Scalar sumReduce( const AMP::AMP_MPI &comm, const AMP::Scalar &x )
+Scalar sumReduce( const AMP::AMP_MPI &comm, const Scalar &x )
 {
     if ( comm.getSize() <= 1 )
         return x;
@@ -143,20 +148,58 @@ AMP::Scalar sumReduce( const AMP::AMP_MPI &comm, const AMP::Scalar &x )
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
-    return AMP::Scalar();
+    return Scalar();
 }
-AMP::Scalar sqrt( const AMP::Scalar &x )
+Scalar Scalar::sqrt() const
 {
-    if ( !x.has_value() )
+    if ( !has_value() )
         return 0.0;
-    if ( x.is_floating_point() ) {
-        return sqrt( x.get<double>() );
-    } else if ( x.is_integral() ) {
-        return sqrt( x.get<int64_t>() );
-    } else if ( x.is_complex() ) {
-        return sqrt( x.get<std::complex<double>>() );
+    if ( is_floating_point() ) {
+        return ::sqrt( get<double>() );
+    } else if ( is_integral() ) {
+        return ::sqrt( get<int64_t>() );
+    } else if ( is_complex() ) {
+        return ::sqrt( get<std::complex<double>>() );
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
-    return AMP::Scalar();
+    return Scalar();
 }
+Scalar Scalar::abs() const
+{
+    if ( !has_value() )
+        return Scalar();
+    if ( is_floating_point() ) {
+        return std::abs( get<double>() );
+    } else if ( is_integral() ) {
+        return std::abs( get<int64_t>() );
+    } else if ( is_complex() ) {
+        return std::abs( get<std::complex<double>>() );
+    } else {
+        AMP_ERROR( "Unable to get types for Scalar" );
+    }
+    return Scalar();
+}
+
+/********************************************************
+ *  ostream operator                                     *
+ ********************************************************/
+template<>
+std::enable_if<std::is_same<AMP::Scalar, AMP::Scalar>::value, std::ostream &>::type
+operator<<<AMP::Scalar>( std::ostream &out, const AMP::Scalar &x )
+{
+    if ( !x.has_value() )
+        return out;
+    if ( x.is_floating_point() ) {
+        out << x.get<double>();
+    } else if ( x.is_integral() ) {
+        out << x.get<int64_t>();
+    } else if ( x.is_complex() ) {
+        out << x.get<std::complex<double>>();
+    } else {
+        AMP_ERROR( "Unable to get types for Scalar" );
+    }
+    return out;
+}
+
+} // namespace AMP

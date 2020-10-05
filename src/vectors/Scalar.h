@@ -60,6 +60,17 @@ public: // Comparison operators
     bool operator<( const Scalar &rhs ) const;
     bool operator<=( const Scalar &rhs ) const;
 
+public: // Overload some typecast operators
+    template<class TYPE>
+    inline explicit operator TYPE() const
+    {
+        return get<TYPE>();
+    }
+
+public: // Math functions
+    Scalar abs() const;
+    Scalar sqrt() const;
+
 private: // Helper functions
     template<class T1, class T2>
     static inline std::tuple<T1, double> convert( const std::any &x0 );

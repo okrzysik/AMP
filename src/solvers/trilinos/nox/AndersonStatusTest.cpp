@@ -39,27 +39,22 @@ NOX::StatusTest::StatusType AndersonStatusTest::checkStatus( const NOX::Solver::
         return NOX::StatusTest::Unevaluated;
 
     // Get the current and previous solutions from solver
-    Teuchos::RCP<const NOX::Abstract::Vector> curSolVec = solver.getSolutionGroup().getXPtr();
-    Teuchos::RCP<const NOX::Abstract::Vector> prevSolVec =
-        solver.getPreviousSolutionGroup().getXPtr();
+    auto curSolVec  = solver.getSolutionGroup().getXPtr();
+    auto prevSolVec = solver.getPreviousSolutionGroup().getXPtr();
     AMP_ASSERT( curSolVec != Teuchos::null );
     AMP_ASSERT( prevSolVec != Teuchos::null );
 
     // Cast vectors to Thyra::Vector base class
-    Teuchos::RCP<const NOX::Thyra::Vector> curSolThyraVec =
-        Teuchos::rcp_dynamic_cast<const NOX::Thyra::Vector>( curSolVec );
-    Teuchos::RCP<const NOX::Thyra::Vector> prevSolThyraVec =
-        Teuchos::rcp_dynamic_cast<const NOX::Thyra::Vector>( prevSolVec );
+    auto curSolThyraVec  = Teuchos::rcp_dynamic_cast<const NOX::Thyra::Vector>( curSolVec );
+    auto prevSolThyraVec = Teuchos::rcp_dynamic_cast<const NOX::Thyra::Vector>( prevSolVec );
     AMP_ASSERT( curSolThyraVec != Teuchos::null );
     AMP_ASSERT( prevSolThyraVec != Teuchos::null );
 
     // Cast to Thyra wrappers
-    const AMP::LinearAlgebra::ThyraVectorWrapper *curSolWrappedVec =
-        dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper *>(
-            curSolThyraVec->getThyraRCPVector().getRawPtr() );
-    const AMP::LinearAlgebra::ThyraVectorWrapper *prevSolWrappedVec =
-        dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper *>(
-            prevSolThyraVec->getThyraRCPVector().getRawPtr() );
+    auto curSolWrappedVec = dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper *>(
+        curSolThyraVec->getThyraRCPVector().getRawPtr() );
+    auto prevSolWrappedVec = dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper *>(
+        prevSolThyraVec->getThyraRCPVector().getRawPtr() );
     AMP_ASSERT( curSolWrappedVec );
     AMP_ASSERT( prevSolWrappedVec );
 
@@ -74,17 +69,15 @@ NOX::StatusTest::StatusType AndersonStatusTest::checkStatus( const NOX::Solver::
     // Process each variable in list
     bool converged = true;
     for ( size_t i = 0; i < d_variableNames.size(); ++i ) {
-        AMP::LinearAlgebra::Variable::shared_ptr thisVar(
-            new AMP::LinearAlgebra::Variable( d_variableNames[i] ) );
-        AMP::LinearAlgebra::Vector::const_shared_ptr thisCurVec =
-            curSolAmpVec->constSubsetVectorForVariable( thisVar );
-        AMP::LinearAlgebra::Vector::const_shared_ptr thisPrevVec =
-            prevSolAmpVec->constSubsetVectorForVariable( thisVar );
+        auto thisVar     = std::make_shared<AMP::LinearAlgebra::Variable>( d_variableNames[i] );
+        auto thisCurVec  = curSolAmpVec->constSubsetVectorForVariable( thisVar );
+        auto thisPrevVec = prevSolAmpVec->constSubsetVectorForVariable( thisVar );
         if ( thisCurVec ) {
             AMP_ASSERT( thisPrevVec );
-            AMP::LinearAlgebra::Vector::shared_ptr thisDiffVec = thisCurVec->cloneVector();
+            auto thisDiffVec = thisCurVec->cloneVector();
             thisDiffVec->subtract( *thisCurVec, *thisPrevVec );
-            d_relativeResiduals[i] = thisDiffVec->L2Norm() / thisCurVec->L2Norm();
+            d_relativeResiduals[i] =
+                double( thisDiffVec->L2Norm() ) / double( thisCurVec->L2Norm() );
             if ( d_relativeResiduals[i] > d_tolerances[i] )
                 converged = false;
         }

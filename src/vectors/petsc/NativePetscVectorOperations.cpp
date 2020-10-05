@@ -88,8 +88,9 @@ void NativePetscVectorOperations::zero( VectorData &x ) { VecZeroEntries( getPet
 
 void NativePetscVectorOperations::setToScalar( const Scalar &alpha, VectorData &x )
 {
+    auto val = alpha.get<double>();
     auto vec = getPetscVec( x );
-    VecSet( vec, alpha.get<double>() );
+    VecSet( vec, val );
 }
 
 void NativePetscVectorOperations::setRandomValues( VectorData &x )
