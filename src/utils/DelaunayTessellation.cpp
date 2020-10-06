@@ -4,6 +4,9 @@
 #include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/NearestPairSearch.h"
 #include "AMP/utils/Utilities.h"
+#if defined( USING_ICC )
+#include "AMP/utils/UtilityMacros.h"
+#endif
 
 #include "ProfilerApp.h"
 
@@ -20,6 +23,10 @@
 #define USE_LAPACK 0
 #endif
 
+
+#if defined( USING_ICC )
+DISABLE_WARNINGS
+#endif
 
 namespace AMP {
 namespace DelaunayTessellation {
@@ -2615,3 +2622,8 @@ create_tessellation<3>( const std::vector<std::array<int, 3>> &x );
 
 } // namespace DelaunayTessellation
 } // namespace AMP
+
+
+#if defined( USING_ICC )
+ENABLE_WARNINGS
+#endif
