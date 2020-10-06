@@ -36,9 +36,13 @@
     } while ( 0 )
 #endif
 
+#if defined( USING_ICC )
+#include "AMP/utils/UtilityMacros.h"
+#endif
 
 namespace AMP {
 
+  
 
 // Forward declerations
 class FunctionTable;
