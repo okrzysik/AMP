@@ -171,7 +171,7 @@
 #elif defined( USING_ICC )
     #define DISABLE_WARNINGS              \
         _Pragma( "warning (push)" )       \
-        _Pragma( "warning disable 1011" ) \  
+        _Pragma( "warning disable 1011" ) \
         _Pragma( "warning disable 1478" )   
     #define ENABLE_WARNINGS _Pragma( "warning(pop)" )
 #else
