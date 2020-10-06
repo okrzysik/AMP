@@ -86,9 +86,6 @@ DISABLE_WARNINGS
             static_assert( !std::is_integral<TYPE>::value, "Unsupported type for range" );
         }
     }
-#if defined( USING_ICC )
-ENABLE_WARNINGS
-#endif
 
     //! Get the ith values in the range
     constexpr TYPE get( size_t index ) const
@@ -104,6 +101,10 @@ ENABLE_WARNINGS
             static_assert( !std::is_integral<TYPE>::value, "Unsupported type for range" );
         }
     }
+
+#if defined( USING_ICC )
+ENABLE_WARNINGS
+#endif
 
 public:
     TYPE i, j, k;
