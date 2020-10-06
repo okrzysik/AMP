@@ -62,6 +62,9 @@ public:
      */
     constexpr Range( TYPE i_, TYPE j_, TYPE k_ = 1 ) : i( i_ ), j( j_ ), k( k_ ) {}
 
+#if defined( USING_ICC )
+DISABLE_WARNINGS
+#endif
     //! Get the number of values in the range
     constexpr size_t size() const
     {
@@ -77,9 +80,11 @@ public:
             return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
         } else {
             static_assert( !std::is_integral<TYPE>::value, "Unsupported type for range" );
-	    return 0;
         }
     }
+#if defined( USING_ICC )
+ENABLE_WARNINGS
+#endif
 
     //! Get the ith values in the range
     constexpr TYPE get( size_t index ) const
