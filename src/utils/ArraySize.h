@@ -77,6 +77,7 @@ public:
             return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
         } else {
             static_assert( !std::is_integral<TYPE>::value, "Unsupported type for range" );
+	    return 0;
         }
     }
 
