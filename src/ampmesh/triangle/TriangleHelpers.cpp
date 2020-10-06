@@ -887,9 +887,9 @@ static std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry:
             for ( int j = 0; j <= NDIM; j++ )
                 x[j] = points[tri[i][j]];
             double M[9];
-            for ( size_t i = 0; i < 3; i++ ) {
+            for ( size_t k = 0; k < 3; k++ ) {
                 for ( size_t d = 0; d < 3; d++ )
-                    M[d + i * 3] = x[i][d] - x[3][d];
+                    M[d + k * 3] = x[k][d] - x[3][d];
             }
             constexpr double C = 1.0 / 6.0;
             double V           = std::abs( C * DelaunayHelpers<NDIM>::det( M ) );
