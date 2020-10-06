@@ -1,17 +1,10 @@
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/ampmesh/Geometry.h"
 #include "AMP/utils/Utilities.h"
-#if defined( USING_ICC )
-#include "AMP/utils/UtilityMacros.h"
-#endif
 
 #include <algorithm>
 #include <cmath>
 
-
-#if defined( USING_ICC )
-DISABLE_WARNINGS
-#endif
 
 /****************************************************************
  * Overload basic array operations                               *
@@ -726,7 +719,3 @@ normal( const AMP::Mesh::Point &a, const AMP::Mesh::Point &b, const AMP::Mesh::P
 
 
 } // namespace AMP::Geometry::GeometryHelpers
-
-#if defined( USING_ICC )
-ENABLE_WARNINGS
-#endif

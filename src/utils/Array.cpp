@@ -1,6 +1,9 @@
 // clang-format off
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Array.hpp"
+#if defined( USING_ICC )
+#include "AMP/utils/UtilityMacros.h"
+#endif
 
 #include <complex>
 
@@ -11,6 +14,9 @@ namespace AMP {
 /********************************************************
  *  Explicit instantiations of Array                     *
  ********************************************************/
+#if defined( USING_ICC )
+DISABLE_WARNINGS
+#endif
 template class Array<char,FunctionTable>;
 template class Array<uint8_t,FunctionTable>;
 template class Array<uint16_t,FunctionTable>;
@@ -22,6 +28,9 @@ template class Array<int32_t,FunctionTable>;
 template class Array<int64_t,FunctionTable>;
 template class Array<float,FunctionTable>;
 template class Array<double,FunctionTable>;
+#if defined( USING_ICC )
+ENABLE_WARNINGS
+#endif
 
 
 /********************************************************
