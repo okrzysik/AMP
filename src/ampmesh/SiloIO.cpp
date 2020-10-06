@@ -1135,7 +1135,7 @@ void SiloIO::writeFile( const std::string &, size_t, double )
 {
     AMP_ERROR( "SILO not configured" );
 }
-void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, std::string )
+void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, const std::string& )
 {
     AMP_ERROR( "SILO not configured" );
 }
