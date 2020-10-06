@@ -464,7 +464,7 @@ static te_expr *factor(state *s) {
     te_expr *ret = power(s);
 
     while (s->type == TOK_INFIX && (s->function == pow)) {
-        te_fun2 t = s->function;
+        te_fun2 t = static_cast<te_fun2>(s->function);
         next_token(s);
         ret = NEW_EXPR(TE_FUNCTION2 | TE_FLAG_PURE, ret, power(s));
         ret->function = t;
