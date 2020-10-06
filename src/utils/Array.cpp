@@ -28,9 +28,6 @@ template class Array<int32_t,FunctionTable>;
 template class Array<int64_t,FunctionTable>;
 template class Array<float,FunctionTable>;
 template class Array<double,FunctionTable>;
-#if defined( USING_ICC )
-ENABLE_WARNINGS
-#endif
 
 
 /********************************************************
@@ -85,5 +82,8 @@ template bool Array<std::complex<double>,FunctionTable>::NaNs() const;
 instantiateArrayConstructors( std::string )
 template void Array<std::string,FunctionTable>::resize( ArraySize const& );
 
+#if defined( USING_ICC )
+ENABLE_WARNINGS
+#endif
 
 } // AMP namespace
