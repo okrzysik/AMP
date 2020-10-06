@@ -28,6 +28,9 @@ namespace AMP {
 /********************************************************************
  * Helper functions                                                  *
  ********************************************************************/
+#if defined( USING_ICC )
+DISABLE_WARNINGS
+#endif
 template<class TYPE>
 constexpr char Scalar::get_type()
 {
@@ -52,6 +55,9 @@ constexpr double Scalar::getTol()
         return 10 * std::abs( std::numeric_limits<TYPE>::epsilon() );
     }
 }
+#if defined( USING_ICC )
+DISABLE_WARNINGS
+#endif
 template<class T1, class T2>
 inline std::tuple<T1, double> Scalar::convert( const std::any &x0 )
 {
