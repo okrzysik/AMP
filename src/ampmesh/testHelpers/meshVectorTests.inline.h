@@ -51,7 +51,7 @@ void meshTests::simpleNodalVectorTests( AMP::UnitTest *utils,
 
     // Try some trival operations
     vectora->setRandomValues();
-    double t1 = vectora->L2Norm();
+    double t1 = static_cast<double>(vectora->L2Norm());
     vectora->abs( *vectora );
     if ( fabs( double( vectora->L2Norm() ) - t1 ) < 0.0000001 )
         utils->passes( "non-trivial random vector" );
