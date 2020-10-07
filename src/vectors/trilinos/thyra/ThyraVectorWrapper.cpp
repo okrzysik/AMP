@@ -346,7 +346,9 @@ void ThyraVectorWrapper::acquireDetachedVectorViewImpl(
         indices[i] = lower + i;
     vec->getValuesByLocalID( size, indices, ptr );
     delete[] indices;
+    DISABLE_WARNINGS
     *sub_vec = RTOpPack::ConstSubVectorView<double>( array );
+    ENABLE_WARNINGS
 }
 void ThyraVectorWrapper::releaseDetachedVectorViewImpl(
     RTOpPack::ConstSubVectorView<double> *sub_vec ) const
@@ -370,7 +372,9 @@ void ThyraVectorWrapper::acquireNonconstDetachedVectorViewImpl(
         indices[i] = lower + i;
     vec->getValuesByLocalID( size, indices, ptr );
     delete[] indices;
+    DISABLE_WARNINGS
     *sub_vec = RTOpPack::SubVectorView<double>( array );
+    ENABLE_WARNINGS
 }
 void ThyraVectorWrapper::commitNonconstDetachedVectorViewImpl(
     RTOpPack::SubVectorView<double> *sub_vec )
@@ -398,6 +402,7 @@ void ThyraVectorWrapper::setSubVectorImpl( const RTOpPack::SparseSubVectorT<doub
 /****************************************************************
  * applyOpImpl                                                   *
  ****************************************************************/
+DISABLE_WARNINGS
 void ThyraVectorWrapper::applyOpImpl(
     const RTOpPack::RTOpT<double> &op,
     const Teuchos::ArrayView<const Teuchos::Ptr<const Thyra::VectorBase<double>>> &vecs,
@@ -459,6 +464,8 @@ void ThyraVectorWrapper::applyOpImpl(
         }
     }
 }
+ENABLE_WARNINGS
+
 void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
     const RTOpPack::RTOpT<double> &primary_op,
     const Teuchos::ArrayView<const Teuchos::Ptr<const Thyra::MultiVectorBase<double>>> &multi_vecs,
