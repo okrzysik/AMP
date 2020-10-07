@@ -464,7 +464,6 @@ void ThyraVectorWrapper::applyOpImpl(
         }
     }
 }
-ENABLE_WARNINGS
 
 void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
     const RTOpPack::RTOpT<double> &primary_op,
@@ -546,6 +545,8 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
         }
     }
 }
+ENABLE_WARNINGS
+
 void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
     const RTOpPack::RTOpT<double> &primary_op,
     const RTOpPack::RTOpT<double> &secondary_op,
