@@ -54,7 +54,6 @@ Vector::shared_ptr ManagedThyraVector::cloneVector( const Variable::shared_ptr v
     auto vec = getVectorEngine();
     if ( vec ) {
         auto vec2   = vec->cloneVector( "ManagedThyraVectorClone" );
-        p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
         p->d_Engine = std::dynamic_pointer_cast<Vector>( vec2 );
     } else {
         AMP_ERROR( "ManagedThyraVector::rawClone() should not have reached here!" );

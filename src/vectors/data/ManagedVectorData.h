@@ -29,9 +29,6 @@ public:
     //! The VectorEngine to use with the managed vector
     std::shared_ptr<Vector> d_Engine;
 
-    //! Buffer to use for the managed vector
-    std::shared_ptr<VectorData> d_Buffer;
-
     //! The CommunicationList for a vector
     CommunicationList::shared_ptr d_CommList = nullptr;
 
@@ -81,10 +78,10 @@ public:
 
 protected:
     //! The buffer used to store data
-    std::shared_ptr<VectorData> d_vBuffer = nullptr;
+    std::shared_ptr<VectorData> d_vBuffer;
 
     //! The engine to act on the buffer
-    std::shared_ptr<Vector> d_Engine = nullptr;
+    std::shared_ptr<Vector> d_Engine;
 
     //! The parameters used to create this vector
     std::shared_ptr<ManagedVectorParameters> d_pParameters;

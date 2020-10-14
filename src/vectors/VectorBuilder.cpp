@@ -115,12 +115,11 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
         auto mvparams = std::make_shared<ManagedPetscVectorParameters>();
         comm.barrier();
-        auto t_buffer = std::make_shared<VectorDataCPU<double>>(
+        auto buffer = std::make_shared<VectorDataCPU<double>>(
             DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
-        auto epetra_engine = createEpetraVector( comm_list, DOFs, t_buffer );
+        auto epetra_engine = createEpetraVector( comm_list, DOFs, buffer );
         epetra_engine->setVariable( variable );
         mvparams->d_Engine     = epetra_engine;
-        mvparams->d_Buffer     = t_buffer;
         mvparams->d_CommList   = comm_list;
         mvparams->d_DOFManager = DOFs;
         // Create the vector
@@ -132,12 +131,11 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
 #elif defined( USE_EXT_TRILINOS )
         auto mvparams = std::make_shared<ManagedVectorParameters>();
         comm.barrier();
-        auto t_buffer = std::make_shared<VectorDataCPU<double>>(
+        auto buffer = std::make_shared<VectorDataCPU<double>>(
             DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
-        auto epetra_engine = createEpetraVector( nullptr, DOFs, t_buffer );
+        auto epetra_engine = createEpetraVector( nullptr, DOFs, buffer );
         epetra_engine->setVariable( variable );
         mvparams->d_Engine     = epetra_engine;
-        mvparams->d_Buffer     = t_buffer;
         mvparams->d_CommList   = comm_list;
         mvparams->d_DOFManager = DOFs;
         // Create the vector

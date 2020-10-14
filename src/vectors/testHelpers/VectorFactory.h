@@ -166,15 +166,12 @@ public:
         auto commList   = AMP::LinearAlgebra::CommunicationList::createEmpty( nLocal, globalComm );
         auto dofManager = std::make_shared<AMP::Discretization::DOFManager>( nLocal, globalComm );
         auto managedParams = std::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
-        managedParams->d_Buffer =
+        auto buffer =
             std::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
-        managedParams->d_Engine =
-            createEpetraVector( commList, dofManager, managedParams->d_Buffer );
-        managedParams->d_CommList = commList;
-
+        managedParams->d_Engine     = createEpetraVector( commList, dofManager, buffer );
+        managedParams->d_CommList   = commList;
         managedParams->d_DOFManager = dofManager;
-
-        auto retval = std::make_shared<TYPE>( managedParams );
+        auto retval                 = std::make_shared<TYPE>( managedParams );
         retval->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
         return retval;
     }

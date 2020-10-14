@@ -24,7 +24,6 @@ createManagedEpetraVector( Vector::shared_ptr inVector, std::shared_ptr<Vector> 
 {
     auto newParams      = std::make_shared<ManagedVectorParameters>();
     newParams->d_Engine = engine;
-    newParams->d_Buffer = std::dynamic_pointer_cast<VectorData>( engine );
     AMP_INSIST( inVector->getCommunicationList(), "All vectors must have a communication list" );
     newParams->d_CommList = inVector->getCommunicationList();
     AMP_INSIST( inVector->getDOFManager(), "All vectors must have a DOFManager list" );

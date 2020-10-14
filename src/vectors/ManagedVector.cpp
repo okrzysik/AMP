@@ -116,23 +116,7 @@ std::string ManagedVector::type() const
     return d_VectorData->VectorDataName();
 }
 
-Vector::shared_ptr ManagedVector::getRootVector()
-{
-    if ( std::dynamic_pointer_cast<ManagedVectorData>( d_VectorData )->hasBuffer() )
-        return shared_from_this();
-
-    auto engine = getVectorEngine();
-    auto vec    = std::dynamic_pointer_cast<ManagedVector>( engine );
-    if ( vec != nullptr ) {
-        auto rvec = vec->getRootVector();
-        AMP_INSIST( rvec->getCommunicationList(),
-                    "Root vector does not have a communication list" );
-    }
-
-    AMP_INSIST( engine->getCommunicationList(),
-                "Managed vector engine does not have a communication list" );
-    return engine->shared_from_this();
-}
+Vector::shared_ptr ManagedVector::getRootVector() { return getVectorEngine(); }
 
 Vector::shared_ptr ManagedVector::selectInto( const VectorSelector &s )
 {

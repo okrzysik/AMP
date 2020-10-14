@@ -62,8 +62,8 @@ static inline std::shared_ptr<const VectorData> getEngineData( const VectorData 
 ManagedVectorData::ManagedVectorData( std::shared_ptr<ManagedVectorParameters> params )
     : VectorData( params->d_CommList ), d_pParameters( params )
 {
-    d_vBuffer = d_pParameters->d_Buffer;
     d_Engine  = d_pParameters->d_Engine;
+    d_vBuffer = d_pParameters->d_Engine->getVectorData();
     AMP_ASSERT( d_Engine );
     if ( d_vBuffer )
         d_vBuffer->setUpdateStatusPtr( getUpdateStatusPtr() );
@@ -303,7 +303,6 @@ std::shared_ptr<VectorData> ManagedVectorData::cloneData( void ) const
     if ( vec ) {
         auto vec2        = vec->cloneVector( "ManagedVectorClone" );
         params->d_Engine = std::dynamic_pointer_cast<Vector>( vec2 );
-        params->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
     } else {
         AMP_ERROR( "ManagedVectorData::cloneVector() should not have reached here!" );
     }
@@ -360,7 +359,7 @@ Vector::shared_ptr ManagedVectorData::getVectorEngine( void ) { return d_Engine;
 
 Vector::const_shared_ptr ManagedVectorData::getVectorEngine( void ) const { return d_Engine; }
 
-ManagedVectorParameters::ManagedVectorParameters() : d_Buffer( nullptr ) {}
+ManagedVectorParameters::ManagedVectorParameters() {}
 
 } // namespace LinearAlgebra
 } // namespace AMP

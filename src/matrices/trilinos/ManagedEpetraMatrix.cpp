@@ -68,17 +68,14 @@ Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
     int localSize  = memp->getLocalNumberOfColumns();
     int globalSize = memp->getGlobalNumberOfColumns();
     int localStart = memp->getRightDOFManager()->beginDOF();
-
-    auto p_params = std::make_shared<ManagedVectorParameters>();
-    p_params->d_Buffer =
-        std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    p_params->d_Engine =
-        createEpetraVector( memp->d_CommListRight, memp->getRightDOFManager(), p_params->d_Buffer );
-    p_params->d_CommList   = memp->d_CommListRight;
-    p_params->d_DOFManager = memp->getRightDOFManager();
-    auto rtn               = std::make_shared<ManagedEpetraVector>( p_params );
+    auto params    = std::make_shared<ManagedVectorParameters>();
+    auto buffer    = std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
+    params->d_Engine =
+        createEpetraVector( memp->d_CommListRight, memp->getRightDOFManager(), buffer );
+    params->d_CommList   = memp->d_CommListRight;
+    params->d_DOFManager = memp->getRightDOFManager();
+    auto rtn             = std::make_shared<ManagedEpetraVector>( params );
     rtn->setVariable( memp->d_VariableRight );
-    // rtn->setVariable( Variable::shared_ptr( new Variable("right") ) );
     return rtn;
 }
 Vector::shared_ptr ManagedEpetraMatrix::getLeftVector() const
@@ -88,18 +85,14 @@ Vector::shared_ptr ManagedEpetraMatrix::getLeftVector() const
     int localSize  = memp->getLocalNumberOfRows();
     int globalSize = memp->getGlobalNumberOfRows();
     int localStart = memp->getRightDOFManager()->beginDOF();
-
-    // need to verify the comm list and dof manager are right for non square
-    auto p_params = std::make_shared<ManagedVectorParameters>();
-    p_params->d_Buffer =
-        std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    p_params->d_Engine =
-        createEpetraVector( memp->d_CommListRight, memp->getRightDOFManager(), p_params->d_Buffer );
-    p_params->d_CommList   = memp->d_CommListLeft;
-    p_params->d_DOFManager = memp->getLeftDOFManager();
-    auto rtn               = std::make_shared<ManagedEpetraVector>( p_params );
+    auto params    = std::make_shared<ManagedVectorParameters>();
+    auto buffer    = std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
+    params->d_Engine =
+        createEpetraVector( memp->d_CommListRight, memp->getRightDOFManager(), buffer );
+    params->d_CommList   = memp->d_CommListLeft;
+    params->d_DOFManager = memp->getLeftDOFManager();
+    auto rtn             = std::make_shared<ManagedEpetraVector>( params );
     rtn->setVariable( memp->d_VariableLeft );
-    // rtn->setVariable( Variable::shared_ptr( new Variable("left") ) );
     return rtn;
 }
 Discretization::DOFManager::shared_ptr ManagedEpetraMatrix::getRightDOFManager() const

@@ -32,7 +32,6 @@ inline Vector::shared_ptr ManagedEpetraVector::cloneVector( const Variable::shar
     auto vec = getVectorEngine();
     if ( vec ) {
         auto vec2   = vec->cloneVector( "ManagedEeptraVectorClone" );
-        p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
         p->d_Engine = std::dynamic_pointer_cast<Vector>( vec2 );
     } else {
         AMP_ERROR( "ManagedEpetraVector::rawClone() should not have reached here!" );

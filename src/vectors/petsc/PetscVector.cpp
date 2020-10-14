@@ -28,7 +28,6 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
     } else if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
         auto newParams      = std::make_shared<ManagedPetscVectorParameters>();
         newParams->d_Engine = std::dynamic_pointer_cast<Vector>( inVector );
-        newParams->d_Buffer = std::dynamic_pointer_cast<VectorData>( inVector );
         AMP_INSIST( inVector->getCommunicationList(),
                     "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();

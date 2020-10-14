@@ -44,7 +44,6 @@ Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
     } else if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
         auto newParams      = std::make_shared<ManagedThyraVectorParameters>();
         newParams->d_Engine = std::dynamic_pointer_cast<Vector>( inVector );
-        newParams->d_Buffer = std::dynamic_pointer_cast<VectorData>( inVector );
         AMP_INSIST( inVector->getCommunicationList().get() != nullptr,
                     "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();
@@ -97,8 +96,8 @@ AMP::LinearAlgebra::Vector::shared_ptr ThyraVector::view( Thyra::VectorBase<doub
                 sprintf( name, "col-%i\n", (int) tmp->d_cols[i] );
                 vars.push_back( std::make_shared<AMP::LinearAlgebra::Variable>( name ) );
             }
-            AMP::LinearAlgebra::Variable::shared_ptr multiVar(
-                new AMP::LinearAlgebra::MultiVariable( "ThyraMultiVec", vars ) );
+            auto multiVar =
+                std::make_shared<AMP::LinearAlgebra::MultiVariable>( "ThyraMultiVec", vars );
             vec_out = AMP::LinearAlgebra::MultiVector::create(
                 multiVar, tmp->d_vecs[0]->getComm(), tmp->d_vecs );
             // Currently our multivectors can't be easily subsetted to create the original vectors
@@ -128,8 +127,8 @@ ThyraVector::constView( const Thyra::VectorBase<double> *vec )
                 sprintf( name, "col-%i\n", (int) tmp->d_cols[i] );
                 vars.push_back( std::make_shared<AMP::LinearAlgebra::Variable>( name ) );
             }
-            AMP::LinearAlgebra::Variable::shared_ptr multiVar(
-                new AMP::LinearAlgebra::MultiVariable( "ThyraMultiVec", vars ) );
+            auto multiVar =
+                std::make_shared<AMP::LinearAlgebra::MultiVariable>( "ThyraMultiVec", vars );
             vec_out = AMP::LinearAlgebra::MultiVector::create(
                 multiVar, tmp->d_vecs[0]->getComm(), tmp->d_vecs );
             // Currently our multivectors can't be easily subsetted to create the original vectors

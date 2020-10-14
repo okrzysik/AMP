@@ -72,7 +72,6 @@ ManagedSundialsVector *ManagedSundialsVector::rawClone() const
     auto vec = getVectorEngine();
     if ( vec ) {
         auto vec2   = vec->cloneVector( "ManagedSundialsVectorClone" );
-        p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
         p->d_Engine = std::dynamic_pointer_cast<Vector>( vec2 );
     } else {
         AMP_ERROR( "ManagedSundialsVector::rawClone() should not have reached here!" );
