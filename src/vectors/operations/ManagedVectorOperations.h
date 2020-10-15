@@ -9,11 +9,8 @@ namespace LinearAlgebra {
 
 /**
    \brief Class used to control data and kernels of various vector libraries
-   \details  A ManagedVector will take an engine and create a buffer, if
-   necessary.
-
-   A ManagedVector has two pointers: data and engine.  If the data pointer
-   is null, then the engine is assumed to have the data.
+   \details  ManagedVectorOperations wraps the vector operations to call the
+      native vector operations with the native data
 */
 class ManagedVectorOperations : public VectorOperationsDefault<double>
 {

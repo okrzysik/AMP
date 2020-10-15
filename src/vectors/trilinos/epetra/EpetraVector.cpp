@@ -1,6 +1,8 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/data/ManagedVectorData.h"
+#include "AMP/vectors/operations/ManagedVectorOperations.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
 #include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
 
@@ -32,34 +34,35 @@ Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
 {
     AMP_INSIST( inVector->numberOfDataBlocks() == 1,
                 "Epetra does not support more than 1 data block" );
-    Vector::shared_ptr retVal;
-    if ( std::dynamic_pointer_cast<EpetraVector>( inVector ) ) {
-        retVal = inVector;
-    } else if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
+    // Check if we have an existing view
+    if ( std::dynamic_pointer_cast<EpetraVector>( inVector ) )
+        return inVector;
+    if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
         auto multivec = std::dynamic_pointer_cast<MultiVector>( inVector );
         if ( multivec->getNumberOfSubvectors() == 1 ) {
-            retVal = view( multivec->getVector( 0 ) );
+            return view( multivec->getVector( 0 ) );
         } else {
             AMP_ERROR( "View of multi-block MultiVector is not supported yet" );
         }
-    } else if ( std::dynamic_pointer_cast<ManagedVector>( inVector ) ) {
-        auto managed = std::dynamic_pointer_cast<ManagedVector>( inVector );
-        auto root    = managed->getRootVector();
-        if ( root == inVector ) {
-            retVal = std::make_shared<ManagedEpetraVector>( root );
-        } else {
-            retVal = view( root );
-        }
-    } else if ( std::dynamic_pointer_cast<EpetraVectorData>( inVector->getVectorData() ) ) {
-        retVal = createManagedEpetraVector( inVector, inVector );
-    } else {
-        auto engine = createEpetraVector( inVector->getCommunicationList(),
-                                          inVector->getDOFManager(),
-                                          inVector->getVectorData() );
-        retVal      = createManagedEpetraVector( inVector, engine );
     }
-    if ( !retVal )
-        AMP_ERROR( "Cannot create view!" );
+    // Check if we are dealing with a managed vector
+    auto managedData = std::dynamic_pointer_cast<ManagedVectorData>( inVector->getVectorData() );
+    if ( managedData ) {
+        auto root = managedData->getVectorEngine();
+        if ( root == inVector )
+            return std::make_shared<ManagedEpetraVector>( root );
+        else
+            return view( root );
+    }
+
+    // Check if we are dealing with EpetraVectorData
+    if ( std::dynamic_pointer_cast<EpetraVectorData>( inVector->getVectorData() ) )
+        return createManagedEpetraVector( inVector, inVector );
+    // Create a default view
+    auto engine = createEpetraVector(
+        inVector->getCommunicationList(), inVector->getDOFManager(), inVector->getVectorData() );
+    auto retVal = createManagedEpetraVector( inVector, engine );
+    AMP_INSIST( retVal, "Cannot create view!" );
     return retVal;
 }
 Vector::const_shared_ptr EpetraVector::constView( Vector::const_shared_ptr inVector )

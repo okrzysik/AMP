@@ -2,7 +2,6 @@
 #define included_AMP_test_VectorFactory
 
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Variable.h"

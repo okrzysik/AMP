@@ -1,7 +1,6 @@
 #ifndef included_AMP_ManagedPetscVector
 #define included_AMP_ManagedPetscVector
 
-#include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/data/DataChangeListener.h"
 #include "AMP/vectors/petsc/PetscVector.h"
 
@@ -21,16 +20,12 @@ namespace LinearAlgebra {
  *
  * \see PetscVector
  */
-class ManagedPetscVector : public ManagedVector, public PetscVector, public DataChangeListener
+class ManagedPetscVector : public Vector, public PetscVector, public DataChangeListener
 {
 private:
     bool d_bMadeWithPetscDuplicate;
 
 protected:
-    /** \brief  Convenience typedef fpr a ManagedVector
-     */
-    typedef ManagedVector ParentVector;
-
     /** \brief Populate PETSc data structures with functions that call
      * back into the Vector interface
      */
@@ -63,24 +58,27 @@ public:
      */
     ManagedPetscVector *rawClone() const;
 
+    //! Check if the two vectors are alias of each other
+    bool isAnAliasOf( const ManagedPetscVector &rhs ) const;
 
     // These are adequately documented in a base class.
 public:
-    virtual void swapVectors( Vector &other ) override;
+    void swapVectors( Vector &other ) override;
     using Vector::cloneVector;
-    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr p ) const override;
+    Vector::shared_ptr cloneVector( const Variable::shared_ptr p ) const override;
+
+    Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
+    Vector::const_shared_ptr
+    constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
 
     virtual std::string type() const override
     {
-        return "Managed PETSc Vector" + ManagedVector::type();
+        return "Managed PETSc Vector" + d_VectorData->VectorDataName();
     }
 
     virtual bool petscHoldsView() const override;
 
     void receiveDataChanged() override;
-
-protected:
-    virtual ManagedVector *getNewRawPtr() const override;
 };
 
 

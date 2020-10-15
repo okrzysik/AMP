@@ -49,8 +49,7 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     }
 
     if ( d_pAlgebraicVariable.get() != nullptr ) {
-        std::shared_ptr<AMP::LinearAlgebra::Vector> algebraicComponent =
-            d_pScratchVector->subsetVectorForVariable( d_pAlgebraicVariable );
+        auto algebraicComponent = d_pScratchVector->subsetVectorForVariable( d_pAlgebraicVariable );
         algebraicComponent->zero();
     }
 

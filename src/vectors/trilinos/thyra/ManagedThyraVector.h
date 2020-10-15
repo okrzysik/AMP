@@ -2,7 +2,6 @@
 #define included_AMP_ManagedThyraVector
 
 // AMP includes
-#include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 
 
@@ -24,7 +23,7 @@ namespace LinearAlgebra {
  *
  * \see EpetraVector
  */
-class ManagedThyraVector : public ManagedVector, public ThyraVector
+class ManagedThyraVector : public Vector, public ThyraVector
 {
 public:
     /** \brief Create a view of a vector
@@ -40,11 +39,14 @@ public:
 
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const override;
+    void swapVectors( Vector &other ) override;
     void copyVector( Vector::const_shared_ptr vec ) override;
-    ManagedVector *getNewRawPtr() const override;
 
-protected:
+    Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
+    Vector::const_shared_ptr
+    constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
 };
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

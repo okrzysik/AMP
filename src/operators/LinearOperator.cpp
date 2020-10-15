@@ -28,15 +28,15 @@ void LinearOperator::setMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> in_m
 void LinearOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                             AMP::LinearAlgebra::Vector::shared_ptr f )
 {
-    AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Solution Vector" );
-    AMP_INSIST( ( ( f.get() ) != nullptr ), "NULL Residual Vector" );
-    AMP_INSIST( ( ( d_matrix.get() ) != nullptr ), "NULL Matrix" );
+    AMP_INSIST( u, "NULL Solution Vector" );
+    AMP_INSIST( f, "NULL Residual Vector" );
+    AMP_INSIST( d_matrix, "NULL Matrix" );
 
-    AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = subsetInputVector( u );
-    AMP::LinearAlgebra::Vector::shared_ptr fInternal       = subsetOutputVector( f );
+    auto uInternal = subsetInputVector( u );
+    auto fInternal = subsetOutputVector( f );
 
-    AMP_INSIST( ( uInternal.get() != nullptr ), "uInternal is NULL" );
-    AMP_INSIST( ( fInternal.get() != nullptr ), "fInternal is NULL" );
+    AMP_INSIST( uInternal, "uInternal is NULL" );
+    AMP_INSIST( fInternal, "fInternal is NULL" );
 
     d_matrix->mult( uInternal, fInternal );
 

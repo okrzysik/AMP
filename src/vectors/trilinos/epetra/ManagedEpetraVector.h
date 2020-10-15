@@ -1,7 +1,6 @@
 #ifndef included_AMP_ManagedEpetraVector
 #define included_AMP_ManagedEpetraVector
 
-#include "AMP/vectors/ManagedVector.h"
 #include "EpetraVector.h"
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
@@ -23,7 +22,7 @@ namespace LinearAlgebra {
  *
  * \see EpetraVector
  */
-class ManagedEpetraVector : public ManagedVector, public EpetraVector
+class ManagedEpetraVector : public Vector, public EpetraVector
 {
 public:
     /** \brief Create a view of a vector
@@ -34,19 +33,24 @@ public:
     virtual ~ManagedEpetraVector();
 
     // These methods are adequately documented in a base class
-    std::string type() const override { return "Managed Epetra Vector" + ManagedVector::type(); }
+    std::string type() const override
+    {
+        return "Managed Epetra Vector" + d_VectorData->VectorDataName();
+    }
 
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const override;
+    void swapVectors( Vector &other ) override;
 
     using Vector::copyVector;
     void copyVector( Vector::const_shared_ptr vec ) override;
 
+    Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
+    Vector::const_shared_ptr
+    constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
+
     Epetra_Vector &getEpetra_Vector() override;
     const Epetra_Vector &getEpetra_Vector() const override;
-
-protected:
-    ManagedVector *getNewRawPtr() const override;
 };
 
 

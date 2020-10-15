@@ -2,7 +2,6 @@
 
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
-#include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
 #ifdef USE_EXT_PETSC

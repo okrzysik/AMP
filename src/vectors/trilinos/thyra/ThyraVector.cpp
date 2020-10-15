@@ -1,7 +1,8 @@
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
-
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/data/ManagedVectorData.h"
+#include "AMP/vectors/operations/ManagedVectorOperations.h"
 #include "AMP/vectors/trilinos/thyra/ManagedThyraVector.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
@@ -36,12 +37,16 @@ Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
         return inVector;
     if ( inVector->hasView<ManagedThyraVector>() )
         return inVector->getView<ManagedThyraVector>();
+    // Check if we are dealing with a managed vector
+    auto managedData = std::dynamic_pointer_cast<ManagedVectorData>( inVector->getVectorData() );
+    if ( managedData ) {
+        auto retVal = view( managedData->getVectorEngine() );
+        retVal->setVariable( inVector->getVariable() );
+        return retVal;
+    }
     // Create a new view
     Vector::shared_ptr retVal;
-    if ( std::dynamic_pointer_cast<ManagedVector>( inVector ) ) {
-        retVal = std::make_shared<ManagedThyraVector>( inVector );
-        inVector->registerView( retVal );
-    } else if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
+    if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
         auto newVector = std::make_shared<ManagedThyraVector>( inVector );
         newVector->setVariable( inVector->getVariable() );
         newVector->getVectorData()->setUpdateStatusPtr(

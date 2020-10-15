@@ -1,7 +1,8 @@
 #include "AMP/vectors/data/ManagedVectorData.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/data/ManagedVectorData.h"
+#include "AMP/vectors/operations/ManagedVectorOperations.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -94,15 +95,14 @@ ManagedVectorData::~ManagedVectorData() {}
  * Subset                                                *
  ********************************************************/
 
-bool ManagedVectorData::isAnAliasOf( VectorData &rhs )
+bool ManagedVectorData::isAnAliasOf( const VectorData &rhs ) const
 {
-    bool retVal = false;
-    auto other  = getManaged( &rhs );
-    if ( other != nullptr ) {
+    auto other = dynamic_cast<const ManagedVectorData *>( &rhs );
+    if ( other ) {
         if ( other->d_Engine == d_Engine )
-            retVal = true;
+            return true;
     }
-    return retVal;
+    return false;
 }
 
 VectorData::UpdateState ManagedVectorData::getUpdateStatus() const

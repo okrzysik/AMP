@@ -69,8 +69,8 @@ void IDATimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> pa
     timeOperator_db->putScalar( "name", "TimeOperator" );
 
     // setup the parameter object for the IDATimeOperator
-    std::shared_ptr<AMP::TimeIntegrator::IDATimeOperatorParameters> idaTimeOp_Params(
-        new AMP::TimeIntegrator::IDATimeOperatorParameters( params->d_db ) );
+    auto idaTimeOp_Params =
+        std::make_shared<AMP::TimeIntegrator::IDATimeOperatorParameters>( params->d_db );
 
     idaTimeOp_Params->d_pRhsOperator       = parameters->d_operator;
     idaTimeOp_Params->d_pMassOperator      = parameters->d_pMassOperator;
@@ -79,8 +79,7 @@ void IDATimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> pa
     idaTimeOp_Params->d_Mesh               = ( parameters->d_operator )->getMesh();
 
     // create the time operator
-    std::shared_ptr<AMP::TimeIntegrator::IDATimeOperator> idaTimeOp(
-        new AMP::TimeIntegrator::IDATimeOperator( idaTimeOp_Params ) );
+    auto idaTimeOp     = std::make_shared<AMP::TimeIntegrator::IDATimeOperator>( idaTimeOp_Params );
     d_pIDATimeOperator = idaTimeOp;
 
     // if we want to create the LinearTimeOperator internally
@@ -137,9 +136,6 @@ void IDATimeIntegrator::initializeIDA()
     N_VConst( 1.0, id );
     ierr = IDASetId( d_ida_mem, id );
     AMP_ASSERT( ierr == IDA_SUCCESS );
-
-    // std::shared_ptr<AMP::LinearAlgebra::SundialsVector> pSun_nvec =
-    // std::dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(pSundials_sol);
 
     ierr = IDAInit( d_ida_mem,
                     IDAResTrial,
@@ -337,13 +333,6 @@ int IDATimeIntegrator::advanceSolution( const double dt, const bool /* first_ste
 
     retval = IDASpilsGetNumLinIters( d_ida_mem, &nliters );
     AMP::pout << "nliters = " << nliters << std::endl;
-    // cout << "current time = " << d_current_time << endl;
-
-    // double maxval;
-    // cout << "maxval = " << ptr_y->getNVector()->ops->nvmaxnorm(ptr_y->getNVector()) << endl;
-
-    // solution has been just updated; the source term should be updated accordingly.
-    // updateSourceTerm();
 
     return ( retval );
 }
@@ -380,10 +369,8 @@ int IDATimeIntegrator::IDAResTrial(
     std::shared_ptr<AMP::LinearAlgebra::Vector> f;
 
 
-    AMP::LinearAlgebra::Vector *pyy =
-        static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( yy->content );
-    AMP::LinearAlgebra::Vector *pyp =
-        static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( yp->content );
+    auto pyy = static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( yy->content );
+    auto pyp = static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( yp->content );
     std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy( pyy, []( auto ) {} );
     std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yp( pyp, []( auto ) {} );
     amp_yy->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
@@ -391,16 +378,15 @@ int IDATimeIntegrator::IDAResTrial(
 
     user_data->getIDATimeOperator()->registerIDATimeDerivative( amp_yp );
 
-    AMP::LinearAlgebra::Vector::shared_ptr d_residual_Sundials = user_data->getResidualVector();
+    auto d_residual_Sundials = user_data->getResidualVector();
 
     double currentTime = user_data->getCurrentTime();
     user_data->getIDATimeOperator()->registerCurrentTime( currentTime );
 
     user_data->getIDATimeOperator()->apply( amp_yy, d_residual_Sundials );
 
-    ( static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( rr->content ) )
+    static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( rr->content )
         ->copyVector( d_residual_Sundials );
-
 
     return ( IDA_SUCCESS );
 }
@@ -443,12 +429,10 @@ int IDATimeIntegrator::IDAPrecSetup( realtype tt,
 
     if ( OrderHasChanged || StepSizeHasChanged ) {
 
-        AMP::LinearAlgebra::Vector *pyy =
-            static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( yy->content );
+        auto pyy = static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( yy->content );
         std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy( pyy, []( auto ) {} );
-        std::shared_ptr<AMP::Operator::OperatorParameters> jacParams =
-            user_data->getIDATimeOperator()->getParameters( "Jacobian", amp_yy );
-        std::shared_ptr<AMP::Database> &db = jacParams->d_db;
+        auto jacParams = user_data->getIDATimeOperator()->getParameters( "Jacobian", amp_yy );
+        auto &db       = jacParams->d_db;
         db->putScalar( "ScalingFactor", cj );
         db->putScalar( "CurrentTime", tt );
         std::shared_ptr<AMP::Solver::SolverStrategy> pSolver = user_data->getPreconditioner();
@@ -487,10 +471,8 @@ int IDATimeIntegrator::IDAPrecSolve( realtype,
 {
     auto user_data = reinterpret_cast<IDATimeIntegrator *>( user_data_in );
 
-    AMP::LinearAlgebra::Vector *pr =
-        static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( rvec->content );
-    AMP::LinearAlgebra::Vector *pz =
-        static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( zvec->content );
+    auto pr = static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( rvec->content );
+    auto pz = static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( zvec->content );
     std::shared_ptr<AMP::LinearAlgebra::Vector> amp_rvec( pr, []( auto ) {} );
     std::shared_ptr<AMP::LinearAlgebra::Vector> amp_zvec( pz, []( auto ) {} );
 
@@ -509,17 +491,16 @@ std::shared_ptr<LinearTimeOperator> IDATimeIntegrator::getLinearTimeOperator() c
     return ( d_pLinearTimeOperator );
 }
 
-
 std::shared_ptr<AMP::LinearAlgebra::Vector> IDATimeIntegrator::getResidualVector() const
 {
     return ( d_residual );
 }
 
-
 std::shared_ptr<AMP::LinearAlgebra::Vector> IDATimeIntegrator::getSourceTerm() const
 {
     return ( d_pSourceTerm );
 }
+
 } // namespace TimeIntegrator
 } // namespace AMP
 

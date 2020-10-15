@@ -1,26 +1,38 @@
 #include "AMP/vectors/sundials/ManagedSundialsVector.h"
-#include "AMP/vectors/data/VectorData.h"
-
 #include "AMP/utils/UtilityMacros.h"
+#include "AMP/vectors/data/ManagedVectorData.h"
+#include "AMP/vectors/data/VectorData.h"
+#include "AMP/vectors/operations/ManagedVectorOperations.h"
 
 
 namespace AMP {
 namespace LinearAlgebra {
 
-/**
- * This macro extracts the content field of an N_Vector and casts it as a pointer to a
- * SundialsVector.
- */
 
-//#define AMPVEC_CAST(v) (static_cast<ManagedSundialsVector*>(v->content))
+static inline auto getVectorEngine( const std::shared_ptr<VectorData> &data )
+{
+    auto managed = std::dynamic_pointer_cast<ManagedVectorData>( data );
+    AMP_ASSERT( managed );
+    return managed->getVectorEngine();
+}
+static inline auto getVectorEngine( const std::shared_ptr<const VectorData> &data )
+{
+    auto managed = std::dynamic_pointer_cast<const ManagedVectorData>( data );
+    AMP_ASSERT( managed );
+    return managed->getVectorEngine();
+}
 
 
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-ManagedSundialsVector::ManagedSundialsVector( std::shared_ptr<Vector> vec )
-    : ManagedVector( vec ), SundialsVector()
+ManagedSundialsVector::ManagedSundialsVector( std::shared_ptr<Vector> vec ) : SundialsVector()
 {
+    AMP_ASSERT( !std::dynamic_pointer_cast<ManagedVectorData>( vec->getVectorData() ) );
+    d_VectorOps  = std::make_shared<ManagedVectorOperations>();
+    d_VectorData = std::make_shared<ManagedVectorData>( vec );
+    d_DOFManager = vec->getDOFManager();
+    setVariable( vec->getVariable() );
     // Create N_Vector
     d_n_vector = (N_Vector) malloc( sizeof *d_n_vector );
     AMP_ASSERT( d_n_vector != nullptr );
@@ -58,9 +70,46 @@ Vector::shared_ptr ManagedSundialsVector::cloneVector( const Variable::shared_pt
 }
 ManagedSundialsVector *ManagedSundialsVector::rawClone() const
 {
-    auto vec    = getVectorEngine();
+    auto vec    = getVectorEngine( getVectorData() );
     auto vec2   = vec->cloneVector( "ManagedSundialsVectorClone" );
     auto retVal = new ManagedSundialsVector( vec2 );
+    return retVal;
+}
+
+
+/********************************************************
+ * Subset                                                *
+ ********************************************************/
+Vector::shared_ptr ManagedSundialsVector::subsetVectorForVariable( Variable::const_shared_ptr name )
+{
+    Vector::shared_ptr retVal;
+    if ( !retVal )
+        retVal = Vector::subsetVectorForVariable( name );
+    if ( !retVal ) {
+        auto vec = getVectorEngine( getVectorData() );
+        if ( vec )
+            retVal = vec->subsetVectorForVariable( name );
+    }
+    return retVal;
+}
+Vector::const_shared_ptr
+ManagedSundialsVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
+{
+    Vector::const_shared_ptr retVal;
+    if ( !retVal )
+        retVal = Vector::constSubsetVectorForVariable( name );
+    if ( !retVal ) {
+        auto const vec = getVectorEngine( getVectorData() );
+        if ( vec )
+            retVal = vec->constSubsetVectorForVariable( name );
+    }
+    if ( !retVal ) {
+        auto const vec = getVectorEngine( getVectorData() );
+        printf( "Unable to subset for %s in %s:%s\n",
+                name->getName().data(),
+                getVariable()->getName().data(),
+                vec->getVariable()->getName().data() );
+    }
     return retVal;
 }
 
@@ -295,19 +344,15 @@ realtype ManagedSundialsVector::minquotient_AMP( N_Vector x, N_Vector w )
     return static_cast<double>( px->minQuotient( *pw ) );
 }
 
-ManagedVector *ManagedSundialsVector::getNewRawPtr() const
-{
-    return new ManagedSundialsVector(
-        const_cast<ManagedSundialsVector *>( this )->getVectorEngine() );
-}
-
 std::string ManagedSundialsVector::type() const
 {
-    std::string retVal = "Managed SUNDIALS Vector";
-    retVal += ManagedVector::type();
-    return retVal;
+    return "Managed SUNDIALS Vector" + d_VectorData->VectorDataName();
 }
 
+void ManagedSundialsVector::swapVectors( Vector &other )
+{
+    d_VectorData->swapData( *other.getVectorData() );
+}
 
 } // namespace LinearAlgebra
 } // namespace AMP

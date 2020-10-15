@@ -156,6 +156,10 @@ Vector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
         if ( *d_pVariable == *name )
             retVal = shared_from_this();
     }
+    if ( !retVal )
+        printf( "Unable to subset for %s in %s\n",
+                name->getName().data(),
+                getVariable()->getName().data() );
     return retVal;
 }
 
