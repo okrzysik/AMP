@@ -10,21 +10,14 @@ namespace LinearAlgebra {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-ManagedThyraVector::ManagedThyraVector( std::shared_ptr<ManagedVectorParameters> params )
-    : ManagedVector( params )
+ManagedThyraVector::ManagedThyraVector( Vector::shared_ptr vec ) : ManagedVector( vec )
 {
-    auto vec   = getVectorEngine();
     d_thyraVec = Teuchos::RCP<Thyra::VectorBase<double>>(
         new ThyraVectorWrapper( std::vector<Vector::shared_ptr>( 1, vec ) ) );
 }
-ManagedThyraVector::ManagedThyraVector( Vector::shared_ptr alias ) : ManagedVector( alias )
-{
-    d_thyraVec = Teuchos::RCP<Thyra::VectorBase<double>>(
-        new ThyraVectorWrapper( std::vector<Vector::shared_ptr>( 1, alias ) ) );
-}
 ManagedVector *ManagedThyraVector::getNewRawPtr() const
 {
-    return new ManagedThyraVector( d_pParameters );
+    return new ManagedThyraVector( const_cast<ManagedThyraVector *>( this )->getVectorEngine() );
 }
 
 
@@ -50,17 +43,10 @@ std::string ManagedThyraVector::ManagedThyraVector::type() const
  ****************************************************************/
 Vector::shared_ptr ManagedThyraVector::cloneVector( const Variable::shared_ptr var ) const
 {
-    std::shared_ptr<ManagedThyraVectorParameters> p( new ManagedThyraVectorParameters() );
-    auto vec = getVectorEngine();
-    if ( vec ) {
-        auto vec2   = vec->cloneVector( "ManagedThyraVectorClone" );
-        p->d_Engine = std::dynamic_pointer_cast<Vector>( vec2 );
-    } else {
-        AMP_ERROR( "ManagedThyraVector::rawClone() should not have reached here!" );
-    }
-    p->d_CommList             = getCommunicationList();
-    p->d_DOFManager           = getDOFManager();
-    Vector::shared_ptr retVal = Vector::shared_ptr( new ManagedThyraVector( p ) );
+    auto vec                  = getVectorEngine();
+    auto vec2                 = vec->cloneVector( "ManagedThyraVectorClone" );
+    auto engine               = std::dynamic_pointer_cast<Vector>( vec2 );
+    Vector::shared_ptr retVal = Vector::shared_ptr( new ManagedThyraVector( engine ) );
     retVal->setVariable( var );
     return retVal;
 }

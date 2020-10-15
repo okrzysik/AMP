@@ -7,12 +7,6 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-ManagedEpetraVector::ManagedEpetraVector( std::shared_ptr<ManagedVectorParameters> params )
-    : ManagedVector( params ), EpetraVector()
-{
-}
-
-
 ManagedEpetraVector::ManagedEpetraVector( shared_ptr alias )
     : ManagedVector( alias ), EpetraVector()
 {
@@ -22,23 +16,15 @@ ManagedEpetraVector::~ManagedEpetraVector() {}
 
 inline ManagedVector *ManagedEpetraVector::getNewRawPtr() const
 {
-    return new ManagedEpetraVector( d_pParameters );
+    return new ManagedEpetraVector( const_cast<ManagedEpetraVector *>( this )->getVectorEngine() );
 }
 
 
 inline Vector::shared_ptr ManagedEpetraVector::cloneVector( const Variable::shared_ptr var ) const
 {
-    auto p   = std::make_shared<ManagedVectorParameters>();
-    auto vec = getVectorEngine();
-    if ( vec ) {
-        auto vec2   = vec->cloneVector( "ManagedEeptraVectorClone" );
-        p->d_Engine = std::dynamic_pointer_cast<Vector>( vec2 );
-    } else {
-        AMP_ERROR( "ManagedEpetraVector::rawClone() should not have reached here!" );
-    }
-    p->d_CommList   = getCommunicationList();
-    p->d_DOFManager = getDOFManager();
-    auto retVal     = std::make_shared<ManagedEpetraVector>( p );
+    auto vec    = getVectorEngine();
+    auto vec2   = vec->cloneVector( "ManagedEeptraVectorClone" );
+    auto retVal = std::make_shared<ManagedEpetraVector>( vec2 );
     retVal->setVariable( var );
     return retVal;
 }

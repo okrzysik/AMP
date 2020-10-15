@@ -10,12 +10,6 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-/** \typedef ManagedPetscVectorParameters
- * \brief   Requirements for constructing a ManagedPetscVector
- */
-typedef ManagedVectorParameters ManagedPetscVectorParameters;
-
-
 /** \class
  * ManagedPetscVector/projects/AMP/build/debug/AMP/include/AMP/vectors/petsc/ManagedPetscVector.h
  * \brief A class that provides a PETSc vector interfaced to a ManagedVector.
@@ -44,11 +38,6 @@ protected:
 
 
 public:
-    /** \brief Construct a new ManagedPetscVector given a set of parameters
-     * \param[in] params  The parameters describing the new vector
-     */
-    explicit ManagedPetscVector( std::shared_ptr<ManagedVectorParameters> params );
-
     /** \brief Construct a view of another vector
      * \param[in] alias The vector to view
      */

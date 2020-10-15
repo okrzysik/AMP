@@ -79,7 +79,6 @@ std::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec,
     multivec  = create( vec->getVariable()->getName(), comm, { vec } );
     auto data = multivec->Vector::getVectorData();
     AMP_ASSERT( data );
-    //    auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
     auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
     vec->getVectorData()->registerListener( listener );
     return multivec;
@@ -147,13 +146,10 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
 }
 void MultiVector::resetVectorOperations()
 {
-    //  std::cout << "Number of vectors " << d_vVectors.size() <<std::endl;
     std::vector<std::shared_ptr<VectorOperations>> operations( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ )
         operations[i] = d_vVectors[i]->getVectorOperations();
-
     AMP_ASSERT( d_VectorOps );
-    //    std::cout << typeid(d_VectorOps).name() <<std::endl;
     auto mvOps = std::dynamic_pointer_cast<MultiVectorOperations>( d_VectorOps );
     AMP_ASSERT( mvOps );
     mvOps->resetVectorOperations( operations );
@@ -202,8 +198,6 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
             d_vVectors.push_back( vec );
             auto data = Vector::getVectorData();
             AMP_ASSERT( data );
-            //            auto listener = std::dynamic_pointer_cast<DataChangeListener>(
-            //            shared_from_this() );
             auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
             vec->getVectorData()->registerListener( listener );
         }
@@ -219,8 +213,6 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
             d_vVectors.push_back( vec );
             auto data = Vector::getVectorData();
             AMP_ASSERT( data );
-            //            auto listener = std::dynamic_pointer_cast<DataChangeListener>(
-            //            shared_from_this() );
             auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
             vec->getVectorData()->registerListener( listener );
         } else {

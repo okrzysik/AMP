@@ -25,19 +25,7 @@ Vector::shared_ptr SundialsVector::view( Vector::shared_ptr inVector )
         retVal = std::make_shared<ManagedSundialsVector>( inVector );
         inVector->registerView( retVal );
     } else if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
-        auto new_params      = std::make_shared<ManagedSundialsVectorParameters>();
-        new_params->d_Engine = std::dynamic_pointer_cast<Vector>( inVector );
-        if ( inVector->getCommunicationList() )
-            new_params->d_CommList = inVector->getCommunicationList();
-        else
-            new_params->d_CommList =
-                CommunicationList::createEmpty( inVector->getLocalSize(), inVector->getComm() );
-        if ( inVector->getDOFManager() )
-            new_params->d_DOFManager = inVector->getDOFManager();
-        else
-            new_params->d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>(
-                inVector->getLocalSize(), inVector->getComm() );
-        auto t = std::make_shared<ManagedSundialsVector>( new_params );
+        auto t = std::make_shared<ManagedSundialsVector>( inVector );
         t->setVariable( inVector->getVariable() );
         t->getVectorData()->setUpdateStatusPtr( inVector->getVectorData()->getUpdateStatusPtr() );
         retVal = t;

@@ -26,14 +26,7 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
         retVal = std::make_shared<ManagedPetscVector>( inVector );
         inVector->registerView( retVal );
     } else if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
-        auto newParams      = std::make_shared<ManagedPetscVectorParameters>();
-        newParams->d_Engine = std::dynamic_pointer_cast<Vector>( inVector );
-        AMP_INSIST( inVector->getCommunicationList(),
-                    "All vectors must have a communication list" );
-        newParams->d_CommList = inVector->getCommunicationList();
-        AMP_INSIST( inVector->getDOFManager(), "All vectors must have a DOFManager list" );
-        newParams->d_DOFManager = inVector->getDOFManager();
-        auto newVector          = std::make_shared<ManagedPetscVector>( newParams );
+        auto newVector = std::make_shared<ManagedPetscVector>( inVector );
         newVector->setVariable( inVector->getVariable() );
         newVector->getVectorData()->setUpdateStatusPtr(
             inVector->getVectorData()->getUpdateStatusPtr() );
@@ -41,6 +34,7 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
         retVal = newVector;
     } else {
         // Create a multivector to wrap the given vector and create a view
+        // Note: this is required so that we call the native vector's operations
         retVal = view( MultiVector::view( inVector, inVector->getComm() ) );
         inVector->registerView( retVal );
     }

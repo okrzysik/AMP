@@ -68,13 +68,9 @@ Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
     int localSize  = memp->getLocalNumberOfColumns();
     int globalSize = memp->getGlobalNumberOfColumns();
     int localStart = memp->getRightDOFManager()->beginDOF();
-    auto params    = std::make_shared<ManagedVectorParameters>();
     auto buffer    = std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    params->d_Engine =
-        createEpetraVector( memp->d_CommListRight, memp->getRightDOFManager(), buffer );
-    params->d_CommList   = memp->d_CommListRight;
-    params->d_DOFManager = memp->getRightDOFManager();
-    auto rtn             = std::make_shared<ManagedEpetraVector>( params );
+    auto engine = createEpetraVector( memp->d_CommListRight, memp->getRightDOFManager(), buffer );
+    auto rtn    = std::make_shared<ManagedEpetraVector>( engine );
     rtn->setVariable( memp->d_VariableRight );
     return rtn;
 }
@@ -85,13 +81,9 @@ Vector::shared_ptr ManagedEpetraMatrix::getLeftVector() const
     int localSize  = memp->getLocalNumberOfRows();
     int globalSize = memp->getGlobalNumberOfRows();
     int localStart = memp->getRightDOFManager()->beginDOF();
-    auto params    = std::make_shared<ManagedVectorParameters>();
     auto buffer    = std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    params->d_Engine =
-        createEpetraVector( memp->d_CommListRight, memp->getRightDOFManager(), buffer );
-    params->d_CommList   = memp->d_CommListLeft;
-    params->d_DOFManager = memp->getLeftDOFManager();
-    auto rtn             = std::make_shared<ManagedEpetraVector>( params );
+    auto engine    = createEpetraVector( memp->d_CommListLeft, memp->getLeftDOFManager(), buffer );
+    auto rtn       = std::make_shared<ManagedEpetraVector>( engine );
     rtn->setVariable( memp->d_VariableLeft );
     return rtn;
 }

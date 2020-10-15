@@ -22,17 +22,11 @@ namespace LinearAlgebra {
  *
  * \see SundialsVector
  */
-typedef ManagedVectorParameters ManagedSundialsVectorParameters;
 
 class ManagedSundialsVector : public ManagedVector, public SundialsVector
 {
 
 public:
-    /** \brief Construct a ManagedSundialsVector from a set of parameters
-     * \param[in] params Description of the new vector
-     */
-    explicit ManagedSundialsVector( std::shared_ptr<ManagedVectorParameters> params );
-
     /** \brief Create a view to an AMP vector
      * \param[in] alias  Vector to view
      */

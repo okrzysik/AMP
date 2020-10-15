@@ -165,13 +165,10 @@ public:
         const int nGlobal = nLocal * globalComm.getSize();
         auto commList   = AMP::LinearAlgebra::CommunicationList::createEmpty( nLocal, globalComm );
         auto dofManager = std::make_shared<AMP::Discretization::DOFManager>( nLocal, globalComm );
-        auto managedParams = std::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
         auto buffer =
             std::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
-        managedParams->d_Engine     = createEpetraVector( commList, dofManager, buffer );
-        managedParams->d_CommList   = commList;
-        managedParams->d_DOFManager = dofManager;
-        auto retval                 = std::make_shared<TYPE>( managedParams );
+        auto engine = createEpetraVector( commList, dofManager, buffer );
+        auto retval = std::make_shared<TYPE>( engine );
         retval->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
         return retval;
     }
@@ -239,10 +236,7 @@ public:
         auto newVec = createVector( v, true );
         VecSetFromOptions( v );
         newVec->getVectorData()->assemble();
-        auto p1        = std::make_shared<AMP::LinearAlgebra::ManagedVectorParameters>();
-        p1->d_Engine   = newVec;
-        p1->d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( 210, globalComm );
-        auto retval    = std::make_shared<T>( p1 );
+        auto retval = std::make_shared<T>( newVec );
         retval->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
         return retval;
     }

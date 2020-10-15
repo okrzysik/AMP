@@ -42,15 +42,7 @@ Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
         retVal = std::make_shared<ManagedThyraVector>( inVector );
         inVector->registerView( retVal );
     } else if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
-        auto newParams      = std::make_shared<ManagedThyraVectorParameters>();
-        newParams->d_Engine = std::dynamic_pointer_cast<Vector>( inVector );
-        AMP_INSIST( inVector->getCommunicationList().get() != nullptr,
-                    "All vectors must have a communication list" );
-        newParams->d_CommList = inVector->getCommunicationList();
-        AMP_INSIST( inVector->getDOFManager().get() != nullptr,
-                    "All vectors must have a DOFManager list" );
-        newParams->d_DOFManager = inVector->getDOFManager();
-        auto newVector          = std::make_shared<ManagedThyraVector>( newParams );
+        auto newVector = std::make_shared<ManagedThyraVector>( inVector );
         newVector->setVariable( inVector->getVariable() );
         newVector->getVectorData()->setUpdateStatusPtr(
             inVector->getVectorData()->getUpdateStatusPtr() );

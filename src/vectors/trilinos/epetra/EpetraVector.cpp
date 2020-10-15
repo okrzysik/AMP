@@ -22,13 +22,7 @@ EpetraVector::~EpetraVector() = default;
 static std::shared_ptr<ManagedEpetraVector>
 createManagedEpetraVector( Vector::shared_ptr inVector, std::shared_ptr<Vector> engine )
 {
-    auto newParams      = std::make_shared<ManagedVectorParameters>();
-    newParams->d_Engine = engine;
-    AMP_INSIST( inVector->getCommunicationList(), "All vectors must have a communication list" );
-    newParams->d_CommList = inVector->getCommunicationList();
-    AMP_INSIST( inVector->getDOFManager(), "All vectors must have a DOFManager list" );
-    newParams->d_DOFManager = inVector->getDOFManager();
-    auto retVal             = std::make_shared<ManagedEpetraVector>( newParams );
+    auto retVal = std::make_shared<ManagedEpetraVector>( engine );
     retVal->setVariable( inVector->getVariable() );
     retVal->getVectorData()->setUpdateStatusPtr( inVector->getVectorData()->getUpdateStatusPtr() );
     inVector->registerView( retVal );

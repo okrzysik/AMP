@@ -18,18 +18,8 @@ namespace LinearAlgebra {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-ManagedSundialsVector::ManagedSundialsVector( std::shared_ptr<ManagedVectorParameters> params )
-    : ManagedVector( params ), SundialsVector()
-{
-    // Create N_Vector
-    d_n_vector = (N_Vector) malloc( sizeof *d_n_vector );
-    AMP_ASSERT( d_n_vector != nullptr );
-    // Attach the content and the ops fields
-    d_n_vector->content = this;
-    d_n_vector->ops     = ManagedSundialsVector::createNVectorOps();
-}
-ManagedSundialsVector::ManagedSundialsVector( shared_ptr alias )
-    : ManagedVector( alias ), SundialsVector()
+ManagedSundialsVector::ManagedSundialsVector( std::shared_ptr<Vector> vec )
+    : ManagedVector( vec ), SundialsVector()
 {
     // Create N_Vector
     d_n_vector = (N_Vector) malloc( sizeof *d_n_vector );
@@ -68,17 +58,9 @@ Vector::shared_ptr ManagedSundialsVector::cloneVector( const Variable::shared_pt
 }
 ManagedSundialsVector *ManagedSundialsVector::rawClone() const
 {
-    auto p   = std::make_shared<ManagedSundialsVectorParameters>();
-    auto vec = getVectorEngine();
-    if ( vec ) {
-        auto vec2   = vec->cloneVector( "ManagedSundialsVectorClone" );
-        p->d_Engine = std::dynamic_pointer_cast<Vector>( vec2 );
-    } else {
-        AMP_ERROR( "ManagedSundialsVector::rawClone() should not have reached here!" );
-    }
-    p->d_CommList   = getCommunicationList();
-    p->d_DOFManager = getDOFManager();
-    auto retVal     = new ManagedSundialsVector( p );
+    auto vec    = getVectorEngine();
+    auto vec2   = vec->cloneVector( "ManagedSundialsVectorClone" );
+    auto retVal = new ManagedSundialsVector( vec2 );
     return retVal;
 }
 
@@ -315,7 +297,8 @@ realtype ManagedSundialsVector::minquotient_AMP( N_Vector x, N_Vector w )
 
 ManagedVector *ManagedSundialsVector::getNewRawPtr() const
 {
-    return new ManagedSundialsVector( d_pParameters );
+    return new ManagedSundialsVector(
+        const_cast<ManagedSundialsVector *>( this )->getVectorEngine() );
 }
 
 std::string ManagedSundialsVector::type() const

@@ -57,22 +57,12 @@ void ManagedPetscVector::initPetsc()
 }
 
 
-ManagedPetscVector::ManagedPetscVector( std::shared_ptr<ManagedVectorParameters> params )
-    : ManagedVector( params ), PetscVector()
-{
-    initPetsc();
-    auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
-    d_VectorData->registerListener( listener );
-}
-
-
 ManagedPetscVector::ManagedPetscVector( Vector::shared_ptr alias )
     : ManagedVector( alias ), PetscVector()
 {
     initPetsc();
     auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
-    //    alias->registerListener( listener );
-    alias->getVectorData()->registerListener( listener );
+    d_VectorData->registerListener( listener );
 }
 
 
@@ -114,24 +104,16 @@ void ManagedPetscVector::swapVectors( Vector &other )
 
 ManagedVector *ManagedPetscVector::getNewRawPtr() const
 {
-    return new ManagedPetscVector( d_pParameters );
+    return new ManagedPetscVector( const_cast<ManagedPetscVector *>( this )->getVectorEngine() );
 }
 
 bool ManagedPetscVector::constructedWithPetscDuplicate() { return d_bMadeWithPetscDuplicate; }
 
 ManagedPetscVector *ManagedPetscVector::rawClone() const
 {
-    auto p   = std::make_shared<ManagedPetscVectorParameters>();
-    auto vec = getVectorEngine();
-    if ( vec ) {
-        auto vec2   = vec->cloneVector( "ManagedPetscVectorClone" );
-        p->d_Engine = std::dynamic_pointer_cast<Vector>( vec2 );
-    } else {
-        AMP_ERROR( "ManagedPetscVector::rawClone() should not have reached here!" );
-    }
-    p->d_CommList   = getCommunicationList();
-    p->d_DOFManager = getDOFManager();
-    auto retVal     = new ManagedPetscVector( p );
+    auto vec    = getVectorEngine();
+    auto vec2   = vec->cloneVector( "ManagedPetscVectorClone" );
+    auto retVal = new ManagedPetscVector( vec2 );
     return retVal;
 }
 

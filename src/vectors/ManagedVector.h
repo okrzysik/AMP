@@ -23,15 +23,10 @@ class ManagedVector : public Vector
 {
 
 public:
-    /** \brief Construct a ManagedVector from a set of parameters
-     * \param[in] params  The description of the ManagedVector
-     */
-    explicit ManagedVector( std::shared_ptr<ManagedVectorParameters> params );
-
     /** \brief Construct a view of an AMP vector
      * \param[in] alias  Vector to view
      */
-    explicit ManagedVector( const Vector::shared_ptr alias );
+    explicit ManagedVector( const Vector::shared_ptr vec );
 
     //! Destructor
     virtual ~ManagedVector();
@@ -56,16 +51,12 @@ public:
     virtual bool isAnAliasOf( Vector::shared_ptr rhs );
 
 protected:
-    //! The parameters used to create this vector
-    std::shared_ptr<ManagedVectorParameters> d_pParameters;
-
     //! Function that returns a pointer to a managed vector
     virtual ManagedVector *getNewRawPtr() const = 0;
 
 public: // Derived from Vector
     std::string type() const override;
     std::shared_ptr<Vector> cloneVector( const Variable::shared_ptr name ) const override;
-    virtual std::shared_ptr<ManagedVectorParameters> getParameters() { return d_pParameters; }
     Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;

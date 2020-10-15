@@ -32,20 +32,18 @@ static inline std::shared_ptr<ManagedVector> getManaged( std::shared_ptr<Vector>
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-ManagedVector::ManagedVector( std::shared_ptr<ManagedVectorParameters> params )
-    : d_pParameters( params )
+ManagedVector::ManagedVector( std::shared_ptr<Vector> vec )
 {
-    d_DOFManager = d_pParameters->d_DOFManager;
-    d_VectorOps  = std::make_shared<ManagedVectorOperations>();
-    d_VectorData = std::make_shared<ManagedVectorData>( params );
-}
-ManagedVector::ManagedVector( shared_ptr alias )
-{
-    auto vec      = getManaged( alias );
-    d_DOFManager  = vec->d_DOFManager;
-    d_VectorData  = vec->d_VectorData;
-    d_VectorOps   = vec->d_VectorOps;
-    d_pParameters = vec->d_pParameters;
+    auto vec2 = std::dynamic_pointer_cast<ManagedVector>( vec );
+    if ( vec2 ) {
+        d_VectorData = vec2->d_VectorData;
+        d_VectorOps  = vec2->d_VectorOps;
+        d_DOFManager = vec2->getDOFManager();
+    } else {
+        d_VectorOps  = std::make_shared<ManagedVectorOperations>();
+        d_VectorData = std::make_shared<ManagedVectorData>( vec );
+        d_DOFManager = vec->getDOFManager();
+    }
     setVariable( vec->getVariable() );
 }
 ManagedVector::~ManagedVector() {}
@@ -98,8 +96,6 @@ bool ManagedVector::isAnAliasOf( Vector::shared_ptr rhs ) { return isAnAliasOf( 
 void ManagedVector::swapVectors( Vector &other )
 {
     d_VectorData->swapData( *other.getVectorData() );
-    auto in = getManaged( &other );
-    std::swap( d_pParameters, in->d_pParameters );
 }
 std::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
 {
