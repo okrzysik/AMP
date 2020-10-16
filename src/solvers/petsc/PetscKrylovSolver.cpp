@@ -3,6 +3,7 @@
 #include "AMP/matrices/petsc/PetscMatrix.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
 #include "ProfilerApp.h"
 
 #include "petsc.h"
@@ -445,10 +446,8 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
 #endif
     AMP_ASSERT( ctx != nullptr );
 
-    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_r(
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( r->data ), []( auto ) {} );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_z(
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( z->data ), []( auto ) {} );
+    auto sp_r = PETSC::getAMP( r );
+    auto sp_z = PETSC::getAMP( z );
 
     // Make sure the vectors are in a consistent state
     AMP_ASSERT(

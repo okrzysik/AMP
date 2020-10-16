@@ -137,7 +137,7 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
     Vec petsc_vec = getVec( vectora );
     Vec another_vec;
     checkPetscError( utils, VecDuplicate( petsc_vec, &another_vec ) );
-    auto *dup = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( another_vec->data );
+    auto dup = PETSC::getAMP( another_vec );
     utils->passes( "managed duplicated" );
     if ( ( dup->getGlobalSize() == vectora->getGlobalSize() ) &&
          ( dup->getLocalSize() == vectora->getLocalSize() ) )

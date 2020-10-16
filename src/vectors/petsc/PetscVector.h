@@ -26,8 +26,6 @@ namespace LinearAlgebra {
  */
 class PetscVector
 {
-private:
-    std::shared_ptr<PetscRandom> d_PetscRandom;
 
 protected:
     /**
@@ -38,21 +36,6 @@ protected:
      *  is what is used when calling the PETSc Vec interface
      */
     Vec d_petscVec;
-
-    /**
-     *  \brief Retrieve a valide PETSc random context
-     *  \param  comm  The communicator to create the context around.
-     *
-     *  If PetscRandomCreate has not been called, this will
-     *  call it.
-     */
-    PetscRandom &getPetscRandom( const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
-
-    /**
-     *  \brief  Swap the underlying PETSc Vec with another
-     *  AMP::LinearAlgebra::Vector.
-     */
-    void swapPetscVec( PetscVector &rhs ) { std::swap( d_petscVec, rhs.d_petscVec ); }
 
     /**
      *  \brief  Construct a PetscVector

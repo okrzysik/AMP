@@ -49,14 +49,6 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
 PetscVector::PetscVector() : d_petscVec( nullptr ) {}
 
 
-PetscRandom &PetscVector::getPetscRandom( const AMP_MPI &comm )
-{
-    if ( !d_PetscRandom )
-        d_PetscRandom = PETSC::genPetscRandom( comm );
-    return *d_PetscRandom;
-}
-
-
 Vec &PetscVector::getVec() { return d_petscVec; }
 
 

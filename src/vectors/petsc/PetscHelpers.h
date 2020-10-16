@@ -14,6 +14,11 @@ typedef struct _p_Mat *Mat;
 typedef struct _p_PetscRandom *PetscRandom;
 
 
+namespace AMP::LinearAlgebra {
+class ManagedPetscVector;
+class ManagedPetscMatrix;
+} // namespace AMP::LinearAlgebra
+
 namespace PETSC {
 
 
@@ -35,6 +40,27 @@ std::shared_ptr<PetscRandom> genPetscRandom( const AMP::AMP_MPI &comm );
  * Reset petsc vector operations                          *
  ********************************************************/
 void reset_vec_ops( Vec t );
+
+
+/********************************************************
+ * Get the AMP vector from the PETSc Vec or Mat          *
+ ********************************************************/
+std::shared_ptr<AMP::LinearAlgebra::ManagedPetscVector> getAMP( Vec t );
+std::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrix> getAMP( Mat t );
+
+
+/********************************************************
+ * Wrapper class for an AMP vector for PETSc Vec         *
+ ********************************************************/
+/*class PetscVectorWrapper {
+public:
+    PetscVectorWrapper() = delete;
+    PetscVectorWrapper( std::shared_ptr<AMP::LinearAlgebra::Vector> vec );
+    ~PetscVectorWrapper();
+private:
+    Vec d_petscVec;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_vec;
+};*/
 
 
 } // namespace PETSC

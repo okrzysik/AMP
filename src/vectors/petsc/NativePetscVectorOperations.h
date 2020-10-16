@@ -81,7 +81,6 @@ public:
                    const VectorData &y,
                    const Scalar &gamma,
                    VectorData &z );
-    //**********************************************************************
 
 private:
 public: // Pull VectorOperations into the current scope
@@ -105,6 +104,9 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::subtract;
     using VectorOperationsDefault::wrmsNorm;
     using VectorOperationsDefault::wrmsNormMask;
+
+private:
+    std::shared_ptr<PetscRandom> d_PetscRandom; // PETSc random context
 };
 
 
