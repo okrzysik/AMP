@@ -3,7 +3,7 @@
 #include "petscvec.h"
 
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/petsc/PetscVector.h"
 
 #include "AMP/matrices/petsc/ManagedPetscMatrix.h"

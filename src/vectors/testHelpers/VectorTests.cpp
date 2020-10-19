@@ -10,7 +10,6 @@
 #include "AMP/vectors/sundials/SundialsVector.h"
 #endif
 #ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "AMP/vectors/petsc/PetscVector.h"
 #endif
 

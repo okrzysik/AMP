@@ -4,8 +4,8 @@
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
+#include "AMP/vectors/petsc/PetscVector.h"
 
 #include "ProfilerApp.h"
 

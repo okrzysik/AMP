@@ -10,7 +10,7 @@
 
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
 #include "AMP/matrices/petsc/PetscMatrix.h"
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #endif
 
@@ -105,10 +105,7 @@ public:
         return vector;
     }
 
-    AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
-    {
-        return getVector();
-    }
+    AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override { return getVector(); }
 
     AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
     {
@@ -151,10 +148,7 @@ public:
         return vector;
     }
 
-    AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
-    {
-        return getVector();
-    }
+    AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override { return getVector(); }
 
     AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
     {

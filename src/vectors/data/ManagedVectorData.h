@@ -44,7 +44,7 @@ public:
     std::shared_ptr<Vector> getVectorEngine();
     std::shared_ptr<const Vector> getVectorEngine() const;
 
-    virtual bool isAnAliasOf( const VectorData &rhs ) const;
+    bool isAnAliasOf( const VectorData &rhs ) const override;
 
     void receiveDataChanged() override { fireDataChange(); }
 

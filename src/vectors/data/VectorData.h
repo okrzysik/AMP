@@ -280,6 +280,15 @@ public: // Advanced functions
      */
     void aliasGhostBuffer( std::shared_ptr<VectorData> in );
 
+    /** \brief Check if the two VectorData objects are alias of each other
+     * \details  This function checks if two VectorData objects are alias of each other.
+     *     Two VectorData objects are alias if their data blocks are the same size and
+     *     point to the same memory blocks.
+     * \param[in] rhs  VectorData to compare
+     * \see makeConsistent
+     */
+    virtual bool isAnAliasOf( const VectorData &rhs ) const;
+
 public:
     /** \brief Write owned data to an std::ostream
      * \param[in] out  The output stream to write to.
@@ -430,7 +439,6 @@ public: // Non-virtual functions
      * \see makeConsistent
      */
     void copyGhostValues( const VectorData &rhs );
-
 
 public:
     /** \brief Notify listeners that data has changed in this vector.

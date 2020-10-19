@@ -3,7 +3,6 @@
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/testHelpers/VectorFactory.h"

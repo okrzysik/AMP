@@ -175,6 +175,22 @@ AMP_MPI VectorData::getComm() const
 
 
 /****************************************************************
+ * Check if two data blocks are alias to each other              *
+ ****************************************************************/
+bool VectorData::isAnAliasOf( const VectorData &rhs ) const
+{
+    if ( numberOfDataBlocks() != rhs.numberOfDataBlocks() )
+        return false;
+    for ( size_t i = 0; i < numberOfDataBlocks(); i++ ) {
+        if ( sizeOfDataBlock( i ) != rhs.sizeOfDataBlock( i ) ||
+             getRawDataBlockAsVoid( i ) != rhs.getRawDataBlockAsVoid( i ) )
+            return false;
+    }
+    return true;
+}
+
+
+/****************************************************************
  * dump data to ostream                                          *
  ****************************************************************/
 void VectorData::dumpOwnedData( std::ostream &out, size_t GIDoffset, size_t LIDoffset ) const

@@ -1,8 +1,6 @@
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
 #include "AMP/vectors/petsc/NativePetscVectorOperations.h"
 
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
-
 #include "petsc.h"
 #include "petsc/private/vecimpl.h"
 #include "petscvec.h"

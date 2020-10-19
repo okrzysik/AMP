@@ -1,5 +1,6 @@
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/matrices/petsc/ManagedPetscMatrix.h"
+#include "AMP/vectors/data/ManagedVectorData.h"
 #include "AMP/vectors/petsc/ManagedPetscVector.h"
 
 #include "petsc.h"
@@ -188,12 +189,13 @@ PetscErrorCode _AMP_shift( Vec )
 PetscErrorCode
 _AMP_axpbypcz( Vec c, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec a, Vec b )
 {
-    auto x = getAMP( a );
-    auto y = getAMP( b );
-    auto z = getAMP( c );
-    if ( z->isAnAliasOf( *x ) ) {
+    auto x      = getAMP( a );
+    auto y      = getAMP( b );
+    auto z      = getAMP( c );
+    auto z_data = z->getVectorData();
+    if ( z_data->isAnAliasOf( *x->getVectorData() ) ) {
         z->linearSum( alpha + gamma, *x, beta, *y );
-    } else if ( z->isAnAliasOf( *y ) ) {
+    } else if ( z_data->isAnAliasOf( *y->getVectorData() ) ) {
         z->linearSum( alpha, *x, beta + gamma, *y );
     } else {
         z->linearSum( alpha, *x, gamma, *z );
@@ -222,11 +224,12 @@ PetscErrorCode _AMP_min( Vec a, PetscInt *p, PetscReal *ans )
 }
 PetscErrorCode _AMP_aypx( Vec b, PetscScalar alpha, Vec a )
 {
+    // y = x + alpha * y
     auto x = getAMP( a );
     auto y = getAMP( b );
     y->linearSum( alpha, *y, 1., *x );
     return 0;
-} /* y = x + alpha * y */
+}
 PetscErrorCode _AMP_dot_local( Vec a, Vec b, PetscScalar *ans )
 {
     auto x = getAMP( a );
@@ -366,10 +369,11 @@ PetscErrorCode _AMP_sqrt( Vec a )
 }
 PetscErrorCode _AMP_setrandom( Vec a, PetscRandom )
 {
+    // set y[j] = random numbers
     auto x = getAMP( a );
     x->setRandomValues();
     return 0;
-} /* set y[j] = random numbers */
+}
 PetscErrorCode _AMP_conjugate( Vec )
 {
     return 0; // Not dealing with complex right now
@@ -545,8 +549,8 @@ bool _Verify_Memory( AMP::LinearAlgebra::Vector *p1, AMP::LinearAlgebra::Vector 
 PetscErrorCode _AMP_duplicate( Vec in, Vec *out )
 {
 
-    auto p                                      = getAMP( in );
-    AMP::LinearAlgebra::ManagedPetscVector *dup = p->petscDuplicate();
+    auto p   = std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscVector>( getAMP( in ) );
+    auto dup = p->petscDuplicate();
     AMP_ASSERT( _Verify_Memory( p.get(), dup ) );
     *out = dup->getVec();
     return 0;
@@ -597,7 +601,7 @@ PetscErrorCode _AMP_abs( Vec v )
 PetscErrorCode _AMP_resetarray( Vec ) { return 0; }
 PetscErrorCode _AMP_destroy( Vec v )
 {
-    auto p = getAMP( v );
+    auto p = std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscVector>( getAMP( v ) );
     if ( p->constructedWithPetscDuplicate() ) {
         delete p.get();
     }
@@ -686,13 +690,13 @@ void reset_vec_ops( Vec t )
 /********************************************************
  * Get the AMP vector from the PETSc Vec or Mat          *
  ********************************************************/
-std::shared_ptr<AMP::LinearAlgebra::ManagedPetscVector> getAMP( Vec v )
+std::shared_ptr<AMP::LinearAlgebra::Vector> getAMP( Vec v )
 {
     auto p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( v->data );
     std::shared_ptr<AMP::LinearAlgebra::ManagedPetscVector> p2( p, []( auto ) {} );
     return p2;
 }
-std::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrix> getAMP( Mat m )
+std::shared_ptr<AMP::LinearAlgebra::Matrix> getAMP( Mat m )
 {
     void *ctx;
     MatShellGetContext( m, &ctx );

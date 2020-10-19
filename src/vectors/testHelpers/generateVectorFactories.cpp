@@ -5,6 +5,7 @@
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 
 #ifdef USE_EXT_PETSC
+#include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #endif
 

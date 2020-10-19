@@ -2,8 +2,8 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/petsc/PetscMatrix.h"
 #include "AMP/operators/LinearOperator.h"
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
+#include "AMP/vectors/petsc/PetscVector.h"
 #include "ProfilerApp.h"
 
 #include "petsc.h"
