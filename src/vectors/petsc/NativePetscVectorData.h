@@ -3,7 +3,9 @@
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/data/VectorData.h"
-#include "AMP/vectors/petsc/PetscVector.h"
+
+#include "petscvec.h"
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -25,7 +27,7 @@ namespace LinearAlgebra {
  * \see PetscVector
  * \see ManagedPetscVector
  */
-class NativePetscVectorData : public VectorData, public PetscVector
+class NativePetscVectorData : public VectorData
 {
 public:
     /** \brief Construct a wrapper for a PETSc Vec from a set of parameters
@@ -71,9 +73,13 @@ public:
      */
     std::shared_ptr<VectorData> cloneData() const override;
 
-    // We can always delete a NativePetscVector
-    bool petscHoldsView() const override { return false; }
     void assemble() override;
+
+    //! Get the PETSc vector
+    Vec &getVec() { return d_petscVec; }
+
+    //! Get the PETSc vector
+    const Vec &getVec() const { return d_petscVec; }
 
 protected:
     void resetArray();
@@ -82,6 +88,7 @@ protected:
 private:
     friend class NativePetscVectorOperations;
     bool d_bDeleteMe;
+    Vec d_petscVec;
     mutable double *d_pArray; // mutable so that we can cache the value
 };
 

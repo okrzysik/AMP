@@ -1,5 +1,6 @@
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
 #include "AMP/vectors/petsc/NativePetscVectorOperations.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
 
 #include "petsc.h"
 #include "petsc/private/vecimpl.h"
@@ -8,8 +9,7 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI comm )
-    : VectorData(), PetscVector()
+NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI comm ) : VectorData()
 {
     // Set the vector
     d_petscVec  = v;

@@ -25,6 +25,7 @@ class ManagedPetscVector : public Vector, public PetscVector, public DataChangeL
 {
 private:
     bool d_bMadeWithPetscDuplicate;
+    Vec d_petscVec;
 
 protected:
     /** \brief Populate PETSc data structures with functions that call
@@ -61,6 +62,12 @@ public:
 
     //! Check if the two vectors are alias of each other
     bool isAnAliasOf( const ManagedPetscVector &rhs ) const;
+
+    //! Get the PETSc vector
+    Vec &getVec() override { return d_petscVec; }
+
+    //! Get the PETSc vector
+    const Vec &getVec() const override { return d_petscVec; }
 
     // These are adequately documented in a base class.
 public:

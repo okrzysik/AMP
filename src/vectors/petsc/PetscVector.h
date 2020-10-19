@@ -29,15 +29,6 @@ class PetscVector
 
 protected:
     /**
-     *  \brief  PETSc Vec holding data in the vector
-     *
-     *  Whether created with VecCreate (called Native) or
-     *  a view of an AMP:Vector (called Managed), this pointer
-     *  is what is used when calling the PETSc Vec interface
-     */
-    Vec d_petscVec;
-
-    /**
      *  \brief  Construct a PetscVector
      *
      *  This can only be called by a derived class or the static function below.  There is
@@ -73,7 +64,7 @@ public:
       }
       \endcode
       */
-    virtual Vec &getVec();
+    virtual Vec &getVec() = 0;
 
     /**
       *  \brief  Obtain PETSc Vec for use in PETSc routines
@@ -97,7 +88,7 @@ public:
       }
       \endcode
       */
-    virtual const Vec &getVec() const;
+    virtual const Vec &getVec() const = 0;
 
     /**
      *  \brief  If needed, create a PETSc wrapper for AmpVector.  Otherwise, return AmpVector.

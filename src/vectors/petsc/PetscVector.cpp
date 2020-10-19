@@ -46,13 +46,7 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
     return newVector;
 }
 
-PetscVector::PetscVector() : d_petscVec( nullptr ) {}
-
-
-Vec &PetscVector::getVec() { return d_petscVec; }
-
-
-const Vec &PetscVector::getVec() const { return d_petscVec; }
+PetscVector::PetscVector() {}
 
 
 PetscVector::~PetscVector() {}

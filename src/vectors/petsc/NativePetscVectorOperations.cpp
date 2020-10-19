@@ -1,5 +1,6 @@
 #include "AMP/vectors/petsc/NativePetscVectorOperations.h"
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
 
 
 namespace AMP {
