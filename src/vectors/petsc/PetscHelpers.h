@@ -54,15 +54,26 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> getAMP( Mat t );
 /********************************************************
  * Wrapper class for an AMP vector for PETSc Vec         *
  ********************************************************/
-/*class PetscVectorWrapper {
+class PetscVectorWrapper
+{
 public:
-    PetscVectorWrapper() = delete;
-    PetscVectorWrapper( std::shared_ptr<AMP::LinearAlgebra::Vector> vec );
+    PetscVectorWrapper()                             = delete;
+    PetscVectorWrapper( const PetscVectorWrapper & ) = delete;
+    PetscVectorWrapper( AMP::LinearAlgebra::ManagedPetscVector *vec );
     ~PetscVectorWrapper();
-private:
+    bool petscHoldsView() const;
+    inline bool constructedWithPetscDuplicate() const { return d_bMadeWithPetscDuplicate; }
+    inline void setMadeWithPetscDuplicate( bool val ) { d_bMadeWithPetscDuplicate = val; }
+    inline Vec &getVec() { return d_petscVec; }
+    inline auto getAMP() { return d_vec; }
+    bool check() const;
+
+protected:
     Vec d_petscVec;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_vec;
-};*/
+    bool d_bMadeWithPetscDuplicate;
+    uint32_t hash;
+    AMP::LinearAlgebra::ManagedPetscVector *d_vec;
+};
 
 
 } // namespace PETSC

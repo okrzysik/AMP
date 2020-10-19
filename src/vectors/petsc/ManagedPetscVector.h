@@ -24,15 +24,7 @@ namespace LinearAlgebra {
 class ManagedPetscVector : public Vector, public PetscVector, public DataChangeListener
 {
 private:
-    bool d_bMadeWithPetscDuplicate;
-    Vec d_petscVec;
-
-protected:
-    /** \brief Populate PETSc data structures with functions that call
-     * back into the Vector interface
-     */
-    void initPetsc();
-
+    std::shared_ptr<PETSC::PetscVectorWrapper> d_wrapper;
 
 public:
     /** \brief Construct a view of another vector
@@ -64,13 +56,12 @@ public:
     bool isAnAliasOf( const ManagedPetscVector &rhs ) const;
 
     //! Get the PETSc vector
-    Vec &getVec() override { return d_petscVec; }
+    Vec &getVec() override { return d_wrapper->getVec(); }
 
     //! Get the PETSc vector
-    const Vec &getVec() const override { return d_petscVec; }
+    const Vec &getVec() const override { return d_wrapper->getVec(); }
 
-    // These are adequately documented in a base class.
-public:
+public: // These are adequately documented in a base class
     void swapVectors( Vector &other ) override;
     using Vector::cloneVector;
     Vector::shared_ptr cloneVector( const Variable::shared_ptr p ) const override;

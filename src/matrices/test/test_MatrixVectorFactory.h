@@ -11,6 +11,7 @@
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
 #include "AMP/matrices/petsc/PetscMatrix.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
+#include "AMP/vectors/petsc/PetscVector.h"
 #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #endif
 

@@ -19,13 +19,8 @@ namespace LinearAlgebra {
 /** \class NativePetscVector
  * \brief An AMP Vector that uses PETSc for parallel data management, linear algebra,
  * etc.
- * \details  This is an AMP wrapper to PETSc.  This is different from ManagedPetscVector
- * in that this class does not replace calls to Vec*.  Rather, it wraps these calls.
+ * \details  This is an AMP wrapper to PETSc.   Rather, it wraps these calls.
  * This class is used when PETSc is chosen as the default linear algebra engine.
- *
- * This class is not to be used directly, just through base class interfaces.
- * \see PetscVector
- * \see ManagedPetscVector
  */
 class NativePetscVectorData : public VectorData
 {

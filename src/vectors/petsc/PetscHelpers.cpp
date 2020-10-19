@@ -692,8 +692,9 @@ void reset_vec_ops( Vec t )
  ********************************************************/
 std::shared_ptr<AMP::LinearAlgebra::Vector> getAMP( Vec v )
 {
-    auto p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( v->data );
-    std::shared_ptr<AMP::LinearAlgebra::ManagedPetscVector> p2( p, []( auto ) {} );
+    auto p = reinterpret_cast<PetscVectorWrapper *>( v->data );
+    AMP_ASSERT( p->check() );
+    std::shared_ptr<AMP::LinearAlgebra::ManagedPetscVector> p2( p->getAMP(), []( auto ) {} );
     return p2;
 }
 std::shared_ptr<AMP::LinearAlgebra::Matrix> getAMP( Mat m )
@@ -709,10 +710,12 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> getAMP( Mat m )
 /********************************************************
  * Wrapper class for an AMP vector for PETSc vec         *
  ********************************************************/
-/*PetscVectorWrapper::PetscVectorWrapper( std::shared_ptr<AMP::LinearAlgebra::Vector> vec ) : d_vec(
-vec )
+static uint32_t globalHash = AMP::Utilities::hash_char( "PetscVectorWrapper" );
+PetscVectorWrapper::PetscVectorWrapper( AMP::LinearAlgebra::ManagedPetscVector *vec )
+    : d_bMadeWithPetscDuplicate( false ), hash( globalHash ), d_vec( vec )
 {
-    AMP_MPI comm = getVectorEngine( getVectorData() )->getComm();
+    AMP_ASSERT( vec );
+    auto comm = vec->getComm();
     VecCreate( comm.getCommunicator(), &d_petscVec );
 
     d_petscVec->data        = this;
@@ -723,43 +726,46 @@ vec )
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     PetscMapInitialize( comm.getCommunicator(), d_petscVec->map );
     PetscMapSetBlockSize( d_petscVec->map, 1 );
-    PetscMapSetSize( d_petscVec->map, this->getGlobalSize() );
+    PetscMapSetSize( d_petscVec->map, vec->getGlobalSize() );
     PetscMapSetLocalSize( d_petscVec->map, this->getLocalSize() );
-    d_petscVec->map->rstart = static_cast<PetscInt>( this->getDOFManager()->beginDOF() );
-    d_petscVec->map->rend   = static_cast<PetscInt>( this->getDOFManager()->endDOF() );
+    d_petscVec->map->rstart = static_cast<PetscInt>( vec->getDOFManager()->beginDOF() );
+    d_petscVec->map->rend   = static_cast<PetscInt>( vec->getDOFManager()->endDOF() );
 #elif PETSC_VERSION_GE( 3, 2, 0 )
     PetscLayoutSetBlockSize( d_petscVec->map, 1 );
-    PetscLayoutSetSize( d_petscVec->map, this->getGlobalSize() );
-    PetscLayoutSetLocalSize( d_petscVec->map, this->getLocalSize() );
+    PetscLayoutSetSize( d_petscVec->map, vec->getGlobalSize() );
+    PetscLayoutSetLocalSize( d_petscVec->map, vec->getLocalSize() );
     PetscLayoutSetUp( d_petscVec->map );
 #else
 #error Not programmed for this version yet
 #endif
 
-    d_bMadeWithPetscDuplicate = false;
-
-    const std::string my_name = "AMPManagedPetscVectorReal";
-    int ierr                  = 0;
-
     if ( ( (PetscObject) d_petscVec )->type_name ) {
-        ierr = PetscFree( ( (PetscObject) d_petscVec )->type_name );
+        int ierr = PetscFree( ( (PetscObject) d_petscVec )->type_name );
+        AMP_INSIST( ierr == 0, "PetscFree returned non-zero error code" );
     }
 
-    ierr =
-        PetscObjectChangeTypeName( reinterpret_cast<PetscObject>( d_petscVec ), my_name.c_str() );
+    int ierr = PetscObjectChangeTypeName( (PetscObject) d_petscVec, "AMPManagedPetscVectorReal" );
     AMP_INSIST( ierr == 0, "PetscObjectChangeTypeName returned non-zero error code" );
 
     VecSetFromOptions( d_petscVec );
 }
 PetscVectorWrapper::~PetscVectorWrapper()
 {
-    int refct = ( ( (PetscObject) d_petscVec )->refct );
     if ( !d_bMadeWithPetscDuplicate ) {
+        int refct = ( (PetscObject) d_petscVec )->refct;
         if ( refct > 1 )
             AMP_ERROR( "Deleting a vector still held by PETSc" );
         PETSC::vecDestroy( &d_petscVec );
     }
-}*/
-
+    hash = 0;
+}
+bool PetscVectorWrapper::petscHoldsView() const
+{
+    int refct = ( (PetscObject) d_petscVec )->refct;
+    if ( !d_bMadeWithPetscDuplicate && refct > 1 )
+        return true;
+    return false;
+}
+bool PetscVectorWrapper::check() const { return hash == globalHash; }
 
 } // namespace PETSC
