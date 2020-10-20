@@ -1,0 +1,7 @@
+variables:
+  PROJECT: AMP
+  
+include:
+  - project: 'AMP/dev-ops'
+    ref: master
+    file: 'amp-darwin.yml'
