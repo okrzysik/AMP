@@ -10,6 +10,11 @@
 #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 
 
+#if PETSC_VERSION_LT( 3, 7, 5 )
+#error AMP only supports PETSc 3.7.5 or greater
+#endif
+
+
 PetscErrorCode _AMP_Mult( Mat m, Vec i, Vec o )
 {
     auto mat    = PETSC::getAMP( m );

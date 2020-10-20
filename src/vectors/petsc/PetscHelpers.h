@@ -71,7 +71,6 @@ public:
 protected:
     Vec d_petscVec;
     bool d_madeWithPetscDuplicate;
-    int id;
     uint32_t hash;
     AMP::LinearAlgebra::ManagedPetscVector *d_vec;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_vec2;

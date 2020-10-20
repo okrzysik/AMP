@@ -253,14 +253,6 @@ void ManagedEpetraMatrix::setOtherData()
 }
 
 
-/*
-Matrix::shared_ptr  ManagedEpetraMatrix::cloneMatrix () const
-{
-    return Vector::shared_ptr ( new ManagedEpetraMatrix ( d_pParameters ) );
-}
-*/
-
-
 void ManagedEpetraMatrix::fillComplete() { EpetraMatrix::fillComplete(); }
 
 

@@ -114,6 +114,7 @@ uninitMemberVar:*/src/vectors/trilinos/thyra/NativeThyraVector.cpp
 multiCondition:*/AMP/include/AMP/vectors/Scalar.hpp
 noExplicitConstructor:*/AMP/vectors/Scalar.h
 noExplicitConstructor:*/AMP/vectors/Vector.h
+noExplicitConstructor:*/AMP/vectors/petsc/PetscHelpers.h
 
 
 // Suppress warnings for solvers

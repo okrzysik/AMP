@@ -9,7 +9,6 @@
 
 
 // Forward declare a few types for PETSc
-#include "petscversion.h"
 typedef int PetscErrorCode;
 typedef struct _p_SNES *SNES;
 typedef struct _p_KSP *KSP;
@@ -161,15 +160,8 @@ private:
     // the signatures of these functions currently vary depending on whether the dev or release
     // release version of PETSc is being used
 
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-    static int setupPreconditioner( void * );
-    static PetscErrorCode applyPreconditioner( void *, Vec, Vec );
-#elif PETSC_VERSION_GE( 3, 2, 0 )
     static PetscErrorCode setupPreconditioner( PC pc );
     static PetscErrorCode applyPreconditioner( PC pc, Vec r, Vec z );
-#else
-#error Not programmed for this version yet
-#endif
 
     AMP_MPI d_comm;
 
@@ -188,15 +180,6 @@ private:
     // FGMRES specific options
     int d_iMaxKrylovDimension;
     std::string d_sGmresOrthogonalizationAlgorithm;
-
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-    // The following KSP solver keeps a reference to these vectors around.
-    // By declaring the vectors here, we ensure correct behavior during destruction.
-    // This will ensure that the std::shared_ptr destructor calls VecDestroy on
-    // the last reference.
-    AMP::LinearAlgebra::Vector::const_shared_ptr fVecView;
-    AMP::LinearAlgebra::Vector::shared_ptr uVecView;
-#endif
 
     std::shared_ptr<PetscMonitor> d_PetscMonitor;
 

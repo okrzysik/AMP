@@ -8,6 +8,10 @@
 #include "petscsys.h"
 #include "petscvec.h"
 
+#if PETSC_VERSION_LT( 3, 7, 5 )
+#error AMP only supports PETSc 3.7.5 or greater
+#endif
+
 
 namespace PETSC {
 
@@ -40,36 +44,9 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> getAMP( Mat m )
 /********************************************************
  * Destructors                                           *
  ********************************************************/
-PetscErrorCode vecDestroy( Vec *v )
-{
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-    return VecDestroy( *v );
-#elif PETSC_VERSION_GE( 3, 2, 0 )
-    return VecDestroy( v );
-#else
-#error Not programmed for this version yet
-#endif
-}
-PetscErrorCode randomDestroy( PetscRandom *random )
-{
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-    return PetscRandomDestroy( *random );
-#elif PETSC_VERSION_GE( 3, 2, 0 )
-    return PetscRandomDestroy( random );
-#else
-#error Not programmed for this version of petsc
-#endif
-}
-PetscErrorCode matDestroy( Mat *mat )
-{
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-    return MatDestroy( *mat );
-#elif PETSC_VERSION_GE( 3, 2, 0 )
-    return MatDestroy( mat );
-#else
-#error Not programmed for this version yet
-#endif
-}
+PetscErrorCode vecDestroy( Vec *v ) { return VecDestroy( v ); }
+PetscErrorCode randomDestroy( PetscRandom *random ) { return PetscRandomDestroy( random ); }
+PetscErrorCode matDestroy( Mat *mat ) { return MatDestroy( mat ); }
 
 
 /********************************************************
@@ -139,33 +116,12 @@ PetscErrorCode _AMP_getvalues( Vec, PetscInt, const PetscInt[], PetscScalar[] )
 }
 PetscErrorCode _AMP_assemblybegin( Vec ) { return 0; }
 PetscErrorCode _AMP_assemblyend( Vec ) { return 0; }
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-PetscErrorCode _AMP_setoption( Vec, VecOption, PetscTruth ) { return 0; }
-PetscErrorCode _AMP_load( PetscViewer, const VecType, Vec * )
-{
-    AMP_ERROR( "48 Not implemented" );
-    return 0;
-}
-PetscErrorCode _AMP_loadintovector( PetscViewer, Vec )
-{
-    AMP_ERROR( "40 Not implemented" );
-    return 0;
-}
-PetscErrorCode _AMP_loadintovectornative( PetscViewer, Vec )
-{
-    AMP_ERROR( "41 Not implemented" );
-    return 0;
-}
-#elif PETSC_VERSION_GE( 3, 2, 0 )
 PetscErrorCode _AMP_setoption( Vec, VecOption, PetscBool ) { return 0; }
 PetscErrorCode _AMP_load( Vec, PetscViewer )
 {
     AMP_ERROR( "48 Not implemented" );
     return 0;
 }
-#else
-#error Not programmed for this version of petsc
-#endif
 PetscErrorCode
 _AMP_setvalues( Vec px, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode iora )
 {
@@ -188,8 +144,6 @@ _AMP_setvalues( Vec px, PetscInt ni, const PetscInt ix[], const PetscScalar y[],
     delete[] vals;
     return 0;
 }
-
-#if PETSC_VERSION_GE( 3, 7, 5 )
 PetscErrorCode _AMP_shift( Vec px, PetscScalar s )
 {
     auto x   = getAMP( px );
@@ -201,16 +155,6 @@ PetscErrorCode _AMP_shift( Vec px, PetscScalar s )
     }
     return 0;
 }
-#elif PETSC_VERSION_LT( 3, 7, 5 )
-PetscErrorCode _AMP_shift( Vec )
-{
-    // This function makes no sense wrt the PETSc interface VecShift( Vec, PetscScalar );
-    AMP_ERROR( "This function cannot be implemented as designed" );
-    return 0;
-}
-#else
-#error Not programmed for this version of petsc
-#endif
 PetscErrorCode
 _AMP_axpbypcz( Vec c, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec a, Vec b )
 {
@@ -699,11 +643,6 @@ void reset_vec_ops( Vec t )
     t->ops->log                     = _AMP_log;
     t->ops->shift                   = _AMP_shift;
     t->ops->create                  = _AMP_create;
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-    t->ops->loadintovector       = _AMP_loadintovector;
-    t->ops->loadintovectornative = _AMP_loadintovectornative;
-    t->ops->viewnative           = _AMP_viewnative;
-#endif
     /*** The following functions do not need to be overridden
       t->ops->setfromoptions = _AMP_setfromoptions;
      ***/
@@ -727,21 +666,10 @@ PetscVectorWrapper::PetscVectorWrapper( AMP::LinearAlgebra::ManagedPetscVector *
 
     PETSC::reset_vec_ops( d_petscVec );
 
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-    PetscMapInitialize( comm.getCommunicator(), d_petscVec->map );
-    PetscMapSetBlockSize( d_petscVec->map, 1 );
-    PetscMapSetSize( d_petscVec->map, vec->getGlobalSize() );
-    PetscMapSetLocalSize( d_petscVec->map, this->getLocalSize() );
-    d_petscVec->map->rstart = static_cast<PetscInt>( vec->getDOFManager()->beginDOF() );
-    d_petscVec->map->rend   = static_cast<PetscInt>( vec->getDOFManager()->endDOF() );
-#elif PETSC_VERSION_GE( 3, 2, 0 )
     PetscLayoutSetBlockSize( d_petscVec->map, 1 );
     PetscLayoutSetSize( d_petscVec->map, vec->getGlobalSize() );
     PetscLayoutSetLocalSize( d_petscVec->map, vec->getLocalSize() );
     PetscLayoutSetUp( d_petscVec->map );
-#else
-#error Not programmed for this version yet
-#endif
 
     if ( ( (PetscObject) d_petscVec )->type_name ) {
         int ierr = PetscFree( ( (PetscObject) d_petscVec )->type_name );

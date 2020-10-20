@@ -864,15 +864,8 @@ void PetscVectorTests::VerifySqrtPetscVector( AMP::UnitTest *utils )
 
     auto veca = getVecFromNative( vectora );
     auto vecb = getVec( vectorb );
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-    checkPetscError( utils, VecSqrt( veca ) );
-    checkPetscError( utils, VecSqrt( vecb ) );
-#elif PETSC_VERSION_GE( 3, 2, 0 )
     checkPetscError( utils, VecSqrtAbs( veca ) );
     checkPetscError( utils, VecSqrtAbs( vecb ) );
-#else
-#error Not programmed for this version yet
-#endif
     bool equal = vectora->equals( *vectorb );
     if ( equal )
         utils->passes( "Vector square root passes" );
@@ -984,13 +977,7 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
     vectorb2->copyVector( vectorb );
     checkPetscError( utils, VecAXPY( veca, 1.23456, vecb ) );
     vectora2->axpy( 1.23456, *vectorb2, *vectora2 );
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-    PetscTruth ans;
-#elif PETSC_VERSION_GE( 3, 2, 0 )
     PetscBool ans;
-#else
-#error Not programmed for this version yet
-#endif
     checkPetscError( utils, VecEqual( veca, veca2, &ans ) );
     if ( ans == PETSC_TRUE )
         utils->passes( "native interface on native petsc axpy works" );
