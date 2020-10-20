@@ -62,17 +62,19 @@ public:
     PetscVectorWrapper( AMP::LinearAlgebra::ManagedPetscVector *vec );
     ~PetscVectorWrapper();
     bool petscHoldsView() const;
-    inline bool constructedWithPetscDuplicate() const { return d_bMadeWithPetscDuplicate; }
-    inline void setMadeWithPetscDuplicate( bool val ) { d_bMadeWithPetscDuplicate = val; }
     inline Vec &getVec() { return d_petscVec; }
     inline auto getAMP() { return d_vec; }
     bool check() const;
+    Vec duplicate();
+    void destroy();
 
 protected:
     Vec d_petscVec;
-    bool d_bMadeWithPetscDuplicate;
+    bool d_madeWithPetscDuplicate;
+    int id;
     uint32_t hash;
     AMP::LinearAlgebra::ManagedPetscVector *d_vec;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_vec2;
 };
 
 

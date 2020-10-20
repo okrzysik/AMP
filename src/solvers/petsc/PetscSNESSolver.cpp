@@ -33,6 +33,14 @@ static inline void checkErr( PetscErrorCode ierr )
 #endif
 
 
+static inline void checkUpdateStatus( std::shared_ptr<const AMP::LinearAlgebra::Vector> x )
+{
+    auto status = x->getUpdateStatus();
+    AMP_ASSERT( ( status == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
+                ( status == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+}
+
+
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
@@ -137,12 +145,10 @@ void PetscSNESSolver::initialize( std::shared_ptr<SolverStrategyParameters> para
         if ( nonlinearSolverDb->keyExists( "LinearSolver" ) ) {
             d_pKrylovSolver.reset( new PetscKrylovSolver() );
             d_pKrylovSolver->setKrylovSolver( &kspSolver );
-            PetscKrylovSolverParameters *krylovSolverParameters =
-                new PetscKrylovSolverParameters( nonlinearSolverDb->getDatabase( "LinearSolver" ) );
-            krylovSolverParameters->d_comm = d_comm;
-            std::shared_ptr<SolverStrategyParameters> pKrylovSolverParameters(
-                krylovSolverParameters );
-            d_pKrylovSolver->initialize( pKrylovSolverParameters );
+            auto params = std::make_shared<PetscKrylovSolverParameters>(
+                nonlinearSolverDb->getDatabase( "LinearSolver" ) );
+            params->d_comm = d_comm;
+            d_pKrylovSolver->initialize( params );
         } else {
             AMP_INSIST( d_pKrylovSolver.get() != nullptr,
                         "ERROR: The nonlinear solver database must "
@@ -242,18 +248,13 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
         sp_f->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     if ( sp_x.get() != nullptr )
         sp_x->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    AMP_ASSERT(
-        ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+    checkUpdateStatus( sp_r );
 
     std::shared_ptr<AMP::Operator::Operator> op( ( (PetscSNESSolver *) ctx )->getOperator() );
 
     op->residual( sp_f, sp_x, sp_r );
     sp_r->scale( -1.0 );
-
-    AMP_ASSERT(
-        ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+    checkUpdateStatus( sp_r );
 
     PROFILE_STOP( "apply" );
     return ( ierr );
@@ -286,20 +287,10 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
         d_refVectors.push_back( AMP::LinearAlgebra::PetscVector::constView( d_pResidualVector ) );
 
     // Check input vector states
-    AMP_ASSERT(
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT(
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT(
-        ( spRhs->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( spRhs->getUpdateStatus() ==
-          AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT(
-        ( spSol->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( spSol->getUpdateStatus() ==
-          AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+    checkUpdateStatus( f );
+    checkUpdateStatus( u );
+    checkUpdateStatus( spRhs );
+    checkUpdateStatus( spSol );
 
     if ( d_iDebugPrintInfoLevel > 2 )
         AMP::pout << "L2 Norm of u in PetscSNESSolver::solve after view " << spSol->L2Norm()
@@ -384,8 +375,7 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     // Delete any copies of the reference vectors that we can
     auto it = d_refVectors.begin();
     while ( it != d_refVectors.end() ) {
-        const AMP::LinearAlgebra::PetscVector *view =
-            dynamic_cast<const AMP::LinearAlgebra::PetscVector *>( it->get() );
+        auto view = dynamic_cast<const AMP::LinearAlgebra::PetscVector *>( it->get() );
         AMP_ASSERT( view != NULL );
         if ( view->petscHoldsView() )
             ++it;
@@ -487,12 +477,11 @@ PetscErrorCode PetscSNESSolver::lineSearchPreCheck(
         *changed_y = PETSC_FALSE;
         ierr       = 0;
     } else {
-        int iNumberOfLineSearchPreCheckAttempts =
-            pSNESSolver->getNumberOfLineSearchPreCheckAttempts();
+        int N_line = pSNESSolver->getNumberOfLineSearchPreCheckAttempts();
         auto pColumnOperator =
             std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( pOperator );
         if ( pColumnOperator.get() != nullptr ) {
-            for ( int i = 0; i < iNumberOfLineSearchPreCheckAttempts; i++ ) {
+            for ( int i = 0; i < N_line; i++ ) {
                 AMP::pout << "Attempting to scale search, attempt number " << i << std::endl;
                 double lambda = 0.5;
                 sp_y->scale( lambda, *sp_y );

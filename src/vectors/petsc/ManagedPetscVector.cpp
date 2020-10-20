@@ -52,7 +52,6 @@ ManagedPetscVector *ManagedPetscVector::petscDuplicate()
 {
     ManagedPetscVector *pAns = rawClone();
     pAns->setVariable( getVariable() );
-    pAns->d_wrapper->setMadeWithPetscDuplicate( true );
     return pAns;
 }
 
@@ -62,11 +61,6 @@ void ManagedPetscVector::swapVectors( Vector &other )
     auto tmp = dynamic_cast<ManagedPetscVector *>( &other );
     AMP_ASSERT( tmp != nullptr );
     d_VectorData->swapData( *other.getVectorData() );
-}
-
-bool ManagedPetscVector::constructedWithPetscDuplicate()
-{
-    return d_wrapper->constructedWithPetscDuplicate();
 }
 
 ManagedPetscVector *ManagedPetscVector::rawClone() const
@@ -88,12 +82,6 @@ Vector::shared_ptr ManagedPetscVector::cloneVector( const Variable::shared_ptr p
 void ManagedPetscVector::receiveDataChanged()
 {
     PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( getVec() ) );
-}
-
-bool ManagedPetscVector::isAnAliasOf( const ManagedPetscVector &rhs ) const
-{
-    auto managedData = std::dynamic_pointer_cast<const ManagedVectorData>( getVectorData() );
-    return managedData->isAnAliasOf( *( rhs.getVectorData() ) );
 }
 
 

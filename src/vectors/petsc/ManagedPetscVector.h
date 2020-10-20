@@ -37,12 +37,6 @@ public:
      */
     ManagedPetscVector *petscDuplicate();
 
-    /** \brief Identifies whether this vector was created through the
-     * VecDuplicate interface
-     * \return true if constructed with VecDuplicate.  False otherwise
-     */
-    bool constructedWithPetscDuplicate();
-
     /** \brief Destructor
      */
     virtual ~ManagedPetscVector();
@@ -51,9 +45,6 @@ public:
      * \return A raw pointer to a clone of this vector
      */
     ManagedPetscVector *rawClone() const;
-
-    //! Check if the two vectors are alias of each other
-    bool isAnAliasOf( const ManagedPetscVector &rhs ) const;
 
     //! Get the PETSc vector
     Vec &getVec() override { return d_wrapper->getVec(); }

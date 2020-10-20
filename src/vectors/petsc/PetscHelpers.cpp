@@ -13,6 +13,31 @@ namespace PETSC {
 
 
 /********************************************************
+ * Get the AMP vector from the PETSc Vec or Mat          *
+ ********************************************************/
+static inline PetscVectorWrapper *getWrapper( Vec v )
+{
+    auto p = reinterpret_cast<PetscVectorWrapper *>( v->data );
+    AMP_ASSERT( p->check() );
+    return p;
+}
+std::shared_ptr<AMP::LinearAlgebra::Vector> getAMP( Vec v )
+{
+    auto p = getWrapper( v );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> p2( p->getAMP(), []( auto ) {} );
+    return p2;
+}
+std::shared_ptr<AMP::LinearAlgebra::Matrix> getAMP( Mat m )
+{
+    void *ctx;
+    MatShellGetContext( m, &ctx );
+    auto p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *>( ctx );
+    std::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrix> p2( p, []( auto ) {} );
+    return p2;
+}
+
+
+/********************************************************
  * Destructors                                           *
  ********************************************************/
 PetscErrorCode vecDestroy( Vec *v )
@@ -538,8 +563,10 @@ PetscErrorCode _AMP_norm( Vec in, NormType type, PetscReal *ans )
     PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( in ) );
     return 0;
 }
-bool _Verify_Memory( AMP::LinearAlgebra::Vector *p1, AMP::LinearAlgebra::Vector *p2 )
+static inline bool verifyMemory( Vec in, Vec out )
 {
+    auto p1 = getAMP( in );
+    auto p2 = getAMP( out );
     for ( size_t i = 0; i != p1->numberOfDataBlocks(); i++ ) {
         if ( p1->getRawDataBlock<double>() == p2->getRawDataBlock<double>() )
             return false;
@@ -548,11 +575,9 @@ bool _Verify_Memory( AMP::LinearAlgebra::Vector *p1, AMP::LinearAlgebra::Vector 
 }
 PetscErrorCode _AMP_duplicate( Vec in, Vec *out )
 {
-
-    auto p   = std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscVector>( getAMP( in ) );
-    auto dup = p->petscDuplicate();
-    AMP_ASSERT( _Verify_Memory( p.get(), dup ) );
-    *out = dup->getVec();
+    auto p = getWrapper( in );
+    *out   = p->duplicate();
+    AMP_ASSERT( verifyMemory( in, *out ) );
     return 0;
 }
 PetscErrorCode _AMP_duplicatevecs( Vec v, PetscInt num, Vec **vecArray )
@@ -601,10 +626,8 @@ PetscErrorCode _AMP_abs( Vec v )
 PetscErrorCode _AMP_resetarray( Vec ) { return 0; }
 PetscErrorCode _AMP_destroy( Vec v )
 {
-    auto p = std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscVector>( getAMP( v ) );
-    if ( p->constructedWithPetscDuplicate() ) {
-        delete p.get();
-    }
+    auto p = getWrapper( v );
+    p->destroy();
     return 0;
 }
 PetscErrorCode _AMP_create( Vec ) { return 0; }
@@ -688,31 +711,12 @@ void reset_vec_ops( Vec t )
 
 
 /********************************************************
- * Get the AMP vector from the PETSc Vec or Mat          *
- ********************************************************/
-std::shared_ptr<AMP::LinearAlgebra::Vector> getAMP( Vec v )
-{
-    auto p = reinterpret_cast<PetscVectorWrapper *>( v->data );
-    AMP_ASSERT( p->check() );
-    std::shared_ptr<AMP::LinearAlgebra::ManagedPetscVector> p2( p->getAMP(), []( auto ) {} );
-    return p2;
-}
-std::shared_ptr<AMP::LinearAlgebra::Matrix> getAMP( Mat m )
-{
-    void *ctx;
-    MatShellGetContext( m, &ctx );
-    auto p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *>( ctx );
-    std::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrix> p2( p, []( auto ) {} );
-    return p2;
-}
-
-
-/********************************************************
  * Wrapper class for an AMP vector for PETSc vec         *
  ********************************************************/
+void null_deleter( AMP::LinearAlgebra::Vector * ) {}
 static uint32_t globalHash = AMP::Utilities::hash_char( "PetscVectorWrapper" );
 PetscVectorWrapper::PetscVectorWrapper( AMP::LinearAlgebra::ManagedPetscVector *vec )
-    : d_bMadeWithPetscDuplicate( false ), hash( globalHash ), d_vec( vec )
+    : d_madeWithPetscDuplicate( false ), hash( globalHash ), d_vec( vec )
 {
     AMP_ASSERT( vec );
     auto comm = vec->getComm();
@@ -744,14 +748,14 @@ PetscVectorWrapper::PetscVectorWrapper( AMP::LinearAlgebra::ManagedPetscVector *
         AMP_INSIST( ierr == 0, "PetscFree returned non-zero error code" );
     }
 
-    int ierr = PetscObjectChangeTypeName( (PetscObject) d_petscVec, "AMPManagedPetscVectorReal" );
+    int ierr = PetscObjectChangeTypeName( (PetscObject) d_petscVec, "AMPManagedPetscVector" );
     AMP_INSIST( ierr == 0, "PetscObjectChangeTypeName returned non-zero error code" );
 
     VecSetFromOptions( d_petscVec );
 }
 PetscVectorWrapper::~PetscVectorWrapper()
 {
-    if ( !d_bMadeWithPetscDuplicate ) {
+    if ( !d_madeWithPetscDuplicate ) {
         int refct = ( (PetscObject) d_petscVec )->refct;
         if ( refct > 1 )
             AMP_ERROR( "Deleting a vector still held by PETSc" );
@@ -762,10 +766,22 @@ PetscVectorWrapper::~PetscVectorWrapper()
 bool PetscVectorWrapper::petscHoldsView() const
 {
     int refct = ( (PetscObject) d_petscVec )->refct;
-    if ( !d_bMadeWithPetscDuplicate && refct > 1 )
+    if ( !d_madeWithPetscDuplicate && refct > 1 )
         return true;
     return false;
 }
 bool PetscVectorWrapper::check() const { return hash == globalHash; }
+Vec PetscVectorWrapper::duplicate()
+{
+    auto dup                                    = d_vec->petscDuplicate();
+    auto vec                                    = dup->getVec();
+    getWrapper( vec )->d_madeWithPetscDuplicate = true;
+    return vec;
+}
+void PetscVectorWrapper::destroy()
+{
+    if ( d_madeWithPetscDuplicate )
+        delete d_vec;
+}
 
 } // namespace PETSC
