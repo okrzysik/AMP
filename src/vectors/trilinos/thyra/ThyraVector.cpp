@@ -26,26 +26,26 @@ ThyraVector::~ThyraVector() { d_thyraVec.reset(); }
 /****************************************************************
  * view                                                          *
  ****************************************************************/
-Vector::const_shared_ptr ThyraVector::constView( Vector::const_shared_ptr inVector )
+std::shared_ptr<const ThyraVector> ThyraVector::constView( Vector::const_shared_ptr inVector )
 {
     return view( std::const_pointer_cast<Vector>( inVector ) );
 }
-Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
+std::shared_ptr<ThyraVector> ThyraVector::view( Vector::shared_ptr inVector )
 {
     // Check if we have an exisiting view
     if ( std::dynamic_pointer_cast<ThyraVector>( inVector ) != nullptr )
-        return inVector;
+        return std::dynamic_pointer_cast<ThyraVector>( inVector );
     if ( inVector->hasView<ManagedThyraVector>() )
         return inVector->getView<ManagedThyraVector>();
     // Check if we are dealing with a managed vector
     auto managedData = std::dynamic_pointer_cast<ManagedVectorData>( inVector->getVectorData() );
     if ( managedData ) {
         auto retVal = view( managedData->getVectorEngine() );
-        retVal->setVariable( inVector->getVariable() );
+        retVal->getManagedVec()->setVariable( inVector->getVariable() );
         return retVal;
     }
     // Create a new view
-    Vector::shared_ptr retVal;
+    std::shared_ptr<ThyraVector> retVal;
     if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
         auto newVector = std::make_shared<ManagedThyraVector>( inVector );
         newVector->setVariable( inVector->getVariable() );

@@ -92,7 +92,8 @@ public:
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
     {
-        return AMP::LinearAlgebra::PetscVector::view( d_factory->getManagedVector() );
+        return AMP::LinearAlgebra::PetscVector::view( d_factory->getManagedVector() )
+            ->getManagedVec();
     }
 
     virtual std::string name() const override { return "PetscViewFactory"; }

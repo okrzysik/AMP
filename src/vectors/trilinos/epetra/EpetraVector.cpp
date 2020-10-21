@@ -30,13 +30,13 @@ createManagedEpetraVector( Vector::shared_ptr inVector, std::shared_ptr<Vector> 
     inVector->registerView( retVal );
     return retVal;
 }
-Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
+std::shared_ptr<EpetraVector> EpetraVector::view( Vector::shared_ptr inVector )
 {
     AMP_INSIST( inVector->numberOfDataBlocks() == 1,
                 "Epetra does not support more than 1 data block" );
     // Check if we have an existing view
     if ( std::dynamic_pointer_cast<EpetraVector>( inVector ) )
-        return inVector;
+        return std::dynamic_pointer_cast<EpetraVector>( inVector );
     if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
         auto multivec = std::dynamic_pointer_cast<MultiVector>( inVector );
         if ( multivec->getNumberOfSubvectors() == 1 ) {
@@ -65,7 +65,7 @@ Vector::shared_ptr EpetraVector::view( Vector::shared_ptr inVector )
     AMP_INSIST( retVal, "Cannot create view!" );
     return retVal;
 }
-Vector::const_shared_ptr EpetraVector::constView( Vector::const_shared_ptr inVector )
+std::shared_ptr<const EpetraVector> EpetraVector::constView( Vector::const_shared_ptr inVector )
 {
     return view( std::const_pointer_cast<Vector>( inVector ) );
 }

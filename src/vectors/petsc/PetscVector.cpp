@@ -12,22 +12,22 @@ namespace LinearAlgebra {
 /****************************************************************
  * view                                                          *
  ****************************************************************/
-Vector::const_shared_ptr PetscVector::constView( Vector::const_shared_ptr inVector )
+std::shared_ptr<const PetscVector> PetscVector::constView( Vector::const_shared_ptr inVector )
 {
     return view( std::const_pointer_cast<Vector>( inVector ) );
 }
-Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
+std::shared_ptr<PetscVector> PetscVector::view( Vector::shared_ptr inVector )
 {
     // Check if we have an existing view
     if ( std::dynamic_pointer_cast<PetscVector>( inVector ) )
-        return inVector;
+        return std::dynamic_pointer_cast<PetscVector>( inVector );
     if ( inVector->hasView<PetscVector>() )
         return inVector->getView<PetscVector>();
     // Check if we are dealing with a managed vector
     auto managedData = std::dynamic_pointer_cast<ManagedVectorData>( inVector->getVectorData() );
     if ( managedData ) {
         auto retVal = view( managedData->getVectorEngine() );
-        retVal->setVariable( inVector->getVariable() );
+        retVal->getManagedVec()->setVariable( inVector->getVariable() );
         return retVal;
     }
     // Check if we are dealing with a multivector

@@ -112,7 +112,7 @@ public:
     {
         AMP_ASSERT( global_cached_matrix != nullptr );
         auto matrix = global_cached_matrix;
-        return AMP::LinearAlgebra::PetscVector::view( matrix->getLeftVector() );
+        return AMP::LinearAlgebra::PetscVector::view( matrix->getLeftVector() )->getManagedVec();
     }
 
     std::string name() const override { return "PETScInterfaceLeftVectorFactory"; }
@@ -155,7 +155,7 @@ public:
     {
         AMP_ASSERT( global_cached_matrix != nullptr );
         auto matrix = global_cached_matrix;
-        return AMP::LinearAlgebra::PetscVector::view( matrix->getRightVector() );
+        return AMP::LinearAlgebra::PetscVector::view( matrix->getRightVector() )->getManagedVec();
     }
 
     std::string name() const override { return "PETScInterfaceRightVectorFactory"; }

@@ -263,7 +263,7 @@ Vector::shared_ptr ManagedEpetraMatrix::extractDiagonal( Vector::shared_ptr v ) 
 {
     Vector::shared_ptr retVal;
     if ( v ) {
-        retVal = EpetraVector::view( v );
+        retVal = EpetraVector::view( v )->getManagedVec();
     } else {
         retVal = getRightVector();
     }

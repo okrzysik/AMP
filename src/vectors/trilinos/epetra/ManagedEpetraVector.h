@@ -51,6 +51,9 @@ public:
 
     Epetra_Vector &getEpetra_Vector() override;
     const Epetra_Vector &getEpetra_Vector() const override;
+
+    std::shared_ptr<Vector> getManagedVec() override { return shared_from_this(); }
+    std::shared_ptr<const Vector> getManagedVec() const override { return shared_from_this(); }
 };
 
 

@@ -468,7 +468,7 @@ public: // Non-virtual functions
      * \return A view of this vector
      */
     template<typename VIEW_TYPE>
-    Vector::shared_ptr getView() const;
+    std::shared_ptr<VIEW_TYPE> getView() const;
 
     /** \brief  If a particular type of view of this Vector has been created,
      * return true.
@@ -481,7 +481,8 @@ public: // Non-virtual functions
     /** \brief Add a view of this vector to an internal queue.
      * \param[in] v The view to add
      */
-    void registerView( Vector::shared_ptr v ) const;
+    template<typename VIEW_TYPE>
+    void registerView( std::shared_ptr<VIEW_TYPE> v ) const;
 
     /** \brief Set the default RNG of this vector
      * \param[in] rng  The generator to set
@@ -751,14 +752,14 @@ private:
     void operator=( const Vector & );
 
 
-protected:                                                       // Internal data
-    static RNG::shared_ptr d_DefaultRNG;                         // default RNG
-    Variable::shared_ptr d_pVariable;                            // Variable
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManager;    // The DOF_Manager
-    std::shared_ptr<VectorData> d_VectorData;                    // Pointer to data
-    std::shared_ptr<VectorOperations> d_VectorOps;               // Pointer to a VectorOperations
-    std::shared_ptr<std::vector<std::weak_ptr<Vector>>> d_Views; // Views of the vector
-    std::ostream *d_output_stream;                               // output stream for vector data
+protected:                                                    // Internal data
+    static RNG::shared_ptr d_DefaultRNG;                      // default RNG
+    Variable::shared_ptr d_pVariable;                         // Variable
+    AMP::Discretization::DOFManager::shared_ptr d_DOFManager; // The DOF_Manager
+    std::shared_ptr<VectorData> d_VectorData;                 // Pointer to data
+    std::shared_ptr<VectorOperations> d_VectorOps;            // Pointer to a VectorOperations
+    std::shared_ptr<std::vector<std::any>> d_Views;           // Views of the vector
+    std::ostream *d_output_stream;                            // output stream for vector data
 };
 
 

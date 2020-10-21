@@ -96,7 +96,7 @@ public:
      *     It will never copy data.  If the vector cannot be wrapped it wll return an error.
      *  \param  AmpVector  a shared pointer to a Vector
      */
-    static Vector::shared_ptr view( Vector::shared_ptr AmpVector );
+    static std::shared_ptr<PetscVector> view( Vector::shared_ptr AmpVector );
 
     /**
      *  \brief  If needed, create a PETSc wrapper for AmpVector.  Otherwise, return AmpVector.
@@ -104,7 +104,7 @@ public:
      *     It will never copy data.  If the vector cannot be wrapped it wll return an error.
      *  \param  AmpVector  a shared pointer to a Vector
      */
-    static Vector::const_shared_ptr constView( Vector::const_shared_ptr AmpVector );
+    static std::shared_ptr<const PetscVector> constView( Vector::const_shared_ptr AmpVector );
 
 
     /**
@@ -119,6 +119,8 @@ public:
 public:
     inline Vec &getNativeVec() { return getVec(); }
     inline const Vec &getNativeVec() const { return getVec(); }
+    virtual std::shared_ptr<Vector> getManagedVec()             = 0;
+    virtual std::shared_ptr<const Vector> getManagedVec() const = 0;
 };
 
 

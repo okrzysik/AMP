@@ -282,12 +282,11 @@ public:
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        auto rtn = TYPE::view( d_factory->getVector() );
-        auto vec = dynamic_cast<TYPE *>( rtn.get() );
+        auto vec = TYPE::view( d_factory->getVector() );
         AMP_INSIST( vec != nullptr, "Failed to cast view to type" );
         auto native = vec->getNativeVec();
         NULL_USE( native );
-        return rtn;
+        return vec->getManagedVec();
     }
 
     virtual std::string name() const override { return "ViewFactory<" + d_factory->name() + ">"; }

@@ -115,7 +115,7 @@ multiCondition:*/AMP/include/AMP/vectors/Scalar.hpp
 noExplicitConstructor:*/AMP/vectors/Scalar.h
 noExplicitConstructor:*/AMP/vectors/Vector.h
 noExplicitConstructor:*/AMP/vectors/petsc/PetscHelpers.h
-
+autovarInvalidDeallocation:*/src/vectors/petsc/PetscHelpers.cpp
 
 // Suppress warnings for solvers
 duplicateAssignExpression:*/src/solvers/test/mechanics/testMaterialModels_VonMisesPlasticity_2.cpp

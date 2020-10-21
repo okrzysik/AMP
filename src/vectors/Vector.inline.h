@@ -37,30 +37,38 @@ Vector::constSubsetVectorForVariable( const std::string &name ) const
  * getView/hasView                                               *
  ****************************************************************/
 template<typename VIEW_TYPE>
-Vector::shared_ptr Vector::getView() const
+std::shared_ptr<VIEW_TYPE> Vector::getView() const
 {
+    typedef typename std::remove_cv<VIEW_TYPE>::type TYPE;
     for ( size_t i = 0; i != d_Views->size(); i++ ) {
-        auto vec = ( *d_Views )[i].lock();
-        if ( vec ) {
-            auto vec2 = std::dynamic_pointer_cast<VIEW_TYPE>( vec );
-            if ( vec2 )
+        if ( ( *d_Views )[i].type() == typeid( std::weak_ptr<TYPE> ) ) {
+            auto ptr = std::any_cast<std::weak_ptr<TYPE>>( ( *d_Views )[i] );
+            auto vec = ptr.lock();
+            if ( vec )
                 return vec;
         }
     }
-    return Vector::shared_ptr();
+    return std::shared_ptr<VIEW_TYPE>();
 }
 template<typename VIEW_TYPE>
 bool Vector::hasView() const
 {
+    return getView<VIEW_TYPE>() != nullptr;
+}
+template<typename VIEW_TYPE>
+void Vector::registerView( std::shared_ptr<VIEW_TYPE> v ) const
+{
+    typedef typename std::remove_cv<VIEW_TYPE>::type TYPE;
     for ( size_t i = 0; i != d_Views->size(); i++ ) {
-        auto vec = ( *d_Views )[i].lock();
-        if ( vec ) {
-            auto vec2 = std::dynamic_pointer_cast<VIEW_TYPE>( vec );
-            if ( vec2 )
-                return true;
+        if ( ( *d_Views )[i].type() == typeid( std::weak_ptr<TYPE> ) ) {
+            auto ptr = std::any_cast<std::weak_ptr<TYPE>>( ( *d_Views )[i] );
+            auto vec = ptr.lock();
+            if ( vec == v )
+                return;
         }
     }
-    return false;
+    std::weak_ptr<TYPE> ptr = v;
+    d_Views->push_back( std::any( ptr ) );
 }
 
 

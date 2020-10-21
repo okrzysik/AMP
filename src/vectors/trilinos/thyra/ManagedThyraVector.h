@@ -45,6 +45,9 @@ public:
     Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
+
+    std::shared_ptr<Vector> getManagedVec() override { return shared_from_this(); }
+    std::shared_ptr<const Vector> getManagedVec() const override { return shared_from_this(); }
 };
 
 } // namespace LinearAlgebra

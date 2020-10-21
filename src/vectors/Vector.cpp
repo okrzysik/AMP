@@ -28,7 +28,7 @@ Vector::Vector()
       d_DOFManager( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) ),
       d_VectorData( new VectorDataNull<double>() ),
       d_VectorOps( new VectorOperationsDefault<double>() ),
-      d_Views( new std::vector<std::weak_ptr<Vector>>() ),
+      d_Views( new std::vector<std::any>() ),
       d_output_stream( &AMP::plog )
 {
 }
@@ -37,7 +37,7 @@ Vector::Vector( const std::string &name )
       d_DOFManager( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) ),
       d_VectorData( new VectorDataNull<double>() ),
       d_VectorOps( new VectorOperationsDefault<double>() ),
-      d_Views( new std::vector<std::weak_ptr<Vector>>() ),
+      d_Views( new std::vector<std::any>() ),
       d_output_stream( &AMP::plog )
 {
 }
@@ -49,7 +49,7 @@ Vector::Vector( std::shared_ptr<VectorData> data,
       d_DOFManager( DOFManager ),
       d_VectorData( data ),
       d_VectorOps( ops ),
-      d_Views( new std::vector<std::weak_ptr<Vector>>() ),
+      d_Views( new std::vector<std::any>() ),
       d_output_stream( &AMP::plog )
 {
     AMP_ASSERT( data && ops && var );
@@ -131,13 +131,6 @@ Vector::const_shared_ptr Vector::constSelect( const VectorSelector &s,
         std::const_pointer_cast<Vector>( retVal )->setVariable( var );
     }
     return retVal;
-}
-void Vector::registerView( Vector::shared_ptr v ) const
-{
-    for ( size_t i = 0; i != d_Views->size(); i++ )
-        if ( ( *d_Views )[i].lock() == v )
-            return;
-    ( *d_Views ).push_back( v );
 }
 Vector::shared_ptr Vector::subsetVectorForVariable( Variable::const_shared_ptr name )
 {

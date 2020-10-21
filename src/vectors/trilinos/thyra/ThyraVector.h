@@ -56,7 +56,7 @@ public:
      *     It will never copy data.  If the vector cannot be wrapped it wll return an error.
      *  \param  AmpVector  a shared pointer to a Vector
      */
-    static Vector::shared_ptr view( Vector::shared_ptr AmpVector );
+    static std::shared_ptr<ThyraVector> view( Vector::shared_ptr AmpVector );
 
     /**
      *  \brief  If needed, create a Thyra wrapper for AmpVector.  Otherwise, return AmpVector.
@@ -64,7 +64,7 @@ public:
      *     It will never copy data.  If the vector cannot be wrapped it wll return an error.
      *  \param  AmpVector  a shared pointer to a Vector
      */
-    static Vector::const_shared_ptr constView( Vector::const_shared_ptr AmpVector );
+    static std::shared_ptr<const ThyraVector> constView( Vector::const_shared_ptr AmpVector );
 
 
     //! Return an AMP Vector from the Thyra::VectorBase
@@ -74,6 +74,11 @@ public:
     static AMP::LinearAlgebra::Vector::const_shared_ptr
     constView( const Thyra::VectorBase<double> *vec );
 
+public:
+    inline auto getNativeVec() { return getVec(); }
+    inline auto getNativeVec() const { return getVec(); }
+    virtual std::shared_ptr<Vector> getManagedVec()             = 0;
+    virtual std::shared_ptr<const Vector> getManagedVec() const = 0;
 
 protected:
     /**

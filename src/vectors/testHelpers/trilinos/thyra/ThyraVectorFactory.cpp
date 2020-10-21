@@ -82,7 +82,8 @@ AMP::LinearAlgebra::Vector::shared_ptr ManagedThyraFactory::getVector() const
     auto vec1 = d_factory->getVector();
     vec1->setVariable( getVariable() );
     // Create the managed vector
-    auto vec2 = AMP::LinearAlgebra::ThyraVector::view( vec1 );
+    auto view = AMP::LinearAlgebra::ThyraVector::view( vec1 );
+    auto vec2 = view->getManagedVec();
     vec2->setVariable( getVariable() );
     return vec2;
 }

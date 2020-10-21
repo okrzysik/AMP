@@ -1,6 +1,7 @@
 #ifndef included_AMP_ManagedPetscVector
 #define included_AMP_ManagedPetscVector
 
+#include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/vectors/data/DataChangeListener.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/petsc/PetscVector.h"
@@ -61,14 +62,17 @@ public: // These are adequately documented in a base class
     Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
 
-    virtual std::string type() const override
+    std::string type() const override
     {
         return "Managed PETSc Vector" + d_VectorData->VectorDataName();
     }
 
-    virtual bool petscHoldsView() const override;
+    bool petscHoldsView() const override;
 
     void receiveDataChanged() override;
+
+    std::shared_ptr<Vector> getManagedVec() override { return shared_from_this(); }
+    std::shared_ptr<const Vector> getManagedVec() const override { return shared_from_this(); }
 };
 
 

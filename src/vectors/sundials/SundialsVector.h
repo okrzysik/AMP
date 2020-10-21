@@ -100,7 +100,7 @@ public:
      *     It will never copy data.  If the vector cannot be wrapped it wll return an error.
      *  \param  AmpVector  a shared pointer to a Vector
      */
-    static Vector::shared_ptr view( Vector::shared_ptr AmpVector );
+    static std::shared_ptr<SundialsVector> view( Vector::shared_ptr AmpVector );
 
     /**
      *  \brief  If needed, create a Sundials wrapper for AmpVector.  Otherwise, return AmpVector.
@@ -108,11 +108,13 @@ public:
      *     It will never copy data.  If the vector cannot be wrapped it wll return an error.
      *  \param  AmpVector  a shared pointer to a Vector
      */
-    static Vector::const_shared_ptr constView( Vector::const_shared_ptr AmpVector );
+    static std::shared_ptr<const SundialsVector> constView( Vector::const_shared_ptr AmpVector );
 
 public:
     inline N_Vector &getNativeVec() { return getNVector(); }
     inline const N_Vector &getNativeVec() const { return getNVector(); }
+    virtual std::shared_ptr<Vector> getManagedVec()             = 0;
+    virtual std::shared_ptr<const Vector> getManagedVec() const = 0;
 };
 
 

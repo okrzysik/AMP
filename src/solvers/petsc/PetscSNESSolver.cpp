@@ -41,24 +41,41 @@ static inline void checkUpdateStatus( std::shared_ptr<const AMP::LinearAlgebra::
  *  Constructors                                                 *
  ****************************************************************/
 PetscSNESSolver::PetscSNESSolver()
+    : d_bUsesJacobian( false ),
+      d_bEnableLineSearchPreCheck( false ),
+      d_bEnableMFFDBoundsCheck( false ),
+      d_iMaximumFunctionEvals( 0 ),
+      d_iNumberOfLineSearchPreCheckAttempts( 0 ),
+      d_operatorComponentToEnableBoundsCheck( 0 ),
+      d_dStepTolerance( 0 ),
+      d_sMFFDDifferencingStrategy( MATMFFD_WP ),
+      d_dMFFDFunctionDifferencingError( PETSC_DEFAULT ),
+      d_comm( AMP_COMM_NULL ),
+      d_pSolutionVector( nullptr ),
+      d_pResidualVector( nullptr ),
+      d_SNESSolver( nullptr ),
+      d_Jacobian( nullptr ),
+      d_pKrylovSolver( nullptr )
 {
-    d_bUsesJacobian                  = false;
-    d_Jacobian                       = nullptr;
-    d_SNESSolver                     = nullptr;
-    d_sMFFDDifferencingStrategy      = MATMFFD_WP;
-    d_dMFFDFunctionDifferencingError = PETSC_DEFAULT;
-    d_pSolutionVector.reset();
-    d_pResidualVector.reset();
-    d_pKrylovSolver.reset();
 }
 PetscSNESSolver::PetscSNESSolver( std::shared_ptr<PetscSNESSolverParameters> parameters )
-    : SolverStrategy( parameters )
+    : SolverStrategy( parameters ),
+      d_bUsesJacobian( false ),
+      d_bEnableLineSearchPreCheck( false ),
+      d_bEnableMFFDBoundsCheck( false ),
+      d_iMaximumFunctionEvals( 0 ),
+      d_iNumberOfLineSearchPreCheckAttempts( 0 ),
+      d_operatorComponentToEnableBoundsCheck( 0 ),
+      d_dStepTolerance( 0 ),
+      d_sMFFDDifferencingStrategy( MATMFFD_WP ),
+      d_dMFFDFunctionDifferencingError( PETSC_DEFAULT ),
+      d_comm( parameters->d_comm ),
+      d_pSolutionVector( nullptr ),
+      d_pResidualVector( nullptr ),
+      d_SNESSolver( nullptr ),
+      d_Jacobian( nullptr ),
+      d_pKrylovSolver( parameters->d_pKrylovSolver )
 {
-    d_bUsesJacobian = false;
-    d_Jacobian      = nullptr;
-    d_SNESSolver    = nullptr;
-    d_comm          = parameters->d_comm;
-    d_pKrylovSolver = parameters->d_pKrylovSolver;
     initialize( parameters );
 }
 
@@ -222,7 +239,8 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
         sp_x->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     checkUpdateStatus( sp_r );
 
-    std::shared_ptr<AMP::Operator::Operator> op( ( (PetscSNESSolver *) ctx )->getOperator() );
+    auto *pSNESSolver = reinterpret_cast<PetscSNESSolver *>( ctx );
+    std::shared_ptr<AMP::Operator::Operator> op( pSNESSolver->getOperator() );
 
     op->residual( sp_f, sp_x, sp_r );
     sp_r->scale( -1.0 );
@@ -262,19 +280,17 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     // Check input vector states
     checkUpdateStatus( f );
     checkUpdateStatus( u );
-    checkUpdateStatus( spRhs );
-    checkUpdateStatus( spSol );
 
     if ( d_iDebugPrintInfoLevel > 2 )
-        AMP::pout << "L2 Norm of u in PetscSNESSolver::solve after view " << spSol->L2Norm()
+        AMP::pout << "L2 Norm of u in PetscSNESSolver::solve after view " << u->L2Norm()
                   << std::endl;
 
-    Vec x = std::dynamic_pointer_cast<const AMP::LinearAlgebra::PetscVector>( spSol )->getVec();
+    Vec x = spSol->getVec();
 
     Vec b = PETSC_NULL;
     if ( spRhs.get() != nullptr ) {
-        b = std::dynamic_pointer_cast<const AMP::LinearAlgebra::PetscVector>( spRhs )->getVec();
-        setSNESFunction( spRhs );
+        b = spRhs->getVec();
+        setSNESFunction( spRhs->getManagedVec() );
     }
 
     // Set the jacobian
@@ -355,7 +371,7 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat, void *ctx 
 {
     PROFILE_START( "setJacobian" );
     int ierr           = 0;
-    auto *pSNESSolver  = (PetscSNESSolver *) ctx;
+    auto *pSNESSolver  = reinterpret_cast<PetscSNESSolver *>( ctx );
     bool bUsesJacobian = pSNESSolver->getUsesJacobian();
 
     if ( !bUsesJacobian ) {
@@ -396,7 +412,7 @@ PetscErrorCode PetscSNESSolver::lineSearchPreCheck(
     SNESLineSearch, Vec x, Vec y, PetscBool *changed_y, void *checkctx )
 {
     int ierr          = 1;
-    auto *pSNESSolver = (PetscSNESSolver *) checkctx;
+    auto *pSNESSolver = reinterpret_cast<PetscSNESSolver *>( checkctx );
 
     auto pOperator      = pSNESSolver->getOperator();
     auto pScratchVector = pSNESSolver->getScratchVector();
@@ -435,7 +451,7 @@ PetscErrorCode PetscSNESSolver::lineSearchPreCheck(
 
 PetscErrorCode PetscSNESSolver::mffdCheckBounds( void *checkctx, Vec U, Vec a, PetscScalar *h )
 {
-    auto *pSNESSolver  = (PetscSNESSolver *) checkctx;
+    auto *pSNESSolver  = reinterpret_cast<PetscSNESSolver *>( checkctx );
     auto pSNESOperator = pSNESSolver->getOperator();
     std::shared_ptr<AMP::Operator::Operator> pOperator;
     auto pScratchVector = pSNESSolver->getScratchVector();

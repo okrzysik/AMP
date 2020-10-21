@@ -152,7 +152,7 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
     utils->passes( "managed duplicated destroyed" );
 
     if ( std::dynamic_pointer_cast<MultiVector>( vectora ) ) {
-        auto b      = AMP::LinearAlgebra::PetscVector::view( vectora );
+        auto b      = AMP::LinearAlgebra::PetscVector::view( vectora )->getManagedVec();
         bool passed = true;
         for ( size_t i = 0; i != b->numberOfDataBlocks(); i++ ) {
             if ( b->getRawDataBlock<double>( i ) == vectora->getRawDataBlock<double>( i ) ) {

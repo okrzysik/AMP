@@ -92,7 +92,7 @@ public:
      *  Epetra_Vector wrapper around the Vector.  If it fails, an
      *  exception is thrown.
      */
-    static Vector::shared_ptr view( Vector::shared_ptr vec );
+    static std::shared_ptr<EpetraVector> view( Vector::shared_ptr vec );
 
     /**
      *  \brief  Obtain a view of a vector with an Epetra_Vector wrapper
@@ -105,11 +105,13 @@ public:
      *  Epetra_Vector wrapper around the Vector.  If it fails, an
      *  exception is thrown.
      */
-    static Vector::const_shared_ptr constView( Vector::const_shared_ptr vec );
+    static std::shared_ptr<const EpetraVector> constView( Vector::const_shared_ptr vec );
 
 public:
     inline Epetra_Vector &getNativeVec() { return getEpetra_Vector(); }
     inline const Epetra_Vector &getNativeVec() const { return getEpetra_Vector(); }
+    virtual std::shared_ptr<Vector> getManagedVec()             = 0;
+    virtual std::shared_ptr<const Vector> getManagedVec() const = 0;
 };
 
 

@@ -50,13 +50,11 @@ PetscErrorCode _AMP_GetVecs( Mat m, Vec *right, Vec *left )
 {
     auto mat = PETSC::getAMP( m );
     if ( right != PETSC_NULL ) {
-        auto pRight = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(
-            AMP::LinearAlgebra::PetscVector::view( mat->getRightVector() ) );
+        auto pRight = AMP::LinearAlgebra::PetscVector::view( mat->getRightVector() );
         VecDuplicate( pRight->getVec(), right );
     }
     if ( left != PETSC_NULL ) {
-        auto pLeft = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(
-            AMP::LinearAlgebra::PetscVector::view( mat->getLeftVector() ) );
+        auto pLeft = AMP::LinearAlgebra::PetscVector::view( mat->getLeftVector() );
         VecDuplicate( pLeft->getVec(), left );
     }
     return 0;

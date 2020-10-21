@@ -38,6 +38,10 @@
 #endif
 #endif
 
+namespace AMP::LinearAlgebra {
+class PetscVector;
+}
+
 
 namespace AMP {
 namespace Solver {
@@ -209,7 +213,7 @@ private:
     // The following SNES solver keeps a reference to certain vectors around.
     // By declaring the vectors here, we ensure correct behavior during destruction.
     // This will ensure that the std::shared_ptr destructor calls VecDestroy on the last reference.
-    std::list<AMP::LinearAlgebra::Vector::const_shared_ptr> d_refVectors;
+    std::list<std::shared_ptr<const AMP::LinearAlgebra::PetscVector>> d_refVectors;
 
     SNES d_SNESSolver;
 

@@ -54,12 +54,20 @@ static inline void checkUpdateStatus( std::shared_ptr<const AMP::LinearAlgebra::
  *  Constructors                                                 *
  ****************************************************************/
 PetscKrylovSolver::PetscKrylovSolver()
+    : d_dDivergenceTolerance( 0 ),
+      d_bKSPCreatedInternally( false ),
+      d_bUsesPreconditioner( false ),
+      d_iMaxKrylovDimension( 0 ),
+      d_KrylovSolver( nullptr )
 {
-    d_bKSPCreatedInternally = false;
-    d_KrylovSolver          = nullptr;
 }
 PetscKrylovSolver::PetscKrylovSolver( std::shared_ptr<SolverStrategyParameters> parameters )
-    : SolverStrategy( parameters )
+    : SolverStrategy( parameters ),
+      d_dDivergenceTolerance( 0 ),
+      d_bKSPCreatedInternally( false ),
+      d_bUsesPreconditioner( false ),
+      d_iMaxKrylovDimension( 0 ),
+      d_KrylovSolver( nullptr )
 {
     AMP_ASSERT( parameters.get() != nullptr );
 
@@ -216,8 +224,6 @@ void PetscKrylovSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     // Check input vector states
     checkUpdateStatus( f );
     checkUpdateStatus( u );
-    checkUpdateStatus( fVecView );
-    checkUpdateStatus( uVecView );
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         std::cout << "PetscKrylovSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
@@ -225,9 +231,8 @@ void PetscKrylovSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         std::cout << "PetscKrylovSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm()
                   << std::endl;
     }
-    Vec fVec =
-        std::dynamic_pointer_cast<const AMP::LinearAlgebra::PetscVector>( fVecView )->getVec();
-    Vec uVec = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( uVecView )->getVec();
+    Vec fVec = fVecView->getVec();
+    Vec uVec = uVecView->getVec();
 
     // Create the preconditioner and re-register the operator
     PC pc;
