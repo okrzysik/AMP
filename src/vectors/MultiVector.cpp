@@ -399,9 +399,9 @@ void MultiVector::swapVectors( Vector &other )
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         d_vVectors[i]->swapVectors( getVector( other, i ) );
 }
-Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) const
+std::unique_ptr<Vector> MultiVector::rawClone( const Variable::shared_ptr name ) const
 {
-    std::shared_ptr<MultiVector> retVec( new MultiVector( name->getName(), getComm() ) );
+    std::unique_ptr<MultiVector> retVec( new MultiVector( name->getName(), getComm() ) );
     retVec->d_DOFManager = d_DOFManager;
     retVec->setCommunicationList( getCommunicationList() );
     retVec->d_vVectors.resize( d_vVectors.size() );

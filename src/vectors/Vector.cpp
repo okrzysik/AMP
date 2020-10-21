@@ -160,20 +160,24 @@ Vector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
 /****************************************************************
  * clone, swap                                                   *
  ****************************************************************/
-Vector::shared_ptr Vector::cloneVector() const { return cloneVector( getVariable() ); }
-Vector::shared_ptr Vector::cloneVector( const std::string &name ) const
+std::shared_ptr<Vector> Vector::cloneVector() const { return cloneVector( getVariable() ); }
+std::shared_ptr<Vector> Vector::cloneVector( const std::string &name ) const
 {
-    Vector::shared_ptr retVal;
+    std::unique_ptr<Vector> retVal;
     if ( getVariable() ) {
-        retVal = cloneVector( getVariable()->cloneVariable( name ) );
+        retVal = rawClone( getVariable()->cloneVariable( name ) );
     } else {
-        retVal = cloneVector( std::make_shared<Variable>( name ) );
+        retVal = rawClone( std::make_shared<Variable>( name ) );
     }
     return retVal;
 }
 Vector::shared_ptr Vector::cloneVector( const Variable::shared_ptr name ) const
 {
-    auto vec             = std::make_shared<Vector>();
+    return rawClone( name );
+}
+std::unique_ptr<Vector> Vector::rawClone( const Variable::shared_ptr name ) const
+{
+    auto vec             = std::make_unique<Vector>();
     vec->d_pVariable     = name;
     vec->d_DOFManager    = d_DOFManager;
     vec->d_VectorData    = d_VectorData->cloneData();

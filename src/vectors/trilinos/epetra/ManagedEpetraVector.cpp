@@ -34,11 +34,11 @@ ManagedEpetraVector::ManagedEpetraVector( shared_ptr vec ) : EpetraVector()
 
 ManagedEpetraVector::~ManagedEpetraVector() {}
 
-inline Vector::shared_ptr ManagedEpetraVector::cloneVector( const Variable::shared_ptr var ) const
+std::unique_ptr<Vector> ManagedEpetraVector::rawClone( const Variable::shared_ptr var ) const
 {
     auto vec    = getVectorEngine( getVectorData() );
     auto vec2   = vec->cloneVector( "ManagedEeptraVectorClone" );
-    auto retVal = std::make_shared<ManagedEpetraVector>( vec2 );
+    auto retVal = std::make_unique<ManagedEpetraVector>( vec2 );
     retVal->setVariable( var );
     return retVal;
 }
@@ -49,7 +49,7 @@ void ManagedEpetraVector::copyVector( Vector::const_shared_ptr vec )
     engineVec->copyVector( vec );
 }
 
-inline Epetra_Vector &ManagedEpetraVector::getEpetra_Vector()
+Epetra_Vector &ManagedEpetraVector::getEpetra_Vector()
 {
     auto vec  = getVectorEngine( getVectorData() );
     auto data = std::dynamic_pointer_cast<EpetraVectorData>( vec->getVectorData() );
@@ -57,7 +57,7 @@ inline Epetra_Vector &ManagedEpetraVector::getEpetra_Vector()
     return data->getEpetra_Vector();
 }
 
-inline const Epetra_Vector &ManagedEpetraVector::getEpetra_Vector() const
+const Epetra_Vector &ManagedEpetraVector::getEpetra_Vector() const
 {
     auto vec  = getVectorEngine( getVectorData() );
     auto data = std::dynamic_pointer_cast<const EpetraVectorData>( vec->getVectorData() );

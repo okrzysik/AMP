@@ -55,12 +55,12 @@ std::string ManagedThyraVector::ManagedThyraVector::type() const
 /****************************************************************
  * Clone the vector                                              *
  ****************************************************************/
-Vector::shared_ptr ManagedThyraVector::cloneVector( const Variable::shared_ptr var ) const
+std::unique_ptr<Vector> ManagedThyraVector::rawClone( const Variable::shared_ptr var ) const
 {
-    auto vec                  = getVectorEngine( getVectorData() );
-    auto vec2                 = vec->cloneVector( "ManagedThyraVectorClone" );
-    auto engine               = std::dynamic_pointer_cast<Vector>( vec2 );
-    Vector::shared_ptr retVal = Vector::shared_ptr( new ManagedThyraVector( engine ) );
+    auto vec    = getVectorEngine( getVectorData() );
+    auto vec2   = vec->cloneVector( "ManagedThyraVectorClone" );
+    auto engine = std::dynamic_pointer_cast<Vector>( vec2 );
+    auto retVal = std::make_unique<ManagedThyraVector>( engine );
     retVal->setVariable( var );
     return retVal;
 }

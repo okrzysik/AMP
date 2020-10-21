@@ -50,8 +50,9 @@ bool ManagedPetscVector::petscHoldsView() const { return d_wrapper->petscHoldsVi
 
 ManagedPetscVector *ManagedPetscVector::petscDuplicate()
 {
-    ManagedPetscVector *pAns = rawClone();
-    pAns->setVariable( getVariable() );
+    auto ptr  = rawClone( getVariable() ).release();
+    auto pAns = dynamic_cast<ManagedPetscVector *>( ptr );
+    AMP_ASSERT( pAns != nullptr );
     return pAns;
 }
 
@@ -63,17 +64,12 @@ void ManagedPetscVector::swapVectors( Vector &other )
     d_VectorData->swapData( *other.getVectorData() );
 }
 
-ManagedPetscVector *ManagedPetscVector::rawClone() const
+
+std::unique_ptr<Vector> ManagedPetscVector::rawClone( const Variable::shared_ptr p ) const
 {
     auto vec    = getVectorEngine( getVectorData() );
     auto vec2   = vec->cloneVector( vec->getVariable() );
-    auto retVal = new ManagedPetscVector( vec2 );
-    return retVal;
-}
-
-Vector::shared_ptr ManagedPetscVector::cloneVector( const Variable::shared_ptr p ) const
-{
-    Vector::shared_ptr retVal( rawClone() );
+    auto retVal = std::make_unique<ManagedPetscVector>( vec2 );
     retVal->setVariable( p );
     return retVal;
 }

@@ -38,8 +38,7 @@ public:
         return "Managed Epetra Vector" + d_VectorData->VectorDataName();
     }
 
-    using Vector::cloneVector;
-    Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const override;
+    std::unique_ptr<Vector> rawClone( const Variable::shared_ptr var ) const override;
     void swapVectors( Vector &other ) override;
 
     using Vector::copyVector;

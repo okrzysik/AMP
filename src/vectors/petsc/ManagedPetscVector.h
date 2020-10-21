@@ -42,11 +42,6 @@ public:
      */
     virtual ~ManagedPetscVector();
 
-    /** \brief Create an exact clone of this vector.
-     * \return A raw pointer to a clone of this vector
-     */
-    ManagedPetscVector *rawClone() const;
-
     //! Get the PETSc vector
     Vec &getVec() override { return d_wrapper->getVec(); }
 
@@ -55,8 +50,7 @@ public:
 
 public: // These are adequately documented in a base class
     void swapVectors( Vector &other ) override;
-    using Vector::cloneVector;
-    Vector::shared_ptr cloneVector( const Variable::shared_ptr p ) const override;
+    std::unique_ptr<Vector> rawClone( const Variable::shared_ptr p ) const override;
 
     Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     Vector::const_shared_ptr

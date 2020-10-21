@@ -36,10 +36,8 @@ public:
     virtual ~ManagedSundialsVector();
 
     // These are adequately documented in a base class or there is little need for the documentation
-    ManagedSundialsVector *rawClone() const;
     std::string type() const override;
-    using Vector::cloneVector;
-    Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const override;
+    std::unique_ptr<Vector> rawClone( const Variable::shared_ptr var ) const override;
     void swapVectors( Vector &other ) override;
 
     Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;

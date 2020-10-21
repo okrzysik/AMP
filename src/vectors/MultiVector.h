@@ -156,7 +156,7 @@ public:
     Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
-    Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
+    std::unique_ptr<Vector> rawClone( const Variable::shared_ptr name ) const override;
     void swapVectors( Vector &other ) override;
 
 protected:
@@ -197,7 +197,6 @@ private:
     inline void resetVectorOperations();
 
 public: // Pull Vector into the current scope
-    using Vector::cloneVector;
     using Vector::constSubsetVectorForVariable;
     using Vector::subsetVectorForVariable;
 };

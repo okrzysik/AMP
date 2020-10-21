@@ -301,7 +301,7 @@ public: // Virtual functions
      * entries.  The vector will
      * be associated with the same Variable.
      */
-    Vector::shared_ptr cloneVector() const;
+    std::shared_ptr<Vector> cloneVector() const;
 
     /** \brief Allocate space in the same fashion as <i>this</i>
      * \param[in] name  Name to give the variable associated with this vector
@@ -311,7 +311,7 @@ public: // Virtual functions
      * number of entries.  The vector will be associated with a clone of the same Variable with the
      * given name
      */
-    Vector::shared_ptr cloneVector( const std::string &name ) const;
+    std::shared_ptr<Vector> cloneVector( const std::string &name ) const;
 
     //! \name Vector memory manipulation
     //! \brief These methods control memory allocation, copying data, aliasing data, and swapping
@@ -325,7 +325,21 @@ public: // Virtual functions
      * It will have the same number of blocks, each with the same engines and same number of
      * entries.
      */
-    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const;
+    std::shared_ptr<Vector> cloneVector( const Variable::shared_ptr name ) const;
+
+    //! \name Vector memory manipulation
+    //! \brief These methods control memory allocation, copying data, aliasing data, and swapping
+    //! pointers among Vector
+    //! instantiations
+    //@{
+    /** \brief Allocate space in the same fashion as <i>this</i>
+     * \param[in] name  The variable to associate with the new vector
+     * \details  This will allocate new space with identical layout as <i>this</i>.
+     * \return  A Vector shared pointer
+     * It will have the same number of blocks, each with the same engines and same number of
+     * entries.
+     */
+    virtual std::unique_ptr<Vector> rawClone( const Variable::shared_ptr name ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other  Vector to swap data with
