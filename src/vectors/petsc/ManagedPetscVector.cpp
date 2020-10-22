@@ -45,18 +45,6 @@ ManagedPetscVector::ManagedPetscVector( Vector::shared_ptr vec ) : PetscVector()
 ManagedPetscVector::~ManagedPetscVector() {}
 
 
-bool ManagedPetscVector::petscHoldsView() const { return d_wrapper->petscHoldsView(); }
-
-
-ManagedPetscVector *ManagedPetscVector::petscDuplicate()
-{
-    auto ptr  = rawClone( getVariable() ).release();
-    auto pAns = dynamic_cast<ManagedPetscVector *>( ptr );
-    AMP_ASSERT( pAns != nullptr );
-    return pAns;
-}
-
-
 void ManagedPetscVector::swapVectors( Vector &other )
 {
     auto tmp = dynamic_cast<ManagedPetscVector *>( &other );

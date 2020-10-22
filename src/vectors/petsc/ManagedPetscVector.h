@@ -24,29 +24,15 @@ namespace LinearAlgebra {
  */
 class ManagedPetscVector : public Vector, public PetscVector, public DataChangeListener
 {
-private:
-    std::shared_ptr<PETSC::PetscVectorWrapper> d_wrapper;
-
 public:
     /** \brief Construct a view of another vector
      * \param[in] alias The vector to view
      */
     explicit ManagedPetscVector( Vector::shared_ptr alias );
 
-    /** \brief Method to create a duplicate of this vector for VecDuplicate
-     * \return Raw pointer to a new vector.  This does not copy data
-     */
-    ManagedPetscVector *petscDuplicate();
-
     /** \brief Destructor
      */
     virtual ~ManagedPetscVector();
-
-    //! Get the PETSc vector
-    Vec &getVec() override { return d_wrapper->getVec(); }
-
-    //! Get the PETSc vector
-    const Vec &getVec() const override { return d_wrapper->getVec(); }
 
 public: // These are adequately documented in a base class
     void swapVectors( Vector &other ) override;
@@ -60,8 +46,6 @@ public: // These are adequately documented in a base class
     {
         return "Managed PETSc Vector" + d_VectorData->VectorDataName();
     }
-
-    bool petscHoldsView() const override;
 
     void receiveDataChanged() override;
 

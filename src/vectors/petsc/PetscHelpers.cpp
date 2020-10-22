@@ -655,7 +655,7 @@ void reset_vec_ops( Vec t )
 void null_deleter( AMP::LinearAlgebra::Vector * ) {}
 static uint32_t globalHash = AMP::Utilities::hash_char( "PetscVectorWrapper" );
 PetscVectorWrapper::PetscVectorWrapper( AMP::LinearAlgebra::ManagedPetscVector *vec )
-    : d_madeWithPetscDuplicate( false ), hash( globalHash ), d_vec( vec )
+    : d_madeWithClone( false ), hash( globalHash ), d_vec( vec )
 {
     AMP_ASSERT( vec );
     auto comm = vec->getComm();
@@ -683,7 +683,7 @@ PetscVectorWrapper::PetscVectorWrapper( AMP::LinearAlgebra::ManagedPetscVector *
 }
 PetscVectorWrapper::~PetscVectorWrapper()
 {
-    if ( !d_madeWithPetscDuplicate ) {
+    if ( !d_madeWithClone ) {
         int refct = ( (PetscObject) d_petscVec )->refct;
         if ( refct > 1 )
             AMP_ERROR( "Deleting a vector still held by PETSc" );
@@ -694,21 +694,23 @@ PetscVectorWrapper::~PetscVectorWrapper()
 bool PetscVectorWrapper::petscHoldsView() const
 {
     int refct = ( (PetscObject) d_petscVec )->refct;
-    if ( !d_madeWithPetscDuplicate && refct > 1 )
+    if ( !d_madeWithClone && refct > 1 )
         return true;
     return false;
 }
 bool PetscVectorWrapper::check() const { return hash == globalHash; }
 Vec PetscVectorWrapper::duplicate()
 {
-    auto dup                                    = d_vec->petscDuplicate();
-    auto vec                                    = dup->getVec();
-    getWrapper( vec )->d_madeWithPetscDuplicate = true;
+    auto ptr = d_vec->rawClone( d_vec->getVariable() ).release();
+    auto dup = dynamic_cast<AMP::LinearAlgebra::ManagedPetscVector *>( ptr );
+    AMP_ASSERT( dup != nullptr );
+    auto vec                           = dup->getVec();
+    getWrapper( vec )->d_madeWithClone = true;
     return vec;
 }
 void PetscVectorWrapper::destroy()
 {
-    if ( d_madeWithPetscDuplicate )
+    if ( d_madeWithClone )
         delete d_vec;
 }
 

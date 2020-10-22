@@ -1,104 +1,113 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/testHelpers/VectorFactory.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
+#include "AMP/vectors/testHelpers/generateVectorFactories.h"
 
-#include "test_VectorHelpers.h"
+#include "test_ArrayVector.h"
+
+#ifdef USE_TRILINOS_THYRA
+#include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
+#endif
 
 #include <iostream>
 
 
-int test_Vector( int argc, char **argv )
+using namespace AMP::unit_test;
+using namespace AMP::LinearAlgebra;
+using AMP::LinearAlgebra::generateVectorFactory;
+using AMP::LinearAlgebra::VectorTests;
+
+
+std::string SimpleFactory1 = "SimpleVectorFactory<15,false,double>";
+std::string SimpleFactory2 = "SimpleVectorFactory<45,true,double>";
+std::string SNPVFactory    = "SimplePetscNativeFactory";
+std::string SMEVFactory    = "SimpleManagedVectorFactory<ManagedEpetraVector>";
+#ifdef USE_EXT_PETSC
+std::string MVFactory1 = "MultiVectorFactory<" + SMEVFactory + ", 1, " + SNPVFactory + ", 1>";
+#else
+std::string MVFactory1 =
+    "MultiVectorFactory<SimpleVectorFactory<15,false>,1," + SMEVFactory + ",1>";
+#endif
+
+
+// Set the tests
+inline void testNullVector( AMP::UnitTest &ut, const std::string &factoryName )
+{
+    auto factory = generateVectorFactory( factoryName );
+    VectorTests tests( factory );
+    tests.testNullVector( &ut );
+    AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
+}
+inline void testBasicVector( AMP::UnitTest &ut, const std::string &factoryName )
+{
+    auto factory = generateVectorFactory( factoryName );
+    VectorTests tests( factory );
+    tests.testBasicVector( &ut );
+    AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
+}
+inline void testManagedVector( AMP::UnitTest &ut, const std::string &factoryName )
+{
+    auto factory = generateVectorFactory( factoryName );
+    VectorTests tests( factory );
+    tests.testManagedVector( &ut );
+    AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
+}
+inline void testVectorSelector( AMP::UnitTest &ut, const std::string &factoryName )
+{
+    auto factory = generateVectorFactory( factoryName );
+    VectorTests tests( factory );
+    tests.testVectorSelector( &ut );
+    AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
+}
+
+
+int main( int argc, char **argv )
 {
 
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
+    // Test ArrayVector dimensions
+    std::vector<size_t> dims{ 3, 3, 3, 3 };
+    testArrayVectorDimensions<double>( dims, ut );
+
+    // Run null vector tests
     AMP::pout << "Testing NullVector" << std::endl;
     testNullVector( ut, SimpleFactory1 );
 
-    AMP::pout << "Testing SimpleVector" << std::endl;
-    testBasicVector( ut, SimpleFactory1 );
-    testBasicVector( ut, SimpleFactory2 );
-// testBasicVector( ut, "SimpleVectorFactory<15,false,float>" );
-#if USE_OPENMP
-    testBasicVector( ut, "SimpleVectorFactory<15,false,double,openmp,cpu>" );
-#endif
-#if USE_CUDA
-    testBasicVector( ut, "SimpleVectorFactory<15,false,double,default,gpu>" );
-    testBasicVector( ut, "SimpleVectorFactory<15,false,double,cuda,gpu>" );
-#endif
+    // Run the basic vector tests
+    AMP::pout << "Running basic vector tests:" << std::endl;
+    for ( auto factory : getAllFactories() ) {
+        // AMP::pout << "    " << factory << std::endl;
+        testBasicVector( ut, factory );
+    }
     AMP::pout << std::endl;
 
-    AMP::pout << "Testing ArrayVector" << std::endl;
-    testBasicVector( ut, ArrayFactory1 );
-    testBasicVector( ut, ArrayFactory2 );
-    std::vector<size_t> dims{ 3, 3, 3, 3 };
-    testArrayVectorDimensions<double>( dims, ut );
+
+    // Run the managed vector tests
+    AMP::pout << "Running managed vector tests:" << std::endl;
+    for ( auto factory : getManagedVectorFactories() ) {
+        // AMP::pout << "    " << factory << std::endl;
+        testManagedVector( ut, factory );
+    }
     AMP::pout << std::endl;
 
-#if defined( USE_EXT_PETSC )
-    AMP::pout << "Testing NativePetscVector" << std::endl;
-    testBasicVector( ut, NPVFactory );
-    AMP::pout << std::endl;
-#endif
-
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-    AMP::pout << "Testing ManagedPetscVector<NativePetscVector>" << std::endl;
-    testManagedVector( ut, SNPVFactory );
-    AMP::pout << std::endl;
-#else
-    ut.expected_failure( "Compiled without petsc" );
-#endif
-
-#ifdef USE_EXT_TRILINOS
-
-#ifdef USE_TRILINOS_THYRA
-    std::string ManagedThyraFactory1       = "ManagedThyraFactory<" + SimpleFactory1 + ">";
-    std::string ManagedThyraFactory2       = "ManagedThyraFactory<" + SimpleFactory2 + ">";
-    std::string ManagedNativeThyraFactory1 = "ManagedNativeThyraFactory<" + SimpleFactory1 + ">";
-    std::string ManagedNativeThyraFactory2 = "ManagedNativeThyraFactory<" + SimpleFactory2 + ">";
-
-    AMP::pout << "Testing NativeThyraVector" << std::endl;
-    testBasicVector( ut, "NativeThyraFactory" );
-    AMP::pout << std::endl;
-
-    AMP::pout << "Testing ManagedThyraVector" << std::endl;
-    testBasicVector( ut, ManagedThyraFactory2 );
-    AMP::pout << std::endl;
-
-    AMP::pout << "Testing NativeThyraVector of a ManagedThyraVector" << std::endl;
-    testBasicVector( ut, ManagedNativeThyraFactory2 );
-    AMP::pout << std::endl;
-#endif
-
-    AMP::pout << "Testing Iterator" << std::endl;
-    VectorIteratorTests( ut, MVFactory1 );
-    AMP::pout << std::endl;
-
-    AMP::pout << "Testing ManagedEpetraVector" << std::endl;
-    testManagedVector( ut, SMEVFactory );
-    AMP::pout << std::endl;
-
-    AMP::pout << "Testing simple multivector" << std::endl;
-    testManagedVector( ut, MVFactory1 );
-    AMP::pout << std::endl;
-
-    AMP::pout << "Testing bigger multivector" << std::endl;
-    testManagedVector( ut, MVFactory2 );
-    AMP::pout << std::endl;
-
-    AMP::pout << "Testing multivector of multivector" << std::endl;
-    testManagedVector( ut, MVFactory3 );
-    AMP::pout << std::endl;
-
-#ifdef USE_TRILINOS_THYRA
-    AMP::pout << "Testing NativeThyraVector of a ManagedThyraVector of a MultVector" << std::endl;
-    testBasicVector( ut, ManagedNativeThyraFactory1 );
+    // Run the vector selector tests
+    AMP::pout << "Running vector selector tests:" << std::endl;
+    for ( auto factory : getAllFactories() ) {
+        // AMP::pout << "    " << factory << std::endl;
+        testVectorSelector( ut, factory );
+    }
     AMP::pout << std::endl;
 
 // Run Belos tests of thyra vectors
-#ifdef USE_TRILINOS_BELOS
+#if defined( USE_TRILINOS_THYRA ) && defined( USE_TRILINOS_BELOS )
     AMP::pout << "Testing Belos interface to Thyra vectors" << std::endl;
     testBelosThyraVector( ut, NativeThyraFactory() );
     testBelosThyraVector( ut, ManagedThyraFactory( generateVectorFactory( SimpleFactory2 ) ) );
@@ -108,17 +117,8 @@ int test_Vector( int argc, char **argv )
     AMP::pout << std::endl;
 #endif
 
-#endif
-
-#else
-    ut.expected_failure( "Compiled without trilinos" );
-#endif
-
     ut.report();
-
     int num_failed = ut.NumFailGlobal();
-    if ( num_failed == 0 )
-        AMP::pout << "No errors detected" << std::endl;
     AMP::AMPManager::shutdown();
     return num_failed;
 }

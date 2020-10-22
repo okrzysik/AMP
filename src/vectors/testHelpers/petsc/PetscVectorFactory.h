@@ -117,7 +117,7 @@ public:
         size_t localSize = t->getLocalSize();
         Vec ans;
         AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-        VecCreate( globalComm.getCommunicator(), &ans );
+        VecCreate( t->getComm().getCommunicator(), &ans );
         VecSetSizes( ans, localSize, PETSC_DECIDE );
         VecSetFromOptions( ans );
         PetscInt N;

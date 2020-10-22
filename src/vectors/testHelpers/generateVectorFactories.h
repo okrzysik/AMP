@@ -32,6 +32,32 @@ namespace LinearAlgebra {
 std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &factory );
 
 
+/** \brief Get the valid vector factories
+ * \details  This will generate a list of all valid factories to test
+ */
+std::vector<std::string> getAllFactories();
+
+/** \brief Get the valid vector factories
+ * \details  This will generate a list of valid SimpleVector factories to test
+ */
+std::vector<std::string> getSimpleVectorFactories();
+
+/** \brief Get the valid vector factories
+ * \details  This will generate a list of valid ArrayVector factories to test
+ */
+std::vector<std::string> getArrayVectorFactories();
+
+/** \brief Get the valid vector factories
+ * \details  This will generate a list of valid native factories to test
+ */
+std::vector<std::string> getNativeVectorFactories();
+
+/** \brief Get the valid vector factories
+ * \details  This will generate a list of valid managed vector factories to test
+ */
+std::vector<std::string> getManagedVectorFactories();
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

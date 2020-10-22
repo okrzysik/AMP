@@ -96,7 +96,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 }
 
 
-int testMultiVector( int argc, char *argv[] )
+int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;

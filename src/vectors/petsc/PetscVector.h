@@ -26,16 +26,6 @@ namespace LinearAlgebra {
  */
 class PetscVector
 {
-
-protected:
-    /**
-     *  \brief  Construct a PetscVector
-     *
-     *  This can only be called by a derived class or the static function below.  There is
-     *  no need to create this vector directly since it is virtual.
-     */
-    PetscVector();
-
 public:
     /**
      *  \brief  Destructor
@@ -64,7 +54,7 @@ public:
       }
       \endcode
       */
-    virtual Vec &getVec() = 0;
+    inline Vec &getVec() { return d_wrapper->getVec(); }
 
     /**
       *  \brief  Obtain PETSc Vec for use in PETSc routines
@@ -88,7 +78,7 @@ public:
       }
       \endcode
       */
-    virtual const Vec &getVec() const = 0;
+    inline const Vec &getVec() const { return d_wrapper->getVec(); }
 
     /**
      *  \brief  If needed, create a PETSc wrapper for AmpVector.  Otherwise, return AmpVector.
@@ -113,14 +103,28 @@ public:
      *    that would prevent us from deleting the vector.  This function returns false
      *    if we can safely delete the vector.
      */
-    virtual bool petscHoldsView() const = 0;
+    inline bool petscHoldsView() const { return d_wrapper->petscHoldsView(); }
 
 
 public:
-    inline Vec &getNativeVec() { return getVec(); }
-    inline const Vec &getNativeVec() const { return getVec(); }
+    inline Vec &getNativeVec() { return d_wrapper->getVec(); }
+    inline const Vec &getNativeVec() const { return d_wrapper->getVec(); }
     virtual std::shared_ptr<Vector> getManagedVec()             = 0;
     virtual std::shared_ptr<const Vector> getManagedVec() const = 0;
+
+
+protected:
+    /**
+     *  \brief  Construct a PetscVector
+     *
+     *  This can only be called by a derived class or the static function below.  There is
+     *  no need to create this vector directly since it is virtual.
+     */
+    PetscVector();
+
+
+protected:
+    std::shared_ptr<PETSC::PetscVectorWrapper> d_wrapper;
 };
 
 

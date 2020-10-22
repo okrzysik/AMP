@@ -53,7 +53,7 @@ void VectorTests::testBasicVector( AMP::UnitTest *ut )
 #endif
     VectorIteratorLengthTest( ut );
     Bug_728( ut );
-    //    VectorIteratorTests( ut );
+    VectorIteratorTests( ut );
     TestMultivectorDuplicate( ut );
 }
 

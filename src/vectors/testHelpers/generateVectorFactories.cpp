@@ -34,6 +34,25 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
+// Remove duplicate entries perserving the initial order
+template<class TYPE>
+static inline void cleanList( std::vector<TYPE> &x )
+{
+    for ( size_t i = 1; i < x.size(); ) {
+        bool found = false;
+        for ( size_t j = 0; j < i; j++ )
+            found = found || x[i].compare( x[j] ) == 0;
+        if ( found ) {
+            for ( size_t j = i; j < x.size() - 1; j++ )
+                x[j] = x[j + 1];
+            x.resize( x.size() - 1 );
+        } else {
+            i++;
+        }
+    }
+}
+
+
 // Trim string
 static inline std::string trim( std::string s )
 {
@@ -290,6 +309,212 @@ std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
         AMP_ERROR( "Unknown factory" );
     }
     return factory;
+}
+
+
+/********************************************************************
+ * Get basic vector factories                                        *
+ ********************************************************************/
+std::vector<std::string> getSimpleVectorFactories()
+{
+    std::vector<std::string> list;
+    list.push_back( "SimpleVectorFactory<15,false,double>" );
+    list.push_back( "SimpleVectorFactory<45,true,double>" );
+    // list.push_back( "SimpleVectorFactory<15,false,float>" );
+    // list.push_back( "SimpleVectorFactory<45,true,double>" );
+#if USE_OPENMP
+    list.push_back( "SimpleVectorFactory<15,false,double,openmp,cpu>" );
+#endif
+#if USE_CUDA
+    list.push_back( "SimpleVectorFactory<15,false,double,default,gpu>" );
+    list.push_back( "SimpleVectorFactory<15,false,double,cuda,gpu>" );
+#endif
+    return list;
+}
+std::vector<std::string> getArrayVectorFactories()
+{
+    std::vector<std::string> list;
+    list.push_back( "ArrayVectorFactory<4,10,false,double>" );
+    list.push_back( "ArrayVectorFactory<4,10,true,double>" );
+    return list;
+}
+std::vector<std::string> getNativeVectorFactories()
+{
+    std::vector<std::string> list;
+#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+    list.push_back( "SimplePetscNativeFactory" );
+    list.push_back( "NativePetscVectorFactory" );
+#endif
+#ifdef USE_TRILINOS_THYRA
+    list.push_back( "NativeThyraFactory" );
+#endif
+    return list;
+}
+
+
+/********************************************************************
+ * Get advanced vector factories                                     *
+ ********************************************************************/
+std::vector<std::string> getMultiVectorFactories()
+{
+    std::vector<std::string> list;
+    std::string SNPVFactory = "SimplePetscNativeFactory";
+    std::string SMEVFactory = "SimpleManagedVectorFactory<ManagedEpetraVector>";
+#ifdef USE_EXT_PETSC
+    std::string MVFactory1 = "MultiVectorFactory<" + SMEVFactory + ", 1, " + SNPVFactory + ", 1>";
+    std::string MVFactory2 = "MultiVectorFactory<" + SMEVFactory + ", 3, " + SNPVFactory + ", 2>";
+    std::string MVFactory3 = "MultiVectorFactory<" + MVFactory1 + ", 2, " + MVFactory2 + ", 2>";
+#else
+    std::string MVFactory1 =
+        "MultiVectorFactory<SimpleVectorFactory<15,false>,1," + SMEVFactory + ",1>";
+    std::string MVFactory2 =
+        "MultiVectorFactory<SimpleVectorFactory<15,false>,3," + SMEVFactory + ",2>";
+    std::string MVFactory3 = "MultiVectorFactory<" + MVFactory1 + ", 2, " + MVFactory2 + ", 2>";
+#endif
+    list.push_back( MVFactory1 );
+    list.push_back( MVFactory2 );
+    list.push_back( MVFactory3 );
+    return list;
+}
+std::vector<std::string> getManagedVectorFactories()
+{
+    std::vector<std::string> list;
+#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+    list.push_back( "SimplePetscNativeFactory" );
+#endif
+#ifdef USE_EXT_TRILINOS
+    std::string SNPVFactory = "SimplePetscNativeFactory";
+    std::string SMEVFactory = "SimpleManagedVectorFactory<ManagedEpetraVector>";
+    std::string NPVFactory  = "NativePetscVectorFactory";
+    std::string MVFactory1  = "MultiVectorFactory<" + SMEVFactory + ", 1, " + SNPVFactory + ", 1>";
+    std::string MVFactory2  = "MultiVectorFactory<" + SMEVFactory + ", 3, " + SNPVFactory + ", 2>";
+    std::string MVFactory3  = "MultiVectorFactory<" + MVFactory1 + ", 2, " + MVFactory2 + ", 2>";
+    list.push_back( SMEVFactory );
+    list.push_back( MVFactory1 );
+    list.push_back( MVFactory2 );
+    list.push_back( MVFactory3 );
+#ifdef USE_TRILINOS_THYRA
+    auto SimpleFactories             = getSimpleVectorFactories();
+    std::string ManagedThyraFactory1 = "ManagedThyraFactory<" + SimpleFactories[0] + ">";
+    std::string ManagedThyraFactory2 = "ManagedThyraFactory<" + SimpleFactories[1] + ">";
+    std::string ManagedNativeThyraFactory1 =
+        "ManagedNativeThyraFactory<" + SimpleFactories[0] + ">";
+    std::string ManagedNativeThyraFactory2 =
+        "ManagedNativeThyraFactory<" + SimpleFactories[1] + ">";
+    std::string MNT_MVFactory = "ManagedNativeThyraFactory<" + MVFactory1 + ">";
+    list.push_back( "NativeThyraFactory" );
+    list.push_back( ManagedThyraFactory1 );
+    list.push_back( ManagedThyraFactory2 );
+    list.push_back( ManagedNativeThyraFactory1 );
+    list.push_back( ManagedNativeThyraFactory2 );
+    list.push_back( MNT_MVFactory );
+#endif
+#endif
+    list.push_back( "StridedVectorFactory<" + SMEVFactory + ">" );
+    return list;
+}
+std::vector<std::string> getCloneVectorFactories()
+{
+    std::vector<std::string> list;
+#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+    std::string CloneSMEVFactory = "CloneFactory<SimpleManagedVectorFactory<ManagedEpetraVector>>";
+    std::string CloneSNPVFactory = "CloneFactory<SimplePetscNativeFactory>";
+    std::string CloneMVFactory1 =
+        "CloneFactory<MultiVectorFactory<" + CloneSMEVFactory + ",1," + CloneSNPVFactory + ",1>>";
+    std::string CloneMVFactory2 =
+        "CloneFactory<MultiVectorFactory<" + CloneSMEVFactory + ",3," + CloneSNPVFactory + ",2>>";
+    std::string CloneMVFactory3 =
+        "CloneFactory<MultiVectorFactory<" + CloneMVFactory1 + ",2," + CloneMVFactory2 + ",2>>";
+    list.push_back( CloneSMEVFactory );
+    list.push_back( CloneSNPVFactory );
+    list.push_back( CloneMVFactory1 );
+    list.push_back( CloneMVFactory2 );
+    list.push_back( CloneMVFactory3 );
+#endif
+    return list;
+}
+std::vector<std::string> getViewVectorFactories()
+{
+    std::vector<std::string> list;
+#if defined( USE_EXT_PETSC )
+    auto SimpleFactories = getSimpleVectorFactories();
+    list.push_back( "ViewFactory<PetscVector," + SimpleFactories[0] + ">" );
+#endif
+#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+    std::string ViewSMEVFactory =
+        "ViewFactory<PetscVector,SimpleManagedVectorFactory<ManagedEpetraVector>>";
+    std::string ViewSNPVFactory = "ViewFactory<PetscVector,SimplePetscNativeFactory>";
+    std::string ViewMVFactory1  = "ViewFactory<PetscVector,MultiVectorFactory<" + ViewSMEVFactory +
+                                 ",1," + ViewSNPVFactory + ",1>>";
+    std::string ViewMVFactory2 = "ViewFactory<PetscVector,MultiVectorFactory<" + ViewSMEVFactory +
+                                 ",3," + ViewSNPVFactory + ",2>>";
+    std::string ViewMVFactory3 = "ViewFactory<PetscVector,MultiVectorFactory<" + ViewMVFactory1 +
+                                 ",2," + ViewMVFactory2 + ",2>>";
+    list.push_back( ViewMVFactory1 );
+    list.push_back( ViewSMEVFactory );
+    list.push_back( ViewSNPVFactory );
+    list.push_back( ViewMVFactory1 );
+    list.push_back( ViewMVFactory2 );
+    list.push_back( ViewMVFactory3 );
+#endif
+    for ( auto factory : getManagedVectorFactories() )
+        list.push_back( "ViewFactory<PetscVector," + factory + ">" );
+    return list;
+}
+std::vector<std::string> getCloneViewVectorFactories()
+{
+    std::vector<std::string> list;
+    for ( auto view : getViewVectorFactories() )
+        list.push_back( "CloneFactory<" + view + ">" );
+#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+    std::string CloneViewSMEVFactory =
+        "CloneFactory<ViewFactory<PetscVector,SimpleManagedVectorFactory<ManagedEpetraVector>>>";
+    std::string CloneViewSNPVFactory =
+        "CloneFactory<ViewFactory<PetscVector,SimplePetscNativeFactory>>";
+    std::string CloneViewMVFactory1 = "CloneFactory<ViewFactory<PetscVector,MultiVectorFactory<" +
+                                      CloneViewSMEVFactory + ",1," + CloneViewSNPVFactory + ",1>>>";
+    std::string CloneViewMVFactory2 = "CloneFactory<ViewFactory<PetscVector,MultiVectorFactory<" +
+                                      CloneViewSMEVFactory + ",3," + CloneViewSNPVFactory + ",2>>>";
+    std::string CloneViewMVFactory3 = "CloneFactory<ViewFactory<PetscVector,MultiVectorFactory<" +
+                                      CloneViewMVFactory1 + ",2," + CloneViewMVFactory2 + ",2>>>";
+    list.push_back( CloneViewMVFactory1 );
+    list.push_back( CloneViewMVFactory2 );
+    list.push_back( CloneViewMVFactory3 );
+#endif
+    return list;
+}
+
+
+/********************************************************************
+ * Get all vector factories                                          *
+ ********************************************************************/
+std::vector<std::string> getAllFactories()
+{
+    std::vector<std::string> list;
+    for ( auto factory : getSimpleVectorFactories() )
+        list.push_back( factory );
+    for ( auto factory : getArrayVectorFactories() )
+        list.push_back( factory );
+    for ( auto factory : getNativeVectorFactories() )
+        list.push_back( factory );
+    for ( auto factory : getMultiVectorFactories() )
+        list.push_back( factory );
+    for ( auto factory : getManagedVectorFactories() )
+        list.push_back( factory );
+    for ( auto factory : getCloneVectorFactories() )
+        list.push_back( factory );
+    for ( auto factory : getViewVectorFactories() )
+        list.push_back( factory );
+    for ( auto factory : getCloneViewVectorFactories() )
+        list.push_back( factory );
+#if defined( USE_EXT_PETSC )
+    list.push_back( "NativePetscVectorFactory" );
+#endif
+#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+    list.push_back( "SimplePetscNativeFactory" );
+#endif
+    cleanList( list );
+    return list;
 }
 
 
