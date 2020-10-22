@@ -4,14 +4,10 @@
 
 COPY_TEST_FILE( input_testMultiVector )
 
-INITIALIZE_TESTBUILDER()
-
 ADD_AMP_TEST_1_2_4( test_Vector )
 ADD_AMP_TEST_1_2_4( testMultiVector )
 ADD_AMP_TEST( test_VectorPerformance )
 ADD_AMP_TEST( test_Scalar )
-
-FINALIZE_TESTBUILDER()
 
 IF ( USE_CUDA )
     ADD_RESOURCE( test_Vector GPU )

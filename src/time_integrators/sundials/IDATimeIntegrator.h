@@ -5,13 +5,11 @@
 
 
 #include "AMP/matrices/ManagedMatrix.h"
+#include "AMP/operators/LinearOperator.h"
 #include "AMP/time_integrators/TimeIntegrator.h"
 #include "AMP/time_integrators/sundials/IDATimeIntegratorParameters.h"
 #include "AMP/time_integrators/sundials/IDATimeOperator.h"
-#include "AMP/vectors/sundials/ManagedSundialsVector.h"
 #include "AMP/vectors/sundials/SundialsVector.h"
-
-#include "AMP/operators/LinearOperator.h"
 
 /*
  #ifndef included_AMP_ImplicitTimeIntegrator

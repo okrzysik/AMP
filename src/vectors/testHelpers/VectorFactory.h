@@ -7,9 +7,6 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
-#ifdef USE_PETSC
-#include "petscvec.h"
-#endif
 
 
 namespace AMP {
@@ -75,7 +72,10 @@ template<class TYPE       = double,
 class SimpleVectorFactory : public VectorFactory
 {
 public:
-    SimpleVectorFactory( int i, bool global ) : I( i ), GLOBAL( global ) {}
+    SimpleVectorFactory( int i, bool global, std::string name = "SimpleVectorFactory" )
+        : I( i ), GLOBAL( global ), NAME( std::move( name ) )
+    {
+    }
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
@@ -93,7 +93,7 @@ public:
         return vec;
     }
 
-    virtual std::string name() const override { return "SimpleVectorFactory"; }
+    virtual std::string name() const override { return NAME; }
 
     virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
     {
@@ -104,6 +104,7 @@ private:
     SimpleVectorFactory();
     int I;
     bool GLOBAL;
+    std::string NAME;
 };
 
 
@@ -142,132 +143,6 @@ private:
     bool GLOBAL;
 };
 
-
-#ifdef USE_EXT_TRILINOS
-
-template<typename TYPE>
-class SimpleManagedVectorFactory : public VectorFactory
-{
-public:
-    SimpleManagedVectorFactory() {}
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "..." );
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
-    {
-        const int nLocal = 210;
-        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-        const int start   = nLocal * globalComm.getRank();
-        const int nGlobal = nLocal * globalComm.getSize();
-        auto commList   = AMP::LinearAlgebra::CommunicationList::createEmpty( nLocal, globalComm );
-        auto dofManager = std::make_shared<AMP::Discretization::DOFManager>( nLocal, globalComm );
-        auto buffer =
-            std::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
-        auto engine = createEpetraVector( commList, dofManager, buffer );
-        auto retval = std::make_shared<TYPE>( engine );
-        retval->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
-        return retval;
-    }
-
-    virtual std::string name() const override { return "SimpleManagedVectorFactory"; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return getVector()->getDOFManager();
-    }
-};
-#endif
-
-
-#ifdef USE_EXT_PETSC
-class NativePetscVectorFactory : public VectorFactory
-{
-public:
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return AMP::LinearAlgebra::Variable::shared_ptr(); // no variable.....
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
-    {
-        Vec v;
-        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-        VecCreate( globalComm.getCommunicator(), &v );
-        PetscInt local_size = 15;
-        VecSetSizes( v, local_size, PETSC_DECIDE );
-        VecSetType( v, VECMPI ); // this line will have to be modified for the no mpi and cuda cases
-        auto newVec = createVector( v, true );
-        VecSetFromOptions( v );
-        newVec->getVectorData()->assemble();
-        newVec->setVariable(
-            std::make_shared<AMP::LinearAlgebra::Variable>( "Test NativePetscVector" ) );
-        return newVec;
-    }
-
-    virtual std::string name() const override { return "NativePetscVectorFactory"; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return getVector()->getDOFManager();
-    }
-};
-
-template<typename T>
-class PetscManagedVectorFactory : public VectorFactory
-{
-public:
-    typedef T vector;
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return AMP::LinearAlgebra::Variable::shared_ptr(); // no variable.....
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
-    {
-        Vec v;
-        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-        VecCreate( globalComm.getCommunicator(), &v );
-        VecSetSizes( v, 15, PETSC_DECIDE );
-        auto newVec = createVector( v, true );
-        VecSetFromOptions( v );
-        newVec->getVectorData()->assemble();
-        auto retval = std::make_shared<T>( newVec );
-        retval->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
-        return retval;
-    }
-
-    virtual std::string name() const override { return "PetscManagedVectorFactory"; }
-};
-#endif
-
-#ifdef USE_EXT_SUNDIALS
-class NativeSundialsVectorFactory : public VectorFactory
-{
-public:
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return AMP::LinearAlgebra::Variable::shared_ptr(); // no variable.....
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
-    {
-        AMP::LinearAlgebra::Vector::shared_ptr newVec;
-        AMP_ERROR( "Not implemented" );
-        return newVec;
-    }
-
-    virtual std::string name() const override { return "NativeSundialsVectorFactory"; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return getVector()->getDOFManager();
-    }
-};
-#endif
 
 template<typename TYPE>
 class ViewFactory : public VectorFactory
@@ -334,7 +209,11 @@ public:
         return retVal;
     }
 
-    virtual std::string name() const override { return "MultiVectorFactory"; }
+    virtual std::string name() const override
+    {
+        return "MultiVectorFactory<" + FACTORY1->name() + "," + std::to_string( NUM1 ) + "," +
+               FACTORY2->name() + "," + std::to_string( NUM2 ) + ">";
+    }
 
     virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
     {

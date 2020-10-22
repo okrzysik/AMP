@@ -1,10 +1,11 @@
+#include "AMP/time_integrators/sundials/IDATimeIntegrator.h"
+#include "AMP/operators/OperatorBuilder.h"
 #include "AMP/time_integrators/LinearTimeOperator.h"
+#include "AMP/time_integrators/TimeIntegratorParameters.h"
+#include "AMP/utils/Utilities.h"
+
 #include <iostream>
 
-#include "AMP/operators/OperatorBuilder.h"
-#include "AMP/time_integrators/TimeIntegratorParameters.h"
-#include "AMP/time_integrators/sundials/IDATimeIntegrator.h"
-#include "AMP/utils/Utilities.h"
 
 #ifdef USE_EXT_SUNDIALS
 // Note:  sundials 2.4.0 has a memory leak that can cause some tests to fail
@@ -15,9 +16,6 @@ extern "C" {
 
 namespace AMP {
 namespace TimeIntegrator {
-
-
-#define AMPVEC_CAST( v ) ( static_cast<ManagedSundialsVector *>( v->content ) )
 
 
 /************************************************************************
@@ -369,10 +367,8 @@ int IDATimeIntegrator::IDAResTrial(
     std::shared_ptr<AMP::LinearAlgebra::Vector> f;
 
 
-    auto pyy = static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( yy->content );
-    auto pyp = static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( yp->content );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy( pyy, []( auto ) {} );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yp( pyp, []( auto ) {} );
+    auto amp_yy = getAMP( yy );
+    auto amp_yp = getAMP( yp );
     amp_yy->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     amp_yp->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
@@ -385,8 +381,7 @@ int IDATimeIntegrator::IDAResTrial(
 
     user_data->getIDATimeOperator()->apply( amp_yy, d_residual_Sundials );
 
-    static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( rr->content )
-        ->copyVector( d_residual_Sundials );
+    getAMP( rr )->copyVector( d_residual_Sundials );
 
     return ( IDA_SUCCESS );
 }
@@ -429,8 +424,7 @@ int IDATimeIntegrator::IDAPrecSetup( realtype tt,
 
     if ( OrderHasChanged || StepSizeHasChanged ) {
 
-        auto pyy = static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( yy->content );
-        std::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy( pyy, []( auto ) {} );
+        auto amp_yy    = getAMP( yy );
         auto jacParams = user_data->getIDATimeOperator()->getParameters( "Jacobian", amp_yy );
         auto &db       = jacParams->d_db;
         db->putScalar( "ScalingFactor", cj );
@@ -471,10 +465,8 @@ int IDATimeIntegrator::IDAPrecSolve( realtype,
 {
     auto user_data = reinterpret_cast<IDATimeIntegrator *>( user_data_in );
 
-    auto pr = static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( rvec->content );
-    auto pz = static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( zvec->content );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> amp_rvec( pr, []( auto ) {} );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> amp_zvec( pz, []( auto ) {} );
+    auto amp_rvec = getAMP( rvec );
+    auto amp_zvec = getAMP( zvec );
 
     user_data->getPreconditioner()->solve( amp_rvec, amp_zvec );
 

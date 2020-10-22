@@ -1,3 +1,4 @@
+#include "AMP/vectors/sundials/SundialsVector.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/data/ManagedVectorData.h"
 #include "AMP/vectors/sundials/ManagedSundialsVector.h"
@@ -54,3 +55,15 @@ const N_Vector &SundialsVector::getNVector() const { return d_n_vector; }
 
 } // namespace LinearAlgebra
 } // namespace AMP
+
+
+/********************************************************
+ * Get the AMP vector from the PETSc Vec or Mat          *
+ ********************************************************/
+std::shared_ptr<AMP::LinearAlgebra::Vector> getAMP( N_Vector t )
+{
+    auto ptr = static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( t->content );
+    AMP_ASSERT( ptr != nullptr );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> vec( ptr, []( auto ) {} );
+    return vec;
+}

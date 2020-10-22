@@ -3,7 +3,6 @@
 #define included_AMP_test_generateVectorFactory
 
 
-#include "AMP/vectors/testHelpers/VectorFactory.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
 
 
@@ -20,7 +19,6 @@ namespace LinearAlgebra {
         ArrayVectorFactory<4,10,false,double>
         ArrayVectorFactory<4,10,true,double>
         SimplePetscNativeFactory
-        SimpleManagedVectorFactory<ManagedEpetraVector>
         MultiVectorFactory<SMEVFactory, 1, SNPVFactory, 1> MVFactory1;
         MultiVectorFactory<SMEVFactory, 3, SNPVFactory, 2> MVFactory2;
         MultiVectorFactory<MVFactory1, 2, MVFactory2, 2> MVFactory3;

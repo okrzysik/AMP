@@ -38,7 +38,10 @@ public:
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override;
 
-    virtual std::string name() const override { return "ManagedThyraFactory"; }
+    virtual std::string name() const override
+    {
+        return "ManagedThyraFactory<" + d_factory->name() + ">";
+    }
 
     virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override;
 
@@ -60,7 +63,10 @@ public:
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override;
 
-    virtual std::string name() const override { return "ManagedNativeThyraFactory"; }
+    virtual std::string name() const override
+    {
+        return "ManagedNativeThyraFactory<" + d_factory->name() + ">";
+    }
 
     virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override;
 

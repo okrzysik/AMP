@@ -10,12 +10,17 @@
 #endif
 
 #ifdef USE_EXT_TRILINOS
+#include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorFactory.h"
 #ifdef USE_TRILINOS_THYRA
 #include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
 #endif
 #ifdef USE_TRILINOS_THYRA
 #include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
 #endif
+#endif
+
+#ifdef USE_EXT_SUNDIALS
+#include "AMP/vectors/testHelpers/sundials/SundialsVectorFactory.h"
 #endif
 
 #ifdef USE_OPENMP
@@ -32,25 +37,6 @@
 
 namespace AMP {
 namespace LinearAlgebra {
-
-
-// Remove duplicate entries perserving the initial order
-template<class TYPE>
-static inline void cleanList( std::vector<TYPE> &x )
-{
-    for ( size_t i = 1; i < x.size(); ) {
-        bool found = false;
-        for ( size_t j = 0; j < i; j++ )
-            found = found || x[i].compare( x[j] ) == 0;
-        if ( found ) {
-            for ( size_t j = i; j < x.size() - 1; j++ )
-                x[j] = x[j + 1];
-            x.resize( x.size() - 1 );
-        } else {
-            i++;
-        }
-    }
-}
 
 
 // Trim string
@@ -108,28 +94,73 @@ int to_bool( const std::string &s )
     else if ( s == "true" )
         return true;
     else
-        AMP_ERROR( "Unknown value for bool" );
+        AMP_ERROR( "Unknown value for bool: " + s );
     return false;
+}
+int count( const std::string &s, char c ) { return std::count( s.begin(), s.end(), c ); }
+
+
+// Check if a factory is valid based on compiled packages
+bool isValid( const std::string &name )
+{
+    bool valid = true;
+#ifndef USE_EXT_PETSC
+    valid = valid && name.find( "Petsc" ) == std::string::npos;
+#endif
+#ifndef USE_TRILINOS_EPETRA
+    valid = valid && name.find( "Epetra" ) == std::string::npos;
+#endif
+#ifndef USE_TRILINOS_THYRA
+    valid = valid && name.find( "Thryra" ) == std::string::npos;
+#endif
+#ifndef USE_EXT_SUNDIALS
+    valid = valid && name.find( "Sundials" ) == std::string::npos;
+#endif
+#ifndef USE_OPENMP
+    valid = valid && name.find( "openmp" ) == std::string::npos;
+#endif
+#ifndef USE_CUDA
+    valid = valid && name.find( "cuda" ) == std::string::npos;
+    valid = valid && name.find( "gpu" ) == std::string::npos;
+#endif
+    return valid;
+}
+
+
+// Remove duplicate and invalid entries perserving the initial order
+template<class TYPE>
+static inline std::vector<TYPE> cleanList( const std::vector<TYPE> &x )
+{
+    std::vector<TYPE> y;
+    y.reserve( x.size() );
+    for ( size_t i = 0; i < x.size(); i++ ) {
+        if ( !isValid( x[i] ) )
+            continue;
+        bool found = false;
+        for ( size_t j = 0; j < y.size(); j++ )
+            found = found || x[i].compare( y[j] ) == 0;
+        if ( !found )
+            y.push_back( x[i] );
+    }
+    return y;
 }
 
 
 // Generate a SimpleVectorFactory
 template<typename TYPE, typename VecOps>
 std::shared_ptr<VectorFactory>
-generateSimpleVectorFactory( int N, bool global, const std::string &data )
+generateSimpleVectorFactory( const std::string &name, int N, bool global, const std::string &data )
 {
     std::shared_ptr<VectorFactory> factory;
     if ( data == "cpu" ) {
         factory.reset(
             new SimpleVectorFactory<TYPE, VecOps, AMP::LinearAlgebra::VectorDataCPU<TYPE>>(
-                N, global ) );
+                N, global, name ) );
     } else if ( data == "gpu" ) {
 #ifdef USE_CUDA
         factory.reset(
             new SimpleVectorFactory<TYPE, VecOps, AMP::LinearAlgebra::VectorDataGPU<TYPE>>(
-                N, global ) );
-#else
-        AMP_ERROR( "gpu data is not supported without CUDA" );
+                N, global, name ) );
 #endif
     } else {
         AMP_ERROR( "Unknown VectorData" );
@@ -137,42 +168,42 @@ generateSimpleVectorFactory( int N, bool global, const std::string &data )
     return factory;
 }
 template<typename TYPE>
-std::shared_ptr<VectorFactory>
-generateSimpleVectorFactory( int N, bool global, const std::string &ops, const std::string &data )
+std::shared_ptr<VectorFactory> generateSimpleVectorFactory(
+    const std::string &name, int N, bool global, const std::string &ops, const std::string &data )
 {
     std::shared_ptr<VectorFactory> factory;
     if ( ops == "default" ) {
         factory =
             generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsDefault<TYPE>>(
-                N, global, data );
+                name, N, global, data );
     } else if ( ops == "openmp" ) {
 #ifdef USE_OPENMP
         factory =
             generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsOpenMP<TYPE>>(
-                N, global, data );
-#else
-        AMP_ERROR( "openmp generators are not supported without OpenMP" );
+                name, N, global, data );
 #endif
     } else if ( ops == "cuda" ) {
 #ifdef USE_CUDA
         factory = generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsCuda<TYPE>>(
-            N, global, data );
-#else
-        AMP_ERROR( "cuda generators are not supported without CUDA" );
+            name, N, global, data );
 #endif
     } else {
         AMP_ERROR( "Unknown VectorOperations" );
     }
     return factory;
 }
-std::shared_ptr<VectorFactory> generateSimpleVectorFactory(
-    int N, bool global, const std::string &type, const std::string &ops, const std::string &data )
+std::shared_ptr<VectorFactory> generateSimpleVectorFactory( const std::string &name,
+                                                            int N,
+                                                            bool global,
+                                                            const std::string &type,
+                                                            const std::string &ops,
+                                                            const std::string &data )
 {
     std::shared_ptr<VectorFactory> factory;
     if ( type == "double" ) {
-        factory = generateSimpleVectorFactory<double>( N, global, ops, data );
+        factory = generateSimpleVectorFactory<double>( name, N, global, ops, data );
     } else if ( type == "float" ) {
-        factory = generateSimpleVectorFactory<float>( N, global, ops, data );
+        factory = generateSimpleVectorFactory<float>( name, N, global, ops, data );
     } else {
         AMP_ERROR( "Unknown VectorOperations" );
     }
@@ -182,13 +213,15 @@ std::shared_ptr<VectorFactory> generateSimpleVectorFactory(
 
 std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
 {
+    AMP_INSIST( isValid( name ), "Factory " + name + " is not valid based on compiled packages" );
+    AMP_INSIST( count( name, '<' ) == count( name, '>' ), "Invalid factory: " + name );
     auto pos                      = name.find_first_of( '<' );
     const std::string factoryName = name.substr( 0, pos );
     auto args                     = splitArgs( name );
     std::shared_ptr<VectorFactory> factory;
     if ( factoryName == "SimpleVectorFactory" ) {
+        // Create a simple vector
         AMP_ASSERT( args.size() >= 2 );
-        // Set default arguments
         if ( args.size() < 3 )
             args.emplace_back( "double" );
         if ( args.size() < 4 )
@@ -196,8 +229,9 @@ std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
         if ( args.size() < 5 )
             args.emplace_back( "cpu" );
         factory = generateSimpleVectorFactory(
-            to_int( args[0] ), to_bool( args[1] ), args[2], args[3], args[4] );
+            name, to_int( args[0] ), to_bool( args[1] ), args[2], args[3], args[4] );
     } else if ( factoryName == "ArrayVectorFactory" ) {
+        // Create an array vector
         AMP_ASSERT( args.size() >= 3 );
         if ( args.size() == 3 )
             args.emplace_back( "double" );
@@ -210,76 +244,54 @@ std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
         } else {
             AMP_ERROR( "Unknown type" );
         }
-    } else if ( factoryName == "SimplePetscNativeFactory" ) {
-        AMP_ASSERT( args.size() == 0 );
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-        factory.reset( new SimplePetscNativeFactory() );
-#else
-        AMP_ERROR( "Generator is not valid without support for PETSc and Trilinos" );
-#endif
     } else if ( factoryName == "MultiVectorFactory" ) {
         AMP_ASSERT( args.size() == 4 );
         factory.reset( new MultiVectorFactory( generateVectorFactory( args[0] ),
                                                to_int( args[1] ),
                                                generateVectorFactory( args[2] ),
                                                to_int( args[3] ) ) );
-    } else if ( factoryName == "NativePetscVectorFactory" ) {
-#if defined( USE_EXT_PETSC )
-        factory.reset( new NativePetscVectorFactory() );
-#else
-        AMP_ERROR( "Generator is not valid without support for PETSc" );
-#endif
-    } else if ( factoryName == "SimpleManagedVectorFactory" ) {
+    } else if ( factoryName == "CloneFactory" ) {
         AMP_ASSERT( args.size() == 1 );
-        if ( args[0] == "ManagedPetscVector" ) {
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-            factory.reset( new SimpleManagedVectorFactory<ManagedPetscVector>() );
-#else
-            AMP_ERROR( "Generator is not valid without support for PETSc and Trilinos" );
+        factory.reset( new CloneFactory( generateVectorFactory( args[0] ) ) );
+    } else if ( factoryName == "StridedVectorFactory" ) {
+        AMP_ASSERT( args.size() == 1 );
+        factory.reset( new StridedVectorFactory( generateVectorFactory( args[0] ) ) );
+#if defined( USE_EXT_PETSC )
+    } else if ( factoryName == "SimplePetscNativeFactory" ) {
+        AMP_ASSERT( args.size() == 0 );
+        factory.reset( new SimplePetscNativeFactory() );
+    } else if ( factoryName == "NativePetscVectorFactory" ) {
+        factory.reset( new NativePetscVectorFactory() );
+    } else if ( factoryName == "ManagedPetscVectorFactory" ) {
+        AMP_ASSERT( args.size() == 1 );
+        factory.reset( new ManagedPetscVectorFactory( generateVectorFactory( args[0] ) ) );
 #endif
-        } else if ( args[0] == "ManagedEpetraVector" ) {
-#ifdef USE_EXT_TRILINOS
-            factory.reset( new SimpleManagedVectorFactory<ManagedEpetraVector>() );
-#else
-            AMP_ERROR( "Generator is not valid without support for Trilinos" );
+#ifdef USE_TRILINOS_EPETRA
+    } else if ( factoryName == "NativeEpetraFactory" ) {
+        AMP_ASSERT( args.size() == 0 );
+        factory.reset( new NativeEpetraFactory() );
+    } else if ( factoryName == "ManagedEpetraVectorFactory" ) {
+        AMP_ASSERT( args.size() == 1 );
+        factory.reset( new ManagedEpetraVectorFactory( generateVectorFactory( args[0] ) ) );
 #endif
-        } else {
-            AMP_ERROR( "Unknown template argument for SimpleManagedVectorFactory" );
-        }
+#ifdef USE_TRILINOS_THYRA
     } else if ( factoryName == "NativeThyraFactory" ) {
         AMP_ASSERT( args.size() == 0 );
-#ifdef USE_TRILINOS_THYRA
         factory.reset( new NativeThyraFactory() );
-#else
-        AMP_ERROR( "Generator is not valid without support for Thyra" );
-#endif
     } else if ( factoryName == "ManagedThyraFactory" ) {
         AMP_ASSERT( args.size() == 1 );
-#ifdef USE_TRILINOS_THYRA
         factory.reset( new ManagedThyraFactory( generateVectorFactory( args[0] ) ) );
-#else
-        AMP_ERROR( "Generator is not valid without support for Thyra" );
-#endif
     } else if ( factoryName == "ManagedNativeThyraFactory" ) {
         AMP_ASSERT( args.size() == 1 );
-#ifdef USE_TRILINOS_THYRA
         factory.reset( new ManagedNativeThyraFactory( generateVectorFactory( args[0] ) ) );
-#else
-        AMP_ERROR( "Generator is not valid without support for Thyra" );
 #endif
+#ifdef EXT_SUNDIALS
     } else if ( factoryName == "NativeSundialsFactory" ) {
         AMP_ASSERT( args.size() == 0 );
-#ifdef EXT_SUNDIALS
         AMP_ERROR( "Not implemented" );
-#else
-        AMP_ERROR( "Generator is not valid without support for Sundials" );
-#endif
     } else if ( factoryName == "ManagedSundialsVectorFactory" ) {
         AMP_ASSERT( args.size() == 0 );
-#ifdef EXT_SUNDIALS
         AMP_ERROR( "Not implemented" );
-#else
-        AMP_ERROR( "Generator is not valid without support for Sundials" );
 #endif
     } else if ( factoryName == "ViewFactory" ) {
         AMP_ASSERT( args.size() == 2 );
@@ -287,26 +299,16 @@ std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
         if ( args[0] == "PetscVector" ) {
 #ifdef USE_EXT_PETSC
             factory.reset( new ViewFactory<PetscVector>( factory2 ) );
-#else
-            AMP_ERROR( "Generator is not valid without support for Petsc" );
 #endif
         } else if ( args[0] == "EpetraVector" ) {
 #ifdef USE_EXT_TRILINOS
             factory.reset( new ViewFactory<EpetraVector>( factory2 ) );
-#else
-            AMP_ERROR( "Generator is not valid without support for Trilinos" );
 #endif
         } else {
-            AMP_ERROR( "Unknown template argument for SimpleManagedVectorFactory" );
+            AMP_ERROR( "Unknown template argument for ViewFactory" );
         }
-    } else if ( factoryName == "CloneFactory" ) {
-        AMP_ASSERT( args.size() == 1 );
-        factory.reset( new CloneFactory( generateVectorFactory( args[0] ) ) );
-    } else if ( factoryName == "StridedVectorFactory" ) {
-        AMP_ASSERT( args.size() == 1 );
-        factory.reset( new CloneFactory( generateVectorFactory( args[0] ) ) );
     } else {
-        AMP_ERROR( "Unknown factory" );
+        AMP_ERROR( "Unknown factory: " + name );
     }
     return factory;
 }
@@ -320,15 +322,11 @@ std::vector<std::string> getSimpleVectorFactories()
     std::vector<std::string> list;
     list.push_back( "SimpleVectorFactory<15,false,double>" );
     list.push_back( "SimpleVectorFactory<45,true,double>" );
-    // list.push_back( "SimpleVectorFactory<15,false,float>" );
-    // list.push_back( "SimpleVectorFactory<45,true,double>" );
-#if USE_OPENMP
+    // list.push_back( "SimpleVectorFactory<15,true,float>" );
     list.push_back( "SimpleVectorFactory<15,false,double,openmp,cpu>" );
-#endif
-#if USE_CUDA
     list.push_back( "SimpleVectorFactory<15,false,double,default,gpu>" );
     list.push_back( "SimpleVectorFactory<15,false,double,cuda,gpu>" );
-#endif
+    list = cleanList( list );
     return list;
 }
 std::vector<std::string> getArrayVectorFactories()
@@ -336,18 +334,17 @@ std::vector<std::string> getArrayVectorFactories()
     std::vector<std::string> list;
     list.push_back( "ArrayVectorFactory<4,10,false,double>" );
     list.push_back( "ArrayVectorFactory<4,10,true,double>" );
+    list = cleanList( list );
     return list;
 }
 std::vector<std::string> getNativeVectorFactories()
 {
     std::vector<std::string> list;
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
     list.push_back( "SimplePetscNativeFactory" );
     list.push_back( "NativePetscVectorFactory" );
-#endif
-#ifdef USE_TRILINOS_THYRA
+    list.push_back( "NativeEpetraFactory" );
     list.push_back( "NativeThyraFactory" );
-#endif
+    list = cleanList( list );
     return list;
 }
 
@@ -359,41 +356,37 @@ std::vector<std::string> getMultiVectorFactories()
 {
     std::vector<std::string> list;
     std::string SNPVFactory = "SimplePetscNativeFactory";
-    std::string SMEVFactory = "SimpleManagedVectorFactory<ManagedEpetraVector>";
-#ifdef USE_EXT_PETSC
-    std::string MVFactory1 = "MultiVectorFactory<" + SMEVFactory + ", 1, " + SNPVFactory + ", 1>";
-    std::string MVFactory2 = "MultiVectorFactory<" + SMEVFactory + ", 3, " + SNPVFactory + ", 2>";
-    std::string MVFactory3 = "MultiVectorFactory<" + MVFactory1 + ", 2, " + MVFactory2 + ", 2>";
-#else
-    std::string MVFactory1 =
-        "MultiVectorFactory<SimpleVectorFactory<15,false>,1," + SMEVFactory + ",1>";
-    std::string MVFactory2 =
-        "MultiVectorFactory<SimpleVectorFactory<15,false>,3," + SMEVFactory + ",2>";
-    std::string MVFactory3 = "MultiVectorFactory<" + MVFactory1 + ", 2, " + MVFactory2 + ", 2>";
-#endif
+    std::string SMEVFactory = "ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>";
+    std::string MVFactory1  = "MultiVectorFactory<" + SMEVFactory + ",1," + SNPVFactory + ",1>";
+    std::string MVFactory2  = "MultiVectorFactory<" + SMEVFactory + ",3," + SNPVFactory + ",2>";
+    std::string MVFactory3  = "MultiVectorFactory<" + MVFactory1 + ",2," + MVFactory2 + ",2>";
+    // std::string MVFactory1 =
+    "MultiVectorFactory<SimpleVectorFactory<15,false>,1," + SMEVFactory + ",1>";
+    // std::string MVFactory2 =
+    "MultiVectorFactory<SimpleVectorFactory<15,false>,3," + SMEVFactory + ",2>";
+    // std::string MVFactory3 = "MultiVectorFactory<" + MVFactory1 + ",2," + MVFactory2 + ",2>";
     list.push_back( MVFactory1 );
     list.push_back( MVFactory2 );
     list.push_back( MVFactory3 );
+    list = cleanList( list );
     return list;
 }
 std::vector<std::string> getManagedVectorFactories()
 {
     std::vector<std::string> list;
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
     list.push_back( "SimplePetscNativeFactory" );
-#endif
-#ifdef USE_EXT_TRILINOS
     std::string SNPVFactory = "SimplePetscNativeFactory";
-    std::string SMEVFactory = "SimpleManagedVectorFactory<ManagedEpetraVector>";
+    std::string SMEVFactory = "ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>";
+    std::string SMPVFactory = "ManagedPetscVectorFactory<SimpleVectorFactory<45,true>>";
     std::string NPVFactory  = "NativePetscVectorFactory";
-    std::string MVFactory1  = "MultiVectorFactory<" + SMEVFactory + ", 1, " + SNPVFactory + ", 1>";
-    std::string MVFactory2  = "MultiVectorFactory<" + SMEVFactory + ", 3, " + SNPVFactory + ", 2>";
-    std::string MVFactory3  = "MultiVectorFactory<" + MVFactory1 + ", 2, " + MVFactory2 + ", 2>";
+    std::string MVFactory1  = "MultiVectorFactory<" + SMEVFactory + ",1," + SNPVFactory + ",1>";
+    std::string MVFactory2  = "MultiVectorFactory<" + SMEVFactory + ",3," + SNPVFactory + ",2>";
+    std::string MVFactory3  = "MultiVectorFactory<" + MVFactory1 + ",2," + MVFactory2 + ",2>";
     list.push_back( SMEVFactory );
+    list.push_back( SMPVFactory );
     list.push_back( MVFactory1 );
     list.push_back( MVFactory2 );
     list.push_back( MVFactory3 );
-#ifdef USE_TRILINOS_THYRA
     auto SimpleFactories             = getSimpleVectorFactories();
     std::string ManagedThyraFactory1 = "ManagedThyraFactory<" + SimpleFactories[0] + ">";
     std::string ManagedThyraFactory2 = "ManagedThyraFactory<" + SimpleFactories[1] + ">";
@@ -408,16 +401,15 @@ std::vector<std::string> getManagedVectorFactories()
     list.push_back( ManagedNativeThyraFactory1 );
     list.push_back( ManagedNativeThyraFactory2 );
     list.push_back( MNT_MVFactory );
-#endif
-#endif
-    list.push_back( "StridedVectorFactory<" + SMEVFactory + ">" );
+    // list.push_back( "StridedVectorFactory<" + SMEVFactory + ">" );
+    list = cleanList( list );
     return list;
 }
 std::vector<std::string> getCloneVectorFactories()
 {
     std::vector<std::string> list;
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-    std::string CloneSMEVFactory = "CloneFactory<SimpleManagedVectorFactory<ManagedEpetraVector>>";
+    std::string CloneSMEVFactory =
+        "CloneFactory<ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>>";
     std::string CloneSNPVFactory = "CloneFactory<SimplePetscNativeFactory>";
     std::string CloneMVFactory1 =
         "CloneFactory<MultiVectorFactory<" + CloneSMEVFactory + ",1," + CloneSNPVFactory + ",1>>";
@@ -430,19 +422,16 @@ std::vector<std::string> getCloneVectorFactories()
     list.push_back( CloneMVFactory1 );
     list.push_back( CloneMVFactory2 );
     list.push_back( CloneMVFactory3 );
-#endif
+    list = cleanList( list );
     return list;
 }
 std::vector<std::string> getViewVectorFactories()
 {
     std::vector<std::string> list;
-#if defined( USE_EXT_PETSC )
     auto SimpleFactories = getSimpleVectorFactories();
     list.push_back( "ViewFactory<PetscVector," + SimpleFactories[0] + ">" );
-#endif
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
     std::string ViewSMEVFactory =
-        "ViewFactory<PetscVector,SimpleManagedVectorFactory<ManagedEpetraVector>>";
+        "ViewFactory<PetscVector,ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>>";
     std::string ViewSNPVFactory = "ViewFactory<PetscVector,SimplePetscNativeFactory>";
     std::string ViewMVFactory1  = "ViewFactory<PetscVector,MultiVectorFactory<" + ViewSMEVFactory +
                                  ",1," + ViewSNPVFactory + ",1>>";
@@ -456,9 +445,9 @@ std::vector<std::string> getViewVectorFactories()
     list.push_back( ViewMVFactory1 );
     list.push_back( ViewMVFactory2 );
     list.push_back( ViewMVFactory3 );
-#endif
     for ( auto factory : getManagedVectorFactories() )
         list.push_back( "ViewFactory<PetscVector," + factory + ">" );
+    list = cleanList( list );
     return list;
 }
 std::vector<std::string> getCloneViewVectorFactories()
@@ -466,9 +455,8 @@ std::vector<std::string> getCloneViewVectorFactories()
     std::vector<std::string> list;
     for ( auto view : getViewVectorFactories() )
         list.push_back( "CloneFactory<" + view + ">" );
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-    std::string CloneViewSMEVFactory =
-        "CloneFactory<ViewFactory<PetscVector,SimpleManagedVectorFactory<ManagedEpetraVector>>>";
+    std::string CloneViewSMEVFactory = "CloneFactory<ViewFactory<PetscVector,"
+                                       "ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>>>";
     std::string CloneViewSNPVFactory =
         "CloneFactory<ViewFactory<PetscVector,SimplePetscNativeFactory>>";
     std::string CloneViewMVFactory1 = "CloneFactory<ViewFactory<PetscVector,MultiVectorFactory<" +
@@ -480,7 +468,7 @@ std::vector<std::string> getCloneViewVectorFactories()
     list.push_back( CloneViewMVFactory1 );
     list.push_back( CloneViewMVFactory2 );
     list.push_back( CloneViewMVFactory3 );
-#endif
+    list = cleanList( list );
     return list;
 }
 
@@ -507,13 +495,7 @@ std::vector<std::string> getAllFactories()
         list.push_back( factory );
     for ( auto factory : getCloneViewVectorFactories() )
         list.push_back( factory );
-#if defined( USE_EXT_PETSC )
-    list.push_back( "NativePetscVectorFactory" );
-#endif
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-    list.push_back( "SimplePetscNativeFactory" );
-#endif
-    cleanList( list );
+    list = cleanList( list );
     return list;
 }
 

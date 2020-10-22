@@ -5,7 +5,6 @@
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include "AMP/vectors/testHelpers/VectorFactory.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
 #include "AMP/vectors/testHelpers/generateVectorFactories.h"
 
@@ -27,7 +26,7 @@ using AMP::LinearAlgebra::VectorTests;
 std::string SimpleFactory1 = "SimpleVectorFactory<15,false,double>";
 std::string SimpleFactory2 = "SimpleVectorFactory<45,true,double>";
 std::string SNPVFactory    = "SimplePetscNativeFactory";
-std::string SMEVFactory    = "SimpleManagedVectorFactory<ManagedEpetraVector>";
+std::string SMEVFactory    = "ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>";
 #ifdef USE_EXT_PETSC
 std::string MVFactory1 = "MultiVectorFactory<" + SMEVFactory + ", 1, " + SNPVFactory + ", 1>";
 #else
@@ -65,6 +64,14 @@ inline void testVectorSelector( AMP::UnitTest &ut, const std::string &factoryNam
     tests.testVectorSelector( &ut );
     AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
 }
+inline void checkFactoryName( AMP::UnitTest &ut, const std::string &factoryName )
+{
+    auto factory = generateVectorFactory( factoryName );
+    auto name    = factory->name();
+    if ( name != factoryName ) {
+        ut.failure( "Factory name " + name + " does not match input name " + factoryName );
+    }
+}
 
 
 int main( int argc, char **argv )
@@ -72,6 +79,12 @@ int main( int argc, char **argv )
 
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+
+    // Print the total nummber of vector factories to test
+    std::cout << "Testing " << getAllFactories().size() << " vector factories\n";
+    for ( auto factory : getManagedVectorFactories() )
+        checkFactoryName( ut, factory );
+    AMP::pout << std::endl;
 
     // Test ArrayVector dimensions
     std::vector<size_t> dims{ 3, 3, 3, 3 };

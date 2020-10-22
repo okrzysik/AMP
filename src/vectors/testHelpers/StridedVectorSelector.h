@@ -37,7 +37,10 @@ public:
         return vec_select;
     }
 
-    virtual std::string name() const override { return "StridedVectorFactory"; }
+    virtual std::string name() const override
+    {
+        return "StridedVectorFactory<" + d_factory->name() + ">";
+    }
 
     virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
     {

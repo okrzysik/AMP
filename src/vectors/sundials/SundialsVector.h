@@ -122,4 +122,10 @@ public:
 } // namespace AMP
 
 
+/********************************************************
+ * Get the AMP vector from the PETSc Vec or Mat          *
+ ********************************************************/
+std::shared_ptr<AMP::LinearAlgebra::Vector> getAMP( N_Vector t );
+
+
 #endif

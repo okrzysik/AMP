@@ -21,12 +21,6 @@ static inline auto getVectorEngine( const std::shared_ptr<const VectorData> &dat
     AMP_ASSERT( managed );
     return managed->getVectorEngine();
 }
-static inline Vector *getAMP( N_Vector v )
-{
-    auto vec = static_cast<ManagedSundialsVector *>( v->content );
-    AMP_ASSERT( vec != nullptr );
-    return vec;
-}
 
 
 /****************************************************************
@@ -173,7 +167,7 @@ void ManagedSundialsVector::freeVectorComponents_AMP( N_Vector v )
 {
 
     auto ptr = getAMP( v );
-    delete ptr;
+    delete ptr.get();
 }
 
 realtype *ManagedSundialsVector::getarraypointer_no_impl( N_Vector )

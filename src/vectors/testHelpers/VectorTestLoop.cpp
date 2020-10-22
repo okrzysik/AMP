@@ -60,8 +60,6 @@ void VectorTests::testBasicVector( AMP::UnitTest *ut )
 
 void VectorTests::testManagedVector( AMP::UnitTest *ut )
 {
-    testBasicVector( ut );
-
 #ifdef USE_EXT_PETSC
     {
         auto simplePetscFactory = std::make_shared<SimplePetscVectorFactory>( d_factory );
