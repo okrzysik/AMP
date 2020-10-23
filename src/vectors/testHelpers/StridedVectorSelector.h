@@ -20,13 +20,7 @@ public:
         : d_factory( factory )
     {
     }
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return AMP::LinearAlgebra::Variable::shared_ptr();
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         auto vec        = d_factory->getVector();
         auto criterion  = AMP::LinearAlgebra::VS_Stride( 1, 3 );
@@ -36,20 +30,13 @@ public:
         AMP_ASSERT( N1 / 3 == N2 );
         return vec_select;
     }
-
-    virtual std::string name() const override
-    {
-        return "StridedVectorFactory<" + d_factory->name() + ">";
-    }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return d_factory->getDOFMap();
-    }
+    std::string name() const override { return "StridedVectorFactory<" + d_factory->name() + ">"; }
 
 private:
     std::shared_ptr<const VectorFactory> d_factory;
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

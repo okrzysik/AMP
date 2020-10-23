@@ -4,8 +4,8 @@
 
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
+#include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
 
 
 /// \cond UNDOCUMENTED
@@ -19,12 +19,6 @@ class NativeEpetraFactory : public VectorFactory
 {
 public:
     NativeEpetraFactory() {}
-
-    AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "epetra" );
-    }
-
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         const int nLocal = 210;
@@ -38,44 +32,32 @@ public:
         auto vec = createEpetraVector( commList, dofManager, buffer );
         return vec;
     }
-
     std::string name() const override { return "NativeEpetraFactory"; }
-
-    AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return getVector()->getDOFManager();
-    }
 };
 
 
 class ManagedEpetraVectorFactory : public VectorFactory
 {
 public:
-    ManagedEpetraVectorFactory( std::shared_ptr<const VectorFactory> factory ) : d_factory( factory ) {}
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
+    ManagedEpetraVectorFactory( std::shared_ptr<const VectorFactory> factory )
+        : d_factory( factory )
     {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "..." );
     }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         auto engine = d_factory->getVector();
         auto retval = std::make_shared<ManagedEpetraVector>( engine );
         retval->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
         return retval;
     }
-
-    virtual std::string name() const override { return "ManagedEpetraVectorFactory<" + d_factory->name() + ">"; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
+    std::string name() const override
     {
-        return getVector()->getDOFManager();
+        return "ManagedEpetraVectorFactory<" + d_factory->name() + ">";
     }
+
 private:
     std::shared_ptr<const VectorFactory> d_factory;
 };
-
 
 
 } // namespace LinearAlgebra

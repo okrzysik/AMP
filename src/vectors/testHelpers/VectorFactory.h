@@ -17,24 +17,12 @@ class CloneFactory : public VectorFactory
 {
 public:
     explicit CloneFactory( std::shared_ptr<const VectorFactory> factory ) : d_factory( factory ) {}
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return d_factory->getVariable()->cloneVariable( "noname" );
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         auto vec = d_factory->getVector();
         return vec->cloneVector();
     }
-
-    virtual std::string name() const override { return "CloneFactory<" + d_factory->name() + ">"; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return d_factory->getDOFMap();
-    }
+    std::string name() const override { return "CloneFactory<" + d_factory->name() + ">"; }
 
 private:
     CloneFactory();
@@ -45,24 +33,11 @@ private:
 class NullVectorFactory : public VectorFactory
 {
 public:
-    typedef AMP::LinearAlgebra::Vector vector;
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "null" );
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         return std::make_shared<AMP::LinearAlgebra::Vector>( "null" );
     }
-
-    virtual std::string name() const override { return "NullVectorFactory"; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return AMP::Discretization::DOFManager::shared_ptr();
-    }
+    std::string name() const override { return "NullVectorFactory"; }
 };
 
 
@@ -76,29 +51,18 @@ public:
         : I( i ), GLOBAL( global ), NAME( std::move( name ) )
     {
     }
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "simple" );
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         AMP::LinearAlgebra::Vector::shared_ptr vec;
+        auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "simple" );
         if ( GLOBAL )
             vec = AMP::LinearAlgebra::createSimpleVector<TYPE, VecOps, VecData>(
-                I, getVariable(), AMP_MPI( AMP_COMM_WORLD ) );
+                I, var, AMP_MPI( AMP_COMM_WORLD ) );
         else
-            vec = AMP::LinearAlgebra::createSimpleVector<TYPE, VecOps, VecData>( I, getVariable() );
+            vec = AMP::LinearAlgebra::createSimpleVector<TYPE, VecOps, VecData>( I, var );
         return vec;
     }
-
-    virtual std::string name() const override { return NAME; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return getVector()->getDOFManager();
-    }
+    std::string name() const override { return NAME; }
 
 private:
     SimpleVectorFactory();
@@ -113,29 +77,18 @@ class ArrayVectorFactory : public VectorFactory
 {
 public:
     ArrayVectorFactory( size_t d, size_t i, bool global ) : D( d ), I( i ), GLOBAL( global ) {}
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "array" );
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         AMP::LinearAlgebra::Vector::shared_ptr vec;
+        auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "array" );
         if ( GLOBAL )
             vec = AMP::LinearAlgebra::createArrayVector<TYPE>(
-                { D, I }, getVariable(), AMP_MPI( AMP_COMM_WORLD ) );
+                { D, I }, var, AMP_MPI( AMP_COMM_WORLD ) );
         else
-            vec = AMP::LinearAlgebra::createArrayVector<TYPE>( { D, I }, getVariable() );
+            vec = AMP::LinearAlgebra::createArrayVector<TYPE>( { D, I }, var );
         return vec;
     }
-
-    virtual std::string name() const override { return "ArrayVectorFactory"; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return getVector()->getDOFManager();
-    }
+    std::string name() const override { return "ArrayVectorFactory"; }
 
 private:
     ArrayVectorFactory();
@@ -149,13 +102,7 @@ class ViewFactory : public VectorFactory
 {
 public:
     explicit ViewFactory( std::shared_ptr<const VectorFactory> factory ) : d_factory( factory ) {}
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return d_factory->getVariable();
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         auto vec = TYPE::view( d_factory->getVector() );
         AMP_INSIST( vec != nullptr, "Failed to cast view to type" );
@@ -163,13 +110,7 @@ public:
         NULL_USE( native );
         return vec->getManagedVec();
     }
-
-    virtual std::string name() const override { return "ViewFactory<" + d_factory->name() + ">"; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return d_factory->getDOFMap();
-    }
+    std::string name() const override { return "ViewFactory<" + d_factory->name() + ">"; }
 
 private:
     ViewFactory();
@@ -187,37 +128,21 @@ public:
         : NUM1( N1 ), NUM2( N2 ), FACTORY1( factory1 ), FACTORY2( factory2 )
     {
     }
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        auto newVar = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "var1" );
-        for ( int i = 0; i != NUM1; i++ )
-            newVar->add( FACTORY1->getVariable() );
-        for ( int i = 0; i != NUM2; i++ )
-            newVar->add( FACTORY2->getVariable() );
-        return newVar;
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-        auto retVal = AMP::LinearAlgebra::MultiVector::create( getVariable(), globalComm );
+        auto var    = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "var1" );
+        auto retVal = AMP::LinearAlgebra::MultiVector::create( var, globalComm );
         for ( int i = 0; i != NUM1; i++ )
             retVal->addVector( FACTORY1->getVector() );
         for ( int i = 0; i != NUM2; i++ )
             retVal->addVector( FACTORY2->getVector() );
         return retVal;
     }
-
-    virtual std::string name() const override
+    std::string name() const override
     {
         return "MultiVectorFactory<" + FACTORY1->name() + "," + std::to_string( NUM1 ) + "," +
                FACTORY2->name() + "," + std::to_string( NUM2 ) + ">";
-    }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return getVector()->getDOFManager();
     }
 
 private:

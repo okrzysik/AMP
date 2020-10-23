@@ -764,8 +764,8 @@ void VectorTests::VerifyVectorGhostCreate( AMP::UnitTest *utils )
 void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
 {
     AMP_MPI globalComm( AMP_COMM_WORLD );
-    auto dofmap = d_factory->getDOFMap();
     auto vector = d_factory->getVector();
+    auto dofmap = vector->getDOFManager();
     if ( !vector )
         utils->failure( "verify makeConsistent () for add " + d_factory->name() );
 
@@ -848,8 +848,8 @@ void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
 
 void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
 {
-    auto dofmap = d_factory->getDOFMap();
     auto vector = d_factory->getVector();
+    auto dofmap = vector->getDOFManager();
 
     // Zero the vector
     vector->zero();

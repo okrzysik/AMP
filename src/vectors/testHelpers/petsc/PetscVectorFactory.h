@@ -157,23 +157,11 @@ public:
               generateVectorFactory( "ManagedPetscVectorFactory<SimpleVectorFactory<45,true>>" ) )
     {
     }
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "dummy" );
-    }
-
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         return getNativeVector();
     }
-
     virtual std::string name() const override { return "SimplePetscNativeFactory"; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return d_factory->getDOFMap();
-    }
 };
 
 
@@ -183,12 +171,6 @@ public:
     ManagedPetscVectorFactory( std::shared_ptr<const VectorFactory> factory ) : d_factory( factory )
     {
     }
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "..." );
-    }
-
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         auto engine = d_factory->getVector();
@@ -196,15 +178,9 @@ public:
         retval->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
         return retval;
     }
-
     virtual std::string name() const override
     {
         return "ManagedPetscVectorFactory<" + d_factory->name() + ">";
-    }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return getVector()->getDOFManager();
     }
 
 private:
@@ -215,11 +191,6 @@ private:
 class NativePetscVectorFactory : public VectorFactory
 {
 public:
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return AMP::LinearAlgebra::Variable::shared_ptr(); // no variable.....
-    }
-
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         Vec v;
@@ -235,26 +206,13 @@ public:
             std::make_shared<AMP::LinearAlgebra::Variable>( "Test NativePetscVector" ) );
         return newVec;
     }
-
     virtual std::string name() const override { return "NativePetscVectorFactory"; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return getVector()->getDOFManager();
-    }
 };
 
 template<typename T>
 class PetscManagedVectorFactory : public VectorFactory
 {
 public:
-    typedef T vector;
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return AMP::LinearAlgebra::Variable::shared_ptr(); // no variable.....
-    }
-
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         Vec v;
@@ -268,7 +226,6 @@ public:
         retval->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
         return retval;
     }
-
     virtual std::string name() const override { return "PetscManagedVectorFactory"; }
 };
 

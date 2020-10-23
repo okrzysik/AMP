@@ -38,10 +38,6 @@ namespace LinearAlgebra {
 /****************************************************************
  * NativeThyraFactory                                            *
  ****************************************************************/
-AMP::LinearAlgebra::Variable::shared_ptr NativeThyraFactory::getVariable() const
-{
-    return std::make_shared<AMP::LinearAlgebra::Variable>( "thyra" );
-}
 AMP::LinearAlgebra::Vector::shared_ptr NativeThyraFactory::getVector() const
 {
     AMP_MPI global_comm( AMP_COMM_WORLD );
@@ -59,47 +55,32 @@ AMP::LinearAlgebra::Vector::shared_ptr NativeThyraFactory::getVector() const
     auto space   = Thyra::create_VectorSpace( epetra_map );
     auto thyra_v = Thyra::create_Vector( epetra_v, space );
     // Create the NativeThyraVector
-    auto vec = AMP::LinearAlgebra::createVector( thyra_v, local_size, global_comm, getVariable() );
+    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "thyra" );
+    auto vec = AMP::LinearAlgebra::createVector( thyra_v, local_size, global_comm, var );
     return vec;
-}
-AMP::Discretization::DOFManager::shared_ptr NativeThyraFactory::getDOFMap() const
-{
-    AMP_ERROR( "Not finished" );
-    return AMP::Discretization::DOFManager::shared_ptr();
 }
 
 
 /****************************************************************
  * ManagedThyraFactory                                           *
  ****************************************************************/
-AMP::LinearAlgebra::Variable::shared_ptr ManagedThyraFactory::getVariable() const
-{
-    return std::make_shared<AMP::LinearAlgebra::Variable>( "managed_thyra" );
-}
 AMP::LinearAlgebra::Vector::shared_ptr ManagedThyraFactory::getVector() const
 {
+    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "managed_thyra" );
     // Create an arbitrary vector
     auto vec1 = d_factory->getVector();
-    vec1->setVariable( getVariable() );
+    vec1->setVariable( var );
     // Create the managed vector
     auto view = AMP::LinearAlgebra::ThyraVector::view( vec1 );
     auto vec2 = view->getManagedVec();
-    vec2->setVariable( getVariable() );
+    vec2->setVariable( var );
     return vec2;
-}
-AMP::Discretization::DOFManager::shared_ptr ManagedThyraFactory::getDOFMap() const
-{
-    return d_factory->getDOFMap();
 }
 
 
 /****************************************************************
  * ManagedNativeThyraFactory                                     *
  ****************************************************************/
-AMP::LinearAlgebra::Variable::shared_ptr ManagedNativeThyraFactory::getVariable() const
-{
-    return std::make_shared<AMP::LinearAlgebra::Variable>( "managed_native_thyra" );
-}
 AMP::LinearAlgebra::Vector::shared_ptr ManagedNativeThyraFactory::getVector() const
 {
     // Create an arbitrary vector
@@ -108,13 +89,10 @@ AMP::LinearAlgebra::Vector::shared_ptr ManagedNativeThyraFactory::getVector() co
     auto vec2 = std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedThyraVector>(
         AMP::LinearAlgebra::ThyraVector::view( vec1 ) );
     // Create a native ThyraVector from the managed vector
+    auto var  = std::make_shared<AMP::LinearAlgebra::Variable>( "managed_native_thyra" );
     auto vec3 = AMP::LinearAlgebra::createVector(
-        vec2->getVec(), vec2->getLocalSize(), vec2->getComm(), getVariable() );
+        vec2->getVec(), vec2->getLocalSize(), vec2->getComm(), var );
     return vec3;
-}
-AMP::Discretization::DOFManager::shared_ptr ManagedNativeThyraFactory::getDOFMap() const
-{
-    return d_factory->getDOFMap();
 }
 
 #ifdef USE_TRILINOS_BELOS

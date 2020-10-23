@@ -18,14 +18,8 @@ class NativeThyraFactory : public VectorFactory
 {
 public:
     NativeThyraFactory() {}
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override;
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override;
-
-    virtual std::string name() const override { return "NativeThyraFactory"; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override;
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override;
+    std::string name() const override { return "NativeThyraFactory"; }
 };
 
 
@@ -33,17 +27,8 @@ class ManagedThyraFactory : public VectorFactory
 {
 public:
     explicit ManagedThyraFactory( std::shared_ptr<VectorFactory> factory ) : d_factory( factory ) {}
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override;
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override;
-
-    virtual std::string name() const override
-    {
-        return "ManagedThyraFactory<" + d_factory->name() + ">";
-    }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override;
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override;
+    std::string name() const override { return "ManagedThyraFactory<" + d_factory->name() + ">"; }
 
 private:
     ManagedThyraFactory();
@@ -58,17 +43,11 @@ public:
         : d_factory( factory )
     {
     }
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override;
-
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override;
-
     virtual std::string name() const override
     {
         return "ManagedNativeThyraFactory<" + d_factory->name() + ">";
     }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override;
 
 private:
     ManagedNativeThyraFactory();
@@ -78,6 +57,7 @@ private:
 #ifdef USE_TRILINOS_BELOS
 void testBelosThyraVector( AMP::UnitTest &utils, const VectorFactory &factory );
 #endif
+
 } // namespace LinearAlgebra
 } // namespace AMP
 
