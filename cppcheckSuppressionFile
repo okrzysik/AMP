@@ -109,9 +109,10 @@ knownConditionTrueFalse:*/src/operators/libmesh/PowerShape.cpp
 
 
 // Suppress warnings for vectors
+redundantPointerOp:*/src/vectors/trilinos/thyra/ThyraVectorWrapper.cpp
 uninitMemberVar:*/src/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.cpp
 uninitMemberVar:*/src/vectors/trilinos/thyra/NativeThyraVector.cpp
-multiCondition:*/AMP/include/AMP/vectors/Scalar.hpp
+multiCondition:*/AMP/vectors/Scalar.hpp
 noExplicitConstructor:*/AMP/vectors/Scalar.h
 noExplicitConstructor:*/AMP/vectors/Vector.h
 
