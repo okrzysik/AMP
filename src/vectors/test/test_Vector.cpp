@@ -25,7 +25,7 @@ using AMP::LinearAlgebra::VectorTests;
 
 std::string SimpleFactory1 = "SimpleVectorFactory<15,false,double>";
 std::string SimpleFactory2 = "SimpleVectorFactory<45,true,double>";
-std::string SNPVFactory    = "SimplePetscNativeFactory";
+std::string SNPVFactory    = "NativePetscVectorFactory";
 std::string SMEVFactory    = "ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>";
 #ifdef USE_EXT_PETSC
 std::string MVFactory1 = "MultiVectorFactory<" + SMEVFactory + ", 1, " + SNPVFactory + ", 1>";
@@ -35,99 +35,82 @@ std::string MVFactory1 =
 #endif
 
 
-// Set the tests
-inline void testNullVector( AMP::UnitTest &ut, const std::string &factoryName )
-{
-    auto factory = generateVectorFactory( factoryName );
-    VectorTests tests( factory );
-    tests.testNullVector( &ut );
-    AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
-}
-inline void testBasicVector( AMP::UnitTest &ut, const std::string &factoryName )
-{
-    auto factory = generateVectorFactory( factoryName );
-    VectorTests tests( factory );
-    tests.testBasicVector( &ut );
-    AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
-}
-inline void testManagedVector( AMP::UnitTest &ut, const std::string &factoryName )
-{
-    auto factory = generateVectorFactory( factoryName );
-    VectorTests tests( factory );
-    tests.testManagedVector( &ut );
-    AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
-}
-inline void testVectorSelector( AMP::UnitTest &ut, const std::string &factoryName )
-{
-    auto factory = generateVectorFactory( factoryName );
-    VectorTests tests( factory );
-    tests.testVectorSelector( &ut );
-    AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
-}
-inline void checkFactoryName( AMP::UnitTest &ut, const std::string &factoryName )
-{
-    auto factory = generateVectorFactory( factoryName );
-    auto name    = factory->name();
-    if ( name != factoryName ) {
-        ut.failure( "Factory name " + name + " does not match input name " + factoryName );
-    }
-}
-
-
 int main( int argc, char **argv )
 {
 
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    // Print the total nummber of vector factories to test
-    std::cout << "Testing " << getAllFactories().size() << " vector factories\n";
-    for ( auto factory : getManagedVectorFactories() )
-        checkFactoryName( ut, factory );
-    AMP::pout << std::endl;
-
     // Test ArrayVector dimensions
     std::vector<size_t> dims{ 3, 3, 3, 3 };
     testArrayVectorDimensions<double>( dims, ut );
 
+    // Print the total nummber of vector factories to test
+    AMP::pout << "Testing " << getAllFactories().size() << " vector factories\n";
+    for ( auto name : getManagedVectorFactories() ) {
+        auto factory = generateVectorFactory( name );
+        auto name2   = factory->name();
+        if ( name != name2 ) {
+            ut.failure( "Factory name " + name2 + " does not match input name " + name );
+        }
+    }
+
     // Run null vector tests
-    AMP::pout << "Testing NullVector" << std::endl;
-    testNullVector( ut, SimpleFactory1 );
+    AMP::pout << std::endl << "Testing NullVector" << std::endl;
+    {
+        auto factory = generateVectorFactory( SimpleFactory1 );
+        VectorTests tests( factory );
+        tests.testNullVector( &ut );
+    }
 
     // Run the basic vector tests
-    AMP::pout << "Running basic vector tests:" << std::endl;
-    for ( auto factory : getAllFactories() ) {
-        // AMP::pout << "    " << factory << std::endl;
-        testBasicVector( ut, factory );
+    AMP::pout << std::endl << "Running basic vector tests:" << std::endl;
+    for ( auto name : getAllFactories() ) {
+        auto factory = generateVectorFactory( name );
+        VectorTests tests( factory );
+        tests.testBasicVector( &ut );
     }
-    AMP::pout << std::endl;
-
 
     // Run the managed vector tests
-    AMP::pout << "Running managed vector tests:" << std::endl;
-    for ( auto factory : getManagedVectorFactories() ) {
-        // AMP::pout << "    " << factory << std::endl;
-        testManagedVector( ut, factory );
+    AMP::pout << std::endl << "Running managed vector tests:" << std::endl;
+    for ( auto name : getManagedVectorFactories() ) {
+        auto factory = generateVectorFactory( name );
+        VectorTests tests( factory );
+        tests.testManagedVector( &ut );
     }
-    AMP::pout << std::endl;
+
+    // Run the petsc vector tests
+    AMP::pout << std::endl << "Running petsc vector tests:" << std::endl;
+    for ( auto name : getManagedVectorFactories() ) {
+        auto factory = generateVectorFactory( name );
+        VectorTests tests( factory );
+        tests.testPetsc( &ut );
+    }
+
+    // Run the sundials vector tests
+    AMP::pout << std::endl << "Running sundials vector tests:" << std::endl;
+    for ( auto name : getManagedVectorFactories() ) {
+        auto factory = generateVectorFactory( name );
+        VectorTests tests( factory );
+        tests.testSundials( &ut );
+    }
 
     // Run the vector selector tests
-    AMP::pout << "Running vector selector tests:" << std::endl;
-    for ( auto factory : getAllFactories() ) {
-        // AMP::pout << "    " << factory << std::endl;
-        testVectorSelector( ut, factory );
+    AMP::pout << std::endl << "Running vector selector tests:" << std::endl;
+    for ( auto name : getAllFactories() ) {
+        auto factory = generateVectorFactory( name );
+        VectorTests tests( factory );
+        tests.testVectorSelector( &ut );
     }
-    AMP::pout << std::endl;
 
 // Run Belos tests of thyra vectors
 #if defined( USE_TRILINOS_THYRA ) && defined( USE_TRILINOS_BELOS )
-    AMP::pout << "Testing Belos interface to Thyra vectors" << std::endl;
+    AMP::pout << std::endl << "Testing Belos interface to Thyra vectors" << std::endl;
     testBelosThyraVector( ut, NativeThyraFactory() );
     testBelosThyraVector( ut, ManagedThyraFactory( generateVectorFactory( SimpleFactory2 ) ) );
     testBelosThyraVector( ut,
                           ManagedNativeThyraFactory( generateVectorFactory( SimpleFactory2 ) ) );
     testBelosThyraVector( ut, ManagedNativeThyraFactory( generateVectorFactory( MVFactory1 ) ) );
-    AMP::pout << std::endl;
 #endif
 
     ut.report();

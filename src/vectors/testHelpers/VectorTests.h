@@ -51,6 +51,10 @@ public:
 
     void testVectorSelector( AMP::UnitTest *ut );
 
+    void testPetsc( AMP::UnitTest *ut );
+
+    void testSundials( AMP::UnitTest *ut );
+
 
 public:
     void InstantiateVector( AMP::UnitTest *utils );

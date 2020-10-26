@@ -60,6 +60,11 @@ void VectorTests::testBasicVector( AMP::UnitTest *ut )
 
 void VectorTests::testManagedVector( AMP::UnitTest *ut )
 {
+}
+
+
+void VectorTests::testPetsc( AMP::UnitTest *ut )
+{
 #ifdef USE_EXT_PETSC
     {
         auto simplePetscFactory = std::make_shared<SimplePetscVectorFactory>( d_factory );
@@ -71,7 +76,11 @@ void VectorTests::testManagedVector( AMP::UnitTest *ut )
         test2.testPetscVector( ut );
     }
 #endif
+}
 
+
+void VectorTests::testSundials( AMP::UnitTest *ut )
+{
 #ifdef USE_EXT_SUNDIALS
     {
         auto viewFactory =
