@@ -61,7 +61,7 @@ public:
 
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
 
-class PETScInterfaceLeftVectorFactory : public VectorFactory, PetscVectorFactory
+class PETScInterfaceLeftVectorFactory : public PetscVectorFactory
 {
 public:
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
@@ -80,18 +80,17 @@ public:
         PROFILE_STOP( "PETScInterfaceLeftVectorFactory::getVector" );
         return vector;
     }
-    AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override { return getVector(); }
-    AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
+    Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
-        AMP_ASSERT( global_cached_matrix != nullptr );
-        auto matrix = global_cached_matrix;
-        return AMP::LinearAlgebra::PetscVector::view( matrix->getLeftVector() )->getManagedVec();
+        return std::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVectorData>(
+                   vec->getVectorData() )
+            ->getVec();
     }
     std::string name() const override { return "PETScInterfaceLeftVectorFactory"; }
 };
 
 
-class PETScInterfaceRightVectorFactory : public VectorFactory, PetscVectorFactory
+class PETScInterfaceRightVectorFactory : public PetscVectorFactory
 {
 public:
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
@@ -110,12 +109,11 @@ public:
         PROFILE_STOP( "PETScInterfaceRightVectorFactory::getVector" );
         return vector;
     }
-    AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override { return getVector(); }
-    AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
+    Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
-        AMP_ASSERT( global_cached_matrix != nullptr );
-        auto matrix = global_cached_matrix;
-        return AMP::LinearAlgebra::PetscVector::view( matrix->getRightVector() )->getManagedVec();
+        return std::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVectorData>(
+                   vec->getVectorData() )
+            ->getVec();
     }
     std::string name() const override { return "PETScInterfaceRightVectorFactory"; }
 };

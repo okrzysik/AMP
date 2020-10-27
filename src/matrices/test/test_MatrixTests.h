@@ -72,8 +72,8 @@ public:
         auto factory2        = std::make_shared<AmpInterfaceLeftVectorFactory>();
         VectorTests tests1( factory1 );
         VectorTests tests2( factory2 );
-        tests1.testManagedVector( utils );
-        tests2.testManagedVector( utils );
+        tests1.testBasicVector( utils );
+        tests2.testBasicVector( utils );
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
         if ( std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscMatrix>(
                  global_cached_matrix ) ) {
@@ -81,8 +81,8 @@ public:
             auto factory4 = std::make_shared<PETScInterfaceLeftVectorFactory>();
             VectorTests tests3( factory3 );
             VectorTests tests4( factory4 );
-            tests3.testManagedVector( utils );
-            tests4.testManagedVector( utils );
+            tests3.testPetsc( utils );
+            tests4.testPetsc( utils );
         } else {
             utils->expected_failure(
                 "PetscMatrix::createView is not ready for arbitrary matricies" );

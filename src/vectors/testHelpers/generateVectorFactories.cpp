@@ -257,9 +257,6 @@ std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
         AMP_ASSERT( args.size() == 1 );
         factory.reset( new StridedVectorFactory( generateVectorFactory( args[0] ) ) );
 #if defined( USE_EXT_PETSC )
-    } else if ( factoryName == "SimplePetscNativeFactory" ) {
-        AMP_ASSERT( args.size() == 0 );
-        factory.reset( new SimplePetscNativeFactory() );
     } else if ( factoryName == "NativePetscVectorFactory" ) {
         factory.reset( new NativePetscVectorFactory() );
     } else if ( factoryName == "ManagedPetscVectorFactory" ) {
@@ -340,7 +337,6 @@ std::vector<std::string> getArrayVectorFactories()
 std::vector<std::string> getNativeVectorFactories()
 {
     std::vector<std::string> list;
-    list.push_back( "SimplePetscNativeFactory" );
     list.push_back( "NativePetscVectorFactory" );
     list.push_back( "NativeEpetraFactory" );
     list.push_back( "NativeThyraFactory" );
@@ -355,7 +351,7 @@ std::vector<std::string> getNativeVectorFactories()
 std::vector<std::string> getMultiVectorFactories()
 {
     std::vector<std::string> list;
-    std::string SNPVFactory = "SimplePetscNativeFactory";
+    std::string SNPVFactory = "NativePetscVectorFactory";
     std::string SMEVFactory = "ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>";
     std::string MVFactory1  = "MultiVectorFactory<" + SMEVFactory + ",1," + SNPVFactory + ",1>";
     std::string MVFactory2  = "MultiVectorFactory<" + SMEVFactory + ",3," + SNPVFactory + ",2>";
@@ -374,8 +370,7 @@ std::vector<std::string> getMultiVectorFactories()
 std::vector<std::string> getManagedVectorFactories()
 {
     std::vector<std::string> list;
-    list.push_back( "SimplePetscNativeFactory" );
-    std::string SNPVFactory = "SimplePetscNativeFactory";
+    std::string SNPVFactory = "NativePetscVectorFactory";
     std::string SMEVFactory = "ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>";
     std::string SMPVFactory = "ManagedPetscVectorFactory<SimpleVectorFactory<45,true>>";
     std::string NPVFactory  = "NativePetscVectorFactory";
@@ -410,7 +405,7 @@ std::vector<std::string> getCloneVectorFactories()
     std::vector<std::string> list;
     std::string CloneSMEVFactory =
         "CloneFactory<ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>>";
-    std::string CloneSNPVFactory = "CloneFactory<SimplePetscNativeFactory>";
+    std::string CloneSNPVFactory = "CloneFactory<NativePetscVectorFactory>";
     std::string CloneMVFactory1 =
         "CloneFactory<MultiVectorFactory<" + CloneSMEVFactory + ",1," + CloneSNPVFactory + ",1>>";
     std::string CloneMVFactory2 =
@@ -432,7 +427,7 @@ std::vector<std::string> getViewVectorFactories()
     list.push_back( "ViewFactory<PetscVector," + SimpleFactories[0] + ">" );
     std::string ViewSMEVFactory =
         "ViewFactory<PetscVector,ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>>";
-    std::string ViewSNPVFactory = "ViewFactory<PetscVector,SimplePetscNativeFactory>";
+    std::string ViewSNPVFactory = "ViewFactory<PetscVector,NativePetscVectorFactory>";
     std::string ViewMVFactory1  = "ViewFactory<PetscVector,MultiVectorFactory<" + ViewSMEVFactory +
                                  ",1," + ViewSNPVFactory + ",1>>";
     std::string ViewMVFactory2 = "ViewFactory<PetscVector,MultiVectorFactory<" + ViewSMEVFactory +
@@ -458,7 +453,7 @@ std::vector<std::string> getCloneViewVectorFactories()
     std::string CloneViewSMEVFactory = "CloneFactory<ViewFactory<PetscVector,"
                                        "ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>>>";
     std::string CloneViewSNPVFactory =
-        "CloneFactory<ViewFactory<PetscVector,SimplePetscNativeFactory>>";
+        "CloneFactory<ViewFactory<PetscVector,NativePetscVectorFactory>>";
     std::string CloneViewMVFactory1 = "CloneFactory<ViewFactory<PetscVector,MultiVectorFactory<" +
                                       CloneViewSMEVFactory + ",1," + CloneViewSNPVFactory + ",1>>>";
     std::string CloneViewMVFactory2 = "CloneFactory<ViewFactory<PetscVector,MultiVectorFactory<" +

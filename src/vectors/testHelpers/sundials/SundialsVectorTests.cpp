@@ -6,6 +6,15 @@
 #include "AMP/vectors/sundials/SundialsVector.h"
 
 
+#define PASS_FAIL( test, MSG )                                                    \
+    do {                                                                          \
+        if ( test )                                                               \
+            ut->passes( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG );  \
+        else                                                                      \
+            ut->failure( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG ); \
+    } while ( 0 )
+
+
 namespace AMP {
 namespace LinearAlgebra {
 
@@ -36,7 +45,7 @@ void SundialsVectorTests::testSundialsVector( AMP::UnitTest *ut )
 }
 
 
-void SundialsVectorTests::CloneSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::CloneSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora   = d_factory->getVector();
     N_Vector vec_a = getVec( vectora );
@@ -47,16 +56,13 @@ void SundialsVectorTests::CloneSundialsVector( AMP::UnitTest *utils )
         if ( vectorb->getRawDataBlock<double>( i ) == vectora->getRawDataBlock<double>( i ) )
             pass = false;
     }
-    if ( pass )
-        utils->passes( "Clone created" );
-    else
-        utils->failure( "Failed to create clone" );
+    PASS_FAIL( pass, "Clone created" );
     N_VDestroy( vec_b );
-    utils->passes( "N_VDestroy returned" );
+    ut->passes( "N_VDestroy returned" );
 }
 
 
-void SundialsVectorTests::LinearSumSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::LinearSumSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora = d_factory->getVector();
     auto vectorb = d_factory->getVector();
@@ -72,35 +78,27 @@ void SundialsVectorTests::LinearSumSundialsVector( AMP::UnitTest *utils )
     N_VLinearSum( .2, vec_a, .5, vec_b, vec_c );
     vectord->linearSum( .2, *vectora, .5, *vectorb );
     vectord->subtract( *vectord, *vectorc );
-    if ( vectord->maxNorm() < 0.000001 )
-        utils->passes( "random linear sum" );
-    else
-        utils->failure( "random linear sum" );
+    PASS_FAIL( vectord->maxNorm() < 0.000001, "random linear sum" );
 }
 
 
-void SundialsVectorTests::ConstSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::ConstSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora   = d_factory->getVector();
     N_Vector vec_a = getVec( vectora );
     N_VConst( 0., vec_a );
     double maxNorm = static_cast<double>( vectora->maxNorm() );
-    if ( maxNorm > 0 )
-        utils->failure( "Nonzero inf norm" );
-    else
-        utils->passes( "Set vector to 0" );
+    PASS_FAIL( maxNorm == 0, "Set vector to 0" );
 
     N_VConst( 1., vec_a );
     maxNorm       = static_cast<double>( vectora->maxNorm() );
     double L1Norm = static_cast<double>( vectora->L1Norm() );
-    if ( ( maxNorm == 1. ) && ( L1Norm == (double) vectora->getGlobalSize() ) )
-        utils->passes( "Set vector to 1" );
-    else
-        utils->failure( "Failed to set to 1" );
+    PASS_FAIL( ( maxNorm == 1. ) && ( L1Norm == (double) vectora->getGlobalSize() ),
+               "Set vector to 1" );
 }
 
 
-void SundialsVectorTests::ProdSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::ProdSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora = d_factory->getVector();
     auto vectorb = d_factory->getVector();
@@ -117,14 +115,11 @@ void SundialsVectorTests::ProdSundialsVector( AMP::UnitTest *utils )
     vectord->multiply( *vectora, *vectorb );
     vectord->subtract( *vectorc, *vectord );
     double norm = static_cast<double>( vectord->maxNorm() );
-    if ( norm < 0.000001 )
-        utils->passes( "Products match" );
-    else
-        utils->failure( "Products are mis-matched" );
+    PASS_FAIL( norm < 0.000001, "Products match" );
 }
 
 
-void SundialsVectorTests::DivSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::DivSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora = d_factory->getVector();
     auto vectorb = d_factory->getVector();
@@ -140,14 +135,11 @@ void SundialsVectorTests::DivSundialsVector( AMP::UnitTest *utils )
     N_VDiv( vec_a, vec_b, vec_c );
     vectord->divide( *vectora, *vectorb );
     vectord->subtract( *vectorc, *vectord );
-    if ( vectord->maxNorm() < 0.000001 )
-        utils->passes( "Quotients match" );
-    else
-        utils->failure( "Quotients are mis-matched" );
+    PASS_FAIL( vectord->maxNorm() < 0.000001, "Quotients match" );
 }
 
 
-void SundialsVectorTests::ScaleSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::ScaleSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora = d_factory->getVector();
     auto vectorb = d_factory->getVector();
@@ -160,14 +152,11 @@ void SundialsVectorTests::ScaleSundialsVector( AMP::UnitTest *utils )
     N_VScale( 2.0, vec_a, vec_b );
     vectorc->scale( 2.0, *vectora );
     vectorc->subtract( *vectorc, *vectorb );
-    if ( vectorc->maxNorm() < 0.000001 )
-        utils->passes( "Scalings match" );
-    else
-        utils->failure( "Scalings are mis-matched" );
+    PASS_FAIL( vectorc->maxNorm() < 0.000001, "Scalings match" );
 }
 
 
-void SundialsVectorTests::AbsSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::AbsSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora = d_factory->getVector();
     auto vectorb = d_factory->getVector();
@@ -182,14 +171,11 @@ void SundialsVectorTests::AbsSundialsVector( AMP::UnitTest *utils )
     N_VAbs( vec_a, vec_b );
     vectorc->abs( *vectora );
     vectorc->subtract( *vectorc, *vectorb );
-    if ( vectorc->maxNorm() < 0.000001 )
-        utils->passes( "Values match" );
-    else
-        utils->failure( "Values are mis-matched" );
+    PASS_FAIL( vectorc->maxNorm() < 0.000001, "Values match" );
 }
 
 
-void SundialsVectorTests::InvSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::InvSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora = d_factory->getVector();
     auto vectorb = d_factory->getVector();
@@ -202,14 +188,11 @@ void SundialsVectorTests::InvSundialsVector( AMP::UnitTest *utils )
     N_VInv( vec_a, vec_b );
     vectorc->reciprocal( *vectora );
     vectorc->subtract( *vectorc, *vectorb );
-    if ( vectorc->maxNorm() < 0.000001 )
-        utils->passes( "Scalings match" );
-    else
-        utils->failure( "Scalings are mis-matched" );
+    PASS_FAIL( vectorc->maxNorm() < 0.000001, "Scalings match" );
 }
 
 
-void SundialsVectorTests::AddConstSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::AddConstSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora = d_factory->getVector();
     auto vectorb = d_factory->getVector();
@@ -223,14 +206,11 @@ void SundialsVectorTests::AddConstSundialsVector( AMP::UnitTest *utils )
     vectorc->addScalar( *vectora, .3 );
     vectorc->subtract( *vectorb, *vectorc );
     double norm = static_cast<double>( vectorc->maxNorm() );
-    if ( norm < 0.00000001 )
-        utils->passes( "N_VAddConst" );
-    else
-        utils->failure( "N_VAddConst" );
+    PASS_FAIL( norm < 0.00000001, "N_VAddConst" );
 }
 
 
-void SundialsVectorTests::DotProdSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::DotProdSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora = d_factory->getVector();
     auto vectorb = d_factory->getVector();
@@ -242,14 +222,11 @@ void SundialsVectorTests::DotProdSundialsVector( AMP::UnitTest *utils )
     vectorb->setRandomValues();
     double d1 = N_VDotProd( vec_a, vec_b );
     double d2 = static_cast<double>( vectora->dot( *vectorb ) );
-    if ( fabs( d1 - d2 ) < 0.00000001 )
-        utils->passes( "N_VDotProd" );
-    else
-        utils->failure( "N_VDotProd" );
+    PASS_FAIL( fabs( d1 - d2 ) < 0.00000001, "N_VDotProd" );
 }
 
 
-void SundialsVectorTests::MaxNormSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::MaxNormSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora = d_factory->getVector();
 
@@ -259,20 +236,17 @@ void SundialsVectorTests::MaxNormSundialsVector( AMP::UnitTest *utils )
 
     double d1 = N_VMaxNorm( vec_a );
     double d2 = static_cast<double>( vectora->maxNorm() );
-    if ( fabs( d1 - d2 ) < 0.00000001 )
-        utils->passes( "N_VMaxNorm" );
-    else
-        utils->failure( "N_VMaxNorm" );
+    PASS_FAIL( fabs( d1 - d2 ) < 0.00000001, "N_VMaxNorm" );
 }
 
 
-void SundialsVectorTests::WRMSNormSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::WRMSNormSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora = d_factory->getVector();
     auto vectorb = d_factory->getVector();
     auto vectorc = d_factory->getVector();
     if ( !vectorc )
-        utils->failure( "N_VWrmsNorm" );
+        ut->failure( "N_VWrmsNorm" );
 
     N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = getVec( vectorb );
@@ -282,14 +256,11 @@ void SundialsVectorTests::WRMSNormSundialsVector( AMP::UnitTest *utils )
 
     double d1 = N_VWrmsNorm( vec_a, vec_b );
     double d2 = static_cast<double>( vectorb->wrmsNorm( *vectora, *vectorb ) );
-    if ( fabs( d1 - d2 ) < 0.00000001 )
-        utils->passes( "N_VWrmsNorm" );
-    else
-        utils->failure( "N_VWrmsNorm" );
+    PASS_FAIL( fabs( d1 - d2 ) < 0.00000001, "N_VWrmsNorm" );
 }
 
 
-void SundialsVectorTests::MinSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::MinSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora = d_factory->getVector();
 
@@ -299,14 +270,11 @@ void SundialsVectorTests::MinSundialsVector( AMP::UnitTest *utils )
 
     double d1 = N_VMin( vec_a );
     double d2 = static_cast<double>( vectora->min() );
-    if ( fabs( d1 - d2 ) < 0.00000001 )
-        utils->passes( "N_VMin" );
-    else
-        utils->failure( "N_VMin" );
+    PASS_FAIL( fabs( d1 - d2 ) < 0.00000001, "N_VMin" );
 }
 
 
-void SundialsVectorTests::L1NormSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::L1NormSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora = d_factory->getVector();
 
@@ -316,14 +284,11 @@ void SundialsVectorTests::L1NormSundialsVector( AMP::UnitTest *utils )
 
     double d1 = N_VL1Norm( vec_a );
     double d2 = static_cast<double>( vectora->L1Norm() );
-    if ( fabs( d1 - d2 ) < 0.00000001 )
-        utils->passes( "N_VL1Norm" );
-    else
-        utils->failure( "N_VL1Norm" );
+    PASS_FAIL( fabs( d1 - d2 ) < 0.00000001, "N_VL1Norm" );
 }
 
 
-void SundialsVectorTests::MinQuotientSundialsVector( AMP::UnitTest *utils )
+void SundialsVectorTests::MinQuotientSundialsVector( AMP::UnitTest *ut )
 {
     auto vectora = d_factory->getVector();
     auto vectorb = d_factory->getVector();
@@ -336,11 +301,9 @@ void SundialsVectorTests::MinQuotientSundialsVector( AMP::UnitTest *utils )
 
     double d1 = N_VMinQuotient( vec_a, vec_b );
     double d2 = static_cast<double>( vectorb->minQuotient( *vectora ) );
-    if ( fabs( d1 - d2 ) < 0.00000001 )
-        utils->passes( "N_VMinQuotient" );
-    else
-        utils->failure( "N_VMinQuotient" );
+    PASS_FAIL( fabs( d1 - d2 ) < 0.00000001, "N_VMinQuotient" );
 }
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

@@ -22,13 +22,12 @@ namespace LinearAlgebra {
  * \class PetscVectorFactory
  * \brief A helper class to generate vectors
  */
-class PetscVectorFactory
+class PetscVectorFactory : public VectorFactory
 {
 public:
     virtual ~PetscVectorFactory() {}
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const = 0;
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const = 0;
-    virtual std::string name() const = 0;
+    virtual Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr ) const = 0;
+
 protected:
     PetscVectorFactory() {}
     PetscVectorFactory( const PetscVectorFactory & );
@@ -43,15 +42,16 @@ public:
         : d_factory( factory )
     {
     }
-    AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
+    Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
-        return d_factory->getNativeVector();
+        return d_factory->getVec( vec );
     }
-    AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        return d_factory->getManagedVector()->cloneVector();
+        return d_factory->getVector()->cloneVector();
     }
-    std::string name() const override { return "PetscCloneFactory"; }
+    std::string name() const override { return "PetscCloneFactory<" + d_factory->name() + ">"; }
+
 private:
     std::shared_ptr<const PetscVectorFactory> d_factory;
 };
@@ -60,82 +60,34 @@ private:
 class PetscViewFactory : public PetscVectorFactory
 {
 public:
-    explicit PetscViewFactory( std::shared_ptr<const PetscVectorFactory> factory )
-        : d_factory( factory )
+    explicit PetscViewFactory( std::shared_ptr<const VectorFactory> factory ) : d_factory( factory )
     {
     }
-    AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
+    Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
-        return d_factory->getNativeVector();
+        return std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscVector>( vec )->getVec();
     }
-    AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        return AMP::LinearAlgebra::PetscVector::view( d_factory->getManagedVector() )
-            ->getManagedVec();
+        return std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscVector>(
+            AMP::LinearAlgebra::PetscVector::view( d_factory->getVector() ) );
     }
-    std::string name() const override { return "PetscViewFactory"; }
+    std::string name() const override { return "PetscViewFactory<" + d_factory->name() + ">"; }
+
 private:
-    std::shared_ptr<const PetscVectorFactory> d_factory;
-};
-
-
-class SimplePetscVectorFactory : public PetscVectorFactory
-{
-public:
-    explicit SimplePetscVectorFactory( std::shared_ptr<const VectorFactory> factory )
-        : d_factory( factory )
-    {
-    }
-    AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
-    {
-        auto t           = getManagedVector();
-        size_t localSize = t->getLocalSize();
-        Vec ans;
-        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-        VecCreate( t->getComm().getCommunicator(), &ans );
-        VecSetSizes( ans, localSize, PETSC_DECIDE );
-        VecSetFromOptions( ans );
-        PetscInt N;
-        VecGetSize( ans, &N );
-        AMP_ASSERT( N == (int) ( t->getGlobalSize() ) );
-        int a, b;
-        VecGetOwnershipRange( ans, &a, &b );
-        AMP_ASSERT( b - a == (int) localSize );
-        auto retVal = createVector( ans, true );
-        retVal->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "petsc vector" ) );
-        return retVal;
-    }
-    AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
-    {
-        return d_factory->getVector();
-    }
-    std::string name() const override { return "SimplePetscVectorFactory"; }
-protected:
     std::shared_ptr<const VectorFactory> d_factory;
 };
 
 
-class SimplePetscNativeFactory : public VectorFactory, SimplePetscVectorFactory
-{
-public:
-    SimplePetscNativeFactory()
-        : SimplePetscVectorFactory(
-              generateVectorFactory( "ManagedPetscVectorFactory<SimpleVectorFactory<45,true>>" ) )
-    {
-    }
-    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
-    {
-        return getNativeVector();
-    }
-    std::string name() const override { return "SimplePetscNativeFactory"; }
-};
-
-
-class ManagedPetscVectorFactory : public VectorFactory
+class ManagedPetscVectorFactory : public PetscVectorFactory
 {
 public:
     ManagedPetscVectorFactory( std::shared_ptr<const VectorFactory> factory ) : d_factory( factory )
     {
+    }
+    Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
+    {
+        return std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscVector>( vec )->getVec();
     }
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
@@ -148,14 +100,21 @@ public:
     {
         return "ManagedPetscVectorFactory<" + d_factory->name() + ">";
     }
+
 private:
     std::shared_ptr<const VectorFactory> d_factory;
 };
 
 
-class NativePetscVectorFactory : public VectorFactory
+class NativePetscVectorFactory : public PetscVectorFactory
 {
 public:
+    Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
+    {
+        return std::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVectorData>(
+                   vec->getVectorData() )
+            ->getVec();
+    }
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         Vec v;
@@ -172,26 +131,6 @@ public:
         return newVec;
     }
     std::string name() const override { return "NativePetscVectorFactory"; }
-};
-
-template<typename T>
-class PetscManagedVectorFactory : public VectorFactory
-{
-public:
-    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
-    {
-        Vec v;
-        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-        VecCreate( globalComm.getCommunicator(), &v );
-        VecSetSizes( v, 15, PETSC_DECIDE );
-        auto newVec = createVector( v, true );
-        VecSetFromOptions( v );
-        newVec->getVectorData()->assemble();
-        auto retval = std::make_shared<T>( newVec );
-        retval->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
-        return retval;
-    }
-    std::string name() const override { return "PetscManagedVectorFactory"; }
 };
 
 

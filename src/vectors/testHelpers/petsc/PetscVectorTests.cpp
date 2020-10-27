@@ -16,27 +16,21 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-static inline Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vector )
-{
-    auto petsc = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( vector );
-    AMP_ASSERT( petsc != nullptr );
-    return petsc->getVec();
-}
-
-static inline Vec getVecFromNative( AMP::LinearAlgebra::Vector::shared_ptr vector )
-{
-    auto nvData = std::dynamic_pointer_cast<NativePetscVectorData>( vector->getVectorData() );
-    AMP_ASSERT( nvData );
-    return nvData->getVec();
-}
+#define PASS_FAIL( test, MSG )                                                    \
+    do {                                                                          \
+        if ( test )                                                               \
+            ut->passes( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG );  \
+        else                                                                      \
+            ut->failure( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG ); \
+    } while ( 0 )
 
 
-void checkPetscError( AMP::UnitTest *utils, PetscErrorCode i )
+void checkPetscError( AMP::UnitTest *ut, PetscErrorCode i )
 {
     if ( i ) {
         char *ans;
         PetscErrorMessage( i, PETSC_NULL, &ans );
-        utils->failure( ans );
+        ut->failure( ans );
         delete[] ans;
     }
 }
@@ -44,11 +38,7 @@ void checkPetscError( AMP::UnitTest *utils, PetscErrorCode i )
 
 void PetscVectorTests::testPetscVector( AMP::UnitTest *ut )
 {
-    InstantiatePetscVectors( ut );
     DuplicatePetscVector( ut );
-    StaticCopyPetscVector( ut );
-    StaticDuplicatePetscVector( ut );
-    CopyPetscVector( ut );
     VerifyDotPetscVector( ut );
     VerifyNormsPetscVector( ut );
     VerifyScalePetscVector( ut );
@@ -72,85 +62,52 @@ void PetscVectorTests::testPetscVector( AMP::UnitTest *ut )
     VerifyAXPBYPCZPetscVector( ut );
 }
 
-void PetscVectorTests::InstantiatePetscVectors( AMP::UnitTest *utils )
+
+void PetscVectorTests::Bug_612( AMP::UnitTest *ut )
 {
-    auto native_vector = d_factory->getNativeVector();
-    if ( native_vector )
-        utils->passes( "native created" );
-    else
-        utils->failure( "native created" );
-    auto managed_vector = d_factory->getManagedVector();
-    if ( managed_vector )
-        utils->passes( "managed created" );
-    else
-        utils->failure( "managed created" );
-    utils->passes( "native destroyed" );
-}
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
 
-
-void PetscVectorTests::Bug_612( AMP::UnitTest *utils )
-{
-    auto vectora = d_factory->getManagedVector();
-    auto vectorb = d_factory->getManagedVector();
-
-    Vec veca = getVec( vectora );
-    Vec vecb = getVec( vectorb );
+    Vec veca = d_factory->getVec( vectora );
+    Vec vecb = d_factory->getVec( vectorb );
 
     vectora->setToScalar( 5.0 );
     vectorb->setToScalar( 0.0 );
 
     double result;
     VecMaxPointwiseDivide( veca, vecb, &result );
-    if ( result == 5.0 )
-        utils->passes( "Correct computation 1" );
-    else
-        utils->failure( "Incorrect computation 1" );
+    PASS_FAIL( result == 5.0, "computation 1" );
 
     vectorb->setToScalar( 5.0 );
     vectorb->getRawDataBlock<double>( 0 )[0] = 0.0;
 
     VecMaxPointwiseDivide( veca, vecb, &result );
-    if ( result == 5.0 )
-        utils->passes( "Correct computation 2" );
-    else
-        utils->failure( "Incorrect computation 2" );
+    PASS_FAIL( result == 5.0, "computation 2" );
 
     vectorb->setToScalar( 0.5 );
     vectorb->getRawDataBlock<double>( 0 )[0] = 0.0;
 
     VecMaxPointwiseDivide( veca, vecb, &result );
-    if ( result == 10.0 )
-        utils->passes( "Correct computation 3" );
-    else
-        utils->failure( "Incorrect computation 3" );
+    PASS_FAIL( result == 10.0, "computation 3" );
 }
 
 
-void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getManagedVector();
-    auto nvData  = std::dynamic_pointer_cast<NativePetscVectorData>( vectora->getVectorData() );
-    if ( nvData )
-        return;
-
-    vectora->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "dummy_variable" ) );
-    Vec petsc_vec = getVec( vectora );
+    auto vectora  = d_factory->getVector();
+    Vec petsc_vec = d_factory->getVec( vectora );
     Vec another_vec;
-    checkPetscError( utils, VecDuplicate( petsc_vec, &another_vec ) );
+    checkPetscError( ut, VecDuplicate( petsc_vec, &another_vec ) );
     auto dup = PETSC::getAMP( another_vec );
-    utils->passes( "managed duplicated" );
-    if ( ( dup->getGlobalSize() == vectora->getGlobalSize() ) &&
-         ( dup->getLocalSize() == vectora->getLocalSize() ) )
-        utils->passes( "Allocated sizes are the same" );
-    else
-        utils->failure( "Allocated sizes are different" );
-    if ( *( vectora->getVariable() ) == *( dup->getVariable() ) )
-        utils->passes( "Associated variables are the same" );
-    else
-        utils->passes( "Associated variables are different" );
-    checkPetscError( utils, PETSC::vecDestroy( &another_vec ) );
-    utils->passes( "managed duplicated destroyed" );
-
+    ut->passes( "managed duplicated" );
+    bool test1 = ( dup->getGlobalSize() == vectora->getGlobalSize() ) &&
+                 ( dup->getLocalSize() == vectora->getLocalSize() );
+    bool test2 = *( vectora->getVariable() ) == *( dup->getVariable() );
+    PASS_FAIL( test1, "Allocated sizes are the same" );
+    PASS_FAIL( test2, "Associated variables are the same" );
+    checkPetscError( ut, PETSC::vecDestroy( &another_vec ) );
+    ut->passes( "managed duplicated destroyed" );
+    checkPetscError( ut, VecDestroy( &another_vec ) );
     if ( std::dynamic_pointer_cast<MultiVector>( vectora ) ) {
         auto b      = AMP::LinearAlgebra::PetscVector::view( vectora )->getManagedVec();
         bool passed = true;
@@ -159,492 +116,328 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
                 passed = false;
             }
         }
-        if ( passed )
-            utils->passes( "VecDuplicate of a multivector allocates new space" );
-        else
-            utils->passes( "VecDuplicate of a multivector does not allocate new space" );
+        PASS_FAIL( passed, "VecDuplicate of a multivector allocates new space" );
     }
 }
 
 
-void PetscVectorTests::StaticDuplicatePetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyPointwiseMaxAbsPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora    = d_factory->getNativeVector();
-    auto vector_dup = d_factory->getManagedVector();
-    vector_dup->setToScalar( 1. );
-    double t = static_cast<double>( vector_dup->L1Norm() );
-    if ( vector_dup->getGlobalSize() == vectora->getGlobalSize() )
-        utils->passes( "global size equality" );
-    else
-        utils->failure( "global size equality" );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
+    auto vectore = d_factory->getVector();
+    auto vectorf = d_factory->getVector();
 
-    if ( vector_dup->getLocalSize() == vectora->getLocalSize() )
-        utils->passes( "local size equality" );
-    else
-        utils->failure( "local size equality" );
-
-    if ( fabs( t - (double) vector_dup->getGlobalSize() ) < 0.0000001 )
-        utils->passes( "trivial set data" );
-    else
-        utils->failure( "trivial set data" );
-}
-
-
-void PetscVectorTests::StaticCopyPetscVector( AMP::UnitTest *utils )
-{
-    auto vectora = d_factory->getNativeVector();
-    vectora->setToScalar( 1. );
-    auto vector_dup = d_factory->getManagedVector();
-    vector_dup->copyVector( vectora );
-    double t = static_cast<double>( vector_dup->L1Norm() );
-    if ( vector_dup->getGlobalSize() == vectora->getGlobalSize() )
-        utils->passes( "global size equality" );
-    else
-        utils->failure( "global size equality" );
-
-    if ( vector_dup->getLocalSize() == vectora->getLocalSize() )
-        utils->passes( "local size equality" );
-    else
-        utils->failure( "local size equality" );
-
-    if ( fabs( t - (double) vector_dup->getGlobalSize() ) < 0.0000001 )
-        utils->passes( "trivial copy data" );
-    else
-        utils->failure( "trivial copy data" );
-}
-
-
-void PetscVectorTests::CopyPetscVector( AMP::UnitTest *utils )
-{
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
-    auto vectorc = d_factory->getNativeVector();
-    vectora->setRandomValues();
-    vectorb->copyVector( vectora );
-    vectorc->subtract( *vectora, *vectorb );
-    if ( vectorc->maxNorm() < 0.0000001 )
-        utils->passes( "native petsc copy" );
-    else
-        utils->failure( "native petsc copy" );
-}
-
-
-void PetscVectorTests::VerifyPointwiseMaxAbsPetscVector( AMP::UnitTest *utils )
-{
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
-    auto vectorc = d_factory->getNativeVector();
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
+    auto vecc = d_factory->getVec( vectorc );
+    auto vecd = d_factory->getVec( vectord );
+    auto vece = d_factory->getVec( vectore );
+    auto vecf = d_factory->getVec( vectorf );
 
     vectora->setRandomValues();
     vectorb->setToScalar( .65 );
-
-    auto vectord = d_factory->getManagedVector();
-    auto vectore = d_factory->getManagedVector();
-    auto vectorf = d_factory->getManagedVector();
-
     vectord->copyVector( vectora );
     vectore->setToScalar( .65 );
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVecFromNative( vectorb );
-    auto vecc = getVecFromNative( vectorc );
-    auto vecd = getVec( vectord );
-    auto vece = getVec( vectore );
-    auto vecf = getVec( vectorf );
+    checkPetscError( ut, VecPointwiseMaxAbs( vecc, veca, vecb ) );
+    checkPetscError( ut, VecPointwiseMaxAbs( vecf, vecd, vece ) );
 
-    checkPetscError( utils, VecPointwiseMaxAbs( vecc, veca, vecb ) );
-    checkPetscError( utils, VecPointwiseMaxAbs( vecf, vecd, vece ) );
-
-    if ( vectorc->equals( *vectorf ) )
-        utils->passes( "VecPointwiseMaxAbs test" );
-    else
-        utils->failure( "VecPointwiseMaxAbs test" );
+    PASS_FAIL( vectorc->equals( *vectorf ), "VecPointwiseMaxAbs test" );
 }
 
 
-void PetscVectorTests::VerifyPointwiseMaxPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyPointwiseMaxPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
-    auto vectorc = d_factory->getNativeVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
+    auto vectore = d_factory->getVector();
+    auto vectorf = d_factory->getVector();
+
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
+    auto vecc = d_factory->getVec( vectorc );
+    auto vecd = d_factory->getVec( vectord );
+    auto vece = d_factory->getVec( vectore );
+    auto vecf = d_factory->getVec( vectorf );
 
     vectora->setRandomValues();
     vectorb->setToScalar( .35 );
-
-    auto vectord = d_factory->getManagedVector();
-    auto vectore = d_factory->getManagedVector();
-    auto vectorf = d_factory->getManagedVector();
-
     vectord->copyVector( vectora );
     vectore->setToScalar( .35 );
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVecFromNative( vectorb );
-    auto vecc = getVecFromNative( vectorc );
-    auto vecd = getVec( vectord );
-    auto vece = getVec( vectore );
-    auto vecf = getVec( vectorf );
+    checkPetscError( ut, VecPointwiseMax( vecc, veca, vecb ) );
+    checkPetscError( ut, VecPointwiseMax( vecf, vecd, vece ) );
 
-    checkPetscError( utils, VecPointwiseMax( vecc, veca, vecb ) );
-    checkPetscError( utils, VecPointwiseMax( vecf, vecd, vece ) );
-
-    if ( vectorc->equals( *vectorf ) )
-        utils->passes( "VecPointwiseMax test" );
-    else
-        utils->failure( "VecPointwiseMax test" );
+    PASS_FAIL( vectorc->equals( *vectorf ), "VecPointwiseMax test" );
 }
 
 
-void PetscVectorTests::VerifyPointwiseMinPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyPointwiseMinPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
-    auto vectorc = d_factory->getNativeVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
+    auto vectore = d_factory->getVector();
+    auto vectorf = d_factory->getVector();
+
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
+    auto vecc = d_factory->getVec( vectorc );
+    auto vecd = d_factory->getVec( vectord );
+    auto vece = d_factory->getVec( vectore );
+    auto vecf = d_factory->getVec( vectorf );
 
     vectora->setRandomValues();
     vectorb->setToScalar( .35 );
-
-    auto vectord = d_factory->getManagedVector();
-    auto vectore = d_factory->getManagedVector();
-    auto vectorf = d_factory->getManagedVector();
-
     vectord->copyVector( vectora );
     vectore->setToScalar( .35 );
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVecFromNative( vectorb );
-    auto vecc = getVecFromNative( vectorc );
-    auto vecd = getVec( vectord );
-    auto vece = getVec( vectore );
-    auto vecf = getVec( vectorf );
+    checkPetscError( ut, VecPointwiseMin( vecc, veca, vecb ) );
+    checkPetscError( ut, VecPointwiseMin( vecf, vecd, vece ) );
 
-    checkPetscError( utils, VecPointwiseMin( vecc, veca, vecb ) );
-    checkPetscError( utils, VecPointwiseMin( vecf, vecd, vece ) );
-
-    if ( vectorc->equals( *vectorf ) )
-        utils->passes( "VecPointwiseMin test" );
-    else
-        utils->failure( "VecPointwiseMin test" );
+    PASS_FAIL( vectorc->equals( *vectorf ), "VecPointwiseMin test" );
 }
 
 
-void PetscVectorTests::VerifyAXPBYPCZPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyAXPBYPCZPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
-    auto vectorc = d_factory->getNativeVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
+    auto vectore = d_factory->getVector();
+    auto vectorf = d_factory->getVector();
+
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
+    auto vecc = d_factory->getVec( vectorc );
+    auto vecd = d_factory->getVec( vectord );
+    auto vece = d_factory->getVec( vectore );
+    auto vecf = d_factory->getVec( vectorf );
 
     vectora->setRandomValues();
     vectorb->setToScalar( -.5 );
     vectorc->setToScalar( 3.45678 );
-
-    auto vectord = d_factory->getManagedVector();
-    auto vectore = d_factory->getManagedVector();
-    auto vectorf = d_factory->getManagedVector();
-
     vectord->copyVector( vectora );
     vectore->setToScalar( -.5 );
     vectorf->setToScalar( 3.45678 );
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVecFromNative( vectorb );
-    auto vecc = getVecFromNative( vectorc );
-    auto vecd = getVec( vectord );
-    auto vece = getVec( vectore );
-    auto vecf = getVec( vectorf );
+    checkPetscError( ut, VecAXPBYPCZ( veca, 3.14159, 1.414, 2.1727, vecb, vecc ) );
+    checkPetscError( ut, VecAXPBYPCZ( vecd, 3.14159, 1.414, 2.1727, vece, vecf ) );
 
-    checkPetscError( utils, VecAXPBYPCZ( veca, 3.14159, 1.414, 2.1727, vecb, vecc ) );
-    checkPetscError( utils, VecAXPBYPCZ( vecd, 3.14159, 1.414, 2.1727, vece, vecf ) );
-
-    if ( vectora->equals( *vectord ) )
-        utils->passes( "VecAXPBYPCZ test" );
-    else
-        utils->failure( "VecAXPBYPCZ test" );
+    PASS_FAIL( vectora->equals( *vectord ), "VecAXPBYPCZ test" );
 }
 
 
-void PetscVectorTests::VerifyAYPXPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyAYPXPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
+
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
+    auto vecc = d_factory->getVec( vectorc );
+    auto vecd = d_factory->getVec( vectord );
 
     vectora->setRandomValues();
     vectorb->setToScalar( -.5 );
-
-    auto vectorc = d_factory->getManagedVector();
-    auto vectord = d_factory->getManagedVector();
-
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVecFromNative( vectorb );
-    auto vecc = getVec( vectorc );
-    auto vecd = getVec( vectord );
+    checkPetscError( ut, VecAYPX( veca, 2, vecb ) );
+    checkPetscError( ut, VecAYPX( vecc, 2, vecd ) );
 
-    checkPetscError( utils, VecAYPX( veca, 2, vecb ) );
-    checkPetscError( utils, VecAYPX( vecc, 2, vecd ) );
-
-    if ( vectora->equals( *vectorc ) )
-        utils->passes( "VecAYPX test" );
-    else
-        utils->failure( "VecAYPX test" );
+    PASS_FAIL( vectora->equals( *vectorc ), "VecAYPX test" );
 }
 
 
-void PetscVectorTests::VerifyExpPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyExpPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
 
     vectora->setRandomValues();
     vectora->abs( *vectora );
-
-    auto vectorb = d_factory->getManagedVector();
     vectorb->copyVector( vectora );
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVec( vectorb );
+    checkPetscError( ut, VecExp( veca ) );
+    checkPetscError( ut, VecExp( vecb ) );
 
-    checkPetscError( utils, VecExp( veca ) );
-    checkPetscError( utils, VecExp( vecb ) );
-
-    if ( vectora->equals( *vectorb ) )
-        utils->passes( "VecExp test" );
-    else
-        utils->failure( "VecExp test" );
+    PASS_FAIL( vectora->equals( *vectorb ), "VecExp test" );
 }
 
 
-void PetscVectorTests::VerifyLogPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyLogPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
 
     vectora->setRandomValues();
     vectora->abs( *vectora );
-
-    auto vectorb = d_factory->getManagedVector();
     vectorb->copyVector( vectora );
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVec( vectorb );
+    checkPetscError( ut, VecLog( veca ) );
+    checkPetscError( ut, VecLog( vecb ) );
 
-    checkPetscError( utils, VecLog( veca ) );
-    checkPetscError( utils, VecLog( vecb ) );
-
-    if ( vectora->equals( *vectorb ) )
-        utils->passes( "VecLog test" );
-    else
-        utils->failure( "VecLog test" );
+    PASS_FAIL( vectora->equals( *vectorb ), "VecLog test" );
 }
 
 
-void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto veca    = getVecFromNative( vectora );
+    auto name = d_factory->name() + "VerifyNormsPetscVector: ";
+
+    auto vectora = d_factory->getVector();
+    auto veca    = d_factory->getVec( vectora );
 
     vectora->setRandomValues();
     double l1norm_a1, l1norm_a2;
     double l2norm_a1, l2norm_a2;
     double infnorm_a1, infnorm_a2;
-    checkPetscError( utils, VecNorm( veca, NORM_1, &l1norm_a1 ) );
-    checkPetscError( utils, VecNorm( veca, NORM_2, &l2norm_a1 ) );
-    checkPetscError( utils, VecNorm( veca, NORM_INFINITY, &infnorm_a1 ) );
+    checkPetscError( ut, VecNorm( veca, NORM_1, &l1norm_a1 ) );
+    checkPetscError( ut, VecNorm( veca, NORM_2, &l2norm_a1 ) );
+    checkPetscError( ut, VecNorm( veca, NORM_INFINITY, &infnorm_a1 ) );
     l1norm_a2  = static_cast<double>( vectora->L1Norm() );
     l2norm_a2  = static_cast<double>( vectora->L2Norm() );
     infnorm_a2 = static_cast<double>( vectora->maxNorm() );
-    if ( l1norm_a1 == l1norm_a2 ) // These should be identical, since same method called
-        utils->passes( "l1 norm: native norm equals interface norm for native vector" );
-    else {
-        std::cout << "Native l1norm (petsc) " << l1norm_a1 << "l1norm (amp) " << l1norm_a2
-                  << std::endl;
-        utils->failure( "l1 norm: native norm does not equal interface norm for native vector" );
-    }
-    if ( l2norm_a1 == l2norm_a2 ) // These should be identical, since same method called
-        utils->passes( "l2 norm: native norm equals interface norm for native vector" );
-    else {
-        std::cout << "Native l2norm (petsc) " << l2norm_a1 << "l2norm (amp) " << l2norm_a2
-                  << std::endl;
-        utils->failure( "l2 norm: native norm does not equal interface norm for native vector" );
-    }
-    if ( infnorm_a1 == infnorm_a2 ) // These should be identical, since same method called
-        utils->passes( "inf norm: native norm equals interface norm for native vector" );
-    else {
-        std::cout << "Native inf norm (petsc) " << infnorm_a1 << "inf norm (amp) " << infnorm_a2
-                  << std::endl;
-        utils->failure( "inf norm: native norm does not equal interface norm for native vector" );
-    }
+    // These should be identical, since same method called
+    PASS_FAIL( l1norm_a1 == l1norm_a2, "l1 norm: native norm equals interface norm 1" );
+    PASS_FAIL( fabs( l2norm_a1 - l2norm_a2 ) < 1e-15,
+               "l2 norm: native norm equals interface norm 1" );
+    PASS_FAIL( infnorm_a1 == infnorm_a2, "inf norm: native norm equals interface norm 1" );
 
-    auto vectorc = d_factory->getManagedVector();
+    auto vectorc = d_factory->getVector();
     vectorc->copyVector( vectora );
 
-
-    auto vecc = getVec( vectorc );
+    auto vecc = d_factory->getVec( vectorc );
     double l1norm_c1, l1norm_c2;
     double l2norm_c1, l2norm_c2;
     double infnorm_c1, infnorm_c2;
-    checkPetscError( utils, VecNorm( vecc, NORM_1, &l1norm_c1 ) );
-    checkPetscError( utils, VecNorm( vecc, NORM_2, &l2norm_c1 ) );
-    checkPetscError( utils, VecNorm( vecc, NORM_INFINITY, &infnorm_c1 ) );
+    checkPetscError( ut, VecNorm( vecc, NORM_1, &l1norm_c1 ) );
+    checkPetscError( ut, VecNorm( vecc, NORM_2, &l2norm_c1 ) );
+    checkPetscError( ut, VecNorm( vecc, NORM_INFINITY, &infnorm_c1 ) );
     l1norm_c2  = static_cast<double>( vectorc->L1Norm() );
     l2norm_c2  = static_cast<double>( vectorc->L2Norm() );
     infnorm_c2 = static_cast<double>( vectorc->maxNorm() );
-    if ( l1norm_c1 == l1norm_c2 ) // These should be identical, since same method called
-        utils->passes( "l1 norm: native norm equals interface norm for managed vector" );
-    else
-        utils->failure( "l1 norm: native norm does not equal interface norm for managed vector" );
-    if ( l2norm_c1 == l2norm_c2 ) // These should be identical, since same method called
-        utils->passes( "l2 norm: native norm equals interface norm for managed vector" );
-    else
-        utils->failure( "l2 norm: native norm does not equal interface norm for managed vector" );
-    if ( infnorm_c1 == infnorm_c2 ) // These should be identical, since same method called
-        utils->passes( "inf norm: native norm equals interface norm for managed vector" );
-    else
-        utils->failure( "inf norm: native norm does not equal interface norm for managed vector" );
-    if ( fabs( l1norm_a1 - l1norm_c1 ) < 0.0000001 )
-        utils->passes( "l1 norms equal for managed and native petsc vectors" );
-    else
-        utils->passes( "l1 norms not equal for managed and native petsc vectors" );
-    if ( fabs( l2norm_a1 - l2norm_c1 ) < 0.0000001 )
-        utils->passes( "l2 norms equal for managed and native petsc vectors" );
-    else
-        utils->passes( "l2 norms not equal for managed and native petsc vectors" );
-    if ( fabs( infnorm_a1 - infnorm_c1 ) < 0.0000001 )
-        utils->passes( "max norms equal for managed and native petsc vectors" );
-    else
-        utils->passes( "max norms not equal for managed and native petsc vectors" );
-    checkPetscError( utils, VecNormBegin( vecc, NORM_1, &l1norm_c1 ) );
-    checkPetscError( utils, VecNormBegin( vecc, NORM_2, &l2norm_c1 ) );
-    checkPetscError( utils, VecNormBegin( vecc, NORM_INFINITY, &infnorm_c1 ) );
-    checkPetscError( utils, VecNormEnd( vecc, NORM_1, &l1norm_c1 ) );
-    checkPetscError( utils, VecNormEnd( vecc, NORM_2, &l2norm_c1 ) );
-    checkPetscError( utils, VecNormEnd( vecc, NORM_INFINITY, &infnorm_c1 ) );
+    // These should be identical, since same method called
+    PASS_FAIL( l1norm_c1 == l1norm_c2, "l1 norm: native norm equals interface norm 2" );
+    PASS_FAIL( fabs( l2norm_c1 - l2norm_c2 ) < 1e-15,
+               "l2 norm: native norm equals interface norm 2" );
+    PASS_FAIL( infnorm_c1 == infnorm_c2, "inf norm: native norm equals interface norm 2" );
+    PASS_FAIL( fabs( l1norm_a1 - l1norm_c1 ) < 0.0000001, "l1 norms equal" );
+    PASS_FAIL( fabs( l2norm_a1 - l2norm_c1 ) < 0.0000001, "l2 norms equal" );
+    PASS_FAIL( fabs( infnorm_a1 - infnorm_c1 ) < 0.0000001, "max norms equal" );
+    checkPetscError( ut, VecNormBegin( vecc, NORM_1, &l1norm_c1 ) );
+    checkPetscError( ut, VecNormBegin( vecc, NORM_2, &l2norm_c1 ) );
+    checkPetscError( ut, VecNormBegin( vecc, NORM_INFINITY, &infnorm_c1 ) );
+    checkPetscError( ut, VecNormEnd( vecc, NORM_1, &l1norm_c1 ) );
+    checkPetscError( ut, VecNormEnd( vecc, NORM_2, &l2norm_c1 ) );
+    checkPetscError( ut, VecNormEnd( vecc, NORM_INFINITY, &infnorm_c1 ) );
     l1norm_c2  = static_cast<double>( vectorc->L1Norm() );
     l2norm_c2  = static_cast<double>( vectorc->L2Norm() );
     infnorm_c2 = static_cast<double>( vectorc->maxNorm() );
-    if ( fabs( l1norm_c1 - l1norm_c2 ) <
-         0.00001 ) // These should be identical, since same method called
-        utils->passes( "l1 norm: native norm equals interface norm for managed vector" );
-    else
-        utils->failure( "l1 norm: native norm does not equal interface norm for managed vector" );
-    if ( fabs( l2norm_c1 - l2norm_c2 ) <
-         0.00001 ) // These should be identical, since same method called
-        utils->passes( "l2 norm: native norm equals interface norm for managed vector" );
-    else
-        utils->failure( "l2 norm: native norm does not equal interface norm for managed vector" );
-    if ( fabs( infnorm_c1 - infnorm_c2 ) <
-         0.00001 ) // These should be identical, since same method called
-        utils->passes( "inf norm: native norm equals interface norm for managed vector" );
-    else
-        utils->failure( "inf norm: native norm does not equal interface norm for managed vector" );
-    if ( fabs( l1norm_a1 - l1norm_c1 ) < 0.0000001 )
-        utils->passes( "l1 norms equal for managed and native petsc vectors" );
-    else
-        utils->passes( "l1 norms not equal for managed and native petsc vectors" );
-    if ( fabs( l2norm_a1 - l2norm_c1 ) < 0.0000001 )
-        utils->passes( "l2 norms equal for managed and native petsc vectors" );
-    else
-        utils->passes( "l2 norms not equal for managed and native petsc vectors" );
-    if ( fabs( infnorm_a1 - infnorm_c1 ) < 0.0000001 )
-        utils->passes( "max norms equal for managed and native petsc vectors" );
-    else
-        utils->passes( "max norms not equal for managed and native petsc vectors" );
+    // These should be identical, since same method called
+    PASS_FAIL( fabs( l1norm_c1 - l1norm_c2 ) < 0.00001,
+               "l1 norm: native norm equals interface norm 3" );
+    PASS_FAIL( fabs( l2norm_c1 - l2norm_c2 ) < 0.00001,
+               "l2 norm: native norm equals interface norm 3" );
+    PASS_FAIL( fabs( infnorm_c1 - infnorm_c2 ) < 0.00001,
+               "inf norm: native norm equals interface norm 3" );
+    PASS_FAIL( fabs( l1norm_a1 - l1norm_c1 ) < 0.0000001, "l1 norms equal" );
+    PASS_FAIL( fabs( l2norm_a1 - l2norm_c1 ) < 0.0000001, "l2 norms equal" );
+    PASS_FAIL( fabs( infnorm_a1 - infnorm_c1 ) < 0.0000001, "max norms equal" );
 }
 
 
-void PetscVectorTests::VerifyAXPBYPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyAXPBYPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
 
     vectora->setRandomValues();
     vectorb->setToScalar( 2.0 );
 
-    auto vectorc = d_factory->getManagedVector();
+    auto vectorc = d_factory->getVector();
     vectorc->copyVector( vectora );
-    auto vectord = d_factory->getManagedVector();
+    auto vectord = d_factory->getVector();
     vectord->copyVector( vectorb );
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVecFromNative( vectorb );
-    auto vecc = getVec( vectorc );
-    auto vecd = getVec( vectord );
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
+    auto vecc = d_factory->getVec( vectorc );
+    auto vecd = d_factory->getVec( vectord );
 
-    checkPetscError( utils, VecAXPBY( veca, 1.234, 2.345, vecb ) );
-    checkPetscError( utils, VecAXPBY( vecc, 1.234, 2.345, vecd ) );
+    checkPetscError( ut, VecAXPBY( veca, 1.234, 2.345, vecb ) );
+    checkPetscError( ut, VecAXPBY( vecc, 1.234, 2.345, vecd ) );
 
-    if ( vectora->L2Norm() != 0 )
-        utils->passes( "Non-trivial axpby computed" );
-    else
-        utils->failure( "Trivial axpby computed" );
-    if ( vectora->equals( *vectorc ) )
-        utils->passes( "Native axpby matches managed axpby" );
-    else
-        utils->failure( "Native axpby does not match managed axpby" );
+    PASS_FAIL( vectora->L2Norm() != 0, "Trivial axpby computed" );
+    PASS_FAIL( vectora->equals( *vectorc ), "Native axpby matches managed axpby" );
 
     vectora->axpby( 1.234, 2.345, *vectorb );
     vectorc->axpby( 1.234, 2.345, *vectord );
 
-    if ( vectora->L2Norm() != 0 )
-        utils->passes( "Non-trivial axpby computed" );
-    else
-        utils->failure( "Trivial axpby computed" );
-    if ( vectora->equals( *vectorc ) )
-        utils->passes( "Native axpby matches managed axpby" );
-    else
-        utils->failure( "Native axpby does not match managed axpby" );
+    PASS_FAIL( vectora->L2Norm() != 0, "Trivial axpby computed" );
+    PASS_FAIL( vectora->equals( *vectorc ), "Native axpby matches managed axpby" );
 }
 
 
-void PetscVectorTests::VerifySwapPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifySwapPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
-    auto vectorc = d_factory->getNativeVector();
-    auto vectord = d_factory->getNativeVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVecFromNative( vectorb );
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
 
     vectora->setRandomValues();
     vectorb->setToScalar( 99. );
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
-    checkPetscError( utils, VecSwap( veca, vecb ) );
+    checkPetscError( ut, VecSwap( veca, vecb ) );
     vectorc->subtract( *vectorc, *vectorb );
     vectord->subtract( *vectord, *vectora );
-    if ( ( vectorc->L1Norm() < 0.0000001 ) && ( vectord->L1Norm() < 0.000001 ) )
-        utils->passes( "Swap vectors native interface works with native vectors" );
-    else
-        utils->failure( "Swap vectors native interface fails with native vectors" );
+    bool test1 = ( vectorc->L1Norm() < 0.0000001 ) && ( vectord->L1Norm() < 0.000001 );
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
     vectora->swapVectors( vectorb );
     vectorc->subtract( *vectorc, *vectorb );
     vectord->subtract( *vectord, *vectora );
-    if ( ( vectorc->L1Norm() < 0.0000001 ) && ( vectord->L1Norm() < 0.000001 ) )
-        utils->passes( "Swap vectors AMP interface works with native vectors" );
-    else
-        utils->failure( "Swap vectors AMP interface fails with native vectors" );
+    bool test2 = ( vectorc->L1Norm() < 0.0000001 ) && ( vectord->L1Norm() < 0.000001 );
+    PASS_FAIL( test1, "Swap vectors native interface works with native vectors" );
+    PASS_FAIL( test2, "Swap vectors AMP interface works with native vectors" );
 
-    auto vectore = d_factory->getManagedVector();
-    auto vectorf = d_factory->getManagedVector();
-    auto vectorg = d_factory->getManagedVector();
-    auto vectorh = d_factory->getManagedVector();
+    auto vectore = d_factory->getVector();
+    auto vectorf = d_factory->getVector();
+    auto vectorg = d_factory->getVector();
+    auto vectorh = d_factory->getVector();
 
-    auto vece = getVec( vectore );
-    auto vecf = getVec( vectorf );
+    auto vece = d_factory->getVec( vectore );
+    auto vecf = d_factory->getVec( vectorf );
     vectore->setRandomValues();
     vectorf->setToScalar( 99. );
     vectorg->copyVector( vectore );
     vectorh->copyVector( vectorf );
-    checkPetscError( utils, VecSwap( vece, vecf ) );
+    checkPetscError( ut, VecSwap( vece, vecf ) );
     vectorg->subtract( *vectorg, *vectorf );
     vectorh->subtract( *vectorh, *vectore );
-    if ( ( vectorg->L1Norm() < 0.0000001 ) && ( vectorh->L1Norm() < 0.000001 ) )
-        utils->passes( "Swap vectors native interface works with managed vectors" );
-    else
-        utils->failure( "Swap vectors native interface fails with managed vectors" );
+    bool test3 = ( vectorg->L1Norm() < 0.0000001 ) && ( vectorh->L1Norm() < 0.000001 );
+    PASS_FAIL( test3, "Swap vectors native interface works with managed vectors" );
 
     vectorg->copyVector( vectore );
     vectorh->subtract( *vectore, *vectorg );
@@ -652,278 +445,233 @@ void PetscVectorTests::VerifySwapPetscVector( AMP::UnitTest *utils )
     vectore->swapVectors( vectorf );
     vectorg->subtract( *vectorg, *vectorf );
     vectorh->subtract( *vectorh, *vectore );
-    if ( ( vectorg->L1Norm() < 0.0000001 ) && ( vectorh->L1Norm() < 0.000001 ) )
-        utils->passes( "Swap vectors managed interface works with managed vectors" );
-    else
-        utils->failure( "Swap vectors managed interface fails with managed vectors" );
+    bool test4 = ( vectorg->L1Norm() < 0.0000001 ) && ( vectorh->L1Norm() < 0.000001 );
+    PASS_FAIL( test4, "Swap vectors managed interface works with managed vectors" );
 }
 
 
-void PetscVectorTests::VerifyGetSizePetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyGetSizePetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getManagedVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVec( vectorb );
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
 
     int sizea1, sizea2, sizeb1, sizeb2;
     sizea1 = vectora->getGlobalSize();
-    checkPetscError( utils, VecGetSize( veca, &sizea2 ) );
+    checkPetscError( ut, VecGetSize( veca, &sizea2 ) );
     sizeb1 = vectorb->getGlobalSize();
-    checkPetscError( utils, VecGetSize( vecb, &sizeb2 ) );
+    checkPetscError( ut, VecGetSize( vecb, &sizeb2 ) );
 
-    if ( sizea1 == sizea2 )
-        utils->passes( "Native PETSc: Native interface matches AMP interface" );
-    else
-        utils->failure( "Native PETSc: Native interface does not match AMP interface" );
-    if ( sizeb1 == sizeb2 )
-        utils->passes( "Managed PETSc: Native interface matches AMP interface" );
-    else
-        utils->failure( "Managed PETSc: Native interface does not match AMP interface" );
+    PASS_FAIL( sizea1 == sizea2, "Native PETSc: Native interface matches AMP interface" );
+    PASS_FAIL( sizeb1 == sizeb2, "Managed PETSc: Native interface matches AMP interface" );
     if ( sizea1 == sizeb1 )
-        utils->passes( "Managed PETSc matches native PETSc" );
+        ut->passes( "Managed PETSc matches native PETSc" );
 }
 
 
-void PetscVectorTests::VerifyMaxPointwiseDividePetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyMaxPointwiseDividePetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
 
     vectora->setRandomValues();
     vectorb->setToScalar( 3.14159 );
 
-    auto vectorc = d_factory->getManagedVector();
+    auto vectorc = d_factory->getVector();
     vectorc->copyVector( vectora );
-    auto vectord = d_factory->getManagedVector();
+    auto vectord = d_factory->getVector();
     vectord->copyVector( vectorb );
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVecFromNative( vectorb );
-    auto vecc = getVec( vectorc );
-    auto vecd = getVec( vectord );
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
+    auto vecc = d_factory->getVec( vectorc );
+    auto vecd = d_factory->getVec( vectord );
 
     double ans1, ans2;
 
-    checkPetscError( utils, VecMaxPointwiseDivide( veca, vecb, &ans1 ) );
-    checkPetscError( utils, VecMaxPointwiseDivide( vecc, vecd, &ans2 ) );
+    checkPetscError( ut, VecMaxPointwiseDivide( veca, vecb, &ans1 ) );
+    checkPetscError( ut, VecMaxPointwiseDivide( vecc, vecd, &ans2 ) );
 
-    if ( fabs( ans1 - ans2 ) < 0.000001 )
-        utils->passes( "VecMaxPointwiseDivide working for both vector types" );
-    else
-        utils->failure( "VecMaxPointwiseDivide not working" );
+    PASS_FAIL( fabs( ans1 - ans2 ) < 0.000001,
+               "VecMaxPointwiseDivide working for both vector types" );
 }
 
 
-void PetscVectorTests::VerifyAbsPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyAbsPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
-    auto veca    = getVecFromNative( vectora );
-    auto vecb    = getVecFromNative( vectorb );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto veca    = d_factory->getVec( vectora );
+    auto vecb    = d_factory->getVec( vectorb );
     if ( !veca || !vecb )
-        utils->failure( "PETSC abs create" );
+        ut->failure( "PETSC abs create" );
 
     vectora->setRandomValues();
     vectora->addScalar( *vectora, 1. );
     vectorb->copyVector( vectora );
     vectora->scale( -1. );
-    checkPetscError( utils, VecAbs( veca ) );
+    checkPetscError( ut, VecAbs( veca ) );
     vectorb->subtract( *vectora, *vectorb );
-    if ( vectorb->L1Norm() < 0.000001 )
-        utils->passes( "native interface on native petsc abs works" );
-    else
-        utils->failure( "native interface on native petsc abs doesn't work" );
+    PASS_FAIL( vectorb->L1Norm() < 0.000001, "native interface on native petsc abs works" );
 
-    auto vectorc = d_factory->getManagedVector();
-    auto vectord = d_factory->getManagedVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
 
-    auto vecc = getVec( vectorc );
-    auto vecd = getVec( vectord );
+    auto vecc = d_factory->getVec( vectorc );
+    auto vecd = d_factory->getVec( vectord );
     if ( !vecc || !vecd )
-        utils->failure( "PETSC abs create" );
+        ut->failure( "PETSC abs create" );
 
     vectorc->setRandomValues();
     vectorc->addScalar( *vectorc, 1. );
     vectord->copyVector( vectorc );
     vectorc->scale( -1. );
-    checkPetscError( utils, VecAbs( vecc ) );
+    checkPetscError( ut, VecAbs( vecc ) );
     vectord->subtract( *vectorc, *vectord );
-    if ( vectord->L1Norm() < 0.000001 )
-        utils->passes( "managed interface on native petsc abs works" );
-    else
-        utils->failure( "managed interface on native petsc abs doesn't work" );
+    PASS_FAIL( vectord->L1Norm() < 0.000001, "managed interface on native petsc abs works" );
 }
 
 
-void PetscVectorTests::VerifyPointwiseMultPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyPointwiseMultPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
-    auto vectorc = d_factory->getNativeVector();
-    auto vectord = d_factory->getNativeVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
     if ( !vectora || !vectorb || !vectorc || !vectord )
-        utils->failure( "PointwiseMult create" );
+        ut->failure( "PointwiseMult create" );
 
     vectora->setRandomValues();
     vectorb->setToScalar( 4.567 );
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVecFromNative( vectorb );
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
 
-    checkPetscError( utils, VecPointwiseMult( veca, veca, vecb ) );
+    checkPetscError( ut, VecPointwiseMult( veca, veca, vecb ) );
     vectorc->multiply( *vectorc, *vectord );
     vectorc->subtract( *vectorc, *vectora );
-    if ( vectorc->L1Norm() < 0.000001 )
-        utils->passes( "managed interface for native vector" );
-    else
-        utils->failure( "managed interface for native vector" );
+    PASS_FAIL( vectorc->L1Norm() < 0.000001, "managed interface for native vector" );
 
-
-    auto vectore = d_factory->getManagedVector();
-    auto vectorf = d_factory->getManagedVector();
-    auto vectorg = d_factory->getManagedVector();
-    auto vectorh = d_factory->getManagedVector();
+    auto vectore = d_factory->getVector();
+    auto vectorf = d_factory->getVector();
+    auto vectorg = d_factory->getVector();
+    auto vectorh = d_factory->getVector();
 
     vectore->setRandomValues();
     vectorf->setToScalar( 4.567 );
     vectorg->copyVector( vectore );
     vectorh->copyVector( vectorf );
 
-    auto vece = getVec( vectore );
-    auto vecf = getVec( vectorf );
+    auto vece = d_factory->getVec( vectore );
+    auto vecf = d_factory->getVec( vectorf );
 
-    checkPetscError( utils, VecPointwiseMult( vece, vece, vecf ) );
+    checkPetscError( ut, VecPointwiseMult( vece, vece, vecf ) );
     vectorg->multiply( *vectorg, *vectorh );
     vectorg->subtract( *vectorg, *vectore );
 
-    if ( vectorg->L1Norm() < 0.000001 )
-        utils->passes( "native interface for managed vector" );
-    else
-        utils->failure( "native interface for managed vector" );
+    PASS_FAIL( vectorg->L1Norm() < 0.000001, "native interface for managed vector" );
 }
 
 
-void PetscVectorTests::VerifyPointwiseDividePetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyPointwiseDividePetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
-    auto vectorc = d_factory->getNativeVector();
-    auto vectord = d_factory->getNativeVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
     vectora->setRandomValues();
     vectorb->setToScalar( 4.567 );
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVecFromNative( vectorb );
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
 
-    checkPetscError( utils, VecPointwiseDivide( veca, veca, vecb ) );
+    checkPetscError( ut, VecPointwiseDivide( veca, veca, vecb ) );
     vectorc->divide( *vectorc, *vectord );
     vectorc->subtract( *vectorc, *vectora );
-    if ( vectorc->L1Norm() < 0.000001 )
-        utils->passes( "managed interface for native vector" );
-    else
-        utils->failure( "managed interface for native vector" );
+    PASS_FAIL( vectorc->L1Norm() < 0.000001, "managed interface for native vector" );
 
-    auto vectore = d_factory->getManagedVector();
-    auto vectorf = d_factory->getManagedVector();
-    auto vectorg = d_factory->getManagedVector();
-    auto vectorh = d_factory->getManagedVector();
+    auto vectore = d_factory->getVector();
+    auto vectorf = d_factory->getVector();
+    auto vectorg = d_factory->getVector();
+    auto vectorh = d_factory->getVector();
 
     vectore->setRandomValues();
     vectorf->setToScalar( 4.567 );
     vectorg->copyVector( vectore );
     vectorh->copyVector( vectorf );
 
-    auto vece = getVec( vectore );
-    auto vecf = getVec( vectorf );
+    auto vece = d_factory->getVec( vectore );
+    auto vecf = d_factory->getVec( vectorf );
 
-    checkPetscError( utils, VecPointwiseDivide( vece, vece, vecf ) );
+    checkPetscError( ut, VecPointwiseDivide( vece, vece, vecf ) );
     vectorg->divide( *vectorg, *vectorh );
     vectorg->subtract( *vectorg, *vectore );
 
-    if ( vectorg->L1Norm() < 0.000001 )
-        utils->passes( "native interface for managed vector" );
-    else
-        utils->failure( "native interface for managed vector" );
+    PASS_FAIL( vectorg->L1Norm() < 0.000001, "native interface for managed vector" );
 }
 
 
-void PetscVectorTests::VerifySqrtPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifySqrtPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
+    auto vectora = d_factory->getVector();
 
     vectora->setRandomValues();
 
-    auto vectorb = d_factory->getManagedVector();
+    auto vectorb = d_factory->getVector();
     vectorb->copyVector( vectora );
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVec( vectorb );
-    checkPetscError( utils, VecSqrtAbs( veca ) );
-    checkPetscError( utils, VecSqrtAbs( vecb ) );
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
+    checkPetscError( ut, VecSqrtAbs( veca ) );
+    checkPetscError( ut, VecSqrtAbs( vecb ) );
     bool equal = vectora->equals( *vectorb );
-    if ( equal )
-        utils->passes( "Vector square root passes" );
-    else
-        utils->failure( "Vector square root fails" );
+    PASS_FAIL( equal, "Vector square root" );
 }
 
 
-void PetscVectorTests::VerifySetRandomPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifySetRandomPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getManagedVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVec( vectorb );
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
 
     vectora->setToScalar( 10.0 );
     vectorb->setToScalar( 10.0 );
 
-    checkPetscError( utils, VecSetRandom( veca, PETSC_NULL ) );
-    checkPetscError( utils, VecSetRandom( vecb, PETSC_NULL ) );
+    checkPetscError( ut, VecSetRandom( veca, PETSC_NULL ) );
+    checkPetscError( ut, VecSetRandom( vecb, PETSC_NULL ) );
 
-    if ( vectora->maxNorm() < 1. )
-        utils->passes( "VecSetRandom passes for native petsc" );
-    else
-        utils->failure( "VecSetRandom fails for native petsc" );
-    if ( vectorb->maxNorm() < 1. )
-        utils->passes( "VecSetRandom passes for managed petsc" );
-    else
-        utils->failure( "VecSet fails for managed petsc" );
+    PASS_FAIL( vectora->maxNorm() < 1.0, "VecSetRandom for native petsc" );
+    PASS_FAIL( vectorb->maxNorm() < 1.0, "VecSetRandom for managed petsc" );
 
     vectora->setToScalar( 5.0 );
     vectorb->setToScalar( 6.0 );
     vectora->setRandomValues();
     vectorb->setRandomValues();
 
-    if ( vectora->maxNorm() < 1. )
-        utils->passes( "setToScalar passes for native petsc" );
-    else
-        utils->failure( "setToScalar fails for native petsc" );
-
-    if ( vectorb->maxNorm() < 1. )
-        utils->passes( "setToScalar passes for managed petsc" );
-    else
-        utils->failure( "setToScalar fails for managed petsc" );
+    PASS_FAIL( vectora->maxNorm() < 1.0, "setToScalar for native petsc" );
+    PASS_FAIL( vectorb->maxNorm() < 1.0, "setToScalar for managed petsc" );
 }
 
 
-void PetscVectorTests::VerifySetPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifySetPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getManagedVector();
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
 
-    auto veca = getVecFromNative( vectora );
-    auto vecb = getVec( vectorb );
+    auto veca = d_factory->getVec( vectora );
+    auto vecb = d_factory->getVec( vectorb );
 
-    checkPetscError( utils, VecSet( veca, 2.0 ) );
-    checkPetscError( utils, VecSet( vecb, 3.0 ) );
+    checkPetscError( ut, VecSet( veca, 2.0 ) );
+    checkPetscError( ut, VecSet( vecb, 3.0 ) );
 
     double aL1   = static_cast<double>( vectora->L1Norm() );
     double bL1   = static_cast<double>( vectorb->L1Norm() );
@@ -931,241 +679,179 @@ void PetscVectorTests::VerifySetPetscVector( AMP::UnitTest *utils )
     double bmax  = static_cast<double>( vectorb->maxNorm() );
     double asize = vectora->getGlobalSize();
     double bsize = vectorb->getGlobalSize();
-    if ( ( fabs( aL1 - asize * 2.0 ) < 0.000001 ) && ( fabs( amax - 2.0 ) < 0.000001 ) )
-        utils->passes( "VecSet passes for native petsc" );
-    else
-        utils->failure( "VecSet fails for native petsc" );
-    if ( ( fabs( bL1 - bsize * 3.0 ) < 0.000001 ) && ( fabs( bmax - 3.0 ) < 0.000001 ) )
-        utils->passes( "VecSet passes for managed petsc" );
-    else
-        utils->failure( "VecSet fails for managed petsc" );
+    bool test1   = ( fabs( aL1 - asize * 2.0 ) < 0.000001 ) && ( fabs( amax - 2.0 ) < 0.000001 );
+    bool test2   = ( fabs( bL1 - bsize * 3.0 ) < 0.000001 ) && ( fabs( bmax - 3.0 ) < 0.000001 );
     vectora->setToScalar( 5.0 );
     vectorb->setToScalar( 6.0 );
-    aL1  = static_cast<double>( vectora->L1Norm() );
-    bL1  = static_cast<double>( vectorb->L1Norm() );
-    amax = static_cast<double>( vectora->maxNorm() );
-    bmax = static_cast<double>( vectorb->maxNorm() );
-    if ( ( fabs( aL1 - asize * 5.0 ) < 0.000001 ) && ( fabs( amax - 5.0 ) < 0.000001 ) )
-        utils->passes( "setToScalar passes for native petsc" );
-    else
-        utils->failure( "setToScalar fails for native petsc" );
-    if ( ( fabs( bL1 - bsize * 6.0 ) < 0.000001 ) && ( fabs( bmax - 6.0 ) < 0.000001 ) )
-        utils->passes( "setToScalar passes for managed petsc" );
-    else
-        utils->failure( "setToScalar fails for managed petsc" );
+    aL1        = static_cast<double>( vectora->L1Norm() );
+    bL1        = static_cast<double>( vectorb->L1Norm() );
+    amax       = static_cast<double>( vectora->maxNorm() );
+    bmax       = static_cast<double>( vectorb->maxNorm() );
+    bool test3 = ( fabs( aL1 - asize * 5.0 ) < 0.000001 ) && ( fabs( amax - 5.0 ) < 0.000001 );
+    bool test4 = ( fabs( bL1 - bsize * 6.0 ) < 0.000001 ) && ( fabs( bmax - 6.0 ) < 0.000001 );
+    PASS_FAIL( test1, "VecSet for native petsc" );
+    PASS_FAIL( test2, "VecSet for managed petsc" );
+    PASS_FAIL( test3, "setToScalar for native petsc" );
+    PASS_FAIL( test4, "setToScalar for managed petsc" );
 }
 
 
-void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora      = d_factory->getNativeVector();
-    auto vectora2     = d_factory->getNativeVector();
-    auto vectora_orig = d_factory->getNativeVector();
-    auto vectorb      = d_factory->getNativeVector();
-    auto vectorb2     = d_factory->getNativeVector();
-    auto veca         = getVecFromNative( vectora );
-    auto vecb         = getVecFromNative( vectorb );
-    auto veca2        = getVecFromNative( vectora2 );
-    auto veca_orig    = getVecFromNative( vectora_orig );
+    auto vectora      = d_factory->getVector();
+    auto vectora2     = d_factory->getVector();
+    auto vectora_orig = d_factory->getVector();
+    auto vectorb      = d_factory->getVector();
+    auto vectorb2     = d_factory->getVector();
+    auto veca         = d_factory->getVec( vectora );
+    auto vecb         = d_factory->getVec( vectorb );
+    auto veca2        = d_factory->getVec( vectora2 );
+    auto veca_orig    = d_factory->getVec( vectora_orig );
     if ( !veca || !vecb || !veca || !veca_orig )
-        utils->failure( "PETSc AXPY create" );
+        ut->failure( "PETSc AXPY create" );
 
     vectora->setRandomValues();
     vectorb->setRandomValues();
     vectora_orig->copyVector( vectora );
     vectora2->copyVector( vectora );
     vectorb2->copyVector( vectorb );
-    checkPetscError( utils, VecAXPY( veca, 1.23456, vecb ) );
+    checkPetscError( ut, VecAXPY( veca, 1.23456, vecb ) );
     vectora2->axpy( 1.23456, *vectorb2, *vectora2 );
     PetscBool ans;
-    checkPetscError( utils, VecEqual( veca, veca2, &ans ) );
-    if ( ans == PETSC_TRUE )
-        utils->passes( "native interface on native petsc axpy works" );
-    else
-        utils->failure( "native interface on native petsc axpy doesn't work" );
+    checkPetscError( ut, VecEqual( veca, veca2, &ans ) );
+    double norma  = static_cast<double>( vectora->L2Norm() );
+    double norma2 = static_cast<double>( vectora2->L2Norm() );
+    PASS_FAIL( fabs( norma - norma2 ) < 1e-15, "native interface on native petsc axpy works" );
 
-    auto vectorc  = d_factory->getManagedVector();
-    auto vectorc2 = d_factory->getManagedVector();
-    auto vectord  = d_factory->getManagedVector();
-    auto vectord2 = d_factory->getManagedVector();
+    auto vectorc  = d_factory->getVector();
+    auto vectorc2 = d_factory->getVector();
+    auto vectord  = d_factory->getVector();
+    auto vectord2 = d_factory->getVector();
 
     vectorc->copyVector( vectora_orig );
     vectorc2->copyVector( vectora_orig );
     vectord->copyVector( vectorb );
     vectord2->copyVector( vectorb2 );
 
-    auto vecc  = getVec( vectorc );
-    auto vecd  = getVec( vectord );
-    auto vecc2 = getVec( vectorc2 );
-    auto vecd2 = getVec( vectord2 );
-    checkPetscError( utils, VecAXPY( vecc, 1.23456, vecd ) );
+    auto vecc  = d_factory->getVec( vectorc );
+    auto vecd  = d_factory->getVec( vectord );
+    auto vecc2 = d_factory->getVec( vectorc2 );
+    auto vecd2 = d_factory->getVec( vectord2 );
+    checkPetscError( ut, VecAXPY( vecc, 1.23456, vecd ) );
     vectorc2->axpy( 1.23456, *vectord2, *vectorc2 );
     if ( !vecc || !vecd || !vecc2 || !vecd2 )
-        utils->failure( "PETSC AXPY create" );
+        ut->failure( "PETSC AXPY create" );
 
-    if ( ( vectorc->L1Norm() - vectorc2->L1Norm() ).abs() < 0.000001 )
-        utils->passes( "managed interface passes l1 norm test of axpy" );
-    else
-        utils->failure( "managed interface fails l1 norm test of axpy" );
-    if ( vectorc->L2Norm() == vectorc2->L2Norm() )
-        utils->passes( "managed interface passes l2 norm test of axpy" );
-    else
-        utils->failure( "managed interface fails l2 norm test of axpy" );
-    if ( vectorc->maxNorm() == vectorc2->maxNorm() )
-        utils->passes( "managed interface passes inf norm test of axpy" );
-    else
-        utils->failure( "managed interface fails inf norm test of axpy" );
-
-    if ( ( vectorc->L1Norm() - vectora->L1Norm() ).abs() < 0.000001 )
-        utils->passes( "managed and native L1 norms the same" );
-    else
-        utils->failure( "managed and native L1 norms different" );
-    if ( ( vectorc->L2Norm() - vectora->L2Norm() ).abs() < 0.000001 )
-        utils->passes( "managed and native L2 norms the same" );
-    else
-        utils->failure( "managed and native L2 norms different" );
-    if ( ( vectorc->maxNorm() - vectora->maxNorm() ).abs() < 0.000001 )
-        utils->passes( "managed and native inf norms the same" );
-    else
-        utils->failure( "managed and native inf norms different" );
+    PASS_FAIL( ( vectorc->L1Norm() - vectorc2->L1Norm() ).abs() < 0.000001,
+               "managed interface l1 norm test of axpy" );
+    PASS_FAIL( vectorc->L2Norm() == vectorc2->L2Norm(), "managed interface l2 norm test of axpy" );
+    PASS_FAIL( vectorc->maxNorm() == vectorc2->maxNorm(),
+               "managed interface inf norm test of axpy" );
+    PASS_FAIL( ( vectorc->L1Norm() - vectora->L1Norm() ).abs() < 0.000001,
+               "managed and native L1 norms the same" );
+    PASS_FAIL( ( vectorc->L2Norm() - vectora->L2Norm() ).abs() < 0.000001,
+               "managed and native L2 norms the same" );
+    PASS_FAIL( ( vectorc->maxNorm() - vectora->maxNorm() ).abs() < 0.000001,
+               "managed and native inf norms the same" );
 }
 
 
-void PetscVectorTests::VerifyScalePetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyScalePetscVector( AMP::UnitTest *ut )
 {
-    auto vectora  = d_factory->getNativeVector();
-    auto vectora2 = d_factory->getNativeVector();
-    auto vectorb  = d_factory->getNativeVector();
-    auto veca     = getVecFromNative( vectora );
-    auto vecb     = getVecFromNative( vectorb );
-    auto veca2    = getVecFromNative( vectora2 );
+    auto vectora  = d_factory->getVector();
+    auto vectora2 = d_factory->getVector();
+    auto vectorb  = d_factory->getVector();
+    auto veca     = d_factory->getVec( vectora );
+    auto vecb     = d_factory->getVec( vectorb );
+    auto veca2    = d_factory->getVec( vectora2 );
     if ( !veca || !veca2 || !vecb )
-        utils->failure( "PETSc scale create" );
+        ut->failure( "PETSc scale create" );
 
     vectora->setRandomValues();
     vectorb->copyVector( vectora );
     vectora2->copyVector( vectora );
-    checkPetscError( utils, VecScale( veca, 1.23456 ) );
+    checkPetscError( ut, VecScale( veca, 1.23456 ) );
     double norm1 = static_cast<double>( vectora->L2Norm() );
     double norm2 = 1.23456 * static_cast<double>( vectorb->L2Norm() );
-    if ( fabs( norm1 - norm2 ) < 0.000001 )
-        utils->passes( "native interface on native petsc scaling works" );
-    else
-        utils->failure( "native interface on native petsc scaling doesn't work" );
+    PASS_FAIL( fabs( norm1 - norm2 ) < 0.000001, "native interface on native petsc scaling works" );
     vectora->scale( 1. / 1.23456 );
     double norma( vectora->L2Norm() );
     double normb( vectorb->L2Norm() );
-    if ( fabs( norma - normb ) < 0.000001 )
-        utils->passes( "AMP interface on native petsc scaling works" );
-    else
-        utils->failure( "AMP interface on native petsc scaling doesn't work" );
-    checkPetscError( utils, VecScale( veca2, 1.234567 ) );
-    checkPetscError( utils, VecScale( veca2, 99.99 ) );
+    PASS_FAIL( fabs( norma - normb ) < 0.000001, "AMP interface on native petsc scaling works" );
+    checkPetscError( ut, VecScale( veca2, 1.234567 ) );
+    checkPetscError( ut, VecScale( veca2, 99.99 ) );
     double norma2( vectora2->L2Norm() );
     double normb2( vectorb->L2Norm() );
-    if ( fabs( norma2 - 99.99 * 1.234567 * normb2 ) < 0.000001 )
-        utils->passes( "Multiple scales working in native petsc" );
-    else
-        utils->failure( "Multiple scales failing in native petsc" );
+    PASS_FAIL( fabs( norma2 - 99.99 * 1.234567 * normb2 ) < 0.000001,
+               "Multiple scales working in native petsc" );
 
-    auto vectorc = d_factory->getManagedVector();
-    auto vectord = d_factory->getManagedVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
     vectorc->copyVector( vectora );
     vectord->copyVector( vectora );
 
-    auto vecc = getVec( vectorc );
+    auto vecc = d_factory->getVec( vectorc );
     double norm3, norm4;
-    checkPetscError( utils, VecScale( vecc, 1.23456 ) );
+    checkPetscError( ut, VecScale( vecc, 1.23456 ) );
     norm3 = static_cast<double>( vectorc->L2Norm() );
     norm4 = 1.23456 * static_cast<double>( vectord->L2Norm() );
-    if ( fabs( norm3 - norm4 ) < 0.000001 )
-        utils->passes( "native interface on managed petsc scaling works" );
-    else
-        utils->failure( "native interface on managed petsc scaling doesn't work" );
+    PASS_FAIL( fabs( norm3 - norm4 ) < 0.000001,
+               "native interface on managed petsc scaling works" );
     vectorc->scale( 1. / 1.23456 );
     double normc( vectorc->L2Norm() );
     double normd( vectord->L2Norm() );
-    if ( fabs( normc - normd ) < 0.000001 )
-        utils->passes( "AMP interface on managed petsc scaling works" );
-    else
-        utils->failure( "AMP interface on managed petsc scaling doesn't work" );
+    PASS_FAIL( fabs( normc - normd ) < 0.000001, "AMP interface on managed petsc scaling works" );
 }
 
 
-void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
+void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *ut )
 {
-    auto vectora = d_factory->getNativeVector();
-    auto vectorb = d_factory->getNativeVector();
-    auto veca    = getVecFromNative( vectora );
-    auto vecb    = getVecFromNative( vectorb );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto veca    = d_factory->getVec( vectora );
+    auto vecb    = d_factory->getVec( vectorb );
 
     vectora->setRandomValues();
     vectorb->setRandomValues();
     double dot1, dot2, dot12;
-    checkPetscError( utils, VecDot( veca, vecb, &dot1 ) );
-    checkPetscError( utils, VecDot( veca, vecb, &dot12 ) );
+    checkPetscError( ut, VecDot( veca, vecb, &dot1 ) );
+    checkPetscError( ut, VecDot( veca, vecb, &dot12 ) );
     dot2 = static_cast<double>( vectora->dot( *vectorb ) );
-    if ( dot1 == dot2 ) // These should be identical, since same method called
-        utils->passes( "native dot equals interface dot for native vector" );
-    else
-        utils->failure( "native dot does not equal interface dot for native vector" );
-    if ( dot1 == dot12 )
-        utils->passes( "multiple native dot passes" );
-    else
-        utils->failure( "multiple native dot fails" );
+    PASS_FAIL( dot1 == dot2, "native dot equals interface dot for native vector" );
+    PASS_FAIL( dot1 == dot12, "multiple native dot" );
 
-    auto vectorc = d_factory->getManagedVector();
-    auto vectord = d_factory->getManagedVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
-    auto vecc = getVec( vectorc );
-    auto vecd = getVec( vectord );
+    auto vecc = d_factory->getVec( vectorc );
+    auto vecd = d_factory->getVec( vectord );
     double dot3, dot4;
-    checkPetscError( utils, VecDot( vecc, vecd, &dot3 ) );
+    checkPetscError( ut, VecDot( vecc, vecd, &dot3 ) );
     dot4 = static_cast<double>( vectorc->dot( *vectord ) );
-    if ( dot3 == dot4 ) // These should be identical, since same method called
-        utils->passes( "native dot equals interface dot for managed vector" );
-    else {
-        AMP::pout << "native dot does not equal interface dot for managed vector "
-                  << std::setprecision( 15 ) << dot3 << ", " << dot4 << std::endl;
-        AMP::pout << "Vector types " << vectorc->type() << ",  " << vectord->type() << std::endl;
-        utils->failure( "native dot does not equal interface dot for managed vector" );
-    }
-    if ( fabs( dot3 - dot1 ) < 0.00000001 ) // This may test two different implementations
-        utils->passes( "native dot equals managed dot" );
-    else
-        utils->failure( "native dot does not equal managed dot" );
+    PASS_FAIL( dot3 == dot4, "native dot equals interface dot for managed vector" );
+    PASS_FAIL( fabs( dot3 - dot1 ) < 0.00000001, "native dot equals managed dot" );
 
-    auto vectore = d_factory->getManagedVector();
-    auto vectorf = d_factory->getManagedVector();
+    auto vectore = d_factory->getVector();
+    auto vectorf = d_factory->getVector();
     vectore->copyVector( vectora );
     vectorf->copyVector( vectorb );
-    auto vece = getVec( vectore );
-    auto vecf = getVec( vectorf );
+    auto vece = d_factory->getVec( vectore );
+    auto vecf = d_factory->getVec( vectorf );
     double dot5, dot6;
-    checkPetscError( utils, VecDot( vece, vecf, &dot5 ) );
+    checkPetscError( ut, VecDot( vece, vecf, &dot5 ) );
     dot6 = static_cast<double>( vectore->dot( *vectorf ) );
-    if ( dot5 == dot6 ) // These should be identical, since same method called
-        utils->passes( "native dot equals interface dot for managed alloc vector" );
-    else {
-        AMP::pout << "native dot does not equal interface dot for managed alloc vector "
-                  << std::setprecision( 15 ) << dot5 << ", " << dot6 << std::endl;
-        AMP::pout << "Vector types " << vectore->type() << ",  " << vectorf->type() << std::endl;
-        utils->failure( "native dot does not equal interface dot for managed alloc vector" );
-    }
-    if ( dot3 == dot5 ) // Again, same function
-        utils->passes( "native alloc dot equals managed alloc dot" );
-    else
-        utils->failure( "native alloc dot does not equal managed alloc dot" );
+    PASS_FAIL( dot5 == dot6, "native dot equals interface dot for managed alloc vector" );
+    PASS_FAIL( dot3 == dot5, "native alloc dot equals managed alloc dot" );
 
     /**** Need to test for failures at some point...
     try {
-      checkPetscError ( utils , VecDot ( veca , vecc , &dot1 ) );  // This
+      checkPetscError ( ut , VecDot ( veca , vecc , &dot1 ) );  // This
     should fail
-      utils->failure ( "incorrect failure of checkPetscError ( utils , VecDot" )
+      ut->failure ( "incorrect failure of checkPetscError ( ut , VecDot" )
     );
     } catch ( ... ) {
-      utils->passes ( "correct failure of checkPetscError ( utils , VecDot" ) );
+      ut->passes ( "correct failure of checkPetscError ( ut , VecDot" ) );
     }
     ***/
 }
