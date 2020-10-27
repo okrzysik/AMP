@@ -18,6 +18,22 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
+//! Helper deleter class
+class PetscVecDeleter
+{
+public:
+    PetscVecDeleter( std::shared_ptr<AMP::LinearAlgebra::PetscVector> vec ) : d_vec( vec ) {}
+    void operator()( Vec *ptr ) const
+    {
+        delete ptr;
+        d_vec.reset();
+    }
+
+private:
+    mutable std::shared_ptr<AMP::LinearAlgebra::PetscVector> d_vec;
+};
+
+
 /**
  * \class PetscVectorFactory
  * \brief A helper class to generate vectors
@@ -26,7 +42,7 @@ class PetscVectorFactory : public VectorFactory
 {
 public:
     virtual ~PetscVectorFactory() {}
-    virtual Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr ) const = 0;
+    virtual std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr ) const = 0;
 
 protected:
     PetscVectorFactory() {}
@@ -42,7 +58,7 @@ public:
         : d_factory( factory )
     {
     }
-    Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
+    std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
         return d_factory->getVec( vec );
     }
@@ -63,14 +79,20 @@ public:
     explicit PetscViewFactory( std::shared_ptr<const VectorFactory> factory ) : d_factory( factory )
     {
     }
-    Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
+    std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
-        return std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscVector>( vec )->getVec();
+        auto view = AMP::LinearAlgebra::PetscVector::view( vec );
+        std::shared_ptr<Vec> ptr( new Vec( view->getVec() ), PetscVecDeleter( view ) );
+        return ptr;
+        // auto vec2 = std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscVector>( vec );
+        // std::shared_ptr<Vec> ptr( new Vec( vec2->getVec() ) );
+        // return ptr;
     }
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        return std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscVector>(
-            AMP::LinearAlgebra::PetscVector::view( d_factory->getVector() ) );
+        return d_factory->getVector();
+        // auto view = AMP::LinearAlgebra::PetscVector::view( d_factory->getVector() );
+        // return std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscVector>( view  );
     }
     std::string name() const override { return "PetscViewFactory<" + d_factory->name() + ">"; }
 
@@ -85,9 +107,11 @@ public:
     ManagedPetscVectorFactory( std::shared_ptr<const VectorFactory> factory ) : d_factory( factory )
     {
     }
-    Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
+    std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
-        return std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscVector>( vec )->getVec();
+        auto vec2 = std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscVector>( vec );
+        std::shared_ptr<Vec> ptr( new Vec( vec2->getVec() ) );
+        return ptr;
     }
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
@@ -109,11 +133,11 @@ private:
 class NativePetscVectorFactory : public PetscVectorFactory
 {
 public:
-    Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
+    std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
-        return std::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVectorData>(
-                   vec->getVectorData() )
-            ->getVec();
+        auto data = std::dynamic_pointer_cast<NativePetscVectorData>( vec->getVectorData() );
+        std::shared_ptr<Vec> ptr( new Vec( data->getVec() ) );
+        return ptr;
     }
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {

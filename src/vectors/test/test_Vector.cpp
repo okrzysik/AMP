@@ -89,7 +89,7 @@ int main( int argc, char **argv )
 
     // Run the sundials vector tests
     AMP::pout << std::endl << "Running sundials vector tests:" << std::endl;
-    for ( auto name : getManagedVectorFactories() ) {
+    for ( auto name : getAllFactories() ) {
         auto factory = generateVectorFactory( name );
         VectorTests tests( factory );
         tests.testSundials( &ut );

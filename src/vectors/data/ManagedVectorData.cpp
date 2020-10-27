@@ -144,7 +144,7 @@ void ManagedVectorData::setUpdateStatus( UpdateState state )
 void ManagedVectorData::swapData( VectorData &other )
 {
     auto in = getManaged( &other );
-    std::swap( d_Engine, in->d_Engine );
+    d_Engine->swapVectors( in->d_Engine );
 
     d_Engine->getVectorData()->setUpdateStatusPtr( getUpdateStatusPtr() );
     auto vec = getVectorEngine();

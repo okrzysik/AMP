@@ -59,6 +59,8 @@ void NativePetscVectorData::swapData( VectorData &other )
     auto otherData = dynamic_cast<NativePetscVectorData *>( &other );
     otherData->resetArray();
     VecSwap( d_petscVec, otherData->getVec() );
+    PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( d_petscVec ) );
+    PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( otherData->getVec() ) );
 }
 
 std::shared_ptr<VectorData> NativePetscVectorData::cloneData() const

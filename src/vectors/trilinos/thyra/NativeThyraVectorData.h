@@ -58,7 +58,7 @@ public:
     {
         return hash == typeid( double ).hash_code();
     }
-    void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
+    void swapData( VectorData & ) override;
     std::shared_ptr<VectorData> cloneData() const override;
 
     Teuchos::RCP<Thyra::VectorBase<double>> getVec() { return d_thyraVec; }

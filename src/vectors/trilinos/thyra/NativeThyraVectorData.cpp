@@ -209,5 +209,15 @@ void NativeThyraVectorData::getLocalValuesByGlobalID( int numVals, size_t *ndx, 
     AMP_ERROR( "not implemented" );
 }
 
+
+void NativeThyraVectorData::swapData( VectorData &rhs )
+{
+    auto rhs2 = dynamic_cast<NativeThyraVectorData *>( &rhs );
+    AMP_INSIST( rhs2, "Cannot swap with arbitrary VectorData" );
+    std::swap( d_local, rhs2->d_local );
+    std::swap( d_thyraVec, rhs2->d_thyraVec );
+}
+
+
 } // namespace LinearAlgebra
 } // namespace AMP

@@ -80,11 +80,11 @@ public:
         PROFILE_STOP( "PETScInterfaceLeftVectorFactory::getVector" );
         return vector;
     }
-    Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
+    std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
-        return std::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVectorData>(
-                   vec->getVectorData() )
-            ->getVec();
+        auto data = std::dynamic_pointer_cast<NativePetscVectorData>( vec->getVectorData() );
+        std::shared_ptr<Vec> ptr( new Vec( data->getVec() ) );
+        return ptr;
     }
     std::string name() const override { return "PETScInterfaceLeftVectorFactory"; }
 };
@@ -109,11 +109,11 @@ public:
         PROFILE_STOP( "PETScInterfaceRightVectorFactory::getVector" );
         return vector;
     }
-    Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
+    std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
-        return std::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVectorData>(
-                   vec->getVectorData() )
-            ->getVec();
+        auto data = std::dynamic_pointer_cast<NativePetscVectorData>( vec->getVectorData() );
+        std::shared_ptr<Vec> ptr( new Vec( data->getVec() ) );
+        return ptr;
     }
     std::string name() const override { return "PETScInterfaceRightVectorFactory"; }
 };

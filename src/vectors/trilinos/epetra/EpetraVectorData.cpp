@@ -139,6 +139,17 @@ std::shared_ptr<VectorData> EpetraVectorData::cloneData() const
     return data;
 }
 
+void EpetraVectorData::swapData( VectorData &rhs )
+{
+    auto rhs2 = dynamic_cast<EpetraVectorData *>( &rhs );
+    AMP_INSIST( rhs2, "Cannot swap with arbitrary VectorData" );
+    std::swap( d_epetraVector, rhs2->d_epetraVector );
+    std::swap( d_buf_scope, rhs2->d_buf_scope );
+    std::swap( d_iLocalStart, rhs2->d_iLocalStart );
+    std::swap( d_iLocalSize, rhs2->d_iLocalSize );
+    std::swap( d_iGlobalSize, rhs2->d_iGlobalSize );
+}
+
 
 } // namespace LinearAlgebra
 } // namespace AMP

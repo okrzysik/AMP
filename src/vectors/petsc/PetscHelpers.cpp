@@ -359,6 +359,8 @@ PetscErrorCode _AMP_swap( Vec a, Vec b )
     auto x = getAMP( a );
     auto y = getAMP( b );
     x->swapVectors( *y );
+    PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( a ) );
+    PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( b ) );
     return 0;
 }
 PetscErrorCode _AMP_getsize( Vec a, PetscInt *ans )
