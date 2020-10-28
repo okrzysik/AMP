@@ -1,8 +1,7 @@
 #ifndef included_AMP_ManagedPetscVector
 #define included_AMP_ManagedPetscVector
 
-#include "AMP/utils/enable_shared_from_this.h"
-#include "AMP/vectors/data/DataChangeListener.h"
+#include "AMP/vectors/Vector.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/petsc/PetscVector.h"
 
@@ -22,7 +21,7 @@ namespace LinearAlgebra {
  *
  * \see PetscVector
  */
-class ManagedPetscVector : public Vector, public PetscVector, public DataChangeListener
+class ManagedPetscVector : public Vector, public PetscVector
 {
 public:
     /** \brief Construct a view of another vector
@@ -47,7 +46,6 @@ public: // These are adequately documented in a base class
         return "Managed PETSc Vector" + d_VectorData->VectorDataName();
     }
 
-    void receiveDataChanged() override;
 
     std::shared_ptr<Vector> getManagedVec() override { return shared_from_this(); }
     std::shared_ptr<const Vector> getManagedVec() const override { return shared_from_this(); }

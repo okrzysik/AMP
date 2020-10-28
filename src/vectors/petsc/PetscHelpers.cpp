@@ -656,7 +656,7 @@ void reset_vec_ops( Vec t )
  ********************************************************/
 void null_deleter( AMP::LinearAlgebra::Vector * ) {}
 static uint32_t globalHash = AMP::Utilities::hash_char( "PetscVectorWrapper" );
-PetscVectorWrapper::PetscVectorWrapper( AMP::LinearAlgebra::ManagedPetscVector *vec )
+PetscVectorWrapper::PetscVectorWrapper( AMP::LinearAlgebra::Vector *vec )
     : d_madeWithClone( false ), hash( globalHash ), d_vec( vec )
 {
     AMP_ASSERT( vec );
@@ -682,6 +682,9 @@ PetscVectorWrapper::PetscVectorWrapper( AMP::LinearAlgebra::ManagedPetscVector *
     AMP_INSIST( ierr == 0, "PetscObjectChangeTypeName returned non-zero error code" );
 
     VecSetFromOptions( d_petscVec );
+
+    auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
+    vec->getVectorData()->registerListener( listener );
 }
 PetscVectorWrapper::~PetscVectorWrapper()
 {
@@ -715,5 +718,10 @@ void PetscVectorWrapper::destroy()
     if ( d_madeWithClone )
         delete d_vec;
 }
+void PetscVectorWrapper::receiveDataChanged()
+{
+    PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( getVec() ) );
+}
+
 
 } // namespace PETSC

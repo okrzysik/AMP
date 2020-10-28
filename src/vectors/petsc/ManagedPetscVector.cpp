@@ -36,9 +36,7 @@ ManagedPetscVector::ManagedPetscVector( Vector::shared_ptr vec ) : PetscVector()
     d_VectorData = std::make_shared<ManagedVectorData>( vec );
     d_DOFManager = vec->getDOFManager();
     setVariable( vec->getVariable() );
-    d_wrapper     = std::make_shared<PETSC::PetscVectorWrapper>( this );
-    auto listener = std::dynamic_pointer_cast<DataChangeListener>( shared_from_this() );
-    d_VectorData->registerListener( listener );
+    d_wrapper = std::make_shared<PETSC::PetscVectorWrapper>( this );
 }
 
 
@@ -60,12 +58,6 @@ std::unique_ptr<Vector> ManagedPetscVector::rawClone( const Variable::shared_ptr
     auto retVal = std::make_unique<ManagedPetscVector>( vec2 );
     retVal->setVariable( p );
     return retVal;
-}
-
-
-void ManagedPetscVector::receiveDataChanged()
-{
-    PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( getVec() ) );
 }
 
 

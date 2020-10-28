@@ -3,6 +3,8 @@
 #define PETSC_HELPERS
 
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/enable_shared_from_this.h"
+#include "AMP/vectors/data/DataChangeListener.h"
 
 #include <memory>
 
@@ -54,12 +56,13 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> getAMP( Mat t );
 /********************************************************
  * Wrapper class for an AMP vector for PETSc Vec         *
  ********************************************************/
-class PetscVectorWrapper
+class PetscVectorWrapper : public AMP::LinearAlgebra::DataChangeListener,
+                           public AMP::enable_shared_from_this<PetscVectorWrapper>
 {
 public:
     PetscVectorWrapper()                             = delete;
     PetscVectorWrapper( const PetscVectorWrapper & ) = delete;
-    PetscVectorWrapper( AMP::LinearAlgebra::ManagedPetscVector *vec );
+    PetscVectorWrapper( AMP::LinearAlgebra::Vector *vec );
     ~PetscVectorWrapper();
     bool petscHoldsView() const;
     inline Vec &getVec() { return d_petscVec; }
@@ -67,12 +70,13 @@ public:
     bool check() const;
     Vec duplicate();
     void destroy();
+    void receiveDataChanged() override;
 
 protected:
     Vec d_petscVec;
     bool d_madeWithClone;
     uint32_t hash;
-    AMP::LinearAlgebra::ManagedPetscVector *d_vec;
+    AMP::LinearAlgebra::Vector *d_vec;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_vec2;
 };
 
