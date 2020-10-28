@@ -1,7 +1,7 @@
 # FindAMP
 # ---------
 #
-# Find the Advanved Multi-Physics package (AMP)
+# Find the Advanced Multi-Physics package (AMP)
 #
 # Use this module by invoking find_package with the form:
 #
