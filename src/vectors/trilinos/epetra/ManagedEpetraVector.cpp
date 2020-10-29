@@ -23,7 +23,7 @@ static inline auto getVectorEngine( const std::shared_ptr<const VectorData> &dat
 }
 
 
-ManagedEpetraVector::ManagedEpetraVector( shared_ptr vec ) : EpetraVector()
+ManagedEpetraVector::ManagedEpetraVector( shared_ptr vec ) : Vector(), EpetraVector()
 {
     AMP_ASSERT( !std::dynamic_pointer_cast<ManagedVectorData>( vec->getVectorData() ) );
     d_VectorOps  = std::make_shared<ManagedVectorOperations>();

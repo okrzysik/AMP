@@ -177,6 +177,28 @@ PetscErrorCode petsc_err_handler( MPI_Comm,
 
 
 /****************************************************************************
+ * Functions to count resources                                              *
+ ****************************************************************************/
+static std::map<std::string, std::pair<int, int>> resourceMap;
+void AMPManager::incrementResource( const std::string &resource )
+{
+    auto it = resourceMap.find( resource );
+    if ( it == resourceMap.end() )
+        resourceMap.insert( std::make_pair( resource, std::pair<int, int>( 1, 0 ) ) );
+    else
+        it->second.first++;
+}
+void AMPManager::decrementResource( const std::string &resource )
+{
+    auto it = resourceMap.find( resource );
+    if ( it == resourceMap.end() )
+        resourceMap.insert( std::make_pair( resource, std::pair<int, int>( 0, 1 ) ) );
+    else
+        it->second.second++;
+}
+
+
+/****************************************************************************
  * Initialize the AMP package.  This routine performs the following tasks:   *
  ****************************************************************************/
 void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperties &properties_in )
@@ -298,6 +320,15 @@ void AMPManager::shutdown()
             printf( "  MPI shutdown time = %0.3f s\n", MPI_time );
         printf( "\n" );
     }
+    // Print resource counts
+    for ( const auto &x : resourceMap ) {
+        if ( x.second.first != x.second.second ) {
+            printf( "%s:\n", x.first.data() );
+            printf( "    %i created\n", x.second.first );
+            printf( "    %i destroyed\n", x.second.second );
+        }
+    }
+    resourceMap.clear();
     // Shutdown timer and print memory leaks on rank 0
     PROFILE_DISABLE();
 #ifdef USE_TIMER

@@ -90,6 +90,7 @@ void VectorTests::SetToScalarVector( AMP::UnitTest *ut )
 {
     auto vector = d_factory->getVector();
     vector->setToScalar( 0. );
+    vector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     ut->passes( "setToScalar ran to completion " + d_factory->name() );
     bool fail   = false;
     auto curVec = vector->begin();
@@ -104,6 +105,7 @@ void VectorTests::SetToScalarVector( AMP::UnitTest *ut )
     PASS_FAIL( !fail, "Set data to 0" );
     fail = false;
     vector->setToScalar( 5. );
+    vector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     auto curVal = vector->begin();
     while ( curVal != endVec ) {
         if ( *curVal != 5. ) {

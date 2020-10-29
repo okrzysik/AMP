@@ -26,7 +26,8 @@ static inline auto getVectorEngine( const std::shared_ptr<const VectorData> &dat
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-ManagedSundialsVector::ManagedSundialsVector( std::shared_ptr<Vector> vec ) : SundialsVector()
+ManagedSundialsVector::ManagedSundialsVector( std::shared_ptr<Vector> vec )
+    : Vector(), SundialsVector()
 {
     AMP_ASSERT( !std::dynamic_pointer_cast<ManagedVectorData>( vec->getVectorData() ) );
     d_VectorOps  = std::make_shared<ManagedVectorOperations>();

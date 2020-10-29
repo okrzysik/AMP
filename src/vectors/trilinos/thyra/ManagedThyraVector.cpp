@@ -26,7 +26,7 @@ static inline auto getVectorEngine( const std::shared_ptr<const VectorData> &dat
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-ManagedThyraVector::ManagedThyraVector( Vector::shared_ptr vec )
+ManagedThyraVector::ManagedThyraVector( Vector::shared_ptr vec ) : Vector()
 {
     AMP_ASSERT( !std::dynamic_pointer_cast<ManagedVectorData>( vec->getVectorData() ) );
     d_VectorOps  = std::make_shared<ManagedVectorOperations>();

@@ -1,4 +1,5 @@
 #include "AMP/vectors/Vector.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/Utilities.h"
@@ -31,6 +32,7 @@ Vector::Vector()
       d_Views( new std::vector<std::any>() ),
       d_output_stream( &AMP::plog )
 {
+    AMPManager::incrementResource( "Vector" );
 }
 Vector::Vector( const std::string &name )
     : d_pVariable( new Variable( name ) ),
@@ -40,6 +42,7 @@ Vector::Vector( const std::string &name )
       d_Views( new std::vector<std::any>() ),
       d_output_stream( &AMP::plog )
 {
+    AMPManager::incrementResource( "Vector" );
 }
 Vector::Vector( std::shared_ptr<VectorData> data,
                 std::shared_ptr<VectorOperations> ops,
@@ -52,12 +55,13 @@ Vector::Vector( std::shared_ptr<VectorData> data,
       d_Views( new std::vector<std::any>() ),
       d_output_stream( &AMP::plog )
 {
+    AMPManager::incrementResource( "Vector" );
     AMP_ASSERT( data && ops && var );
     if ( !d_DOFManager )
         d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>(
             d_VectorData->getLocalSize(), d_VectorData->getComm() );
 }
-Vector::~Vector() {}
+Vector::~Vector() { AMPManager::decrementResource( "Vector" ); }
 
 
 /****************************************************************

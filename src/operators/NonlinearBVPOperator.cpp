@@ -20,6 +20,10 @@ void NonlinearBVPOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
 {
     PROFILE_START( "apply" );
 
+    if ( u.get() != nullptr )
+        AMP_ASSERT( u->getUpdateStatus() ==
+                    AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+
     AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL Residual Vector" );
 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector( r );

@@ -94,11 +94,11 @@ void TrilinosMLSolver::convertMLoptionsToTeuchosParameterList()
 
     d_MLParameterList.set( "coarse: type", d_mlOptions->d_coarseType );
     d_MLParameterList.set( "coarse: max size", d_mlOptions->d_coarseMaxSize );
-    
+
 #if TRILINOS_MAJOR_MINOR_VERSION >= 130000
-    d_MLParameterList.set("coarse: split communicator",false);
+    d_MLParameterList.set( "coarse: split communicator", false );
 #endif
-    
+
     d_MLParameterList.set( "aggregation: aux: enable", d_mlOptions->d_aggregationAuxEnable );
     d_MLParameterList.set( "aggregation: aux: threshold", d_mlOptions->d_aggregationAuxThreshold );
 
@@ -258,10 +258,8 @@ void TrilinosMLSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
         // These functions throw exceptions if this cannot be performed.
         AMP_ASSERT( f != nullptr );
 
-        auto f_epetra = std::dynamic_pointer_cast<const AMP::LinearAlgebra::EpetraVector>(
-            AMP::LinearAlgebra::EpetraVector::constView( f ) );
-        auto u_epetra = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>(
-            AMP::LinearAlgebra::EpetraVector::view( u ) );
+        auto f_epetra             = AMP::LinearAlgebra::EpetraVector::constView( f );
+        auto u_epetra             = AMP::LinearAlgebra::EpetraVector::view( u );
         const Epetra_Vector &fVec = f_epetra->getEpetra_Vector();
         Epetra_Vector &uVec       = u_epetra->getEpetra_Vector();
 
@@ -408,7 +406,7 @@ void TrilinosMLSolver::buildML()
 
     if ( ( d_mlOptions->d_coarseType ) == "Amesos-KLU" ) {
 #if TRILINOS_MAJOR_MINOR_VERSION >= 130000
-      ML_Gen_Smoother_Amesos( d_ml, ( nlevels - 1 ), ML_AMESOS_KLU, -1, 0.0, 1 );
+        ML_Gen_Smoother_Amesos( d_ml, ( nlevels - 1 ), ML_AMESOS_KLU, -1, 0.0, 1 );
 #else
         ML_Gen_Smoother_Amesos( d_ml, ( nlevels - 1 ), ML_AMESOS_KLU, -1, 0.0 );
 #endif

@@ -38,7 +38,10 @@ public:
         PROFILE_STOP( "AmpInterfaceLeftVectorFactory::getVector" );
         return vector;
     }
-    std::string name() const override { return "AmpInterfaceLeftVectorFactory"; }
+    std::string name() const override
+    {
+        return "AmpInterfaceLeftVectorFactory<" + getVector()->type() + ">";
+    }
 };
 
 
@@ -55,7 +58,10 @@ public:
         PROFILE_STOP( "AmpInterfaceRightVectorFactory::getVector" );
         return vector;
     }
-    std::string name() const override { return "AmpInterfaceRightVectorFactory"; }
+    std::string name() const override
+    {
+        return "AmpInterfaceRightVectorFactory<" + getVector()->type() + ">";
+    }
 };
 
 
@@ -86,9 +92,8 @@ public:
         std::shared_ptr<Vec> ptr( new Vec( data->getVec() ) );
         return ptr;
     }
-    std::string name() const override { return "PETScInterfaceLeftVectorFactory"; }
+    std::string name() const override { return "PETScInterfaceLeftVectorFactory"; };
 };
-
 
 class PETScInterfaceRightVectorFactory : public PetscVectorFactory
 {

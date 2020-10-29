@@ -55,10 +55,8 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
     const ::Thyra::ModelEvaluatorBase::OutArgs<double> &outArgs ) const
 {
 
-    AMP::LinearAlgebra::Vector::const_shared_ptr x =
-        AMP::LinearAlgebra::ThyraVector::constView( inArgs.get_x().get() );
-    AMP::LinearAlgebra::Vector::shared_ptr f_out =
-        AMP::LinearAlgebra::ThyraVector::view( outArgs.get_f().get() );
+    auto x     = AMP::LinearAlgebra::ThyraVector::constView( inArgs.get_x().get() );
+    auto f_out = AMP::LinearAlgebra::ThyraVector::view( outArgs.get_f().get() );
     // const Thyra::ConstDetachedVectorView<double> x(inArgs.get_x());
     // const Teuchos::RCP< Thyra::VectorBase<double> > f_out = outArgs.get_f();
     // const Teuchos::RCP< Thyra::LinearOpBase<double> > W_out = outArgs.get_W_op();
@@ -71,9 +69,9 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
         const_cast<AMP::LinearAlgebra::Vector *>( d_rhs.get() )
             ->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     }
-    AMP::pout << "x update status " << (int) x->getUpdateStatus() << std::endl;
     AMP_ASSERT( x->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
-    AMP_ASSERT( d_rhs->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+    AMP_ASSERT( d_rhs->getUpdateStatus() ==
+                AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 
     const Teuchos::RCP<Thyra::PreconditionerBase<double>> W_prec_out = outArgs.get_W_prec();
     if ( nonnull( W_prec_out ) ) {
@@ -158,7 +156,7 @@ TrilinosThyraModelEvaluator::get_W_factory() const
     ::Thyra::ModelEvaluatorBase::InArgsSetup<double> inArgs;
     inArgs.setModelEvalDescription( this->description() );
     inArgs.setSupports(::Thyra::ModelEvaluatorBase::IN_ARG_x );
-    return std::move(inArgs);
+    return std::move( inArgs );
 }
 ::Thyra::ModelEvaluatorBase::OutArgs<double> TrilinosThyraModelEvaluator::createOutArgsImpl() const
 {
@@ -167,7 +165,7 @@ TrilinosThyraModelEvaluator::get_W_factory() const
     outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_f );
     outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op );
     outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_prec );
-    return std::move(outArgs);
+    return std::move( outArgs );
 }
 
 

@@ -245,10 +245,9 @@ void PetscKrylovSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         } else {
             // for a shell preconditioner the user context is set to an instance of this class
             // and the setup and apply preconditioner functions for the PCSHELL
-            // are set to static member functions of this class. By doing this we do not need to
-            // introduce
-            // static member functions into every SolverStrategy that might be used as a
-            // preconditioner
+            // are set to static member functions of this class.
+            // By doing this we do not need to introduce static member functions
+            // into every SolverStrategy that might be used as a preconditioner
             checkErr( PCSetType( pc, PCSHELL ) );
             checkErr( PCShellSetContext( pc, this ) );
             checkErr( PCShellSetSetUp( pc, PetscKrylovSolver::setupPreconditioner ) );
@@ -330,8 +329,7 @@ void PetscKrylovSolver::resetOperator(
     }
 
     // should add a mechanism for the linear operator to provide updated parameters for the
-    // preconditioner operator
-    // though it's unclear where this might be necessary
+    // preconditioner operator though it's unclear where this might be necessary
     if ( d_pPreconditioner.get() != nullptr ) {
         d_pPreconditioner->resetOperator( params );
     }
@@ -365,8 +363,6 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     auto sp_z = PETSC::getAMP( z );
 
     // Make sure the vectors are in a consistent state
-    checkUpdateStatus( sp_r );
-    checkUpdateStatus( sp_z );
     sp_r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     sp_z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 

@@ -230,10 +230,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         const ML_Aggregate *agg_obj = mlSolver->GetML_Aggregate();
         ML_Aggregate_Print( const_cast<ML_Aggregate *>( agg_obj ) );
 
-        auto f_epetra = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>(
-            AMP::LinearAlgebra::EpetraVector::view( fusedRhsVec ) );
-        auto u_epetra = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>(
-            AMP::LinearAlgebra::EpetraVector::view( fusedSolVec ) );
+        auto f_epetra = AMP::LinearAlgebra::EpetraVector::view( fusedRhsVec );
+        auto u_epetra = AMP::LinearAlgebra::EpetraVector::view( fusedSolVec );
 
         Epetra_Vector &fVec = f_epetra->getEpetra_Vector();
         Epetra_Vector &uVec = u_epetra->getEpetra_Vector();
