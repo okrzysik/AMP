@@ -28,6 +28,9 @@ namespace AMP {
 /********************************************************************
  * Helper functions                                                  *
  ********************************************************************/
+#if defined( USING_ICC )
+DISABLE_WARNINGS
+#endif
 template<class TYPE>
 constexpr char Scalar::get_type()
 {
@@ -72,6 +75,9 @@ inline void Scalar::store( const TYPE &x )
     d_hash = get_hash<TYPE>();
     d_data = std::make_any<TYPE>( x );
 }
+#if defined( USING_ICC )
+ENABLE_WARNINGS
+#endif
 
 
 /********************************************************************

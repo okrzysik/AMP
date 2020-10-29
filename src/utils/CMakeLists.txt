@@ -11,3 +11,5 @@ ADD_SUBDIRECTORY( threadpool/test )
 IF ( USE_CUDA )
 ADD_SUBDIRECTORY(cuda/test)
 ENDIF()
+
+ADD_SUBDIRECTORY(examples)

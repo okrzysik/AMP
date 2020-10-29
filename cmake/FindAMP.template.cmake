@@ -1,7 +1,7 @@
 # FindAMP
 # ---------
 #
-# Find the Advanved Multi-Physics package (AMP)
+# Find the Advanced Multi-Physics package (AMP)
 #
 # Use this module by invoking find_package with the form:
 #
@@ -50,6 +50,14 @@ IF ( NOT TEST_MAX_PROCS )
     SET( TEST_MAX_PROCS @TEST_MAX_PROCS@ )
 ENDIF()
 
+# Override the compiler flags (to add extra flags set by AMP)
+SET( CMAKE_C_FLAGS "@CMAKE_C_FLAGS@" )
+SET( CMAKE_CXX_FLAGS "@CMAKE_CXX_FLAGS@" )
+SET( CMAKE_Fortran_FLAGS "@CMAKE_Fortran_FLAGS@" )
+SET( LDLIBS "@LDLIBS@" )
+SET( LDFLAGS "@LDFLAGS@" )
+SET( LDLIBS_EXTRA "@LDLIBS_EXTRA@" )
+SET( LDFLAGS_EXTRA "@LDFLAGS_EXTRA@" )
 
 # Set MATLAB variables (eventually needs to be moved to the TPL builder)
 SET( USE_MATLAB @USE_MATLAB@ )

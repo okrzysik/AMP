@@ -1,0 +1,15 @@
+
+a = 5
+b = 6.0
+
+// this is a comment
+
+myFirstDatabase{
+ greeting = "Hello World"
+}
+
+myArray = 1,2,3,4
+
+x = 2
+y = "2*x"
+z = "2**x"

@@ -1,5 +1,7 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
+#include <Trilinos_version.h>
+
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
 #include "AMP/operators/LinearOperator.h"

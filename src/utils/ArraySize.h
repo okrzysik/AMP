@@ -36,6 +36,10 @@
     } while ( 0 )
 #endif
 
+#if defined( USING_ICC )
+#include "AMP/utils/UtilityMacros.h"
+DISABLE_WARNINGS
+#endif
 
 namespace AMP {
 
@@ -415,6 +419,10 @@ constexpr AMP::ArraySize operator+( size_t v, const AMP::ArraySize &x )
     size_t N[5] = { x[0] + v, x[1] + v, x[2] + v, x[3] + v, x[4] + v };
     return AMP::ArraySize( x.ndim(), N );
 }
+
+#if defined( USING_ICC )
+ENABLE_WARNINGS
+#endif
 
 
 #endif

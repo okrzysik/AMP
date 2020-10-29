@@ -307,14 +307,18 @@ void testDefaults( AMP::UnitTest &ut )
     // Run tests on a STKmesh mesh (currently disabled)
     // testSTKMesh( &ut );
 
+#if defined( USE_EXT_LIBMESH )
     // Run tests on a libmesh mesh
     testlibMesh( &ut );
+#endif
 
     // Run tests on a moab mesh
     testMoabMesh( &ut );
 
+#if defined( USE_EXT_LIBMESH )
     // Run tests on the input file
     testInputMesh( &ut, "input_Mesh" );
+#endif
 
     // Run the basic tests on all mesh generators
     testMeshGenerators( &ut );

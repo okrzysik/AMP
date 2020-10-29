@@ -26,7 +26,8 @@ constexpr unsigned int AMP::Utilities::hash_char( const char *name )
 template<typename T>
 constexpr AMP::string_view AMP::Utilities::type_name()
 {
-    AMP::string_view name, prefix, suffix;
+    AMP::string_view name;
+    //    AMP::string_view prefix, suffix;
 #ifdef __clang__
     name = __PRETTY_FUNCTION__;
     // prefix = "std::string_view type_name() [T = ";

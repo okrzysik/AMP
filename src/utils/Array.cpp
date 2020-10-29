@@ -1,6 +1,7 @@
 // clang-format off
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Array.hpp"
+#include "AMP/utils/UtilityMacros.h"
 
 #include <complex>
 
@@ -11,6 +12,9 @@ namespace AMP {
 /********************************************************
  *  Explicit instantiations of Array                     *
  ********************************************************/
+#if defined( USING_ICC )
+DISABLE_WARNINGS
+#endif
 template class Array<char,FunctionTable>;
 template class Array<uint8_t,FunctionTable>;
 template class Array<uint16_t,FunctionTable>;
@@ -76,5 +80,8 @@ template bool Array<std::complex<double>,FunctionTable>::NaNs() const;
 instantiateArrayConstructors( std::string )
 template void Array<std::string,FunctionTable>::resize( ArraySize const& );
 
+#if defined( USING_ICC )
+ENABLE_WARNINGS
+#endif
 
 } // AMP namespace

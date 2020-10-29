@@ -4,6 +4,7 @@
 #include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/NearestPairSearch.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #include "ProfilerApp.h"
 
@@ -20,6 +21,10 @@
 #define USE_LAPACK 0
 #endif
 
+
+#if defined( USING_ICC )
+DISABLE_WARNINGS
+#endif
 
 namespace AMP {
 namespace DelaunayTessellation {
@@ -908,7 +913,7 @@ void clean_triangles( const int N,
                       std::array<int, NDIM + 1> *tri,
                       std::array<int, NDIM + 1> *tri_nab )
 {
-    NULL_USE(N);
+    NULL_USE( N );
     // Get a list of all triangles on the boundary and a figure of merit
     // We will use the ratio of the volume of the circumsphere to the volume of the simplex
     std::vector<std::pair<double, size_t>> index;
@@ -995,7 +1000,7 @@ void swap_triangles( size_t N_tri,
                      std::array<int, NDIM + 1> *tri,
                      std::array<int, NDIM + 1> *tri_nab )
 {
-    NULL_USE(N_tri);
+    NULL_USE( N_tri );
     // First swap the triangle data
     for ( int j = 0; j < NDIM + 1; j++ ) {
         std::swap( tri[i1][j], tri[i2][j] );
@@ -2615,3 +2620,8 @@ create_tessellation<3>( const std::vector<std::array<int, 3>> &x );
 
 } // namespace DelaunayTessellation
 } // namespace AMP
+
+
+#if defined( USING_ICC )
+ENABLE_WARNINGS
+#endif

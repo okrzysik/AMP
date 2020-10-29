@@ -21,7 +21,9 @@ ENDIF()
 
 ADD_AMP_TEST_1_2_4( testManufacturedSolution )
 ADD_AMP_TEST( test_LinearRegression )
+IF( NOT USING_ICC )
 ADD_AMP_TEST( testArray )
+ENDIF()
 ADD_AMP_TEST( test_MathExpr )
 
 COPY_TEST_FILE( input_InputManager )

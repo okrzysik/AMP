@@ -250,7 +250,7 @@ public:
             matrix->setValueByGlobalID( row, row, static_cast<double>( row + 1 ) );
         }
         auto diag         = matrix->extractDiagonal();
-        double l1norm     = diag->L1Norm();
+        double l1norm     = static_cast<double>( diag->L1Norm() );
         double numRows    = static_cast<double>( matrix->numGlobalRows() );
         double numCols    = static_cast<double>( matrix->numGlobalColumns() );
         double compareVal = std::min( numRows, numCols );
