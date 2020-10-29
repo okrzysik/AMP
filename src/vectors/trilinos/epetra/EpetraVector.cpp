@@ -3,8 +3,8 @@
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/data/ManagedVectorData.h"
 #include "AMP/vectors/operations/ManagedVectorOperations.h"
+#include "AMP/vectors/trilinos/epetra/EpetraHelpers.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
-#include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
 
 
 namespace AMP {
@@ -14,22 +14,12 @@ namespace LinearAlgebra {
 /********************************************************
  * Constructors / De-constructors                        *
  ********************************************************/
-EpetraVector::EpetraVector()  = default;
 EpetraVector::~EpetraVector() = default;
 
 
 /********************************************************
  * View                                                  *
  ********************************************************/
-static std::shared_ptr<ManagedEpetraVector>
-createManagedEpetraVector( Vector::shared_ptr inVector, std::shared_ptr<Vector> engine )
-{
-    auto retVal = std::make_shared<ManagedEpetraVector>( engine );
-    retVal->setVariable( inVector->getVariable() );
-    retVal->getVectorData()->setUpdateStatusPtr( inVector->getVectorData()->getUpdateStatusPtr() );
-    inVector->registerView( retVal );
-    return retVal;
-}
 std::shared_ptr<EpetraVector> EpetraVector::view( Vector::shared_ptr inVector )
 {
     AMP_INSIST( inVector->numberOfDataBlocks() == 1,
@@ -49,25 +39,22 @@ std::shared_ptr<EpetraVector> EpetraVector::view( Vector::shared_ptr inVector )
     auto managedData = std::dynamic_pointer_cast<ManagedVectorData>( inVector->getVectorData() );
     if ( managedData ) {
         auto root = managedData->getVectorEngine();
-        if ( root == inVector )
-            return std::make_shared<ManagedEpetraVector>( root );
-        else
-            return view( root );
+        return view( root );
     }
-
-    // Check if we are dealing with EpetraVectorData
-    if ( std::dynamic_pointer_cast<EpetraVectorData>( inVector->getVectorData() ) )
-        return createManagedEpetraVector( inVector, inVector );
-    // Create a default view
-    auto engine = createEpetraVector(
-        inVector->getCommunicationList(), inVector->getDOFManager(), inVector->getVectorData() );
-    auto retVal = createManagedEpetraVector( inVector, engine );
-    AMP_INSIST( retVal, "Cannot create view!" );
-    return retVal;
+    // Create the view
+    std::shared_ptr<EpetraVector> ptr( new EpetraVector( inVector ) );
+    inVector->registerView( ptr );
+    return ptr;
 }
 std::shared_ptr<const EpetraVector> EpetraVector::constView( Vector::const_shared_ptr inVector )
 {
     return view( std::const_pointer_cast<Vector>( inVector ) );
+}
+
+
+EpetraVector::EpetraVector( std::shared_ptr<Vector> vec )
+    : d_epetra( getEpetra( vec ) ), d_AMP( vec )
+{
 }
 
 

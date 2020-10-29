@@ -24,7 +24,7 @@ namespace LinearAlgebra {
  *  -# Provides a static method for creating a PETSc view of an AMP Vector.
  *
  */
-class PetscVector
+class PetscVector final
 {
 public:
     /**
@@ -54,7 +54,7 @@ public:
       }
       \endcode
       */
-    inline Vec &getVec() { return d_wrapper->getVec(); }
+    inline Vec &getVec() { return d_Vec; }
 
     /**
       *  \brief  Obtain PETSc Vec for use in PETSc routines
@@ -78,7 +78,7 @@ public:
       }
       \endcode
       */
-    inline const Vec &getVec() const { return d_wrapper->getVec(); }
+    inline const Vec &getVec() const { return d_Vec; }
 
     /**
      *  \brief  If needed, create a PETSc wrapper for AmpVector.  Otherwise, return AmpVector.
@@ -97,34 +97,23 @@ public:
     static std::shared_ptr<const PetscVector> constView( Vector::const_shared_ptr AmpVector );
 
 
-    /**
-     *  \brief  Check if petsc is holding a view that might prevent us from deleting the vector
-     *  \details This function checks if petsc might be holding a view of the vector
-     *    that would prevent us from deleting the vector.  This function returns false
-     *    if we can safely delete the vector.
-     */
-    inline bool petscHoldsView() const { return d_wrapper->petscHoldsView(); }
-
-
 public:
-    inline Vec &getNativeVec() { return d_wrapper->getVec(); }
-    inline const Vec &getNativeVec() const { return d_wrapper->getVec(); }
-    virtual std::shared_ptr<Vector> getManagedVec()             = 0;
-    virtual std::shared_ptr<const Vector> getManagedVec() const = 0;
+    inline Vec &getNativeVec() { return d_Vec; }
+    inline const Vec &getNativeVec() const { return d_Vec; }
+    inline std::shared_ptr<Vector> getManagedVec() { return d_vector; }
+    inline std::shared_ptr<const Vector> getManagedVec() const { return d_vector; }
 
 
 protected:
-    /**
-     *  \brief  Construct a PetscVector
-     *
-     *  This can only be called by a derived class or the static function below.  There is
-     *  no need to create this vector directly since it is virtual.
-     */
+    //! Empty constructor
     PetscVector();
 
+    //! Default constructor
+    explicit PetscVector( std::shared_ptr<Vector> vec );
 
 protected:
-    std::shared_ptr<PETSC::PetscVectorWrapper> d_wrapper;
+    Vec d_Vec;
+    std::shared_ptr<Vector> d_vector;
 };
 
 

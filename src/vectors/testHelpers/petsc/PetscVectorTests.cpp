@@ -100,11 +100,12 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *ut )
     checkPetscError( ut, VecDuplicate( *petsc_vec, &another_vec ) );
     auto dup = PETSC::getAMP( another_vec );
     ut->passes( "managed duplicated" );
+    auto name1 = vectora->getVariable()->getName();
+    auto name2 = dup->getVariable()->getName();
     bool test1 = ( dup->getGlobalSize() == vectora->getGlobalSize() ) &&
                  ( dup->getLocalSize() == vectora->getLocalSize() );
-    bool test2 = *( vectora->getVariable() ) == *( dup->getVariable() );
     PASS_FAIL( test1, "Allocated sizes are the same" );
-    PASS_FAIL( test2, "Associated variables are the same" );
+    PASS_FAIL( name1 == name2, "Associated variables are the same: " + name1 + " - " + name2 );
     checkPetscError( ut, PETSC::vecDestroy( &another_vec ) );
     ut->passes( "managed duplicated destroyed" );
     checkPetscError( ut, VecDestroy( &another_vec ) );

@@ -13,7 +13,10 @@
 #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #include "AMP/vectors/testHelpers/petsc/PetscVectorTests.h"
 #endif
-
+#ifdef USE_TRILINOS_EPETRA
+#include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorFactory.h"
+#include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorTests.h"
+#endif
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -75,6 +78,19 @@ void VectorTests::testPetsc( AMP::UnitTest *ut )
             auto factory2 = std::dynamic_pointer_cast<const PetscVectorFactory>( d_factory );
             PetscVectorTests test3( petscCloneFactory );
             test3.testPetscVector( ut );
+        }
+    }
+#endif
+}
+
+void VectorTests::testEpetra( AMP::UnitTest *ut )
+{
+#ifdef USE_TRILINOS_EPETRA
+    {
+        if ( d_factory->getVector()->numberOfDataBlocks() <= 1 ) {
+            // Epetra currently only supports one data block
+            EpetraVectorTests test( d_factory );
+            test.testEpetraVector( ut );
         }
     }
 #endif

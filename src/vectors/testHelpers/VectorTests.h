@@ -55,6 +55,8 @@ public:
 
     void testSundials( AMP::UnitTest *ut );
 
+    void testEpetra( AMP::UnitTest *ut );
+
 
 public:
     void InstantiateVector( AMP::UnitTest *utils );

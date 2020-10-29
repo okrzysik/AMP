@@ -26,12 +26,12 @@ using AMP::LinearAlgebra::VectorTests;
 std::string SimpleFactory1 = "SimpleVectorFactory<15,false,double>";
 std::string SimpleFactory2 = "SimpleVectorFactory<45,true,double>";
 std::string SNPVFactory    = "NativePetscVectorFactory";
-std::string SMEVFactory    = "ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>";
+std::string SNEVFactory    = "NativeEpetraFactory";
 #ifdef USE_EXT_PETSC
-std::string MVFactory1 = "MultiVectorFactory<" + SMEVFactory + ", 1, " + SNPVFactory + ", 1>";
+std::string MVFactory1 = "MultiVectorFactory<" + SNEVFactory + ", 1, " + SNPVFactory + ", 1>";
 #else
 std::string MVFactory1 =
-    "MultiVectorFactory<SimpleVectorFactory<15,false>,1," + SMEVFactory + ",1>";
+    "MultiVectorFactory<SimpleVectorFactory<15,false>,1," + SNEVFactory + ",1>";
 #endif
 
 
@@ -85,6 +85,14 @@ int main( int argc, char **argv )
         auto factory = generateVectorFactory( name );
         VectorTests tests( factory );
         tests.testPetsc( &ut );
+    }
+
+    // Run the epetra vector tests
+    AMP::pout << std::endl << "Running epetra vector tests:" << std::endl;
+    for ( auto name : getAllFactories() ) {
+        auto factory = generateVectorFactory( name );
+        VectorTests tests( factory );
+        tests.testEpetra( &ut );
     }
 
     // Run the sundials vector tests

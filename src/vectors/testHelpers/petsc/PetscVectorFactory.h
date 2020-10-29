@@ -3,7 +3,6 @@
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/testHelpers/VectorFactory.h"
@@ -90,29 +89,6 @@ public:
         return d_factory->getVector();
     }
     std::string name() const override { return "PetscViewFactory<" + d_factory->name() + ">"; }
-
-private:
-    std::shared_ptr<const VectorFactory> d_factory;
-};
-
-
-class ManagedPetscVectorFactory : public VectorFactory
-{
-public:
-    ManagedPetscVectorFactory( std::shared_ptr<const VectorFactory> factory ) : d_factory( factory )
-    {
-    }
-    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
-    {
-        auto engine = d_factory->getVector();
-        auto retval = std::make_shared<ManagedPetscVector>( engine );
-        retval->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "Test Vector" ) );
-        return retval;
-    }
-    std::string name() const override
-    {
-        return "ManagedPetscVectorFactory<" + d_factory->name() + ">";
-    }
 
 private:
     std::shared_ptr<const VectorFactory> d_factory;

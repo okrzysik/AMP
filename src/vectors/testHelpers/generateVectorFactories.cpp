@@ -5,15 +5,13 @@
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 
 #ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/PetscVector.h"
 #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #endif
 
 #ifdef USE_EXT_TRILINOS
 #include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorFactory.h"
-#ifdef USE_TRILINOS_THYRA
-#include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
-#endif
+#include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 #ifdef USE_TRILINOS_THYRA
 #include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
 #endif
@@ -259,17 +257,11 @@ std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
 #if defined( USE_EXT_PETSC )
     } else if ( factoryName == "NativePetscVectorFactory" ) {
         factory.reset( new NativePetscVectorFactory() );
-    } else if ( factoryName == "ManagedPetscVectorFactory" ) {
-        AMP_ASSERT( args.size() == 1 );
-        factory.reset( new ManagedPetscVectorFactory( generateVectorFactory( args[0] ) ) );
 #endif
 #ifdef USE_TRILINOS_EPETRA
     } else if ( factoryName == "NativeEpetraFactory" ) {
         AMP_ASSERT( args.size() == 0 );
         factory.reset( new NativeEpetraFactory() );
-    } else if ( factoryName == "ManagedEpetraVectorFactory" ) {
-        AMP_ASSERT( args.size() == 1 );
-        factory.reset( new ManagedEpetraVectorFactory( generateVectorFactory( args[0] ) ) );
 #endif
 #ifdef USE_TRILINOS_THYRA
     } else if ( factoryName == "NativeThyraFactory" ) {
@@ -351,16 +343,9 @@ std::vector<std::string> getNativeVectorFactories()
 std::vector<std::string> getMultiVectorFactories()
 {
     std::vector<std::string> list;
-    std::string SNPVFactory = "NativePetscVectorFactory";
-    std::string SMEVFactory = "ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>";
-    std::string MVFactory1  = "MultiVectorFactory<" + SMEVFactory + ",1," + SNPVFactory + ",1>";
-    std::string MVFactory2  = "MultiVectorFactory<" + SMEVFactory + ",3," + SNPVFactory + ",2>";
-    std::string MVFactory3  = "MultiVectorFactory<" + MVFactory1 + ",2," + MVFactory2 + ",2>";
-    // std::string MVFactory1 =
-    "MultiVectorFactory<SimpleVectorFactory<15,false>,1," + SMEVFactory + ",1>";
-    // std::string MVFactory2 =
-    "MultiVectorFactory<SimpleVectorFactory<15,false>,3," + SMEVFactory + ",2>";
-    // std::string MVFactory3 = "MultiVectorFactory<" + MVFactory1 + ",2," + MVFactory2 + ",2>";
+    std::string MVFactory1 = "MultiVectorFactory<NativeEpetraFactory,1,NativePetscVectorFactory,1>";
+    std::string MVFactory2 = "MultiVectorFactory<NativeEpetraFactory,3,NativePetscVectorFactory,2>";
+    std::string MVFactory3 = "MultiVectorFactory<" + MVFactory1 + ",2," + MVFactory2 + ",2>";
     list.push_back( MVFactory1 );
     list.push_back( MVFactory2 );
     list.push_back( MVFactory3 );
@@ -370,15 +355,9 @@ std::vector<std::string> getMultiVectorFactories()
 std::vector<std::string> getManagedVectorFactories()
 {
     std::vector<std::string> list;
-    std::string SNPVFactory = "NativePetscVectorFactory";
-    std::string SMEVFactory = "ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>";
-    std::string SMPVFactory = "ManagedPetscVectorFactory<SimpleVectorFactory<45,true>>";
-    std::string NPVFactory  = "NativePetscVectorFactory";
-    std::string MVFactory1  = "MultiVectorFactory<" + SMEVFactory + ",1," + SNPVFactory + ",1>";
-    std::string MVFactory2  = "MultiVectorFactory<" + SMEVFactory + ",3," + SNPVFactory + ",2>";
-    std::string MVFactory3  = "MultiVectorFactory<" + MVFactory1 + ",2," + MVFactory2 + ",2>";
-    list.push_back( SMEVFactory );
-    list.push_back( SMPVFactory );
+    std::string MVFactory1 = "MultiVectorFactory<NativeEpetraFactory,1,NativePetscVectorFactory,1>";
+    std::string MVFactory2 = "MultiVectorFactory<NativeEpetraFactory,3,NativePetscVectorFactory,2>";
+    std::string MVFactory3 = "MultiVectorFactory<" + MVFactory1 + ",2," + MVFactory2 + ",2>";
     list.push_back( MVFactory1 );
     list.push_back( MVFactory2 );
     list.push_back( MVFactory3 );
@@ -403,17 +382,16 @@ std::vector<std::string> getManagedVectorFactories()
 std::vector<std::string> getCloneVectorFactories()
 {
     std::vector<std::string> list;
-    std::string CloneSMEVFactory =
-        "CloneFactory<ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>>";
-    std::string CloneSNPVFactory = "CloneFactory<NativePetscVectorFactory>";
+    for ( auto factory : getNativeVectorFactories() )
+        list.push_back( "CloneFactory<" + factory + ">" );
+    list.push_back( "CloneFactory<" + getSimpleVectorFactories()[0] + ">" );
+    list.push_back( "CloneFactory<" + getArrayVectorFactories()[0] + ">" );
     std::string CloneMVFactory1 =
-        "CloneFactory<MultiVectorFactory<" + CloneSMEVFactory + ",1," + CloneSNPVFactory + ",1>>";
+        "CloneFactory<MultiVectorFactory<" + list[0] + ",1," + list[1] + ",1>>";
     std::string CloneMVFactory2 =
-        "CloneFactory<MultiVectorFactory<" + CloneSMEVFactory + ",3," + CloneSNPVFactory + ",2>>";
+        "CloneFactory<MultiVectorFactory<" + list[0] + ",3," + list[1] + ",2>>";
     std::string CloneMVFactory3 =
         "CloneFactory<MultiVectorFactory<" + CloneMVFactory1 + ",2," + CloneMVFactory2 + ",2>>";
-    list.push_back( CloneSMEVFactory );
-    list.push_back( CloneSNPVFactory );
     list.push_back( CloneMVFactory1 );
     list.push_back( CloneMVFactory2 );
     list.push_back( CloneMVFactory3 );
@@ -425,17 +403,16 @@ std::vector<std::string> getViewVectorFactories()
     std::vector<std::string> list;
     auto SimpleFactories = getSimpleVectorFactories();
     list.push_back( "ViewFactory<PetscVector," + SimpleFactories[0] + ">" );
-    std::string ViewSMEVFactory =
-        "ViewFactory<PetscVector,ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>>";
+    std::string ViewSNEVFactory = "ViewFactory<PetscVector,NativeEpetraFactory>";
     std::string ViewSNPVFactory = "ViewFactory<PetscVector,NativePetscVectorFactory>";
-    std::string ViewMVFactory1  = "ViewFactory<PetscVector,MultiVectorFactory<" + ViewSMEVFactory +
+    std::string ViewMVFactory1  = "ViewFactory<PetscVector,MultiVectorFactory<" + ViewSNEVFactory +
                                  ",1," + ViewSNPVFactory + ",1>>";
-    std::string ViewMVFactory2 = "ViewFactory<PetscVector,MultiVectorFactory<" + ViewSMEVFactory +
+    std::string ViewMVFactory2 = "ViewFactory<PetscVector,MultiVectorFactory<" + ViewSNEVFactory +
                                  ",3," + ViewSNPVFactory + ",2>>";
     std::string ViewMVFactory3 = "ViewFactory<PetscVector,MultiVectorFactory<" + ViewMVFactory1 +
                                  ",2," + ViewMVFactory2 + ",2>>";
     list.push_back( ViewMVFactory1 );
-    list.push_back( ViewSMEVFactory );
+    list.push_back( ViewSNEVFactory );
     list.push_back( ViewSNPVFactory );
     list.push_back( ViewMVFactory1 );
     list.push_back( ViewMVFactory2 );
@@ -450,14 +427,13 @@ std::vector<std::string> getCloneViewVectorFactories()
     std::vector<std::string> list;
     for ( auto view : getViewVectorFactories() )
         list.push_back( "CloneFactory<" + view + ">" );
-    std::string CloneViewSMEVFactory = "CloneFactory<ViewFactory<PetscVector,"
-                                       "ManagedEpetraVectorFactory<SimpleVectorFactory<45,true>>>>";
+    std::string CloneViewSNEVFactory = "CloneFactory<ViewFactory<PetscVector,NativeEpetraFactory>>";
     std::string CloneViewSNPVFactory =
         "CloneFactory<ViewFactory<PetscVector,NativePetscVectorFactory>>";
     std::string CloneViewMVFactory1 = "CloneFactory<ViewFactory<PetscVector,MultiVectorFactory<" +
-                                      CloneViewSMEVFactory + ",1," + CloneViewSNPVFactory + ",1>>>";
+                                      CloneViewSNEVFactory + ",1," + CloneViewSNPVFactory + ",1>>>";
     std::string CloneViewMVFactory2 = "CloneFactory<ViewFactory<PetscVector,MultiVectorFactory<" +
-                                      CloneViewSMEVFactory + ",3," + CloneViewSNPVFactory + ",2>>>";
+                                      CloneViewSNEVFactory + ",3," + CloneViewSNPVFactory + ",2>>>";
     std::string CloneViewMVFactory3 = "CloneFactory<ViewFactory<PetscVector,MultiVectorFactory<" +
                                       CloneViewMVFactory1 + ",2," + CloneViewMVFactory2 + ",2>>>";
     list.push_back( CloneViewMVFactory1 );

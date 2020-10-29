@@ -726,7 +726,7 @@ void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *ut )
     }
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED )
         ut->failure( "local set/add leaves vector in UpdateState::LOCAL_CHANGED state " +
-                     d_factory->name() );
+                     d_factory->name() + " - " + vector->type() );
 
     // Set values by global id
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {

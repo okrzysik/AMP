@@ -6,8 +6,6 @@
 
 #include "AMP/vectors/data/VectorData.h"
 
-#include <Epetra_Vector.h>
-
 
 namespace AMP {
 namespace LinearAlgebra {

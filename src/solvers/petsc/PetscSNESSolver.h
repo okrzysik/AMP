@@ -207,13 +207,7 @@ private:
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionVector;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pResidualVector;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
-
     std::shared_ptr<PetscMonitor> d_PetscMonitor;
-
-    // The following SNES solver keeps a reference to certain vectors around.
-    // By declaring the vectors here, we ensure correct behavior during destruction.
-    // This will ensure that the std::shared_ptr destructor calls VecDestroy on the last reference.
-    std::list<std::shared_ptr<const AMP::LinearAlgebra::PetscVector>> d_refVectors;
 
     SNES d_SNESSolver;
 

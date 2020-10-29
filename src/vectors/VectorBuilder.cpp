@@ -5,7 +5,6 @@
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
 #ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
 #include "AMP/vectors/petsc/NativePetscVectorOperations.h"
 #include "AMP/vectors/petsc/PetscVector.h"
@@ -15,7 +14,6 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
-#include "AMP/vectors/trilinos/epetra/ManagedEpetraVector.h"
 #include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
 #include "AMP/vectors/trilinos/thyra/NativeThyraVectorOperations.h"
 #endif
@@ -110,35 +108,9 @@ Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOF
             comm_list             = std::make_shared<CommunicationList>( params );
         }
         comm.barrier();
-        // Create the vector parameters
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-        comm.barrier();
-        auto buffer = std::make_shared<VectorDataCPU<double>>(
-            DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
-        auto epetra_engine = createEpetraVector( comm_list, DOFs, buffer );
-        epetra_engine->setVariable( variable );
         // Create the vector
-        comm.barrier();
-        auto vector = std::make_shared<ManagedPetscVector>( epetra_engine );
-        vector->setVariable( variable );
-        comm.barrier();
-        return vector;
-#elif defined( USE_EXT_TRILINOS )
-        comm.barrier();
-        auto buffer = std::make_shared<VectorDataCPU<double>>(
-            DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
-        auto epetra_engine = createEpetraVector( nullptr, DOFs, buffer );
-        epetra_engine->setVariable( variable );
-        // Create the vector
-        comm.barrier();
-        auto vector = std::make_shared<ManagedEpetraVector>( epetra_engine );
-        vector->setVariable( variable );
-        comm.barrier();
-        return vector;
-#else
         auto vector = createSimpleVector<double>( variable, DOFs, comm_list );
         return vector;
-#endif
     }
     return Vector::shared_ptr();
 }

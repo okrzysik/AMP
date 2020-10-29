@@ -23,17 +23,12 @@ namespace LinearAlgebra {
   classes
   *  -# Provides a static method for creating an Epetra_Vector view of an AMP Vector.
   */
-class EpetraVector
+class EpetraVector final
 {
-protected:
-    /**  \brief Constructor
-     */
-    EpetraVector();
-
 public:
     /**  \brief Destructor
      */
-    virtual ~EpetraVector();
+    ~EpetraVector();
 
     /**
       *  \brief  Obtain Epetra_Vector for use in Trilinos routines
@@ -55,7 +50,7 @@ public:
       }
       \endcode
       */
-    virtual Epetra_Vector &getEpetra_Vector() = 0;
+    inline Epetra_Vector &getEpetra_Vector() { return *d_epetra; }
 
     /**
       *  \brief  Obtain Epetra_Vector for use in Trilinos routines
@@ -77,7 +72,7 @@ public:
       }
       \endcode
       */
-    virtual const Epetra_Vector &getEpetra_Vector() const = 0;
+    inline const Epetra_Vector &getEpetra_Vector() const { return *d_epetra; }
 
     /**
      *  \brief  Obtain a view of a vector with an Epetra_Vector wrapper
@@ -106,10 +101,18 @@ public:
     static std::shared_ptr<const EpetraVector> constView( Vector::const_shared_ptr vec );
 
 public:
-    inline Epetra_Vector &getNativeVec() { return getEpetra_Vector(); }
-    inline const Epetra_Vector &getNativeVec() const { return getEpetra_Vector(); }
-    virtual std::shared_ptr<Vector> getManagedVec()             = 0;
-    virtual std::shared_ptr<const Vector> getManagedVec() const = 0;
+    inline Epetra_Vector &getNativeVec() { return *d_epetra; }
+    inline const Epetra_Vector &getNativeVec() const { return *d_epetra; }
+    inline std::shared_ptr<Vector> getManagedVec() { return d_AMP; }
+    inline std::shared_ptr<const Vector> getManagedVec() const { return d_AMP; }
+
+private:
+    EpetraVector() = delete;
+    explicit EpetraVector( std::shared_ptr<Vector> );
+
+private:
+    std::shared_ptr<Epetra_Vector> d_epetra;
+    std::shared_ptr<Vector> d_AMP;
 };
 
 

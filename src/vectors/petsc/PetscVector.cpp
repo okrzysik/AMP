@@ -1,6 +1,6 @@
+#include "AMP/vectors/petsc/PetscVector.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/data/ManagedVectorData.h"
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
 
 #include "petsc/private/petscimpl.h"
 
@@ -30,26 +30,18 @@ std::shared_ptr<PetscVector> PetscVector::view( Vector::shared_ptr inVector )
         retVal->getManagedVec()->setVariable( inVector->getVariable() );
         return retVal;
     }
-    // Check if we are dealing with a multivector
-    if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
-        auto newVector = std::make_shared<ManagedPetscVector>( inVector );
-        newVector->setVariable( inVector->getVariable() );
-        newVector->getVectorData()->setUpdateStatusPtr(
-            inVector->getVectorData()->getUpdateStatusPtr() );
-        inVector->registerView( newVector );
-        return newVector;
-    }
-    // Create a multivector to wrap the given vector and create a view
-    // Note: this is required so that we call the native vector's operations
-    auto newVector = view( MultiVector::view( inVector, inVector->getComm() ) );
-    inVector->registerView( newVector );
-    return newVector;
+    // Create the view
+    std::shared_ptr<PetscVector> ptr( new PetscVector( inVector ) );
+    inVector->registerView( ptr );
+    return ptr;
 }
 
 PetscVector::PetscVector() {}
-
-
-PetscVector::~PetscVector() {}
+PetscVector::PetscVector( std::shared_ptr<Vector> vec )
+    : d_Vec( PETSC::getVec( vec ) ), d_vector( vec )
+{
+}
+PetscVector::~PetscVector() { PETSC::vecDestroy( &d_Vec ); }
 
 
 } // namespace LinearAlgebra

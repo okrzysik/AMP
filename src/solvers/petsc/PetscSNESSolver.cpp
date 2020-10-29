@@ -29,14 +29,6 @@ static inline void checkErr( PetscErrorCode ierr )
 }
 
 
-static inline void checkUpdateStatus( std::shared_ptr<const AMP::LinearAlgebra::Vector> x )
-{
-    auto status = x->getUpdateStatus();
-    AMP_ASSERT( ( status == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-                ( status == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
-}
-
-
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
@@ -237,14 +229,14 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
         sp_f->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     if ( sp_x.get() != nullptr )
         sp_x->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    checkUpdateStatus( sp_r );
+    sp_r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     auto *pSNESSolver = reinterpret_cast<PetscSNESSolver *>( ctx );
     std::shared_ptr<AMP::Operator::Operator> op( pSNESSolver->getOperator() );
 
     op->residual( sp_f, sp_x, sp_r );
     sp_r->scale( -1.0 );
-    checkUpdateStatus( sp_r );
+    sp_r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     PROFILE_STOP( "apply" );
     return ( ierr );
@@ -268,18 +260,11 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     auto spSol = AMP::LinearAlgebra::PetscVector::view( u );
     AMP_ASSERT( spSol );
 
-    // Create temporary copies of the petsc views
-    // This fixes a bug where a previous solve call creates and used views of a different vector,
-    // which then are destroyed when the views of the new vectors are created, but petsc still
-    // holds a copy of the original views until the new solve call is created
-    d_refVectors.push_back( spRhs );
-    d_refVectors.push_back( spSol );
-    if ( d_pResidualVector != NULL )
-        d_refVectors.push_back( AMP::LinearAlgebra::PetscVector::constView( d_pResidualVector ) );
-
     // Check input vector states
-    checkUpdateStatus( f );
-    checkUpdateStatus( u );
+    using UpdateState = AMP::LinearAlgebra::VectorData::UpdateState;
+    AMP_ASSERT( ( f->getUpdateStatus() == UpdateState::UNCHANGED ) ||
+                ( f->getUpdateStatus() == UpdateState::LOCAL_CHANGED ) );
+    u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 2 )
         AMP::pout << "L2 Norm of u in PetscSNESSolver::solve after view " << u->L2Norm()
@@ -343,17 +328,6 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     // Reset the solvers
     SNESReset( d_SNESSolver );
-
-    // Delete any copies of the reference vectors that we can
-    auto it = d_refVectors.begin();
-    while ( it != d_refVectors.end() ) {
-        auto view = dynamic_cast<const AMP::LinearAlgebra::PetscVector *>( it->get() );
-        AMP_ASSERT( view != NULL );
-        if ( view->petscHoldsView() )
-            ++it;
-        else
-            it = d_refVectors.erase( it );
-    }
 
     spRhs.reset();
     spSol.reset();
@@ -509,8 +483,7 @@ void PetscSNESSolver::setSNESFunction( std::shared_ptr<const AMP::LinearAlgebra:
     AMP_INSIST( petscVec.get() != nullptr,
                 "ERROR: Currently the SNES Solver can only be used with a Petsc_Vector, "
                 "the supplied Vector does not appear to belong to this class" );
-    Vec residualVector =
-        std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( petscVec )->getVec();
+    Vec residualVector = petscVec->getVec();
     SNESSetFunction( d_SNESSolver, residualVector, PetscSNESSolver::apply, (void *) this );
 }
 
