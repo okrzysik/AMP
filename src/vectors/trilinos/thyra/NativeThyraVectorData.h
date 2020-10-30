@@ -19,7 +19,7 @@ namespace LinearAlgebra {
  * \see ThyraVector
  * \see ManagedThyraVector
  */
-class NativeThyraVectorData : public VectorData, public ThyraVector
+class NativeThyraVectorData : public VectorData
 {
 public:
     /** \brief Construct a wrapper for a Thyra Vec from a set of parameters
@@ -58,8 +58,11 @@ public:
     {
         return hash == typeid( double ).hash_code();
     }
-    void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
+    void swapData( VectorData & ) override;
     std::shared_ptr<VectorData> cloneData() const override;
+
+    Teuchos::RCP<Thyra::VectorBase<double>> getVec() { return d_thyraVec; }
+    Teuchos::RCP<const Thyra::VectorBase<double>> getVec() const { return d_thyraVec; }
 
 protected:
     //! Empty constructor.
@@ -68,6 +71,8 @@ protected:
 
 private:
     size_t d_local;
+
+    Teuchos::RCP<Thyra::VectorBase<double>> d_thyraVec;
 
     static Teuchos::RCP<const Thyra::VectorBase<double>>
     getThyraVec( const std::shared_ptr<const VectorData> &vec );

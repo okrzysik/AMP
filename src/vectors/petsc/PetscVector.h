@@ -24,44 +24,8 @@ namespace LinearAlgebra {
  *  -# Provides a static method for creating a PETSc view of an AMP Vector.
  *
  */
-class PetscVector
+class PetscVector final
 {
-private:
-    std::shared_ptr<PetscRandom> d_PetscRandom;
-
-protected:
-    /**
-     *  \brief  PETSc Vec holding data in the vector
-     *
-     *  Whether created with VecCreate (called Native) or
-     *  a view of an AMP:Vector (called Managed), this pointer
-     *  is what is used when calling the PETSc Vec interface
-     */
-    Vec d_petscVec;
-
-    /**
-     *  \brief Retrieve a valide PETSc random context
-     *  \param  comm  The communicator to create the context around.
-     *
-     *  If PetscRandomCreate has not been called, this will
-     *  call it.
-     */
-    PetscRandom &getPetscRandom( const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
-
-    /**
-     *  \brief  Swap the underlying PETSc Vec with another
-     *  AMP::LinearAlgebra::Vector.
-     */
-    void swapPetscVec( PetscVector &rhs ) { std::swap( d_petscVec, rhs.d_petscVec ); }
-
-    /**
-     *  \brief  Construct a PetscVector
-     *
-     *  This can only be called by a derived class or the static function below.  There is
-     *  no need to create this vector directly since it is virtual.
-     */
-    PetscVector();
-
 public:
     /**
      *  \brief  Destructor
@@ -90,7 +54,7 @@ public:
       }
       \endcode
       */
-    virtual Vec &getVec();
+    inline Vec &getVec() { return d_Vec; }
 
     /**
       *  \brief  Obtain PETSc Vec for use in PETSc routines
@@ -114,7 +78,7 @@ public:
       }
       \endcode
       */
-    virtual const Vec &getVec() const;
+    inline const Vec &getVec() const { return d_Vec; }
 
     /**
      *  \brief  If needed, create a PETSc wrapper for AmpVector.  Otherwise, return AmpVector.
@@ -122,7 +86,7 @@ public:
      *     It will never copy data.  If the vector cannot be wrapped it wll return an error.
      *  \param  AmpVector  a shared pointer to a Vector
      */
-    static Vector::shared_ptr view( Vector::shared_ptr AmpVector );
+    static std::shared_ptr<PetscVector> view( Vector::shared_ptr AmpVector );
 
     /**
      *  \brief  If needed, create a PETSc wrapper for AmpVector.  Otherwise, return AmpVector.
@@ -130,21 +94,26 @@ public:
      *     It will never copy data.  If the vector cannot be wrapped it wll return an error.
      *  \param  AmpVector  a shared pointer to a Vector
      */
-    static Vector::const_shared_ptr constView( Vector::const_shared_ptr AmpVector );
-
-
-    /**
-     *  \brief  Check if petsc is holding a view that might prevent us from deleting the vector
-     *  \details This function checks if petsc might be holding a view of the vector
-     *    that would prevent us from deleting the vector.  This function returns false
-     *    if we can safely delete the vector.
-     */
-    virtual bool petscHoldsView() const = 0;
+    static std::shared_ptr<const PetscVector> constView( Vector::const_shared_ptr AmpVector );
 
 
 public:
-    inline Vec &getNativeVec() { return getVec(); }
-    inline const Vec &getNativeVec() const { return getVec(); }
+    inline Vec &getNativeVec() { return d_Vec; }
+    inline const Vec &getNativeVec() const { return d_Vec; }
+    inline std::shared_ptr<Vector> getManagedVec() { return d_vector; }
+    inline std::shared_ptr<const Vector> getManagedVec() const { return d_vector; }
+
+
+protected:
+    //! Empty constructor
+    PetscVector();
+
+    //! Default constructor
+    explicit PetscVector( std::shared_ptr<Vector> vec );
+
+protected:
+    Vec d_Vec;
+    std::shared_ptr<Vector> d_vector;
 };
 
 

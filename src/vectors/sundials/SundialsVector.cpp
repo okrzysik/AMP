@@ -1,5 +1,6 @@
-
+#include "AMP/vectors/sundials/SundialsVector.h"
 #include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/data/ManagedVectorData.h"
 #include "AMP/vectors/sundials/ManagedSundialsVector.h"
 
 
@@ -10,44 +11,37 @@ namespace LinearAlgebra {
 /****************************************************************
  * view                                                          *
  ****************************************************************/
-Vector::const_shared_ptr SundialsVector::constView( Vector::const_shared_ptr inVector )
+std::shared_ptr<const SundialsVector> SundialsVector::constView( Vector::const_shared_ptr inVector )
 {
     return view( std::const_pointer_cast<Vector>( inVector ) );
 }
-Vector::shared_ptr SundialsVector::view( Vector::shared_ptr inVector )
+std::shared_ptr<SundialsVector> SundialsVector::view( Vector::shared_ptr inVector )
 {
-    Vector::shared_ptr retVal;
-    if ( std::dynamic_pointer_cast<SundialsVector>( inVector ) ) {
-        retVal = inVector;
-    } else if ( inVector->hasView<SundialsVector>() ) {
-        retVal = inVector->getView<SundialsVector>();
-    } else if ( std::dynamic_pointer_cast<ManagedVector>( inVector ) ) {
-        retVal = std::make_shared<ManagedSundialsVector>( inVector );
-        inVector->registerView( retVal );
-    } else if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
-        auto new_params      = std::make_shared<ManagedSundialsVectorParameters>();
-        new_params->d_Engine = std::dynamic_pointer_cast<Vector>( inVector );
-        new_params->d_Buffer = std::dynamic_pointer_cast<VectorData>( inVector );
-        if ( inVector->getCommunicationList().get() != nullptr )
-            new_params->d_CommList = inVector->getCommunicationList();
-        else
-            new_params->d_CommList =
-                CommunicationList::createEmpty( inVector->getLocalSize(), inVector->getComm() );
-        if ( inVector->getDOFManager().get() != nullptr )
-            new_params->d_DOFManager = inVector->getDOFManager();
-        else
-            new_params->d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>(
-                inVector->getLocalSize(), inVector->getComm() );
-        auto t = std::make_shared<ManagedSundialsVector>( new_params );
-        t->setVariable( inVector->getVariable() );
-        t->getVectorData()->setUpdateStatusPtr( inVector->getVectorData()->getUpdateStatusPtr() );
-        retVal = t;
-        inVector->registerView( retVal );
-    } else {
-        // Create a multivector to wrap the given vector and create a view
-        retVal = view( MultiVector::view( inVector, inVector->getComm() ) );
-        inVector->registerView( retVal );
+    // Check if we have an existing view
+    if ( std::dynamic_pointer_cast<SundialsVector>( inVector ) )
+        return std::dynamic_pointer_cast<SundialsVector>( inVector );
+    if ( inVector->hasView<SundialsVector>() )
+        return inVector->getView<SundialsVector>();
+    // Check if we are dealing with a managed vector
+    auto managedData = std::dynamic_pointer_cast<ManagedVectorData>( inVector->getVectorData() );
+    if ( managedData ) {
+        auto retVal = view( managedData->getVectorEngine() );
+        retVal->getManagedVec()->setVariable( inVector->getVariable() );
+        return retVal;
     }
+    // Check if we are dealing with a multivector
+    if ( std::dynamic_pointer_cast<MultiVector>( inVector ) ) {
+        auto retVal = std::make_shared<ManagedSundialsVector>( inVector );
+        retVal->setVariable( inVector->getVariable() );
+        retVal->getVectorData()->setUpdateStatusPtr(
+            inVector->getVectorData()->getUpdateStatusPtr() );
+        inVector->registerView( retVal );
+        return retVal;
+    }
+    // Create a multivector to wrap the given vector and create a view
+    auto retVal = view( MultiVector::view( inVector, inVector->getComm() ) );
+    retVal->getManagedVec()->setVariable( inVector->getVariable() );
+    inVector->registerView( retVal );
     return retVal;
 }
 
@@ -61,3 +55,15 @@ const N_Vector &SundialsVector::getNVector() const { return d_n_vector; }
 
 } // namespace LinearAlgebra
 } // namespace AMP
+
+
+/********************************************************
+ * Get the AMP vector from the PETSc Vec or Mat          *
+ ********************************************************/
+std::shared_ptr<AMP::LinearAlgebra::Vector> getAMP( N_Vector t )
+{
+    auto ptr = static_cast<AMP::LinearAlgebra::ManagedSundialsVector *>( t->content );
+    AMP_ASSERT( ptr != nullptr );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> vec( ptr, []( auto ) {} );
+    return vec;
+}

@@ -142,6 +142,12 @@ public:
     //! Return detailed revision information
     static std::string info();
 
+    //! Increment a resource counter
+    static void incrementResource( const std::string &resource );
+
+    //! Decrement a resource counter
+    static void decrementResource( const std::string &resource );
+
 private:
     // Private constructor (we do not actually want to create an object)
     AMPManager() {}

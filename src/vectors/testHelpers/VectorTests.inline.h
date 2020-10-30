@@ -16,7 +16,7 @@ void VectorTests::DeepCloneOfView( AMP::UnitTest *utils )
     auto vector1 = d_factory->getVector();
     if ( !std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vector1 ) )
         return;
-    vector1      = VIEWER::view( vector1 );
+    vector1      = VIEWER::view( vector1 )->getManagedVec();
     auto vector2 = vector1->cloneVector();
     bool pass    = true;
     for ( size_t i = 0; i != vector1->numberOfDataBlocks(); i++ ) {

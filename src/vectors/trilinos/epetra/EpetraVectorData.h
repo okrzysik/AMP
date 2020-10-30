@@ -6,8 +6,6 @@
 
 #include "AMP/vectors/data/VectorData.h"
 
-#include <Epetra_Vector.h>
-
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -100,7 +98,7 @@ public: // Virtual functions
     {
         return hash == typeid( double ).hash_code();
     }
-    void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
+    void swapData( VectorData & ) override;
     std::shared_ptr<VectorData> cloneData() const override;
 
     /** \brief  Get the raw Epetra_Vector

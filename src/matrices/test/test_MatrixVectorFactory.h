@@ -10,7 +10,8 @@
 
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
 #include "AMP/matrices/petsc/PetscMatrix.h"
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
+#include "AMP/vectors/petsc/PetscVector.h"
 #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #endif
 
@@ -27,26 +28,19 @@ AMP::LinearAlgebra::Matrix::shared_ptr global_cached_matrix =
 class AmpInterfaceLeftVectorFactory : public VectorFactory
 {
 public:
-    AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "left" );
-    }
-
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         PROFILE_START( "AmpInterfaceLeftVectorFactory::getVector" );
         AMP_ASSERT( global_cached_matrix != nullptr );
         auto matrix = global_cached_matrix;
         auto vector = matrix->getLeftVector();
-        vector->setVariable( getVariable() );
+        vector->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "left" ) );
         PROFILE_STOP( "AmpInterfaceLeftVectorFactory::getVector" );
         return vector;
     }
-    std::string name() const override { return "AmpInterfaceLeftVectorFactory"; }
-
-    AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
+    std::string name() const override
     {
-        return getVector()->getDOFManager();
+        return "AmpInterfaceLeftVectorFactory<" + getVector()->type() + ">";
     }
 };
 
@@ -54,40 +48,28 @@ public:
 class AmpInterfaceRightVectorFactory : public VectorFactory
 {
 public:
-    AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "right" );
-    }
-
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         PROFILE_START( "AmpInterfaceRightVectorFactory::getVector" );
         AMP_ASSERT( global_cached_matrix != nullptr );
         auto matrix = global_cached_matrix;
         auto vector = matrix->getRightVector();
-        vector->setVariable( getVariable() );
+        vector->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "right" ) );
         PROFILE_STOP( "AmpInterfaceRightVectorFactory::getVector" );
         return vector;
     }
-    std::string name() const override { return "AmpInterfaceRightVectorFactory"; }
-
-    AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
+    std::string name() const override
     {
-        return getVector()->getDOFManager();
+        return "AmpInterfaceRightVectorFactory<" + getVector()->type() + ">";
     }
 };
 
 
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
 
-class PETScInterfaceLeftVectorFactory : public VectorFactory, PetscVectorFactory
+class PETScInterfaceLeftVectorFactory : public PetscVectorFactory
 {
 public:
-    AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "petsc_left" );
-    }
-
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         PROFILE_START( "PETScInterfaceLeftVectorFactory::getVector" );
@@ -100,40 +82,23 @@ public:
         MatGetVecs( m, &v, nullptr );
         ENABLE_WARNINGS
         auto vector = createVector( v, true );
-        vector->setVariable( getVariable() );
+        vector->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "petsc_left" ) );
         PROFILE_STOP( "PETScInterfaceLeftVectorFactory::getVector" );
         return vector;
     }
-
-    AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
+    std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
-        return getVector();
+        auto data = std::dynamic_pointer_cast<NativePetscVectorData>( vec->getVectorData() );
+        std::shared_ptr<Vec> ptr( new Vec( data->getVec() ) );
+        return ptr;
     }
-
-    AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
-    {
-        AMP_ASSERT( global_cached_matrix != nullptr );
-        auto matrix = global_cached_matrix;
-        return AMP::LinearAlgebra::PetscVector::view( matrix->getLeftVector() );
-    }
-
-    std::string name() const override { return "PETScInterfaceLeftVectorFactory"; }
-
-    AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return getVector()->getDOFManager();
-    }
+    std::string name() const override { return "PETScInterfaceLeftVectorFactory"; };
 };
 
 
-class PETScInterfaceRightVectorFactory : public VectorFactory, PetscVectorFactory
+class PETScInterfaceRightVectorFactory : public PetscVectorFactory
 {
 public:
-    AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-    {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "petsc_right" );
-    }
-
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         PROFILE_START( "PETScInterfaceRightVectorFactory::getVector" );
@@ -146,29 +111,17 @@ public:
         MatGetVecs( m, &v, nullptr );
         ENABLE_WARNINGS
         auto vector = createVector( v, true );
-        vector->setVariable( getVariable() );
+        vector->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "petsc_right" ) );
         PROFILE_STOP( "PETScInterfaceRightVectorFactory::getVector" );
         return vector;
     }
-
-    AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
+    std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
-        return getVector();
+        auto data = std::dynamic_pointer_cast<NativePetscVectorData>( vec->getVectorData() );
+        std::shared_ptr<Vec> ptr( new Vec( data->getVec() ) );
+        return ptr;
     }
-
-    AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
-    {
-        AMP_ASSERT( global_cached_matrix != nullptr );
-        auto matrix = global_cached_matrix;
-        return AMP::LinearAlgebra::PetscVector::view( matrix->getRightVector() );
-    }
-
     std::string name() const override { return "PETScInterfaceRightVectorFactory"; }
-
-    AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return getVector()->getDOFManager();
-    }
 };
 
 #endif

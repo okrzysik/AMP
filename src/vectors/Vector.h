@@ -301,7 +301,7 @@ public: // Virtual functions
      * entries.  The vector will
      * be associated with the same Variable.
      */
-    Vector::shared_ptr cloneVector() const;
+    std::shared_ptr<Vector> cloneVector() const;
 
     /** \brief Allocate space in the same fashion as <i>this</i>
      * \param[in] name  Name to give the variable associated with this vector
@@ -311,7 +311,7 @@ public: // Virtual functions
      * number of entries.  The vector will be associated with a clone of the same Variable with the
      * given name
      */
-    Vector::shared_ptr cloneVector( const std::string &name ) const;
+    std::shared_ptr<Vector> cloneVector( const std::string &name ) const;
 
     //! \name Vector memory manipulation
     //! \brief These methods control memory allocation, copying data, aliasing data, and swapping
@@ -325,7 +325,21 @@ public: // Virtual functions
      * It will have the same number of blocks, each with the same engines and same number of
      * entries.
      */
-    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const;
+    std::shared_ptr<Vector> cloneVector( const Variable::shared_ptr name ) const;
+
+    //! \name Vector memory manipulation
+    //! \brief These methods control memory allocation, copying data, aliasing data, and swapping
+    //! pointers among Vector
+    //! instantiations
+    //@{
+    /** \brief Allocate space in the same fashion as <i>this</i>
+     * \param[in] name  The variable to associate with the new vector
+     * \details  This will allocate new space with identical layout as <i>this</i>.
+     * \return  A Vector shared pointer
+     * It will have the same number of blocks, each with the same engines and same number of
+     * entries.
+     */
+    virtual std::unique_ptr<Vector> rawClone( const Variable::shared_ptr name ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other  Vector to swap data with
@@ -468,7 +482,7 @@ public: // Non-virtual functions
      * \return A view of this vector
      */
     template<typename VIEW_TYPE>
-    Vector::shared_ptr getView() const;
+    std::shared_ptr<VIEW_TYPE> getView() const;
 
     /** \brief  If a particular type of view of this Vector has been created,
      * return true.
@@ -481,7 +495,8 @@ public: // Non-virtual functions
     /** \brief Add a view of this vector to an internal queue.
      * \param[in] v The view to add
      */
-    void registerView( Vector::shared_ptr v ) const;
+    template<typename VIEW_TYPE>
+    void registerView( std::shared_ptr<VIEW_TYPE> v ) const;
 
     /** \brief Set the default RNG of this vector
      * \param[in] rng  The generator to set
@@ -751,14 +766,14 @@ private:
     void operator=( const Vector & );
 
 
-protected:                                                       // Internal data
-    static RNG::shared_ptr d_DefaultRNG;                         // default RNG
-    Variable::shared_ptr d_pVariable;                            // Variable
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManager;    // The DOF_Manager
-    std::shared_ptr<VectorData> d_VectorData;                    // Pointer to data
-    std::shared_ptr<VectorOperations> d_VectorOps;               // Pointer to a VectorOperations
-    std::shared_ptr<std::vector<std::weak_ptr<Vector>>> d_Views; // Views of the vector
-    std::ostream *d_output_stream;                               // output stream for vector data
+protected:                                                    // Internal data
+    static RNG::shared_ptr d_DefaultRNG;                      // default RNG
+    Variable::shared_ptr d_pVariable;                         // Variable
+    AMP::Discretization::DOFManager::shared_ptr d_DOFManager; // The DOF_Manager
+    std::shared_ptr<VectorData> d_VectorData;                 // Pointer to data
+    std::shared_ptr<VectorOperations> d_VectorOps;            // Pointer to a VectorOperations
+    std::shared_ptr<std::vector<std::any>> d_Views;           // Views of the vector
+    std::ostream *d_output_stream;                            // output stream for vector data
 };
 
 

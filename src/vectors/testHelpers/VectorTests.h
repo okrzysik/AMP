@@ -21,16 +21,9 @@ namespace LinearAlgebra {
 class VectorFactory
 {
 public:
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const = 0;
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const = 0;
-
     virtual ~VectorFactory() {}
-
-    virtual std::string name() const = 0;
-
-    //! Get the DOFManager
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const = 0;
+    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const = 0;
+    virtual std::string name() const                                 = 0;
 
 protected:
     VectorFactory() {}
@@ -57,6 +50,12 @@ public:
     void testParallelVectors( AMP::UnitTest *ut );
 
     void testVectorSelector( AMP::UnitTest *ut );
+
+    void testPetsc( AMP::UnitTest *ut );
+
+    void testSundials( AMP::UnitTest *ut );
+
+    void testEpetra( AMP::UnitTest *ut );
 
 
 public:

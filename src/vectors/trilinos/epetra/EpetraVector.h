@@ -23,17 +23,12 @@ namespace LinearAlgebra {
   classes
   *  -# Provides a static method for creating an Epetra_Vector view of an AMP Vector.
   */
-class EpetraVector
+class EpetraVector final
 {
-protected:
-    /**  \brief Constructor
-     */
-    EpetraVector();
-
 public:
     /**  \brief Destructor
      */
-    virtual ~EpetraVector();
+    ~EpetraVector();
 
     /**
       *  \brief  Obtain Epetra_Vector for use in Trilinos routines
@@ -47,16 +42,15 @@ public:
       double DoEpetraMax( Vector::shared_ptr  &in )
       {
         // Create an Epetra_Vector, if necessary
-        Vector::shared_ptr  in_epetra_view = EpetraVector::view ( in );
+        auto view = EpetraVector::view( in );
         // Extract the Epetra_Vector
-        Epetra_Vector &in_vec =
-      std::dynamic_pointer_cast<EpetraVector>(in_epetra_view)->getEpetra_Vector();
+        Epetra_Vector &in_vec = view->getEpetra_Vector();
         // Perform an Epetra_Vector operation
         retrun in_vec.MaxValue ( &abs );
       }
       \endcode
       */
-    virtual Epetra_Vector &getEpetra_Vector() = 0;
+    inline Epetra_Vector &getEpetra_Vector() { return *d_epetra; }
 
     /**
       *  \brief  Obtain Epetra_Vector for use in Trilinos routines
@@ -70,16 +64,15 @@ public:
       double DoEpetraMax( Vector::shared_ptr  &in )
       {
         // Create an Epetra_Vector, if necessary
-        Vector::shared_ptr  in_epetra_view = EpetraVector::view ( in );
+        auto view = EpetraVector::view( in );
         // Extract the Epetra_Vector
-        Epetra_Vector &in_vec =
-      std::dynamic_pointer_cast<EpetraVector>(in_epetra_view)->getEpetra_Vector();
+        Epetra_Vector &in_vec = view->getEpetra_Vector();
         // Perform an Epetra_Vector operation
         retrun in_vec.MaxValue ( &abs );
       }
       \endcode
       */
-    virtual const Epetra_Vector &getEpetra_Vector() const = 0;
+    inline const Epetra_Vector &getEpetra_Vector() const { return *d_epetra; }
 
     /**
      *  \brief  Obtain a view of a vector with an Epetra_Vector wrapper
@@ -92,7 +85,7 @@ public:
      *  Epetra_Vector wrapper around the Vector.  If it fails, an
      *  exception is thrown.
      */
-    static Vector::shared_ptr view( Vector::shared_ptr vec );
+    static std::shared_ptr<EpetraVector> view( Vector::shared_ptr vec );
 
     /**
      *  \brief  Obtain a view of a vector with an Epetra_Vector wrapper
@@ -105,11 +98,21 @@ public:
      *  Epetra_Vector wrapper around the Vector.  If it fails, an
      *  exception is thrown.
      */
-    static Vector::const_shared_ptr constView( Vector::const_shared_ptr vec );
+    static std::shared_ptr<const EpetraVector> constView( Vector::const_shared_ptr vec );
 
 public:
-    inline Epetra_Vector &getNativeVec() { return getEpetra_Vector(); }
-    inline const Epetra_Vector &getNativeVec() const { return getEpetra_Vector(); }
+    inline Epetra_Vector &getNativeVec() { return *d_epetra; }
+    inline const Epetra_Vector &getNativeVec() const { return *d_epetra; }
+    inline std::shared_ptr<Vector> getManagedVec() { return d_AMP; }
+    inline std::shared_ptr<const Vector> getManagedVec() const { return d_AMP; }
+
+private:
+    EpetraVector() = delete;
+    explicit EpetraVector( std::shared_ptr<Vector> );
+
+private:
+    std::shared_ptr<Epetra_Vector> d_epetra;
+    std::shared_ptr<Vector> d_AMP;
 };
 
 

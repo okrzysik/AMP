@@ -2,16 +2,11 @@
 #define included_AMP_ManagedThyraVector
 
 // AMP includes
-#include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 
 
 namespace AMP {
 namespace LinearAlgebra {
-
-
-//! ManagedThyraVectorParameters
-typedef ManagedVectorParameters ManagedThyraVectorParameters;
 
 
 /** \class ManagedThyraVector
@@ -28,14 +23,9 @@ typedef ManagedVectorParameters ManagedThyraVectorParameters;
  *
  * \see EpetraVector
  */
-class ManagedThyraVector : public ManagedVector, public ThyraVector
+class ManagedThyraVector : public Vector, public ThyraVector
 {
 public:
-    /** \brief Create a ManagedThyraVector from a set of parameters
-     * \param[in] params  A VectorParameters class used to construct this vector
-     */
-    explicit ManagedThyraVector( std::shared_ptr<ManagedVectorParameters> params );
-
     /** \brief Create a view of a vector
      * \param[in] alias  Vector to view
      */
@@ -47,13 +37,18 @@ public:
     // These methods are adequately documented in a base class
     std::string type() const override;
 
-    using Vector::cloneVector;
-    Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const override;
+    std::unique_ptr<Vector> rawClone( const Variable::shared_ptr var ) const override;
+    void swapVectors( Vector &other ) override;
     void copyVector( Vector::const_shared_ptr vec ) override;
-    ManagedVector *getNewRawPtr() const override;
 
-protected:
+    Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
+    Vector::const_shared_ptr
+    constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
+
+    std::shared_ptr<Vector> getManagedVec() override { return shared_from_this(); }
+    std::shared_ptr<const Vector> getManagedVec() const override { return shared_from_this(); }
 };
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

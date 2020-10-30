@@ -3,85 +3,58 @@
 #include "petscvec.h"
 
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/petsc/PetscVector.h"
 
 #include "AMP/matrices/petsc/ManagedPetscMatrix.h"
 #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 
 
+#if PETSC_VERSION_LT( 3, 7, 5 )
+#error AMP only supports PETSc 3.7.5 or greater
+#endif
+
+
 PetscErrorCode _AMP_Mult( Mat m, Vec i, Vec o )
 {
-    void *ctx;
-    MatShellGetContext( m, &ctx );
-    AMP::LinearAlgebra::Matrix *pMatrix =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *>( ctx );
-    AMP::LinearAlgebra::Vector *pVecIn =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( i->data );
-    AMP::LinearAlgebra::Vector *pVecOut =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( o->data );
-
-    AMP::LinearAlgebra::Vector::shared_ptr pvin( pVecIn, []( auto ) {} );
-    AMP::LinearAlgebra::Vector::shared_ptr pvout( pVecOut, []( auto ) {} );
-
-    pMatrix->mult( pvin, pvout );
+    auto mat    = PETSC::getAMP( m );
+    auto vecIn  = PETSC::getAMP( i );
+    auto vecOut = PETSC::getAMP( o );
+    mat->mult( vecIn, vecOut );
     return 0;
 }
 
 
 PetscErrorCode _AMP_Mult_add( Mat m, Vec i, Vec a, Vec o )
 {
-    void *ctx;
-    MatShellGetContext( m, &ctx );
-    AMP::LinearAlgebra::Matrix *pMatrix =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *>( ctx );
-    AMP::LinearAlgebra::Vector *pVecIn =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( i->data );
-    AMP::LinearAlgebra::Vector *pVecAdd =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
-    AMP::LinearAlgebra::Vector *pVecOut =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( o->data );
-
-    AMP::LinearAlgebra::Vector::shared_ptr pvin( pVecIn, []( auto ) {} );
-    AMP::LinearAlgebra::Vector::shared_ptr pvout( pVecOut, []( auto ) {} );
-
-    pMatrix->mult( pvin, pvout );
-    pVecOut->add( *pVecOut, *pVecAdd );
+    auto mat    = PETSC::getAMP( m );
+    auto vecIn  = PETSC::getAMP( i );
+    auto vecAdd = PETSC::getAMP( a );
+    auto vecOut = PETSC::getAMP( o );
+    mat->mult( vecIn, vecOut );
+    vecOut->add( *vecOut, *vecAdd );
     return 0;
 }
 
 
 PetscErrorCode _AMP_GetDiagonal( Mat m, Vec d )
 {
-    void *ctx;
-    MatShellGetContext( m, &ctx );
-
-    AMP::LinearAlgebra::Matrix *pMatrix =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *>( ctx );
-    AMP::LinearAlgebra::Vector *pVecIn =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( d->data );
-    AMP::LinearAlgebra::Vector::shared_ptr t( pVecIn, []( auto ) {} );
-    pMatrix->extractDiagonal( t );
+    auto mat = PETSC::getAMP( m );
+    auto vec = PETSC::getAMP( d );
+    mat->extractDiagonal( vec );
     return 0;
 }
 
 
 PetscErrorCode _AMP_GetVecs( Mat m, Vec *right, Vec *left )
 {
-    void *ctx;
-    MatShellGetContext( m, &ctx );
-    AMP::LinearAlgebra::Matrix *pMatrix =
-        static_cast<AMP::LinearAlgebra::ManagedPetscMatrix *>( ctx );
+    auto mat = PETSC::getAMP( m );
     if ( right != PETSC_NULL ) {
-        std::shared_ptr<AMP::LinearAlgebra::PetscVector> pRight =
-            std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(
-                AMP::LinearAlgebra::PetscVector::view( pMatrix->getRightVector() ) );
+        auto pRight = AMP::LinearAlgebra::PetscVector::view( mat->getRightVector() );
         VecDuplicate( pRight->getVec(), right );
     }
     if ( left != PETSC_NULL ) {
-        std::shared_ptr<AMP::LinearAlgebra::PetscVector> pLeft =
-            std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(
-                AMP::LinearAlgebra::PetscVector::view( pMatrix->getLeftVector() ) );
+        auto pLeft = AMP::LinearAlgebra::PetscVector::view( mat->getLeftVector() );
         VecDuplicate( pLeft->getVec(), left );
     }
     return 0;
@@ -90,28 +63,17 @@ PetscErrorCode _AMP_GetVecs( Mat m, Vec *right, Vec *left )
 
 PetscErrorCode _AMP_AXPY( Mat y, PetscScalar alpha, Mat x, MatStructure )
 {
-    void *ctx1;
-    void *ctx2;
-    MatShellGetContext( x, &ctx1 );
-    MatShellGetContext( y, &ctx2 );
-    AMP::LinearAlgebra::Matrix *pX =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *>( ctx1 );
-    AMP::LinearAlgebra::Matrix *pY =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *>( ctx2 );
-
-    pY->axpy( alpha, *pX );
+    auto matX = PETSC::getAMP( x );
+    auto matY = PETSC::getAMP( y );
+    matY->axpy( alpha, *matX );
     return 0;
 }
 
 
 PetscErrorCode _AMP_Scale( Mat x, PetscScalar alpha )
 {
-    void *ctx1;
-    MatShellGetContext( x, &ctx1 );
-    AMP::LinearAlgebra::Matrix *pX =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *>( ctx1 );
-
-    pX->scale( alpha );
+    auto mat = PETSC::getAMP( x );
+    mat->scale( alpha );
     return 0;
 }
 
@@ -124,8 +86,7 @@ using ManagedPetscMatrixParameters = ManagedEpetraMatrixParameters;
 
 void ManagedPetscMatrix::initPetscMat()
 {
-    std::shared_ptr<ManagedPetscMatrixParameters> params =
-        std::dynamic_pointer_cast<ManagedPetscMatrixParameters>( d_pParameters );
+    auto params         = std::dynamic_pointer_cast<ManagedPetscMatrixParameters>( d_pParameters );
     MPI_Comm petsc_comm = params->getEpetraComm().getCommunicator();
     size_t N_col_local  = params->getLocalNumberOfColumns();
     size_t N_row_local  = params->getLocalNumberOfRows();
@@ -188,10 +149,8 @@ Matrix::shared_ptr ManagedPetscMatrix::duplicateMat( Mat m, AMP_MPI comm )
     MatGetSize( m, &global_size, &t );
     int num_local = global_end - global_start;
 
-    AMP::Discretization::DOFManager::shared_ptr left(
-        new AMP::Discretization::DOFManager( num_local, comm ) );
-    AMP::Discretization::DOFManager::shared_ptr right(
-        new AMP::Discretization::DOFManager( num_local, comm ) );
+    auto left  = std::make_shared<AMP::Discretization::DOFManager>( num_local, comm );
+    auto right = std::make_shared<AMP::Discretization::DOFManager>( num_local, comm );
     ManagedPetscMatrixParameters *params = new ManagedPetscMatrixParameters( left, right, comm );
     // ManagedPetscMatrixParameters::iterator  cur_entry = params->begin();
     int i = 0;
@@ -209,10 +168,8 @@ Matrix::shared_ptr ManagedPetscMatrix::duplicateMat( Mat m, AMP_MPI comm )
 
 void ManagedPetscMatrix::copyFromMat( Mat m )
 {
-    std::shared_ptr<ManagedPetscMatrixParameters> params =
-        std::dynamic_pointer_cast<ManagedPetscMatrixParameters>( d_pParameters );
-    AMP::Discretization::DOFManager::shared_ptr rowDOF = params->getLeftDOFManager();
-    // AMP::Discretization::DOFManager::shared_ptr colDOF = params->getRightDOFManager();
+    auto params = std::dynamic_pointer_cast<ManagedPetscMatrixParameters>( d_pParameters );
+    auto rowDOF = params->getLeftDOFManager();
     for ( size_t i = rowDOF->beginDOF(); i < rowDOF->endDOF(); i++ ) {
         AMP_ASSERT( i < 0x80000000 ); // We have not converted matrices to 64-bits yet
         auto row = (int) i;

@@ -1,7 +1,7 @@
 #include "AMP/vectors/petsc/NativePetscVectorOperations.h"
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
 
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -96,8 +96,12 @@ void NativePetscVectorOperations::setToScalar( const Scalar &alpha, VectorData &
 void NativePetscVectorOperations::setRandomValues( VectorData &x )
 {
     auto nx = getNativeVec( x );
+    // Get PETSc random context
+    if ( !d_PetscRandom )
+        d_PetscRandom = PETSC::genPetscRandom( nx->getComm() );
+    // Get the native vector and set to random values
     nx->resetArray();
-    VecSetRandom( nx->getVec(), nx->getPetscRandom( nx->getComm() ) );
+    VecSetRandom( nx->getVec(), *d_PetscRandom );
 }
 
 void NativePetscVectorOperations::scale( const Scalar &alpha, const VectorData &x, VectorData &y )

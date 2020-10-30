@@ -1,9 +1,7 @@
 // clang-format off
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Array.hpp"
-#if defined( USING_ICC )
 #include "AMP/utils/UtilityMacros.h"
-#endif
 
 #include <complex>
 

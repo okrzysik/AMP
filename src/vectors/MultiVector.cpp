@@ -2,9 +2,9 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/VectorSelector.h"
+#include "AMP/vectors/data/ManagedVectorData.h"
 #include "AMP/vectors/data/MultiVectorData.h"
 #include "AMP/vectors/operations/MultiVectorOperations.h"
 
@@ -79,7 +79,6 @@ std::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec,
     multivec  = create( vec->getVariable()->getName(), comm, { vec } );
     auto data = multivec->Vector::getVectorData();
     AMP_ASSERT( data );
-    //    auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
     auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
     vec->getVectorData()->registerListener( listener );
     return multivec;
@@ -94,7 +93,7 @@ std::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr vec, const AM
         return multivec;
     }
     // Check to see if the managed vector engine is a multivector
-    auto managed = std::dynamic_pointer_cast<ManagedVector>( vec );
+    auto managed = std::dynamic_pointer_cast<ManagedVectorData>( vec->getVectorData() );
     if ( managed )
         multivec = std::dynamic_pointer_cast<MultiVector>( managed->getVectorEngine() );
     // If still don't have a multivector, make one
@@ -116,7 +115,7 @@ std::shared_ptr<const MultiVector> MultiVector::constView( Vector::const_shared_
         return multivec;
     }
     // Check to see if the manged vector engine is a multivector
-    auto managed = std::dynamic_pointer_cast<const ManagedVector>( vec );
+    auto managed = std::dynamic_pointer_cast<const ManagedVectorData>( vec->getVectorData() );
     if ( managed )
         multivec = std::dynamic_pointer_cast<const MultiVector>( managed->getVectorEngine() );
     // If still don't have a multivector, make one
@@ -147,13 +146,10 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
 }
 void MultiVector::resetVectorOperations()
 {
-    //  std::cout << "Number of vectors " << d_vVectors.size() <<std::endl;
     std::vector<std::shared_ptr<VectorOperations>> operations( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ )
         operations[i] = d_vVectors[i]->getVectorOperations();
-
     AMP_ASSERT( d_VectorOps );
-    //    std::cout << typeid(d_VectorOps).name() <<std::endl;
     auto mvOps = std::dynamic_pointer_cast<MultiVectorOperations>( d_VectorOps );
     AMP_ASSERT( mvOps );
     mvOps->resetVectorOperations( operations );
@@ -190,7 +186,7 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
             return;
         auto multivec = std::dynamic_pointer_cast<MultiVector>( vec );
         if ( !multivec ) {
-            auto managed = std::dynamic_pointer_cast<ManagedVector>( vec );
+            auto managed = std::dynamic_pointer_cast<ManagedVectorData>( vec->getVectorData() );
             if ( managed )
                 multivec = std::dynamic_pointer_cast<MultiVector>( managed->getVectorEngine() );
         }
@@ -202,8 +198,6 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
             d_vVectors.push_back( vec );
             auto data = Vector::getVectorData();
             AMP_ASSERT( data );
-            //            auto listener = std::dynamic_pointer_cast<DataChangeListener>(
-            //            shared_from_this() );
             auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
             vec->getVectorData()->registerListener( listener );
         }
@@ -219,8 +213,6 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
             d_vVectors.push_back( vec );
             auto data = Vector::getVectorData();
             AMP_ASSERT( data );
-            //            auto listener = std::dynamic_pointer_cast<DataChangeListener>(
-            //            shared_from_this() );
             auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
             vec->getVectorData()->registerListener( listener );
         } else {
@@ -331,14 +323,13 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( Variable::const_shared_
     AMP_ASSERT( name.get() != nullptr );
 
     // Check if the variable matches the variable of the multivector
-    if ( *d_pVariable == *name ) {
+    if ( *d_pVariable == *name )
         return shared_from_this();
-    }
 
     // Get a list of all sub vectors matching the variable
     std::vector<Vector::shared_ptr> subvectors;
     for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
-        Vector::shared_ptr subset = d_vVectors[i]->subsetVectorForVariable( name );
+        auto subset = d_vVectors[i]->subsetVectorForVariable( name );
         if ( subset.get() != nullptr )
             subvectors.push_back( subset );
     }
@@ -351,7 +342,7 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( Variable::const_shared_
             bool all_found = true;
             std::vector<Vector::shared_ptr> sub_subvectors( multivariable->numVariables() );
             for ( size_t i = 0; i != multivariable->numVariables(); i++ ) {
-                Vector::shared_ptr t = subsetVectorForVariable( multivariable->getVariable( i ) );
+                auto t = subsetVectorForVariable( multivariable->getVariable( i ) );
                 if ( !t ) {
                     all_found = false;
                     break;
@@ -362,6 +353,15 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( Variable::const_shared_
                 for ( size_t i = 0; i != multivariable->numVariables(); i++ )
                     subvectors.push_back( sub_subvectors[i] );
             }
+        }
+    }
+
+    if ( subvectors.empty() ) {
+        printf( "Unable to subset for %s in %s\n",
+                name->getName().data(),
+                getVariable()->getName().data() );
+        for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
+            printf( "   %s\n", d_vVectors[i]->getVariable()->getName().data() );
         }
     }
 
@@ -399,9 +399,9 @@ void MultiVector::swapVectors( Vector &other )
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         d_vVectors[i]->swapVectors( getVector( other, i ) );
 }
-Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) const
+std::unique_ptr<Vector> MultiVector::rawClone( const Variable::shared_ptr name ) const
 {
-    std::shared_ptr<MultiVector> retVec( new MultiVector( name->getName(), getComm() ) );
+    std::unique_ptr<MultiVector> retVec( new MultiVector( name->getName(), getComm() ) );
     retVec->d_DOFManager = d_DOFManager;
     retVec->setCommunicationList( getCommunicationList() );
     retVec->d_vVectors.resize( d_vVectors.size() );

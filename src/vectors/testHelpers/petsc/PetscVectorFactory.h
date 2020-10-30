@@ -3,7 +3,6 @@
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/testHelpers/VectorFactory.h"
@@ -17,31 +16,38 @@
 namespace AMP {
 namespace LinearAlgebra {
 
+
+//! Helper deleter class
+class PetscVecDeleter
+{
+public:
+    PetscVecDeleter( std::shared_ptr<AMP::LinearAlgebra::PetscVector> vec ) : d_vec( vec ) {}
+    void operator()( Vec *ptr ) const
+    {
+        delete ptr;
+        d_vec.reset();
+    }
+
+private:
+    mutable std::shared_ptr<AMP::LinearAlgebra::PetscVector> d_vec;
+};
+
+
 /**
  * \class PetscVectorFactory
  * \brief A helper class to generate vectors
  */
-class PetscVectorFactory
+class PetscVectorFactory : public VectorFactory
 {
 public:
     virtual ~PetscVectorFactory() {}
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const = 0;
-
-    virtual void destroyNativeVector( AMP::LinearAlgebra::Vector::shared_ptr rhs ) const
-    {
-        auto nvData = std::dynamic_pointer_cast<NativePetscVectorData>( rhs->getVectorData() );
-        PETSC::vecDestroy( &( nvData->getVec() ) );
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const = 0;
-
-    virtual std::string name() const = 0;
+    virtual std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr ) const = 0;
 
 protected:
     PetscVectorFactory() {}
     PetscVectorFactory( const PetscVectorFactory & );
 };
+
 
 class PetscCloneFactory : public PetscVectorFactory
 {
@@ -51,22 +57,15 @@ public:
         : d_factory( factory )
     {
     }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
+    std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
-        return d_factory->getNativeVector();
+        return d_factory->getVec( vec );
     }
-
-    virtual void destroyNativeVector( AMP::LinearAlgebra::Vector::shared_ptr rhs ) const override
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        d_factory->destroyNativeVector( rhs );
+        return d_factory->getVector()->cloneVector();
     }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
-    {
-        return d_factory->getManagedVector()->cloneVector();
-    }
-    virtual std::string name() const override { return "PetscCloneFactory"; }
+    std::string name() const override { return "PetscCloneFactory<" + d_factory->name() + ">"; }
 
 private:
     std::shared_ptr<const PetscVectorFactory> d_factory;
@@ -76,108 +75,54 @@ private:
 class PetscViewFactory : public PetscVectorFactory
 {
 public:
-    explicit PetscViewFactory( std::shared_ptr<const PetscVectorFactory> factory )
-        : d_factory( factory )
+    explicit PetscViewFactory( std::shared_ptr<const VectorFactory> factory ) : d_factory( factory )
     {
     }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
+    std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
-        return d_factory->getNativeVector();
+        auto view = AMP::LinearAlgebra::PetscVector::view( vec );
+        std::shared_ptr<Vec> ptr( new Vec( view->getVec() ), PetscVecDeleter( view ) );
+        return ptr;
     }
-
-    virtual void destroyNativeVector( AMP::LinearAlgebra::Vector::shared_ptr rhs ) const override
-    {
-        d_factory->destroyNativeVector( rhs );
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
-    {
-        return AMP::LinearAlgebra::PetscVector::view( d_factory->getManagedVector() );
-    }
-
-    virtual std::string name() const override { return "PetscViewFactory"; }
-
-private:
-    std::shared_ptr<const PetscVectorFactory> d_factory;
-};
-
-
-class SimplePetscVectorFactory : public PetscVectorFactory
-{
-public:
-    explicit SimplePetscVectorFactory( std::shared_ptr<const VectorFactory> factory )
-        : d_factory( factory )
-    {
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
-    {
-        auto t           = getManagedVector();
-        size_t localSize = t->getLocalSize();
-        Vec ans;
-        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-        VecCreate( globalComm.getCommunicator(), &ans );
-        VecSetSizes( ans, localSize, PETSC_DECIDE );
-        VecSetFromOptions( ans );
-        PetscInt N;
-        VecGetSize( ans, &N );
-        AMP_ASSERT( N == (int) ( t->getGlobalSize() ) );
-        int a, b;
-        VecGetOwnershipRange( ans, &a, &b );
-        AMP_ASSERT( b - a == (int) localSize );
-        auto retVal = createVector( ans, true );
-        retVal->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "petsc vector" ) );
-        return retVal;
-    }
-
-    virtual void destroyNativeVector( AMP::LinearAlgebra::Vector::shared_ptr rhs ) const override
-    {
-        auto nvData = std::dynamic_pointer_cast<NativePetscVectorData>( rhs->getVectorData() );
-        PETSC::vecDestroy( &( nvData->getVec() ) );
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const override
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         return d_factory->getVector();
     }
-    virtual std::string name() const override { return "SimplePetscVectorFactory"; }
+    std::string name() const override { return "PetscViewFactory<" + d_factory->name() + ">"; }
 
-protected:
+private:
     std::shared_ptr<const VectorFactory> d_factory;
 };
 
 
-#ifdef USE_EXT_TRILINOS
-class SimplePetscNativeFactory : public VectorFactory, SimplePetscVectorFactory
+class NativePetscVectorFactory : public PetscVectorFactory
 {
 public:
-    SimplePetscNativeFactory()
-        : SimplePetscVectorFactory(
-              generateVectorFactory( "SimpleManagedVectorFactory<ManagedPetscVector>" ) )
+    std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
+        auto data = std::dynamic_pointer_cast<NativePetscVectorData>( vec->getVectorData() );
+        std::shared_ptr<Vec> ptr( new Vec( data->getVec() ) );
+        return ptr;
     }
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
+    AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        return std::make_shared<AMP::LinearAlgebra::Variable>( "dummy" ); // No associated variable
+        Vec v;
+        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+        VecCreate( globalComm.getCommunicator(), &v );
+        PetscInt local_size = 15;
+        VecSetSizes( v, local_size, PETSC_DECIDE );
+        VecSetType( v, VECMPI ); // this line will have to be modified for the no mpi and cuda cases
+        auto newVec = createVector( v, true );
+        VecSetFromOptions( v );
+        newVec->getVectorData()->assemble();
+        newVec->setVariable(
+            std::make_shared<AMP::LinearAlgebra::Variable>( "Test NativePetscVector" ) );
+        return newVec;
     }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
-    {
-        return getNativeVector();
-    }
-
-    virtual std::string name() const override { return "SimplePetscNativeFactory"; }
-
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-    {
-        return d_factory->getDOFMap();
-    }
+    std::string name() const override { return "NativePetscVectorFactory"; }
 };
 
 
-#endif
 } // namespace LinearAlgebra
 } // namespace AMP
 

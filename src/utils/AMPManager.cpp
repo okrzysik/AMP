@@ -154,37 +154,17 @@ void AMPManager::exitFun()
  *  Function to PETSc errors                                                 *
  ****************************************************************************/
 #ifdef USE_EXT_PETSC
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-PetscErrorCode petsc_err_handler( int line,
-                                  const char *,
-                                  const char *file,
-                                  const char *dir,
-                                  PetscErrorCode,
-                                  int,
-                                  const char *buf,
-                                  void * )
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
-PetscErrorCode petsc_err_handler( MPI_Comm,
-                                  int line,
-                                  const char *,
-                                  const char *dir,
-                                  const char *file,
-                                  PetscErrorCode,
-                                  PetscErrorType,
-                                  const char *buf,
-                                  void * )
-#elif PETSC_VERSION_GE( 3, 7, 5 )
-PetscErrorCode petsc_err_handler( MPI_Comm,
-                                  int line,
-                                  const char *dir,
-                                  const char *file,
-                                  PetscErrorCode,
-                                  PetscErrorType,
-                                  const char *buf,
-                                  void * )
-#else
-#error Not programmed for this version of petsc
+#if PETSC_VERSION_LT( 3, 7, 5 )
+#error AMP only supports PETSc 3.7.5 or greater
 #endif
+PetscErrorCode petsc_err_handler( MPI_Comm,
+                                  int line,
+                                  const char *dir,
+                                  const char *file,
+                                  PetscErrorCode,
+                                  PetscErrorType,
+                                  const char *buf,
+                                  void * )
 {
     std::stringstream msg;
     msg << "PETSc error:" << std::endl;
@@ -194,6 +174,28 @@ PetscErrorCode petsc_err_handler( MPI_Comm,
     return 0;
 }
 #endif
+
+
+/****************************************************************************
+ * Functions to count resources                                              *
+ ****************************************************************************/
+static std::map<std::string, std::pair<int, int>> resourceMap;
+void AMPManager::incrementResource( const std::string &resource )
+{
+    auto it = resourceMap.find( resource );
+    if ( it == resourceMap.end() )
+        resourceMap.insert( std::make_pair( resource, std::pair<int, int>( 1, 0 ) ) );
+    else
+        it->second.first++;
+}
+void AMPManager::decrementResource( const std::string &resource )
+{
+    auto it = resourceMap.find( resource );
+    if ( it == resourceMap.end() )
+        resourceMap.insert( std::make_pair( resource, std::pair<int, int>( 0, 1 ) ) );
+    else
+        it->second.second++;
+}
 
 
 /****************************************************************************
@@ -318,6 +320,15 @@ void AMPManager::shutdown()
             printf( "  MPI shutdown time = %0.3f s\n", MPI_time );
         printf( "\n" );
     }
+    // Print resource counts
+    for ( const auto &x : resourceMap ) {
+        if ( x.second.first != x.second.second ) {
+            printf( "%s:\n", x.first.data() );
+            printf( "    %i created\n", x.second.first );
+            printf( "    %i destroyed\n", x.second.second );
+        }
+    }
+    resourceMap.clear();
     // Shutdown timer and print memory leaks on rank 0
     PROFILE_DISABLE();
 #ifdef USE_TIMER

@@ -11,11 +11,11 @@ int main( int argc, char **argv )
     // AMP uses pout to print only from process 0
     // Printing from other ranks is disabled in parallel
     AMP::pout << "Hello World from AMP!!" << std::endl;
-    
+
     // Every AMP program needs to call shutdown
     // to properly release resources used by AMP
     // and third party libraries it is using
     AMP::AMPManager::shutdown();
-    
+
     return 0;
 }

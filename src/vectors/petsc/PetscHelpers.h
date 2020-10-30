@@ -3,6 +3,8 @@
 #define PETSC_HELPERS
 
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/enable_shared_from_this.h"
+#include "AMP/vectors/data/DataChangeListener.h"
 
 #include <memory>
 
@@ -13,6 +15,11 @@ typedef struct _p_Vec *Vec;
 typedef struct _p_Mat *Mat;
 typedef struct _p_PetscRandom *PetscRandom;
 
+
+namespace AMP::LinearAlgebra {
+class Vector;
+class Matrix;
+} // namespace AMP::LinearAlgebra
 
 namespace PETSC {
 
@@ -35,6 +42,19 @@ std::shared_ptr<PetscRandom> genPetscRandom( const AMP::AMP_MPI &comm );
  * Reset petsc vector operations                          *
  ********************************************************/
 void reset_vec_ops( Vec t );
+
+
+/********************************************************
+ * Get the AMP vector from the PETSc Vec or Mat          *
+ ********************************************************/
+std::shared_ptr<AMP::LinearAlgebra::Vector> getAMP( Vec t );
+std::shared_ptr<AMP::LinearAlgebra::Matrix> getAMP( Mat t );
+
+
+/********************************************************
+ * Get a PETSc Vec from an AMP vector                    *
+ ********************************************************/
+Vec getVec( std::shared_ptr<AMP::LinearAlgebra::Vector> v );
 
 
 } // namespace PETSC

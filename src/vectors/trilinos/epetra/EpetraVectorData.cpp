@@ -68,6 +68,8 @@ void EpetraVectorData::setValuesByLocalID( int num, size_t *indices, const doubl
 {
     for ( int i = 0; i != num; i++ )
         d_epetraVector[indices[i]] = vals[i];
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 void EpetraVectorData::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
@@ -79,6 +81,8 @@ void EpetraVectorData::setLocalValuesByGlobalID( int num, size_t *indices, const
     for ( int i = 0; i < num; i++ )
         indices2[i] = (int) indices[i];
     d_epetraVector.ReplaceGlobalValues( num, const_cast<double *>( vals ), &indices2[0] );
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 void EpetraVectorData::addValuesByLocalID( int num, size_t *indices, const double *vals )
@@ -87,6 +91,8 @@ void EpetraVectorData::addValuesByLocalID( int num, size_t *indices, const doubl
         return;
     for ( int i = 0; i != num; i++ )
         d_epetraVector[indices[i]] += vals[i];
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 void EpetraVectorData::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
@@ -98,16 +104,22 @@ void EpetraVectorData::addLocalValuesByGlobalID( int num, size_t *indices, const
     for ( int i = 0; i < num; i++ )
         indices2[i] = (int) indices[i];
     d_epetraVector.SumIntoGlobalValues( num, const_cast<double *>( vals ), &indices2[0] );
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
-void EpetraVectorData::getValuesByLocalID( int, size_t *, double * ) const
+void EpetraVectorData::getValuesByLocalID( int num, size_t *indices, double *vals ) const
 {
-    AMP_ERROR( "EpetraVectorData::getValuesByLocalID() This shouldn't be called" );
+    if ( num == 0 )
+        return;
+    double *data;
+    d_epetraVector.ExtractView( &data );
+    for ( int i = 0; i != num; i++ )
+        vals[i] = data[indices[i]];
 }
 
 void EpetraVectorData::getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
 {
-    //    AMP_ERROR( "EpetraVectorData::getLocalValuesByGlobalID() This shouldn't be called" );
     if ( num == 0 )
         return;
     double *data;
@@ -137,6 +149,17 @@ std::shared_ptr<VectorData> EpetraVectorData::cloneData() const
         getLocalSize(), getComm(), getCommunicationList() );
     auto data = EpetraVectorData::create( params, buffer );
     return data;
+}
+
+void EpetraVectorData::swapData( VectorData &rhs )
+{
+    auto rhs2 = dynamic_cast<EpetraVectorData *>( &rhs );
+    AMP_INSIST( rhs2, "Cannot swap with arbitrary VectorData" );
+    std::swap( d_epetraVector, rhs2->d_epetraVector );
+    std::swap( d_buf_scope, rhs2->d_buf_scope );
+    std::swap( d_iLocalStart, rhs2->d_iLocalStart );
+    std::swap( d_iLocalSize, rhs2->d_iLocalSize );
+    std::swap( d_iGlobalSize, rhs2->d_iGlobalSize );
 }
 
 

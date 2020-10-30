@@ -5,9 +5,7 @@
 #include "AMP/ampmesh/triangle/TriangleMeshIterator.h"
 #include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/Utilities.h"
-#if defined( USING_ICC )
 #include "AMP/utils/UtilityMacros.h"
-#endif
 
 #include <limits>
 

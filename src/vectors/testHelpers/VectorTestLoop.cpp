@@ -13,7 +13,10 @@
 #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #include "AMP/vectors/testHelpers/petsc/PetscVectorTests.h"
 #endif
-
+#ifdef USE_TRILINOS_EPETRA
+#include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorFactory.h"
+#include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorTests.h"
+#endif
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -53,27 +56,49 @@ void VectorTests::testBasicVector( AMP::UnitTest *ut )
 #endif
     VectorIteratorLengthTest( ut );
     Bug_728( ut );
-    //    VectorIteratorTests( ut );
+    VectorIteratorTests( ut );
     TestMultivectorDuplicate( ut );
 }
 
 
-void VectorTests::testManagedVector( AMP::UnitTest *ut )
-{
-    testBasicVector( ut );
+void VectorTests::testManagedVector( AMP::UnitTest * ) {}
 
+
+void VectorTests::testPetsc( AMP::UnitTest *ut )
+{
 #ifdef USE_EXT_PETSC
     {
-        auto simplePetscFactory = std::make_shared<SimplePetscVectorFactory>( d_factory );
-        auto petscViewFactory   = std::make_shared<PetscViewFactory>( simplePetscFactory );
-        auto petscCloneFactory  = std::make_shared<PetscCloneFactory>( petscViewFactory );
+        auto petscViewFactory  = std::make_shared<PetscViewFactory>( d_factory );
+        auto petscCloneFactory = std::make_shared<PetscCloneFactory>( petscViewFactory );
         PetscVectorTests test1( petscViewFactory );
         PetscVectorTests test2( petscCloneFactory );
         test1.testPetscVector( ut );
         test2.testPetscVector( ut );
+        if ( std::dynamic_pointer_cast<const PetscVectorFactory>( d_factory ) ) {
+            auto factory2 = std::dynamic_pointer_cast<const PetscVectorFactory>( d_factory );
+            PetscVectorTests test3( petscCloneFactory );
+            test3.testPetscVector( ut );
+        }
     }
 #endif
+}
 
+void VectorTests::testEpetra( AMP::UnitTest *ut )
+{
+#ifdef USE_TRILINOS_EPETRA
+    {
+        if ( d_factory->getVector()->numberOfDataBlocks() <= 1 ) {
+            // Epetra currently only supports one data block
+            EpetraVectorTests test( d_factory );
+            test.testEpetraVector( ut );
+        }
+    }
+#endif
+}
+
+
+void VectorTests::testSundials( AMP::UnitTest *ut )
+{
 #ifdef USE_EXT_SUNDIALS
     {
         auto viewFactory =

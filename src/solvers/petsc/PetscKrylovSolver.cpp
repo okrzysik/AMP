@@ -2,7 +2,8 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/petsc/PetscMatrix.h"
 #include "AMP/operators/LinearOperator.h"
-#include "AMP/vectors/petsc/ManagedPetscVector.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
+#include "AMP/vectors/petsc/PetscVector.h"
 #include "ProfilerApp.h"
 
 #include "petsc.h"
@@ -14,19 +15,15 @@ namespace AMP {
 namespace Solver {
 
 
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-static inline void checkErr( int ierr )
-{
-    AMP_INSIST( ierr == 0, "Petsc returned non-zero error code" );
-}
-#elif PETSC_VERSION_GE( 3, 2, 0 )
+#if PETSC_VERSION_LT( 3, 7, 5 )
+#error AMP only supports PETSc 3.7.5 or greater
+#endif
+
+
 static inline void checkErr( PetscErrorCode ierr )
 {
     AMP_INSIST( ierr == 0, "Petsc returned non-zero error code" );
 }
-#else
-#error Not programmed for this version yet
-#endif
 
 
 static inline PCSide getPCSide( const std::string &pc_side )
@@ -45,16 +42,32 @@ static inline PCSide getPCSide( const std::string &pc_side )
 }
 
 
+static inline void checkUpdateStatus( std::shared_ptr<const AMP::LinearAlgebra::Vector> x )
+{
+    auto status = x->getUpdateStatus();
+    AMP_ASSERT( ( status == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
+                ( status == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+}
+
+
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
 PetscKrylovSolver::PetscKrylovSolver()
+    : d_dDivergenceTolerance( 0 ),
+      d_bKSPCreatedInternally( false ),
+      d_bUsesPreconditioner( false ),
+      d_iMaxKrylovDimension( 0 ),
+      d_KrylovSolver( nullptr )
 {
-    d_bKSPCreatedInternally = false;
-    d_KrylovSolver          = nullptr;
 }
 PetscKrylovSolver::PetscKrylovSolver( std::shared_ptr<SolverStrategyParameters> parameters )
-    : SolverStrategy( parameters )
+    : SolverStrategy( parameters ),
+      d_dDivergenceTolerance( 0 ),
+      d_bKSPCreatedInternally( false ),
+      d_bUsesPreconditioner( false ),
+      d_iMaxKrylovDimension( 0 ),
+      d_KrylovSolver( nullptr )
 {
     AMP_ASSERT( parameters.get() != nullptr );
 
@@ -75,15 +88,8 @@ PetscKrylovSolver::PetscKrylovSolver( std::shared_ptr<SolverStrategyParameters> 
  ****************************************************************/
 PetscKrylovSolver::~PetscKrylovSolver()
 {
-    if ( d_bKSPCreatedInternally ) {
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-        KSPDestroy( d_KrylovSolver );
-#elif PETSC_VERSION_GE( 3, 2, 0 )
+    if ( d_bKSPCreatedInternally )
         KSPDestroy( &d_KrylovSolver );
-#else
-#error Not programmed for this version yet
-#endif
-    }
 }
 
 
@@ -134,13 +140,7 @@ void PetscKrylovSolver::initialize( std::shared_ptr<SolverStrategyParameters> co
             checkErr( PCShellSetSetUp( pc, PetscKrylovSolver::setupPreconditioner ) );
             checkErr( PCShellSetApply( pc, PetscKrylovSolver::applyPreconditioner ) );
         }
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-        checkErr( KSPSetPreconditionerSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
-#elif PETSC_VERSION_GE( 3, 2, 0 )
         checkErr( KSPSetPCSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
-#else
-#error Not programmed for this version yet
-#endif
     } else {
         checkErr( PCSetType( pc, PCNONE ) );
     }
@@ -148,13 +148,8 @@ void PetscKrylovSolver::initialize( std::shared_ptr<SolverStrategyParameters> co
     // PetscTruth useZeroGuess = (d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
     // ierr = KSPSetInitialGuessNonzero(d_KrylovSolver, useZeroGuess);
 
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-    PetscTruth useNonzeroGuess = ( !d_bUseZeroInitialGuess ) ? PETSC_TRUE : PETSC_FALSE;
-#elif PETSC_VERSION_GE( 3, 2, 0 )
     PetscBool useNonzeroGuess = ( !d_bUseZeroInitialGuess ) ? PETSC_TRUE : PETSC_FALSE;
-#else
-#error Not programmed for this version yet
-#endif
+
     checkErr( KSPSetInitialGuessNonzero( d_KrylovSolver, useNonzeroGuess ) );
 
     checkErr( KSPSetTolerances( d_KrylovSolver,
@@ -184,16 +179,7 @@ void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
         petscOptions = PetscMonitor::removeMonitor( petscOptions );
         d_PetscMonitor.reset( new PetscMonitor( d_comm ) );
     }
-#if PETSC_VERSION_LT( 3, 3, 0 )
-    PetscOptionsInsertString( petscOptions.c_str() );
-#elif PETSC_VERSION_GE( 3, 7, 5 )
     PetscOptionsInsertString( PETSC_NULL, petscOptions.c_str() );
-#else
-    PetscOptions options;
-    PetscOptionsInsertString( options, petscOptions.c_str() );
-#error This does not seem right. The options are not used.  Check!!!
-#endif
-
 
     d_sKspType             = db->getWithDefault<std::string>( "ksp_type", "fgmres" );
     d_dDivergenceTolerance = db->getWithDefault<double>( "divergence_tolerance", 1.0e+03 );
@@ -230,37 +216,14 @@ void PetscKrylovSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>
                                std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-    // fVecView and uVecView may be held in KSPSolve internals.
-    // by declaring a temporary vector, we ensure that the KSPSolve
-    // will be replaced by fVecView and uVecView before they are destroyed.
-    AMP::LinearAlgebra::Vector::const_shared_ptr f_thisGetsAroundPETScSharedPtrIssue = fVecView;
-    AMP::LinearAlgebra::Vector::shared_ptr u_thisGetsAroundPETScSharedPtrIssue       = uVecView;
-#endif
 
-// Get petsc views of the vectors
-#if !( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-    AMP::LinearAlgebra::Vector::const_shared_ptr fVecView;
-    AMP::LinearAlgebra::Vector::shared_ptr uVecView;
-#endif
-    fVecView = AMP::LinearAlgebra::PetscVector::constView( f );
-    uVecView = AMP::LinearAlgebra::PetscVector::view( u );
+    // Get petsc views of the vectors
+    auto fVecView = AMP::LinearAlgebra::PetscVector::constView( f );
+    auto uVecView = AMP::LinearAlgebra::PetscVector::view( u );
 
     // Check input vector states
-    AMP_ASSERT(
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT(
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT(
-        ( fVecView->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( fVecView->getUpdateStatus() ==
-          AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT(
-        ( uVecView->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( uVecView->getUpdateStatus() ==
-          AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+    checkUpdateStatus( f );
+    checkUpdateStatus( u );
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         std::cout << "PetscKrylovSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
@@ -268,9 +231,8 @@ void PetscKrylovSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         std::cout << "PetscKrylovSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm()
                   << std::endl;
     }
-    Vec fVec =
-        std::dynamic_pointer_cast<const AMP::LinearAlgebra::PetscVector>( fVecView )->getVec();
-    Vec uVec = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( uVecView )->getVec();
+    Vec fVec = fVecView->getVec();
+    Vec uVec = uVecView->getVec();
 
     // Create the preconditioner and re-register the operator
     PC pc;
@@ -283,22 +245,15 @@ void PetscKrylovSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         } else {
             // for a shell preconditioner the user context is set to an instance of this class
             // and the setup and apply preconditioner functions for the PCSHELL
-            // are set to static member functions of this class. By doing this we do not need to
-            // introduce
-            // static member functions into every SolverStrategy that might be used as a
-            // preconditioner
+            // are set to static member functions of this class.
+            // By doing this we do not need to introduce static member functions
+            // into every SolverStrategy that might be used as a preconditioner
             checkErr( PCSetType( pc, PCSHELL ) );
             checkErr( PCShellSetContext( pc, this ) );
             checkErr( PCShellSetSetUp( pc, PetscKrylovSolver::setupPreconditioner ) );
             checkErr( PCShellSetApply( pc, PetscKrylovSolver::applyPreconditioner ) );
         }
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-        checkErr( KSPSetPreconditionerSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
-#elif PETSC_VERSION_GE( 3, 2, 0 )
         checkErr( KSPSetPCSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
-#else
-#error Not programmed for this version yet
-#endif
     } else {
         checkErr( PCSetType( pc, PCNONE ) );
     }
@@ -314,10 +269,8 @@ void PetscKrylovSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         std::cout << "L2Norm of solution from KSP: " << u->L2Norm() << std::endl;
     }
 
-// Reset the solvers
-#if !( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
+    // Reset the solvers
     KSPReset( d_KrylovSolver );
-#endif
     PROFILE_STOP( "solve" );
 }
 
@@ -327,15 +280,8 @@ void PetscKrylovSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>
  ****************************************************************/
 void PetscKrylovSolver::setKrylovSolver( KSP *ksp )
 {
-    if ( d_bKSPCreatedInternally ) {
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-        KSPDestroy( d_KrylovSolver );
-#elif PETSC_VERSION_GE( 3, 2, 0 )
+    if ( d_bKSPCreatedInternally )
         KSPDestroy( &d_KrylovSolver );
-#else
-#error Not programmed for this version yet
-#endif
-    }
     d_bKSPCreatedInternally = false;
     d_KrylovSolver          = *ksp;
 }
@@ -361,13 +307,7 @@ void PetscKrylovSolver::registerOperator( const std::shared_ptr<AMP::Operator::O
     Mat mat;
     mat = pMatrix->getMat();
 
-#if PETSC_VERSION_LE( 3, 2, 0 )
-    KSPSetOperators( d_KrylovSolver, mat, mat, DIFFERENT_NONZERO_PATTERN );
-#elif PETSC_VERSION_GE( 3, 7, 5 )
     KSPSetOperators( d_KrylovSolver, mat, mat );
-#else
-#error This version of PETSc is not supported.  Check!!!
-#endif
 }
 void PetscKrylovSolver::resetOperator(
     const std::shared_ptr<AMP::Operator::OperatorParameters> params )
@@ -385,19 +325,11 @@ void PetscKrylovSolver::resetOperator(
         Mat mat;
         mat = pMatrix->getMat();
 
-
-#if PETSC_VERSION_LE( 3, 2, 0 )
-        KSPSetOperators( d_KrylovSolver, mat, mat, DIFFERENT_NONZERO_PATTERN );
-#elif PETSC_VERSION_GE( 3, 7, 5 )
         KSPSetOperators( d_KrylovSolver, mat, mat );
-#else
-#error This version of PETSc is not supported.  Check!!!
-#endif // for now we will assume the pc is affected at every iteration
     }
 
     // should add a mechanism for the linear operator to provide updated parameters for the
-    // preconditioner operator
-    // though it's unclear where this might be necessary
+    // preconditioner operator though it's unclear where this might be necessary
     if ( d_pPreconditioner.get() != nullptr ) {
         d_pPreconditioner->resetOperator( params );
     }
@@ -407,14 +339,6 @@ void PetscKrylovSolver::resetOperator(
 /****************************************************************
  *  Function to setup the preconditioner                         *
  ****************************************************************/
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-int PetscKrylovSolver::setupPreconditioner( void * )
-{
-    int ierr = 0;
-    // return( ((PetscKrylovSolver*)ctx)->getPreconditioner()->reset() );
-    return ierr;
-}
-#elif PETSC_VERSION_GE( 3, 2, 0 )
 PetscErrorCode PetscKrylovSolver::setupPreconditioner( PC pc )
 {
     int ierr  = 0;
@@ -422,46 +346,28 @@ PetscErrorCode PetscKrylovSolver::setupPreconditioner( PC pc )
     ierr      = PCShellGetContext( pc, &ctx );
     return ierr;
 }
-#else
-#error Not programmed for this version yet
-#endif
 
 
 /****************************************************************
  *  Function to call the preconditioner                          *
  ****************************************************************/
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-PetscErrorCode PetscKrylovSolver::applyPreconditioner( void *ctx, Vec r, Vec z )
-#elif PETSC_VERSION_GE( 3, 2, 0 )
 PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
-#else
-#error Not programmed for this version yet
-#endif
 {
     int ierr = 0;
-#if PETSC_VERSION_GE( 3, 2, 0 )
     void *ctx;
     PCShellGetContext( pc, &ctx );
-#endif
     AMP_ASSERT( ctx != nullptr );
+    auto solver = reinterpret_cast<PetscKrylovSolver *>( ctx );
 
-    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_r(
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( r->data ), []( auto ) {} );
-    std::shared_ptr<AMP::LinearAlgebra::Vector> sp_z(
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( z->data ), []( auto ) {} );
+    auto sp_r = PETSC::getAMP( r );
+    auto sp_z = PETSC::getAMP( z );
 
     // Make sure the vectors are in a consistent state
-    AMP_ASSERT(
-        ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT(
-        ( sp_z->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( sp_z->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
     sp_r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     sp_z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     // these tests were helpful in finding a bug
-    if ( ( (PetscKrylovSolver *) ctx )->getDebugPrintInfoLevel() > 5 ) {
+    if ( solver->getDebugPrintInfoLevel() > 5 ) {
         double norm = 0.0;
         VecNorm( r, NORM_2, &norm );
         double sp_r_norm = static_cast<double>( sp_r->L2Norm() );
@@ -469,7 +375,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     }
 
     // Call the preconditioner
-    auto preconditioner = ( (PetscKrylovSolver *) ctx )->getPreconditioner();
+    auto preconditioner = solver->getPreconditioner();
     if ( preconditioner != nullptr ) {
         preconditioner->solve( sp_r, sp_z );
     } else {
@@ -486,7 +392,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     sp_z->getVectorData()->fireDataChange();
 
     // these tests were helpful in finding a bug
-    if ( ( (PetscKrylovSolver *) ctx )->getDebugPrintInfoLevel() > 5 ) {
+    if ( solver->getDebugPrintInfoLevel() > 5 ) {
         double norm = 0.0;
         AMP::pout << "L2 Norm of sp_z " << sp_z->L2Norm() << std::endl;
         VecNorm( z, NORM_2, &norm );

@@ -11,11 +11,6 @@
 namespace AMP {
 
 // template for factories for operators and solvers
-
-// NOTE: ideally the create function should return a
-// unique_ptr but since AMP does not currently have that
-// we will return a shared_ptr
-
 template<typename TYPE, typename PARAMETERS>
 class FactoryStrategy
 {
@@ -25,13 +20,13 @@ private:
      */
     FactoryStrategy();
 
-    using FunctionPtr = std::shared_ptr<TYPE> ( * )( std::shared_ptr<PARAMETERS> parameters );
+    using FunctionPtr = std::unique_ptr<TYPE> ( * )( std::shared_ptr<PARAMETERS> parameters );
     using FunctionMap = std::map<std::string, FunctionPtr>;
 
     FunctionMap d_factories; //! maps from names to factories
 
     //! given name and parameter object create object
-    std::shared_ptr<TYPE> create( std::string name, std::shared_ptr<PARAMETERS> parameters );
+    std::unique_ptr<TYPE> create( std::string name, std::shared_ptr<PARAMETERS> parameters );
 
     //! register a function that creates an object
     void registerFunction( std::string name, FactoryStrategy::FunctionPtr ptr );
@@ -49,7 +44,7 @@ public:
      * Factory method for generating objects with characteristics
      * specified by parameters.
      */
-    static std::shared_ptr<TYPE> create( std::shared_ptr<PARAMETERS> parameters );
+    static std::unique_ptr<TYPE> create( std::shared_ptr<PARAMETERS> parameters );
 
     // public interface for registering a function that creates an object
     static void registerFactory( std::string name, FactoryStrategy::FunctionPtr ptr );
@@ -73,11 +68,11 @@ FactoryStrategy<TYPE, PARAMETERS> &FactoryStrategy<TYPE, PARAMETERS>::getFactory
 }
 
 template<typename TYPE, typename PARAMETERS>
-std::shared_ptr<TYPE>
+std::unique_ptr<TYPE>
 FactoryStrategy<TYPE, PARAMETERS>::create( std::string name,
                                            std::shared_ptr<PARAMETERS> parameters )
 {
-    std::shared_ptr<TYPE> obj;
+    std::unique_ptr<TYPE> obj;
     auto it = d_factories.find( name );
     if ( it != d_factories.end() ) {
         obj = it->second( parameters );
@@ -91,15 +86,15 @@ FactoryStrategy<TYPE, PARAMETERS>::create( std::string name,
 }
 
 template<typename TYPE, typename PARAMETERS>
-std::shared_ptr<TYPE>
+std::unique_ptr<TYPE>
 FactoryStrategy<TYPE, PARAMETERS>::create( std::shared_ptr<PARAMETERS> parameters )
 {
     AMP_ASSERT( parameters != nullptr );
 
     std::string objectName = "";
 
-    std::shared_ptr<AMP::Database> inputDatabase = parameters->d_db;
-
+    auto inputDatabase = parameters->d_db;
+    AMP_ASSERT( inputDatabase );
     if ( inputDatabase->keyExists( "name" ) ) {
         objectName = inputDatabase->getString( "name" );
     } else {
@@ -126,5 +121,7 @@ void FactoryStrategy<TYPE, PARAMETERS>::registerFunction(
 {
     d_factories[name] = ptr;
 }
+
+
 } // namespace AMP
 #endif

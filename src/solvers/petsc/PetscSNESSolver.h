@@ -38,6 +38,10 @@
 #endif
 #endif
 
+namespace AMP::LinearAlgebra {
+class PetscVector;
+}
+
 
 namespace AMP {
 namespace Solver {
@@ -169,31 +173,14 @@ private:
 
     static PetscErrorCode apply( SNES snes, Vec x, Vec f, void *ctx );
 
-#if PETSC_VERSION_LE( 3, 2, 0 )
-    static PetscErrorCode
-    setJacobian( SNES snes, Vec x, Mat *A, Mat *B, MatStructure *mstruct, void *ctx );
-#elif PETSC_VERSION_GE( 3, 7, 5 )
     static PetscErrorCode setJacobian( SNES, Vec x, Mat A, Mat, void *ctx );
-#else
-#error This version of PETSc is not supported.  Check!!!
-#endif
 
     static bool isVectorValid( std::shared_ptr<AMP::Operator::Operator> &op,
                                AMP::LinearAlgebra::Vector::shared_ptr &v,
                                AMP_MPI comm );
 
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-    static PetscErrorCode
-    lineSearchPreCheck( SNES snes, Vec x, Vec y, void *checkctx, PetscTruth *changed_y );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
-    static PetscErrorCode
-    lineSearchPreCheck( SNES, Vec x, Vec y, void *checkctx, PetscBool *changed_y );
-#elif PETSC_VERSION_GE( 3, 7, 5 )
     static PetscErrorCode
     lineSearchPreCheck( SNESLineSearch, Vec x, Vec y, PetscBool *changed_y, void *checkctx );
-#else
-#error Not programmed for this version yet
-#endif
 
 
     static PetscErrorCode mffdCheckBounds( void *checkctx, Vec U, Vec a, PetscScalar *h );
@@ -220,13 +207,7 @@ private:
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionVector;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pResidualVector;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
-
     std::shared_ptr<PetscMonitor> d_PetscMonitor;
-
-    // The following SNES solver keeps a reference to certain vectors around.
-    // By declaring the vectors here, we ensure correct behavior during destruction.
-    // This will ensure that the std::shared_ptr destructor calls VecDestroy on the last reference.
-    std::list<AMP::LinearAlgebra::Vector::const_shared_ptr> d_refVectors;
 
     SNES d_SNESSolver;
 

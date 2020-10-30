@@ -122,10 +122,10 @@ public:
 
 
     //! static create routine that is used by SolverFactory
-    static std::shared_ptr<SolverStrategy>
+    static std::unique_ptr<SolverStrategy>
     createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-        return std::make_shared<TrilinosMLSolver>( solverStrategyParameters );
+        return std::make_unique<TrilinosMLSolver>( solverStrategyParameters );
     }
 
     /**

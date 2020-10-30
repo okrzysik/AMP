@@ -257,20 +257,11 @@ public: // Vector based tests
               SPLIT( split )
         {
         }
-        //! Get the Variable
-        AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
-        {
-            return std::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
-        }
         //! Get the Vector
         AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
         {
-            return AMP::LinearAlgebra::createVector( d_dofManager, getVariable(), SPLIT );
-        }
-        //! Get the DOFManager
-        AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
-        {
-            return d_dofManager;
+            auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
+            return AMP::LinearAlgebra::createVector( d_dofManager, var, SPLIT );
         }
         //! Get the name
         std::string name() const override { return "MeshVectorFactory"; }

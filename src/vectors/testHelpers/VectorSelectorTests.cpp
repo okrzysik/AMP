@@ -1,6 +1,5 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorSelector.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
@@ -102,9 +101,6 @@ void AMP::LinearAlgebra::VectorTests::test_VS_ByVariableName( AMP::UnitTest *ut 
         }
     } else {
         if ( std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vec2 ) ) {
-            ut->expected_failure(
-                "Subsetting a multivector of multivectors by name is not functional yet" );
-        } else if ( std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedVector>( vec2 ) ) {
             ut->expected_failure(
                 "Subsetting a multivector of multivectors by name is not functional yet" );
         } else {

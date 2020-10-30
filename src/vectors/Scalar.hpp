@@ -55,9 +55,6 @@ constexpr double Scalar::getTol()
         return 10 * std::abs( std::numeric_limits<TYPE>::epsilon() );
     }
 }
-#if defined( USING_ICC )
-DISABLE_WARNINGS
-#endif
 template<class T1, class T2>
 inline std::tuple<T1, double> Scalar::convert( const std::any &x0 )
 {
@@ -78,6 +75,9 @@ inline void Scalar::store( const TYPE &x )
     d_hash = get_hash<TYPE>();
     d_data = std::make_any<TYPE>( x );
 }
+#if defined( USING_ICC )
+ENABLE_WARNINGS
+#endif
 
 
 /********************************************************************

@@ -311,7 +311,7 @@ void testDefaults( AMP::UnitTest &ut )
     // Run tests on a libmesh mesh
     testlibMesh( &ut );
 #endif
-    
+
     // Run tests on a moab mesh
     testMoabMesh( &ut );
 

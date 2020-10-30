@@ -32,24 +32,6 @@ namespace AMP {
 namespace Solver {
 
 
-static inline std::shared_ptr<AMP::LinearAlgebra::EpetraVector>
-epetraView( AMP::LinearAlgebra::Vector::shared_ptr x )
-{
-    auto y = AMP::LinearAlgebra::EpetraVector::view( x );
-    auto z = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>( y );
-    AMP_ASSERT( x != nullptr );
-    return z;
-}
-static inline std::shared_ptr<const AMP::LinearAlgebra::EpetraVector>
-epetraView( AMP::LinearAlgebra::Vector::const_shared_ptr x )
-{
-    auto y = AMP::LinearAlgebra::EpetraVector::constView( x );
-    auto z = std::dynamic_pointer_cast<const AMP::LinearAlgebra::EpetraVector>( y );
-    AMP_ASSERT( x != nullptr );
-    return z;
-}
-
-
 /****************************************************************
  * Constructors / Destructor                                     *
  ****************************************************************/
@@ -513,8 +495,10 @@ void TrilinosMueLuSolver::solveWithHierarchy( std::shared_ptr<const AMP::LinearA
 
 
         // These functions throw exceptions if this cannot be performed.
-        Epetra_Vector &fVec = const_cast<Epetra_Vector &>( epetraView( f )->getEpetra_Vector() );
-        Epetra_Vector &uVec = epetraView( u )->getEpetra_Vector();
+        auto fView          = AMP::LinearAlgebra::EpetraVector::constView( f );
+        auto uView          = AMP::LinearAlgebra::EpetraVector::view( u );
+        Epetra_Vector &fVec = const_cast<Epetra_Vector &>( fView->getEpetra_Vector() );
+        Epetra_Vector &uVec = uView->getEpetra_Vector();
 
         auto rcp_u = Teuchos::rcpFromRef( uVec );
         auto rcp_f = Teuchos::rcpFromRef( fVec );
@@ -597,9 +581,11 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
         }
 
         if ( d_bUseEpetra ) {
-            // These functions throw exceptions if this cannot be performed.
-            const Epetra_Vector &fVec = epetraView( f )->getEpetra_Vector();
-            Epetra_Vector &uVec       = epetraView( u )->getEpetra_Vector();
+            // These functions throw exceptions if this cannot be performed
+            auto fView                = AMP::LinearAlgebra::EpetraVector::constView( f );
+            auto uView                = AMP::LinearAlgebra::EpetraVector::view( u );
+            const Epetra_Vector &fVec = fView->getEpetra_Vector();
+            Epetra_Vector &uVec       = uView->getEpetra_Vector();
 
             d_mueluSolver->ApplyInverse( fVec, uVec );
         } else {

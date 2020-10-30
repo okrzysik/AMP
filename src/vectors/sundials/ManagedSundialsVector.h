@@ -1,7 +1,6 @@
 #ifndef included_AMP_ManagedSundialsVector
 #define included_AMP_ManagedSundialsVector
 
-#include "AMP/vectors/ManagedVector.h"
 #include "AMP/vectors/sundials/SundialsVector.h"
 
 
@@ -22,17 +21,11 @@ namespace LinearAlgebra {
  *
  * \see SundialsVector
  */
-typedef ManagedVectorParameters ManagedSundialsVectorParameters;
 
-class ManagedSundialsVector : public ManagedVector, public SundialsVector
+class ManagedSundialsVector : public Vector, public SundialsVector
 {
 
 public:
-    /** \brief Construct a ManagedSundialsVector from a set of parameters
-     * \param[in] params Description of the new vector
-     */
-    explicit ManagedSundialsVector( std::shared_ptr<ManagedVectorParameters> params );
-
     /** \brief Create a view to an AMP vector
      * \param[in] alias  Vector to view
      */
@@ -43,13 +36,16 @@ public:
     virtual ~ManagedSundialsVector();
 
     // These are adequately documented in a base class or there is little need for the documentation
-    ManagedSundialsVector *rawClone() const;
     std::string type() const override;
-    using Vector::cloneVector;
-    Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const override;
+    std::unique_ptr<Vector> rawClone( const Variable::shared_ptr var ) const override;
+    void swapVectors( Vector &other ) override;
 
-protected:
-    virtual ManagedVector *getNewRawPtr() const override;
+    Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
+    Vector::const_shared_ptr
+    constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
+
+    std::shared_ptr<Vector> getManagedVec() override { return shared_from_this(); }
+    std::shared_ptr<const Vector> getManagedVec() const override { return shared_from_this(); }
 
 private:
     explicit ManagedSundialsVector( const ManagedSundialsVector & );

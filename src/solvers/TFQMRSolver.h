@@ -50,10 +50,10 @@ public:
      @param [in] parameters The parameters object
      contains a database objects with the fields listed for the constructor above
      */
-    static std::shared_ptr<SolverStrategy>
+    static std::unique_ptr<SolverStrategy>
     createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-        return std::make_shared<TFQMRSolver>( solverStrategyParameters );
+        return std::make_unique<TFQMRSolver>( solverStrategyParameters );
     }
 
     /**

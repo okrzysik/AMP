@@ -2,6 +2,7 @@
 #ifndef included_AMP_enable_shared_from_this
 #define included_AMP_enable_shared_from_this
 
+#include "AMP/utils/UtilityMacros.h"
 
 #include <memory>
 

@@ -1,36 +1,39 @@
 #include "AMP/vectors/sundials/ManagedSundialsVector.h"
-#include "AMP/vectors/data/VectorData.h"
-
 #include "AMP/utils/UtilityMacros.h"
+#include "AMP/vectors/data/ManagedVectorData.h"
+#include "AMP/vectors/data/VectorData.h"
+#include "AMP/vectors/operations/ManagedVectorOperations.h"
 
 
 namespace AMP {
 namespace LinearAlgebra {
 
-/**
- * This macro extracts the content field of an N_Vector and casts it as a pointer to a
- * SundialsVector.
- */
 
-//#define AMPVEC_CAST(v) (static_cast<ManagedSundialsVector*>(v->content))
+static inline auto getVectorEngine( const std::shared_ptr<VectorData> &data )
+{
+    auto managed = std::dynamic_pointer_cast<ManagedVectorData>( data );
+    AMP_ASSERT( managed );
+    return managed->getVectorEngine();
+}
+static inline auto getVectorEngine( const std::shared_ptr<const VectorData> &data )
+{
+    auto managed = std::dynamic_pointer_cast<const ManagedVectorData>( data );
+    AMP_ASSERT( managed );
+    return managed->getVectorEngine();
+}
 
 
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-ManagedSundialsVector::ManagedSundialsVector( std::shared_ptr<ManagedVectorParameters> params )
-    : ManagedVector( params ), SundialsVector()
+ManagedSundialsVector::ManagedSundialsVector( std::shared_ptr<Vector> vec )
+    : Vector(), SundialsVector()
 {
-    // Create N_Vector
-    d_n_vector = (N_Vector) malloc( sizeof *d_n_vector );
-    AMP_ASSERT( d_n_vector != nullptr );
-    // Attach the content and the ops fields
-    d_n_vector->content = this;
-    d_n_vector->ops     = ManagedSundialsVector::createNVectorOps();
-}
-ManagedSundialsVector::ManagedSundialsVector( shared_ptr alias )
-    : ManagedVector( alias ), SundialsVector()
-{
+    AMP_ASSERT( !std::dynamic_pointer_cast<ManagedVectorData>( vec->getVectorData() ) );
+    d_VectorOps  = std::make_shared<ManagedVectorOperations>();
+    d_VectorData = std::make_shared<ManagedVectorData>( vec );
+    d_DOFManager = vec->getDOFManager();
+    setVariable( vec->getVariable() );
     // Create N_Vector
     d_n_vector = (N_Vector) malloc( sizeof *d_n_vector );
     AMP_ASSERT( d_n_vector != nullptr );
@@ -60,26 +63,49 @@ ManagedSundialsVector::~ManagedSundialsVector()
 /************************************************************************
  * Clone the vector                                                      *
  ************************************************************************/
-Vector::shared_ptr ManagedSundialsVector::cloneVector( const Variable::shared_ptr var ) const
+std::unique_ptr<Vector> ManagedSundialsVector::rawClone( const Variable::shared_ptr var ) const
 {
-    Vector::shared_ptr retVal( rawClone() );
+    auto vec    = getVectorEngine( getVectorData() );
+    auto vec2   = vec->cloneVector( "ManagedSundialsVectorClone" );
+    auto retVal = std::make_unique<ManagedSundialsVector>( vec2 );
     retVal->setVariable( var );
     return retVal;
 }
-ManagedSundialsVector *ManagedSundialsVector::rawClone() const
+
+
+/********************************************************
+ * Subset                                                *
+ ********************************************************/
+Vector::shared_ptr ManagedSundialsVector::subsetVectorForVariable( Variable::const_shared_ptr name )
 {
-    auto p   = std::make_shared<ManagedSundialsVectorParameters>();
-    auto vec = getVectorEngine();
-    if ( vec ) {
-        auto vec2   = vec->cloneVector( "ManagedSundialsVectorClone" );
-        p->d_Buffer = std::dynamic_pointer_cast<VectorData>( vec2 );
-        p->d_Engine = std::dynamic_pointer_cast<Vector>( vec2 );
-    } else {
-        AMP_ERROR( "ManagedSundialsVector::rawClone() should not have reached here!" );
+    Vector::shared_ptr retVal;
+    if ( !retVal )
+        retVal = Vector::subsetVectorForVariable( name );
+    if ( !retVal ) {
+        auto vec = getVectorEngine( getVectorData() );
+        if ( vec )
+            retVal = vec->subsetVectorForVariable( name );
     }
-    p->d_CommList   = getCommunicationList();
-    p->d_DOFManager = getDOFManager();
-    auto retVal     = new ManagedSundialsVector( p );
+    return retVal;
+}
+Vector::const_shared_ptr
+ManagedSundialsVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
+{
+    Vector::const_shared_ptr retVal;
+    if ( !retVal )
+        retVal = Vector::constSubsetVectorForVariable( name );
+    if ( !retVal ) {
+        auto const vec = getVectorEngine( getVectorData() );
+        if ( vec )
+            retVal = vec->constSubsetVectorForVariable( name );
+    }
+    if ( !retVal ) {
+        auto const vec = getVectorEngine( getVectorData() );
+        printf( "Unable to subset for %s in %s:%s\n",
+                name->getName().data(),
+                getVariable()->getName().data(),
+                vec->getVariable()->getName().data() );
+    }
     return retVal;
 }
 
@@ -124,14 +150,12 @@ N_Vector_Ops ManagedSundialsVector::createNVectorOps()
 
 N_Vector ManagedSundialsVector::cloneVector_AMP( N_Vector n_vector )
 {
-    /**
-     * Extracts the content filed of n_vector
-     */
-    auto *srcAMPVector = static_cast<ManagedSundialsVector *>( n_vector->content );
-    ManagedSundialsVector *newSundialsVector = srcAMPVector->rawClone();
-
-    newSundialsVector->setVariable( srcAMPVector->getVariable() );
-    return ( newSundialsVector->getNVector() );
+    // Extracts the content filed of n_vector
+    auto srcAMPVector      = getAMP( n_vector );
+    auto ptr               = srcAMPVector->rawClone( srcAMPVector->getVariable() ).release();
+    auto newSundialsVector = dynamic_cast<ManagedSundialsVector *>( ptr );
+    AMP_ASSERT( newSundialsVector != nullptr );
+    return newSundialsVector->getNVector();
 }
 
 N_Vector ManagedSundialsVector::cloneempty_no_impl( N_Vector )
@@ -143,8 +167,8 @@ N_Vector ManagedSundialsVector::cloneempty_no_impl( N_Vector )
 void ManagedSundialsVector::freeVectorComponents_AMP( N_Vector v )
 {
 
-    auto *ptr = static_cast<ManagedSundialsVector *>( v->content );
-    delete ptr;
+    auto ptr = getAMP( v );
+    delete ptr.get();
 }
 
 realtype *ManagedSundialsVector::getarraypointer_no_impl( N_Vector )
@@ -162,42 +186,42 @@ void ManagedSundialsVector::setarraypointer_no_impl( realtype *, N_Vector )
 void ManagedSundialsVector::linearSum_AMP(
     realtype a, N_Vector x, realtype b, N_Vector y, N_Vector z )
 {
-    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
-    Vector *py = static_cast<ManagedSundialsVector *>( y->content );
-    Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
+    auto px = getAMP( x );
+    auto py = getAMP( y );
+    auto pz = getAMP( z );
     pz->linearSum( a, *px, b, *py );
 }
 
 // Set each entry of z to c
 void ManagedSundialsVector::setToScalar_AMP( realtype c, N_Vector z )
 {
-    Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
+    auto pz = getAMP( z );
     pz->setToScalar( c );
 }
 
 // Set z_i = x_i * y_i
 void ManagedSundialsVector::multiply_AMP( N_Vector x, N_Vector y, N_Vector z )
 {
-    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
-    Vector *py = static_cast<ManagedSundialsVector *>( y->content );
-    Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
+    auto px = getAMP( x );
+    auto py = getAMP( y );
+    auto pz = getAMP( z );
     pz->multiply( *px, *py );
 }
 
 // Set z_i = x_i / y_i
 void ManagedSundialsVector::divide_AMP( N_Vector x, N_Vector y, N_Vector z )
 {
-    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
-    Vector *py = static_cast<ManagedSundialsVector *>( y->content );
-    Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
+    auto px = getAMP( x );
+    auto py = getAMP( y );
+    auto pz = getAMP( z );
     pz->divide( *px, *py );
 }
 
 // Set z_i = c * x_i
 void ManagedSundialsVector::scale_AMP( realtype c, N_Vector x, N_Vector z )
 {
-    auto px = static_cast<ManagedSundialsVector *>( x->content );
-    auto pz = static_cast<ManagedSundialsVector *>( z->content );
+    auto px = getAMP( x );
+    auto pz = getAMP( z );
     pz->scale( c, *px );
 }
 
@@ -207,24 +231,24 @@ void ManagedSundialsVector::scale_AMP( realtype c, N_Vector x, N_Vector z )
 
 void ManagedSundialsVector::abs_AMP( N_Vector x, N_Vector z )
 {
-    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
-    Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
+    auto px = getAMP( x );
+    auto pz = getAMP( z );
     pz->abs( *px );
 }
 
 // Set z_i = 1.0 / x_i
 void ManagedSundialsVector::reciprocal_AMP( N_Vector x, N_Vector z )
 {
-    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
-    Vector *pz = static_cast<ManagedSundialsVector *>( z->content );
+    auto px = getAMP( x );
+    auto pz = getAMP( z );
     pz->reciprocal( *px );
 }
 
 // Set z_i = x_i + b
 void ManagedSundialsVector::addScalar_AMP( N_Vector x, realtype b, N_Vector z )
 {
-    Vector *px           = static_cast<ManagedSundialsVector *>( x->content );
-    Vector *pz           = static_cast<ManagedSundialsVector *>( z->content );
+    auto px              = getAMP( x );
+    auto pz              = getAMP( z );
     Vector::shared_ptr t = px->cloneVector();
     t->setToScalar( b );
     pz->add( *px, *t );
@@ -233,29 +257,29 @@ void ManagedSundialsVector::addScalar_AMP( N_Vector x, realtype b, N_Vector z )
 // Returns the dot product of x and y
 realtype ManagedSundialsVector::dot_AMP( N_Vector x, N_Vector y )
 {
-    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
-    Vector *py = static_cast<ManagedSundialsVector *>( y->content );
+    auto px = getAMP( x );
+    auto py = getAMP( y );
     return static_cast<double>( py->dot( *px ) );
 }
 
 // Returns the maximum norm of the input vector
 realtype ManagedSundialsVector::maxNorm_AMP( N_Vector x )
 {
-    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
+    auto px = getAMP( x );
     return static_cast<double>( px->maxNorm() );
 }
 
 // Returns the minimum entry of the input vector
 realtype ManagedSundialsVector::min_AMP( N_Vector x )
 {
-    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
+    auto px = getAMP( x );
     return static_cast<double>( px->min() );
 }
 
 // Returns the L1 norm of the input vector
 realtype ManagedSundialsVector::L1Norm_AMP( N_Vector x )
 {
-    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
+    auto px = getAMP( x );
     return static_cast<double>( px->L1Norm() );
 }
 
@@ -266,8 +290,8 @@ realtype ManagedSundialsVector::L1Norm_AMP( N_Vector x )
  */
 realtype ManagedSundialsVector::WRMSNorm_AMP( N_Vector x, N_Vector w )
 {
-    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
-    Vector *pw = static_cast<ManagedSundialsVector *>( w->content );
+    auto px = getAMP( x );
+    auto pw = getAMP( w );
     // is this OK?
     return static_cast<double>( px->wrmsNorm( *px, *pw ) );
 }
@@ -275,9 +299,9 @@ realtype ManagedSundialsVector::WRMSNorm_AMP( N_Vector x, N_Vector w )
 
 realtype ManagedSundialsVector::WRMSNormMask_AMP( N_Vector x, N_Vector w, N_Vector id )
 {
-    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
-    Vector *pw = static_cast<ManagedSundialsVector *>( w->content );
-    Vector *pm = static_cast<ManagedSundialsVector *>( id->content );
+    auto px = getAMP( x );
+    auto pw = getAMP( w );
+    auto pm = getAMP( id );
     // is this OK?
     return static_cast<double>( px->wrmsNormMask( *px, *pm, *pw ) );
 }
@@ -308,24 +332,21 @@ booleantype ManagedSundialsVector::constrmask_no_impl( N_Vector, N_Vector, N_Vec
 
 realtype ManagedSundialsVector::minquotient_AMP( N_Vector x, N_Vector w )
 {
-    Vector *px = static_cast<ManagedSundialsVector *>( x->content );
-    Vector *pw = static_cast<ManagedSundialsVector *>( w->content );
+    auto px = getAMP( x );
+    auto pw = getAMP( w );
     // is this OK?
     return static_cast<double>( px->minQuotient( *pw ) );
 }
 
-ManagedVector *ManagedSundialsVector::getNewRawPtr() const
-{
-    return new ManagedSundialsVector( d_pParameters );
-}
-
 std::string ManagedSundialsVector::type() const
 {
-    std::string retVal = "Managed SUNDIALS Vector";
-    retVal += ManagedVector::type();
-    return retVal;
+    return "Managed SUNDIALS Vector" + d_VectorData->VectorDataName();
 }
 
+void ManagedSundialsVector::swapVectors( Vector &other )
+{
+    d_VectorData->swapData( *other.getVectorData() );
+}
 
 } // namespace LinearAlgebra
 } // namespace AMP

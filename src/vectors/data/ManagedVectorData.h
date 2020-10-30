@@ -14,33 +14,6 @@ namespace LinearAlgebra {
 
 
 /**
-  \brief Data necessary to create a managed vector
-*/
-class ManagedVectorParameters
-{
-protected:
-    //!  Copy constructor is protected to prevent unintended copies
-    ManagedVectorParameters( const ManagedVectorParameters & );
-
-public:
-    //! Constructor
-    ManagedVectorParameters();
-
-    //! The VectorEngine to use with the managed vector
-    std::shared_ptr<Vector> d_Engine;
-
-    //! Buffer to use for the managed vector
-    std::shared_ptr<VectorData> d_Buffer;
-
-    //! The CommunicationList for a vector
-    CommunicationList::shared_ptr d_CommList = nullptr;
-
-    //! The DOF_Manager for a vector
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManager = nullptr;
-};
-
-
-/**
    \brief Class used to control data and kernels of various vector libraries
    \details  A ManagedVector will take an engine and create a buffer, if
    necessary.
@@ -55,7 +28,7 @@ public:
     /** \brief Construct a ManagedVector from a set of parameters
      * \param[in] params  The description of the ManagedVector
      */
-    explicit ManagedVectorData( std::shared_ptr<ManagedVectorParameters> params );
+    explicit ManagedVectorData( std::shared_ptr<Vector> vec );
 
     /** \brief Construct a view of an AMP vector
      * \param[in] alias  Vector to view
@@ -71,23 +44,13 @@ public:
     std::shared_ptr<Vector> getVectorEngine();
     std::shared_ptr<const Vector> getVectorEngine() const;
 
-    virtual bool isAnAliasOf( VectorData &rhs );
-
-    std::shared_ptr<ManagedVectorParameters> getParameters();
-
-    bool hasBuffer( void ) const { return ( d_vBuffer != nullptr ); }
+    bool isAnAliasOf( const VectorData &rhs ) const override;
 
     void receiveDataChanged() override { fireDataChange(); }
 
 protected:
-    //! The buffer used to store data
-    std::shared_ptr<VectorData> d_vBuffer = nullptr;
-
-    //! The engine to act on the buffer
-    std::shared_ptr<Vector> d_Engine = nullptr;
-
-    //! The parameters used to create this vector
-    std::shared_ptr<ManagedVectorParameters> d_pParameters;
+    //! The unterlying vector
+    std::shared_ptr<Vector> d_Engine;
 
 
 public: // Derived from VectorData
@@ -123,7 +86,6 @@ public: // Derived from VectorData
     void dataChanged() override;
 
     std::shared_ptr<VectorData> cloneData() const override;
-    void aliasData( VectorData &other );
 
 protected: // Derived from VectorData
     void *getRawDataBlockAsVoid( size_t i ) override;

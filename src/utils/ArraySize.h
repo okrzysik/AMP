@@ -43,7 +43,6 @@ DISABLE_WARNINGS
 
 namespace AMP {
 
-  
 
 // Forward declerations
 class FunctionTable;

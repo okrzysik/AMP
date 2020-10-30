@@ -1,4 +1,5 @@
 #include "AMP/vectors/Vector.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/Utilities.h"
@@ -28,18 +29,20 @@ Vector::Vector()
       d_DOFManager( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) ),
       d_VectorData( new VectorDataNull<double>() ),
       d_VectorOps( new VectorOperationsDefault<double>() ),
-      d_Views( new std::vector<std::weak_ptr<Vector>>() ),
+      d_Views( new std::vector<std::any>() ),
       d_output_stream( &AMP::plog )
 {
+    AMPManager::incrementResource( "Vector" );
 }
 Vector::Vector( const std::string &name )
     : d_pVariable( new Variable( name ) ),
       d_DOFManager( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) ),
       d_VectorData( new VectorDataNull<double>() ),
       d_VectorOps( new VectorOperationsDefault<double>() ),
-      d_Views( new std::vector<std::weak_ptr<Vector>>() ),
+      d_Views( new std::vector<std::any>() ),
       d_output_stream( &AMP::plog )
 {
+    AMPManager::incrementResource( "Vector" );
 }
 Vector::Vector( std::shared_ptr<VectorData> data,
                 std::shared_ptr<VectorOperations> ops,
@@ -49,15 +52,16 @@ Vector::Vector( std::shared_ptr<VectorData> data,
       d_DOFManager( DOFManager ),
       d_VectorData( data ),
       d_VectorOps( ops ),
-      d_Views( new std::vector<std::weak_ptr<Vector>>() ),
+      d_Views( new std::vector<std::any>() ),
       d_output_stream( &AMP::plog )
 {
+    AMPManager::incrementResource( "Vector" );
     AMP_ASSERT( data && ops && var );
     if ( !d_DOFManager )
         d_DOFManager = std::make_shared<AMP::Discretization::DOFManager>(
             d_VectorData->getLocalSize(), d_VectorData->getComm() );
 }
-Vector::~Vector() {}
+Vector::~Vector() { AMPManager::decrementResource( "Vector" ); }
 
 
 /****************************************************************
@@ -132,13 +136,6 @@ Vector::const_shared_ptr Vector::constSelect( const VectorSelector &s,
     }
     return retVal;
 }
-void Vector::registerView( Vector::shared_ptr v ) const
-{
-    for ( size_t i = 0; i != d_Views->size(); i++ )
-        if ( ( *d_Views )[i].lock() == v )
-            return;
-    ( *d_Views ).push_back( v );
-}
 Vector::shared_ptr Vector::subsetVectorForVariable( Variable::const_shared_ptr name )
 {
     Vector::shared_ptr retVal;
@@ -156,6 +153,10 @@ Vector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
         if ( *d_pVariable == *name )
             retVal = shared_from_this();
     }
+    if ( !retVal )
+        printf( "Unable to subset for %s in %s\n",
+                name->getName().data(),
+                getVariable()->getName().data() );
     return retVal;
 }
 
@@ -163,20 +164,24 @@ Vector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
 /****************************************************************
  * clone, swap                                                   *
  ****************************************************************/
-Vector::shared_ptr Vector::cloneVector() const { return cloneVector( getVariable() ); }
-Vector::shared_ptr Vector::cloneVector( const std::string &name ) const
+std::shared_ptr<Vector> Vector::cloneVector() const { return cloneVector( getVariable() ); }
+std::shared_ptr<Vector> Vector::cloneVector( const std::string &name ) const
 {
-    Vector::shared_ptr retVal;
+    std::unique_ptr<Vector> retVal;
     if ( getVariable() ) {
-        retVal = cloneVector( getVariable()->cloneVariable( name ) );
+        retVal = rawClone( getVariable()->cloneVariable( name ) );
     } else {
-        retVal = cloneVector( std::make_shared<Variable>( name ) );
+        retVal = rawClone( std::make_shared<Variable>( name ) );
     }
     return retVal;
 }
 Vector::shared_ptr Vector::cloneVector( const Variable::shared_ptr name ) const
 {
-    auto vec             = std::make_shared<Vector>();
+    return rawClone( name );
+}
+std::unique_ptr<Vector> Vector::rawClone( const Variable::shared_ptr name ) const
+{
+    auto vec             = std::make_unique<Vector>();
     vec->d_pVariable     = name;
     vec->d_DOFManager    = d_DOFManager;
     vec->d_VectorData    = d_VectorData->cloneData();
