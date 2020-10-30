@@ -84,10 +84,10 @@ public:
     virtual ~TrilinosMueLuSolver();
 
     //! static create routine that is used by SolverFactory
-    static std::shared_ptr<SolverStrategy>
+    static std::unique_ptr<SolverStrategy>
     createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-        return std::make_shared<TrilinosMueLuSolver>( solverStrategyParameters );
+        return std::make_unique<TrilinosMueLuSolver>( solverStrategyParameters );
     }
 
     /**
@@ -181,8 +181,8 @@ private:
     // ifpack related -- could be used in future
     bool d_construct_partition = false; //! whether to construct user defined partitions
 #endif
-    bool d_bCreationPhase      = false; //! set to true if the solver is yet to be initialized
-    bool d_bRobustMode         = false; //! use a direct solver if the MG solve fails to converge
+    bool d_bCreationPhase = false; //! set to true if the solver is yet to be initialized
+    bool d_bRobustMode    = false; //! use a direct solver if the MG solve fails to converge
 
     AMP_MPI d_comm;
 
