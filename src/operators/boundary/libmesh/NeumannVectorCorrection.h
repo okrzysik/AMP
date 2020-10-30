@@ -41,7 +41,7 @@ public:
     virtual ~NeumannVectorCorrection() {}
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     /**
       This function computes the surface integral for either constant or varrying flux values

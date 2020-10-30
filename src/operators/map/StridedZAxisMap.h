@@ -38,7 +38,7 @@ public:
 
     // Overload the apply
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     void setVector( AMP::LinearAlgebra::Vector::shared_ptr p ) override;
 

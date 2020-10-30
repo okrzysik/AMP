@@ -62,10 +62,7 @@ class EmptyKeyData final : public KeyData
 public:
     EmptyKeyData() {}
     virtual ~EmptyKeyData() {}
-    std::unique_ptr<KeyData> clone() const override
-    {
-        return std::make_unique<EmptyKeyData>();
-    }
+    std::unique_ptr<KeyData> clone() const override { return std::make_unique<EmptyKeyData>(); }
     void print( std::ostream &os, const AMP::string_view & = "" ) const override
     {
         os << std::endl;
@@ -75,10 +72,7 @@ public:
     bool is_integral() const override { return true; }
     std::vector<double> convertToDouble() const override { return std::vector<double>(); }
     std::vector<int64_t> convertToInt64() const override { return std::vector<int64_t>(); }
-    bool operator==( const KeyData &rhs ) const override
-    {
-        return rhs.convertToDouble().empty();
-    }
+    bool operator==( const KeyData &rhs ) const override { return rhs.convertToDouble().empty(); }
 };
 template<class TYPE>
 class KeyDataScalar final : public KeyData
@@ -180,10 +174,7 @@ public:
             data.print( os, indent2 );
         }
     }
-    AMP::string_view type() const override
-    {
-        return typeid( std::vector<Database> ).name();
-    }
+    AMP::string_view type() const override { return typeid( std::vector<Database> ).name(); }
     bool is_floating_point() const override { return false; }
     bool is_integral() const override { return false; }
     std::vector<double> convertToDouble() const override

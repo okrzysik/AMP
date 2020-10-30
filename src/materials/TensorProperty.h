@@ -142,9 +142,8 @@ public:
     }
 
     // disable scalar evaluator
-    void
-    evalv( std::vector<Number> &,
-           const std::map<std::string, std::shared_ptr<std::vector<Number>>> & ) override
+    void evalv( std::vector<Number> &,
+                const std::map<std::string, std::shared_ptr<std::vector<Number>>> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from tensor property" );
     }
@@ -159,7 +158,7 @@ public:
 
     // disable scalar evaluator
     void evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &,
-		const std::shared_ptr<AMP::LinearAlgebra::MultiVector> & ) override
+                const std::shared_ptr<AMP::LinearAlgebra::MultiVector> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from tensor property" );
     }

@@ -309,7 +309,8 @@ namespace Operator {
             d_inVec[id] = frozenVec->subsetVectorForVariable(var);
           }
 
-          (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+          (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET
+   );
         }
 */
 }

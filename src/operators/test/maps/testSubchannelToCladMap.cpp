@@ -107,7 +107,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
             subchannel_DOFs->getDOFs( it->globalID(), dofs );
-	    double val = getTemp( it->centroid() );
+            double val = getTemp( it->centroid() );
             T_subchannel->setValuesByGlobalID( 1, &dofs[0], &val );
             ++it;
         }

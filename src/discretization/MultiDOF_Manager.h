@@ -47,8 +47,7 @@ public:
      * (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
-    void getDOFs( const AMP::Mesh::MeshElementID &id,
-		  std::vector<size_t> &dofs ) const override;
+    void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const override;
 
 
     /** \brief Get the entry indices of DOFs given a mesh element ID
@@ -58,7 +57,7 @@ public:
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
     void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
-		  std::vector<size_t> &dofs ) const override;
+                  std::vector<size_t> &dofs ) const override;
 
     /** \brief Get the mesh element for a DOF
      * \details  This will return the mesh element associated with a given DOF.
@@ -99,7 +98,7 @@ public:
      * will return NULL.
      */
     DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh,
-				   bool useMeshComm = true ) override;
+                                   bool useMeshComm = true ) override;
 
 
     /** \brief Subset the DOF Manager for a mesh element iterator
@@ -109,7 +108,7 @@ public:
      * \param[in]  comm         The desired comm
      */
     DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator,
-				   const AMP_MPI &comm ) override;
+                                   const AMP_MPI &comm ) override;
 
 public:
     //! Get the DOFManagers that compose the multiDOFManager

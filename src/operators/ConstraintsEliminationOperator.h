@@ -57,7 +57,7 @@ public:
       @param [out] f residual/output vector.
       */
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     /**
       @return The variable for the input vector.

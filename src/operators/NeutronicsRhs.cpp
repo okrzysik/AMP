@@ -192,7 +192,7 @@ void NeutronicsRhs::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         for ( ; elem != end_elems; ++elem ) {
             dof_map->getDOFs( elem->globalID(), gid );
             for ( unsigned int i = 0; i < DOFsPerVolume; gp++, i++ ) {
-	      rInternal->setValuesByGlobalID( 1, &gid[i], &d_values[this_step][gp] );
+                rInternal->setValuesByGlobalID( 1, &gid[i], &d_values[this_step][gp] );
                 /*          if( gp==0 ) {
                             if( (rInternal->max()>0) &&
                    (!AMP::Utilities::approx_equal(rInternal->max(),

@@ -68,14 +68,14 @@ public:
     void setValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
     void getValuesByGlobalID( size_t num_rows,
-			      size_t num_cols,
-			      size_t *rows,
-			      size_t *cols,
-			      double *values ) const override;
+                              size_t num_cols,
+                              size_t *rows,
+                              size_t *cols,
+                              double *values ) const override;
     void getRowByGlobalID( size_t row,
-			   std::vector<size_t> &cols,
-			   std::vector<double> &values ) const override;
-    
+                           std::vector<size_t> &cols,
+                           std::vector<double> &values ) const override;
+
     std::vector<size_t> getColumnIDs( size_t row ) const override;
 
     void setScalar( double ) override;

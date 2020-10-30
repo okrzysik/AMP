@@ -89,8 +89,7 @@ public:
      * (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
-    void getDOFs( const AMP::Mesh::MeshElementID &id,
-		  std::vector<size_t> &dofs ) const override;
+    void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const override;
 
 
     /** \brief Get the entry indices of DOFs given a mesh element ID
@@ -100,7 +99,7 @@ public:
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
     void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
-		  std::vector<size_t> &dofs ) const override;
+                  std::vector<size_t> &dofs ) const override;
 
 
     /** \brief   Get an entry over the mesh elements associated with the DOFs
@@ -130,7 +129,7 @@ public:
      * will return NULL.
      */
     DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh,
-				   bool useMeshComm = true ) override;
+                                   bool useMeshComm = true ) override;
 
 
 private:

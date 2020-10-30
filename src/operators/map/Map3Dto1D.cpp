@@ -199,8 +199,8 @@ void Map3Dto1D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     // Store the results
     for ( size_t i = 0; i < numPoints; i++ ) {
-      const double val = aggMapValues[i] / static_cast<double>( aggNumFaceGauss[i] );
-      outputVec->setValuesByLocalID( 1, &i, &val );
+        const double val = aggMapValues[i] / static_cast<double>( aggNumFaceGauss[i] );
+        outputVec->setValuesByLocalID( 1, &i, &val );
     }
 
     if ( d_iDebugPrintInfoLevel > 4 ) {
@@ -330,8 +330,8 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     // Store the results
     for ( size_t i = 0; i < numPoints; i++ ) {
-      const double val = aggMapValues[i] / static_cast<double>( aggNumFaceNodes[i] );
-      outputVec->setValuesByLocalID( 1, &i, &val );
+        const double val = aggMapValues[i] / static_cast<double>( aggNumFaceNodes[i] );
+        outputVec->setValuesByLocalID( 1, &i, &val );
     }
 
     if ( d_iDebugPrintInfoLevel > 4 ) {

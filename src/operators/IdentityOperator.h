@@ -35,7 +35,7 @@ public:
      * @param [out] f output vector.
      */
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     /**
      * This function is useful for re-initializing/updating an operator

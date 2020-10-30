@@ -42,7 +42,7 @@ public:
      * @param[out] u    shared pointer to approximate computed solution
      */
     void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-		std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+                std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Resets the operator registered with the solver with new parameters if necessary

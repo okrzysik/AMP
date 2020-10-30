@@ -57,7 +57,7 @@ public:
 
     void setJacobianParametersSize( const int paramSz ) { d_paramsize = paramSz; }
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {

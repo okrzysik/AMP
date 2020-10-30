@@ -125,7 +125,7 @@ void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> 
         depth->setLocalValuesByGlobalID( dofs.size(), &dofs[0], depth2 );
         DOF_oxide->getDOFs( id, dofs );
         AMP_ASSERT( dofs.size() == 1 );
-	auto val = 1e-2 * depth2[0];
+        auto val = 1e-2 * depth2[0];
         d_oxide->setLocalValuesByGlobalID( 1, &dofs[0], &val ); // Convert from cm to m
         DOF_alpha->getDOFs( id, dofs );
         AMP_ASSERT( dofs.size() == 1 );
@@ -215,7 +215,7 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
         depth->setLocalValuesByGlobalID( dofs.size(), &dofs[0], depth2 );
         DOF_oxide->getDOFs( id, dofs );
         AMP_ASSERT( dofs.size() == 1 );
-	auto val = 1e-2 * depth2[0];
+        auto val = 1e-2 * depth2[0];
         d_oxide->setLocalValuesByGlobalID( 1, &dofs[0], &val ); // Convert from cm to m
         DOF_alpha->getDOFs( id, dofs );
         AMP_ASSERT( dofs.size() == 1 );

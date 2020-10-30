@@ -17,7 +17,7 @@ public:
     explicit AsynchronousColumnOperator( const std::shared_ptr<OperatorParameters> & );
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     virtual void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                               AMP::LinearAlgebra::Vector::shared_ptr f );

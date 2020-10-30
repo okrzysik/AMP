@@ -33,7 +33,7 @@ public:
     virtual ~ColumnBoundaryOperator() {}
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+                AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
     std::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,

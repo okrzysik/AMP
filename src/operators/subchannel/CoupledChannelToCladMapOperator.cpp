@@ -78,8 +78,9 @@ void CoupledChannelToCladMapOperator::apply( AMP::LinearAlgebra::Vector::const_s
                 "Temperature", temperatureResult, temperatureArgMap );
             d_subchannelPhysicsModel->getProperty(
                 "SpecificVolume", specificVolume, temperatureArgMap );
-            d_subchannelTemperature->setValuesByGlobalID( 1, &scalarDofs[0], &temperatureResult[0] );
-	    const double val = 1.0 / specificVolume[0];
+            d_subchannelTemperature->setValuesByGlobalID(
+                1, &scalarDofs[0], &temperatureResult[0] );
+            const double val = 1.0 / specificVolume[0];
             d_subchannelDensity->setValuesByGlobalID( 1, &scalarDofs[0], &val );
             ++face;
         }

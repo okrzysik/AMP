@@ -19,7 +19,7 @@ public:
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
 protected:
     AMP::LinearAlgebra::Variable::shared_ptr d_var;

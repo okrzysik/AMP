@@ -129,8 +129,8 @@ void FlowFrapconJacobian::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     // set the inlet flow temperature value
     // flowInputVec->setValueByLocalID(0, 0.0);
-    size_t idx = 0;
-    const double val = flowInputVec->getValueByLocalID( idx ); 
+    size_t idx       = 0;
+    const double val = flowInputVec->getValueByLocalID( idx );
     outputVec->setValuesByLocalID( 1, &idx, &val );
 
     zPoints[0] = min_z;

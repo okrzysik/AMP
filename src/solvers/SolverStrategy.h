@@ -147,34 +147,28 @@ public:
      *  Get absolute tolerance for solver.
      */
     double getAbsoluteTolerance() const { return ( d_dAbsoluteTolerance ); }
-    
+
     /*!
      *  Set absolute tolerance for nonlinear solver.
      */
-    void setAbsoluteTolerance( double abs_tol )
-    {
-      d_dAbsoluteTolerance = abs_tol;
-    }
+    void setAbsoluteTolerance( double abs_tol ) { d_dAbsoluteTolerance = abs_tol; }
 
     double getRelativeTolerance() const { return ( d_dRelativeTolerance ); }
 
-    void setRelativeTolerance( double rel_tol )
-    {
-      d_dRelativeTolerance = rel_tol;
-    }
+    void setRelativeTolerance( double rel_tol ) { d_dRelativeTolerance = rel_tol; }
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
     int d_iNumberIterations = 0; // iterations in solver
 
-    int d_iMaxIterations    = 0;
+    int d_iMaxIterations = 0;
 
     double d_dResidualNorm = 0.0;
 
     double d_dAbsoluteTolerance = 1.0e-14;
     double d_dRelativeTolerance = 1.0e-09;
-    
+
     int d_iDebugPrintInfoLevel = 0;
 
     bool d_bUseZeroInitialGuess;
@@ -185,7 +179,7 @@ protected:
 
     std::shared_ptr<AMP::Operator::Operator> d_pOperator = nullptr;
 
-    std::shared_ptr<AMP::Utilities::Writer> d_writer     = nullptr;
+    std::shared_ptr<AMP::Utilities::Writer> d_writer = nullptr;
 
 
 private:

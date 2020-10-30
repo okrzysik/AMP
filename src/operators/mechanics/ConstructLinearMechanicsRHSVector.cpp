@@ -27,8 +27,10 @@ void computeTemperatureRhsVector(
     const std::shared_ptr<AMP::LinearAlgebra::Vector> &prevTemperatureVec,
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec )
 {
-    currTemperatureVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    prevTemperatureVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    currTemperatureVec->makeConsistent(
+        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    prevTemperatureVec->makeConsistent(
+        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal =
         rhsVec->subsetVectorForVariable( displacementVar );
@@ -257,8 +259,8 @@ void computeTemperatureRhsVector(
 
         for ( unsigned int r = 0; r < numNodesInCurrElem; r++ ) {
             for ( unsigned int d = 0; d < 3; d++ ) {
-	      rInternal->addValuesByGlobalID( 1, &type0DofIndices[r][d],
-					      &elementForceVector[( 3 * r ) + d] );
+                rInternal->addValuesByGlobalID(
+                    1, &type0DofIndices[r][d], &elementForceVector[( 3 * r ) + d] );
             } // end d
         }     // end r
 

@@ -22,7 +22,7 @@ public:
     explicit CoupledOperator( const std::shared_ptr<OperatorParameters> &params );
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
 
     /**
@@ -32,8 +32,8 @@ public:
      * \param r: shared pointer to vector residual
      */
     void residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
-		   AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		   AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+                   AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                   AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
 
     std::shared_ptr<AMP::Operator::Operator> getMapOperator() { return d_Operators[2]; }

@@ -35,7 +35,7 @@ public:
      * The apply routine for the column operator calls apply on each of the component operators
      */
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+                AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
     /**
      * Column specific implementation of the residual: f-L(u)
@@ -44,8 +44,8 @@ public:
      * \param r: shared pointer to vector residual
      */
     void residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
-		   AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		   AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+                   AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                   AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
     void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 

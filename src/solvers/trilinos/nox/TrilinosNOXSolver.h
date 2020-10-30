@@ -92,7 +92,7 @@ public:
      * @param [out] u : shared pointer to approximate computed solution
      */
     void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-		std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+                std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Provide the initial guess for the solver. This is a pure virtual function that the derived
@@ -100,8 +100,7 @@ public:
      * need to provide an implementation of.
      * @param [in] initialGuess: shared pointer to the initial guess vector.
      */
-    void
-    setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override
+    void setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override
     {
         d_initialGuess = initialGuess;
     }

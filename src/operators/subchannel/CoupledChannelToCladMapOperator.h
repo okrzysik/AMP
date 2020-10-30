@@ -17,10 +17,7 @@ public:
     explicit CoupledChannelToCladMapOperator(
         const std::shared_ptr<CoupledChannelToCladMapOperatorParameters> &params );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
-    {
-        return d_flowVariable;
-    }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_flowVariable; }
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {

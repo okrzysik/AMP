@@ -55,7 +55,7 @@ void SolverStrategy::getFromInput( std::shared_ptr<AMP::Database> db )
     d_dAbsoluteTolerance   = db->getWithDefault<double>( "absolute_tolerance", 1.0e-14 );
     d_dRelativeTolerance   = db->getWithDefault<double>( "relative_tolerance", 1.0e-09 );
 }
-  
+
 void SolverStrategy::initialize( std::shared_ptr<SolverStrategyParameters> const parameters )
 {
     AMP_INSIST( parameters.get() != nullptr, "SolverStrategyParameters object cannot be NULL" );

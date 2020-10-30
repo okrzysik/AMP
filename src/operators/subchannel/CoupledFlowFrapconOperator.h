@@ -34,7 +34,7 @@ public:
     }
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     void append( std::shared_ptr<Operator> op ) override
     {

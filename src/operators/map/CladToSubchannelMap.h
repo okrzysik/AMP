@@ -51,13 +51,13 @@ public:
      * \details  Start a communicative apply operation.
      */
     void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		     AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+                     AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
     /** \brief   Finish a communicative apply operation.
      * \details  Finish a communicative apply operation.
      */
     void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		      AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+                      AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
 protected:
 private:

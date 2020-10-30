@@ -62,8 +62,7 @@ public:
 
 
     void mult( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
-    void multTranspose( const Vector::const_shared_ptr in,
-			Vector::shared_ptr out ) override;
+    void multTranspose( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
     Vector::shared_ptr
     extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const override;
     void scale( double alpha ) override;
@@ -71,12 +70,12 @@ public:
     size_t numGlobalRows() const override { return d_epetraMatrix->NumGlobalRows(); }
     size_t numGlobalColumns() const override { return d_epetraMatrix->NumGlobalCols(); }
     void addValuesByGlobalID(
-			     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
+        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
     void setValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
     void getRowByGlobalID( size_t row,
-			   std::vector<size_t> &cols,
-			   std::vector<double> &values ) const override;
+                           std::vector<size_t> &cols,
+                           std::vector<double> &values ) const override;
 
 
     /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
@@ -85,10 +84,10 @@ public:
     std::vector<size_t> getColumnIDs( size_t row ) const override;
 
     void getValuesByGlobalID( size_t num_rows,
-			      size_t num_cols,
-			      size_t *rows,
-			      size_t *cols,
-			      double *values ) const override;
+                              size_t num_cols,
+                              size_t *rows,
+                              size_t *cols,
+                              double *values ) const override;
 
     void setScalar( double ) override;
     void setDiagonal( Vector::const_shared_ptr in ) override;

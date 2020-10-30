@@ -41,7 +41,7 @@ public:
 
     // Overload the apply operator to include makeConsistent
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     /** \brief  A factory method.
      * \return  A column of map operators of type MAP_TYPE

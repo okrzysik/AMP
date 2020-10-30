@@ -586,7 +586,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
             AMP::Mesh::MeshElement minusFace; // lower axial face for current cell
             subchannelOperator->getAxialFaces( d_elem[isub][j], plusFace, minusFace );
 
-	    double val;
+            double val;
             if ( j == 0 ) // for first axial interval only, set the quantities for the lower face
             {
                 size_t jj = j + 1; // corresponding MATLAB index for this axial face
@@ -594,17 +594,17 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
                 std::vector<size_t> minusDofs;
                 subchannelDOFManager->getDOFs( minusFace.globalID(), minusDofs );
                 // set values of minus face
-		val = m_scale * 0.35 * ( 1.0 + 1.0 / 100.0 * cos( ii ) * cos( 17.3 * jj ) );
+                val = m_scale * 0.35 * ( 1.0 + 1.0 / 100.0 * cos( ii ) * cos( 17.3 * jj ) );
                 FrozenVec->setValuesByGlobalID( 1, &minusDofs[0], &val );
-		val = h_scale * 1000.0e3 * ( 1.0 + 1.0 / 100.0 * cos( ii ) * cos( 17.3 * jj ) );
+                val = h_scale * 1000.0e3 * ( 1.0 + 1.0 / 100.0 * cos( ii ) * cos( 17.3 * jj ) );
                 FrozenVec->setValuesByGlobalID( 1, &minusDofs[1], &val );
-		val = p_scale * 15.5e6 * ( 1.0 + 1.0 / 100.0 * cos( ii ) * cos( 17.3 * jj ) );
+                val = p_scale * 15.5e6 * ( 1.0 + 1.0 / 100.0 * cos( ii ) * cos( 17.3 * jj ) );
                 FrozenVec->setValuesByGlobalID( 1, &minusDofs[2], &val );
-		val = m_scale * 1.0;
+                val = m_scale * 1.0;
                 SolVec->setValuesByGlobalID( 1, &minusDofs[0], &val );
-		val = h_scale * 1.0;
+                val = h_scale * 1.0;
                 SolVec->setValuesByGlobalID( 1, &minusDofs[1], &val );
-		val = p_scale * 1.0;
+                val = p_scale * 1.0;
                 SolVec->setValuesByGlobalID( 1, &minusDofs[2], &val );
             }
 
@@ -613,17 +613,17 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
             std::vector<size_t> plusDofs;
             subchannelDOFManager->getDOFs( plusFace.globalID(), plusDofs );
             // set values of plus face
-	    val = m_scale * 0.35 * ( 1.0 + 1.0 / 100.0 * cos( ii ) * cos( 17.3 * jj ) );
+            val = m_scale * 0.35 * ( 1.0 + 1.0 / 100.0 * cos( ii ) * cos( 17.3 * jj ) );
             FrozenVec->setValuesByGlobalID( 1, &plusDofs[0], &val );
-	    val = h_scale * 1000.0e3 * ( 1.0 + 1.0 / 100.0 * cos( ii ) * cos( 17.3 * jj ) );
+            val = h_scale * 1000.0e3 * ( 1.0 + 1.0 / 100.0 * cos( ii ) * cos( 17.3 * jj ) );
             FrozenVec->setValuesByGlobalID( 1, &plusDofs[1], &val );
-	    val = p_scale * 15.5e6 * ( 1.0 + 1.0 / 100.0 * cos( ii ) * cos( 17.3 * jj ) );
+            val = p_scale * 15.5e6 * ( 1.0 + 1.0 / 100.0 * cos( ii ) * cos( 17.3 * jj ) );
             FrozenVec->setValuesByGlobalID( 1, &plusDofs[2], &val );
-	    val = m_scale * 1.0;
+            val = m_scale * 1.0;
             SolVec->setValuesByGlobalID( 1, &plusDofs[0], &val );
-	    val = h_scale * 1.0;
+            val = h_scale * 1.0;
             SolVec->setValuesByGlobalID( 1, &plusDofs[1], &val );
-	    val = p_scale * 1.0;
+            val = p_scale * 1.0;
             SolVec->setValuesByGlobalID( 1, &plusDofs[2], &val );
         }
     }
@@ -653,9 +653,10 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
             std::vector<size_t> gapDofs;
             subchannelDOFManager->getDOFs( lateralFace.globalID(), gapDofs );
             // set test value for crossflow
-	    double val = w_scale * 0.001 * ( 1.0 + 1.0 / 100.0 * cos( k + 1 ) * cos( 17.3 * ( j + 1 ) ) );
+            double val =
+                w_scale * 0.001 * ( 1.0 + 1.0 / 100.0 * cos( k + 1 ) * cos( 17.3 * ( j + 1 ) ) );
             FrozenVec->setValuesByGlobalID( 1, &gapDofs[0], &val );
-	    val = w_scale * 1.0;
+            val = w_scale * 1.0;
             SolVec->setValuesByGlobalID( 1, &gapDofs[0], &val );
         }
     }

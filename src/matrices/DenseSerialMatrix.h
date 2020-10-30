@@ -36,7 +36,7 @@ public:
      * \details  Compute \f$\mathbf{Ain} = \mathbf{out}\f$.
      */
     void mult( AMP::LinearAlgebra::Vector::const_shared_ptr in,
-	       AMP::LinearAlgebra::Vector::shared_ptr out ) override;
+               AMP::LinearAlgebra::Vector::shared_ptr out ) override;
 
     /** \brief  Matrix transpose-vector multiplication
      * \param[in]  in  The vector to multiply
@@ -44,8 +44,8 @@ public:
      * \details  Compute \f$\mathbf{A}^T\mathbf{in} = \mathbf{out}\f$.
      */
     void multTranspose( AMP::LinearAlgebra::Vector::const_shared_ptr in,
-			AMP::LinearAlgebra::Vector::shared_ptr out ) override;
-    
+                        AMP::LinearAlgebra::Vector::shared_ptr out ) override;
+
 
     /** \brief  Return a new matrix that is the transpose of this one
      * \return  A copy of this matrix transposed.
@@ -156,8 +156,8 @@ public:
      * \param[out] values  The values in the row
      */
     void getRowByGlobalID( size_t row,
-			   std::vector<size_t> &cols,
-			   std::vector<double> &values ) const override;
+                           std::vector<size_t> &cols,
+                           std::vector<double> &values ) const override;
 
     /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
      * \param[in]  row Which row

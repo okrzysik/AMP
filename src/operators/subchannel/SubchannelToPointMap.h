@@ -46,10 +46,7 @@ public:
     }
 
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
-    {
-        return d_outputVar;
-    }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outputVar; }
 
 
 private:

@@ -16,17 +16,14 @@ public:
     virtual ~NodeToGaussPointOperator() {}
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {
         return d_GaussPtVariable;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
-    {
-        return d_NodalVariable;
-    }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_NodalVariable; }
 
 protected:
     bool d_UseSurfaceElements;

@@ -44,10 +44,10 @@ public:
     virtual ~NodeToNodeMap();
 
     void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		     AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                     AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		      AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                      AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     void setVector( AMP::LinearAlgebra::Vector::shared_ptr p ) override;
 

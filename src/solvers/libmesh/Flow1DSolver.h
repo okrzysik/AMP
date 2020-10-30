@@ -18,17 +18,15 @@ public:
     virtual ~Flow1DSolver();
 
     void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-		std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
+                std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
-    void
-    setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override;
+    void setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override;
 
     void initialize( std::shared_ptr<SolverStrategyParameters> const parameters ) override;
 
     void reset( std::shared_ptr<SolverStrategyParameters> ) override;
 
-    void
-    resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
+    void resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable( int varId = -1 );
 

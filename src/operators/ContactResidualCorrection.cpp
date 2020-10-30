@@ -18,7 +18,7 @@ void ContactResidualCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_
         std::vector<size_t> slaveGlobalIds;
         master_dof_map->getDOFs( d_masterNodes[i], masterGlobalIds );
         slave_dof_map->getDOFs( d_slaveNodes[i], slaveGlobalIds );
-	const double zero = 0.0;
+        const double zero = 0.0;
         for ( auto &elem : d_dofs[i] ) {
             double slaveVal = rSlave->getLocalValueByGlobalID( slaveGlobalIds[elem] );
             rMaster->addLocalValuesByGlobalID( 1, &masterGlobalIds[elem], &slaveVal );

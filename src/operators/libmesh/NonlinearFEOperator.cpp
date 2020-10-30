@@ -31,7 +31,8 @@ void NonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP_INSIST( ( rInternal != nullptr ), "NULL Residual/Output Vector" );
 
     if ( u.get() != nullptr )
-        AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+        AMP_ASSERT( u->getUpdateStatus() ==
+                    AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 
     d_currElemIdx = static_cast<unsigned int>( -1 );
     this->preAssembly( u, rInternal );

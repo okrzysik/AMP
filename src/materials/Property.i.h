@@ -64,7 +64,7 @@ template<class Number>
 void Property<Number>::getAuxiliaryData( const std::string &key, int &val )
 {
     auto p = d_AuxiliaryDataInteger.find( key );
-    AMP_ASSERT ( p != d_AuxiliaryDataInteger.end() );
+    AMP_ASSERT( p != d_AuxiliaryDataInteger.end() );
     val = p->second;
 }
 
@@ -73,7 +73,7 @@ template<class Number>
 void Property<Number>::getAuxiliaryData( const std::string &key, std::string &val )
 {
     auto p = d_AuxiliaryDataString.find( key );
-    AMP_ASSERT ( p != d_AuxiliaryDataString.end() );
+    AMP_ASSERT( p != d_AuxiliaryDataString.end() );
     val = p->second;
 }
 

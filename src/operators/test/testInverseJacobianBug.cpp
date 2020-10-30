@@ -124,8 +124,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     fe->reinit( currElemPtr );
 
     for ( unsigned int i = 0; i < d_dofIndices.size(); i++ ) {
-      const double val = 300 * ( i + 1 );
-      T->setValuesByGlobalID( 1, &d_dofIndices[i], &val );
+        const double val = 300 * ( i + 1 );
+        T->setValuesByGlobalID( 1, &d_dofIndices[i], &val );
     }
 
     fprintf( fp,

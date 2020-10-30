@@ -56,8 +56,8 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
 
             for ( unsigned int j = 0; j < numNodesInCurrElem; j++ ) {
                 for ( unsigned int i = 0; i < 3; i++ ) {
-		  d_refXYZ->setValuesByGlobalID( 1, &d_dofIndices[j][i],
-                                                  &elementRefXYZ[( 3 * j ) + i] );
+                    d_refXYZ->setValuesByGlobalID(
+                        1, &d_dofIndices[j][i], &elementRefXYZ[( 3 * j ) + i] );
                 } // end of i
             }     // end of j
 
