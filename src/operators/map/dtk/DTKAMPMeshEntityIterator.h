@@ -56,10 +56,10 @@ public:
     DataTransferKit::EntityIterator &operator++() override;
 
     // Dereference operator.
-    DataTransferKit::Entity &operator*(void) override;
+    DataTransferKit::Entity &operator*( void ) override;
 
     // Dereference operator.
-    DataTransferKit::Entity *operator->(void) override;
+    DataTransferKit::Entity *operator->( void ) override;
 
     // Equal comparison operator.
     bool operator==( const DataTransferKit::EntityIterator &rhs ) const override;
