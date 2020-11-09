@@ -1,36 +1,3 @@
-MACRO ( CONFIGURE_TIMERS )
-  CHECK_INCLUDE_FILE ( sys/times.h HAVE_SYS_TIMES_H )
-  CHECK_INCLUDE_FILE ( windows.h HAVE_WINDOWS_H )
-ENDMACRO ()
-
-# Macro to configure OpenMP
-MACRO( CONFIGURE_OPENMP )
-    CHECK_ENABLE_FLAG( USE_OPENMP 0 )
-    IF ( USE_OPENMP )
-        ADD_DEFINITIONS( -DUSE_OPENMP )
-        IF ( USING_GCC )
-            SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
-            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-        ELSEIF ( USING_CRAY )
-        ELSEIF ( USING_PGCC )
-            SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mp")
-            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mp")
-        ELSEIF ( USING_CLANG )
-            SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp -pthread")
-            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread")
-        ELSEIF ( USING_XL )
-            SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -qsmp=omp")
-            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qsmp=omp")
-        ELSE()
-            MESSAGE(FATAL_ERROR "Compiling with OpenMP is not yet set for this compiler")
-        ENDIF()
-        MESSAGE( "Using OpenMP" )
-    ELSE()
-        MESSAGE( "Not using OpenMP" ) 
-    ENDIF()
-ENDMACRO()
-
-
 # Macro to find and configure the X11 libraries
 MACRO( CONFIGURE_X11_LIBRARIES )
     # Determine if we want to use X11

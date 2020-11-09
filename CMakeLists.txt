@@ -98,20 +98,10 @@ ENABLE_TESTING()
 INCLUDE( CTest )
 
 
-# Check for CUDA
-CHECK_ENABLE_FLAG( USE_CUDA 0 )
-IF ( USE_CUDA )
-    ADD_DEFINITIONS( -DUSE_CUDA )
-    ENABLE_LANGUAGE( CUDA )
-    SET( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${CXX_STD_FLAG} ${CUDA_FLAGS_EXTRA}" )
-ENDIF()
-
-
 # Configure external libraries that are not configured through the TPL builder
 IF ( NOT ONLY_BUILD_DOCS )
     INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake" )
     CONFIGURE_LINE_COVERAGE()
-    CONFIGURE_OPENMP()
     IF ( NOT TPL_FOUND_TIMER )
         INCLUDE( "${TPL_DIRECTORY}/cmake/FindTimer.cmake" )
         CONFIGURE_TIMER( FALSE "${AMP_INSTALL_DIR}/include" FALSE )
