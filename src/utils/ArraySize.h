@@ -17,6 +17,11 @@
 #else
 #define HOST_DEVICE
 #endif
+#if defined( __NVCC__ )
+#define CONSTEXPR
+#else
+#define CONSTEXPR constexpr
+#endif
 #if defined( USING_GCC ) || defined( USING_CLANG )
 #define ARRAY_ATTRIBUTE HOST_DEVICE __attribute__( ( always_inline ) )
 #else
@@ -56,7 +61,7 @@ class Range final
 {
 public:
     //! Empty constructor
-    constexpr Range() : i( 0 ), j( -1 ), k( 1 ) {}
+    CONSTEXPR Range() : i( 0 ), j( -1 ), k( 1 ) {}
 
     /*!
      * Create a range i:k:j (or i:j)
@@ -64,37 +69,49 @@ public:
      * @param j_            Ending value
      * @param k_            Increment value
      */
-    constexpr Range( TYPE i_, TYPE j_, TYPE k_ = 1 ) : i( i_ ), j( j_ ), k( k_ ) {}
+    CONSTEXPR Range( TYPE i_, TYPE j_, TYPE k_ = 1 ) : i( i_ ), j( j_ ), k( k_ ) {}
 
     //! Get the number of values in the range
-    constexpr size_t size() const
+    CONSTEXPR size_t size() const
     {
-        if constexpr ( std::is_integral<TYPE>::value ) {
-            return ( static_cast<int64_t>( j ) - static_cast<int64_t>( i ) ) /
-                   static_cast<int64_t>( k );
-        } else if constexpr ( std::is_floating_point<TYPE>::value ) {
-            double tmp = static_cast<double>( ( j - i ) ) / static_cast<double>( k );
-            return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
-        } else if constexpr ( std::is_same<TYPE, std::complex<float>>::value ||
-                              std::is_same<TYPE, std::complex<double>>::value ) {
-            double tmp = std::real( ( j - i ) / ( k ) );
-            return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
-        } else {
+        if
+            CONSTEXPR( std::is_integral<TYPE>::value )
+            {
+                return ( static_cast<int64_t>( j ) - static_cast<int64_t>( i ) ) /
+                       static_cast<int64_t>( k );
+            }
+        else if
+            CONSTEXPR( std::is_floating_point<TYPE>::value )
+            {
+                double tmp = static_cast<double>( ( j - i ) ) / static_cast<double>( k );
+                return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
+            }
+        else if
+            CONSTEXPR( std::is_same<TYPE, std::complex<float>>::value ||
+                       std::is_same<TYPE, std::complex<double>>::value )
+            {
+                double tmp = std::real( ( j - i ) / ( k ) );
+                return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
+            }
+        else {
             static_assert( !std::is_integral<TYPE>::value, "Unsupported type for range" );
         }
     }
 
     //! Get the ith values in the range
-    constexpr TYPE get( size_t index ) const
+    CONSTEXPR TYPE get( size_t index ) const
     {
-        if constexpr ( std::is_integral<TYPE>::value ) {
-            return i + index * k;
-        } else if constexpr ( std::is_floating_point<TYPE>::value ) {
-            return k * ( i / k + index );
-        } else if constexpr ( std::is_same<TYPE, std::complex<float>>::value ||
-                              std::is_same<TYPE, std::complex<double>>::value ) {
-            return k * ( i / k + static_cast<TYPE>( index ) );
-        } else {
+        if
+            CONSTEXPR( std::is_integral<TYPE>::value ) { return i + index * k; }
+        else if
+            CONSTEXPR( std::is_floating_point<TYPE>::value ) { return k * ( i / k + index ); }
+        else if
+            CONSTEXPR( std::is_same<TYPE, std::complex<float>>::value ||
+                       std::is_same<TYPE, std::complex<double>>::value )
+            {
+                return k * ( i / k + static_cast<TYPE>( index ) );
+            }
+        else {
             static_assert( !std::is_integral<TYPE>::value, "Unsupported type for range" );
         }
     }
@@ -109,20 +126,20 @@ class ArraySize final
 {
 public:
     //! Empty constructor
-    constexpr ArraySize() : d_ndim( 1 ), d_length( 0 ), d_N{ 0, 1, 1, 1, 1 } {}
+    CONSTEXPR ArraySize() : d_ndim( 1 ), d_length( 0 ), d_N{ 0, 1, 1, 1, 1 } {}
 
     /*!
      * Create the vector size
      * @param N1            Number of elements in the first dimension
      */
-    constexpr ArraySize( size_t N1 ) : d_ndim( 1 ), d_length( N1 ), d_N{ N1, 1, 1, 1, 1 } {}
+    CONSTEXPR ArraySize( size_t N1 ) : d_ndim( 1 ), d_length( N1 ), d_N{ N1, 1, 1, 1, 1 } {}
 
     /*!
      * Create the vector size
      * @param N1            Number of elements in the first dimension
      * @param N2            Number of elements in the second dimension
      */
-    constexpr ArraySize( size_t N1, size_t N2 )
+    CONSTEXPR ArraySize( size_t N1, size_t N2 )
         : d_ndim( 2 ), d_length( N1 * N2 ), d_N{ N1, N2, 1, 1, 1 }
     {
     }
@@ -133,7 +150,7 @@ public:
      * @param N2            Number of elements in the second dimension
      * @param N3            Number of elements in the third dimension
      */
-    constexpr ArraySize( size_t N1, size_t N2, size_t N3 )
+    CONSTEXPR ArraySize( size_t N1, size_t N2, size_t N3 )
         : d_ndim( 3 ), d_length( N1 * N2 * N3 ), d_N{ N1, N2, N3, 1, 1 }
     {
     }
@@ -145,7 +162,7 @@ public:
      * @param N3            Number of elements in the third dimension
      * @param N4            Number of elements in the fourth dimension
      */
-    constexpr ArraySize( size_t N1, size_t N2, size_t N3, size_t N4 )
+    CONSTEXPR ArraySize( size_t N1, size_t N2, size_t N3, size_t N4 )
         : d_ndim( 4 ), d_length( N1 * N2 * N3 * N4 ), d_N{ N1, N2, N3, N4, 1 }
     {
     }
@@ -158,7 +175,7 @@ public:
      * @param N4            Number of elements in the fourth dimension
      * @param N5            Number of elements in the fifth dimension
      */
-    constexpr ArraySize( size_t N1, size_t N2, size_t N3, size_t N4, size_t N5 )
+    CONSTEXPR ArraySize( size_t N1, size_t N2, size_t N3, size_t N4, size_t N5 )
         : d_ndim( 5 ), d_length( N1 * N2 * N3 * N4 * N5 ), d_N{ N1, N2, N3, N4, N5 }
     {
     }
@@ -167,7 +184,7 @@ public:
      * Create from initializer list
      * @param N             Size of the array
      */
-    constexpr ArraySize( std::initializer_list<size_t> N )
+    CONSTEXPR ArraySize( std::initializer_list<size_t> N )
         : d_ndim( N.size() ), d_length( 0 ), d_N{ 0, 1, 1, 1, 1 }
     {
         if ( d_ndim > maxDim() )
@@ -188,7 +205,7 @@ public:
      * @param ndim          Number of dimensions
      * @param dims          Dimensions
      */
-    constexpr ArraySize( size_t ndim, const size_t *dims )
+    CONSTEXPR ArraySize( size_t ndim, const size_t *dims )
         : d_ndim( ndim ), d_length( 0 ), d_N{ 0, 1, 1, 1, 1 }
     {
         if ( d_ndim > maxDim() )
@@ -207,7 +224,7 @@ public:
      * @param N             Size of the array
      */
     template<std::size_t NDIM>
-    constexpr ArraySize( const std::array<size_t, NDIM> &N ) : ArraySize( NDIM, N.data() )
+    CONSTEXPR ArraySize( const std::array<size_t, NDIM> &N ) : ArraySize( NDIM, N.data() )
     {
     }
 
@@ -218,28 +235,28 @@ public:
     inline ArraySize( const std::vector<size_t> &N ) : ArraySize( N.size(), N.data() ) {}
 
     // Copy/assignment constructors
-    constexpr ArraySize( ArraySize &&rhs )      = default;
-    constexpr ArraySize( const ArraySize &rhs ) = default;
-    constexpr ArraySize &operator=( ArraySize &&rhs ) = default;
-    constexpr ArraySize &operator=( const ArraySize &rhs ) = default;
+    CONSTEXPR ArraySize( ArraySize &&rhs )      = default;
+    CONSTEXPR ArraySize( const ArraySize &rhs ) = default;
+    CONSTEXPR ArraySize &operator=( ArraySize &&rhs ) = default;
+    CONSTEXPR ArraySize &operator=( const ArraySize &rhs ) = default;
 
     /*!
      * Access the ith dimension
      * @param i             Index to access
      */
-    constexpr ARRAY_ATTRIBUTE size_t operator[]( size_t i ) const { return d_N[i]; }
+    CONSTEXPR ARRAY_ATTRIBUTE size_t operator[]( size_t i ) const { return d_N[i]; }
 
     //! Return the number of dimensions
-    constexpr ARRAY_ATTRIBUTE uint8_t ndim() const { return d_ndim; }
+    CONSTEXPR ARRAY_ATTRIBUTE uint8_t ndim() const { return d_ndim; }
 
     //! Return the number of dimensions
-    constexpr ARRAY_ATTRIBUTE size_t size() const { return d_ndim; }
+    CONSTEXPR ARRAY_ATTRIBUTE size_t size() const { return d_ndim; }
 
     //! Return the total number of elements in the array
-    constexpr ARRAY_ATTRIBUTE size_t length() const { return d_length; }
+    CONSTEXPR ARRAY_ATTRIBUTE size_t length() const { return d_length; }
 
     //! Resize the dimension
-    constexpr void resize( uint8_t dim, size_t N )
+    CONSTEXPR void resize( uint8_t dim, size_t N )
     {
         if ( dim >= d_ndim )
             throw std::out_of_range( "Invalid dimension" );
@@ -254,44 +271,44 @@ public:
      *    max of ndim and the largest dim>1.
      * @param ndim          Desired number of dimensions
      */
-    constexpr void setNdim( uint8_t ndim ) { d_ndim = std::max( ndim, d_ndim ); }
+    CONSTEXPR void setNdim( uint8_t ndim ) { d_ndim = std::max( ndim, d_ndim ); }
 
     //! Returns an iterator to the beginning
-    constexpr const size_t *begin() const { return d_N; }
+    CONSTEXPR const size_t *begin() const { return d_N; }
 
     //! Returns an iterator to the end
-    constexpr const size_t *end() const { return d_N + d_ndim; }
+    CONSTEXPR const size_t *end() const { return d_N + d_ndim; }
 
     // Check if two array sizes are equal
-    constexpr ARRAY_ATTRIBUTE bool operator==( const ArraySize &rhs ) const
+    CONSTEXPR ARRAY_ATTRIBUTE bool operator==( const ArraySize &rhs ) const
     {
         return d_ndim == rhs.d_ndim && memcmp( d_N, rhs.d_N, sizeof( d_N ) ) == 0;
     }
 
     // Check if two array sizes are equal (ignoring the dimension)
-    constexpr ARRAY_ATTRIBUTE bool approxEqual( const ArraySize &rhs ) const
+    CONSTEXPR ARRAY_ATTRIBUTE bool approxEqual( const ArraySize &rhs ) const
     {
         return ( length() == 0 && rhs.length() == 0 ) || memcmp( d_N, rhs.d_N, sizeof( d_N ) ) == 0;
     }
 
     //! Check if two matrices are not equal
-    constexpr ARRAY_ATTRIBUTE bool operator!=( const ArraySize &rhs ) const
+    CONSTEXPR ARRAY_ATTRIBUTE bool operator!=( const ArraySize &rhs ) const
     {
         return d_ndim != rhs.d_ndim || memcmp( d_N, rhs.d_N, sizeof( d_N ) ) != 0;
     }
 
     //! Maximum supported dimension
-    constexpr ARRAY_ATTRIBUTE static uint8_t maxDim() { return 5u; }
+    CONSTEXPR ARRAY_ATTRIBUTE static uint8_t maxDim() { return 5u; }
 
     //! Get the index
-    constexpr ARRAY_ATTRIBUTE size_t index( size_t i ) const
+    CONSTEXPR ARRAY_ATTRIBUTE size_t index( size_t i ) const
     {
         CHECK_ARRAY_LENGTH( i, d_length );
         return i;
     }
 
     //! Get the index
-    constexpr ARRAY_ATTRIBUTE size_t index( size_t i1, size_t i2 ) const
+    CONSTEXPR ARRAY_ATTRIBUTE size_t index( size_t i1, size_t i2 ) const
     {
         size_t index = i1 + i2 * d_N[0];
         CHECK_ARRAY_LENGTH( index, d_length );
@@ -299,7 +316,7 @@ public:
     }
 
     //! Get the index
-    constexpr ARRAY_ATTRIBUTE size_t index( size_t i1, size_t i2, size_t i3 ) const
+    CONSTEXPR ARRAY_ATTRIBUTE size_t index( size_t i1, size_t i2, size_t i3 ) const
     {
         size_t index = i1 + d_N[0] * ( i2 + d_N[1] * i3 );
         CHECK_ARRAY_LENGTH( index, d_length );
@@ -307,7 +324,7 @@ public:
     }
 
     //! Get the index
-    constexpr ARRAY_ATTRIBUTE size_t index( size_t i1, size_t i2, size_t i3, size_t i4 ) const
+    CONSTEXPR ARRAY_ATTRIBUTE size_t index( size_t i1, size_t i2, size_t i3, size_t i4 ) const
     {
         size_t index = i1 + d_N[0] * ( i2 + d_N[1] * ( i3 + d_N[2] * i4 ) );
         CHECK_ARRAY_LENGTH( index, d_length );
@@ -315,7 +332,7 @@ public:
     }
 
     //! Get the index
-    constexpr ARRAY_ATTRIBUTE size_t
+    CONSTEXPR ARRAY_ATTRIBUTE size_t
     index( size_t i1, size_t i2, size_t i3, size_t i4, size_t i5 ) const
     {
         size_t index = i1 + d_N[0] * ( i2 + d_N[1] * ( i3 + d_N[2] * ( i4 + d_N[3] * i5 ) ) );
@@ -324,7 +341,7 @@ public:
     }
 
     //! Get the index
-    constexpr size_t index( const std::array<size_t, 5> i ) const
+    CONSTEXPR size_t index( const std::array<size_t, 5> i ) const
     {
         size_t j = 0;
         for ( size_t m = 0, N = 1; m < 5; m++ ) {
@@ -335,7 +352,7 @@ public:
     }
 
     //! Get the index
-    constexpr size_t index( std::initializer_list<size_t> i ) const
+    CONSTEXPR size_t index( std::initializer_list<size_t> i ) const
     {
         size_t N = 1;
         size_t j = 0;
@@ -360,7 +377,7 @@ public:
     }
 
     //! Convert the index to ijk values
-    constexpr void ijk( size_t index, size_t *x ) const
+    CONSTEXPR void ijk( size_t index, size_t *x ) const
     {
         for ( int i = 0; i < 4; i++ ) {
             x[i]  = index % d_N[i];
@@ -377,7 +394,7 @@ private:
 
 
 // Function to concatenate dimensions of two array sizes
-constexpr ArraySize cat( const ArraySize &x, const ArraySize &y )
+CONSTEXPR ArraySize cat( const ArraySize &x, const ArraySize &y )
 {
     if ( x.ndim() + y.ndim() > ArraySize::maxDim() )
         throw std::out_of_range( "Maximum number of dimensions exceeded" );
@@ -394,27 +411,27 @@ constexpr ArraySize cat( const ArraySize &x, const ArraySize &y )
 
 
 // Operator overloads
-constexpr AMP::ArraySize operator*( size_t v, const AMP::ArraySize &x )
+CONSTEXPR AMP::ArraySize operator*( size_t v, const AMP::ArraySize &x )
 {
     size_t N[5] = { v * x[0], v * x[1], v * x[2], v * x[3], v * x[4] };
     return AMP::ArraySize( x.ndim(), N );
 }
-constexpr AMP::ArraySize operator*( const AMP::ArraySize &x, size_t v )
+CONSTEXPR AMP::ArraySize operator*( const AMP::ArraySize &x, size_t v )
 {
     size_t N[5] = { v * x[0], v * x[1], v * x[2], v * x[3], v * x[4] };
     return AMP::ArraySize( x.ndim(), N );
 }
-constexpr AMP::ArraySize operator-( const AMP::ArraySize &x, size_t v )
+CONSTEXPR AMP::ArraySize operator-( const AMP::ArraySize &x, size_t v )
 {
     size_t N[5] = { x[0] - v, x[1] - v, x[2] - v, x[3] - v, x[4] - v };
     return AMP::ArraySize( x.ndim(), N );
 }
-constexpr AMP::ArraySize operator+( const AMP::ArraySize &x, size_t v )
+CONSTEXPR AMP::ArraySize operator+( const AMP::ArraySize &x, size_t v )
 {
     size_t N[5] = { x[0] + v, x[1] + v, x[2] + v, x[3] + v, x[4] + v };
     return AMP::ArraySize( x.ndim(), N );
 }
-constexpr AMP::ArraySize operator+( size_t v, const AMP::ArraySize &x )
+CONSTEXPR AMP::ArraySize operator+( size_t v, const AMP::ArraySize &x )
 {
     size_t N[5] = { x[0] + v, x[1] + v, x[2] + v, x[3] + v, x[4] + v };
     return AMP::ArraySize( x.ndim(), N );

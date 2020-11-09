@@ -1,5 +1,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Array.h"
+#include "AMP/utils/FunctionTable.h"
+#include "AMP/utils/FunctionTable.hpp"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/cuda/GPUFunctionTable.h"
 #include "AMP/utils/cuda/GPUUmemAllocator.h"
@@ -23,10 +25,10 @@ void TestFunctionTable( AMP::UnitTest *ut,
     size_t n2 = 456079;
     A.resize( n1 );
     B.resize( n2 );
-    for ( int i = 0; i < n1; i++ ) {
+    for ( size_t i = 0; i < n1; i++ ) {
         A.data()[i] = (TYPE) 1.0;
     }
-    for ( int i = 0; i < n1; i++ ) {
+    for ( size_t i = 0; i < n1; i++ ) {
         A.data()[i] = 1.0;
     }
     TYPE r1 = FUN::sum( A );
@@ -36,7 +38,7 @@ void TestFunctionTable( AMP::UnitTest *ut,
     }
 
     A.resize( n2 );
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         A.data()[i] = 1.0;
         B.data()[i] = 1.0;
     }
@@ -54,48 +56,48 @@ void TestFunctionTable( AMP::UnitTest *ut,
 
     // Tests for transform operators - using same tests as AMPNN
     // ReLU
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         A.data()[i] = -1.0;
     }
     FUN::transformReLU( A, B );
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         if ( fabs( B.data()[i] ) > thresh ) {
             pass = false;
         }
     }
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         A.data()[i] = 1.0;
     }
     FUN::transformReLU( A, B );
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         if ( fabs( B.data()[i] - 1.0 ) > thresh ) {
             pass = false;
         }
     }
 
     // Abs
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         A.data()[i] = -1.0;
     }
     FUN::transformAbs( A, B );
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         if ( fabs( B.data()[i] - 1.0 ) > thresh ) {
             pass = false;
         }
     }
 
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         A.data()[i] = 1.0;
     }
     FUN::transformAbs( A, B );
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         if ( fabs( B.data()[i] - 1.0 ) > thresh ) {
             pass = false;
         }
     }
 
     // HardTanh
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         if ( i % 2 == 0 ) {
             A.data()[i] = 2.0;
         } else {
@@ -103,7 +105,7 @@ void TestFunctionTable( AMP::UnitTest *ut,
         }
     }
     FUN::transformHardTanh( A, B );
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         if ( i % 2 == 0 ) {
             if ( fabs( B.data()[i] - 1.0 ) > thresh ) {
                 pass = false;
@@ -116,21 +118,21 @@ void TestFunctionTable( AMP::UnitTest *ut,
     }
 
     // Tanh
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         A.data()[i] = ( 1.0 / 2.0 ) * log( 1.0 );
     }
     FUN::transformTanh( A, B );
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         if ( fabs( B.data()[i] ) > thresh ) {
             pass = false;
         }
     }
 
-    for ( int i = 1; i <= n2; i++ ) {
+    for ( size_t i = 1; i <= n2; i++ ) {
         A.data()[i - 1] = ( 1.0 / 2.0 ) * log( i );
     }
     FUN::transformTanh( A, B );
-    for ( int i = 1; i <= n2; i++ ) {
+    for ( size_t i = 1; i <= n2; i++ ) {
         val = ( i - 1.0 ) / ( i + 1.0 );
         if ( fabs( val - B.data()[i - 1] ) > thresh ) {
             pass = false;
@@ -138,21 +140,21 @@ void TestFunctionTable( AMP::UnitTest *ut,
     }
 
     // Sigmoid
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         A.data()[i] = ( 1.0 / 2.0 ) * log( 1.0 );
     }
     FUN::transformSigmoid( A, B );
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         if ( fabs( B.data()[i] - ( 1.0 / 2.0 ) ) > thresh ) {
             pass = false;
         }
     }
 
-    for ( int i = 1; i <= n2; i++ ) {
+    for ( size_t i = 1; i <= n2; i++ ) {
         A.data()[i - 1] = log( 1.0 / i );
     }
     FUN::transformSigmoid( A, B );
-    for ( int i = 1; i <= n2; i++ ) {
+    for ( size_t i = 1; i <= n2; i++ ) {
         val = 1.0 / ( 1.0 + i );
         if ( fabs( val - B.data()[i - 1] ) > thresh ) {
             pass = false;
@@ -160,22 +162,22 @@ void TestFunctionTable( AMP::UnitTest *ut,
     }
 
     // Softplus
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         A.data()[i] = log( expm1( 1.0 ) );
     }
     FUN::transformSoftPlus( A, B );
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         if ( fabs( 1.0 - B.data()[i] ) > thresh ) {
             pass = false;
         }
     }
 
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         A.data()[i] = -1.0;
     }
     FUN::transformSoftPlus( A, B );
     val = log1p( exp( -1.0 ) );
-    for ( int i = 0; i < n2; i++ ) {
+    for ( size_t i = 0; i < n2; i++ ) {
         if ( fabs( B.data()[i] - val ) > thresh ) {
             pass = false;
         }

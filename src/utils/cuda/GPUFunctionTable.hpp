@@ -1,11 +1,13 @@
 #ifndef included_AMP_GPUFunctionTable_HPP_
 #define included_AMP_GPUFunctionTable_HPP_
 
+#include "cublas_v2.h"
+#include "curand.h"
+
+
 #include "AMP/utils/Array.h"
 #include "AMP/utils/UtilityMacros.h"
 
-#include <cublas_v2.h>
-#include <curand.h>
 
 namespace AMP {
 
@@ -133,7 +135,7 @@ bool GPUFunctionTable::equals( const Array<TYPE, FUN, ALLOC> &A,
                                TYPE tol )
 {
     bool eq = true;
-    ARRAY_INSIST( A.sizeMatch( B ), "Sizes of A and B do not match" );
+    AMP_INSIST( A.size() == B.size(), "Sizes of A and B do not match" );
     eq = equalsW( A.data(), B.data(), tol, A.length() );
 
     return eq;
@@ -235,42 +237,42 @@ inline void gemmWrapper<double>( char TRANSA,
 /* Functions not yet implemented */
 
 template<class TYPE, class FUN, class ALLOC, typename LAMBDA>
-inline void GPUFunctionTable::transform( LAMBDA &fun,
-                                         const Array<TYPE, FUN, ALLOC> &x,
-                                         Array<TYPE, FUN, ALLOC> &y )
+inline void
+GPUFunctionTable::transform( LAMBDA &, const Array<TYPE, FUN, ALLOC> &, Array<TYPE, FUN, ALLOC> & )
 {
     AMP_ERROR( "Not implemented for GPU" );
 }
 
 template<class TYPE, class FUN, class ALLOC, typename LAMBDA>
-inline void GPUFunctionTable::transform( LAMBDA &fun,
-                                         const Array<TYPE, FUN, ALLOC> &x,
-                                         const Array<TYPE, FUN, ALLOC> &y,
-                                         Array<TYPE, FUN, ALLOC> &z )
+inline void GPUFunctionTable::transform( LAMBDA &,
+                                         const Array<TYPE, FUN, ALLOC> &,
+                                         const Array<TYPE, FUN, ALLOC> &,
+                                         Array<TYPE, FUN, ALLOC> & )
 {
     AMP_ERROR( "Not implemented for GPU" );
 }
 
 template<class TYPE, class FUN, class ALLOC, typename LAMBDA>
-inline TYPE
-GPUFunctionTable::reduce( LAMBDA &op, const Array<TYPE, FUN, ALLOC> &A, const TYPE &initialValue )
+inline TYPE GPUFunctionTable::reduce( LAMBDA &, const Array<TYPE, FUN, ALLOC> &, const TYPE & )
 {
     AMP_ERROR( "Not implemented for GPU" );
+    return 0;
 }
 
 template<class TYPE, class FUN, class ALLOC, typename LAMBDA>
-inline TYPE GPUFunctionTable::reduce( LAMBDA &op,
-                                      const Array<TYPE, FUN, ALLOC> &A,
-                                      const Array<TYPE, FUN, ALLOC> &B,
-                                      const TYPE &initialValue )
+inline TYPE GPUFunctionTable::reduce( LAMBDA &,
+                                      const Array<TYPE, FUN, ALLOC> &,
+                                      const Array<TYPE, FUN, ALLOC> &,
+                                      const TYPE & )
 {
     AMP_ERROR( "Not implemented for GPU" );
+    return 0;
 }
 
 template<class TYPE, class FUN, class ALLOC>
-void GPUFunctionTable::multiply( const Array<TYPE, FUN, ALLOC> &a,
-                                 const Array<TYPE, FUN, ALLOC> &b,
-                                 Array<TYPE, FUN, ALLOC> &c )
+void GPUFunctionTable::multiply( const Array<TYPE, FUN, ALLOC> &,
+                                 const Array<TYPE, FUN, ALLOC> &,
+                                 Array<TYPE, FUN, ALLOC> & )
 {
     AMP_ERROR( "not implemented" );
 }

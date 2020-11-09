@@ -121,6 +121,7 @@ bool isValid( const std::string &name )
     valid = valid && name.find( "cuda" ) == std::string::npos;
     valid = valid && name.find( "gpu" ) == std::string::npos;
 #endif
+    NULL_USE( name );
     return valid;
 }
 

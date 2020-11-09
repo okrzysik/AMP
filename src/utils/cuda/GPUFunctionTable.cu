@@ -5,7 +5,9 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+
 #include "AMP/utils/cuda/GPUFunctionTable.h"
+
 
 namespace AMP{
 

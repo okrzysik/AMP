@@ -459,7 +459,7 @@ Array<TYPE, FUN, Allocator>::subset( const std::vector<Range<size_t>> &index ) c
     getSubsetArrays( index, first, last, inc, N1 );
     ArraySize S1( d_size.ndim(), N1.data() );
     // Create the new array
-    Array<TYPE> subset_array( S1 );
+    Array<TYPE, FUN, Allocator> subset_array( S1 );
     // Fill the new array
     static_assert( ArraySize::maxDim() == 5, "Not programmed for more than 5 dimensions" );
     TYPE *subset_data = subset_array.data();
@@ -1218,16 +1218,16 @@ void Array<TYPE, FUN, Allocator>::rand()
     FUN::rand( *this );
 }
 template<class TYPE, class FUN, class Allocator>
-Array<TYPE, FUN, Allocator> &
-Array<TYPE, FUN, Allocator>::operator+=( const Array<TYPE, FUN, Allocator> &rhs )
+Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::
+operator+=( const Array<TYPE, FUN, Allocator> &rhs )
 {
     auto op = []( const TYPE &a, const TYPE &b ) { return a + b; };
     FUN::transform( op, *this, rhs, *this );
     return *this;
 }
 template<class TYPE, class FUN, class Allocator>
-Array<TYPE, FUN, Allocator> &
-Array<TYPE, FUN, Allocator>::operator-=( const Array<TYPE, FUN, Allocator> &rhs )
+Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::
+operator-=( const Array<TYPE, FUN, Allocator> &rhs )
 {
     auto op = []( const TYPE &a, const TYPE &b ) { return a - b; };
     FUN::transform( op, *this, rhs, *this );
