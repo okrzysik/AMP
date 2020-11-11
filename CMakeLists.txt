@@ -98,17 +98,9 @@ ENABLE_TESTING()
 INCLUDE( CTest )
 
 
-# Configure external libraries that are not configured through the TPL builder
-IF ( NOT ONLY_BUILD_DOCS )
-    INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake" )
-    CONFIGURE_LINE_COVERAGE()
-    IF ( NOT TPL_FOUND_TIMER )
-        INCLUDE( "${TPL_DIRECTORY}/cmake/FindTimer.cmake" )
-        CONFIGURE_TIMER( FALSE "${AMP_INSTALL_DIR}/include" FALSE )
-    ENDIF()
-    # Configure AMP (all external libraries must be configured first)
-    CONFIGURE_AMP()
-ENDIF()
+# Configure AMP (all external libraries must be configured first)
+INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake" )
+CONFIGURE_AMP()
 
 
 # Create the target for documentation
