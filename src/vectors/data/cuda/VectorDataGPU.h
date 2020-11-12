@@ -165,6 +165,10 @@ public: // Advanced virtual functions
      */
     virtual void swapData( VectorData &rhs ) override;
 
+    /** \brief Clone the data
+     */
+    virtual std::shared_ptr<VectorData> cloneData() const override;
+
 
 public: // Non-virtual functions
     /** \brief Access the raw element

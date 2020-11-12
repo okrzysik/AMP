@@ -24,40 +24,46 @@ namespace LinearAlgebra {
 
 void VectorTests::testBasicVector( AMP::UnitTest *ut )
 {
-    InstantiateVector( ut );
-    SetToScalarVector( ut );
-    SetRandomValuesVector( ut );
-    CloneVector( ut );
-    DotProductVector( ut );
-    AbsVector( ut );
-    L1NormVector( ut );
-    L2NormVector( ut );
-    MaxNormVector( ut );
-    ScaleVector( ut );
-    AddVector( ut );
-    SubtractVector( ut );
-    MultiplyVector( ut );
-    DivideVector( ut );
-    ReciprocalVector( ut );
-    LinearSumVector( ut );
-    AxpyVector( ut );
-    AxpbyVector( ut );
-    CopyVector( ut );
-    CopyRawDataBlockVector( ut );
-    VerifyVectorMin( ut );
-    VerifyVectorMax( ut );
-    VerifyVectorMaxMin( ut );
+    try {
+        InstantiateVector( ut );
+        SetToScalarVector( ut );
+        SetRandomValuesVector( ut );
+        CloneVector( ut );
+        DotProductVector( ut );
+        AbsVector( ut );
+        L1NormVector( ut );
+        L2NormVector( ut );
+        MaxNormVector( ut );
+        ScaleVector( ut );
+        AddVector( ut );
+        SubtractVector( ut );
+        MultiplyVector( ut );
+        DivideVector( ut );
+        ReciprocalVector( ut );
+        LinearSumVector( ut );
+        AxpyVector( ut );
+        AxpbyVector( ut );
+        CopyVector( ut );
+        CopyRawDataBlockVector( ut );
+        VerifyVectorMin( ut );
+        VerifyVectorMax( ut );
+        VerifyVectorMaxMin( ut );
 #ifdef USE_EXT_PETSC
-    DeepCloneOfView<AMP::LinearAlgebra::PetscVector>( ut );
-    Bug_491( ut );
+        DeepCloneOfView<AMP::LinearAlgebra::PetscVector>( ut );
+        Bug_491( ut );
 #endif
 #ifdef USE_EXT_SUNDIALS
-    DeepCloneOfView<AMP::LinearAlgebra::SundialsVector>( ut );
+        DeepCloneOfView<AMP::LinearAlgebra::SundialsVector>( ut );
 #endif
-    VectorIteratorLengthTest( ut );
-    Bug_728( ut );
-    VectorIteratorTests( ut );
-    TestMultivectorDuplicate( ut );
+        VectorIteratorLengthTest( ut );
+        Bug_728( ut );
+        VectorIteratorTests( ut );
+        TestMultivectorDuplicate( ut );
+    } catch ( const std::exception &err ) {
+        ut->failure( "Caught std::exception testing " + d_factory->name() + ":\n" + err.what() );
+    } catch ( ... ) {
+        ut->failure( "Caught unhandled error testing " + d_factory->name() );
+    }
 }
 
 

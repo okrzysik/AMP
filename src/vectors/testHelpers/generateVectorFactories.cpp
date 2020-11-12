@@ -314,7 +314,7 @@ std::vector<std::string> getSimpleVectorFactories()
     list.push_back( "SimpleVectorFactory<45,true,double>" );
     // list.push_back( "SimpleVectorFactory<15,true,float>" );
     list.push_back( "SimpleVectorFactory<15,false,double,openmp,cpu>" );
-    list.push_back( "SimpleVectorFactory<15,false,double,default,gpu>" );
+    // list.push_back( "SimpleVectorFactory<15,false,double,default,gpu>" ); // Requires UVM
     list.push_back( "SimpleVectorFactory<15,false,double,cuda,gpu>" );
     list = cleanList( list );
     return list;

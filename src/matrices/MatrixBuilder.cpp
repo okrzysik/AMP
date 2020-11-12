@@ -15,6 +15,10 @@
 
 #include <functional>
 
+#ifdef USE_EXT_TRILINOS
+#include <Epetra_CrsMatrix.h>
+#endif
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -29,7 +33,6 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                      const std::function<std::vector<size_t>( size_t )> &getRow,
                      const std::string &type )
 {
-#if defined( USE_EXT_TRILINOS )
     // Get the DOFs
     auto leftDOF  = leftVec->getDOFManager();
     auto rightDOF = rightVec->getDOFManager();
@@ -41,8 +44,8 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         comm = AMP_MPI( AMP_COMM_SELF );
 
     // Create the matrix parameters
-    auto params = std::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrixParameters>(
-        leftDOF, rightDOF, comm );
+    auto params =
+        std::make_shared<AMP::LinearAlgebra::ManagedMatrixParameters>( leftDOF, rightDOF, comm );
     params->d_CommListLeft  = leftVec->getCommunicationList();
     params->d_CommListRight = rightVec->getCommunicationList();
     params->d_VariableLeft  = leftVec->getVariable();
@@ -61,15 +64,23 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     params->addColumns( columns );
 
     // Create the matrix
-    std::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrix> newMatrix;
+    std::shared_ptr<AMP::LinearAlgebra::ManagedMatrix> newMatrix;
     if ( type == "ManagedPetscMatrix" ) {
-#if defined( USE_EXT_PETSC )
-        newMatrix.reset( new AMP::LinearAlgebra::ManagedPetscMatrix( params ) );
+#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+        auto mat = std::make_shared<AMP::LinearAlgebra::ManagedPetscMatrix>( params );
+        mat->setEpetraMaps( leftVec, rightVec );
+        newMatrix = mat;
 #else
-        AMP_ERROR( "Unable to build ManagedPetscMatrix without PETSc" );
+        AMP_ERROR( "Unable to build ManagedPetscMatrix without PETSc and Trilinos" );
 #endif
     } else if ( type == "ManagedEpetraMatrix" ) {
-        newMatrix.reset( new AMP::LinearAlgebra::ManagedEpetraMatrix( params ) );
+#if defined( USE_EXT_TRILINOS )
+        auto mat = std::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrix>( params );
+        mat->setEpetraMaps( leftVec, rightVec );
+        newMatrix = mat;
+#else
+        AMP_ERROR( "Unable to build ManagedEpetraMatrix without Trilinos" );
+#endif
     } else {
         AMP_ERROR( "Unknown ManagedMatrix type" );
     }
@@ -79,20 +90,10 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         auto col = getRow( row );
         newMatrix->createValuesByGlobalID( row, col );
     }
-    std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( newMatrix )
-        ->setEpetraMaps( leftVec, rightVec );
     newMatrix->fillComplete();
     newMatrix->zero();
     newMatrix->makeConsistent();
     return newMatrix;
-#else
-    NULL_USE( leftVec );
-    NULL_USE( rightVec );
-    NULL_USE( type );
-    NULL_USE( getRow );
-    AMP_ERROR( "Unable to build a ManagedMatrix without TRILINOS" );
-    return AMP::LinearAlgebra::Matrix::shared_ptr();
-#endif
 }
 
 

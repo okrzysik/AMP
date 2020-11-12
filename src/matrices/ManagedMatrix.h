@@ -7,9 +7,6 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-/** \brief  The parameters used to create a matrix
- */
-typedef MatrixParameters ManagedMatrixParameters;
 
 /** \class ManagedMatrix
  * \brief  A class that indicates AMP manages the data is some fashion

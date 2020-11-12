@@ -35,6 +35,7 @@ private:
     static const MultiVectorData *getMultiVectorData( const VectorData &x );
 
 public:
+    std::string VectorOpName() const override { return "MultiVectorOperations"; }
     void zero( VectorData &z ) override;
     void setToScalar( const Scalar &alpha, VectorData &z ) override;
     void setRandomValues( VectorData &x ) override;

@@ -166,7 +166,6 @@ void VectorData::dataChanged()
 /****************************************************************
  * Default clone                                                 *
  ****************************************************************/
-std::shared_ptr<VectorData> VectorData::cloneData() const { return std::shared_ptr<VectorData>(); }
 AMP_MPI VectorData::getComm() const
 {
     AMP_ASSERT( d_CommList );

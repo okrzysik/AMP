@@ -9,6 +9,7 @@
 #include "AMP/utils/AMP_MPI.h"
 
 #include <EpetraExt_MatrixMatrix.h>
+#include <Epetra_FECrsMatrix.h>
 DISABLE_WARNINGS
 #include <EpetraExt_Transpose_RowMatrix.h>
 ENABLE_WARNINGS
@@ -23,20 +24,39 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
+static inline auto createEpetraMap( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
+                                    const AMP_MPI &comm )
+{
+#ifdef USE_EXT_MPI
+    Epetra_MpiComm comm2 = comm.getCommunicator();
+#else
+    Epetra_SerialComm comm2;
+#endif
+    AMP_INSIST( DOFs->numGlobalDOF() < 0x80000000,
+                "Epetra does not support vectors with global size greater than 2^31" );
+    auto N_local  = static_cast<int>( DOFs->numLocalDOF() );
+    auto N_global = static_cast<int>( DOFs->numGlobalDOF() );
+    return std::make_shared<Epetra_Map>( N_global, N_local, 0, comm2 );
+}
+
+
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-ManagedEpetraMatrix::ManagedEpetraMatrix( std::shared_ptr<ManagedEpetraMatrixParameters> params )
-    : EpetraMatrix( params->getEpetraRowMap(), params->getEpetraColMap(), params->entryList() ),
+ManagedEpetraMatrix::ManagedEpetraMatrix( std::shared_ptr<ManagedMatrixParameters> params )
+    : EpetraMatrix( *createEpetraMap( params->getLeftDOFManager(), params->getComm() ),
+                    nullptr,
+                    params->entryList() ),
       ManagedMatrix( params ),
       d_pParameters( params )
 {
 }
 ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
     : Matrix(),
-      EpetraMatrix( rhs.d_pParameters->getEpetraRowMap(),
-                    rhs.d_pParameters->getEpetraColMap(),
-                    rhs.d_pParameters->entryList() ),
+      EpetraMatrix(
+          *createEpetraMap( rhs.d_pParameters->getLeftDOFManager(), rhs.d_pParameters->getComm() ),
+          nullptr,
+          rhs.d_pParameters->entryList() ),
       ManagedMatrix( rhs.d_pParameters ),
       d_pParameters( rhs.d_pParameters )
 {
@@ -55,6 +75,16 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
     d_DomainMap = rhs.d_DomainMap;
     makeConsistent();
 }
+ManagedEpetraMatrix::ManagedEpetraMatrix( Epetra_CrsMatrix *m, bool dele )
+    : EpetraMatrix( m, dele ), ManagedMatrix( MatrixParameters::shared_ptr() )
+{
+}
+Matrix::shared_ptr ManagedEpetraMatrix::cloneMatrix() const
+{
+    ManagedEpetraMatrix *r = new ManagedEpetraMatrix( *this );
+    r->d_DeleteMatrix      = true;
+    return Matrix::shared_ptr( r );
+}
 
 
 /********************************************************
@@ -62,26 +92,24 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
  ********************************************************/
 Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
 {
-    auto memp = std::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
-    AMP_INSIST( memp != nullptr, "null cached ManagedEpetraMatrixParameters" );
-    int localSize  = memp->getLocalNumberOfColumns();
-    int globalSize = memp->getGlobalNumberOfColumns();
-    int localStart = memp->getRightDOFManager()->beginDOF();
+    int localSize  = d_pParameters->getLocalNumberOfColumns();
+    int globalSize = d_pParameters->getGlobalNumberOfColumns();
+    int localStart = d_pParameters->getRightDOFManager()->beginDOF();
     auto buffer    = std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    auto vec = createEpetraVector( memp->d_CommListRight, memp->getRightDOFManager(), buffer );
-    vec->setVariable( memp->d_VariableRight );
+    auto vec       = createEpetraVector(
+        d_pParameters->d_CommListRight, d_pParameters->getRightDOFManager(), buffer );
+    vec->setVariable( d_pParameters->d_VariableRight );
     return vec;
 }
 Vector::shared_ptr ManagedEpetraMatrix::getLeftVector() const
 {
-    auto memp = std::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
-    AMP_INSIST( memp != nullptr, "null cached ManagedEpetraMatrixParameters" );
-    int localSize  = memp->getLocalNumberOfRows();
-    int globalSize = memp->getGlobalNumberOfRows();
-    int localStart = memp->getRightDOFManager()->beginDOF();
+    int localSize  = d_pParameters->getLocalNumberOfRows();
+    int globalSize = d_pParameters->getGlobalNumberOfRows();
+    int localStart = d_pParameters->getRightDOFManager()->beginDOF();
     auto buffer    = std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    auto vec       = createEpetraVector( memp->d_CommListLeft, memp->getLeftDOFManager(), buffer );
-    vec->setVariable( memp->d_VariableLeft );
+    auto vec       = createEpetraVector(
+        d_pParameters->d_CommListLeft, d_pParameters->getLeftDOFManager(), buffer );
+    vec->setVariable( d_pParameters->d_VariableLeft );
     return vec;
 }
 Discretization::DOFManager::shared_ptr ManagedEpetraMatrix::getRightDOFManager() const
@@ -92,6 +120,8 @@ Discretization::DOFManager::shared_ptr ManagedEpetraMatrix::getLeftDOFManager() 
 {
     return d_pParameters->getLeftDOFManager();
 }
+size_t ManagedEpetraMatrix::numGlobalRows() const { return d_epetraMatrix->NumGlobalRows(); }
+size_t ManagedEpetraMatrix::numGlobalColumns() const { return d_epetraMatrix->NumGlobalCols(); }
 
 
 /********************************************************
@@ -112,7 +142,7 @@ void ManagedEpetraMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 #endif
     auto leftVec  = this->getLeftVector();
     auto rightVec = other_op->getRightVector();
-    auto memp     = std::make_shared<ManagedEpetraMatrixParameters>(
+    auto memp     = std::make_shared<ManagedMatrixParameters>(
         leftVec->getDOFManager(), rightVec->getDOFManager(), AMP_MPI( epetraComm ) );
     memp->d_CommListLeft     = leftVec->getCommunicationList();
     memp->d_CommListRight    = rightVec->getCommunicationList();
@@ -186,6 +216,12 @@ void ManagedEpetraMatrix::axpy( double alpha, const Matrix &rhs )
         *d_epetraMatrix,
         1.0 );
 }
+
+
+/********************************************************
+ * norm                                                  *
+ ********************************************************/
+double ManagedEpetraMatrix::L1Norm() const { return d_epetraMatrix->NormOne(); }
 
 
 /********************************************************
@@ -425,5 +461,9 @@ void ManagedEpetraMatrix::makeConsistent()
     }
     setOtherData();
 }
+
+
+void ManagedEpetraMatrix::FillComplete() { d_epetraMatrix->FillComplete(); }
+
 } // namespace LinearAlgebra
 } // namespace AMP

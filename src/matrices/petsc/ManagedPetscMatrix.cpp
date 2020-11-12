@@ -81,13 +81,11 @@ PetscErrorCode _AMP_Scale( Mat x, PetscScalar alpha )
 namespace AMP {
 namespace LinearAlgebra {
 
-using ManagedPetscMatrixParameters = ManagedEpetraMatrixParameters;
-
 
 void ManagedPetscMatrix::initPetscMat()
 {
-    auto params         = std::dynamic_pointer_cast<ManagedPetscMatrixParameters>( d_pParameters );
-    MPI_Comm petsc_comm = params->getEpetraComm().getCommunicator();
+    auto params         = std::dynamic_pointer_cast<ManagedMatrixParameters>( d_pParameters );
+    MPI_Comm petsc_comm = params->getComm().getCommunicator();
     size_t N_col_local  = params->getLocalNumberOfColumns();
     size_t N_row_local  = params->getLocalNumberOfRows();
     size_t N_col_global = params->getGlobalNumberOfColumns();
@@ -123,7 +121,7 @@ void ManagedPetscMatrix::initPetscMat()
 ManagedPetscMatrix::ManagedPetscMatrix( MatrixParameters::shared_ptr params )
     : Matrix( params ),
       PetscMatrix( params ),
-      ManagedEpetraMatrix( std::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( params ) )
+      ManagedEpetraMatrix( std::dynamic_pointer_cast<ManagedMatrixParameters>( params ) )
 {
     //    std::cout << "ManagedPetscMatrix:: WARNING!!!!!! the matrix is currently assumed to be
     //    square. This needs to
@@ -149,11 +147,10 @@ Matrix::shared_ptr ManagedPetscMatrix::duplicateMat( Mat m, AMP_MPI comm )
     MatGetSize( m, &global_size, &t );
     int num_local = global_end - global_start;
 
-    auto left  = std::make_shared<AMP::Discretization::DOFManager>( num_local, comm );
-    auto right = std::make_shared<AMP::Discretization::DOFManager>( num_local, comm );
-    ManagedPetscMatrixParameters *params = new ManagedPetscMatrixParameters( left, right, comm );
-    // ManagedPetscMatrixParameters::iterator  cur_entry = params->begin();
-    int i = 0;
+    auto left   = std::make_shared<AMP::Discretization::DOFManager>( num_local, comm );
+    auto right  = std::make_shared<AMP::Discretization::DOFManager>( num_local, comm );
+    auto params = std::make_shared<ManagedMatrixParameters>( left, right, comm );
+    int i       = 0;
     for ( ; global_start != global_end; global_start++ ) {
         int num_cols;
         MatGetRow( m, global_start, &num_cols, PETSC_NULL, PETSC_NULL );
@@ -161,14 +158,14 @@ Matrix::shared_ptr ManagedPetscMatrix::duplicateMat( Mat m, AMP_MPI comm )
         MatRestoreRow( m, global_start, &num_cols, PETSC_NULL, PETSC_NULL );
         i++;
     }
-    Matrix::shared_ptr ret_val( new ManagedPetscMatrix( MatrixParameters::shared_ptr( params ) ) );
+    auto ret_val = std::make_shared<ManagedPetscMatrix>( params );
     return ret_val;
 }
 
 
 void ManagedPetscMatrix::copyFromMat( Mat m )
 {
-    auto params = std::dynamic_pointer_cast<ManagedPetscMatrixParameters>( d_pParameters );
+    auto params = std::dynamic_pointer_cast<ManagedMatrixParameters>( d_pParameters );
     auto rowDOF = params->getLeftDOFManager();
     for ( size_t i = rowDOF->beginDOF(); i < rowDOF->endDOF(); i++ ) {
         AMP_ASSERT( i < 0x80000000 ); // We have not converted matrices to 64-bits yet
@@ -183,7 +180,7 @@ void ManagedPetscMatrix::copyFromMat( Mat m )
         createValuesByGlobalID( row, cols2 );
         MatRestoreRow( m, row, &num_cols, &cols, &data );
     }
-    d_epetraMatrix->FillComplete();
+    FillComplete();
 }
 
 

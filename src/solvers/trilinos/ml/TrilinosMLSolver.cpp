@@ -10,6 +10,10 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 #include "ProfilerApp.h"
 
+
+#include <Epetra_CrsMatrix.h>
+
+
 namespace AMP {
 namespace Solver {
 

@@ -365,6 +365,12 @@ void MultiVectorData::swapData( VectorData & ) { AMP_ERROR( "Not finished" ); }
 
 
 /****************************************************************
+ * Clone raw data                                                *
+ ****************************************************************/
+std::shared_ptr<VectorData> MultiVectorData::cloneData() const { AMP_ERROR( "Not finished" ); }
+
+
+/****************************************************************
  * Function to partition the global ids by the sub vectors       *
  ****************************************************************/
 void MultiVectorData::partitionGlobalValues( const int num,

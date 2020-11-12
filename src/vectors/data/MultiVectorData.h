@@ -173,6 +173,10 @@ public: // Advanced virtual functions
      */
     void swapData( VectorData &rhs ) override;
 
+    /** \brief Clone the data
+     */
+    std::shared_ptr<VectorData> cloneData() const override;
+
     void
     dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const override;
     void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const override;

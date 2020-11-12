@@ -2,12 +2,13 @@
 #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 
 DISABLE_WARNINGS
+#include "Epetra_CrsMatrix.h"
+#include "Epetra_FECrsMatrix.h"
 #include <EpetraExt_Transpose_RowMatrix.h>
 ENABLE_WARNINGS
 
 #ifdef USE_EXT_MPI
 #include <Epetra_MpiComm.h>
-
 #else
 #include <Epetra_SerialComm.h>
 #endif
@@ -16,6 +17,31 @@ ENABLE_WARNINGS
 namespace AMP {
 namespace LinearAlgebra {
 
+
+void EpetraMatrix::VerifyEpetraReturn( int err, const char *func ) const
+{
+    std::stringstream error;
+    error << func << ": " << err;
+    if ( err < 0 )
+        AMP_ERROR( error.str() );
+    if ( err > 0 )
+        AMP_ERROR( error.str() );
+}
+
+EpetraMatrix::EpetraMatrix( Epetra_CrsMatrix *inMatrix, bool dele )
+    : d_epetraMatrix( inMatrix ), d_DeleteMatrix( dele )
+{
+}
+
+EpetraMatrix::~EpetraMatrix()
+{
+    if ( d_DeleteMatrix )
+        delete d_epetraMatrix;
+}
+
+Epetra_CrsMatrix &EpetraMatrix::getEpetra_CrsMatrix() { return *d_epetraMatrix; }
+
+const Epetra_CrsMatrix &EpetraMatrix::getEpetra_CrsMatrix() const { return *d_epetraMatrix; }
 
 Matrix::shared_ptr EpetraMatrix::transpose() const
 {

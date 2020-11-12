@@ -113,19 +113,6 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
         for ( size_t i = 0; i < cols.size(); i++ )
             out << "    M(" << row << "," << cols[i] << ") = " << values[i] << "\n";
     }
-    /*
-        out << "Full Matix: " << std::endl;
-        out << std::setprecision(15);
-        for (size_t row=0; row<leftDOF->numGlobalDOF(); row++) {
-            M->getRowByGlobalID( row, cols, values );
-            std::vector<double> A(M->numGlobalColumns(),0.);
-            for (size_t i=0; i<cols.size(); i++)
-              A[cols[i]]=values[i];
-            for (size_t i=0; i<A.size(); i++) out<< A[i]<<"  ";
-            out<<std::endl;
-        }
-        out.unsetf(std::ios::floatfield);
-    */
     return out;
 }
 } // namespace LinearAlgebra

@@ -163,6 +163,11 @@ public: // Advanced virtual functions
     }
 
     inline void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }
+
+    inline std::shared_ptr<VectorData> cloneData() const override
+    {
+        return std::make_shared<VectorDataNull>();
+    }
 };
 
 

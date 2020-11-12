@@ -187,6 +187,10 @@ std::unique_ptr<Vector> Vector::rawClone( const Variable::shared_ptr name ) cons
     vec->d_VectorData    = d_VectorData->cloneData();
     vec->d_VectorOps     = d_VectorOps->cloneOperations();
     vec->d_output_stream = d_output_stream;
+    if ( !vec->d_VectorData )
+        AMP_ERROR( "Failed to clone data: " + d_VectorData->VectorDataName() );
+    if ( !vec->d_VectorOps )
+        AMP_ERROR( "Failed to clone ops: " + d_VectorOps->VectorOpName() );
     return vec;
 }
 void Vector::swapVectors( Vector &other ) { d_VectorData->swapData( *other.getVectorData() ); }

@@ -26,8 +26,7 @@ extern template class VectorOperationsCuda<float>;  // Suppresses implicit insta
 template<typename TYPE>
 std::shared_ptr<VectorOperations> VectorOperationsCuda<TYPE>::cloneOperations() const
 {
-    auto ptr = std::make_shared<VectorOperationsCuda<TYPE>>();
-    return ptr;
+    return std::make_shared<VectorOperationsCuda<TYPE>>();
 }
 
 template<typename TYPE>

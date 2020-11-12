@@ -27,6 +27,9 @@ public:
     //! Destructor
     virtual ~VectorOperations() {}
 
+    //! Get the type name
+    virtual std::string VectorOpName() const = 0;
+
     //! Clone the operations
     virtual std::shared_ptr<VectorOperations> cloneOperations() const = 0;
 

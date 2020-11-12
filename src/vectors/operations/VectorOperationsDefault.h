@@ -29,6 +29,7 @@ public:
 
 public:
     //  function that operate on VectorData
+    std::string VectorOpName() const override { return "VectorOperationsDefault"; }
     void copy( const VectorData &x, VectorData &z ) override;
     void zero( VectorData &z ) override;
     void setToScalar( const Scalar &alpha, VectorData &z ) override;

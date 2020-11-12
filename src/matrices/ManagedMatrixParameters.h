@@ -1,20 +1,20 @@
-#ifndef included_AMP_ManagedEpetraMatrixParameters
-#define included_AMP_ManagedEpetraMatrixParameters
+#ifndef included_AMP_ManagedMatrixParameters
+#define included_AMP_ManagedMatrixParameters
 
-#include <set>
 
 #include "AMP/matrices/MatrixParameters.h"
 
-#include <Epetra_FECrsMatrix.h>
+#include <set>
+
 
 namespace AMP {
 namespace LinearAlgebra {
 
 
-/** \class ManagedEpetraMatrixParameters
+/** \class     ManagedMatrixParameters
  * \brief  A class used to create an Epetra matrix
  */
-class ManagedEpetraMatrixParameters : public MatrixParameters
+class ManagedMatrixParameters : public MatrixParameters
 {
 public:
     /** \brief Constructor
@@ -26,13 +26,13 @@ public:
      * vector )
      * \param[in] comm     Communicator for the matrix
      */
-    explicit ManagedEpetraMatrixParameters( AMP::Discretization::DOFManager::shared_ptr left,
-                                            AMP::Discretization::DOFManager::shared_ptr right,
-                                            const AMP_MPI &comm );
+    explicit ManagedMatrixParameters( AMP::Discretization::DOFManager::shared_ptr left,
+                                      AMP::Discretization::DOFManager::shared_ptr right,
+                                      const AMP_MPI &comm );
 
 
     //! Deconstructor
-    virtual ~ManagedEpetraMatrixParameters(){};
+    virtual ~ManagedMatrixParameters(){};
 
     /** \brief Return the number of entries in each row
      * \return  An integer array of the number of entries in each
@@ -76,31 +76,6 @@ public:
      */
     bool isSquare();
 
-    /** \brief  Get the Epetra_Map for the rows
-     * \return  The Epetra_Map
-     */
-    Epetra_Map &getEpetraRowMap();
-
-    /** \brief  Get the Epetra_Map for the columns
-     * \return  The Epetra_Map
-     */
-    Epetra_Map *getEpetraColMap();
-
-    /** \brief  Get the Epetra_Map for the rows as a shared pointer
-     * \return  The Epetra_Map
-     */
-    std::shared_ptr<Epetra_Map> getEpetraRowMapPtr();
-
-    /** \brief  Get the Epetra_Map for the columns as a shared pointer
-     * \return  The Epetra_Map
-     */
-    std::shared_ptr<Epetra_Map> getEpetraColMapPtr();
-
-    /** \brief  Get the AMP_MPI comm associated with this description
-     * \return  The AMP_MPI object
-     */
-    AMP_MPI getEpetraComm();
-
     /** \brief  Add columns to a description
      * \param[in] i  The number of columns
      * \param[in] cols  The column ids
@@ -112,16 +87,12 @@ public:
      */
     void addColumns( const std::set<size_t> &cols );
 
-private:
-    std::shared_ptr<Epetra_Map> d_eRowMap;
-    std::shared_ptr<Epetra_Map> d_eColMap;
-
 protected:
     //! Constructor -- unimplemented
-    ManagedEpetraMatrixParameters();
+    ManagedMatrixParameters();
 
     //! Constructor -- unimplemented
-    ManagedEpetraMatrixParameters( const ManagedEpetraMatrixParameters & );
+    ManagedMatrixParameters( const ManagedMatrixParameters & );
 
     //!  The number of nonzeros per row of the matrix
     std::vector<int> d_vEntriesPerRow;

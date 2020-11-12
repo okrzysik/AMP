@@ -273,7 +273,7 @@ public: // Advanced functions
 
     /** \brief Clone the data
      */
-    virtual std::shared_ptr<VectorData> cloneData() const;
+    virtual std::shared_ptr<VectorData> cloneData() const = 0;
 
     /** \brief Associate the ghost buffer of a Vector with this Vector
      * \param in  The Vector to share a ghost buffer with

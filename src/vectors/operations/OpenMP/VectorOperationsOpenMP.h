@@ -29,6 +29,7 @@ public:
 
 public:
     //  function that operate on VectorData
+    std::string VectorOpName() const override { return "VectorOperationsOpenMP"; }
     void zero( VectorData &z ) override;
     void setToScalar( const Scalar &alpha, VectorData &z ) override;
     void setRandomValues( VectorData &x ) override;

@@ -199,6 +199,21 @@ void VectorDataGPU<TYPE>::copyOutRawData( double *out ) const
 
 
 /****************************************************************
+ * Clone raw data                                                *
+ ****************************************************************/
+template<typename TYPE>
+std::shared_ptr<VectorData> VectorDataGPU<TYPE>::cloneData() const
+{
+    {
+        auto retVal =
+            std::make_shared<VectorDataGPU<TYPE>>( d_startIndex, d_localSize, d_globalSize );
+        retVal->setCommunicationList( getCommunicationList() );
+        return retVal;
+    }
+}
+
+
+/****************************************************************
  * Swap raw data                                                 *
  ****************************************************************/
 template<typename TYPE>

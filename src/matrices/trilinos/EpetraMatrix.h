@@ -3,7 +3,10 @@
 
 #include "AMP/matrices/Matrix.h"
 
-#include <Epetra_FECrsMatrix.h>
+
+// Forward declare
+class Epetra_Map;
+class Epetra_CrsMatrix;
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -112,6 +115,5 @@ public:
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "EpetraMatrix.inline.h"
 
 #endif

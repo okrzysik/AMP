@@ -129,6 +129,7 @@ void VectorTests::CloneVector( AMP::UnitTest *ut )
 {
     auto vector = d_factory->getVector();
     auto clone  = vector->cloneVector( "cloned vector" );
+    vector->setToScalar( 3 );
     clone->setToScalar( 0 );
     ut->passes( "Clone created " + d_factory->name() );
     bool pass = true;
