@@ -25,6 +25,7 @@
 #include "libmesh/mesh_communication.h"
 
 #include "ml_include.h"
+#include <Trilinos_version.h>
 
 #include <iostream>
 #include <string>
@@ -291,7 +292,12 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         for ( int lev = 0; lev < ( nlevels - 1 ); lev++ ) {
             ML_Gen_Smoother_SymGaussSeidel( ml_object, lev, ML_BOTH, 2, 1.0 );
         }
+	
+#if TRILINOS_MAJOR_MINOR_VERSION >= 130000
+        ML_Gen_Smoother_Amesos( ml_object, ( nlevels - 1 ), ML_AMESOS_KLU, -1, 0.0, 1 );
+#else
         ML_Gen_Smoother_Amesos( ml_object, ( nlevels - 1 ), ML_AMESOS_KLU, -1, 0.0 );
+#endif
 
         ML_Gen_Solver( ml_object, ML_MGV, 0, ( nlevels - 1 ) );
 

@@ -37,7 +37,7 @@
 // Using MAC
 #define USE_MAC
 #include <sched.h>
-#elif defined( __linux ) || defined( __unix ) || defined( __posix )
+#elif defined( __linux ) || defined( __linux__ ) || defined( __unix ) || defined( __posix )
 // We are using linux
 #define USE_LINUX
 #include <sched.h>
