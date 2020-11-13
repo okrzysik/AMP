@@ -326,7 +326,7 @@ Scalar VectorOperationsDefault<TYPE>::localMin( const VectorData &x ) const
         for ( size_t j = 0; j < size; j++ )
             ans = std::min( data[j], ans );
     }
-    return ans;
+    return Scalar::create( ans );
 }
 
 template<typename TYPE>
@@ -340,7 +340,7 @@ Scalar VectorOperationsDefault<TYPE>::localMax( const VectorData &x ) const
         for ( size_t j = 0; j < size; j++ )
             ans = std::max( data[j], ans );
     }
-    return ans;
+    return Scalar::create( ans );
 }
 
 template<typename TYPE>
@@ -354,7 +354,7 @@ Scalar VectorOperationsDefault<TYPE>::localL1Norm( const VectorData &x ) const
         for ( size_t j = 0; j < size; j++ )
             ans += std::abs( data[j] );
     }
-    return ans;
+    return Scalar::create( ans );
 }
 
 template<typename TYPE>
@@ -368,7 +368,7 @@ Scalar VectorOperationsDefault<TYPE>::localL2Norm( const VectorData &x ) const
         for ( size_t j = 0; j < size; j++ )
             ans += data[j] * data[j];
     }
-    return sqrt( ans );
+    return Scalar::create( sqrt( ans ) );
 }
 
 template<typename TYPE>
@@ -382,7 +382,7 @@ Scalar VectorOperationsDefault<TYPE>::localMaxNorm( const VectorData &x ) const
         for ( size_t j = 0; j < size; j++ )
             ans = std::max( std::abs( data[j] ), ans );
     }
-    return ans;
+    return Scalar::create( ans );
 }
 
 template<typename TYPE>
@@ -400,7 +400,7 @@ Scalar VectorOperationsDefault<TYPE>::localDot( const VectorData &x, const Vecto
         ++curXRhs;
         ++curMe;
     }
-    return ans;
+    return Scalar::create( ans );
 }
 
 template<typename TYPE>
@@ -420,7 +420,7 @@ Scalar VectorOperationsDefault<TYPE>::localMinQuotient( const VectorData &x,
         ++curx;
         ++cury;
     }
-    return ans;
+    return Scalar::create( ans );
 }
 
 template<typename TYPE>
@@ -440,7 +440,7 @@ Scalar VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorData &x,
         ++cury;
         ++N;
     }
-    return sqrt( ans / N );
+    return Scalar::create( sqrt( ans / N ) );
 }
 
 template<typename TYPE>
@@ -465,7 +465,7 @@ Scalar VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorData &x,
         ++curm;
         ++N;
     }
-    return sqrt( ans / N );
+    return Scalar::create( sqrt( ans / N ) );
 }
 
 template<typename TYPE>

@@ -58,11 +58,11 @@ Scalar operator+( const Scalar &x, const Scalar &y )
     if ( !y.has_value() )
         return x;
     if ( x.is_floating_point() ) {
-        return x.get<double>() + y.get<double>();
+        return Scalar::create( x.get<double>() + y.get<double>() );
     } else if ( x.is_integral() ) {
-        return x.get<int64_t>() + y.get<int64_t>();
+        return Scalar::create( x.get<int64_t>() + y.get<int64_t>() );
     } else if ( x.is_complex() ) {
-        return x.get<std::complex<double>>() + y.get<std::complex<double>>();
+        return Scalar::create( x.get<std::complex<double>>() + y.get<std::complex<double>>() );
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
@@ -75,11 +75,11 @@ Scalar operator-( const Scalar &x, const Scalar &y )
     if ( !y.has_value() )
         return x;
     if ( x.is_floating_point() ) {
-        return x.get<double>() - y.get<double>();
+        return Scalar::create( x.get<double>() - y.get<double>() );
     } else if ( x.is_integral() ) {
-        return x.get<int64_t>() - y.get<int64_t>();
+        return Scalar::create( x.get<int64_t>() - y.get<int64_t>() );
     } else if ( x.is_complex() ) {
-        return x.get<std::complex<double>>() - y.get<std::complex<double>>();
+        return Scalar::create( x.get<std::complex<double>>() - y.get<std::complex<double>>() );
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
@@ -90,11 +90,11 @@ Scalar operator*( const Scalar &x, const Scalar &y )
     if ( !x.has_value() || !y.has_value() )
         return 0.0;
     if ( x.is_floating_point() ) {
-        return x.get<double>() * y.get<double>();
+        return Scalar::create( x.get<double>() * y.get<double>() );
     } else if ( x.is_integral() ) {
-        return x.get<int64_t>() * y.get<int64_t>();
+        return Scalar::create( x.get<int64_t>() * y.get<int64_t>() );
     } else if ( x.is_complex() ) {
-        return x.get<std::complex<double>>() * y.get<std::complex<double>>();
+        return Scalar::create( x.get<std::complex<double>>() * y.get<std::complex<double>>() );
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
@@ -110,11 +110,11 @@ Scalar minReduce( const AMP::AMP_MPI &comm, const Scalar &x )
     if ( comm.getSize() <= 1 )
         return x;
     if ( x.is_floating_point() ) {
-        return comm.minReduce( x.get<double>() );
+        return Scalar::create( comm.minReduce( x.get<double>() ) );
     } else if ( x.is_integral() ) {
-        return comm.minReduce( x.get<int64_t>() );
+        return Scalar::create( comm.minReduce( x.get<int64_t>() ) );
     } else if ( x.is_complex() ) {
-        return comm.minReduce( x.get<std::complex<double>>() );
+        return Scalar::create( comm.minReduce( x.get<std::complex<double>>() ) );
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
@@ -125,11 +125,11 @@ Scalar maxReduce( const AMP::AMP_MPI &comm, const Scalar &x )
     if ( comm.getSize() <= 1 )
         return x;
     if ( x.is_floating_point() ) {
-        return comm.maxReduce( x.get<double>() );
+        return Scalar::create( comm.maxReduce( x.get<double>() ) );
     } else if ( x.is_integral() ) {
-        return comm.maxReduce( x.get<int64_t>() );
+        return Scalar::create( comm.maxReduce( x.get<int64_t>() ) );
     } else if ( x.is_complex() ) {
-        return comm.maxReduce( x.get<std::complex<double>>() );
+        return Scalar::create( comm.maxReduce( x.get<std::complex<double>>() ) );
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
@@ -140,11 +140,11 @@ Scalar sumReduce( const AMP::AMP_MPI &comm, const Scalar &x )
     if ( comm.getSize() <= 1 )
         return x;
     if ( x.is_floating_point() ) {
-        return comm.sumReduce( x.get<double>() );
+        return Scalar::create( comm.sumReduce( x.get<double>() ) );
     } else if ( x.is_integral() ) {
-        return comm.sumReduce( x.get<int64_t>() );
+        return Scalar::create( comm.sumReduce( x.get<int64_t>() ) );
     } else if ( x.is_complex() ) {
-        return comm.sumReduce( x.get<std::complex<double>>() );
+        return Scalar::create( comm.sumReduce( x.get<std::complex<double>>() ) );
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
@@ -155,11 +155,11 @@ Scalar Scalar::sqrt() const
     if ( !has_value() )
         return 0.0;
     if ( is_floating_point() ) {
-        return ::sqrt( get<double>() );
+        return Scalar::create(::sqrt( get<double>() ) );
     } else if ( is_integral() ) {
-        return ::sqrt( get<int64_t>() );
+        return Scalar::create(::sqrt( get<int64_t>() ) );
     } else if ( is_complex() ) {
-        return ::sqrt( get<std::complex<double>>() );
+        return Scalar::create(::sqrt( get<std::complex<double>>() ) );
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
@@ -170,11 +170,11 @@ Scalar Scalar::abs() const
     if ( !has_value() )
         return Scalar();
     if ( is_floating_point() ) {
-        return std::abs( get<double>() );
+        return Scalar::create( std::abs( get<double>() ) );
     } else if ( is_integral() ) {
-        return std::abs( get<int64_t>() );
+        return Scalar::create( std::abs( get<int64_t>() ) );
     } else if ( is_complex() ) {
-        return std::abs( get<std::complex<double>>() );
+        return Scalar::create( std::abs( get<std::complex<double>>() ) );
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }

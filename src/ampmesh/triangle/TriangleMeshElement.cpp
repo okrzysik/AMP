@@ -10,6 +10,10 @@
 #include <limits>
 
 
+namespace AMP {
+namespace Mesh {
+
+
 /****************************************************************
  * Overload basic operations                                     *
  ****************************************************************/
@@ -74,10 +78,6 @@ static inline std::array<double, N> normalize( const std::array<double, N> &x )
         return { tmp * x[0], tmp * x[1], tmp * x[2] };
     }
 }
-
-
-namespace AMP {
-namespace Mesh {
 
 
 /****************************************************************
@@ -147,8 +147,8 @@ TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( TriangleMeshElement &&rh
     element = nullptr;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-TriangleMeshElement<NG, NP, TYPE> &
-TriangleMeshElement<NG, NP, TYPE>::operator=( const TriangleMeshElement &rhs )
+TriangleMeshElement<NG, NP, TYPE> &TriangleMeshElement<NG, NP, TYPE>::
+operator=( const TriangleMeshElement &rhs )
 {
     if ( &rhs == this )
         return *this;
@@ -159,8 +159,8 @@ TriangleMeshElement<NG, NP, TYPE>::operator=( const TriangleMeshElement &rhs )
     return *this;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-TriangleMeshElement<NG, NP, TYPE> &
-TriangleMeshElement<NG, NP, TYPE>::operator=( TriangleMeshElement &&rhs )
+TriangleMeshElement<NG, NP, TYPE> &TriangleMeshElement<NG, NP, TYPE>::
+operator=( TriangleMeshElement &&rhs )
 {
     if ( &rhs == this )
         return *this;

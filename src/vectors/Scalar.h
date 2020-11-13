@@ -19,11 +19,23 @@ public:
     inline Scalar();
 
     /**
-     * \brief Construct a sclar value
+     * \brief Construct a Scalar value
+     * \details Default constructor allowing implict conversion to double
+     * \param[in] x         Input scalar
+     */
+    inline Scalar( double x );
+
+    /**
+     * \brief Construct a Scalar value
+     * \details Construct a Scalar value from the given input.
+     *    The input type may be any type.  If it can be converted to one of a few internal
+     *    primitive types (double int64_t, etc) without loss of precision, then it will be
+     *    stored in that type and automatic conversion is possible.  If it is an arbitrary type,
+     *    then the user is responsible for ensuring that the get function matches the type.
      * \param[in] x         Input scalar
      */
     template<class TYPE>
-    inline Scalar( TYPE x );
+    static inline Scalar create( TYPE x );
 
     /**
      * \brief Construct a sclar value
@@ -82,7 +94,7 @@ private: // Helper functions
     inline void store( const TYPE &x );
 
     template<class TYPE>
-    constexpr char get_type();
+    static constexpr char get_type();
 
 private: // Internal data
     char d_type;

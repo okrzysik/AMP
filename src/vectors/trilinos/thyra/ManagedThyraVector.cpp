@@ -106,13 +106,6 @@ ManagedThyraVector::constSubsetVectorForVariable( Variable::const_shared_ptr nam
         if ( vec )
             retVal = vec->constSubsetVectorForVariable( name );
     }
-    if ( !retVal ) {
-        auto const vec = getVectorEngine( getVectorData() );
-        printf( "Unable to subset for %s in %s:%s\n",
-                name->getName().data(),
-                getVariable()->getName().data(),
-                vec->getVariable()->getName().data() );
-    }
     return retVal;
 }
 

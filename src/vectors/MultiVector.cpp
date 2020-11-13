@@ -356,15 +356,6 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( Variable::const_shared_
         }
     }
 
-    if ( subvectors.empty() ) {
-        printf( "Unable to subset for %s in %s\n",
-                name->getName().data(),
-                getVariable()->getName().data() );
-        for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
-            printf( "   %s\n", d_vVectors[i]->getVariable()->getName().data() );
-        }
-    }
-
     // Create the new vector
     auto N_procs = comm.sumReduce<int>( subvectors.empty() ? 0 : 1 );
     if ( N_procs == 0 )

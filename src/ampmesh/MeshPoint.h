@@ -262,9 +262,6 @@ private:
 
 using Point = MeshPoint<double>;
 
-} // namespace Mesh
-} // namespace AMP
-
 
 /****************************************************************
  * Operator overloading                                          *
@@ -370,5 +367,9 @@ std::ostream &operator<<( std::ostream &out, const AMP::Mesh::MeshPoint<TYPE> &x
     x.print( out );
     return out;
 }
+
+} // namespace Mesh
+} // namespace AMP
+
 
 #endif

@@ -85,46 +85,53 @@ ENABLE_WARNINGS
  ********************************************************************/
 inline Scalar::Scalar() : d_type( 0 ), d_hash( 0 ) {}
 template<class TYPE>
-Scalar::Scalar( TYPE x ) : d_type( get_type<TYPE>() ), d_hash( 0 )
+Scalar Scalar::create( TYPE x )
 {
+    // Special case if we are dealing with a Scalar
+    if constexpr ( std::is_same<TYPE, Scalar>::value )
+        return x;
     // Store the scalar
+    Scalar y;
+    y.d_type = get_type<TYPE>();
     if constexpr ( std::is_integral<TYPE>::value ) {
         if constexpr ( std::is_signed<TYPE>::value ) {
             if ( x >= std::numeric_limits<int64_t>::min() &&
                  x <= std::numeric_limits<int64_t>::max() ) {
-                store( static_cast<int64_t>( x ) );
+                y.store( static_cast<int64_t>( x ) );
             } else {
-                store( x );
+                y.store( x );
             }
         } else {
             if ( x <= std::numeric_limits<int64_t>::max() ) {
-                store( static_cast<int64_t>( x ) );
+                y.store( static_cast<int64_t>( x ) );
             } else {
-                store( x );
+                y.store( x );
             }
         }
     } else if constexpr ( std::is_same<TYPE, float>::value ) {
-        store( static_cast<double>( x ) );
+        y.store( static_cast<double>( x ) );
     } else if constexpr ( std::is_same<TYPE, double>::value ) {
-        store( x );
+        y.store( x );
     } else if constexpr ( std::is_same<TYPE, long double>::value ) {
-        store( static_cast<long double>( x ) );
+        y.store( static_cast<long double>( x ) );
     } else if constexpr ( AMP::is_complex<TYPE>::value ) {
-        store( std::complex<double>( x.real(), x.imag() ) );
+        y.store( std::complex<double>( x.real(), x.imag() ) );
     } else {
-        store( x );
+        y.store( x );
     }
     // Check that we can get the data back
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
-    auto y = get<TYPE>();
+    auto z = y.get<TYPE>();
     if constexpr ( std::is_integral<TYPE>::value ) {
-        AMP_ASSERT( x == y );
+        AMP_ASSERT( x == z );
     } else {
         auto tol = 10 * std::abs( std::numeric_limits<TYPE>::epsilon() );
-        AMP_ASSERT( std::abs( x - y ) <= tol * std::abs( x ) );
+        AMP_ASSERT( std::abs( x - z ) <= tol * std::abs( x ) );
     }
 #endif
+    return y;
 }
+Scalar::Scalar( double x ) : d_type( get_type<double>() ), d_hash( 0 ) { store( x ); }
 
 
 /********************************************************************

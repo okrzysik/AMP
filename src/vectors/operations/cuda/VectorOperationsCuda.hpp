@@ -110,14 +110,14 @@ template<typename TYPE>
 void VectorOperationsCuda<TYPE>::setRandomValues( VectorData &x )
 {
     // Default to VectorOperationsDefault (on cpu)
-    return getDefaultOps()->setRandomValues( x );
+    getDefaultOps()->setRandomValues( x );
 }
 
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::setRandomValues( RNG::shared_ptr rng, VectorData &x )
 {
     // Default to VectorOperationsDefault (on cpu)
-    return getDefaultOps()->setRandomValues( rng, x );
+    getDefaultOps()->setRandomValues( rng, x );
 }
 
 template<typename TYPE>
@@ -326,7 +326,7 @@ Scalar VectorOperationsCuda<TYPE>::localMin( const VectorData &x ) const
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return CudaOperationsHelpers<TYPE>::localMin( N, xdata );
+        return Scalar::create( CudaOperationsHelpers<TYPE>::localMin( N, xdata ) );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localMin( x );
@@ -339,7 +339,7 @@ Scalar VectorOperationsCuda<TYPE>::localMax( const VectorData &x ) const
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return CudaOperationsHelpers<TYPE>::localMax( N, xdata );
+        return Scalar::create( CudaOperationsHelpers<TYPE>::localMax( N, xdata ) );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localMax( x );
@@ -352,7 +352,7 @@ Scalar VectorOperationsCuda<TYPE>::localL1Norm( const VectorData &x ) const
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return CudaOperationsHelpers<TYPE>::localL1Norm( N, xdata );
+        return Scalar::create( CudaOperationsHelpers<TYPE>::localL1Norm( N, xdata ) );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localL1Norm( x );
@@ -365,7 +365,7 @@ Scalar VectorOperationsCuda<TYPE>::localL2Norm( const VectorData &x ) const
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return CudaOperationsHelpers<TYPE>::localL2Norm( N, xdata );
+        return Scalar::create( CudaOperationsHelpers<TYPE>::localL2Norm( N, xdata ) );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localL2Norm( x );
@@ -378,7 +378,7 @@ Scalar VectorOperationsCuda<TYPE>::localMaxNorm( const VectorData &x ) const
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return CudaOperationsHelpers<TYPE>::localMaxNorm( N, xdata );
+        return Scalar::create( CudaOperationsHelpers<TYPE>::localMaxNorm( N, xdata ) );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localMaxNorm( x );
@@ -392,7 +392,7 @@ Scalar VectorOperationsCuda<TYPE>::localDot( const VectorData &x, const VectorDa
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return CudaOperationsHelpers<TYPE>::localDot( N, xdata, ydata );
+        return Scalar::create( CudaOperationsHelpers<TYPE>::localDot( N, xdata, ydata ) );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localDot( x, y );
@@ -407,7 +407,7 @@ Scalar VectorOperationsCuda<TYPE>::localMinQuotient( const VectorData &x,
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return CudaOperationsHelpers<TYPE>::localMinQuotient( N, xdata, ydata );
+        return Scalar::create( CudaOperationsHelpers<TYPE>::localMinQuotient( N, xdata, ydata ) );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localMinQuotient( x, y );
@@ -421,7 +421,7 @@ Scalar VectorOperationsCuda<TYPE>::localWrmsNorm( const VectorData &x, const Vec
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return CudaOperationsHelpers<TYPE>::localWrmsNorm( N, xdata, ydata );
+        return Scalar::create( CudaOperationsHelpers<TYPE>::localWrmsNorm( N, xdata, ydata ) );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localWrmsNorm( x, y );

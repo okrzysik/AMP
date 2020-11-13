@@ -14,8 +14,8 @@ template<class TYPE>
 bool testGet( TYPE x )
 {
     // Store the scalar
-    auto y    = AMP::Scalar( x );
-    bool pass = true;
+    AMP::Scalar y = AMP::Scalar::create( x );
+    bool pass     = true;
     // Test getting the scalar
     auto z = std::real( x );
     pass   = pass && y.get<int>() == static_cast<int>( z );
@@ -74,7 +74,7 @@ int main( int, char ** )
     pass = pass && fun( 4.0 );
 
     // Test complex
-    auto c1 = AMP::Scalar( std::complex<float>( 3.0, 1.0 ) );
+    auto c1 = AMP::Scalar::create( std::complex<float>( 3.0, 1.0 ) );
     pass    = pass && c1.get<std::complex<float>>() == std::complex<float>( 3.0, 1.0 );
 
     // Test copy

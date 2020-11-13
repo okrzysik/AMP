@@ -776,9 +776,6 @@ private:
 };
 
 
-} // namespace AMP
-
-
 /********************************************************
  *  ostream operator                                     *
  ********************************************************/
@@ -873,6 +870,9 @@ inline void AMP::Array<TYPE, FUN, Allocator>::copyTo( TYPE2 *data ) const
             data[i] = static_cast<TYPE2>( d_data[i] );
     }
 }
+
+
+} // namespace AMP
 
 
 #endif
