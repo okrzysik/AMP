@@ -19,17 +19,16 @@ class ColumnOperator : public Operator
 {
 
 public:
-    // the parameter object for the column operator is intentionally meant not to do
-    // anything ColumnOperator specific. Please keep that way
-    explicit ColumnOperator( const std::shared_ptr<OperatorParameters> &params ) : Operator()
-    {
-        (void) params;
-    }
+    //! Default constructor;
+    explicit ColumnOperator( const std::shared_ptr<OperatorParameters> &params );
 
     /** Default empty constructor */
     ColumnOperator() : Operator() {}
 
     virtual ~ColumnOperator() {}
+
+    //! Return the name of the operator
+    std::string type() const override { return "ColumnOperator"; }
 
     /**
      * The apply routine for the column operator calls apply on each of the component operators
@@ -80,12 +79,21 @@ public:
 
     bool isValidInput( std::shared_ptr<AMP::LinearAlgebra::Vector> &u ) override;
 
-    std::shared_ptr<Operator> getOperator( size_t i ) { return d_Operators[i]; }
+    std::shared_ptr<Operator> getOperator( size_t i ) { return d_operators[i]; }
 
-    size_t getNumberOfOperators( void ) { return d_Operators.size(); }
+    size_t getNumberOfOperators() { return d_operators.size(); }
+
+    //! Return an iterator to the beginning of the operators
+    inline auto begin() { return d_operators.begin(); }
+
+    //! Return an iterator to the end of the operators
+    inline auto end() { return d_operators.end(); }
+
+    //! Return the operator(s) with the given name/type
+    std::vector<std::shared_ptr<Operator>> find( const std::string &name );
 
 protected:
-    std::vector<std::shared_ptr<Operator>> d_Operators;
+    std::vector<std::shared_ptr<Operator>> d_operators;
 
 private:
 };

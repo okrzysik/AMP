@@ -14,6 +14,8 @@ public:
 
     virtual ~PressureBoundaryOperator() {}
 
+    std::string type() const override { return "PressureBoundaryOperator"; }
+
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
                 AMP::LinearAlgebra::Vector::shared_ptr r ) override
     {

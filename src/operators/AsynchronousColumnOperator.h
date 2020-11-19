@@ -16,6 +16,8 @@ public:
      */
     explicit AsynchronousColumnOperator( const std::shared_ptr<OperatorParameters> & );
 
+    std::string type() const override { return "AsynchronousColumnOperator"; }
+
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 

@@ -23,6 +23,9 @@ public:
 
     virtual ~AsyncMapOperator();
 
+    //! Return the name of the operator
+    std::string type() const override { return "AsyncMapOperator"; }
+
     /** \brief  Set a frozen vector for results of the apply operation.
      * \param[in]  p  The vector to set
      */

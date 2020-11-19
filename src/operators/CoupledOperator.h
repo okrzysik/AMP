@@ -24,6 +24,8 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
+    //! Return the name of the operator
+    std::string type() const override { return "CoupledOperator"; }
 
     /**
      * Default base class implementation of the residual: f-L(u)
@@ -36,29 +38,29 @@ public:
                    AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
 
-    std::shared_ptr<AMP::Operator::Operator> getMapOperator() { return d_Operators[2]; }
+    std::shared_ptr<AMP::Operator::Operator> getMapOperator() { return d_operators[2]; }
 
-    void setMapOperator( std::shared_ptr<AMP::Operator::Operator> op ) { d_Operators[2] = op; }
+    void setMapOperator( std::shared_ptr<AMP::Operator::Operator> op ) { d_operators[2] = op; }
 
-    std::shared_ptr<AMP::Operator::Operator> getBVPOperator() { return d_Operators[3]; }
+    std::shared_ptr<AMP::Operator::Operator> getBVPOperator() { return d_operators[3]; }
 
-    void setBVPOperator( std::shared_ptr<AMP::Operator::Operator> op ) { d_Operators[3] = op; }
+    void setBVPOperator( std::shared_ptr<AMP::Operator::Operator> op ) { d_operators[3] = op; }
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {
-        return d_Operators[3]->getOutputVariable();
+        return d_operators[3]->getOutputVariable();
     }
 
     void append( std::shared_ptr<Operator> op ) override
     {
-        AMP_ASSERT( d_Operators.size() < 4 );
+        AMP_ASSERT( d_operators.size() < 4 );
         AMP_ASSERT( op.get() != nullptr );
-        d_Operators.push_back( op );
+        d_operators.push_back( op );
     }
 
     bool isValidInput( std::shared_ptr<AMP::LinearAlgebra::Vector> &u ) override
     {
-        return d_Operators[3]->isValidInput( u );
+        return d_operators[3]->isValidInput( u );
     }
 
     void setFrozenGaussPointVector( AMP::LinearAlgebra::Vector::shared_ptr u )
@@ -71,7 +73,7 @@ public:
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                    std::shared_ptr<OperatorParameters> params = nullptr ) override
     {
-        return ( d_Operators[3]->getParameters( type, u, params ) );
+        return ( d_operators[3]->getParameters( type, u, params ) );
     }
 
     virtual ~CoupledOperator() {}

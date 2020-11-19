@@ -44,6 +44,9 @@ public:
       */
     virtual ~MapOperator() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "MapOperator"; }
+
     void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr createInputVariable( const std::string &, int )

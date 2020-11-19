@@ -20,7 +20,7 @@ AsyncMapColumnOperator::AsyncMapColumnOperator( const std::shared_ptr<OperatorPa
 void AsyncMapColumnOperator::setVector( AMP::LinearAlgebra::Vector::shared_ptr p )
 {
     d_OutputVector = p;
-    for ( auto &elem : d_Operators )
+    for ( auto &elem : d_operators )
         std::dynamic_pointer_cast<AsyncMapOperator>( elem )->setVector( d_OutputVector );
 }
 
@@ -30,8 +30,8 @@ void AsyncMapColumnOperator::append( std::shared_ptr<Operator> op )
     std::shared_ptr<AsyncMapColumnOperator> mapColumn =
         std::dynamic_pointer_cast<AsyncMapColumnOperator>( op );
     if ( mapColumn ) {
-        auto curOp = mapColumn.get()->d_Operators.begin();
-        while ( curOp != mapColumn.get()->d_Operators.end() ) {
+        auto curOp = mapColumn.get()->d_operators.begin();
+        while ( curOp != mapColumn.get()->d_operators.end() ) {
             append( *curOp );
             ++curOp;
         }
@@ -61,7 +61,7 @@ void AsyncMapColumnOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
 bool AsyncMapColumnOperator::requiresMakeConsistentSet()
 {
     bool test = false;
-    for ( auto &elem : d_Operators )
+    for ( auto &elem : d_operators )
         test = test ||
                std::dynamic_pointer_cast<AsyncMapOperator>( elem )->requiresMakeConsistentSet();
     return test;

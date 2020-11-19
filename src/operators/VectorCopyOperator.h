@@ -16,6 +16,8 @@ public:
 
     virtual ~VectorCopyOperator() {}
 
+    std::string type() const override { return "VectorCopyOperator"; }
+
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 

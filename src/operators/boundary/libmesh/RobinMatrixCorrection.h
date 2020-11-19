@@ -45,6 +45,9 @@ public:
     */
     virtual ~RobinMatrixCorrection() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "RobinMatrixCorrection"; }
+
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
                 AMP::LinearAlgebra::Vector::shared_ptr ) override
     {

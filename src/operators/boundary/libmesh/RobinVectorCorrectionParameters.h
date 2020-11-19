@@ -15,7 +15,7 @@ public:
     {
     }
 
-    virtual ~RobinVectorCorrectionParameters() {}
+    std::string type() const override { return "RobinVectorCorrectionParameters"; }
 
     AMP::LinearAlgebra::Variable::shared_ptr d_variable;
 };

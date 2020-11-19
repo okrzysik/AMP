@@ -19,20 +19,11 @@ public:
 
     virtual ~BoundaryOperator() {}
 
-    virtual void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr )
-    {
-        // Do nothing
-    }
+    virtual void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr ) {}
 
-    virtual void setRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr )
-    {
-        // Do nothing
-    }
+    virtual void setRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr ) {}
 
-    virtual void modifyInitialSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr )
-    {
-        // Do nothing
-    }
+    virtual void modifyInitialSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr ) {}
 
 protected:
 private:

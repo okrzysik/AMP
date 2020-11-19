@@ -26,6 +26,9 @@ public:
     //! Destructor
     virtual ~SubchannelTwoEqNonlinearOperator() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "SubchannelTwoEqNonlinearOperator"; }
+
     /**
       For this operator we have an in-place apply.
       @param [in]  u input vector.

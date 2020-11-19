@@ -22,6 +22,8 @@ public:
 
     virtual ~NavierStokesGalWFLinearFEOperator() {}
 
+    std::string type() const override { return "NavierStokesGalWFLinearFEOperator"; }
+
     void preAssembly( const std::shared_ptr<OperatorParameters> &params );
 
     void postAssembly();

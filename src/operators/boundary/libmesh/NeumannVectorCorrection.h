@@ -40,6 +40,9 @@ public:
       */
     virtual ~NeumannVectorCorrection() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "NeumannVectorCorrection"; }
+
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 

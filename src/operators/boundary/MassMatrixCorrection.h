@@ -35,6 +35,9 @@ public:
     //! Destructor
     virtual ~MassMatrixCorrection() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "MassMatrixCorrection"; }
+
     /**
       Set the variable for the vector that will used with this operator.
       */

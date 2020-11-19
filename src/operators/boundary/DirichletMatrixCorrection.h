@@ -29,6 +29,9 @@ public:
     //! Destructor
     virtual ~DirichletMatrixCorrection() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "DirichletMatrixCorrection"; }
+
     //! Set the variable for the vector that will used with this operator.
     void setVariable( const AMP::LinearAlgebra::Variable::shared_ptr &var ) { d_variable = var; }
 

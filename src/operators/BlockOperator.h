@@ -18,6 +18,8 @@ public:
 
     virtual ~BlockOperator() {}
 
+    std::string type() const override { return "BlockOperator"; }
+
     void setNumRowBlocks( int val );
 
     void setNumColumnBlocks( int val );

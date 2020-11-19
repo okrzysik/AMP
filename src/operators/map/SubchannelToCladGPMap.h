@@ -18,6 +18,9 @@ typedef SubchannelToCladMapParameters SubchannelToCladGPMapParameters;
 class SubchannelToCladGPMap : public SubchannelToCladMap
 {
 public:
+    //! Return the name of the operator
+    std::string type() const override { return "SubchannelToCladGPMap"; }
+
     /** \brief  Returns true if MapType = "SubchannelToCladGPMap"
      * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db
      * \return  True iff s == "SubchannelToCladMapParameters"

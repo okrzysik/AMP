@@ -44,6 +44,9 @@ public:
     //! Destructor
     virtual ~ScalarZAxisMap();
 
+    //! Return the name of the operator
+    std::string type() const override { return "ScalarZAxisMap"; }
+
 protected:
     // Implemented buildMap routine
     virtual std::multimap<double, double> buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr,

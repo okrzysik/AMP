@@ -29,6 +29,8 @@ public:
 
     virtual ~CoupledChannelToCladMapOperator() {}
 
+    std::string type() const override { return "CoupledChannelToCladMapOperator"; }
+
 protected:
 private:
     AMP::LinearAlgebra::Variable::shared_ptr d_flowVariable;

@@ -27,6 +27,8 @@ public:
 
     virtual ~NavierStokesGalWFFEOperator() {}
 
+    std::string type() const override { return "NavierStokesGalWFFEOperator"; }
+
     void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                       std::shared_ptr<AMP::LinearAlgebra::Vector> r ) override;
 

@@ -27,6 +27,8 @@ public:
       */
     virtual ~FlowFrapconOperator() {}
 
+    std::string type() const override { return "FlowFrapconOperator"; }
+
     /**
       For this operator we have an in-place apply.
       @param [in]  u input vector.

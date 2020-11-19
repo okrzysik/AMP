@@ -111,6 +111,9 @@ public:
      */
     virtual ~PowerShape();
 
+    //! Return the name of the operator
+    std::string type() const override { return "PowerShape"; }
+
     /**
      * Print out all members of integrator instance to given output stream.
      */

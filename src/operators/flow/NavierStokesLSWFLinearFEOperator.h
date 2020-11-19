@@ -21,6 +21,8 @@ public:
 
     virtual ~NavierStokesLSWFLinearFEOperator() {}
 
+    std::string type() const override { return "NavierStokesLSWFLinearFEOperator"; }
+
     void preAssembly( const std::shared_ptr<OperatorParameters> &params );
 
     void postAssembly();

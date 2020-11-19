@@ -14,6 +14,8 @@ public:
 
     virtual ~MoveMeshOperator() {}
 
+    std::string type() const override { return "MoveMeshOperator"; }
+
     void setVariable( AMP::LinearAlgebra::Variable::shared_ptr var );
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;

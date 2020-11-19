@@ -28,6 +28,9 @@ public:
     //! brief  Typedef to identify the parameters class of this operator
     typedef NodeToNodeMapParameters Parameters;
 
+    //! Return the name of the operator
+    std::string type() const override { return "NodeToNodeMap"; }
+
     /** \brief  Returns true if MapType = "NodeToNode"
      * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db
      * \return  True iff s == "NodeToNode"

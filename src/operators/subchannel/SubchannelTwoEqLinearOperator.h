@@ -26,6 +26,9 @@ public:
     //! Destructor
     virtual ~SubchannelTwoEqLinearOperator() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "SubchannelTwoEqLinearOperator"; }
+
     void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     //! Sets frozen vector

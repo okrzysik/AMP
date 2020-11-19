@@ -14,6 +14,7 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
+    std::string type() const override { return "BackwardEulerTimeOperator"; }
 
 protected:
 private:

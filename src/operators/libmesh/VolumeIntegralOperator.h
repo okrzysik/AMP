@@ -42,6 +42,9 @@ public:
       */
     virtual ~VolumeIntegralOperator() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "VolumeIntegralOperator"; }
+
     /**
       This is used to update the operator between successive solves with the operator.
       */

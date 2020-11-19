@@ -41,6 +41,9 @@ public:
     //! Destructor
     virtual ~SubchannelToCladMap();
 
+    //! Return the name of the operator
+    std::string type() const override { return "SubchannelToCladMap"; }
+
     /** \brief   Set a frozen vector for results of the apply operation.
      * \details  Set a frozen vector for results of the apply operation.
      * \param result    The results vector

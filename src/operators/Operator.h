@@ -37,6 +37,9 @@ public:
     //! Destructor
     virtual ~Operator() {}
 
+    //! Return the name of the operator
+    virtual std::string type() const = 0;
+
     /**
      * This function is useful for re-initializing/updating an operator
      * \param params

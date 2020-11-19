@@ -21,6 +21,8 @@ public:
     explicit MapSurface( const std::shared_ptr<OperatorParameters> &params );
     virtual ~MapSurface() {}
 
+    std::string type() const override { return "MapSurface"; }
+
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 

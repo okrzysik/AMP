@@ -20,21 +20,20 @@ public:
             new AMP::LinearAlgebra::Variable( params->d_db->getString( "SecondaryVariable" ) ) );
     }
 
+    std::string type() const override { return "SecondOperator"; }
+
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr r ) override
     {
-        AMP::LinearAlgebra::Vector::const_shared_ptr inP =
-            u->constSubsetVectorForVariable( d_primaryVar );
-        AMP::LinearAlgebra::Vector::const_shared_ptr inS =
-            u->constSubsetVectorForVariable( d_secondaryVar );
-        AMP::LinearAlgebra::Vector::shared_ptr out = r->subsetVectorForVariable( d_primaryVar );
+        auto inP = u->constSubsetVectorForVariable( d_primaryVar );
+        auto inS = u->constSubsetVectorForVariable( d_secondaryVar );
+        auto out = r->subsetVectorForVariable( d_primaryVar );
         out->linearSum( d_constant, *inP, 1.0, *inS );
     }
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
     {
-        std::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
-            new AMP::LinearAlgebra::MultiVariable( "MultiVariable" ) );
+        auto retVariable = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "MultiVariable" );
         retVariable->add( d_primaryVar );
         retVariable->add( d_secondaryVar );
         return retVariable;

@@ -27,6 +27,8 @@ public:
 
     virtual ~RowOperator() {}
 
+    std::string type() const override { return "RowOperator"; }
+
     void reset( const std::shared_ptr<OperatorParameters> &params ) override
     {
         std::shared_ptr<ColumnOperatorParameters> fParams =

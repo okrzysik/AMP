@@ -38,6 +38,9 @@ public:
       */
     virtual ~ConstraintsEliminationOperator() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "ConstraintsEliminationOperator"; }
+
     /**
      * This function is useful for re-initializing/updating an operator
      * \param params

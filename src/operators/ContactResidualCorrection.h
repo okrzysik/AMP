@@ -22,6 +22,8 @@ public:
 
     virtual ~ContactResidualCorrection() {}
 
+    std::string type() const override { return "ContactResidualCorrection"; }
+
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 

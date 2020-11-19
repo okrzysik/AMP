@@ -84,6 +84,9 @@ public:
 
     virtual ~AsynchronousOperator();
 
+    //! Return the name of the operator
+    std::string type() const override { return "AsynchronousOperator"; }
+
     /** \brief  Start a communicative apply operation
      * \details  The specific meaning of applyStart will vary depending on the operator,
      *   but the intended purpose is to start non-blocking communication.

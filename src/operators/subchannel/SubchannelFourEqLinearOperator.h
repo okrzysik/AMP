@@ -24,6 +24,9 @@ public:
     //! Destructor
     virtual ~SubchannelFourEqLinearOperator() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "SubchannelFourEqLinearOperator"; }
+
     void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr

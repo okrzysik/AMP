@@ -33,6 +33,9 @@ public:
       */
     virtual ~FlowFrapconJacobian() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "FlowFrapconJacobian"; }
+
     /**
       For this operator we have an in-place apply.
       @param [in]  u input vector.

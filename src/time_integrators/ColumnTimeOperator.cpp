@@ -35,8 +35,7 @@ ColumnTimeOperator::ColumnTimeOperator(
         const int numberOfOperators = d_pRhsOperator->getNumberOfOperators();
 
         for ( int i = 0; i < numberOfOperators; i++ ) {
-            std::shared_ptr<AMP::Database> timeOperator_db(
-                new AMP::Database( "TimeOperatorDatabase" ) );
+            auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
             // we assume for now that either all operators in the column operator are linear or all
             // are nonlinear
             timeOperator_db->putScalar( "CurrentDt",
@@ -50,8 +49,8 @@ ColumnTimeOperator::ColumnTimeOperator(
                                         column_db->getWithDefault( "bLinearRhsOperator", false ) );
             timeOperator_db->putScalar(
                 "ScalingFactor", column_db->getWithDefault<double>( "ScalingFactor", 1.0e6 ) );
-            std::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(
-                new AMP::TimeIntegrator::TimeOperatorParameters( timeOperator_db ) );
+            auto timeOperatorParameters =
+                std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
             timeOperatorParameters->d_pRhsOperator = d_pRhsOperator->getOperator( i );
 
             // if there are algebraic components set the mass operator to NULL
@@ -61,10 +60,10 @@ ColumnTimeOperator::ColumnTimeOperator(
                 timeOperator_db->putScalar( "bAlgebraicComponent", true );
             }
 
-            std::shared_ptr<AMP::TimeIntegrator::LinearTimeOperator> op(
-                new AMP::TimeIntegrator::LinearTimeOperator( timeOperatorParameters ) );
+            auto op =
+                std::make_shared<AMP::TimeIntegrator::LinearTimeOperator>( timeOperatorParameters );
 
-            d_Operators.push_back( op );
+            d_operators.push_back( op );
         }
     } else {
         AMP::pout << "Error: ColumnTimeOperator::ColumnTimeOperator() currently implemented for "
@@ -84,15 +83,12 @@ ColumnTimeOperator::~ColumnTimeOperator() = default;
 void ColumnTimeOperator::reset(
     const std::shared_ptr<AMP::Operator::OperatorParameters> &in_params )
 {
-    std::shared_ptr<TimeOperatorParameters> params =
-        std::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
-    std::shared_ptr<AMP::Database> column_db = params->d_db;
-    std::shared_ptr<AMP::Operator::ColumnOperatorParameters> pRhsParameters =
-        std::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(
-            params->d_pRhsOperatorParameters );
-    std::shared_ptr<AMP::Operator::ColumnOperatorParameters> pMassParameters =
-        std::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(
-            params->d_pMassOperatorParameters );
+    auto params         = std::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    auto column_db      = params->d_db;
+    auto pRhsParameters = std::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(
+        params->d_pRhsOperatorParameters );
+    auto pMassParameters = std::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(
+        params->d_pMassOperatorParameters );
 
     AMP_INSIST( params.get() != nullptr, "Error: NULL TimeOperatorParameters object" );
 
@@ -101,8 +97,7 @@ void ColumnTimeOperator::reset(
     const int numberOfOperators = d_pRhsOperator->getNumberOfOperators();
 
     for ( int i = 0; i < numberOfOperators; i++ ) {
-        std::shared_ptr<AMP::Database> timeOperator_db(
-            new AMP::Database( "TimeOperatorDatabase" ) );
+        auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
         // we assume for now that either all operators in the column operator are linear or all are
         // nonlinear
         timeOperator_db->putScalar( "CurrentDt",
@@ -116,8 +111,8 @@ void ColumnTimeOperator::reset(
                                     column_db->getWithDefault( "bLinearRhsOperator", false ) );
         timeOperator_db->putScalar( "ScalingFactor",
                                     column_db->getWithDefault<double>( "ScalingFactor", 1.0e6 ) );
-        std::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(
-            new AMP::TimeIntegrator::TimeOperatorParameters( timeOperator_db ) );
+        auto timeOperatorParameters =
+            std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
         if ( pRhsParameters.get() != nullptr ) {
             timeOperatorParameters->d_pRhsOperatorParameters =
                 ( pRhsParameters->d_OperatorParameters )[i];
@@ -133,7 +128,7 @@ void ColumnTimeOperator::reset(
             timeOperator_db->putScalar( "bAlgebraicComponent", true );
         }
 
-        d_Operators[i]->reset( timeOperatorParameters );
+        d_operators[i]->reset( timeOperatorParameters );
     }
 }
 

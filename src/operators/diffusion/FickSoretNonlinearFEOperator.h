@@ -24,6 +24,8 @@ public:
 
     virtual ~FickSoretNonlinearFEOperator() {}
 
+    std::string type() const override { return "FickSoretNonlinearFEOperator"; }
+
     void reset( const std::shared_ptr<OperatorParameters> &params ) override
     {
         std::shared_ptr<FickSoretNonlinearFEOperatorParameters> fsParams =

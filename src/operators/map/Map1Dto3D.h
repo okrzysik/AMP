@@ -32,6 +32,9 @@ public:
     //! De-constructor
     virtual ~Map1Dto3D() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "Map1Dto3D"; }
+
     /**
       This function reads the entries of the database for the operator
       and can also be used to change the parameters if required.

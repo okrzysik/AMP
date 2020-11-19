@@ -13,7 +13,7 @@ CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(
 {
     d_Mesh        = params->d_Mesh;
     auto myparams = std::dynamic_pointer_cast<CoupledFlowFrapconOperatorParameters>( params );
-    d_Operators.push_back( myparams->d_Map3to1 );
+    d_operators.push_back( myparams->d_Map3to1 );
 
     std::string flowOutVar = ( ( myparams->d_Map1to3 )->getOutputVariable() )->getName();
 
@@ -43,8 +43,8 @@ CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(
     std::dynamic_pointer_cast<AMP::Operator::Map3Dto1D>( d_flowInternal3to1 )
         ->setVector( d_flowInput );
 
-    d_Operators.push_back( d_flowInternal3to1 );
-    d_Operators.push_back( myparams->d_FlowOperator );
+    d_operators.push_back( d_flowInternal3to1 );
+    d_operators.push_back( myparams->d_FlowOperator );
 
     auto tmp_db2 = std::make_shared<AMP::Database>( "Dummy" );
     tmp_db2->putScalar( "BoundaryId", 4 );
@@ -64,8 +64,8 @@ CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(
             ( std::dynamic_pointer_cast<AMP::Operator::Map1Dto3D>( d_flowInternal1to3 ) )
                 ->getZLocations() );
 
-    d_Operators.push_back( d_flowInternal1to3 );
-    d_Operators.push_back( myparams->d_Map1to3 );
+    d_operators.push_back( d_flowInternal1to3 );
+    d_operators.push_back( myparams->d_Map1to3 );
 }
 
 void CoupledFlowFrapconOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
@@ -73,13 +73,13 @@ void CoupledFlowFrapconOperator::apply( AMP::LinearAlgebra::Vector::const_shared
 {
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = subsetInputVector( r );
-    std::dynamic_pointer_cast<AMP::Operator::Map1Dto3D>( d_Operators[4] )->setVector( rInternal );
+    std::dynamic_pointer_cast<AMP::Operator::Map1Dto3D>( d_operators[4] )->setVector( rInternal );
 
-    d_Operators[0]->apply( u, nullVec );
-    d_Operators[1]->apply( u, nullVec );
-    d_Operators[2]->apply( d_flowInput, d_flowOutput );
-    // d_Operators[3]->apply(nullVec, d_flowInput, nullVec, a, b);  // Is this necessary
-    d_Operators[4]->apply( d_flowOutput, nullVec );
+    d_operators[0]->apply( u, nullVec );
+    d_operators[1]->apply( u, nullVec );
+    d_operators[2]->apply( d_flowInput, d_flowOutput );
+    // d_operators[3]->apply(nullVec, d_flowInput, nullVec, a, b);  // Is this necessary
+    d_operators[4]->apply( d_flowOutput, nullVec );
 }
 } // namespace Operator
 } // namespace AMP

@@ -29,6 +29,9 @@ public:
     //! Constructor
     explicit AsyncMapColumnOperator( const std::shared_ptr<OperatorParameters> &params );
 
+    //! Return the name of the operator
+    std::string type() const override { return "AsyncMapColumnOperator"; }
+
     /** \brief  Call setVector on all vectors in the column
      * \param[in] p  The auxiliary or "frozen" vector to store results in
      */

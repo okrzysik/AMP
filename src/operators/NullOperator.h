@@ -34,6 +34,9 @@ public:
     //! Destructor
     virtual ~NullOperator() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "NullOperator"; }
+
     //! Empty apply call
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
                         AMP::LinearAlgebra::Vector::shared_ptr ) override

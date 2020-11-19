@@ -33,6 +33,9 @@ public:
     //! Destructor
     virtual ~LinearFEOperator() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "LinearFEOperator"; }
+
     /**
       This function will be called just before looping over the elements to
       build the stiffness matrix, so if the derived classes need to perform

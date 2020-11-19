@@ -16,6 +16,8 @@ public:
         d_constant = 0.0;
     }
 
+    std::string type() const override { return "OnePointOperator"; }
+
     double getConstant() { return d_constant; }
 
 protected:

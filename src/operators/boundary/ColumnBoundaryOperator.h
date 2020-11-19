@@ -32,6 +32,8 @@ public:
 
     virtual ~ColumnBoundaryOperator() {}
 
+    std::string type() const override { return "ColumnBoundaryOperator"; }
+
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 

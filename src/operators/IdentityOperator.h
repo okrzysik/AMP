@@ -27,6 +27,9 @@ public:
     //! Destructor
     virtual ~IdentityOperator() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "IdentityOperator"; }
+
     /**
      * The apply function for this operator, A, performs the following operation:
      * r = A(u)

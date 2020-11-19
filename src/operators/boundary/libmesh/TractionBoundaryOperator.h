@@ -16,6 +16,8 @@ public:
 
     virtual ~TractionBoundaryOperator() {}
 
+    std::string type() const override { return "TractionBoundaryOperator"; }
+
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 

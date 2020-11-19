@@ -35,6 +35,9 @@ public:
     //! Destructor
     virtual ~NonlinearFEOperator();
 
+    //! Return the name of the operator
+    std::string type() const override { return "NonlinearFEOperator"; }
+
     /**
       The apply function for this operator, A, performs the following operation:
       f = A(u)

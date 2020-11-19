@@ -37,6 +37,9 @@ public:
 
     virtual ~RobinVectorCorrection() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "RobinVectorCorrection"; }
+
     /**
       Sets Robin values into the appropriate locations of the output vector (r).
       */

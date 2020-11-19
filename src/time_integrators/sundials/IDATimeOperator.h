@@ -42,6 +42,9 @@ public:
      */
     virtual ~IDATimeOperator();
 
+    //! Return the name of the operator
+    std::string type() const override { return "IDATimeOperator"; }
+
     // virtual void reset(const std::shared_ptr<AMP::Operator::OperatorParameters>& params);
 
     /**

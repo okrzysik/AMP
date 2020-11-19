@@ -20,17 +20,17 @@ public:
 
     void reset( const std::shared_ptr<OperatorParameters> &params ) override
     {
-        d_Operators[2]->reset( params );
+        d_operators[2]->reset( params );
     }
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
     {
-        return d_Operators[4]->getOutputVariable();
+        return d_operators[4]->getOutputVariable();
     }
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {
-        return d_Operators[4]->getOutputVariable();
+        return d_operators[4]->getOutputVariable();
     }
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
@@ -38,9 +38,9 @@ public:
 
     void append( std::shared_ptr<Operator> op ) override
     {
-        AMP_ASSERT( d_Operators.size() < 3 );
+        AMP_ASSERT( d_operators.size() < 3 );
         AMP_ASSERT( op.get() != NULL );
-        d_Operators.push_back( op );
+        d_operators.push_back( op );
     }
 
     std::shared_ptr<OperatorParameters>
@@ -48,10 +48,12 @@ public:
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                    std::shared_ptr<OperatorParameters> params = NULL ) override
     {
-        return ( d_Operators[2]->getParameters( type, u, params ) );
+        return ( d_operators[2]->getParameters( type, u, params ) );
     }
 
     virtual ~CoupledFlowFrapconOperator() {}
+
+    std::string type() const override { return "CoupledFlowFrapconOperator"; }
 
 protected:
 private:

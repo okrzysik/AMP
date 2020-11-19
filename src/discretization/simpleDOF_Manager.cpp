@@ -34,7 +34,7 @@ DOFManager::shared_ptr simpleDOFManager::create( std::shared_ptr<AMP::Mesh::Mesh
             if ( subMesh.get() != nullptr )
                 managers.push_back( create( subMesh, type, gcw, DOFsPerObject, false ) );
         }
-        std::shared_ptr<multiDOFManager> rtn( new multiDOFManager( mesh->getComm(), managers ) );
+        auto rtn = std::make_shared<multiDOFManager>( mesh->getComm(), managers );
         return rtn;
     }
     // We are ready to create the simpleDOFManager

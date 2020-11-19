@@ -27,6 +27,8 @@ public:
 
     virtual ~GaussPointToGaussPointMap() {}
 
+    std::string type() const override { return "GaussPointToGaussPointMap"; }
+
 protected:
     void createIdxMap( std::shared_ptr<AMP::Operator::OperatorParameters> params );
 

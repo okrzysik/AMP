@@ -42,6 +42,9 @@ public:
      */
     virtual ~NeutronicsRhs();
 
+    //! Return the name of the operator
+    std::string type() const override { return "NeutronicsRhs"; }
+
     /**
      * Print out all members of integrator instance to given output stream.
      */

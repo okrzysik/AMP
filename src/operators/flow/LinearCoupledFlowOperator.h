@@ -20,6 +20,8 @@ public:
 
     virtual ~LinearCoupledFlowOperator() {}
 
+    std::string type() const override { return "LinearCoupledFlowOperator"; }
+
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
                         AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr r,

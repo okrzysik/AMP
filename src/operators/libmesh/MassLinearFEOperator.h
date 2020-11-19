@@ -21,6 +21,8 @@ public:
 
     virtual ~MassLinearFEOperator() {}
 
+    std::string type() const override { return "MassLinearFEOperator"; }
+
     void preAssembly( const std::shared_ptr<AMP::Operator::OperatorParameters> & ) override;
 
     void postAssembly() override;

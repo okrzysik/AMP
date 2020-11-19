@@ -43,6 +43,9 @@ public:
      */
     virtual ~LinearBVPOperator() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "LinearBVPOperator"; }
+
     /**
      * This function is useful for re-initializing/updating an operator
      */

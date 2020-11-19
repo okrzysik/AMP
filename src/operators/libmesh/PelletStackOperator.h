@@ -14,6 +14,8 @@ public:
 
     virtual ~PelletStackOperator() {}
 
+    std::string type() const override { return "PelletStackOperator"; }
+
     int getLocalIndexForPellet( unsigned int pellId );
 
     unsigned int getTotalNumberOfPellets();

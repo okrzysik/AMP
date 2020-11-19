@@ -30,6 +30,9 @@ public:
     //! Destructor
     virtual ~StridedZAxisMap();
 
+    //! Return the name of the operator
+    std::string type() const override { return "StridedZAxisMap"; }
+
     /** \brief  Returns true if MapType = "ScalarZAxis"
      * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db
      * \return  True iff s == "ScalarZAxis"

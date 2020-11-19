@@ -45,6 +45,9 @@ public:
       */
     virtual ~DirichletVectorCorrection() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "DirichletVectorCorrection"; }
+
     /**
       Set the variable for the vector that will used with this operator
       */

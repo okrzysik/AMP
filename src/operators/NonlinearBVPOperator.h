@@ -43,6 +43,9 @@ public:
      */
     virtual ~NonlinearBVPOperator() {}
 
+    //! Return the name of the operator
+    std::string type() const override { return "NonlinearBVPOperator"; }
+
     /**
       The apply function for this operator performs the following operation:
       r = b*f+a*A(u), if f is not NULL and
