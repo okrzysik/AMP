@@ -102,7 +102,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
             d_prePostOperator->runPostApply( x, f_out, exact );
     }
 
-    if ( outArgs.supports( ::Thyra::ModelEvaluatorBase::OUT_ARG_W_op ) ) {
+    if ( outArgs.supports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op ) ) {
         Teuchos::RCP<Thyra::LinearOpBase<double>> W_out = outArgs.get_W_op();
         if ( W_out.get() != nullptr ) {
             // Get the jacobian
@@ -155,16 +155,16 @@ TrilinosThyraModelEvaluator::get_W_factory() const
 {
     ::Thyra::ModelEvaluatorBase::InArgsSetup<double> inArgs;
     inArgs.setModelEvalDescription( this->description() );
-    inArgs.setSupports( ::Thyra::ModelEvaluatorBase::IN_ARG_x );
+    inArgs.setSupports(::Thyra::ModelEvaluatorBase::IN_ARG_x );
     return std::move( inArgs );
 }
 ::Thyra::ModelEvaluatorBase::OutArgs<double> TrilinosThyraModelEvaluator::createOutArgsImpl() const
 {
     ::Thyra::ModelEvaluatorBase::OutArgsSetup<double> outArgs;
     outArgs.setModelEvalDescription( this->description() );
-    outArgs.setSupports( ::Thyra::ModelEvaluatorBase::OUT_ARG_f );
-    outArgs.setSupports( ::Thyra::ModelEvaluatorBase::OUT_ARG_W_op );
-    outArgs.setSupports( ::Thyra::ModelEvaluatorBase::OUT_ARG_W_prec );
+    outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_f );
+    outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op );
+    outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_prec );
     return std::move( outArgs );
 }
 

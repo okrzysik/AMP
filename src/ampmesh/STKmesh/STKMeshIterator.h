@@ -45,16 +45,16 @@ public:
     bool operator!=( const MeshIterator &rhs ) const override;
 
     //! Dereference the iterator
-    MeshElement &operator*( void ) override;
+    MeshElement &operator*(void) override;
 
     //! Dereference the iterator
-    MeshElement *operator->( void ) override;
+    MeshElement *operator->(void) override;
 
     //! Dereference the iterator
-    const MeshElement &operator*( void ) const override;
+    const MeshElement &operator*(void) const override;
 
     //! Dereference the iterator
-    const MeshElement *operator->( void ) const override;
+    const MeshElement *operator->(void) const override;
 
     //! Return an iterator to the begining
     MeshIterator begin() const override;
