@@ -42,29 +42,25 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout.flush();
 
     // Test create
-
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
     // Create the Mesh.
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mgrParams                         = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
-    std::shared_ptr<AMP::Operator::FickSoretNonlinearFEOperator> fsOp;
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    std::shared_ptr<AMP::Database> fsOp_db =
+    auto fsOp_db =
         std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "NonlinearFickSoretOp" ) );
-    std::shared_ptr<AMP::Operator::Operator> nonlinearOperator =
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "NonlinearFickSoretOp", input_db, elementModel );
-    fsOp =
+    auto nonlinearOperator = AMP::Operator::OperatorBuilder::createOperator(
+        meshAdapter, "NonlinearFickSoretOp", input_db, elementModel );
+    auto fsOp =
         std::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>( nonlinearOperator );
-    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> fickOp  = fsOp->getFickOperator();
-    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> soretOp = fsOp->getSoretOperator();
+    auto fickOp  = fsOp->getFickOperator();
+    auto soretOp = fsOp->getSoretOperator();
 
     ut->passes( exeName + ": create" );
     std::cout.flush();
@@ -75,39 +71,34 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         soretOp->getTransportModel();
 
     // create parameters for reset test
-    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperatorParameters> fickOpParams(
-        new AMP::Operator::DiffusionNonlinearFEOperatorParameters( fsOp_db ) );
-    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperatorParameters> soretOpParams(
-        new AMP::Operator::DiffusionNonlinearFEOperatorParameters( fsOp_db ) );
+    auto fickOpParams =
+        std::make_shared<AMP::Operator::DiffusionNonlinearFEOperatorParameters>( fsOp_db );
+    auto soretOpParams =
+        std::make_shared<AMP::Operator::DiffusionNonlinearFEOperatorParameters>( fsOp_db );
     fickOpParams->d_transportModel  = fickModel;
     soretOpParams->d_transportModel = soretModel;
-    std::shared_ptr<AMP::Database> fsOpBase_db(
-        std::dynamic_pointer_cast<AMP::Database>( fsOp_db ) );
-    std::shared_ptr<AMP::Operator::FickSoretNonlinearFEOperatorParameters> fsOpParams(
-        new AMP::Operator::FickSoretNonlinearFEOperatorParameters( fsOpBase_db ) );
+    auto fsOpBase_db                = std::dynamic_pointer_cast<AMP::Database>( fsOp_db );
+    auto fsOpParams =
+        std::make_shared<AMP::Operator::FickSoretNonlinearFEOperatorParameters>( fsOpBase_db );
     fsOpParams->d_FickParameters  = fickOpParams;
     fsOpParams->d_SoretParameters = soretOpParams;
 
     // create vectors for parameters
-    AMP::LinearAlgebra::Variable::shared_ptr tVar( new AMP::LinearAlgebra::Variable( "temp" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr cVar( new AMP::LinearAlgebra::Variable( "conc" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr bVar( new AMP::LinearAlgebra::Variable( "burnup" ) );
+    auto tVar = std::make_shared<AMP::LinearAlgebra::Variable>( "temp" );
+    auto cVar = std::make_shared<AMP::LinearAlgebra::Variable>( "conc" );
+    auto bVar = std::make_shared<AMP::LinearAlgebra::Variable>( "burnup" );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode     = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+    auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // create solution, rhs, and residual vectors
-    AMP::LinearAlgebra::Vector::shared_ptr tVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, tVar );
-    AMP::LinearAlgebra::Vector::shared_ptr cVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, cVar );
-    AMP::LinearAlgebra::Vector::shared_ptr bVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, bVar );
+    auto tVec = AMP::LinearAlgebra::createVector( nodalDofMap, tVar );
+    auto cVec = AMP::LinearAlgebra::createVector( nodalDofMap, cVar );
+    auto bVec = AMP::LinearAlgebra::createVector( nodalDofMap, bVar );
 
     // set vectors in parameters
     fickOpParams->d_FrozenTemperature    = tVec;
@@ -133,8 +124,8 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     scale[1] = 1.;
     std::vector<double> range( 2 );
     std::vector<double> defaults;
-    AMP::Materials::Material::shared_ptr matFick  = fickModel->getMaterial();  // compile error
-    AMP::Materials::Material::shared_ptr matSoret = soretModel->getMaterial(); // compile error
+    auto matFick  = fickModel->getMaterial();  // compile error
+    auto matSoret = soretModel->getMaterial(); // compile error
     // the Soret has a principal variable of temperature
     if ( soretOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
         std::string property = "ThermalDiffusionCoefficient";
@@ -166,12 +157,11 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     if ( defaults.size() > 2 )
         bVec->setToScalar( defaults[2] ); // compile error
     // set up input multivariable and output variable
-    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> fsInpVar(
-        new AMP::LinearAlgebra::MultiVariable( "fsInput" ) );
+    auto fsInpVar = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "fsInput" );
     fsInpVar->add( tVar );
     fsInpVar->add( cVar );
     fsInpVar->add( bVar );
-    std::shared_ptr<AMP::LinearAlgebra::Variable> fsOutVar( fickOp->getOutputVariable() );
+    auto fsOutVar = fickOp->getOutputVariable();
 
     std::string msgPrefix = exeName + ": apply ";
     AMP::LinearAlgebra::Vector::shared_ptr solVec =

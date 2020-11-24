@@ -304,9 +304,9 @@ void ThermalVonMisesMatModel::computeEvalv( const std::vector<std::vector<double
         std::string burnupString      = "burnup";        // in the future get from input file
         std::string oxygenString      = "concentration"; // in the future get from input file
 
-        std::shared_ptr<std::vector<double>> tempVec( new std::vector<double> );
-        std::shared_ptr<std::vector<double>> burnupVec( new std::vector<double> );
-        std::shared_ptr<std::vector<double>> oxygenVec( new std::vector<double> );
+        auto tempVec   = std::make_shared<std::vector<double>>();
+        auto burnupVec = std::make_shared<std::vector<double>>();
+        auto oxygenVec = std::make_shared<std::vector<double>>();
 
         inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec ) );
         inputMaterialParameters.insert( std::make_pair( burnupString, burnupVec ) );

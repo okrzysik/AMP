@@ -1,9 +1,21 @@
-#include "RowOperator.h"
+#include "AMP/operators/RowOperator.h"
+#include "AMP/operators/ColumnOperatorParameters.h"
+
 
 namespace AMP {
 namespace Operator {
 
 
+// Constructor
+RowOperator::RowOperator( const std::shared_ptr<OperatorParameters> &params ) : Operator()
+{
+    (void) params;
+    getAllJacobian = false;
+    d_paramsize    = 1;
+}
+
+
+// Apply
 void RowOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                          AMP::LinearAlgebra::Vector::shared_ptr r )
 {
@@ -29,5 +41,75 @@ void RowOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         rOriginal->add( *rOriginal, *( rInternal[i] ) );
     }
 }
+
+
+// Reset
+void RowOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+{
+    std::shared_ptr<ColumnOperatorParameters> fParams =
+        std::dynamic_pointer_cast<ColumnOperatorParameters>( params );
+
+    AMP_INSIST( ( fParams.get() != nullptr ), "RowOperator::reset parameter object is NULL" );
+
+    AMP_INSIST( ( ( ( fParams->d_OperatorParameters ).size() ) == ( d_Operators.size() ) ),
+                " std::vector sizes do not match! " );
+
+    for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
+        d_Operators[i]->reset( ( fParams->d_OperatorParameters )[i] );
+    }
+}
+
+
+// getParameters
+void RowOperator::append( std::shared_ptr<Operator> op, double a )
+{
+    AMP_INSIST( ( op.get() != nullptr ),
+                "AMP::RowOperator::appendRow input argument is a NULL operator" );
+    d_Operators.push_back( op );
+    scalea.push_back( a );
+}
+
+
+// getParameters
+std::shared_ptr<OperatorParameters>
+RowOperator::getParameters( const std::string &type,
+                            AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                            std::shared_ptr<OperatorParameters> params )
+{
+    std::shared_ptr<AMP::Database> db;
+
+    auto opParameters = std::make_shared<ColumnOperatorParameters>( db );
+
+    auto rtParameters = std::make_shared<OperatorParameters>( db );
+
+    if ( type == "Jacobian" ) {
+        if ( getAllJacobian ) {
+            ( opParameters->d_OperatorParameters ).resize( d_Operators.size() );
+
+            for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
+                ( opParameters->d_OperatorParameters )[i] =
+                    ( d_Operators[i]->getParameters( type, u, params ) );
+            }
+
+            rtParameters = std::dynamic_pointer_cast<OperatorParameters>( opParameters );
+        } else {
+            ( opParameters->d_OperatorParameters ).resize( d_paramsize );
+
+            for ( int i = 0; i < d_paramsize; i++ ) {
+                ( opParameters->d_OperatorParameters )[i] =
+                    ( d_Operators[i]->getParameters( type, u, params ) );
+            }
+
+            rtParameters = std::dynamic_pointer_cast<OperatorParameters>( opParameters );
+            // rtParameters = (d_Operators[0]->getJacobianParameters(u));
+        }
+    } else {
+        AMP_ERROR( "Unknown type requested" );
+    }
+
+    return rtParameters;
+}
+
+
 } // namespace Operator
 } // namespace AMP

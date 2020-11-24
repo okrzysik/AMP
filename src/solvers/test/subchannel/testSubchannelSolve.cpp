@@ -156,17 +156,12 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     auto powerVariable =
         std::make_shared<AMP::LinearAlgebra::Variable>( "SpecificPowerInWattsPerGram" );
 
-    std::shared_ptr<AMP::Operator::Operator> thermalCopyOperator;
-
-    std::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
-    auto nonlinearColumnOperator = std::make_shared<AMP::Operator::ColumnOperator>( emptyParams );
-    auto linearColumnOperator    = std::make_shared<AMP::Operator::ColumnOperator>( emptyParams );
-    auto volumeIntegralColumnOperator =
-        std::make_shared<AMP::Operator::ColumnOperator>( emptyParams );
-
-    auto mapsColumn = std::make_shared<AMP::Operator::ColumnOperator>( emptyParams );
-    auto n2nColumn  = std::make_shared<AMP::Operator::AsyncMapColumnOperator>( emptyParams );
-    auto szaColumn  = std::make_shared<AMP::Operator::AsyncMapColumnOperator>( emptyParams );
+    auto nonlinearColumnOperator      = std::make_shared<AMP::Operator::ColumnOperator>();
+    auto linearColumnOperator         = std::make_shared<AMP::Operator::ColumnOperator>();
+    auto volumeIntegralColumnOperator = std::make_shared<AMP::Operator::ColumnOperator>();
+    auto mapsColumn                   = std::make_shared<AMP::Operator::ColumnOperator>();
+    auto n2nColumn                    = std::make_shared<AMP::Operator::AsyncMapColumnOperator>();
+    auto szaColumn                    = std::make_shared<AMP::Operator::AsyncMapColumnOperator>();
 
     std::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearCoupledSolver;
     std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearColumnSolver;
@@ -480,6 +475,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             coupledChannelMapOperatorParams );
     mapsColumn->append( coupledChannelMapOperator );
 
+    std::shared_ptr<AMP::Operator::Operator> thermalCopyOperator;
     if ( pinMesh.get() != nullptr ) {
         auto copyOp_db = std::dynamic_pointer_cast<AMP::Database>(
             global_input_db->getDatabase( "CopyOperator" ) );

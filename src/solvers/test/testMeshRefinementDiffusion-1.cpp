@@ -214,9 +214,8 @@ void createThermalOperators(
 {
     AMP::pout << "Entering createThermalOperators" << std::endl;
 
-    std::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
-    nonlinearColumnOperator.reset( new AMP::Operator::ColumnOperator( emptyParams ) );
-    linearColumnOperator.reset( new AMP::Operator::ColumnOperator( emptyParams ) );
+    nonlinearColumnOperator = std::make_shared<AMP::Operator::ColumnOperator>();
+    linearColumnOperator    = std::make_shared<AMP::Operator::ColumnOperator>();
 
     auto bottomAdapter = manager->Subset( "Bottom" );
 

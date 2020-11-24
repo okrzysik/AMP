@@ -216,8 +216,8 @@ void test_shared_from_this( UnitTest *ut )
 {
     bool pass = true;
     try {
-        std::shared_ptr<dummy> ptr( new dummy );
-        pass = test_shared_from_this_pointer( ptr );
+        auto ptr = std::make_shared<dummy>();
+        pass     = test_shared_from_this_pointer( ptr );
     } catch ( ... ) {
         pass = false;
     }

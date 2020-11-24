@@ -92,8 +92,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     // create a column rhs operator object with the nonlinear thermal in it for use in the nonlinear
     // problem definition
-    std::shared_ptr<AMP::Operator::OperatorParameters> params;
-    auto columnNonlinearRhsOperator = std::make_shared<AMP::Operator::ColumnOperator>( params );
+    auto columnNonlinearRhsOperator = std::make_shared<AMP::Operator::ColumnOperator>();
     columnNonlinearRhsOperator->append( nonlinearThermalOperator );
     columnNonlinearRhsOperator->append( nonlinearOxygenOperator );
 
@@ -106,8 +105,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             meshAdapter, "LinearOxygenOperator", input_db, oxygenModel ) );
     // create a column rhs operator object with the linear thermal in it for use in the linear
     // problem definition
-    std::shared_ptr<AMP::Operator::OperatorParameters> rhsparams;
-    auto columnLinearRhsOperator = std::make_shared<AMP::Operator::ColumnOperator>( rhsparams );
+    auto columnLinearRhsOperator = std::make_shared<AMP::Operator::ColumnOperator>();
     columnLinearRhsOperator->append( linearThermalOperator );
     columnLinearRhsOperator->append( linearOxygenOperator );
 
@@ -122,8 +120,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             meshAdapter, "MassOxygenOperator", input_db, massOxygenModel ) );
 
     // create a column mass operator object for use in the nonlinear and linear problem definition
-    std::shared_ptr<AMP::Operator::OperatorParameters> massParams;
-    auto columnMassOperator = std::make_shared<AMP::Operator::ColumnOperator>( massParams );
+    auto columnMassOperator = std::make_shared<AMP::Operator::ColumnOperator>();
     columnMassOperator->append( massThermalOp );
     columnMassOperator->append( massOxygenOp );
 

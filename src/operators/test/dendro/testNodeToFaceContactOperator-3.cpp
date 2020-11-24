@@ -182,9 +182,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, dofsPerNode, split );
 
     // Build a column operator and a column preconditioner
-    std::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
-    auto columnOperator = std::make_shared<AMP::Operator::ColumnOperator>( emptyParams );
-
+    auto columnOperator          = std::make_shared<AMP::Operator::ColumnOperator>();
     auto linearSolver_db         = input_db->getDatabase( "LinearSolver" );
     auto columnPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
     auto columnPreconditionerParams =

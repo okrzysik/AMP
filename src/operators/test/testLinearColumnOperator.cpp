@@ -71,8 +71,7 @@ static void myTest( AMP::UnitTest *ut )
         std::vector<int> dofsPerNodeArr = innerInput_db->getVector<int>( "dofsPerNode" );
 
         // create a column operator object
-        std::shared_ptr<AMP::Operator::OperatorParameters> colParams;
-        auto columnOperator = std::make_shared<AMP::Operator::ColumnOperator>( colParams );
+        auto columnOperator = std::make_shared<AMP::Operator::ColumnOperator>();
 
         std::vector<AMP::LinearAlgebra::Variable::shared_ptr> inputVariables;
         std::vector<AMP::Discretization::DOFManager::shared_ptr> dofMapVec;

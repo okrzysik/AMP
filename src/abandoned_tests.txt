@@ -8,7 +8,6 @@ solvers/test/testNonlinearThermalContact-2.cc
 solvers/test/writeBox.cc
 solvers/test/testNonlinearThermalContact-FastReactor.cc
 solvers/test/testNonlinearThermalOxygenContact-StronglyCoupled.cc
-solvers/test/testNonlinearKrylovAccelerator-NonlinearThermal-1.cc
 solvers/test/writeCookMesh.cc
 solvers/test/testNonlinearThermalContact-StronglyCoupled.cc
 solvers/test/testPetscSNESSolver-NonlinearThermalMechanics-OperatorSplit.cc

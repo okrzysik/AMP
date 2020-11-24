@@ -5,6 +5,11 @@ namespace AMP {
 namespace Operator {
 
 
+/********************************************************
+ * Constructors                                          *
+ ********************************************************/
+AsynchronousColumnOperator::AsynchronousColumnOperator() : ColumnOperator() {}
+
 AsynchronousColumnOperator::AsynchronousColumnOperator(
     const std::shared_ptr<OperatorParameters> &params )
     : ColumnOperator( params )
@@ -12,24 +17,21 @@ AsynchronousColumnOperator::AsynchronousColumnOperator(
 }
 
 
+/********************************************************
+ * apply                                                 *
+ ********************************************************/
 void AsynchronousColumnOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                         AMP::LinearAlgebra::Vector::shared_ptr f )
 {
     applyStart( u, f );
     applyFinish( u, f );
 }
-
-
-// Initiate all applies in the column
 void AsynchronousColumnOperator::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                              AMP::LinearAlgebra::Vector::shared_ptr f )
 {
     for ( size_t i = 0; i != getNumberOfOperators(); i++ )
         std::dynamic_pointer_cast<AsynchronousOperator>( getOperator( i ) )->applyStart( u, f );
 }
-
-
-// Finish all applies in the column
 void AsynchronousColumnOperator::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                               AMP::LinearAlgebra::Vector::shared_ptr f )
 {
@@ -38,6 +40,9 @@ void AsynchronousColumnOperator::applyFinish( AMP::LinearAlgebra::Vector::const_
 }
 
 
+/********************************************************
+ * append                                                *
+ ********************************************************/
 void AsynchronousColumnOperator::append( std::shared_ptr<Operator> op )
 {
     if ( std::dynamic_pointer_cast<AsynchronousOperator>( op ) ) {

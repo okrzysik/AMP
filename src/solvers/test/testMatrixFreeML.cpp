@@ -292,7 +292,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         for ( int lev = 0; lev < ( nlevels - 1 ); lev++ ) {
             ML_Gen_Smoother_SymGaussSeidel( ml_object, lev, ML_BOTH, 2, 1.0 );
         }
-	
+
 #if TRILINOS_MAJOR_MINOR_VERSION >= 130000
         ML_Gen_Smoother_Amesos( ml_object, ( nlevels - 1 ), ML_AMESOS_KLU, -1, 0.0, 1 );
 #else
@@ -335,8 +335,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
     // matrix-free-3 using TrilinosMatrixShellOperator and customized getRow()
     if ( type == 3 ) {
-        std::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
-        auto columnOperator = std::make_shared<AMP::Operator::ColumnOperator>( emptyParams );
+        auto columnOperator = std::make_shared<AMP::Operator::ColumnOperator>();
         columnOperator->append( fusedOperator );
 
         auto matrixShellDatabase = std::make_shared<AMP::Database>( "MatrixShellOperator" );
@@ -436,11 +435,10 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
             fusedMeshes->getMeshes()[0], "LoadOperator", input_db, dummyModel ) );
     firstLoadOperator->setVariable( firstFusedVar );
 
-    std::shared_ptr<AMP::Operator::OperatorParameters> nullOpParams;
-    auto fusedColumnOperator = std::make_shared<AMP::Operator::ColumnOperator>( nullOpParams );
+    auto fusedColumnOperator = std::make_shared<AMP::Operator::ColumnOperator>();
     fusedColumnOperator->append( firstFusedOperator );
 
-    auto loadColumnOperator = std::make_shared<AMP::Operator::ColumnOperator>( nullOpParams );
+    auto loadColumnOperator = std::make_shared<AMP::Operator::ColumnOperator>();
     loadColumnOperator->append( firstLoadOperator );
     if ( useTwoMeshes ) {
         auto secondFusedOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(

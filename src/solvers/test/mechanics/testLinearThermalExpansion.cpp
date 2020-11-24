@@ -29,50 +29,38 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-#ifdef USE_EXT_SILO
-    // Create the silo writer and register the data
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-#endif
-
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db    = input_db->getDatabase( "Mesh" );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
+    auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
     AMP::pout << "Constructed BVP operator" << std::endl;
 
-    AMP::LinearAlgebra::Variable::shared_ptr dispVar = bvpOperator->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr tempVar( new AMP::LinearAlgebra::Variable( "temp" ) );
+    auto dispVar = bvpOperator->getOutputVariable();
+    auto tempVar = std::make_shared<AMP::LinearAlgebra::Variable>( "temp" );
 
-    AMP::Discretization::DOFManager::shared_ptr tempDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto tempDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
-    AMP::Discretization::DOFManager::shared_ptr dispDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto dispDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    AMP::LinearAlgebra::Vector::shared_ptr mechSolVec =
-        AMP::LinearAlgebra::createVector( dispDofMap, dispVar, true );
-    AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = mechSolVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr mechResVec = mechSolVec->cloneVector();
+    auto mechSolVec = AMP::LinearAlgebra::createVector( dispDofMap, dispVar, true );
+    auto mechRhsVec = mechSolVec->cloneVector();
+    auto mechResVec = mechSolVec->cloneVector();
 
-    AMP::LinearAlgebra::Vector::shared_ptr currTempVec =
-        AMP::LinearAlgebra::createVector( tempDofMap, tempVar, true );
-    AMP::LinearAlgebra::Vector::shared_ptr prevTempVec = currTempVec->cloneVector();
+    auto currTempVec = AMP::LinearAlgebra::createVector( tempDofMap, tempVar, true );
+    auto prevTempVec = currTempVec->cloneVector();
 
     mechSolVec->setToScalar( 0.0 );
     mechResVec->setToScalar( 0.0 );
@@ -92,29 +80,25 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                  mechRhsVec );
     bvpOperator->modifyRHSvector( mechRhsVec );
 
-    std::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "LinearSolver" );
-    std::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase( "Preconditioner" );
-    std::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams(
-        new AMP::Solver::TrilinosMLSolverParameters( pcSolver_db ) );
+    auto linearSolver_db = input_db->getDatabase( "LinearSolver" );
+    auto pcSolver_db     = linearSolver_db->getDatabase( "Preconditioner" );
+    auto pcSolverParams  = std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( pcSolver_db );
     pcSolverParams->d_pOperator = bvpOperator;
-    std::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
-        new AMP::Solver::TrilinosMLSolver( pcSolverParams ) );
+    auto pcSolver               = std::make_shared<AMP::Solver::TrilinosMLSolver>( pcSolverParams );
 
-    std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
-        new AMP::Solver::PetscKrylovSolverParameters( linearSolver_db ) );
+    auto linearSolverParams =
+        std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
     linearSolverParams->d_pOperator       = bvpOperator;
     linearSolverParams->d_comm            = AMP_COMM_WORLD;
     linearSolverParams->d_pPreconditioner = pcSolver;
-    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(
-        new AMP::Solver::PetscKrylovSolver( linearSolverParams ) );
+    auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
     linearSolver->solve( mechRhsVec, mechSolVec );
 
 #ifdef USE_EXT_SILO
+    // Create the silo writer and register the data
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-#endif
-
-#ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 1 );
     meshAdapter->displaceMesh( mechSolVec );
     siloWriter->writeFile( exeName, 2 );

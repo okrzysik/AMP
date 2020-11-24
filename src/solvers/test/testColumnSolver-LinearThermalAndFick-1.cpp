@@ -66,8 +66,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
             meshAdapter, "testLinearThermalOperator", input_db, thermalTransportModel ) );
 
     // create a column operator object for linear Thermal-Fick
-    std::shared_ptr<AMP::Operator::OperatorParameters> params;
-    auto linearThermalFickOperator = std::make_shared<AMP::Operator::ColumnOperator>( params );
+    auto linearThermalFickOperator = std::make_shared<AMP::Operator::ColumnOperator>();
     linearThermalFickOperator->append( linearThermalOperator );
     linearThermalFickOperator->append( linearFickOperator );
 

@@ -17,8 +17,7 @@ CoupledFlow1DSolver::CoupledFlow1DSolver( std::shared_ptr<SolverStrategyParamete
 {
     AMP_ASSERT( parameters.get() != nullptr );
 
-    std::shared_ptr<CoupledFlow1DSolverParameters> params =
-        std::dynamic_pointer_cast<CoupledFlow1DSolverParameters>( parameters );
+    auto params = std::dynamic_pointer_cast<CoupledFlow1DSolverParameters>( parameters );
 
     std::string flowOutVar = ( ( params->d_pOperator )->getOutputVariable() )->getName();
 
@@ -28,34 +27,33 @@ CoupledFlow1DSolver::CoupledFlow1DSolver( std::shared_ptr<SolverStrategyParamete
     d_flow1DSolver         = std::dynamic_pointer_cast<Flow1DSolver>( params->d_flow1DSolver );
     std::string flowInpVar = ( d_flow1DSolver->getInputVariable() )->getName();
 
-    std::shared_ptr<AMP::Database> tmp_db1( new AMP::Database( "Dummy" ) );
+    auto tmp_db1 = std::make_shared<AMP::Database>( "Dummy" );
     tmp_db1->putScalar( "BoundaryId", 4 );
     tmp_db1->putScalar( "InputVariable", flowOutVar );
     tmp_db1->putScalar( "OutputVariable", flowInpVar );
-    std::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowInternal3to1Params(
-        new AMP::Operator::MapOperatorParameters( tmp_db1 ) );
+    auto mapflowInternal3to1Params =
+        std::make_shared<AMP::Operator::MapOperatorParameters>( tmp_db1 );
     mapflowInternal3to1Params->d_MapMesh = ( d_flow1DSolver->getOperator() )->getMesh();
     mapflowInternal3to1Params->d_MapComm = mapflowInternal3to1Params->d_MapMesh->getComm();
-    d_flowInternal3to1.reset( new AMP::Operator::Map3Dto1D( mapflowInternal3to1Params ) );
+    d_flowInternal3to1 = std::make_shared<AMP::Operator::Map3Dto1D>( mapflowInternal3to1Params );
 
-    std::shared_ptr<AMP::Database> tmp_db2( new AMP::Database( "Dummy" ) );
+    std::shared_ptr<AMP::Database> tmp_db2 = std::make_shared<AMP::Database>( "Dummy" );
     tmp_db2->putScalar( "BoundaryId", 4 );
     tmp_db2->putScalar( "InputVariable", flowInpVar );
     tmp_db2->putScalar( "OutputVariable", flowOutVar );
-    std::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowInternal1to3Params(
-        new AMP::Operator::MapOperatorParameters( tmp_db2 ) );
+    auto mapflowInternal1to3Params =
+        std::make_shared<AMP::Operator::MapOperatorParameters>( tmp_db2 );
     mapflowInternal1to3Params->d_MapMesh = ( d_flow1DSolver->getOperator() )->getMesh();
     mapflowInternal1to3Params->d_MapComm = mapflowInternal1to3Params->d_MapMesh->getComm();
-    d_flowInternal1to3.reset( new AMP::Operator::Map1Dto3D( mapflowInternal1to3Params ) );
+    d_flowInternal1to3 = std::make_shared<AMP::Operator::Map1Dto3D>( mapflowInternal1to3Params );
 
-    ( std::dynamic_pointer_cast<AMP::Operator::Map3Dto1D>( d_flowInternal3to1 ) )
-        ->setZLocations(
-            ( std::dynamic_pointer_cast<AMP::Operator::Map1Dto3D>( d_flowInternal1to3 ) )
-                ->getZLocations() );
+    std::dynamic_pointer_cast<AMP::Operator::Map3Dto1D>( d_flowInternal3to1 )
+        ->setZLocations( std::dynamic_pointer_cast<AMP::Operator::Map1Dto3D>( d_flowInternal1to3 )
+                             ->getZLocations() );
 
     int d_numpoints = ( std::dynamic_pointer_cast<AMP::Operator::Map1Dto3D>( d_flowInternal1to3 ) )
                           ->getNumZlocations();
-    d_SimpleVariable.reset( new AMP::LinearAlgebra::Variable( flowInpVar ) );
+    d_SimpleVariable = std::make_shared<AMP::LinearAlgebra::Variable>( flowInpVar );
 
     d_flowInput  = AMP::LinearAlgebra::createSimpleVector<double>( d_numpoints, d_SimpleVariable );
     d_flowOutput = AMP::LinearAlgebra::createSimpleVector<double>( d_numpoints, d_SimpleVariable );

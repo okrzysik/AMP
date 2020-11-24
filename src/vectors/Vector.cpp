@@ -114,7 +114,7 @@ Vector::shared_ptr Vector::select( const VectorSelector &s, const std::string &v
     if ( retVal != nullptr ) {
         if ( std::dynamic_pointer_cast<MultiVector>( retVal ) == nullptr )
             retVal = MultiVector::view( retVal, retVal->getComm() );
-        Variable::shared_ptr var( new Variable( variable_name ) );
+        auto var = std::make_shared<Variable>( variable_name );
         retVal->setVariable( var );
     }
     return retVal;
@@ -131,7 +131,7 @@ Vector::const_shared_ptr Vector::constSelect( const VectorSelector &s,
     if ( retVal != nullptr ) {
         if ( std::dynamic_pointer_cast<const MultiVector>( retVal ) == nullptr )
             retVal = MultiVector::constView( retVal, retVal->getComm() );
-        Variable::shared_ptr var( new Variable( variable_name ) );
+        auto var = std::make_shared<Variable>( variable_name );
         std::const_pointer_cast<Vector>( retVal )->setVariable( var );
     }
     return retVal;

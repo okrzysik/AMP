@@ -26,7 +26,10 @@ typedef AsynchronousColumnOperatorParameters AsyncMapColumnOperatorParameters;
 class AsyncMapColumnOperator : public AsynchronousColumnOperator
 {
 public:
-    //! Constructor
+    //! Default constructor
+    explicit AsyncMapColumnOperator();
+
+    //! Empty constructor
     explicit AsyncMapColumnOperator( const std::shared_ptr<OperatorParameters> &params );
 
     //! Return the name of the operator

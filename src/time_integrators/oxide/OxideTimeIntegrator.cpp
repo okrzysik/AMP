@@ -37,9 +37,8 @@ void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> 
     d_current_dt   = 1.0;
 
     // Get the parameters
-    std::shared_ptr<OxideTimeIntegratorParameters> oxide_parameters =
-        std::dynamic_pointer_cast<OxideTimeIntegratorParameters>( parameters );
-    d_mesh = oxide_parameters->d_mesh;
+    auto oxide_parameters = std::dynamic_pointer_cast<OxideTimeIntegratorParameters>( parameters );
+    d_mesh                = oxide_parameters->d_mesh;
     AMP_INSIST( d_mesh.get() != nullptr, "Oxide Time Integrator needs a mesh" );
     AMP_INSIST( (int) d_mesh->getGeomType() < d_mesh->getDim(),
                 "Oxide mesh must be a surface mesh (dimension < physical dimension" );
@@ -56,14 +55,11 @@ void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> 
     AMP_INSIST( total_depth > 0, "Surface depth must be > 0" );
 
     // Create the solution vector
-    AMP::Discretization::DOFManager::shared_ptr DOF = AMP::Discretization::simpleDOFManager::create(
+    auto DOF = AMP::Discretization::simpleDOFManager::create(
         d_mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    AMP::LinearAlgebra::Variable::shared_ptr oxide_var(
-        new AMP::LinearAlgebra::Variable( "oxide" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr alpha_var(
-        new AMP::LinearAlgebra::Variable( "alpha" ) );
-    std::shared_ptr<AMP::LinearAlgebra::MultiVariable> multivariable(
-        new AMP::LinearAlgebra::MultiVariable( "solution" ) );
+    auto oxide_var     = std::make_shared<AMP::LinearAlgebra::Variable>( "oxide" );
+    auto alpha_var     = std::make_shared<AMP::LinearAlgebra::Variable>( "alpha" );
+    auto multivariable = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "solution" );
     multivariable->add( oxide_var );
     multivariable->add( alpha_var );
     d_solution = AMP::LinearAlgebra::createVector( DOF, multivariable, true );
@@ -79,16 +75,14 @@ void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> 
     int N_total = 0;
     for ( auto &elem : N_layer )
         N_total += elem;
-    AMP::Discretization::DOFManager::shared_ptr DOF_d =
-        AMP::Discretization::simpleDOFManager::create(
-            d_mesh, AMP::Mesh::GeomType::Vertex, 0, N_layer.size(), true );
-    AMP::Discretization::DOFManager::shared_ptr DOF_C =
-        AMP::Discretization::simpleDOFManager::create(
-            d_mesh, AMP::Mesh::GeomType::Vertex, 0, N_total, true );
-    AMP::LinearAlgebra::Variable::shared_ptr d_var( new AMP::LinearAlgebra::Variable( "depth" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr C_var( new AMP::LinearAlgebra::Variable( "C" ) );
-    depth = AMP::LinearAlgebra::createVector( DOF_d, d_var, true );
-    conc  = AMP::LinearAlgebra::createVector( DOF_C, C_var, true );
+    auto DOF_d = AMP::Discretization::simpleDOFManager::create(
+        d_mesh, AMP::Mesh::GeomType::Vertex, 0, N_layer.size(), true );
+    auto DOF_C = AMP::Discretization::simpleDOFManager::create(
+        d_mesh, AMP::Mesh::GeomType::Vertex, 0, N_total, true );
+    auto d_var = std::make_shared<AMP::LinearAlgebra::Variable>( "depth" );
+    auto C_var = std::make_shared<AMP::LinearAlgebra::Variable>( "C" );
+    depth      = AMP::LinearAlgebra::createVector( DOF_d, d_var, true );
+    conc       = AMP::LinearAlgebra::createVector( DOF_C, C_var, true );
 
     // Create the initial conditions (500K for 1 day)
     double *C0[10], *C1[10], D[10], Cb[20], x0[11], x1[11], v1[11],
@@ -112,9 +106,9 @@ void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> 
     for ( size_t i = 0; i < N_layer.size(); i++ )
         depth2[i] = x1[i + 1] - x1[i];
     // Copy the initial solution to all points in the mesh
-    AMP::Discretization::DOFManager::shared_ptr DOF_oxide = d_oxide->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr DOF_alpha = d_alpha->getDOFManager();
-    AMP::Mesh::MeshIterator iterator = d_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto DOF_oxide = d_oxide->getDOFManager();
+    auto DOF_alpha = d_alpha->getDOFManager();
+    auto iterator  = d_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         AMP::Mesh::MeshElementID id = iterator->globalID();
         DOF_C->getDOFs( id, dofs );
@@ -160,11 +154,11 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
     d_current_time += dt;
     d_current_dt = dt;
     // Get the relavent DOF Managers
-    AMP::Discretization::DOFManager::shared_ptr DOF_C     = conc->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr DOF_d     = depth->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr DOF_temp  = d_temp->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr DOF_oxide = d_oxide->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr DOF_alpha = d_alpha->getDOFManager();
+    auto DOF_C     = conc->getDOFManager();
+    auto DOF_d     = depth->getDOFManager();
+    auto DOF_temp  = d_temp->getDOFManager();
+    auto DOF_oxide = d_oxide->getDOFManager();
+    auto DOF_alpha = d_alpha->getDOFManager();
     // Allocate memory for the solve
     int N_total = 0;
     for ( auto &elem : N_layer )
@@ -179,9 +173,9 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
     }
     std::vector<size_t> dofs;
     // Loop through the points
-    AMP::Mesh::MeshIterator iterator = d_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto iterator = d_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( size_t i = 0; i < iterator.size(); i++ ) {
-        AMP::Mesh::MeshElementID id = iterator->globalID();
+        auto id = iterator->globalID();
         // Get the current temperature
         DOF_temp->getDOFs( id, dofs );
         AMP_ASSERT( dofs.size() == 1 );

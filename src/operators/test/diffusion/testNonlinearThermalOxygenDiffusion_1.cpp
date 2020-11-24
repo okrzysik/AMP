@@ -71,8 +71,7 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
         nonlinearOxygenOperator->getVolumeOperator() );
 
     // create a column operator object for nonlinear thermothermal
-    std::shared_ptr<AMP::Operator::OperatorParameters> params;
-    auto nonlinearThermalOxygenOperator = std::make_shared<AMP::Operator::ColumnOperator>( params );
+    auto nonlinearThermalOxygenOperator = std::make_shared<AMP::Operator::ColumnOperator>();
     nonlinearThermalOxygenOperator->append( nonlinearThermalOperator );
     nonlinearThermalOxygenOperator->append( nonlinearOxygenOperator );
 
@@ -104,7 +103,6 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     auto rhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable );
     auto resVec = AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // set up the frozen variables for each operator
     // first get defaults
     double defTemp, defConc;
@@ -121,7 +119,6 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     tempVec->setToScalar( defTemp );
     concVec->setToScalar( defConc );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // set up the shift and scale parameters
     double shift[2];
     double scale[2];
@@ -166,7 +163,7 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
             meshAdapter, "testLinearOxygenOperator", input_db, oxygenTransportModel ) );
 
     // create a column operator object for linear thermomechanics
-    auto linearThermalOxygenOperator = std::make_shared<AMP::Operator::ColumnOperator>( params );
+    auto linearThermalOxygenOperator = std::make_shared<AMP::Operator::ColumnOperator>();
     linearThermalOxygenOperator->append( linearThermalOperator );
     linearThermalOxygenOperator->append( linearOxygenOperator );
 

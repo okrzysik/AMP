@@ -221,7 +221,7 @@ void libmeshMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &nei
     neighbors.clear();
     if ( d_globalID.type() == GeomType::Vertex ) {
         // Return the neighbors of the current node
-        std::vector<libMesh::Node *> neighbor_nodes = d_mesh->getNeighborNodes( d_globalID );
+        auto neighbor_nodes = d_mesh->getNeighborNodes( d_globalID );
         neighbors.resize( neighbor_nodes.size(), MeshElement::shared_ptr() );
         for ( size_t i = 0; i < neighbor_nodes.size(); i++ ) {
             // There are no NULL neighbors
@@ -239,7 +239,7 @@ void libmeshMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &nei
             auto *neighbor_elem = (void *) elem->neighbor_ptr( i );
             std::shared_ptr<libmeshMeshElement> neighbor;
             if ( neighbor_elem != nullptr )
-                neighbor = std::shared_ptr<libmeshMeshElement>( new libmeshMeshElement(
+                neighbor.reset( new libmeshMeshElement(
                     d_dim, d_globalID.type(), neighbor_elem, d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
@@ -304,7 +304,7 @@ bool libmeshMeshElement::isOnSurface() const
     auto type          = static_cast<int>( d_globalID.type() );
     MeshElement search = MeshElement( *this );
     if ( d_globalID.is_local() ) {
-        const std::vector<MeshElement> &data = *( d_mesh->d_localSurfaceElements[type] );
+        const auto &data = *( d_mesh->d_localSurfaceElements[type] );
         if ( data.empty() )
             return false; // There are no elements on the surface for this processor
         size_t index = AMP::Utilities::findfirst( data, search );
@@ -314,7 +314,7 @@ bool libmeshMeshElement::isOnSurface() const
                 return true;
         }
     } else {
-        const std::vector<MeshElement> &data = *( d_mesh->d_ghostSurfaceElements[type] );
+        const auto &data = *( d_mesh->d_ghostSurfaceElements[type] );
         if ( data.empty() )
             return false; // There are no elements on the surface for this processor
         size_t index = AMP::Utilities::findfirst( data, search );
@@ -328,13 +328,13 @@ bool libmeshMeshElement::isOnSurface() const
 }
 bool libmeshMeshElement::isOnBoundary( int id ) const
 {
-    GeomType type                            = d_globalID.type();
-    bool on_boundary                         = false;
-    std::shared_ptr<libMesh::Mesh> d_libMesh = d_mesh->getlibMesh();
+    GeomType type    = d_globalID.type();
+    bool on_boundary = false;
+    auto d_libMesh   = d_mesh->getlibMesh();
     if ( type == GeomType::Vertex ) {
         // Entity is a libmesh node
-        auto *node                  = (libMesh::Node *) ptr_element;
-        std::vector<short int> bids = d_libMesh->boundary_info->boundary_ids( node );
+        auto *node = (libMesh::Node *) ptr_element;
+        auto bids  = d_libMesh->boundary_info->boundary_ids( node );
         for ( auto &bid : bids ) {
             if ( bid == id )
                 on_boundary = true;

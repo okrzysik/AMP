@@ -10,6 +10,7 @@ namespace Operator {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
+ColumnOperator::ColumnOperator() : Operator() {}
 ColumnOperator::ColumnOperator( const std::shared_ptr<OperatorParameters> &params )
     : Operator( params )
 {

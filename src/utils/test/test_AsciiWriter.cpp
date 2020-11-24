@@ -42,13 +42,13 @@ AMP::LinearAlgebra::Vector::shared_ptr createVector( AMP::LinearAlgebra::Variabl
     range[3] = 1.0;
     range[5] = 1.0;
     // Create a generic MeshParameters object
-    std::shared_ptr<AMP::Database> database( new AMP::Database( "Mesh" ) );
+    auto database = std::make_shared<AMP::Database>( "Mesh" );
     database->putScalar<int>( "dim", 3 );
     database->putScalar<std::string>( "MeshName", "mesh1" );
     database->putScalar<std::string>( "Generator", "cube" );
     database->putVector<int>( "Size", size );
     database->putVector<double>( "Range", range );
-    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( comm );
     // Create an AMP mesh
     auto mesh = AMP::Mesh::BoxMesh::generate( params );
@@ -73,10 +73,8 @@ void test_AsciiWriter( AMP::UnitTest *ut )
 // Create and register a vector
 #ifdef USE_AMP_VECTORS
     std::string rankString = AMP::Utilities::intToString( globalComm.getRank() + 1, 1 );
-    AMP::LinearAlgebra::Variable::shared_ptr var1(
-        new AMP::LinearAlgebra::Variable( "vec_global" ) );
-    AMP::LinearAlgebra::Variable::shared_ptr var2(
-        new AMP::LinearAlgebra::Variable( "vec_" + rankString ) );
+    auto var1              = std::make_shared<AMP::LinearAlgebra::Variable>( "vec_global" );
+    auto var2              = std::make_shared<AMP::LinearAlgebra::Variable>( "vec_" + rankString );
 #ifdef USE_AMP_MESH
     auto vec1 = createVector<2, 3, 4>( var1, globalComm );
     auto vec2 = createVector<3, 2, 1>( var2, selfComm );

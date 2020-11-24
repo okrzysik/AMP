@@ -43,16 +43,15 @@ void myTest( AMP::UnitTest *ut )
     libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
     // mesh->prepare_for_use(false);
     mesh->prepare_for_use( true );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter( new AMP::Mesh::libmeshMesh( mesh, "uniform" ) );
+    auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "uniform" );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "LinearBVPOperator", input_db, elementPhysicsModel ) );
+    auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "LinearBVPOperator", input_db, elementPhysicsModel ) );
 
-    std::shared_ptr<AMP::LinearAlgebra::Matrix> mat = bvpOperator->getMatrix();
-    size_t matSz                                    = mat->numGlobalRows();
+    auto mat     = bvpOperator->getMatrix();
+    size_t matSz = mat->numGlobalRows();
     for ( size_t i = 0; i < matSz; ++i ) {
         std::vector<size_t> cols;
         std::vector<double> vals;
@@ -68,25 +67,21 @@ void myTest( AMP::UnitTest *ut )
     // int DOFsPerElement = 8;
     int nodalGhostWidth = 1;
     bool split          = true;
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+    auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    AMP::LinearAlgebra::Vector::shared_ptr solVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, bvpOperator->getOutputVariable() );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
+    auto solVec = AMP::LinearAlgebra::createVector( nodalDofMap, bvpOperator->getOutputVariable() );
+    auto rhsVec = solVec->cloneVector();
 
     solVec->setRandomValues();
     bvpOperator->apply( solVec, rhsVec );
     solVec->zero();
 
-    std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams(
-        new AMP::Solver::SolverStrategyParameters( mlSolver_db ) );
+    auto mlSolver_db    = input_db->getDatabase( "LinearSolver" );
+    auto mlSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
     mlSolverParams->d_pOperator = bvpOperator;
-    std::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver(
-        new AMP::Solver::TrilinosMLSolver( mlSolverParams ) );
+    auto mlSolver               = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
 
     mlSolver->setZeroInitialGuess( true );
 
@@ -101,8 +96,8 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(
-        new AMP::Mesh::initializeLibMesh( AMP::AMP_MPI( AMP_COMM_WORLD ) ) );
+    auto libmeshInit =
+        std::make_shared<AMP::Mesh::initializeLibMesh>( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     myTest( &ut );
 

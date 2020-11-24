@@ -19,20 +19,19 @@ class ColumnOperator : public Operator
 {
 
 public:
+    //! Empty constructor;
+    explicit ColumnOperator();
+
     //! Default constructor;
     explicit ColumnOperator( const std::shared_ptr<OperatorParameters> &params );
 
-    /** Default empty constructor */
-    ColumnOperator() : Operator() {}
-
+    //! Destructor
     virtual ~ColumnOperator() {}
 
     //! Return the name of the operator
     std::string type() const override { return "ColumnOperator"; }
 
-    /**
-     * The apply routine for the column operator calls apply on each of the component operators
-     */
+    //! The apply routine for the column operator calls apply on each of the component operators
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 

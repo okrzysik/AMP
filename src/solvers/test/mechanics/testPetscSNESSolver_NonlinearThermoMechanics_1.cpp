@@ -68,9 +68,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             meshAdapter, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
 
     // create a column operator object for nonlinear thermomechanics
-    std::shared_ptr<AMP::Operator::OperatorParameters> params;
-    auto nonlinearThermoMechanicsOperator =
-        std::make_shared<AMP::Operator::ColumnOperator>( params );
+    auto nonlinearThermoMechanicsOperator = std::make_shared<AMP::Operator::ColumnOperator>();
     nonlinearThermoMechanicsOperator->append( nonlinearMechanicsOperator );
     nonlinearThermoMechanicsOperator->append( nonlinearThermalOperator );
 
@@ -126,7 +124,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             meshAdapter, "testLinearThermalOperator", input_db, thermalTransportModel ) );
 
     // create a column operator object for linear thermomechanics
-    auto linearThermoMechanicsOperator = std::make_shared<AMP::Operator::ColumnOperator>( params );
+    auto linearThermoMechanicsOperator = std::make_shared<AMP::Operator::ColumnOperator>();
     linearThermoMechanicsOperator->append( linearMechanicsOperator );
     linearThermoMechanicsOperator->append( linearThermalOperator );
 

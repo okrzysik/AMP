@@ -54,157 +54,125 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
-    std::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto database = input_db->getDatabase( "Mesh" );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    AMP::Mesh::Mesh::shared_ptr manager        = AMP::Mesh::Mesh::buildMesh( params );
-    AMP::Mesh::Mesh::shared_ptr meshAdapterH27 = manager->Subset( "cubeH27" );
-    AMP::Mesh::Mesh::shared_ptr meshAdapterH08 = manager->Subset( "cubeH08" );
+    auto manager        = AMP::Mesh::Mesh::buildMesh( params );
+    auto meshAdapterH27 = manager->Subset( "cubeH27" );
+    auto meshAdapterH08 = manager->Subset( "cubeH08" );
 
-    /////////////////////////////////////////////////
-    //   CREATE THE Conservation of Momentum Operator  //
-    /////////////////////////////////////////////////
-
+    // Create the Conservation of Momentum Operator
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> FlowTransportModel;
     AMP_INSIST( input_db->keyExists( "ConsMomentumLinearFEOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> ConsMomentumOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapterH27, "ConsMomentumLinearBVPOperator", input_db, FlowTransportModel ) );
+    auto ConsMomentumOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapterH27, "ConsMomentumLinearBVPOperator", input_db, FlowTransportModel ) );
 
-    /////////////////////////////////////////////////
-    //   CREATE THE Conservation of Mass Operator  //
-    /////////////////////////////////////////////////
-
+    // Create the Conservation of Mass Operator
     AMP_INSIST( input_db->keyExists( "ConsMassLinearFEOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> ConsMassOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapterH08, "ConsMassLinearBVPOperator", input_db, FlowTransportModel ) );
-
+    auto ConsMassOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapterH08, "ConsMassLinearBVPOperator", input_db, FlowTransportModel ) );
     AMP::pout << "Finished creating Mass Operator" << std::endl;
 
     // Create the variables
-    AMP::LinearAlgebra::Variable::shared_ptr velocityVar =
-        ConsMomentumOperator->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr pressureVar = ConsMassOperator->getOutputVariable();
+    auto velocityVar = ConsMomentumOperator->getOutputVariable();
+    auto pressureVar = ConsMassOperator->getOutputVariable();
 
     // Create the DOF managers
-    AMP::Discretization::DOFManager::shared_ptr DOF_scalar =
-        AMP::Discretization::simpleDOFManager::create(
-            manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    AMP::Discretization::DOFManager::shared_ptr DOF_vector =
-        AMP::Discretization::simpleDOFManager::create(
-            manager, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto DOF_scalar = AMP::Discretization::simpleDOFManager::create(
+        manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto DOF_vector = AMP::Discretization::simpleDOFManager::create(
+        manager, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     // Create the vectors
-    std::shared_ptr<AMP::LinearAlgebra::MultiVector> globalSolVec =
+    auto globalSolVec =
         AMP::LinearAlgebra::MultiVector::create( "globalSolVec", manager->getComm() );
     globalSolVec->addVector( AMP::LinearAlgebra::createVector( DOF_scalar, pressureVar ) );
     globalSolVec->addVector( AMP::LinearAlgebra::createVector( DOF_vector, velocityVar ) );
-    AMP::LinearAlgebra::Vector::shared_ptr globalRhsVec =
-        globalSolVec->cloneVector( "globalRhsVec" );
-    // AMP::LinearAlgebra::Vector::shared_ptr globalResVec =
-    // globalSolVec->cloneVector("globalResVec");
+    auto globalRhsVec = globalSolVec->cloneVector( "globalRhsVec" );
 
     // Get the matrices
-    AMP::LinearAlgebra::Matrix::shared_ptr FMat = ConsMomentumOperator->getMatrix();
-    AMP::LinearAlgebra::Matrix::shared_ptr BMat = ConsMassOperator->getMatrix();
-
-    AMP::LinearAlgebra::Matrix::shared_ptr BtMat = BMat->transpose();
+    auto FMat  = ConsMomentumOperator->getMatrix();
+    auto BMat  = ConsMassOperator->getMatrix();
+    auto BtMat = BMat->transpose();
 
     // Create a zero matrix over meshAdapterH08
-    AMP::Discretization::DOFManager::shared_ptr DOF_H08_scalar =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapterH08, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    AMP::LinearAlgebra::Matrix::shared_ptr zeroMat = AMP::LinearAlgebra::createMatrix(
+    auto DOF_H08_scalar = AMP::Discretization::simpleDOFManager::create(
+        meshAdapterH08, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto zeroMat = AMP::LinearAlgebra::createMatrix(
         AMP::LinearAlgebra::createVector( DOF_H08_scalar, pressureVar ),
         AMP::LinearAlgebra::createVector( DOF_H08_scalar, pressureVar ) );
     zeroMat->zero();
 
     std::shared_ptr<AMP::Database> dummy_db;
-    std::shared_ptr<AMP::Operator::EpetraMatrixOperatorParameters> dummyParams1(
-        new AMP::Operator::EpetraMatrixOperatorParameters( dummy_db ) );
+    auto dummyParams1 = std::make_shared<AMP::Operator::EpetraMatrixOperatorParameters>( dummy_db );
     dummyParams1->d_Matrix = &( std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( BtMat )
                                     ->getEpetra_CrsMatrix() );
-    std::shared_ptr<AMP::Operator::EpetraMatrixOperator> bTOperator(
-        new AMP::Operator::EpetraMatrixOperator( dummyParams1 ) );
+    auto bTOperator        = std::make_shared<AMP::Operator::EpetraMatrixOperator>( dummyParams1 );
     bTOperator->setVariables( ConsMassOperator->getOutputVariable(),
                               ConsMassOperator->getInputVariable() );
 
-    std::shared_ptr<AMP::Operator::EpetraMatrixOperatorParameters> dummyParams2(
-        new AMP::Operator::EpetraMatrixOperatorParameters( dummy_db ) );
+    auto dummyParams2 = std::make_shared<AMP::Operator::EpetraMatrixOperatorParameters>( dummy_db );
     dummyParams2->d_Matrix =
         &( std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( zeroMat )
                ->getEpetra_CrsMatrix() );
-    std::shared_ptr<AMP::Operator::EpetraMatrixOperator> zeroOperator(
-        new AMP::Operator::EpetraMatrixOperator( dummyParams2 ) );
+    auto zeroOperator = std::make_shared<AMP::Operator::EpetraMatrixOperator>( dummyParams2 );
     zeroOperator->setVariables( ConsMassOperator->getOutputVariable(),
                                 ConsMassOperator->getOutputVariable() );
 
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
-    std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
+    auto mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> convdiffSolverParams(
-        new AMP::Solver::SolverStrategyParameters( mlSolver_db ) );
+    auto convdiffSolverParams =
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
     convdiffSolverParams->d_pOperator = ConsMomentumOperator;
-    std::shared_ptr<AMP::Solver::TrilinosMLSolver> convdiffSolver(
-        new AMP::Solver::TrilinosMLSolver( convdiffSolverParams ) );
+    auto convdiffSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( convdiffSolverParams );
     convdiffSolver->setZeroInitialGuess( false );
 
-    AMP::LinearAlgebra::Vector::shared_ptr diagonalVec    = FMat->extractDiagonal();
-    AMP::LinearAlgebra::Vector::shared_ptr diagonalInvVec = diagonalVec->cloneVector();
+    auto diagonalVec    = FMat->extractDiagonal();
+    auto diagonalInvVec = diagonalVec->cloneVector();
     diagonalInvVec->reciprocal( *diagonalVec );
 
-    AMP::LinearAlgebra::Matrix::shared_ptr DMat = FMat->cloneMatrix();
+    auto DMat = FMat->cloneMatrix();
     DMat->zero();
     DMat->setDiagonal( diagonalVec );
 
-    AMP::LinearAlgebra::Matrix::shared_ptr DInvMat = FMat->cloneMatrix();
+    auto DInvMat = FMat->cloneMatrix();
     DInvMat->zero();
     DInvMat->setDiagonal( diagonalInvVec );
 
-    AMP::LinearAlgebra::Matrix::shared_ptr schurMat = zeroMat->cloneMatrix();
+    auto schurMat = zeroMat->cloneMatrix();
 
-    AMP::LinearAlgebra::Matrix::shared_ptr DInvBtMat =
-        AMP::LinearAlgebra::Matrix::matMultiply( DInvMat, BtMat );
+    auto DInvBtMat = AMP::LinearAlgebra::Matrix::matMultiply( DInvMat, BtMat );
 
     schurMat = AMP::LinearAlgebra::Matrix::matMultiply( BtMat, DInvBtMat );
 
-    std::shared_ptr<AMP::Operator::EpetraMatrixOperatorParameters> dummyParams3(
-        new AMP::Operator::EpetraMatrixOperatorParameters( dummy_db ) );
+    auto dummyParams3 = std::make_shared<AMP::Operator::EpetraMatrixOperatorParameters>( dummy_db );
     dummyParams3->d_Matrix =
         &( std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( schurMat )
                ->getEpetra_CrsMatrix() );
-    std::shared_ptr<AMP::Operator::EpetraMatrixOperator> schurMatOperator(
-        new AMP::Operator::EpetraMatrixOperator( dummyParams3 ) );
+    auto schurMatOperator = std::make_shared<AMP::Operator::EpetraMatrixOperator>( dummyParams3 );
     schurMatOperator->setVariables( ConsMassOperator->getOutputVariable(),
                                     ConsMassOperator->getOutputVariable() );
 
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> schurMatSolverParams(
-        new AMP::Solver::SolverStrategyParameters( mlSolver_db ) );
+    auto schurMatSolverParams =
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
     schurMatSolverParams->d_pOperator = schurMatOperator;
-    std::shared_ptr<AMP::Solver::TrilinosMLSolver> schurMatSolver(
-        new AMP::Solver::TrilinosMLSolver( schurMatSolverParams ) );
+    auto schurMatSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( schurMatSolverParams );
     schurMatSolver->setZeroInitialGuess( false );
 
-    AMP::LinearAlgebra::Vector::shared_ptr velocityRhsVec =
-        globalRhsVec->subsetVectorForVariable( velocityVar );
-    AMP::LinearAlgebra::Vector::shared_ptr pressureRhsVec =
-        globalRhsVec->subsetVectorForVariable( pressureVar );
+    auto velocityRhsVec = globalRhsVec->subsetVectorForVariable( velocityVar );
+    auto pressureRhsVec = globalRhsVec->subsetVectorForVariable( pressureVar );
 
-    AMP::LinearAlgebra::Vector::shared_ptr velocitySolVec =
-        globalSolVec->subsetVectorForVariable( velocityVar );
-    AMP::LinearAlgebra::Vector::shared_ptr pressureSolVec =
-        globalSolVec->subsetVectorForVariable( pressureVar );
+    auto velocitySolVec = globalSolVec->subsetVectorForVariable( velocityVar );
+    auto pressureSolVec = globalSolVec->subsetVectorForVariable( pressureVar );
 
-    AMP::LinearAlgebra::Vector::shared_ptr pressureUpdateVec = pressureSolVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr velocityUpdateVec = velocitySolVec->cloneVector();
+    auto pressureUpdateVec = pressureSolVec->cloneVector();
+    auto velocityUpdateVec = velocitySolVec->cloneVector();
 
-    //        AMP::LinearAlgebra::Vector::shared_ptr pressurePrimeVec =
-    //        pressureSolVec->cloneVector();
     AMP::LinearAlgebra::Vector::shared_ptr velocityPrimeVec = velocitySolVec->cloneVector();
 
     // SIMPLE(Semi Implicit Method for Pressure Linked Equations) ALGORITHM

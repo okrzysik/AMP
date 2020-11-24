@@ -89,7 +89,7 @@ public:
     std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
         auto data = std::dynamic_pointer_cast<NativePetscVectorData>( vec->getVectorData() );
-        std::shared_ptr<Vec> ptr( new Vec( data->getVec() ) );
+        auto ptr  = std::make_shared<Vec>( data->getVec() );
         return ptr;
     }
     std::string name() const override { return "PETScInterfaceLeftVectorFactory"; };
@@ -118,7 +118,7 @@ public:
     std::shared_ptr<Vec> getVec( AMP::LinearAlgebra::Vector::shared_ptr vec ) const override
     {
         auto data = std::dynamic_pointer_cast<NativePetscVectorData>( vec->getVectorData() );
-        std::shared_ptr<Vec> ptr( new Vec( data->getVec() ) );
+        auto ptr  = std::make_shared<Vec>( data->getVec() );
         return ptr;
     }
     std::string name() const override { return "PETScInterfaceRightVectorFactory"; }

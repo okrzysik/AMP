@@ -55,8 +55,7 @@ static void myTest( AMP::UnitTest *ut )
     AMP::LinearAlgebra::Vector::shared_ptr vec2;
 
     for ( int dummy = 0; dummy < 2; ++dummy ) {
-        std::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
-        auto colOp             = std::make_shared<AMP::Operator::ColumnOperator>( emptyParams );
+        auto colOp             = std::make_shared<AMP::Operator::ColumnOperator>();
         auto linearSolver_db   = input_db->getDatabase( "LinearSolver" );
         auto preconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
         auto preconditionerParams =

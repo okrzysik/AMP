@@ -12,21 +12,28 @@ namespace Operator {
 class AsynchronousColumnOperator : public ColumnOperator
 {
 public:
-    /** Constructor
-     */
+    //! Empty constructor
+    explicit AsynchronousColumnOperator();
+
+    //! Default constructor
     explicit AsynchronousColumnOperator( const std::shared_ptr<OperatorParameters> & );
 
+    //! Return the name of the operator
     std::string type() const override { return "AsynchronousColumnOperator"; }
 
+    //! The apply routine for the column operator calls apply on each of the component operators
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    virtual void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                              AMP::LinearAlgebra::Vector::shared_ptr f );
-
+    //! Start an apply operation
     virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              AMP::LinearAlgebra::Vector::shared_ptr f );
 
+    //! Finish an apply operation (arguments should match applyStart)
+    virtual void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                              AMP::LinearAlgebra::Vector::shared_ptr f );
+
+    // Append the given operator
     void append( std::shared_ptr<Operator> op ) override;
 };
 } // namespace Operator

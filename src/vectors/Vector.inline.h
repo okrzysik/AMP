@@ -80,10 +80,10 @@ inline RNG::shared_ptr Vector::getDefaultRNG()
 {
     if ( !d_DefaultRNG ) {
         AMP_MPI globalComm( AMP_COMM_WORLD );
-        int rank = globalComm.getRank();
-        RNGParameters::shared_ptr params( new RNGParameters(
-            RNGParameters::RNGOptions::USE_GLOBAL_SEED, static_cast<size_t>( rank ) ) );
-        d_DefaultRNG = RNG::shared_ptr( new RNG( params ) );
+        int rank     = globalComm.getRank();
+        auto params  = std::make_shared<RNGParameters>( RNGParameters::RNGOptions::USE_GLOBAL_SEED,
+                                                       static_cast<size_t>( rank ) );
+        d_DefaultRNG = std::make_shared<RNG>( params );
     }
     return d_DefaultRNG;
 }

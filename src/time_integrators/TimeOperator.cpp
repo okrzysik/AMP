@@ -104,7 +104,7 @@ TimeOperator::getParameters( const std::string &type,
                              AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
-    std::shared_ptr<AMP::Database> timeOperator_db( new AMP::Database( "TimeOperatorDatabase" ) );
+    auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
     timeOperator_db->putScalar( "CurrentDt", d_dCurrentDt );
     timeOperator_db->putScalar( "name", "TimeOperator" );
     timeOperator_db->putScalar( "bLinearMassOperator", d_bLinearMassOperator );
@@ -112,8 +112,8 @@ TimeOperator::getParameters( const std::string &type,
     timeOperator_db->putScalar( "bAlgebraicComponent", d_bAlgebraicComponent );
     timeOperator_db->putScalar( "ScalingFactor", 1.0 / d_dCurrentDt );
 
-    std::shared_ptr<TimeOperatorParameters> timeOperatorParameters(
-        new AMP::TimeIntegrator::TimeOperatorParameters( timeOperator_db ) );
+    auto timeOperatorParameters =
+        std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
 
     timeOperatorParameters->d_Mesh = d_Mesh;
     // if we have a linear rhs operator then just pass the pointer to the rhs operator instead of

@@ -41,56 +41,47 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Read the mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mesh_db = input_db->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams =
+        std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // Create a nonlinear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "NonlinearMechanicsOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsBVPoperator =
+    auto nonlinearMechanicsBVPoperator =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "NonlinearMechanicsOperator", input_db ) );
-    std::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> nonlinearMechanicsVolumeOperator =
+    auto nonlinearMechanicsVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel =
-        nonlinearMechanicsVolumeOperator->getMaterialModel();
+    auto mechanicsMaterialModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
     // Create a Linear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsBVPoperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
+    auto linearMechanicsBVPoperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
 
     // Create the variables
-    std::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsNonlinearVolumeOperator =
+    auto mechanicsNonlinearVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
-    AMP::LinearAlgebra::Variable::shared_ptr dispVar =
-        mechanicsNonlinearVolumeOperator->getOutputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr tempVar( new AMP::LinearAlgebra::Variable( "temp" ) );
-
-    AMP::Discretization::DOFManager::shared_ptr tempDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-
-    AMP::Discretization::DOFManager::shared_ptr dispDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto dispVar    = mechanicsNonlinearVolumeOperator->getOutputVariable();
+    auto tempVar    = std::make_shared<AMP::LinearAlgebra::Variable>( "temp" );
+    auto tempDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto dispDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    AMP::LinearAlgebra::Vector::shared_ptr solVec =
-        AMP::LinearAlgebra::createVector( dispDofMap, dispVar, true );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr initTempVec =
-        AMP::LinearAlgebra::createVector( tempDofMap, tempVar, true );
-    AMP::LinearAlgebra::Vector::shared_ptr finalTempVec = initTempVec->cloneVector();
+    auto solVec       = AMP::LinearAlgebra::createVector( dispDofMap, dispVar, true );
+    auto rhsVec       = solVec->cloneVector();
+    auto resVec       = solVec->cloneVector();
+    auto initTempVec  = AMP::LinearAlgebra::createVector( tempDofMap, tempVar, true );
+    auto finalTempVec = initTempVec->cloneVector();
 
     // Set Initial Temperature
     AMP_INSIST( input_db->keyExists( "INIT_TEMP_CONST" ), "key missing!" );
@@ -113,34 +104,32 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     rhsVec->zero();
     nonlinearMechanicsBVPoperator->modifyRHSvector( rhsVec );
 
-    std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    std::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver;
+    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
 
     AMP_INSIST( nonlinearSolver_db->keyExists( "LinearSolver" ), "key missing!" );
-    std::shared_ptr<AMP::Database> linearSolver_db =
-        nonlinearSolver_db->getDatabase( "LinearSolver" );
+    auto linearSolver_db = nonlinearSolver_db->getDatabase( "LinearSolver" );
     std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver;
 
     AMP_INSIST( nonlinearSolver_db->keyExists( "usesJacobian" ), "key missing!" );
     bool usesJacobian = nonlinearSolver_db->getScalar<bool>( "usesJacobian" );
 
     if ( usesJacobian ) {
-        std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(
-            new AMP::Solver::PetscKrylovSolverParameters( linearSolver_db ) );
+        auto linearSolverParams =
+            std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
         linearSolverParams->d_pOperator = linearMechanicsBVPoperator;
         linearSolverParams->d_comm      = globalComm;
-        linearSolver.reset( new AMP::Solver::PetscKrylovSolver( linearSolverParams ) );
+        linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
     }
 
-    std::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(
-        new AMP::Solver::PetscSNESSolverParameters( nonlinearSolver_db ) );
+    auto nonlinearSolverParams =
+        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = nonlinearMechanicsBVPoperator;
     nonlinearSolverParams->d_pInitialGuess = solVec;
     if ( usesJacobian ) {
         nonlinearSolverParams->d_pKrylovSolver = linearSolver;
     }
-    nonlinearSolver.reset( new AMP::Solver::PetscSNESSolver( nonlinearSolverParams ) );
+    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
     nonlinearSolver->setZeroInitialGuess( false );
 
     if ( !usesJacobian ) {
@@ -155,13 +144,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearMechanicsBVPoperator->getParameters( "Jacobian", solVec ) );
 
     AMP_INSIST( linearSolver_db->keyExists( "Preconditioner" ), "key missing!" );
-    std::shared_ptr<AMP::Database> preconditioner_db =
-        linearSolver_db->getDatabase( "Preconditioner" );
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> preconditionerParams(
-        new AMP::Solver::SolverStrategyParameters( preconditioner_db ) );
+    auto preconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
+    auto preconditionerParams =
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( preconditioner_db );
     preconditionerParams->d_pOperator = linearMechanicsBVPoperator;
-    std::shared_ptr<AMP::Solver::TrilinosMLSolver> preconditioner(
-        new AMP::Solver::TrilinosMLSolver( preconditionerParams ) );
+    auto preconditioner = std::make_shared<AMP::Solver::TrilinosMLSolver>( preconditionerParams );
 
     linearSolver->setPreconditioner( preconditioner );
 
