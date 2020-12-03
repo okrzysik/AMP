@@ -73,18 +73,16 @@ void VectorTests::testManagedVector( AMP::UnitTest * ) {}
 void VectorTests::testPetsc( AMP::UnitTest *ut )
 {
 #ifdef USE_EXT_PETSC
-    {
-        auto petscViewFactory  = std::make_shared<PetscViewFactory>( d_factory );
-        auto petscCloneFactory = std::make_shared<PetscCloneFactory>( petscViewFactory );
-        PetscVectorTests test1( petscViewFactory );
-        PetscVectorTests test2( petscCloneFactory );
-        test1.testPetscVector( ut );
-        test2.testPetscVector( ut );
-        if ( std::dynamic_pointer_cast<const PetscVectorFactory>( d_factory ) ) {
-            auto factory2 = std::dynamic_pointer_cast<const PetscVectorFactory>( d_factory );
-            PetscVectorTests test3( petscCloneFactory );
-            test3.testPetscVector( ut );
-        }
+    auto petscViewFactory  = std::make_shared<PetscViewFactory>( d_factory );
+    auto petscCloneFactory = std::make_shared<PetscCloneFactory>( petscViewFactory );
+    PetscVectorTests test1( petscViewFactory );
+    PetscVectorTests test2( petscCloneFactory );
+    test1.testPetscVector( ut );
+    test2.testPetscVector( ut );
+    if ( std::dynamic_pointer_cast<const PetscVectorFactory>( d_factory ) ) {
+        auto factory2 = std::dynamic_pointer_cast<const PetscVectorFactory>( d_factory );
+        PetscVectorTests test3( petscCloneFactory );
+        test3.testPetscVector( ut );
     }
 #endif
 }
@@ -92,12 +90,10 @@ void VectorTests::testPetsc( AMP::UnitTest *ut )
 void VectorTests::testEpetra( AMP::UnitTest *ut )
 {
 #ifdef USE_TRILINOS_EPETRA
-    {
-        if ( d_factory->getVector()->numberOfDataBlocks() <= 1 ) {
-            // Epetra currently only supports one data block
-            EpetraVectorTests test( d_factory );
-            test.testEpetraVector( ut );
-        }
+    if ( d_factory->getVector()->numberOfDataBlocks() <= 1 ) {
+        // Epetra currently only supports one data block
+        EpetraVectorTests test( d_factory );
+        test.testEpetraVector( ut );
     }
 #endif
 }
@@ -106,19 +102,17 @@ void VectorTests::testEpetra( AMP::UnitTest *ut )
 void VectorTests::testSundials( AMP::UnitTest *ut )
 {
 #ifdef USE_EXT_SUNDIALS
-    {
-        auto viewFactory =
-            std::make_shared<ViewFactory<AMP::LinearAlgebra::SundialsVector>>( d_factory );
-        auto cloneFactory = std::make_shared<CloneFactory>( viewFactory );
-        VectorTests test1( viewFactory );
-        VectorTests test2( cloneFactory );
-        SundialsVectorTests test3( viewFactory );
-        SundialsVectorTests test4( cloneFactory );
-        test1.testBasicVector( ut );
-        test2.testBasicVector( ut );
-        test3.testSundialsVector( ut );
-        test4.testSundialsVector( ut );
-    }
+    auto viewFactory =
+        std::make_shared<ViewFactory<AMP::LinearAlgebra::SundialsVector>>( d_factory );
+    auto cloneFactory = std::make_shared<CloneFactory>( viewFactory );
+    VectorTests test1( viewFactory );
+    VectorTests test2( cloneFactory );
+    SundialsVectorTests test3( viewFactory );
+    SundialsVectorTests test4( cloneFactory );
+    test1.testBasicVector( ut );
+    test2.testBasicVector( ut );
+    test3.testSundialsVector( ut );
+    test4.testSundialsVector( ut );
 #endif
 }
 

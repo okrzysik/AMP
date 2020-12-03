@@ -197,16 +197,16 @@ public: // non-virtual functions
     inline bool operator>=( const MeshIterator & ) const;
 
     //! Dereference the iterator
-    inline MeshElement &operator*( void );
+    inline MeshElement &operator*();
 
     //! Dereference the iterator
-    inline const MeshElement &operator*(void) const;
+    inline const MeshElement &operator*() const;
 
     //! Dereference the iterator
-    inline MeshElement *operator->( void );
+    inline MeshElement *operator->();
 
     //! Dereference the iterator
-    inline const MeshElement *operator->(void) const;
+    inline const MeshElement *operator->() const;
 
 protected:
     // Clone the iterator

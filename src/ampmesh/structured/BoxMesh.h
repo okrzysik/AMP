@@ -437,6 +437,10 @@ private:
 };
 
 
+// Function to write an index to std::ostream
+std::ostream &operator<<( std::ostream &out, const BoxMesh::MeshElementIndex &x );
+
+
 } // namespace Mesh
 } // namespace AMP
 
