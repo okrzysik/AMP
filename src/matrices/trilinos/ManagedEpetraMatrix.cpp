@@ -1,12 +1,12 @@
 #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/data/VectorDataCPU.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
+
 #include "ProfilerApp.h"
 #include <algorithm>
-
-#include "AMP/utils/AMP_MPI.h"
 
 #include <EpetraExt_MatrixMatrix.h>
 #include <Epetra_FECrsMatrix.h>
@@ -47,8 +47,7 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( std::shared_ptr<ManagedMatrixParameter
     : EpetraMatrix( *createEpetraMap( params->getLeftDOFManager(), params->getComm() ),
                     nullptr,
                     params->entryList() ),
-      ManagedMatrix( params ),
-      d_pParameters( params )
+      ManagedMatrix( params )
 {
 }
 ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
@@ -57,8 +56,7 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
           *createEpetraMap( rhs.d_pParameters->getLeftDOFManager(), rhs.d_pParameters->getComm() ),
           nullptr,
           rhs.d_pParameters->entryList() ),
-      ManagedMatrix( rhs.d_pParameters ),
-      d_pParameters( rhs.d_pParameters )
+      ManagedMatrix( rhs.d_pParameters )
 {
     for ( size_t i = d_pParameters->getLeftDOFManager()->beginDOF();
           i != d_pParameters->getLeftDOFManager()->endDOF();
@@ -76,7 +74,7 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
     makeConsistent();
 }
 ManagedEpetraMatrix::ManagedEpetraMatrix( Epetra_CrsMatrix *m, bool dele )
-    : EpetraMatrix( m, dele ), ManagedMatrix( MatrixParameters::shared_ptr() )
+    : EpetraMatrix( m, dele ), ManagedMatrix( nullptr )
 {
 }
 Matrix::shared_ptr ManagedEpetraMatrix::cloneMatrix() const

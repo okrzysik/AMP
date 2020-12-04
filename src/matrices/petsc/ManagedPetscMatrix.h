@@ -1,6 +1,9 @@
 #ifndef included_AMP_ManagedPetscMatrix
 #define included_AMP_ManagedPetscMatrix
 
+#ifdef USE_EXT_TRILINOS
+
+
 // Petsc files
 #include "petscmat.h"
 
@@ -56,8 +59,10 @@ public:
 
     shared_ptr cloneMatrix() const;
 };
+
 } // namespace LinearAlgebra
 } // namespace AMP
 
 
+#endif
 #endif

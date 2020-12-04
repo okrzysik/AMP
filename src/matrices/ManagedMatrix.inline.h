@@ -5,6 +5,10 @@ namespace LinearAlgebra {
 
 inline ManagedMatrix::ManagedMatrix() {}
 
-inline ManagedMatrix::ManagedMatrix( MatrixParameters::shared_ptr p ) : Matrix( p ) {}
+inline ManagedMatrix::ManagedMatrix( std::shared_ptr<ManagedMatrixParameters> p )
+    : Matrix( p ), d_pParameters( p )
+{
+}
+
 } // namespace LinearAlgebra
 } // namespace AMP

@@ -1,13 +1,14 @@
+#ifdef USE_EXT_TRILINOS
+
 #include "petsc/private/vecimpl.h"
 #include "petscmat.h"
 #include "petscvec.h"
 
+#include "AMP/matrices/ManagedMatrixParameters.h"
+#include "AMP/matrices/petsc/ManagedPetscMatrix.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/petsc/PetscVector.h"
-
-#include "AMP/matrices/petsc/ManagedPetscMatrix.h"
-#include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 
 
 #if PETSC_VERSION_LT( 3, 7, 5 )
@@ -123,9 +124,6 @@ ManagedPetscMatrix::ManagedPetscMatrix( MatrixParameters::shared_ptr params )
       PetscMatrix( params ),
       ManagedEpetraMatrix( std::dynamic_pointer_cast<ManagedMatrixParameters>( params ) )
 {
-    //    std::cout << "ManagedPetscMatrix:: WARNING!!!!!! the matrix is currently assumed to be
-    //    square. This needs to
-    //    be fixed!!!" << std::endl;
     initPetscMat();
 }
 
@@ -133,9 +131,6 @@ ManagedPetscMatrix::ManagedPetscMatrix( MatrixParameters::shared_ptr params )
 ManagedPetscMatrix::ManagedPetscMatrix( const ManagedPetscMatrix &rhs )
     : Matrix( rhs.d_pParameters ), PetscMatrix( rhs.d_pParameters ), ManagedEpetraMatrix( rhs )
 {
-    //    std::cout << "ManagedPetscMatrix:: WARNING!!!!!! the matrix is currently assumed to be
-    //    square. This needs to
-    //    be fixed!!!" << std::endl;
     initPetscMat();
 }
 
@@ -189,7 +184,9 @@ ManagedPetscMatrix::~ManagedPetscMatrix() { PETSC::matDestroy( &d_Mat ); }
 
 Matrix::shared_ptr ManagedPetscMatrix::cloneMatrix() const
 {
-    return shared_ptr( new ManagedPetscMatrix( *this ) );
+    return std::shared_ptr<ManagedPetscMatrix>( new ManagedPetscMatrix( *this ) );
 }
 } // namespace LinearAlgebra
 } // namespace AMP
+
+#endif

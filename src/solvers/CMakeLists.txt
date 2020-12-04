@@ -3,7 +3,7 @@ ADD_PACKAGE_SUBDIRECTORY( newFrozenVectorDesign )
 IF ( USE_EXT_DENDRO )
     ADD_PACKAGE_SUBDIRECTORY( contact )
 ENDIF()
-IF( USE_EXT_PETSC AND USE_EXT_TRILINOS )
+IF( USE_EXT_PETSC )
     ADD_PACKAGE_SUBDIRECTORY( petsc )
 ELSEIF ( USE_EXT_PETSC )
     # Note: currently petsc matrices require trilinos, this needs to be fixed

@@ -21,9 +21,6 @@ namespace LinearAlgebra {
 class ManagedEpetraMatrix : public EpetraMatrix, public ManagedMatrix
 {
 protected:
-    //!  Parameters used to construct the matrix
-    std::shared_ptr<ManagedMatrixParameters> d_pParameters;
-
     //!  Empty constructor
     ManagedEpetraMatrix() = delete;
 

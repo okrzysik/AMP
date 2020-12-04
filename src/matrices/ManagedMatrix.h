@@ -20,7 +20,7 @@ protected:
     ManagedMatrix();
 
 public:
-    explicit ManagedMatrix( MatrixParameters::shared_ptr p );
+    explicit ManagedMatrix( std::shared_ptr<ManagedMatrixParameters> p );
 
     /** \brief  Create values in a matrix
      * \param[in]  row       the row ids
@@ -35,7 +35,12 @@ public:
     /** \brief  All createValuesByGlobalID have completed.
      */
     virtual void fillComplete() = 0;
+
+protected:
+    //!  Parameters used to construct the matrix
+    std::shared_ptr<ManagedMatrixParameters> d_pParameters;
 };
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

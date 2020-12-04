@@ -2,6 +2,18 @@
 #  Configure tests
 ############################################################################
 
+# Function to add a serial or 1,2,4 processor test dependent on the existence of a parallel matrix
+FUNCTION( ADD_AMP_TEST_124_MATRIX EXEFILE ${ARGN} )
+    IF ( USE_EXT_TRILINOS )
+        # We have a parallel matrix
+        ADD_AMP_TEST_1_2_4( ${EXEFILE} ${ARGN} )
+    ELSE()
+        # We do not have a parallel matrix
+        ADD_AMP_TEST( ${EXEFILE} ${ARGN} )
+    ENDIF()
+ENDFUNCTION()
+
+
 # Copy test inputs
 COPY_TEST_FILE( input_testAMGuniform)
 COPY_TEST_FILE( input_testLinearRobinBoundaryOperator-1 )
@@ -103,21 +115,23 @@ IF( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_TRILINOS AND AMP_DATA )
 ENDIF()
 IF ( USE_EXT_LIBMESH AND USE_EXT_HYPRE )
     ADD_AMP_TEST( testBoomerAMGSolver-LinearThermalRobin )
-    ADD_AMP_TEST_PARALLEL( testBoomerAMGSolver-LinearThermalRobin 2 )
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalOperator-bar )
-IF( USE_EXT_PETSC )
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalOperator-cylinder )
-ENDIF()		
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalOperator-2 )
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearFickOperator-bar )
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearElasticityOperator-1 )
+    ADD_AMP_TEST_124_MATRIX( testBoomerAMGSolver-LinearThermalOperator-bar )
+    ADD_AMP_TEST_124_MATRIX( testBoomerAMGSolver-LinearThermalOperator-2 )
+    ADD_AMP_TEST_124_MATRIX( testBoomerAMGSolver-LinearFickOperator-bar )
+    ADD_AMP_TEST_124_MATRIX( testBoomerAMGSolver-LinearElasticityOperator-1 )	
+ENDIF()
+IF ( USE_EXT_TRILINOS AND USE_EXT_LIBMESH AND USE_EXT_HYPRE )
     ADD_AMP_TEST_1_2_4( testSolversForUserMatrix )
+    ADD_AMP_TEST_PARALLEL( testBoomerAMGSolver-LinearThermalRobin 2 )
 ENDIF()
 IF ( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_HYPRE )
-    ADD_AMP_TEST_1_2_4( testPetscSNESSolver-BoomerAMG-NonlinearThermal-1 )
-    ADD_AMP_TEST_1_2_4( testPetscSNESSolver-JFNK-BoomerAMG-NonlinearMechanics-1 )
+    ADD_AMP_TEST_124_MATRIX( testPetscSNESSolver-BoomerAMG-NonlinearThermal-1 )
+    ADD_AMP_TEST_124_MATRIX( testPetscSNESSolver-JFNK-BoomerAMG-NonlinearMechanics-1 )
 ENDIF()
-ADD_AMP_PROVISIONAL_TEST ( testNewFrozenVectorDesign )
+IF ( USE_EXT_PETSC AND USE_EXT_TRILINOS AND USE_EXT_LIBMESH AND USE_EXT_HYPRE )
+    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalOperator-cylinder )
+ENDIF()
+ADD_AMP_PROVISIONAL_TEST( testNewFrozenVectorDesign )
 FINALIZE_TESTBUILDER()
 
 

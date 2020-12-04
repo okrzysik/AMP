@@ -109,7 +109,7 @@ bool isValid( const std::string &name )
     valid = valid && name.find( "Epetra" ) == std::string::npos;
 #endif
 #ifndef USE_TRILINOS_THYRA
-    valid = valid && name.find( "Thryra" ) == std::string::npos;
+    valid = valid && name.find( "Thyra" ) == std::string::npos;
 #endif
 #ifndef USE_EXT_SUNDIALS
     valid = valid && name.find( "Sundials" ) == std::string::npos;
