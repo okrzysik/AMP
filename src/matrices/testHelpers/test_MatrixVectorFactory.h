@@ -15,25 +15,23 @@
 #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #endif
 
+#include "ProfilerApp.h"
+
 
 namespace AMP {
 namespace LinearAlgebra {
 
-
-AMP::LinearAlgebra::Matrix::shared_ptr global_cached_matrix =
-    AMP::LinearAlgebra::Matrix::shared_ptr();
 
 
 // Classes to serve as the vector factories
 class AmpInterfaceLeftVectorFactory : public VectorFactory
 {
 public:
+    AmpInterfaceLeftVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix ) : d_matrix( matrix ) {}
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         PROFILE_START( "AmpInterfaceLeftVectorFactory::getVector" );
-        AMP_ASSERT( global_cached_matrix != nullptr );
-        auto matrix = global_cached_matrix;
-        auto vector = matrix->getLeftVector();
+        auto vector = d_matrix->getLeftVector();
         vector->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "left" ) );
         PROFILE_STOP( "AmpInterfaceLeftVectorFactory::getVector" );
         return vector;
@@ -42,18 +40,19 @@ public:
     {
         return "AmpInterfaceLeftVectorFactory<" + getVector()->type() + ">";
     }
+private:
+    AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
 };
 
 
 class AmpInterfaceRightVectorFactory : public VectorFactory
 {
 public:
+    AmpInterfaceRightVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix ) : d_matrix( matrix ) {}
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         PROFILE_START( "AmpInterfaceRightVectorFactory::getVector" );
-        AMP_ASSERT( global_cached_matrix != nullptr );
-        auto matrix = global_cached_matrix;
-        auto vector = matrix->getRightVector();
+        auto vector = d_matrix->getRightVector();
         vector->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "right" ) );
         PROFILE_STOP( "AmpInterfaceRightVectorFactory::getVector" );
         return vector;
@@ -62,6 +61,8 @@ public:
     {
         return "AmpInterfaceRightVectorFactory<" + getVector()->type() + ">";
     }
+private:
+    AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
 };
 
 
@@ -70,12 +71,12 @@ public:
 class PETScInterfaceLeftVectorFactory : public PetscVectorFactory
 {
 public:
+    PETScInterfaceLeftVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix ) : d_matrix( matrix ) {}
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         PROFILE_START( "PETScInterfaceLeftVectorFactory::getVector" );
-        AMP_ASSERT( global_cached_matrix != nullptr );
         auto matrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(
-            AMP::LinearAlgebra::PetscMatrix::createView( global_cached_matrix ) );
+            AMP::LinearAlgebra::PetscMatrix::createView( d_matrix ) );
         ::Mat m = matrix->getMat();
         ::Vec v;
         DISABLE_WARNINGS
@@ -93,18 +94,20 @@ public:
         return ptr;
     }
     std::string name() const override { return "PETScInterfaceLeftVectorFactory"; };
+private:
+    AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
 };
 
 
 class PETScInterfaceRightVectorFactory : public PetscVectorFactory
 {
 public:
+    PETScInterfaceRightVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix ) : d_matrix( matrix ) {}
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         PROFILE_START( "PETScInterfaceRightVectorFactory::getVector" );
-        AMP_ASSERT( global_cached_matrix != nullptr );
         auto matrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(
-            AMP::LinearAlgebra::PetscMatrix::createView( global_cached_matrix ) );
+            AMP::LinearAlgebra::PetscMatrix::createView( d_matrix ) );
         ::Mat m = matrix->getMat();
         ::Vec v;
         DISABLE_WARNINGS
@@ -122,6 +125,8 @@ public:
         return ptr;
     }
     std::string name() const override { return "PETScInterfaceRightVectorFactory"; }
+private:
+    AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
 };
 
 #endif

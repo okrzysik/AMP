@@ -1,9 +1,9 @@
 #include "test_Matrix.h"
-#include "test_MatrixTests.h"
 
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/matrices/testHelpers/MatrixTests.h"
 
 
 using namespace AMP::LinearAlgebra;
@@ -12,20 +12,21 @@ using namespace AMP::LinearAlgebra;
 template<typename FACTORY>
 void test_matrix_loop( AMP::UnitTest &ut )
 {
-    std::string name = FACTORY::name();
+    auto factory = std::make_shared<FACTORY>();
+    std::string name = factory->name();
     PROFILE_START( name );
-    FACTORY factory;
-    factory.initMesh();
-    InstantiateMatrix<FACTORY>::run_test( &ut );
-    VerifyGetSetValuesMatrix<FACTORY>::run_test( &ut );
-    VerifyAXPYMatrix<FACTORY>::run_test( &ut );
-    VerifyScaleMatrix<FACTORY>::run_test( &ut );
-    VerifyGetLeftRightVector<FACTORY>::run_test( &ut );
-    VerifyExtractDiagonal<FACTORY>::run_test( &ut );
-    VerifyMultMatrix<FACTORY>::run_test( &ut );
-    VerifyMatMultMatrix<FACTORY>::run_test( &ut );
-    VerifyAddElementNode<FACTORY>::run_test( &ut );
-    factory.endMesh();
+    factory->initMesh();
+    MatrixTests tests( factory );
+    tests.InstantiateMatrix( &ut );
+    tests.VerifyGetSetValuesMatrix( &ut );
+    tests.VerifyAXPYMatrix( &ut );
+    tests.VerifyScaleMatrix( &ut );
+    tests.VerifyGetLeftRightVector( &ut );
+    tests.VerifyExtractDiagonal( &ut );
+    tests.VerifyMultMatrix( &ut );
+    tests.VerifyMatMultMatrix( &ut );
+    tests.VerifyAddElementNode( &ut );
+    factory->endMesh();
     PROFILE_STOP( name );
 }
 
