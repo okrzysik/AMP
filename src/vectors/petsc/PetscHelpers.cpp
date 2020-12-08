@@ -1,8 +1,5 @@
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/data/ManagedVectorData.h"
-#ifdef USE_AMP_MATRICES
-#include "AMP/matrices/petsc/ManagedPetscMatrix.h"
-#endif
 
 #include "petsc.h"
 #include "petsc/private/vecimpl.h"
@@ -98,22 +95,6 @@ std::shared_ptr<AMP::LinearAlgebra::Vector> getAMP( Vec v )
     auto p = getWrapper( v );
     return p->getAMP();
 }
-#ifdef USE_AMP_MATRICES
-std::shared_ptr<AMP::LinearAlgebra::Matrix> getAMP( Mat m )
-{
-#ifdef USE_EXT_TRILINOS
-    void *ctx;
-    MatShellGetContext( m, &ctx );
-    auto p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *>( ctx );
-    std::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrix> p2( p, []( auto ) {} );
-    return p2;
-#else
-    NULL_USE( m );
-    AMP_ERROR( "ManagedPetscMatrix currently requires Epetra" );
-    return nullptr;
-#endif
-}
-#endif
 Vec getVec( std::shared_ptr<AMP::LinearAlgebra::Vector> v )
 {
     auto ptr = new PetscVectorWrapper( v );
@@ -150,7 +131,6 @@ std::shared_ptr<PetscRandom> genPetscRandom( const AMP::AMP_MPI &comm )
 /********************************************************
  * Override Petsc functions                              *
  ********************************************************/
-// Overridden Petsc functions!
 PetscErrorCode
 _AMP_setvaluesblocked( Vec, PetscInt, const PetscInt[], const PetscScalar[], InsertMode )
 {

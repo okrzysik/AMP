@@ -68,8 +68,8 @@ private:
     int N, M, KL, KU;
     double *AB;
     int *IPIV;
-    AMP::Discretization::DOFManager::shared_ptr rightDOF;
-    AMP::Discretization::DOFManager::shared_ptr leftDOF;
+    std::shared_ptr<AMP::Discretization::DOFManager> rightDOF;
+    std::shared_ptr<AMP::Discretization::DOFManager> leftDOF;
 };
 } // namespace Solver
 } // namespace AMP

@@ -1,8 +1,7 @@
 #include "AMP/matrices/testHelpers/MatrixTests.h"
-#include "AMP/matrices/testHelpers/test_MatrixVectorFactory.h"
-#include "AMP/matrices/petsc/ManagedPetscMatrix.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/matrices/testHelpers/test_MatrixVectorFactory.h"
 
 #include "ProfilerApp.h"
 
@@ -10,7 +9,8 @@
 namespace AMP::LinearAlgebra {
 
 
-static void fillWithPseudoLaplacian( AMP::LinearAlgebra::Matrix::shared_ptr matrix, std::shared_ptr<const MatrixFactory> factory )
+static void fillWithPseudoLaplacian( AMP::LinearAlgebra::Matrix::shared_ptr matrix,
+                                     std::shared_ptr<const MatrixFactory> factory )
 {
     auto dofmap = factory->getDOFMap();
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
@@ -31,7 +31,6 @@ static void fillWithPseudoLaplacian( AMP::LinearAlgebra::Matrix::shared_ptr matr
 }
 
 
-
 void MatrixTests::InstantiateMatrix( AMP::UnitTest *utils )
 {
     PROFILE_START( "InstantiateMatrix" );
@@ -48,25 +47,19 @@ void MatrixTests::VerifyGetLeftRightVector( AMP::UnitTest *utils )
 {
     PROFILE_START( "VerifyGetLeftRightVector" );
     auto matrix   = d_factory->getMatrix();
-    auto factory1        = std::make_shared<AmpInterfaceRightVectorFactory>( matrix );
-    auto factory2        = std::make_shared<AmpInterfaceLeftVectorFactory>( matrix );
+    auto factory1 = std::make_shared<AmpInterfaceRightVectorFactory>( matrix );
+    auto factory2 = std::make_shared<AmpInterfaceLeftVectorFactory>( matrix );
     VectorTests tests1( factory1 );
     VectorTests tests2( factory2 );
     tests1.testBasicVector( utils );
     tests2.testBasicVector( utils );
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-    if ( std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscMatrix>(
-             matrix ) ) {
-        auto factory3 = std::make_shared<PETScInterfaceRightVectorFactory>( matrix );
-        auto factory4 = std::make_shared<PETScInterfaceLeftVectorFactory>( matrix );
-        VectorTests tests3( factory3 );
-        VectorTests tests4( factory4 );
-        tests3.testPetsc( utils );
-        tests4.testPetsc( utils );
-    } else {
-        utils->expected_failure(
-            "PetscMatrix::createView is not ready for arbitrary matricies" );
-    }
+#if defined( USE_EXT_PETSC )
+    auto factory3 = std::make_shared<PETScInterfaceRightVectorFactory>( matrix );
+    auto factory4 = std::make_shared<PETScInterfaceLeftVectorFactory>( matrix );
+    VectorTests tests3( factory3 );
+    VectorTests tests4( factory4 );
+    tests3.testPetsc( utils );
+    tests4.testPetsc( utils );
 #endif
     PROFILE_STOP( "VerifyGetLeftRightVector" );
 }
@@ -79,8 +72,7 @@ void MatrixTests::VerifyGetSetValuesMatrix( AMP::UnitTest *utils )
     auto dofmap = d_factory->getDOFMap();
 
     matrix->makeConsistent();
-    fillWithPseudoLaplacian(
-        matrix, d_factory );
+    fillWithPseudoLaplacian( matrix, d_factory );
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
         std::vector<size_t> cols;
         std::vector<double> vals;
@@ -134,8 +126,7 @@ void MatrixTests::VerifyAXPYMatrix( AMP::UnitTest *utils )
     std::vector<size_t> row( 7 );
     for ( size_t i = 0; i < row.size(); i++ )
         row[i] = i;
-    auto smallVec =
-        AMP::LinearAlgebra::createSimpleVector<double>( 7, vector1lhs->getVariable() );
+    auto smallVec = AMP::LinearAlgebra::createSimpleVector<double>( 7, vector1lhs->getVariable() );
     auto smallMat = AMP::LinearAlgebra::createMatrix(
         smallVec, smallVec, d_factory->type(), [row]( size_t ) { return row; } );
     try {
@@ -266,7 +257,6 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
 }
 
 
-
 // Test matrix-matrix multiplication (this tests takes a long time for large matrices)
 void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
 {
@@ -310,8 +300,8 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
     matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matIdent );
     matSol->mult( vector1, vector2 );
     ans3 = static_cast<double>( vector2->L2Norm() );
-    if ( AMP::Utilities::approx_equal( ans1, ans2 ) &&
-         AMP::Utilities::approx_equal( ans1, ans3 ) && ans1 != 0.0 )
+    if ( AMP::Utilities::approx_equal( ans1, ans2 ) && AMP::Utilities::approx_equal( ans1, ans3 ) &&
+         ans1 != 0.0 )
         utils->passes( "matMultiply with identity matrix" );
     else
         utils->failure( "matMultiply with identity matrix" );
@@ -404,5 +394,4 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
 }
 
 
-}
-
+} // namespace AMP::LinearAlgebra

@@ -100,7 +100,7 @@ void calculateManufacturedSolution(
 
 
 void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                       AMP::Discretization::DOFManager::shared_ptr gaussPointDOF,
+                       std::shared_ptr<AMP::Discretization::DOFManager> gaussPointDOF,
                        std::shared_ptr<AMP::LinearAlgebra::Vector> manufacturedRHS )
 {
     // Compute the source on the gauss point
@@ -147,7 +147,7 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     auto el                        = meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
-    AMP::Discretization::DOFManager::shared_ptr dof_map = TemperatureVec->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = TemperatureVec->getDOFManager();
 
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );

@@ -27,7 +27,7 @@ public:
 
     std::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
-    AMP::Discretization::DOFManager::shared_ptr d_DofMap;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_DofMap;
 };
 } // namespace Operator
 } // namespace AMP

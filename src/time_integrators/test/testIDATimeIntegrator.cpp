@@ -63,10 +63,10 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         int nodalGhostWidth = 1;
         // int gaussPointGhostWidth = 1;
         bool split = true;
-        AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
+        std::shared_ptr<AMP::Discretization::DOFManager> nodalDofMap =
             AMP::Discretization::simpleDOFManager::create(
                 mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-        // AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
+        // std::shared_ptr<AMP::Discretization::DOFManager> gaussPointDofMap =
         // AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::GeomType::Volume,
         // gaussPointGhostWidth, DOFsPerElement,
         // split);

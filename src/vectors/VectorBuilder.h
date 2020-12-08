@@ -39,7 +39,7 @@ class EpetraVectorEngineParameters;
  *                              based on the individual DOFManagers to create a MultiVector
  */
 AMP::LinearAlgebra::Vector::shared_ptr
-createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
+createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
               AMP::LinearAlgebra::Variable::shared_ptr variable,
               bool split = true );
 
@@ -133,7 +133,7 @@ template<typename TYPE,
          typename VecOps  = VectorOperationsDefault<TYPE>,
          typename VecData = VectorDataCPU<TYPE>>
 Vector::shared_ptr createSimpleVector( Variable::shared_ptr var,
-                                       AMP::Discretization::DOFManager::shared_ptr DOFs,
+                                       std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                        AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
 
 
@@ -166,7 +166,7 @@ createArrayVector( const ArraySize &localSize, Variable::shared_ptr var, AMP_MPI
  */
 template<typename T, typename FUN = FunctionTable, typename Allocator = std::allocator<T>>
 Vector::shared_ptr createArrayVector( Variable::shared_ptr var,
-                                      AMP::Discretization::DOFManager::shared_ptr DOFs,
+                                      std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                       AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
 
 

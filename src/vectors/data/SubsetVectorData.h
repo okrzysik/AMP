@@ -19,7 +19,7 @@ public:
     CommunicationList::shared_ptr d_CommList = nullptr;
 
     //! The DOF_Manager for a vector
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManager = nullptr;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager = nullptr;
 
     Vector::shared_ptr d_ViewVector; // Vector we subsetted for the view
 };

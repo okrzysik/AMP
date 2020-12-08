@@ -122,8 +122,8 @@ protected:
 
     std::vector<size_t> d_dofIndices; /**<Node dof Ids */
 
-    AMP::Discretization::DOFManager::shared_ptr d_elementDofMap;
-    AMP::Discretization::DOFManager::shared_ptr d_nodeDofMap;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_elementDofMap;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_nodeDofMap;
 
     std::vector<AMP::Mesh::MeshElement> d_currNodes;
 

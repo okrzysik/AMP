@@ -14,9 +14,6 @@ namespace LinearAlgebra {
 class MatrixParameters
 {
 public:
-    //! Convenience typedef
-    typedef std::shared_ptr<MatrixParameters> shared_ptr;
-
     /** \brief Constructor
      * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$y\f$ is a left
@@ -26,8 +23,8 @@ public:
      * vector )
      * \param[in] comm     Communicator for the matrix
      */
-    explicit MatrixParameters( AMP::Discretization::DOFManager::shared_ptr left,
-                               AMP::Discretization::DOFManager::shared_ptr right,
+    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> left,
+                               std::shared_ptr<AMP::Discretization::DOFManager> right,
                                const AMP_MPI &comm );
 
     //! Deconstructor
@@ -47,14 +44,14 @@ public:
 
     //!  Get the DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
-    inline AMP::Discretization::DOFManager::shared_ptr getLeftDOFManager()
+    inline std::shared_ptr<AMP::Discretization::DOFManager> getLeftDOFManager()
     {
         return d_DOFManagerLeft;
     }
 
     //!  Get the DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a
     //!  right vector )
-    inline AMP::Discretization::DOFManager::shared_ptr getRightDOFManager()
+    inline std::shared_ptr<AMP::Discretization::DOFManager> getRightDOFManager()
     {
         return d_DOFManagerRight;
     }
@@ -82,10 +79,10 @@ protected:
     MatrixParameters(){};
 
     // The DOFManager for the left vector ( may be null )
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManagerLeft;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerLeft;
 
     // The DOFManager for the right vector ( may be null )
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManagerRight;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerRight;
 
     // The comm of the matrix
     AMP_MPI d_comm;

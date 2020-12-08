@@ -68,7 +68,7 @@ bool GaussPointToGaussPointMap::validMapType( const std::string &t )
 // Correct the local ordering
 void GaussPointToGaussPointMap::correctLocalOrdering()
 {
-    AMP::Discretization::DOFManager::shared_ptr dofMap = d_OutputVector->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> dofMap = d_OutputVector->getDOFManager();
     std::vector<size_t> localDofs( DofsPerObj );
     for ( size_t i = 0; i < d_recvList.size(); ++i ) {
         dofMap->getDOFs( d_recvList[i], localDofs );
@@ -136,12 +136,12 @@ void GaussPointToGaussPointMap::createIdxMap(
 
     //      AMP::Mesh::MeshIterator surfIter =
     //      multiMesh->getSurfaceIterator(AMP::Mesh::GeomType::Face, 0);
-    //      AMP::Discretization::DOFManager::shared_ptr dofMap =
+    //      std::shared_ptr<AMP::Discretization::DOFManager> dofMap =
     //      AMP::Discretization::simpleDOFManager::create(multiMesh,
     //          surfIter, surfIter, dofsPerElem);
     AMP::Mesh::Mesh::shared_ptr submesh =
         multiMesh->Subset( multiMesh->getSurfaceIterator( AMP::Mesh::GeomType::Face, 0 ) );
-    AMP::Discretization::DOFManager::shared_ptr dofMap =
+    std::shared_ptr<AMP::Discretization::DOFManager> dofMap =
         AMP::Discretization::simpleDOFManager::create(
             submesh, AMP::Mesh::GeomType::Face, 0, dofsPerElem, true );
 

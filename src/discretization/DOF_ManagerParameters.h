@@ -19,8 +19,6 @@ namespace Discretization {
 class DOFManagerParameters
 {
 public:
-    typedef std::shared_ptr<AMP::Discretization::DOFManagerParameters> shared_ptr;
-
     //! Empty constructor for a DOF manager object
     DOFManagerParameters();
 

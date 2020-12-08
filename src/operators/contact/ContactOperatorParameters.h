@@ -33,7 +33,7 @@ public:
     AMP::AMP_MPI d_GlobalComm;
 
     size_t d_DOFsPerNode;
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManager;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager;
 
     AMP::Mesh::MeshID d_MasterMeshID;
     AMP::Mesh::MeshID d_SlaveMeshID;

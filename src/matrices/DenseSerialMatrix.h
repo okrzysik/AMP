@@ -20,7 +20,7 @@ public:
     /** \brief Constructor
      * \param[in] params  Description of the matrix
      */
-    explicit DenseSerialMatrix( MatrixParameters::shared_ptr params );
+    explicit DenseSerialMatrix( std::shared_ptr<MatrixParameters> params );
 
     DenseSerialMatrix( const DenseSerialMatrix & ) = delete;
 
@@ -29,6 +29,9 @@ public:
     /** \brief Destructor
      */
     virtual ~DenseSerialMatrix();
+
+    //! Return the type of the matrix
+    virtual std::string type() const override { return "DenseSerialMatrix"; }
 
     /** \brief  Matrix-vector multiplication
      * \param[in]  in  The vector to multiply
@@ -235,8 +238,8 @@ protected:
     // AMP variables and DOFManagers for the left and right vectors
     AMP::LinearAlgebra::Variable::shared_ptr d_VariableLeft;
     AMP::LinearAlgebra::Variable::shared_ptr d_VariableRight;
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManagerLeft;
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManagerRight;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerLeft;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerRight;
 
     // Data for the matrix
     size_t d_rows;

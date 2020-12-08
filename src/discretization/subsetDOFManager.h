@@ -28,10 +28,10 @@ public:
      * \param[in] iterator  The iterator over the subset of elements in the subsetDOFManager
      * \param[in] comm      The new comm for the subset DOF Manager
      */
-    static DOFManager::shared_ptr create( std::shared_ptr<const DOFManager> parentDOFManager,
-                                          const std::vector<size_t> &dofs,
-                                          const AMP::Mesh::MeshIterator &iterator,
-                                          const AMP_MPI &comm );
+    static std::shared_ptr<DOFManager> create( std::shared_ptr<const DOFManager> parentDOFManager,
+                                               const std::vector<size_t> &dofs,
+                                               const AMP::Mesh::MeshIterator &iterator,
+                                               const AMP_MPI &comm );
 
 
     /** \brief Get the entry indices of DOFs given a mesh element ID

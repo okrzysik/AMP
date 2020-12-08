@@ -76,8 +76,6 @@ class Logger
 {
 
 public:
-    typedef std::shared_ptr<Logger> shared_ptr;
-
     /*!
      * Interface for class that does the logging for the Logger.
      *
@@ -87,8 +85,6 @@ public:
     {
 
     public:
-        typedef std::shared_ptr<Appender> shared_ptr;
-
         /*!
          * Log a message with file and location information.
          */

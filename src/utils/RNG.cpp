@@ -24,7 +24,7 @@ void RNG::initialize( size_t seed )
     d_SizeTDivisor *= ( 1. + mach_eps );
 }
 
-RNG::RNG( RNGParameters::shared_ptr params ) : d_Params( params )
+RNG::RNG( std::shared_ptr<RNGParameters> params ) : d_Params( params )
 {
     if ( params->d_WhichSeed == RNGParameters::RNGOptions::USE_GLOBAL_SEED ) {
         srand( static_cast<int>( d_Seed ) + params->d_Rank );
@@ -33,11 +33,11 @@ RNG::RNG( RNGParameters::shared_ptr params ) : d_Params( params )
     }
 }
 
-RNG::shared_ptr RNG::cloneRNG( size_t new_rank )
+std::shared_ptr<RNG> RNG::cloneRNG( size_t new_rank )
 {
     AMP_ASSERT( new_rank != d_Params->d_Rank );
-    RNGParameters::shared_ptr newParams(
-        new RNGParameters( d_Params->d_WhichSeed, new_rank, d_Params->d_Seed ) );
+    auto newParams =
+        std::make_shared<RNGParameters>( d_Params->d_WhichSeed, new_rank, d_Params->d_Seed );
     return std::make_shared<RNG>( newParams );
 }
 } // namespace AMP

@@ -21,17 +21,12 @@ void linearElasticTest( AMP::UnitTest *ut )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-#ifdef USE_EXT_SILO
-    // Create the silo writer and register the data
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-#endif
-
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    auto meshParams                        = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto mesh_db    = input_db->getDatabase( "Mesh" );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
@@ -87,6 +82,8 @@ void linearElasticTest( AMP::UnitTest *ut )
     mlSolver->solve( mechRhsVec, mechSolVec );
 
 #ifdef USE_EXT_SILO
+    // Create the silo writer and register the data
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->writeFile( exeName, 0 );
 #endif

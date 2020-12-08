@@ -90,7 +90,7 @@ void Map3Dto1D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP_ASSERT( inputVec->getUpdateStatus() ==
                     AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 
-        AMP::Discretization::DOFManager::shared_ptr dof_map = inputVec->getDOFManager();
+        std::shared_ptr<AMP::Discretization::DOFManager> dof_map = inputVec->getDOFManager();
 
         if ( d_iDebugPrintInfoLevel > 5 ) {
             AMP::pout << "The input to Map3Dto1D " << std::endl;
@@ -228,7 +228,7 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP_ASSERT( inputVec->getUpdateStatus() ==
                     AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 
-        AMP::Discretization::DOFManager::shared_ptr dof_map = inputVec->getDOFManager();
+        std::shared_ptr<AMP::Discretization::DOFManager> dof_map = inputVec->getDOFManager();
 
         if ( d_iDebugPrintInfoLevel > 5 ) {
             AMP::pout << "The input to Map3Dto1D " << std::endl;

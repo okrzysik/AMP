@@ -1,11 +1,71 @@
-
-#include "Matrix.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/ParameterBase.h"
 #include <iomanip>
 
 namespace AMP {
 namespace LinearAlgebra {
 
+
+/********************************************************
+ * Constructors                                          *
+ ********************************************************/
+Matrix::Matrix( const Matrix &rhs ) : d_comm( rhs.d_comm )
+{
+    AMPManager::incrementResource( "Matrix" );
+}
+Matrix::Matrix() { AMPManager::incrementResource( "Matrix" ); }
+Matrix::Matrix( std::shared_ptr<MatrixParameters> params ) : d_comm( params->getComm() )
+{
+    AMP_ASSERT( !d_comm.isNull() );
+    AMPManager::incrementResource( "Matrix" );
+}
+Matrix::~Matrix() { AMPManager::decrementResource( "Matrix" ); }
+
+
+/********************************************************
+ * Get the number of rows/columns in the matrix          *
+ ********************************************************/
+size_t Matrix::numLocalRows() const
+{
+    auto DOF = getLeftDOFManager();
+    return DOF->numLocalDOF();
+}
+size_t Matrix::numGlobalRows() const
+{
+    auto DOF = getLeftDOFManager();
+    return DOF->numGlobalDOF();
+}
+size_t Matrix::numLocalColumns() const
+{
+    auto DOF = getRightDOFManager();
+    return DOF->numLocalDOF();
+}
+size_t Matrix::numGlobalColumns() const
+{
+    auto DOF = getRightDOFManager();
+    return DOF->numGlobalDOF();
+}
+
+
+/********************************************************
+ * Get iterators                                         *
+ ********************************************************/
+size_t Matrix::beginRow() const
+{
+    auto DOF = getRightDOFManager();
+    return DOF->beginDOF();
+}
+size_t Matrix::endRow() const
+{
+    auto DOF = getRightDOFManager();
+    return DOF->endDOF();
+}
+
+
+/********************************************************
+ * multiply                                             *
+ ********************************************************/
 Matrix::shared_ptr Matrix::matMultiply( shared_ptr A, shared_ptr B )
 {
     if ( A->numGlobalColumns() != B->numGlobalRows() )
@@ -16,51 +76,9 @@ Matrix::shared_ptr Matrix::matMultiply( shared_ptr A, shared_ptr B )
 }
 
 
-// Get the number of local rows in the matrix
-size_t Matrix::numLocalRows() const
-{
-    auto DOF = getLeftDOFManager();
-    return DOF->numLocalDOF();
-}
-
-
-// Get the number of global rows in the matrix
-size_t Matrix::numGlobalRows() const
-{
-    auto DOF = getLeftDOFManager();
-    return DOF->numGlobalDOF();
-}
-
-
-// Get the number of local columns in the matrix
-size_t Matrix::numLocalColumns() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->numLocalDOF();
-}
-
-
-// Get the number of global columns in the matrix
-size_t Matrix::numGlobalColumns() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->numGlobalDOF();
-}
-
-size_t Matrix::beginRow() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->beginDOF();
-}
-
-size_t Matrix::endRow() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->endDOF();
-}
-
-
-// axpy
+/********************************************************
+ * axpy                                                  *
+ ********************************************************/
 void Matrix::axpy( double alpha, Matrix::const_shared_ptr x )
 {
     AMP_ASSERT( x );
@@ -72,7 +90,9 @@ void Matrix::axpy( double alpha, Matrix::const_shared_ptr x )
 }
 
 
-// Print the matrix to a IO stream
+/********************************************************
+ * Print the matrix to a IO stream                       *
+ ********************************************************/
 std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
 {
     auto *M = (Matrix *) &M_in;

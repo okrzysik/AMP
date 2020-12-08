@@ -79,13 +79,6 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
     auto rhsVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
     auto resVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
 
-#ifdef USE_EXT_SILO
-    // register some variables for plotting
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-#endif
-
     // now construct the linear BVP operator for fick
     AMP_INSIST( input_db->keyExists( "testLinearFickOperator" ), "key missing!" );
     std::shared_ptr<AMP::Operator::LinearBVPOperator> linearFickOperator =
@@ -139,13 +132,16 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
     resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
 #ifdef USE_EXT_SILO
+    // register some variables for plotting
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
     siloWriter->writeFile( exeName, 0 );
 #endif
 
     // store result
     {
-        AMP::Mesh::MeshIterator iterator =
-            meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        auto iterator   = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         size_t numNodes = iterator.size();
         results.resize( numNodes );
         std::vector<size_t> dofs;
@@ -223,13 +219,6 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     fickOp->setVector( 0, tVec );
     soretOp->setVector( 0, tVec );
 
-#ifdef USE_EXT_SILO
-    // register some variables for plotting
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-#endif
-
     // Initial guess
 
     solVec->setToScalar( .05 );
@@ -278,6 +267,10 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
 #ifdef USE_EXT_SILO
+    // register some variables for plotting
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
     siloWriter->writeFile( exeName, 0 );
 #endif
 

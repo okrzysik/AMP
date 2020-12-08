@@ -186,7 +186,7 @@ void NeutronicsRhsExtras::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         int DOFsPerElement = 8;
         int ghostWidth     = 1;
         bool split         = true;
-        AMP::Discretization::DOFManager::shared_ptr dof_map =
+        std::shared_ptr<AMP::Discretization::DOFManager> dof_map =
             AMP::Discretization::simpleDOFManager::create(
                 d_Mesh, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
 

@@ -26,18 +26,11 @@ public:
     {
     }
 
-    DiffusionNonlinearFEOperator::shared_ptr d_FickOperator;
-
-    DiffusionNonlinearFEOperator::shared_ptr d_SoretOperator;
-
+    std::shared_ptr<DiffusionNonlinearFEOperator> d_FickOperator;
+    std::shared_ptr<DiffusionNonlinearFEOperator> d_SoretOperator;
     std::shared_ptr<DiffusionNonlinearFEOperatorParameters> d_FickParameters;
-
     std::shared_ptr<DiffusionNonlinearFEOperatorParameters> d_SoretParameters;
-
-    /**
-     * the name of the FickSoretOperator
-     */
-    std::string d_name;
+    std::string d_name; // the name of the FickSoretOperator
 };
 } // namespace Operator
 } // namespace AMP

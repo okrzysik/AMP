@@ -1,12 +1,15 @@
 #ifndef included_AMP_VectorOperations
 #define included_AMP_VectorOperations
 
-
-#include "AMP/utils/RNG.h"
 #include "AMP/vectors/Scalar.h"
 
 #include <memory>
 #include <vector>
+
+
+namespace AMP {
+class RNG;
+}
 
 
 namespace AMP {
@@ -65,7 +68,7 @@ public:
      *      a particular generator
      * \param[in] rng       The generator to use.
      */
-    virtual void setRandomValues( RNG::shared_ptr rng, VectorData &x ) = 0;
+    virtual void setRandomValues( std::shared_ptr<RNG> rng, VectorData &x ) = 0;
 
     /**
      * \brief  Set vector equal to scaled input.

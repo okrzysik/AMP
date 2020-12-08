@@ -49,6 +49,7 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( std::shared_ptr<ManagedMatrixParameter
                     params->entryList() ),
       ManagedMatrix( params )
 {
+    AMP_ASSERT( !d_comm.isNull() );
 }
 ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
     : Matrix(),

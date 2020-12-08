@@ -72,7 +72,7 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
 {
 #ifdef USE_AMP_DISCRETIZATION
     // Create the position vector with the necessary ghost nodes
-    AMP::Discretization::DOFManager::shared_ptr DOFs =
+    std::shared_ptr<AMP::Discretization::DOFManager> DOFs =
         AMP::Discretization::simpleDOFManager::create(
             shared_from_this(),
             getIterator( AMP::Mesh::GeomType::Vertex, d_max_gcw ),

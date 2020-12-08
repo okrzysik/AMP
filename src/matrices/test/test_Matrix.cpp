@@ -1,9 +1,9 @@
 #include "test_Matrix.h"
 
 #include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/matrices/testHelpers/MatrixTests.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include "AMP/matrices/testHelpers/MatrixTests.h"
 
 
 using namespace AMP::LinearAlgebra;
@@ -12,10 +12,9 @@ using namespace AMP::LinearAlgebra;
 template<typename FACTORY>
 void test_matrix_loop( AMP::UnitTest &ut )
 {
-    auto factory = std::make_shared<FACTORY>();
+    auto factory     = std::make_shared<FACTORY>();
     std::string name = factory->name();
     PROFILE_START( name );
-    factory->initMesh();
     MatrixTests tests( factory );
     tests.InstantiateMatrix( &ut );
     tests.VerifyGetSetValuesMatrix( &ut );
@@ -26,7 +25,6 @@ void test_matrix_loop( AMP::UnitTest &ut )
     tests.VerifyMultMatrix( &ut );
     tests.VerifyMatMultMatrix( &ut );
     tests.VerifyAddElementNode( &ut );
-    factory->endMesh();
     PROFILE_STOP( name );
 }
 
@@ -67,9 +65,6 @@ int main( int argc, char **argv )
     std::vector<std::string> types = { "DenseSerialMatrix" };
 #ifdef USE_EXT_TRILINOS
     types.emplace_back( "ManagedEpetraMatrix" );
-#endif
-#if defined( USE_EXT_TRILINOS ) && defined( USE_EXT_PETSC )
-    types.emplace_back( "ManagedPetscMatrix" );
 #endif
     types.emplace_back( "auto" );
     for ( auto type : types )

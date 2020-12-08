@@ -28,7 +28,7 @@ public:
      * \param[in]  manager  The DOF manager we want to subset
      */
     virtual AMP::Discretization::DOFManager::shared_ptr
-    getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr manager ) const = 0;
+    getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> manager ) const = 0;
 
 
     /** \brief  This vector is a subset of an AMP Vector

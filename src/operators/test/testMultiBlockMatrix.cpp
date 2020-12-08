@@ -55,7 +55,7 @@ static void LinearTimeOperatorTest( AMP::UnitTest *ut )
     int nodalGhostWidth = 1;
     bool split          = true;
 
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
+    std::shared_ptr<AMP::Discretization::DOFManager> nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
             meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 

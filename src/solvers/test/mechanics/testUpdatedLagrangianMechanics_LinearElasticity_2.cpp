@@ -74,7 +74,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             meshAdapter, "Load_Boundary", input_db, dummyModel ) );
     dirichletLoadVecOp->setVariable( dispVar );
 
-    AMP::Discretization::DOFManager::shared_ptr dofMap =
+    std::shared_ptr<AMP::Discretization::DOFManager> dofMap =
         AMP::Discretization::simpleDOFManager::create(
             meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 

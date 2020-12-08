@@ -108,8 +108,9 @@ void computeTemperatureRhsVector(
     default_OXYGEN_CONCENTRATION =
         materialModelDatabase->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
 
-    AMP::Discretization::DOFManager::shared_ptr dof_map_0 = rInternal->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr dof_map_1 = currTemperatureVec->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> dof_map_0 = rInternal->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> dof_map_1 =
+        currTemperatureVec->getDOFManager();
 
     AMP::Mesh::MeshIterator el     = mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();

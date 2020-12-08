@@ -86,7 +86,7 @@ nullPointer:*/materials/Property.h
 
 // Suppress warnings for matrices
 exceptNew:*/src/matrices/trilinos/ManagedEpetraMatrix.cpp
-
+uninitMemberVar:*/src/matrices/petsc/NativePetscMatrix.cpp
 
 // Supress warnings for operators
 uninitMemberVar:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cpp

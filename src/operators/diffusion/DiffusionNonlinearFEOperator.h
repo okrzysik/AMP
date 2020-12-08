@@ -17,8 +17,6 @@ namespace Operator {
 class DiffusionNonlinearFEOperator : public NonlinearFEOperator
 {
 public:
-    typedef std::shared_ptr<DiffusionNonlinearFEOperator> shared_ptr;
-
     explicit DiffusionNonlinearFEOperator(
         const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params );
 

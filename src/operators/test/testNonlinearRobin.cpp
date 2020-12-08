@@ -21,9 +21,9 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
 #include <iostream>
+#include <memory>
 #include <string>
 
 
@@ -40,46 +40,37 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
-    std::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( database ) );
+    auto database   = input_db->getDatabase( "Mesh" );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( database );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    AMP::Mesh::Mesh::shared_ptr manager     = AMP::Mesh::Mesh::buildMesh( meshParams );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = manager->Subset( "cylinder" );
+    auto manager     = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = manager->Subset( "cylinder" );
 
     AMP::pout << "Constructing Nonlinear Thermal Operator..." << std::endl;
 
-    //-------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
-    std::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator =
-        std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
+    auto nonlinearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
 
-    //-------------------------------------------------------------------------------------------//
     // initialize the input variable
-    std::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator =
+    auto thermalVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearThermalOperator->getVolumeOperator() );
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> thermalVariable =
-        thermalVolumeOperator->getOutputVariable();
+    auto thermalVariable = thermalVolumeOperator->getOutputVariable();
 
     // create solution, rhs, and residual vectors
-    AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    AMP::LinearAlgebra::Vector::shared_ptr solVec =
-        AMP::LinearAlgebra::createVector( NodalScalarDOF, thermalVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec =
-        AMP::LinearAlgebra::createVector( NodalScalarDOF, thermalVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr resVec =
-        AMP::LinearAlgebra::createVector( NodalScalarDOF, thermalVariable, true );
+    auto NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto solVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, thermalVariable, true );
+    auto rhsVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, thermalVariable, true );
+    auto resVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, thermalVariable, true );
 
     // create the following shared pointers for ease of use
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -87,63 +78,51 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #ifdef USE_EXT_SILO
     //-------------------------------------------------------------------------------------------//
     // Create the silo writer and register the data
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
 #endif
 
     AMP::pout << "Constructing Linear Thermal Operator..." << std::endl;
 
-    //-------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "testLinearThermalOperator", input_db, thermalTransportModel ) );
+    auto linearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "testLinearThermalOperator", input_db, thermalTransportModel ) );
 
-    ////////////////////////////////////
-    //  CREATE THE NEUTRONICS SOURCE  //
-    ////////////////////////////////////
+    // CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
-    std::shared_ptr<AMP::Database> neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
-    std::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(
-        new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ) );
+    auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
+    auto neutronicsParams =
+        std::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
     neutronicsParams->d_Mesh = meshAdapter;
-    std::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(
-        new AMP::Operator::NeutronicsRhs( neutronicsParams ) );
+    auto neutronicsOperator  = std::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
 
     // Create a DOF manager for a gauss point vector
-    int DOFsPerNode = 8;
-    int ghostWidth  = 1;
-    bool split      = true;
-    AMP::Discretization::DOFManager::shared_ptr gauss_dof_map =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerNode, split );
+    int DOFsPerNode    = 8;
+    int ghostWidth     = 1;
+    bool split         = true;
+    auto gauss_dof_map = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerNode, split );
 
-    AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar =
-        neutronicsOperator->getOutputVariable();
-    AMP::LinearAlgebra::Vector::shared_ptr SpecificPowerVec =
+    auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
+    auto SpecificPowerVec =
         AMP::LinearAlgebra::createVector( gauss_dof_map, SpecificPowerVar, split );
 
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    /////////////////////////////////////////////////////
-    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
-    /////////////////////////////////////////////////////
-
+    // Integrate Nuclear Rhs over Desnity * GeomType::Volume
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
-    std::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator =
-        std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
+    auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
 
     // Create the power (heat source) vector.
-    AMP::LinearAlgebra::Variable::shared_ptr PowerInWattsVar = sourceOperator->getOutputVariable();
-    AMP::LinearAlgebra::Vector::shared_ptr PowerInWattsVec =
+    auto PowerInWattsVar = sourceOperator->getOutputVariable();
+    auto PowerInWattsVec =
         AMP::LinearAlgebra::createVector( NodalScalarDOF, PowerInWattsVar, true );
     PowerInWattsVec->zero();
 

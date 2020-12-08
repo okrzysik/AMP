@@ -1,10 +1,10 @@
 #ifndef included_AMP_test_MatrixTests
 #define included_AMP_test_MatrixTests
 
+#include "AMP/matrices/Matrix.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/matrices/Matrix.h"
 
 #include <memory>
 #include <string>
@@ -21,15 +21,13 @@ class MatrixFactory
 {
 public:
     virtual ~MatrixFactory() {}
-    virtual AMP::Mesh::Mesh::shared_ptr getMesh() const = 0;
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const = 0;
-    virtual AMP::LinearAlgebra::Matrix::shared_ptr getMatrix() const = 0;
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const = 0;
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMapL() const = 0;
-    virtual std::string name() const                                 = 0;
-    virtual std::string type() const { return "auto"; }
-    virtual void initMesh()  = 0;
-    virtual void endMesh()  = 0;
+    virtual AMP::Mesh::Mesh::shared_ptr getMesh() const                         = 0;
+    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const            = 0;
+    virtual AMP::LinearAlgebra::Matrix::shared_ptr getMatrix() const            = 0;
+    virtual std::shared_ptr<AMP::Discretization::DOFManager> getDOFMap() const  = 0;
+    virtual std::shared_ptr<AMP::Discretization::DOFManager> getDOFMapL() const = 0;
+    virtual std::string name() const                                            = 0;
+    virtual std::string type() const                                            = 0;
 
 protected:
     MatrixFactory() {}
@@ -62,7 +60,7 @@ private:
 };
 
 
-}
+} // namespace AMP::LinearAlgebra
 
 
 // Extra includes

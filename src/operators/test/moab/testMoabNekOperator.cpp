@@ -126,10 +126,10 @@ static void nekPipeOperator( AMP::UnitTest *ut )
     int gaussPointGhostWidth = 1;
     int nodalGhostWidth      = 1;
     bool split               = true;
-    AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
+    std::shared_ptr<AMP::Discretization::DOFManager> gaussPointDofMap =
         AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
+    std::shared_ptr<AMP::Discretization::DOFManager> nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
@@ -187,7 +187,8 @@ static void nekPipeOperator( AMP::UnitTest *ut )
         // How about some output?
 
 #ifdef USE_EXT_SILO
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    std::shared_ptr<AMP::Utilities::Writer> siloWriter =
+        AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
     siloWriter->registerVector( r_gp, mesh, AMP::Mesh::GeomType::Volume, "AllGaussPointPressures" );
     siloWriter->registerVector( r_node, mesh, AMP::Mesh::GeomType::Vertex, "AllNodalPressures" );

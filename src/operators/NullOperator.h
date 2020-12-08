@@ -21,8 +21,6 @@ namespace Operator {
 class NullOperator : public AMP::Operator::Operator
 {
 public:
-    typedef std::shared_ptr<AMP::Operator::Operator> shared_ptr;
-
     //! Default constructor
     NullOperator( void ) {}
 

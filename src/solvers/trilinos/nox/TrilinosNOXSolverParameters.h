@@ -30,10 +30,10 @@ public:
     virtual ~TrilinosNOXSolverParameters() {}
 
     AMP_MPI d_comm;
-    AMP::LinearAlgebra::Vector::shared_ptr d_pInitialGuess;
-    AMP::Operator::Operator::shared_ptr d_pLinearOperator;
-    AMP::Solver::SolverStrategy::shared_ptr d_preconditioner;
-    AMP::Solver::PrePostOperator::shared_ptr d_prePostOperator;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pInitialGuess;
+    std::shared_ptr<AMP::Operator::Operator> d_pLinearOperator;
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_preconditioner;
+    std::shared_ptr<AMP::Solver::PrePostOperator> d_prePostOperator;
 
 protected:
 private:

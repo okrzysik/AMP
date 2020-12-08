@@ -149,7 +149,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     auto subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // get dof manager
-    AMP::Discretization::DOFManager::shared_ptr subchannelDOFManager;
+    std::shared_ptr<AMP::Discretization::DOFManager> subchannelDOFManager;
     if ( subchannelMesh.get() != nullptr ) {
         auto axialFaces0 = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 );
         auto axialFaces1 = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 1 );

@@ -68,20 +68,6 @@ protected:
 class Database final : public KeyData
 {
 public:
-    /**
-     *\typedef shared_ptr
-     *\brief  Name for the shared pointer.
-     *\details  Use this typedef for a reference counted pointer to a mesh manager object.
-     */
-    typedef std::shared_ptr<AMP::Database> shared_ptr;
-
-    /**
-     *\typedef const_shared_ptr
-     *\brief  Name for the const shared pointer.
-     *\details  Use this typedef for a reference counted pointer to a mesh manager object.
-     */
-    typedef std::shared_ptr<const AMP::Database> const_shared_ptr;
-
     //! Empty constructor
     Database() = default;
 

@@ -22,11 +22,11 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
 #include "applyTests.h"
 
 #include <iostream>
+#include <memory>
 #include <string>
 
 
@@ -66,9 +66,8 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout.flush();
 
     // set up defaults for materials arguments and create transport model
-    std::shared_ptr<AMP::Operator::DiffusionTransportModel> fickModel = fickOp->getTransportModel();
-    std::shared_ptr<AMP::Operator::DiffusionTransportModel> soretModel =
-        soretOp->getTransportModel();
+    auto fickModel  = fickOp->getTransportModel();
+    auto soretModel = soretOp->getTransportModel();
 
     // create parameters for reset test
     auto fickOpParams =

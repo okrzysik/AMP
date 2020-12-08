@@ -35,7 +35,7 @@ static bool check_prefix( std::string prefix, std::string str )
 
 // Misc function declerations
 static void copyKey( std::shared_ptr<const AMP::Database>,
-                     std::vector<AMP::Database::shared_ptr> &,
+                     std::vector<std::shared_ptr<AMP::Database>> &,
                      const std::string &,
                      bool,
                      const std::string &,
@@ -388,7 +388,7 @@ MultiMesh::createDatabases( std::shared_ptr<AMP::Database> database )
     if ( database->keyExists( "submeshDatabases" ) ) {
         auto databaseNames = database->getVector<std::string>( "submeshDatabases" );
         AMP_ASSERT( !databaseNames.empty() );
-        std::vector<AMP::Database::shared_ptr> meshDatabases( databaseNames.size() );
+        std::vector<std::shared_ptr<AMP::Database>> meshDatabases( databaseNames.size() );
         for ( size_t i = 0; i < databaseNames.size(); i++ )
             meshDatabases[i] = database->getDatabase( databaseNames[i] )->cloneDatabase();
         return meshDatabases;
@@ -413,7 +413,7 @@ MultiMesh::createDatabases( std::shared_ptr<AMP::Database> database )
         }
     }
     // Create the basic databases for each mesh
-    std::vector<AMP::Database::shared_ptr> meshDatabases;
+    std::vector<std::shared_ptr<AMP::Database>> meshDatabases;
     for ( auto &meshe : meshes ) {
         // We are dealing with a single mesh object, use the existing database
         auto database2 = database->getDatabase( meshe )->cloneDatabase();
@@ -444,7 +444,7 @@ MultiMesh::createDatabases( std::shared_ptr<AMP::Database> database )
             }
         }
         // Create the new databases
-        std::vector<AMP::Database::shared_ptr> databaseArray( N );
+        std::vector<std::shared_ptr<AMP::Database>> databaseArray( N );
         for ( int j = 0; j < N; j++ )
             databaseArray[j] = std::make_shared<AMP::Database>( meshArray );
         // Populate the databases with the proper keys
@@ -886,7 +886,7 @@ void MultiMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr
  ********************************************************/
 template<class TYPE>
 static inline void putEntry( std::shared_ptr<const AMP::Database> database1,
-                             std::vector<AMP::Database::shared_ptr> &database2,
+                             std::vector<std::shared_ptr<AMP::Database>> &database2,
                              const std::string &key,
                              bool select )
 {
@@ -900,7 +900,7 @@ static inline void putEntry( std::shared_ptr<const AMP::Database> database1,
     }
 }
 static void copyKey( std::shared_ptr<const AMP::Database> database1,
-                     std::vector<AMP::Database::shared_ptr> &database2,
+                     std::vector<std::shared_ptr<AMP::Database>> &database2,
                      const std::string &key,
                      bool select,
                      const std::string &iterator,
@@ -910,8 +910,8 @@ static void copyKey( std::shared_ptr<const AMP::Database> database1,
         // Copy the database
         auto subDatabase1 = database1->getDatabase( key );
         for ( size_t i = 0; i < database2.size(); i++ ) {
-            std::vector<AMP::Database::shared_ptr> subDatabase2( 1,
-                                                                 database2[i]->putDatabase( key ) );
+            std::vector<std::shared_ptr<AMP::Database>> subDatabase2(
+                1, database2[i]->putDatabase( key ) );
             std::vector<std::string> index2( 1, index[i] );
             auto subKeys = subDatabase1->getAllKeys();
             for ( auto &subKey : subKeys )

@@ -9,14 +9,6 @@ inline Matrix::shared_ptr Matrix::transpose() const
     return Matrix::shared_ptr();
 }
 
-inline Matrix::Matrix( const Matrix &rhs ) : d_comm( rhs.d_comm ) {}
-
-inline Matrix::Matrix() {}
-
-inline Matrix::Matrix( MatrixParameters::shared_ptr params ) : d_comm( params->getComm() ) {}
-
-inline Matrix::~Matrix() {}
-
 inline void Matrix::addValueByGlobalID( size_t row, size_t col, double value )
 {
     addValuesByGlobalID( 1u, 1u, &row, &col, &value );

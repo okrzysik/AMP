@@ -13,7 +13,7 @@ namespace LinearAlgebra {
  * \details  As opposed to ManagedPetscMatrix, this is a
  *    thin wrapper around a PETSc Mat.
  */
-class NativePetscMatrix : public PetscMatrix
+class NativePetscMatrix : public Matrix
 {
 protected:
     /** \brief Unused default constructor
@@ -33,6 +33,9 @@ public:
     /** \brief Destructor
      */
     virtual ~NativePetscMatrix();
+
+    //! Return the type of the matrix
+    virtual std::string type() const override { return "NativePetscMatrix"; }
 
     /** \brief Create a NativePetscMatrix with the same non-zero
      * structure
@@ -89,10 +92,13 @@ public:
     void zero() override;
 
 private:
+    Mat d_Mat;
+    bool d_MatCreatedInternally;
 };
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#include "NativePetscMatrix.inline.h"
 
 #endif

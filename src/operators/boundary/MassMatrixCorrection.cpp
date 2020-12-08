@@ -56,8 +56,8 @@ void MassMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &par
     AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myParams->d_inputMatrix;
     AMP_INSIST( ( ( inputMatrix.get() ) != nullptr ), "NULL matrix" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr inVec        = inputMatrix->getRightVector();
-    AMP::Discretization::DOFManager::shared_ptr dof_map = inVec->getDOFManager();
+    AMP::LinearAlgebra::Vector::shared_ptr inVec             = inputMatrix->getRightVector();
+    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = inVec->getDOFManager();
 
     unsigned int numIds = d_boundaryIds.size();
 

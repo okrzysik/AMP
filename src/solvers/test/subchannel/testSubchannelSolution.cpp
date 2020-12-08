@@ -42,7 +42,7 @@ static double getSolutionEnthalpy( double Q, double H, double m, double hin, dou
 // Function to get the pressure solution
 // Note: this is only an approximation for an incompressible fluid with a fixed density
 static double
-getSolutionPressure( AMP::Database::shared_ptr db, double H, double Pout, double p, double z )
+getSolutionPressure( std::shared_ptr<AMP::Database> db, double H, double Pout, double p, double z )
 {
     if ( db->keyExists( "Inlet_Pressure" ) )
         return Pout + ( 1. - z / H ) * ( db->getScalar<double>( "Inlet_Pressure" ) - Pout );

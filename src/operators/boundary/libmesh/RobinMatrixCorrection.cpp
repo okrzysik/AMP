@@ -151,7 +151,7 @@ void RobinMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &pa
         std::vector<std::vector<size_t>> dofIndices;
         std::vector<size_t> dofs;
 
-        AMP::Discretization::DOFManager::shared_ptr gpDOFManager;
+        std::shared_ptr<AMP::Discretization::DOFManager> gpDOFManager;
         if ( d_isFluxGaussPtVector && myparams->d_variableFlux.get() != nullptr ) {
             gpDOFManager = ( myparams->d_variableFlux )->getDOFManager();
         }

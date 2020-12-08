@@ -2,6 +2,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/PIO.h"
+#include "AMP/utils/RNG.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorSelector.h"
@@ -18,7 +19,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-RNG::shared_ptr Vector::d_DefaultRNG;
+std::shared_ptr<RNG> Vector::d_DefaultRNG;
 
 
 /****************************************************************
@@ -47,7 +48,7 @@ Vector::Vector( const std::string &name )
 Vector::Vector( std::shared_ptr<VectorData> data,
                 std::shared_ptr<VectorOperations> ops,
                 Variable::shared_ptr var,
-                AMP::Discretization::DOFManager::shared_ptr DOFManager )
+                std::shared_ptr<AMP::Discretization::DOFManager> DOFManager )
     : d_pVariable( var ),
       d_DOFManager( DOFManager ),
       d_VectorData( data ),
@@ -68,6 +69,28 @@ Vector::~Vector() { AMPManager::decrementResource( "Vector" ); }
  * Get the default name                                          *
  ****************************************************************/
 std::string Vector::type() const { return "Vector<" + d_VectorData->VectorDataName() + ">"; }
+
+
+/****************************************************************
+ * RNG                                                           *
+ ****************************************************************/
+void Vector::setDefaultRNG( std::shared_ptr<RNG> p ) { d_DefaultRNG = p; }
+std::shared_ptr<RNG> Vector::getDefaultRNG()
+{
+    if ( !d_DefaultRNG ) {
+        AMP_MPI globalComm( AMP_COMM_WORLD );
+        int rank     = globalComm.getRank();
+        auto params  = std::make_shared<RNGParameters>( RNGParameters::RNGOptions::USE_GLOBAL_SEED,
+                                                       static_cast<size_t>( rank ) );
+        d_DefaultRNG = std::make_shared<RNG>( params );
+    }
+    return d_DefaultRNG;
+}
+void Vector::setRandomValues( void ) { d_VectorOps->setRandomValues( *getVectorData() ); }
+void Vector::setRandomValues( std::shared_ptr<RNG> rng )
+{
+    d_VectorOps->setRandomValues( rng, *getVectorData() );
+}
 
 
 /****************************************************************

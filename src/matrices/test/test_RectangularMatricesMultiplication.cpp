@@ -64,9 +64,6 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #ifdef USE_EXT_TRILINOS
     types.emplace_back( "ManagedEpetraMatrix" );
 #endif
-#if defined( USE_EXT_TRILINOS ) && defined( USE_EXT_PETSC )
-    types.emplace_back( "ManagedPetscMatrix" );
-#endif
     for ( auto &type : types ) {
         auto tmp = exeName + ": " + type;
         // create four matrices

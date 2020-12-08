@@ -64,9 +64,9 @@ void ThyraVectorWrapper::initialize(
         }*/
     }
     // Check that the DOFs are compatible for all copies of the vector
-    AMP::Discretization::DOFManager::shared_ptr dofs1 = vecs[0]->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> dofs1 = vecs[0]->getDOFManager();
     for ( size_t i = 1; i < vecs.size(); i++ ) {
-        AMP::Discretization::DOFManager::shared_ptr dofs2 = vecs[i]->getDOFManager();
+        std::shared_ptr<AMP::Discretization::DOFManager> dofs2 = vecs[i]->getDOFManager();
         if ( dofs1 == dofs2 )
             continue;
         if ( *dofs1 != *dofs2 )

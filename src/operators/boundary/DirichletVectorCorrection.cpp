@@ -94,9 +94,9 @@ void DirichletVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_
 
 void DirichletVectorCorrection::applyZeroValues( AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr rInternal    = mySubsetVector( r, d_variable );
-    AMP::Discretization::DOFManager::shared_ptr dof_map = rInternal->getDOFManager();
-    size_t numIds                                       = d_boundaryIds.size();
+    AMP::LinearAlgebra::Vector::shared_ptr rInternal         = mySubsetVector( r, d_variable );
+    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = rInternal->getDOFManager();
+    size_t numIds                                            = d_boundaryIds.size();
     for ( size_t j = 0; j < numIds; j++ ) {
         AMP::Mesh::MeshIterator bnd =
             d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[j], 0 );
@@ -116,9 +116,9 @@ void DirichletVectorCorrection::applyZeroValues( AMP::LinearAlgebra::Vector::sha
 
 void DirichletVectorCorrection::applyNonZeroValues( AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr rInternal    = mySubsetVector( r, d_variable );
-    AMP::Discretization::DOFManager::shared_ptr dof_map = rInternal->getDOFManager();
-    size_t numIds                                       = d_boundaryIds.size();
+    AMP::LinearAlgebra::Vector::shared_ptr rInternal         = mySubsetVector( r, d_variable );
+    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = rInternal->getDOFManager();
+    size_t numIds                                            = d_boundaryIds.size();
     for ( size_t j = 0; j < numIds; j++ ) {
         AMP::Mesh::MeshIterator bnd =
             d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[j], 0 );
@@ -144,9 +144,9 @@ void DirichletVectorCorrection::applyNonZeroValues( AMP::LinearAlgebra::Vector::
 void DirichletVectorCorrection::applyResidual( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                                AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = mySubsetVector( u, d_variable );
-    AMP::Discretization::DOFManager::shared_ptr dof_map    = uInternal->getDOFManager();
-    size_t numIds                                          = d_boundaryIds.size();
+    AMP::LinearAlgebra::Vector::const_shared_ptr uInternal   = mySubsetVector( u, d_variable );
+    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = uInternal->getDOFManager();
+    size_t numIds                                            = d_boundaryIds.size();
     for ( size_t j = 0; j < numIds; j++ ) {
         AMP::Mesh::MeshIterator bnd =
             d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[j], 0 );

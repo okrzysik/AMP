@@ -127,8 +127,8 @@ void NeumannVectorCorrection::addRHScorrection(
 
     double gammaValue = ( d_params->d_db )->getWithDefault<double>( "gamma", 1.0 );
 
-    AMP::LinearAlgebra::Vector::shared_ptr rInternal       = myRhs->cloneVector();
-    AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
+    AMP::LinearAlgebra::Vector::shared_ptr rInternal            = myRhs->cloneVector();
+    std::shared_ptr<AMP::Discretization::DOFManager> dofManager = rInternal->getDOFManager();
     rInternal->zero();
 
     unsigned int numBndIds = d_boundaryIds.size();
@@ -161,7 +161,7 @@ void NeumannVectorCorrection::addRHScorrection(
                         dofManager->getDOFs( d_currNodes[i].globalID(), dofIndices[i] );
                     }
 
-                    AMP::Discretization::DOFManager::shared_ptr fluxDOFManager;
+                    std::shared_ptr<AMP::Discretization::DOFManager> fluxDOFManager;
                     if ( !d_isConstantFlux && d_isFluxGaussPtVector ) {
                         fluxDOFManager = d_variableFlux->getDOFManager();
                         fluxDOFManager->getDOFs( bnd->globalID(), fluxDofs );

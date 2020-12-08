@@ -24,11 +24,6 @@ void linearElasticTest( AMP::UnitTest *ut )
 
     AMP::PIO::logOnlyNodeZero( log_file );
 
-#ifdef USE_EXT_SILO
-    // Create the silo writer and register the data
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-#endif
-
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
@@ -67,18 +62,12 @@ void linearElasticTest( AMP::UnitTest *ut )
 
     dirichletVecOp->apply( nullVec, mechRhsVec );
 
-    double rhsNorm = static_cast<double>( mechRhsVec->L2Norm() );
-
-    std::cout << "RHS Norm: " << rhsNorm << std::endl;
-
-    double initSolNorm = static_cast<double>( mechSolVec->L2Norm() );
-
-    std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
+    std::cout << "RHS Norm: " << mechRhsVec->L2Norm() << std::endl;
+    std::cout << "Initial Solution Norm: " << mechSolVec->L2Norm() << std::endl;
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
     double initResidualNorm = static_cast<double>( mechResVec->L2Norm() );
-
     std::cout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
     auto mlSolver_db = input_db->getDatabase( "LinearSolver" );
@@ -95,6 +84,8 @@ void linearElasticTest( AMP::UnitTest *ut )
     mlSolver->solve( mechRhsVec, mechSolVec );
 
 #ifdef USE_EXT_SILO
+    // Create the silo writer and register the data
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->writeFile( exeName, 0 );
 #endif

@@ -20,7 +20,7 @@
 // Function to test getting the DOFs for a mesh iterator
 void testGetDOFIterator( AMP::UnitTest *ut,
                          const AMP::Mesh::MeshIterator &iterator,
-                         AMP::Discretization::DOFManager::shared_ptr DOF )
+                         std::shared_ptr<AMP::Discretization::DOFManager> DOF )
 {
     bool pass1 = true;
     bool pass2 = true;
@@ -50,7 +50,7 @@ void testGetDOFIterator( AMP::UnitTest *ut,
 
 
 // Function to test some very basic properites
-void testBasics( AMP::Discretization::DOFManager::shared_ptr DOF, AMP::UnitTest *ut )
+void testBasics( std::shared_ptr<AMP::Discretization::DOFManager> DOF, AMP::UnitTest *ut )
 {
     bool passAll = true;
 
@@ -98,7 +98,7 @@ void testBasics( AMP::Discretization::DOFManager::shared_ptr DOF, AMP::UnitTest 
 
 
 // Test subsetting for different comms
-void testSubsetComm( AMP::Discretization::DOFManager::shared_ptr DOF, AMP::UnitTest *ut )
+void testSubsetComm( std::shared_ptr<AMP::Discretization::DOFManager> DOF, AMP::UnitTest *ut )
 {
     auto subsetDOF = DOF->subset( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     if ( *DOF == *subsetDOF )
@@ -121,7 +121,7 @@ void testSubsetComm( AMP::Discretization::DOFManager::shared_ptr DOF, AMP::UnitT
 
 // Test subsetting for different meshes
 void testSubsetMesh( AMP::Mesh::Mesh::shared_ptr mesh,
-                     AMP::Discretization::DOFManager::shared_ptr DOF,
+                     std::shared_ptr<AMP::Discretization::DOFManager> DOF,
                      bool is_nodal,
                      int DOFsPerNode,
                      int gcw,
@@ -209,7 +209,7 @@ void testMultiDOFMap( AMP::UnitTest *ut,
 
 // Function to test that a multivector with a DOFManager repeated correctly sets the values
 #ifdef USE_AMP_VECTORS
-void testMultiDOFVector( AMP::UnitTest *ut, AMP::Discretization::DOFManager::shared_ptr DOF )
+void testMultiDOFVector( AMP::UnitTest *ut, std::shared_ptr<AMP::Discretization::DOFManager> DOF )
 {
     // Create the individual vectors
     auto var1 = std::make_shared<AMP::LinearAlgebra::Variable>( "a" );

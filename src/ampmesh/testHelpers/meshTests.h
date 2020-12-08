@@ -268,7 +268,7 @@ public: // Vector based tests
 
     private:
         MeshVectorFactory();
-        AMP::Discretization::DOFManager::shared_ptr d_dofManager;
+        std::shared_ptr<AMP::Discretization::DOFManager> d_dofManager;
         bool SPLIT;
     };
 #endif
@@ -284,7 +284,7 @@ public: // Vector based tests
     template<int DOF_PER_NODE, bool SPLIT>
     static void simpleNodalVectorTests( AMP::UnitTest *ut,
                                         AMP::Mesh::Mesh::shared_ptr mesh,
-                                        AMP::Discretization::DOFManager::shared_ptr DOFs,
+                                        std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                         int gcw );
 
 

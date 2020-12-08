@@ -1,6 +1,7 @@
 #ifndef included_AMP_VectorOperationsDefault_hpp
 #define included_AMP_VectorOperationsDefault_hpp
 
+#include "AMP/utils/RNG.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
@@ -80,7 +81,7 @@ void VectorOperationsDefault<TYPE>::setRandomValues( VectorData &x )
 }
 
 template<typename TYPE>
-void VectorOperationsDefault<TYPE>::setRandomValues( RNG::shared_ptr rng, VectorData &x )
+void VectorOperationsDefault<TYPE>::setRandomValues( std::shared_ptr<RNG> rng, VectorData &x )
 {
     RandomVariable<double> r( 0, 1, rng );
     auto curMe = x.begin<TYPE>();

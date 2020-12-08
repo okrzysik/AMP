@@ -12,7 +12,7 @@ namespace LinearAlgebra {
 /********************************************************
  * Constructor/Destructor                                *
  ********************************************************/
-DenseSerialMatrix::DenseSerialMatrix( MatrixParameters::shared_ptr params )
+DenseSerialMatrix::DenseSerialMatrix( std::shared_ptr<MatrixParameters> params )
     : Matrix( params ),
       d_VariableLeft( params->d_VariableLeft ),
       d_VariableRight( params->d_VariableRight ),

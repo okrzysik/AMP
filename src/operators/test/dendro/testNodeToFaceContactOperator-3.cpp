@@ -71,11 +71,12 @@ static void printNodesValues( AMP::Mesh::Mesh::shared_ptr mesh,
     } // end for i
 }
 
-static void getConcentratedLoadAtNodes( double loadParameter,
-                                        double loadCutoff,
-                                        AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                                        AMP::LinearAlgebra::Vector::shared_ptr loadVector,
-                                        AMP::Discretization::DOFManager::shared_ptr dofManager )
+static void
+getConcentratedLoadAtNodes( double loadParameter,
+                            double loadCutoff,
+                            AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                            AMP::LinearAlgebra::Vector::shared_ptr loadVector,
+                            std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
 {
     static std::vector<double> loadValues;
     static std::vector<size_t> dofIndices;

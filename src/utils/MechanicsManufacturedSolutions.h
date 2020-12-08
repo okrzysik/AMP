@@ -19,8 +19,6 @@ namespace MechanicsManufacturedSolution {
 class MMS
 {
 public:
-    typedef std::shared_ptr<MMS> shared_ptr;
-
     /**
      * Default constructor
      * @param YM  Youngs modulus

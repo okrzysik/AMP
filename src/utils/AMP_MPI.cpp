@@ -636,8 +636,10 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
         d_count  = new std::atomic_int;
         *d_count = 1;
     }
-    if ( d_manage )
+    if ( d_manage ) {
         ++N_MPI_Comm_created;
+        // StackTrace::multi_stack_info( StackTrace::getCallStack() ).print( std::cout );
+    }
     // Create d_ranks
     if ( comm_size > 1 ) {
         d_ranks    = new int[comm_size];

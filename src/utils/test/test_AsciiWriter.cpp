@@ -68,7 +68,7 @@ void test_AsciiWriter( AMP::UnitTest *ut )
     AMP::AMP_MPI selfComm( AMP_COMM_SELF );
 
     // Create the ascii writer
-    AMP::Utilities::Writer::shared_ptr writer = AMP::Utilities::Writer::buildWriter( "ASCII" );
+    auto writer = AMP::Utilities::Writer::buildWriter( "ASCII" );
 
 // Create and register a vector
 #ifdef USE_AMP_VECTORS

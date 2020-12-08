@@ -481,7 +481,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         vecLag2->subtract( *TemperatureInKelvinVec2, *vecLag2 );
 
 #ifdef USE_EXT_SILO
-        AMP::Utilities::Writer::shared_ptr siloWriter =
+        std::shared_ptr<AMP::Utilities::Writer> siloWriter =
             AMP::Utilities::Writer::buildWriter( "Silo" );
 
         siloWriter->registerVector(

@@ -31,7 +31,7 @@ inline double RNG::nextDouble( double low, double high )
     return low + ( high - low ) * static_cast<double>( nextInt( 0, 1073741824 ) ) / 1073741824.0;
 }
 
-inline RandomVariable<double>::RandomVariable( type low, type high, RNG::shared_ptr r )
+inline RandomVariable<double>::RandomVariable( type low, type high, std::shared_ptr<RNG> r )
     : d_Low( low ), d_High( high ), d_RNG( r )
 {
     AMP_ASSERT( high > low );
@@ -40,7 +40,7 @@ inline RandomVariable<double>::RandomVariable( type low, type high, RNG::shared_
 
 inline RandomVariable<double>::operator type() { return d_RNG->nextDouble( d_Low, d_High ); }
 
-inline RandomVariable<float>::RandomVariable( type low, type high, RNG::shared_ptr r )
+inline RandomVariable<float>::RandomVariable( type low, type high, std::shared_ptr<RNG> r )
     : d_Low( low ), d_High( high ), d_RNG( r )
 {
     AMP_ASSERT( high > low );

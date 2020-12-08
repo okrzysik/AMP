@@ -124,8 +124,8 @@ void DirichletMatrixCorrection::applyMatrixCorrection()
     AMP_ASSERT( !d_applyMatrixCorrectionWasCalled );
     d_applyMatrixCorrectionWasCalled = true;
 
-    AMP::LinearAlgebra::Vector::shared_ptr inVec        = d_inputMatrix->getRightVector();
-    AMP::Discretization::DOFManager::shared_ptr dof_map = inVec->getDOFManager();
+    AMP::LinearAlgebra::Vector::shared_ptr inVec             = d_inputMatrix->getRightVector();
+    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = inVec->getDOFManager();
     AMP_ASSERT( ( *dof_map ) == ( *d_inputMatrix->getLeftDOFManager() ) );
     AMP_ASSERT( ( *dof_map ) == ( *d_inputMatrix->getRightDOFManager() ) );
 

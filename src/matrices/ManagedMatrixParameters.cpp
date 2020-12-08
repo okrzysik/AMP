@@ -6,9 +6,10 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-ManagedMatrixParameters::ManagedMatrixParameters( AMP::Discretization::DOFManager::shared_ptr left,
-                                                  AMP::Discretization::DOFManager::shared_ptr right,
-                                                  const AMP_MPI &comm )
+ManagedMatrixParameters::ManagedMatrixParameters(
+    std::shared_ptr<AMP::Discretization::DOFManager> left,
+    std::shared_ptr<AMP::Discretization::DOFManager> right,
+    const AMP_MPI &comm )
     : MatrixParameters( left, right, comm )
 {
     d_vEntriesPerRow.resize( getLocalNumberOfRows() );

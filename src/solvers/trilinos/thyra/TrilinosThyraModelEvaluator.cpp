@@ -41,7 +41,7 @@ TrilinosThyraModelEvaluator::~TrilinosThyraModelEvaluator() = default;
 /****************************************************************
  *  Set the rhs vector                                           *
  ****************************************************************/
-void TrilinosThyraModelEvaluator::setRhs( AMP::LinearAlgebra::Vector::const_shared_ptr rhs )
+void TrilinosThyraModelEvaluator::setRhs( std::shared_ptr<const AMP::LinearAlgebra::Vector> rhs )
 {
     d_rhs = rhs;
 }

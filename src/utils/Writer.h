@@ -35,9 +35,6 @@ namespace Utilities {
 class Writer
 {
 public:
-    //!  Convenience typedef
-    typedef std::shared_ptr<AMP::Utilities::Writer> shared_ptr;
-
     /**
      * \brief   Function to build a writer
      * \details This function will build a default writer for use.

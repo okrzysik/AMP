@@ -26,8 +26,8 @@ public:
      * vector )
      * \param[in] comm     Communicator for the matrix
      */
-    explicit ManagedMatrixParameters( AMP::Discretization::DOFManager::shared_ptr left,
-                                      AMP::Discretization::DOFManager::shared_ptr right,
+    explicit ManagedMatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> left,
+                                      std::shared_ptr<AMP::Discretization::DOFManager> right,
                                       const AMP_MPI &comm );
 
 

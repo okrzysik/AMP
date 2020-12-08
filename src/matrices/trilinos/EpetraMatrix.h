@@ -31,7 +31,7 @@ class EpetraMatrix : virtual public Matrix
 {
 private:
     EpetraMatrix();
-    explicit EpetraMatrix( MatrixParameters::shared_ptr );
+    explicit EpetraMatrix( std::shared_ptr<MatrixParameters> );
 
 protected:
     /** \brief Bare pointer to an Epetra_CrsMatrix
@@ -87,6 +87,9 @@ public:
     /** \brief Destructor
      */
     virtual ~EpetraMatrix();
+
+    //! Return the type of the matrix
+    virtual std::string type() const override { return "EpetraMatrix"; }
 
     /** \brief  Return an Epetra_CrsMatrix
      * \return An Epetra_CrsMatrix view of this matrix

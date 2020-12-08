@@ -84,7 +84,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto vectorDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
-    AMP::Discretization::DOFManager::shared_ptr scalarDofMap =
+    std::shared_ptr<AMP::Discretization::DOFManager> scalarDofMap =
         AMP::Discretization::simpleDOFManager::create(
             meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 

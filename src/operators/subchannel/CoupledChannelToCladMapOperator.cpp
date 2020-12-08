@@ -50,8 +50,9 @@ void CoupledChannelToCladMapOperator::apply( AMP::LinearAlgebra::Vector::const_s
 
         AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = subsetInputVector( u );
 
-        AMP::Discretization::DOFManager::shared_ptr faceDOFManager = uInternal->getDOFManager();
-        AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager =
+        std::shared_ptr<AMP::Discretization::DOFManager> faceDOFManager =
+            uInternal->getDOFManager();
+        std::shared_ptr<AMP::Discretization::DOFManager> scalarFaceDOFManager =
             d_subchannelTemperature->getDOFManager();
 
         AMP::Mesh::MeshIterator face =

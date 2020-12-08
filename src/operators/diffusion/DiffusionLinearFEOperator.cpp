@@ -135,7 +135,7 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
         //    AMP::pout << d_temperature << std::endl;
         if ( localTemperature.size() == 0 )
             localTemperature.resize( num_local_dofs );
-        AMP::Discretization::DOFManager::shared_ptr DOF = d_temperature->getDOFManager();
+        std::shared_ptr<AMP::Discretization::DOFManager> DOF = d_temperature->getDOFManager();
         std::vector<size_t> dofs;
         for ( size_t r = 0; r < d_currNodes.size(); r++ ) {
             DOF->getDOFs( d_currNodes[r].globalID(), dofs );
@@ -149,7 +149,7 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
     } else {
         if ( localConcentration.size() == 0 )
             localConcentration.resize( num_local_dofs );
-        AMP::Discretization::DOFManager::shared_ptr DOF = d_concentration->getDOFManager();
+        std::shared_ptr<AMP::Discretization::DOFManager> DOF = d_concentration->getDOFManager();
         std::vector<size_t> dofs;
         for ( size_t r = 0; r < d_currNodes.size(); r++ ) {
             DOF->getDOFs( d_currNodes[r].globalID(), dofs );
@@ -163,7 +163,7 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
     } else {
         if ( localBurnup.size() == 0 )
             localBurnup.resize( num_local_dofs );
-        AMP::Discretization::DOFManager::shared_ptr DOF = d_burnup->getDOFManager();
+        std::shared_ptr<AMP::Discretization::DOFManager> DOF = d_burnup->getDOFManager();
         std::vector<size_t> dofs;
         for ( size_t r = 0; r < d_currNodes.size(); r++ ) {
             DOF->getDOFs( d_currNodes[r].globalID(), dofs );

@@ -19,11 +19,11 @@ namespace Solver {
 class TrilinosThyraModelEvaluatorParameters
 {
 public:
-    AMP::LinearAlgebra::Vector::shared_ptr d_icVec;             //!< The dofs to use for the vectors
-    AMP::Operator::Operator::shared_ptr d_nonlinearOp;          //!< The non-linear operator
-    AMP::Operator::Operator::shared_ptr d_linearOp;             //!< The linear operator
-    AMP::Solver::SolverStrategy::shared_ptr d_preconditioner;   //!< The preconditioner
-    AMP::Solver::PrePostOperator::shared_ptr d_prePostOperator; //!< The pre-post operator
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_icVec;    //!< The dofs to use for the vectors
+    std::shared_ptr<AMP::Operator::Operator> d_nonlinearOp; //!< The non-linear operator
+    std::shared_ptr<AMP::Operator::Operator> d_linearOp;    //!< The linear operator
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_preconditioner;   //!< The preconditioner
+    std::shared_ptr<AMP::Solver::PrePostOperator> d_prePostOperator; //!< The pre-post operator
 };
 } // namespace Solver
 } // namespace AMP

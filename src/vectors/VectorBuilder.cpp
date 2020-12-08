@@ -28,7 +28,7 @@ namespace LinearAlgebra {
 /********************************************************
  * Vector builder                                        *
  ********************************************************/
-Vector::shared_ptr createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
+Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                  Variable::shared_ptr variable,
                                  bool split )
 {

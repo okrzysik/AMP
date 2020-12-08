@@ -86,7 +86,7 @@ public:
      * \details  This will subset a DOF manager for a given communicator.
      * \param[in]  comm         The communicator to use to subset
      */
-    DOFManager::shared_ptr subset( const AMP_MPI &comm ) override;
+    std::shared_ptr<DOFManager> subset( const AMP_MPI &comm ) override;
 
 
     /** \brief Subset the DOF Manager for a mesh
@@ -97,8 +97,8 @@ public:
      *                          Note: if this is true, any processors that do not contain the mesh
      * will return NULL.
      */
-    DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh,
-                                   bool useMeshComm = true ) override;
+    std::shared_ptr<DOFManager> subset( const AMP::Mesh::Mesh::shared_ptr mesh,
+                                        bool useMeshComm = true ) override;
 
 
     /** \brief Subset the DOF Manager for a mesh element iterator
@@ -107,8 +107,8 @@ public:
      * \param[in]  iterator     The mesh iterator for the subset
      * \param[in]  comm         The desired comm
      */
-    DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator,
-                                   const AMP_MPI &comm ) override;
+    std::shared_ptr<DOFManager> subset( const AMP::Mesh::MeshIterator &iterator,
+                                        const AMP_MPI &comm ) override;
 
 public:
     //! Get the DOFManagers that compose the multiDOFManager

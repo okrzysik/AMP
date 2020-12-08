@@ -111,7 +111,7 @@ protected:
 
     std::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
-    AMP::Discretization::DOFManager::shared_ptr d_dofManager;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_dofManager;
 
 private:
     std::shared_ptr<NeumannVectorCorrection> d_NeumannCorrection;

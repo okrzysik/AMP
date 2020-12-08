@@ -119,7 +119,7 @@ void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     // Get the DOFs to send
     PROFILE_START( "getDOFs", 1 );
-    AMP::Discretization::DOFManager::shared_ptr DOF = curPhysics->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> DOF = curPhysics->getDOFManager();
     std::vector<size_t> dofs( DofsPerObj * d_sendList.size() );
     std::vector<size_t> local_dofs( DofsPerObj );
     for ( size_t i = 0; i < d_sendList.size(); i++ ) {
@@ -167,7 +167,7 @@ void NodeToNodeMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     PROFILE_START( "applyFinish" );
 
     // Get the DOFs to recv
-    AMP::Discretization::DOFManager::shared_ptr DOF = d_OutputVector->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> DOF = d_OutputVector->getDOFManager();
     std::vector<size_t> dofs( DofsPerObj * d_recvList.size() );
     std::vector<size_t> local_dofs( DofsPerObj );
     for ( size_t i = 0; i < d_recvList.size(); i++ ) {

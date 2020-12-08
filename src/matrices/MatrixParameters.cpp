@@ -7,14 +7,15 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-MatrixParameters::MatrixParameters( AMP::Discretization::DOFManager::shared_ptr left,
-                                    AMP::Discretization::DOFManager::shared_ptr right,
+MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> left,
+                                    std::shared_ptr<AMP::Discretization::DOFManager> right,
                                     const AMP_MPI &comm )
     : d_comm( comm )
 
 {
     AMP_ASSERT( left );
     AMP_ASSERT( right );
+    AMP_ASSERT( !d_comm.isNull() );
     d_DOFManagerLeft  = left;
     d_DOFManagerRight = right;
 }

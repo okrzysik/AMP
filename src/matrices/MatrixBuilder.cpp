@@ -3,17 +3,16 @@
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/DenseSerialMatrix.h"
-#include "AMP/utils/Utilities.h"
-
 #include "AMP/matrices/ManagedMatrix.h"
 #include "AMP/matrices/ManagedMatrixParameters.h"
+#include "AMP/utils/Utilities.h"
 
 #ifdef USE_EXT_TRILINOS
 #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
-#ifdef USE_EXT_PETSC
-#include "AMP/matrices/petsc/ManagedPetscMatrix.h"
-#include "AMP/vectors/petsc/PetscHelpers.h"
 #endif
+#ifdef USE_EXT_PETSC
+#include "AMP/matrices/petsc/NativePetscMatrix.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
 #endif
 
 #include <functional>
@@ -40,8 +39,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     auto leftDOF  = leftVec->getDOFManager();
     auto rightDOF = rightVec->getDOFManager();
     if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
-        AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested, and needs to "
-                   "be fixed" );
+        AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested" );
     AMP_MPI comm = leftDOF->getComm();
     if ( comm.getSize() == 1 )
         comm = AMP_MPI( AMP_COMM_SELF );
@@ -68,15 +66,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 
     // Create the matrix
     std::shared_ptr<AMP::LinearAlgebra::ManagedMatrix> newMatrix;
-    if ( type == "ManagedPetscMatrix" ) {
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-        auto mat = std::make_shared<AMP::LinearAlgebra::ManagedPetscMatrix>( params );
-        mat->setEpetraMaps( leftVec, rightVec );
-        newMatrix = mat;
-#else
-        AMP_ERROR( "Unable to build ManagedPetscMatrix without PETSc and Trilinos" );
-#endif
-    } else if ( type == "ManagedEpetraMatrix" ) {
+    if ( type == "ManagedEpetraMatrix" ) {
 #if defined( USE_EXT_TRILINOS )
         auto mat = std::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrix>( params );
         mat->setEpetraMaps( leftVec, rightVec );
@@ -150,6 +140,7 @@ static void test( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
     AMP_ASSERT( N_local_col1 == N_local_col2 );
     AMP_ASSERT( N_global_row1 == N_global_row2 );
     AMP_ASSERT( N_global_col1 == N_global_col2 );
+    AMP_ASSERT( !matrix->getComm().isNull() );
 }
 
 
@@ -165,9 +156,7 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     // Determine the type of matrix to build
     std::string type2 = type;
     if ( type == "auto" ) {
-#if defined( USE_EXT_TRILINOS ) && defined( USE_EXT_PETSC )
-        type2 = "ManagedPetscMatrix";
-#elif defined( USE_EXT_TRILINOS )
+#if defined( USE_EXT_TRILINOS )
         type2 = "ManagedEpetraMatrix";
 #else
         type2 = "DenseSerialMatrix";
@@ -184,18 +173,32 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     }
     // Build the matrix
     AMP::LinearAlgebra::Matrix::shared_ptr matrix;
-    if ( type2 == "ManagedPetscMatrix" || type2 == "ManagedEpetraMatrix" ) {
+    if ( type2 == "ManagedEpetraMatrix" ) {
         matrix = createManagedMatrix( leftVec, rightVec, getRow, type2 );
+        test( matrix );
     } else if ( type2 == "DenseSerialMatrix" ) {
         matrix = createDenseSerialMatrix( leftVec, rightVec );
+        test( matrix );
     } else {
         AMP_ERROR( "Unknown matrix type to build" );
     }
-    // Run some quick checks on the matrix
-    if ( matrix )
-        test( matrix );
     return matrix;
 }
+
+
+/********************************************************
+ * Create Matrix from PETSc Mat                          *
+ ********************************************************/
+#if defined( USE_EXT_PETSC )
+std::shared_ptr<Matrix> createMatrix( Mat M, bool deleteable )
+{
+    auto matrix = std::make_shared<NativePetscMatrix>( M, deleteable );
+    AMP_ASSERT( !matrix->getComm().isNull() );
+    return matrix;
+}
+#endif
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 

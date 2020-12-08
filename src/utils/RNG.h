@@ -11,16 +11,10 @@ namespace AMP {
 class RNGParameters
 {
 public:
-    /**\brief Flag to let the RNG know if you want to provide a seed or use a global seed
-     */
+    //! Flag to let the RNG know if you want to provide a seed or use a global seed
     enum class RNGOptions { USE_GLOBAL_SEED, USE_PARAMS_SEED };
 
-    /**\brief Shorthand for shared pointer to RNGParameters
-     */
-    typedef std::shared_ptr<RNGParameters> shared_ptr;
-
-    /**\brief Seed to use when creating an RNG
-     */
+    //! Seed to use when creating an RNG
     size_t d_Seed;
 
     /**\brief Rank of the RNG to use
@@ -29,12 +23,10 @@ public:
      */
     size_t d_Rank;
 
-    /**\brief Which seed should be used
-     */
+    //! Which seed should be used
     RNGOptions d_WhichSeed;
 
-    /**\brief Constructor.
-     */
+    //! Constructor.
     RNGParameters( RNGOptions o = RNGOptions::USE_GLOBAL_SEED, size_t rank = 0, size_t seed = 0 );
 };
 
@@ -50,23 +42,17 @@ public:
 class RNG
 {
 protected:
-    /**\brief  Constant used in the generation of random doubles
-     */
+    //! Constant used in the generation of random doubles
     static double d_SizeTDivisor;
 
-    /**\brief  A global seed used for convenience
-     */
+    //! A global seed used for convenience
     static size_t d_Seed;
 
-    /**\brief  Parameters used to construct this class
-     */
-    RNGParameters::shared_ptr d_Params;
+    //! Parameters used to construct this class
+    std::shared_ptr<RNGParameters> d_Params;
+
 
 public:
-    /**\brief Shorthand for shared pointer to RNG
-     */
-    typedef std::shared_ptr<RNG> shared_ptr;
-
     /**\brief Initialization function to be called at program start
      *\details  Computes the static constants
      */
@@ -77,7 +63,7 @@ public:
      *\details  This calls srand() with the chosen seed plus the rank.  THIS IS A COMPLETELY
      * INADEQUATE RNG.
      */
-    explicit RNG( RNGParameters::shared_ptr params );
+    explicit RNG( std::shared_ptr<RNGParameters> params );
 
     /**\brief Destructor
      */
@@ -108,7 +94,7 @@ public:
     /**\brief Return a new RNG with a different rank.
      *\param[in]  new_rank  New rank of cloned RNG.
      */
-    virtual RNG::shared_ptr cloneRNG( size_t new_rank );
+    virtual std::shared_ptr<RNG> cloneRNG( size_t new_rank );
 };
 
 
@@ -116,7 +102,7 @@ public:
   *\tparam  T  The type to cast as for random values
   *\details  This class can be used with any P.O.D. type to generate a random variable
   * that can be used as a regular variable.  For instance, \code
-  void performMath ( RNG::shared_ptr stream )
+  void performMath ( std::shared_ptr<RNG> stream )
   {
     RandomVariable<int>     randomInt ( 0 , 100 , stream );
     RandomVariable<double>  randomDouble ( 0. , 1. , stream );
@@ -139,7 +125,7 @@ public:
 private:
     type d_Low;
     type d_Size;
-    RNG::shared_ptr d_RNG;
+    std::shared_ptr<RNG> d_RNG;
 
 public:
     /**\brief  Constructor.
@@ -147,7 +133,7 @@ public:
      *\param[in] high  The supremum or one more than the max value the variable can take
      *\param[in] r  The generator to use for making the variable
      */
-    explicit RandomVariable( type low, type high, RNG::shared_ptr r );
+    explicit RandomVariable( type low, type high, std::shared_ptr<RNG> r );
 
     /**\brief  The casting operator to allow the RandomVariable to be an appropriate
      * rvalue for type.  Everytime it is cast, it generates a new number.
@@ -166,10 +152,10 @@ public:
 
 private:
     type d_Low, d_High;
-    RNG::shared_ptr d_RNG;
+    std::shared_ptr<RNG> d_RNG;
 
 public:
-    explicit RandomVariable( type low, type high, RNG::shared_ptr r );
+    explicit RandomVariable( type low, type high, std::shared_ptr<RNG> r );
 
     operator type();
 };
@@ -185,10 +171,10 @@ public:
 
 private:
     type d_Low, d_High;
-    RNG::shared_ptr d_RNG;
+    std::shared_ptr<RNG> d_RNG;
 
 public:
-    explicit RandomVariable( type low, type high, RNG::shared_ptr r );
+    explicit RandomVariable( type low, type high, std::shared_ptr<RNG> r );
 
     operator type();
 };

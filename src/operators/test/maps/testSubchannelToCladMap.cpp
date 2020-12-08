@@ -83,8 +83,8 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     int DOFsPerNode     = 1;
     std::string varName = "Temperature";
     auto temperature    = std::make_shared<AMP::LinearAlgebra::Variable>( varName );
-    AMP::Discretization::DOFManager::shared_ptr pin_DOFs;
-    AMP::Discretization::DOFManager::shared_ptr subchannel_DOFs;
+    std::shared_ptr<AMP::Discretization::DOFManager> pin_DOFs;
+    std::shared_ptr<AMP::Discretization::DOFManager> subchannel_DOFs;
     AMP::LinearAlgebra::Vector::shared_ptr T_clad;
     AMP::LinearAlgebra::Vector::shared_ptr T_subchannel;
     AMP::LinearAlgebra::Vector::shared_ptr dummy;
@@ -165,7 +165,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
 
 
     // Perform a complete test of SubchannelToCladGPMap
-    AMP::Discretization::DOFManager::shared_ptr gauss_DOFs;
+    std::shared_ptr<AMP::Discretization::DOFManager> gauss_DOFs;
     AMP::LinearAlgebra::Vector::shared_ptr T_gauss;
     if ( pin_mesh.get() != nullptr ) {
         gauss_DOFs = AMP::Discretization::simpleDOFManager::create(
@@ -207,7 +207,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
 
 // Write the results
 #ifdef USE_EXT_SILO
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     if ( T_clad.get() != nullptr )
         siloWriter->registerVector( T_clad, pin_mesh, AMP::Mesh::GeomType::Vertex, "Temperature" );
     if ( T_subchannel.get() != nullptr )

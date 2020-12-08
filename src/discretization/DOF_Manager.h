@@ -176,7 +176,7 @@ protected:
     DOFManager(){};
 
     //! The DOF manager parameters
-    const DOFManagerParameters::shared_ptr params;
+    const std::shared_ptr<DOFManagerParameters> params;
 
     //! The begining DOF, ending DOF and number of local DOFs for this processor
     size_t d_begin, d_end, d_global;

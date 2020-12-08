@@ -2,7 +2,6 @@
 #define included_AMP_Vector
 
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/utils/RNG.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/data/VectorData.h"
@@ -12,6 +11,10 @@
 #include <memory>
 #include <string>
 
+
+namespace AMP {
+class RNG;
+}
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -82,7 +85,7 @@ public: // Constructor/destructors
     Vector( std::shared_ptr<VectorData> data,
             std::shared_ptr<VectorOperations> ops,
             Variable::shared_ptr var,
-            AMP::Discretization::DOFManager::shared_ptr DOFManager );
+            std::shared_ptr<AMP::Discretization::DOFManager> DOFManager );
 
     /** \brief Destructor
      */
@@ -121,7 +124,7 @@ public: // the next set of functions defines the public math. interface for vect
      *      a particular generator
      * \param[in] rng       The generator to use.
      */
-    void setRandomValues( RNG::shared_ptr rng );
+    void setRandomValues( std::shared_ptr<RNG> rng );
 
     /**
      * \brief  Set vector equal to scaled input.
@@ -404,7 +407,7 @@ public: // Virtual functions
                                   const std::string &variable_name ) const;
 
     //! Get the DOFManager for this Vector
-    AMP::Discretization::DOFManager::shared_ptr getDOFManager() const;
+    std::shared_ptr<AMP::Discretization::DOFManager> getDOFManager() const;
 
 
     /** \brief  Selects a portion of this vector and puts a view into a vector
@@ -501,14 +504,14 @@ public: // Non-virtual functions
     /** \brief Set the default RNG of this vector
      * \param[in] rng  The generator to set
      */
-    static void setDefaultRNG( RNG::shared_ptr rng );
+    static void setDefaultRNG( std::shared_ptr<RNG> rng );
 
     /** \brief Get the current default RNG of this vector
      * \return  The current default RNG.
      * \details  If setDefaultRNG has not been called, this returns
      * an AMP::RNG base class.
      */
-    static RNG::shared_ptr getDefaultRNG();
+    static std::shared_ptr<RNG> getDefaultRNG();
 
     /** \brief Associate the ghost buffer of a Vector with this Vector
      * \param in  The Vector to share a ghost buffer with
@@ -766,14 +769,14 @@ private:
     void operator=( const Vector & );
 
 
-protected:                                                    // Internal data
-    static RNG::shared_ptr d_DefaultRNG;                      // default RNG
-    Variable::shared_ptr d_pVariable;                         // Variable
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManager; // The DOF_Manager
-    std::shared_ptr<VectorData> d_VectorData;                 // Pointer to data
-    std::shared_ptr<VectorOperations> d_VectorOps;            // Pointer to a VectorOperations
-    std::shared_ptr<std::vector<std::any>> d_Views;           // Views of the vector
-    std::ostream *d_output_stream;                            // output stream for vector data
+protected:                                                         // Internal data
+    static std::shared_ptr<RNG> d_DefaultRNG;                      // default RNG
+    Variable::shared_ptr d_pVariable;                              // Variable
+    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager; // The DOF_Manager
+    std::shared_ptr<VectorData> d_VectorData;                      // Pointer to data
+    std::shared_ptr<VectorOperations> d_VectorOps;                 // Pointer to a VectorOperations
+    std::shared_ptr<std::vector<std::any>> d_Views;                // Views of the vector
+    std::ostream *d_output_stream;                                 // output stream for vector data
 };
 
 

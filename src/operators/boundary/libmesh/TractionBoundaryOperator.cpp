@@ -71,7 +71,7 @@ void TractionBoundaryOperator::computeCorrection()
     std::shared_ptr<libMesh::QBase> qrule(
         ( libMesh::QBase::build( qruleType, 2, qruleOrder ) ).release() );
 
-    AMP::Discretization::DOFManager::shared_ptr dofMap = d_correction->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> dofMap = d_correction->getDOFManager();
 
     d_correction->zero();
     for ( size_t b = 0; b < d_sideNumbers.size(); ++b ) {

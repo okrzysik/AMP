@@ -33,9 +33,7 @@
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
-    // std::string log_file = "output_" + exeName;
 
-    //  AMP::PIO::logOnlyNodeZero(log_file);
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     size_t N_error0 = ut->NumFailLocal();
@@ -43,19 +41,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    //--------------------------------------------------
-    //   Create the Mesh.
-    //--------------------------------------------------
+    // Create the Mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
-    //--------------------------------------------------
 
-    //--------------------------------------------------
     // Create a DOF manager for a nodal vector
-    //--------------------------------------------------
     int DOFsPerNode          = 1;
     int DOFsPerElement       = 8;
     int nodalGhostWidth      = 1;
@@ -66,7 +59,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
@@ -74,7 +66,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the input variable
     auto thermalVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
@@ -103,7 +94,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearThermalOperator->modifyInitialSolutionVector( solVec );
     std::cout << "initial guess norm  after apply = " << solVec->L2Norm() << "\n";
 
-    //  CREATE THE NEUTRONICS SOURCE  //
+    // CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
@@ -202,7 +193,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         ut->failure( "the Final Rhs Norm has changed." );
 
 #ifdef USE_EXT_SILO
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );

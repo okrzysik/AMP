@@ -101,8 +101,8 @@ void NodeToGaussPointOperator::apply( AMP::LinearAlgebra::Vector::const_shared_p
                 AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 
     PROFILE_START( "getDOFManager" );
-    AMP::Discretization::DOFManager::shared_ptr dof_map         = nodalVec->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr gaussPt_dof_map = gaussPtVec->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> dof_map         = nodalVec->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> gaussPt_dof_map = gaussPtVec->getDOFManager();
     PROFILE_STOP( "getDOFManager" );
 
     AMP::Mesh::MeshIterator iterator = d_iterator.begin();

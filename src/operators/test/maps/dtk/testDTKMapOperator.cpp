@@ -53,7 +53,7 @@ static void myTest( AMP::UnitTest *ut )
     bool const split      = true;
     int const ghostWidth  = 1;
     int const dofsPerNode = 1;
-    AMP::Discretization::DOFManager::shared_ptr sourceDofManager =
+    std::shared_ptr<AMP::Discretization::DOFManager> sourceDofManager =
         AMP::Discretization::simpleDOFManager::create(
             sourceMesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
     AMP::LinearAlgebra::Variable::shared_ptr variable(
@@ -76,7 +76,7 @@ static void myTest( AMP::UnitTest *ut )
     }
 #ifdef USE_EXT_SILO
     {
-        AMP::Utilities::Writer::shared_ptr siloWriter =
+        std::shared_ptr<AMP::Utilities::Writer> siloWriter =
             AMP::Utilities::Writer::buildWriter( "silo" );
         siloWriter->setDecomposition( 1 );
         siloWriter->registerVector(
@@ -100,7 +100,7 @@ static void myTest( AMP::UnitTest *ut )
     AMP::pout << "target mesh contains " << numElementsOnTargetMesh << " elements\n";
 
     AMP::pout << "Building the target vector" << std::endl;
-    AMP::Discretization::DOFManager::shared_ptr targetDofManager =
+    std::shared_ptr<AMP::Discretization::DOFManager> targetDofManager =
         AMP::Discretization::simpleDOFManager::create(
             targetMesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
     AMP::LinearAlgebra::Vector::shared_ptr targetVector =
@@ -128,7 +128,8 @@ static void myTest( AMP::UnitTest *ut )
     AMP::pout << "source vector l2 norm = " << sourceVector->L2Norm() << std::endl;
     AMP::pout << "target vector l2 norm = " << targetVector->L2Norm() << std::endl;
 #ifdef USE_EXT_SILO
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "silo" );
+    std::shared_ptr<AMP::Utilities::Writer> siloWriter =
+        AMP::Utilities::Writer::buildWriter( "silo" );
     siloWriter->setDecomposition( 1 );
     siloWriter->registerVector( targetVector, targetMesh, AMP::Mesh::GeomType::Vertex, "vector" );
     siloWriter->writeFile( "target", 0 );

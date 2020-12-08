@@ -300,9 +300,7 @@ void PetscKrylovSolver::registerOperator( const std::shared_ptr<AMP::Operator::O
     auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
     AMP_ASSERT( linearOperator.get() != nullptr );
 
-    auto pMatrix =
-        std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>( linearOperator->getMatrix() );
-    AMP_ASSERT( pMatrix.get() != nullptr );
+    auto pMatrix = AMP::LinearAlgebra::PetscMatrix::view( linearOperator->getMatrix() );
 
     Mat mat;
     mat = pMatrix->getMat();
@@ -318,9 +316,7 @@ void PetscKrylovSolver::resetOperator(
             std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
         AMP_ASSERT( linearOperator.get() != nullptr );
 
-        auto pMatrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(
-            linearOperator->getMatrix() );
-        AMP_ASSERT( pMatrix.get() != nullptr );
+        auto pMatrix = AMP::LinearAlgebra::PetscMatrix::view( linearOperator->getMatrix() );
 
         Mat mat;
         mat = pMatrix->getMat();

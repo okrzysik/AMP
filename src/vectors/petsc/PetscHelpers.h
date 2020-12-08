@@ -52,9 +52,10 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> getAMP( Mat t );
 
 
 /********************************************************
- * Get a PETSc Vec from an AMP vector                    *
+ * Get a PETSc Vec or Mat from an AMP vector/matrix      *
  ********************************************************/
 Vec getVec( std::shared_ptr<AMP::LinearAlgebra::Vector> v );
+Mat getMat( std::shared_ptr<AMP::LinearAlgebra::Matrix> m );
 
 
 } // namespace PETSC

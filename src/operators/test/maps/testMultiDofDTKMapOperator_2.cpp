@@ -57,11 +57,11 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     // Distribute degrees of freedom
     int const ghostWidth = 1;
     bool const split     = true;
-    AMP::Discretization::DOFManager::shared_ptr phiDofMap =
+    std::shared_ptr<AMP::Discretization::DOFManager> phiDofMap =
         AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, 1, split );
 
-    //    AMP::Discretization::DOFManager::shared_ptr eectDofMap =
+    //    std::shared_ptr<AMP::Discretization::DOFManager> eectDofMap =
     //        AMP::Discretization::simpleDOFManager::create(
     //            mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, 5, split );
 
@@ -98,7 +98,8 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     */
     //---------------------------------------------------
 
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    std::shared_ptr<AMP::Utilities::Writer> siloWriter =
+        AMP::Utilities::Writer::buildWriter( "Silo" );
     //    siloWriter->registerMesh( mesh );
     //    siloWriter->setDecomposition( 1 );
     siloWriter->registerVector(

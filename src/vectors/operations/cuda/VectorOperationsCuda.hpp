@@ -114,7 +114,7 @@ void VectorOperationsCuda<TYPE>::setRandomValues( VectorData &x )
 }
 
 template<typename TYPE>
-void VectorOperationsCuda<TYPE>::setRandomValues( RNG::shared_ptr rng, VectorData &x )
+void VectorOperationsCuda<TYPE>::setRandomValues( std::shared_ptr<RNG> rng, VectorData &x )
 {
     // Default to VectorOperationsDefault (on cpu)
     getDefaultOps()->setRandomValues( rng, x );

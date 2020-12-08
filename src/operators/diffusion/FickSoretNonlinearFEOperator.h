@@ -18,22 +18,13 @@ namespace Operator {
 class FickSoretNonlinearFEOperator : public Operator
 {
 public:
-    typedef std::shared_ptr<FickSoretNonlinearFEOperator> shared_ptr;
-
     explicit FickSoretNonlinearFEOperator( const std::shared_ptr<OperatorParameters> &params );
 
     virtual ~FickSoretNonlinearFEOperator() {}
 
     std::string type() const override { return "FickSoretNonlinearFEOperator"; }
 
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override
-    {
-        std::shared_ptr<FickSoretNonlinearFEOperatorParameters> fsParams =
-            std::dynamic_pointer_cast<FickSoretNonlinearFEOperatorParameters>( params );
-
-        d_FickOperator->reset( fsParams->d_FickParameters );
-        d_SoretOperator->reset( fsParams->d_SoretParameters );
-    }
+    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
@@ -56,9 +47,7 @@ public:
         return d_FickOperator->getInputVariable();
     }
 
-    /**
-     * checks input to apply operator for satisfaction of range conditions
-     */
+    //! checks input to apply operator for satisfaction of range conditions
     bool isValidInput( AMP::LinearAlgebra::Vector::shared_ptr &u ) override
     {
         bool result;
@@ -66,16 +55,14 @@ public:
         return result;
     }
 
-    DiffusionNonlinearFEOperator::shared_ptr getFickOperator() { return d_FickOperator; }
-    DiffusionNonlinearFEOperator::shared_ptr getSoretOperator() { return d_SoretOperator; }
+    inline auto getFickOperator() { return d_FickOperator; }
+    inline auto getSoretOperator() { return d_SoretOperator; }
 
 protected:
 private:
-    DiffusionNonlinearFEOperator::shared_ptr d_FickOperator;
-    DiffusionNonlinearFEOperator::shared_ptr d_SoretOperator;
-
-    AMP::LinearAlgebra::Variable::shared_ptr d_OutputVariable;
-
+    std::shared_ptr<DiffusionNonlinearFEOperator> d_FickOperator;
+    std::shared_ptr<DiffusionNonlinearFEOperator> d_SoretOperator;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable;
     bool d_AddSoretTerm;
 };
 } // namespace Operator

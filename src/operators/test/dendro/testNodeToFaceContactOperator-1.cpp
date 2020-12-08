@@ -111,7 +111,7 @@ static void applySlaveLoadOperator( double loadParameterX,
                                     double loadParameterZ,
                                     AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                     AMP::LinearAlgebra::Vector::shared_ptr loadVector,
-                                    AMP::Discretization::DOFManager::shared_ptr dofManager )
+                                    std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
 {
     static std::vector<double> loadValuesX;
     static std::vector<double> loadValuesZ;
@@ -175,7 +175,7 @@ static void applyMasterLoadOperator( double loadParameterX,
                                      double loadParameterZ,
                                      AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                      AMP::LinearAlgebra::Vector::shared_ptr loadVector,
-                                     AMP::Discretization::DOFManager::shared_ptr dofManager )
+                                     std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
 {
     static std::vector<double> loadValuesX;
     static std::vector<double> loadValuesZ;

@@ -289,7 +289,7 @@ static size_t AMP_to_MATLAB( const AMP::Mesh::MeshElement &face, size_t variable
 }
 
 // function to create map of global IDs to elements and variables
-static void createGlobalIDMaps( AMP::Discretization::DOFManager::shared_ptr dof_manager,
+static void createGlobalIDMaps( std::shared_ptr<AMP::Discretization::DOFManager> dof_manager,
                                 std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                 std::map<size_t, AMP::Mesh::MeshElement> &elements_by_globalID,
                                 std::map<size_t, size_t> &variables_by_globalID )
@@ -329,7 +329,7 @@ static void createGlobalIDMaps( AMP::Discretization::DOFManager::shared_ptr dof_
 // function to check that Jacobian matches known values
 static bool JacobianIsCorrect( std::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
                                double J_reference[num_dofs_MATLAB][num_dofs_MATLAB],
-                               AMP::Discretization::DOFManager::shared_ptr dof_manager,
+                               std::shared_ptr<AMP::Discretization::DOFManager> dof_manager,
                                AMP::Mesh::Mesh::shared_ptr mesh,
                                std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> lateral_face_map,
                                std::map<size_t, AMP::Mesh::MeshElement> elements_by_globalID,
@@ -470,7 +470,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // get dof manager
-    AMP::Discretization::DOFManager::shared_ptr subchannelDOFManager;
+    std::shared_ptr<AMP::Discretization::DOFManager> subchannelDOFManager;
     if ( subchannelMesh.get() != nullptr ) {
         int DOFsPerFace[3] = { 1, 1, 3 };
         subchannelDOFManager =

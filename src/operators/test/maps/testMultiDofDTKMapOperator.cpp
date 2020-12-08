@@ -43,7 +43,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     AMP::pout << "--------------------\n";
     AMP::pout << "    LOADING MESH    \n";
     AMP::pout << "--------------------\n";
-    AMP::Database::shared_ptr meshDatabase = inputDatabase->getDatabase( "Mesh" );
+    std::shared_ptr<AMP::Database> meshDatabase = inputDatabase->getDatabase( "Mesh" );
     AMP::Mesh::MeshParameters::shared_ptr meshParams(
         new AMP::Mesh::MeshParameters( meshDatabase ) );
     meshParams->setComm( globalComm );
@@ -57,10 +57,10 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     // Distribute degrees of freedom
     int const ghostWidth = 1;
     bool const split     = true;
-    AMP::Discretization::DOFManager::shared_ptr phiDofMap =
+    std::shared_ptr<AMP::Discretization::DOFManager> phiDofMap =
         AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, 1, split );
-    AMP::Discretization::DOFManager::shared_ptr eectDofMap =
+    std::shared_ptr<AMP::Discretization::DOFManager> eectDofMap =
         AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, 5, split );
 
@@ -96,7 +96,8 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
         BatteryMapVec->select( AMP::LinearAlgebra::VS_Stride( 3, 5 ), "V4" );
     //---------------------------------------------------
 
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    std::shared_ptr<AMP::Utilities::Writer> siloWriter =
+        AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
     siloWriter->setDecomposition( 1 );
     siloWriter->registerVector(

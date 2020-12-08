@@ -10,8 +10,8 @@ void ContactResidualCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_
     AMP::LinearAlgebra::Vector::shared_ptr rMaster = r->subsetVectorForVariable( d_masterVariable );
     AMP::LinearAlgebra::Vector::shared_ptr rSlave  = r->subsetVectorForVariable( d_slaveVariable );
 
-    AMP::Discretization::DOFManager::shared_ptr master_dof_map = rMaster->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr slave_dof_map  = rSlave->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> master_dof_map = rMaster->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> slave_dof_map  = rSlave->getDOFManager();
 
     for ( size_t i = 0; i < d_masterNodes.size(); i++ ) {
         std::vector<size_t> masterGlobalIds;

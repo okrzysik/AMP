@@ -19,13 +19,6 @@ namespace Solver {
 class PrePostOperator : public NOX::Abstract::PrePostOperator
 {
 public:
-    /**
-     *\typedef shared_ptr
-     *\brief  Name for the shared pointer.
-     *\details  Use this typedef for a reference counted pointer to a mesh manager object.
-     */
-    typedef std::shared_ptr<AMP::Solver::PrePostOperator> shared_ptr;
-
     // Destructor
     virtual ~PrePostOperator() {}
 

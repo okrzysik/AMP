@@ -54,7 +54,7 @@ protected:
     // Variables to store the individual meshes and the DOFManager
     AMP::Mesh::Mesh::shared_ptr d_mesh1;
     AMP::Mesh::Mesh::shared_ptr d_mesh2;
-    AMP::Discretization::DOFManager::shared_ptr d_DOFManager;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager;
     AMP::LinearAlgebra::Variable::shared_ptr d_inpVariable;
     AMP::LinearAlgebra::Variable::shared_ptr d_outVariable;
 

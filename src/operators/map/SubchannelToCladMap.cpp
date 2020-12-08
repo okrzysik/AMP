@@ -271,7 +271,7 @@ void SubchannelToCladMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
     }
     delete[] tmp_data;
     // Fill the output vector
-    // AMP::Discretization::DOFManager::shared_ptr  DOF = d_OutputVector->getDOFManager( );
+    // std::shared_ptr<AMP::Discretization::DOFManager>  DOF = d_OutputVector->getDOFManager( );
     double range[4];
     int Nx = d_x.size() - 1;
     for ( size_t i = 0; i < N_subchannels; i++ ) {
@@ -304,7 +304,7 @@ void SubchannelToCladMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_p
                                             const std::vector<double> &f )
 {
     PROFILE_START( "fillReturnVector" );
-    AMP::Discretization::DOFManager::shared_ptr DOF = vec->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> DOF = vec->getDOFManager();
     std::vector<size_t> dofs( 1 );
     for ( auto &id : ids ) {
         DOF->getDOFs( id, dofs );

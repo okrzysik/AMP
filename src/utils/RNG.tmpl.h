@@ -1,6 +1,6 @@
 namespace AMP {
 template<typename T>
-RandomVariable<T>::RandomVariable( type low, type high, RNG::shared_ptr r )
+RandomVariable<T>::RandomVariable( type low, type high, std::shared_ptr<RNG> r )
     : d_Low( low ), d_Size( high - low ), d_RNG( r )
 {
     AMP_ASSERT( high > low );

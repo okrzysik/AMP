@@ -90,7 +90,7 @@ public:
     }
 
     void uglyHack( AMP::LinearAlgebra::Vector::shared_ptr temperatureFieldVector,
-                   AMP::Discretization::DOFManager::shared_ptr temperatureDOFManager,
+                   std::shared_ptr<AMP::Discretization::DOFManager> temperatureDOFManager,
                    double thermalExpansionCoefficient,
                    double referenceTemperature )
     {
@@ -120,7 +120,7 @@ public:
 protected:
 private:
     AMP::LinearAlgebra::Vector::shared_ptr d_TemperatureFieldVector;
-    AMP::Discretization::DOFManager::shared_ptr d_TemperatureDOFManager;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_TemperatureDOFManager;
     double d_ThermalExpansionCoefficient;
     double d_ReferenceTemperature;
 

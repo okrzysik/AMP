@@ -70,12 +70,12 @@ private:
 
     // Data members
     Teuchos::RCP<const ::Thyra::LinearOpWithSolveFactoryBase<double>> d_W_factory;
-    AMP::LinearAlgebra::Vector::shared_ptr d_icVec;
-    AMP::LinearAlgebra::Vector::const_shared_ptr d_rhs;
-    AMP::Operator::Operator::shared_ptr d_nonlinearOp;
-    AMP::Operator::Operator::shared_ptr d_linearOp;
-    AMP::Solver::SolverStrategy::shared_ptr d_preconditioner;
-    AMP::Solver::PrePostOperator::shared_ptr d_prePostOperator;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_icVec;
+    std::shared_ptr<const AMP::LinearAlgebra::Vector> d_rhs;
+    std::shared_ptr<AMP::Operator::Operator> d_nonlinearOp;
+    std::shared_ptr<AMP::Operator::Operator> d_linearOp;
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_preconditioner;
+    std::shared_ptr<AMP::Solver::PrePostOperator> d_prePostOperator;
 };
 } // namespace Solver
 } // namespace AMP

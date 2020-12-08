@@ -117,17 +117,17 @@ void PetscSNESSolver::initialize( std::shared_ptr<SolverStrategyParameters> para
         SNESAppendOptionsPrefix( d_SNESSolver, d_SNESAppendOptionsPrefix.c_str() );
 
     // if the initial guess is non-zero set the vectors accordingly
-    if ( parameters->d_pInitialGuess.get() != nullptr ) {
+    if ( parameters->d_pInitialGuess ) {
         d_pSolutionVector = parameters->d_pInitialGuess;
     } else {
-        AMP_INSIST( parameters->d_pInitialGuess.get() != nullptr,
+        AMP_INSIST( parameters->d_pInitialGuess,
                     "ERROR:: The initial guess has to "
                     "be provided through the "
                     "PetscSNESSolverParameters class" );
     }
 
     // if the krylov solver is initialized set the SNES pointer to it
-    if ( d_pKrylovSolver.get() != nullptr ) {
+    if ( d_pKrylovSolver ) {
         SNESSetKSP( d_SNESSolver, d_pKrylovSolver->getKrylovSolver() );
     } else {
         // initialize the Krylov solver correctly
@@ -145,7 +145,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<SolverStrategyParameters> para
             params->d_comm = d_comm;
             d_pKrylovSolver->initialize( params );
         } else {
-            AMP_INSIST( d_pKrylovSolver.get() != nullptr,
+            AMP_INSIST( d_pKrylovSolver,
                         "ERROR: The nonlinear solver database must "
                         "contain a database called LinearSolver" );
         }
@@ -160,7 +160,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<SolverStrategyParameters> para
 
     checkErr( SNESSetFromOptions( d_SNESSolver ) );
 
-    if ( d_PetscMonitor.get() != nullptr ) {
+    if ( d_PetscMonitor ) {
         // Add the monitor
         SNESMonitorSet( d_SNESSolver, PetscMonitor::monitorSNES, d_PetscMonitor.get(), PETSC_NULL );
     }
@@ -225,9 +225,9 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
     auto sp_r = PETSC::getAMP( r );
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> sp_f;
-    if ( sp_f.get() != nullptr )
+    if ( sp_f )
         sp_f->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    if ( sp_x.get() != nullptr )
+    if ( sp_x )
         sp_x->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     sp_r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
@@ -273,14 +273,15 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     Vec x = spSol->getVec();
 
     Vec b = PETSC_NULL;
-    if ( spRhs.get() != nullptr ) {
+    if ( spRhs ) {
         b = spRhs->getVec();
         setSNESFunction( spRhs->getManagedVec() );
     }
 
     // Set the jacobian
+    std::shared_ptr<AMP::LinearAlgebra::PetscMatrix> view1;
     if ( !d_bUsesJacobian ) {
-        if ( d_Jacobian != nullptr ) {
+        if ( d_Jacobian ) {
             PETSC::matDestroy( &d_Jacobian );
             d_Jacobian = nullptr;
         }
@@ -294,26 +295,25 @@ void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     } else {
         auto linearOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>(
             d_pKrylovSolver->getOperator() );
-        if ( linearOp.get() != nullptr ) {
-            auto pMatrix =
-                std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>( linearOp->getMatrix() );
-            AMP_ASSERT( pMatrix.get() != nullptr );
-            d_Jacobian = pMatrix->getMat();
+        if ( linearOp ) {
+            view1      = AMP::LinearAlgebra::PetscMatrix::view( linearOp->getMatrix() );
+            d_Jacobian = view1->getMat();
         } else {
-            AMP_INSIST( linearOp.get() != nullptr,
+            AMP_INSIST( linearOp,
                         "ERROR: The LinearOperator pointer in the PetscKrylovSolver is NULL" );
         }
     }
     auto pcSolver  = d_pKrylovSolver->getPreconditioner();
     Mat PCJacobian = d_Jacobian;
-    if ( pcSolver.get() != nullptr ) {
+    std::shared_ptr<AMP::LinearAlgebra::PetscMatrix> view2;
+    if ( pcSolver ) {
         auto linearOp =
             std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( pcSolver->getOperator() );
-        if ( linearOp.get() != nullptr ) {
-            auto pMatrix =
-                std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>( linearOp->getMatrix() );
-            if ( pMatrix.get() != nullptr ) {
-                PCJacobian = pMatrix->getMat();
+        if ( linearOp ) {
+            auto matrix = linearOp->getMatrix();
+            if ( matrix ) {
+                view2      = AMP::LinearAlgebra::PetscMatrix::view( matrix );
+                PCJacobian = view2->getMat();
             }
         }
     }
@@ -403,7 +403,7 @@ PetscErrorCode PetscSNESSolver::lineSearchPreCheck(
         int N_line = pSNESSolver->getNumberOfLineSearchPreCheckAttempts();
         auto pColumnOperator =
             std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( pOperator );
-        if ( pColumnOperator.get() != nullptr ) {
+        if ( pColumnOperator ) {
             for ( int i = 0; i < N_line; i++ ) {
                 AMP::pout << "Attempting to scale search, attempt number " << i << std::endl;
                 double lambda = 0.5;
@@ -436,7 +436,7 @@ PetscErrorCode PetscSNESSolver::mffdCheckBounds( void *checkctx, Vec U, Vec a, P
     // check for column operators
     auto pColumnOperator =
         std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( pSNESOperator );
-    if ( pColumnOperator.get() != nullptr ) {
+    if ( pColumnOperator ) {
         pOperator = pColumnOperator->getOperator( pSNESSolver->getBoundsCheckComponent() );
     } else {
         pOperator = pSNESOperator;
@@ -471,7 +471,7 @@ PetscErrorCode PetscSNESSolver::mffdCheckBounds( void *checkctx, Vec U, Vec a, P
 
 void PetscSNESSolver::setSNESFunction( std::shared_ptr<const AMP::LinearAlgebra::Vector> rhs )
 {
-    AMP_INSIST( rhs.get() != nullptr,
+    AMP_INSIST( rhs,
                 "ERROR: PetscSNESSolver::setSNESFunction needs a non NULL rhs vector argument" );
 
     // Create new residual and scratch vectors
@@ -480,7 +480,7 @@ void PetscSNESSolver::setSNESFunction( std::shared_ptr<const AMP::LinearAlgebra:
 
     // set the function evaluation routine to a static member of this class which acts as a wrapper
     auto petscVec = AMP::LinearAlgebra::PetscVector::view( d_pResidualVector );
-    AMP_INSIST( petscVec.get() != nullptr,
+    AMP_INSIST( petscVec,
                 "ERROR: Currently the SNES Solver can only be used with a Petsc_Vector, "
                 "the supplied Vector does not appear to belong to this class" );
     Vec residualVector = petscVec->getVec();

@@ -209,8 +209,10 @@ void SubchannelFourEqLinearOperator::reset( const std::shared_ptr<OperatorParame
     const double w_scale = 1.0 / Subchannel::scaleLateralMassFlowRate;
 
     // get DoF manager
-    AMP::Discretization::DOFManager::shared_ptr left_DOFManager  = d_matrix->getLeftDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr right_DOFManager = d_matrix->getRightDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> left_DOFManager =
+        d_matrix->getLeftDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> right_DOFManager =
+        d_matrix->getRightDOFManager();
     bool equal_to_leftDOFManager = false, equal_to_rightDOFManager = false;
     if ( *left_DOFManager == *dof_manager )
         equal_to_leftDOFManager = true;
@@ -218,7 +220,7 @@ void SubchannelFourEqLinearOperator::reset( const std::shared_ptr<OperatorParame
         equal_to_rightDOFManager = true;
     AMP_ASSERT( equal_to_leftDOFManager );
     AMP_ASSERT( equal_to_rightDOFManager );
-    AMP::Discretization::DOFManager::shared_ptr cladDofManager;
+    std::shared_ptr<AMP::Discretization::DOFManager> cladDofManager;
     if ( d_source == "averageCladdingTemperature" ) {
         cladDofManager = d_cladTemperature->getDOFManager();
     }

@@ -174,7 +174,7 @@ std::unique_ptr<Mesh> libmeshMesh::clone() const { return std::make_unique<libme
 
 
 /********************************************************
- * Function to initialize the libmeshMesh object             *
+ * Function to initialize the libmeshMesh object         *
  ********************************************************/
 void libmeshMesh::initialize()
 {

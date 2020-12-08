@@ -94,8 +94,8 @@ ScalarN2GZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
         return std::multimap<double, double>();
     PROFILE_START( "buildMap" );
     std::multimap<double, double> map;
-    AMP::Discretization::DOFManager::shared_ptr dof = vec->getDOFManager();
-    size_t N                                        = iterator.size();
+    std::shared_ptr<AMP::Discretization::DOFManager> dof = vec->getDOFManager();
+    size_t N                                             = iterator.size();
     std::vector<AMP::Mesh::MeshElementID> ids( N );
     std::vector<double> z( N, 0.0 );
     AMP::Mesh::MeshIterator it = iterator.begin();
@@ -127,7 +127,7 @@ ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator &iterator )
     if ( iterator == d_dstIterator2 && d_z_coord2.get() != nullptr )
         return d_z_coord2;
     PROFILE_START( "getGaussPoints" );
-    AMP::Discretization::DOFManager::shared_ptr GpDofMap =
+    std::shared_ptr<AMP::Discretization::DOFManager> GpDofMap =
         AMP::Discretization::simpleDOFManager::create( iterator, 4 );
     AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "gauss_z" ) );
     AMP::LinearAlgebra::Vector::shared_ptr z_pos =
@@ -192,8 +192,8 @@ void ScalarN2GZAxisMap::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
     AMP_ASSERT( z_pos.get() != nullptr );
 
     // Get the DOF managers
-    AMP::Discretization::DOFManager::shared_ptr DOFs      = vec->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr gaussDOFs = z_pos->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> DOFs      = vec->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> gaussDOFs = z_pos->getDOFManager();
 
     // Loop through the points in the output vector
     size_t N0 = iterator.size();

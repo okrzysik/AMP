@@ -35,11 +35,11 @@ public:
      * \param split         Do we want to split the DOFManager by the meshes returning a
      * multiDOFManager
      */
-    static DOFManager::shared_ptr create( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                          AMP::Mesh::GeomType type,
-                                          int gcw,
-                                          int DOFsPerElement,
-                                          bool split = true );
+    static std::shared_ptr<DOFManager> create( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                               AMP::Mesh::GeomType type,
+                                               int gcw,
+                                               int DOFsPerElement,
+                                               bool split = true );
 
 
     /**
@@ -50,10 +50,10 @@ public:
      * \param it2           The iterator over the elements (excluding ghost cells)
      * \param DOFsPerElement The desired number of DOFs pere element
      */
-    static DOFManager::shared_ptr create( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                          const AMP::Mesh::MeshIterator &it1,
-                                          const AMP::Mesh::MeshIterator &it2,
-                                          int DOFsPerElement );
+    static std::shared_ptr<DOFManager> create( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                               const AMP::Mesh::MeshIterator &it1,
+                                               const AMP::Mesh::MeshIterator &it2,
+                                               int DOFsPerElement );
 
 
     /**
@@ -63,7 +63,8 @@ public:
      * \param it             The iterator over the elements (no ghost cells)
      * \param DOFsPerElement The desired number of DOFs pere element
      */
-    static DOFManager::shared_ptr create( const AMP::Mesh::MeshIterator &it, int DOFsPerElement );
+    static std::shared_ptr<DOFManager> create( const AMP::Mesh::MeshIterator &it,
+                                               int DOFsPerElement );
 
 
     //! Destructor
@@ -128,8 +129,8 @@ public:
      *                          Note: if this is true, any processors that do not contain the mesh
      * will return NULL.
      */
-    DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh,
-                                   bool useMeshComm = true ) override;
+    std::shared_ptr<DOFManager> subset( const AMP::Mesh::Mesh::shared_ptr mesh,
+                                        bool useMeshComm = true ) override;
 
 
 private:

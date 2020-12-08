@@ -12,7 +12,7 @@ namespace LinearAlgebra {
 /****************************************************************
  * Get basic info                                                *
  ****************************************************************/
-inline AMP::Discretization::DOFManager::shared_ptr Vector::getDOFManager() const
+inline std::shared_ptr<AMP::Discretization::DOFManager> Vector::getDOFManager() const
 {
     return d_DOFManager;
 }
@@ -73,23 +73,6 @@ void Vector::registerView( std::shared_ptr<VIEW_TYPE> v ) const
 
 
 /****************************************************************
- * RNG                                                           *
- ****************************************************************/
-inline void Vector::setDefaultRNG( RNG::shared_ptr p ) { d_DefaultRNG = p; }
-inline RNG::shared_ptr Vector::getDefaultRNG()
-{
-    if ( !d_DefaultRNG ) {
-        AMP_MPI globalComm( AMP_COMM_WORLD );
-        int rank     = globalComm.getRank();
-        auto params  = std::make_shared<RNGParameters>( RNGParameters::RNGOptions::USE_GLOBAL_SEED,
-                                                       static_cast<size_t>( rank ) );
-        d_DefaultRNG = std::make_shared<RNG>( params );
-    }
-    return d_DefaultRNG;
-}
-
-
-/****************************************************************
  * Misc functions                                                *
  ****************************************************************/
 inline const Variable::shared_ptr Vector::getVariable() const { return d_pVariable; }
@@ -122,11 +105,6 @@ inline void Vector::zero( void ) { d_VectorOps->zero( *getVectorData() ); }
 inline void Vector::setToScalar( const Scalar &alpha )
 {
     d_VectorOps->setToScalar( alpha, *getVectorData() );
-}
-inline void Vector::setRandomValues( void ) { d_VectorOps->setRandomValues( *getVectorData() ); }
-inline void Vector::setRandomValues( RNG::shared_ptr rng )
-{
-    d_VectorOps->setRandomValues( rng, *getVectorData() );
 }
 inline void Vector::scale( const Scalar &alpha, const Vector &x )
 {

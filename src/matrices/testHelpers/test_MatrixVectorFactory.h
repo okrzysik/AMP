@@ -8,7 +8,7 @@
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+#if defined( USE_EXT_PETSC )
 #include "AMP/matrices/petsc/PetscMatrix.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/petsc/PetscVector.h"
@@ -17,17 +17,21 @@
 
 #include "ProfilerApp.h"
 
+#include "petscmat.h"
+
 
 namespace AMP {
 namespace LinearAlgebra {
-
 
 
 // Classes to serve as the vector factories
 class AmpInterfaceLeftVectorFactory : public VectorFactory
 {
 public:
-    AmpInterfaceLeftVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix ) : d_matrix( matrix ) {}
+    explicit AmpInterfaceLeftVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+        : d_matrix( matrix )
+    {
+    }
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         PROFILE_START( "AmpInterfaceLeftVectorFactory::getVector" );
@@ -40,6 +44,7 @@ public:
     {
         return "AmpInterfaceLeftVectorFactory<" + getVector()->type() + ">";
     }
+
 private:
     AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
 };
@@ -48,7 +53,10 @@ private:
 class AmpInterfaceRightVectorFactory : public VectorFactory
 {
 public:
-    AmpInterfaceRightVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix ) : d_matrix( matrix ) {}
+    explicit AmpInterfaceRightVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+        : d_matrix( matrix )
+    {
+    }
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         PROFILE_START( "AmpInterfaceRightVectorFactory::getVector" );
@@ -61,23 +69,26 @@ public:
     {
         return "AmpInterfaceRightVectorFactory<" + getVector()->type() + ">";
     }
+
 private:
     AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
 };
 
 
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+#if defined( USE_EXT_PETSC )
 
 class PETScInterfaceLeftVectorFactory : public PetscVectorFactory
 {
 public:
-    PETScInterfaceLeftVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix ) : d_matrix( matrix ) {}
+    explicit PETScInterfaceLeftVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+        : d_matrix( matrix )
+    {
+    }
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         PROFILE_START( "PETScInterfaceLeftVectorFactory::getVector" );
-        auto matrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(
-            AMP::LinearAlgebra::PetscMatrix::createView( d_matrix ) );
-        ::Mat m = matrix->getMat();
+        auto view = AMP::LinearAlgebra::PetscMatrix::view( d_matrix );
+        ::Mat m   = view->getMat();
         ::Vec v;
         DISABLE_WARNINGS
         MatGetVecs( m, &v, nullptr );
@@ -94,6 +105,7 @@ public:
         return ptr;
     }
     std::string name() const override { return "PETScInterfaceLeftVectorFactory"; };
+
 private:
     AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
 };
@@ -102,13 +114,15 @@ private:
 class PETScInterfaceRightVectorFactory : public PetscVectorFactory
 {
 public:
-    PETScInterfaceRightVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix ) : d_matrix( matrix ) {}
+    explicit PETScInterfaceRightVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+        : d_matrix( matrix )
+    {
+    }
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         PROFILE_START( "PETScInterfaceRightVectorFactory::getVector" );
-        auto matrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(
-            AMP::LinearAlgebra::PetscMatrix::createView( d_matrix ) );
-        ::Mat m = matrix->getMat();
+        auto view = AMP::LinearAlgebra::PetscMatrix::view( d_matrix );
+        ::Mat m   = view->getMat();
         ::Vec v;
         DISABLE_WARNINGS
         MatGetVecs( m, &v, nullptr );
@@ -125,6 +139,7 @@ public:
         return ptr;
     }
     std::string name() const override { return "PETScInterfaceRightVectorFactory"; }
+
 private:
     AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
 };

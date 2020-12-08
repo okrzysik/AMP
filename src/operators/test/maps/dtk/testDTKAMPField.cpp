@@ -44,7 +44,7 @@ static void myTest( AMP::UnitTest *ut )
     bool const split      = true;
     int const ghostWidth  = 0;
     int const dofsPerNode = 1;
-    AMP::Discretization::DOFManager::shared_ptr dofManager =
+    std::shared_ptr<AMP::Discretization::DOFManager> dofManager =
         AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
     AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::LinearAlgebra::Variable( "var" ) );

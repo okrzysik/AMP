@@ -194,8 +194,8 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
     AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
     AMP::LinearAlgebra::Vector::shared_ptr outputVec      = subsetOutputVector( r );
 
-    AMP::Discretization::DOFManager::shared_ptr dof_manager = inputVec->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr cladDofManager;
+    std::shared_ptr<AMP::Discretization::DOFManager> dof_manager = inputVec->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> cladDofManager;
     if ( d_source == "averageCladdingTemperature" ) {
         cladDofManager = d_cladTemperature->getDOFManager();
     }

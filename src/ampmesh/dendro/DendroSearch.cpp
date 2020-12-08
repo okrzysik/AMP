@@ -1091,7 +1091,7 @@ void DendroSearch::interpolate( AMP::AMP_MPI comm,
 
     AMP_CHECK_ASSERT( vectorField->getUpdateStatus() ==
                       AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
-    AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
+    std::shared_ptr<AMP::Discretization::DOFManager> dofManager = vectorField->getDOFManager();
 
     for ( int i = 0; i < npes; ++i ) {
         d_sendCnts[i] *= ( dofsPerNode + 1 );

@@ -53,7 +53,8 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
     if ( d_Mesh != nullptr ) {
         AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = subsetInputVector( u );
         AMP_ASSERT( uInternal != nullptr );
-        AMP::Discretization::DOFManager::shared_ptr faceDOFManager = uInternal->getDOFManager();
+        std::shared_ptr<AMP::Discretization::DOFManager> faceDOFManager =
+            uInternal->getDOFManager();
         AMP::Mesh::MeshIterator it =
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( d_Mesh, 0 );
         std::vector<size_t> dofs;

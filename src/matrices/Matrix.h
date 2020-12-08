@@ -31,27 +31,29 @@ public:
     /** \brief Constructor
      * \param[in] params  Description of the matrix
      */
-    explicit Matrix( MatrixParameters::shared_ptr params );
+    explicit Matrix( std::shared_ptr<MatrixParameters> params );
 
-    /** \brief Destructor
-     */
+    //! Destructor
     virtual ~Matrix();
+
+    //! Return the type of the matrix
+    virtual std::string type() const = 0;
 
     /** \brief  Matrix-vector multiplication
      * \param[in]  in  The vector to multiply
      * \param[out] out The resulting vectory
      * \details  Compute \f$\mathbf{Ain} = \mathbf{out}\f$.
      */
-    virtual void mult( AMP::LinearAlgebra::Vector::const_shared_ptr in,
-                       AMP::LinearAlgebra::Vector::shared_ptr out ) = 0;
+    virtual void mult( std::shared_ptr<const AMP::LinearAlgebra::Vector> in,
+                       std::shared_ptr<AMP::LinearAlgebra::Vector> out ) = 0;
 
     /** \brief  Matrix transpose-vector multiplication
      * \param[in]  in  The vector to multiply
      * \param[out] out The resulting vectory
      * \details  Compute \f$\mathbf{A}^T\mathbf{in} = \mathbf{out}\f$.
      */
-    virtual void multTranspose( AMP::LinearAlgebra::Vector::const_shared_ptr in,
-                                AMP::LinearAlgebra::Vector::shared_ptr out ) = 0;
+    virtual void multTranspose( std::shared_ptr<const AMP::LinearAlgebra::Vector> in,
+                                std::shared_ptr<AMP::LinearAlgebra::Vector> out ) = 0;
 
 
     /** \brief  Return a new matrix that is the transpose of this one
@@ -252,20 +254,22 @@ public:
      * is a right vector )
      * \return  The DOFManager associated with a right vector
      */
-    virtual Discretization::DOFManager::shared_ptr getRightDOFManager() const = 0;
+    virtual std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const = 0;
 
     /** \brief Get the DOFManager associated with a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$\mathbf{y}\f$ is
      * a left vector )
      * \return  The DOFManager associated with a left vector
      */
-    virtual Discretization::DOFManager::shared_ptr getLeftDOFManager() const = 0;
+    virtual std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const = 0;
 
     /** \brief Compute the maximum column sum
      * \return  The L1 norm of the matrix
      */
     virtual double L1Norm() const = 0;
 
+    //! Get the comm
+    inline auto getComm() const { return d_comm; }
 
 protected:
     //! Protected constructor

@@ -220,7 +220,7 @@ static void moabInterface( AMP::UnitTest *ut )
     size_t DOFsPerNode  = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
+    std::shared_ptr<AMP::Discretization::DOFManager> nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::LinearAlgebra::Variable::shared_ptr nodalVar(
@@ -299,7 +299,8 @@ static void moabInterface( AMP::UnitTest *ut )
         // Useful for making sure everything looks right
 
 #ifdef USE_EXT_SILO
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    std::shared_ptr<AMP::Utilities::Writer> siloWriter =
+        AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
     siloWriter->registerVector( nodalVec, mesh, AMP::Mesh::GeomType::Vertex, "Temperatures" );
     siloWriter->writeFile( "Moab_Temp", 0 );
