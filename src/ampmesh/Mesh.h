@@ -3,23 +3,24 @@
 
 #include "AMP/ampmesh/MeshID.h"
 #include "AMP/ampmesh/MeshIterator.h"
-#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/enable_shared_from_this.h"
+
 #include <memory>
 
 
 // Forward declerations
-namespace AMP {
-namespace Geometry {
+namespace AMP::Mesh {
+class MeshParameters;
+}
+namespace AMP::Geometry {
 class Geometry;
 }
 #ifdef USE_AMP_VECTORS
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 class Vector;
 }
 #endif
-} // namespace AMP
 
 
 namespace AMP {
@@ -72,7 +73,7 @@ public:
      *\details  This is a user-supplied function to generate a mesh.  Users may register their
      *     own mesh generators using registerGenerator and the mesh builder will call them.
      */
-    typedef std::function<Mesh::shared_ptr( MeshParameters::shared_ptr )> generatorType;
+    typedef std::function<Mesh::shared_ptr( std::shared_ptr<MeshParameters> )> generatorType;
 
     //! Enumeration for basic mesh-based quantities
     enum class Movable : uint8_t { Fixed = 0, Displace = 1, Deform = 2 };
@@ -85,7 +86,7 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params  Parameters for constructing a mesh from an input database
      */
-    explicit Mesh( const MeshParameters::shared_ptr &params );
+    explicit Mesh( const std::shared_ptr<MeshParameters> &params );
 
 
     /**
@@ -109,7 +110,8 @@ public:
      *   the input database.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static std::shared_ptr<AMP::Mesh::Mesh> buildMesh( const MeshParameters::shared_ptr &params );
+    static std::shared_ptr<AMP::Mesh::Mesh>
+    buildMesh( const std::shared_ptr<MeshParameters> &params );
 
 
     /**
@@ -149,7 +151,7 @@ public:
      *   any communication and should not have to actually load a mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t estimateMeshSize( const MeshParameters::shared_ptr &params );
+    static size_t estimateMeshSize( const std::shared_ptr<MeshParameters> &params );
 
 
     /**
@@ -158,7 +160,7 @@ public:
      *   be used with the mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t maxProcs( const MeshParameters::shared_ptr &params );
+    static size_t maxProcs( const std::shared_ptr<MeshParameters> &params );
 
 
     //! Deconstructor
@@ -475,7 +477,7 @@ protected:
     Mesh() {}
 
     //! The mesh parameters
-    MeshParameters::shared_ptr d_params;
+    std::shared_ptr<MeshParameters> d_params;
 
     //! The geometry parameters
     std::shared_ptr<Geometry::Geometry> d_geometry;

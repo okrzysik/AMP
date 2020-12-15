@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/MeshElement.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/MultiGeometry.h"
 #include "AMP/ampmesh/MultiIterator.h"
 #include "AMP/ampmesh/MultiMeshParameters.h"
@@ -7,7 +8,6 @@
 #include "AMP/ampmesh/loadBalance/loadBalanceSimulator.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
@@ -44,7 +44,7 @@ static void copyKey( std::shared_ptr<const AMP::Database>,
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_in )
+MultiMesh::MultiMesh( const std::shared_ptr<MeshParameters> &params_in ) : Mesh( params_in )
 {
     // Create an array of MeshParameters for each submesh
     AMP_ASSERT( d_db != nullptr );
@@ -53,7 +53,7 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
         // Create a database for each mesh within the multimesh
         auto meshDatabases = MultiMesh::createDatabases( d_db );
         params             = std::make_shared<MultiMeshParameters>( d_db );
-        params->params     = std::vector<MeshParameters::shared_ptr>( meshDatabases.size() );
+        params->params     = std::vector<std::shared_ptr<MeshParameters>>( meshDatabases.size() );
         params->N_elements = std::vector<size_t>( meshDatabases.size() );
         for ( size_t i = 0; i < meshDatabases.size(); i++ ) {
             params->params[i]     = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabases[i] );
@@ -256,7 +256,7 @@ MultiMesh::MultiMesh( const MultiMesh &rhs ) : Mesh( rhs )
  * Function to simulate the mesh building process        *
  ********************************************************/
 AMP::Mesh::loadBalanceSimulator
-MultiMesh::simulateBuildMesh( const MeshParameters::shared_ptr params,
+MultiMesh::simulateBuildMesh( const std::shared_ptr<MeshParameters> params,
                               const std::vector<int> &comm_ranks )
 {
     // Create the multimesh parameters
@@ -265,8 +265,9 @@ MultiMesh::simulateBuildMesh( const MeshParameters::shared_ptr params,
         auto database   = params->getDatabase();
         multimeshParams = std::make_shared<MultiMeshParameters>( database );
         // Create a database for each mesh within the multimesh
-        auto meshDatabases      = MultiMesh::createDatabases( database );
-        multimeshParams->params = std::vector<MeshParameters::shared_ptr>( meshDatabases.size() );
+        auto meshDatabases = MultiMesh::createDatabases( database );
+        multimeshParams->params =
+            std::vector<std::shared_ptr<MeshParameters>>( meshDatabases.size() );
         multimeshParams->N_elements = std::vector<size_t>( meshDatabases.size() );
         std::vector<int> rank1( 1, 0 );
         for ( size_t i = 0; i < meshDatabases.size(); i++ ) {
@@ -314,7 +315,7 @@ std::unique_ptr<Mesh> MultiMesh::clone() const { return std::make_unique<MultiMe
 /********************************************************
  * Function to estimate the mesh size                    *
  ********************************************************/
-size_t MultiMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
+size_t MultiMesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &params )
 {
     // Create the multimesh parameters
     auto multimeshParams = std::dynamic_pointer_cast<MultiMeshParameters>( params );
@@ -322,8 +323,9 @@ size_t MultiMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         auto database   = params->getDatabase();
         multimeshParams = std::make_shared<MultiMeshParameters>( database );
         // Create a database for each mesh within the multimesh
-        auto meshDatabases      = MultiMesh::createDatabases( database );
-        multimeshParams->params = std::vector<MeshParameters::shared_ptr>( meshDatabases.size() );
+        auto meshDatabases = MultiMesh::createDatabases( database );
+        multimeshParams->params =
+            std::vector<std::shared_ptr<MeshParameters>>( meshDatabases.size() );
         for ( size_t i = 0; i < meshDatabases.size(); i++ )
             multimeshParams->params[i] =
                 std::make_shared<AMP::Mesh::MeshParameters>( meshDatabases[i] );
@@ -347,7 +349,7 @@ size_t MultiMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 /********************************************************
  * Function to estimate the mesh size                    *
  ********************************************************/
-size_t MultiMesh::maxProcs( const MeshParameters::shared_ptr &params )
+size_t MultiMesh::maxProcs( const std::shared_ptr<MeshParameters> &params )
 {
     // Create the multimesh parameters
     auto multimeshParams = std::dynamic_pointer_cast<MultiMeshParameters>( params );
@@ -355,8 +357,9 @@ size_t MultiMesh::maxProcs( const MeshParameters::shared_ptr &params )
         auto database   = params->getDatabase();
         multimeshParams = std::make_shared<MultiMeshParameters>( database );
         // Create a database for each mesh within the multimesh
-        auto meshDatabases      = MultiMesh::createDatabases( database );
-        multimeshParams->params = std::vector<MeshParameters::shared_ptr>( meshDatabases.size() );
+        auto meshDatabases = MultiMesh::createDatabases( database );
+        multimeshParams->params =
+            std::vector<std::shared_ptr<MeshParameters>>( meshDatabases.size() );
         for ( size_t i = 0; i < meshDatabases.size(); i++ )
             multimeshParams->params[i] =
                 std::make_shared<AMP::Mesh::MeshParameters>( meshDatabases[i] );
@@ -968,7 +971,7 @@ std::vector<AMP_MPI> MultiMesh::createComms( const AMP_MPI &comm,
  ********************************************************/
 std::vector<MultiMesh::rank_list>
 MultiMesh::loadBalancer( int N_procs,
-                         const std::vector<MeshParameters::shared_ptr> &meshParams,
+                         const std::vector<std::shared_ptr<MeshParameters>> &meshParams,
                          const std::vector<size_t> &meshSizes,
                          int method )
 {
@@ -1109,7 +1112,7 @@ bool MultiMesh::addProcSimulation( const loadBalanceSimulator &mesh,
  ********************************************************/
 std::vector<MultiMesh::comm_groups>
 MultiMesh::independentGroups1( int N_procs,
-                               const std::vector<MeshParameters::shared_ptr> &meshParameters,
+                               const std::vector<std::shared_ptr<MeshParameters>> &meshParameters,
                                const std::vector<size_t> &size )
 {
     AMP_ASSERT( size.size() == meshParameters.size() );

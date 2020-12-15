@@ -9,6 +9,7 @@
  */
 
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/utils/AMPManager.h"

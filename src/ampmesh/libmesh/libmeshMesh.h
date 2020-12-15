@@ -51,7 +51,7 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params Parameters for constructing a mesh from an input database
      */
-    explicit libmeshMesh( const MeshParameters::shared_ptr &params );
+    explicit libmeshMesh( const std::shared_ptr<MeshParameters> &params );
 
     /**
      * \brief Contructor to create a libmeshMesh object from a libMesh mesh.
@@ -79,7 +79,7 @@ public:
      *   any communication and should not have to actually load a mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t estimateMeshSize( const MeshParameters::shared_ptr &params );
+    static size_t estimateMeshSize( const std::shared_ptr<MeshParameters> &params );
 
 
     /**
@@ -88,7 +88,7 @@ public:
      *   be used with the mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t maxProcs( const MeshParameters::shared_ptr &params );
+    static size_t maxProcs( const std::shared_ptr<MeshParameters> &params );
 
 
     /* Return the number of local element of the given type

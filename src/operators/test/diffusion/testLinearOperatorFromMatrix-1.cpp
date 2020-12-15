@@ -1,7 +1,5 @@
-#include <iostream>
-#include <string>
-
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/MatrixBuilder.h"
@@ -17,7 +15,10 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+
+#include <iostream>
 #include <memory>
+#include <string>
 
 
 void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName )

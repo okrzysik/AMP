@@ -151,7 +151,7 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params  Parameters for constructing a mesh from an input database
      */
-    static std::shared_ptr<BoxMesh> generate( MeshParameters::shared_ptr params );
+    static std::shared_ptr<BoxMesh> generate( std::shared_ptr<MeshParameters> params );
 
 
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
@@ -166,7 +166,7 @@ public:
      *   any communication and should not have to actually load a mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t estimateMeshSize( const MeshParameters::shared_ptr &params );
+    static size_t estimateMeshSize( const std::shared_ptr<MeshParameters> &params );
 
     /**
      * \brief   Estimate the number of elements in the mesh
@@ -176,7 +176,8 @@ public:
      *   any communication and should not have to actually load a mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static std::vector<size_t> estimateLogicalMeshSize( const MeshParameters::shared_ptr &params );
+    static std::vector<size_t>
+    estimateLogicalMeshSize( const std::shared_ptr<MeshParameters> &params );
 
 
     /**
@@ -185,7 +186,7 @@ public:
      *   be used with the mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t maxProcs( const MeshParameters::shared_ptr &params );
+    static size_t maxProcs( const std::shared_ptr<MeshParameters> &params );
 
 
     //! Deconstructor
@@ -392,7 +393,7 @@ protected: // Convenience typedef
 
 protected:
     // Constructor
-    explicit BoxMesh( MeshParameters::shared_ptr );
+    explicit BoxMesh( std::shared_ptr<MeshParameters> );
     explicit BoxMesh( const BoxMesh & );
     BoxMesh &operator=( const BoxMesh & ) = delete;
 

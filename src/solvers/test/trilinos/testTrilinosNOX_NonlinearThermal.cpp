@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
@@ -24,9 +25,9 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
 #include <iostream>
+#include <memory>
 #include <string>
 
 

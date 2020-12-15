@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/structured/BoxMesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/MultiIterator.h"
 #include "AMP/ampmesh/structured/MovableBoxMesh.h"
 #include "AMP/ampmesh/structured/StructuredGeometryMesh.h"
@@ -26,7 +27,7 @@ namespace Mesh {
 /****************************************************************
  * Generator                                                     *
  ****************************************************************/
-std::shared_ptr<BoxMesh> BoxMesh::generate( MeshParameters::shared_ptr params )
+std::shared_ptr<BoxMesh> BoxMesh::generate( std::shared_ptr<MeshParameters> params )
 {
     auto db          = params->getDatabase();
     bool static_mesh = db->getWithDefault( "static", false );
@@ -40,7 +41,7 @@ std::shared_ptr<BoxMesh> BoxMesh::generate( MeshParameters::shared_ptr params )
 /****************************************************************
  * Estimate the mesh size                                        *
  ****************************************************************/
-size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
+size_t BoxMesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &params )
 {
     auto size = estimateLogicalMeshSize( params );
     size_t N  = 1;
@@ -48,7 +49,8 @@ size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         N *= s;
     return N;
 }
-std::vector<size_t> BoxMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
+std::vector<size_t>
+BoxMesh::estimateLogicalMeshSize( const std::shared_ptr<MeshParameters> &params )
 {
     auto db    = params->getDatabase();
     auto geom  = AMP::Geometry::Geometry::buildGeometry( db );
@@ -64,7 +66,7 @@ std::vector<size_t> BoxMesh::estimateLogicalMeshSize( const MeshParameters::shar
 /****************************************************************
  * Constructor                                                   *
  ****************************************************************/
-BoxMesh::BoxMesh( MeshParameters::shared_ptr params_in ) : Mesh( params_in )
+BoxMesh::BoxMesh( std::shared_ptr<MeshParameters> params_in ) : Mesh( params_in )
 {
     // Check for valid inputs
     AMP_INSIST( d_params != nullptr, "Params must not be null" );
@@ -293,7 +295,7 @@ BoxMesh::~BoxMesh() = default;
 /****************************************************************
  * Estimate the maximum number of processors                     *
  ****************************************************************/
-size_t BoxMesh::maxProcs( const MeshParameters::shared_ptr &params )
+size_t BoxMesh::maxProcs( const std::shared_ptr<MeshParameters> &params )
 {
     // Check for valid inputs
     AMP_INSIST( params.get(), "Params must not be null" );

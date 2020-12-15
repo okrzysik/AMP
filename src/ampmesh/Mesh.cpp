@@ -1,9 +1,9 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/Geometry.h"
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/SubsetMesh.h"
 #include "AMP/utils/Utilities.h"
-
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
@@ -31,7 +31,7 @@ static unsigned int nextLocalMeshID = 1;
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
+Mesh::Mesh( const std::shared_ptr<MeshParameters> &params_in )
 {
     // Set the base properties
     AMP_ASSERT( sizeof( MeshElementID ) == 16 );

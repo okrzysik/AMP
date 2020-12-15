@@ -83,6 +83,16 @@ public:
     // Read a YAML database
     static std::unique_ptr<KeyData> readYAML( const AMP::string_view &filename );
 
+    /** \brief Create a database from key/value pairs
+     * \details  This function will create a database from a set of key/value pairs
+     *    of the form: create( "key1", value1, "key2", value2, ... ).
+     *    Note that for simplicity each value must either be a scalar value
+     *       (int, double, string, etc) or a std::vector of scalar values
+     * \param[in]  args         The input arguments
+     */
+    template<class... Args>
+    static std::unique_ptr<Database> create( Args... args );
+
     /**
      * Create database from string
      * @param data       String containing the database data
@@ -362,6 +372,10 @@ protected: // Internal data and functions
 
     // Function to load a database from a buffer
     static size_t loadDatabase( const char *buffer, Database &db );
+
+    // Function to add arguments to the database
+    template<class TYPE, class... Args>
+    void addArgs( const AMP::string_view &key, TYPE value, Args... args );
 
     // Hash a AMP::string_view
     static constexpr uint32_t hashString( const AMP::string_view &s )

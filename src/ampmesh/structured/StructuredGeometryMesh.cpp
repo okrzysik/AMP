@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/structured/StructuredGeometryMesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 
 
 namespace AMP {
@@ -8,7 +9,7 @@ namespace Mesh {
 /****************************************************************
  * Constructors                                                 *
  ****************************************************************/
-StructuredGeometryMesh::StructuredGeometryMesh( MeshParameters::shared_ptr params )
+StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<MeshParameters> params )
     : BoxMesh( params ), d_pos_hash( 0 )
 {
     // Basic defaults

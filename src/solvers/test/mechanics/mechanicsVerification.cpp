@@ -1,13 +1,5 @@
-#include <fstream>
-#include <iostream>
-#include <limits>
-#include <random>
-#include <string>
-#include <sys/stat.h>
-
-
-// AMP
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
@@ -37,8 +29,14 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
+#include <fstream>
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <random>
+#include <string>
+#include <sys/stat.h>
 
 // libMesh
 DISABLE_WARNINGS

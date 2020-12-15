@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/StructuredMeshHelper.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
@@ -13,9 +14,9 @@
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
 
-
 #include <iostream>
 #include <string>
+
 
 static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
 {

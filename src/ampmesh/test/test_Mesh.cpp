@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
 #include "AMP/ampmesh/testHelpers/meshTests.h"
 #include "AMP/utils/AMPManager.h"

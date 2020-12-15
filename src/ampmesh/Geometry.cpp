@@ -1,6 +1,7 @@
 #include "AMP/ampmesh/Geometry.h"
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshGeometry.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/MultiGeometry.h"
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/shapes/Box.h"

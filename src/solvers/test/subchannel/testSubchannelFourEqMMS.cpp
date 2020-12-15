@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/SiloIO.h"
 #include "AMP/ampmesh/StructuredMeshHelper.h"
 #include "AMP/discretization/simpleDOF_Manager.h"

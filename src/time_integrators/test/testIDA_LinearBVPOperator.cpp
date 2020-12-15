@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
@@ -55,9 +56,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     auto manager     = AMP::Mesh::Mesh::buildMesh( params );
     auto meshAdapter = manager->Subset( "ida" );
 
-    //--------------------------------------------------
     // Create a DOF manager for a nodal vector
-    //--------------------------------------------------
     int DOFsPerNode          = 1;
     int DOFsPerElement       = 8;
     int nodalGhostWidth      = 1;
@@ -116,7 +115,6 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         // convert the vector of specific power to power for a given basis.
         sourceOperator->apply( SpecificPowerVec, powerInWattsVec );
 
-        // ---------------------------------------------------------------------------------------
         // create vectors for initial conditions (IC) and time derivative at IC
         // AMP::LinearAlgebra::Variable::shared_ptr inputVar = IDARhsOperator->getInputVariable();
         auto outputVar = IDARhsOperator->getOutputVariable();
@@ -125,7 +123,6 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         auto initialConditionPrime = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
         auto f                     = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
 
-        //----------------------------------------------------------------------------------------------------------------------------------------------//
         // set initial conditions, initialize created vectors
         int zeroGhostWidth = 0;
         auto node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
@@ -155,7 +152,6 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         // modify the rhs to take into account boundary conditions
         IDARhsOperator->modifyRHSvector( f );
 
-        // ---------------------------------------------------------------------------------------
         // create a preconditioner
 
         // get the ida database
@@ -181,7 +177,6 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             ut->passes( "Testing TrilinosMLSolver's constructor: PASS" );
         }
 
-        // ---------------------------------------------------------------------------------------
         // create the IDA time integrator
         auto time_Params =
             std::make_shared<AMP::TimeIntegrator::IDATimeIntegratorParameters>( ida_db );

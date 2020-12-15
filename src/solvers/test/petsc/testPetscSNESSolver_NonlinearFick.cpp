@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
@@ -31,9 +32,9 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
 #include <iostream>
+#include <memory>
 #include <string>
 
 
@@ -60,8 +61,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto DOF_scalar = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
-
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear fick diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearFickOperator" ), "key missing!" );
 
@@ -70,12 +69,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "testNonlinearFickOperator", input_db, fickTransportModel ) );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the input variable
     auto fickVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearFickOperator->getVolumeOperator() );
-
     auto fickVariable = fickVolumeOperator->getOutputVariable();
 
     // create solution, rhs, and residual vectors
@@ -83,7 +80,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto rhsVec = AMP::LinearAlgebra::createVector( DOF_scalar, fickVariable );
     auto resVec = AMP::LinearAlgebra::createVector( DOF_scalar, fickVariable );
 
-//----------------------------------------------------------------------------------------------------------------------------------------------//
 // register some variables for plotting
 #ifdef USE_EXT_SILO
     auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
@@ -91,7 +87,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
 #endif
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for fick
     AMP_INSIST( input_db->keyExists( "testLinearFickOperator" ), "key missing!" );
     auto linearFickOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -120,7 +115,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolverParams->d_pInitialGuess = solVec;
     auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     auto fickPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
     auto fickPreconditionerParams =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( fickPreconditioner_db );
@@ -128,7 +122,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto linearFickPreconditioner =
         std::make_shared<AMP::Solver::TrilinosMLSolver>( fickPreconditionerParams );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
 

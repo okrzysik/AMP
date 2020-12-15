@@ -1,7 +1,5 @@
-#include <sstream>
-#include <string>
-
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -9,7 +7,6 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-
 #ifdef USE_AMP_VECTORS
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
@@ -21,6 +18,8 @@
 
 #include "ProfilerApp.h"
 
+#include <sstream>
+#include <string>
 
 AMP::Mesh::GeomType getSurfaceType( AMP::Mesh::GeomType volume )
 {

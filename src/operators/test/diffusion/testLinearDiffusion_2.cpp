@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
@@ -19,15 +20,14 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
 #include "patchfunctions.h"
 
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
-
 
 /**
  * This test is designed to allow the programmer to set up a function on a mesh and compute the

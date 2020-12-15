@@ -1,16 +1,12 @@
-#include <sstream>
-#include <string>
-
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "ProfilerApp.h"
-
 #include "AMP/utils/Writer.h"
-
+#include "ProfilerApp.h"
 #ifdef USE_AMP_MESH
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
@@ -25,6 +21,9 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #endif
+
+#include <sstream>
+#include <string>
 
 
 // Function to build a vector using a mesh

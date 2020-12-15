@@ -1,3 +1,4 @@
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/StructuredMeshHelper.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
@@ -13,10 +14,10 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <string>
 
 

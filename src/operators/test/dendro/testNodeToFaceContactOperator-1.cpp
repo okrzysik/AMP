@@ -1,5 +1,5 @@
-
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/euclidean_geometry_tools.h"
 #include "AMP/ampmesh/latex_visualization_tools.h"
 #include "AMP/ampmesh/libmesh/libmeshMesh.h"

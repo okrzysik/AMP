@@ -188,6 +188,22 @@ void runBasicTests( UnitTest &ut )
         ut.passes( "copy/move" );
     else
         ut.failure( "copy/move" );
+
+    // Test creating a database from key/value pairs
+    int v1                   = 4;
+    double v2                = 2.0;
+    std::string v3           = "string";
+    std::vector<double> v4   = { 1.5, 0.2 };
+    std::array<double, 3> v5 = { 2.4, 3.7, 5.6 };
+    std::set<double> v6      = { 1.2, 1.3, 1.4 };
+    auto db7 = AMP::Database::create( "v1", v1, "v2", v2, "v3", v3, "v4", v4, "v5", v5, "v6", v6 );
+    if ( db7->getScalar<int>( "v1" ) == v1 && db7->getScalar<double>( "v2" ) == v2 &&
+         db7->getString( "v3" ) == v3 && db7->getVector<double>( "v4" ) == v4 &&
+         db7->getVector<double>( "v5" ) == std::vector<double>( v5.begin(), v5.end() ) &&
+         db7->getVector<double>( "v6" ) == std::vector<double>( v6.begin(), v6.end() ) )
+        ut.passes( "AMP::Database::create" );
+    else
+        ut.failure( "AMP::Database::create" );
 }
 
 

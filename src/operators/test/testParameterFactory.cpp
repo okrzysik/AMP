@@ -1,18 +1,17 @@
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/ParameterFactory.h"
+#include "AMP/operators/boundary/DirichletMatrixCorrectionParameters.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <memory>
-
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
-
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include "AMP/operators/ParameterFactory.h"
-#include "AMP/operators/boundary/DirichletMatrixCorrectionParameters.h"
+#include <memory>
 
 
 static void ParameterFactoryTest( AMP::UnitTest *ut )

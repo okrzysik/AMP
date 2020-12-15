@@ -1,10 +1,8 @@
 #include "AMP/ampmesh/triangle/TriangleMesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/ampmesh/MultiIterator.h"
 #include "AMP/ampmesh/triangle/TriangleHelpers.h"
 #include "AMP/ampmesh/triangle/TriangleMeshIterator.h"
-
-#include "AMP/ampmesh/MultiIterator.h"
-
-
 #include "AMP/utils/Utilities.h"
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Variable.h"
@@ -330,7 +328,7 @@ static void sortData( std::vector<TYPE> &data,
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
 std::shared_ptr<TriangleMesh<NG, NP>>
-TriangleMesh<NG, NP>::generate( MeshParameters::shared_ptr params )
+TriangleMesh<NG, NP>::generate( std::shared_ptr<MeshParameters> params )
 {
     auto db = params->getDatabase();
     // Create the mesh
@@ -820,7 +818,7 @@ TriangleMesh<NG, NP>::createIterator( std::shared_ptr<std::vector<ElementID>> li
  * Estimate the mesh size                                        *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-size_t TriangleMesh<NG, NP>::estimateMeshSize( const MeshParameters::shared_ptr &params )
+size_t TriangleMesh<NG, NP>::estimateMeshSize( const std::shared_ptr<MeshParameters> &params )
 {
     size_t N      = 0;
     auto db       = params->getDatabase();
@@ -847,7 +845,7 @@ size_t TriangleMesh<NG, NP>::estimateMeshSize( const MeshParameters::shared_ptr 
  * Constructor                                                   *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-TriangleMesh<NG, NP>::TriangleMesh( MeshParameters::shared_ptr params_in ) : Mesh( params_in )
+TriangleMesh<NG, NP>::TriangleMesh( std::shared_ptr<MeshParameters> params_in ) : Mesh( params_in )
 {
     // Check for valid inputs
     AMP_INSIST( d_params != nullptr, "Params must not be null" );
@@ -893,7 +891,7 @@ TriangleMesh<NG, NP>::~TriangleMesh() = default;
  * Estimate the maximum number of processors                     *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-size_t TriangleMesh<NG, NP>::maxProcs( const MeshParameters::shared_ptr &params )
+size_t TriangleMesh<NG, NP>::maxProcs( const std::shared_ptr<MeshParameters> &params )
 {
     return estimateMeshSize( params );
 }

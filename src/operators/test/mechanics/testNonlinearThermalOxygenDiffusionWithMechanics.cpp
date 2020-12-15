@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
@@ -20,13 +21,12 @@
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
 #include "../applyTests.h"
 
 #include <iostream>
+#include <memory>
 #include <string>
-
 
 static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
 {

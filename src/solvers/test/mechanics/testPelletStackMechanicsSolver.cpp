@@ -1,3 +1,4 @@
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/solvers/libmesh/PelletStackHelpers.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/utils/AMPManager.h"

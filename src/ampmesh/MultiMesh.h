@@ -35,7 +35,7 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params Parameters for constructing a mesh from an input database
      */
-    explicit MultiMesh( const MeshParameters::shared_ptr &params );
+    explicit MultiMesh( const std::shared_ptr<MeshParameters> &params );
 
 
     /**
@@ -65,7 +65,7 @@ public:
      *   any communication and should not have to actually load a mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t estimateMeshSize( const MeshParameters::shared_ptr &params );
+    static size_t estimateMeshSize( const std::shared_ptr<MeshParameters> &params );
 
     /**
      * \brief   Return the maximum number of processors that can be used with the mesh
@@ -73,7 +73,7 @@ public:
      *   be used with the mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t maxProcs( const MeshParameters::shared_ptr &params );
+    static size_t maxProcs( const std::shared_ptr<MeshParameters> &params );
 
     /* Return the number of local element of the given type
      * \param type   Geometric type
@@ -318,7 +318,7 @@ public:
 
 
     // Function to simulate loading a multimesh
-    static loadBalanceSimulator simulateBuildMesh( const MeshParameters::shared_ptr params,
+    static loadBalanceSimulator simulateBuildMesh( const std::shared_ptr<MeshParameters> params,
                                                    const std::vector<int> &comm_ranks );
 
     // Function to add a processor to the load balance simulation
@@ -358,7 +358,7 @@ public: // Functions to help with load balancing
      */
     static std::vector<rank_list>
     loadBalancer( int N_procs,
-                  const std::vector<MeshParameters::shared_ptr> &params,
+                  const std::vector<std::shared_ptr<MeshParameters>> &params,
                   const std::vector<size_t> &size,
                   int method = 1 );
 
@@ -388,7 +388,7 @@ private:
     // (smallest comms)
     static std::vector<comm_groups>
     independentGroups1( int N_procs,
-                        const std::vector<MeshParameters::shared_ptr> &params,
+                        const std::vector<std::shared_ptr<MeshParameters>> &params,
                         const std::vector<size_t> &size );
 
     // Function to distribute N groups with weights onto P processors (N>P) with the greatest number

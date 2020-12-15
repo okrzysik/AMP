@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/MultiIterator.h"
 #include "AMP/ampmesh/libmesh/initializeLibMesh.h"
 #include "AMP/ampmesh/libmesh/libmeshElemIterator.h"
@@ -8,7 +9,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
@@ -40,7 +40,7 @@ namespace Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-libmeshMesh::libmeshMesh( const MeshParameters::shared_ptr &params_in )
+libmeshMesh::libmeshMesh( const std::shared_ptr<MeshParameters> &params_in )
     : Mesh( params_in ), d_pos_hash( 0 )
 {
     PROFILE_START( "constructor" );
@@ -540,7 +540,7 @@ void libmeshMesh::initialize()
 /********************************************************
  * Function to estimate the mesh size                    *
  ********************************************************/
-size_t libmeshMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
+size_t libmeshMesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &params )
 {
     auto database = params->getDatabase();
     AMP_ASSERT( database.get() != nullptr );
@@ -591,7 +591,7 @@ size_t libmeshMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 /****************************************************************
  * Estimate the maximum number of processors                     *
  ****************************************************************/
-size_t libmeshMesh::maxProcs( const MeshParameters::shared_ptr &params )
+size_t libmeshMesh::maxProcs( const std::shared_ptr<MeshParameters> &params )
 {
     return estimateMeshSize( params );
 }

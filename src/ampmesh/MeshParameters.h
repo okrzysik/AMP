@@ -16,13 +16,6 @@ namespace Mesh {
 class MeshParameters
 {
 public:
-    /**
-     *\typedef shared_ptr
-     *\brief  Name for the shared pointer.
-     *\details  Use this typedef for a reference counted pointer to a mesh manager object.
-     */
-    typedef std::shared_ptr<MeshParameters> shared_ptr;
-
     //! Empty constructor
     MeshParameters();
 

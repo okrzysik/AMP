@@ -45,7 +45,7 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     AMP::pout << "    LOADING MESH    \n";
     AMP::pout << "--------------------\n";
     AMP::Database::shared_ptr meshDatabase = inputDatabase->getDatabase( "Mesh" );
-    AMP::Mesh::MeshParameters::shared_ptr meshParams(
+    AMP::Mesh::std::shared_ptr<MeshParameters> meshParams(
         new AMP::Mesh::MeshParameters( meshDatabase ) );
     meshParams->setComm( globalComm );
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );

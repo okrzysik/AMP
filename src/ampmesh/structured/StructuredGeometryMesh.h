@@ -23,7 +23,7 @@ class StructuredGeometryMesh final : public AMP::Mesh::BoxMesh
 {
 public:
     //! Default constructor
-    explicit StructuredGeometryMesh( MeshParameters::shared_ptr );
+    explicit StructuredGeometryMesh( std::shared_ptr<MeshParameters> );
 
     //! Copy constructor
     explicit StructuredGeometryMesh( const StructuredGeometryMesh & );

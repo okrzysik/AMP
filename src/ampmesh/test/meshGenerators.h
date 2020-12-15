@@ -3,6 +3,7 @@
 #define included_AMP_Unit_test_Mesh_Generators_h
 
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
 #include "AMP/utils/Database.h"
 

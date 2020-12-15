@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/BVPOperatorParameters.h"
@@ -27,13 +28,13 @@
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
 #include "../../../operators/test/applyTests.h"
 
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <string>
 
 

@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
@@ -41,8 +42,8 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
+#include <memory>
 #include <string>
 
 
@@ -94,12 +95,8 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     TemperatureInKelvin->setToScalar( intguess );
 
 
-    //-----------------------------------------------
-    //   CREATE THE NONLINEAR THERMAL OPERATOR 1 ----
-    //-----------------------------------------------
-
+    //   CREATE THE NONLINEAR THERMAL OPERATOR 1
     AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator1" ), "key missing!" );
-
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel1;
     auto nonlinearThermalDatabase1 = input_db->getDatabase( "NonlinearThermalOperator1" );
     auto nonlinearThermalOperator1 = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
@@ -201,7 +198,6 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter2, "LinearThermalOperator2", input_db, thermalTransportModel2 ) );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     auto thermalVolumeOperator2 =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(
             linearThermalOperator2->getVolumeOperator() );
@@ -214,7 +210,6 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     auto RightHandSideVec2 = AMP::LinearAlgebra::createVector( nodalDofMap2, outputVariable2 );
     auto ResidualVec2      = AMP::LinearAlgebra::createVector( nodalDofMap2, outputVariable2 );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     auto mlSolverParams2 =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db1 );
     mlSolverParams2->d_pOperator = linearThermalOperator2;

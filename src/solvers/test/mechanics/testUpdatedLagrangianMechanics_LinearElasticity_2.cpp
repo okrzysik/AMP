@@ -1,3 +1,4 @@
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"

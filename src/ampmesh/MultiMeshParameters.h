@@ -23,7 +23,7 @@ public:
 
 protected:
     //! A vector containing the mesh parameters for the sum meshes
-    std::vector<MeshParameters::shared_ptr> params;
+    std::vector<std::shared_ptr<MeshParameters>> params;
 
     //! A vector containing the number of elements in each submesh
     std::vector<size_t> N_elements;

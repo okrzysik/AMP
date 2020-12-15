@@ -1,3 +1,4 @@
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -23,6 +24,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
+
 #include <iostream>
 #include <string>
 

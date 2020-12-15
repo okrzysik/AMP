@@ -28,6 +28,61 @@ namespace AMP {
 
 
 /********************************************************************
+ * Create database from arguments                                    *
+ ********************************************************************/
+template<typename T>
+struct is_vector : std::false_type {
+};
+template<typename T>
+struct is_vector<std::vector<T>> : std::true_type {
+};
+template<typename T>
+struct has_size {
+private:
+    typedef std::true_type yes;
+    typedef std::false_type no;
+    template<typename U>
+    static auto test( int ) -> decltype( std::declval<U>().size() == 1, yes() );
+    template<typename>
+    static no test( ... );
+
+public:
+    static constexpr bool value = std::is_same<decltype( test<T>( 0 ) ), yes>::value;
+};
+template<class TYPE, class... Args>
+inline void Database::addArgs( const AMP::string_view &key, TYPE value, Args... args )
+{
+    if constexpr ( is_vector<TYPE>::value ) {
+        putVector( key, value );
+    } else if constexpr ( std::is_same<TYPE, std::string>::value ||
+                          std::is_same<TYPE, std::string_view>::value ) {
+        putScalar( key, value );
+    } else if constexpr ( has_size<TYPE>::value ) {
+        typedef decltype( *value.begin() ) TYPE2;
+        typedef typename std::remove_reference<TYPE2>::type TYPE3;
+        typedef typename std::remove_cv<TYPE3>::type TYPE4;
+        std::vector<TYPE4> data( value.begin(), value.end() );
+        putVector( key, std::move( data ) );
+    } else {
+        putScalar( key, value );
+    }
+    if constexpr ( sizeof...( args ) > 0 )
+        addArgs( args... );
+}
+template<class... Args>
+inline std::unique_ptr<Database> Database::create( Args... args )
+{
+    constexpr size_t n = sizeof...( args );
+    static_assert( n % 2 == 0 );
+    auto db = std::make_unique<AMP::Database>();
+    if ( n == 0 )
+        return db;
+    db->addArgs( args... );
+    return db;
+}
+
+
+/********************************************************************
  * Basic classes for primative data types                            *
  ********************************************************************/
 template<class TYPE>

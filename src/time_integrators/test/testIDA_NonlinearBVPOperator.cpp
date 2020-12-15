@@ -1,4 +1,5 @@
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
@@ -51,9 +52,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
-    //--------------------------------------------------
     // Create a DOF manager for a nodal vector
-    //--------------------------------------------------
     int DOFsPerNode          = 1;
     int DOFsPerElement       = 8;
     int nodalGhostWidth      = 1;
@@ -65,7 +64,6 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear BVP operator
     AMP_INSIST( input_db->keyExists( "NonlinearOperator" ), "key missing!" );
 
@@ -75,20 +73,17 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             meshAdapter, "NonlinearOperator", input_db, elementModel ) );
 
     AMP::LinearAlgebra::Variable::shared_ptr outputVar = nonlinearOperator->getOutputVariable();
-    // ---------------------------------------------------------------------------------------
     // create a linear BVP operator
     auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "LinearOperator", input_db, elementModel ) );
 
-    // ---------------------------------------------------------------------------------------
     // create a mass linear BVP operator
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
     auto massOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "MassLinearOperator", input_db, massElementModel ) );
 
-    // ---------------------------------------------------------------------------------------
     //  create neutronics source
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
@@ -122,20 +117,15 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, powerInWattsVec );
 
-    // ---------------------------------------------------------------------------------------
     // create vectors for initial conditions (IC) and time derivative at IC
-
     auto initialCondition      = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
     auto initialConditionPrime = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
     auto f                     = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // set initial conditions, initialize created vectors
-
     auto node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     auto end_node = node.end();
-
-    int counter = 0;
+    int counter   = 0;
     for ( ; node != end_node; ++node ) {
         counter++;
 
@@ -155,9 +145,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             // ** as this causes trouble with the boundary - BP, 07/16/2010
             const double zero = 0.0;
             initialConditionPrime->setValuesByGlobalID( 1, &bndGlobalId, &zero );
-
-        } // end for i
-    }     // end for node
+        }
+    }
     initialCondition->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     initialConditionPrime->makeConsistent(
         AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
@@ -171,7 +160,6 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     nonlinearOperator->modifyRHSvector( f );
     nonlinearOperator->modifyInitialSolutionVector( initialCondition );
 
-    // ---------------------------------------------------------------------------------------
     // create a linear time operator
     std::shared_ptr<AMP::Database> timeOperator_db =
         std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
@@ -201,7 +189,6 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     linearTimeOperator->apply( initialCondition, residualVec );
     std::cout << "Residual Norm of linearTimeOp apply : " << residualVec->L2Norm() << std::endl;
 
-    // ---------------------------------------------------------------------------------------
     // create a preconditioner
 
     // get the ida database
@@ -236,7 +223,6 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     siloWriter->writeFile( input_file, 0 );
 #endif
 
-    // ---------------------------------------------------------------------------------------
     // create the IDA time integrator
     auto time_Params = std::make_shared<AMP::TimeIntegrator::IDATimeIntegratorParameters>( ida_db );
 

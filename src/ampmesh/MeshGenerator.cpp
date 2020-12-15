@@ -29,7 +29,7 @@ std::map<std::string, AMP::Mesh::Mesh::generatorType> AMP::Mesh::Mesh::d_generat
 /********************************************************
  * Create a mesh from the input database                 *
  ********************************************************/
-std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_ptr &params )
+std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const std::shared_ptr<MeshParameters> &params )
 {
     auto db = params->d_db;
     AMP_ASSERT( db != nullptr );
@@ -101,7 +101,7 @@ std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
 /********************************************************
  * Estimate the mesh size                                *
  ********************************************************/
-size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
+size_t Mesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &params )
 {
     auto db = params->d_db;
     AMP_ASSERT( db != nullptr );
@@ -170,7 +170,7 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 /********************************************************
  * Estimate the maximum number of processors             *
  ********************************************************/
-size_t Mesh::maxProcs( const MeshParameters::shared_ptr &params )
+size_t Mesh::maxProcs( const std::shared_ptr<MeshParameters> &params )
 {
     auto db = params->d_db;
     AMP_ASSERT( db != nullptr );

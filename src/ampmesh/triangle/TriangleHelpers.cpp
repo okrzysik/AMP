@@ -579,7 +579,7 @@ std::vector<std::vector<std::array<int64_t, 2>>>
 /********************************************************
  *  Generate mesh for STL file                           *
  ********************************************************/
-std::shared_ptr<AMP::Mesh::Mesh> generateSTL( MeshParameters::shared_ptr params )
+std::shared_ptr<AMP::Mesh::Mesh> generateSTL( std::shared_ptr<MeshParameters> params )
 {
     auto db       = params->getDatabase();
     auto filename = db->getWithDefault<std::string>( "FileName", "" );

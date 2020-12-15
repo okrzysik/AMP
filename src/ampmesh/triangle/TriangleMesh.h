@@ -91,7 +91,7 @@ public:
      * \details Create triangle mesh data from the given parameters
      * \param params  Parameters for constructing a mesh from an input database
      */
-    static std::shared_ptr<TriangleMesh<NG, NP>> generate( MeshParameters::shared_ptr params );
+    static std::shared_ptr<TriangleMesh<NG, NP>> generate( std::shared_ptr<MeshParameters> params );
 
     /**
      * \brief Generate a triangle mesh from local triangle coordinates
@@ -140,7 +140,7 @@ public:
      *   any communication and should not have to actually load a mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t estimateMeshSize( const MeshParameters::shared_ptr &params );
+    static size_t estimateMeshSize( const std::shared_ptr<MeshParameters> &params );
 
     /**
      * \brief   Estimate the number of elements in the mesh
@@ -150,7 +150,8 @@ public:
      *   any communication and should not have to actually load a mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static std::vector<size_t> estimateLogicalMeshSize( const MeshParameters::shared_ptr &params );
+    static std::vector<size_t>
+    estimateLogicalMeshSize( const std::shared_ptr<MeshParameters> &params );
 
 
     /**
@@ -159,7 +160,7 @@ public:
      *   be used with the mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t maxProcs( const MeshParameters::shared_ptr &params );
+    static size_t maxProcs( const std::shared_ptr<MeshParameters> &params );
 
 
     // Copy/move constructors
@@ -334,7 +335,7 @@ public:
 protected:
     // Constructors
     TriangleMesh();
-    explicit TriangleMesh( MeshParameters::shared_ptr );
+    explicit TriangleMesh( std::shared_ptr<MeshParameters> );
     explicit TriangleMesh( std::vector<std::array<double, NP>> verticies,
                            std::vector<std::array<int64_t, NG + 1>> triangles,
                            std::vector<std::array<int64_t, NG + 1>> tri_nab,

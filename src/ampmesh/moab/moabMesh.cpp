@@ -27,7 +27,7 @@ namespace Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-moabMesh::moabMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_in )
+moabMesh::moabMesh( const std::shared_ptr<MeshParameters> &params_in ) : Mesh( params_in )
 {
     d_core = std::shared_ptr<moab::Core>( new moab::Core() );
     AMP_ERROR( "Not finished" );
@@ -55,7 +55,7 @@ void moabMesh::initialize() { AMP_ERROR( "Not finished" ); }
 /********************************************************
  * Function to estimate the mesh size                    *
  ********************************************************/
-size_t moabMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
+size_t moabMesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &params )
 {
     AMP_ERROR( "Not finished" );
     return 0;

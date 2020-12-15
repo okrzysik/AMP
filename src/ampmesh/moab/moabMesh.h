@@ -46,7 +46,7 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params Parameters for constructing a mesh from an input database
      */
-    moabMesh( const MeshParameters::shared_ptr &params );
+    moabMesh( const std::shared_ptr<MeshParameters> &params );
 
 
     //! Deconstructor
@@ -65,7 +65,7 @@ public:
      *   any communication and should not have to actually load a mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t estimateMeshSize( const MeshParameters::shared_ptr &params );
+    static size_t estimateMeshSize( const std::shared_ptr<MeshParameters> &params );
 
 
     /* Return the number of local element of the given type

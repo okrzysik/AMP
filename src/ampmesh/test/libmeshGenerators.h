@@ -2,6 +2,7 @@
 #ifndef included_AMP_Unit_test_Libmesh_Generators_h
 #define included_AMP_Unit_test_Libmesh_Generators_h
 
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/libmesh/initializeLibMesh.h"
 #include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "meshGenerators.h"
