@@ -239,6 +239,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
         abort_stackType = std::min( abort_stackType, 2 );
     if ( abort_stackType == 3 )
         StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
+    StackTrace::setDefaultStackType( static_cast<StackTrace::printStackType>( abort_stackType ) );
     // Initialize the random number generator
     AMP::RNG::initialize( 123 );
     // Initialize cuda

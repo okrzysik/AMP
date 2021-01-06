@@ -2,146 +2,191 @@
 #define included_AMP_Units
 
 #include <array>
+#include <math.h>
+#include <tuple>
 
 #include "AMP/utils/string_view.h"
 
 
 namespace AMP {
 
+//! Enum to hold prefix
+enum class UnitPrefix : int8_t {
+    yocto   = 0,
+    zepto   = 1,
+    atto    = 2,
+    femto   = 3,
+    pico    = 4,
+    nano    = 5,
+    micro   = 6,
+    milli   = 7,
+    centi   = 8,
+    deci    = 9,
+    none    = 10,
+    deca    = 11,
+    hecto   = 12,
+    kilo    = 13,
+    mega    = 14,
+    giga    = 15,
+    tera    = 16,
+    peta    = 17,
+    exa     = 18,
+    zetta   = 19,
+    yotta   = 20,
+    unknown = 21
+};
 
-//! Unit system class
-class alignas( 2 ) Units final
+
+//! Enum to hold type
+enum class UnitType : int8_t {
+    time                  = 1,
+    length                = 2,
+    mass                  = 3,
+    current               = 4,
+    temperature           = 5,
+    mole                  = 6,
+    intensity             = 7,
+    angle                 = 8,
+    solidAngle            = 9,
+    energy                = 10,
+    power                 = 11,
+    frequency             = 12,
+    force                 = 13,
+    pressure              = 14,
+    electricCharge        = 15,
+    electricalPotential   = 16,
+    capacitance           = 17,
+    resistance            = 18,
+    electricalConductance = 19,
+    magneticFlux          = 20,
+    magneticFluxDensity   = 21,
+    inductance            = 22,
+    luminousFlux          = 23,
+    illuminance           = 24,
+    unknown               = 0
+};
+
+
+/**
+ * \class Units
+ * \brief  Provides a class for storing units
+ * \details  This class provides routines for creating and storing units.
+ *    A user can specify a unit and get the scaling factor to a compatible unit.
+ *    All user-provided units are converted to SI base units with a scaling factor.
+ *    Currently we support all major SI units and some additional units with prefixes.
+ *    Note: currently the majority of the routines are constexpr so that the creation
+ *       of a unit can be done at compile-time.
+ */
+class alignas( 8 ) Units final
 {
 public:
-    //! Enum to hold prefix
-    enum class UnitPrefix : int8_t {
-        yocto   = 0,
-        zepto   = 1,
-        atto    = 2,
-        femto   = 3,
-        pico    = 4,
-        nano    = 5,
-        micro   = 6,
-        milli   = 7,
-        centi   = 8,
-        deci    = 9,
-        none    = 10,
-        deca    = 11,
-        hecto   = 12,
-        kilo    = 13,
-        mega    = 14,
-        giga    = 15,
-        tera    = 16,
-        peta    = 17,
-        exa     = 18,
-        zetta   = 19,
-        yotta   = 20,
-        unknown = 21
-    };
-
-    //! Enum to unit type
-    enum class UnitType : uint8_t {
-        length,
-        mass,
-        time,
-        current,
-        temperature,
-        energy,
-        angle,
-        unknown
-    };
-
-    //! Enum to hold unit
-    enum class UnitValue : uint8_t {
-        meter,
-        gram,
-        second,
-        ampere,
-        kelvin,
-        joule,
-        erg,
-        degree,
-        radian,
-        unknown
-    };
-
-
-public:
-    //! Constructor
+    //! Empty constructor
     constexpr Units();
 
-    //! Constructor
+    /**
+     * \brief  Construct the units from a const char array
+     * \details  This is the default constructor for a const char array.
+     *    It can create a unit from a string of the format "W/(m^2)"
+     * \param unit      Input string
+     */
     constexpr Units( const char *unit ) : Units( AMP::string_view( unit ) ) {}
 
-    //! Constructor
+    /**
+     * \brief  Construct the units from a const char array
+     * \details  This is the default constructor for a string view.
+     *    It can create a unit from a string of the format "W/(m^2)"
+     * \param unit      Input string
+     */
     constexpr Units( const AMP::string_view &unit );
 
-    //! Constructor
-    explicit constexpr Units( UnitPrefix, UnitValue );
+    /**
+     * \brief  Get the unit type
+     * \details  This returns the type of unit (if it is reducible).
+     *   e.g. time, length, energy, power, etc.
+     */
+    constexpr UnitType getType() const noexcept;
 
-    //! Get the prefix
-    constexpr UnitPrefix getPrefix() const noexcept { return d_prefix; }
+    /**
+     * \brief  Convert the unit to a new type
+     * \details  This function returns the scaling factor to convert between
+     *    two different units.  For example, converting "J" to "ergs" returns 1e-7.
+     *    If the two units are not compatible an exception will be thrown.
+     * \param unit      Desired unit
+     */
+    constexpr double convert( const Units &unit ) const;
 
-    //! Get the unit
-    constexpr UnitValue getUnit() const noexcept { return d_unit; }
+    /**
+     * \brief  Get the prefix from a string
+     * \details  This returns an enum representing the given input string
+     * \param str       Input string
+     */
+    constexpr static UnitPrefix getUnitPrefix( const AMP::string_view &str ) noexcept;
 
-    //! Get the unit
-    constexpr UnitType getUnitType() const noexcept { return getUnitType( d_unit ); }
-
-    //! Get the unit
-    static constexpr UnitType getUnitType( UnitValue ) noexcept;
-
-    //! Get the prefix from a string
-    static constexpr UnitPrefix getUnitPrefix( const AMP::string_view & ) noexcept;
-
-    //! Get the unit value from a string
-    static constexpr UnitValue getUnitValue( const AMP::string_view & ) noexcept;
-
-    //! Convert to the given unit system
-    constexpr double convert( const Units & ) const noexcept;
-
-    //! Convert a prefix to a scalar
-    static constexpr double convert( UnitPrefix x ) noexcept
+    /**
+     * \brief  Convert the prefix to a double
+     * \details  This returns the value of the given prefix
+     * \param x         Enum for the prefix
+     */
+    constexpr static double convert( UnitPrefix x ) noexcept
     {
         return d_pow10[static_cast<int8_t>( x )];
     }
 
+    //! Operator ==
+    constexpr bool operator==( const Units &rhs ) const noexcept;
+
+    //! Operator !=
+    constexpr bool operator!=( const Units &rhs ) const noexcept { return !operator!=( rhs ); }
+
+    //! Operator *=
+    constexpr void operator*=( const Units &rhs ) noexcept;
+
+    //! Operator /=
+    constexpr void operator/=( const Units &rhs ) noexcept;
+
+    //! Check if unit is null
+    constexpr bool isNull() const { return d_scale == 0; }
+
+
+public:
     //! Get a string representation of the units
     std::string str() const;
 
     //! Get a string representation for the prefix
-    static std::array<char, 3> str( UnitPrefix ) noexcept;
+    static AMP::string_view getPrefixStr( UnitPrefix ) noexcept;
 
-    //! Get a string representation for the unit value
-    static AMP::string_view str( UnitValue ) noexcept;
+    //! Get a string representation of the units in SI units (with scaling factor)
+    std::string printSI() const;
 
-    //! Operator ==
-    constexpr bool operator==( const Units &rhs ) const noexcept
-    {
-        return d_prefix == rhs.d_prefix && d_unit == rhs.d_unit;
-    }
+    //! Get a string representation of the units in SI units (with scaling factor)
+    std::string printUnit() const;
 
-    //! Operator !=
-    constexpr bool operator!=( const Units &rhs ) const noexcept
-    {
-        return d_prefix != rhs.d_prefix || d_unit != rhs.d_unit;
-    }
+    //! Get the full unit and conversion string
+    std::string printFull() const;
 
-    //! Check if unit is null
-    constexpr bool isNull() const
-    {
-        return d_prefix == UnitPrefix::unknown || d_unit == UnitValue::unknown;
-    }
 
 protected:
-    UnitPrefix d_prefix;
-    UnitValue d_unit;
+    using SI_type = std::array<int8_t, 9>;
+
+    std::array<char, 31> d_unit;
+    SI_type d_SI;
+    double d_scale;
+
+protected:
+    static constexpr std::tuple<SI_type, double> read( const AMP::string_view &str );
+    static constexpr std::tuple<SI_type, double> read2( const AMP::string_view &str );
+    static constexpr std::tuple<SI_type, double> readUnit( const AMP::string_view &str,
+                                                           bool throwErr = true );
+    static constexpr SI_type combine( const SI_type &a, const SI_type &b );
+    static constexpr SI_type getSI( UnitType );
 
 private:
-    constexpr static double d_pow10[22]    = { 1e-24, 1e-21, 1e-18, 1e-15, 1e-12, 1e-9, 1e-6, 1e-3,
+    static constexpr double d_pow10[22] = { 1e-24, 1e-21, 1e-18, 1e-15, 1e-12, 1e-9, 1e-6, 1e-3,
                                             1e-2,  0.1,   1,     10,    100,   1000, 1e6,  1e9,
                                             1e12,  1e15,  1e18,  1e21,  1e24,  0 };
-    constexpr static char d_prefixSymbol[] = "yzafpnumcd\0dhkMGTPEZYu";
+    static constexpr const char *d_SI_units[] = {
+        "s", "m", "kg", "A", "K", "mol", "cd", "rad", "sr"
+    };
 };
 
 

@@ -11,7 +11,6 @@ ADD_AMP_TEST( test_LapackWrappers )
 ADD_AMP_TEST_1_2_4( test_InputManager )
 ADD_AMP_TEST( test_Database laser_plasma_input.txt )
 ADD_AMP_TEST( test_Database2 )
-ADD_AMP_TEST( test_Units )
 
 IF( USE_EXT_PETSC AND USE_EXT_TRILINOS )
 ADD_AMP_TEST_1_2_4( test_AsciiWriter )

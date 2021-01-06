@@ -256,11 +256,15 @@ void Database::putData( const AMP::string_view &key, std::unique_ptr<KeyData> da
         d_data.emplace_back( std::move( data ) );
     }
 }
-void Database::erase( const AMP::string_view &key )
+void Database::erase( const AMP::string_view &key, bool check )
 {
     auto hash = hashString( key );
     int index = find( hash );
-    DATABASE_INSIST( index != -1, "Variable %s does not exist in database", key.data() );
+    if ( index == -1 ) {
+        if ( check )
+            AMP_ERROR( std::string( key ) + " does not exist in database" );
+        return;
+    }
     std::swap( d_hash[index], d_hash.back() );
     std::swap( d_keys[index], d_keys.back() );
     std::swap( d_data[index], d_data.back() );

@@ -55,7 +55,7 @@ inline void Database::addArgs( const AMP::string_view &key, TYPE value, Args... 
     if constexpr ( is_vector<TYPE>::value ) {
         putVector( key, value );
     } else if constexpr ( std::is_same<TYPE, std::string>::value ||
-                          std::is_same<TYPE, std::string_view>::value ) {
+                          std::is_same<TYPE, AMP::string_view>::value ) {
         putScalar( key, value );
     } else if constexpr ( has_size<TYPE>::value ) {
         typedef decltype( *value.begin() ) TYPE2;
@@ -74,7 +74,7 @@ inline std::unique_ptr<Database> Database::create( Args... args )
 {
     constexpr size_t n = sizeof...( args );
     static_assert( n % 2 == 0 );
-    auto db = std::make_unique<AMP::Database>();
+    auto db = std::make_unique<Database>();
     if ( n == 0 )
         return db;
     db->addArgs( args... );

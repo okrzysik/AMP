@@ -323,12 +323,13 @@ public:
 
 
     /**
-     * Erase
-     * If the specified key does not exists in the database an error is thrown.
+     * Erase the given key
+     * If the specified key does not exists and check is true, an error is thrown.
      *
-     * @param key       Key name in database.
+     * @param key       Key name in database
+     * @param check     Check if the key exists
      */
-    void erase( const AMP::string_view &key );
+    void erase( const AMP::string_view &key, bool check = true );
 
 
     /**
@@ -377,7 +378,7 @@ protected: // Internal data and functions
     template<class TYPE, class... Args>
     void addArgs( const AMP::string_view &key, TYPE value, Args... args );
 
-    // Hash a AMP::string_view
+    // Hash a string
     static constexpr uint32_t hashString( const AMP::string_view &s )
     {
         uint32_t hash = 5381;
