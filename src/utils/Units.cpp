@@ -28,19 +28,22 @@ AMP::string_view Units::getPrefixStr( UnitPrefix p ) noexcept
     auto i                                        = static_cast<int8_t>( p );
     return d_prefixSymbol[i];
 }
-std::string Units::printSI() const
+std::string Units::printSIBase() const
 {
-    std::string s = Utilities::stringf( "%e", d_scale );
+    std::string s;
     for ( size_t i = 0; i < d_SI.size(); i++ ) {
         if ( d_SI[i] != 0 ) {
-            s += " ";
             s += d_SI_units[i];
             if ( d_SI[i] != 1 )
                 s += "^" + std::to_string( d_SI[i] );
+            s += " ";
         }
     }
+    if ( !s.empty() )
+        s.resize( s.size() - 1 );
     return s;
 }
+std::string Units::printSI() const { return Utilities::stringf( "%e ", d_scale ) + printSIBase(); }
 std::string Units::printFull() const
 {
     return std::string( d_unit.data(), 0, d_unit.size() ) + " - " + printSI();
@@ -90,6 +93,13 @@ static_assert( Units( "degree" ).getType() == UnitType::angle );
 static_assert( Units( "radian" ).getType() == UnitType::angle );
 static_assert( Units( "V" ) * Units( "A" ) == Units( "W" ) );
 static_assert( Units( "W/m^2" ) == Units( "uW/mm^2" ) );
+static_assert( static_cast<int>( Units( "eV" ).convert( Units( "K" ) ) ) == 11604 );
+static_assert( Units( "pt" ).convert( Units( "litre" ) ) == 568.26125 );
+static_assert( Units( "qt" ).convert( Units( "pt" ) ) == 2 );
+static_assert( Units( "gal" ).convert( Units( "pt" ) ) == 8 );
+static_assert( Units( "oz" ).convert( Units( "g" ) ) == 28.349523125 );
+static_assert( Units( "lb" ).convert( Units( "oz" ) ) == 16 );
+static_assert( Units( "ton" ).convert( Units( "lb" ) ) == 2240 );
 
 
 } // namespace AMP

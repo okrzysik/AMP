@@ -15,8 +15,8 @@ constexpr Units::Units( const AMP::string_view &str ) : d_unit( { 0 } ), d_SI( {
 {
     // Remove trailing/preceeding whitespace
     int i1 = 0, i2 = str.size() - 1;
-    for ( ; i1 < (int) str.size() && str[i1] == ' '; i1++ ) {}
-    for ( ; i2 > 0 && str[i2] == ' '; i2-- ) {}
+    for ( ; i1 < (int) str.size() && ( str[i1] == ' ' || str[i1] == '"' ); i1++ ) {}
+    for ( ; i2 > 0 && ( str[i2] == ' ' || str[i2] == '"' ); i2-- ) {}
     // Copy the unit to internal memory (removed extra spaces)
     if ( i1 > i2 )
         return;
@@ -287,11 +287,43 @@ constexpr std::tuple<Units::SI_type, double> Units::readUnit( const AMP::string_
         return create( UnitType::luminousFlux );
     if ( str == "lux" || str == "lx" )
         return create( UnitType::illuminance );
+    if ( str == "litre" || str == "L" )
+        return std::tuple<Units::SI_type, double>( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 1e-3 );
     // Check cgs units
     if ( str == "ergs" || str == "erg" )
         return create( UnitType::energy, 1e-7 );
     if ( str == "eV" )
         return create( UnitType::energy, 1.602176634e-19 );
+    // Check English units
+    if ( str == "inch" || str == "in" || str == "\"" )
+        return create( UnitType::length, 0.0254 );
+    if ( str == "foot" || str == "ft" || str == "\'" )
+        return create( UnitType::length, 0.3048 );
+    if ( str == "yard" || str == "yd" )
+        return create( UnitType::length, 0.9144 );
+    if ( str == "furlong" || str == "fur" )
+        return create( UnitType::length, 201.168 );
+    if ( str == "mile" || str == "mi" )
+        return create( UnitType::length, 1609.344 );
+    if ( str == "acre" )
+        return std::tuple<Units::SI_type, double>( { 0, 2, 0, 0, 0, 0, 0, 0, 0 }, 4046.8564224 );
+    if ( str == "pint" || str == "pt" )
+        return std::tuple<Units::SI_type, double>( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 0.56826125 );
+    if ( str == "quart" || str == "qt" )
+        return std::tuple<Units::SI_type, double>( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 1.1365225 );
+    if ( str == "gallon" || str == "gal" )
+        return std::tuple<Units::SI_type, double>( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 4.54609 );
+    if ( str == "ounce" || str == "oz" )
+        return create( UnitType::mass, 0.028349523125 );
+    if ( str == "pound" || str == "lb" )
+        return create( UnitType::mass, 0.45359237 );
+    if ( str == "ton" )
+        return create( UnitType::mass, 1016.0469088 );
+    // Check atomic units
+    if ( str == "hartree" )
+        return create( UnitType::energy, 4.359744722207185e-18 );
+    if ( str == "bohr" )
+        return create( UnitType::length, 5.2917721090380e-11 );
     // No success
     SI_type u = { 0 };
     double s  = 0;
@@ -369,14 +401,42 @@ constexpr UnitType Units::getType() const noexcept
 /********************************************************************
  * Convert to another unit system                                    *
  ********************************************************************/
+constexpr bool operator==( const std::array<int8_t, 9> &a, const std::array<int8_t, 9> &b )
+{
+    bool test = true;
+    for ( size_t i = 0; i < a.size(); i++ )
+        test = test && a[i] == b[i];
+    return test;
+}
+constexpr bool Units::compatible( const Units &rhs ) noexcept
+{
+    constexpr SI_type energy     = { -2, 2, 1, 0, 0, 0, 0, 0 };
+    constexpr SI_type tmperature = { 0, 0, 0, 0, 1, 0, 0, 0, 0 };
+    if ( d_SI == rhs.d_SI )
+        return true;
+    if ( d_SI == energy && rhs.d_SI == tmperature )
+        return true; // Convert from energy to temperature (using boltzmann constant)
+    if ( d_SI == tmperature && rhs.d_SI == energy )
+        return true; // Convert from temperature to energy (using boltzmann constant)
+    return false;
+}
 constexpr double Units::convert( const Units &rhs ) const
 {
-    // Verify the SI units match
-    for ( size_t i = 0; i < d_SI.size(); i++ ) {
-        if ( d_SI[i] != rhs.d_SI[i] )
-            throw std::logic_error( "Incompatible units" );
+    constexpr SI_type energy     = { -2, 2, 1, 0, 0, 0, 0, 0 };
+    constexpr SI_type tmperature = { 0, 0, 0, 0, 1, 0, 0, 0, 0 };
+    if ( d_SI == rhs.d_SI ) {
+        // The SI units match
+        return d_scale / rhs.d_scale;
+    } else if ( d_SI == energy && rhs.d_SI == tmperature ) {
+        // Convert from energy to temperature (using bolztmann constant)
+        return 7.242971666663E+22 * d_scale / rhs.d_scale;
+    } else if ( d_SI == tmperature && rhs.d_SI == energy ) {
+        // Convert from temperature to energy (using bolztmann constant)
+        return 1.38064878066922E-23 * d_scale / rhs.d_scale;
+    } else {
+        throw std::logic_error( "Incompatible units: " + printSIBase() + " - " +
+                                rhs.printSIBase() );
     }
-    return d_scale / rhs.d_scale;
 }
 
 

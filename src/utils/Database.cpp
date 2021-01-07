@@ -550,6 +550,13 @@ static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buff
         } else {
             std::tie( pos, type ) = find_next_token( &buffer[pos0] );
             pos += pos0;
+            if ( buffer[pos - 1] == '"' ) {
+                while ( buffer[pos] != '"' )
+                    pos++;
+                size_t pos2           = pos + 1;
+                std::tie( pos, type ) = find_next_token( &buffer[pos2] );
+                pos += pos2;
+            }
         }
         AMP::string_view tmp( &buffer[pos0], pos - pos0 - length( type ) );
         if ( !tmp.empty() ) {

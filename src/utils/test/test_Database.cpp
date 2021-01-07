@@ -207,6 +207,37 @@ void runBasicTests( UnitTest &ut )
     else
         ut.failure( "Database::create" );
 
+    // Test creating a database from key/value/unit triplets
+    db7 = Database::createWithUnits( "v1",
+                                     v1,
+                                     "",
+                                     "v2",
+                                     v2,
+                                     "cm",
+                                     "v3",
+                                     v3,
+                                     "",
+                                     "v4",
+                                     v4,
+                                     "m",
+                                     "v5",
+                                     v5,
+                                     "kg",
+                                     "v6",
+                                     v6,
+                                     "J",
+                                     "v7",
+                                     "test",
+                                     "" );
+    if ( db7->getScalar<int>( "v1" ) == v1 && db7->getScalar<double>( "v2", "m" ) == 1e-2 * v2 &&
+         db7->getString( "v3" ) == v3 && db7->getVector<double>( "v4", "m" ) == v4 &&
+         db7->getVector<double>( "v5", "kg" ) == std::vector<double>( v5.begin(), v5.end() ) &&
+         db7->getVector<double>( "v6", "J" ) == std::vector<double>( v6.begin(), v6.end() ) &&
+         db7->getString( "v7" ) == "test" )
+        ut.passes( "Database::create" );
+    else
+        ut.failure( "Database::create" );
+
     // Test getting some values in different units
     Database db8;
     db8.putScalar<double>( "I1", 2.3, "W/cm^2" );

@@ -107,6 +107,21 @@ public:
     constexpr UnitType getType() const noexcept;
 
     /**
+     * \brief  Get the prefix from a string
+     * \details  This returns an enum representing the given input string
+     * \param str       Input string
+     */
+    constexpr static UnitPrefix getUnitPrefix( const AMP::string_view &str ) noexcept;
+
+    /**
+     * \brief  Check if two units are compatible
+     * \details  Check if two units are compatible with each other.
+     *     I.e. if convert will succeed.
+     * \param unit      Unit to compare
+     */
+    constexpr bool compatible( const Units &unit ) noexcept;
+
+    /**
      * \brief  Convert the unit to a new type
      * \details  This function returns the scaling factor to convert between
      *    two different units.  For example, converting "J" to "ergs" returns 1e-7.
@@ -114,13 +129,6 @@ public:
      * \param unit      Desired unit
      */
     constexpr double convert( const Units &unit ) const;
-
-    /**
-     * \brief  Get the prefix from a string
-     * \details  This returns an enum representing the given input string
-     * \param str       Input string
-     */
-    constexpr static UnitPrefix getUnitPrefix( const AMP::string_view &str ) noexcept;
 
     /**
      * \brief  Convert the prefix to a double
@@ -179,6 +187,8 @@ protected:
                                                            bool throwErr = true );
     static constexpr SI_type combine( const SI_type &a, const SI_type &b );
     static constexpr SI_type getSI( UnitType );
+
+    std::string printSIBase() const;
 
 private:
     static constexpr double d_pow10[22] = { 1e-24, 1e-21, 1e-18, 1e-15, 1e-12, 1e-9, 1e-6, 1e-3,

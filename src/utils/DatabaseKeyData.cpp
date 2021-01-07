@@ -108,31 +108,31 @@ void scaleData( std::complex<float>& data, double factor )
             data2[i] = static_cast<TYPE>( data[i] );                       \
         return data2;                                                      \
     }
-#define convertDataInvalid( TYPE )                                    \
-    template<>                                                        \
-    std::vector<double> KeyDataScalar<TYPE>::convertToDouble() const  \
-    {                                                                 \
-        throw std::logic_error( "Invalid conversion" );               \
-    }                                                                 \
-    template<>                                                        \
-    std::vector<int64_t> KeyDataScalar<TYPE>::convertToInt64() const  \
-    {                                                                 \
-        throw std::logic_error( "Invalid conversion" );               \
-    }                                                                 \
-    template<>                                                        \
-    std::vector<double> KeyDataVector<TYPE>::convertToDouble() const  \
-    {                                                                 \
-        throw std::logic_error( "Invalid conversion" );               \
-    }                                                                 \
-    template<>                                                        \
-    std::vector<int64_t> KeyDataVector<TYPE>::convertToInt64() const  \
-    {                                                                 \
-        throw std::logic_error( "Invalid conversion" );               \
-    }                                                                 \
-    template<>                                                        \
-    std::vector<TYPE> convertFromDouble( const std::vector<double>& ) \
-    {                                                                 \
-        throw std::logic_error( "Invalid conversion" );               \
+#define convertDataInvalid( TYPE )                                        \
+    template<>                                                            \
+    std::vector<double> KeyDataScalar<TYPE>::convertToDouble() const      \
+    {                                                                     \
+        throw std::logic_error( "Invalid conversion: " #TYPE "-double" ); \
+    }                                                                     \
+    template<>                                                            \
+    std::vector<int64_t> KeyDataScalar<TYPE>::convertToInt64() const      \
+    {                                                                     \
+        throw std::logic_error( "Invalid conversion: " #TYPE"-int" );     \
+    }                                                                     \
+    template<>                                                            \
+    std::vector<double> KeyDataVector<TYPE>::convertToDouble() const      \
+    {                                                                     \
+        throw std::logic_error( "Invalid conversion: " #TYPE "-double" ); \
+    }                                                                     \
+    template<>                                                            \
+    std::vector<int64_t> KeyDataVector<TYPE>::convertToInt64() const      \
+    {                                                                     \
+        throw std::logic_error( "Invalid conversion: " #TYPE "-int" );    \
+    }                                                                     \
+    template<>                                                            \
+    std::vector<TYPE> convertFromDouble( const std::vector<double>& )     \
+    {                                                                     \
+        throw std::logic_error( "Invalid conversion: double-" #TYPE );    \
     }
 convertDataValid( char )
 convertDataValid( int8_t )

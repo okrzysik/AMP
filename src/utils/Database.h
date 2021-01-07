@@ -93,6 +93,16 @@ public:
     template<class... Args>
     static std::unique_ptr<Database> create( Args... args );
 
+    /** \brief Create a database from key/value/unit triplets
+     * \details  This function will create a database from a set of key/value/unit triplets
+     *    of the form: create( "key1", value1, unit1, "key2", value2, unit2, ... ).
+     *    Note that for simplicity each value must either be a scalar value
+     *       (int, double, string, etc) or a std::vector of scalar values
+     * \param[in]  args         The input arguments
+     */
+    template<class... Args>
+    static std::unique_ptr<Database> createWithUnits( Args... args );
+
     /**
      * Create database from string
      * @param data       String containing the database data
@@ -377,6 +387,11 @@ protected: // Internal data and functions
     // Function to add arguments to the database
     template<class TYPE, class... Args>
     void addArgs( const AMP::string_view &key, TYPE value, Args... args );
+
+    // Function to add arguments to the database
+    template<class TYPE, class... Args>
+    void
+    addArgsWithUnits( const AMP::string_view &key, TYPE value, const Units &unit, Args... args );
 
     // Hash a string
     static constexpr uint32_t hashString( const AMP::string_view &s )
