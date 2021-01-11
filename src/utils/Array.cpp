@@ -26,6 +26,7 @@ template class Array<int32_t,FunctionTable>;
 template class Array<int64_t,FunctionTable>;
 template class Array<float,FunctionTable>;
 template class Array<double,FunctionTable>;
+template class Array<long double,FunctionTable>;
 
 
 /********************************************************
@@ -47,6 +48,7 @@ template Array<bool,FunctionTable>& Array<bool,FunctionTable>::operator=( const 
 template Array<bool,FunctionTable>& Array<bool,FunctionTable>::operator=( Array<bool,FunctionTable>&& );
 template Array<bool,FunctionTable>& Array<bool,FunctionTable>::operator=( const std::vector<bool>& );
 template void Array<bool,FunctionTable>::clear();
+template void Array<bool,FunctionTable>::viewRaw(ArraySize const&, bool*, bool, bool);
 template bool Array<bool,FunctionTable>::operator==(Array<bool,FunctionTable> const&) const;
 template void Array<bool,FunctionTable>::resize( ArraySize const& );
 
@@ -60,6 +62,8 @@ template Array<std::complex<float>,FunctionTable>::Array( const Range<std::compl
 template Array<std::complex<double>,FunctionTable>::Array( const Range<std::complex<double>>& range );
 template void Array<std::complex<float>,FunctionTable>::resize( ArraySize const& );
 template void Array<std::complex<double>,FunctionTable>::resize( ArraySize const& );
+template Array<std::complex<double>,FunctionTable>& Array<std::complex<double>,FunctionTable>::operator=(std::vector<std::complex<double>> const&);
+template Array<std::complex<float>,FunctionTable>& Array<std::complex<float>,FunctionTable>::operator=(std::vector<std::complex<float>> const&);
 template void Array<std::complex<float>,FunctionTable>::clear();
 template void Array<std::complex<double>,FunctionTable>::clear();
 template bool Array<std::complex<float>,FunctionTable>::operator==(Array<std::complex<float>,FunctionTable> const&) const;
@@ -79,6 +83,9 @@ template bool Array<std::complex<double>,FunctionTable>::NaNs() const;
  ********************************************************/
 instantiateArrayConstructors( std::string )
 template void Array<std::string,FunctionTable>::resize( ArraySize const& );
+template void Array<std::string,FunctionTable>::clear();
+template Array<std::string, FunctionTable> &Array<std::string, FunctionTable>::
+operator=( const std::vector<std::string> & );
 
 #if defined( USING_ICC )
 ENABLE_WARNINGS

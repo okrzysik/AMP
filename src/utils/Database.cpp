@@ -507,7 +507,7 @@ static size_t skip_comment( const char *buffer )
     pos += std::get<0>( tmp );
     return pos;
 }
-enum class class_type { STRING, BOOL, INT, FLOAT, COMPLEX, BOX, UNKNOWN };
+enum class class_type { STRING, BOOL, INT, FLOAT, COMPLEX, BOX, ARRAY, UNKNOWN };
 static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buffer,
                                                                 const AMP::string_view &key )
 {
@@ -544,6 +544,21 @@ static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buff
             while ( buffer[pos] != ')' || buffer[pos + 1] != ']' )
                 pos++;
             pos++;
+            size_t i;
+            std::tie( i, type ) = find_next_token( &buffer[pos] );
+            pos += i;
+        } else if ( buffer[pos0] == '[' ) {
+            // We are reading a multi-dimensional array
+            data_type = class_type::ARRAY;
+            int count = 1;
+            pos       = pos0 + 1;
+            while ( count != 0 ) {
+                if ( buffer[pos] == '[' )
+                    count++;
+                if ( buffer[pos] == ']' )
+                    count--;
+                pos++;
+            }
             size_t i;
             std::tie( i, type ) = find_next_token( &buffer[pos] );
             pos += i;
@@ -610,79 +625,166 @@ static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buff
             std::string str( values[0] );
             data = std::make_unique<KeyDataScalar<std::string>>( std::move( str ) );
         } else {
-            std::vector<std::string> data2( values.size() );
+            Array<std::string> data2( values.size() );
             for ( size_t i = 0; i < values.size(); i++ )
-                data2[i] = std::string( values[i].data(), values[i].size() );
-            data = std::make_unique<KeyDataVector<std::string>>( std::move( data2 ) );
+                data2( i ) = std::string( values[i].data(), values[i].size() );
+            data = std::make_unique<KeyDataArray<std::string>>( std::move( data2 ) );
         }
     } else if ( data_type == class_type::BOOL ) {
         // We are dealing with logical values
-        std::vector<bool> data2( values.size() );
+        Array<bool> data2( values.size() );
         for ( size_t i = 0; i < values.size(); i++ ) {
             if ( !strcmpi( values[i], "true" ) && !strcmpi( values[i], "false" ) )
                 throw std::logic_error( "Error converting " + std::string( key ) +
                                         " to logical array" );
-            data2[i] = strcmpi( values[i], "true" );
+            data2( i ) = strcmpi( values[i], "true" );
         }
         if ( values.size() == 1 ) {
-            data = std::make_unique<KeyDataScalar<bool>>( data2[0] );
+            data = std::make_unique<KeyDataScalar<bool>>( data2( 0 ) );
         } else {
-            data = std::make_unique<KeyDataVector<bool>>( std::move( data2 ) );
+            data = std::make_unique<KeyDataArray<bool>>( std::move( data2 ) );
         }
     } else if ( data_type == class_type::INT ) {
-        // We are dealing with floating point values
-        std::vector<int> data2( values.size() );
+        // We are dealing with integer values
+        Array<int> data2( values.size() );
         Units unit;
         for ( size_t i = 0; i < values.size(); i++ ) {
             Units unit2;
-            std::tie( data2[i], unit2 ) = readPair<int>( values[i] );
+            std::tie( data2( i ), unit2 ) = readPair<int>( values[i] );
             if ( !unit2.isNull() )
                 unit = unit2;
         }
         if ( values.size() == 1 ) {
-            data = std::make_unique<KeyDataScalar<int>>( data2[0], unit );
+            data = std::make_unique<KeyDataScalar<int>>( data2( 0 ), unit );
         } else {
-            data = std::make_unique<KeyDataVector<int>>( std::move( data2 ), unit );
+            data = std::make_unique<KeyDataArray<int>>( std::move( data2 ), unit );
         }
     } else if ( data_type == class_type::FLOAT ) {
         // We are dealing with floating point values
-        std::vector<double> data2( values.size() );
+        Array<double> data2( values.size() );
         Units unit;
         for ( size_t i = 0; i < values.size(); i++ ) {
             Units unit2;
-            std::tie( data2[i], unit2 ) = readPair<double>( values[i] );
+            std::tie( data2( i ), unit2 ) = readPair<double>( values[i] );
             if ( !unit2.isNull() )
                 unit = unit2;
         }
         if ( values.size() == 1 ) {
-            data = std::make_unique<KeyDataScalar<double>>( data2[0], unit );
+            data = std::make_unique<KeyDataScalar<double>>( data2( 0 ), unit );
         } else {
-            data = std::make_unique<KeyDataVector<double>>( std::move( data2 ), unit );
+            data = std::make_unique<KeyDataArray<double>>( std::move( data2 ), unit );
         }
     } else if ( data_type == class_type::COMPLEX ) {
         // We are dealing with complex values
-        std::vector<std::complex<double>> data2( values.size() );
+        Array<std::complex<double>> data2( values.size() );
         Units unit;
         for ( size_t i = 0; i < values.size(); i++ ) {
             Units unit2;
-            std::tie( data2[i], unit2 ) = readPair<std::complex<double>>( values[i] );
+            std::tie( data2( i ), unit2 ) = readPair<std::complex<double>>( values[i] );
             if ( !unit2.isNull() )
                 unit = unit2;
         }
         if ( values.size() == 1 ) {
-            data = std::make_unique<KeyDataScalar<std::complex<double>>>( data2[0], unit );
+            data = std::make_unique<KeyDataScalar<std::complex<double>>>( data2( 0 ), unit );
         } else {
-            data =
-                std::make_unique<KeyDataVector<std::complex<double>>>( std::move( data2 ), unit );
+            data = std::make_unique<KeyDataArray<std::complex<double>>>( std::move( data2 ), unit );
         }
     } else if ( data_type == class_type::BOX ) {
-        std::vector<DatabaseBox> data2( values.size() );
+        Array<DatabaseBox> data2( values.size() );
         for ( size_t i = 0; i < values.size(); i++ )
-            data2[i] = DatabaseBox( values[i] );
+            data2( i ) = DatabaseBox( values[i] );
         if ( values.size() == 1 ) {
-            data = std::make_unique<KeyDataScalar<DatabaseBox>>( data2[0] );
+            data = std::make_unique<KeyDataScalar<DatabaseBox>>( data2( 0 ) );
         } else {
-            data = std::make_unique<KeyDataVector<DatabaseBox>>( std::move( data2 ) );
+            data = std::make_unique<KeyDataArray<DatabaseBox>>( std::move( data2 ) );
+        }
+    } else if ( data_type == class_type::ARRAY ) {
+        // We are dealing with an Array
+        size_t k = 0;
+        for ( size_t i = 0; i < values[0].size(); i++ ) {
+            if ( values[0][i] == ']' )
+                k = i;
+        }
+        auto array_str = values[0].substr( 0, k + 1 );
+        auto unit_str  = values[0].substr( k + 1 );
+        Units unit( unit_str );
+        if ( deblank( array_str.substr( 1, array_str.size() - 2 ) ).empty() ) {
+            // We are dealing with an empty array
+            data = std::make_unique<KeyDataArray<double>>( Array<double>( 0 ), unit );
+        } else {
+            // Get the array size
+            size_t ndim = 1, dims[10] = { 1 };
+            for ( size_t i = 1, d = 0; i < array_str.size() - 1; i++ ) {
+                if ( array_str[i] == '[' ) {
+                    d++;
+                    ndim    = std::max( ndim, d + 1 );
+                    dims[d] = 1;
+                } else if ( array_str[i] == ']' ) {
+                    d--;
+                } else if ( array_str[i] == ',' ) {
+                    dims[d]++;
+                }
+            }
+            size_t dims2[10] = { 0 };
+            for ( size_t d = 0; d < ndim; d++ )
+                dims2[d] = dims[ndim - d - 1];
+            ArraySize size( ndim, dims2 );
+            // Get the Array values
+            values.clear();
+            values.resize( size.length() );
+            for ( size_t i1 = 0, i2 = 0, j = 0; j < values.size(); j++ ) {
+                while ( array_str[i1] == '[' || array_str[i1] == ']' || array_str[i1] == ',' ||
+                        array_str[i1] == ' ' || array_str[i1] == '\n' )
+                    i1++;
+                i2 = i1 + 1;
+                while ( array_str[i2] != '[' && array_str[i2] != ']' && array_str[i2] != ',' &&
+                        array_str[i2] != ' ' )
+                    i2++;
+                values[j] = deblank( array_str.substr( i1, i2 - i1 ) );
+                i1        = i2;
+            }
+            // Create the array
+            if ( array_str.find( '"' ) != std::string::npos ) {
+                // String array
+                Array<std::string> A( size );
+                for ( size_t i = 0; i < size.length(); i++ )
+                    A( i ) = std::string( values[i].substr( 1, values[i].size() - 2 ) );
+                data = std::make_unique<KeyDataArray<std::string>>( std::move( A ), unit );
+            } else if ( array_str.find( '(' ) != std::string::npos ) {
+                // Complex array
+                Array<std::complex<double>> A( size );
+                A.fill( 0.0 );
+                for ( size_t i = 0; i < size.length(); i++ )
+                    std::tie( A( i ), std::ignore ) = readPair<std::complex<double>>( values[i] );
+                data = std::make_unique<KeyDataArray<std::complex<double>>>( std::move( A ), unit );
+            } else if ( array_str.find( "true" ) != std::string::npos ||
+                        array_str.find( "false" ) != std::string::npos ) {
+                // Bool array
+                Array<bool> A( size );
+                A.fill( false );
+                for ( size_t i = 0; i < values.size(); i++ ) {
+                    if ( !strcmpi( values[i], "true" ) && !strcmpi( values[i], "false" ) )
+                        throw std::logic_error( "Error converting " + std::string( key ) +
+                                                " to logical array" );
+                    A( i ) = strcmpi( values[i], "true" );
+                }
+                data = std::make_unique<KeyDataArray<bool>>( std::move( A ), unit );
+            } else if ( array_str.find( '.' ) != std::string::npos ||
+                        array_str.find( 'e' ) != std::string::npos ) {
+                // Floating point array
+                Array<double> A( size );
+                A.fill( 0.0 );
+                for ( size_t i = 0; i < size.length(); i++ )
+                    std::tie( A( i ), std::ignore ) = readPair<double>( values[i] );
+                data = std::make_unique<KeyDataArray<double>>( std::move( A ), unit );
+            } else {
+                // Integer point array
+                Array<int> A( size );
+                A.fill( 0 );
+                for ( size_t i = 0; i < size.length(); i++ )
+                    std::tie( A( i ), std::ignore ) = readPair<int>( values[i] );
+                data = std::make_unique<KeyDataArray<int>>( std::move( A ), unit );
+            }
         }
     } else {
         // Treat unknown data as a string
@@ -690,10 +792,10 @@ static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buff
             std::string str( values[0] );
             data = std::make_unique<KeyDataScalar<std::string>>( std::move( str ) );
         } else {
-            std::vector<std::string> data2( values.size() );
+            Array<std::string> data2( values.size() );
             for ( size_t i = 0; i < values.size(); i++ )
-                data2[i] = std::string( values[i].data(), values[i].size() );
-            data = std::make_unique<KeyDataVector<std::string>>( std::move( data2 ) );
+                data2( i ) = std::string( values[i].data(), values[i].size() );
+            data = std::make_unique<KeyDataArray<std::string>>( std::move( data2 ) );
         }
     }
     return std::make_tuple( pos, std::move( data ) );
@@ -741,11 +843,11 @@ size_t Database::loadDatabase( const char *buffer, Database &db )
     }
     return pos;
 }
-std::vector<double> Database::convertToDouble() const
+Array<double> Database::convertToDouble() const
 {
     throw std::logic_error( "convertData on a database is not valid" );
 }
-std::vector<int64_t> Database::convertToInt64() const
+Array<int64_t> Database::convertToInt64() const
 {
     throw std::logic_error( "convertData on a database is not valid" );
 }
@@ -847,9 +949,9 @@ static std::unique_ptr<KeyData> loadYAMLDatabase( FILE *fid, size_t indent = 0 )
                 std::tie( std::ignore, read_entry ) = read_value( line3.data(), key );
                 auto y                              = read_entry->convertToDouble();
                 size_t i                            = x.size( 0 );
-                x.resize( i + 1, y.size() );
-                for ( size_t j = 0; j < y.size(); j++ )
-                    x( i, j ) = y[j];
+                x.resize( i + 1, y.length() );
+                for ( size_t j = 0; j < y.length(); j++ )
+                    x( i, j ) = y( j );
             }
             // need to store a multi-dimentional array
             entry = std::make_unique<KeyDataScalar<std::string>>(
@@ -861,7 +963,7 @@ static std::unique_ptr<KeyData> loadYAMLDatabase( FILE *fid, size_t indent = 0 )
                 entry = std::make_unique<KeyDataScalar<std::string>>( std::string( value ) );
             }
             try {
-                if ( entry->convertToDouble() == std::vector<double>( 1, 0 ) )
+                if ( entry->convertToDouble() == Array<double>( 1, 0 ) )
                     entry = std::make_unique<KeyDataScalar<std::string>>( std::string( value ) );
             } catch ( ... ) {
             }

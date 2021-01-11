@@ -255,8 +255,8 @@ public: // Views/copies/subset
      * Copy and convert data from another array to this array
      * @param array         Source array
      */
-    template<class TYPE2>
-    void inline copy( const Array<TYPE2, FUN, Allocator> &array )
+    template<class TYPE2, class FUN2, class Allocator2>
+    void inline copy( const Array<TYPE2, FUN2, Allocator2> &array )
     {
         resize( array.size() );
         copy( array.data() );

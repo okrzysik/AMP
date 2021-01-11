@@ -1,14 +1,14 @@
 #ifndef included_AMP_Database
 #define included_AMP_Database
 
+#include "AMP/utils/Array.h"
+#include "AMP/utils/Units.h"
+#include "AMP/utils/string_view.h"
+
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "AMP/utils/Units.h"
-#include "AMP/utils/string_view.h"
-#include <memory>
 
 
 // Forward declare SAMRAI's database
@@ -40,10 +40,12 @@ public:
     virtual bool is_floating_point() const = 0;
     //! Return true if the type is a integer point type
     virtual bool is_integral() const = 0;
-    //! Return the data as a std::vector<double> (throw error if this is not valid)
-    virtual std::vector<double> convertToDouble() const = 0;
-    //! Return the data as a std::vector<int64_t> (throw error if this is not valid)
-    virtual std::vector<int64_t> convertToInt64() const = 0;
+    //! Return the array size
+    virtual ArraySize arraySize() const = 0;
+    //! Return the data as a Array<double> (throw error if this is not valid)
+    virtual Array<double> convertToDouble() const = 0;
+    //! Return the data as a Array<int64_t> (throw error if this is not valid)
+    virtual Array<int64_t> convertToInt64() const = 0;
     //! Check if two sets of data are equal
     virtual bool operator==( const KeyData &rhs ) const = 0;
     //! Check if two sets of data are not equal
@@ -87,7 +89,7 @@ public:
      * \details  This function will create a database from a set of key/value pairs
      *    of the form: create( "key1", value1, "key2", value2, ... ).
      *    Note that for simplicity each value must either be a scalar value
-     *       (int, double, string, etc) or a std::vector of scalar values
+     *       (int, double, string, etc) or a std::vector/Array of scalar values
      * \param[in]  args         The input arguments
      */
     template<class... Args>
@@ -97,7 +99,7 @@ public:
      * \details  This function will create a database from a set of key/value/unit triplets
      *    of the form: create( "key1", value1, unit1, "key2", value2, unit2, ... ).
      *    Note that for simplicity each value must either be a scalar value
-     *       (int, double, string, etc) or a std::vector of scalar values
+     *       (int, double, string, etc) or a std::vector/Array of scalar values
      * \param[in]  args         The input arguments
      */
     template<class... Args>
@@ -221,6 +223,19 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
+    Array<TYPE> getArray( const AMP::string_view &key, Units unit = Units() ) const;
+
+
+    /**
+     * Get the vector entries from the database with the specified key
+     * name.  If the specified key does not exist in the database or
+     * is not of the given type, then an error message is printed and
+     * the program exits.
+     *
+     * @param key           Key name in database.
+     * @param unit          Desired units
+     */
+    template<class TYPE>
     std::vector<TYPE> getVector( const AMP::string_view &key, Units unit = Units() ) const;
 
 
@@ -245,8 +260,22 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
+    inline void putArray( const AMP::string_view &key, Array<TYPE> data, Units unit = Units() );
+
+
+    /**
+     * Put the vector entries into the database with the specified key
+     * name.  If the specified key does not exist in the database or
+     * is not of the given type, then an error message is printed and
+     * the program exits.
+     *
+     * @param key           Key name in database.
+     * @param data          Data to store
+     * @param unit          Desired units
+     */
+    template<class TYPE>
     inline void
-    putVector( const AMP::string_view &key, std::vector<TYPE> data, Units unit = Units() );
+    putVector( const AMP::string_view &key, const std::vector<TYPE> &data, Units unit = Units() );
 
 
     /**
@@ -413,8 +442,9 @@ protected: // Internal data and functions
     }
 
     // Functions inherited from KeyData that really aren't valid
-    std::vector<double> convertToDouble() const override;
-    std::vector<int64_t> convertToInt64() const override;
+    Array<double> convertToDouble() const override;
+    Array<int64_t> convertToInt64() const override;
+    ArraySize arraySize() const override { return ArraySize( 1 ); }
     bool is_floating_point() const override;
     bool is_integral() const override;
 };

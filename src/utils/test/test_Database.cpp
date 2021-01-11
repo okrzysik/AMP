@@ -125,9 +125,23 @@ void runBasicTests( UnitTest &ut )
         "diam   = 30 um          // Beam diameter\n"
         "length = 0.4 cm         // Beam length\n"
         "lambda = 0.8 um         // Wavelength of laser\n"
-        "angle  = 0 degrees      // Angle of beam with repect to normal\n";
+        "angle  = 0 degrees      // Angle of beam with repect to normal\n"
+        "array  = [ [ [ 1, 2, 3, 4 ], [5,6,7,8],[9,10,11,12]],\n"
+        "         [[0,1,2,3],[4,5,6,7],[8,9,10,11]]] m   // Multi-dimentional array\n"
+        "empty  = []             // Empty array\n"
+        "end  = \"end\"\n";
     auto beam = Database::createFromString( beamDatabaseText );
     db.putDatabase( "beam", std::move( beam ) );
+
+    // Check the arrays
+    auto empty = db.getDatabase( "beam" )->getData( "empty" );
+    if ( !empty )
+        ut.failure( "empty array (1)" );
+    else if ( empty->arraySize().length() != 0 )
+        ut.failure( "empty array (2)" );
+    auto array = db.getDatabase( "beam" )->getArray<int>( "array", "m" );
+    if ( array.size() != ArraySize( 4, 3, 2 ) )
+        ut.failure( "array size" );
 
     // Write the database to a file
     std::ofstream inputfile;
