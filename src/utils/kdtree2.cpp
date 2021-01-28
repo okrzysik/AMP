@@ -10,5 +10,7 @@ namespace AMP {
 template class kdtree2<1, int>;
 template class kdtree2<2, int>;
 template class kdtree2<3, int>;
+template class kdtree2<4, int>;
+template class kdtree2<5, int>;
 
 } // namespace AMP

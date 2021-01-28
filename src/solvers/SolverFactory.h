@@ -16,8 +16,8 @@ implied, or assumes any liability or
 responsibility for the use of this software.
 */
 
-#ifndef included_SolverFactory_H_
-#define included_SolverFactory_H_
+#ifndef included_AMP_SolverFactory_H
+#define included_AMP_SolverFactory_H
 
 #include "AMP/utils/FactoryStrategy.hpp"
 
@@ -34,4 +34,4 @@ using SolverFactory = FactoryStrategy<SolverStrategy, SolverStrategyParameters>;
 void registerSolverFactories();
 } // namespace Solver
 } // namespace AMP
-#endif // included_SolverFactory_H_
+#endif

@@ -1,5 +1,5 @@
-#ifndef included_ArrayVectorData_hpp
-#define included_ArrayVectorData_hpp
+#ifndef included_AMP_ArrayVectorData_hpp
+#define included_AMP_ArrayVectorData_hpp
 #include "AMP/discretization/DOF_Manager.h"
 
 #include "math.h"

@@ -1,5 +1,5 @@
-#ifndef included_ArrayClass
-#define included_ArrayClass
+#ifndef included_AMP_ArrayClass
+#define included_AMP_ArrayClass
 
 #include "AMP/utils/ArraySize.h"
 
@@ -283,7 +283,7 @@ public: // Views/copies/subset
     template<class TYPE2>
     Array<TYPE2, FUN, Allocator> inline cloneTo() const
     {
-        Array<TYPE2, FUN> dst( this->size() );
+        Array<TYPE2, FUN, Allocator> dst( this->size() );
         copyTo( dst.data() );
         return dst;
     }
@@ -852,7 +852,7 @@ template<class TYPE, class FUN, class Allocator>
 template<class TYPE2>
 inline void AMP::Array<TYPE, FUN, Allocator>::copy( const TYPE2 *data )
 {
-    if constexpr ( std::is_same<TYPE, TYPE2>::value ) {
+    if ( std::is_same<TYPE, TYPE2>::value ) {
         std::copy( data, data + d_size.length(), d_data );
     } else {
         for ( size_t i = 0; i < d_size.length(); i++ )
@@ -863,7 +863,7 @@ template<class TYPE, class FUN, class Allocator>
 template<class TYPE2>
 inline void AMP::Array<TYPE, FUN, Allocator>::copyTo( TYPE2 *data ) const
 {
-    if constexpr ( std::is_same<TYPE, TYPE2>::value ) {
+    if ( std::is_same<TYPE, TYPE2>::value ) {
         std::copy( d_data, d_data + d_size.length(), data );
     } else {
         for ( size_t i = 0; i < d_size.length(); i++ )

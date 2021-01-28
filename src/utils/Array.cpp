@@ -32,23 +32,9 @@ template class Array<long double,FunctionTable>;
 /********************************************************
  *  Explicit instantiations of Array<bool>               *
  ********************************************************/
-template Array<bool,FunctionTable>::Array();
-template Array<bool,FunctionTable>::~Array();
-template Array<bool,FunctionTable>::Array( size_t );
-template Array<bool,FunctionTable>::Array( size_t, size_t );
-template Array<bool,FunctionTable>::Array( size_t, size_t, size_t );
-template Array<bool,FunctionTable>::Array( size_t, size_t, size_t, size_t );
-template Array<bool,FunctionTable>::Array( size_t, size_t, size_t, size_t, size_t );
-template Array<bool,FunctionTable>::Array( const std::vector<size_t>&, const bool* );
-template Array<bool,FunctionTable>::Array( std::string );
-template Array<bool,FunctionTable>::Array( std::initializer_list<bool> );
-template Array<bool,FunctionTable>::Array( const Array<bool,FunctionTable>& );
-template Array<bool,FunctionTable>::Array( Array<bool,FunctionTable>&& );
-template Array<bool,FunctionTable>& Array<bool,FunctionTable>::operator=( const Array<bool,FunctionTable>& );
-template Array<bool,FunctionTable>& Array<bool,FunctionTable>::operator=( Array<bool,FunctionTable>&& );
+instantiateArrayConstructors( bool )
 template Array<bool,FunctionTable>& Array<bool,FunctionTable>::operator=( const std::vector<bool>& );
 template void Array<bool,FunctionTable>::clear();
-template void Array<bool,FunctionTable>::viewRaw(ArraySize const&, bool*, bool, bool);
 template bool Array<bool,FunctionTable>::operator==(Array<bool,FunctionTable> const&) const;
 template void Array<bool,FunctionTable>::resize( ArraySize const& );
 

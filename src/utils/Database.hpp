@@ -2,6 +2,7 @@
 #define included_AMP_Database_hpp
 
 #include "AMP/utils/Database.h"
+#include "AMP/utils/TypeTraits.h"
 
 #include <iomanip>
 #include <limits>
@@ -30,31 +31,6 @@ namespace AMP {
 /********************************************************************
  * Create database from arguments                                    *
  ********************************************************************/
-template<typename T>
-struct is_vector : std::false_type {
-};
-template<typename T>
-struct is_vector<std::vector<T>> : std::true_type {
-};
-template<typename T>
-struct is_Array : std::false_type {
-};
-template<typename T>
-struct is_Array<Array<T>> : std::true_type {
-};
-template<typename T>
-struct has_size {
-private:
-    typedef std::true_type yes;
-    typedef std::false_type no;
-    template<typename U>
-    static auto test( int ) -> decltype( std::declval<U>().size() == 1, yes() );
-    template<typename>
-    static no test( ... );
-
-public:
-    static constexpr bool value = std::is_same<decltype( test<T>( 0 ) ), yes>::value;
-};
 template<class TYPE, class... Args>
 inline void Database::addArgs( const AMP::string_view &key, TYPE value, Args... args )
 {

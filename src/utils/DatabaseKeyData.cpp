@@ -101,7 +101,6 @@ void scaleData( std::complex<float>& data, double factor )
         Array<int64_t> data( d_data.size() );                              \
         data.copy( d_data );                                               \
         return data;                                                       \
-        return data;                                                       \
     }                                                                      \
     template<>                                                             \
     Array<TYPE> convertFromDouble( const Array<double>& data )             \

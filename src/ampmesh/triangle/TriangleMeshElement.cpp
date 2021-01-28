@@ -293,7 +293,7 @@ double TriangleMeshElement<NG, NP, TYPE>::volume() const
         double V           = std::abs( C * DelaunayHelpers<TYPE>::det( M ) );
         return V;
     } else {
-        AMP_ERROR( "Not finished" );
+        AMP_ERROR( "TriangleMeshElement::volume - Not finished" );
         return 0;
     }
 }
@@ -306,7 +306,7 @@ MeshPoint<double> TriangleMeshElement<NG, NP, TYPE>::norm() const
         auto n = AMP::Geometry::GeometryHelpers::normal( x[0], x[1], x[2] );
         return { n[0], n[1], n[2] };
     } else {
-        AMP_ERROR( "Not finished" );
+        AMP_ERROR( "TriangleMeshElement::norm - Not finished" );
     }
     return MeshPoint<double>();
 }
@@ -361,7 +361,7 @@ bool TriangleMeshElement<NG, NP, TYPE>::containsPoint( const MeshPoint<double> &
             AMP::Geometry::GeometryHelpers::barycentric<3, 3>( x, { pos.x(), pos.y(), pos.z() } );
         return ( L[0] >= -TOL ) && ( L[1] >= -TOL ) && ( L[2] >= -TOL );
     } else {
-        AMP_ERROR( "Not finished" );
+        AMP_ERROR( "TriangleMeshElement::containsPoint - Not finished" );
     }
     return false;
 }
@@ -391,11 +391,20 @@ MeshPoint<double> TriangleMeshElement<NG, NP, TYPE>::nearest( const MeshPoint<do
     // Get the vertex coordinates
     std::array<double, NP> v[TYPE + 1];
     getVertexCoord( v );
-    if constexpr ( TYPE == 2 && NP == 3 ) {
+    if constexpr ( TYPE == 0 ) {
+        // Nearest point to a vertex is the vertex
+        return MeshPoint( NP, v[0].data() );
+    } else if constexpr ( TYPE == 1 && NP == 3 ) {
+        // Nearest point to a line in 3D
+        auto p =
+            AMP::Geometry::GeometryHelpers::nearest( v[0], v[1], { pos.x(), pos.y(), pos.z() } );
+        return { p[0], p[1], p[2] };
+    } else if constexpr ( TYPE == 2 && NP == 3 ) {
+        // Nearest point to a triangle in 3D
         auto p = AMP::Geometry::GeometryHelpers::nearest( v, { pos.x(), pos.y(), pos.z() } );
         return { p[0], p[1], p[2] };
     } else {
-        AMP_ERROR( "Not finished" );
+        AMP_ERROR( "TriangleMeshElement - Not finished" );
     }
     return MeshPoint<double>();
 }
@@ -436,7 +445,7 @@ double TriangleMeshElement<NG, NP, TYPE>::distance( const MeshPoint<double> &pos
         else
             return std::numeric_limits<double>::infinity();
     } else {
-        AMP_ERROR( "Not finished" );
+        AMP_ERROR( "TriangleMeshElement::distance - Not finished" );
     }
     return 0;
 }

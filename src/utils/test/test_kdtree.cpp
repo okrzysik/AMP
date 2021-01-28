@@ -194,17 +194,17 @@ int main( int argc, char *argv[] )
     error += run_kdtree_test( 3, 100000, 100000 );
     PROFILE_STOP( "3D kdtree" );
 
-    /*    // Run a 5D test
-        PROFILE_START( "5D kdtree" );
-        error += run_kdtree_test( 5, 10, 10 );
-        error += run_kdtree_test( 5, 10000, 2000 );
-        PROFILE_STOP( "5D kdtree" );
+    // Run a 5D test
+    PROFILE_START( "5D kdtree" );
+    error += run_kdtree_test( 5, 10, 10 );
+    error += run_kdtree_test( 5, 10000, 2000 );
+    PROFILE_STOP( "5D kdtree" );
 
-        // Run a 10D test
-        PROFILE_START( "10D kdtree" );
-        error += run_kdtree_test( 10, 10, 10 );
-        error += run_kdtree_test( 10, 10000, 2000 );
-        PROFILE_STOP( "10D kdtree" );*/
+    // Run a 10D test
+    //    PROFILE_START( "10D kdtree" );
+    //    error += run_kdtree_test( 10, 10, 10 );
+    //    error += run_kdtree_test( 10, 10000, 2000 );
+    //    PROFILE_STOP( "10D kdtree" );
 
     // Save the results
     PROFILE_SAVE( "test_kdtree" );

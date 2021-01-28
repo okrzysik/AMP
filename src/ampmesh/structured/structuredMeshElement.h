@@ -71,6 +71,24 @@ public:
     }
 
     /**
+     * \brief    Calculate the nearest point on the element
+     * \details  This function computes nearest point on/in the element to the given point
+     * \param[in] pos   Current position of the point
+     */
+    MeshPoint<double> nearest( const MeshPoint<double> &pos ) const override;
+
+    /**
+     * \brief    Calculate the distance to the element given a ray
+     * \details  This function computes the distance to the element given a ray.
+     *     If the ray will never intersect the element, this distance is inf.
+     * \param[in] pos   Current position of ray
+     * \param[in] dir   Direction of ray (should be normalized for most uses)
+     * @return          Returns the distance to the element surface
+     */
+    virtual double distance( const MeshPoint<double> &pos,
+                             const MeshPoint<double> &dir ) const override;
+
+    /**
      * \brief     Return true if the element contains the point
      * \details   This function checks if the given point is inside or
      *   within TOL of the given element.  If the current element is a vertex,

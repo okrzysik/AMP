@@ -1,5 +1,5 @@
-#ifndef included_ArraySizeClass
-#define included_ArraySizeClass
+#ifndef included_AMP_ArraySizeClass
+#define included_AMP_ArraySizeClass
 
 
 #include <array>
@@ -184,9 +184,11 @@ public:
      * Create from initializer list
      * @param N             Size of the array
      */
-    CONSTEXPR ArraySize( std::initializer_list<size_t> N )
+    CONSTEXPR ArraySize( std::initializer_list<size_t> N, int ndim = -1 )
         : d_ndim( N.size() ), d_length( 0 ), d_N{ 0, 1, 1, 1, 1 }
     {
+        if ( ndim >= 0 )
+            d_ndim = ndim;
         if ( d_ndim > maxDim() )
             throw std::out_of_range( "Maximum number of dimensions exceeded" );
         auto it = N.begin();
@@ -365,25 +367,33 @@ public:
     }
 
     //! Convert the index to ijk values
-    inline std::array<size_t, 5> ijk( size_t index ) const
+    CONSTEXPR std::array<size_t, 5> ijk( size_t index ) const
     {
-        std::array<size_t, 5> x = { 0, 0, 0, 0, 0 };
-        for ( int i = 0; i < 4; i++ ) {
-            x[i]  = index % d_N[i];
-            index = index / d_N[i];
-        }
-        x[4] = index;
-        return x;
+        CHECK_ARRAY_LENGTH( index, d_length );
+        size_t i0 = index % d_N[0];
+        index     = index / d_N[0];
+        size_t i1 = index % d_N[1];
+        index     = index / d_N[1];
+        size_t i2 = index % d_N[2];
+        index     = index / d_N[2];
+        size_t i3 = index % d_N[3];
+        index     = index / d_N[3];
+        return { i0, i1, i2, i3, index };
     }
 
     //! Convert the index to ijk values
     CONSTEXPR void ijk( size_t index, size_t *x ) const
     {
-        for ( int i = 0; i < 4; i++ ) {
-            x[i]  = index % d_N[i];
-            index = index / d_N[i];
-        }
-        x[4] = index;
+        CHECK_ARRAY_LENGTH( index, d_length );
+        x[0]  = index % d_N[0];
+        index = index / d_N[0];
+        x[1]  = index % d_N[1];
+        index = index / d_N[1];
+        x[2]  = index % d_N[2];
+        index = index / d_N[2];
+        x[3]  = index % d_N[3];
+        index = index / d_N[3];
+        x[4]  = index;
     }
 
 private:

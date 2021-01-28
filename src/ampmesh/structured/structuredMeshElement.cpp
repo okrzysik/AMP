@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/structured/structuredMeshElement.h"
 #include "AMP/ampmesh/MeshElement.h"
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -783,6 +784,41 @@ bool structuredMeshElement::isInBlock( int id ) const
     if ( id == 0 )
         return true;
     return false;
+}
+
+
+/****************************************************************
+ * Calculate the nearest point on the element                    *
+ ****************************************************************/
+MeshPoint<double> structuredMeshElement::nearest( const MeshPoint<double> &pos ) const
+{
+    // Get the vertex coordinates
+    if ( d_meshType == GeomType::Vertex ) {
+        AMP_ASSERT( d_physicalDim <= 3 );
+        int N = 0;
+        BoxMesh::MeshElementIndex nodes[2];
+        getElementIndex( GeomType::Vertex, N, nodes );
+        std::array<double, 3> x[2];
+        d_mesh->coord( nodes[0], x[0].data() );
+        d_mesh->coord( nodes[1], x[1].data() );
+        return AMP::Geometry::GeometryHelpers::nearest( x[0], x[1], pos );
+    } else {
+        AMP_ERROR( "nearest is not implimented for arbitrary types" );
+    }
+    return MeshPoint<double>();
+}
+
+
+/****************************************************************
+ * Calculate the distance to the element                         *
+ ****************************************************************/
+double structuredMeshElement::distance( const MeshPoint<double> &pos,
+                                        const MeshPoint<double> &dir ) const
+{
+    NULL_USE( pos );
+    NULL_USE( dir );
+    AMP_ERROR( "distance is not implimented for structuredMeshElement" );
+    return 0;
 }
 
 

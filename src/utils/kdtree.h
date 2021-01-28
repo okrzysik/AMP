@@ -1,5 +1,5 @@
-#ifndef included_kdtree
-#define included_kdtree
+#ifndef included_AMP_kdtree
+#define included_AMP_kdtree
 
 #include <array>
 #include <iostream>

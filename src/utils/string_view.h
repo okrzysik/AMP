@@ -1,5 +1,5 @@
-#ifndef included_stringView
-#define included_stringView
+#ifndef included_AMP_stringView
+#define included_AMP_stringView
 
 #include <cstring>
 #include <ostream>
