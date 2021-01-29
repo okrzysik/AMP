@@ -18,9 +18,11 @@
 #define HOST_DEVICE
 #endif
 #if defined( __NVCC__ )
-#define CONSTEXPR
+#define CONSTEXPR inline
+#define CONSTEXPR_IF
 #else
 #define CONSTEXPR constexpr
+#define CONSTEXPR_IF constexpr
 #endif
 #if defined( USING_GCC ) || defined( USING_CLANG )
 #define ARRAY_ATTRIBUTE HOST_DEVICE __attribute__( ( always_inline ) )
@@ -75,20 +77,20 @@ public:
     CONSTEXPR size_t size() const
     {
         if
-            CONSTEXPR( std::is_integral<TYPE>::value )
+            CONSTEXPR_IF( std::is_integral<TYPE>::value )
             {
                 return ( static_cast<int64_t>( j ) - static_cast<int64_t>( i ) ) /
                        static_cast<int64_t>( k );
             }
         else if
-            CONSTEXPR( std::is_floating_point<TYPE>::value )
+            CONSTEXPR_IF( std::is_floating_point<TYPE>::value )
             {
                 double tmp = static_cast<double>( ( j - i ) ) / static_cast<double>( k );
                 return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
             }
         else if
-            CONSTEXPR( std::is_same<TYPE, std::complex<float>>::value ||
-                       std::is_same<TYPE, std::complex<double>>::value )
+            CONSTEXPR_IF( std::is_same<TYPE, std::complex<float>>::value ||
+                          std::is_same<TYPE, std::complex<double>>::value )
             {
                 double tmp = std::real( ( j - i ) / ( k ) );
                 return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
@@ -102,12 +104,12 @@ public:
     CONSTEXPR TYPE get( size_t index ) const
     {
         if
-            CONSTEXPR( std::is_integral<TYPE>::value ) { return i + index * k; }
+            CONSTEXPR_IF( std::is_integral<TYPE>::value ) { return i + index * k; }
         else if
-            CONSTEXPR( std::is_floating_point<TYPE>::value ) { return k * ( i / k + index ); }
+            CONSTEXPR_IF( std::is_floating_point<TYPE>::value ) { return k * ( i / k + index ); }
         else if
-            CONSTEXPR( std::is_same<TYPE, std::complex<float>>::value ||
-                       std::is_same<TYPE, std::complex<double>>::value )
+            CONSTEXPR_IF( std::is_same<TYPE, std::complex<float>>::value ||
+                          std::is_same<TYPE, std::complex<double>>::value )
             {
                 return k * ( i / k + static_cast<TYPE>( index ) );
             }

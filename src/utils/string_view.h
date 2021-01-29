@@ -114,6 +114,30 @@ public:
         }
         return std::string::npos;
     }
+    constexpr size_t rfind( char ch, size_t pos = 0 ) const noexcept
+    {
+        for ( int64_t i = d_size - 1; i >= (int64_t) pos; i-- )
+            if ( d_data[i] == ch )
+                return i;
+        return std::string::npos;
+    }
+
+    // find_first_of
+    size_t find_first_of( const AMP::string_view &v, size_t pos = 0 ) const noexcept
+    {
+        for ( size_t i = pos; i < d_size; i++ )
+            for ( size_t j = 0; j < v.d_size; j++ )
+                if ( d_data[i] == v[j] )
+                    return i;
+        return std::string::npos;
+    }
+    size_t find_first_of( char ch, size_t pos = 0 ) const noexcept
+    {
+        for ( size_t i = pos; i < d_size; i++ )
+            if ( d_data[i] == ch )
+                return i;
+        return std::string::npos;
+    }
 
     // find_first_not_of
     size_t find_first_not_of( char ch, size_t pos = 0 ) const noexcept

@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
     try {
         std::cout << "Testing tstOne" << std::endl;
         tstOne(&ut);
+        ut.passes("Test XXX passed");
     } catch( ... ) {
         ut.failure("An unknown exception was thrown");
     }
